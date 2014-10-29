@@ -49,14 +49,9 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
 #define TESTMAGIC2(buf, off, a, b) (buf[off] == a && buf[off + 1] == b)
 #define TESTMAGIC4(buf, off, a, b, c, d) (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
-static QString selectPluginForFile(const QString &sName) {
+static QString selectPluginForFile(QIODevice &f) {
     QString libName;
     unsigned char buf[64];
-    QFile f(sName);
-    if(!f.open(QFile::ReadOnly)) {
-        fprintf(stderr, "Unable to open binary file: %s\n", qPrintable(sName));
-        return nullptr;
-    }
     f.read((char *)buf,sizeof(buf));
     if (TESTMAGIC4(buf, 0, '\177', 'E', 'L', 'F')) {
         /* ELF Binary */
@@ -95,7 +90,7 @@ static QString selectPluginForFile(const QString &sName) {
     } else if (buf[0] == 0x4c && buf[1] == 0x01) {
         libName = "IntelCoffFile";
     } else {
-        fprintf(stderr, "Unrecognised binary file\n");
+        qWarning() << "Unrecognised binary format";
         return "";
     }
     return libName;
@@ -110,7 +105,13 @@ QObject *BinaryFileFactory::getInstanceFor(const QString &sName) {
     if (!qApp->libraryPaths().contains(pluginsDir.absolutePath())) {
         qApp->addLibraryPath(pluginsDir.absolutePath());
     }
-    QString libName = selectPluginForFile(sName);
+    QFile f(sName);
+    if(!f.open(QFile::ReadOnly)) {
+        qWarning() << "Unable to open binary file: " << sName;
+        return nullptr;
+    }
+
+    QString libName = selectPluginForFile(f);
     if (libName.isEmpty())
         return nullptr;
 

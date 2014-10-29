@@ -87,7 +87,6 @@ public:
     bool PostLoad(void *handle) override;  // For archive files only
     LOAD_FMT GetFormat() const override;   // Get format i.e. LOADFMT_PALM
     MACHINE getMachine() const override;   // Get format i.e. MACHINE_HPRISC
-    QString getFilename() const override { return m_pFileName; }
 
     bool isLibrary() const;
     ADDRESS getImageBase() override;
@@ -120,6 +119,7 @@ public:
 
 protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
+    bool LoadFromMemory(QByteArray &data);
 
 private:
     // Private method to get the start and length of a given subspace
@@ -128,7 +128,6 @@ private:
     unsigned char *m_pImage; // Points to loaded image
     IBinarySymbolTable * Symbols;          // Symbol table object
     std::set<ADDRESS> imports; // Set of imported proc addr's
-    QString m_pFileName;
     class IBinaryImage *Image;
     // LoaderInterface interface
 public:

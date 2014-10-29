@@ -24,6 +24,7 @@
 #include <cassert>
 #include <cstring>
 #include <QFile>
+#include <QBuffer>
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(p) ((unsigned char *)p)
@@ -179,13 +180,11 @@ void HpSomBinaryFile::processSymbols()
         // aux " << SYMBOLAUX(u) << endl;  // HACK!
     }
 }
-
-bool HpSomBinaryFile::RealLoad(const QString &sName) {
-    QFile fp(sName);
-
-    m_pFileName = sName;
+bool HpSomBinaryFile::LoadFromMemory(QByteArray &imgdata) {
+    QBuffer fp(&imgdata);
+    fp.open(QBuffer::ReadOnly);
     if (!fp.open(QFile::ReadOnly)) {
-        fprintf(stderr, "Could not open binary file %s\n", qPrintable(sName));
+        fprintf(stderr, "Could not open binary file \n");
         return false;
     }
 
@@ -201,7 +200,7 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
 
 
     if (fp.read((char *)m_pImage, size) != (unsigned)size) {
-        fprintf(stderr, "Error reading binary file %s\n", qPrintable(sName));
+        fprintf(stderr, "Error reading binary file\n");
         return false;
     }
 
@@ -212,8 +211,8 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
     unsigned a_magic = magic & 0xFFFF;
     if (((system_id != 0x210) && (system_id != 0x20B)) ||
             ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
-        fprintf(stderr, "%s is not a standard PA/RISC executable file, with system ID %X and magic number %X\n",
-                qPrintable(sName), system_id, a_magic);
+        fprintf(stderr, "File is not a standard PA/RISC executable file, with system ID %X and magic number %X\n",
+                system_id, a_magic);
         return false;
     }
 
@@ -386,6 +385,10 @@ bool HpSomBinaryFile::RealLoad(const QString &sName) {
 
     processSymbols();
     Symbols->find("main")->setAttr("EntryPoint",true);
+
+}
+bool HpSomBinaryFile::RealLoad(const QString &sName) {
+
     return true;
 }
 

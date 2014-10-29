@@ -31,6 +31,8 @@
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+#include <QBuffer>
+#include <QFile>
 namespace {
 
 struct SectionParam {
@@ -135,32 +137,33 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint() {
     }
     return NO_ADDRESS;
 }
-
-bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
-    m_pFileName = sName;
-    FILE *fp = fopen(qPrintable(sName), "rb");
+bool DOS4GWBinaryFile::LoadFromMemory(QByteArray &data) {
+    QBuffer buf(&data);
+    buf.open(QBuffer::ReadOnly);
 
     DWord lxoffLE, lxoff;
-    fseek(fp, 0x3c, SEEK_SET);
-    fread(&lxoffLE, 4, 1, fp); // Note: peoffLE will be in Little Endian
+    if(!buf.seek(0x3c))
+        return false;
+    buf.read((char *)&lxoffLE, 4); // Note: peoffLE will be in Little Endian
     lxoff = LMMH(lxoffLE);
 
-    fseek(fp, lxoff, SEEK_SET);
+    if(!buf.seek(lxoff))
+        return false;
     m_pLXHeader = new LXHeader;
 
-    fread(m_pLXHeader, sizeof(LXHeader), 1, fp);
+    if(!buf.read((char *)m_pLXHeader, sizeof(LXHeader)))
+        return false;
 
     if (m_pLXHeader->sigLo != 'L' || (m_pLXHeader->sigHi != 'X' && m_pLXHeader->sigHi != 'E')) {
-        fprintf(stderr, "error loading file %s, bad LE/LX magic\n", qPrintable(sName));
+        qWarning() << "error loading file bad LE/LX magic";
         return false;
     }
-
-    fseek(fp, lxoff + LMMH(m_pLXHeader->objtbloffset), SEEK_SET);
+    if(!buf.seek(lxoff + LMMH(m_pLXHeader->objtbloffset)))
+        return false;
     m_pLXObjects = new LXObject[LMMH(m_pLXHeader->numobjsinmodule)];
-    fread(m_pLXObjects, sizeof(LXObject), LMMH(m_pLXHeader->numobjsinmodule), fp);
-
-// at this point we're supposed to read in the page table and fuss around with it
-// but I'm just going to assume the file is flat.
+    buf.read((char *)m_pLXObjects, sizeof(LXObject)*LMMH(m_pLXHeader->numobjsinmodule));
+    // at this point we're supposed to read in the page table and fuss around with it
+    // but I'm just going to assume the file is flat.
 #if 0
     unsigned npagetblentries = 0;
     m_cbImage = 0;
@@ -209,11 +212,11 @@ bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
             sect.Code = Flags & 0x4 ? 1 : 0;
             sect.Data = Flags & 0x4 ? 0 : 1;
             sect.ReadOnly = Flags & 0x1 ? 0 : 1;
-            fseek(fp,
-                  m_pLXHeader->datapagesoffset + (LMMH(m_pLXObjects[n].PageTblIdx) - 1) * LMMH(m_pLXHeader->pagesize),
-                  SEEK_SET);
+            buf.seek(
+                  m_pLXHeader->datapagesoffset + (LMMH(m_pLXObjects[n].PageTblIdx) - 1) * LMMH(m_pLXHeader->pagesize)
+                  );
             char *p = base + LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr);
-            fread(p, LMMH(m_pLXObjects[n].NumPageTblEntries), LMMH(m_pLXHeader->pagesize), fp);
+            buf.read(p, LMMH(m_pLXObjects[n].NumPageTblEntries) * LMMH(m_pLXHeader->pagesize));
         }
     }
     for(SectionParam par : params) {
@@ -229,21 +232,23 @@ bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
     // TODO: decode entry tables
 
     // fixups
-    fseek(fp, LMMH(m_pLXHeader->fixuppagetbloffset) + lxoff, SEEK_SET);
+    if(!buf.seek(LMMH(m_pLXHeader->fixuppagetbloffset) + lxoff))
+        return false;
     unsigned int *fixuppagetbl = new unsigned int[npages + 1];
-    fread(fixuppagetbl, sizeof(unsigned int), npages + 1, fp);
+    buf.read((char *)fixuppagetbl, sizeof(unsigned int)*(npages + 1));
 
     // for (unsigned n = 0; n < npages; n++)
     //    printf("offset for page %i: %x\n", n + 1, fixuppagetbl[n]);
     // printf("offset to end of fixup rec: %x\n", fixuppagetbl[npages]);
 
-    fseek(fp, LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff, SEEK_SET);
+    buf.seek(LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff);
     LXFixup fixup;
     unsigned srcpage = 0;
     do {
-        fread(&fixup, sizeof(fixup), 1, fp);
+        buf.read((char *)&fixup, sizeof(fixup));
         if (fixup.src != 7 || (fixup.flags & ~0x50)) {
-            fprintf(stderr, "unknown fixup type %02x %02x\n", fixup.src, fixup.flags);
+            qWarning() << QString("unknown fixup type %1 %2").arg(fixup.src,2,16,QChar('0'))
+                          .arg( fixup.flags,2,16,QChar('0'));
             return false;
         }
         // printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object,
@@ -251,24 +256,32 @@ bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
         unsigned long src = srcpage * LMMH(m_pLXHeader->pagesize) + (short)LMMHw(fixup.srcoff);
         unsigned short object = 0;
         if (fixup.flags & 0x40)
-            fread(&object, 2, 1, fp);
+            buf.read((char *)&object, 2);
         else
-            fread(&object, 1, 1, fp);
+            buf.read((char *)&object, 1);
         unsigned int trgoff = 0;
         if (fixup.flags & 0x10)
-            fread(&trgoff, 4, 1, fp);
+            buf.read((char *)&trgoff, 4);
         else
-            fread(&trgoff, 2, 1, fp);
+            buf.read((char *)&trgoff, 2);
         unsigned long target = LMMH(m_pLXObjects[object - 1].RelocBaseAddr) + LMMHw(trgoff);
         //        printf("relocate dword at %x to point to %x\n", src, target);
         *(unsigned int *)(base + src) = target;
 
-        while (ftell(fp) - (LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage + 1]))
+        while (buf.pos() - (LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage + 1]))
             srcpage++;
     } while (srcpage < npages);
 
-    fclose(fp);
     return true;
+}
+
+bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
+    QFile fp(sName);
+    if(fp.open(QFile::ReadOnly)) {
+        QByteArray dat = fp.readAll();
+        return LoadFromMemory(dat);
+    }
+    return false;
 }
 
 // Clean up and unload the binary image

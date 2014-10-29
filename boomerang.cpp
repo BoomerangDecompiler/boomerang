@@ -931,4 +931,9 @@ QTextStream &Boomerang::getLogStream(int level)
     return LogStream;
 }
 
+QString Boomerang::filename() const
+{
+    return "";
+}
+
 const char *Boomerang::getVersionStr() { return VERSION; }

@@ -236,7 +236,7 @@ public:
     virtual void alertDecompileDebugPoint(UserProc *p, const char *description);
 
     QTextStream &getLogStream(int level=LL_Default); //!< Return overall logging target
-
+    QString filename() const;
     void logTail();
 
     // Command line flags

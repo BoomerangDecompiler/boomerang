@@ -98,10 +98,10 @@ void Prog::setFrontEnd(FrontEnd *_pFE) {
         delete m;
     ModuleList.clear();
     m_rootCluster = nullptr;
-    if (pLoaderIface && !pLoaderIface->getFilename().isEmpty()) {
+    if (pLoaderIface && !m_name.isEmpty()) {
         if(m_rootCluster)
             m_rootCluster->eraseFromParent();
-        m_name = pLoaderIface->getFilename();
+        //m_name = pLoaderIface->getFilename();
         m_rootCluster = this->getOrInsertModule(getNameNoPathNoExt());
     }
 }

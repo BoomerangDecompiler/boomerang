@@ -57,7 +57,7 @@ class MachOBinaryFile : public QObject,
     void UnLoad();                // Unload the image
     LOAD_FMT GetFormat() const;   // Get format (i.e. LOADFMT_MACHO)
     MACHINE getMachine() const;   // Get machine (i.e. MACHINE_PPC)
-    QString getFilename() const override { return m_pFileName; }
+
     bool isLibrary() const;
     ADDRESS getImageBase();
     size_t getImageSize();
@@ -88,7 +88,8 @@ class MachOBinaryFile : public QObject,
   public:
     std::map<QString, ObjcModule> &getObjcModules() override  { return modules; }
 
-  protected:
+    bool LoadFromMemory(QByteArray &data);
+protected:
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
   private:
@@ -97,7 +98,7 @@ class MachOBinaryFile : public QObject,
 
     struct mach_header *header; // The Mach-O header
     char *base;                 // Beginning of the loaded image
-    QString m_pFileName;
+
     ADDRESS entrypoint, loaded_addr;
     unsigned loaded_size;
     MACHINE machine;

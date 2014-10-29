@@ -89,9 +89,12 @@ ADDRESS MachOBinaryFile::GetMainEntryPoint() {
 }
 
 #define BE4(x) ((magic[(x)] << 24) | (magic[(x)+1] << 16) | (magic[(x)+2] << 8) | (magic[(x)+3]))
-
+bool MachOBinaryFile::LoadFromMemory(QByteArray &data) {
+    assert(false);
+    return false;
+}
 bool MachOBinaryFile::RealLoad(const QString &sName) {
-    m_pFileName = sName;
+
     FILE *fp = fopen(qPrintable(sName), "rb");
     unsigned int imgoffs = 0;
 

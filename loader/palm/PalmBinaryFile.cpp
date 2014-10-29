@@ -68,9 +68,14 @@ struct SectionParams {
     ADDRESS hostAddr;
 };
 }
+
+bool PalmBinaryFile::LoadFromMemory(QByteArray &data) {
+    assert(false);
+    return false;
+}
+
 bool PalmBinaryFile::RealLoad(const QString &sName) {
     FILE *fp;
-    m_pFileName = sName;
 
     if ((fp = fopen(qPrintable(sName), "rb")) == nullptr) {
         fprintf(stderr, "Could not open binary file %s\n", qPrintable(sName));

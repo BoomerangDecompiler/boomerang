@@ -30,14 +30,16 @@ void ExeBinaryFile::initialize(IBoomerang *sys) {
     Image = sys->getImage();
     Symbols = sys->getSymbols();
 }
+bool ExeBinaryFile::LoadFromMemory(QByteArray &data) {
+    assert(false);
+    return false;
+}
 
 bool ExeBinaryFile::RealLoad(const QString &sName) {
     FILE *fp;
     int i, cb;
     Byte buf[4];
     int fCOM;
-
-    m_pFileName = sName;
 
     // Always just 3 sections
     m_pHeader = new exeHeader;
