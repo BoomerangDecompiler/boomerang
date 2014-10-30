@@ -118,7 +118,6 @@ public:
     //        ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
 protected:
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
     bool LoadFromMemory(QByteArray &data);
 
 private:

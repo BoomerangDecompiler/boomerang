@@ -302,8 +302,6 @@ bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
 
 // Clean up and unload the binary image
 void ElfBinaryFile::UnLoad() {
-    if (m_pImage)
-        delete[] m_pImage;
     Init(); // Set all internal state to 0
 }
 

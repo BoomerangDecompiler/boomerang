@@ -78,9 +78,9 @@ private:
 
 public:
     typedef std::map<ADDRESS, BinarySymbol *> mAddressToSymbol;
-    Prog();
+    //Prog();
     virtual ~Prog();
-    Prog(const char *name);
+    Prog(const QString &name);
     void setFrontEnd(FrontEnd *_pFE);
     FrontEnd *getFrontEnd() { return DefaultFrontend; }
     void setName(const char *name);

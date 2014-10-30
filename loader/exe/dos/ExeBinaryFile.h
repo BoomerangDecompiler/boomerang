@@ -89,8 +89,6 @@ public:
 
     void initialize(IBoomerang *sys) override;
     bool LoadFromMemory(QByteArray &data);
-protected:
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 private:
     exeHeader *m_pHeader; // Pointer to header
     Byte *m_pImage;       // Pointer to image

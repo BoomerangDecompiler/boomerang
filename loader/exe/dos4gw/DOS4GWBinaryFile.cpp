@@ -275,15 +275,6 @@ bool DOS4GWBinaryFile::LoadFromMemory(QByteArray &data) {
     return true;
 }
 
-bool DOS4GWBinaryFile::RealLoad(const QString &sName) {
-    QFile fp(sName);
-    if(fp.open(QFile::ReadOnly)) {
-        QByteArray dat = fp.readAll();
-        return LoadFromMemory(dat);
-    }
-    return false;
-}
-
 // Clean up and unload the binary image
 void DOS4GWBinaryFile::UnLoad() {}
 

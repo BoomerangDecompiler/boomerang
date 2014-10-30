@@ -520,14 +520,6 @@ bool Win32BinaryFile::LoadFromMemory(QByteArray &arr) {
     return true;
 
 }
-bool Win32BinaryFile::RealLoad(const QString &sName) {
-    QFile fp(sName);
-    if(fp.open(QFile::ReadOnly)) {
-        QByteArray data = fp.readAll();
-        return LoadFromMemory(data);
-    }
-    return false;
-}
 
 // Used above for a hack to find jump instructions pointing to IATs.
 // Heuristic: start just before the "start" entry point looking for FF 25 opcodes followed by a pointer to an import

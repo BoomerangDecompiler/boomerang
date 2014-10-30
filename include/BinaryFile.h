@@ -126,9 +126,6 @@ public:
     virtual void Close() = 0;                 //!< Close file opened with Open()
     virtual LOAD_FMT GetFormat() const = 0;   //!< Get the format (e.g. LOADFMT_ELF)
     virtual MACHINE getMachine() const = 0;   //!< Get the expected machine (e.g. MACHINE_PENTIUM)
-    virtual bool RealLoad(const QString &sName) {
-
-    }
 
     virtual bool LoadFromMemory(QByteArray &data) = 0;
 

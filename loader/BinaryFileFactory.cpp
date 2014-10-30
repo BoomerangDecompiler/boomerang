@@ -37,7 +37,17 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
     }
     ldr_iface->initialize(Boomerang::get());
     ldr_iface->Close();
-    if (ldr_iface->RealLoad(sName) == 0) {
+    QFile src_file(sName);
+    if(false==src_file.open(QFile::ReadOnly)) {
+        qWarning() << "Opening '" <<sName<< "' failed";
+        delete pBF;
+        return nullptr;
+    }
+
+    static QByteArray binary_file_contents;
+    binary_file_contents.clear();
+    binary_file_contents=src_file.readAll();
+    if (ldr_iface->LoadFromMemory(binary_file_contents) == 0) {
         qWarning() << "Loading '" <<sName<< "' failed";
         delete pBF;
         return nullptr;

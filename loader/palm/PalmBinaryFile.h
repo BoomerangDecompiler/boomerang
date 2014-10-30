@@ -25,7 +25,7 @@ class PalmBinaryFile : public QObject, public LoaderInterface {
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
 
-  public:
+public:
     PalmBinaryFile(); // Constructor
     virtual ~PalmBinaryFile();
     void initialize(IBoomerang *sys) override;
@@ -68,8 +68,6 @@ class PalmBinaryFile : public QObject, public LoaderInterface {
     //    ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
     bool LoadFromMemory(QByteArray &data);
-protected:
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
 private:
     void addTrapSymbols();

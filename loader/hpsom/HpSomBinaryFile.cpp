@@ -385,10 +385,6 @@ bool HpSomBinaryFile::LoadFromMemory(QByteArray &imgdata) {
 
     processSymbols();
     Symbols->find("main")->setAttr("EntryPoint",true);
-
-}
-bool HpSomBinaryFile::RealLoad(const QString &sName) {
-
     return true;
 }
 

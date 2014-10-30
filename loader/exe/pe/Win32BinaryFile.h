@@ -193,7 +193,6 @@ public:
     void initialize(IBoomerang *sys) override;
 
 protected:
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
     void processIAT();
     void readDebugData();
     bool LoadFromMemory(QByteArray &arr);

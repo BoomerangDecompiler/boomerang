@@ -271,10 +271,10 @@ void XMLProgParser::start_prog(const QXmlStreamAttributes &attr) {
     if (phase == 1) {
         return;
     }
-    Context *ctx = stack.front();
-    ctx->prog = new Prog();
-    addId(attr, ctx->prog);
     QStringRef name = attr.value(QLatin1Literal("name"));
+    Context *ctx = stack.front();
+    ctx->prog = new Prog(name.toString());
+    addId(attr, ctx->prog);
     if (!name.isEmpty())
         ctx->prog->setName(qPrintable(name.toString()));
     name = attr.value(QLatin1Literal("path"));

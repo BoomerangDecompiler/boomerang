@@ -473,7 +473,10 @@ PentiumFrontEnd::PentiumFrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *b
 }
 
 // destructor
-PentiumFrontEnd::~PentiumFrontEnd() {}
+PentiumFrontEnd::~PentiumFrontEnd() {
+    delete decoder;
+    decoder = nullptr;
+}
 
 /***************************************************************************/ /**
   * \brief    Locate the starting address of "main" in the code section

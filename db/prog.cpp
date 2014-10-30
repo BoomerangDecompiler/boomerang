@@ -69,11 +69,13 @@ namespace dbghelp {
 
 #include <sys/types.h>
 
-Prog::Prog() : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_iNumberedProc(1) {
-    m_rootCluster = getOrInsertModule("prog");
-    Image = Boomerang::get()->getImage();
+Prog::Prog(const QString &name)
+    : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_name(name), m_iNumberedProc(1) {
     BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
-    // Default constructor
+    m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
+    // Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
+    m_path = m_name;
+    Image = Boomerang::get()->getImage();
 }
 /// Create or retrieve existing module
 /// \param frontend for the module, if nullptr set it to program's default frontend.
@@ -104,14 +106,6 @@ void Prog::setFrontEnd(FrontEnd *_pFE) {
         //m_name = pLoaderIface->getFilename();
         m_rootCluster = this->getOrInsertModule(getNameNoPathNoExt());
     }
-}
-
-Prog::Prog(const char *name)
-    : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_name(name), m_iNumberedProc(1) {
-    m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
-    // Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
-    m_path = m_name;
-    Image = Boomerang::get()->getImage();
 }
 
 Prog::~Prog() {

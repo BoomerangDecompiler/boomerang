@@ -55,7 +55,7 @@ void FrontSparcTest::test1() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_SPARC);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(HELLO_SPARC);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
@@ -125,7 +125,7 @@ void FrontSparcTest::test2() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_SPARC);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(HELLO_SPARC);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
@@ -171,7 +171,7 @@ void FrontSparcTest::test3() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_SPARC);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(HELLO_SPARC);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
@@ -233,7 +233,7 @@ void FrontSparcTest::testBranch() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(BRANCH_SPARC);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(BRANCH_SPARC);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
@@ -273,7 +273,7 @@ void FrontSparcTest::testDelaySlot() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(BRANCH_SPARC);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(BRANCH_SPARC);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);

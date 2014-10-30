@@ -61,8 +61,6 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
     ADDRESS NativeToHostAddress(ADDRESS uNative);
 
     bool LoadFromMemory(QByteArray &img);
-protected:
-    virtual bool RealLoad(const QString &sName); // Load the file; pure virtual
 
   private:
     // Apply relocations; important when compiled without -fPIC

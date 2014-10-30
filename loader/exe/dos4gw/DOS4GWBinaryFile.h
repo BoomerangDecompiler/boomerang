@@ -143,6 +143,7 @@ public:
     ADDRESS GetMainEntryPoint() override;
     ADDRESS GetEntryPoint() override;
     DWord getDelta();
+    bool LoadFromMemory(QByteArray &data) override;
 
     //
     //        --        --        --        --        --        --        --        --        --
@@ -156,8 +157,6 @@ protected:
     int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
     int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
 
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
-    bool LoadFromMemory(QByteArray &data) override;
 private:
     bool PostLoad(void *handle); // Called after archive member loaded
 

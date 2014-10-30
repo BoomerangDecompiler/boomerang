@@ -89,14 +89,11 @@ class MachOBinaryFile : public QObject,
     std::map<QString, ObjcModule> &getObjcModules() override  { return modules; }
 
     bool LoadFromMemory(QByteArray &data);
-protected:
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
   private:
     bool PostLoad(void *handle);  // Called after archive member loaded
     void findJumps(ADDRESS curr); // Find names for jumps to IATs
 
-    struct mach_header *header; // The Mach-O header
     char *base;                 // Beginning of the loaded image
 
     ADDRESS entrypoint, loaded_addr;
