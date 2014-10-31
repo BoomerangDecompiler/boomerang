@@ -20,13 +20,14 @@
 class Prog;
 class IBinaryImage;
 
-class Project : QObject {
+class Project : public QObject {
     Q_OBJECT
+    QByteArray file_bytes;
     IBinaryImage *Image; // raw memory interface
     Prog *Program; // program interface
 public:
     bool serializeTo(QIODevice &dev);
     bool serializeFrom(QIODevice &dev);
-
+    QByteArray &filedata() { return file_bytes; }
 };
 #endif

@@ -8,6 +8,7 @@
 
 #include "BinaryFile.h"
 #include "boomerang.h"
+#include "project.h"
 #include "IBinaryImage.h"
 #include "IBinarySymbols.h"
 
@@ -44,10 +45,9 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
         return nullptr;
     }
 
-    static QByteArray binary_file_contents;
-    binary_file_contents.clear();
-    binary_file_contents=src_file.readAll();
-    if (ldr_iface->LoadFromMemory(binary_file_contents) == 0) {
+    Boomerang::get()->project()->filedata().clear();
+    Boomerang::get()->project()->filedata()=src_file.readAll();
+    if (ldr_iface->LoadFromMemory(Boomerang::get()->project()->filedata()) == 0) {
         qWarning() << "Loading '" <<sName<< "' failed";
         delete pBF;
         return nullptr;

@@ -20,6 +20,7 @@
 #include "log.h"
 #include "xmlprogparser.h"
 #include "codegen/chllcode.h"
+#include "project.h"
 
 // For the -nG switch to disable the garbage collector
 #ifdef HAVE_LIBGC
@@ -42,6 +43,7 @@ Boomerang *Boomerang::boomerang = nullptr;
  * - Main log stream is output on stderr
  */
 Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), LogStream(stdout),ErrStream(stderr) {
+    currentProject = new Project;
 }
 
 Boomerang::~Boomerang() {
