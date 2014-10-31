@@ -28,6 +28,7 @@
 #include <cassert>
 #include <cstring>
 
+
 extern char debug_buffer[]; // For prints functions
 QMap<QString, SharedType > Type::namedTypes;
 //QMap<QString, SharedType > Type::namedTypes;
@@ -173,9 +174,8 @@ SharedType CompoundType::clone() const {
 
 SharedType UnionType::clone() const {
     auto u = std::make_shared<UnionType>();
-    std::list<UnionElement>::const_iterator it;
-    for (it = li.begin(); it != li.end(); it++)
-        u->addType(it->type, it->name);
+    for (UnionElement el : li)
+        u->addType(el.type, el.name);
     return u;
 }
 
@@ -218,8 +218,7 @@ size_t CompoundType::getSize() const {
 }
 size_t UnionType::getSize() const {
     int max = 0;
-    std::list<UnionElement>::const_iterator it;
-    for (it = li.begin(); it != li.end(); it++) {
+    for (UnionEntrySet::const_iterator it = li.begin(); it != li.end(); it++) {
         int sz = it->type->getSize();
         if (sz > max)
             max = sz;
@@ -340,13 +339,15 @@ SharedType Type::parseType(const char */*str*/) {
   * \returns            this == other
   ******************************************************************************/
 bool IntegerType::operator==(const Type &other) const {
+    if(not other.isInteger())
+        return false;
     IntegerType &otherInt = (IntegerType &)other;
-    return other.isInteger() &&
-           // Note: zero size matches any other size (wild, or unknown, size)
-           (size == 0 || otherInt.size == 0 || size == otherInt.size) &&
-           // Note: actual value of signedness is disregarded, just whether less than, equal to, or greater than 0
-           ((signedness < 0 && otherInt.signedness < 0) || (signedness == 0 && otherInt.signedness == 0) ||
-            (signedness > 0 && otherInt.signedness > 0));
+    return
+            // Note: zero size matches any other size (wild, or unknown, size)
+            (size == 0 || otherInt.size == 0 || size == otherInt.size) &&
+            // Note: actual value of signedness is disregarded, just whether less than, equal to, or greater than 0
+            ((signedness < 0 && otherInt.signedness < 0) || (signedness == 0 && otherInt.signedness == 0) ||
+             (signedness > 0 && otherInt.signedness > 0));
 }
 
 bool FloatType::operator==(const Type &other) const {
@@ -400,15 +401,15 @@ bool CompoundType::operator==(const Type &other) const {
 }
 
 bool UnionType::operator==(const Type &other) const {
+    if(not other.isUnion())
+        return false;
     const UnionType &uother = (UnionType &)other;
-    std::list<UnionElement>::const_iterator it1, it2;
-    if (other.isUnion() && uother.li.size() == li.size()) {
-        for (it1 = li.begin(), it2 = uother.li.begin(); it1 != li.end(); it1++, it2++)
-            if (!(*it1->type == *it2->type))
-                return false;
-        return true;
-    }
-    return false;
+    if (uother.li.size() != li.size())
+        return false;
+    for (const UnionElement &el : li)
+        if(uother.li.find(el)==uother.li.end())
+            return false;
+    return true;
 }
 
 bool SizeType::operator==(const Type &other) const { return other.isSize() && (size == ((SizeType &)other).size); }
@@ -753,7 +754,7 @@ QString CompoundType::getCtype(bool final) const {
 
 QString UnionType::getCtype(bool final) const {
     QString tmp("union { ");
-    std::list<UnionElement>::const_iterator it;
+
     for (const UnionElement &el : li) {
         tmp += el.type->getCtype(final);
         if (el.name != "") {
@@ -970,20 +971,20 @@ void ArrayType::fixBaseType(SharedType b) {
 
 #define AS_TYPE(x)                                                                                                     \
     std::shared_ptr<x##Type> Type::as##x() {                                                                                           \
-        SharedType ty = shared_from_this();                                                                                               \
-        if (isNamed())                                                                                                 \
-            ty = std::static_pointer_cast<NamedType>(ty)->resolvesTo();                                                                      \
-        auto res = std::dynamic_pointer_cast<x##Type>(ty);                                                         \
-        assert(res);                                                                                                   \
-        return res;                                                                                                    \
+    SharedType ty = shared_from_this();                                                                                               \
+    if (isNamed())                                                                                                 \
+    ty = std::static_pointer_cast<NamedType>(ty)->resolvesTo();                                                                      \
+    auto res = std::dynamic_pointer_cast<x##Type>(ty);                                                         \
+    assert(res);                                                                                                   \
+    return res;                                                                                                    \
     }                                                                                                                  \
     std::shared_ptr<const x##Type> Type::as##x() const {                                                                               \
-        auto ty = shared_from_this();                                                                                         \
-        if (isNamed())                                                                                                 \
-            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                                                               \
-        auto res = std::dynamic_pointer_cast<const x##Type>(ty);                                             \
-        assert(res);                                                                                                   \
-        return res;                                                                                                    \
+    auto ty = shared_from_this();                                                                                         \
+    if (isNamed())                                                                                                 \
+    ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                                                               \
+    auto res = std::dynamic_pointer_cast<const x##Type>(ty);                                             \
+    assert(res);                                                                                                   \
+    return res;                                                                                                    \
     }
 
 AS_TYPE(Void)
@@ -1016,10 +1017,10 @@ std::shared_ptr<const NamedType> Type::asNamed() const {
 
 #define RESOLVES_TO_TYPE(x)                                                                                            \
     bool Type::resolvesTo##x() const {                                                                                 \
-        auto ty = shared_from_this();                                                                                         \
-        if (ty->isNamed())                                                                                             \
-            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                                                                      \
-        return ty && ty->is##x();                                                                                      \
+    auto ty = shared_from_this();                                                                                         \
+    if (ty->isNamed())                                                                                             \
+    ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                                                                      \
+    return ty && ty->is##x();                                                                                      \
     }
 
 RESOLVES_TO_TYPE(Void)
@@ -1082,7 +1083,7 @@ QTextStream &operator<<(QTextStream &os, const Type &t) {
     case eUnion:
         os << "union";
         break;
-    // case eUnion:    os << t.getCtype(); break;
+        // case eUnion:    os << t.getCtype(); break;
     case eFunc:
         os << "func";
         break;
@@ -1174,12 +1175,9 @@ bool CompoundType::isSubStructOf(SharedType other) const {
 
 // Return true if this type is already in the union. Note: linear search, but number of types is usually small
 bool UnionType::findType(SharedType ty) {
-    std::list<UnionElement>::iterator it;
-    for (it = li.begin(); it != li.end(); it++) {
-        if (*it->type == *ty)
-            return true;
-    }
-    return false;
+    UnionElement ue;
+    ue.type = ty;
+    return li.find(ue)!=li.end();
 }
 
 void UpperType::setSize(size_t /*size*/) {
@@ -1298,8 +1296,8 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
             memberType = memberType->meetWith(ty, ch);
             pdie->second.type->asCompound()->setTypeAtOffset(bitOffset, memberType);
         } else
-            LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype() << " is not compatible with "
-                                                                                      "existing structure member type "
+            LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype()
+                << " is not compatible with existing structure member type "
                 << memberType->getCtype() << "\n";
     } else if (pdie->second.type->resolvesToArray()) {
         SharedType memberType = pdie->second.type->asArray()->getBaseType();
@@ -1308,8 +1306,8 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
             memberType = memberType->meetWith(ty, ch);
             pdie->second.type->asArray()->setBaseType(memberType);
         } else
-            LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype() << " is not compatible with "
-                                                                                      "existing array member type "
+            LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype()
+                << " is not compatible with existing array member type "
                 << memberType->getCtype() << "\n";
     } else
         LOG << "TYPE ERROR: Existing type at address " << pdie->first << " is not structure or array type\n";
@@ -1336,8 +1334,8 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
                 memberType = it->second.type->meetWith(memberType, ch);
                 ty->asCompound()->setTypeAtOffset(bitOffset, memberType);
             } else {
-                LOG << "TYPE ERROR: At address " << addr << " struct type " << ty->getCtype() << " is not compatible "
-                       "with existing type " << it->second.type->getCtype() << "\n";
+                LOG << "TYPE ERROR: At address " << addr << " struct type " << ty->getCtype() <<
+                       " is not compatible with existing type " << it->second.type->getCtype() << "\n";
                 return;
             }
         }
@@ -1351,9 +1349,8 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
                 memberType = memberType->meetWith(it->second.type, ch);
                 ty->asArray()->setBaseType(memberType);
             } else {
-                LOG << "TYPE ERROR: At address " << addr << " array type " << ty->getCtype() << " is not compatible "
-                                                                                                "with existing type "
-                    << it->second.type->getCtype() << "\n";
+                LOG << "TYPE ERROR: At address " << addr << " array type " << ty->getCtype() <<
+                       " is not compatible with existing type " << it->second.type->getCtype() << "\n";
                 return;
             }
         }
@@ -1361,8 +1358,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
         // Just make sure it doesn't overlap anything
         if (!isClear(addr, (ty->getSize() + 7) / 8)) {
             LOG << "TYPE ERROR: at address " << addr << ", overlapping type " << ty->getCtype()
-                << " does not resolve "
-                   "to compound or array\n";
+                << " does not resolve to compound or array\n";
             return;
         }
     }
@@ -1484,7 +1480,7 @@ void UnionType::addType(SharedType n, const QString &str) {
     if (n->isUnion()) {
         auto utp = std::static_pointer_cast<UnionType>(n);
         // Note: need to check for name clashes eventually
-        li.insert(li.end(), utp->li.begin(), utp->li.end());
+        li.insert(utp->li.begin(), utp->li.end());
     } else {
         if (n->isPointer() && n->asPointer()->getPointsTo().get() == this) { // Note: pointer comparison
             n = PointerType::get(VoidType::get());
@@ -1493,7 +1489,7 @@ void UnionType::addType(SharedType n, const QString &str) {
         UnionElement ue;
         ue.type = n;
         ue.name = str;
-        li.push_back(ue);
+        li.insert(ue);
     }
 }
 

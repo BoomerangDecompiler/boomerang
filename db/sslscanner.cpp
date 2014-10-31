@@ -778,281 +778,281 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
             { return SSLParser::TOK_INTEGER; }
             YY_BREAK
         case 3:
-#line 67 "db/sslscanner.l"
+
         case 4:
-#line 67 "db/sslscanner.l"
+
         {
             return SSLParser::TOK_FLOAT;
         }
             YY_BREAK
         case 5:
-#line 68 "db/sslscanner.l"
+
         {
             return SSLParser::OPERAND;
         }
             YY_BREAK
         case 6:
-#line 70 "db/sslscanner.l"
+
         case 7:
-#line 70 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::ENDIANNESS;
         }
             YY_BREAK
         case 8:
-#line 75 "db/sslscanner.l"
+
         case 9:
-#line 75 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::BIG;
         }
             YY_BREAK
         case 10:
-#line 80 "db/sslscanner.l"
+
         case 11:
-#line 80 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::LITTLE;
         }
             YY_BREAK
         case 12:
-#line 84 "db/sslscanner.l"
+
         {
             return SSLParser::COVERS;
         }
             YY_BREAK
         case 13:
-#line 85 "db/sslscanner.l"
+
         {
             return SSLParser::SHARES;
         }
             YY_BREAK
         case 14:
-#line 86 "db/sslscanner.l"
+
         {
             return SSLParser::FAST;
         }
             YY_BREAK
         case 15:
-#line 87 "db/sslscanner.l"
+
         {
             return SSLParser::FETCHEXEC;
         }
             YY_BREAK
         case 16:
-#line 89 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::ASSIGNTYPE;
         }
             YY_BREAK
         case 17:
-#line 95 "db/sslscanner.l"
+
         case 18:
-#line 95 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::LOG_OP;
         }
             YY_BREAK
         case 19:
-#line 100 "db/sslscanner.l"
+
         case 20:
-#line 101 "db/sslscanner.l"
+
         case 21:
-#line 102 "db/sslscanner.l"
+
         case 22:
-#line 103 "db/sslscanner.l"
+
         case 23:
-#line 104 "db/sslscanner.l"
+
         case 24:
-#line 105 "db/sslscanner.l"
+
         case 25:
-#line 106 "db/sslscanner.l"
+
         case 26:
-#line 107 "db/sslscanner.l"
+
         case 27:
-#line 108 "db/sslscanner.l"
+
         case 28:
-#line 108 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::COND_OP;
         }
             YY_BREAK
         case 29:
-#line 114 "db/sslscanner.l"
+
         case 30:
-#line 115 "db/sslscanner.l"
+
         case 31:
-#line 116 "db/sslscanner.l"
+
         case 32:
-#line 117 "db/sslscanner.l"
+
         case 33:
-#line 118 "db/sslscanner.l"
+
         case 34:
-#line 119 "db/sslscanner.l"
+
         case 35:
-#line 120 "db/sslscanner.l"
+
         case 36:
-#line 121 "db/sslscanner.l"
+
         case 37:
-#line 122 "db/sslscanner.l"
+
         case 38:
-#line 122 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::BIT_OP;
         }
             YY_BREAK
         case 39:
-#line 128 "db/sslscanner.l"
+
         case 40:
-#line 129 "db/sslscanner.l"
+
         case 41:
-#line 130 "db/sslscanner.l"
+
         case 42:
-#line 131 "db/sslscanner.l"
+
         case 43:
-#line 132 "db/sslscanner.l"
+
         case 44:
-#line 133 "db/sslscanner.l"
+
         case 45:
-#line 134 "db/sslscanner.l"
+
         case 46:
-#line 134 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::ARITH_OP;
         }
             YY_BREAK
         case 47:
-#line 139 "db/sslscanner.l"
+
         case 48:
-#line 140 "db/sslscanner.l"
+
         case 49:
-#line 141 "db/sslscanner.l"
+
         case 50:
-#line 142 "db/sslscanner.l"
+
         case 51:
-#line 143 "db/sslscanner.l"
+
         case 52:
-#line 144 "db/sslscanner.l"
+
         case 53:
-#line 145 "db/sslscanner.l"
+
         case 54:
-#line 146 "db/sslscanner.l"
+
         case 55:
-#line 147 "db/sslscanner.l"
+
         case 56:
-#line 148 "db/sslscanner.l"
+
         case 57:
-#line 149 "db/sslscanner.l"
+
         case 58:
-#line 150 "db/sslscanner.l"
+
         case 59:
-#line 151 "db/sslscanner.l"
+
         case 60:
-#line 152 "db/sslscanner.l"
+
         case 61:
-#line 152 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::FARITH_OP;
         }
             YY_BREAK
         case 62:
-#line 156 "db/sslscanner.l"
+
         {
             return SSLParser::NOT;
         }
             YY_BREAK
         case 63:
-#line 159 "db/sslscanner.l"
+
         {
             return SSLParser::LNOT;
         }
             YY_BREAK
         case 64:
-#line 162 "db/sslscanner.l"
+
         {
             return SSLParser::FNEG;
         }
             YY_BREAK
         case 65:
-#line 165 "db/sslscanner.l"
+
         {
             return SSLParser::THEN;
         }
             YY_BREAK
         case 66:
-#line 168 "db/sslscanner.l"
+
         {
             return SSLParser::INDEX;
         }
             YY_BREAK
         case 67:
-#line 171 "db/sslscanner.l"
+
         {
             return SSLParser::EQUATE;
         }
             YY_BREAK
         case 68:
-#line 174 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::ASSIGN;
         }
             YY_BREAK
         case 69:
-#line 178 "db/sslscanner.l"
+
         {
             return SSLParser::TO;
         }
             YY_BREAK
         case 70:
-#line 181 "db/sslscanner.l"
+
         {
             return SSLParser::COLON;
         }
             YY_BREAK
         case 71:
-#line 184 "db/sslscanner.l"
+
         {
             return SSLParser::S_E;
         }
             YY_BREAK
         case 72:
-#line 187 "db/sslscanner.l"
+
         {
             return SSLParser::AT;
         }
             YY_BREAK
         case 73:
-#line 190 "db/sslscanner.l"
+
         {
             return SSLParser::ADDR;
         }
             YY_BREAK
         case 74:
-#line 194 "db/sslscanner.l"
+
         case 75:
-#line 195 "db/sslscanner.l"
+
         case 76:
-#line 196 "db/sslscanner.l"
+
         case 77:
-#line 197 "db/sslscanner.l"
+
         case 78:
-#line 198 "db/sslscanner.l"
+
         case 79:
-#line 199 "db/sslscanner.l"
+
         case 80:
-#line 200 "db/sslscanner.l"
+
         case 81:
-#line 200 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             yylval.str.chop(1);
@@ -1060,7 +1060,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
         }
             YY_BREAK
         case 82:
-#line 205 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             yylval.str.chop(1);
@@ -1068,7 +1068,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
         }
             YY_BREAK
         case 83:
-#line 210 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             yylval.str.chop(1);
@@ -1076,43 +1076,43 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
         }
             YY_BREAK
         case 84:
-#line 216 "db/sslscanner.l"
+
         case 85:
-#line 216 "db/sslscanner.l"
+
         {
             return SSLParser::FLAGMACRO;
         }
             YY_BREAK
         case 86:
-#line 219 "db/sslscanner.l"
+
         {
             return SSLParser::FPOP;
         }
             YY_BREAK
         case 87:
-#line 220 "db/sslscanner.l"
+
         {
             return SSLParser::FPUSH;
         }
             YY_BREAK
         case 88:
-#line 222 "db/sslscanner.l"
+
         case 89:
-#line 223 "db/sslscanner.l"
+
         case 90:
-#line 224 "db/sslscanner.l"
+
         case 91:
-#line 225 "db/sslscanner.l"
+
         case 92:
-#line 226 "db/sslscanner.l"
+
         case 93:
-#line 227 "db/sslscanner.l"
+
         case 94:
-#line 228 "db/sslscanner.l"
+
         case 95:
-#line 229 "db/sslscanner.l"
+
         case 96:
-#line 229 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             yylval.str.chop(1);
@@ -1120,52 +1120,52 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
         }
             YY_BREAK
         case 97:
-#line 235 "db/sslscanner.l"
+
         {
             return SSLParser::SUCCESSOR;
         }
             YY_BREAK
         case 98:
-#line 239 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::TEMP;
         }
             YY_BREAK
         case 99:
-#line 244 "db/sslscanner.l"
+
         {
             return SSLParser::REG_IDX;
         }
             YY_BREAK
         case 100:
-#line 245 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::REG_NUM;
         }
             YY_BREAK
         case 101:
-#line 247 "db/sslscanner.l"
+
         {
             return SSLParser::MEM_IDX;
         }
             YY_BREAK
         case 102:
-#line 248 "db/sslscanner.l"
+
         {
             return yytext[0];
         }
             YY_BREAK
         case 103:
-#line 249 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::REG_ID;
         }
             YY_BREAK
         case 104:
-#line 253 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             yylval.str.chop(1);
@@ -1173,7 +1173,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
         }
             YY_BREAK
         case 105:
-#line 258 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             yylval.str.chop(1);
@@ -1181,74 +1181,74 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
         }
             YY_BREAK
         case 106:
-#line 263 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::NAME;
         }
             YY_BREAK
         case 107:
-#line 268 "db/sslscanner.l"
+
         case 108:
-#line 268 "db/sslscanner.l"
+
         {
             yylval.str = yytext;
             return SSLParser::DECOR;
         }
             YY_BREAK
         case 109:
-#line 272 "db/sslscanner.l"
+
         {
             return yytext[0];
         }
             YY_BREAK
         case 110:
-#line 273 "db/sslscanner.l"
+
         {
             return yytext[0];
         }
             YY_BREAK
         case 111:
-#line 274 "db/sslscanner.l"
+
         {
             return yytext[0];
         }
             YY_BREAK
         case 112:
-#line 275 "db/sslscanner.l"
+
         {
             return yytext[0];
         }
             YY_BREAK
         case 113:
-#line 276 "db/sslscanner.l"
+
         {
             return yytext[0];
         }
             YY_BREAK
         case 114:
-#line 277 "db/sslscanner.l"
+
         {
             yylval.dbl = atof(yytext);
             return SSLParser::FLOATNUM;
         }
             YY_BREAK
         case 115:
-#line 281 "db/sslscanner.l"
+
         {
             yylval.num = strtol(yytext, 0, 10);
             return SSLParser::NUM;
         }
             YY_BREAK
         case 116:
-#line 286 "db/sslscanner.l"
+
         {
             yylval.num = strtol(yytext, 0, 16);
             return SSLParser::NUM;
         }
             YY_BREAK
         case 117:
-#line 291 "db/sslscanner.l"
+
         {
             // a power of two
             int sign = (yytext[0] == '-' ? -1 : 1);
@@ -1262,19 +1262,19 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
         }
             YY_BREAK
         case 118:
-#line 303 "db/sslscanner.l"
+
             ;
             YY_BREAK
         case 119:
-#line 304 "db/sslscanner.l"
+
             ; /* comment */
             YY_BREAK
         case 120:
-#line 305 "db/sslscanner.l"
+
             ;
             YY_BREAK
         case 121:
-#line 306 "db/sslscanner.l"
+
         { // funky print-next-line-for-debug token
             if (yyleng > MAX_LINE) {
                 LOG_STREAM() << theLine + 1 << ": line too long.\n";
@@ -1297,7 +1297,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
         }
             YY_BREAK
         case 122:
-#line 327 "db/sslscanner.l"
+
             ECHO;
             YY_BREAK
         case YY_STATE_EOF(INITIAL):

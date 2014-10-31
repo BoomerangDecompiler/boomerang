@@ -320,13 +320,13 @@ Exp *Location::clone() const {
   ******************************************************************************/
 bool Const::operator==(const Exp &o) const {
     // Note: the casts of o to Const& are needed, else op is protected! Duh.
-    if (((Const &)o).op == opWild)
+    if (o.getOper() == opWild)
         return true;
-    if (((Const &)o).op == opWildIntConst && op == opIntConst)
+    if (o.getOper() == opWildIntConst && op == opIntConst)
         return true;
-    if (((Const &)o).op == opWildStrConst && op == opStrConst)
+    if (o.getOper() == opWildStrConst && op == opStrConst)
         return true;
-    if (op != ((Const &)o).op)
+    if (op != o.getOper())
         return false;
     if ((conscript && conscript != ((Const &)o).conscript) || ((Const &)o).conscript)
         return false;
@@ -408,11 +408,11 @@ bool TypedExp::operator==(const Exp &o) const {
 }
 
 bool RefExp::operator==(const Exp &o) const {
-    if (((RefExp &)o).op == opWild)
+    if (o.getOper() == opWild)
         return true;
-    if (((RefExp &)o).op != opSubscript)
+    if (o.getOper() != opSubscript)
         return false;
-    if (!(*subExp1 == *((RefExp &)o).subExp1))
+    if (!(*subExp1 == *o.getSubExp1()))
         return false;
     // Allow a def of (Statement*)-1 as a wild card
     if ((long)def == -1)
@@ -568,15 +568,15 @@ bool Unary::operator*=(Exp &o) {
     Exp *other = &o;
     if (o.getOper() == opSubscript)
         other = o.getSubExp1();
-    if (((Unary *)other)->op == opWild)
+    if (other->getOper() == opWild)
         return true;
-    if (((Unary *)other)->op == opWildRegOf && op == opRegOf)
+    if (other->getOper() == opWildRegOf && op == opRegOf)
         return true;
-    if (((Unary *)other)->op == opWildMemOf && op == opMemOf)
+    if (other->getOper() == opWildMemOf && op == opMemOf)
         return true;
-    if (((Unary *)other)->op == opWildAddrOf && op == opAddrOf)
+    if (other->getOper() == opWildAddrOf && op == opAddrOf)
         return true;
-    if (op != ((Unary *)other)->op)
+    if (op != other->getOper())
         return false;
     return *subExp1 *= *((Unary *)other)->getSubExp1();
 }
@@ -585,28 +585,28 @@ bool Binary::operator*=(Exp &o) {
     Exp *other = &o;
     if (o.getOper() == opSubscript)
         other = o.getSubExp1();
-    if (((Binary *)other)->op == opWild)
+    if (other->getOper() == opWild)
         return true;
-    if (op != ((Binary *)other)->op)
+    if (op != other->getOper())
         return false;
-    if (!(*subExp1 *= *((Binary *)other)->getSubExp1()))
+    if (!(*subExp1 *= *other->getSubExp1()))
         return false;
-    return *subExp2 *= *((Binary *)other)->getSubExp2();
+    return *subExp2 *= *other->getSubExp2();
 }
 
 bool Ternary::operator*=(Exp &o) {
     Exp *other = &o;
     if (o.getOper() == opSubscript)
         other = o.getSubExp1();
-    if (((Ternary *)other)->op == opWild)
+    if (other->getOper() == opWild)
         return true;
-    if (op != ((Ternary *)other)->op)
+    if (op != other->getOper())
         return false;
-    if (!(*subExp1 *= *((Ternary *)other)->getSubExp1()))
+    if (!(*subExp1 *= *other->getSubExp1()))
         return false;
-    if (!(*subExp2 *= *((Ternary *)other)->getSubExp2()))
+    if (!(*subExp2 *= *other->getSubExp2()))
         return false;
-    return *subExp3 *= *((Ternary *)other)->getSubExp3();
+    return *subExp3 *= *other->getSubExp3();
 }
 bool Terminal::operator*=(Exp &o) {
     Exp *other = &o;
@@ -618,9 +618,9 @@ bool TypedExp::operator*=(Exp &o) {
     Exp *other = &o;
     if (o.getOper() == opSubscript)
         other = o.getSubExp1();
-    if (((TypedExp *)other)->op == opWild)
+    if (other->getOper() == opWild)
         return true;
-    if (((TypedExp *)other)->op != opTypedExp)
+    if (other->getOper() != opTypedExp)
         return false;
     // This is the strict type version
     if (*type != *((TypedExp *)other)->type)
@@ -1179,7 +1179,7 @@ void Unary::print(QTextStream &os, bool html) const {
     case opTemp:
         if (p1->getOper() == opWildStrConst) {
             os << "t[";
-            ((Const *)p1)->printNoQuotes(os);
+            p1->print(os);
             os << "]";
             return;
         }
@@ -4006,12 +4006,19 @@ Exp *Binary::accept(ExpModifier *v) {
     assert(subExp1 && subExp2);
 
     bool recur;
-    Binary *ret = (Binary *)v->preVisit(this, recur);
+    Exp *ret = v->preVisit(this, recur);
     if (recur)
         subExp1 = subExp1->accept(v);
     if (recur)
         subExp2 = subExp2->accept(v);
-    return v->postVisit(ret);
+    Binary *bret = dynamic_cast<Binary *>(ret);
+    Unary *uret = dynamic_cast<Unary *>(ret);
+    if(bret)
+        return v->postVisit(bret);
+    if(uret)
+        return v->postVisit(uret);
+    Q_ASSERT(false);
+    return nullptr;
 }
 Exp *Ternary::accept(ExpModifier *v) {
     bool recur;
@@ -4029,10 +4036,13 @@ Exp *Location::accept(ExpModifier *v) {
     // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
     // important here!  (it makes a call to a different visitor member function).
     bool recur;
-    Location *ret = (Location *)v->preVisit(this, recur);
+    Exp *ret = v->preVisit(this, recur);
     if (recur)
         subExp1 = subExp1->accept(v);
-    return v->postVisit(ret);
+    if(dynamic_cast<RefExp *>(ret))
+        return v->postVisit((RefExp *)ret);
+    else
+        return v->postVisit((Location *)ret);
 }
 
 Exp *RefExp::accept(ExpModifier *v) {
@@ -4061,7 +4071,10 @@ Exp *TypedExp::accept(ExpModifier *v) {
 
 Exp *Terminal::accept(ExpModifier *v) {
     // This is important if we need to modify terminals
-    return v->postVisit((Terminal *)v->preVisit(this));
+    Exp *ret = v->preVisit(this);
+    if(dynamic_cast<RefExp *>(ret))
+        return v->postVisit((RefExp *)ret);
+    return v->postVisit((Terminal *)ret);
 }
 
 Exp *Const::accept(ExpModifier *v) { return v->postVisit((Const *)v->preVisit(this)); }

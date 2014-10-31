@@ -383,6 +383,7 @@ public:
     // get how to access this lvalue
     virtual Exp *getLeft() { return lhs; } // Note: now only defined for Assignments, not all Statements
     virtual const Exp *getLeft() const { return lhs; }
+    virtual Exp *getRight() { return nullptr; }
 
     // set the lhs to something new
     void setLeft(Exp *e) { lhs = e; }
@@ -408,7 +409,7 @@ public:
     virtual void genConstraints(LocationSet &cons);
 
     // Data flow based type analysis
-    void dfaTypeAnalysis(bool &ch);
+    virtual void dfaTypeAnalysis(bool &ch);
 
     friend class XMLProgParser;
 }; // class Assignment
@@ -484,7 +485,7 @@ public:
     virtual void genConstraints(LocationSet &cons);
 
     // Data flow based type analysis
-    void dfaTypeAnalysis(bool &ch);
+    virtual void dfaTypeAnalysis(bool &ch);
 
     // FIXME: I suspect that this was only used by adhoc TA, and can be deleted
     bool match(const char *pattern, std::map<QString, Exp *> &bindings);
@@ -560,7 +561,7 @@ public:
     virtual void genConstraints(LocationSet &cons);
 
     // Data flow based type analysis
-    void dfaTypeAnalysis(bool &ch);
+    virtual void dfaTypeAnalysis(bool &ch);
 
     //
     //    Phi specific functions
@@ -609,7 +610,7 @@ public:
     virtual ~ImplicitAssign();
 
     virtual Instruction * clone() const;
-    void dfaTypeAnalysis(bool &ch);
+    virtual void dfaTypeAnalysis(bool &ch);
 
     // general search
     virtual bool search(const Exp &search, Exp *&result);
@@ -894,7 +895,7 @@ public:
     virtual void genConstraints(LocationSet &cons);
 
     // Data flow based type analysis
-    void dfaTypeAnalysis(bool &ch);
+    virtual void dfaTypeAnalysis(bool &ch);
 
     friend class XMLProgParser;
 }; // class BranchStatement

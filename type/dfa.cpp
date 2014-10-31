@@ -132,7 +132,7 @@ void UserProc::dfaTypeAnalysis() {
         LOG << "\n ### end results for Data flow based Type Analysis for " << getName() << " ###\n\n";
     }
 
-// Now use the type information gathered
+    // Now use the type information gathered
 #if 0
     Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
     if (DEBUG_TA)
@@ -219,7 +219,7 @@ void UserProc::dfaTypeAnalysis() {
                         ADDRESS K = ADDRESS::g(constK->getInt());
                         Exp *idx = bin_rr->getSubExp1();
                         Exp *arr = new Unary(
-                            opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalName(K), this), idx));
+                                    opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalName(K), this), idx));
                         // Beware of changing expressions in implicit assignments... map can become invalid
                         bool isImplicit = s->isImplicit();
                         if (isImplicit)
@@ -571,6 +571,7 @@ unsigned unionCount = 0;
 #endif
 
 SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) const {
+
     if (other->resolvesToVoid())
         return ((UnionType *)this)->shared_from_this();
     if (other->resolvesToUnion()) {
@@ -580,10 +581,9 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         auto otherUnion = other->as<UnionType>();
         // Always return this, never other, (even if other is larger than this) because otherwise iterators can become
         // invalid below
-        std::list<UnionElement>::iterator it;
         // TODO: verify the below, before the return was done after single meetWith on first file of other union
-        for (it = otherUnion->li.begin(); it != otherUnion->li.end(); ++it) {
-            meetWith(it->type, ch, bHighestPtr);
+        for (UnionElement it : otherUnion->li) {
+            meetWith(it.type, ch, bHighestPtr);
         }
         return ((UnionType *)this)->shared_from_this();
     }
@@ -594,23 +594,23 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         return ((UnionType *)this)->shared_from_this();
     }
     std::list<UnionElement>::iterator it;
-//    int subtypes_count = 0;
-//    for (it = li.begin(); it != li.end(); ++it) {
-//        Type &v(*it->type);
-//        if(v.isCompound()) {
-//            subtypes_count += ((CompoundType &)v).getNumTypes();
-//        }
-//        else if(v.isUnion()) {
-//            subtypes_count += ((UnionType &)v).getNumTypes();
-//        }
-//        else
-//            subtypes_count+=1;
-//    }
-//    if(subtypes_count>9) {
-//        qDebug() << getCtype();
-//        qDebug() << other->getCtype();
-//        qDebug() << "*****";
-//    }
+    //    int subtypes_count = 0;
+    //    for (it = li.begin(); it != li.end(); ++it) {
+    //        Type &v(*it->type);
+    //        if(v.isCompound()) {
+    //            subtypes_count += ((CompoundType &)v).getNumTypes();
+    //        }
+    //        else if(v.isUnion()) {
+    //            subtypes_count += ((UnionType &)v).getNumTypes();
+    //        }
+    //        else
+    //            subtypes_count+=1;
+    //    }
+    //    if(subtypes_count>9) {
+    //        qDebug() << getCtype();
+    //        qDebug() << other->getCtype();
+    //        qDebug() << "*****";
+    //    }
 
     // Match 'other' agains all fields of 'this' UnionType
     // if a field is found that requires no change to 'meet', this type is returned unchanged
@@ -618,28 +618,32 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
     // then the meetWith result, and this types field iterator are stored.
     int best_meet_quality=INT_MAX;
     SharedType best_so_far;
-    std::list<UnionElement>::iterator location_of_meet=li.end();
-    for (it = li.begin(); it != li.end(); ++it) {
+    UnionEntrySet::iterator location_of_meet=li.end();
+
+    for (auto it = li.begin(); it != li.end(); ++it) {
         Type &v(*it->type);
         if (!v.isCompatibleWith(*other))
             continue;
         SharedType curr = v.clone();
         auto meet_res = curr->meetWith(other, ch, bHighestPtr);
         if(!ch) { // no change necessary for meet, perfect
-//            qDebug() << getCtype();
+            //            qDebug() << getCtype();
             return ((UnionType *)this)->shared_from_this();
         }
         int quality = meet_res->getCtype().size();
         if(quality<best_meet_quality) {
-//            qDebug() << "Found better match:" << meet_res->getCtype();
+            //            qDebug() << "Found better match:" << meet_res->getCtype();
             best_so_far = meet_res;
             best_meet_quality = quality;
             location_of_meet = it;
         }
     }
     if(best_meet_quality!=INT_MAX) {
-        location_of_meet->type = best_so_far;
-//        qDebug() << getCtype();
+        UnionElement ne = *location_of_meet;
+        ne.type = best_so_far;
+        li.erase(location_of_meet);
+        li.insert(ne);
+        //        qDebug() << getCtype();
         return ((UnionType *)this)->shared_from_this();
     }
 
@@ -761,7 +765,7 @@ SharedType Type::createUnion(SharedType other, bool &ch, bool bHighestPtr /* = f
     ch = true;
 #if PRINT_UNION
     LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype()
-              << ", result is " << u->getCtype() << "\n";
+                 << ", result is " << u->getCtype() << "\n";
 #endif
     return u;
 }
@@ -781,7 +785,7 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
                 if (boundmax == procDest->getSignature()->getParamName(nt)) {
                     SharedType tyt = ((Assign *)*aat)->getType();
                     if (tyt->resolvesToPointer() && tyt->asPointer()->getPointsTo()->resolvesToArray() &&
-                        tyt->asPointer()->getPointsTo()->asArray()->isUnbounded())
+                            tyt->asPointer()->getPointsTo()->asArray()->isUnbounded())
                         tyt->asPointer()->getPointsTo()->asArray()->setLength(((Const *)a->getRight())->getInt());
                     break;
                 }
@@ -800,12 +804,15 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
 }
 
 void ReturnStatement::dfaTypeAnalysis(bool &ch) {
-    StatementList::iterator mm, rr;
-    for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-        ((Assign *)*mm)->dfaTypeAnalysis(ch);
+    for (Instruction * mm : modifieds) {
+        if(not mm->isAssignment())
+            qDebug()<< "non assignment in modifieds of ReturnStatement";
+        mm->dfaTypeAnalysis(ch);
     }
-    for (rr = returns.begin(); rr != returns.end(); ++rr) {
-        ((Assign *)*rr)->dfaTypeAnalysis(ch);
+    for (Instruction * rr : returns) {
+        if(not rr->isAssignment())
+            qDebug()<< "non assignment in returns of ReturnStatement";
+        rr->dfaTypeAnalysis(ch);
     }
 }
 
@@ -1009,7 +1016,7 @@ SharedType Binary::ascendType() {
     switch (op) {
     case opPlus:
         return sigmaSum(ta, tb);
-    // Do I need to check here for Array* promotion? I think checking in descendType is enough
+        // Do I need to check here for Array* promotion? I think checking in descendType is enough
     case opMinus:
         return deltaDifference(ta, tb);
     case opMult:
@@ -1052,13 +1059,13 @@ SharedType Const::ascendType() {
     if (type->resolvesToVoid()) {
         switch (op) {
         case opIntConst:
-// could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
+            // could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
 #if 0
-                if (u.i != 0 && (u.i < 0x1000 && u.i > -0x100))
-                    // Assume that small nonzero integer constants are of integer type (can't be pointers)
-                    // But note that you can't say anything about sign; these are bit patterns, not HLL constants
-                    // (e.g. all ones could be signed -1 or unsigned 0xFFFFFFFF)
-                    type = IntegerType::get(STD_SIZE, 0);
+            if (u.i != 0 && (u.i < 0x1000 && u.i > -0x100))
+                // Assume that small nonzero integer constants are of integer type (can't be pointers)
+                // But note that you can't say anything about sign; these are bit patterns, not HLL constants
+                // (e.g. all ones could be signed -1 or unsigned 0xFFFFFFFF)
+                type = IntegerType::get(STD_SIZE, 0);
 #endif
             break;
         case opLongConst:
@@ -1146,9 +1153,9 @@ void Binary::descendType(SharedType parentType, bool &ch, Instruction *s) {
     SharedType ta = subExp1->ascendType();
     SharedType tb = subExp2->ascendType();
     SharedType nt; // "New" type for certain operators
-// The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
-// where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
-// triggers with every ordinary local reference, causing esp to appear used in the final program
+    // The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
+    // where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
+    // triggers with every ordinary local reference, causing esp to appear used in the final program
 #if 0
     Signature* sig = s->getProc()->getSignature();
     Prog* prog = s->getProc()->getProg();
@@ -1281,7 +1288,7 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
     case opMemOf:
         // Check for m[x*K1 + K2]: array with base K2 and stride K1
         if (subExp1->getOper() == opPlus && as_bin->getSubExp1()->getOper() == opMult &&
-            as_bin->getSubExp2()->isIntConst() && ((Binary *)as_bin->getSubExp1())->getSubExp2()->isIntConst()) {
+                as_bin->getSubExp2()->isIntConst() && ((Binary *)as_bin->getSubExp1())->getSubExp2()->isIntConst()) {
             Exp *leftOfPlus = as_bin->getSubExp1();
             // We would expect the stride to be the same size as the base type
             size_t stride = ((Const *)((Binary *)leftOfPlus)->getSubExp2())->getInt();
@@ -1534,26 +1541,26 @@ bool ArrayType::isCompatible(const Type &other, bool all) const {
 bool UnionType::isCompatible(const Type &other, bool all) const {
     if (other.resolvesToVoid())
         return true;
-    std::list<UnionElement>::const_iterator it;
+
     if (other.resolvesToUnion()) {
         if (this == &other) // Note: pointer comparison
             return true;   // Avoid infinite recursion
         const UnionType &otherUnion((const UnionType &)other);
         // Unions are compatible if one is a subset of the other
         if (li.size() < otherUnion.li.size()) {
-            for (it = li.begin(); it != li.end(); ++it)
-                if (!otherUnion.isCompatible(*it->type, all))
+            for (const UnionElement &e : li)
+                if (!otherUnion.isCompatible(*e.type, all))
                     return false;
         } else {
-            for (it = otherUnion.li.begin(); it != otherUnion.li.end(); ++it)
-                if (!isCompatible(*it->type, all))
+            for (const UnionElement &e : otherUnion.li)
+                if (!isCompatible(*e.type, all))
                     return false;
         }
         return true;
     }
     // Other is not a UnionType
-    for (it = li.begin(); it != li.end(); ++it)
-        if (other.isCompatibleWith(*it->type, all))
+    for (const UnionElement &e : li)
+        if (other.isCompatibleWith(*e.type, all))
             return true;
     return false;
 }
@@ -1620,7 +1627,7 @@ SharedType Type::dereference() {
 SharedType UnionType::dereferenceUnion() {
     auto ret = UnionType::get();
     char name[20];
-    std::list<UnionElement>::iterator it;
+    UnionEntrySet::iterator it;
     for (it = li.begin(); it != li.end(); ++it) {
         SharedType elem = it->type->dereference();
         if (elem->resolvesToVoid())

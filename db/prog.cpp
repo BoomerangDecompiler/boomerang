@@ -1067,9 +1067,9 @@ void Prog::decompile() {
             foundone = false;
             for(Module *module : ModuleList) {
                 for (Function *pp : *module) {
-                    UserProc *proc = (UserProc *)pp;
-                    if (proc->isLib())
+                    if (pp->isLib())
                         continue;
+                    UserProc *proc = (UserProc *)pp;
                     if (proc->isDecompiled())
                         continue;
                     int indent = 0;
@@ -1099,9 +1099,9 @@ void Prog::decompile() {
         // print XML after removing returns
         for(Module *m :ModuleList) {
             for (Function *pp : *m) {
-                UserProc *proc = (UserProc *)pp;
-                if (proc->isLib())
+                if (pp->isLib())
                     continue;
+                UserProc *proc = (UserProc *)pp;
                 proc->printXML();
             }
         }
@@ -1188,8 +1188,8 @@ bool Prog::removeUnusedReturns() {
     bool change = false;
     for(Module *module : ModuleList) {
         for (Function *pp : *module) {
-            UserProc *proc = (UserProc *)pp;
-            if (proc->isLib() || !proc->isDecoded())
+            UserProc *proc = dynamic_cast<UserProc *>(pp);
+            if (nullptr==proc || !proc->isDecoded())
                 continue; // e.g. use -sf file to just prototype the proc
             removeRetSet.insert(proc);
         }
@@ -1212,9 +1212,9 @@ bool Prog::removeUnusedReturns() {
 void Prog::fromSSAform() {
     for(Module *module : ModuleList) {
         for (Function *pp : *module) {
-            UserProc *proc = (UserProc *)pp;
-            if (proc->isLib())
+            if (pp->isLib())
                 continue;
+            UserProc *proc = (UserProc *)pp;
             if (VERBOSE) {
                 LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n" << *proc
                     << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
@@ -1250,8 +1250,8 @@ void Prog::globalTypeAnalysis() {
         LOG << "### start global data-flow-based type analysis ###\n";
     for(Module *module : ModuleList) {
         for (Function *pp : *module) {
-            UserProc *proc = (UserProc *)pp;
-            if (proc->isLib() || !proc->isDecoded())
+            UserProc *proc = dynamic_cast<UserProc *>(pp);
+            if ( nullptr==proc || !proc->isDecoded())
                 continue;
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop

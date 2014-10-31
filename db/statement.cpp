@@ -412,8 +412,8 @@ bool Instruction::propagateFlagsTo() {
             Exp *e = *ll;
             if (!e->isSubscript())
                 continue; // e.g. %pc
-            Assign *def = (Assign *)((RefExp *)e)->getDef();
-            if (def == nullptr || !def->isAssign())
+            Assign *def = dynamic_cast<Assign *>(((RefExp *)e)->getDef());
+            if ( def == nullptr ) // not a plain Assign, or missing Def
                 continue;
             Exp *base = ((RefExp *)e)->getSubExp1();
             if (base->isFlags() || base->isMainFlag()) {
@@ -2836,14 +2836,12 @@ Assign::Assign(SharedType ty, Exp * lhs, Exp * r, Exp * guard) : Assignment(ty, 
 Assign::Assign(Assign & o) : Assignment(lhs->clone()) {
     Kind = STMT_ASSIGN;
     rhs = o.rhs->clone();
+    type = nullptr;
+    guard = nullptr;
     if (o.type)
         type = o.type->clone();
-    else
-        type = nullptr;
     if (o.guard)
         guard = o.guard->clone();
-    else
-        guard = nullptr;
 }
 
 // Implicit Assignment
@@ -4009,7 +4007,7 @@ void ReturnStatement::print(QTextStream & os, bool html) const {
     for (auto const &elem : modifieds) {
         QString tgt2;
         QTextStream ost(&tgt2);
-        const Assign *as = (const Assign *)elem;
+        const Assignment *as = (const Assignment *)elem;
         const SharedType ty = as->getType();
         if (ty)
             ost << "*" << ty << "* ";
@@ -4078,7 +4076,7 @@ void ReturnStatement::updateModifieds() {
         if (proc->filterReturns(colLhs))
             continue; // Filtered out
         for (it = oldMods.begin(); it != oldMods.end(); it++) {
-            Exp *lhs = ((Assign *)*it)->getLeft();
+            Exp *lhs = ((Assignment *)*it)->getLeft();
             if (*lhs == *colLhs) {
                 found = true;
                 break;
@@ -4098,7 +4096,7 @@ void ReturnStatement::updateModifieds() {
     for (it = oldMods.end(); it != oldMods.begin();) {
         --it; // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the collector
-        Assign *as = (Assign *)*it;
+        Assignment *as = (Assignment *)*it;
         Exp *lhs = as->getLeft();
         if (!col.existsOnLeft(lhs))
             continue; // Not in collector: delete it (don't copy it)
@@ -4109,7 +4107,7 @@ void ReturnStatement::updateModifieds() {
         StatementList::iterator nn;
         bool inserted = false;
         for (nn = modifieds.begin(); nn != modifieds.end(); ++nn) {
-            if (sig->returnCompare(*as, *(Assign *)*nn)) { // If the new assignment is less than the current one
+            if (sig->returnCompare(*as, *(Assignment *)*nn)) { // If the new assignment is less than the current one
                 nn = modifieds.insert(nn, as);             // then insert before this position
                 inserted = true;
                 break;
@@ -4217,10 +4215,10 @@ void CallStatement::updateDefines() {
     defines.clear();
 
     if (procDest && calleeReturn) {
-        StatementList::iterator mm;
+
         StatementList &modifieds = ((UserProc *)procDest)->getModifieds();
-        for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-            Assign *as = (Assign *)*mm;
+        for (Instruction *mm : modifieds) {
+            Assignment *as = (Assignment *)mm;
             Exp *loc = as->getLeft();
             if (proc->filterReturns(loc))
                 continue;
@@ -4247,7 +4245,7 @@ void CallStatement::updateDefines() {
     for (it = oldDefines.end(); it != oldDefines.begin();) {
         --it; // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the return or collector
-        Assign *as = (Assign *)*it;
+        Assignment *as = (Assignment *)*it;
         Exp *lhs = as->getLeft();
         if (calleeReturn) {
             if (!calleeReturn->definesLoc(lhs))
@@ -4263,7 +4261,7 @@ void CallStatement::updateDefines() {
         StatementList::iterator nn;
         bool inserted = false;
         for (nn = defines.begin(); nn != defines.end(); ++nn) {
-            if (sig->returnCompare(*as, *(Assign *)*nn)) { // If the new assignment is less than the current one
+            if (sig->returnCompare(*as, *(Assignment *)*nn)) { // If the new assignment is less than the current one
                 nn = defines.insert(nn, as);               // then insert before this position
                 inserted = true;
                 break;
@@ -4534,14 +4532,14 @@ StatementList *CallStatement::calcResults() {
             }
         } else {
             Exp *rsp = Location::regOf(proc->getSignature()->getStackRegister(proc->getProg()));
-            StatementList::iterator dd;
-            for (dd = defines.begin(); dd != defines.end(); ++dd) {
-                Exp *lhs = ((Assign *)*dd)->getLeft();
+
+            for (Instruction *dd : defines) {
+                Exp *lhs = ((Assignment *)dd)->getLeft();
                 // The stack pointer is allowed as a define, so remove it here as a special case non result
                 if (*lhs == *rsp)
                     continue;
                 if (useCol.exists(lhs))
-                    ret->append(*dd);
+                    ret->append(dd);
             }
             delete rsp;
         }
@@ -4584,7 +4582,7 @@ type = ty;
 void CallStatement::removeDefine(Exp * e) {
     StatementList::iterator ss;
     for (ss = defines.begin(); ss != defines.end(); ++ss) {
-        Assign *as = ((Assign *)*ss);
+        Assignment *as = ((Assignment *)*ss);
         if (*as->getLeft() == *e) {
             defines.erase(ss);
             return;
