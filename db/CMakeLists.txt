@@ -28,6 +28,7 @@ SET(INCLUDES
 ../include/frontend.h
 ../include/managed.h
 ../include/osfcn.h
+../include/project.h
 ../include/register.h
 ../include/signature.h
 ../include/transformer.h
@@ -47,8 +48,9 @@ SET(SRC
         insnameelem.cpp
         managed.cpp
         proc.cpp
-        prog.cpp #-Icodegen -Ic
+        prog.cpp
         module.cpp
+        project.cpp
         register.cpp
         rtl.cpp
         signature.cpp

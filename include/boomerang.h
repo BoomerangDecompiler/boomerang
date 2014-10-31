@@ -50,6 +50,7 @@ class HLLCode;
 class ObjcModule;
 class IBinaryImage;
 class IBinarySymbolTable;
+class Project;
 enum LogLevel {
     LL_Debug = 0,
     LL_Default=1,
@@ -120,6 +121,7 @@ public:
     static Boomerang *get();
     IBinaryImage *getImage() override;
     IBinarySymbolTable *getSymbols() override;
+    Project *project() { return currentProject; }
     int processCommand(QStringList &args);
     static const char *getVersionStr();
     Log &log();
@@ -197,43 +199,43 @@ public:
         for (Watcher *it : watchers)
             it->alertEndDecode();
     }
-    virtual void alertStartDecompile(UserProc *p) {
+    void alertStartDecompile(UserProc *p) {
         for (Watcher *it : watchers)
             it->alertStartDecompile(p);
     }
-    virtual void alertProcStatusChange(UserProc *p) {
+    void alertProcStatusChange(UserProc *p) {
         for (Watcher *it : watchers)
             it->alertProcStatusChange(p);
     }
-    virtual void alertDecompileSSADepth(UserProc *p, int depth) {
+    void alertDecompileSSADepth(UserProc *p, int depth) {
         for (Watcher *it : watchers)
             it->alertDecompileSSADepth(p, depth);
     }
-    virtual void alertDecompileBeforePropagate(UserProc *p, int depth) {
+    void alertDecompileBeforePropagate(UserProc *p, int depth) {
         for (Watcher *it : watchers)
             it->alertDecompileBeforePropagate(p, depth);
     }
-    virtual void alertDecompileAfterPropagate(UserProc *p, int depth) {
+    void alertDecompileAfterPropagate(UserProc *p, int depth) {
         for (Watcher *it : watchers)
             it->alertDecompileAfterPropagate(p, depth);
     }
-    virtual void alertDecompileAfterRemoveStmts(UserProc *p, int depth) {
+    void alertDecompileAfterRemoveStmts(UserProc *p, int depth) {
         for (Watcher *it : watchers)
             it->alertDecompileAfterRemoveStmts(p, depth);
     }
-    virtual void alertEndDecompile(UserProc *p) {
+    void alertEndDecompile(UserProc *p) {
         for (Watcher *it : watchers)
             it->alertEndDecompile(p);
     }
-    virtual void alertConsidering(Function *parent, Function *p) {
+    void alertConsidering(Function *parent, Function *p) {
         for (Watcher *it : watchers)
             it->alertConsidering(parent, p);
     }
-    virtual void alertDecompiling(UserProc *p) {
+    void alertDecompiling(UserProc *p) {
         for (Watcher *it : watchers)
             it->alertDecompiling(p);
     }
-    virtual void alertDecompileDebugPoint(UserProc *p, const char *description);
+    void alertDecompileDebugPoint(UserProc *p, const char *description);
 
     QTextStream &getLogStream(int level=LL_Default); //!< Return overall logging target
     QString filename() const;
@@ -291,6 +293,7 @@ public:
     std::vector<ADDRESS> entrypoints;       /// A vector which contains all know entrypoints for the Prog.
     std::vector<QString> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
     std::map<ADDRESS, QString> symbols; /// A map to find a name by a given address.
+    Project *currentProject;
 };
 
 #define VERBOSE (Boomerang::get()->vFlag)
