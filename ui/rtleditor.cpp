@@ -1,7 +1,9 @@
 #include "rtleditor.h"
 #include "DecompilerThread.h"
 
-#include <QtWidgets>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QScrollBar>
+#include <QtGui/QMouseEvent>
 RTLEditor::RTLEditor(Decompiler *decompiler, const QString &name) : decompiler(decompiler), name(name) {
     updateContents();
     setMouseTracking(true);

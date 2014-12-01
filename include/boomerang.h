@@ -99,7 +99,6 @@ class Boomerang : public QObject,public IBoomerang {
     Q_OBJECT
 private:
     static Boomerang *boomerang;
-    IBinaryImage *Image = nullptr;
     IBinarySymbolTable *Symbols = nullptr;
     QString progPath;               //!< String with the path to the boomerang executable.
     QString outputPath;             //!< The path where all output files are created.

@@ -14,20 +14,25 @@
   ******************************************************************************/
 #ifndef __PROJECT_H__
 #define __PROJECT_H__
+
+#include "IProject.h"
+
 #include <QtCore/QObject>
 #include <QtCore/QIODevice>
 
 class Prog;
 class IBinaryImage;
 
-class Project : public QObject {
+class Project : public QObject, public IProject {
     Q_OBJECT
     QByteArray file_bytes;
-    IBinaryImage *Image; // raw memory interface
+    IBinaryImage *Image=nullptr; // raw memory interface
     Prog *Program; // program interface
 public:
+    virtual ~Project();
     bool serializeTo(QIODevice &dev);
     bool serializeFrom(QIODevice &dev);
     QByteArray &filedata() { return file_bytes; }
+    IBinaryImage *image();
 };
 #endif

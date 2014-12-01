@@ -47,7 +47,6 @@ Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), LogStream(stdo
 }
 
 Boomerang::~Boomerang() {
-    delete Image;
 }
 
 /**
@@ -905,9 +904,8 @@ Boomerang *Boomerang::get() {
 }
 IBinaryImage *Boomerang::getImage()
 {
-    if(!Image)
-        Image = new BinaryImage;
-    return Image;
+    assert(nullptr != currentProject);
+    return currentProject->image();
 }
 
 IBinarySymbolTable *Boomerang::getSymbols()

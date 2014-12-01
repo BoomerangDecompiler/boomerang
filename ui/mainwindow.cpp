@@ -1,10 +1,11 @@
 #include "mainwindow.h"
 #include "DecompilerThread.h"
+#include "project.h"
 #include "rtleditor.h"
 #include "LoggingSettingsDlg.h"
 
-#include <QFileDialog>
-#include <QtWidgets>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QtWidgets>
 
 
 #include "ui_boomerang.h"
@@ -40,10 +41,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(d, &Decompiler::removeUserProc, this, &MainWindow::showRemoveUserProc);
     connect(d, &Decompiler::removeLibProc, this, &MainWindow::showRemoveLibProc);
     connect(d, &Decompiler::newSection, this, &MainWindow::showNewSection);
-    connect(ui->toLoadButton, SIGNAL(clicked()), d, SLOT(load()));
-    connect(ui->toDecodeButton, SIGNAL(clicked()), d, SLOT(decode()));
-    connect(ui->toDecompileButton, SIGNAL(clicked()), d, SLOT(decompile()));
-    connect(ui->toGenerateCodeButton, SIGNAL(clicked()), d, SLOT(generateCode()));
+    connect(ui->loadButton, SIGNAL(clicked()), d, SLOT(load()));
+    connect(ui->decodeButton, SIGNAL(clicked()), d, SLOT(decode()));
+    connect(ui->decompileButton, SIGNAL(clicked()), d, SLOT(decompile()));
+    connect(ui->generateCodeButton, SIGNAL(clicked()), d, SLOT(generateCode()));
     // connect(ui->inputFileComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(
     //    changeInputFile(const QString &)));
     // connect(ui->outputPathComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(
@@ -95,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
     if (!ui->inputFileComboBox->currentText().isEmpty()) {
         d->changeInputFile(ui->inputFileComboBox->currentText());
-        ui->toLoadButton->setDisabled(false);
+        ui->loadButton->setDisabled(false);
     }
     loadingSettings = false;
 }
@@ -137,8 +138,7 @@ void MainWindow::on_inputFileBrowseButton_clicked() {
             saveSettings();
         }
         decompilerThread->getDecompiler()->changeInputFile(s);
-        if (!ui->outputPathComboBox->currentText().isEmpty())
-            ui->toLoadButton->setDisabled(false);
+        ui->loadButton->setDisabled(false);
     }
 }
 
@@ -150,8 +150,6 @@ void MainWindow::on_outputPathBrowseButton_clicked() {
             saveSettings();
         }
         ui->outputPathComboBox->setEditText(s);
-        if (!ui->inputFileComboBox->currentText().isEmpty())
-            ui->toLoadButton->setDisabled(false);
     }
 }
 
@@ -162,8 +160,6 @@ void MainWindow::on_inputFileComboBox_editTextChanged(const QString &text) {
         ui->inputFileComboBox->setCurrentIndex(ui->inputFileComboBox->findText(text));
         saveSettings();
     }
-    if (!ui->outputPathComboBox->currentText().isEmpty())
-        ui->toLoadButton->setDisabled(false);
 }
 
 void MainWindow::on_inputFileComboBox_currentIndexChanged(const QString &text) {
@@ -175,8 +171,6 @@ void MainWindow::on_outputPathComboBox_editTextChanged(const QString &text) {
     decompilerThread->getDecompiler()->changeOutputPath(text);
     ui->outputPathComboBox->addItem(text);
     saveSettings();
-    if (!ui->inputFileComboBox->currentText().isEmpty())
-        ui->toLoadButton->setDisabled(false);
 }
 
 void MainWindow::closeCurrentTab() {
@@ -249,14 +243,10 @@ void MainWindow::on_tabWidget_currentChanged(int index) {
 void MainWindow::errorLoadingFile() {}
 
 void MainWindow::showInitPage() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(true);
     ui->decodeButton->setDisabled(true);
     ui->decompileButton->setDisabled(true);
     ui->generateCodeButton->setDisabled(true);
-    ui->toDecodeButton->setDisabled(true);
-    ui->toDecompileButton->setDisabled(true);
-    ui->toGenerateCodeButton->setDisabled(true);
     ui->stackedWidget->setCurrentIndex(0);
     ui->entrypoints->setRowCount(0);
     ui->userProcs->setRowCount(0);
@@ -272,23 +262,19 @@ void MainWindow::showInitPage() {
 }
 
 void MainWindow::showLoadPage() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(false);
     ui->decodeButton->setDisabled(true);
     ui->decompileButton->setDisabled(true);
     ui->generateCodeButton->setDisabled(true);
-    ui->toLoadButton->setDisabled(true);
     ui->stackedWidget->setCurrentIndex(1);
     ui->actionLoad->setDisabled(false);
 }
 
 void MainWindow::showDecodePage() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(true);
     ui->decodeButton->setDisabled(false);
     ui->decompileButton->setDisabled(true);
     ui->generateCodeButton->setDisabled(true);
-    ui->toDecodeButton->setDisabled(true);
     ui->stackedWidget->setCurrentIndex(2);
 
     if (!ui->actionEnable->isChecked()) {
@@ -302,38 +288,33 @@ void MainWindow::showDecodePage() {
 }
 
 void MainWindow::showDecompilePage() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(true);
     ui->decodeButton->setDisabled(true);
     ui->decompileButton->setDisabled(false);
     ui->generateCodeButton->setDisabled(true);
-    ui->toDecompileButton->setDisabled(true);
     ui->stackedWidget->setCurrentIndex(3);
 
     ui->actionDecompile->setDisabled(false);
 }
 
 void MainWindow::showGenerateCodePage() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(true);
     ui->decodeButton->setDisabled(true);
     ui->decompileButton->setDisabled(true);
     ui->generateCodeButton->setDisabled(false);
-    ui->toGenerateCodeButton->setDisabled(true);
     ui->stackedWidget->setCurrentIndex(4);
     ui->actionGenerate_Code->setDisabled(false);
 }
 
 void MainWindow::loadComplete() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(false);
     ui->decodeButton->setDisabled(true);
     ui->decompileButton->setDisabled(true);
     ui->generateCodeButton->setDisabled(true);
-    ui->toDecodeButton->setDisabled(false);
-    ui->toDecompileButton->setDisabled(true);
-    ui->toGenerateCodeButton->setDisabled(true);
     ui->stackedWidget->setCurrentIndex(1);
+    QByteArray &file_data(Boomerang::get()->project()->filedata());
+    ui->hexView->setText(file_data.toHex());
+    ui->stackedWidget->setCurrentIndex(5);
 }
 
 void MainWindow::showMachineType(const QString &machine) { ui->machineTypeLabel->setText(machine); }
@@ -348,38 +329,26 @@ void MainWindow::showNewEntrypoint(ADDRESS addr, const QString &name) {
 }
 
 void MainWindow::decodeComplete() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(true);
     ui->decodeButton->setDisabled(false);
     ui->decompileButton->setDisabled(true);
     ui->generateCodeButton->setDisabled(true);
-    ui->toDecodeButton->setDisabled(true);
-    ui->toDecompileButton->setDisabled(false);
-    ui->toGenerateCodeButton->setDisabled(true);
     ui->stackedWidget->setCurrentIndex(2);
 }
 
 void MainWindow::decompileComplete() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(true);
     ui->decodeButton->setDisabled(true);
     ui->decompileButton->setDisabled(false);
     ui->generateCodeButton->setDisabled(true);
-    ui->toDecodeButton->setDisabled(true);
-    ui->toDecompileButton->setDisabled(true);
-    ui->toGenerateCodeButton->setDisabled(false);
     ui->stackedWidget->setCurrentIndex(3);
 }
 
 void MainWindow::generateCodeComplete() {
-    ui->toLoadButton->setDisabled(true);
     ui->loadButton->setDisabled(true);
     ui->decodeButton->setDisabled(true);
     ui->decompileButton->setDisabled(true);
     ui->generateCodeButton->setDisabled(true);
-    ui->toDecodeButton->setDisabled(true);
-    ui->toDecompileButton->setDisabled(true);
-    ui->toGenerateCodeButton->setDisabled(true);
     ui->stackedWidget->setCurrentIndex(4);
 }
 
