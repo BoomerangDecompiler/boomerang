@@ -59,7 +59,6 @@ enum LogLevel {
 #define LOG Boomerang::get()->log()
 #define LOG_SEPARATE(x) Boomerang::get()->separate_log(x)
 #define LOG_VERBOSE(x) Boomerang::get()->if_verbose_log(x)
-#define LOGTAIL Boomerang::get()->logTail()
 #define LOG_STREAM Boomerang::get()->getLogStream
 
 /// Virtual class to monitor the decompilation.
@@ -236,8 +235,6 @@ public:
     virtual void alertDecompileDebugPoint(UserProc *p, const char *description);
 
     QTextStream &getLogStream(int level=LL_Default); //!< Return overall logging target
-
-    void logTail();
 
     // Command line flags
     bool vFlag = false;

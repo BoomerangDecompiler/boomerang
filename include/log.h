@@ -30,7 +30,6 @@ public:
     virtual Log &operator<<(ADDRESS a);
     virtual Log &operator<<(const LocationSet *l);
     virtual ~Log() {}
-    virtual void tail();
 };
 
 class FileLogger : public Log {
@@ -39,7 +38,6 @@ protected:
 public:
     FileLogger(); // Implemented in boomerang.cpp
     virtual ~FileLogger() {}
-    void tail()  override;
     Log &operator<<(const QString &str)  override;
 };
 class SeparateLogger : public Log {
@@ -50,7 +48,6 @@ public:
     SeparateLogger(const QString &); // Implemented in boomerang.cpp
     virtual ~SeparateLogger();
     Log &operator<<(const QString &str) override;
-    void tail() override;
 };
 class NullLogger : public Log {
 public:

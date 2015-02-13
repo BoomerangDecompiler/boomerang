@@ -840,11 +840,6 @@ Prog *Boomerang::loadFromXML(const char *fname) {
     return p->parse(fname);
 }
 
-/**
- * Prints the last lines of the log file.
- */
-void Boomerang::logTail() { logger->tail(); }
-
 void Boomerang::miniDebugger(UserProc *p, const char *description)
 {
     QTextStream q_cout(stdout);
