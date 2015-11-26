@@ -86,7 +86,7 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
         fprintf(stderr, "Could not allocate %ld bytes for image\n", size);
         return false;
     }
-    memset(m_pImage, size, 0);
+    memset(m_pImage, 0, size);
 
     fseek(fp, 0, SEEK_SET);
     if (fread(m_pImage, 1, size, fp) != (unsigned)size) {
