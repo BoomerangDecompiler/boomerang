@@ -314,19 +314,19 @@ public:
         // setSubclassData(NumBits);
     }
     static std::shared_ptr<IntegerType> get(unsigned NumBits, int sign = 0);
-    virtual bool isInteger() const { return true; }
-    virtual bool isComplete() { return signedness != 0 && size != 0; }
+    virtual bool isInteger() const  override { return true; }
+    virtual bool isComplete()  override { return signedness != 0 && size != 0; }
 
-    virtual SharedType clone() const;
+    virtual SharedType clone() const override;
 
-    virtual bool operator==(const Type &other) const;
+    virtual bool operator==(const Type &other) const override;
     // virtual bool          operator-=(const Type& other) const;
-    virtual bool operator<(const Type &other) const;
-    virtual SharedType mergeWith(SharedType other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual bool operator<(const Type &other) const override;
+    virtual SharedType mergeWith(SharedType other) const  override;
+    virtual Exp *match(SharedType pattern)  override;
 
-    virtual size_t getSize() const; // Get size in bits
-    virtual void setSize(size_t sz) { size = sz; }
+    virtual size_t getSize() const override; // Get size in bits
+    virtual void setSize(size_t sz)  override { size = sz; }
     // Is it signed? 0=unknown, pos=yes, neg = no
     bool isSigned() { return signedness >= 0; }   // True if not unsigned
     bool isUnsigned() { return signedness <= 0; } // True if not definately signed
@@ -338,12 +338,12 @@ public:
     int getSignedness() const { return signedness; }
 
     // Get the C type as a string. If full, output comments re the lack of sign information (in IntegerTypes).
-    virtual QString getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const override;
 
     virtual QString getTempName() const override;
 
-    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type &other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const override;
+    virtual bool isCompatible(const Type &other, bool all) const override;
 
 protected:
     friend class XMLProgParser;
@@ -357,24 +357,24 @@ public:
     explicit FloatType(int sz = 64);
     static std::shared_ptr<FloatType> get(int sz = 64);
     virtual ~FloatType();
-    virtual bool isFloat() const { return true; }
+    virtual bool isFloat() const  override { return true; }
 
-    virtual SharedType clone() const;
+    virtual SharedType clone() const override;
 
-    virtual bool operator==(const Type &other) const;
+    virtual bool operator==(const Type &other) const override;
     // virtual bool          operator-=(const Type& other) const;
-    virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual bool operator<(const Type &other) const override;
+    virtual Exp *match(SharedType pattern) override;
 
-    virtual size_t getSize() const;
-    virtual void setSize(size_t sz) { size = sz; }
+    virtual size_t getSize() const override;
+    virtual void setSize(size_t sz)  override { size = sz; }
 
-    virtual QString getCtype(bool final = false) const;
+    virtual QString getCtype(bool final = false) const override;
 
     virtual QString getTempName() const override;
 
-    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const;
-    virtual bool isCompatible(const Type &other, bool all) const;
+    virtual SharedType meetWith(SharedType other, bool &ch, bool bHighestPtr) const override;
+    virtual bool isCompatible(const Type &other, bool all) const override;
 
 protected:
     friend class XMLProgParser;

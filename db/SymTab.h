@@ -45,7 +45,7 @@ struct BinarySymbol : public IBinarySymbol {
         attributes[name] = v;
         return *this;
     }
-    bool rename(const QString &s);
+    bool rename(const QString &s) override;
 
     bool isImportedFunction() const override;
     bool isStaticFunction() const override;
@@ -68,13 +68,13 @@ public:
     BinarySymbol *getOrCreateSymbol();
 
     IBinarySymbol &create(ADDRESS a, const QString &s,bool local=false) override;
-    const IBinarySymbol *find(ADDRESS a) const;  //!< Find an entry by address; nullptr if none
-    const IBinarySymbol *find(const QString &s) const;  //!< Find an entry by name; NO_ADDRESS if none
+    const IBinarySymbol *find(ADDRESS a) const override;  //!< Find an entry by address; nullptr if none
+    const IBinarySymbol *find(const QString &s) const override;  //!< Find an entry by name; NO_ADDRESS if none
     SymbolListType &        getSymbolList() { return SymbolList; }
-    iterator                begin()       { return SymbolList.begin(); }
-    const_iterator          begin() const { return SymbolList.begin(); }
-    iterator                end  ()       { return SymbolList.end();   }
-    const_iterator          end  () const { return SymbolList.end();   }
+    iterator                begin()       override { return SymbolList.begin(); }
+    const_iterator          begin() const override { return SymbolList.begin(); }
+    iterator                end  ()       override { return SymbolList.end();   }
+    const_iterator          end  () const override { return SymbolList.end();   }
     size_t                  size()  const { return SymbolList.size(); }
     bool                    empty() const { return SymbolList.empty(); }
     void                    clear() override;

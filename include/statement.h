@@ -384,6 +384,7 @@ public:
     virtual Exp *getLeft() { return lhs; } // Note: now only defined for Assignments, not all Statements
     virtual const Exp *getLeft() const { return lhs; }
 
+    virtual Exp *getRight() = 0;
     // set the lhs to something new
     void setLeft(Exp *e) { lhs = e; }
 
@@ -433,55 +434,55 @@ public:
     ~Assign() {}
 
     // Clone
-    virtual Instruction * clone() const;
+    virtual Instruction * clone() const override;
 
     // get how to replace this statement in a use
-    virtual Exp *getRight() { return rhs; }
+    virtual Exp *getRight() override { return rhs; }
     Exp *&getRightRef() { return rhs; }
 
     // set the rhs to something new
     void setRight(Exp *e) { rhs = e; }
 
     // Accept a visitor to this Statement
-    virtual bool accept(StmtVisitor *visitor);
-    virtual bool accept(StmtExpVisitor *visitor);
-    virtual bool accept(StmtModifier *visitor);
-    virtual bool accept(StmtPartModifier *visitor);
+    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtExpVisitor *visitor) override;
+    virtual bool accept(StmtModifier *visitor) override;
+    virtual bool accept(StmtPartModifier *visitor) override;
 
-    virtual void printCompact(QTextStream &os, bool html = false) const; // Without statement number
+    virtual void printCompact(QTextStream &os, bool html = false) const override; // Without statement number
 
     // Guard
     void setGuard(Exp *g) { guard = g; }
     Exp *getGuard() { return guard; }
     bool isGuarded() { return guard != nullptr; }
 
-    virtual bool usesExp(const Exp &e);
-    virtual bool isDefinition() { return true; }
+    virtual bool usesExp(const Exp &e) override;
+    virtual bool isDefinition()  override { return true; }
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result);
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
+    virtual bool search(const Exp &search, Exp *&result) override;
+    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
 
     // general search and replace
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
 
     // memory depth
     int getMemDepth();
 
     // Generate code
-    virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
+    virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) override;
 
     // simpify internal expressions
-    virtual void simplify();
+    virtual void simplify() override;
 
     // simplify address expressions
-    virtual void simplifyAddr();
+    virtual void simplifyAddr() override;
 
     // fixSuccessor (succ(r2) -> r3)
-    virtual void fixSuccessor();
+    virtual void fixSuccessor() override;
 
     // generate Constraints
-    virtual void genConstraints(LocationSet &cons);
+    virtual void genConstraints(LocationSet &cons) override;
 
     // Data flow based type analysis
     void dfaTypeAnalysis(bool &ch);
@@ -703,18 +704,18 @@ public:
     void meetWith(SharedType ty, bool &ch); // Meet the internal type with ty. Set ch if a change
 
     // Virtuals
-    virtual Instruction * clone() const;
-    virtual bool accept(StmtVisitor *);
-    virtual bool accept(StmtExpVisitor *);
-    virtual bool accept(StmtModifier *);
-    virtual bool accept(StmtPartModifier *);
-    virtual bool isDefinition() { return false; }
-    virtual bool usesExp(const Exp &) { return false; }
-    virtual bool search(const Exp &, Exp *&);
-    virtual bool searchAll(const Exp &, std::list<Exp *, std::allocator<Exp *>> &);
-    virtual bool searchAndReplace(const Exp &, Exp *, bool cc = false);
-    virtual void generateCode(HLLCode *, BasicBlock *, int) {}
-    virtual void simplify();
+    virtual Instruction * clone() const override;
+    virtual bool accept(StmtVisitor *) override;
+    virtual bool accept(StmtExpVisitor *) override;
+    virtual bool accept(StmtModifier *) override;
+    virtual bool accept(StmtPartModifier *) override;
+    virtual bool isDefinition()  override { return false; }
+    virtual bool usesExp(const Exp &)  override { return false; }
+    virtual bool search(const Exp &, Exp *&) override;
+    virtual bool searchAll(const Exp &, std::list<Exp *, std::allocator<Exp *>> &) override;
+    virtual bool searchAndReplace(const Exp &, Exp *, bool cc = false) override;
+    virtual void generateCode(HLLCode *, BasicBlock *, int)  override {}
+    virtual void simplify() override;
     virtual void print(QTextStream &os, bool html = false) const override;
 
 }; // class ImpRefStatement
@@ -743,13 +744,13 @@ public:
     GotoStatement(ADDRESS jumpDest);
     virtual ~GotoStatement();
 
-    virtual Instruction * clone() const; //!< Make a deep copy, and make the copy a derived object if needed.
+    virtual Instruction * clone() const override; //!< Make a deep copy, and make the copy a derived object if needed.
 
     // Accept a visitor to this Statement
-    virtual bool accept(StmtVisitor *visitor);
-    virtual bool accept(StmtExpVisitor *visitor);
-    virtual bool accept(StmtModifier *visitor);
-    virtual bool accept(StmtPartModifier *visitor);
+    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtExpVisitor *visitor) override;
+    virtual bool accept(StmtModifier *visitor) override;
+    virtual bool accept(StmtPartModifier *visitor) override;
 
     // Set and return the destination of the jump. The destination is either an Exp, or an ADDRESS that
     // is converted to a Exp.
@@ -766,27 +767,27 @@ public:
     void setIsComputed(bool b = true);
     bool isComputed();
 
-    virtual void print(QTextStream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    virtual bool search(const Exp &, Exp *&);
+    virtual bool search(const Exp &, Exp *&) override;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
+    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
 
     // code generation
-    virtual void generateCode(HLLCode *, BasicBlock *, int);
+    virtual void generateCode(HLLCode *, BasicBlock *, int) override;
 
     // simplify all the uses/defs in this Statement
-    virtual void simplify();
+    virtual void simplify() override;
 
     // Statement virtual functions
-    virtual bool isDefinition() { return false; }
-    virtual bool usesExp(const Exp &);
+    virtual bool isDefinition()  override { return false; }
+    virtual bool usesExp(const Exp &) override;
 
     friend class XMLProgParser;
 }; // class GotoStatement
@@ -798,29 +799,29 @@ public:
     Instruction * clone() const override { return new JunctionStatement(); }
 
     // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
-    bool accept(StmtVisitor *visitor);
-    bool accept(StmtExpVisitor *visitor);
-    bool accept(StmtModifier *visitor);
-    bool accept(StmtPartModifier *visitor);
+    bool accept(StmtVisitor *visitor) override;
+    bool accept(StmtExpVisitor *visitor) override;
+    bool accept(StmtModifier *visitor) override;
+    bool accept(StmtPartModifier *visitor) override;
 
     // returns true if this statement defines anything
-    bool isDefinition() { return false; }
+    bool isDefinition()  override { return false; }
 
-    bool usesExp(const Exp &) { return false; }
+    bool usesExp(const Exp &)  override { return false; }
 
-    void print(QTextStream &os, bool html = false) const;
+    void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    bool search(const Exp & /*search*/, Exp *& /*result*/) { return false; }
-    bool searchAll(const Exp & /*search*/, std::list<Exp *> & /*result*/) { return false; }
+    bool search(const Exp & /*search*/, Exp *& /*result*/)  override { return false; }
+    bool searchAll(const Exp & /*search*/, std::list<Exp *> & /*result*/)  override { return false; }
 
     //! general search and replace. Set cc true to change collectors as well. Return true if any change
-    bool searchAndReplace(const Exp & /*search*/, Exp * /*replace*/, bool /*cc*/ = false) { return false; }
+    bool searchAndReplace(const Exp & /*search*/, Exp * /*replace*/, bool /*cc*/ = false)  override { return false; }
 
-    void generateCode(HLLCode * /*hll*/, BasicBlock * /*pbb*/, int /*indLevel*/) {}
+    void generateCode(HLLCode * /*hll*/, BasicBlock * /*pbb*/, int /*indLevel*/)  override {}
 
     // simpify internal expressions
-    void simplify() {}
+    void simplify() override {}
 
     bool isLoopJunction() const;
 };
@@ -841,13 +842,13 @@ public:
     virtual ~BranchStatement();
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Instruction * clone() const;
+    virtual Instruction * clone() const override;
 
     // Accept a visitor to this Statement
-    virtual bool accept(StmtVisitor *visitor);
-    virtual bool accept(StmtExpVisitor *visitor);
-    virtual bool accept(StmtModifier *visitor);
-    virtual bool accept(StmtPartModifier *visitor);
+    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtExpVisitor *visitor) override;
+    virtual bool accept(StmtModifier *visitor) override;
+    virtual bool accept(StmtPartModifier *visitor) override;
 
     // Set and return the BRANCH_TYPE of this jcond as well as whether the
     // floating point condition codes are used.
@@ -869,29 +870,29 @@ public:
     // signed conditional branch
     void makeSigned();
 
-    virtual void print(QTextStream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result);
+    virtual bool search(const Exp &search, Exp *&result)  override;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
+    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
 
     // code generation
-    virtual void generateCode(HLLCode *, BasicBlock *, int);
+    virtual void generateCode(HLLCode *, BasicBlock *, int) override;
 
     // dataflow analysis
-    virtual bool usesExp(const Exp &e);
+    virtual bool usesExp(const Exp &e) override;
 
     // simplify all the uses/defs in this Statememt
-    virtual void simplify();
+    virtual void simplify() override;
 
     // Generate constraints
-    virtual void genConstraints(LocationSet &cons);
+    virtual void genConstraints(LocationSet &cons) override;
 
     // Data flow based type analysis
     void dfaTypeAnalysis(bool &ch);
@@ -995,15 +996,15 @@ public:
     CallStatement();
     virtual ~CallStatement();
 
-    virtual void setNumber(int num);
+    virtual void setNumber(int num) override;
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Instruction * clone() const;
+    virtual Instruction * clone() const override;
 
     // Accept a visitor to this stmt
-    virtual bool accept(StmtVisitor *visitor);
-    virtual bool accept(StmtExpVisitor *visitor);
-    virtual bool accept(StmtModifier *visitor);
-    virtual bool accept(StmtPartModifier *visitor);
+    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtExpVisitor *visitor) override;
+    virtual bool accept(StmtModifier *visitor) override;
+    virtual bool accept(StmtPartModifier *visitor) override;
 
     void setArguments(StatementList &args);
     // Set implicit arguments: so far, for testing only:
@@ -1049,17 +1050,17 @@ public:
     void clearLiveEntry();
     void eliminateDuplicateArgs();
 
-    virtual void print(QTextStream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result);
+    virtual bool search(const Exp &search, Exp *&result) override;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
+    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
 
     // Set and return whether the call is effectively followed by a return.
     // E.g. on Sparc, whether there is a restore in the delay slot.
@@ -1076,28 +1077,28 @@ public:
     Function *getDestProc();
 
     // Generate constraints
-    virtual void genConstraints(LocationSet &cons);
+    virtual void genConstraints(LocationSet &cons) override;
 
     // Data flow based type analysis
     void dfaTypeAnalysis(bool &ch);
 
     // code generation
-    virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
+    virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) override;
 
     // dataflow analysis
-    virtual bool usesExp(const Exp &e);
+    virtual bool usesExp(const Exp &e) override;
 
     // dataflow related functions
-    virtual bool isDefinition();
-    virtual void getDefinitions(LocationSet &defs);
+    virtual bool isDefinition() override;
+    virtual void getDefinitions(LocationSet &defs) override;
 
-    virtual bool definesLoc(Exp *loc); // True if this Statement defines loc
+    virtual bool definesLoc(Exp *loc) override; // True if this Statement defines loc
 
     // get how to replace this statement in a use
     // virtual Exp*        getRight() { return nullptr; }
 
     // simplify all the uses/defs in this Statement
-    virtual void simplify();
+    virtual void simplify() override;
 
     //        void        setIgnoreReturnLoc(bool b);
 
@@ -1106,8 +1107,8 @@ public:
     // Insert actual arguments to match formal parameters
     // void        insertArguments(InstructionSet& rs);
 
-    virtual SharedType getTypeFor(Exp *e);                   // Get the type defined by this Statement for this location
-    virtual void setTypeFor(Exp *e, SharedType ty);          // Set the type for this location, defined in this statement
+    virtual SharedType getTypeFor(Exp *e) override;             // Get the type defined by this Statement for this location
+    virtual void setTypeFor(Exp *e, SharedType ty) override;    // Set the type for this location, defined in this statement
     DefCollector *getDefCollector() { return &defCol; } // Return pointer to the def collector object
     UseCollector *getUseCollector() { return &useCol; } // Return pointer to the use collector object
     void useBeforeDefine(Exp *x) { useCol.insert(x); }  // Add x to the UseCollector for this call
@@ -1183,50 +1184,50 @@ public:
     void updateModifieds(); // Update modifieds from the collector
     void updateReturns();   // Update returns from the modifieds
 
-    virtual void print(QTextStream &os, bool html = false) const;
+    virtual void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    virtual bool search(const Exp &, Exp *&);
+    virtual bool search(const Exp &, Exp *&) override;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this statement and adds them to a given list
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
+    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
 
     // returns true if this statement uses the given expression
-    virtual bool usesExp(const Exp &e);
+    virtual bool usesExp(const Exp &e) override;
 
-    virtual void getDefinitions(LocationSet &defs);
+    virtual void getDefinitions(LocationSet &defs) override;
 
     void removeModified(Exp *loc); // Remove from modifieds AND from returns
     void removeReturn(Exp *loc);   // Remove from returns only
     void addReturn(Assignment *a);
 
-    SharedType getTypeFor(Exp *e);
-    void setTypeFor(Exp *e, SharedType ty);
+    SharedType getTypeFor(Exp *e) override;
+    void setTypeFor(Exp *e, SharedType ty) override;
 
     // simplify all the uses/defs in this Statement
-    virtual void simplify();
+    virtual void simplify() override;
 
-    virtual bool isDefinition() { return true; }
+    virtual bool isDefinition()  override { return true; }
 
     // Get a subscripted version of e from the collector
     Exp *subscriptWithDef(Exp *e);
 
     // Make a deep copy, and make the copy a derived object if needed.
-    virtual Instruction * clone() const;
+    virtual Instruction * clone() const override;
 
     // Accept a visitor to this Statement
-    virtual bool accept(StmtVisitor *visitor);
-    virtual bool accept(StmtExpVisitor *visitor);
-    virtual bool accept(StmtModifier *visitor);
-    virtual bool accept(StmtPartModifier *visitor);
+    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtExpVisitor *visitor) override;
+    virtual bool accept(StmtModifier *visitor) override;
+    virtual bool accept(StmtPartModifier *visitor) override;
 
-    virtual bool definesLoc(Exp *loc); // True if this Statement defines loc
+    virtual bool definesLoc(Exp *loc) override; // True if this Statement defines loc
 
     // code generation
-    virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel);
+    virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) override;
 
     // Exp        *getReturnExp(int n) { return returns[n]; }
     // void        setReturnExp(int n, Exp *e) { returns[n] = e; }

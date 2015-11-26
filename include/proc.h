@@ -259,7 +259,7 @@ public:
     //! Returns a pointer to the DataFlow object.
     DataFlow *getDataFlow() { return &df; }
     void deleteCFG() override;
-    virtual bool isNoReturn();
+    virtual bool isNoReturn() override;
 
     SyntaxNode *getAST();
     void printAST(SyntaxNode *a = nullptr);
@@ -409,7 +409,7 @@ public:
                 PhiAssign *lastPhi = nullptr);
     void promoteSignature();
     void getStatements(StatementList &stmts) const;
-    virtual void removeReturn(Exp *e);
+    virtual void removeReturn(Exp *e) override;
     void removeStatement(Instruction *stmt);
     bool searchAll(const Exp &search, std::list<Exp *> &result);
 
@@ -445,7 +445,7 @@ public:
     QString getLocalName(int n);
     QString getSymbolName(Exp *e);
     void renameLocal(const char *oldName, const char *newName);
-    virtual void renameParam(const char *oldName, const char *newName);
+    virtual void renameParam(const char *oldName, const char *newName) override;
 
     QString getRegName(Exp *r);
     void setParamType(const char *nam, SharedType ty);
@@ -460,17 +460,17 @@ public:
     bool containsAddr(ADDRESS uAddr);
     //! Change BB containing this statement from a COMPCALL to a CALL.
     void undoComputedBB(Instruction *stmt) { cfg->undoComputedBB(stmt); }
-    virtual Exp *getProven(Exp *left);
-    virtual Exp *getPremised(Exp *left);
+    virtual Exp *getProven(Exp *left) override;
+    virtual Exp *getPremised(Exp *left) override;
     //! Set a location as a new premise, i.e. assume e=e
     void setPremise(Exp *e) {
         e = e->clone();
         recurPremises[e] = e;
     }
     void killPremise(Exp *e) { recurPremises.erase(e); }
-    virtual bool isPreserved(Exp *e);
+    virtual bool isPreserved(Exp *e) override;
 
-    virtual void printCallGraphXML(QTextStream &os, int depth, bool recurse = true);
+    virtual void printCallGraphXML(QTextStream &os, int depth, bool recurse = true) override;
     void printDecodedXML();
     void printAnalysedXML();
     void printSSAXML();

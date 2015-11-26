@@ -156,7 +156,7 @@ class ExpModifier {
     void clearMod() { mod = false; }
 
     // visitor functions
-    // Most times these won't be needed. You only need to override the ones that make a cange.
+    // Most times these won't be needed. You only need to override the ones that make a change.
     // preVisit comes before modifications to the children (if any)
     virtual Exp *preVisit(Unary *e, bool &recur) {
         recur = true;

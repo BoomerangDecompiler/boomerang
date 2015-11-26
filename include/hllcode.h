@@ -176,9 +176,9 @@ class BlockSyntaxNode : public SyntaxNode {
     BlockSyntaxNode();
     virtual ~BlockSyntaxNode();
 
-    virtual bool isBlock() { return pbb == nullptr; }
+    virtual bool isBlock()  override { return pbb == nullptr; }
 
-    virtual void ignoreGoto() {
+    virtual void ignoreGoto()  override {
         if (pbb)
             notGoto = true;
         else if (statements.size() > 0)
@@ -207,8 +207,8 @@ class BlockSyntaxNode : public SyntaxNode {
     }
 
     virtual size_t getNumOutEdges() override;
-    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
-    virtual bool endsWithGoto() {
+    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n) override;
+    virtual bool endsWithGoto()  override {
         if (pbb)
             return isGoto();
         bool last = false;
@@ -216,10 +216,10 @@ class BlockSyntaxNode : public SyntaxNode {
             last = statements[statements.size() - 1]->endsWithGoto();
         return last;
     }
-    virtual bool startsWith(SyntaxNode *node) {
+    virtual bool startsWith(SyntaxNode *node)  override{
         return this == node || (statements.size() > 0 && statements[0]->startsWith(node));
     }
-    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
+    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr)  override{
         if (this == pFor)
             return cur;
         for (unsigned i = 0; i < statements.size(); i++) {
@@ -230,13 +230,13 @@ class BlockSyntaxNode : public SyntaxNode {
         return nullptr;
     }
 
-    virtual SyntaxNode *clone();
-    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
+    virtual SyntaxNode *clone() override;
+    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
-    virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, QTextStream &os);
-    virtual int evaluate(SyntaxNode *root);
-    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
+    virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;
+    virtual void printAST(SyntaxNode *root, QTextStream &os) override;
+    virtual int evaluate(SyntaxNode *root) override;
+    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors) override;
 }; // class BlockSyntaxNode
 
 class IfThenSyntaxNode : public SyntaxNode {
@@ -248,17 +248,17 @@ class IfThenSyntaxNode : public SyntaxNode {
     IfThenSyntaxNode();
     virtual ~IfThenSyntaxNode();
 
-    virtual bool isGoto() { return false; }
-    virtual bool isBranch() { return false; }
+    virtual bool isGoto()  override { return false; }
+    virtual bool isBranch()  override { return false; }
 
     virtual size_t getNumOutEdges() override { return 1; }
-    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t);
-    virtual bool endsWithGoto() { return false; }
+    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t) override;
+    virtual bool endsWithGoto()  override { return false; }
 
-    virtual SyntaxNode *clone();
-    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
+    virtual SyntaxNode *clone() override;
+    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
-    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
+    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr)  override {
         if (this == pFor)
             return cur;
         return pThen->getEnclosingLoop(pFor, cur);
@@ -268,10 +268,10 @@ class IfThenSyntaxNode : public SyntaxNode {
     Exp *getCond() { return cond; }
     void setThen(SyntaxNode *n) { pThen = n; }
 
-    virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, QTextStream &os);
-    virtual int evaluate(SyntaxNode *root);
-    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
+    virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;
+    virtual void printAST(SyntaxNode *root, QTextStream &os) override;
+    virtual int evaluate(SyntaxNode *root) override;
+    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors) override;
 }; // class IfThenSyntaxNode
 
 class IfThenElseSyntaxNode : public SyntaxNode {
@@ -283,18 +283,18 @@ class IfThenElseSyntaxNode : public SyntaxNode {
   public:
     IfThenElseSyntaxNode();
     virtual ~IfThenElseSyntaxNode();
-    virtual bool isGoto() { return false; }
-    virtual bool isBranch() { return false; }
+    virtual bool isGoto()  override { return false; }
+    virtual bool isBranch()  override { return false; }
 
     virtual size_t getNumOutEdges() override { return 1; }
-    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t /*n*/) {
+    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t /*n*/)  override {
         SyntaxNode *o = pThen->getOutEdge(root, 0);
         assert(o == pElse->getOutEdge(root, 0));
         return o;
     }
-    virtual bool endsWithGoto() { return false; }
+    virtual bool endsWithGoto()  override { return false; }
 
-    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
+    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr)  override {
         if (this == pFor)
             return cur;
         SyntaxNode *n = pThen->getEnclosingLoop(pFor, cur);
@@ -303,17 +303,17 @@ class IfThenElseSyntaxNode : public SyntaxNode {
         return pElse->getEnclosingLoop(pFor, cur);
     }
 
-    virtual SyntaxNode *clone();
-    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
+    virtual SyntaxNode *clone() override;
+    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
     void setCond(Exp *e) { cond = e; }
     void setThen(SyntaxNode *n) { pThen = n; }
     void setElse(SyntaxNode *n) { pElse = n; }
 
-    virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, QTextStream &os);
-    virtual int evaluate(SyntaxNode *root);
-    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
+    virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;
+    virtual void printAST(SyntaxNode *root, QTextStream &os) override;
+    virtual int evaluate(SyntaxNode *root) override;
+    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors) override;
 }; // class IfThenElseSyntaxNode
 
 class PretestedLoopSyntaxNode : public SyntaxNode {
@@ -324,28 +324,28 @@ class PretestedLoopSyntaxNode : public SyntaxNode {
   public:
     PretestedLoopSyntaxNode();
     virtual ~PretestedLoopSyntaxNode();
-    virtual bool isGoto() { return false; }
-    virtual bool isBranch() { return false; }
+    virtual bool isGoto()  override { return false; }
+    virtual bool isBranch()  override { return false; }
 
     virtual size_t getNumOutEdges() override { return 1; }
-    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n);
-    virtual bool endsWithGoto() { return false; }
-    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
+    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t n) override;
+    virtual bool endsWithGoto()  override { return false; }
+    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr)  override {
         if (this == pFor)
             return cur;
         return pBody->getEnclosingLoop(pFor, this);
     }
 
-    virtual SyntaxNode *clone();
-    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
+    virtual SyntaxNode *clone() override;
+    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
     void setCond(Exp *e) { cond = e; }
     void setBody(SyntaxNode *n) { pBody = n; }
 
-    virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, QTextStream &os);
-    virtual int evaluate(SyntaxNode *root);
-    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
+    virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;
+    virtual void printAST(SyntaxNode *root, QTextStream &os) override;
+    virtual int evaluate(SyntaxNode *root) override;
+    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors) override;
 }; // class PretestedLoopSyntaxNode
 
 class PostTestedLoopSyntaxNode : public SyntaxNode {
@@ -356,28 +356,28 @@ class PostTestedLoopSyntaxNode : public SyntaxNode {
   public:
     PostTestedLoopSyntaxNode();
     virtual ~PostTestedLoopSyntaxNode();
-    virtual bool isGoto() { return false; }
-    virtual bool isBranch() { return false; }
+    virtual bool isGoto()  override { return false; }
+    virtual bool isBranch()  override { return false; }
 
     virtual size_t getNumOutEdges() override { return 1; }
-    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t);
-    virtual bool endsWithGoto() { return false; }
-    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
+    virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t) override;
+    virtual bool endsWithGoto()  override { return false; }
+    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr)  override {
         if (this == pFor)
             return cur;
         return pBody->getEnclosingLoop(pFor, this);
     }
 
-    virtual SyntaxNode *clone();
-    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
+    virtual SyntaxNode *clone() override;
+    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
     void setCond(Exp *e) { cond = e; }
     void setBody(SyntaxNode *n) { pBody = n; }
 
-    virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, QTextStream &os);
-    virtual int evaluate(SyntaxNode *root);
-    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
+    virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;
+    virtual void printAST(SyntaxNode *root, QTextStream &os) override;
+    virtual int evaluate(SyntaxNode *root) override;
+    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors) override;
 }; // class PostTestedLoopSyntaxNode
 
 class InfiniteLoopSyntaxNode : public SyntaxNode {
@@ -387,27 +387,27 @@ class InfiniteLoopSyntaxNode : public SyntaxNode {
   public:
     InfiniteLoopSyntaxNode();
     virtual ~InfiniteLoopSyntaxNode();
-    virtual bool isGoto() { return false; }
-    virtual bool isBranch() { return false; }
+    virtual bool isGoto()  override { return false; }
+    virtual bool isBranch()  override { return false; }
 
     virtual size_t getNumOutEdges() override { return 0; }
-    virtual SyntaxNode *getOutEdge(SyntaxNode * /*root*/, size_t /*n*/) { return nullptr; }
-    virtual bool endsWithGoto() { return false; }
-    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr) {
+    virtual SyntaxNode *getOutEdge(SyntaxNode * /*root*/, size_t /*n*/)  override { return nullptr; }
+    virtual bool endsWithGoto()  override { return false; }
+    virtual SyntaxNode *getEnclosingLoop(SyntaxNode *pFor, SyntaxNode *cur = nullptr)  override {
         if (this == pFor)
             return cur;
         return pBody->getEnclosingLoop(pFor, this);
     }
 
-    virtual SyntaxNode *clone();
-    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to);
+    virtual SyntaxNode *clone() override;
+    virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
     void setBody(SyntaxNode *n) { pBody = n; }
 
-    virtual SyntaxNode *findNodeFor(BasicBlock *bb);
-    virtual void printAST(SyntaxNode *root, QTextStream &os);
-    virtual int evaluate(SyntaxNode *root);
-    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors);
+    virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;
+    virtual void printAST(SyntaxNode *root, QTextStream &os) override;
+    virtual int evaluate(SyntaxNode *root) override;
+    virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors) override;
 }; // class InfiniteLoopSyntaxNode
 
 #endif
