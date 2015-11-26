@@ -243,10 +243,11 @@ bool hasSetFlags(Exp *e) {
 bool Instruction::canPropagateToExp(Exp &e) {
     if (!e.isSubscript())
         return false;
-    if (((RefExp &)e).isImplicitDef())
+    RefExp & re((RefExp &)e);
+    if (re.isImplicitDef())
         // Can't propagate statement "-" or "0" (implicit assignments)
         return false;
-    Instruction *def = ((RefExp &)e).getDef();
+    Instruction *def = re.getDef();
     //    if (def == this)
     // Don't propagate to self! Can happen with %pc's (?!)
     //        return false;
@@ -298,7 +299,8 @@ bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *
             Exp *e = *ll;
             if (!canPropagateToExp(*e))
                 continue;
-            Assign *def = (Assign *)((RefExp *)e)->getDef();
+            assert(dynamic_cast<Assignment *>(((RefExp *)e)->getDef())!=nullptr);
+            Assignment *def = (Assignment *)((RefExp *)e)->getDef();
             Exp *rhs = def->getRight();
             // If force is true, ignore the fact that a memof should not be propagated (for switch analysis)
             if (rhs->containsBadMemof(proc) && !(force && rhs->isMemOf()))
@@ -412,8 +414,8 @@ bool Instruction::propagateFlagsTo() {
             Exp *e = *ll;
             if (!e->isSubscript())
                 continue; // e.g. %pc
-            Assign *def = (Assign *)((RefExp *)e)->getDef();
-            if (def == nullptr || !def->isAssign())
+            Assignment *def = dynamic_cast<Assignment *>(((RefExp *)e)->getDef());
+            if ( def == nullptr || nullptr == def->getRight() ) // process if it has definition with rhs
                 continue;
             Exp *base = ((RefExp *)e)->getSubExp1();
             if (base->isFlags() || base->isMainFlag()) {
@@ -430,7 +432,7 @@ bool Instruction::propagateFlagsTo() {
 // Note: this procedure does not control what part of this statement is propagated to
 // Propagate to e from definition statement def.
 // Set convert to true if convert a call from indirect to direct.
-bool Instruction::doPropagateTo(Exp * e, Assign * def, bool &convert) {
+bool Instruction::doPropagateTo(Exp * e, Assignment * def, bool &convert) {
     // Respect the -p N switch
     if (Boomerang::get()->numToPropagate >= 0) {
         if (Boomerang::get()->numToPropagate == 0)
@@ -454,7 +456,7 @@ bool Instruction::doPropagateTo(Exp * e, Assign * def, bool &convert) {
 //! replaces a use in this statement with an expression from an ordinary assignment
 //! \returns true if change
 //! \note Internal use only
-bool Instruction::replaceRef(Exp * e, Assign * def, bool &convert) {
+bool Instruction::replaceRef(Exp * e, Assignment * def, bool &convert) {
     Exp *rhs = def->getRight();
     assert(rhs);
 
@@ -4009,7 +4011,7 @@ void ReturnStatement::print(QTextStream & os, bool html) const {
     for (auto const &elem : modifieds) {
         QString tgt2;
         QTextStream ost(&tgt2);
-        const Assign *as = (const Assign *)elem;
+        const Assignment *as = (const Assignment *)elem;
         const SharedType ty = as->getType();
         if (ty)
             ost << "*" << ty << "* ";
@@ -4078,7 +4080,7 @@ void ReturnStatement::updateModifieds() {
         if (proc->filterReturns(colLhs))
             continue; // Filtered out
         for (it = oldMods.begin(); it != oldMods.end(); it++) {
-            Exp *lhs = ((Assign *)*it)->getLeft();
+            Exp *lhs = ((Assignment *)*it)->getLeft();
             if (*lhs == *colLhs) {
                 found = true;
                 break;
@@ -4098,7 +4100,7 @@ void ReturnStatement::updateModifieds() {
     for (it = oldMods.end(); it != oldMods.begin();) {
         --it; // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the collector
-        Assign *as = (Assign *)*it;
+        Assignment *as = (Assignment *)*it;
         Exp *lhs = as->getLeft();
         if (!col.existsOnLeft(lhs))
             continue; // Not in collector: delete it (don't copy it)
@@ -4109,7 +4111,7 @@ void ReturnStatement::updateModifieds() {
         StatementList::iterator nn;
         bool inserted = false;
         for (nn = modifieds.begin(); nn != modifieds.end(); ++nn) {
-            if (sig->returnCompare(*as, *(Assign *)*nn)) { // If the new assignment is less than the current one
+            if (sig->returnCompare(*as, *(Assignment *)*nn)) { // If the new assignment is less than the current one
                 nn = modifieds.insert(nn, as);             // then insert before this position
                 inserted = true;
                 break;
@@ -4247,7 +4249,7 @@ void CallStatement::updateDefines() {
     for (it = oldDefines.end(); it != oldDefines.begin();) {
         --it; // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the return or collector
-        Assign *as = (Assign *)*it;
+        Assignment *as = (Assignment *)*it;
         Exp *lhs = as->getLeft();
         if (calleeReturn) {
             if (!calleeReturn->definesLoc(lhs))
@@ -4263,7 +4265,7 @@ void CallStatement::updateDefines() {
         StatementList::iterator nn;
         bool inserted = false;
         for (nn = defines.begin(); nn != defines.end(); ++nn) {
-            if (sig->returnCompare(*as, *(Assign *)*nn)) { // If the new assignment is less than the current one
+            if (sig->returnCompare(*as, *(Assignment *)*nn)) { // If the new assignment is less than the current one
                 nn = defines.insert(nn, as);               // then insert before this position
                 inserted = true;
                 break;
@@ -4536,7 +4538,7 @@ StatementList *CallStatement::calcResults() {
             Exp *rsp = Location::regOf(proc->getSignature()->getStackRegister(proc->getProg()));
             StatementList::iterator dd;
             for (dd = defines.begin(); dd != defines.end(); ++dd) {
-                Exp *lhs = ((Assign *)*dd)->getLeft();
+                Exp *lhs = ((Assignment *)*dd)->getLeft();
                 // The stack pointer is allowed as a define, so remove it here as a special case non result
                 if (*lhs == *rsp)
                     continue;

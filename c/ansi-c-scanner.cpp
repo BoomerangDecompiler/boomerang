@@ -1204,7 +1204,7 @@ long YY_AnsiCScanner_CLASS::yy_get_previous_state_() {
 
     for (yy_cp = yy___text + YY_MORE_ADJ; yy_cp < yy_c_buf_p; ++yy_cp) {
         /* % code to find the next state goes here */
-        register YY_CHAR yy_c = (*yy_cp ? yy_ec[(unsigned char)*yy_cp] : 1);
+        YY_CHAR yy_c = (*yy_cp ? yy_ec[(unsigned char)*yy_cp] : 1);
         if (yy_accept[yy_current_state]) {
             yy_last_accepting_state = yy_current_state;
             yy_last_accepting_cpos = yy_cp;

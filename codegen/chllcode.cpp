@@ -384,8 +384,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         break;
     case opRegOf: {
         // MVE: this can likely go
-        if (VERBOSE)
-            LOG << "WARNING: CHLLCode::appendExp: case opRegOf is deprecated\n";
+        LOG_VERBOSE(1) << "WARNING: CHLLCode::appendExp: case opRegOf is deprecated\n";
         if (u.getSubExp1()->getOper() == opTemp) {
             // The great debate: r[tmpb] vs tmpb
             str << "tmp";
@@ -407,8 +406,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
     } break;
     case opTemp:
         // Should never see this; temps should be mapped to locals now so that they get declared
-        if (VERBOSE)
-            LOG << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
+        LOG_VERBOSE(1) << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
         // Emit the temp name, e.g. "tmp1"
         str << ((Const *)u.getSubExp1())->getStr();
         break;
@@ -668,8 +666,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
                 break;
             }
         }
-        if (VERBOSE)
-            LOG << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
+        LOG_VERBOSE(1) << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
         str << "(";
         appendExp(str, *t.getSubExp3(), PREC_NONE);
         str << ")";
@@ -1335,11 +1332,14 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString &nam
             first = false;
         else
             s << ", ";
-        SharedType t = ((Assign *)*ss)->getType();
-        auto const_arg = static_cast<const Const *>(((Assign *)*ss)->getRight());
+        Assignment *arg_assign = dynamic_cast<Assignment *>(*ss);
+        assert(arg_assign!=nullptr);
+        SharedType t = arg_assign->getType();
+        auto as_arg = arg_assign->getRight();
+        auto const_arg = dynamic_cast<const Const *>(as_arg);
         bool ok = true;
         if (t && t->isPointer() && std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
-            Function *p = proc->getProg()->findProc((const_arg)->getAddr());
+            Function *p = proc->getProg()->findProc(const_arg->getAddr());
             if (p) {
                 s << p->getName();
                 ok = false;
@@ -1352,7 +1352,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString &nam
                 s << "ADDR(";
                 needclose = true;
             }
-            appendExp(s, *const_arg, PREC_COMMA);
+            appendExp(s, *as_arg, PREC_COMMA);
             if (needclose)
                 s << ")";
         }
@@ -1514,7 +1514,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
             first = false;
         else
             s << ", ";
-        Assign *as = (Assign *)*pp;
+        Assignment *as = (Assignment *)*pp;
         Exp *left = as->getLeft();
         SharedType ty = as->getType();
         if (ty == nullptr) {

@@ -801,7 +801,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         if (callAddr < Image->getLimitTextHigh()) {
                             // Decode it.
                             DecodeResult decoded = decodeInstruction(callAddr);
-                            if (decoded.valid) { // is the instruction decoded succesfully?
+                            if (decoded.valid && !decoded.rtl->empty()) { // is the instruction decoded succesfully?
                                 // Yes, it is. Create a Statement from it.
                                 RTL *rtl = decoded.rtl;
                                 Instruction *first_statement = rtl->front();

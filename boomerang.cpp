@@ -47,6 +47,7 @@ Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), LogStream(stdo
 }
 
 Boomerang::~Boomerang() {
+    delete currentProject;
 }
 
 /**

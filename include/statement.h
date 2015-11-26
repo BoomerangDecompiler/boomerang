@@ -286,7 +286,7 @@ public:
     void addUsedLocs(LocationSet &used, bool cc = false, bool memOnly = false);
     bool addUsedLocals(LocationSet &used);
     void bypass();
-    bool replaceRef(Exp *e, Assign *def, bool &convert);
+    bool replaceRef(Exp *e, Assignment *def, bool &convert);
     void findConstants(std::list<Const *> &lc);
     int setConscripts(int n);
     void clearConscripts();
@@ -310,7 +310,7 @@ public:
     // virtual    Type*    getType() {return nullptr;}            // Assignment, ReturnStatement and
     // virtual    void    setType(Type* t) {assert(0);}        // CallStatement override
 
-    bool doPropagateTo(Exp *e, Assign *def, bool &convert);
+    bool doPropagateTo(Exp *e, Assignment *def, bool &convert);
     bool calcMayAlias(Exp *e1, Exp *e2, int size);
     bool mayAlias(Exp *e1, Exp *e2, int size);
 

@@ -65,7 +65,7 @@ void UserProc::dfaTypeAnalysis() {
     int iter;
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
-        for (it = stmts.begin(); it != stmts.end(); ++it) {
+        for (Instruction *it : stmts) {
             if (++dfa_progress >= 2000) {
                 dfa_progress = 0;
                 LOG_STREAM() << "t";
@@ -73,11 +73,11 @@ void UserProc::dfaTypeAnalysis() {
             }
             bool thisCh = false;
             //auto before = (*it)->clone();
-            (*it)->dfaTypeAnalysis(thisCh);
+            it->dfaTypeAnalysis(thisCh);
             if (thisCh) {
                 ch = true;
                 if (DEBUG_TA)
-                    LOG << " caused change: " << *it << "\n"; //<< before << " TO: "
+                    LOG << " caused change: " << it << "\n"; //<< before << " TO: "
             }
             //delete before;
         }
@@ -91,7 +91,7 @@ void UserProc::dfaTypeAnalysis() {
     if (DEBUG_TA) {
         LOG << "\n ### results for data flow based type analysis for " << getName() << " ###\n";
         LOG << iter << " iterations\n";
-        for (it = stmts.begin(); it != stmts.end(); ++it) {
+        for (StatementList::iterator it = stmts.begin(); it != stmts.end(); ++it) {
             Instruction *s = *it;
             LOG << s << "\n"; // Print the statement; has dest type
             // Now print type for each constant in this Statement
@@ -149,8 +149,7 @@ void UserProc::dfaTypeAnalysis() {
     debugPrintAll("before other uses of dfa type analysis");
 
     Prog *_prog = getProg();
-    for (it = stmts.begin(); it != stmts.end(); ++it) {
-        Instruction *s = *it;
+    for (Instruction *s : stmts) {
 
         // 1) constants
         std::list<Const *> lc;
@@ -291,8 +290,8 @@ void UserProc::dfaTypeAnalysis() {
                             addr = -addr;
                     }
                 }
-                LOG << "in proc " << getName() << " adding addrExp " << addrExp << " to local table\n";
                 SharedType ty = ((TypingStatement *)s)->getType();
+                LOG << "in proc " << getName() << " adding addrExp " << addrExp << "with type " << *ty << " to local table\n";
                 Exp * loc_mem = Location::memOf(addrExp);
                 localTable.addItem(ADDRESS::g(addr), lookupSym(*loc_mem, ty), typeExp);
                 delete loc_mem;
