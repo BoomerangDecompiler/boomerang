@@ -165,7 +165,9 @@ ADDRESS Function::getNativeAddress() const { return address; }
   ******************************************************************************/
 void Function::setNativeAddress(ADDRESS a) { address = a; }
 
-bool LibProc::isNoReturn() { return FrontEnd::noReturnCallDest(getName()); }
+bool LibProc::isNoReturn() {
+    return FrontEnd::noReturnCallDest(getName()) || signature->isNoReturn();
+}
 
 /**
  * \var UserProc::cycleGrp
@@ -201,8 +203,10 @@ bool UserProc::isNoReturn() {
         return true;
     if (exitbb->getNumInEdges() == 1) {
         Instruction *s = exitbb->getInEdges()[0]->getLastStmt();
+        if(not s->isCall())
+            return false;
         CallStatement *call = (CallStatement *)s;
-        if (s->isCall() && call->getDestProc() && call->getDestProc()->isNoReturn())
+        if (call->getDestProc() && call->getDestProc()->isNoReturn())
             return true;
     }
     return false;
@@ -296,7 +300,7 @@ void UserProc::setParamType(int idx, SharedType ty) {
     for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++) // find n-th parameter it
         ;
     if (it != parameters.end()) {
-        Assign *a = (Assign *)*it;
+        Assignment *a = (Assignment *)*it;
         a->setType(ty);
         // Sometimes the signature isn't up to date with the latest parameters
         signature->setParamType(a->getLeft(), ty);
@@ -308,7 +312,7 @@ void UserProc::renameLocal(const char *oldName, const char *newName) {
     const Exp *oldExp = expFromSymbol(oldName);
     locals.erase(oldName);
     Exp *oldLoc = getSymbolFor(oldExp, ty);
-    Exp *newLoc = Location::local(newName, this);
+    Location *newLoc = Location::local(newName, this);
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
     locals[newName] = ty;
     cfg->searchAndReplace(*oldLoc, newLoc);
@@ -797,7 +801,7 @@ void UserProc::printParams(QTextStream &out, bool html /*= false*/) const {
             first = false;
         else
             out << ", ";
-        out << ((Assign *)elem)->getType() << " " << ((Assign *)elem)->getLeft();
+        out << ((Assignment *)elem)->getType() << " " << ((Assignment *)elem)->getLeft();
     }
     out << "\n";
     if (html)
@@ -1106,8 +1110,8 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int &indent) {
                 LOG << "bb at " << bb->getLowAddr() << " is a CALL but last stmt is not a call: " << call << "\n";
             }
             assert(call->isCall());
-            UserProc *c = (UserProc *)call->getDestProc();
-            if (c == nullptr || c->isLib())
+            UserProc *c = dynamic_cast<UserProc *>(call->getDestProc());
+            if ( c == nullptr ) // not an user proc, or missing dest
                 continue;
             if (c->status == PROC_FINAL) {
                 // Already decompiled, but the return statement still needs to be set for this call
@@ -3241,7 +3245,8 @@ void UserProc::fromSSAform() {
         else if (r2->isImplicitDef())
             rename = r1; // Ditto for r2
         if (rename == nullptr) {
-#if 0 // By preferring to rename the destination of the phi, we have more chance that all the phi operands will
+#if 0
+            // By preferring to rename the destination of the phi, we have more chance that all the phi operands will
             // end up being the same, so the phi can end up as one copy assignment
 
             // In general, it is best to rename the location (r1 or r2) which has the smallest number of uniting
@@ -3567,9 +3572,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
     bool change = true;
     bool swapped = false;
     while (change) {
-        if (DEBUG_PROOF) {
+        if (DEBUG_PROOF)
             LOG << query << "\n";
-        }
 
         change = false;
         if (query->getOper() == opEquals) {
@@ -3587,12 +3591,12 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                 if (plus && s1s2) {
                     if (plus->getOper() == opPlus && s1s2->isIntConst()) {
                         query->setSubExp2(Binary::get(opPlus, query->getSubExp2(), new Unary(opNeg, s1s2->clone())));
-                        query->setSubExp1(((Binary *)plus)->getSubExp1());
+                        query->setSubExp1(plus->getSubExp1());
                         change = true;
                     }
                     if (plus->getOper() == opMinus && s1s2->isIntConst()) {
                         query->setSubExp2(Binary::get(opPlus, query->getSubExp2(), s1s2->clone()));
-                        query->setSubExp1(((Binary *)plus)->getSubExp1());
+                        query->setSubExp1(plus->getSubExp1());
                         change = true;
                     }
                 }
@@ -3605,7 +3609,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                 CallStatement *call = dynamic_cast<CallStatement *>(s);
                 if (call) {
                     // See if we can prove something about this register.
-                    UserProc *destProc = (UserProc *)call->getDestProc();
+                    UserProc *destProc = dynamic_cast<UserProc *>(call->getDestProc());
                     Exp *base = r->getSubExp1();
                     if (destProc && !destProc->isLib() && destProc->cycleGrp != nullptr &&
                         destProc->cycleGrp->find(this) != destProc->cycleGrp->end()) {
@@ -3759,8 +3763,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                 getStatements(stmts);
                 StatementList::iterator it;
                 for (it = stmts.begin(); it != stmts.end(); it++) {
-                    Assign *s = (Assign *)*it;
-                    if (s->isAssign() && *s->getRight() == *query->getSubExp2() && s->getLeft()->getOper() == opMemOf) {
+                    Assign *s = dynamic_cast<Assign *>(*it);
+                    if (s && *s->getRight() == *query->getSubExp2() && s->getLeft()->getOper() == opMemOf) {
                         query->setSubExp2(s->getLeft()->clone());
                         change = true;
                         break;
@@ -3984,9 +3988,9 @@ bool UserProc::ellipsisProcessing() {
     StatementList::reverse_iterator srit;
     bool ch = false;
     for (it = cfg->begin(); it != cfg->end(); ++it) {
-        CallStatement *c = (CallStatement *)(*it)->getLastStmt(rrit, srit);
+        CallStatement *c = dynamic_cast<CallStatement *>((*it)->getLastStmt(rrit, srit));
         // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr || !c->isCall())
+        if ( c == nullptr )
             continue;
         ch |= c->ellipsisProcessing(prog);
     }
@@ -4175,18 +4179,13 @@ void UserProc::updateArguments() {
     BasicBlock::rtlrit rrit;
     StatementList::reverse_iterator srit;
     for (BasicBlock *it : *cfg) {
-        CallStatement *c = (CallStatement *)it->getLastStmt(rrit, srit);
+        CallStatement *c = dynamic_cast<CallStatement *>(it->getLastStmt(rrit, srit));
         // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr || !c->isCall())
+        if ( c == nullptr )
             continue;
         c->updateArguments();
         // c->bypass();
-        if (VERBOSE) {
-            QString tgt;
-            QTextStream ost(&tgt);
-            c->print(ost);
-            LOG << tgt << "\n";
-        }
+        LOG_VERBOSE(1) << c << "\n";
     }
     LOG_VERBOSE(1) << "=== end update arguments for " << getName() << "\n";
     Boomerang::get()->alertDecompileDebugPoint(this, "after updating arguments");
@@ -4661,8 +4660,8 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet> &cs) {
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb : *cfg) {
-        CallStatement *c = (CallStatement *)bb->getLastStmt(rrit, srit);
-        if (c && c->isCall() && c->isChildless()) {
+        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
+        if (c && c->isChildless()) {
             UserProc *dest = (UserProc *)c->getDestProc();
             if (cs->find(dest) != cs->end()) // Part of the cycle?
                 // Yes, set the callee return statement (making it non childless)
@@ -4919,8 +4918,8 @@ bool UserProc::checkForGainfulUse(Exp *bparam, ProcSet &visited) {
         // Special checking for recursive calls
         if (s->isCall()) {
             CallStatement *c = (CallStatement *)s;
-            UserProc *dest = (UserProc *)c->getDestProc();
-            if (dest && !dest->isLib() && dest->doesRecurseTo(this)) {
+            UserProc *dest = dynamic_cast<UserProc *>(c->getDestProc());
+            if (dest && dest->doesRecurseTo(this)) {
                 // In the destination expression?
                 LocationSet u;
                 c->getDest()->addUsedLocs(u);
@@ -4991,7 +4990,7 @@ bool UserProc::removeRedundantParameters() {
     // Note: this would be far more efficient if we had def-use information
     StatementList::iterator pp;
     for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
-        Exp *param = ((Assign *)*pp)->getLeft();
+        Exp *param = ((Assignment *)*pp)->getLeft();
         bool az;
         Exp *bparam = param->clone()->removeSubscripts(az); // FIXME: why does main have subscripts on parameters?
         // Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found in uses
@@ -5206,13 +5205,13 @@ void UserProc::updateForUseChange(std::set<UserProc *> &removeRetSet) {
     StatementList::reverse_iterator srit;
     BB_IT it;
     for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        CallStatement *c = (CallStatement *)bb->getLastStmt(rrit, srit);
+        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
         // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr || !c->isCall())
+        if (c == nullptr)
             continue;
-        UserProc *dest = (UserProc *)c->getDestProc();
+        UserProc *dest = dynamic_cast<UserProc *>(c->getDestProc());
         // Not interested in unanalysed indirect calls (not sure) or calls to lib procs
-        if (dest == nullptr || dest->isLib())
+        if (dest == nullptr)
             continue;
         callLiveness[c].makeCloneOf(*c->getUseCollector());
     }
@@ -5418,10 +5417,10 @@ void UserProc::eliminateDuplicateArgs() {
     BB_IT it;
     BasicBlock::rtlrit rrit;
     StatementList::reverse_iterator srit;
-    for (it = cfg->begin(); it != cfg->end(); ++it) {
-        CallStatement *c = (CallStatement *)(*it)->getLastStmt(rrit, srit);
+    for (BasicBlock *bb : *cfg) {
+        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
         // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr || !c->isCall())
+        if (c == nullptr)
             continue;
         c->eliminateDuplicateArgs();
     }
@@ -5434,9 +5433,9 @@ void UserProc::removeCallLiveness() {
     BasicBlock::rtlrit rrit;
     StatementList::reverse_iterator srit;
     for (it = cfg->begin(); it != cfg->end(); ++it) {
-        CallStatement *c = (CallStatement *)(*it)->getLastStmt(rrit, srit);
+        CallStatement *c = dynamic_cast<CallStatement *>((*it)->getLastStmt(rrit, srit));
         // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr || !c->isCall())
+        if (c == nullptr)
             continue;
         c->removeAllLive();
     }
@@ -5542,14 +5541,12 @@ void UserProc::setDominanceNumbers() {
 void UserProc::findPhiUnites(ConnectionGraph &pu) {
     StatementList stmts;
     getStatements(stmts);
-    StatementList::iterator it;
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        PhiAssign *pa = (PhiAssign *)*it;
-        if (!pa->isPhi())
+    for (Instruction *insn : stmts) {
+        if (!insn->isPhi())
             continue;
+        PhiAssign *pa = (PhiAssign *)insn;
         Exp *lhs = pa->getLeft();
         RefExp *reLhs = RefExp::get(lhs, pa);
-        PhiAssign::iterator pp;
         for (const auto &v : *pa) {
             assert(v.second.e);
             RefExp *re = RefExp::get(v.second.e, (Instruction *)v.second.def());
@@ -5600,9 +5597,9 @@ void UserProc::verifyPHIs() {
     StatementList stmts;
     getStatements(stmts);
     for (Instruction *st : stmts) {
-        PhiAssign *pi = (PhiAssign *)st;
-        if (!pi->isPhi())
+        if (!st->isPhi())
             continue; // Might be able to optimise this a bit
+        PhiAssign *pi = (PhiAssign *)st;
         for (const auto &pas : *pi) {
             assert(pas.second.def());
         }
@@ -5626,11 +5623,10 @@ void UserProc::nameParameterPhis() {
     StatementList stmts;
     getStatements(stmts);
 
-    StatementList::iterator it;
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        PhiAssign *pi = (PhiAssign *)*it;
-        if (!pi->isPhi())
+    for (Instruction *insn : stmts) {
+        if (!insn->isPhi())
             continue; // Might be able to optimise this a bit
+        PhiAssign *pi = static_cast<PhiAssign *>(insn);
         // See if the destination has a symbol already
         Exp *lhs = pi->getLeft();
         RefExp *lhsRef = RefExp::get(lhs, pi);

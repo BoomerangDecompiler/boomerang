@@ -244,6 +244,7 @@ class Signature {
     virtual bool argumentCompare(Assignment &a, Assignment &b);
     virtual bool returnCompare(Assignment &a, Assignment &b);
 
+    bool isNoReturn() const { return false; }
   protected:
     friend class XMLProgParser;
     Signature() : name(""), rettype(nullptr), ellipsis(false), preferedReturn(nullptr), preferedName("") {}
@@ -259,8 +260,8 @@ class CustomSignature : public Signature {
   public:
     CustomSignature(const QString &nam);
     virtual ~CustomSignature() {}
-    virtual bool isPromoted() { return true; }
-    virtual Signature *clone();
+    virtual bool isPromoted() override { return true; }
+    virtual Signature *clone() override;
     void setSP(int nsp);
     virtual int getStackRegister() noexcept(false) override { return sp; }
 };

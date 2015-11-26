@@ -7,10 +7,12 @@
   ******************************************************************************/
 class IBinaryImage;
 class IBinarySymbolTable;
+class IProject;
 class IBoomerang {
 public:
     virtual IBinaryImage *getImage() = 0;
     virtual IBinarySymbolTable *getSymbols() = 0;
+    virtual IProject *project() = 0;
 };
 
 #endif // IBOOMERANG_H

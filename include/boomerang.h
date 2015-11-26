@@ -31,6 +31,7 @@
 #include "config.h"
 #include "types.h"
 #include "IBoomerang.h"
+#include "IProject.h"
 
 #include <QObject>
 #include <QDir>
@@ -50,6 +51,7 @@ class HLLCode;
 class ObjcModule;
 class IBinaryImage;
 class IBinarySymbolTable;
+class Project;
 enum LogLevel {
     LL_Debug = 0,
     LL_Default=1,
@@ -119,6 +121,7 @@ public:
     static Boomerang *get();
     IBinaryImage *getImage() override;
     IBinarySymbolTable *getSymbols() override;
+    IProject *project()  override { return currentProject; }
     int processCommand(QStringList &args);
     static const char *getVersionStr();
     Log &log();
@@ -235,6 +238,7 @@ public:
     virtual void alertDecompileDebugPoint(UserProc *p, const char *description);
 
     QTextStream &getLogStream(int level=LL_Default); //!< Return overall logging target
+    QString filename() const;
 
     // Command line flags
     bool vFlag = false;
@@ -288,6 +292,7 @@ public:
     std::vector<ADDRESS> entrypoints;       /// A vector which contains all know entrypoints for the Prog.
     std::vector<QString> symbolFiles;   /// A vector containing the names off all symbolfiles to load.
     std::map<ADDRESS, QString> symbols; /// A map to find a name by a given address.
+    IProject *currentProject;
 };
 
 #define VERBOSE (Boomerang::get()->vFlag)

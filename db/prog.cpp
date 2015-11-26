@@ -1066,9 +1066,9 @@ void Prog::decompile() {
             foundone = false;
             for(Module *module : ModuleList) {
                 for (Function *pp : *module) {
-                    UserProc *proc = (UserProc *)pp;
-                    if (proc->isLib())
+                    if (pp->isLib())
                         continue;
+                    UserProc *proc = (UserProc *)pp;
                     if (proc->isDecompiled())
                         continue;
                     int indent = 0;
@@ -1098,9 +1098,9 @@ void Prog::decompile() {
         // print XML after removing returns
         for(Module *m :ModuleList) {
             for (Function *pp : *m) {
-                UserProc *proc = (UserProc *)pp;
-                if (proc->isLib())
+                if (pp->isLib())
                     continue;
+                UserProc *proc = (UserProc *)pp;
                 proc->printXML();
             }
         }
@@ -1187,8 +1187,8 @@ bool Prog::removeUnusedReturns() {
     bool change = false;
     for(Module *module : ModuleList) {
         for (Function *pp : *module) {
-            UserProc *proc = (UserProc *)pp;
-            if (proc->isLib() || !proc->isDecoded())
+            UserProc *proc = dynamic_cast<UserProc *>(pp);
+            if (nullptr==proc || !proc->isDecoded())
                 continue; // e.g. use -sf file to just prototype the proc
             removeRetSet.insert(proc);
         }
@@ -1211,9 +1211,9 @@ bool Prog::removeUnusedReturns() {
 void Prog::fromSSAform() {
     for(Module *module : ModuleList) {
         for (Function *pp : *module) {
-            UserProc *proc = (UserProc *)pp;
-            if (proc->isLib())
+            if (pp->isLib())
                 continue;
+            UserProc *proc = (UserProc *)pp;
             if (VERBOSE) {
                 LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n" << *proc
                     << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
@@ -1441,13 +1441,14 @@ void Prog::readSymbolFile(const QString &fname) {
 
     for (Symbol *sym : par->symbols) {
         if (sym->sig) {
-            tgt_mod = getDefaultModule(sym->sig->getName());
+            QString name = sym->sig->getName();
+            tgt_mod = getDefaultModule(name);
             auto bin_sym = BinarySymbols->find(sym->addr);
             bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
                     // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
                     // to specifically specify that this function obeys library calling conventions
                     sym->mods->noDecode;
-            Function *p = tgt_mod->getOrInsertFunction(sym->sig->getName(), sym->addr,do_not_decode);
+            Function *p = tgt_mod->getOrInsertFunction(name, sym->addr,do_not_decode);
             if (!sym->mods->incomplete) {
                 p->setSignature(sym->sig->clone());
                 p->getSignature()->setForced(true);

@@ -20,6 +20,7 @@
 #include "log.h"
 #include "xmlprogparser.h"
 #include "codegen/chllcode.h"
+#include "project.h"
 
 // For the -nG switch to disable the garbage collector
 #ifdef HAVE_LIBGC
@@ -42,10 +43,10 @@ Boomerang *Boomerang::boomerang = nullptr;
  * - Main log stream is output on stderr
  */
 Boomerang::Boomerang() : progPath("./"), outputPath("./output/"), LogStream(stdout),ErrStream(stderr) {
+    currentProject = new Project;
 }
 
 Boomerang::~Boomerang() {
-    delete Image;
 }
 
 /**
@@ -898,9 +899,8 @@ Boomerang *Boomerang::get() {
 }
 IBinaryImage *Boomerang::getImage()
 {
-    if(!Image)
-        Image = new BinaryImage;
-    return Image;
+    assert(nullptr != currentProject);
+    return currentProject->image();
 }
 
 IBinarySymbolTable *Boomerang::getSymbols()
@@ -924,6 +924,11 @@ QTextStream &Boomerang::getLogStream(int level)
     if(level>=LL_Error)
         return ErrStream;
     return LogStream;
+}
+
+QString Boomerang::filename() const
+{
+    return "";
 }
 
 const char *Boomerang::getVersionStr() { return VERSION; }

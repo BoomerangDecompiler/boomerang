@@ -522,12 +522,10 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
     if (plat != PLAT_PENTIUM)
         return false;
 
-    if (VERBOSE)
-        LOG << "consider promotion to stdc pentium signature for " << p->getName() << "\n";
+    LOG_VERBOSE(1) << "consider promotion to stdc pentium signature for " << p->getName() << "\n";
 
 #if 1
-    if (VERBOSE)
-        LOG << "qualified: always true\n";
+    LOG_VERBOSE(1) << "qualified: always true\n";
     return true; // For now, always pass
 #else
     bool gotcorrectret1 = false;
@@ -1216,6 +1214,7 @@ Signature *CustomSignature::clone() {
     n->ellipsis = ellipsis;
     n->rettype = rettype->clone();
     n->sp = sp;
+    n->forced = forced;
     n->preferedName = preferedName;
     n->preferedReturn = preferedReturn ? preferedReturn->clone() : nullptr;
     n->preferedParams = preferedParams;
