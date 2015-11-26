@@ -152,12 +152,12 @@ class Win32BinaryFile : public QObject, public LoaderInterface {
     Q_PLUGIN_METADATA(IID LoaderInterface_iid)
     Q_INTERFACES(LoaderInterface)
 public:
-    Win32BinaryFile();                    // Default constructor
-    virtual ~Win32BinaryFile();           // Destructor
-    void Close();                 // Close file opened with Open()
-    void UnLoad();                // Unload the image
-    LOAD_FMT GetFormat() const override;   // Get format (i.e.LOADFMT_Win32)
-    MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_Pentium)
+    Win32BinaryFile();
+    virtual ~Win32BinaryFile();
+    void Close() override;                 //!< Close file opened with Open()
+    void UnLoad() override;                //!< Unload the image
+    LOAD_FMT GetFormat() const override;   //!< Get format (i.e.LOADFMT_Win32)
+    MACHINE getMachine() const override;   //!< Get machine (i.e. MACHINE_Pentium)
     QString getFilename() const override { return m_pFileName; }
     ADDRESS getImageBase() override;
     size_t getImageSize() override;
@@ -181,7 +181,7 @@ protected:
 public:
 
     bool IsStaticLinkedLibProc(ADDRESS uNative);
-    ADDRESS IsJumpToAnotherAddr(ADDRESS uNative);
+    ADDRESS IsJumpToAnotherAddr(ADDRESS uNative) override;
 
     bool IsMinGWsAllocStack(ADDRESS uNative);
     bool IsMinGWsFrameInit(ADDRESS uNative);
@@ -190,7 +190,7 @@ public:
     bool IsMinGWsMalloc(ADDRESS uNative);
 
 
-    bool hasDebugInfo() { return haveDebugInfo; }
+    bool hasDebugInfo()  override { return haveDebugInfo; }
     void initialize(IBoomerang *sys) override;
 
 protected:
@@ -199,7 +199,7 @@ protected:
     void readDebugData();
     bool LoadFromArray(QByteArray &arr);
 private:
-    bool PostLoad(void *handle);  // Called after archive member loaded
+    bool PostLoad(void *handle) override;  // Called after archive member loaded
     void findJumps(ADDRESS curr); // Find names for jumps to IATs
 
     Header *m_pHeader;     // Pointer to header

@@ -30,7 +30,7 @@ NWINDOWS    := 8;            # Number of windows (register windows)-
 MAX_BYTE    := 2**8  - 1;    # a byte of all 1's
 MAX32BIT    := 0xFFFFFFFF;    # a word of all 1's
 MAXSIGN32   := 0x7FFFFFFF;    # all bits except sign bit are set
-SIGN_32_NEG := -2**31;
+SIGN_32_NEG := 0x80000000;
 WORD        := 4;            # size of word in bytes (for now)
 
 ENDIANNESS BIG;

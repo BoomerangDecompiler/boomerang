@@ -56,14 +56,14 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
     void writeObjectFile(QString &path, const char *name, void *ptxt, int txtsz, RelocMap &reloc);
 
     // Analysis functions
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+    virtual ADDRESS GetMainEntryPoint() override;
+    virtual ADDRESS GetEntryPoint() override;
 
     ADDRESS NativeToHostAddress(ADDRESS uNative);
 
     QString m_pFileName; // Pointer to input file name
   protected:
-    virtual bool RealLoad(const QString &sName); // Load the file; pure virtual
+    virtual bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
   private:
     // Apply relocations; important when compiled without -fPIC
@@ -75,7 +75,7 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
     void AddSyms(int secIndex);
     void AddRelocsAsSyms(uint32_t secIndex);
     void SetRelocInfo(SectionInfo * pSect);
-    bool PostLoad(void *handle); // Called after archive member loaded
+    bool PostLoad(void *handle) override; // Called after archive member loaded
     // Search the .rel[a].plt section for an entry with symbol table index i.
     // If found, return the native address of the associated PLT entry.
     ADDRESS findRelPltOffset(int i);

@@ -53,17 +53,17 @@ class MachOBinaryFile : public QObject,
     virtual ~MachOBinaryFile();           // Destructor
     void initialize(IBoomerang *sys) override;
     bool Open(const char *sName); // Open the file for r/w; ???
-    void Close();                 // Close file opened with Open()
-    void UnLoad();                // Unload the image
-    LOAD_FMT GetFormat() const;   // Get format (i.e. LOADFMT_MACHO)
-    MACHINE getMachine() const;   // Get machine (i.e. MACHINE_PPC)
+    void Close() override;                 // Close file opened with Open()
+    void UnLoad() override;                // Unload the image
+    LOAD_FMT GetFormat() const override;   // Get format (i.e. LOADFMT_MACHO)
+    MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_PPC)
     QString getFilename() const override { return m_pFileName; }
     bool isLibrary() const;
-    ADDRESS getImageBase();
-    size_t getImageSize();
+    ADDRESS getImageBase() override;
+    size_t getImageSize() override;
 
-    ADDRESS GetMainEntryPoint();
-    ADDRESS GetEntryPoint();
+    ADDRESS GetMainEntryPoint() override;
+    ADDRESS GetEntryPoint() override;
     DWord getDelta();
 
     //
@@ -92,7 +92,7 @@ class MachOBinaryFile : public QObject,
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 
   private:
-    bool PostLoad(void *handle);  // Called after archive member loaded
+    bool PostLoad(void *handle) override;  // Called after archive member loaded
     void findJumps(ADDRESS curr); // Find names for jumps to IATs
 
     struct mach_header *header; // The Mach-O header

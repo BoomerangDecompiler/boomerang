@@ -150,7 +150,7 @@ public:
     //
     // Internal information
     // Dump headers, etc
-    virtual bool DisplayDetails(const char *fileName, FILE *f = stdout);
+    virtual bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
 
     void initialize(IBoomerang *sys) override;
 protected:
@@ -159,7 +159,7 @@ protected:
 
     bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 private:
-    bool PostLoad(void *handle); // Called after archive member loaded
+    bool PostLoad(void *handle) override; //!< Called after archive member loaded
 
     Header *m_pHeader;      // Pointer to header
     LXHeader *m_pLXHeader;  // Pointer to lx header

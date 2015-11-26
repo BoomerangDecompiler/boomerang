@@ -18,7 +18,7 @@
 
 MAX_BYTE    := 2**8  - 1;    # a byte of all 1's
 MAX32BIT    := 0xFFFFFFFF;    # a word of all 1's
-MAXSIGN32   := 2**31 - 1;    # all bits except sign bit are set
+MAXSIGN32   := 0x7FFFFFFF;    # all bits except sign bit are set
 SIGN_32_NEG := -2**31;
 WORD        := 4;            # size of word in bytes (for now)
 
