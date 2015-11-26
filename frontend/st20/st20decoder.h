@@ -26,7 +26,7 @@ class ST20Decoder : public NJMCDecoder {
   public:
     /* Default constructor
          */
-    ST20Decoder();
+    ST20Decoder(Prog *prog);
 
     /**
          * Decodes the machine instruction at pc and returns an RTL instance for

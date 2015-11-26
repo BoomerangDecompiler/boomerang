@@ -41,7 +41,7 @@
 #include <sstream>
 
 ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : FrontEnd(pBF, prog, pbff) {
-    decoder = new ST20Decoder();
+    decoder = new ST20Decoder(prog);
 }
 
 // destructor
