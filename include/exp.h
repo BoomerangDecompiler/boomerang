@@ -566,7 +566,7 @@ class Binary : public Unary {
     Binary(OPER op, Exp *e1, Exp *e2);
     // Copy constructor
     Binary(const Binary &o);
-    static Exp *get(OPER op, Exp *e1, Exp *e2) { return new Binary(op, e1, e2); }
+    static Binary *get(OPER op, Exp *e1, Exp *e2) { return new Binary(op, e1, e2); }
 
     // Clone
     virtual Exp *clone() const override;

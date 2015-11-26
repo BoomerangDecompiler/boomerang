@@ -18,3 +18,7 @@ void glVertex3f(GLfloat x, GLfloat y, GLfloat z);
 GLenum glGetError(void);
 void glRasterPos2f(GLfloat x, GLfloat y);
 
+
+void glGenTextures(GLsizei n, GLuint *textures);
+__stdcall void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+__stdcall void glTexParameterf(GLenum target, GLenum pname, GLfloat param);
