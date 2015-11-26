@@ -580,10 +580,9 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         auto otherUnion = other->as<UnionType>();
         // Always return this, never other, (even if other is larger than this) because otherwise iterators can become
         // invalid below
-        std::list<UnionElement>::iterator it;
         // TODO: verify the below, before the return was done after single meetWith on first file of other union
-        for (it = otherUnion->li.begin(); it != otherUnion->li.end(); ++it) {
-            meetWith(it->type, ch, bHighestPtr);
+        for (UnionElement it : otherUnion->li) {
+            meetWith(it.type, ch, bHighestPtr);
         }
         return ((UnionType *)this)->shared_from_this();
     }
@@ -618,8 +617,9 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
     // then the meetWith result, and this types field iterator are stored.
     int best_meet_quality=INT_MAX;
     SharedType best_so_far;
-    std::list<UnionElement>::iterator location_of_meet=li.end();
-    for (it = li.begin(); it != li.end(); ++it) {
+    UnionEntrySet::iterator location_of_meet=li.end();
+
+    for (auto it = li.begin(); it != li.end(); ++it) {
         Type &v(*it->type);
         if (!v.isCompatibleWith(*other))
             continue;
@@ -638,7 +638,10 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         }
     }
     if(best_meet_quality!=INT_MAX) {
-        location_of_meet->type = best_so_far;
+        UnionElement ne = *location_of_meet;
+        ne.type = best_so_far;
+        li.erase(location_of_meet);
+        li.insert(ne);
 //        qDebug() << getCtype();
         return ((UnionType *)this)->shared_from_this();
     }
@@ -1534,26 +1537,25 @@ bool ArrayType::isCompatible(const Type &other, bool all) const {
 bool UnionType::isCompatible(const Type &other, bool all) const {
     if (other.resolvesToVoid())
         return true;
-    std::list<UnionElement>::const_iterator it;
     if (other.resolvesToUnion()) {
         if (this == &other) // Note: pointer comparison
             return true;   // Avoid infinite recursion
         const UnionType &otherUnion((const UnionType &)other);
         // Unions are compatible if one is a subset of the other
         if (li.size() < otherUnion.li.size()) {
-            for (it = li.begin(); it != li.end(); ++it)
-                if (!otherUnion.isCompatible(*it->type, all))
+            for (const UnionElement &e : li)
+                if (!otherUnion.isCompatible(*e.type, all))
                     return false;
         } else {
-            for (it = otherUnion.li.begin(); it != otherUnion.li.end(); ++it)
-                if (!isCompatible(*it->type, all))
+            for (const UnionElement &e : otherUnion.li)
+                if (!isCompatible(*e.type, all))
                     return false;
         }
         return true;
     }
     // Other is not a UnionType
-    for (it = li.begin(); it != li.end(); ++it)
-        if (other.isCompatibleWith(*it->type, all))
+    for (const UnionElement &e : li)
+        if (other.isCompatibleWith(*e.type, all))
             return true;
     return false;
 }
@@ -1620,7 +1622,7 @@ SharedType Type::dereference() {
 SharedType UnionType::dereferenceUnion() {
     auto ret = UnionType::get();
     char name[20];
-    std::list<UnionElement>::iterator it;
+    UnionEntrySet::iterator it;
     for (it = li.begin(); it != li.end(); ++it) {
         SharedType elem = it->type->dereference();
         if (elem->resolvesToVoid())

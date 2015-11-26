@@ -26,9 +26,12 @@
 #include <vector>
 #include <cassert>
 #include <list>
+#include <set>
+#include <unordered_set>
 #include <fstream>
 #include <QString>
 #include <QMap>
+#include <QHash>
 
 class Signature;
 class UserProc;
@@ -611,14 +614,24 @@ protected:
 struct UnionElement {
     SharedType type;
     QString name;
+    bool operator==(const UnionElement &other) const {
+        return *type == *other.type;
+    }
 };
+struct  hashUnionElem {
+    size_t operator()(const UnionElement &e) const {
+        return qHash(e.type->getCtype());
+    }
+};
+typedef std::unordered_set<UnionElement,hashUnionElem> UnionEntrySet;
 class UnionType : public Type {
 private:
     // Note: list, not vector, as it is occasionally desirable to insert elements without affecting iterators
     // (e.g. meetWith(another Union))
-    mutable std::list<UnionElement> li;
+    mutable UnionEntrySet li;
 
 public:
+    typedef UnionEntrySet::iterator ilUnionElement;
     UnionType();
     virtual ~UnionType();
     virtual bool isUnion() const { return true; }
@@ -626,7 +639,8 @@ public:
     void addType(SharedType n, const QString &str);
     size_t getNumTypes() const { return li.size(); }
     bool findType(SharedType ty); // Return true if ty is already in the union
-    // Type        *getType(int n) { assert(n < getNumTypes()); return types[n]; }
+    ilUnionElement begin() { return li.begin(); }
+    ilUnionElement end() { return li.end(); }
     // Type        *getType(const char *nam);
     // const        char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
 
