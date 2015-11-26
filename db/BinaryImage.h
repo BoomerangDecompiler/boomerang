@@ -43,9 +43,9 @@ public:
     float  readNativeFloat4(ADDRESS nat) override;
     double readNativeFloat8(ADDRESS nat) override;
     void   writeNative4(ADDRESS nat, uint32_t n) override;
-    void   calculateTextLimits();
+    void calculateTextLimits() override;
     //! Find the section, given an address in the section
-    const IBinarySection *getSectionInfoByAddr(ADDRESS uEntry) const;
+    const IBinarySection *getSectionInfoByAddr(ADDRESS uEntry) const override;
 
     int         GetSectionIndexByName(const QString &sName) override;
     IBinarySection *GetSectionInfoByName(const QString &sName) override;
@@ -55,14 +55,14 @@ public:
     ADDRESS     getLimitTextHigh() override;
     ptrdiff_t   getTextDelta() override { return TextDelta; }
 
-    SectionInfo *createSection(const QString &name, ADDRESS from, ADDRESS to);
+    SectionInfo *createSection(const QString &name, ADDRESS from, ADDRESS to) override;
 
-    iterator                begin()       { return Sections.begin(); }
-    const_iterator          begin() const { return Sections.begin(); }
-    iterator                end  ()       { return Sections.end();   }
-    const_iterator          end  () const { return Sections.end();   }
-    size_t                  size()  const { return Sections.size(); }
-    bool                    empty() const { return Sections.empty(); }
+    iterator                begin()       override { return Sections.begin(); }
+    const_iterator          begin() const override { return Sections.begin(); }
+    iterator                end  ()       override { return Sections.end();   }
+    const_iterator          end  () const override { return Sections.end();   }
+    size_t                  size()  const override { return Sections.size(); }
+    bool                    empty() const override { return Sections.empty(); }
 
 private:
     ADDRESS limitTextLow;

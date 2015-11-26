@@ -808,10 +808,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                                 if (first_statement) {
                                     first_statement->setProc(pProc);
                                     first_statement->simplify();
-                                    GotoStatement *stmt_jump = static_cast<GotoStatement *>(first_statement);
+                                    CaseStatement *stmt_jump = dynamic_cast<CaseStatement *>(first_statement);
                                     // In fact it's a computed (looked up) jump, so the jump seems to be a case
                                     // statement.
-                                    if (first_statement->getKind() == STMT_CASE &&
+                                    if ( nullptr!=stmt_jump &&
                                         refersToImportedFunction(stmt_jump->getDest())) { // Is it an "DynamicLinkedProcPointer"?
                                         // Yes, it's a library function. Look up it's name.
                                         ADDRESS a = ((Const *)stmt_jump->getDest()->getSubExp1())->getAddr();

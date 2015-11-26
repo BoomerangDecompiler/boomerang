@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QCoreApplication>
 #include "mainwindow.h"
 #include "commandlinedriver.h"
 
@@ -11,16 +12,16 @@ int main(int argc, char *argv[]) {
     init_sslparser();
     init_basicblock();
 
-    QApplication app(argc, argv);
-    if(app.arguments().size()>1) {
+    if(argc>1) {
+        QCoreApplication app(argc,argv);
         CommandlineDriver driver;
-        init_dfa();
-        init_sslparser();
-        init_basicblock();
         driver.applyCommandline(app.arguments());
         return driver.decompile();
     }
-    MainWindow mainWindow;
-    mainWindow.show();
-    return app.exec();
+    else {
+        QApplication app(argc, argv);
+        MainWindow mainWindow;
+        mainWindow.show();
+        return app.exec();
+    }
 }

@@ -152,8 +152,8 @@ Exp *CallBypasser::postVisit(RefExp *r) {
     mask >>= 1;
     // Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and avoids a cast
     Instruction *def = r->getDef();
-    CallStatement *call = (CallStatement *)def;
-    if (call && call->isCall()) {
+    CallStatement *call = dynamic_cast<CallStatement *>(def);
+    if (call ) {
         bool ch;
         ret = call->bypassRef((RefExp *)ret, ch);
         if (ch) {

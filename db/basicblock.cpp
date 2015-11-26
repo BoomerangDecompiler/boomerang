@@ -1507,7 +1507,7 @@ void BasicBlock::prependStmt(Instruction *s, UserProc *proc) {
 
 // Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
 // Also check for type conflicts if DFA_TYPE_ANALYSIS
-// This is a helper function that is not directly declated in the BasicBlock class
+// This is a helper function that is not directly declared in the BasicBlock class
 void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig, UserProc * /*proc*/) {
     // For each location to be considered
     for (Exp *u : ls) {
