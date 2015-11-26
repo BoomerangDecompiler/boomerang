@@ -52,7 +52,7 @@ public:
     void        clearDefinedArea();
     void        addDefinedArea(ADDRESS from,ADDRESS to) override;
     void        setAttributeForRange(const QString &name,const QVariant &val,ADDRESS from,ADDRESS to) override;
-    QVariantMap getAttributesForRange(ADDRESS from,ADDRESS to);
+    QVariantMap getAttributesForRange(ADDRESS from,ADDRESS to) override;
     QVariant    attributeInRange(const QString &attrib,ADDRESS from,ADDRESS to) const;
 private:
     SectionInfoImpl *Impl;

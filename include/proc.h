@@ -403,7 +403,7 @@ public:
     bool removeRedundantReturns(std::set<UserProc *> &removeRetSet);
     bool checkForGainfulUse(Exp *e, ProcSet &Visited);
     void updateForUseChange(std::set<UserProc *> &removeRetSet);
-    bool prove(Exp *query, bool conditional = false);
+    bool prove(Binary * query, bool conditional = false);
 
     bool prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiAssign *, Exp *> &cache, Exp *original,
                 PhiAssign *lastPhi = nullptr);

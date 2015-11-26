@@ -56,7 +56,7 @@ void FrontPentTest::test1() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_PENT);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(HELLO_PENT);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -102,7 +102,7 @@ void FrontPentTest::test2() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_PENT);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(HELLO_PENT);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -140,7 +140,7 @@ void FrontPentTest::test3() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_PENT);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(HELLO_PENT);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -177,7 +177,7 @@ void FrontPentTest::testBranch() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(BRANCH_PENT);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(BRANCH_PENT);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -218,7 +218,7 @@ void FrontPentTest::testFindMain() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(FEDORA2_TRUE);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(FEDORA2_TRUE);
     LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
     QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
@@ -230,6 +230,7 @@ void FrontPentTest::testFindMain() {
     QCOMPARE(addr,expected);
     iface->Close();
     bff.UnLoad();
+    delete pFE;
 
     pBF = bff.Load(FEDORA3_TRUE);
     QVERIFY(pBF != nullptr);
@@ -241,6 +242,7 @@ void FrontPentTest::testFindMain() {
     QCOMPARE(addr,expected);
     iface->Close();
     bff.UnLoad();
+    delete pFE;
 
     pBF = bff.Load(SUSE_TRUE);
     QVERIFY(pBF != nullptr);
@@ -252,6 +254,7 @@ void FrontPentTest::testFindMain() {
     QCOMPARE(addr,expected);
     iface->Close();
 
+    bff.UnLoad();
     delete pFE;
 }
 QTEST_MAIN(FrontPentTest)

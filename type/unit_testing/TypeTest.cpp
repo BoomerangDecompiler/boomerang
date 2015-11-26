@@ -82,7 +82,7 @@ void TypeTest::testNotEqual() {
 void TypeTest::testCompound() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(HELLO_WINDOWS);
-    FrontEnd *pFE = new PentiumFrontEnd(pBF, new Prog, &bff);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF, new Prog(HELLO_WINDOWS), &bff);
     pFE->readLibraryCatalog(); // Read definitions
 
     Signature *paintSig = pFE->getLibSignature("BeginPaint");
@@ -132,7 +132,7 @@ void TypeTest::testCompound() {
 void TypeTest::testDataInterval() {
     DataIntervalMap dim;
 
-    Prog *prog = new Prog;
+    Prog *prog = new Prog("test");
     Module *m = prog->getOrInsertModule("test");
     UserProc *proc = (UserProc *)m->getOrInsertFunction("test",ADDRESS::g(0x123));
     proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, "test"));
@@ -209,7 +209,7 @@ void TypeTest::testDataInterval() {
 void TypeTest::testDataIntervalOverlaps() {
     DataIntervalMap dim;
 
-    Prog *prog = new Prog;
+    Prog *prog = new Prog("test");
     Module *m = prog->getOrInsertModule("test");
     UserProc *proc = (UserProc *)m->getOrInsertFunction("test", ADDRESS::g(0x123));
     proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, "test"));

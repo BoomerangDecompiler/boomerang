@@ -1981,8 +1981,7 @@ bool UserProc::doRenameBlockVars(int pass, bool clearStacks) {
   *
   ******************************************************************************/
 void UserProc::findSpPreservation() {
-    if (VERBOSE)
-        LOG << "finding stack pointer preservation for " << getName() << "\n";
+    LOG_VERBOSE(1) << "finding stack pointer preservation for " << getName() << "\n";
 
     bool stdsp = false; // FIXME: are these really used?
     // Note: need this non-virtual version most of the time, since nothing proved yet
@@ -2016,8 +2015,7 @@ void UserProc::findSpPreservation() {
 void UserProc::findPreserveds() {
     std::set<Exp *> removes;
 
-    if (VERBOSE)
-        LOG << "finding preserveds for " << getName() << "\n";
+    LOG_VERBOSE(1) << "finding preserveds for " << getName() << "\n";
 
     Boomerang::get()->alertDecompileDebugPoint(this, "before finding preserveds");
 
@@ -2033,7 +2031,7 @@ void UserProc::findPreserveds() {
     StatementList &modifieds = theReturnStatement->getModifieds();
     for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
         Exp *lhs = ((Assignment *)*mm)->getLeft();
-        Exp *equation = Binary::get(opEquals, lhs, lhs);
+        Binary *equation = Binary::get(opEquals, lhs, lhs);
         if (DEBUG_PROOF)
             LOG << "attempting to prove " << equation << " is preserved by " << getName() << "\n";
         if (prove(equation)) {
@@ -2046,12 +2044,6 @@ void UserProc::findPreserveds() {
         for (auto &elem : provenTrue)
             LOG << elem.first << " = " << elem.second << "\n";
         LOG << "### end proven true for procedure " << getName() << "\n\n";
-#if PROVEN_FALSE
-        LOG << "### proven false for procedure " << getName() << ":\n";
-        for (std::map<Exp *, Exp *, lessExpStar>::iterator it = provenFalse.begin(); it != provenFalse.end(); it++)
-            LOG << it->first << " != " << it->second << "\n";
-        LOG << "### end proven false for procedure " << getName() << "\n\n";
-#endif
     }
 
     // Remove the preserved locations from the modifieds and the returns
@@ -2776,8 +2768,7 @@ bool UserProc::removeNullStatements() {
 /// Propagate statemtents; return true if change; set convert if an indirect call is converted to direct
 /// (else clear)
 bool UserProc::propagateStatements(bool &convert, int pass) {
-    if (VERBOSE)
-        LOG << "--- begin propagating statements pass " << pass << " ---\n";
+    LOG_VERBOSE(1) << "--- begin propagating statements pass " << pass << " ---\n";
     StatementList stmts;
     getStatements(stmts);
     // propagate any statements that can be
@@ -3484,37 +3475,29 @@ static Binary allEqAll(opEquals, new Terminal(opDefineAll), new Terminal(opDefin
 // this function was non-reentrant, but now reentrancy is frequently used
 /// prove any arbitary property of this procedure. If conditional is true, do not save the result, as it may
 /// be conditional on premises stored in other procedures
-bool UserProc::prove(Exp *query, bool conditional /* = false */) {
+bool UserProc::prove(Binary *query, bool conditional /* = false */) {
 
     assert(query->isEquality());
-    Exp *queryLeft = ((Binary *)query)->getSubExp1();
-    Exp *queryRight = ((Binary *)query)->getSubExp2();
+    Exp *queryLeft = query->getSubExp1();
+    Exp *queryRight = query->getSubExp2();
     if (provenTrue.find(queryLeft) != provenTrue.end() && *provenTrue[queryLeft] == *queryRight) {
         if (DEBUG_PROOF)
             LOG << "found true in provenTrue cache " << query << " in " << getName() << "\n";
         return true;
     }
-#if PROVEN_FALSE // Maybe not so smart... may prove true after some iterations
-    if (provenFalse.find(queryLeft) != provenFalse.end() && *provenFalse[queryLeft] == *queryRight) {
-        if (DEBUG_PROOF)
-            LOG << "found false in provenFalse cache " << query << " in " << getName() << "\n";
-        return false;
-    }
-#endif
 
     if (Boomerang::get()->noProve)
         return false;
 
     Exp *original = query->clone();
-    Exp *origLeft = ((Binary *)original)->getSubExp1();
-    Exp *origRight = ((Binary *)original)->getSubExp2();
+    Exp *origLeft = original->getSubExp1();
+    Exp *origRight = original->getSubExp2();
 
     // subscript locs on the right with {-} (nullptr reference)
     LocationSet locs;
     query->getSubExp2()->addUsedLocs(locs);
-    LocationSet::iterator xx;
-    for (xx = locs.begin(); xx != locs.end(); xx++) {
-        query->setSubExp2(query->getSubExp2()->expSubscriptValNull(*xx));
+    for (Exp *xx : locs) {
+        query->setSubExp2(query->getSubExp2()->expSubscriptValNull(xx));
     }
 
     if (query->getSubExp1()->getOper() != opSubscript) {
@@ -3535,14 +3518,14 @@ bool UserProc::prove(Exp *query, bool conditional /* = false */) {
                 origLeft->getOper() != opDefineAll &&    // Beware infinite recursion
                 prove(&allEqAll)) {                      // Recurse in case <all> not proven yet
                 if (DEBUG_PROOF)
-                    LOG << "Using all=all for " << query->getSubExp1() << "\n"
-                        << "prove returns true\n";
+                    LOG << "Using all=all for " << query->getSubExp1() << "\n" << "prove returns true\n";
                 provenTrue[origLeft->clone()] = right;
                 return true;
             }
+            else
+                delete right;
             if (DEBUG_PROOF)
-                LOG << "not in return collector: " << query->getSubExp1() << "\n"
-                    << "prove returns false\n";
+                LOG << "not in return collector: " << query->getSubExp1() << "\n" << "prove returns false\n";
             return false;
         }
     }
@@ -3562,10 +3545,6 @@ bool UserProc::prove(Exp *query, bool conditional /* = false */) {
     if (!conditional) {
         if (result)
             provenTrue[origLeft] = origRight; // Save the now proven equation
-#if PROVEN_FALSE
-        else
-            provenFalse[origLeft] = origRight; // Save the now proven-to-be-false equation
-#endif
     }
     return result;
 }
@@ -3655,11 +3634,10 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                                 // another premise! Example: try to prove esp, depends on whether ebp is preserved, so
                                 // recurse to check ebp's preservation. Won't infinitely loop because of the premise map
                                 // FIXME: what if it needs a rx = rx + K preservation?
-                                Exp *newQuery = Binary::get(opEquals, base->clone(), base->clone());
+                                Binary *newQuery = Binary::get(opEquals, base->clone(), base->clone());
                                 destProc->setPremise(base);
                                 if (DEBUG_PROOF)
-                                    LOG << "new required premise " << newQuery << " for " << destProc->getName()
-                                        << "\n";
+                                    LOG << "new required premise " << newQuery << " for " << destProc->getName() << "\n";
                                 // Pass conditional as true, since even if proven, this is conditional on other things
                                 bool result = destProc->prove(newQuery, true);
                                 destProc->killPremise(base);
@@ -3758,8 +3736,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
 
             // remove memofs from both sides if possible
             if (!change && query->getSubExp1()->getOper() == opMemOf && query->getSubExp2()->getOper() == opMemOf) {
-                query->setSubExp1(((Unary *)query->getSubExp1())->getSubExp1());
-                query->setSubExp2(((Unary *)query->getSubExp2())->getSubExp1());
+                query->setSubExp1(query->getSubExp1()->getSubExp1());
+                query->setSubExp2(query->getSubExp2()->getSubExp1());
                 change = true;
             }
 
@@ -3769,8 +3747,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                 ((RefExp *)query->getSubExp1())->getDef() == nullptr && query->getSubExp2()->getOper() == opSubscript &&
                 query->getSubExp2()->getSubExp1()->getOper() == opMemOf &&
                 ((RefExp *)query->getSubExp2())->getDef() == nullptr) {
-                query->setSubExp1(((Unary *)query->getSubExp1()->getSubExp1())->getSubExp1());
-                query->setSubExp2(((Unary *)query->getSubExp2()->getSubExp1())->getSubExp1());
+                query->setSubExp1(query->getSubExp1()->getSubExp1()->getSubExp1());
+                query->setSubExp2(query->getSubExp2()->getSubExp1()->getSubExp1());
                 change = true;
             }
 
@@ -3806,11 +3784,13 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
 
         Exp *old = query->clone();
 
+        Exp *query_prev=query;
         query = query->clone()->simplify();
 
         if (change && !(*old == *query) && DEBUG_PROOF) {
             LOG << old << "\n";
         }
+        delete query_prev;
         delete old;
     }
 

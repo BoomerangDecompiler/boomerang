@@ -204,6 +204,8 @@ class ConnectionGraph {
     void update(Exp *a, Exp *b, Exp *c);
     iterator remove(iterator aa); // Remove the mapping at *aa
     void dump() const;            // Dump for debugging
+private:
+    std::vector<Exp *> allConnected(Exp *a);
 };
 QTextStream &operator<<(QTextStream &os, const AssignSet *as);
 QTextStream &operator<<(QTextStream &os, const InstructionSet *ss);

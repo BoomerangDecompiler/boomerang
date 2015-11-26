@@ -69,7 +69,7 @@ namespace dbghelp {
 
 #include <sys/types.h>
 
-Prog::Prog() : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_iNumberedProc(1) {
+Prog::Prog(const QString &name) : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_name(name), m_iNumberedProc(1) {
     m_rootCluster = getOrInsertModule("prog");
     Image = Boomerang::get()->getImage();
     BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
@@ -104,14 +104,6 @@ void Prog::setFrontEnd(FrontEnd *_pFE) {
         m_name = pLoaderIface->getFilename();
         m_rootCluster = this->getOrInsertModule(getNameNoPathNoExt());
     }
-}
-
-Prog::Prog(const char *name)
-    : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_name(name), m_iNumberedProc(1) {
-    m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
-    // Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
-    m_path = m_name;
-    Image = Boomerang::get()->getImage();
 }
 
 Prog::~Prog() {
@@ -1053,6 +1045,7 @@ void Prog::decodeEverythingUndecoded() {
 }
 //! Do the main non-global decompilation steps
 void Prog::decompile() {
+    Boomerang * boom=Boomerang::get();
     assert(!ModuleList.empty());
     getNumProcs();
     LOG_VERBOSE(1) << getNumProcs(false) << " procedures\n";
@@ -1067,7 +1060,7 @@ void Prog::decompile() {
 
     // Just in case there are any Procs not in the call graph.
 
-    if (Boomerang::get()->decodeMain && !Boomerang::get()->noDecodeChildren) {
+    if (boom->decodeMain && !boom->noDecodeChildren) {
         bool foundone = true;
         while (foundone) {
             foundone = false;

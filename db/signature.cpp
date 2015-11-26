@@ -1484,13 +1484,21 @@ Signature *Signature::instantiate(platform plat, callconv cc, const QString &nam
         else
             return new CallingConvention::StdC::PentiumSignature(nam);
     case PLAT_SPARC:
+        if(cc == CONV_PASCAL)
+            cc = CONV_C;
         assert(cc == CONV_C);
         return new CallingConvention::StdC::SparcSignature(nam);
     case PLAT_PPC:
+        if(cc == CONV_PASCAL)
+            cc = CONV_C;
         return new CallingConvention::StdC::PPCSignature(nam);
     case PLAT_ST20:
+        if(cc == CONV_PASCAL)
+            cc = CONV_C;
         return new CallingConvention::StdC::ST20Signature(nam);
     case PLAT_MIPS:
+        if(cc == CONV_PASCAL)
+            cc = CONV_C;
         return new CallingConvention::StdC::MIPSSignature(nam);
     // insert other conventions here
     default:

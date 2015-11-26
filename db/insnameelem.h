@@ -42,8 +42,8 @@ class InsOptionElem : public InsNameElem {
 public:
     InsOptionElem(const QString &name);
     virtual size_t ntokens(void) override;
-    virtual QString getinstruction(void);
-    virtual QString getinspattern(void);
+    virtual QString getinstruction(void) override;
+    virtual QString getinspattern(void) override;
 };
 
 class InsListElem : public InsNameElem {
@@ -51,9 +51,9 @@ class InsListElem : public InsNameElem {
 public:
     InsListElem(const QString &name, Table *t, const QString &idx);
     virtual size_t ntokens(void) override;
-    virtual QString getinstruction(void);
-    virtual QString getinspattern(void);
-    virtual void getrefmap(std::map<QString, InsNameElem *> &m);
+    virtual QString getinstruction(void) override;
+    virtual QString getinspattern(void) override;
+    virtual void getrefmap(std::map<QString, InsNameElem *> &m) override;
 
     QString getindex(void) const;
 

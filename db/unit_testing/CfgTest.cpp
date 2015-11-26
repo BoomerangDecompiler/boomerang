@@ -55,7 +55,7 @@ void CfgTest::testDominators() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(FRONTIER_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(FRONTIER_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
     prog->setFrontEnd(pFE);
@@ -111,7 +111,7 @@ void CfgTest::testSemiDominators() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(SEMI_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(SEMI_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
     prog->setFrontEnd(pFE);
@@ -167,7 +167,7 @@ void CfgTest::testPlacePhi() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(FRONTIER_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(FRONTIER_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
     prog->setFrontEnd(pFE);
@@ -209,7 +209,7 @@ void CfgTest::testPlacePhi2() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(IFTHEN_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(IFTHEN_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
     prog->setFrontEnd(pFE);
@@ -292,7 +292,7 @@ void CfgTest::testRenameVars() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(FRONTIER_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog;
+    Prog *prog = new Prog(FRONTIER_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     Type::clearNamedTypes();
     prog->setFrontEnd(pFE);

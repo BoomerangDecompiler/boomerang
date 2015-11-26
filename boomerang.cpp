@@ -678,7 +678,7 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule> &modules, Prog *p
 Prog *Boomerang::loadAndDecode(const QString &fname, const char *pname) {
     QTextStream q_cout(stdout);
     q_cout << "loading...\n";
-    Prog *prog = new Prog();
+    Prog *prog = new Prog(fname);
     FrontEnd *fe = FrontEnd::Load(fname, prog);
     if (fe == nullptr) {
         LOG_STREAM(LL_Default) << "failed.\n";

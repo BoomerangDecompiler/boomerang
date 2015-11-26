@@ -83,7 +83,7 @@ void Decompiler::load() {
     emit loading();
 
     Image = Boomerang::get()->getImage();
-    prog = new Prog();
+    prog = new Prog(filename);
     fe = FrontEnd::Load(filename, prog);
     if (fe == NULL) {
         emit machineType(QString("unavailable: Load Failed!"));

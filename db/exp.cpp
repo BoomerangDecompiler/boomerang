@@ -320,13 +320,13 @@ Exp *Location::clone() const {
   ******************************************************************************/
 bool Const::operator==(const Exp &o) const {
     // Note: the casts of o to Const& are needed, else op is protected! Duh.
-    if (((Const &)o).op == opWild)
+    if (o.getOper() == opWild)
         return true;
-    if (((Const &)o).op == opWildIntConst && op == opIntConst)
+    if (o.getOper() == opWildIntConst && op == opIntConst)
         return true;
-    if (((Const &)o).op == opWildStrConst && op == opStrConst)
+    if (o.getOper() == opWildStrConst && op == opStrConst)
         return true;
-    if (op != ((Const &)o).op)
+    if (op != o.getOper())
         return false;
     if ((conscript && conscript != ((Const &)o).conscript) || ((Const &)o).conscript)
         return false;
@@ -408,11 +408,11 @@ bool TypedExp::operator==(const Exp &o) const {
 }
 
 bool RefExp::operator==(const Exp &o) const {
-    if (((RefExp &)o).op == opWild)
+    if (o.getOper() == opWild)
         return true;
-    if (((RefExp &)o).op != opSubscript)
+    if (o.getOper() != opSubscript)
         return false;
-    if (!(*subExp1 == *((RefExp &)o).subExp1))
+    if (!(*subExp1 == *o.getSubExp1()))
         return false;
     // Allow a def of (Statement*)-1 as a wild card
     if ((long)def == -1)
@@ -568,15 +568,15 @@ bool Unary::operator*=(Exp &o) {
     Exp *other = &o;
     if (o.getOper() == opSubscript)
         other = o.getSubExp1();
-    if (((Unary *)other)->op == opWild)
+    if (other->getOper() == opWild)
         return true;
-    if (((Unary *)other)->op == opWildRegOf && op == opRegOf)
+    if (other->getOper() == opWildRegOf && op == opRegOf)
         return true;
-    if (((Unary *)other)->op == opWildMemOf && op == opMemOf)
+    if (other->getOper() == opWildMemOf && op == opMemOf)
         return true;
-    if (((Unary *)other)->op == opWildAddrOf && op == opAddrOf)
+    if (other->getOper() == opWildAddrOf && op == opAddrOf)
         return true;
-    if (op != ((Unary *)other)->op)
+    if (op != other->getOper())
         return false;
     return *subExp1 *= *((Unary *)other)->getSubExp1();
 }
@@ -585,28 +585,28 @@ bool Binary::operator*=(Exp &o) {
     Exp *other = &o;
     if (o.getOper() == opSubscript)
         other = o.getSubExp1();
-    if (((Binary *)other)->op == opWild)
+    if (other->getOper() == opWild)
         return true;
-    if (op != ((Binary *)other)->op)
+    if (op != other->getOper())
         return false;
-    if (!(*subExp1 *= *((Binary *)other)->getSubExp1()))
+    if (!(*subExp1 *= *other->getSubExp1()))
         return false;
-    return *subExp2 *= *((Binary *)other)->getSubExp2();
+    return *subExp2 *= *other->getSubExp2();
 }
 
 bool Ternary::operator*=(Exp &o) {
     Exp *other = &o;
     if (o.getOper() == opSubscript)
         other = o.getSubExp1();
-    if (((Ternary *)other)->op == opWild)
+    if (other->getOper() == opWild)
         return true;
-    if (op != ((Ternary *)other)->op)
+    if (op != other->getOper())
         return false;
-    if (!(*subExp1 *= *((Ternary *)other)->getSubExp1()))
+    if (!(*subExp1 *= *other->getSubExp1()))
         return false;
-    if (!(*subExp2 *= *((Ternary *)other)->getSubExp2()))
+    if (!(*subExp2 *= *other->getSubExp2()))
         return false;
-    return *subExp3 *= *((Ternary *)other)->getSubExp3();
+    return *subExp3 *= *other->getSubExp3();
 }
 bool Terminal::operator*=(Exp &o) {
     Exp *other = &o;
@@ -618,9 +618,9 @@ bool TypedExp::operator*=(Exp &o) {
     Exp *other = &o;
     if (o.getOper() == opSubscript)
         other = o.getSubExp1();
-    if (((TypedExp *)other)->op == opWild)
+    if (other->getOper() == opWild)
         return true;
-    if (((TypedExp *)other)->op != opTypedExp)
+    if (other->getOper() != opTypedExp)
         return false;
     // This is the strict type version
     if (*type != *((TypedExp *)other)->type)
@@ -2540,9 +2540,7 @@ Exp *Binary::polySimplify(bool &bMod) {
         subExp2->getSubExp1()->getSubExp1()->isGlobal() && op == opPlus) {
         commute();
         // Swap opSub1 and opSub2 as well
-        OPER t = opSub1;
-        opSub1 = opSub2;
-        opSub2 = t;
+        std::swap(opSub1,opSub2);
         // This is not counted as a modification
     }
 
