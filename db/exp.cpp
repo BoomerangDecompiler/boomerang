@@ -4004,12 +4004,19 @@ Exp *Binary::accept(ExpModifier *v) {
     assert(subExp1 && subExp2);
 
     bool recur;
-    Binary *ret = (Binary *)v->preVisit(this, recur);
+    Exp *ret = v->preVisit(this, recur);
     if (recur)
         subExp1 = subExp1->accept(v);
     if (recur)
         subExp2 = subExp2->accept(v);
-    return v->postVisit(ret);
+    Binary *bret = dynamic_cast<Binary *>(ret);
+    Unary *uret = dynamic_cast<Unary *>(ret);
+    if(bret)
+        return v->postVisit(bret);
+    if(uret)
+        return v->postVisit(uret);
+    Q_ASSERT(false);
+    return nullptr;
 }
 Exp *Ternary::accept(ExpModifier *v) {
     bool recur;
@@ -4027,10 +4034,17 @@ Exp *Location::accept(ExpModifier *v) {
     // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
     // important here!  (it makes a call to a different visitor member function).
     bool recur;
-    Location *ret = (Location *)v->preVisit(this, recur);
+    Exp *ret = v->preVisit(this, recur);
     if (recur)
         subExp1 = subExp1->accept(v);
-    return v->postVisit(ret);
+    Location * loc_ret = dynamic_cast<Location *>(ret);
+    if(loc_ret)
+        return v->postVisit(loc_ret);
+    RefExp * ref_ret = dynamic_cast<RefExp *>(ret);
+    if(ref_ret)
+        return v->postVisit(ref_ret);
+    assert(false);
+    return nullptr;
 }
 
 Exp *RefExp::accept(ExpModifier *v) {
@@ -4059,7 +4073,16 @@ Exp *TypedExp::accept(ExpModifier *v) {
 
 Exp *Terminal::accept(ExpModifier *v) {
     // This is important if we need to modify terminals
-    return v->postVisit((Terminal *)v->preVisit(this));
+    Exp *val = v->preVisit(this);
+    Terminal *term_res = dynamic_cast<Terminal *>(val);
+    if(term_res)
+        return v->postVisit(term_res);
+
+    RefExp *ref_res = dynamic_cast<RefExp *>(val);
+    if(ref_res)
+        return v->postVisit(ref_res);
+    assert(false);
+    return nullptr;
 }
 
 Exp *Const::accept(ExpModifier *v) { return v->postVisit((Const *)v->preVisit(this)); }
