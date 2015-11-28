@@ -705,9 +705,27 @@ void ConnectionGraph::add(Exp *a, Exp *b) {
     emap.insert(pr);
 }
 
+std::vector<Exp *> ConnectionGraph::allConnected(Exp *a) {
+    std::vector<Exp *> res;
+    const_iterator ff = emap.find(a);
+    while (ff != emap.end() && *ff->first == *a) {
+        res.push_back(ff->second);
+        ++ff;
+    }
+    return res;
+}
 void ConnectionGraph::connect(Exp *a, Exp *b) {
+    // if a is connected to c,d and e, 'b' should also be connected to c,d and e
+    std::vector<Exp *> a_connections = allConnected(a);
+    std::vector<Exp *> b_connections = allConnected(b);
     add(a, b);
+    for(Exp * e : b_connections) {
+        add(a,e);
+    }
     add(b, a);
+    for(Exp * e : a_connections) {
+        add(e,b);
+    }
 }
 //! Return a count of locations connected to \a e
 int ConnectionGraph::count(Exp *e) const {
