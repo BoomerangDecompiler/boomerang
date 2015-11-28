@@ -59,14 +59,17 @@ void UserProc::dfaTypeAnalysis() {
                 LOG_STREAM().flush();
             }
             bool thisCh = false;
-            //auto before = (*it)->clone();
+            Instruction *before = nullptr;
+            if (DEBUG_TA)
+                before = it->clone();
             it->dfaTypeAnalysis(thisCh);
             if (thisCh) {
                 ch = true;
                 if (DEBUG_TA)
-                    LOG << " caused change: " << it << "\n"; //<< before << " TO: "
+                    LOG << " caused change: FROM: " << before << "TO: \n" << it << "\n";
             }
-            //delete before;
+            if (DEBUG_TA)
+                delete before;
         }
         if (!ch)
             // No more changes: round robin algorithm terminates
@@ -839,7 +842,7 @@ void Assignment::dfaTypeAnalysis(bool &ch) {
     // Don't do this for the common case of an ordinary local, since it generates hundreds of implicit references,
     // without any new type information
     if (lhs->isMemOf() && !sig->isStackLocal(proc->getProg(), lhs)) {
-        Exp *addr = ((Unary *)lhs)->getSubExp1();
+        Exp *addr = lhs->getSubExp1();
         // Meet the assignment type with *(type of the address)
         SharedType addrType = addr->ascendType();
         SharedType memofType;
@@ -1263,17 +1266,41 @@ void Const::descendType(SharedType parentType, bool &ch, Instruction */*s*/) {
         // May be other cases
     }
 }
-
+// match m[l1{} + K] pattern
+static bool match_l1_K(Exp *in,std::vector<Exp *> &matches) {
+    if(!in->isMemOf())
+        return false;
+    Binary *as_bin = dynamic_cast<Binary *>(in->getSubExp1());
+    if(!as_bin || as_bin->getOper()!=opPlus)
+        return false;
+    if(!as_bin->getSubExp2()->isIntConst())
+        return false;
+    if(!as_bin->getSubExp1()->isSubscript())
+        return false;
+    RefExp * refexp= static_cast<RefExp *>(as_bin->getSubExp1());
+    if(!refexp->getSubExp1()->isLocation())
+        return false;
+    Location *loc = static_cast<Location *>(refexp->getSubExp1());
+    matches.push_back(refexp);
+    matches.push_back(as_bin->getSubExp2());
+    return true;
+}
 void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
+    UserProc *owner_proc = s->getProc();
+    Signature *sig = owner_proc != nullptr ? owner_proc->getSignature() : nullptr;
+    Prog *prog = owner_proc->getProg();
+    std::vector<Exp *> matches;
     Binary *as_bin = dynamic_cast<Binary *>(subExp1);
     switch (op) {
     case opMemOf:
+    {
         // Check for m[x*K1 + K2]: array with base K2 and stride K1
-        if (subExp1->getOper() == opPlus && as_bin->getSubExp1()->getOper() == opMult &&
-            as_bin->getSubExp2()->isIntConst() && ((Binary *)as_bin->getSubExp1())->getSubExp2()->isIntConst()) {
+        if (as_bin && as_bin->getOper() == opPlus && as_bin->getSubExp1()->getOper() == opMult &&
+                as_bin->getSubExp2()->isIntConst() &&
+                as_bin->getSubExp1()->getSubExp2()->isIntConst()) {
             Exp *leftOfPlus = as_bin->getSubExp1();
             // We would expect the stride to be the same size as the base type
-            size_t stride = ((Const *)((Binary *)leftOfPlus)->getSubExp2())->getInt();
+            size_t stride = ((Const *)(leftOfPlus->getSubExp2()))->getInt();
             if (DEBUG_TA && stride * 8 != parentType->getSize())
                 LOG << "type WARNING: apparent array reference at " << this << " has stride " << stride * 8
                     << " bits, but parent type " << parentType->getCtype() << " has size " << parentType->getSize()
@@ -1284,19 +1311,18 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
             // K2 is of type <array of parentType>
             Const *constK2 = (Const *)((Binary *)subExp1)->getSubExp2();
             ADDRESS intK2 = ADDRESS::g(constK2->getInt()); // TODO: use getAddr ?
-            Prog *prog = s->getProc()->getProg();
             constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
-        } else if (subExp1->getOper() == opPlus && as_bin->getSubExp1()->isSubscript() &&
-                   ((RefExp *)as_bin->getSubExp1())->isLocation() && as_bin->getSubExp2()->isIntConst()) {
+        } else if (match_l1_K(this,matches)) {
             // m[l1 + K]
-            Location *l1 = (Location *)((RefExp *)((Binary *)subExp1)->getSubExp1());
+            Location *l1 = (Location *)matches[0];
             SharedType l1Type = l1->ascendType();
-            int K = ((Const *)as_bin->getSubExp2())->getInt();
+            int K = ((Const *)matches[1])->getInt();
             if (l1Type->resolvesToPointer()) {
                 // This is a struct reference m[ptr + K]; ptr points to the struct and K is an offset into it
                 // First find out if we already have struct information
-                if (l1Type->asPointer()->resolvesToCompound()) {
-                    auto ct = l1Type->asPointer()->asCompound();
+                SharedType st(l1Type->asPointer()->getPointsTo());
+                if (st->resolvesToCompound()) {
+                    auto ct = st->asCompound();
                     if (ct->isGeneric())
                         ct->updateGenericMember(K, parentType, ch);
                     else {
@@ -1316,6 +1342,7 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
         } else
             subExp1->descendType(PointerType::get(parentType), ch, s);
         break;
+    }
     case opAddrOf:
         if (parentType->resolvesToPointer())
             subExp1->descendType(parentType->asPointer()->getPointsTo(), ch, s);
@@ -1364,16 +1391,16 @@ void Terminal::descendType(SharedType /*parentType*/, bool &/*ch*/, Instruction 
 bool Signature::dfaTypeAnalysis(Cfg *cfg) {
     bool ch = false;
     std::vector<Parameter *>::iterator it;
-    for (it = params.begin(); it != params.end(); ++it) {
+    for (Parameter * it : params) {
         // Parameters should be defined in an implicit assignment
-        Instruction *def = cfg->findImplicitParamAssign(*it);
+        Instruction *def = cfg->findImplicitParamAssign(it);
         if (def) { // But sometimes they are not used, and hence have no implicit definition
             bool thisCh = false;
-            def->meetWithFor((*it)->getType(), (*it)->getExp(), thisCh);
+            def->meetWithFor(it->getType(), it->getExp(), thisCh);
             if (thisCh) {
                 ch = true;
                 if (DEBUG_TA)
-                    LOG << "  sig caused change: " << (*it)->getType()->getCtype() << " " << (*it)->name() << "\n";
+                    LOG << "  sig caused change: " << it->getType()->getCtype() << " " << it->name() << "\n";
             }
         }
     }
