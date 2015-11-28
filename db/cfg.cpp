@@ -2048,7 +2048,17 @@ Instruction *Cfg::findTheImplicitAssign(Exp *x) {
 //! Find exiting implicit assign for parameter p
 Instruction *Cfg::findImplicitParamAssign(Parameter *param) {
     // As per the above, but for parameters (signatures don't get updated with opParams)
-    auto it = implicitMap.find(param->getExp());
+    Exp *n = param->getExp();
+    //TODO: implicitMap contains subscripted values -> m[r28{0}+4]
+    // but the Parameter expresions are not subscripted, so, they are not found
+    // with a simple:
+    //auto it = implicitMap.find(n);
+    mExpStatement::iterator it;
+    // search the map by hand, and compare without subscripts.
+    for(it = implicitMap.begin(); it!=implicitMap.end(); ++it) {
+        if((*(it->first)) *= *n)
+            break;
+    }
     if (it == implicitMap.end()) {
         Exp *eParam = Location::param(param->name());
         it = implicitMap.find(eParam);
