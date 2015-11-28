@@ -407,7 +407,8 @@ bool UnionType::operator==(const Type &other) const {
         return false;
     for (const UnionElement &el : li)
         if(uother.li.find(el)==uother.li.end())
-    return false;
+            return false;
+    return true;
 }
 
 bool SizeType::operator==(const Type &other) const { return other.isSize() && (size == ((SizeType &)other).size); }

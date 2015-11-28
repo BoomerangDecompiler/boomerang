@@ -1249,10 +1249,8 @@ void Prog::globalTypeAnalysis() {
         LOG << "### start global data-flow-based type analysis ###\n";
     for(Module *module : ModuleList) {
         for (Function *pp : *module) {
-            if(pp->isLib())
-                continue;
-            UserProc *proc = (UserProc *)pp;
-            if (!proc->isDecoded())
+            UserProc *proc = dynamic_cast<UserProc *>(pp);
+            if ( nullptr==proc || !proc->isDecoded())
                 continue;
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
