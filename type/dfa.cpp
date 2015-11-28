@@ -13,11 +13,8 @@
   ******************************************************************************/
 
 #include "config.h"
-#ifdef HAVE_LIBGC
-#include "gc.h"
-#else
+
 #define NO_GARBAGE_COLLECTOR
-#endif
 #include "type.h"
 #include "boomerang.h"
 #include "signature.h"
@@ -40,16 +37,6 @@ static int nextUnionNumber = 0;
 // idx + K; leave idx wild
 static const Binary unscaledArrayPat(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst));
 
-// The purpose of this funciton and others like it is to establish safe static roots for garbage collection purposes
-// This is particularly important for OS X where it is known that the collector can't see global variables, but it is
-// suspected that this is actually important for other architectures as well
-void init_dfa() {
-#ifndef NO_GARBAGE_COLLECTOR
-    static Exp **gc_pointers = (Exp **)GC_MALLOC_UNCOLLECTABLE(2 * sizeof(Exp *));
-    gc_pointers[0] = scaledArrayPat;
-    gc_pointers[1] = unscaledArrayPat;
-#endif
-}
 
 static int dfa_progress = 0;
 void UserProc::dfaTypeAnalysis() {

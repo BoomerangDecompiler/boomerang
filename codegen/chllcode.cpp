@@ -411,25 +411,39 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         str << ((Const *)u.getSubExp1())->getStr();
         break;
     case opItof:
-        // MVE: needs work: float/double/long double.
+        // TODO: MVE: needs work: float/double/long double.
         str << "(float)";
         openParen(str, curPrec, PREC_UNARY);
         appendExp(str, *t.getSubExp3(), PREC_UNARY);
         closeParen(str, curPrec, PREC_UNARY);
         break;
     case opFsize:
-        // MVE: needs work!
-        if (Boomerang::get()->noDecompile && t.getSubExp3()->isMemOf()) {
+        // TODO: needs work!
+        if(t.getSubExp3()->isMemOf()) {
             assert(t.getSubExp1()->isIntConst());
-            if (((Const *)t.getSubExp1())->getInt() == 32)
-                str << "FLOAT_MEMOF(";
-            else
-                str << "DOUBLE_MEMOF(";
-            appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_NONE);
-            str << ")";
-            break;
-        }
-        appendExp(str, *t.getSubExp3(), curPrec);
+            int float_bits =  ((Const *)t.getSubExp1())->getInt();
+            if (Boomerang::get()->noDecompile) {
+                assert(t.getSubExp1()->isIntConst());
+                if (float_bits == 32)
+                    str << "FLOAT_MEMOF(";
+                else
+                    str << "DOUBLE_MEMOF(";
+                appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_NONE);
+                str << ")";
+            } else {
+               switch (float_bits) {
+                   case 32: str << "*((float *)&"; break;
+                   case 64: str << "*((double *)&"; break;
+                   case 80: str << "*((long double*)&"; break;
+               }
+               openParen(str, curPrec, curPrec);
+               appendExp(str, *t.getSubExp3(), curPrec);
+               closeParen(str, curPrec, curPrec);
+               str << ")";
+            }
+        } 
+        else
+            appendExp(str, *t.getSubExp3(), curPrec);
         break;
     case opMult:
     case opMults: // FIXME: check types

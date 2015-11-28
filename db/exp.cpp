@@ -417,6 +417,7 @@ bool RefExp::operator==(const Exp &o) const {
     // Allow a def of (Statement*)-1 as a wild card
     if ((long)def == -1)
         return true;
+    assert(dynamic_cast<const RefExp *>(&o)!=nullptr);
     // Allow a def of nullptr to match a def of an implicit assignment
     if ((long)((RefExp &)o).def == -1)
         return true;

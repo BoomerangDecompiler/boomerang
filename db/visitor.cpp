@@ -1047,7 +1047,7 @@ void StmtSsaXformer::visit(BoolAssign *s, bool &recur) {
 void StmtSsaXformer::visit(Assign *s, bool &recur) {
     commonLhs(s);
     Exp *rhs = s->getRight();
-    rhs = rhs->accept((ExpSsaXformer *)mod);
+    rhs = rhs->accept(mod);
     s->setRight(rhs);
     recur = false; // TODO: verify recur setting
 }

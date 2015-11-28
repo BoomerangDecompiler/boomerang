@@ -31,7 +31,7 @@ class Project : public QObject, public IProject {
 
 public:
     virtual ~Project();
-    bool serializeTo(QIODevice &);
+    bool serializeTo(QIODevice &dev);
     bool serializeFrom(QIODevice &dev);
 
     QByteArray &filedata() override { return file_bytes; }

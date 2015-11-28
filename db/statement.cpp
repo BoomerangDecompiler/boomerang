@@ -288,9 +288,10 @@ bool Instruction::propagateTo(bool &convert, std::map<Exp *, int, lessExpStar> *
     int propMaxDepth = Boomerang::get()->propMaxDepth;
     do {
         LocationSet exps;
-        addUsedLocs(exps, true); // True to also add uses from collectors. For example, want to propagate into
+        // addUsedLocs(..,true) -> true to also add uses from collectors. For example, want to propagate into
         // the reaching definitions of calls. Third parameter defaults to false, to
         // find all locations, not just those inside m[...]
+        addUsedLocs(exps, true);
         LocationSet::iterator ll;
         change = false; // True if changed this iteration of the do/while loop
         // Example: m[r24{10}] := r25{20} + m[r26{30}]
@@ -2838,14 +2839,12 @@ Assign::Assign(SharedType ty, Exp * lhs, Exp * r, Exp * guard) : Assignment(ty, 
 Assign::Assign(Assign & o) : Assignment(lhs->clone()) {
     Kind = STMT_ASSIGN;
     rhs = o.rhs->clone();
+    type = nullptr;
+    guard = nullptr;
     if (o.type)
         type = o.type->clone();
-    else
-        type = nullptr;
     if (o.guard)
         guard = o.guard->clone();
-    else
-        guard = nullptr;
 }
 
 // Implicit Assignment
@@ -4219,10 +4218,9 @@ void CallStatement::updateDefines() {
     defines.clear();
 
     if (procDest && calleeReturn) {
-        StatementList::iterator mm;
         StatementList &modifieds = ((UserProc *)procDest)->getModifieds();
-        for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-            Assign *as = (Assign *)*mm;
+        for (Instruction *mm : modifieds) {
+            Assignment *as = (Assignment *)mm;
             Exp *loc = as->getLeft();
             if (proc->filterReturns(loc))
                 continue;
@@ -4536,14 +4534,13 @@ StatementList *CallStatement::calcResults() {
             }
         } else {
             Exp *rsp = Location::regOf(proc->getSignature()->getStackRegister(proc->getProg()));
-            StatementList::iterator dd;
-            for (dd = defines.begin(); dd != defines.end(); ++dd) {
-                Exp *lhs = ((Assignment *)*dd)->getLeft();
+            for (Instruction *dd : defines) {
+                Exp *lhs = ((Assignment *)dd)->getLeft();
                 // The stack pointer is allowed as a define, so remove it here as a special case non result
                 if (*lhs == *rsp)
                     continue;
                 if (useCol.exists(lhs))
-                    ret->append(*dd);
+                    ret->append(dd);
             }
             delete rsp;
         }
@@ -4586,7 +4583,7 @@ type = ty;
 void CallStatement::removeDefine(Exp * e) {
     StatementList::iterator ss;
     for (ss = defines.begin(); ss != defines.end(); ++ss) {
-        Assign *as = ((Assign *)*ss);
+        Assignment *as = ((Assignment *)*ss);
         if (*as->getLeft() == *e) {
             defines.erase(ss);
             return;
