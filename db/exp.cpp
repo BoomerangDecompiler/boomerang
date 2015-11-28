@@ -2389,7 +2389,42 @@ Exp *Unary::polySimplify(bool &bMod) {
 
     return res;
 }
+Exp * accessMember(Exp *parent,const std::shared_ptr<CompoundType> &c,int n) {
+    unsigned r = c->getOffsetRemainder(n * 8);
+    QString nam = c->getNameAtOffset(n * 8);
+    SharedType t = c->getTypeAtOffset(n * 8);
+    Exp *res = Binary::get(opMemberAccess, parent, Const::get(nam));
+    assert((r % 8) == 0);
+    if(t->resolvesToCompound()) {
+        res = accessMember(res,t->asCompound(),r/8);
+    } else if(t->resolvesToPointer() && t->asPointer()->getPointsTo()->resolvesToCompound()) {
+        if(r!=0)
+            assert(false);
+    } else if(t->resolvesToArray()) {
+        std::shared_ptr<ArrayType> a = t->asArray();
+        SharedType array_member_type = a->getBaseType();
+        int b  = array_member_type->getSize() / 8;
+        int br = array_member_type->getSize() % 8;
+        assert(br==0);
+        res = Binary::get(opArrayIndex, res,Const::get(n/b));
+        if(array_member_type->resolvesToCompound()) {
+            res = accessMember(res,array_member_type->asCompound(),n%b);
+        }
 
+    }
+    return res;
+
+}
+Exp * convertFromOffsetToCompound(Exp *parent,std::shared_ptr<CompoundType> &c,int n) {
+    if (n * 8 >= c->getSize())
+        return nullptr;
+    QString nam = c->getNameAtOffset(n * 8);
+    if ( !nam.isNull() && nam != "pad") {
+        Exp *l = Location::memOf(parent);
+        return new Unary(opAddrOf, accessMember(l,c,n));
+    }
+    return nullptr;
+}
 Exp *Binary::polySimplify(bool &bMod) {
     assert(subExp1 && subExp2);
 
@@ -2918,19 +2953,11 @@ Exp *Binary::polySimplify(bool &bMod) {
         opSub2 == opIntConst) {
         unsigned n = (unsigned)((Const *)subExp2)->getInt();
         std::shared_ptr<CompoundType> c = ty->asPointer()->getPointsTo()->asCompound();
-        if (n * 8 < c->getSize()) {
-            unsigned r = c->getOffsetRemainder(n * 8);
-            assert((r % 8) == 0);
-            QString nam = c->getNameAtOffset(n * 8);
-            if ( !nam.isNull() && nam != "pad") {
-                Exp *l = Location::memOf(subExp1);
-                // l->setType(c);
-                res = Binary::get(opPlus, new Unary(opAddrOf, Binary::get(opMemberAccess, l, Const::get(nam))),
-                                  new Const((int)r / 8));
+        res = convertFromOffsetToCompound(subExp1,c,n);
+        if(res) {
                 LOG_VERBOSE(1) << "(trans1) replacing " << this << " with " << res << "\n";
                 bMod = true;
                 return res;
-            }
         }
     }
 
