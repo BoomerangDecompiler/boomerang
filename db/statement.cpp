@@ -1254,7 +1254,7 @@ bool condToRelational(Exp * &pCond, BRANCH_TYPE jtCond) {
                 if (setFlagsParam->isIntConst())
                     mask = ((Const *)setFlagsParam)->getInt();
             }
-            Exp *at_opFlagsCall_List = flagsParam->getSubExp1();
+            Exp *at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
             // Sometimes the mask includes the 0x4 bit, but we expect that to be off all the time. So effectively
             // the branch is for any one of the (one or two) bits being on. For example, if the mask is 0x41, we
             // are branching of less (0x1) or equal (0x41).
