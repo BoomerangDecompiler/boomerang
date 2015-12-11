@@ -725,7 +725,7 @@ rt_list:
                 }
 
         |	rt {
-                        $$ = new RTL(STMT_ASSIGN);
+                        $$ = std::make_shared<RTL>(ADDRESS::g(0L)); // WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
                         if ($1 != NULL)
                                 $$->appendStmt($1);
                 }

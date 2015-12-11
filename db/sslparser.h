@@ -38,7 +38,7 @@ struct yy_SSLParser_stype {
     std::deque<Exp *> *exprlist;
     std::deque<QString> *namelist=nullptr;
     std::list<Exp *> *explist;
-    RTL *rtlist;
+    std::shared_ptr<RTL> rtlist;
 };
 #define YY_SSLParser_DEBUG 1
 /* use no goto to be clean in C++ */
@@ -145,7 +145,7 @@ class SSLParser {
     OPER strToOper(const QString &s);               /* Convert string to an operator */
     static Instruction *parseExp(const char *str); /* Parse an expression or assignment from a string */
     /* The code for expanding tables and saving to the dictionary */
-    void expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<QString> *params, RTL *o_rtlist, RTLInstDict &Dict);
+    void expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict &Dict);
     Exp *makeSuccessor(Exp *e); /* Get successor (of register expression) */
 
     /*

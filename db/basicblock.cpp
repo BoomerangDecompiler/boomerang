@@ -794,8 +794,8 @@ bool BasicBlock::isAncestorOf(BasicBlock *other) {
  */
 void BasicBlock::simplify() {
     if (ListOfRTLs)
-        for (auto &elem : *ListOfRTLs)
-            (elem)->simplify();
+        for (RTL *elem : *ListOfRTLs)
+            elem->simplify();
     if (NodeType == BBTYPE::TWOWAY) {
         assert(OutEdges.size()>1);
         if (ListOfRTLs == nullptr || ListOfRTLs->empty()) {
@@ -1547,7 +1547,8 @@ bool BasicBlock::calcLiveness(ConnectionGraph &ig, UserProc *myProc) {
                 s->getDefinitions(defs);
                 // The definitions don't have refs yet
                 defs.addSubscript(s /* , myProc->getCFG() */);
-#if 0 // I used to think it necessary to consider definitions as a special case. However, I now believe that
+#if 0
+                // I used to think it necessary to consider definitions as a special case. However, I now believe that
                 // this was either an error of implementation (e.g. it didn't seem to correctly consider the livenesses
                 // causesd by phis) or something to do with renaming but not propagating certain memory locations.
                 // The idea is now to clearly divide locations into those that can be renamed and propagated, and those

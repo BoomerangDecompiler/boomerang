@@ -269,7 +269,7 @@ void init_sslparser() {
   * \param   o_rtlist Original rtlist object (before expanding)
   * \param   Dict Ref to the dictionary that will contain the results of the parse
   ******************************************************************************/
-void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<QString> *params, RTL *o_rtlist, RTLInstDict &Dict) {
+void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict &Dict) {
     int i, m;
     QString nam;
     m = iname->ninstructions();
@@ -285,8 +285,8 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
             if (((Assign *)s)->searchAll(srchExpr, le)) {
                 std::list<Exp *>::iterator it;
                 for (it = le.begin(); it != le.end(); it++) {
-                    QString tbl = ((Const *)((Binary *)*it)->getSubExp1())->getStr();
-                    QString idx = ((Const *)((Binary *)*it)->getSubExp2())->getStr();
+                    QString tbl = ((Const *)(*it)->getSubExp1())->getStr();
+                    QString idx = ((Const *)(*it)->getSubExp2())->getStr();
                     Exp *repl = ((ExprTable *)(TableDict[tbl]))->expressions[indexrefmap[idx]->getvalue()];
                     s->searchAndReplace(**it, repl);
                 }
@@ -310,7 +310,7 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
                 Exp *e1 = b->getSubExp1();
                 Exp *e2 = b->getSubExp2(); // This should be an opList too
                 assert(b->getOper() == opList);
-                e2 = ((Binary *)e2)->getSubExp1();
+                e2 = e2->getSubExp1();
                 QString ops = ((OpTable *)(TableDict[tbl]))->Records[indexrefmap[idx]->getvalue()];
                 Exp *repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
                 s->searchAndReplace(*res, repl);
