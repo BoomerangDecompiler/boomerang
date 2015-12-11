@@ -818,7 +818,7 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
     if (hours || mins)
         q_cout << mins << " mins ";
     q_cout << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
-
+    delete prog;
     return 0;
 }
 

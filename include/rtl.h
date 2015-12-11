@@ -35,6 +35,7 @@
 #include <utility>                      // for pair
 #include <vector>                       // for vector
 #include <QMap>
+#include <memory>
 
 class Exp;  // lines 38-38
 class Instruction;  // lines 47-47
@@ -42,7 +43,7 @@ class QTextStream;
 class QString;
 
 enum STMT_KIND : uint8_t;
-
+typedef std::shared_ptr<class RTL> SharedRTL;
 /***************************************************************************/ /**
   * Class RTL: describes low level register transfer lists (actually lists of statements).
   * \note when time permits, this class could be removed, replaced with new Statements that mark the current native
@@ -54,6 +55,7 @@ class RTL : public std::list<Instruction *> {
     RTL();
     RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
     RTL(const RTL &other); // Makes deep copy of "other"
+    ~RTL();
 
     RTL *clone() const;
     RTL &operator=(const RTL &other);
@@ -194,7 +196,7 @@ class RTLInstDict {
     std::map<QString, TableEntry, std::less<QString>> idict;
 
     //! An RTL describing the machine's basic fetch-execute cycle
-    std::list<Instruction *> *fetchExecCycle;
+    SharedRTL fetchExecCycle;
 
     void fixupParamsSub(const QString &s, std::list<QString> &funcParams, bool &haveCount, int mark);
 };

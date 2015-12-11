@@ -56,8 +56,13 @@ RTL::RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt /*= nu
   ******************************************************************************/
 RTL::RTL(const RTL &other) : std::list<Instruction *>(), nativeAddr(other.nativeAddr) {
     for (auto const &elem : other) {
-        push_back((elem)->clone());
+        push_back(elem->clone());
     }
+}
+
+RTL::~RTL()
+{
+    qDeleteAll(*this);
 }
 
 /***************************************************************************/ /**
@@ -67,6 +72,7 @@ RTL::RTL(const RTL &other) : std::list<Instruction *>(), nativeAddr(other.native
   ******************************************************************************/
 RTL &RTL::operator=(const RTL &other) {
     if (this != &other) {
+        qDeleteAll(*this);
         // Do a deep copy always
         clear();
         const_iterator it;
