@@ -103,7 +103,7 @@ TypedExp::TypedExp(TypedExp &o) : Unary(opTypedExp) {
     type = o.type->clone();
 }
 
-FlagDef::FlagDef(Exp *params, RTL *rtl) : Unary(opFlagDef, params), rtl(rtl) {}
+FlagDef::FlagDef(Exp *params, SharedRTL rtl) : Unary(opFlagDef, params), rtl(rtl) {}
 
 RefExp::RefExp(Exp *e, Instruction *d) : Unary(opSubscript, e), def(d) { assert(e); }
 
@@ -2229,8 +2229,7 @@ Exp *Exp::Accumulate(std::list<Exp *> exprs) {
       *unification.
       * We're trying to do it with a simple iterative algorithm, but the algorithm keeps getting more and more complex.
       * Eventually I will replace this with a simple theorem prover and we'll have something powerful, but until then,
-      *dont
-      * rely on this code to do anything critical. - trent 8/7/2002
+      * dont rely on this code to do anything critical. - trent 8/7/2002
       ******************************************************************************/
 #define DEBUG_SIMP 0                                                              // Set to 1 to print every change
 Exp *Exp::simplify() {
@@ -3256,7 +3255,7 @@ Exp *RefExp::polySimplify(bool &bMod) {
      * procedure.
          */
     if (subExp1->getOper() == opDF && def == nullptr) {
-        res = new Const(0);
+        res = Const::get(int(0));
         bMod = true;
         return res;
     }

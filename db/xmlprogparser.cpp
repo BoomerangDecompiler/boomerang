@@ -2368,7 +2368,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const Exp *e) {
         out.writeStartElement("flagdef");
         out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
         if (f->rtl)
-            out.writeAttribute("rtl", QString::number(ADDRESS::host_ptr(f->rtl).m_value));
+            out.writeAttribute("rtl", QString::number(ADDRESS::host_ptr(f->rtl.get()).m_value));
         out.writeAttribute("op", op_name);
         out.writeStartElement("subexp1");
         persistToXML(out, f->subExp1);

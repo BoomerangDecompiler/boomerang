@@ -1100,5 +1100,6 @@ void AnsiCParser::yyerror(const char *s) {
 }
 
 AnsiCParser::~AnsiCParser() {
+    delete theScanner;
     // Suppress warnings from gcc about lack of virtual destructor
 }

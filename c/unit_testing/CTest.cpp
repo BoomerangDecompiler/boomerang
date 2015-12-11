@@ -28,6 +28,7 @@ void CTest::testSignature() {
     QVERIFY(*sig->getParamType(0) == *t);
     QCOMPARE(sig->getParamName(0),QString("fmt"));
     QVERIFY(sig->hasEllipsis());
+    delete sig;
     delete p;
 }
 QTEST_MAIN(CTest)
