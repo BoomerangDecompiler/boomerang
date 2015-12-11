@@ -52,6 +52,8 @@ class Exp;
 typedef std::unique_ptr<Exp> UniqExp;
 typedef std::shared_ptr<Exp> SharedExp;
 
+typedef std::shared_ptr<RTL> SharedRTL;
+
 /**
   * \class Exp
   * An expression class, though it will probably be used to hold many other things (e.g. perhaps transformations).
@@ -745,14 +747,14 @@ class TypedExp : public Unary {
   * FlagDef is a subclass of Unary, and holds a list of parameters (in the subexpression), and a pointer to an RTL
   ******************************************************************************/
 class FlagDef : public Unary {
-    RTL *rtl;
+    SharedRTL rtl;
 
   public:
-    FlagDef(Exp *params, RTL *rtl); // Constructor
+    FlagDef(Exp *params, SharedRTL rtl); // Constructor
     virtual ~FlagDef();             // Destructor
     virtual void appendDotFile(QTextStream &of);
-    RTL *getRtl() { return rtl; }
-    void setRtl(RTL *r) { rtl = r; }
+//    RTL *getRtl() { return rtl; }
+//    void setRtl(RTL *r) { rtl = r; }
 
     // Visitation
     virtual bool accept(ExpVisitor *v);
