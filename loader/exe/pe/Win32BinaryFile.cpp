@@ -74,6 +74,8 @@ Win32BinaryFile::Win32BinaryFile() : mingw_main(false) {
 }
 
 Win32BinaryFile::~Win32BinaryFile() {
+    if(base)
+        free(base);
 }
 void Win32BinaryFile::initialize(IBoomerang *sys) {
     Image = sys->getImage();

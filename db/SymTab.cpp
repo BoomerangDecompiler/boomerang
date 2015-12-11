@@ -25,6 +25,8 @@ SymTab::~SymTab() {
 void SymTab::clear() {
     for(IBinarySymbol *s : SymbolList)
         delete s;
+    for(std::pair<const ADDRESS, BinarySymbol *> &s : amap)
+        delete s.second;
     SymbolList.clear();
     amap.clear();
     smap.clear();

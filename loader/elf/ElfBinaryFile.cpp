@@ -69,7 +69,11 @@ ElfBinaryFile::ElfBinaryFile() : next_extern(ADDRESS::g(0L)) {
 ElfBinaryFile::~ElfBinaryFile() {
     if (m_pImportStubs)
         // Delete the array of import stubs
-        delete[] m_pImportStubs;
+        delete []m_pImportStubs;
+    delete  []m_pImage;
+    delete  []m_sh_link;
+    delete  []m_sh_info;
+
 }
 
 void ElfBinaryFile::initialize(IBoomerang *sys)

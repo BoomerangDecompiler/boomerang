@@ -93,6 +93,7 @@ void LoaderTest::testSparcLoad() {
                          ".hash\t.stab.indexstr");
     QCOMPARE(actual,expected);
     bff.UnLoad();
+    delete pBF;
 }
 
 /***************************************************************************/ /**
@@ -124,6 +125,7 @@ void LoaderTest::testPentiumLoad() {
 
     QCOMPARE(actual,expected);
     bff.UnLoad();
+    delete pBF;
 }
 
 /***************************************************************************/ /**
@@ -153,6 +155,7 @@ void LoaderTest::testHppaLoad() {
                          "$TEXT$\t$DATA$\t$BSS$\t");
     QCOMPARE(actual,expected);
     bff.UnLoad();
+    delete pBF;
 }
 
 /***************************************************************************/ /**
@@ -184,6 +187,7 @@ void LoaderTest::testPalmLoad() {
                          "data0\tcode0\ttAIN1000\ttver1000\t");
     QCOMPARE(actual,expected);
     bff.UnLoad();
+    delete pBF;
 }
 
 /***************************************************************************/ /**
