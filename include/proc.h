@@ -405,7 +405,7 @@ public:
     void updateForUseChange(std::set<UserProc *> &removeRetSet);
     bool prove(Binary * query, bool conditional = false);
 
-    bool prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiAssign *, Exp *> &cache, Exp *original,
+    bool prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiAssign *, Exp *> &cache,
                 PhiAssign *lastPhi = nullptr);
     void promoteSignature();
     void getStatements(StatementList &stmts) const;

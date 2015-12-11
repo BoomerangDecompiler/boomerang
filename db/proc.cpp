@@ -3494,7 +3494,7 @@ bool UserProc::prove(Binary *query, bool conditional /* = false */) {
     if (Boomerang::get()->noProve)
         return false;
 
-    Exp *original = query->clone();
+    UniqExp original(query->clone());
     Exp *origLeft = original->getSubExp1();
     Exp *origRight = original->getSubExp2();
 
@@ -3541,7 +3541,8 @@ bool UserProc::prove(Binary *query, bool conditional /* = false */) {
 
     std::set<PhiAssign *> lastPhis;
     std::map<PhiAssign *, Exp *> cache;
-    bool result = prover(query, lastPhis, cache, original);
+    bool result = prover(query, lastPhis, cache);
+
     if (cycleGrp)
         recurPremises.erase(origLeft); // Remove the premise, regardless of result
     if (DEBUG_PROOF)
@@ -3554,7 +3555,7 @@ bool UserProc::prove(Binary *query, bool conditional /* = false */) {
     return result;
 }
 /// helper function, should be private
-bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiAssign *, Exp *> &cache, Exp *original,
+bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiAssign *, Exp *> &cache,
                       PhiAssign *lastPhi /* = nullptr */) {
     // A map that seems to be used to detect loops in the call graph:
     std::map<CallStatement *, Exp *> called;
@@ -3622,7 +3623,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                             Exp *queryLeft = call->localiseExp(provenTo->clone());
                             query->setSubExp1(queryLeft);
                             // Now try everything on the result
-                            return prover(query, lastPhis, cache, original, lastPhi);
+                            return prover(query, lastPhis, cache, lastPhi);
                         } else {
                             // Check if the required preservation is one of the premises already assumed
                             Exp *premisedTo = destProc->getPremised(base);
@@ -3632,7 +3633,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                                         << destProc->getName() << ", allows bypassing\n";
                                 Exp *queryLeft = call->localiseExp(premisedTo->clone());
                                 query->setSubExp1(queryLeft);
-                                return prover(query, lastPhis, cache, original, lastPhi);
+                                return prover(query, lastPhis, cache, lastPhi);
                             } else {
                                 // There is no proof, and it's not one of the premises. It may yet succeed, by making
                                 // another premise! Example: try to prove esp, depends on whether ebp is preserved, so
@@ -3652,7 +3653,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                                     // Use the new conditionally proven result
                                     Exp *queryLeft = call->localiseExp(base->clone());
                                     query->setSubExp1(queryLeft);
-                                    return destProc->prover(query, lastPhis, cache, original, lastPhi);
+                                    return destProc->prover(query, lastPhis, cache, lastPhi);
                                 } else {
                                     if (DEBUG_PROOF)
                                         LOG << "conditional preservation required premise " << newQuery << " fails!\n";
@@ -3705,7 +3706,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiA
                             if (DEBUG_PROOF)
                                 LOG << "proving for " << e << "\n";
                             lastPhis.insert(lastPhi);
-                            if (!prover(e, lastPhis, cache, original, pa)) {
+                            if (!prover(e, lastPhis, cache, pa)) {
                                 ok = false;
                                 // delete e;
                                 break;
