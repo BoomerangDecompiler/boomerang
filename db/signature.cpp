@@ -1507,6 +1507,10 @@ Signature *Signature::instantiate(platform plat, callconv cc, const QString &nam
     return nullptr;
 }
 
+Signature::~Signature() {
+    qDeleteAll(params);
+}
+
 void Signature::print(QTextStream &out, bool /*html*/) const {
     if (isForced())
         out << "*forced* ";
