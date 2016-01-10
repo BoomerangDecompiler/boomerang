@@ -62,7 +62,7 @@ TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 ###############################################################################
 # Defines section
 ###############################################################################
-SET(VERSION "alpha 0.3.99 xx/xxx/2014")
+SET(VERSION "alpha 0.3.99 xx/xxx/2016")
 SET(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
 SET(PACKAGE_BUGREPORT "http://github.com/nemerle/boomerang")
 SET(PACKAGE_NAME      "boomerang")
