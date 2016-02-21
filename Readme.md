@@ -17,7 +17,7 @@ Considering part 3, the target compilers are GCC \>=4.6 family (MinGW on windows
 
 For full ( and slightly stale :) ) build instructions please see
 
-<http://boomerang.sourceforge.net/making.html>
+<http://boomerang.sourceforge.net/making.php>
 ----------------------------------------------
 
 Compiling the `next` branch
