@@ -47,6 +47,7 @@
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/QDir>
 #include <QtCore/QString>
+#include <QtCore/QLockFile>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -61,7 +62,10 @@
 #ifndef __MINGW32__
 namespace dbghelp {
 #include <dbghelp.h>
-};
+#ifdef ADDRESS
+#undef ADDRESS
+#endif
+}
 #endif
 #undef NO_ADDRESS
 #define NO_ADDRESS (ADDRESS::g(-1))
@@ -461,7 +465,7 @@ SharedType makeUDT(int index, DWORD64 ModBase) {
         SharedType ty = Type::getNamedType(nameA);
         if (ty)
             return NamedType::get(nameA);
-        CompoundSharedType cty = CompoundType::get();
+        std::shared_ptr<CompoundType> cty = CompoundType::get();
         DWORD count = 0;
         got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
         int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
@@ -530,9 +534,9 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase) {
         case 14: // ulong
             return IntegerType::get(sz, -1);
         case 8:
-            return new FloatType(sz);
+            return SharedType(new FloatType(sz));
         case 10:
-            return new BooleanType();
+            return SharedType(new BooleanType());
         default:
             LOG_STREAM() << "unhandled base type " << d << "\n";
             assert(false);
@@ -559,8 +563,7 @@ int debugRegister(int r) {
 }
 
 BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext) {
-    Proc *proc = (Proc *)UserContext;
-    const char *name = proc->getName();
+    Function *proc = (Function *)UserContext;
     if (pSymInfo->Flags & SYMFLAG_PARAMETER) {
         SharedType ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
         if (pSymInfo->Flags & SYMFLAG_REGREL) {
@@ -776,7 +779,7 @@ SharedType Prog::guessGlobalType(const QString &nam, ADDRESS u) {
     sym->Name[0] = 0;
     BOOL got = dbghelp::SymFromAddr(hProcess, u.m_value, 0, sym);
     if (got && *sym->Name && sym->TypeIndex) {
-        assert(!strcmp(nam, sym->Name));
+        assert(nam == sym->Name);
         return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
     }
 #endif
@@ -1277,8 +1280,10 @@ void Prog::rangeAnalysis() {
 void Prog::printCallGraph() {
     QString fname1 = Boomerang::get()->getOutputPath() + "callgraph.out";
     QString fname2 = Boomerang::get()->getOutputPath() + "callgraph.dot";
-    int fd1 = lockFileWrite(qPrintable(fname1));
-    int fd2 = lockFileWrite(qPrintable(fname2));
+    QLockFile lockFile1(fname1);
+    QLockFile lockFile2(fname2);
+    lockFile1.lock();
+    lockFile2.lock();
     QFile file1(fname1);
     QFile file2(fname2);
     if( !(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly)) ) {
@@ -1325,8 +1330,6 @@ void Prog::printCallGraph() {
     f2 << "}\n";
     f1.flush();
     f2.flush();
-    unlockFile(fd1);
-    unlockFile(fd2);
 }
 
 void printProcsRecursive(Function *proc, int indent, QTextStream &f, std::set<Function *> &seen) {
@@ -1357,7 +1360,8 @@ void printProcsRecursive(Function *proc, int indent, QTextStream &f, std::set<Fu
 void Prog::printSymbolsToFile() {
     LOG_STREAM() << "entering Prog::printSymbolsToFile\n";
     QString fname = Boomerang::get()->getOutputPath() + "symbols.h";
-    int fd = lockFileWrite(qPrintable(fname));
+    QLockFile lockFile(fname);
+    lockFile.lock();
     QFile tgt(fname);
     if(!tgt.open(QFile::WriteOnly)) {
         LOG_STREAM() << " Cannot open " << fname << " for writing\n";
@@ -1380,7 +1384,6 @@ void Prog::printSymbolsToFile() {
         }
     }
     f.flush();
-    unlockFile(fd);
     LOG_STREAM() << "leaving Prog::printSymbolsToFile\n";
 }
 
@@ -1393,7 +1396,7 @@ void Prog::printCallGraphXML() {
             it->clearVisited();
     }
     QString fname = Boomerang::get()->getOutputPath() + "callgraph.xml";
-    int fd = lockFileWrite(qPrintable(fname));
+    QLockFile lockFile(fname);
     QFile CallGraphFile(fname);
     QTextStream f(&CallGraphFile);
     f << "<prog name=\"" << getName() << "\">\n";
@@ -1411,7 +1414,6 @@ void Prog::printCallGraphXML() {
     f << "     </callgraph>\n";
     f << "</prog>\n";
     f.flush();
-    unlockFile(fd);
 }
 
 Module *Prog::findModule(const QString &name) {

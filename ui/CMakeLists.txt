@@ -24,6 +24,9 @@ TARGET_LINK_LIBRARIES(boomerang
 ${GC_LIBS}
 ${DEBUG_LIB}
 boom_base frontend db type boomerang_DSLs codegen util boom_base
-pthread boomerang_passes
+boomerang_passes
 )
+if (NOT WIN32)
+TARGET_LINK_LIBRARIES(boomerang pthread)
+endif()
 qt5_use_modules(boomerang Core Xml Widgets)

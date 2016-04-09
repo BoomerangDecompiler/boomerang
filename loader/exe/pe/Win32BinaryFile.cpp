@@ -41,6 +41,7 @@ namespace dbghelp {
 #include "IBoomerang.h"
 #include "config.h"
 
+#include <iostream>
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
@@ -403,12 +404,12 @@ void Win32BinaryFile::readDebugData() {
         // SymInitialize failed
         error = GetLastError();
         printf("SymInitialize returned error : %d\n", error);
-        return true;
+        return;
     }
 
     DWORD64 dwBaseAddr = 0;
 
-    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, (PSTR)sName, nullptr, dwBaseAddr, 0)) {
+    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, (PSTR)m_pFileName.toStdString().c_str(), nullptr, dwBaseAddr, 0)) {
         assert(dwBaseAddr == m_pPEHeader->Imagebase);
         bool found = false;
         dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr, 0, lookforsource, &found);
@@ -417,7 +418,7 @@ void Win32BinaryFile::readDebugData() {
         // SymLoadModule64 failed
         error = GetLastError();
         printf("SymLoadModule64 returned error : %d\n", error);
-        return true;
+        return;
     }
 #endif
 }

@@ -23,15 +23,6 @@
 #include <QTextStream>
 #include <cassert>
 #include <string>
-#include <unistd.h>
-#include <fcntl.h>
-
-int lockFileWrite(const char *fname) {
-    int fd = open(fname, O_WRONLY); /* get the file descriptor */
-    return fd;
-}
-
-void unlockFile(int fd) { close(fd); }
 
 // Turn things like newline, return, tab into \n, \r, \t etc
 // Note: assumes a C or C++ back end...

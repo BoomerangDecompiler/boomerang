@@ -43,7 +43,13 @@ typedef struct {/* exe file header, just the signature really */
     Byte sigHi;
 } Header;
 
+#ifdef _MSC_VER
+#define PACKED
+#pragma pack(1)
+#else
 #define PACKED __attribute__((packed))
+#endif
+
 
 typedef struct PACKED {
     Byte sigLo;
@@ -146,6 +152,10 @@ typedef struct PACKED {
     DWord nptRVA; // RVA of the NPT
     DWord otRVA;  // RVA of the OT
 } PEExportDtor;
+
+#ifdef _MSC_VER
+#pragma pack()
+#endif
 
 class Win32BinaryFile : public QObject, public LoaderInterface {
     Q_OBJECT

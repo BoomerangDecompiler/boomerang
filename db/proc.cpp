@@ -88,6 +88,10 @@
 #ifndef __MINGW32__
 namespace dbghelp {
 #include <dbghelp.h>
+// dbghelp.h can define ADDRESS
+#ifdef ADDRESS
+#undef ADDRESS
+#endif
 };
 #endif
 #undef NO_ADDRESS
@@ -203,7 +207,7 @@ bool UserProc::isNoReturn() {
         return true;
     if (exitbb->getNumInEdges() == 1) {
         Instruction *s = exitbb->getInEdges()[0]->getLastStmt();
-        if(not s->isCall())
+        if(!s->isCall())
             return false;
         CallStatement *call = (CallStatement *)s;
         if (call->getDestProc() && call->getDestProc()->isNoReturn())
@@ -2571,7 +2575,7 @@ Exp *UserProc::getSymbolExp(Exp *le, SharedType ty, bool lastPass) {
                 locals[name] = ty;
             }
             if (ty->resolvesToCompound()) {
-                CompoundSharedType compound = ty->asCompound();
+                std::shared_ptr<const CompoundType> compound = ty->asCompound();
                 if (VERBOSE)
                     LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
                 char* nam = (char*)compound->getName(0);
