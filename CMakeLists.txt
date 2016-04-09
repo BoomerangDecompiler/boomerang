@@ -38,8 +38,8 @@ ENDIF(BUILD_TESTING)
 ###############################################################################
 
 IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
-    message(SEND_ERROR "This is a c++11 build of boomerang it's highly likely it will fail under VisualStudio")
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
+    STRING(REGEX REPLACE /W[0-9] /W4 CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 ELSE()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11 -pedantic" )
     IF(CMAKE_CXX_COMPILER MATCHES clang)
@@ -52,7 +52,7 @@ ELSE()
 ENDIF()
 
 INCLUDE(TestBigEndian)
-#find_package(Boost REQUIRED)
+find_package(Boost REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Xml REQUIRED)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
