@@ -1331,7 +1331,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString &nam
     QString tgt;
     QTextStream s(&tgt);
     indent(s, indLevel);
-    if (not results->empty()) {
+    if (!results->empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
         Exp *firstRet = ((Assignment *)*results->begin())->getLeft();
         appendExp(s, *firstRet, PREC_ASSIGN);

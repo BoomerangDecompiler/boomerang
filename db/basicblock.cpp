@@ -739,7 +739,7 @@ void BasicBlock::setCond(Exp *e) noexcept(false) {
     assert(ListOfRTLs);
     RTL *last = ListOfRTLs->back();
     // it should contain a BranchStatement
-    assert(not last->empty());
+    assert(!last->empty());
     for (auto it = last->rbegin(); it != last->rend(); it++) {
         if ((*it)->getKind() == STMT_BRANCH) {
             ((BranchStatement *)(*it))->setCondExpr(e);
@@ -755,7 +755,7 @@ bool BasicBlock::isJmpZ(BasicBlock *dest) {
     assert(ListOfRTLs);
     RTL *last = ListOfRTLs->back();
     // it should contain a BranchStatement
-    assert(not last->empty());
+    assert(!last->empty());
     for (auto it = last->rbegin(); it != last->rend(); it++) {
         if ((*it)->getKind() == STMT_BRANCH) {
             BRANCH_TYPE jt = ((BranchStatement *)(*it))->getCond();
@@ -1848,7 +1848,7 @@ int BasicBlock::findNumCases() {
             continue;                  // Ignore all others
         assert(in->ListOfRTLs && in->ListOfRTLs->size());
         RTL *lastRtl = in->ListOfRTLs->back();
-        assert(not lastRtl->empty());
+        assert(!lastRtl->empty());
         BranchStatement *lastStmt = (BranchStatement *)lastRtl->back();
         Exp *pCond = lastStmt->getCondExpr();
         if (pCond->getArity() != 2)
@@ -1927,7 +1927,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
         RTL *lastRtl = ListOfRTLs->back();
         if (DEBUG_SWITCH)
             LOG << "decodeIndirectJmp: " << lastRtl->prints();
-        assert(not lastRtl->empty());
+        assert(!lastRtl->empty());
         CaseStatement *lastStmt = (CaseStatement *)lastRtl->back();
         // Note: some programs might not have the case expression propagated to, because of the -l switch (?)
         // We used to use ordinary propagation here to get the memory expression, but now it refuses to propagate memofs
@@ -2027,7 +2027,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
         RTL *lastRtl = ListOfRTLs->back();
         if (DEBUG_SWITCH)
             LOG << "decodeIndirectJmp: COMPCALL:\n" << lastRtl->prints() << "\n";
-        assert(not lastRtl->empty());
+        assert(!lastRtl->empty());
         CallStatement *lastStmt = (CallStatement *)lastRtl->back();
         Exp *e = lastStmt->getDest();
         // Indirect calls may sometimes not be propagated to, because of limited propagation (-l switch).

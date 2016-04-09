@@ -282,7 +282,7 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname) {
     decode(Program, a);
     Program->setEntryPoint(a);
 
-    if (not gotMain)
+    if (!gotMain)
         return;
     static const char *mainName[] = {"main", "WinMain", "DriverEntry"};
     QString name = Program->symbolByAddress(a);
@@ -469,7 +469,7 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
         std::list<Instruction *>::iterator ss1 = ss;
         ss1++;
         assert(ss1 == sl.end());
-        assert(not pRtl->empty());
+        assert(!pRtl->empty());
         pRtl->back() = call;
         *ss = call;
     }
