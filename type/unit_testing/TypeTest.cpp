@@ -196,9 +196,9 @@ void TypeTest::testDataInterval() {
     QCOMPARE(ua,ue);
     ComplexTypeComp &ctc0 = ctcl2.front();
     ComplexTypeComp &ctc1 = ctcl2.back();
-    QCOMPARE(ctc0.isArray,1);
+    QCOMPARE(ctc0.isArray,true);
     QCOMPARE(ctc0.u.index,5U);
-    QCOMPARE(ctc1.isArray,0);
+    QCOMPARE(ctc1.isArray,false);
     QCOMPARE(ctc1.u.memberName,QString("float1"));
 }
 
