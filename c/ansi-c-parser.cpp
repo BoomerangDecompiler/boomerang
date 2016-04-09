@@ -25,7 +25,6 @@
 
 /* HEADER SECTION */
 #if defined(_WINDOWS) && defined(_MSC_VER)
-#define __HAVE_NO_ALLOCA
 #define __MSDOS_AND_ALIKE
 #endif
 
@@ -336,9 +335,13 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         yyss = (short *)__ALLOCA_alloca(yystacksize * sizeof(*yyssp));
         __yy_bcopy((char *)yyss1, (char *)yyss, size * sizeof(*yyssp));
         __ALLOCA_free(yyss1, yyssa);
-        yyvs = new (__ALLOCA_alloca(yystacksize * sizeof(*yyvsp))) yy_AnsiCParser_stype[yystacksize];
+        // FIXME: Memory leak of yy_AnsiCParser_stype members
+        yyvs = (yy_AnsiCParser_stype *)__ALLOCA_alloca(yystacksize * sizeof(*yyvsp));
         for(int i=0; i<size; ++i) {
-            yyvs[i] = yyvs1[i];
+            new (yyvs + i) yy_AnsiCParser_stype(yyvs1[i]);
+        }
+        for(int i=size; i<yystacksize; ++i) {
+            new (yyvs + i) yy_AnsiCParser_stype;
         }
         __ALLOCA_free(yyvs1, yyvsa);
 
