@@ -70,7 +70,7 @@
 #include "util.h"
 #include "signature.h"
 #include "boomerang.h"
-#include "constraint.h"
+#include "type/constraint.h"
 #include "visitor.h"
 #include "log.h"
 #include "basicblock.h"
