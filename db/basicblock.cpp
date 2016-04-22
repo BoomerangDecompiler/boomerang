@@ -20,11 +20,6 @@
 #include "basicblock.h"
 
 #include "config.h"
-#ifdef HAVE_LIBGC
-#include "gc.h"
-#else
-#define NO_GARBAGE_COLLECTOR
-#endif
 #include "types.h"
 #include "statement.h"
 #include "exp.h"
@@ -1712,15 +1707,6 @@ static Exp *hlForms[] = {forma, formA, formo, formO, formR, formr};
 static char chForms[] = {'a', 'A', 'o', 'O', 'R', 'r'};
 
 void init_basicblock() {
-#ifndef NO_GARBAGE_COLLECTOR
-    Exp **gc_pointers = (Exp **)GC_MALLOC_UNCOLLECTABLE(6 * sizeof(Exp *));
-    gc_pointers[0] = forma;
-    gc_pointers[1] = formA;
-    gc_pointers[2] = formo;
-    gc_pointers[3] = formO;
-    gc_pointers[4] = formR;
-    gc_pointers[5] = formr;
-#endif
 }
 
 // Vcall high level patterns

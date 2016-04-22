@@ -1086,8 +1086,8 @@ void Prog::decompile() {
     }
     globalTypeAnalysis();
 
-    if (!Boomerang::get()->noDecompile) {
-        if (!Boomerang::get()->noRemoveReturns) {
+    if (!boom->noDecompile) {
+        if (!boom->noRemoveReturns) {
             // A final pass to remove returns not used by any caller
             LOG_VERBOSE(1) << "prog: global removing unused returns\n";
             // Repeat until no change. Note 100% sure if needed.

@@ -59,11 +59,6 @@ void *alloca();
 #define YYBISON 1
 
 #include "config.h"
-#ifdef HAVE_LIBGC
-#include "gc.h"
-#else
-#define NO_GARBAGE_COLLECTOR
-#endif
 #include <cassert>
 #include <sstream>
 #include <cstring>

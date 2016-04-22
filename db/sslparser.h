@@ -5,11 +5,6 @@
 #include <cstdio>
 
 #include "config.h"
-#ifdef HAVE_LIBGC
-#include "gc.h"
-#else
-#define NO_GARBAGE_COLLECTOR
-#endif
 #include "types.h"
 #include "rtl.h"
 #include "table.h"

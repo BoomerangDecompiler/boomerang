@@ -5,12 +5,6 @@
 #include "boomerang.h"
 #include "commandlinedriver.h"
 
-#ifdef HAVE_LIBGC
-#include "gc.h"
-#else
-#define NO_GARBAGE_COLLECTOR
-#endif
-
 CommandlineDriver::CommandlineDriver(QObject *parent) : QObject(parent), m_kill_timer(this) {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
     QCoreApplication::instance()->connect(&m_thread, &DecompilationThread::finished,
@@ -72,9 +66,6 @@ static void help() {
     q_cout << "  -nl              : No creation of local variables\n";
     //    q_cout << "  -nm              : No decoding of the 'main' procedure\n";
     q_cout << "  -ng              : No replacement of expressions with Globals\n";
-#ifdef HAVE_LIBGC
-    q_cout << "  -nG              : No garbage collection\n";
-#endif
     q_cout << "  -nn              : No removal of nullptr and unused statements\n";
     q_cout << "  -np              : No replacement of expressions with Parameter names\n";
     q_cout << "  -nP              : No promotion of signatures (other than main/WinMain/\n";
@@ -231,11 +222,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args) {
                 break;
             case 'g':
                 boom.noGlobals = true;
-                break;
-            case 'G':
-#ifndef NO_GARBAGE_COLLECTOR
-                GC_disable();
-#endif
                 break;
             default:
                 help();

@@ -2,7 +2,6 @@ INCLUDE_DIRECTORIES(../c/) # used by prog.cpp
 SET(INCLUDES
 ../include/basicblock.h
 ../include/boomerang.h
-../include/constraint.h
 ../include/exp.h
 ../include/hllcode.h
 ../include/memo.h

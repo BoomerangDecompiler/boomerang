@@ -1,11 +1,6 @@
 #include "sslparser.h"
 #include "sslscanner.h"
 #include "config.h"
-#ifdef HAVE_LIBGC
-#include "gc.h"
-#else
-#define NO_GARBAGE_COLLECTOR
-#endif
 #include "types.h"
 #include "rtl.h"
 #include "table.h"
@@ -253,11 +248,6 @@ Exp *listStrToExp(std::list<QString> *ls) {
 static Binary srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
 static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
 void init_sslparser() {
-#ifndef NO_GARBAGE_COLLECTOR
-    static Exp **gc_pointers = (Exp **)GC_MALLOC_UNCOLLECTABLE(2 * sizeof(Exp *));
-    gc_pointers[0] = srchExpr;
-    gc_pointers[1] = srchOp;
-#endif
 }
 
 /***************************************************************************/ /**

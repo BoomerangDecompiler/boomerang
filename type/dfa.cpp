@@ -14,7 +14,6 @@
 
 #include "config.h"
 
-#define NO_GARBAGE_COLLECTOR
 #include "type.h"
 #include "boomerang.h"
 #include "signature.h"
@@ -81,8 +80,7 @@ void UserProc::dfaTypeAnalysis() {
     if (DEBUG_TA) {
         LOG << "\n ### results for data flow based type analysis for " << getName() << " ###\n";
         LOG << iter << " iterations\n";
-        for (StatementList::iterator it = stmts.begin(); it != stmts.end(); ++it) {
-            Instruction *s = *it;
+        for (Instruction *s : stmts) {
             LOG << s << "\n"; // Print the statement; has dest type
             // Now print type for each constant in this Statement
             std::list<Const *> lc;
@@ -1026,6 +1024,8 @@ SharedType Binary::ascendType() {
     case opLessEqUns:
     case opGtrEqUns:
         return BooleanType::get();
+    case opFMinus:
+        return FloatType::get(ta->getSize());
     default:
         // Many more cases to implement
         return VoidType::get();
@@ -1582,10 +1582,10 @@ bool CompoundType::isCompatible(const Type &other, bool all) const {
         // Used to always return false here. But in fact, a struct is compatible with its first member (if all is false)
         return !all && types[0]->isCompatibleWith(other);
     auto otherComp = other.asCompound();
-    int n = otherComp->getNumTypes();
-    if (n != (int)types.size())
+    size_t n = otherComp->getNumTypes();
+    if (n != types.size())
         return false; // Is a subcompound compatible with a supercompound?
-    for (int i = 0; i < n; i++)
+    for (size_t i = 0; i < n; i++)
         if (!types[i]->isCompatibleWith(*otherComp->types[i]))
             return false;
     return true;

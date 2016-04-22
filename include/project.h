@@ -28,7 +28,7 @@ class Project : public QObject, public IProject {
     QByteArray file_bytes;
     IBinaryImage *Image=nullptr; // raw memory interface
     Prog *Program; // program interface
-
+    ITypeRecovery *type_recovery_engine;
 public:
     virtual ~Project();
     bool serializeTo(QIODevice &dev);
@@ -37,5 +37,7 @@ public:
     QByteArray &filedata() override { return file_bytes; }
     IBinaryImage *image() override;
 
+    ITypeRecovery *typeEngine() override { return type_recovery_engine; }
+    void typeEngine(ITypeRecovery *e) override { type_recovery_engine=e; }
 };
 #endif
