@@ -87,7 +87,6 @@ public slots:
 
     void on_actionBoomerang_Website_triggered();
 
-    void on_enableDFTAcheckBox_toggled(bool b);
     void on_enableNoDecodeChildren_toggled(bool b);
 
     void on_entrypoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
@@ -103,6 +102,7 @@ protected:
 
 private slots:
     void on_actionLoggingOptions_triggered();
+    void on_cmb_typeRecoveryEngine_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

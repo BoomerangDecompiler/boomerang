@@ -531,22 +531,7 @@
            <number>0</number>
           </property>
           <widget class="QWidget" name="start">
-           <layout class="QVBoxLayout">
-            <property name="spacing">
-             <number>6</number>
-            </property>
-            <property name="leftMargin">
-             <number>9</number>
-            </property>
-            <property name="topMargin">
-             <number>9</number>
-            </property>
-            <property name="rightMargin">
-             <number>9</number>
-            </property>
-            <property name="bottomMargin">
-             <number>9</number>
-            </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
             <item>
              <layout class="QHBoxLayout">
               <property name="spacing">
@@ -676,11 +661,47 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="enableDFTAcheckBox">
-              <property name="text">
-               <string>Enable Dataflow Based Type Analysis</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>16</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_15">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Type Recovery Engine</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="cmb_typeRecoveryEngine">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
              <widget class="QCheckBox" name="enableNoDecodeChildren">
@@ -1420,7 +1441,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
@@ -1445,7 +1466,7 @@
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>Setti&amp;ngs</string>
     </property>
     <addaction name="actionLoggingOptions"/>
     <addaction name="actionDecodeOptions"/>
@@ -1453,14 +1474,14 @@
    </widget>
    <widget class="QMenu" name="menuDebug_2">
     <property name="title">
-     <string>Debug</string>
+     <string>Deb&amp;ug</string>
     </property>
     <addaction name="actionEnable"/>
     <addaction name="actionStep"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
     <addaction name="actionLoad"/>
     <addaction name="actionDecode"/>
@@ -1491,7 +1512,7 @@
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
   </action>
   <action name="actionOpen">
@@ -1499,7 +1520,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Open</string>
+    <string>&amp;Open</string>
    </property>
   </action>
   <action name="actionClose">
@@ -1507,7 +1528,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Close</string>
+    <string>&amp;Close</string>
    </property>
   </action>
   <action name="actionStep">
@@ -1515,7 +1536,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Step</string>
+    <string>&amp;Step</string>
    </property>
   </action>
   <action name="actionEnable">
@@ -1523,7 +1544,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Enable</string>
+    <string>&amp;Enable</string>
    </property>
   </action>
   <action name="actionSave">
@@ -1531,7 +1552,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -1539,7 +1560,7 @@
   </action>
   <action name="actionCut">
    <property name="text">
-    <string>Cut</string>
+    <string>&amp;Cut</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
@@ -1547,7 +1568,7 @@
   </action>
   <action name="actionCopy">
    <property name="text">
-    <string>Copy</string>
+    <string>C&amp;opy</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -1555,7 +1576,7 @@
   </action>
   <action name="actionPaste">
    <property name="text">
-    <string>Paste</string>
+    <string>&amp;Paste</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
@@ -1563,7 +1584,7 @@
   </action>
   <action name="actionDelete">
    <property name="text">
-    <string>Delete</string>
+    <string>&amp;Delete</string>
    </property>
    <property name="shortcut">
     <string>Del</string>
@@ -1571,7 +1592,7 @@
   </action>
   <action name="actionFind">
    <property name="text">
-    <string>Find...</string>
+    <string>&amp;Find...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -1579,7 +1600,7 @@
   </action>
   <action name="actionFind_Next">
    <property name="text">
-    <string>Find Next</string>
+    <string>Find &amp;Next</string>
    </property>
    <property name="shortcut">
     <string>F3</string>
@@ -1587,7 +1608,7 @@
   </action>
   <action name="actionGo_To">
    <property name="text">
-    <string>Go To...</string>
+    <string>&amp;Go To...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
@@ -1595,7 +1616,7 @@
   </action>
   <action name="actionSelect_All">
    <property name="text">
-    <string>Select All</string>
+    <string>&amp;Select All</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
@@ -1603,57 +1624,57 @@
   </action>
   <action name="actionStructs">
    <property name="text">
-    <string>Structs</string>
+    <string>&amp;Structs</string>
    </property>
   </action>
   <action name="actionLoad">
    <property name="text">
-    <string>Load</string>
+    <string>&amp;Load</string>
    </property>
   </action>
   <action name="actionDecode">
    <property name="text">
-    <string>Decode</string>
+    <string>&amp;Decode</string>
    </property>
   </action>
   <action name="actionDecompile">
    <property name="text">
-    <string>Decompile</string>
+    <string>D&amp;ecompile</string>
    </property>
   </action>
   <action name="actionGenerate_Code">
    <property name="text">
-    <string>Generate Code</string>
+    <string>&amp;Generate Code</string>
    </property>
   </action>
   <action name="actionBoomerang_Website">
    <property name="text">
-    <string>Boomerang Website</string>
+    <string>&amp;Boomerang Website</string>
    </property>
   </action>
   <action name="actionLoggingOptions">
    <property name="text">
-    <string>Logging</string>
+    <string>&amp;Logging</string>
    </property>
   </action>
   <action name="actionDecodeOptions">
    <property name="text">
-    <string>Decode</string>
+    <string>&amp;Decode</string>
    </property>
   </action>
   <action name="actionDecompileOptions">
    <property name="text">
-    <string>Decompile</string>
+    <string>D&amp;ecompile</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About Boomerang</string>
+    <string>&amp;About Boomerang</string>
    </property>
   </action>
   <action name="actionAboutQt">
    <property name="text">
-    <string>About Qt</string>
+    <string>About &amp;Qt</string>
    </property>
   </action>
  </widget>

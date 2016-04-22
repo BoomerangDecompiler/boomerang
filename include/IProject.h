@@ -3,6 +3,7 @@
 
 class IBinaryImage;
 class QByteArray;
+class ITypeRecovery;
 /**
  * @brief The Project interface class
  */

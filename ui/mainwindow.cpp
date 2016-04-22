@@ -98,6 +98,9 @@ MainWindow::MainWindow(QWidget *parent)
         ui->toLoadButton->setDisabled(false);
     }
     loadingSettings = false;
+    ui->cmb_typeRecoveryEngine->addItem("Constraint based recovery",QVariant::fromValue((void *)1));
+    ui->cmb_typeRecoveryEngine->addItem("DFA based recovery",QVariant::fromValue((void *)2));
+    ui->cmb_typeRecoveryEngine->setCurrentIndex(1);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -750,9 +753,11 @@ void MainWindow::on_actionDecompile_triggered() { showDecompilePage(); }
 void MainWindow::on_actionGenerate_Code_triggered() { showGenerateCodePage(); }
 
 void MainWindow::on_actionStructs_triggered() {
-    for (int i = 0; i < ui->tabWidget->count(); i++)
-        if (ui->tabWidget->widget(i) == structs)
+    for (int i = 0; i < ui->tabWidget->count(); i++) {
+        if (ui->tabWidget->widget(i) == structs) {
             return;
+        }
+    }
     ui->tabWidget->addTab(structs, "Structs");
     ui->tabWidget->setCurrentWidget(structs);
 }
@@ -774,8 +779,6 @@ void MainWindow::on_actionAbout_triggered() {
 }
 
 void MainWindow::on_actionAboutQt_triggered() { QApplication::aboutQt(); }
-
-void MainWindow::on_enableDFTAcheckBox_toggled(bool b) { decompilerThread->getDecompiler()->setUseDFTA(b); }
 
 void MainWindow::on_enableNoDecodeChildren_toggled(bool b) {
     decompilerThread->getDecompiler()->setNoDecodeChildren(b);
@@ -816,4 +819,24 @@ void MainWindow::on_actionLoggingOptions_triggered()
 {
     LoggingSettingsDlg dlg;
     dlg.exec();
+}
+
+void MainWindow::on_cmb_typeRecoveryEngine_currentIndexChanged(int index)
+{
+
+    QVariant sel_data = ui->cmb_typeRecoveryEngine->itemData(index);
+    ITypeRecovery *ptr = (ITypeRecovery *)sel_data.value<void *>();
+    Boomerang *boom = Boomerang::get();
+    if(!boom->project()) {
+        QMessageBox::warning(this,"Error","Cannot set type recovery without active project");
+        return;
+    }
+    if((intptr_t)ptr == 1) {
+        decompilerThread->getDecompiler()->setUseDFTA(false);
+    } else {
+        decompilerThread->getDecompiler()->setUseDFTA(true);
+    }
+
+
+    //boom->project()->typeEngine(ptr);
 }
