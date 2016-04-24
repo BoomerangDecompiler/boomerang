@@ -33,6 +33,7 @@
 #include <cassert>
 #include <cstring>
 #include <inttypes.h>
+#include <QBuffer>
 
 struct SectionParam {
     QString Name;
@@ -61,19 +62,13 @@ struct Translated_ElfSym{
 typedef std::map<QString, int, std::less<QString>> StrIntMap;
 
 ElfBinaryFile::ElfBinaryFile() : next_extern(ADDRESS::g(0L)) {
-    m_fd = nullptr;
-    m_pFileName = nullptr;
     Init(); // Initialise all the common stuff
 }
 
 ElfBinaryFile::~ElfBinaryFile() {
-    if (m_pImportStubs)
-        // Delete the array of import stubs
-        delete []m_pImportStubs;
-    delete  []m_pImage;
+    delete  []m_pImportStubs; // Delete the array of import stubs
     delete  []m_sh_link;
     delete  []m_sh_info;
-
 }
 
 void ElfBinaryFile::initialize(IBoomerang *sys)
@@ -121,38 +116,18 @@ unsigned elf_hash(const char *o0) {
 }
 } // extern "C"
 // Return true for a good load
-bool ElfBinaryFile::RealLoad(const QString &sName) {
+bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
     int i;
     //    if (m_bArchive) {
     //        // This is a member of an archive. Should not be using this function at all
     //        return false;
     //    }
 
-    m_pFileName = sName;
-    m_fd = fopen(qPrintable(sName), "rb");
-    if (m_fd == nullptr)
-        return 0;
-
-    // Determine file size
-    if (fseek(m_fd, 0, SEEK_END)) {
-        fprintf(stderr, "Error seeking to end of binary file\n");
-        return false;
-    }
-    m_lImageSize = ftell(m_fd);
+    m_lImageSize = img.size();
 
     // Allocate memory to hold the file
-    m_pImage = new char[m_lImageSize];
-    if (m_pImage == nullptr) {
-        fprintf(stderr, "Could not allocate %ld bytes for program image\n", m_lImageSize);
-        return false;
-    }
-    Elf32_Ehdr *pHeader = (Elf32_Ehdr *)m_pImage; // Save a lot of casts
-
-    // Read the whole file in
-    fseek(m_fd, 0, SEEK_SET);
-    size_t size = fread(m_pImage, 1, m_lImageSize, m_fd);
-    if (size != (size_t)m_lImageSize)
-        fprintf(stderr, "WARNING! Only read %zd of %ld bytes of binary file!\n", size, m_lImageSize);
+    m_pImage = img.data();
+    Elf32_Ehdr *pHeader = (Elf32_Ehdr *)img.data(); // Save a lot of casts
 
     // Basic checks
     if (strncmp(m_pImage, "\x7F"
@@ -163,7 +138,7 @@ bool ElfBinaryFile::RealLoad(const QString &sName) {
         return 0;
     }
     if ((pHeader->endianness != 1) && (pHeader->endianness != 2)) {
-        fprintf(stderr, "Unknown endianness %02X\n", pHeader->endianness);
+        qWarning() << QString("Unknown endianness ").arg(pHeader->endianness,2,16,QChar('0'));
         return 0;
     }
     // Needed for elfRead4 to work:
@@ -327,12 +302,6 @@ bool ElfBinaryFile::RealLoad(const QString &sName) {
 
 // Clean up and unload the binary image
 void ElfBinaryFile::UnLoad() {
-    if (m_pImage)
-        delete[] m_pImage;
-    if(m_fd) {
-        fclose(m_fd);
-        m_fd = nullptr;
-    }
     Init(); // Set all internal state to 0
 }
 
@@ -732,7 +701,10 @@ void ElfBinaryFile::applyRelocations() {
                     switch (relType) {
                     case 0: // R_386_NONE: just ignore (common)
                         break;
+                    case R_SPARC_HI22:
+                    case R_SPARC_LO10:
                     case R_SPARC_GLOB_DAT:
+                        qWarning() << "Unhandled sparc relocation"; break;
                         break;
                     }
                 }

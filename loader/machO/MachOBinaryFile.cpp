@@ -33,6 +33,8 @@
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+#include <QFile>
+#include <QBuffer>
 #define DEBUG_MACHO_LOADER 0
 #define DEBUG_PRINT(...) \
             do { if (DEBUG_MACHO_LOADER) fprintf(stderr, __VA_ARGS__); } while (0)
@@ -90,13 +92,14 @@ ADDRESS MachOBinaryFile::GetMainEntryPoint() {
 
 #define BE4(x) ((magic[(x)] << 24) | (magic[(x)+1] << 16) | (magic[(x)+2] << 8) | (magic[(x)+3]))
 
-bool MachOBinaryFile::RealLoad(const QString &sName) {
-    m_pFileName = sName;
-    FILE *fp = fopen(qPrintable(sName), "rb");
+bool MachOBinaryFile::LoadFromMemory(QByteArray &img) {
+    QBuffer fp(&img);
+    if(!fp.open(QFile::ReadOnly))
+        return false;
     unsigned int imgoffs = 0;
 
-    unsigned char magic[12 * 4];
-    fread(magic, sizeof(magic), 1, fp);
+    unsigned char *magic = (uint8_t *)img.data();
+    struct mach_header *header; // The Mach-O header
 
     if (magic[0] == 0xca && magic[1] == 0xfe && magic[2] == 0xba && magic[3] == 0xbe) {
         int nimages = BE4(4);
@@ -119,13 +122,11 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         }
     }
 
-    fseek(fp, imgoffs, SEEK_SET);
-    header = new struct mach_header;
-    fread(header, sizeof(*header), 1, fp);
+    header = (mach_header *)(img.data() + imgoffs);// new mach_header;
+    //fp.read((char *)header, sizeof(mach_header));
 
     if ((header->magic != MH_MAGIC) && (_BMMH(header->magic) != MH_MAGIC)) {
-        fclose(fp);
-        fprintf(stderr, "error loading file %s, bad Mach-O magic\n", qPrintable(sName));
+        qWarning() << "error loading file, bad Mach-O magic";
         return false;
     }
 
@@ -149,22 +150,22 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
     ADDRESS objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
     unsigned objc_modules_size = 0;
 
-    fseek(fp, imgoffs + sizeof(*header), SEEK_SET);
+    fp.seek(imgoffs + sizeof(*header));
     for (unsigned i = 0; i < BMMH(header->ncmds); i++) {
-        struct load_command cmd;
-        long pos = ftell(fp);
-        fread(&cmd, 1, sizeof(struct load_command), fp);
-        fseek(fp, pos, SEEK_SET);
+        load_command cmd;
+        long pos = fp.pos();
+        fp.read((char *)&cmd, sizeof(load_command));
+        fp.seek(pos);
         switch (BMMH(cmd.cmd)) {
         case LC_SEGMENT: {
             segment_command seg;
-            fread(&seg, 1, sizeof(seg), fp);
+            fp.read((char *)&seg, sizeof(seg));
             segments.push_back(seg);
             DEBUG_PRINT("seg addr %x size %i fileoff %x filesize %i flags %x\n", BMMH(seg.vmaddr), BMMH(seg.vmsize),
                     BMMH(seg.fileoff), BMMH(seg.filesize), BMMH(seg.flags));
             for (unsigned n = 0; n < BMMH(seg.nsects); n++) {
                 section sect;
-                fread(&sect, 1, sizeof(sect), fp);
+                fp.read((char *)&sect, sizeof(sect));
                 sections.push_back(sect);
                 DEBUG_PRINT("    sectname %s segname %s addr %x size %i flags %x\n", sect.sectname, sect.segname,
                         BMMH(sect.addr), BMMH(sect.size), BMMH(sect.flags));
@@ -193,15 +194,15 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
             }
         } break;
         case LC_SYMTAB: {
-            struct symtab_command syms;
-            fread(&syms, 1, sizeof(syms), fp);
-            fseek(fp, imgoffs + BMMH(syms.stroff), SEEK_SET);
+            symtab_command syms;
+            fp.read((char *)&syms, sizeof(syms));
+            fp.seek(imgoffs + BMMH(syms.stroff));
             strtbl = new char[BMMH(syms.strsize)];
-            fread(strtbl, 1, BMMH(syms.strsize), fp);
-            fseek(fp, imgoffs + BMMH(syms.symoff), SEEK_SET);
+            fp.read(strtbl, BMMH(syms.strsize));
+            fp.seek(imgoffs + BMMH(syms.symoff));
             for (unsigned n = 0; n < BMMH(syms.nsyms); n++) {
-                struct nlist sym;
-                fread(&sym, 1, sizeof(sym), fp);
+                nlist sym;
+                fp.read((char *)&sym, sizeof(sym));
                 symbols.push_back(sym);
                 // DEBUG_PRINT(stdout, "got sym %s flags %x value %x\n", strtbl + BMMH(sym.n_un.n_strx), sym.n_type, BMMH(sym.n_value));
             }
@@ -209,7 +210,7 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
         } break;
         case LC_DYSYMTAB: {
             struct dysymtab_command syms;
-            fread(&syms, 1, sizeof(syms), fp);
+            fp.read((char *)&syms, sizeof(syms));
             DEBUG_PRINT("dysymtab local %i %i defext %i %i undef %i %i\n", BMMH(syms.ilocalsym),
                     BMMH(syms.nlocalsym), BMMH(syms.iextdefsym), BMMH(syms.nextdefsym), BMMH(syms.iundefsym),
                     BMMH(syms.nundefsym));
@@ -223,8 +224,8 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
 
             DEBUG_PRINT("dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));
             indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
-            fseek(fp, imgoffs + BMMH(syms.indirectsymoff), SEEK_SET);
-            fread(indirectsymtbl, 1, BMMH(syms.nindirectsyms) * sizeof(unsigned), fp);
+            fp.seek(imgoffs + BMMH(syms.indirectsymoff));
+            fp.read((char *)indirectsymtbl, BMMH(syms.nindirectsyms) * sizeof(unsigned));
             for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
                 DEBUG_PRINT("%i ", BMMH(indirectsymtbl[j]));
             }
@@ -236,10 +237,10 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
             break;
         }
 
-        fseek(fp, pos + BMMH(cmd.cmdsize), SEEK_SET);
+        fp.seek(pos + BMMH(cmd.cmdsize));
     }
 
-    struct segment_command *lowest = &segments[0], *highest = &segments[0];
+    segment_command *lowest = &segments[0], *highest = &segments[0];
     for (unsigned i = 1; i < segments.size(); i++) {
         if (BMMH(segments[i].vmaddr) < BMMH(lowest->vmaddr))
             lowest = &segments[i];
@@ -253,18 +254,17 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
     base = (char *)malloc(loaded_size);
 
     if (!base) {
-        fclose(fp);
-        fprintf(stderr, "Cannot allocate memory for copy of image\n");
+        qWarning() << "Cannot allocate memory for copy of image";
         return false;
     }
 
     for (unsigned i = 0; i < segments.size(); i++) {
-        fseek(fp, imgoffs + BMMH(segments[i].fileoff), SEEK_SET);
+        fp.seek(imgoffs + BMMH(segments[i].fileoff));
         ADDRESS a = ADDRESS::g(BMMH(segments[i].vmaddr));
         unsigned sz = BMMH(segments[i].vmsize);
         unsigned fsz = BMMH(segments[i].filesize);
         memset(base + a.m_value - loaded_addr.m_value, 0, sz);
-        fread(base + a.m_value - loaded_addr.m_value, 1, fsz, fp);
+        fp.read(base + a.m_value - loaded_addr.m_value, fsz);
         DEBUG_PRINT("loaded segment %tx %i in mem %i in file\n", a.m_value, sz, fsz);
         QString name = QByteArray(segments[i].segname,17);
         IBinarySection *sect = Image->createSection(name,ADDRESS::n(BMMH(segments[i].vmaddr)),
@@ -388,7 +388,6 @@ bool MachOBinaryFile::RealLoad(const QString &sName) {
     // ADDRESS entry = GetMainEntryPoint();
     entrypoint = GetMainEntryPoint();
 
-    fclose(fp);
     return true;
 }
 

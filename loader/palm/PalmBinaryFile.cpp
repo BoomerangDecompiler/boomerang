@@ -53,12 +53,25 @@ static int Read2(short *ps) {
     int n = (int(p[0]) << 8) | p[1];
     return n;
 }
+static int Read2(uint16_t *ps) {
+    unsigned char *p = (unsigned char *)ps;
+    // Little endian
+    uint16_t n = (uint16_t(p[0]) << 8) | p[1];
+    return n;
+}
 
-int Read4(int *pi) {
+static int Read4(int *pi) {
     short *p = (short *)pi;
     int n1 = Read2(p);
     int n2 = Read2(p + 1);
     int n = (int)((n1 << 16) | n2);
+    return n;
+}
+static int Read4(uint32_t *pi) {
+    uint16_t *p = (uint16_t *)pi;
+    uint32_t n1 = Read2(p);
+    uint32_t n2 = Read2(p + 1);
+    uint32_t n = (uint32_t)((n1 << 16) | n2);
     return n;
 }
 namespace {
@@ -68,36 +81,16 @@ struct SectionParams {
     ADDRESS hostAddr;
 };
 }
-bool PalmBinaryFile::RealLoad(const QString &sName) {
-    FILE *fp;
-    m_pFileName = sName;
 
-    if ((fp = fopen(qPrintable(sName), "rb")) == nullptr) {
-        fprintf(stderr, "Could not open binary file %s\n", qPrintable(sName));
-        return false;
-    }
+bool PalmBinaryFile::LoadFromMemory(QByteArray &img) {
+    long size = img.size();
 
-    fseek(fp, 0, SEEK_END);
-    long size = ftell(fp);
-
-    // Allocate a buffer for the image
-    m_pImage = new unsigned char[size];
-    if (m_pImage == nullptr) {
-        fprintf(stderr, "Could not allocate %ld bytes for image\n", size);
-        return false;
-    }
-    memset(m_pImage, 0, size);
-
-    fseek(fp, 0, SEEK_SET);
-    if (fread(m_pImage, 1, size, fp) != (unsigned)size) {
-        fprintf(stderr, "Error reading binary file %s\n", qPrintable(sName));
-        return false;
-    }
+    m_pImage = (uint8_t *)img.data();
 
     // Check type at offset 0x3C; should be "appl" (or "palm"; ugh!)
     if ((strncmp((char *)(m_pImage + 0x3C), "appl", 4) != 0) && (strncmp((char *)(m_pImage + 0x3C), "panl", 4) != 0) &&
         (strncmp((char *)(m_pImage + 0x3C), "libr", 4) != 0)) {
-        fprintf(stderr, "%s is not a standard .prc file\n", qPrintable(sName));
+        qWarning() << "This is not a standard .prc file";
         return false;
     }
     addTrapSymbols();
@@ -266,10 +259,6 @@ bool PalmBinaryFile::RealLoad(const QString &sName) {
 }
 
 void PalmBinaryFile::UnLoad() {
-    if (m_pImage) {
-        delete[] m_pImage;
-        m_pImage = nullptr;
-    }
 }
 
 ADDRESS PalmBinaryFile::GetEntryPoint() {
@@ -367,7 +356,9 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max) {
         bool found = true;
         for (int i = 0; i < pattSize; i++) {
             SWord curr = patt[i];
-            if ((curr != WILD) && (curr != start[i])) {
+            SWord val = Read2(start+i);
+
+            if ((curr != WILD) && (curr != val)) {
                 found = false;
                 break; // Mismatch
             }
@@ -387,22 +378,26 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint() {
     if (psect == nullptr)
         return ADDRESS::g(0L); // Failed
     // Return the start of the code1 section
-    SWord *startCode = (SWord *)psect->hostAddr().m_value;
+    ADDRESS ha(psect->hostAddr());
+    uintptr_t gb(ha.m_value);
+    uint16_t *startCode = (uint16_t *)psect->hostAddr().m_value;
+    startCode = (uint16_t *)gb;
     int delta = (psect->hostAddr() - psect->sourceAddr()).m_value;
 
     // First try the CW first jump pattern
     SWord *res = findPattern(startCode, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord), 1);
     if (res) {
         // We have the code warrior first jump. Get the addil operand
-        int addilOp = (startCode[5] << 16) + startCode[6];
+        int addilOp = Read4((uint32_t *)(startCode+5));
         SWord *startupCode = (SWord *)(ADDRESS::host_ptr(startCode) + 10 + addilOp).m_value;
         // Now check the next 60 SWords for the call to PilotMain
         res = findPattern(startupCode, CWCallMain, sizeof(CWCallMain) / sizeof(SWord), 60);
         if (res) {
             // Get the addil operand
-            addilOp = (res[5] << 16) + res[6];
+            int addilOp = Read4((int32_t *)(res+5));
             // That operand plus the address of that operand is PilotMain
-            return ADDRESS::host_ptr(res) + 10 + addilOp - delta;
+            ADDRESS offset_loc = ADDRESS::n((char *)(res+5)-(char *)startCode);
+            return offset_loc + addilOp; //ADDRESS::host_ptr(res) + 10 + addilOp - delta;
         } else {
             fprintf(stderr, "Could not find call to PilotMain in CW app\n");
             return ADDRESS::g(0L);

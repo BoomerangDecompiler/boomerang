@@ -222,7 +222,7 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints() {
     if (a != NO_ADDRESS)
         entrypoints.push_back(a);
     else { // try some other tricks
-        QString fname = ldrIface->getFilename();
+        QString fname = Boomerang::get()->filename();
         // X11 Module
         if (fname.endsWith("_drv.o")) {
             int seploc = fname.lastIndexOf(QDir::separator());

@@ -137,13 +137,13 @@ public:
     // LOADFMT_DOS4GW)
     MACHINE getMachine() const override; // Get machine (i.e.
     // MACHINE_Pentium)
-    QString getFilename() const override { return m_pFileName; }
     ADDRESS getImageBase() override;
     size_t getImageSize() override;
 
     ADDRESS GetMainEntryPoint() override;
     ADDRESS GetEntryPoint() override;
     DWord getDelta();
+    bool LoadFromMemory(QByteArray &data) override;
 
     //
     //        --        --        --        --        --        --        --        --        --
@@ -157,7 +157,6 @@ protected:
     int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
     int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
 
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
 private:
     bool PostLoad(void *handle) override; //!< Called after archive member loaded
 
@@ -170,7 +169,6 @@ private:
     // DWord*    m_pRelocTable;            // The relocation table
     char *base; // Beginning of the loaded image
     // Map from address of dynamic pointers to library procedure names:
-    QString m_pFileName;
     class IBinarySymbolTable *Symbols;
     class IBinaryImage *Image;
 };

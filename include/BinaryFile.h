@@ -126,8 +126,7 @@ public:
     virtual void Close() = 0;                 //!< Close file opened with Open()
     virtual LOAD_FMT GetFormat() const = 0;   //!< Get the format (e.g. LOADFMT_ELF)
     virtual MACHINE getMachine() const = 0;   //!< Get the expected machine (e.g. MACHINE_PENTIUM)
-    virtual QString getFilename() const = 0;
-    virtual bool RealLoad(const QString &sName) = 0;
+    virtual bool LoadFromMemory(QByteArray &data) = 0;
 
     /// Return the virtual address at which the binary expects to be loaded.
     /// For position independent / relocatable code this should be NO_ADDDRESS

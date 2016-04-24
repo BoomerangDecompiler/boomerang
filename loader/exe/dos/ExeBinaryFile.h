@@ -72,7 +72,6 @@ public:
     bool PostLoad(void *handle) override;  // For archive files only
     LOAD_FMT GetFormat() const override;   // Get format (i.e. LOADFMT_EXE)
     MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_PENTIUM)
-    QString getFilename() const override { return m_pFileName; }
 
     ADDRESS getImageBase() override;
     size_t getImageSize() override;
@@ -89,15 +88,13 @@ public:
     bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
 
     void initialize(IBoomerang *sys) override;
-protected:
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
+    bool LoadFromMemory(QByteArray &data);
 private:
     exeHeader *m_pHeader; // Pointer to header
     Byte *m_pImage;       // Pointer to image
     int m_cbImage;        // Size of image
     int m_cReloc;         // Number of relocation entries
     DWord *m_pRelocTable; // The relocation table
-    QString m_pFileName;
     ADDRESS m_uInitPC;        //!< Initial program counter
     ADDRESS m_uInitSP;        //!< Initial stack pointer
     class IBinaryImage *Image;

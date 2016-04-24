@@ -421,7 +421,7 @@ void Win32BinaryFile::readDebugData() {
     }
 #endif
 }
-bool Win32BinaryFile::LoadFromArray(QByteArray &arr) {
+bool Win32BinaryFile::LoadFromMemory(QByteArray &arr) {
     const char *data = arr.constData();
     const char *data_end = arr.constData() + arr.size();
     if(arr.size()<int(0x40+sizeof(PEHeader)))
@@ -447,13 +447,13 @@ bool Win32BinaryFile::LoadFromArray(QByteArray &arr) {
     memcpy(base,data,LMMH(tmphdr->HeaderSize));
     m_pHeader = (Header *)base;
     if (m_pHeader->sigLo != 'M' || m_pHeader->sigHi != 'Z') {
-        fprintf(stderr, "error loading file %s, bad magic\n", qPrintable(m_pFileName));
+        fprintf(stderr, "error loading file - bad magic\n");
         return false;
     }
 
     m_pPEHeader = (PEHeader *)(base + peoff);
     if (m_pPEHeader->sigLo != 'P' || m_pPEHeader->sigHi != 'E') {
-        fprintf(stderr, "error loading file %s, bad PE magic\n", qPrintable(m_pFileName));
+        fprintf(stderr, "error loading file bad PE magic\n");
         return false;
     }
 
@@ -521,15 +521,6 @@ bool Win32BinaryFile::LoadFromArray(QByteArray &arr) {
     readDebugData();
     return true;
 
-}
-bool Win32BinaryFile::RealLoad(const QString &sName) {
-    m_pFileName = sName;
-    QFile fp(sName);
-    if(fp.open(QFile::ReadOnly)) {
-        QByteArray data = fp.readAll();
-        return LoadFromArray(data);
-    }
-    return false;
 }
 
 // Used above for a hack to find jump instructions pointing to IATs.

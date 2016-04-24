@@ -22,6 +22,7 @@
 #include "IBoomerang.h"
 #include "IBinaryImage.h"
 
+#include <QBuffer>
 #include <cassert>
 
 ExeBinaryFile::ExeBinaryFile() {
@@ -31,46 +32,37 @@ void ExeBinaryFile::initialize(IBoomerang *sys) {
     Symbols = sys->getSymbols();
 }
 
-bool ExeBinaryFile::RealLoad(const QString &sName) {
-    FILE *fp;
+bool ExeBinaryFile::LoadFromMemory(QByteArray &data) {
+    QBuffer fp(&data);
     int i, cb;
     Byte buf[4];
     int fCOM;
 
-    m_pFileName = sName;
 
     // Always just 3 sections
     m_pHeader = new exeHeader;
-    if (m_pHeader == nullptr) {
-        fprintf(stderr, "Could not allocate header memory\n");
-        return 0;
-    }
 
-    /* Open the input file */
-    if ((fp = fopen(qPrintable(sName), "rb")) == nullptr) {
-        fprintf(stderr, "Could not open file %s\n", qPrintable(sName));
-        return 0;
-    }
+    fp.open(QBuffer::ReadOnly);
 
     /* Read in first 2 bytes to check EXE signature */
-    if (fread(m_pHeader, 1, 2, fp) != 2) {
-        fprintf(stderr, "Cannot read file %s\n", qPrintable(sName));
-        return 0;
+    if (fp.read((char *)m_pHeader, 2) != 2) {
+        qWarning() << "Cannot read file ";
+        return false;
     }
 
     // Check for the "MZ" exe header
     if (!(fCOM = (m_pHeader->sigLo != 0x4D || m_pHeader->sigHi != 0x5A))) {
         /* Read rest of m_pHeader */
-        fseek(fp, 0, SEEK_SET);
-        if (fread(m_pHeader, sizeof(exeHeader), 1, fp) != 1) {
-            fprintf(stderr, "Cannot read file %s\n", qPrintable(sName));
-            return 0;
+        fp.seek(0);
+        if (fp.read((char *)m_pHeader, sizeof(exeHeader)) != sizeof(exeHeader)) {
+            qWarning() << "Cannot read file ";
+            return false;
         }
 
         /* This is a typical DOS kludge! */
         if (LH(&m_pHeader->relocTabOffset) == 0x40) {
-            fprintf(stderr, "Error - NE format executable\n");
-            return 0;
+            qWarning() << "Error - NE format executable";
+            return false;
         }
 
         /* Calculate the load module size.
@@ -96,21 +88,17 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
         /* Allocate the relocation table */
         if (m_cReloc) {
             m_pRelocTable = new DWord[m_cReloc];
-            if (m_pRelocTable == nullptr) {
-                fprintf(stderr, "Could not allocate relocation table (%d entries)\n",m_cReloc);
-                return 0;
-            }
-            fseek(fp, LH(&m_pHeader->relocTabOffset), SEEK_SET);
+            fp.seek(LH(&m_pHeader->relocTabOffset));
 
             /* Read in seg:offset pairs and convert to Image ptrs */
             for (i = 0; i < m_cReloc; i++) {
-                fread(buf, 1, 4, fp);
+                fp.read((char *)buf, 4);
                 m_pRelocTable[i] = LH(buf) + (((int)LH(buf + 2)) << 4);
             }
         }
 
         /* Seek to start of image */
-        fseek(fp, (int)LH(&m_pHeader->numParaHeader) * 16, SEEK_SET);
+        fp.seek((int)LH(&m_pHeader->numParaHeader) * 16);
 
         // Initial PC and SP. Note that we fake the seg:offset by putting
         // the segment in the top half, and offset int he bottom
@@ -120,8 +108,7 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
         /* COM file
          * In this case the load module size is just the file length
          */
-        fseek(fp, 0, SEEK_END);
-        cb = ftell(fp);
+        cb = fp.size();
 
         /* COM programs start off with an ORG 100H (to leave room for a PSP)
                  * This is also the implied start address so if we load the image
@@ -131,16 +118,16 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
         m_uInitSP = 0xFFFE;
         m_cReloc = 0;
 
-        fseek(fp, 0, SEEK_SET);
+        fp.seek(0);
     }
 
     /* Allocate a block of memory for the image. */
     m_cbImage = cb;
-    m_pImage = new Byte[m_cbImage];
+    m_pImage = new uint8_t[m_cbImage];
 
-    if (cb != (int)fread(m_pImage, 1, (size_t)cb, fp)) {
-        fprintf(stderr, "Cannot read file %s\n", qPrintable(sName));
-        return 0;
+    if (cb != fp.read((char *)m_pImage, (size_t)cb)) {
+        qWarning() << "Cannot read file ";
+        return false;
     }
 
     /* Relocate segment constants */
@@ -153,7 +140,7 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
         }
     }
 
-    fclose(fp);
+    fp.close();
     //TODO: prevent overlapping of those 3 sections
     IBinarySection *header = Image->createSection("$HEADER",ADDRESS::n(0x4000),ADDRESS::n(0x4000)+sizeof(exeHeader));
     header->setHostAddr(ADDRESS::host_ptr(m_pHeader))
@@ -167,7 +154,7 @@ bool ExeBinaryFile::RealLoad(const QString &sName) {
     IBinarySection *reloc = Image->createSection("$RELOC",ADDRESS::n(0x4000)+sizeof(exeHeader),ADDRESS::n(0x4000)+sizeof(exeHeader)+sizeof(DWord) * m_cReloc);
     reloc->setHostAddr(ADDRESS::host_ptr(m_pRelocTable))
             .setEntrySize(sizeof(DWord));
-    return 1;
+    return true;
 }
 
 // Clean up and unload the binary image

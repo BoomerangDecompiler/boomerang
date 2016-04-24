@@ -8,6 +8,7 @@
 
 #include "BinaryFile.h"
 #include "boomerang.h"
+#include "project.h"
 #include "IBinaryImage.h"
 #include "IBinarySymbols.h"
 
@@ -37,7 +38,16 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
     }
     ldr_iface->initialize(Boomerang::get());
     ldr_iface->Close();
-    if (ldr_iface->RealLoad(sName) == 0) {
+    QFile src_file(sName);
+    if(false==src_file.open(QFile::ReadOnly)) {
+        qWarning() << "Opening '" <<sName<< "' failed";
+        delete pBF;
+        return nullptr;
+    }
+
+    Boomerang::get()->project()->filedata().clear();
+    Boomerang::get()->project()->filedata()=src_file.readAll();
+    if (ldr_iface->LoadFromMemory(Boomerang::get()->project()->filedata()) == 0) {
         qWarning() << "Loading '" <<sName<< "' failed";
         delete pBF;
         return nullptr;
@@ -49,14 +59,9 @@ QObject *BinaryFileFactory::Load(const QString &sName) {
 #define TESTMAGIC2(buf, off, a, b) (buf[off] == a && buf[off + 1] == b)
 #define TESTMAGIC4(buf, off, a, b, c, d) (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
-static QString selectPluginForFile(const QString &sName) {
+static QString selectPluginForFile(QIODevice &f) {
     QString libName;
     unsigned char buf[64];
-    QFile f(sName);
-    if(!f.open(QFile::ReadOnly)) {
-        fprintf(stderr, "Unable to open binary file: %s\n", qPrintable(sName));
-        return nullptr;
-    }
     f.read((char *)buf,sizeof(buf));
     if (TESTMAGIC4(buf, 0, '\177', 'E', 'L', 'F')) {
         /* ELF Binary */
@@ -95,7 +100,7 @@ static QString selectPluginForFile(const QString &sName) {
     } else if (buf[0] == 0x4c && buf[1] == 0x01) {
         libName = "IntelCoffFile";
     } else {
-        fprintf(stderr, "Unrecognised binary file\n");
+        qWarning() << "Unrecognised binary format";
         return "";
     }
     return libName;
@@ -110,7 +115,13 @@ QObject *BinaryFileFactory::getInstanceFor(const QString &sName) {
     if (!qApp->libraryPaths().contains(pluginsDir.absolutePath())) {
         qApp->addLibraryPath(pluginsDir.absolutePath());
     }
-    QString libName = selectPluginForFile(sName);
+    QFile f(sName);
+    if(!f.open(QFile::ReadOnly)) {
+        qWarning() << "Unable to open binary file: " << sName;
+        return nullptr;
+    }
+
+    QString libName = selectPluginForFile(f);
     if (libName.isEmpty())
         return nullptr;
 

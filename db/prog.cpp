@@ -70,9 +70,10 @@ namespace dbghelp {
 #include <sys/types.h>
 
 Prog::Prog(const QString &name) : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_name(name), m_iNumberedProc(1) {
-    m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
-    Image = Boomerang::get()->getImage();
     BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
+    m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
+    m_path = m_name;
+    Image = Boomerang::get()->getImage();
 }
 /// Create or retrieve existing module
 /// \param frontend for the module, if nullptr set it to program's default frontend.
@@ -97,10 +98,9 @@ void Prog::setFrontEnd(FrontEnd *_pFE) {
         delete m;
     ModuleList.clear();
     m_rootCluster = nullptr;
-    if (pLoaderIface && !pLoaderIface->getFilename().isEmpty()) {
+    if (pLoaderIface && !m_name.isEmpty()) {
         if(m_rootCluster)
             m_rootCluster->eraseFromParent();
-        m_name = pLoaderIface->getFilename();
         m_rootCluster = this->getOrInsertModule(getNameNoPathNoExt());
     }
 }

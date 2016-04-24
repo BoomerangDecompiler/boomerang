@@ -34,7 +34,6 @@ class PalmBinaryFile : public QObject, public LoaderInterface {
     bool PostLoad(void *handle) override;  // For archive files only
     LOAD_FMT GetFormat() const override;   // Get format i.e. LOADFMT_PALM
     MACHINE getMachine() const override;   // Get machine i.e. MACHINE_PALM
-    QString getFilename() const override { return m_pFileName; }
 
     bool isLibrary() const;
     ADDRESS getImageBase() override;
@@ -67,8 +66,7 @@ class PalmBinaryFile : public QObject, public LoaderInterface {
     //    bool        IsDynamicLinkedProc(ADDRESS wNative);
     //    ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
-  protected:
-    bool RealLoad(const QString &sName) override; // Load the file; pure virtual
+    bool LoadFromMemory(QByteArray &data);
 
 private:
     void addTrapSymbols();
@@ -76,7 +74,6 @@ private:
     unsigned char *m_pData;  //!< Points to data
     // Offset from start of data to where register a5 should be initialised to
     unsigned int m_SizeBelowA5;
-    QString m_pFileName;
     class IBinaryImage *Image;
     class IBinarySymbolTable *Symbols;
 

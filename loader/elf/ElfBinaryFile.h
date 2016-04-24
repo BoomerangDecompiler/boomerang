@@ -43,7 +43,6 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
     void Close() override;
     LOAD_FMT GetFormat() const override;
     MACHINE getMachine() const override;
-    QString getFilename() const override { return m_pFileName; }
     bool isLibrary() const;
     QStringList getDependencyList();
     ADDRESS getImageBase() override;
@@ -61,9 +60,7 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
 
     ADDRESS NativeToHostAddress(ADDRESS uNative);
 
-    QString m_pFileName; // Pointer to input file name
-  protected:
-    virtual bool RealLoad(const QString &sName) override; // Load the file; pure virtual
+    bool LoadFromMemory(QByteArray &img);
 
   private:
     // Apply relocations; important when compiled without -fPIC
@@ -85,7 +82,6 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
     int elfRead4(const int *pi) const;      // Read an int with endianness care
     void elfWrite4(int *pi, int val); // Write an int with endianness care
 
-    FILE *m_fd;                             // File stream
     long m_lImageSize;                      // Size of image in bytes
     char *m_pImage;                         // Pointer to the loaded image
     Elf32_Phdr *m_pPhdrs;                   // Pointer to program headers

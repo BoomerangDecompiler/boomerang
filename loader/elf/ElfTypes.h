@@ -142,6 +142,7 @@ enum ElfSectionTypes {
     SHT_NULL = 0,
     SHT_PROGBITS = 1,
     SHT_SYMTAB = 2,  // Symbol table
+    SHT_STRTAB = 3,
     SHT_RELA = 4,    // Relocation table (with addend, e.g. RISC)
     SHT_NOBITS = 8,  // Bss
     SHT_REL = 9,     // Relocation table (no addend)
