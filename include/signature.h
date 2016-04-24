@@ -25,6 +25,7 @@
 #include "statement.h" // For class Return
 
 #include <string>
+#include <vector>
 #include <QString>
 
 class Instruction;

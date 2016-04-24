@@ -182,7 +182,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
 
             auto con = static_cast<const Const *>(sub->getSubExp1());
             SharedType gt = prog->getGlobalType(con->getStr());
-            if (gt && (gt->isArray() || (gt->isPointer() && gt->asPointer()->getPointsTo()->isChar()))) {
+            if (gt && (gt->isArray() || (gt->isPointer() && gt->as<PointerType>()->getPointsTo()->isChar()))) {
                 // Special C requirement: don't emit "&" for address of an array or char*
                 appendExp(str, *sub, curPrec);
                 break;
@@ -441,7 +441,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
                closeParen(str, curPrec, curPrec);
                str << ")";
             }
-        } 
+        }
         else
             appendExp(str, *t.getSubExp3(), curPrec);
         break;
@@ -660,8 +660,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
 #if 0 // Suspect ADHOC TA only
                     SharedType ty = t.getSubExp3()->getSubExp1()->getType();
                     if (ty == nullptr || !ty->isPointer() ||
-                            !ty->asPointer()->getPointsTo()->isInteger() ||
-                            ty->asPointer()->getPointsTo()->asInteger()->getSize() != sz) {
+                            !ty->as<PointerType>()->getPointsTo()->isInteger() ||
+                            ty->as<PointerType>()->getPointsTo()->as<IntegerType>()->getSize() != sz) {
 #endif
                 str << "(unsigned ";
                 if (sz == 8)
@@ -716,7 +716,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             else {
                 if (Boomerang::get()->noDecompile) {
                     if (tt && tt->isFloat()) {
-                        if (tt->asFloat()->getSize() == 32)
+                        if (tt->as<FloatType>()->getSize() == 32)
                             str << "FLOAT_MEMOF";
                         else
                             str << "DOUBLE_MEMOF";
@@ -895,7 +895,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
 #else
             SharedType ty = nullptr;
 #endif
-            if (ty && ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToArray()) {
+            if (ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
                 // a pointer to an array is automatically dereferenced in C
                 appendExp(str, *b.getSubExp1()->getSubExp1(), PREC_PRIM);
             } else
@@ -932,11 +932,11 @@ void CHLLCode::appendType(QTextStream &str, SharedType typ) {
         str << "int"; // Default type for C
         return;
     }
-    if (typ->resolvesToPointer() && typ->asPointer()->getPointsTo()->resolvesToArray()) {
+    if (typ->resolvesToPointer() && typ->as<PointerType>()->getPointsTo()->resolvesToArray()) {
         // C programmers prefer to see pointers to arrays as pointers
         // to the first element of the array.  They then use syntactic
         // sugar to access a pointer as if it were an array.
-        typ = PointerType::get(typ->asPointer()->getPointsTo()->asArray()->getBaseType());
+        typ = PointerType::get(typ->as<PointerType>()->getPointsTo()->as<ArrayType>()->getBaseType());
     }
     str << typ->getCtype(true);
 }
@@ -947,14 +947,14 @@ void CHLLCode::appendType(QTextStream &str, SharedType typ) {
 void CHLLCode::appendTypeIdent(QTextStream &str, SharedType typ, QString ident) {
     if (typ == nullptr)
         return;
-    if (typ->isPointer() && typ->asPointer()->getPointsTo()->isArray()) {
-        appendType(str, typ->asPointer()->getPointsTo()->asArray()->getBaseType());
+    if (typ->isPointer() && typ->as<PointerType>()->getPointsTo()->isArray()) {
+        appendType(str, typ->as<PointerType>()->getPointsTo()->as<ArrayType>()->getBaseType());
         str << " *" << ident;
     } else if (typ->isPointer()) {
         appendType(str, typ);
         str << ident;
     } else if (typ->isArray()) {
-        auto a = typ->asArray();
+        auto a = typ->as<ArrayType>();
         appendTypeIdent(str, a->getBaseType(), ident);
         str << "[";
         if (!a->isUnbounded())
@@ -1246,7 +1246,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 
     if (Boomerang::get()->noDecompile && isBareMemof(*lhs, proc)) {
         if (asgnType && asgnType->isFloat()) {
-            if (asgnType->asFloat()->getSize() == 32)
+            if (asgnType->as<FloatType>()->getSize() == 32)
                 s << "FLOAT_";
             else
                 s << "DOUBLE_";
@@ -1299,7 +1299,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
         // however it's not always acceptable for assigns to m[] (?)
         if (rhs->getSubExp2()->isIntConst() &&
             (((Const *)rhs->getSubExp2())->getInt() == 1 || (asgn->getType()->isPointer() &&
-                                                             asgn->getType()->asPointer()->getPointsTo()->getSize() ==
+                                                             asgn->getType()->as<PointerType>()->getPointsTo()->getSize() ==
                                                                  (unsigned)((Const *)rhs->getSubExp2())->getInt() * 8)))
             s << "++";
         else {
@@ -1630,8 +1630,8 @@ void CHLLCode::AddGlobal(const QString &name, SharedType type, Exp *init) {
     }
     if (init && !init->isNil()) {
         s << " = ";
-        SharedType base_type = type->isArray() ? type->asArray()->getBaseType() : type;
-        appendExp(s, *init, PREC_ASSIGN, base_type->isInteger() ? !base_type->asInteger()->isSigned() : false);
+        SharedType base_type = type->isArray() ? type->as<ArrayType>()->getBaseType() : type;
+        appendExp(s, *init, PREC_ASSIGN, base_type->isInteger() ? !base_type->as<IntegerType>()->isSigned() : false);
     }
     s << ";";
     if (type->isSize())

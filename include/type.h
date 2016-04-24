@@ -123,40 +123,12 @@ public:
     // Return false if some info is missing, e.g. unknown sign, size or basic type
     virtual bool isComplete() { return true; }
 
+    // These replace type casts
     template <class T>
     std::shared_ptr<T> as();
     template <class T>
     std::shared_ptr<const T> as() const;
 
-    // These replace type casts
-    std::shared_ptr<VoidType> asVoid();
-    std::shared_ptr<const VoidType> asVoid() const;
-    std::shared_ptr<FuncType> asFunc();
-    std::shared_ptr<const FuncType> asFunc() const;
-    std::shared_ptr<BooleanType> asBoolean();
-    std::shared_ptr<const BooleanType> asBoolean() const;
-    std::shared_ptr<CharType> asChar();
-    std::shared_ptr<const CharType> asChar() const;
-    std::shared_ptr<IntegerType> asInteger();
-    std::shared_ptr<const IntegerType> asInteger() const;
-    std::shared_ptr<FloatType> asFloat();
-    std::shared_ptr<const FloatType> asFloat() const;
-    std::shared_ptr<NamedType> asNamed();
-    std::shared_ptr<const NamedType> asNamed() const;
-    std::shared_ptr<PointerType> asPointer();
-    std::shared_ptr<const PointerType> asPointer() const;
-    std::shared_ptr<ArrayType> asArray();
-    std::shared_ptr<const ArrayType> asArray() const;
-    std::shared_ptr<CompoundType> asCompound();
-    std::shared_ptr<const CompoundType> asCompound() const;
-    std::shared_ptr<UnionType> asUnion();
-    std::shared_ptr<const UnionType> asUnion() const;
-    std::shared_ptr<SizeType> asSize();
-    std::shared_ptr<const SizeType> asSize() const;
-    std::shared_ptr<UpperType> asUpper();
-    std::shared_ptr<const UpperType> asUpper() const;
-    std::shared_ptr<LowerType> asLower();
-    std::shared_ptr<const LowerType> asLower() const;
 
     // These replace calls to isNamed() and resolvesTo()
     bool resolvesToVoid() const;
@@ -795,7 +767,7 @@ QTextStream &operator<<(QTextStream &os, const Type &t); // Print the Type point
 
 
 template <class T>
-std::shared_ptr<T> Type::as() {
+inline std::shared_ptr<T> Type::as() {
     SharedType ty = shared_from_this();
     if (isNamed())
         ty = std::static_pointer_cast<NamedType>(ty)->resolvesTo();
@@ -804,11 +776,25 @@ std::shared_ptr<T> Type::as() {
     return res;
 }
 template <class T>
-std::shared_ptr<const T> Type::as() const {
+inline std::shared_ptr<const T> Type::as() const {
     SharedConstType ty = shared_from_this();
     if (isNamed())
         ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();
     auto res = std::dynamic_pointer_cast<const T>(ty);
+    assert(res);
+    return res;
+}
+template<>
+inline std::shared_ptr<NamedType> Type::as<NamedType>() {
+    SharedType ty = shared_from_this();
+    auto res = std::dynamic_pointer_cast<NamedType>(ty);
+    assert(res);
+    return res;
+}
+template<>
+inline std::shared_ptr<const NamedType> Type::as<NamedType>() const {
+    auto ty = shared_from_this();
+    auto res = std::dynamic_pointer_cast<const NamedType>(ty);
     assert(res);
     return res;
 }
