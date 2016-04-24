@@ -20,7 +20,11 @@ void CTest::testSignature() {
     QCOMPARE(p->signatures.size(),size_t(1));
     Signature *sig = p->signatures.front();
     QCOMPARE(sig->getName(),QString("printf"));
-    QVERIFY(sig->getReturnType(0)->resolvesToInteger());
+    // The functions have two return parameters :
+    // 0 - ESP
+    // 1 - Actual return
+    QCOMPARE(sig->getNumReturns(),size_t(2));
+    QVERIFY(sig->getReturnType(1)->resolvesToInteger());
     SharedType t = PointerType::get(CharType::get());
     // Pentium signatures used to have esp prepended to the list of parameters; no more?
     int num = sig->getNumParams();
