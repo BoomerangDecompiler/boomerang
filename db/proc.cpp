@@ -2259,8 +2259,8 @@ void UserProc::findFinalParameters() {
         }
         return;
     }
-    if (VERBOSE || DEBUG_PARAMS)
-        LOG << "finding final parameters for " << getName() << "\n";
+    if (DEBUG_PARAMS)
+        LOG_VERBOSE(1) << "finding final parameters for " << getName() << "\n";
 
     //    int sp = signature->getStackRegister();
     signature->setNumParams(0); // Clear any old ideas
@@ -2333,8 +2333,8 @@ void UserProc::findFinalParameters() {
                 continue;
             }
 #endif
-            if (VERBOSE || DEBUG_PARAMS)
-                LOG << "found new parameter " << e << "\n";
+            if (DEBUG_PARAMS)
+                LOG_VERBOSE(1) << "found new parameter " << e << "\n";
 
             SharedType ty = ((ImplicitAssign *)s)->getType();
             // Add this parameter to the signature (for now; creates parameter names)
@@ -2519,9 +2519,9 @@ Exp *UserProc::getSymbolExp(Exp *le, SharedType ty, bool lastPass) {
             SharedType lty = locals[nam];
             const Exp *loc = (elem).first;
             if (loc->isMemOf() && loc->getSubExp1()->getOper() == opMinus &&
-                    loc->getSubExp1()->getSubExp1()->isSubscript() &&
-                    loc->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
-                    loc->getSubExp1()->getSubExp2()->isIntConst()) {
+                    loc->subExp(1)->subExp(1)->isSubscript() &&
+                    loc->subExp(1)->subExp(1)->subExp(1)->isRegN(signature->getStackRegister()) &&
+                    loc->subExp(1)->subExp(2)->isIntConst()) {
                 int n = -((const Const *)loc->getSubExp1()->getSubExp2())->getInt();
                 int m = -((Const *)le->getSubExp1()->getSubExp2())->getInt();
                 if (m > n && m < n + (int)(lty->getSize() / 8)) {
@@ -2621,7 +2621,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                 // If a pointer type and e is of the form m[sp{0} - K]:
                 if (ty && ty->resolvesToPointer() && signature->isAddrOfStackLocal(prog, e)) {
                     LOG << "argument " << e << " is an addr of stack local and the type resolves to a pointer\n";
-                    Exp *olde = e->clone();
+                    UniqExp olde(e->clone());
                     SharedType pty = ty->asPointer()->getPointsTo();
                     if (e->isAddrOf() && e->getSubExp1()->isSubscript() && e->getSubExp1()->getSubExp1()->isMemOf())
                         e = e->getSubExp1()->getSubExp1()->getSubExp1();
@@ -2640,7 +2640,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                     e = getSymbolExp(Location::memOf(e->clone(), this), pty);
                     if (e) {
                         Exp *ne = new Unary(opAddrOf, e);
-                        LOG_VERBOSE(1) << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
+                        LOG_VERBOSE(1) << "replacing argument " << olde.get() << " with " << ne << " in " << call << "\n";
                         call->setArgumentExp(i, ne);
                     }
                 }

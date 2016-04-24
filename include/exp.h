@@ -253,6 +253,16 @@ class Exp : public Printable {
     // These are here so we can (optionally) prevent code clutter.
     // Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2.
     // However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
+    Exp *subExp(int v) {
+        switch(v) {
+        case 1: return getSubExp1();
+        case 2: return getSubExp1();
+        case 3: return getSubExp1();
+        default:
+            assert(false);
+        }
+    }
+    const Exp *subExp(int v) const { return const_cast<Exp *>(this)->subExp(v); }
     virtual Exp *getSubExp1() { return nullptr; }
     virtual const Exp *getSubExp1() const { return nullptr; }
     virtual Exp *getSubExp2() { return nullptr; }
@@ -753,8 +763,6 @@ class FlagDef : public Unary {
     FlagDef(Exp *params, SharedRTL rtl); // Constructor
     virtual ~FlagDef();             // Destructor
     virtual void appendDotFile(QTextStream &of);
-//    RTL *getRtl() { return rtl; }
-//    void setRtl(RTL *r) { rtl = r; }
 
     // Visitation
     virtual bool accept(ExpVisitor *v);

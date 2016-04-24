@@ -3066,7 +3066,7 @@ void ImplicitAssign::printCompact(QTextStream & os, bool html) const {
 // All the Assignment-derived classes have the same definitions: the lhs
 void Assignment::getDefinitions(LocationSet & defs) {
     if (lhs->getOper() == opAt) // foo@[m:n] really only defines foo
-        defs.insert(((Ternary *)lhs)->getSubExp1());
+        defs.insert(lhs->getSubExp1());
     else
         defs.insert(lhs);
     // Special case: flag calls define %CF (and others)
