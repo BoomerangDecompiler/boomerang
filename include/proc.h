@@ -264,6 +264,7 @@ public:
     SyntaxNode *getAST();
     void printAST(SyntaxNode *a = nullptr);
 
+    DataIntervalMap &localsMap() {return localTable;}
     //! Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
     bool isDecoded() { return status >= PROC_DECODED; }
     bool isDecompiled() { return status >= PROC_FINAL; }
@@ -389,9 +390,7 @@ public:
 
     void conTypeAnalysis();
     void dfaTypeAnalysis();
-    void dfa_analyze_scaled_array_ref(Instruction *s, Prog *prog);
 
-    void dfa_analyze_implict_assigns(Instruction *s, Prog *prog);
     bool ellipsisProcessing();
 
     // For the final pass of removing returns that are never used

@@ -8,9 +8,10 @@
 
 /***************************************************************************/ /**
   * \file       dfa.cpp
-  * \brief   Implementation of class Type functions related to solving type analysis in an iterative, data-flow-based
-  *                manner
+  * \brief   Implementation of class Type functions related to solving type analysis in an iterative,
+  * data-flow-based manner
   ******************************************************************************/
+#include "dfa.h"
 
 #include "config.h"
 
@@ -36,16 +37,149 @@ static int nextUnionNumber = 0;
 // idx + K; leave idx wild
 static const Binary unscaledArrayPat(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst));
 
-
+static DFA_TypeRecovery s_type_recovery;
 static int dfa_progress = 0;
-void UserProc::dfaTypeAnalysis() {
-    Boomerang::get()->alertDecompileDebugPoint(this, "before dfa type analysis");
+
+void DFA_TypeRecovery::dumpResults(StatementList & stmts, int iter)
+{
+    LOG << iter << " iterations\n";
+    for (Instruction *s : stmts) {
+        LOG << s << "\n"; // Print the statement; has dest type
+        // Now print type for each constant in this Statement
+        std::list<Const *> lc;
+        std::list<Const *>::iterator cc;
+        s->findConstants(lc);
+        if (lc.size()) {
+            LOG << "       ";
+            for (cc = lc.begin(); cc != lc.end(); ++cc)
+                LOG << (*cc)->getType()->getCtype() << " " << *cc << "  ";
+            LOG << "\n";
+        }
+        // If s is a call, also display its return types
+        CallStatement *call = dynamic_cast<CallStatement *>(s);
+        if (s->isCall() && call) {
+            ReturnStatement *rs = call->getCalleeReturn();
+            if (rs == nullptr)
+                continue;
+            UseCollector *uc = call->getUseCollector();
+            ReturnStatement::iterator rr;
+            bool first = true;
+            for (rr = rs->begin(); rr != rs->end(); ++rr) {
+                // Intersect the callee's returns with the live locations at the call, i.e. make sure that they
+                // exist in *uc
+                Assignment *assgn = dynamic_cast<Assignment *>(*rr);
+                Exp *lhs = assgn->getLeft();
+                if (!uc->exists(lhs))
+                    continue; // Intersection fails
+                if (first)
+                    LOG << "       returns: ";
+                else
+                    LOG << ", ";
+                LOG << assgn->getType()->getCtype() << " " << assgn->getLeft();
+            }
+            LOG << "\n";
+        }
+    }
+}
+// m[idx*K1 + K2]; leave idx wild
+static Location
+scaledArrayPat(opMemOf,
+               Binary::get(opPlus,
+                           Binary::get(opMult,
+                                       Terminal::get(opWild),
+                                       Terminal::get(opWildIntConst)
+                                       ),
+                           Terminal::get(opWildIntConst)
+                           ),
+               nullptr);
+
+void DFA_TypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
+{
+    UserProc * pr = s->getProc();
+    Prog *prog = pr->getProg();
+    Exp *arr;
+    std::list<Exp *> result;
+    s->searchAll(scaledArrayPat, result);
+    // query: (memOf (opPlus (opMult ? ?:IntConst) ?:IntConst))
+    // rewrite_as (opArrayIndex (global `(getOrCreateGlobalName arg3) ) arg2 ) assert (= (typeSize
+    // (getOrCreateGlobalName arg3)) (arg1))
+    for (Exp *rr : result) {
+        // Type* ty = s->getTypeFor(*rr);
+        // FIXME: should check that we use with array type...
+        // Find idx and K2
+        assert(rr->getSubExp1() == rr->getSubExp1());
+        Exp *t = rr->getSubExp1();            // idx*K1 + K2
+        Exp *l = t->getSubExp1(); // idx*K1
+        Exp *r = t->getSubExp2(); // K2
+        ADDRESS K2 = ((Const *)r)->getAddr().native();
+        Exp *idx = l->getSubExp1();
+
+        // Replace with the array expression
+        QString nam = prog->getGlobalName(K2);
+        if (nam.isEmpty())
+            nam = prog->newGlobalName(K2);
+        arr = Binary::get(opArrayIndex, Location::global(nam, pr), idx);
+        if (s->searchAndReplace(scaledArrayPat, arr)) {
+            if (s->isImplicit())
+                // Register an array of appropriate type
+                prog->globalUsed(K2, ArrayType::get(((ImplicitAssign *)s)->getType()));
+        }
+    }
+}
+// 3) Check implicit assigns for parameter and global types.
+void DFA_TypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
+{
+    bool allZero;
+    Exp *lhs;
+    Exp *slhs;
+    SharedType iType;
+    int i;
+    UserProc * pr = s->getProc();
+    assert(pr);
+    Prog *prog = pr->getProg();
+    assert(prog);
+
+    if (!s->isImplicit())
+        return;
+
+    lhs = ((ImplicitAssign *)s)->getLeft();
+    // Note: parameters are not explicit any more
+    // if (lhs->isParam()) { // }
+    slhs = lhs->clone()->removeSubscripts(allZero);
+    iType = ((ImplicitAssign *)s)->getType();
+    i = pr->getSignature()->findParam(slhs);
+    if (i != -1)
+        pr->setParamType(i, iType);
+    else if (lhs->isMemOf()) {
+        Exp *sub = lhs->getSubExp1();
+        if (sub->isIntConst()) {
+            // We have a m[K] := -
+            ADDRESS K = ((Const *)sub)->getAddr();
+            prog->globalUsed(K, iType);
+        }
+    } else if (lhs->isGlobal()) {
+        assert(dynamic_cast<Location *>(lhs) != nullptr);
+        QString gname = ((Const *)lhs->getSubExp1())->getStr();
+        prog->setGlobalType(gname, iType);
+    }
+}
+
+void DFA_TypeRecovery::recoverFunctionTypes(Function *)
+{
+    assert(false);
+}
+
+void DFA_TypeRecovery::dfaTypeAnalysis(Function * f) {
+    assert(not f->isLib());
+    UserProc *proc = static_cast<UserProc *>(f);
+    Cfg *cfg = proc->getCFG();
+    Boomerang::get()->alertDecompileDebugPoint(proc, "before dfa type analysis");
 
     // First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
     // int and char* in sparc/switch_gcc)
-    bool ch = signature->dfaTypeAnalysis(cfg);
+    bool ch = proc->getSignature()->dfaTypeAnalysis(cfg);
     StatementList stmts;
-    getStatements(stmts);
+    proc->getStatements(stmts);
 
     int iter;
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
@@ -74,76 +208,26 @@ void UserProc::dfaTypeAnalysis() {
             break;
     }
     if (ch)
-        LOG << "### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure " << getName() << " ###\n";
+        LOG << "### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure " << proc->getName() << " ###\n";
 
     if (DEBUG_TA) {
-        LOG << "\n ### results for data flow based type analysis for " << getName() << " ###\n";
-        LOG << iter << " iterations\n";
-        for (Instruction *s : stmts) {
-            LOG << s << "\n"; // Print the statement; has dest type
-            // Now print type for each constant in this Statement
-            std::list<Const *> lc;
-            std::list<Const *>::iterator cc;
-            s->findConstants(lc);
-            if (lc.size()) {
-                LOG << "       ";
-                for (cc = lc.begin(); cc != lc.end(); ++cc)
-                    LOG << (*cc)->getType()->getCtype() << " " << *cc << "  ";
-                LOG << "\n";
-            }
-            // If s is a call, also display its return types
-            CallStatement *call = dynamic_cast<CallStatement *>(s);
-            if (s->isCall() && call) {
-                ReturnStatement *rs = call->getCalleeReturn();
-                if (rs == nullptr)
-                    continue;
-                UseCollector *uc = call->getUseCollector();
-                ReturnStatement::iterator rr;
-                bool first = true;
-                for (rr = rs->begin(); rr != rs->end(); ++rr) {
-                    // Intersect the callee's returns with the live locations at the call, i.e. make sure that they
-                    // exist in *uc
-                    Assignment *assgn = dynamic_cast<Assignment *>(*rr);
-                    Exp *lhs = assgn->getLeft();
-                    if (!uc->exists(lhs))
-                        continue; // Intersection fails
-                    if (first)
-                        LOG << "       returns: ";
-                    else
-                        LOG << ", ";
-                    LOG << assgn->getType()->getCtype() << " " << assgn->getLeft();
-                }
-                LOG << "\n";
-            }
-        }
-        LOG << "\n ### end results for Data flow based Type Analysis for " << getName() << " ###\n\n";
+        LOG << "\n ### results for data flow based type analysis for " << proc->getName() << " ###\n";
+        dumpResults(stmts, iter);
+        LOG << "\n ### end results for Data flow based Type Analysis for " << proc->getName() << " ###\n\n";
     }
 
-// Now use the type information gathered
-#if 0
-    Boomerang::get()->alert_decompile_debug_point(this, "before mapping locals from dfa type analysis");
-    if (DEBUG_TA)
-        LOG << " ### mapping expressions to local variables for " << getName() << " ###\n";
-    for (it = stmts.begin(); it != stmts.end(); ++it) {
-        Statement* s = *it;
-        s->dfaMapLocals();
-    }
-    if (DEBUG_TA)
-        LOG << " ### end mapping expressions to local variables for " << getName() << " ###\n";
-#endif
+    // Now use the type information gathered
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "before other uses of dfa type analysis");
-    debugPrintAll("before other uses of dfa type analysis");
+    Boomerang::get()->alertDecompileDebugPoint(proc, "before other uses of dfa type analysis");
+    proc->debugPrintAll("before other uses of dfa type analysis");
 
-    Prog *_prog = getProg();
+    Prog *_prog = proc->getProg();
     for (Instruction *s : stmts) {
 
         // 1) constants
         std::list<Const *> lc;
         s->findConstants(lc);
-        std::list<Const *>::iterator cc;
-        for (cc = lc.begin(); cc != lc.end(); ++cc) {
-            Const *con = (Const *)*cc;
+        for (Const *con : lc) {
             if(con->getOper()==opStrConst)
                 continue;
             SharedType t = con->getType();
@@ -168,17 +252,17 @@ void UserProc::dfaTypeAnalysis() {
                         ADDRESS r = addr - _prog->getGlobalAddr(gloName);
                         Exp *ne;
                         if (!r.isZero()) { // TODO: what if r is NO_ADDR ?
-                            Exp *g = Location::global(gloName, this);
-                            ne = Location::memOf(Binary::get(opPlus, new Unary(opAddrOf, g), new Const(r)), this);
+                            Exp *g = Location::global(gloName, proc);
+                            ne = Location::memOf(Binary::get(opPlus, new Unary(opAddrOf, g), new Const(r)), proc);
                         } else {
                             SharedType ty = _prog->getGlobalType(gloName);
                             Assign *assgn = dynamic_cast<Assign *>(s);
                             if (s->isAssign() && assgn && assgn->getType()) {
-                                int bits = assgn->getType()->getSize();
+                                size_t bits = assgn->getType()->getSize();
                                 if (ty == nullptr || ty->getSize() == 0)
                                     _prog->setGlobalType(gloName, IntegerType::get(bits));
                             }
-                            Exp *g = Location::global(gloName, this);
+                            Exp *g = Location::global(gloName, proc);
                             if (ty && ty->resolvesToArray())
                                 ne = Binary::get(opArrayIndex, g, new Const(0));
                             else
@@ -205,7 +289,7 @@ void UserProc::dfaTypeAnalysis() {
                         ADDRESS K = ADDRESS::g(constK->getInt());
                         Exp *idx = bin_rr->getSubExp1();
                         Exp *arr = new Unary(
-                            opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalName(K), this), idx));
+                                    opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalName(K), proc), idx));
                         // Beware of changing expressions in implicit assignments... map can become invalid
                         bool isImplicit = s->isImplicit();
                         if (isImplicit)
@@ -229,7 +313,7 @@ void UserProc::dfaTypeAnalysis() {
                     int tmp = con->getInt();
                     con->setFlt(*(float *)&tmp); // Reinterpret to float, then cast to double
                     con->setOper(opFltConst);
-                    con->setType(FloatType::get(64));
+                    con->setType(FloatType::get(64)); // TODO: why double ? float might do
                 }
                 // MVE: more work if double?
             } else /* if (t->resolvesToArray()) */ {
@@ -238,10 +322,10 @@ void UserProc::dfaTypeAnalysis() {
         }
 
         // 2) Search for the scaled array pattern and replace it with an array use m[idx*K1 + K2]
-        dfa_analyze_scaled_array_ref(s, _prog);
+        dfa_analyze_scaled_array_ref(s);
 
         // 3) Check implicit assigns for parameter and global types.
-        dfa_analyze_implict_assigns(s, _prog);
+        dfa_analyze_implict_assigns(s);
 
         // 4) Add the locals (soon globals as well) to the localTable, to sort out the overlaps
         if (s->isTyping()) {
@@ -250,7 +334,7 @@ void UserProc::dfaTypeAnalysis() {
             if (s->isAssignment()) {
                 Exp *lhs = ((Assignment *)s)->getLeft();
                 if (lhs->isMemOf()) {
-                    addrExp = ((Location *)lhs)->getSubExp1();
+                    addrExp = lhs->getSubExp1();
                     typeExp = ((Assignment *)s)->getType();
                 }
             } else {
@@ -267,10 +351,10 @@ void UserProc::dfaTypeAnalysis() {
                     typeExp = typeExp->as<PointerType>()->getPointsTo();
                 }
             }
-            if (addrExp && signature->isAddrOfStackLocal(_prog, addrExp)) {
+            if (addrExp && proc->getSignature()->isAddrOfStackLocal(_prog, addrExp)) {
                 int addr = 0;
-                if (addrExp->getArity() == 2 && signature->isOpCompatStackLocal(addrExp->getOper())) {
-                    Const *K = (Const *)((Binary *)addrExp)->getSubExp2();
+                if (addrExp->getArity() == 2 && proc->getSignature()->isOpCompatStackLocal(addrExp->getOper())) {
+                    Const *K = (Const *)addrExp->getSubExp2();
                     if (K->isConst()) {
                         addr = K->getInt();
                         if (addrExp->getOper() == opMinus)
@@ -278,17 +362,31 @@ void UserProc::dfaTypeAnalysis() {
                     }
                 }
                 SharedType ty = ((TypingStatement *)s)->getType();
-                LOG << "in proc " << getName() << " adding addrExp " << addrExp << "with type " << *ty << " to local table\n";
+                LOG << "in proc " << proc->getName() << " adding addrExp " << addrExp << "with type " << *ty << " to local table\n";
                 Exp * loc_mem = Location::memOf(addrExp);
-                localTable.addItem(ADDRESS::g(addr), lookupSym(*loc_mem, ty), typeExp);
+                proc->localsMap().addItem(ADDRESS::g(addr), proc->lookupSym(*loc_mem, ty), typeExp);
                 delete loc_mem;
             }
         }
     }
 
-    debugPrintAll("after application of dfa type analysis");
+    proc->debugPrintAll("after application of dfa type analysis");
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "after dfa type analysis");
+    Boomerang::get()->alertDecompileDebugPoint(proc, "after dfa type analysis");
+}
+
+bool DFA_TypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
+{
+    assert(false);
+}
+
+bool DFA_TypeRecovery::dfaTypeAnalysis(Instruction *i)
+{
+    assert(false);
+}
+
+void UserProc::dfaTypeAnalysis() {
+    s_type_recovery.dfaTypeAnalysis(this);
 }
 
 // This is the core of the data-flow-based type analysis algorithm: implementing the meet operator.
@@ -579,23 +677,23 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         return ((UnionType *)this)->shared_from_this();
     }
     std::list<UnionElement>::iterator it;
-//    int subtypes_count = 0;
-//    for (it = li.begin(); it != li.end(); ++it) {
-//        Type &v(*it->type);
-//        if(v.isCompound()) {
-//            subtypes_count += ((CompoundType &)v).getNumTypes();
-//        }
-//        else if(v.isUnion()) {
-//            subtypes_count += ((UnionType &)v).getNumTypes();
-//        }
-//        else
-//            subtypes_count+=1;
-//    }
-//    if(subtypes_count>9) {
-//        qDebug() << getCtype();
-//        qDebug() << other->getCtype();
-//        qDebug() << "*****";
-//    }
+    //    int subtypes_count = 0;
+    //    for (it = li.begin(); it != li.end(); ++it) {
+    //        Type &v(*it->type);
+    //        if(v.isCompound()) {
+    //            subtypes_count += ((CompoundType &)v).getNumTypes();
+    //        }
+    //        else if(v.isUnion()) {
+    //            subtypes_count += ((UnionType &)v).getNumTypes();
+    //        }
+    //        else
+    //            subtypes_count+=1;
+    //    }
+    //    if(subtypes_count>9) {
+    //        qDebug() << getCtype();
+    //        qDebug() << other->getCtype();
+    //        qDebug() << "*****";
+    //    }
 
     // Match 'other' agains all fields of 'this' UnionType
     // if a field is found that requires no change to 'meet', this type is returned unchanged
@@ -612,12 +710,12 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         SharedType curr = v.clone();
         auto meet_res = curr->meetWith(other, ch, bHighestPtr);
         if(!ch) { // no change necessary for meet, perfect
-//            qDebug() << getCtype();
+            //            qDebug() << getCtype();
             return ((UnionType *)this)->shared_from_this();
         }
         int quality = meet_res->getCtype().size();
         if(quality<best_meet_quality) {
-//            qDebug() << "Found better match:" << meet_res->getCtype();
+            //            qDebug() << "Found better match:" << meet_res->getCtype();
             best_so_far = meet_res;
             best_meet_quality = quality;
             location_of_meet = it;
@@ -628,7 +726,7 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         ne.type = best_so_far;
         li.erase(location_of_meet);
         li.insert(ne);
-//        qDebug() << getCtype();
+        //        qDebug() << getCtype();
         return ((UnionType *)this)->shared_from_this();
     }
 
@@ -750,7 +848,7 @@ SharedType Type::createUnion(SharedType other, bool &ch, bool bHighestPtr /* = f
     ch = true;
 #if PRINT_UNION
     LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype()
-              << ", result is " << u->getCtype() << "\n";
+                 << ", result is " << u->getCtype() << "\n";
 #endif
     return u;
 }
@@ -770,7 +868,7 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
                 if (boundmax == procDest->getSignature()->getParamName(nt)) {
                     SharedType tyt = ((Assign *)*aat)->getType();
                     if (tyt->resolvesToPointer() && tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
-                        tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded())
+                            tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded())
                         tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->setLength(((Const *)param->getRight())->getInt());
                     break;
                 }
@@ -963,11 +1061,11 @@ SharedType deltaSubtrahend(SharedType tc, SharedType ta) {
     return ta->clone();
 }
 
-//                    ta=
-//  tb=        alpha*    int        pi
-// beta*    int        bottom    int
-// int        void*    int        pi
-// pi        pi        int        pi
+//          ta=
+// tb=      alpha*  int        pi
+// beta*    int     bottom    int
+// int      void*   int        pi
+// pi       pi      int        pi
 SharedType deltaDifference(SharedType ta, SharedType tb) {
     bool ch;
     if (ta->resolvesToPointer()) {
@@ -1002,7 +1100,7 @@ SharedType Binary::ascendType() {
     switch (op) {
     case opPlus:
         return sigmaSum(ta, tb);
-    // Do I need to check here for Array* promotion? I think checking in descendType is enough
+        // Do I need to check here for Array* promotion? I think checking in descendType is enough
     case opMinus:
         return deltaDifference(ta, tb);
     case opMult:
@@ -1048,13 +1146,13 @@ SharedType Const::ascendType() {
     if (type->resolvesToVoid()) {
         switch (op) {
         case opIntConst:
-// could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
+            // could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
 #if 0
-                if (u.i != 0 && (u.i < 0x1000 && u.i > -0x100))
-                    // Assume that small nonzero integer constants are of integer type (can't be pointers)
-                    // But note that you can't say anything about sign; these are bit patterns, not HLL constants
-                    // (e.g. all ones could be signed -1 or unsigned 0xFFFFFFFF)
-                    type = IntegerType::get(STD_SIZE, 0);
+            if (u.i != 0 && (u.i < 0x1000 && u.i > -0x100))
+                // Assume that small nonzero integer constants are of integer type (can't be pointers)
+                // But note that you can't say anything about sign; these are bit patterns, not HLL constants
+                // (e.g. all ones could be signed -1 or unsigned 0xFFFFFFFF)
+                type = IntegerType::get(STD_SIZE, 0);
 #endif
             break;
         case opLongConst:
@@ -1142,9 +1240,9 @@ void Binary::descendType(SharedType parentType, bool &ch, Instruction *s) {
     SharedType ta = subExp1->ascendType();
     SharedType tb = subExp2->ascendType();
     SharedType nt; // "New" type for certain operators
-// The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
-// where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
-// triggers with every ordinary local reference, causing esp to appear used in the final program
+    // The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
+    // where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
+    // triggers with every ordinary local reference, causing esp to appear used in the final program
 #if 0
     Signature* sig = s->getProc()->getSignature();
     Prog* prog = s->getProc()->getProg();
@@ -1294,10 +1392,10 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
     Signature *sig = owner_proc != nullptr ? owner_proc->getSignature() : nullptr;
     Prog *prog = owner_proc->getProg();
     std::vector<Exp *> matches;
-    Binary *as_bin = dynamic_cast<Binary *>(subExp1);
     switch (op) {
     case opMemOf:
     {
+        Binary *as_bin = dynamic_cast<Binary *>(subExp1);
         // Check for m[x*K1 + K2]: array with base K2 and stride K1
         if (as_bin && as_bin->getOper() == opPlus && as_bin->getSubExp1()->getOper() == opMult &&
                 as_bin->getSubExp2()->isIntConst() &&
