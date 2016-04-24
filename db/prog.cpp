@@ -70,10 +70,9 @@ namespace dbghelp {
 #include <sys/types.h>
 
 Prog::Prog(const QString &name) : pLoaderPlugin(nullptr), DefaultFrontend(nullptr), m_name(name), m_iNumberedProc(1) {
-    m_rootCluster = getOrInsertModule("prog");
+    m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
     Image = Boomerang::get()->getImage();
     BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
-    // Default constructor
 }
 /// Create or retrieve existing module
 /// \param frontend for the module, if nullptr set it to program's default frontend.
