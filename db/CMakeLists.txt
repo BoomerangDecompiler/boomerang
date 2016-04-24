@@ -35,6 +35,7 @@ SET(INCLUDES
 ../include/IBinaryImage.h
 ../include/IBinarySymbols.h
 ../include/IBoomerang.h
+../include/IProject.h
 )
 SET(SRC
     SymTab
