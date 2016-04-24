@@ -885,6 +885,17 @@ LONG InterlockedIncrement(LONG *Addend);
 
 LONG InterlockedDecrement(LONG *Addend);
 
+typedef struct
+{
+     void * DebugInfo;
+     LONG LockCount;
+     LONG RecursionCount;
+     PVOID OwningThread;
+     PVOID LockSemaphore;
+     ULONG SpinCount;
+} RTL_CRITICAL_SECTION;
+void EnterCriticalSection (RTL_CRITICAL_SECTION *lpCriticalSection);
+void LeaveCriticalSection (RTL_CRITICAL_SECTION *lpCriticalSection);
 
 // guessed LPR functions
 
