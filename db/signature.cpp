@@ -1413,7 +1413,7 @@ void Signature::addReturn(SharedType type, Exp *exp) {
 // Deprecated. Use the above version.
 void Signature::addReturn(Exp *exp) {
     // addReturn(exp->getType() ? exp->getType() : new IntegerType(), exp);
-    addReturn(std::make_shared<VoidType>(), exp);
+    addReturn(PointerType::get(VoidType::get()), exp);
 }
 
 void Signature::removeReturn(Exp *e) {

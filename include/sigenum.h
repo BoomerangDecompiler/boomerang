@@ -8,6 +8,7 @@ enum callconv {
     CONV_C,        // Standard C, no callee pop
     CONV_PASCAL,   // callee pop
     CONV_THISCALL, // MSVC "thiscall": one parameter in register ecx
+    CONV_FASTCALL, // MSVC fastcall convention ECX,EDX,stack, callee pop
     CONV_NONE
 };
 

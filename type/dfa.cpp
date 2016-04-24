@@ -47,7 +47,6 @@ void UserProc::dfaTypeAnalysis() {
     StatementList stmts;
     getStatements(stmts);
 
-    StatementList::iterator it;
     int iter;
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
@@ -758,13 +757,13 @@ SharedType Type::createUnion(SharedType other, bool &ch, bool bHighestPtr /* = f
 
 void CallStatement::dfaTypeAnalysis(bool &ch) {
     // Iterate through the arguments
-    StatementList::iterator aa;
     int n = 0;
-    for (aa = arguments.begin(); aa != arguments.end(); ++aa, ++n) {
-        if (procDest && !procDest->getSignature()->getParamBoundMax(n).isNull() && ((Assign *)*aa)->getRight()->isIntConst()) {
-            Assign *a = (Assign *)*aa;
+    for (Instruction * aa : arguments) {
+        Assign * param = dynamic_cast<Assign *>(aa);
+        assert(param);
+        if (procDest && !procDest->getSignature()->getParamBoundMax(n).isNull() && param->getRight()->isIntConst()) {
             QString boundmax = procDest->getSignature()->getParamBoundMax(n);
-            assert(a->getType()->resolvesToInteger());
+            assert(param->getType()->resolvesToInteger());
             StatementList::iterator aat;
             int nt = 0;
             for (aat = arguments.begin(); aat != arguments.end(); ++aat, ++nt)
@@ -772,13 +771,14 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
                     SharedType tyt = ((Assign *)*aat)->getType();
                     if (tyt->resolvesToPointer() && tyt->asPointer()->getPointsTo()->resolvesToArray() &&
                         tyt->asPointer()->getPointsTo()->asArray()->isUnbounded())
-                        tyt->asPointer()->getPointsTo()->asArray()->setLength(((Const *)a->getRight())->getInt());
+                        tyt->asPointer()->getPointsTo()->asArray()->setLength(((Const *)param->getRight())->getInt());
                     break;
                 }
         }
         // The below will ascend type, meet type with that of arg, and descend type. Note that the type of the assign
         // will already be that of the signature, if this is a library call, from updateArguments()
-        ((Assign *)*aa)->dfaTypeAnalysis(ch);
+        param->dfaTypeAnalysis(ch);
+        ++n;
     }
     // The destination is a pointer to a function with this function's signature (if any)
     if (pDest) {
@@ -790,12 +790,15 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
 }
 
 void ReturnStatement::dfaTypeAnalysis(bool &ch) {
-    StatementList::iterator mm, rr;
-    for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-        ((Assign *)*mm)->dfaTypeAnalysis(ch);
+    for (Instruction * mm : modifieds) {
+        if(not mm->isAssignment())
+            qDebug()<< "non assignment in modifieds of ReturnStatement";
+        mm->dfaTypeAnalysis(ch);
     }
-    for (rr = returns.begin(); rr != returns.end(); ++rr) {
-        ((Assign *)*rr)->dfaTypeAnalysis(ch);
+    for (Instruction * rr : returns) {
+        if(not rr->isAssignment())
+            qDebug()<< "non assignment in returns of ReturnStatement";
+        rr->dfaTypeAnalysis(ch);
     }
 }
 
@@ -1025,6 +1028,7 @@ SharedType Binary::ascendType() {
     case opGtrEqUns:
         return BooleanType::get();
     case opFMinus:
+    case opFPlus:
         return FloatType::get(ta->getSize());
     default:
         // Many more cases to implement

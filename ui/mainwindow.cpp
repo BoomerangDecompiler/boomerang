@@ -3,8 +3,8 @@
 #include "rtleditor.h"
 #include "LoggingSettingsDlg.h"
 
-#include <QFileDialog>
-#include <QtWidgets>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QtWidgets>
 
 
 #include "ui_boomerang.h"

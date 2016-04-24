@@ -4088,7 +4088,8 @@ QString UserProc::lookupSym(const Exp &arg, SharedType ty) {
     if (e->isSubscript())
         // A subscripted location, where there was no specific mapping. Check for a general mapping covering all
         // versions of the location
-        return lookupSym(((RefExp*)e)->getSubExp1(), ty);
+        assert(dynamic_cast<const RefExp*>(e)!=nullptr);
+        return lookupSym(*e->getSubExp1(), ty);
 #endif
     // Else there is no symbol
     return QString::null;

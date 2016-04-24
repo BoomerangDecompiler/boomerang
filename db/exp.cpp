@@ -2945,8 +2945,9 @@ Exp *Binary::polySimplify(bool &bMod) {
     SharedType ty = nullptr; // Type of subExp1
     if (subExp1->isSubscript()) {
         Instruction *def = ((RefExp *)subExp1)->getDef();
-        if (def)
+        if (def) {
             ty = def->getTypeFor(((RefExp *)subExp1)->getSubExp1());
+        }
     }
     if (op == opPlus && ty && ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToCompound() &&
         opSub2 == opIntConst) {
