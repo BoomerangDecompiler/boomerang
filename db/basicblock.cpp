@@ -1706,9 +1706,6 @@ static Exp *formr = Binary::get(
 static Exp *hlForms[] = {forma, formA, formo, formO, formR, formr};
 static char chForms[] = {'a', 'A', 'o', 'O', 'R', 'r'};
 
-void init_basicblock() {
-}
-
 // Vcall high level patterns
 // Pattern 0: global<wild>[0]
 static Exp *vfc_funcptr =

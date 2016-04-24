@@ -247,8 +247,6 @@ Exp *listStrToExp(std::list<QString> *ls) {
 
 static Binary srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
 static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
-void init_sslparser() {
-}
 
 /***************************************************************************/ /**
   *
