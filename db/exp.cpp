@@ -438,11 +438,11 @@ bool TypeVal::operator==(const Exp &o) const {
 
 /***************************************************************************/ /**
   *
-  * \brief        Virtual function to compare myself with another Exp
-  * \note            The test for a wildcard is only with this object, not the other object (o).
-  *                    So when searching and there could be wildcards, use search == *this not *this == search
-  * \param        o - Ref to other Exp
-  * \returns            True if equal
+  * \brief      Virtual function to compare myself with another Exp
+  * \note       The test for a wildcard is only with this object, not the other object (o).
+  *             So when searching and there could be wildcards, use search == *this not *this == search
+  * \param      o - Ref to other Exp
+  * \returns    true if equal
   ******************************************************************************/
 bool Const::operator<(const Exp &o) const {
     if (op < o.getOper())
@@ -1651,8 +1651,10 @@ Exp *Binary::match(Exp *pattern) {
     if (b_lhs == nullptr)
         return nullptr;
     Exp *b_rhs = subExp2->match(pattern->getSubExp2());
-    if (b_rhs == nullptr)
+    if (b_rhs == nullptr) {
+        delete b_lhs;
         return nullptr;
+    }
     if (b_lhs->getOper() == opNil) {
         delete b_lhs;
         return b_rhs;

@@ -701,6 +701,7 @@ void ElfBinaryFile::applyRelocations() {
                     switch (relType) {
                     case 0: // R_386_NONE: just ignore (common)
                         break;
+                    default:
                     case R_SPARC_HI22:
                     case R_SPARC_LO10:
                     case R_SPARC_GLOB_DAT:
