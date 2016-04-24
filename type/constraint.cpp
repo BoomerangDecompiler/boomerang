@@ -17,6 +17,9 @@
 #include "exp.h"
 #include "boomerang.h"
 #include "log.h"
+#include "proc.h"
+#include "prog.h"
+#include "type.h"
 #include <sstream>
 #include <cstring>
 
@@ -309,7 +312,7 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
         // right is <alpha*> -> <alpha>
         right = ((Binary *)clone)->getSubExp2();
         t = ((TypeVal *)right)->getType();
-        ((TypeVal *)right)->setType(t->asPointer()->getPointsTo()->clone());
+        ((TypeVal *)right)->setType(t->as<PointerType>()->getPointsTo()->clone());
         conSet.remove(c);
         conSet.insert(clone);
         delete c;

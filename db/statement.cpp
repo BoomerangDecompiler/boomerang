@@ -2181,7 +2181,7 @@ Exp *processConstant(Exp * e, SharedType  t, Prog * prog, UserProc * proc, ADDRE
                         prog->decodeEntryPoint(a);
                     Function *p = prog->findProc(a);
                     if (p) {
-                        Signature *sig = points_to->asFunc()->getSignature()->clone();
+                        Signature *sig = points_to->as<FuncType>()->getSignature()->clone();
                         if (sig->getName() == nullptr || sig->getName().isEmpty() || sig->getName() == "<ANON>" ||
                             prog->findProc(sig->getName()) != nullptr)
                             sig->setName(p->getName());
@@ -3362,10 +3362,10 @@ void BranchStatement::genConstraints(LocationSet & cons) {
         opsType = IntegerType::get(0);
     if (jtCond == BRANCH_JUGE || jtCond == BRANCH_JULE || jtCond == BRANCH_JUG || jtCond == BRANCH_JUL) {
         assert(!bFloat);
-        opsType->asInteger()->bumpSigned(-1);
+        opsType->as<IntegerType>()->bumpSigned(-1);
     } else if (jtCond == BRANCH_JSGE || jtCond == BRANCH_JSLE || jtCond == BRANCH_JSG || jtCond == BRANCH_JSL) {
         assert(!bFloat);
-        opsType->asInteger()->bumpSigned(+1);
+        opsType->as<IntegerType>()->bumpSigned(+1);
     }
 
     // Constraints leading from the condition

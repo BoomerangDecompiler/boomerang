@@ -2260,7 +2260,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter &out, const SharedType &ty) {
         out.writeEndElement();
         return;
     }
-    auto n = ty->asNamed();
+    auto n = ty->as<NamedType>();
     if (n) {
         out.writeStartElement("namedtype");
         out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));

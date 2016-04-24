@@ -203,7 +203,7 @@ void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, 
     assert(ty->isFunc());
     UserProc *proc = (UserProc *)Program->setNewProc(addr);
     assert(proc);
-    Signature *sig = ty->asFunc()->getSignature()->clone();
+    Signature *sig = ty->as<FuncType>()->getSignature()->clone();
     const IBinarySymbol *p_sym  = BinarySymbols->find(addr);
     QString sym = p_sym ? p_sym->getName() : QString("");
     if (!sym.isEmpty())

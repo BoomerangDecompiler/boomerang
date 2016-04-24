@@ -94,11 +94,11 @@ void TypeTest::testCompound() {
     QCOMPARE(actual,expected);
 
     // Get the type pointed to
-    ty = ty->asPointer()->getPointsTo();
+    ty = ty->as<PointerType>()->getPointsTo();
     QCOMPARE(ty->getCtype(),QString("PAINTSTRUCT"));
 
     // Offset 8 should have a RECT
-    auto subTy = ty->asCompound()->getTypeAtOffset(8 * 8);
+    auto subTy = ty->as<CompoundType>()->getTypeAtOffset(8 * 8);
     expected = "struct { "
                     "int left; "
                     "int top; "
@@ -108,19 +108,19 @@ void TypeTest::testCompound() {
     QCOMPARE(subTy->getCtype(true),expected);
 
     // Name at offset C should be bottom
-    QCOMPARE(subTy->asCompound()->getNameAtOffset(0x0C * 8),QString("bottom"));
+    QCOMPARE(subTy->as<CompoundType>()->getNameAtOffset(0x0C * 8),QString("bottom"));
 
     // Now figure out the name at offset 8+C
-    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 0x0C) * 8),QString("rcPaint"));
+    QCOMPARE(ty->as<CompoundType>()->getNameAtOffset((8 + 0x0C) * 8),QString("rcPaint"));
 
     // Also at offset 8
-    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 0) * 8),QString("rcPaint"));
+    QCOMPARE(ty->as<CompoundType>()->getNameAtOffset((8 + 0) * 8),QString("rcPaint"));
 
     // Also at offset 8+4
-    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 4) * 8),QString("rcPaint"));
+    QCOMPARE(ty->as<CompoundType>()->getNameAtOffset((8 + 4) * 8),QString("rcPaint"));
 
     // And at offset 8+8
-    QCOMPARE(ty->asCompound()->getNameAtOffset((8 + 8) * 8),QString("rcPaint"));
+    QCOMPARE(ty->as<CompoundType>()->getNameAtOffset((8 + 8) * 8),QString("rcPaint"));
 
     delete pFE;
 }

@@ -2397,19 +2397,19 @@ Exp * accessMember(Exp *parent,const std::shared_ptr<CompoundType> &c,int n) {
     Exp *res = Binary::get(opMemberAccess, parent, Const::get(nam));
     assert((r % 8) == 0);
     if(t->resolvesToCompound()) {
-        res = accessMember(res,t->asCompound(),r/8);
-    } else if(t->resolvesToPointer() && t->asPointer()->getPointsTo()->resolvesToCompound()) {
+        res = accessMember(res,t->as<CompoundType>(),r/8);
+    } else if(t->resolvesToPointer() && t->as<PointerType>()->getPointsTo()->resolvesToCompound()) {
         if(r!=0)
             assert(false);
     } else if(t->resolvesToArray()) {
-        std::shared_ptr<ArrayType> a = t->asArray();
+        std::shared_ptr<ArrayType> a = t->as<ArrayType>();
         SharedType array_member_type = a->getBaseType();
         int b  = array_member_type->getSize() / 8;
         int br = array_member_type->getSize() % 8;
         assert(br==0);
         res = Binary::get(opArrayIndex, res,Const::get(n/b));
         if(array_member_type->resolvesToCompound()) {
-            res = accessMember(res,array_member_type->asCompound(),n%b);
+            res = accessMember(res,array_member_type->as<CompoundType>(),n%b);
         }
 
     }
@@ -2932,7 +2932,7 @@ Exp *Binary::polySimplify(bool &bMod) {
             subExp2->getOper() == opIntConst) {
         SharedType ty = subExp1->getSubExp1()->getType();
         if (ty->resolvesToPointer() &&
-                ty->asPointer()->getPointsTo()->resolvesToCompound()) {
+                ty->as<PointerType>()->getPointsTo()->resolvesToCompound()) {
             res = Binary::get(opPlus, subExp1->getSubExp1(), subExp2);
             res = Binary::get(opPlus, res, subExp1->getSubExp2());
             bMod = true;
@@ -2951,10 +2951,10 @@ Exp *Binary::polySimplify(bool &bMod) {
             ty = def->getTypeFor(((RefExp *)subExp1)->getSubExp1());
         }
     }
-    if (op == opPlus && ty && ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToCompound() &&
+    if (op == opPlus && ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToCompound() &&
         opSub2 == opIntConst) {
         unsigned n = (unsigned)((Const *)subExp2)->getInt();
-        std::shared_ptr<CompoundType> c = ty->asPointer()->getPointsTo()->asCompound();
+        std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
         res = convertFromOffsetToCompound(subExp1,c,n);
         if(res) {
                 LOG_VERBOSE(1) << "(trans1) replacing " << this << " with " << res << "\n";
@@ -2972,8 +2972,8 @@ Exp *Binary::polySimplify(bool &bMod) {
         Exp *l = subExp1;
         SharedType ty = l->getType();
         if (    ty && ty->resolvesToPointer() &&
-                ty->asPointer()->getPointsTo()->resolvesToArray()) {
-            auto a = ty->asPointer()->getPointsTo()->asArray();
+                ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
+            auto a = ty->as<PointerType>()->getPointsTo()->as<ArrayType>();
             int b = a->getBaseType()->getSize() / 8;
             int br = a->getBaseType()->getSize() % 8;
             assert(br == 0);

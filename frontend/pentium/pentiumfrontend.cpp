@@ -900,14 +900,14 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         std::shared_ptr<CompoundType> compound;
         bool paramIsFuncPointer = false, paramIsCompoundWithFuncPointers = false;
         if (paramType->resolvesToPointer()) {
-            points_to = paramType->asPointer()->getPointsTo();
+            points_to = paramType->as<PointerType>()->getPointsTo();
             if (points_to->resolvesToFunc())
                 paramIsFuncPointer = true;
             else if (points_to->resolvesToCompound()) {
                 compound = points_to->as<CompoundType>();
                 for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
                     if (compound->getType(n)->resolvesToPointer() &&
-                        compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc())
+                        compound->getType(n)->as<PointerType>()->getPointsTo()->resolvesToFunc())
                         paramIsCompoundWithFuncPointers = true;
                 }
             }
@@ -956,7 +956,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
             LOG_VERBOSE(1) << "found a new procedure at address " << a << " from inspecting parameters of call to "
                            << call->getDestProc()->getName() << ".\n";
             Function *proc = Program->setNewProc(a);
-            Signature *sig = paramType->asPointer()->getPointsTo()->asFunc()->getSignature()->clone();
+            Signature *sig = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
             sig->setName(proc->getName());
             sig->setForced(true);
             proc->setSignature(sig);
@@ -970,13 +970,13 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 
         for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
             if (compound->getType(n)->resolvesToPointer() &&
-                compound->getType(n)->asPointer()->getPointsTo()->resolvesToFunc()) {
+                compound->getType(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
                 ADDRESS d = ADDRESS::g(Image->readNative4(a));
                 if (VERBOSE)
                     LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "
                         << call->getDestProc()->getName() << ".\n";
                 Function *proc = Program->setNewProc(d);
-                Signature *sig = compound->getType(n)->asPointer()->getPointsTo()->asFunc()->getSignature()->clone();
+                Signature *sig = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);
                 proc->setSignature(sig);

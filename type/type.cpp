@@ -35,12 +35,12 @@ QMap<QString, SharedType > Type::namedTypes;
 bool Type::isCString() {
     if (!resolvesToPointer())
         return false;
-    SharedType p = asPointer()->getPointsTo();
+    SharedType p = as<PointerType>()->getPointsTo();
     if (p->resolvesToChar())
         return true;
     if (!p->resolvesToArray())
         return false;
-    p = p->asArray()->getBaseType();
+    p = p->as<ArrayType>()->getBaseType();
     return p->resolvesToChar();
 }
 
@@ -569,7 +569,7 @@ bool LowerType::operator<(const Type &other) const {
 Exp *Type::match(SharedType pattern) {
     if (pattern->isNamed()) {
         LOG << "type match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
-        return Binary::get(opList, Binary::get(opEquals, new Unary(opVar, new Const(pattern->asNamed()->getName())),
+        return Binary::get(opList, Binary::get(opEquals, new Unary(opVar, new Const(pattern->as<NamedType>()->getName())),
                                                new TypeVal(this->clone())),
                            new Terminal(opNil));
     }
@@ -577,21 +577,16 @@ Exp *Type::match(SharedType pattern) {
 }
 
 Exp *IntegerType::match(SharedType pattern) { return Type::match(pattern); }
-
-Exp *FloatType::match(SharedType pattern) { return Type::match(pattern); }
-
+Exp *FloatType::match(SharedType pattern)   { return Type::match(pattern); }
 Exp *BooleanType::match(SharedType pattern) { return Type::match(pattern); }
-
-Exp *CharType::match(SharedType pattern) { return Type::match(pattern); }
-
-Exp *VoidType::match(SharedType pattern) { return Type::match(pattern); }
-
-Exp *FuncType::match(SharedType pattern) { return Type::match(pattern); }
+Exp *CharType::match(SharedType pattern)    { return Type::match(pattern); }
+Exp *VoidType::match(SharedType pattern)    { return Type::match(pattern); }
+Exp *FuncType::match(SharedType pattern)    { return Type::match(pattern); }
 
 Exp *PointerType::match(SharedType pattern) {
     if (pattern->isPointer()) {
         LOG << "got pointer match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
-        return points_to->match(pattern->asPointer()->getPointsTo());
+        return points_to->match(pattern->as<PointerType>()->getPointsTo());
     }
     return Type::match(pattern);
 }
@@ -930,14 +925,14 @@ bool PointerType::pointsToAlpha() const {
         return true;
     if (!points_to->isNamed())
         return false;
-    return points_to->asNamed()->getName().startsWith("alpha");
+    return points_to->as<NamedType>()->getName().startsWith("alpha");
 }
 
 int PointerType::pointerDepth() const {
     int d = 1;
     auto pt = points_to;
     while (pt->isPointer()) {
-        pt = pt->asPointer()->getPointsTo();
+        pt = pt->as<PointerType>()->getPointsTo();
         d++;
     }
     return d;
@@ -946,7 +941,7 @@ int PointerType::pointerDepth() const {
 SharedType PointerType::getFinalPointsTo() const {
     SharedType pt = points_to;
     while (pt->isPointer()) {
-        pt = pt->asPointer()->getPointsTo();
+        pt = pt->as<PointerType>()->getPointsTo();
     }
     return pt;
 }
@@ -963,55 +958,12 @@ void ArrayType::fixBaseType(SharedType b) {
         BaseType = b;
     else {
         assert(BaseType->isArray());
-        BaseType->asArray()->fixBaseType(b);
+        BaseType->as<ArrayType>()->fixBaseType(b);
     }
 }
 
-#define AS_TYPE(x)                                                                                                     \
-    std::shared_ptr<x##Type> Type::as##x() {                                                                                           \
-        SharedType ty = shared_from_this();                                                                                               \
-        if (isNamed())                                                                                                 \
-            ty = std::static_pointer_cast<NamedType>(ty)->resolvesTo();                                                                      \
-        auto res = std::dynamic_pointer_cast<x##Type>(ty);                                                         \
-        assert(res);                                                                                                   \
-        return res;                                                                                                    \
-    }                                                                                                                  \
-    std::shared_ptr<const x##Type> Type::as##x() const {                                                                               \
-        auto ty = shared_from_this();                                                                                         \
-        if (isNamed())                                                                                                 \
-            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();                                                               \
-        auto res = std::dynamic_pointer_cast<const x##Type>(ty);                                             \
-        assert(res);                                                                                                   \
-        return res;                                                                                                    \
-    }
-
-AS_TYPE(Void)
-AS_TYPE(Func)
-AS_TYPE(Boolean)
-AS_TYPE(Char)
-AS_TYPE(Integer)
-AS_TYPE(Float)
-AS_TYPE(Pointer)
-AS_TYPE(Array)
-AS_TYPE(Compound)
-AS_TYPE(Size)
-AS_TYPE(Union)
-AS_TYPE(Upper)
-AS_TYPE(Lower)
 // Note: don't want to call this->resolve() for this case, since then we (probably) won't have a NamedType and the
 // assert will fail
-std::shared_ptr<NamedType> Type::asNamed() {
-    SharedType ty = shared_from_this();
-    auto res = std::dynamic_pointer_cast<NamedType>(ty);
-    assert(res);
-    return res;
-}
-std::shared_ptr<const NamedType> Type::asNamed() const {
-    auto ty = shared_from_this();
-    auto res = std::dynamic_pointer_cast<const NamedType>(ty);
-    assert(res);
-    return res;
-}
 
 #define RESOLVES_TO_TYPE(x)                                                                                            \
     bool Type::resolvesTo##x() const {                                                                                 \
@@ -1035,7 +987,7 @@ RESOLVES_TO_TYPE(Size)
 RESOLVES_TO_TYPE(Upper)
 RESOLVES_TO_TYPE(Lower)
 
-bool Type::isPointerToAlpha() { return isPointer() && asPointer()->pointsToAlpha(); }
+bool Type::isPointerToAlpha() { return isPointer() && as<PointerType>()->pointsToAlpha(); }
 //! Print in *i32* format
 void Type::starPrint(QTextStream &os) { os << "*" << this << "*"; }
 
@@ -1053,15 +1005,15 @@ QTextStream &operator<<(QTextStream &os, const Type &t) {
         int sg = t.as<IntegerType>()->getSignedness();
         // 'j' for either i or u, don't know which
         os << (sg == 0 ? 'j' : sg > 0 ? 'i' : 'u');
-        os << t.asInteger()->getSize();
+        os << t.as<IntegerType>()->getSize();
         break;
     }
     case eFloat:
         os << 'f';
-        os << t.asFloat()->getSize();
+        os << t.as<FloatType>()->getSize();
         break;
     case ePointer:
-        os << t.asPointer()->getPointsTo() << '*';
+        os << t.as<PointerType>()->getPointsTo() << '*';
         break;
     case eSize:
         os << t.getSize();
@@ -1086,19 +1038,19 @@ QTextStream &operator<<(QTextStream &os, const Type &t) {
         os << "func";
         break;
     case eArray:
-        os << '[' << t.asArray()->getBaseType();
-        if (!t.asArray()->isUnbounded())
-            os << ", " << t.asArray()->getLength();
+        os << '[' << t.as<ArrayType>()->getBaseType();
+        if (!t.as<ArrayType>()->isUnbounded())
+            os << ", " << t.as<ArrayType>()->getLength();
         os << ']';
         break;
     case eNamed:
-        os << t.asNamed()->getName();
+        os << t.as<NamedType>()->getName();
         break;
     case eUpper:
-        os << "U(" << t.asUpper()->getBaseType() << ')';
+        os << "U(" << t.as<UpperType>()->getBaseType() << ')';
         break;
     case eLower:
-        os << "L(" << t.asLower()->getBaseType() << ')';
+        os << "L(" << t.as<LowerType>()->getBaseType() << ')';
         break;
     }
     return os;
@@ -1147,7 +1099,7 @@ SharedType LowerType::mergeWith(SharedType /*other*/) const {
 bool CompoundType::isSuperStructOf(const SharedType &other) {
     if (!other->isCompound())
         return false;
-    auto otherCmp = other->asCompound();
+    auto otherCmp = other->as<CompoundType>();
     size_t n = otherCmp->types.size();
     if (n > types.size())
         return false;
@@ -1161,7 +1113,7 @@ bool CompoundType::isSuperStructOf(const SharedType &other) {
 bool CompoundType::isSubStructOf(SharedType other) const {
     if (!other->isCompound())
         return false;
-    auto otherCmp = other->asCompound();
+    auto otherCmp = other->as<CompoundType>();
     unsigned n = types.size();
     if (n > otherCmp->types.size())
         return false;
@@ -1231,7 +1183,7 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
         end = it->first + it->second.size;
     if (end <= addr)
         return true;
-    if (it->second.type->isArray() && it->second.type->asArray()->isUnbounded()) {
+    if (it->second.type->isArray() && it->second.type->as<ArrayType>()->isUnbounded()) {
         it->second.size = (addr - it->first).m_value;
         LOG << "shrinking size of unbound array to " << it->second.size << " bytes\n";
         return true;
@@ -1288,21 +1240,21 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
                                      bool /*forced*/) {
     if (pdie->second.type->resolvesToCompound()) {
         unsigned bitOffset = (addr - pdie->first).m_value * 8;
-        SharedType memberType = pdie->second.type->asCompound()->getTypeAtOffset(bitOffset);
+        SharedType memberType = pdie->second.type->as<CompoundType>()->getTypeAtOffset(bitOffset);
         if (memberType->isCompatibleWith(*ty)) {
             bool ch;
             memberType = memberType->meetWith(ty, ch);
-            pdie->second.type->asCompound()->setTypeAtOffset(bitOffset, memberType);
+            pdie->second.type->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
         } else
             LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype()
                 << " is not compatible with existing structure member type "
                 << memberType->getCtype() << "\n";
     } else if (pdie->second.type->resolvesToArray()) {
-        SharedType memberType = pdie->second.type->asArray()->getBaseType();
+        SharedType memberType = pdie->second.type->as<ArrayType>()->getBaseType();
         if (memberType->isCompatibleWith(*ty)) {
             bool ch;
             memberType = memberType->meetWith(ty, ch);
-            pdie->second.type->asArray()->setBaseType(memberType);
+            pdie->second.type->as<ArrayType>()->setBaseType(memberType);
         } else
             LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype()
                 << " is not compatible with existing array member type "
@@ -1324,13 +1276,13 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
         for (it = it1; it != it2; ++it) {
             unsigned bitOffset = (it->first - addr).m_value * 8;
 
-            SharedType memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
+            SharedType memberType = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
             if (memberType->isCompatibleWith(*it->second.type, true)) {
                 bool ch;
                 qDebug() << prints();
                 qDebug() << memberType->getCtype()<<" "<< it->second.type->getCtype();
                 memberType = it->second.type->meetWith(memberType, ch);
-                ty->asCompound()->setTypeAtOffset(bitOffset, memberType);
+                ty->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
             } else {
                 LOG << "TYPE ERROR: At address " << addr << " struct type " << ty->getCtype() <<
                        " is not compatible with existing type " << it->second.type->getCtype() << "\n";
@@ -1338,14 +1290,14 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
             }
         }
     } else if (ty->resolvesToArray()) {
-        SharedType memberType = ty->asArray()->getBaseType();
+        SharedType memberType = ty->as<ArrayType>()->getBaseType();
         iterator it1 = dimap.lower_bound(addr);
         iterator it2 = dimap.upper_bound(pastLast - 1);
         for (it = it1; it != it2; ++it) {
             if (memberType->isCompatibleWith(*it->second.type, true)) {
                 bool ch;
                 memberType = memberType->meetWith(it->second.type, ch);
-                ty->asArray()->setBaseType(memberType);
+                ty->as<ArrayType>()->setBaseType(memberType);
             } else {
                 LOG << "TYPE ERROR: At address " << addr << " array type " << ty->getCtype() <<
                        " is not compatible with existing type " << it->second.type->getCtype() << "\n";
@@ -1376,12 +1328,12 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
             SharedType elemTy;
             int bitOffset = (it->first - addr).m_value / 8;
             if (ty->resolvesToCompound())
-                elemTy = ty->asCompound()->getTypeAtOffset(bitOffset);
+                elemTy = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
             else
-                elemTy = ty->asArray()->getBaseType();
+                elemTy = ty->as<ArrayType>()->getBaseType();
             QString locName = proc->findLocal(*locl, elemTy);
             if (!locName.isNull() && ty->resolvesToCompound()) {
-                auto c = ty->asCompound();
+                auto c = ty->as<CompoundType>();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
                 QString memName = c->getNameAtOffset(bitOffset);
                 Exp *s = Location::memOf(Binary::get(opPlus, rsp0->clone(), new Const(addr)));
@@ -1449,7 +1401,7 @@ ComplexTypeCompList &Type::compForAddress(ADDRESS addr, DataIntervalMap &dim) {
     while (startCurrent < addr) {
         size_t bitOffset = (addr - startCurrent).m_value * 8;
         if (curType->isCompound()) {
-            auto compCurType = curType->asCompound();
+            auto compCurType = curType->as<CompoundType>();
             unsigned rem = compCurType->getOffsetRemainder(bitOffset);
             startCurrent = addr - (rem / 8);
             ComplexTypeComp ctc;
@@ -1458,7 +1410,7 @@ ComplexTypeCompList &Type::compForAddress(ADDRESS addr, DataIntervalMap &dim) {
             res->push_back(ctc);
             curType = compCurType->getTypeAtOffset(bitOffset);
         } else if (curType->isArray()) {
-            curType = curType->asArray()->getBaseType();
+            curType = curType->as<ArrayType>()->getBaseType();
             unsigned baseSize = curType->getSize();
             unsigned index = bitOffset / baseSize;
             startCurrent += index * baseSize / 8;
@@ -1480,7 +1432,7 @@ void UnionType::addType(SharedType n, const QString &str) {
         // Note: need to check for name clashes eventually
         li.insert(utp->li.begin(), utp->li.end());
     } else {
-        if (n->isPointer() && n->asPointer()->getPointsTo().get() == this) { // Note: pointer comparison
+        if (n->isPointer() && n->as<PointerType>()->getPointsTo().get() == this) { // Note: pointer comparison
             n = PointerType::get(VoidType::get());
             LOG_VERBOSE(1) << "Warning: attempt to union with pointer to self!\n";
         }

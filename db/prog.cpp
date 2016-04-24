@@ -724,8 +724,8 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
     SharedType ty;
     if (knownType) {
         ty = knownType;
-        if (ty->resolvesToArray() && ty->asArray()->isUnbounded()) {
-            SharedType baseType = ty->asArray()->getBaseType();
+        if (ty->resolvesToArray() && ty->as<ArrayType>()->isUnbounded()) {
+            SharedType baseType = ty->as<ArrayType>()->getBaseType();
             int baseSize = 0;
             if (baseType)
                 baseSize = baseType->getBytes();
@@ -733,7 +733,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType) {
             int sz = symbol ? symbol->getSize() : 0;
             if (sz && baseSize)
                 // Note: since ty is a pointer and has not been cloned, this will also set the type for knownType
-                ty->asArray()->setLength(sz / baseSize);
+                ty->as<ArrayType>()->setLength(sz / baseSize);
         }
     } else
         ty = guessGlobalType(nam, uaddr);
@@ -1512,14 +1512,14 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
         if (!nam.isEmpty())
             // TODO: typecast?
             return Location::global(nam, nullptr);
-        if (type->asPointer()->getPointsTo()->resolvesToChar()) {
+        if (type->as<PointerType>()->getPointsTo()->resolvesToChar()) {
             const char *str = getStringConstant(init);
             if (str != nullptr)
                 return new Const(str);
         }
     }
     if (type->resolvesToCompound()) {
-        std::shared_ptr<CompoundType> c = type->asCompound();
+        std::shared_ptr<CompoundType> c = type->as<CompoundType>();
         Exp *n = e = new Terminal(opNil);
         for (unsigned int i = 0; i < c->getNumTypes(); i++) {
             ADDRESS addr = uaddr + c->getOffsetTo(i) / 8;
@@ -1540,7 +1540,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
         }
         return e;
     }
-    if (type->resolvesToArray() && type->asArray()->getBaseType()->resolvesToChar()) {
+    if (type->resolvesToArray() && type->as<ArrayType>()->getBaseType()->resolvesToChar()) {
         const char *str = getStringConstant(uaddr, true);
         if (str) {
             // Make a global string
@@ -1550,7 +1550,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
     if (type->resolvesToArray()) {
         int nelems = -1;
         QString nam = getGlobalName(uaddr);
-        int base_sz = type->asArray()->getBaseType()->getSize() / 8;
+        int base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
         if (!nam.isEmpty()) {
             auto symbol = BinarySymbols->find(nam);
             nelems = symbol ? symbol->getSize() : 0;
@@ -1559,7 +1559,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
         }
         Exp *n = e = new Terminal(opNil);
         for (int i = 0; nelems == -1 || i < nelems; i++) {
-            Exp *v = readNativeAs(uaddr + i * base_sz, type->asArray()->getBaseType());
+            Exp *v = readNativeAs(uaddr + i * base_sz, type->as<ArrayType>()->getBaseType());
             if (v == nullptr)
                 break;
             if (n->isNil()) {
@@ -1578,9 +1578,9 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
     if (type->resolvesToInteger() || type->resolvesToSize()) {
         int size;
         if (type->resolvesToInteger())
-            size = type->asInteger()->getSize();
+            size = type->as<IntegerType>()->getSize();
         else
-            size = type->asSize()->getSize();
+            size = type->as<SizeType>()->getSize();
         switch (size) {
         case 8:
             return new Const(Image->readNative1(uaddr));
@@ -1595,7 +1595,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
     }
     if (!type->resolvesToFloat())
         return e;
-    switch (type->asFloat()->getSize()) {
+    switch (type->as<FloatType>()->getSize()) {
     case 32:
         return new Const(Image->readNativeFloat4(uaddr));
     case 64:

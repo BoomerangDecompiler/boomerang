@@ -305,7 +305,7 @@ void Decompiler::getCompoundMembers(const QString &name, QTableWidget *tbl) {
     tbl->setRowCount(0);
     if (ty == nullptr || !ty->resolvesToCompound())
         return;
-    std::shared_ptr<CompoundType> c = ty->asCompound();
+    std::shared_ptr<CompoundType> c = ty->as<CompoundType>();
     for (unsigned int i = 0; i < c->getNumTypes(); i++) {
         tbl->setRowCount(tbl->rowCount() + 1);
         tbl->setItem(tbl->rowCount() - 1, 0, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i))));

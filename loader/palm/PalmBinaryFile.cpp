@@ -33,12 +33,8 @@ PalmBinaryFile::PalmBinaryFile() : m_pImage(nullptr), m_pData(nullptr) {
 }
 
 PalmBinaryFile::~PalmBinaryFile() {
-    if (m_pImage) {
-        delete[] m_pImage;
-    }
-    if (m_pData) {
-        delete[] m_pData;
-    }
+    m_pImage = nullptr;
+    delete[] m_pData;
 }
 
 void PalmBinaryFile::initialize(IBoomerang *sys)

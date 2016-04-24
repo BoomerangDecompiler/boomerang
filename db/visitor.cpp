@@ -849,7 +849,7 @@ Exp *ConstGlobalConverter::preVisit(RefExp *e, bool &recur) {
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             SharedType gloType = prog->getGlobal(gname)->getType();
             assert(gloType->isArray());
-            SharedType componentType = gloType->asArray()->getBaseType();
+            SharedType componentType = gloType->as<ArrayType>()->getBaseType();
             int value = prog->readNative4(gloValue + K * (componentType->getSize() / 8));
             recur = false;
             return new Const(value);
@@ -947,7 +947,7 @@ static Exp *checkSignedness(Exp *e, int reqSignedness) {
     int currSignedness = 0;
     bool isInt = ty->resolvesToInteger();
     if (isInt) {
-        currSignedness = ty->asInteger()->getSignedness();
+        currSignedness = ty->as<IntegerType>()->getSignedness();
         currSignedness = (currSignedness >= 0) ? 1 : -1;
     }
     // if (!isInt || currSignedness != reqSignedness) { // }
@@ -997,8 +997,8 @@ Exp *ExpCastInserter::postVisit(Const *e) {
     if (e->isIntConst()) {
         bool naturallySigned = e->getInt() < 0;
         SharedType ty = e->getType();
-        if (naturallySigned && ty->isInteger() && !ty->asInteger()->isSigned()) {
-            return new TypedExp(IntegerType::get(ty->asInteger()->getSize(), -1), e);
+        if (naturallySigned && ty->isInteger() && !ty->as<IntegerType>()->isSigned()) {
+            return new TypedExp(IntegerType::get(ty->as<IntegerType>()->getSize(), -1), e);
         }
     }
     return e;

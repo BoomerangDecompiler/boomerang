@@ -2571,7 +2571,7 @@ Exp *UserProc::getSymbolExp(Exp *le, SharedType ty, bool lastPass) {
                 locals[name] = ty;
             }
             if (ty->resolvesToCompound()) {
-                CompoundSharedType compound = ty->asCompound();
+                CompoundSharedType compound = ty->as<CompoundType>();
                 if (VERBOSE)
                     LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
                 char* nam = (char*)compound->getName(0);
@@ -2622,11 +2622,11 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
                 if (ty && ty->resolvesToPointer() && signature->isAddrOfStackLocal(prog, e)) {
                     LOG << "argument " << e << " is an addr of stack local and the type resolves to a pointer\n";
                     UniqExp olde(e->clone());
-                    SharedType pty = ty->asPointer()->getPointsTo();
+                    SharedType pty = ty->as<PointerType>()->getPointsTo();
                     if (e->isAddrOf() && e->getSubExp1()->isSubscript() && e->getSubExp1()->getSubExp1()->isMemOf())
                         e = e->getSubExp1()->getSubExp1()->getSubExp1();
-                    if (pty->resolvesToArray() && pty->asArray()->isUnbounded()) {
-                        auto a = std::static_pointer_cast<ArrayType>(pty->asArray()->clone());
+                    if (pty->resolvesToArray() && pty->as<ArrayType>()->isUnbounded()) {
+                        auto a = std::static_pointer_cast<ArrayType>(pty->as<ArrayType>()->clone());
                         pty = a;
                         a->setLength(1024); // just something arbitrary
                         if (i + 1 < call->getNumArguments()) {
@@ -2656,10 +2656,10 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
         Instruction *s = *it;
         std::list<Exp *> results;
         s->searchAll(nn, results);
-        for (auto &result : results) {
+        for (Exp *result : results) {
             Exp *wild = (result)->getSubExp1();
-            (result)->setSubExp1((result)->getSubExp2());
-            (result)->setSubExp2(wild);
+            result->setSubExp1(result->getSubExp2());
+            result->setSubExp2(wild);
         }
     }
 
