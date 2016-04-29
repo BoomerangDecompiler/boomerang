@@ -245,7 +245,10 @@ SectionInfo *BinaryImage::createSection(const QString &name, ADDRESS from, ADDRE
 //    for(auto iter = SectionMap.begin(),e=SectionMap.end(); iter!=e; ++iter) {
 //        qDebug() << iter->first.lower().toString() << " - "<< iter->first.upper().toString();
 //    }
-    if(SectionMap.find(interval<ADDRESS>::right_open(from,to))!=SectionMap.end()) {
+    auto clash_with = SectionMap.find(interval<ADDRESS>::right_open(from,to));
+    if(clash_with!=SectionMap.end()) {
+
+        qDebug() << "Segment" << name <<"would intersect existing one" << (*clash_with->second).getName();
         return nullptr;
     }
     SectionInfo *sect = new SectionInfo(name);
