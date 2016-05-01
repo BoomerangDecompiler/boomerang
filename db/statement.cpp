@@ -468,7 +468,8 @@ bool Instruction::replaceRef(Exp * e, Assignment * def, bool &convert) {
         if (!rhs->isFlagCall())
             return false;
         QString str = ((Const *)((Binary *)rhs)->getSubExp1())->getStr();
-        if (str.startsWith("SUBFLAGS")) {
+        //FIXME: check SUBFLAGSFL handling, and implement it if needed
+        if (str.startsWith("SUBFLAGS") && str!="SUBFLAGSFL") {
             /* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
                the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
                Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
@@ -482,8 +483,9 @@ bool Instruction::replaceRef(Exp * e, Assignment * def, bool &convert) {
                   /     \
                 P3     opNil
             */
-            Exp *relExp = Binary::get(opLessUns, ((Binary *)rhs)->getSubExp2()->getSubExp1(),
-                                      ((Binary *)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
+            Exp *relExp = Binary::get(opLessUns,
+                                      rhs->getSubExp2()->getSubExp1(),
+                                      rhs->getSubExp2()->getSubExp2()->getSubExp1());
             searchAndReplace(RefExp(Terminal::get(opCF), def), relExp, true);
             return true;
         }
@@ -492,11 +494,21 @@ bool Instruction::replaceRef(Exp * e, Assignment * def, bool &convert) {
     if (base->getOper() == opZF && lhs->isFlags()) {
         if (!rhs->isFlagCall())
             return false;
-        QString str = ((Const *)((Binary *)rhs)->getSubExp1())->getStr();
-        if (str.startsWith("SUBFLAGS")) {
+        QString str = ((Const *)rhs->getSubExp1())->getStr();
+        if (str.startsWith("SUBFLAGS") && str!="SUBFLAGSFL") {
             // for zf we're only interested in if the result part of the subflags is equal to zero
-            Exp *relExp = Binary::get(
-                opEquals, ((Binary *)rhs)->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(), Const::get(0));
+            Exp *relExp = Binary::get(opEquals,
+                                      rhs->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
+                                      Const::get(0));
+            searchAndReplace(RefExp(Terminal::get(opZF), def), relExp, true);
+            return true;
+        }
+        if(str=="SUBFLAGSFL") {
+            // for float zf we'll replace the ZF with (P1==P2)
+            Exp *relExp = Binary::get(opEquals,
+                                      rhs->getSubExp2()->getSubExp1(),
+                                      rhs->getSubExp2()->getSubExp2()->getSubExp1()
+                                      );
             searchAndReplace(RefExp(Terminal::get(opZF), def), relExp, true);
             return true;
         }
