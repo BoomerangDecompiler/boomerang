@@ -419,6 +419,8 @@ void Win32BinaryFile::readDebugData(QString exename) {
         printf("SymLoadModule64 returned error : %d\n", error);
         return;
     }
+#else
+    qWarning() << "Cannot retrieve debugging information for"<<exename;
 #endif
 }
 bool Win32BinaryFile::LoadFromMemory(QByteArray &arr) {
@@ -518,7 +520,7 @@ bool Win32BinaryFile::LoadFromMemory(QByteArray &arr) {
     ADDRESS start = GetEntryPoint();
     findJumps(start);
 
-	//TODO: loading debuging data should be an optional step, decision should be made 'upstream'
+    //TODO: loading debuging data should be an optional step, decision should be made 'upstream'
     //readDebugData();
     return true;
 
@@ -641,15 +643,15 @@ void printType(DWORD index, DWORD64 ImageBase) {
         got = dbghelp::SymGetTypeInfo(hProcess, ImageBase, index, dbghelp::TI_GET_TYPE, &d);
         assert(got);
         printType(d, ImageBase);
-		qDebug() << "*";
+        qDebug() << "*";
     } break;
     case SymTagBaseType:
         got = dbghelp::SymGetTypeInfo(hProcess, ImageBase, index, dbghelp::TI_GET_BASETYPE, &d);
         assert(got);
-		qDebug() << basicTypes[d];
+        qDebug() << basicTypes[d];
         break;
     default:
-		qWarning() << "unhandled symtag " << SymTagEnums[d] << "\n";
+        qWarning() << "unhandled symtag " << SymTagEnums[d] << "\n";
         assert(false);
     }
 }

@@ -464,7 +464,7 @@ SharedType makeUDT(int index, DWORD64 ModBase) {
         SharedType ty = Type::getNamedType(nameA);
         if (ty)
             return NamedType::get(nameA);
-		auto cty = CompoundType::get();
+        auto cty = CompoundType::get();
         DWORD count = 0;
         got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
         int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
@@ -1279,8 +1279,8 @@ void Prog::rangeAnalysis() {
 void Prog::printCallGraph() {
     QString fname1 = Boomerang::get()->getOutputPath() + "callgraph.out";
     QString fname2 = Boomerang::get()->getOutputPath() + "callgraph.dot";
-	QSaveFile file1(fname1);
-	QSaveFile file2(fname2);
+    QSaveFile file1(fname1);
+    QSaveFile file2(fname2);
     if( !(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly)) ) {
         LOG_STREAM() << "Cannot open output files for callgraph output";
         return;
@@ -1325,8 +1325,8 @@ void Prog::printCallGraph() {
     f2 << "}\n";
     f1.flush();
     f2.flush();
-	file1.commit();
-	file2.commit();
+    file1.commit();
+    file2.commit();
 }
 
 void printProcsRecursive(Function *proc, int indent, QTextStream &f, std::set<Function *> &seen) {
@@ -1379,7 +1379,7 @@ void Prog::printSymbolsToFile() {
         }
     }
     f.flush();
-	tgt.commit();
+    tgt.commit();
     LOG_STREAM() << "leaving Prog::printSymbolsToFile\n";
 }
 
@@ -1409,7 +1409,7 @@ void Prog::printCallGraphXML() {
     f << "     </callgraph>\n";
     f << "</prog>\n";
     f.flush();
-	CallGraphFile.commit();
+    CallGraphFile.commit();
 }
 
 Module *Prog::findModule(const QString &name) {

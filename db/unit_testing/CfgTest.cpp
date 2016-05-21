@@ -247,8 +247,8 @@ void CfgTest::testPlacePhi2() {
    Twoway (2) if (b < 4 )
       |
       |-T-> Fall (3)
-      |		 |
-      |		 V
+      |      |
+      |      V
       |-F-> Call (4) ----> Ret (5)
     */
 

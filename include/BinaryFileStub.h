@@ -50,7 +50,7 @@ class BinaryFileStub : public LoaderInterface {
 
     const char *m_pFileName; // Pointer to input file name
   protected:
-    virtual bool LoadFromMemory(const QByteArray &data) { return false; }
+    virtual bool LoadFromMemory(const QByteArray &/*data*/) { return false; }
     virtual bool PostLoad(void *handle);         // Called after loading archive member
 
   private:

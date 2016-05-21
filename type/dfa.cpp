@@ -378,13 +378,13 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function * f) {
 bool DFA_TypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
 {
     assert(false);
-	return false;
+    return false;
 }
 
 bool DFA_TypeRecovery::dfaTypeAnalysis(Instruction *i)
 {
     assert(false);
-	return false;
+    return false;
 }
 
 void UserProc::dfaTypeAnalysis() {
@@ -1385,7 +1385,6 @@ static bool match_l1_K(Exp *in,std::vector<Exp *> &matches) {
     RefExp * refexp= static_cast<RefExp *>(as_bin->getSubExp1());
     if(!refexp->getSubExp1()->isLocation())
         return false;
-    Location *loc = static_cast<Location *>(refexp->getSubExp1());
     matches.push_back(refexp);
     matches.push_back(as_bin->getSubExp2());
     return true;
