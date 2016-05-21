@@ -109,6 +109,8 @@ SET(boom_base_SRC
 )
 ADD_LIBRARY(boom_base ${boom_base_SRC} )
 qt5_use_modules(boom_base Core Xml)
+SET_PROPERTY(TARGET boom_base PROPERTY CXX_STANDARD 11)
+SET_PROPERTY(TARGET boom_base PROPERTY CXX_STANDARD_REQUIRED ON)
 
 ADD_SUBDIRECTORY(loader)
 ADD_SUBDIRECTORY(ui)

@@ -15,7 +15,7 @@ This is an experimental branch of boomerang project, the inital goals are:
 2. Verify stability of decompilation results: compare 2 run results, they should be exactly the same.
 3. Simplify code base using features available in c++11
 
-Considering part 3, the target compilers are GCC \>=4.6 family (MinGW on windows), and Clang.
+Considering part 3, the target compilers are GCC \>=4.6 family (MinGW on windows), Clang and MSVC>=2015.
 
 For full ( and slightly stale :) ) build instructions please see
 
@@ -28,7 +28,7 @@ Compiling the `next` branch
 Note that on a debian system you can usually get away with:
 
 ```bash
-sudo apt-get install git libboost-dev cmake qt5-default
+sudo apt-get install git cmake qt5-default
 cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
 git clone git://github.com/nemerle/boomerang.git
 cd boomerang
@@ -39,7 +39,7 @@ make
 
 To compile on windows, it should be enough to have:
 
--   [CMake 2.8.12 or newer](http://www.CMake.org/CMake/resources/software.html)
+-   [CMake 3.1.0 or newer](http://www.CMake.org/CMake/resources/software.html)
 -   [Qt5 for MinGW](http://qt-project.org/wiki/MinGW-64-bit)
 -   QtCreator (installed with Qt5)
 
