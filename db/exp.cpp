@@ -1037,18 +1037,21 @@ void Unary::print(QTextStream &os, bool html) const {
             // Just print the temp {   // balance }s
             p1->print(os, html);
             break;
+        } else {
+            os << "r["; // e.g. r[r2]
+            // Use print, not printr, because this is effectively the top level again (because the [] act as
+            // parentheses)
+            p1->print(os, html);
+
         }
-        [[clang::fallthrough]];
-    // Else fall through
+        os << "]";
+        break;
     case opMemOf:
     case opAddrOf:
     case opVar:
     case opTypeOf:
     case opKindOf:
         switch (op) {
-        case opRegOf:
-            os << "r[";
-            break; // e.g. r[r2]
         case opMemOf:
             os << "m[";
             break;
@@ -2416,7 +2419,7 @@ Exp * accessMember(Exp *parent,const std::shared_ptr<CompoundType> &c,int n) {
     return res;
 
 }
-Exp * convertFromOffsetToCompound(Exp *parent,std::shared_ptr<CompoundType> &c,int n) {
+Exp * convertFromOffsetToCompound(Exp *parent,std::shared_ptr<CompoundType> &c,unsigned n) {
     if (n * 8 >= c->getSize())
         return nullptr;
     QString nam = c->getNameAtOffset(n * 8);
