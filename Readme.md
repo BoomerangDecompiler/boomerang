@@ -1,6 +1,8 @@
 Welcome to boomerang decompiler
 ===============================
 
+[![Join the chat at https://gitter.im/nemerle/boomerang](https://badges.gitter.im/nemerle/boomerang.svg)](https://gitter.im/nemerle/boomerang?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This repository is now connected to continous integration server:
 <http://boomerang.nemerle.eu>
 Generated documentation is available at <http://boomerang.nemerle.eu/job/Boomerang-next/doxygen/>
