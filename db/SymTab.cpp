@@ -72,7 +72,7 @@ bool BinarySymbol::rename(const QString &s)
     return true;
 }
 bool BinarySymbol::isImported() const {
-    return attributes.contains("Imported") and attributes["Imported"].toBool();
+    return attributes.contains("Imported") && attributes["Imported"].toBool();
 }
 
 QString BinarySymbol::belongsToSourceFile() const
@@ -82,7 +82,7 @@ QString BinarySymbol::belongsToSourceFile() const
     return attributes["SourceFile"].toString();
 }
 bool BinarySymbol::isFunction() const {
-    return attributes.contains("Function") and attributes["Function"].toBool();
+    return attributes.contains("Function") && attributes["Function"].toBool();
 }
 bool BinarySymbol::isImportedFunction() const
 {
@@ -91,5 +91,5 @@ bool BinarySymbol::isImportedFunction() const
 
 bool BinarySymbol::isStaticFunction() const
 {
-    return attributes.contains("StaticFunction") and attributes["StaticFunction"].toBool();
+    return attributes.contains("StaticFunction") && attributes["StaticFunction"].toBool();
 }

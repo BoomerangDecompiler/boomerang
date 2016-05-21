@@ -23,7 +23,16 @@
 #define __EXEBINARYFILE_H__
 
 #include "BinaryFile.h"
+#ifdef _MSC_VER
+#define PACKED
+#else
 #define PACKED __attribute__((packed))
+#endif
+
+#ifdef _MSC_VER
+#pragma pack(1)
+#endif
+
 typedef struct PACKED { /*        PSP structure                 */
     SWord int20h;       /* interrupt 20h                        */
     SWord eof;          /* segment, end of allocation block     */
@@ -60,6 +69,10 @@ typedef struct PACKED { /*      EXE file header          */
     SWord relocTabOffset; /* Relocation table offset       */
     SWord overlayNum;   /* Overlay number                */
 } exeHeader;
+
+#ifdef _MSC_VER
+#pragma pack(0)
+#endif
 
 class ExeBinaryFile : public QObject, public LoaderInterface {
     Q_OBJECT

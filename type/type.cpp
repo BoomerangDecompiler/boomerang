@@ -338,7 +338,7 @@ SharedType Type::parseType(const char */*str*/) {
   * \returns            this == other
   ******************************************************************************/
 bool IntegerType::operator==(const Type &other) const {
-    if(not other.isInteger())
+    if(!other.isInteger())
         return false;
     IntegerType &otherInt = (IntegerType &)other;
     return
@@ -400,7 +400,7 @@ bool CompoundType::operator==(const Type &other) const {
 }
 
 bool UnionType::operator==(const Type &other) const {
-    if(not other.isUnion())
+    if(!other.isUnion())
         return false;
     const UnionType &uother = (UnionType &)other;
     if (uother.li.size() != li.size())

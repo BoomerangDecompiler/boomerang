@@ -39,7 +39,13 @@
     ((unsigned)((Byte *)(x))[3] << 24))
 #define LMMHw(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8))
 
+#ifdef _MSC_VER
+#define PACKED
+#else
 #define PACKED __attribute__((packed))
+#endif
+
+#pragma pack(1)
 
 typedef struct {/* exe file header, just the signature really */
     Byte sigLo; /* .EXE signature: 0x4D 0x5A     */
@@ -121,7 +127,7 @@ typedef struct PACKED {
 } LXFixup;
 
 //#ifdef WIN32
-#pragma pack(4)
+#pragma pack()
 //#endif
 
 class DOS4GWBinaryFile : public QObject, public LoaderInterface {

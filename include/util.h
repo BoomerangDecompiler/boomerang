@@ -15,6 +15,4 @@ struct Printable {
 #define STR(x) (char *)(x.str().c_str())
 
 QString escapeStr(const QString &str);
-int lockFileWrite(const char *fname);
-void unlockFile(int n);
 #endif

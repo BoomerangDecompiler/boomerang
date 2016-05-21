@@ -117,7 +117,7 @@ void RTL::deepCopyList(std::list<Instruction *> &dest) const {
   ******************************************************************************/
 void RTL::appendStmt(Instruction *s) {
     assert(s != nullptr);
-    if (not empty()) {
+    if (!empty()) {
         if (back()->isFlagAssgn()) {
             iterator it = end();
             insert(--it, s);

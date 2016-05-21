@@ -4,8 +4,32 @@
 #include "proc.h"
 #include "prog.h"
 
+#include "signature.h"
+
 #include <QDir>
 #include <QString>
+
+#if defined(_WIN32) && !defined(__MINGW32__)
+#undef NO_ADDRESS
+#include <windows.h>
+namespace dbghelp {
+#include <dbghelp.h>
+// dbghelp.h can define ADDRESS
+#ifdef ADDRESS
+#undef ADDRESS
+#endif
+}
+#undef NO_ADDRESS
+#define NO_ADDRESS ADDRESS::g(-1)
+#include <iostream>
+#include "log.h"
+#endif
+
+#if defined(_WIN32) && !defined(__MINGW32__)
+// From prog.cpp
+BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext);
+SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
+#endif
 
 void Module::onLibrarySignaturesChanged()
 {
@@ -163,7 +187,7 @@ Function *Module::getOrInsertFunction(const QString &name, ADDRESS uNative, bool
     // from Loader
 
 #if defined(_WIN32) && !defined(__MINGW32__)
-    if (isWin32()) {
+    if (CurrentFrontend->isWin32()) {
         // use debugging information
         HANDLE hProcess = GetCurrentProcess();
         dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
@@ -183,7 +207,7 @@ Function *Module::getOrInsertFunction(const QString &name, ADDRESS uNative, bool
                 // TODO: use it
             } else {
                 // assume we're stdc calling convention, remove r28, r24 returns
-                pProc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, sname.c_str()));
+                pProc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name));
             }
 
             // get a return type
