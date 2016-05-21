@@ -114,7 +114,7 @@ protected:
 
     Exp *instantiateNamedParam(char *name, ...);
 
-    void substituteCallArgs(char *name, Exp *&exp, Exp * firstArg, ...);
+    void substituteCallArgs(char *name, Exp **exp, ...);
     void unconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
                            std::list<Instruction *> *stmts, DecodeResult &result);
 

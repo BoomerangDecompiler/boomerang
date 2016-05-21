@@ -12,15 +12,8 @@ ${GC_LIBS}
 ${DEBUG_LIB}
 boomerang_DSLs
 type db codegen boomerang_passes type util boom_base frontend db codegen
+${CMAKE_THREAD_LIBS_INIT}
 )
-
-if (NOT WIN32)
-list(APPEND test_LIBRARIES pthread)
-endif()
-
-IF(MSVC)
-list(APPEND test_LIBRARIES Dbghelp.lib)
-ENDIF()
 
 set(TESTS
     CTest

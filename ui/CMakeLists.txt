@@ -13,7 +13,6 @@ SET(boomerang_SRC
     main.cpp
     mainwindow
     rtleditor
-    mypthread
     commandlinedriver
     DecompilerThread
     LoggingSettingsDlg
@@ -24,9 +23,6 @@ TARGET_LINK_LIBRARIES(boomerang
 ${GC_LIBS}
 ${DEBUG_LIB}
 boom_base frontend db type boomerang_DSLs codegen util boom_base
-boomerang_passes
+${CMAKE_THREAD_LIBS_INIT} boomerang_passes
 )
-if (NOT WIN32)
-TARGET_LINK_LIBRARIES(boomerang pthread)
-endif()
 qt5_use_modules(boomerang Core Xml Widgets)

@@ -13,6 +13,7 @@
   *               I guess this will be the most popular output language unless we do C++.
   ******************************************************************************/
 
+#include "msvc_fixes.h"
 #include "cfg.h"
 #include "statement.h"
 #include "exp.h"
@@ -1331,7 +1332,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString &nam
     QString tgt;
     QTextStream s(&tgt);
     indent(s, indLevel);
-    if (!results->empty()) {
+    if (not results->empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
         Exp *firstRet = ((Assignment *)*results->begin())->getLeft();
         appendExp(s, *firstRet, PREC_ASSIGN);

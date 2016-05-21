@@ -132,7 +132,7 @@ Exp *NJMCDecoder::instantiateNamedParam(char *name, ...) {
   * \param   ... - Exp* representing actual operands
   * \returns an instantiated list of Exps
   ******************************************************************************/
-void NJMCDecoder::substituteCallArgs(char *name, Exp *&exp, Exp * firstArg, ...) {
+void NJMCDecoder::substituteCallArgs(char *name, Exp **exp, ...) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
         LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
         return;
@@ -144,14 +144,12 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp *&exp, Exp * firstArg, ...)
         }*/
 
     va_list args;
-    va_start(args, firstArg);
-    bool usedFirst = false;
+    va_start(args, exp);
     for (auto &elem : ent.funcParams) {
         Location formal(opParam, Const::get(elem), nullptr);
-        Exp *actual = usedFirst ? va_arg(args, Exp *) : firstArg;
-        usedFirst = true;
+        Exp *actual = va_arg(args, Exp *);
         bool change;
-        exp = exp->searchReplaceAll(formal, actual, change);
+        *exp = (*exp)->searchReplaceAll(formal, actual, change);
     }
 }
 

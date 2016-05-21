@@ -39,20 +39,15 @@
     ((unsigned)((Byte *)(x))[3] << 24))
 #define LMMHw(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8))
 
-#ifdef _MSC_VER
-#define PACKED
-#else
-#define PACKED __attribute__((packed))
-#endif
-
-#pragma pack(1)
 
 typedef struct {/* exe file header, just the signature really */
     Byte sigLo; /* .EXE signature: 0x4D 0x5A     */
     Byte sigHi;
 } Header;
 
-typedef struct PACKED {
+// The following structures should have their members byte aligned
+#pragma pack(push,1)
+typedef struct {
     Byte sigLo;
     Byte sigHi;
     Byte byteord;
@@ -102,7 +97,7 @@ typedef struct PACKED {
     DWord heapsize;
 } LXHeader;
 
-typedef struct PACKED {
+typedef struct {
     DWord VirtualSize;
     DWord RelocBaseAddr;
     DWord ObjectFlags;
@@ -111,14 +106,14 @@ typedef struct PACKED {
     DWord Reserved1;
 } LXObject;
 
-typedef struct PACKED {
+typedef struct {
     DWord pagedataoffset;
     SWord datasize;
     SWord flags;
 } LXPage;
 
 // this is correct for internal fixups only
-typedef struct PACKED {
+typedef struct {
     unsigned char src;
     unsigned char flags;
     short srcoff;
@@ -126,9 +121,7 @@ typedef struct PACKED {
     //    unsigned short trgoff;
 } LXFixup;
 
-//#ifdef WIN32
-#pragma pack()
-//#endif
+#pragma pack(pop)
 
 class DOS4GWBinaryFile : public QObject, public LoaderInterface {
     Q_OBJECT

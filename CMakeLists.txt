@@ -3,7 +3,7 @@ include(ExternalProject)
 ###############################################################################
 # Settings related to build system, and target directories
 ###############################################################################
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.10)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 CMAKE_POLICY(SET CMP0020 OLD)
 IF(POLICY CMP0043)
 CMAKE_POLICY(SET CMP0043 OLD)
@@ -39,7 +39,6 @@ ENDIF(BUILD_TESTING)
 
 IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
-    STRING(REGEX REPLACE /W[0-9] /W4 CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 ELSE()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11 -pedantic" )
     IF(CMAKE_CXX_COMPILER MATCHES clang)
@@ -50,11 +49,14 @@ ELSE()
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra" )
     add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG
 ENDIF()
+IF(MSVC)
+    SET(DEBUG_LIB Dbghelp.lib )
+ENDIF()
 
 INCLUDE(TestBigEndian)
-find_package(Boost REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Xml REQUIRED)
+find_package(Threads REQUIRED)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
@@ -76,6 +78,7 @@ CONFIGURE_FILE(include/config.h.cmake include/config.h)
 
 INCLUDE_DIRECTORIES(
     .
+    "${PROJECT_SOURCE_DIR}/3rd_party"
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_BINARY_DIR}/include"
     ${Qt5Core_INCLUDE_DIRS}
@@ -104,9 +107,6 @@ SET(boom_base_SRC
         boomerang.cpp
         log.cpp
 )
-IF(MSVC)
-    SET(DEBUG_LIB Dbghelp.lib )
-ENDIF()
 ADD_LIBRARY(boom_base ${boom_base_SRC} )
 qt5_use_modules(boom_base Core Xml)
 

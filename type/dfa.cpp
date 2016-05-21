@@ -378,11 +378,13 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function * f) {
 bool DFA_TypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
 {
     assert(false);
+	return false;
 }
 
 bool DFA_TypeRecovery::dfaTypeAnalysis(Instruction *i)
 {
     assert(false);
+	return false;
 }
 
 void UserProc::dfaTypeAnalysis() {
@@ -1341,6 +1343,7 @@ void Binary::descendType(SharedType parentType, bool &ch, Instruction *s) {
 }
 
 void RefExp::descendType(SharedType parentType, bool &ch, Instruction *s) {
+    assert(def!=nullptr);
     SharedType newType = def->meetWithFor(parentType, subExp1, ch);
     // In case subExp1 is a m[...]
     subExp1->descendType(newType, ch, s);

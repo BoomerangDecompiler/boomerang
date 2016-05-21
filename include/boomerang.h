@@ -28,6 +28,8 @@
 #ifndef BOOMERANG_H
 #define BOOMERANG_H
 
+#include "msvc_fixes.h"
+
 #include "config.h"
 #include "types.h"
 #include "IBoomerang.h"

@@ -2348,7 +2348,7 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
             PhiAssign *pa = (PhiAssign *)def;
             for (auto &v : *pa) {
                 def = v.second.def();
-                if ((def == nullptr) || (!def->isAssign()))
+                if ((def == nullptr) or (!def->isAssign()))
                     continue;
                 Exp *rhs = ((Assign *)def)->getRight();
                 if (rhs == nullptr || !rhs->isStrConst())

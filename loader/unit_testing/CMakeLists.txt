@@ -14,12 +14,9 @@ ${GC_LIBS}
 ${DEBUG_LIB}
 boom_base frontend db type boomerang_DSLs codegen util
 boom_base frontend db codegen
-boomerang_passes
+${CMAKE_THREAD_LIBS_INIT} boomerang_passes
 )
 
-if (NOT WIN32)
-list(APPEND test_LIBRARIES pthread)
-endif()
 
 set(TESTS
     LoaderTest

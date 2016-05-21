@@ -3,11 +3,6 @@
 /** \file ElfTypes.h
  * \brief This file contains the elf format support structures
 */
-#ifdef _WIN32
-#define PACKED
-#else
-#define PACKED __attribute__((packed))
-#endif
 
 // Internal elf info
 typedef struct {
@@ -153,10 +148,7 @@ enum ElfSectionTypes {
     SHT_DYNSYM = 11 // Dynamic symbol table
 };
 
-#ifdef _MSC_VER
-#pragma pack(1)
-#endif
-
+#pragma pack(push,1)
 struct Elf32_Sym  {
     int st_name;
     unsigned st_value;
@@ -164,11 +156,8 @@ struct Elf32_Sym  {
     unsigned char st_info;
     unsigned char st_other;
     short st_shndx;
-} PACKED;
-
-#ifdef _MSC_VER
-#pragma pack()
-#endif
+};
+#pragma pack(pop)
 
 struct Elf32_Rel {
     unsigned r_offset;

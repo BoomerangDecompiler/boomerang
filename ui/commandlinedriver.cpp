@@ -120,7 +120,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args) {
             }
             bool converted = false;
             addr.m_value = args[i].toLongLong(&converted, 0);
-            if (!converted) {
+            if (not converted) {
                 LOG_STREAM() << "bad address: " << args[i] << '\n';
                 exit(1);
             }
@@ -253,7 +253,7 @@ int CommandlineDriver::applyCommandline(const QStringList &args) {
             }
             bool converted = false;
             addr.m_value = args[i].toLongLong(&converted, 0);
-            if (!converted) {
+            if (not converted) {
                 LOG_STREAM() << "bad address: " << args[i + 1] << '\n';
                 exit(1);
             }

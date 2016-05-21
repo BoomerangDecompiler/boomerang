@@ -207,7 +207,7 @@ bool UserProc::isNoReturn() {
         return true;
     if (exitbb->getNumInEdges() == 1) {
         Instruction *s = exitbb->getInEdges()[0]->getLastStmt();
-        if(!s->isCall())
+        if(not s->isCall())
             return false;
         CallStatement *call = (CallStatement *)s;
         if (call->getDestProc() && call->getDestProc()->isNoReturn())
@@ -2575,7 +2575,7 @@ Exp *UserProc::getSymbolExp(Exp *le, SharedType ty, bool lastPass) {
                 locals[name] = ty;
             }
             if (ty->resolvesToCompound()) {
-                std::shared_ptr<const CompoundType> compound = ty->asCompound();
+                auto compound = ty->as<CompoundType>();
                 if (VERBOSE)
                     LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
                 char* nam = (char*)compound->getName(0);

@@ -43,11 +43,11 @@
 #include "db/SymTab.h"
 
 #include <QtCore/QFileInfo>
+#include <QtCore/QSaveFile>
 #include <QtCore/QDebug>
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/QDir>
 #include <QtCore/QString>
-#include <QtCore/QLockFile>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -464,7 +464,7 @@ SharedType makeUDT(int index, DWORD64 ModBase) {
         SharedType ty = Type::getNamedType(nameA);
         if (ty)
             return NamedType::get(nameA);
-        std::shared_ptr<CompoundType> cty = CompoundType::get();
+		auto cty = CompoundType::get();
         DWORD count = 0;
         got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
         int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
@@ -533,9 +533,9 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase) {
         case 14: // ulong
             return IntegerType::get(sz, -1);
         case 8:
-            return SharedType(new FloatType(sz));
+            return FloatType::get(sz);
         case 10:
-            return SharedType(new BooleanType());
+            return BooleanType::get();
         default:
             LOG_STREAM() << "unhandled base type " << d << "\n";
             assert(false);
@@ -1279,12 +1279,8 @@ void Prog::rangeAnalysis() {
 void Prog::printCallGraph() {
     QString fname1 = Boomerang::get()->getOutputPath() + "callgraph.out";
     QString fname2 = Boomerang::get()->getOutputPath() + "callgraph.dot";
-    QLockFile lockFile1(fname1);
-    QLockFile lockFile2(fname2);
-    lockFile1.lock();
-    lockFile2.lock();
-    QFile file1(fname1);
-    QFile file2(fname2);
+	QSaveFile file1(fname1);
+	QSaveFile file2(fname2);
     if( !(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly)) ) {
         LOG_STREAM() << "Cannot open output files for callgraph output";
         return;
@@ -1329,6 +1325,8 @@ void Prog::printCallGraph() {
     f2 << "}\n";
     f1.flush();
     f2.flush();
+	file1.commit();
+	file2.commit();
 }
 
 void printProcsRecursive(Function *proc, int indent, QTextStream &f, std::set<Function *> &seen) {
@@ -1359,9 +1357,7 @@ void printProcsRecursive(Function *proc, int indent, QTextStream &f, std::set<Fu
 void Prog::printSymbolsToFile() {
     LOG_STREAM() << "entering Prog::printSymbolsToFile\n";
     QString fname = Boomerang::get()->getOutputPath() + "symbols.h";
-    QLockFile lockFile(fname);
-    lockFile.lock();
-    QFile tgt(fname);
+    QSaveFile tgt(fname);
     if(!tgt.open(QFile::WriteOnly)) {
         LOG_STREAM() << " Cannot open " << fname << " for writing\n";
         return;
@@ -1383,6 +1379,7 @@ void Prog::printSymbolsToFile() {
         }
     }
     f.flush();
+	tgt.commit();
     LOG_STREAM() << "leaving Prog::printSymbolsToFile\n";
 }
 
@@ -1395,8 +1392,7 @@ void Prog::printCallGraphXML() {
             it->clearVisited();
     }
     QString fname = Boomerang::get()->getOutputPath() + "callgraph.xml";
-    QLockFile lockFile(fname);
-    QFile CallGraphFile(fname);
+    QSaveFile CallGraphFile(fname);
     QTextStream f(&CallGraphFile);
     f << "<prog name=\"" << getName() << "\">\n";
     f << "     <callgraph>\n";
@@ -1413,6 +1409,7 @@ void Prog::printCallGraphXML() {
     f << "     </callgraph>\n";
     f << "</prog>\n";
     f.flush();
+	CallGraphFile.commit();
 }
 
 Module *Prog::findModule(const QString &name) {

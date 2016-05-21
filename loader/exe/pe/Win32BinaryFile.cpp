@@ -41,7 +41,6 @@ namespace dbghelp {
 #include "IBoomerang.h"
 #include "config.h"
 
-#include <iostream>
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
@@ -386,7 +385,7 @@ void Win32BinaryFile::processIAT()
         }
     }
 }
-void Win32BinaryFile::readDebugData() {
+void Win32BinaryFile::readDebugData(QString exename) {
 #if defined(_WIN32) && !defined(__MINGW32__)
     // attempt to load symbols for the exe or dll
 
@@ -409,7 +408,7 @@ void Win32BinaryFile::readDebugData() {
 
     DWORD64 dwBaseAddr = 0;
 
-    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, (PSTR)m_pFileName.toStdString().c_str(), nullptr, dwBaseAddr, 0)) {
+    if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0)) {
         assert(dwBaseAddr == m_pPEHeader->Imagebase);
         bool found = false;
         dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr, 0, lookforsource, &found);
@@ -519,7 +518,8 @@ bool Win32BinaryFile::LoadFromMemory(QByteArray &arr) {
     ADDRESS start = GetEntryPoint();
     findJumps(start);
 
-    readDebugData();
+	//TODO: loading debuging data should be an optional step, decision should be made 'upstream'
+    //readDebugData();
     return true;
 
 }
@@ -628,7 +628,7 @@ void printType(DWORD index, DWORD64 ImageBase) {
     if (got) {
         char nameA[1024];
         WideCharToMultiByte(CP_ACP, 0, name, -1, nameA, sizeof(nameA), 0, nullptr);
-        std::cout << nameA;
+        qDebug() << nameA;
         return;
     }
 
@@ -641,15 +641,15 @@ void printType(DWORD index, DWORD64 ImageBase) {
         got = dbghelp::SymGetTypeInfo(hProcess, ImageBase, index, dbghelp::TI_GET_TYPE, &d);
         assert(got);
         printType(d, ImageBase);
-        std::cout << "*";
+		qDebug() << "*";
     } break;
     case SymTagBaseType:
         got = dbghelp::SymGetTypeInfo(hProcess, ImageBase, index, dbghelp::TI_GET_BASETYPE, &d);
         assert(got);
-        std::cout << basicTypes[d];
+		qDebug() << basicTypes[d];
         break;
     default:
-        std::cerr << "unhandled symtag " << SymTagEnums[d] << "\n";
+		qWarning() << "unhandled symtag " << SymTagEnums[d] << "\n";
         assert(false);
     }
 }
@@ -657,35 +657,35 @@ void printType(DWORD index, DWORD64 ImageBase) {
 BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext) {
     HANDLE hProcess = GetCurrentProcess();
     printType(pSymInfo->TypeIndex, pSymInfo->ModBase);
-    std::cout << " " << pSymInfo->Name << " flags: ";
+    qDebug() << " " << pSymInfo->Name << " flags: ";
     if (pSymInfo->Flags & SYMFLAG_VALUEPRESENT)
-        std::cout << "value present, ";
+        qDebug() << "value present, ";
     if (pSymInfo->Flags & SYMFLAG_REGISTER)
-        std::cout << "register, ";
+        qDebug() << "register, ";
     if (pSymInfo->Flags & SYMFLAG_REGREL)
-        std::cout << "regrel, ";
+        qDebug() << "regrel, ";
     if (pSymInfo->Flags & SYMFLAG_FRAMEREL)
-        std::cout << "framerel, ";
+        qDebug() << "framerel, ";
     if (pSymInfo->Flags & SYMFLAG_PARAMETER)
-        std::cout << "parameter, ";
+        qDebug() << "parameter, ";
     if (pSymInfo->Flags & SYMFLAG_LOCAL)
-        std::cout << "local, ";
+        qDebug() << "local, ";
     if (pSymInfo->Flags & SYMFLAG_CONSTANT)
-        std::cout << "constant, ";
+        qDebug() << "constant, ";
     if (pSymInfo->Flags & SYMFLAG_EXPORT)
-        std::cout << "export, ";
+        qDebug() << "export, ";
     if (pSymInfo->Flags & SYMFLAG_FORWARDER)
-        std::cout << "forwarder, ";
+        qDebug() << "forwarder, ";
     if (pSymInfo->Flags & SYMFLAG_FUNCTION)
-        std::cout << "function, ";
+        qDebug() << "function, ";
     if (pSymInfo->Flags & SYMFLAG_VIRTUAL)
-        std::cout << "virtual, ";
+        qDebug() << "virtual, ";
     if (pSymInfo->Flags & SYMFLAG_THUNK)
-        std::cout << "thunk, ";
+        qDebug() << "thunk, ";
     if (pSymInfo->Flags & SYMFLAG_TLSREL)
-        std::cout << "tlsrel, ";
-    std::cout << "\n";
-    std::cout << "register: " << pSymInfo->Register << " address: " << (int)pSymInfo->Address << "\n";
+        qDebug() << "tlsrel, ";
+    qDebug() << "\n";
+    qDebug() << "register: " << pSymInfo->Register << " address: " << (int)pSymInfo->Address << "\n";
     return TRUE;
 }
 #endif
