@@ -49,7 +49,7 @@ struct SectionParam {
 };
 // not part of anonymous namespace, since it would create an ambiguity
 // anonymous_namespace::Translated_ElfSym vs. ElfTypes.h/Translated_ElfSym declarations
-struct Translated_ElfSym{
+struct Translated_ElfSym {
     QString Name;
     ElfSymType Type;
     ElfSymBinding Binding;
@@ -66,7 +66,9 @@ ElfBinaryFile::ElfBinaryFile() : next_extern(ADDRESS::g(0L)) {
 }
 
 ElfBinaryFile::~ElfBinaryFile() {
-    delete  []m_pImportStubs; // Delete the array of import stubs
+    // Delete the array of import stubs
+    delete  []m_pImportStubs;
+    delete  []m_pImage;
     delete  []m_sh_link;
     delete  []m_sh_info;
 }
@@ -94,7 +96,7 @@ void ElfBinaryFile::Init() {
 }
 
 // Hand decompiled from sparc library function
-extern "C" { // So we can call this with dlopen()
+extern "C" { // So we can call this with dlopen() in test function
 Q_DECL_EXPORT
 unsigned elf_hash(const char *o0) {
     int o3 = *o0;
@@ -694,7 +696,7 @@ void ElfBinaryFile::applyRelocations() {
                 for (unsigned u = 0; u < size; u += sizeof(Elf32_Rela)) {
                     Elf32_Rela r;
                     r.r_offset = elfRead4(pReloc++);
-                    r.r_info = elfRead4(pReloc++);
+                    r.r_info   = elfRead4(pReloc++);
                     r.r_addend = elfRead4(pReloc++);
                     unsigned char relType = (unsigned char)r.r_info;
                     //unsigned symTabIndex = r.r_info >> 8;
