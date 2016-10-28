@@ -19,7 +19,6 @@ struct VariantHolder {
     bool operator==(const VariantHolder &other) const {
         return val==other.val;
     }
-
 };
 struct SectionInfoImpl {
     boost::icl::interval_set<ADDRESS> HasDefinedValue;

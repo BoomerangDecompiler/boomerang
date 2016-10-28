@@ -108,6 +108,8 @@ static QString selectPluginForFile(QIODevice &f) {
 /**
  * Perform simple magic on the file by the given name in order to determine the appropriate type, and then return an
  * instance of the appropriate subclass.
+ * \param sName - name of the file to load
+ * \return Instance of the plugin that can load the file with given \a sName
  */
 QObject *BinaryFileFactory::getInstanceFor(const QString &sName) {
     QDir pluginsDir(qApp->applicationDirPath());

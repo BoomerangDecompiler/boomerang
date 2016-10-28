@@ -34,7 +34,9 @@ void TargetQueue::visit(Cfg *pCfg, ADDRESS uNewAddr, BasicBlock *&pNewBB) {
   * \note        Can be some targets already in the queue now
   * \param    uAddr Native address to seed the queue with
   ******************************************************************************/
-void TargetQueue::initial(ADDRESS uAddr) { targets.push(uAddr); }
+void TargetQueue::initial(ADDRESS uAddr) {
+    targets.push(uAddr);
+}
 
 /***************************************************************************/ /**
   *

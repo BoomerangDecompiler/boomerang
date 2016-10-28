@@ -2,8 +2,7 @@
  * \file types.h
  * \brief Contains some often used basic type definitions
  */
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#pragma once
 
 #include <QObject>
 #include <iosfwd>
@@ -83,7 +82,7 @@ struct ADDRESS {        /* pointer. size depends on platform */
         return *this;
     }
     ADDRESS operator-(intptr_t other) const { return ADDRESS::g(m_value - other); }
-    friend QTextStream& operator<< (QTextStream& os, const ADDRESS& mdv);\
+    friend QTextStream& operator<< (QTextStream& os, const ADDRESS& mdv);
     QString toString(bool zerofill=false) const {
         if(zerofill)
             return QString("%1").arg(m_value,8,16,QChar('0'));
@@ -101,8 +100,6 @@ Q_DECLARE_METATYPE(ADDRESS)
 #ifdef NO_ADDRESS
 #undef NO_ADDRESS
 #endif
-#define NO_ADDRESS (ADDRESS::g(-1)) // For invalid ADDRESSes
+#define NO_ADDRESS (ADDRESS::g(~0U)) // For invalid ADDRESSes
 
 typedef uint64_t QWord; // 64 bits
-
-#endif // #ifndef __TYPES_H__

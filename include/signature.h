@@ -150,7 +150,7 @@ class Signature {
                               const QString &boundMax = "");
     virtual void addParameter(Exp *e, SharedType ty);
     virtual void addParameter(Parameter *param);
-    void addEllipsis() { ellipsis = true; }
+    void addEllipsis()  { ellipsis = true; }
     void killEllipsis() { ellipsis = false; }
     virtual void removeParameter(Exp *e);
     virtual void removeParameter(size_t i);

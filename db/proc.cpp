@@ -771,13 +771,14 @@ void UserProc::print(QTextStream &out, bool html) const {
     QTextStream ost3(&tgt3);
     printParams(ost1, html);
     dumpLocals(ost1, html);
-    col.print(ost2);
+    procUseCollector.print(ost2);
     cfg->print(ost3, html);
 
     signature->print(out, html);
+    out << "\n";
     if (html)
         out << "<br>";
-    out << "in cluster " << Parent->getName() << "\n";
+    out << "in module " << Parent->getName() << "\n";
     if (html)
         out << "<br>";
     out << tgt1;
@@ -4638,7 +4639,7 @@ void UserProc::fixCallAndPhiRefs() {
 
     // Also do xxx in m[xxx] in the use collector
     UseCollector::iterator cc;
-    for (cc = col.begin(); cc != col.end(); ++cc) {
+    for (cc = procUseCollector.begin(); cc != procUseCollector.end(); ++cc) {
         if (!(*cc)->isMemOf())
             continue;
         Exp *addr = ((Location *)*cc)->getSubExp1();
@@ -4679,7 +4680,7 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet> &cs) {
 // Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
 void UserProc::propagateToCollector() {
     UseCollector::iterator it;
-    for (it = col.begin(); it != col.end();) {
+    for (it = procUseCollector.begin(); it != procUseCollector.end();) {
         if (!(*it)->isMemOf()) {
             ++it;
             continue;
@@ -4700,9 +4701,9 @@ void UserProc::propagateToCollector() {
                 continue; // No change
             Exp *memOfRes = Location::memOf(res)->simplify();
             // First check to see if memOfRes is already in the set
-            if (col.exists(memOfRes)) {
+            if (procUseCollector.exists(memOfRes)) {
                 // Take care not to use an iterator to the newly erased element.
-                /* it = */ col.remove(it++); // Already exists; just remove the old one
+                /* it = */ procUseCollector.remove(it++); // Already exists; just remove the old one
                 continue;
             } else {
                 LOG_VERBOSE(1) << "propagating " << r << " to " << as->getRight() << " in collector; result "
@@ -4723,7 +4724,7 @@ void UserProc::propagateToCollector() {
 void UserProc::initialParameters() {
     LOG_VERBOSE(1) << "### initial parameters for " << getName() << "\n";
     parameters.clear();
-    for (Exp *v : col)
+    for (Exp *v : procUseCollector)
         parameters.append(new ImplicitAssign(v->clone()));
     if (VERBOSE) {
         QString tgt;
@@ -5261,7 +5262,7 @@ void UserProc::updateForUseChange(std::set<UserProc *> &removeRetSet) {
 void UserProc::clearUses() {
     if (VERBOSE)
         LOG << "### clearing usage for " << getName() << " ###\n";
-    col.clear();
+    procUseCollector.clear();
     BB_IT it;
     BasicBlock::rtlrit rrit;
     StatementList::reverse_iterator srit;

@@ -232,7 +232,7 @@ private:
      * Set of callees (Procedures that this procedure calls). Used for call graph, among other things
      */
     std::list<Function *> calleeList;
-    UseCollector col;
+    UseCollector procUseCollector;
     StatementList parameters;
 
     /**
@@ -481,7 +481,7 @@ public:
     /// Add a location to the UseCollector; this means this location is used before defined,
     /// and hence is an *initial* parameter.
     /// \note final parameters don't use this information; it's only for handling recursion.
-    void useBeforeDefine(Exp *loc) { col.insert(loc); }
+    void useBeforeDefine(Exp *loc) { procUseCollector.insert(loc); }
     void processDecodedICTs();
 
 private:

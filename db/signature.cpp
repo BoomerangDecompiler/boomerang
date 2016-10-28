@@ -1514,7 +1514,8 @@ Signature::~Signature() {
 void Signature::print(QTextStream &out, bool /*html*/) const {
     if (isForced())
         out << "*forced* ";
-    if (returns.size() > 0) {
+    if (not returns.empty() )
+    {
         out << "{ ";
         unsigned n = 0;
         for (const Return *rr : returns) {
@@ -1528,19 +1529,20 @@ void Signature::print(QTextStream &out, bool /*html*/) const {
     } else
         out << "void ";
     out << name << "(";
-    unsigned int i;
-    for (i = 0; i < params.size(); i++) {
+    for (unsigned int i = 0; i < params.size(); i++) {
         out << params[i]->getType()->getCtype() << " " << params[i]->name() << " " << params[i]->getExp();
         if (i != params.size() - 1)
             out << ", ";
     }
-    out << ")\n";
+    out << ")";
 }
 
 char *Signature::prints() {
     QString tgt;
     QTextStream ost(&tgt);
     print(ost);
+    tgt += "\n";
+
     strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
@@ -1550,7 +1552,7 @@ void Signature::printToLog() {
     QString tgt;
     QTextStream os(&tgt);
     print(os);
-    LOG << tgt;
+    LOG << tgt << "\n";
 }
 
 bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreach, int &n) {
@@ -1569,9 +1571,8 @@ bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreac
             bool ok = true;
             if (checkreach) {
                 bool hasDef = false;
-                InstructionSet::iterator it1;
-                for (it1 = reachin.begin(); it1 != reachin.end(); it1++) {
-                    Assignment *as = (Assignment *)*it1;
+                for (Instruction *ins : reachin) {
+                    Assignment *as = (Assignment *)ins;
                     if (as->isAssignment() && *as->getLeft() == *getParamExp(i)) {
                         hasDef = true;
                         break;
