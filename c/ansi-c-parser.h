@@ -29,7 +29,7 @@ class Symbol {
     ADDRESS addr;
     QString nam;
     SharedType ty;
-    Signature *sig;
+    std::shared_ptr<Signature> sig;
     SymbolMods *mods;
 
     Symbol(ADDRESS a) : addr(a), nam(""), sig(nullptr), mods(nullptr) {}
@@ -45,7 +45,7 @@ class SymbolMods {
 
 class CustomOptions {
   public:
-    Exp *exp;
+    SharedExp exp;
     int sp;
 
     CustomOptions() : exp(nullptr), sp(0) {}
@@ -71,11 +71,11 @@ typedef struct {
     int ival=0;
     QString str;
     std::shared_ptr<Type> type=nullptr;
-    std::list<Parameter *> *param_list=nullptr;
+    std::list<std::shared_ptr<Parameter> > *param_list=nullptr;
     std::list<int> *num_list=nullptr;
-    Parameter *param=nullptr;
-    Exp *exp=nullptr;
-    Signature *sig=nullptr;
+    std::shared_ptr<Parameter> param=nullptr;
+    SharedExp exp=nullptr;
+    std::shared_ptr<Signature> sig=nullptr;
     TypeIdent *type_ident=nullptr;
     Bound *bound = nullptr;
     std::list<TypeIdent *> *type_ident_list=nullptr;
@@ -192,7 +192,7 @@ class AnsiCParser {
     AnsiCScanner *theScanner;
 
   public:
-    std::list<Signature *> signatures;
+    std::list<std::shared_ptr<Signature> > signatures;
     std::list<Symbol *> symbols;
     std::list<SymbolRef *> refs;
     virtual ~AnsiCParser();

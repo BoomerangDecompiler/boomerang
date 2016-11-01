@@ -55,8 +55,8 @@
 bool PentiumFrontEnd::isStoreFsw(Instruction *s) {
     if (!s->isAssign())
         return false;
-    Exp *rhs = ((Assign *)s)->getRight();
-    Exp *result;
+    SharedExp rhs = ((Assign *)s)->getRight();
+    SharedExp result;
     bool res = rhs->search(*Location::regOf(FSW), result);
     return res;
 }
@@ -74,7 +74,7 @@ bool PentiumFrontEnd::isDecAh(RTL *r) {
     if (!mid->isAssign())
         return false;
     Assign *asgn = (Assign *)mid;
-    Exp *rhs = asgn->getRight();
+    SharedExp rhs = asgn->getRight();
     Binary ahm1(opMinus, Binary::get(opSize, Const::get(8), Location::regOf(12)), Const::get(1));
     return *rhs == ahm1;
 }
@@ -90,18 +90,18 @@ bool PentiumFrontEnd::isSetX(Instruction *s) {
     if (!s->isAssign())
         return false;
     Assign *asgn = (Assign *)s;
-    Exp *lhs = asgn->getLeft();
+    SharedExp lhs = asgn->getLeft();
     // LHS must be a register
     if (!lhs->isRegOf())
         return false;
-    Exp *rhs = asgn->getRight();
+    SharedExp rhs = asgn->getRight();
     if (rhs->getOper() != opTern)
         return false;
-    Exp *s2 = ((Ternary *)rhs)->getSubExp2();
-    Exp *s3 = ((Ternary *)rhs)->getSubExp3();
+    SharedExp s2 = rhs->getSubExp2();
+    SharedExp s3 = rhs->getSubExp3();
     if (!s2->isIntConst() || s3->isIntConst())
         return false;
-    return ((Const *)s2)->getInt() == 1 && ((Const *)s3)->getInt() == 0;
+    return s2->subExp<Const>()->getInt() == 1 && s3->subExp<Const>()->getInt() == 0;
 }
 /***************************************************************************/ /**
   * \fn      isAssignFromTern
@@ -113,7 +113,7 @@ bool PentiumFrontEnd::isAssignFromTern(Instruction *s) {
     if (!s->isAssign())
         return false;
     Assign *asgn = (Assign *)s;
-    Exp *rhs = asgn->getRight();
+    SharedExp rhs = asgn->getRight();
     return rhs->getOper() == opTern;
 }
 /***************************************************************************/ /**
@@ -131,19 +131,19 @@ bool PentiumFrontEnd::isAssignFromTern(Instruction *s) {
   *                      re-replacing already replaced registers
   *
   ******************************************************************************/
-void PentiumFrontEnd::bumpRegisterAll(Exp *e, int min, int max, int delta, int mask) {
-    std::list<Exp **> li;
-    std::list<Exp **>::iterator it;
-    Exp *exp = e;
+void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask) {
+    std::list<SharedExp*> li;
+    std::list<SharedExp*>::iterator it;
+    SharedExp exp = e;
     // Use doSearch, which is normally an internal method of Exp, to avoid problems of replacing the wrong
     // subexpression (in some odd cases)
     Exp::doSearch(*Location::regOf(Terminal::get(opWild)), exp, li, false);
-    for (it = li.begin(); it != li.end(); it++) {
-        int reg = ((Const *)((Unary *)**it)->getSubExp1())->getInt();
+    for (SharedExp *it : li) {
+        int reg = (*it)->subExp<Const,1>()->getInt();
         if ((min <= reg) && (reg <= max)) {
             // Replace the K in r[ K] with a new K
             // **it is a reg[K]
-            Const *K = (Const *)((Unary *)**it)->getSubExp1();
+            auto K = (*it)->subExp<Const,1>();
             K->setInt(min + ((reg - min + delta) & mask));
         }
     }
@@ -189,8 +189,8 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &o
     return true;
 }
 
-std::vector<Exp *> &PentiumFrontEnd::getDefaultParams() {
-    static std::vector<Exp *> params;
+std::vector<SharedExp> &PentiumFrontEnd::getDefaultParams() {
+    static std::vector<SharedExp> params;
     if (params.size() == 0) {
         params.push_back(Location::regOf(24 /*eax*/));
         params.push_back(Location::regOf(25 /*ecx*/));
@@ -205,8 +205,8 @@ std::vector<Exp *> &PentiumFrontEnd::getDefaultParams() {
     return params;
 }
 
-std::vector<Exp *> &PentiumFrontEnd::getDefaultReturns() {
-    static std::vector<Exp *> returns;
+std::vector<SharedExp> &PentiumFrontEnd::getDefaultReturns() {
+    static std::vector<SharedExp> returns;
     if (returns.size() == 0) {
         returns.push_back(Location::regOf(24 /*eax*/));
         returns.push_back(Location::regOf(25 /*ecx*/));
@@ -224,7 +224,7 @@ std::vector<Exp *> &PentiumFrontEnd::getDefaultReturns() {
         returns.push_back(Location::regOf(37 /*st5*/));
         returns.push_back(Location::regOf(38 /*st6*/));
         returns.push_back(Location::regOf(39 /*st7*/));
-        returns.push_back(new Terminal(opPC));
+        returns.push_back(Terminal::get(opPC));
     }
     return returns;
 }
@@ -338,8 +338,8 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int &tos, Cfg *pCfg) {
                     continue;
                 } else if (st->isAssign()) {
                     Assign *asgn = (Assign *)st;
-                    Exp *lhs = asgn->getLeft();
-                    Exp *rhs = asgn->getRight();
+                    SharedExp lhs = asgn->getLeft();
+                    SharedExp rhs = asgn->getRight();
                     if (tos != 0) {
                         // Substitute all occurrences of r[x] (where 32 <= x <= 39) with r[y] where
                         // y = 32 + (x + tos) & 7
@@ -350,7 +350,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int &tos, Cfg *pCfg) {
             } else {
                 // st is a flagcall
                 // We are interested in any register parameters in the range 32 - 39
-                Exp *cur;
+                SharedExp cur;
                 for (cur = ((Assign *)st)->getRight(); !cur->isNil(); cur = cur->getSubExp2()) {
                     // I dont understand why we want typed exps in the flag calls so much. If we're going to replace
                     // opSize with TypedExps
@@ -360,9 +360,9 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int &tos, Cfg *pCfg) {
                     // is wrong.
                     // - trent 9/6/2002
                     //                    TypedExp* te = (TypedExp*)cur->getSubExp1();
-                    Exp *s = cur->getSubExp1();
+                    SharedExp s = cur->getSubExp1();
                     if (s->isRegOfK()) {
-                        Const *c = (Const *)((Unary *)s)->getSubExp1();
+                        auto c = s->subExp<Const,1>();
                         int K = c->getInt(); // Old register number
                         // Change to new register number, if in range
                         if ((K >= 32) && (K <= 39))
@@ -395,10 +395,10 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int &tos, Cfg *pCfg) {
 
 // Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
 // Insert before rit
-void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::iterator &rit, ADDRESS uAddr, Exp *lhs,
-                              Exp *cond) {
+void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::iterator &rit, ADDRESS uAddr, SharedExp lhs,
+                              SharedExp cond) {
 
-    Instruction *asgn = new Assign(lhs, new Ternary(opTern, cond, Const::get(1), Const::get(0)));
+    Instruction *asgn = new Assign(lhs, std::make_shared<Ternary>(opTern, cond, Const::get(1), Const::get(0)));
     RTL *pRtl = new RTL(uAddr);
     pRtl->appendStmt(asgn);
     //    std::cout << "Emit "; pRtl->print(); std::cout << '\n';
@@ -429,10 +429,10 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
         // r[24] = trunc(64, 32, r[tmpl])
         // r[26] = r[tmpl] >> 32
         Instruction *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
-                                  new Ternary(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
+                                  std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
         RTL *pRtl = new RTL(addr);
         pRtl->appendStmt(a);
-        a = new Assign(Location::regOf(24), new Ternary(opTruncs, Const::get(64), Const::get(32),
+        a = new Assign(Location::regOf(24), std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                                         Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
         pRtl->appendStmt(a);
         a = new Assign(Location::regOf(26),
@@ -512,7 +512,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
         if (not inst.rtl->empty())
             cs = (CallStatement *)((inst.rtl->back()->getKind() == STMT_CALL) ? inst.rtl->back() : nullptr);
         const IBinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
-                    Symbols->find(((Const *)cs->getDest()->getSubExp1())->getAddr()) : nullptr;
+                    Symbols->find(cs->getDest()->subExp<Const,1>()->getAddr()) : nullptr;
         if (sym && sym->isImportedFunction() && sym->getName() == "GetModuleHandleA" ) {
             int oNumBytes = inst.numBytes;
             inst = decodeInstruction(addr + oNumBytes);
@@ -546,10 +546,10 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
                 assert(inst.valid);
                 assert(inst.rtl->size() == 2);
                 Assign *a = (Assign *)inst.rtl->front(); // Get m[esp-4] = K
-                Exp *rhs = a->getRight();
+                SharedExp rhs = a->getRight();
                 assert(rhs->isIntConst());
                 gotMain = true;
-                return ADDRESS::g(((Const *)rhs)->getInt()); // TODO: use getAddr ?
+                return ADDRESS::g(rhs->subExp<Const>()->getInt()); // TODO: use getAddr ?
             }
         } else
             conseq = 0; // Must be consequitive
@@ -616,9 +616,9 @@ void PentiumFrontEnd::processStringInst(UserProc *proc) {
             if (not rtl->empty()) {
                 Instruction *firstStmt = rtl->front();
                 if (firstStmt->isAssign()) {
-                    Exp *lhs = ((Assign *)firstStmt)->getLeft();
+                    SharedExp lhs = ((Assign *)firstStmt)->getLeft();
                     if (lhs->isMachFtr()) {
-                        Const *sub = (Const *)((Unary *)lhs)->getSubExp1();
+                        auto sub = lhs->subExp<Const,1>();
                         QString str = sub->getStr();
                         if (str.startsWith("%SKIP")) {
                             toBranches(addr, lastRtl, cfg, rtl, bb, it);
@@ -652,10 +652,10 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
         LocationSet locs;
         s->addUsedLocs(locs);
         for (LocationSet::iterator li = locs.begin(); li != locs.end(); li++) {
-            Exp *l = *li;
+            SharedExp l = *li;
             if (!l->isRegOfK())
                 continue;
-            int n = ((Const *)l->getSubExp1())->getInt();
+            int n = l->subExp<Const,1>()->getInt();
             usedRegs.insert(n);
         }
     }
@@ -683,10 +683,10 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
         bbs.insert(s->getBB());
         if (!s->isAssignment())
             continue;
-        Exp *lhs = ((Assignment *)s)->getLeft();
+        SharedExp lhs = ((Assignment *)s)->getLeft();
         if (!lhs->isRegOf())
             continue;
-        Const *c = (Const *)((Location *)lhs)->getSubExp1();
+        auto c = lhs->subExp<Const,1>();
         assert(c->isIntConst());
         int r = c->getInt();
         int off = r & 3;      // Offset into the array of 4 registers
@@ -701,21 +701,21 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
             // Emit *16* r<off> := trunc(32, 16, r<24+off>)
             if (usedRegs.find(off) != usedRegs.end()) {
                 a = new Assign(IntegerType::get(16), Location::regOf(off),
-                               new Ternary(opTruncu, Const::get(32), Const::get(16), Location::regOf(24 + off)));
+                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(16), Location::regOf(24 + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<8+off> := trunc(32, 8, r<24+off>)
             if (usedRegs.find(8 + off) != usedRegs.end()) {
                 a = new Assign(IntegerType::get(8), Location::regOf(8 + off),
-                               new Ternary(opTruncu, Const::get(32), Const::get(8), Location::regOf(24 + off)));
+                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(8), Location::regOf(24 + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<12+off> := r<24+off>@[15:8]
             if (usedRegs.find(12 + off) != usedRegs.end()) {
                 a = new Assign(IntegerType::get(8), Location::regOf(12 + off),
-                               new Ternary(opAt, Location::regOf(24 + off), Const::get(15), Const::get(8)));
+                               std::make_shared<Ternary>(opAt, Location::regOf(24 + off), Const::get(15), Const::get(8)));
                 proc->insertStatementAfter(s, a);
             }
             break;
@@ -729,22 +729,22 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
             if (usedRegs.find(24 + off) != usedRegs.end()) {
                 a = new Assign(IntegerType::get(32), Location::regOf(24 + off),
                                Binary::get(opBitOr,
-                                           new Ternary(opAt, Location::regOf(24 + off), Const::get(31), Const::get(16)),
-                                           new Ternary(opZfill, Const::get(16), Const::get(32), Location::regOf(off))));
+                                           std::make_shared<Ternary>(opAt, Location::regOf(24 + off), Const::get(31), Const::get(16)),
+                                           std::make_shared<Ternary>(opZfill, Const::get(16), Const::get(32), Location::regOf(off))));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<8+off> := trunc(16, 8, r<off>)
             if (usedRegs.find(8 + off) != usedRegs.end()) {
                 a = new Assign(IntegerType::get(8), Location::regOf(8 + off),
-                               new Ternary(opTruncu, Const::get(16), Const::get(8), Location::regOf(24 + off)));
+                               std::make_shared<Ternary>(opTruncu, Const::get(16), Const::get(8), Location::regOf(24 + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<12+off> := r<off>@[15:8]
             if (usedRegs.find(12 + off) != usedRegs.end()) {
                 a = new Assign(IntegerType::get(8), Location::regOf(12 + off),
-                               new Ternary(opAt, Location::regOf(off), Const::get(15), Const::get(8)));
+                               std::make_shared<Ternary>(opAt, Location::regOf(off), Const::get(15), Const::get(8)));
                 proc->insertStatementAfter(s, a);
             }
             break;
@@ -758,8 +758,8 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
             if (usedRegs.find(24 + off) != usedRegs.end()) {
                 a = new Assign(
                     IntegerType::get(32), Location::regOf(24 + off),
-                    Binary::get(opBitOr, new Ternary(opAt, Location::regOf(24 + off), Const::get(31), Const::get(8)),
-                                new Ternary(opZfill, Const::get(8), Const::get(32), Location::regOf(8 + off))));
+                    Binary::get(opBitOr, std::make_shared<Ternary>(opAt, Location::regOf(24 + off), Const::get(31), Const::get(8)),
+                                std::make_shared<Ternary>(opZfill, Const::get(8), Const::get(32), Location::regOf(8 + off))));
                 proc->insertStatementAfter(s, a);
             }
 
@@ -767,8 +767,8 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
             if (usedRegs.find(off) != usedRegs.end()) {
                 a = new Assign(
                     IntegerType::get(16), Location::regOf(off),
-                    Binary::get(opBitOr, new Ternary(opAt, Location::regOf(off), Const::get(15), Const::get(8)),
-                                new Ternary(opZfill, Const::get(8), Const::get(16), Location::regOf(8 + off))));
+                    Binary::get(opBitOr, std::make_shared<Ternary>(opAt, Location::regOf(off), Const::get(15), Const::get(8)),
+                                std::make_shared<Ternary>(opZfill, Const::get(8), Const::get(16), Location::regOf(8 + off))));
                 proc->insertStatementAfter(s, a);
             }
             break;
@@ -812,8 +812,8 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
                 a = new Assign(
                     IntegerType::get(32), Location::regOf(24 + off_mod8),
                     Binary::get(opBitOr,
-                                new Ternary(opAt, Location::regOf(24 + off_mod8), Const::get(31), Const::get(16)),
-                                new Ternary(opZfill, Const::get(16), Const::get(32), Location::regOf(off_mod8))));
+                                std::make_shared<Ternary>(opAt, Location::regOf(24 + off_mod8), Const::get(31), Const::get(16)),
+                                std::make_shared<Ternary>(opZfill, Const::get(16), Const::get(32), Location::regOf(off_mod8))));
                 proc->insertStatementAfter(s, a);
             }
             break;
@@ -825,7 +825,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
             // Emit *16* r<off_mod8> := trunc(32, 16, r<24+off_mod8>)
             if (usedRegs.find(off_mod8) != usedRegs.end()) {
                 a = new Assign(IntegerType::get(16), Location::regOf(off_mod8),
-                               new Ternary(opTruncu, Const::get(32), Const::get(16), Location::regOf(24 + off_mod8)));
+                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(16), Location::regOf(24 + off_mod8)));
                 proc->insertStatementAfter(s, a);
             }
             break;
@@ -844,8 +844,8 @@ bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult &r) {
     r.type = NCT;
     r.reDecode = false;
     r.rtl = new RTL(pc);
-    Exp *dx = Location::regOf(decoder->getRTLDict().RegMap["%dx"]);
-    Exp *al = Location::regOf(decoder->getRTLDict().RegMap["%al"]);
+    SharedExp dx = Location::regOf(decoder->getRTLDict().RegMap["%dx"]);
+    SharedExp al = Location::regOf(decoder->getRTLDict().RegMap["%al"]);
     CallStatement *call = new CallStatement();
     call->setDestProc(Program->getLibraryProc("outp"));
     call->setArgumentExp(0, dx);
@@ -892,7 +892,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         return;
 
     // looking for function pointers
-    Signature *calledSig = call->getDestProc()->getSignature();
+    auto calledSig = call->getDestProc()->getSignature();
     for (unsigned int i = 0; i < calledSig->getNumParams(); i++) {
         // check param type
         SharedType paramType = calledSig->getParamType(i);
@@ -916,7 +916,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
             continue;
 
         // count pushes backwards to find arg
-        Exp *found = nullptr;
+        SharedExp found = nullptr;
         std::list<RTL *>::reverse_iterator itr;
         unsigned int pushcount = 0;
         for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
@@ -942,9 +942,9 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 
         ADDRESS a;
         if (found->isIntConst())
-            a = ((Const *)found)->getInt();
+            a = found->subExp<Const>()->getInt();
         else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
-            QString name = ((Const *)found->getSubExp1()->getSubExp1())->getStr();
+            QString name = found->subExp<Const,1,1>()->getStr();
             if (Program->getGlobal(name) == nullptr)
                 continue;
             a = Program->getGlobalAddr(name);
@@ -956,7 +956,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
             LOG_VERBOSE(1) << "found a new procedure at address " << a << " from inspecting parameters of call to "
                            << call->getDestProc()->getName() << ".\n";
             Function *proc = Program->setNewProc(a);
-            Signature *sig = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
+            auto sig = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
             sig->setName(proc->getName());
             sig->setForced(true);
             proc->setSignature(sig);
@@ -976,7 +976,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
                     LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "
                         << call->getDestProc()->getName() << ".\n";
                 Function *proc = Program->setNewProc(d);
-                Signature *sig = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
+                auto sig = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);
                 proc->setSignature(sig);
@@ -1003,7 +1003,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
                              asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(28) &&
                              asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
                         if (asgn->getRight()->isIntConst()) {
-                            int n = ((Const *)asgn->getRight())->getInt();
+                            int n = asgn->getRight()->subExp<Const>()->getInt();
                             if (n == 0) {
                                 found = true;
                                 break;

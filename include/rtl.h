@@ -20,8 +20,7 @@
   *       switch statements).
   ******************************************************************************/
 
-#ifndef __RTL_H__
-#define __RTL_H__
+#pragma once
 
 #include "register.h"                   // for Register
 #include "type.h"                       // for Type
@@ -43,7 +42,9 @@ class QTextStream;
 class QString;
 
 enum STMT_KIND : uint8_t;
-typedef std::shared_ptr<class RTL> SharedRTL;
+using SharedRTL = std::shared_ptr<class RTL> ;
+using SharedExp = std::shared_ptr<Exp> ;
+
 /***************************************************************************/ /**
   * Class RTL: describes low level register transfer lists (actually lists of statements).
   * \note when time permits, this class could be removed, replaced with new Statements that mark the current native
@@ -51,7 +52,7 @@ typedef std::shared_ptr<class RTL> SharedRTL;
   ******************************************************************************/
 class RTL : public std::list<Instruction *> {
     ADDRESS nativeAddr; // RTL's source program instruction address
-  public:
+public:
     RTL();
     RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
     RTL(const RTL &other); // Makes deep copy of "other"
@@ -78,7 +79,7 @@ class RTL : public std::list<Instruction *> {
     bool isCall(); // Is this RTL a call instruction?
     Instruction *getHlStmt();
     char *prints() const; // Print to a string (mainly for debugging)
-  protected:
+protected:
     void simplify();
     friend class XMLProgParser;
     friend class BasicBlock;
@@ -91,7 +92,7 @@ class RTL : public std::list<Instruction *> {
   * header file...
   ******************************************************************************/
 class TableEntry {
-  public:
+public:
     TableEntry();
     TableEntry(std::list<QString> &p, RTL &rtl);
 
@@ -103,7 +104,7 @@ class TableEntry {
     // non-zero return indicates failure
     int appendRTL(std::list<QString> &p, RTL &rtl);
 
-  public:
+public:
     std::list<QString> params;
     RTL rtl;
 
@@ -117,22 +118,16 @@ class TableEntry {
 typedef enum { PARAM_SIMPLE, PARAM_ASGN, PARAM_LAMBDA, PARAM_VARIANT } ParamKind;
 
 class ParamEntry {
-  public:
-    ParamEntry() {
-        asgn = nullptr;
-        kind = PARAM_SIMPLE;
-        lhs = false;
-        mark = 0;
-    }
-    std::list<QString> params;     //!< PARAM_VARIANT & PARAM_ASGN only */
-    std::list<QString> funcParams; //!< PARAM_LAMBDA - late bound params */
-    Instruction *asgn;                   //!< PARAM_ASGN only */
-    bool lhs;                          //!< True if this param ever appears on the LHS of an expression */
-    ParamKind kind;
-    SharedType regType;        //!< Type of r[this], if any (void otherwise)
-    std::set<int> regIdx; //!< Values this param can take as an r[param]
-    int mark;             //!< Traversal mark. (free temporary use, basically)
-  protected:
+public:
+    std::list<QString> params;          //!< PARAM_VARIANT & PARAM_ASGN only */
+    std::list<QString> funcParams;      //!< PARAM_LAMBDA - late bound params */
+    Instruction *asgn = nullptr;        //!< PARAM_ASGN only */
+    bool lhs          = false;          //!< True if this param ever appears on the LHS of an expression */
+    ParamKind kind = PARAM_SIMPLE;
+    SharedType regType;                 //!< Type of r[this], if any (void otherwise)
+    std::set<int> regIdx;               //!< Values this param can take as an r[param]
+    int mark          = 0;              //!< Traversal mark. (free temporary use, basically)
+protected:
     SharedType m_type;
 };
 
@@ -145,7 +140,7 @@ class ParamEntry {
   ******************************************************************************/
 
 class RTLInstDict {
-  public:
+public:
     RTLInstDict();
     ~RTLInstDict();
 
@@ -155,9 +150,9 @@ class RTLInstDict {
 
     int appendToDict(const QString &n, std::list<QString> &p, RTL &rtl);
 
-    std::list<Instruction *> *instantiateRTL(const QString &name, ADDRESS natPC, const std::vector<Exp *> &actuals);
+    std::list<Instruction *> *instantiateRTL(const QString &name, ADDRESS natPC, const std::vector<SharedExp> &actuals);
     std::list<Instruction *> *instantiateRTL(RTL &rtls, ADDRESS, std::list<QString> &params,
-                                           const std::vector<Exp *> &actuals);
+                                             const std::vector<SharedExp> &actuals);
 
     void transformPostVars(std::list<Instruction *> &rts, bool optimise);
     void print(QTextStream &os);
@@ -165,7 +160,7 @@ class RTLInstDict {
     bool partialType(Exp *exp, Type &ty);
     void fixupParams();
 
-  public:
+public:
     //! A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
     std::map<QString, int, std::less<QString>> RegMap;
 
@@ -183,9 +178,9 @@ class RTLInstDict {
     QMap<QString, ParamEntry> DetParamMap;
 
     //! The maps which summarise the semantics (.ssl) file
-    std::map<QString, Exp *> FlagFuncs;
+    std::map<QString, SharedExp> FlagFuncs;
     std::map<QString, std::pair<int, void *> *> DefMap;
-    std::map<int, Exp *> AliasMap;
+    std::map<int, SharedExp> AliasMap;
 
     //! Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
     std::map<QString, QString> fastMap;
@@ -200,5 +195,3 @@ class RTLInstDict {
 
     void fixupParamsSub(const QString &s, std::list<QString> &funcParams, bool &haveCount, int mark);
 };
-
-#endif /*__RTL_H__*/

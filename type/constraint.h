@@ -20,17 +20,17 @@ class Instruction;
 // This class represents fixed constraints (e.g. Ta = <int>, Tb = <alpha2*>),
 // but also "tentative" constraints resulting from disjunctions of constraints
 class ConstraintMap {
-    std::map<Exp *, Exp *, lessExpStar> cmap;
+    std::map<SharedExp, SharedExp, lessExpStar> cmap;
 
   public:
-    typedef std::map<Exp *, Exp *, lessExpStar>::iterator iterator;
+    typedef std::map<SharedExp, SharedExp, lessExpStar>::iterator iterator;
 
     //! Return true if the given expression is in the map
-    bool isFound(Exp *e) { return cmap.find(e) != cmap.end(); }
+    bool isFound(SharedExp e) { return cmap.find(e) != cmap.end(); }
     //! Return an iterator to the given left hand side Exp
-    iterator find(Exp *e) { return cmap.find(e); }
+    iterator find(SharedExp e) { return cmap.find(e); }
     //! Lookup a given left hand side Exp (e.g. given Tlocal1, return <char*>)
-    Exp *&operator[](Exp *e) { return cmap[e]; }
+    SharedExp&operator[](SharedExp e) { return cmap[e]; }
     //! Return the number of constraints in the map
     size_t size() { return cmap.size(); }
     //! Empty the map
@@ -38,14 +38,14 @@ class ConstraintMap {
     //! Return iterators for the begin() and end() of the map
     iterator begin() { return cmap.begin(); }
     iterator end() { return cmap.end(); }
-    void constrain(Exp *loc1, Exp *loc2);
-    void constrain(Exp *loc, SharedType t);
+    void constrain(SharedExp loc1, SharedExp loc2);
+    void constrain(SharedExp loc, SharedType t);
     void constrain(SharedType t1, SharedType t2);
     //! Insert a constraint given an equality expression
     //! e.g. Tlocal1 = <char*>
-    void insert(Exp *term);
+    void insert(SharedExp term);
     //! Insert a constraint given left and right hand sides (as type Exps)
-    void insert(Exp *lhs, Exp *rhs) { cmap[lhs] = rhs; }
+    void insert(SharedExp lhs, SharedExp rhs) { cmap[lhs] = rhs; }
     //! Union with another constraint map
     void makeUnion(ConstraintMap &o);
     //! Print to the given stream
@@ -69,27 +69,27 @@ class ConstraintMap {
 //! Ta = Tb and also as Tb = Ta. So to find out if Ta is involved in an
 //! equate, only have to look up Ta in the map (on the LHS, which is fast)
 class EquateMap {
-    std::map<Exp *, LocationSet, lessExpStar> emap;
+    std::map<SharedExp, LocationSet, lessExpStar> emap;
 
   public:
-    typedef std::map<Exp *, LocationSet, lessExpStar>::iterator iterator;
+    typedef std::map<SharedExp, LocationSet, lessExpStar>::iterator iterator;
     iterator begin() { return emap.begin(); }
     iterator end() { return emap.end(); }
     void erase(iterator it) { emap.erase(it); }
     size_t size() { return emap.size(); }
     // Add an equate (both ways)
-    void addEquate(Exp *a, Exp *b) {
+    void addEquate(SharedExp a, SharedExp b) {
         emap[a].insert(b);
         emap[b].insert(a);
     }
-    iterator find(Exp *e) { return emap.find(e); }
+    iterator find(SharedExp e) { return emap.find(e); }
     void print(QTextStream &os);
     char *prints();
 }; // class EquateMap
 
 class Constraints {
     LocationSet conSet;
-    std::list<Exp *> disjunctions;
+    std::list<SharedExp> disjunctions;
     //! Map from location to a fixed type (could be a pointer to a variable type, i.e. an alpha).
     ConstraintMap fixed;
     //! EquateMap of locations that are equal
@@ -116,9 +116,9 @@ class Constraints {
     bool solve(std::list<ConstraintMap> &solns);
 
   private:
-    bool doSolve(std::list<Exp *>::iterator it, ConstraintMap &extra, std::list<ConstraintMap> &solns);
+    bool doSolve(std::list<SharedExp>::iterator it, ConstraintMap &extra, std::list<ConstraintMap> &solns);
     //! Test for compatibility of these types. Sometimes, they are compatible
     //! with an extra constraint (e.g. alpha3* is compatible with alpha4* with
     //! the extra constraint that alpha3 == alpha4)
-    bool unify(Exp *x, Exp *y, ConstraintMap &extra);
+    bool unify(SharedExp x, SharedExp y, ConstraintMap &extra);
 };

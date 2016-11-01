@@ -49,7 +49,7 @@ public:
 class InsListElem : public InsNameElem {
 
 public:
-    InsListElem(const QString &name, Table *t, const QString &idx);
+    InsListElem(const QString &name, const std::shared_ptr<Table> &t, const QString &idx);
     virtual size_t ntokens(void) override;
     virtual QString getinstruction(void) override;
     virtual QString getinspattern(void) override;
@@ -59,7 +59,7 @@ public:
 
 protected:
     QString indexname;
-    Table *thetable;
+    std::shared_ptr<Table> thetable;
 };
 
 #endif

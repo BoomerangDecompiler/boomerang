@@ -17,6 +17,7 @@
 
 #include <QString>
 #include <deque>
+#include <memory>
 
 // Kinds of SSL specification tables
 enum TABLE_TYPE { NAMETABLE, OPTABLE, EXPRTABLE };
@@ -41,12 +42,13 @@ class OpTable : public Table {
 };
 
 class Exp;
+using SharedExp = std::shared_ptr<Exp>;
 
 class ExprTable : public Table {
   public:
-    ExprTable(const std::deque<Exp *> &exprs);
+    ExprTable(const std::deque<SharedExp> &exprs);
     ~ExprTable(void);
-    std::deque<Exp *> expressions;
+    std::deque<SharedExp> expressions;
 };
 
 #endif

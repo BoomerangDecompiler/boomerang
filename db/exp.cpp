@@ -66,7 +66,7 @@ Unary::Unary(OPER op) : Exp(op) /*,subExp1(nullptr)*/ {
     assert(op != opRegOf);
 }
 
-Unary::Unary(OPER op, Exp *e) : Exp(op), subExp1(e) { assert(subExp1); }
+Unary::Unary(OPER op, SharedExp e) : Exp(op), subExp1(e) { assert(subExp1); }
 Unary::Unary(const Unary &o) : Exp(o.op) {
     subExp1 = o.subExp1->clone();
     assert(subExp1);
@@ -76,7 +76,7 @@ Binary::Binary(OPER op) : Unary(op) {
     // Initialise the 2nd pointer. The first pointer is initialised in the Unary constructor
     // subExp2 = 0;
 }
-Binary::Binary(OPER op, Exp *e1, Exp *e2) : Unary(op, e1), subExp2(e2) { assert(subExp1 && subExp2); }
+Binary::Binary(OPER op, SharedExp e1, SharedExp e2) : Unary(op, e1), subExp2(e2) { assert(subExp1 && subExp2); }
 Binary::Binary(const Binary &o) : Unary(op) {
     setSubExp1(subExp1->clone());
     subExp2 = o.subExp2->clone();
@@ -84,7 +84,7 @@ Binary::Binary(const Binary &o) : Unary(op) {
 }
 
 Ternary::Ternary(OPER op) : Binary(op) { subExp3 = nullptr; }
-Ternary::Ternary(OPER op, Exp *e1, Exp *e2, Exp *e3) : Binary(op, e1, e2) {
+Ternary::Ternary(OPER op, SharedExp e1, SharedExp e2, SharedExp e3) : Binary(op, e1, e2) {
     subExp3 = e3;
     assert(subExp1 && subExp2 && subExp3);
 }
@@ -96,16 +96,20 @@ Ternary::Ternary(const Ternary &o) : Binary(o.op) {
 }
 
 TypedExp::TypedExp() : Unary(opTypedExp), type(nullptr) {}
-TypedExp::TypedExp(Exp *e1) : Unary(opTypedExp, e1), type(nullptr) {}
-TypedExp::TypedExp(SharedType ty, Exp *e1) : Unary(opTypedExp, e1), type(ty) {}
+TypedExp::TypedExp(SharedExp e1) : Unary(opTypedExp, e1), type(nullptr) {}
+TypedExp::TypedExp(SharedType ty, SharedExp e1) : Unary(opTypedExp, e1), type(ty) {}
 TypedExp::TypedExp(TypedExp &o) : Unary(opTypedExp) {
     subExp1 = o.subExp1->clone();
     type = o.type->clone();
 }
 
-FlagDef::FlagDef(Exp *params, SharedRTL rtl) : Unary(opFlagDef, params), rtl(rtl) {}
+FlagDef::FlagDef(SharedExp params, SharedRTL rtl) : Unary(opFlagDef, params), rtl(rtl) {}
 
-RefExp::RefExp(Exp *e, Instruction *d) : Unary(opSubscript, e), def(d) { assert(e); }
+RefExp::RefExp(SharedExp e, Instruction *d) : Unary(opSubscript, e), def(d) { assert(e); }
+
+std::shared_ptr<RefExp> RefExp::get(SharedExp e, Instruction * def) {
+    return std::make_shared<RefExp>(e, def);
+}
 
 TypeVal::TypeVal(SharedType ty) : Terminal(opTypeVal), val(ty) {}
 
@@ -115,11 +119,11 @@ TypeVal::TypeVal(SharedType ty) : Terminal(opTypeVal), val(ty) {}
  * \param exp - child expression
  * \param p - enclosing procedure, if null this constructor will try to find it.
  */
-Location::Location(OPER op, Exp *exp, UserProc *p) : Unary(op, exp), proc(p) {
+Location::Location(OPER op, SharedExp exp, UserProc *p) : Unary(op, exp), proc(p) {
     assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
     if (p == nullptr) {
         // eep.. this almost always causes problems
-        Exp *e = exp;
+        SharedExp e = exp;
         if (e) {
             bool giveUp = false;
             while (this->proc == nullptr && !giveUp) {
@@ -130,7 +134,7 @@ Location::Location(OPER op, Exp *exp, UserProc *p) : Unary(op, exp), proc(p) {
                 case opLocal:
                 case opGlobal:
                 case opParam:
-                    this->proc = ((Location *)e)->getProc();
+                    this->proc = std::static_pointer_cast<Location>(e)->getProc();
                     giveUp = true;
                     break;
                 case opSubscript:
@@ -177,21 +181,18 @@ TypeVal::~TypeVal() {
   * \param  e Pointer to subexpression to set
   * \note   If an expression already exists, it is ;//deleted
   ******************************************************************************/
-void Unary::setSubExp1(Exp *e) {
-    if (subExp1 != nullptr) {
-        ; // delete subExp1;
-    }
+void Unary::setSubExp1(SharedExp e) {
     subExp1 = e;
     assert(subExp1);
 }
-void Binary::setSubExp2(Exp *e) {
+void Binary::setSubExp2(SharedExp e) {
     if (subExp2 != nullptr) {
         ; // delete subExp2;
     }
     subExp2 = e;
     assert(subExp1 && subExp2);
 }
-void Ternary::setSubExp3(Exp *e) {
+void Ternary::setSubExp3(SharedExp e) {
     if (subExp3 != nullptr) {
         ; // delete subExp3;
     }
@@ -203,48 +204,48 @@ void Ternary::setSubExp3(Exp *e) {
   * \brief        Get subexpression
   * \returns            Pointer to the requested subexpression
   ******************************************************************************/
-Exp *Unary::getSubExp1() {
+SharedExp Unary::getSubExp1() {
     assert(subExp1);
     return subExp1;
 }
-const Exp *Unary::getSubExp1() const {
+SharedConstExp Unary::getSubExp1() const {
     assert(subExp1);
     return subExp1;
 }
-Exp *&Unary::refSubExp1() {
+SharedExp & Unary::refSubExp1() {
     assert(subExp1);
     return subExp1;
 }
-Exp *Binary::getSubExp2() {
+SharedExp Binary::getSubExp2() {
     assert(subExp1 && subExp2);
     return subExp2;
 }
-const Exp *Binary::getSubExp2() const {
+SharedConstExp Binary::getSubExp2() const {
     assert(subExp1 && subExp2);
     return subExp2;
 }
-Exp *&Binary::refSubExp2() {
+SharedExp &Binary::refSubExp2() {
     assert(subExp1 && subExp2);
     return subExp2;
 }
-Exp *Ternary::getSubExp3() {
+SharedExp Ternary::getSubExp3() {
     assert(subExp1 && subExp2 && subExp3);
     return subExp3;
 }
-const Exp *Ternary::getSubExp3() const {
+SharedConstExp Ternary::getSubExp3() const {
     assert(subExp1 && subExp2 && subExp3);
     return subExp3;
 }
-Exp *&Ternary::refSubExp3() {
+SharedExp & Ternary::refSubExp3() {
     assert(subExp1 && subExp2 && subExp3);
     return subExp3;
 }
 
 // This to satisfy the compiler (never gets called!)
-Exp *dummy;
-Exp *&Exp::refSubExp1() { return dummy; }
-Exp *&Exp::refSubExp2() { return dummy; }
-Exp *&Exp::refSubExp3() { return dummy; }
+SharedExp dummy;
+SharedExp & Exp::refSubExp1() { return dummy; }
+SharedExp & Exp::refSubExp2() { return dummy; }
+SharedExp & Exp::refSubExp3() { return dummy; }
 
 /***************************************************************************/ /**
   *
@@ -265,50 +266,38 @@ void Binary::commute() {
   *                     Pointers to subexpressions are not copied, but also cloned.
   * \returns            Pointer to cloned object
   ******************************************************************************/
-Exp *Const::clone() const {
+SharedExp Const::clone() const {
     // Note: not actually cloning the Type* type pointer. Probably doesn't matter with GC
-    return new Const(*this);
+    return Const::get(*this);
 }
-Exp *Terminal::clone() const { return new Terminal(*this); }
-Exp *Unary::clone() const {
+SharedExp Terminal::clone() const { return std::make_shared<Terminal>(*this); }
+SharedExp Unary::clone() const {
     assert(subExp1);
-    Unary *c = new Unary(op);
-    c->subExp1 = subExp1->clone();
-    return c;
+    return std::make_shared<Unary>(op,subExp1->clone());
 }
-Exp *Binary::clone() const {
+SharedExp Binary::clone() const {
     assert(subExp1 && subExp2);
-    Binary *c = new Binary(op);
-    c->subExp1 = subExp1->clone();
-    c->subExp2 = subExp2->clone();
-    return c;
+    return std::make_shared<Binary>(op,subExp1->clone(),subExp2->clone());
 }
 
-Exp *Ternary::clone() const {
+SharedExp Ternary::clone() const {
     assert(subExp1 && subExp2 && subExp3);
-    Ternary *c = new Ternary(op);
-    c->subExp1 = subExp1->clone();
-    c->subExp2 = subExp2->clone();
-    c->subExp3 = subExp3->clone();
+    std::shared_ptr<Ternary> c = std::make_shared<Ternary>(op,subExp1->clone(),subExp2->clone(),subExp3->clone());
     return c;
 }
-Exp *TypedExp::clone() const {
-    TypedExp *c = new TypedExp(type, subExp1->clone());
-    return c;
+SharedExp TypedExp::clone() const {
+    return std::make_shared<TypedExp>(type, subExp1->clone());
 }
-Exp *RefExp::clone() const {
-    RefExp *c = new RefExp(subExp1->clone(), def);
-    return c;
+SharedExp RefExp::clone() const {
+    return RefExp::get(subExp1->clone(), def);
 }
 
-Exp *TypeVal::clone() const {
-    TypeVal *c = new TypeVal(val->clone());
-    return c;
+SharedExp TypeVal::clone() const {
+    return std::make_shared<TypeVal>(val->clone());
 }
 
-Exp *Location::clone() const {
-    Location *c = new Location(op, subExp1->clone(), proc);
-    return c;
+SharedExp Location::clone() const {
+    return std::make_shared<Location>(op, subExp1->clone(), proc);
 }
 
 /***************************************************************************/ /**
@@ -339,7 +328,7 @@ bool Const::operator==(const Exp &o) const {
         return strin == ((Const &)o).strin;
     default:
         LOG << "Operator== invalid operator " << operStrings[op] << "\n";
-        assert(0);
+        assert(false);
     }
     return false;
 }
@@ -465,7 +454,7 @@ bool Const::operator<(const Exp &o) const {
         return strin < ((Const &)o).strin;
     default:
         LOG << "Operator< invalid operator " << operStrings[op] << "\n";
-        assert(0);
+        assert(false);
     }
     return false;
 }
@@ -559,16 +548,16 @@ bool TypeVal::operator<(const Exp &o) const {
   * \param        o - Ref to other Exp
   * \returns            True if equal
   ******************************************************************************/
-bool Const::operator*=(Exp &o) {
-    Exp *other = &o;
+bool Const::operator*=(const Exp &o) const {
+    const Exp *other = &o;
     if (o.getOper() == opSubscript)
-        other = o.getSubExp1();
+        other = o.getSubExp1().get();
     return *this == *other;
 }
-bool Unary::operator*=(Exp &o) {
-    Exp *other = &o;
+bool Unary::operator*=(const Exp &o) const {
+    const Exp *other = &o;
     if (o.getOper() == opSubscript)
-        other = o.getSubExp1();
+        other = o.getSubExp1().get();
     if (other->getOper() == opWild)
         return true;
     if (other->getOper() == opWildRegOf && op == opRegOf)
@@ -579,13 +568,13 @@ bool Unary::operator*=(Exp &o) {
         return true;
     if (op != other->getOper())
         return false;
-    return *subExp1 *= *((Unary *)other)->getSubExp1();
+    return *subExp1 *= *other->getSubExp1();
 }
-bool Binary::operator*=(Exp &o) {
+bool Binary::operator*=(const Exp &o) const {
     assert(subExp1 && subExp2);
-    Exp *other = &o;
+    const Exp *other = &o;
     if (o.getOper() == opSubscript)
-        other = o.getSubExp1();
+        other = o.getSubExp1().get();
     if (other->getOper() == opWild)
         return true;
     if (op != other->getOper())
@@ -595,10 +584,10 @@ bool Binary::operator*=(Exp &o) {
     return *subExp2 *= *other->getSubExp2();
 }
 
-bool Ternary::operator*=(Exp &o) {
-    Exp *other = &o;
+bool Ternary::operator*=(const Exp &o) const {
+    const Exp *other = &o;
     if (o.getOper() == opSubscript)
-        other = o.getSubExp1();
+        other = o.getSubExp1().get();
     if (other->getOper() == opWild)
         return true;
     if (op != other->getOper())
@@ -609,16 +598,16 @@ bool Ternary::operator*=(Exp &o) {
         return false;
     return *subExp3 *= *other->getSubExp3();
 }
-bool Terminal::operator*=(Exp &o) {
-    Exp *other = &o;
+bool Terminal::operator*=(const Exp &o) const {
+    const Exp *other = &o;
     if (o.getOper() == opSubscript)
-        other = o.getSubExp1();
+        other = o.getSubExp1().get();
     return *this == *other;
 }
-bool TypedExp::operator*=(Exp &o) {
-    Exp *other = &o;
+bool TypedExp::operator*=(const Exp &o) const {
+    const Exp *other = &o;
     if (o.getOper() == opSubscript)
-        other = o.getSubExp1();
+        other = o.getSubExp1().get();
     if (other->getOper() == opWild)
         return true;
     if (other->getOper() != opTypedExp)
@@ -626,20 +615,20 @@ bool TypedExp::operator*=(Exp &o) {
     // This is the strict type version
     if (*type != *((TypedExp *)other)->type)
         return false;
-    return *((Unary *)this)->getSubExp1() *= *((Unary *)other)->getSubExp1();
+    return *((Unary *)this)->getSubExp1() *= *other->getSubExp1();
 }
 
-bool RefExp::operator*=(Exp &o) {
-    Exp *other = &o;
+bool RefExp::operator*=(const Exp &o) const {
+    const Exp *other = &o;
     if (o.getOper() == opSubscript)
-        other = o.getSubExp1();
+        other = o.getSubExp1().get();
     return *subExp1 *= *other;
 }
 
-bool TypeVal::operator*=(Exp &o) {
-    Exp *other = &o;
+bool TypeVal::operator*=(const Exp &o) const {
+    const Exp *other = &o;
     if (o.getOper() == opSubscript)
-        other = o.getSubExp1();
+        other = o.getSubExp1().get();
     return *this == *other;
 }
 
@@ -677,7 +666,7 @@ void Const::print(QTextStream &os, bool /*html*/) const {
         break;
     default:
         LOG << "Const::print invalid operator " << operStrings[op] << "\n";
-        assert(0);
+        assert(false);
     }
     if (conscript)
         os << "\\" << conscript << "\\";
@@ -688,7 +677,7 @@ void Const::print(QTextStream &os, bool /*html*/) const {
     setLexEnd(os.pos());
 }
 
-void Const::printNoQuotes(QTextStream &os) {
+void Const::printNoQuotes(QTextStream &os) const {
     if (op == opStrConst)
         os << strin;
     else
@@ -720,8 +709,8 @@ void Binary::printr(QTextStream &os, bool html) const {
 
 void Binary::print(QTextStream &os, bool html) const {
     assert(subExp1 && subExp2);
-    Exp *p1 = ((Binary *)this)->getSubExp1();
-    Exp *p2 = ((Binary *)this)->getSubExp2();
+    SharedConstExp p1 = getSubExp1();
+    SharedConstExp p2 = getSubExp2();
     // Special cases
     switch (op) {
     case opSize:
@@ -734,7 +723,7 @@ void Binary::print(QTextStream &os, bool html) const {
         return;
     case opFlagCall:
         // The name of the flag function (e.g. ADDFLAGS) should be enough
-        ((Const *)p1)->printNoQuotes(os);
+        std::static_pointer_cast<const Const>(p1)->printNoQuotes(os);
         os << "( ";
         p2->printr(os, html);
         os << " )";
@@ -760,7 +749,7 @@ void Binary::print(QTextStream &os, bool html) const {
     case opMemberAccess:
         p1->print(os, html);
         os << ".";
-        ((Const *)p2)->printNoQuotes(os);
+        std::static_pointer_cast<const Const>(p2)->printNoQuotes(os);
         return;
 
     case opArrayIndex:
@@ -928,7 +917,7 @@ void Binary::print(QTextStream &os, bool html) const {
 
     default:
         LOG << "Binary::print invalid operator " << operStrings[op] << "\n";
-        assert(0);
+        assert(false);
     }
 
     if (p2 == nullptr)
@@ -1012,7 +1001,7 @@ void Terminal::print(QTextStream &os, bool /*html*/) const {
         break;
     default:
         LOG << "Terminal::print invalid operator " << operStrings[op] << "\n";
-        assert(0);
+        assert(false);
     }
 }
 
@@ -1020,7 +1009,7 @@ void Terminal::print(QTextStream &os, bool /*html*/) const {
 //     Unary    //
 //    //    //    //
 void Unary::print(QTextStream &os, bool html) const {
-    Exp *p1 = ((Unary *)this)->getSubExp1();
+    SharedConstExp p1 = this->getSubExp1();
     switch (op) {
     //    //    //    //    //    //    //
     //    x[ subexpression ]    //
@@ -1028,9 +1017,9 @@ void Unary::print(QTextStream &os, bool html) const {
     case opRegOf:
         // Make a special case for the very common case of r[intConst]
         if (p1->isIntConst()) {
-            os << "r" << ((Const *)p1)->getInt();
+            os << "r" << std::static_pointer_cast<const Const>(p1)->getInt();
 #ifdef DUMP_TYPES
-        os << "T("<<((Const *)p1)->getType()<<")";
+        os << "T("<<std::static_pointer_cast<const Const>(p1)->getType()<<")";
 #endif
             break;
         } else if (p1->isTemp()) {
@@ -1071,7 +1060,7 @@ void Unary::print(QTextStream &os, bool html) const {
             break; // Suppress compiler warning
         }
         if (op == opVar)
-            ((Const *)p1)->printNoQuotes(os);
+            std::static_pointer_cast<const Const>(p1)->printNoQuotes(os);
         // Use print, not printr, because this is effectively the top level again (because the [] act as
         // parentheses)
         else {
@@ -1079,7 +1068,7 @@ void Unary::print(QTextStream &os, bool html) const {
         }
         os << "]";
 #ifdef DUMP_TYPES
-        os << "T("<<((Const *)p1)->getType()<<")";
+        os << "T("<<std::static_pointer_cast<const Const>(p1)->getType()<<")";
 #endif
         break;
 
@@ -1183,7 +1172,7 @@ void Unary::print(QTextStream &os, bool html) const {
     case opTemp:
         if (p1->getOper() == opWildStrConst) {
             os << "t[";
-            ((Const *)p1)->printNoQuotes(os);
+            std::static_pointer_cast<const Const>(p1)->printNoQuotes(os);
             os << "]";
             return;
         }
@@ -1192,7 +1181,7 @@ void Unary::print(QTextStream &os, bool html) const {
     case opLocal:
     case opParam:
         // Print a more concise form than param["foo"] (just foo)
-        ((Const *)p1)->printNoQuotes(os);
+        std::static_pointer_cast<const Const>(p1)->printNoQuotes(os);
         return;
     case opInitValueOf:
         p1->printr(os, html);
@@ -1215,7 +1204,7 @@ void Unary::print(QTextStream &os, bool html) const {
         return;
     default:
         LOG << "Unary::print invalid operator " << operStrings[op] << "\n";
-        assert(0);
+        assert(false);
     }
 }
 
@@ -1247,9 +1236,9 @@ void Ternary::printr(QTextStream &os, bool /*html*/) const {
 }
 
 void Ternary::print(QTextStream &os, bool html) const {
-    Exp *p1 = ((Ternary *)this)->getSubExp1();
-    Exp *p2 = ((Ternary *)this)->getSubExp2();
-    Exp *p3 = ((Ternary *)this)->getSubExp3();
+    SharedConstExp p1 = this->getSubExp1();
+    SharedConstExp p2 = this->getSubExp2();
+    SharedConstExp p3 = this->getSubExp3();
     switch (op) {
     // The "function-like" ternaries
     case opTruncu:
@@ -1346,7 +1335,7 @@ void Ternary::print(QTextStream &os, bool html) const {
             os << "nullptr>";
     } else {
         LOG << "Ternary::print invalid operator " << operStrings[op] << "\n";
-        assert(0);
+        assert(false);
     }
 }
 
@@ -1356,7 +1345,7 @@ void Ternary::print(QTextStream &os, bool html) const {
 void TypedExp::print(QTextStream &os, bool html) const {
     os << " ";
     type->starPrint(os);
-    Exp *p1 = ((Ternary *)this)->getSubExp1();
+    SharedConstExp p1 = this->getSubExp1();
     p1->print(os, html);
 }
 
@@ -1492,7 +1481,7 @@ void Unary::appendDotFile(QTextStream &of) {
     subExp1->appendDotFile(of);
 
     // Finally an edge for the subexpression
-    of << "e" << ADDRESS::host_ptr(this) << "->e" << ADDRESS::host_ptr(subExp1) << ";\n";
+    of << "e" << ADDRESS::host_ptr(this) << "->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
 }
 
 //    //    //    //
@@ -1507,8 +1496,8 @@ void Binary::appendDotFile(QTextStream &of) {
     subExp1->appendDotFile(of);
     subExp2->appendDotFile(of);
     // Now an edge for each subexpression
-    of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1) << ";\n";
-    of << "e" << ADDRESS::host_ptr(this) << ":p2->e" << ADDRESS::host_ptr(subExp2) << ";\n";
+    of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
+    of << "e" << ADDRESS::host_ptr(this) << ":p2->e" << ADDRESS::host_ptr(subExp2.get()) << ";\n";
 }
 
 //    //    //    //
@@ -1524,9 +1513,9 @@ void Ternary::appendDotFile(QTextStream &of) {
     subExp2->appendDotFile(of);
     subExp3->appendDotFile(of);
     // Now an edge for each subexpression
-    of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1) << ";\n";
-    of << "e" << ADDRESS::host_ptr(this) << ":p2->e" << ADDRESS::host_ptr(subExp2) << ";\n";
-    of << "e" << ADDRESS::host_ptr(this) << ":p3->e" << ADDRESS::host_ptr(subExp3) << ";\n";
+    of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
+    of << "e" << ADDRESS::host_ptr(this) << ":p2->e" << ADDRESS::host_ptr(subExp2.get()) << ";\n";
+    of << "e" << ADDRESS::host_ptr(this) << ":p3->e" << ADDRESS::host_ptr(subExp3.get()) << ";\n";
 }
 //    //    //    //
 // TypedExp //
@@ -1538,7 +1527,7 @@ void TypedExp::appendDotFile(QTextStream &of) {
     of << type->getCtype() << " | <p1>";
     of << " }\"];\n";
     subExp1->appendDotFile(of);
-    of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1) << ";\n";
+    of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
 }
 
 //    //    //    //
@@ -1554,7 +1543,7 @@ void FlagDef::appendDotFile(QTextStream &of) {
         of << "| <r" << i << "> ";
     of << "} | <p1> }\"];\n";
     subExp1->appendDotFile(of);
-    of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1) << ";\n";
+    of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
 }
 
 /***************************************************************************/ /**
@@ -1576,8 +1565,8 @@ bool Exp::isRegOfK() {
 bool Exp::isRegN(int N) const {
     if (op != opRegOf)
         return false;
-    const Exp *sub = ((const Unary *)this)->getSubExp1();
-    return (sub->getOper() == opIntConst && ((const Const *)sub)->getInt() == N);
+    SharedConstExp sub = ((const Unary *)this)->getSubExp1();
+    return (sub->getOper() == opIntConst && std::static_pointer_cast<const Const>(sub)->getInt() == N);
 }
 /***************************************************************************/ /**
   *
@@ -1585,12 +1574,12 @@ bool Exp::isRegN(int N) const {
   * \returns            True if found
   ******************************************************************************/
 bool Exp::isAfpTerm() {
-    Exp *cur = this;
+    auto cur = shared_from_this();
     if (op == opTypedExp)
-        cur = ((Unary *)this)->getSubExp1();
-    Exp *p;
-    if ((cur->getOper() == opAddrOf) && ((p = ((Unary *)cur)->getSubExp1()), p->getOper() == opMemOf))
-        cur = ((Unary *)p)->getSubExp1();
+        cur = getSubExp1();
+    SharedExp p;
+    if ((cur->getOper() == opAddrOf) && ((p = cur->getSubExp1()), p->getOper() == opMemOf))
+        cur = p->getSubExp1();
 
     OPER curOp = cur->getOper();
     if (curOp == opAFP)
@@ -1598,8 +1587,8 @@ bool Exp::isAfpTerm() {
     if ((curOp != opPlus) && (curOp != opMinus))
         return false;
     // cur must be a Binary* now
-    OPER subOp1 = ((Binary *)cur)->getSubExp1()->getOper();
-    OPER subOp2 = ((Binary *)cur)->getSubExp2()->getOper();
+    OPER subOp1 = cur->getSubExp1()->getOper();
+    OPER subOp2 = cur->getSubExp2()->getOper();
     return ((subOp1 == opAFP) && (subOp2 == opIntConst));
 }
 
@@ -1610,8 +1599,8 @@ bool Exp::isAfpTerm() {
   ******************************************************************************/
 int Exp::getVarIndex() {
     assert(op == opVar);
-    Exp *sub = ((Unary *)this)->getSubExp1();
-    return ((Const *)sub)->getInt();
+    SharedExp sub = this->getSubExp1();
+    return std::static_pointer_cast<const Const>(sub)->getInt();
 }
 
 /***************************************************************************/ /**
@@ -1619,9 +1608,9 @@ int Exp::getVarIndex() {
   * \brief        Returns a ptr to the guard exression, or 0 if none
   * \returns            Ptr to the guard, or 0
   ******************************************************************************/
-Exp *Exp::getGuard() {
+SharedExp Exp::getGuard() {
     if (op == opGuard)
-        return ((Unary *)this)->getSubExp1();
+        return getSubExp1();
     return nullptr;
 }
 
@@ -1631,48 +1620,45 @@ Exp *Exp::getGuard() {
   * \param        pattern to match
   * \returns            list of variable bindings, or nullptr if matching fails
   ******************************************************************************/
-Exp *Exp::match(Exp *pattern) {
+SharedExp Exp::match(const SharedConstExp &pattern) {
     if (*this == *pattern)
-        return new Terminal(opNil);
+        return Terminal::get(opNil);
     if (pattern->getOper() == opVar) {
-        return Binary::get(opList, Binary::get(opEquals, pattern->clone(), this->clone()), new Terminal(opNil));
+        return Binary::get(opList, Binary::get(opEquals, pattern->clone(), this->clone()), Terminal::get(opNil));
     }
     return nullptr;
 }
-Exp *Unary::match(Exp *pattern) {
+SharedExp Unary::match(const SharedConstExp &pattern) {
     assert(subExp1);
     if (op == pattern->getOper()) {
         return subExp1->match(pattern->getSubExp1());
     }
     return Exp::match(pattern);
 }
-Exp *Binary::match(Exp *pattern) {
+SharedExp Binary::match(const SharedConstExp & pattern) {
     assert(subExp1 && subExp2);
     if (op != pattern->getOper())
         return Exp::match(pattern);
-    Exp *b_lhs = subExp1->match(pattern->getSubExp1());
+    SharedExp b_lhs = subExp1->match(pattern->getSubExp1());
     if (b_lhs == nullptr)
         return nullptr;
-    Exp *b_rhs = subExp2->match(pattern->getSubExp2());
+    SharedExp b_rhs = subExp2->match(pattern->getSubExp2());
     if (b_rhs == nullptr) {
-        delete b_lhs;
         return nullptr;
     }
     if (b_lhs->getOper() == opNil) {
-        delete b_lhs;
         return b_rhs;
     }
     if (b_rhs->getOper() == opNil) {
-        delete b_rhs;
         return b_lhs;
     }
 #if 0
     LOG << "got lhs list " << b_lhs << " and rhs list " << b_rhs << "\n";
 #endif
-    Exp *result = new Terminal(opNil);
+    SharedExp result = Terminal::get(opNil);
     // TODO: verify that adding (l &&) is not violating unwritten validity assertion
-    for (Exp *l = b_lhs; l && (l->getOper() != opNil); l = l->getSubExp2())
-        for (Exp *r = b_rhs; r && r->getOper() != opNil; r = r->getSubExp2())
+    for (SharedExp l = b_lhs; l && (l->getOper() != opNil); l = l->getSubExp2())
+        for (SharedExp r = b_rhs; r && r->getOper() != opNil; r = r->getSubExp2())
             if ((*l->getSubExp1()->getSubExp1() == *r->getSubExp1()->getSubExp1()) &&
                 !(*l->getSubExp1()->getSubExp2() == *r->getSubExp1()->getSubExp2())) {
 #if 0
@@ -1682,12 +1668,12 @@ Exp *Binary::match(Exp *pattern) {
                 return nullptr; // must be agreement between LHS and RHS
             } else
                 result = Binary::get(opList, l->getSubExp1()->clone(), result);
-    for (Exp *r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
+    for (SharedExp r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
         result = Binary::get(opList, r->getSubExp1()->clone(), result);
     return result;
 }
-Exp *RefExp::match(Exp *pattern) {
-    Exp *r = Unary::match(pattern);
+SharedExp RefExp::match(const SharedConstExp & pattern) {
+    SharedExp r = Unary::match(pattern);
     //      if (r)
     return r;
     /*      r = subExp1->match(pattern);
@@ -1699,7 +1685,7 @@ Exp *RefExp::match(Exp *pattern) {
         return Exp::match(pattern); */
 }
 #if 0 // Suspect ADHOC TA only
-Exp* TypeVal::match(Exp *pattern) {
+Exp* TypeVal::match(SharedExp pattern) {
     if (op == pattern->getOper()) {
         return val->match(pattern->getType());
     }
@@ -1739,7 +1725,7 @@ int tlstrchr(const QString &str, char ch) {
   * \param bindings a map
   * \returns            true if match, false otherwise
   ******************************************************************************/
-bool Exp::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
+bool Exp::match(const QString &pattern, std::map<QString, SharedConstExp > &bindings) {
     // most obvious
     QString tgt;
     QTextStream ostr(&tgt);
@@ -1750,13 +1736,13 @@ bool Exp::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     assert((pattern.lastIndexOf(variableRegexp)==0) == ISVARIABLE_S(pattern.toStdString()));
     // alright, is pattern an acceptable variable?
     if (pattern.lastIndexOf(variableRegexp)==0) {
-        bindings[pattern] = this;
+        bindings[pattern] = shared_from_this();
         return true;
     }
     // no, fail
     return false;
 }
-bool Unary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
+bool Unary::match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1767,7 +1753,7 @@ bool Unary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     }
     return false;
 }
-bool Binary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
+bool Binary::match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1780,7 +1766,7 @@ bool Binary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
         sub1 = sub1.left(split_point);
         if (subExp1->match(sub1, bindings)) {
             assert(subExp2->isStrConst());
-            if (follow == ((Const *)subExp2)->getStr())
+            if (follow == std::static_pointer_cast<const Const>(subExp2)->getStr())
                 return true;
             if ((follow.lastIndexOf(variableRegexp)==0)) {
                 bindings[follow] = subExp2;
@@ -1812,7 +1798,7 @@ bool Binary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     }
     return false;
 }
-bool Ternary::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
+bool Ternary::match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1820,7 +1806,7 @@ bool Ternary::match(const QString &pattern, std::map<QString, Exp *> &bindings) 
 #endif
     return false;
 }
-bool RefExp::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
+bool RefExp::match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1841,7 +1827,7 @@ bool RefExp::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
     }
     return false;
 }
-bool Const::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
+bool Const::match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1849,7 +1835,7 @@ bool Const::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
 #endif
     return false;
 }
-bool Terminal::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
+bool Terminal::match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1857,7 +1843,7 @@ bool Terminal::match(const QString &pattern, std::map<QString, Exp *> &bindings)
 #endif
     return false;
 }
-bool Location::match(const QString &pattern, std::map<QString, Exp *> &bindings) {
+bool Location::match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) {
     if (Exp::match(pattern, bindings))
         return true;
 #ifdef DEBUG_MATCH
@@ -1884,12 +1870,11 @@ bool Location::match(const QString &pattern, std::map<QString, Exp *> &bindings)
   * \param   search ptr to Exp we are searching for
   * \param   pSrc ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
   *               to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
-  * \param   li   list of Exp** where pointers to the matches are found once: true if not all occurrences to be
-  *                    found, false for all
-  * \param   once if set to true only the first possible replacement will be made
+  * \param   li   list of Exp** where pointers to the matches are found
+  * \param   once true if not all occurrences to be found, false for all
   *
   ******************************************************************************/
-void Exp::doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool once) {
+void Exp::doSearch(const Exp &search, SharedExp &pSrc, std::list<SharedExp *> &li, bool once) {
     bool compare;
     compare = (search == *pSrc);
     if (compare) {
@@ -1913,24 +1898,24 @@ void Exp::doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool on
   * \param       once - true if not all occurrences to be found, false for all
   *
   ******************************************************************************/
-void Exp::doSearchChildren(const Exp & search, std::list<Exp **> & li, bool once) {
+void Exp::doSearchChildren(const Exp & search, std::list<SharedExp *> & li, bool once) {
     Q_UNUSED(search);
     Q_UNUSED(li);
     Q_UNUSED(once);
     return; // Const and Terminal do not override this
 }
-void Unary::doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once) {
+void Unary::doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) {
     if (op != opInitValueOf) // don't search child
         doSearch(search, subExp1, li, once);
 }
-void Binary::doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once) {
+void Binary::doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) {
     assert(subExp1 && subExp2);
     doSearch(search, subExp1, li, once);
     if (once && li.size())
         return;
     doSearch(search, subExp2, li, once);
 }
-void Ternary::doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once) {
+void Ternary::doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) {
     doSearch(search, subExp1, li, once);
     if (once && li.size())
         return;
@@ -1949,7 +1934,7 @@ void Ternary::doSearchChildren(const Exp &search, std::list<Exp **> &li, bool on
   * \param       change - ref to boolean, set true if a change made (else cleared)
   * \returns            True if a change made
   ******************************************************************************/
-Exp *Exp::searchReplace(const Exp &search, Exp *replace, bool &change) {
+SharedExp Exp::searchReplace(const Exp &search, const SharedExp &replace, bool &change) {
 
     return searchReplaceAll(search, replace, change, true);
 }
@@ -1968,21 +1953,18 @@ Exp *Exp::searchReplace(const Exp &search, Exp *replace, bool &change) {
   * \note    \a change is ALWAYS assigned. No need to clear beforehand.
   * \returns the result (often this, but possibly changed)
   ******************************************************************************/
-Exp *Exp::searchReplaceAll(const Exp &search, Exp *replace, bool &change, bool once /* = false */) {
+SharedExp Exp::searchReplaceAll(const Exp &search, const SharedExp & replace, bool &change, bool once /* = false */) {
     // TODO: consider working on base object, and only in case when we find the search, use clone call to return the
     // new object ?
-    if (this == &search) { // WAT ?
+    if (this == &search) { // TODO: WAT ?
         change = true;
         return replace->clone();
     }
-    assert(this != &search);
-    std::list<Exp **> li;
-    Exp *top = this; // top may change; that's why we have to return it
+    std::list<SharedExp *> li;
+    SharedExp top = shared_from_this(); // top may change; that's why we have to return it
     doSearch(search, top, li, false);
-    std::list<Exp **>::iterator it;
-    for (it = li.begin(); it != li.end(); it++) {
-        Exp **pp = *it;
-        // if (*pp) //delete *pp;         // Delete any existing
+    for (auto it = li.begin(); it != li.end(); it++) {
+        SharedExp *pp = *it;
         *pp = replace->clone(); // Do the replacement
         if (once) {
             change = true;
@@ -1995,20 +1977,19 @@ Exp *Exp::searchReplaceAll(const Exp &search, Exp *replace, bool &change, bool o
 
 /***************************************************************************/ /**
   *
-  * \brief        Search this expression for the given subexpression, and if found, return true and return a pointer
-  *                      to the matched expression in result (useful when there are wildcards, e.g. search pattern is
-  *r[?]
-  *                      result is r[2].
+  * \brief  Search this expression for the given subexpression, and if found, return true and return a pointer
+  *         to the matched expression in result
+  *         useful when there are wildcards, e.g. search pattern is *r[?] result is r[2].
   * \param   search     ptr to Exp we are searching for
   * \param   result     ref to ptr to Exp that matched
   * \returns            True if a match was found
   ******************************************************************************/
-bool Exp::search(const Exp &search, Exp *&result) {
-    std::list<Exp **> li;
+bool Exp::search(const Exp &search, SharedExp &result) {
+    std::list<SharedExp *> li;
     result = nullptr; // In case it fails; don't leave it unassigned
     // The search requires a reference to a pointer to this object.
     // This isn't needed for searches, only for replacements, but we want to re-use the same search routine
-    Exp *top = this;
+    SharedExp top = shared_from_this();
     doSearch(search, top, li, false);
     if (li.size()) {
         result = *li.front();
@@ -2025,20 +2006,19 @@ bool Exp::search(const Exp &search, Exp *&result) {
   * \param   result  ref to list of Exp that matched
   * \returns            True if a match was found
   ******************************************************************************/
-bool Exp::searchAll(const Exp &search, std::list<Exp *> &result) {
-    std::list<Exp **> li;
+bool Exp::searchAll(const Exp &search, std::list<SharedExp> &result) {
+    std::list<SharedExp *> li;
     // result.clear();    // No! Useful when searching for more than one thing
     // (add to the same list)
     // The search requires a reference to a pointer to this object.
     // This isn't needed for searches, only for replacements, but we want to re-use the same search routine
-    Exp *pSrc = this;
+    SharedExp pSrc = shared_from_this();
     doSearch(search, pSrc, li, false);
-    std::list<Exp **>::iterator it;
-    for (it = li.begin(); it != li.end(); it++) {
-        // li is list of Exp**; result is list of Exp*
-        result.push_back(**it);
+    for (auto it : li) {
+        // li is list of pointers to SharedExp ; result is list of SharedExp
+        result.push_back(*it);
     }
-    return li.size() != 0;
+    return not li.empty();
 }
 
 // These simplifying functions don't really belong in class Exp, but they know too much about how Exps work
@@ -2060,28 +2040,28 @@ bool Exp::searchAll(const Exp &search, std::list<Exp *> &result) {
   * \param negate - determines whether or not to negate the whole expression, i.e. we are on the RHS of an opMinus
   *
   ******************************************************************************/
-void Exp::partitionTerms(std::list<Exp *> &positives, std::list<Exp *> &negatives, std::vector<int> &integers,
+void Exp::partitionTerms(std::list<SharedExp> &positives, std::list<SharedExp> &negatives, std::vector<int> &integers,
                          bool negate) {
-    Exp *p1, *p2;
+    SharedExp p1, p2;
     switch (op) {
     case opPlus:
-        p1 = ((Binary *)this)->getSubExp1();
-        p2 = ((Binary *)this)->getSubExp2();
+        p1 = getSubExp1();
+        p2 = getSubExp2();
         p1->partitionTerms(positives, negatives, integers, negate);
         p2->partitionTerms(positives, negatives, integers, negate);
         break;
     case opMinus:
-        p1 = ((Binary *)this)->getSubExp1();
-        p2 = ((Binary *)this)->getSubExp2();
+        p1 = getSubExp1();
+        p2 = getSubExp2();
         p1->partitionTerms(positives, negatives, integers, negate);
         p2->partitionTerms(positives, negatives, integers, !negate);
         break;
     case opTypedExp:
-        p1 = ((Binary *)this)->getSubExp1();
+        p1 = getSubExp1();
         p1->partitionTerms(positives, negatives, integers, negate);
         break;
     case opIntConst: {
-        int k = ((Const *)this)->getInt();
+        int k = static_cast<Const *>(this)->getInt();
         if (negate)
             integers.push_back(-k);
         else
@@ -2091,9 +2071,9 @@ void Exp::partitionTerms(std::list<Exp *> &positives, std::list<Exp *> &negative
     default:
         // These can be any other expression tree
         if (negate)
-            negatives.push_back(this);
+            negatives.push_back(shared_from_this());
         else
-            positives.push_back(this);
+            positives.push_back(shared_from_this());
     }
 }
 
@@ -2105,32 +2085,32 @@ void Exp::partitionTerms(std::list<Exp *> &positives, std::list<Exp *> &negative
   * \note            User must ;//delete result
   * \returns            Ptr to the simplified expression
   ******************************************************************************/
-Exp *Unary::simplifyArith() {
+SharedExp Unary::simplifyArith() {
     if (op == opMemOf || op == opRegOf || op == opAddrOf || op == opSubscript) {
         // assume we want to simplify the subexpression
         subExp1 = subExp1->simplifyArith();
     }
-    return this; // Else, do nothing
+    return shared_from_this(); // Else, do nothing
 }
 
-Exp *Ternary::simplifyArith() {
+SharedExp Ternary::simplifyArith() {
     subExp1 = subExp1->simplifyArith();
     subExp2 = subExp2->simplifyArith();
     subExp3 = subExp3->simplifyArith();
-    return this;
+    return shared_from_this();
 }
 
-Exp *Binary::simplifyArith() {
+SharedExp Binary::simplifyArith() {
     assert(subExp1 && subExp2);
     subExp1 = subExp1->simplifyArith(); // FIXME: does this make sense?
     subExp2 = subExp2->simplifyArith(); // FIXME: ditto
     if ((op != opPlus) && (op != opMinus))
-        return this;
+        return shared_from_this();
 
     // Partition this expression into positive non-integer terms, negative
     // non-integer terms and integer terms.
-    std::list<Exp *> positives;
-    std::list<Exp *> negatives;
+    std::list<SharedExp> positives;
+    std::list<SharedExp> negatives;
     std::vector<int> integers;
     partitionTerms(positives, negatives, integers, false);
 
@@ -2138,8 +2118,8 @@ Exp *Binary::simplifyArith() {
     // Note: can't improve this algorithm using multisets, since can't instantiate multisets of type Exp (only Exp*).
     // The Exp* in the multisets would be sorted by address, not by value of the expression.
     // So they would be unsorted, same as lists!
-    std::list<Exp *>::iterator pp = positives.begin();
-    std::list<Exp *>::iterator nn = negatives.begin();
+    std::list<SharedExp>::iterator pp = positives.begin();
+    std::list<SharedExp>::iterator nn = negatives.begin();
     while (pp != positives.end()) {
         bool inc = true;
         while (nn != negatives.end()) {
@@ -2164,10 +2144,10 @@ Exp *Binary::simplifyArith() {
     // Now put all these elements back together and return the result
     if (positives.size() == 0) {
         if (negatives.size() == 0) {
-            return new Const(sum);
+            return Const::get(sum);
         } else
             // No positives, some negatives. sum - Acc
-            return Binary::get(opMinus, new Const(sum), Exp::Accumulate(negatives));
+            return Binary::get(opMinus, Const::get(sum), Exp::Accumulate(negatives));
     }
     if (negatives.size() == 0) {
         // Positives + sum
@@ -2180,7 +2160,7 @@ Exp *Binary::simplifyArith() {
                 op = opMinus;
                 sum = -sum;
             }
-            return Binary::get(op, Exp::Accumulate(positives), new Const(sum));
+            return Binary::get(op, Exp::Accumulate(positives), Const::get(sum));
         }
     }
     // Some positives, some negatives
@@ -2195,59 +2175,68 @@ Exp *Binary::simplifyArith() {
         sum = -sum;
     }
     return Binary::get(op, Binary::get(opMinus, Exp::Accumulate(positives), Exp::Accumulate(negatives)),
-                       new Const(sum));
+                       Const::get(sum));
 }
 
 /***************************************************************************/ /**
   *
   * \brief        This method creates an expression that is the sum of all expressions in a list.
-  *                    E.g. given the list <4,r[8],m[14]> the resulting expression is 4+r[8]+m[14].
-  * \note            static (non instance) function
-  * \note            Exps ARE cloned
+  *               E.g. given the list <4,r[8],m[14]> the resulting expression is 4+r[8]+m[14].
+  * \note         static (non instance) function
+  * \note         Exps ARE cloned
   * \param        exprs - a list of expressions
-  * \returns            a new Exp with the accumulation
+  * \returns      a new Exp with the accumulation
   ******************************************************************************/
-Exp *Exp::Accumulate(std::list<Exp *> exprs) {
+SharedExp Exp::Accumulate(std::list<SharedExp> &exprs) {
     int n = exprs.size();
     if (n == 0)
-        return new Const(0);
+        return Const::get(0);
     if (n == 1)
         return exprs.front()->clone();
 
-    Exp *first = exprs.front()->clone();
-    exprs.pop_front();
-    auto res = Binary::get(opPlus, first, Accumulate(exprs));
-    exprs.push_front(first);
+    std::list<SharedExp> cloned_list;
+    for(const SharedExp &v : exprs)
+        cloned_list.push_back(v->clone());
+
+    SharedExp last_val = cloned_list.back();
+    cloned_list.pop_back();
+    auto res = Binary::get(opPlus, cloned_list.back(), last_val);
+    cloned_list.pop_back();
+
+    while(not cloned_list.empty()) {
+        res = Binary::get(opPlus, cloned_list.back(), res);
+        cloned_list.pop_back();
+    }
     return res;
 }
 
-    /***************************************************************************/ /**
-      *
-      * \brief        Apply various simplifications such as constant folding. Also canonicalise by putting iteger
-      *                    constants on the right hand side of sums, adding of negative constants changed to subtracting
-      *                    positive constants, etc.  Changes << k to a multiply
-      * \note            User must ;//delete result
-      * \note            Address simplification (a[ m[ x ]] == x) is done separately
-      * \returns            Ptr to the simplified expression
-      *
-      * This code is so big, so weird and so lame it's not funny.  What this boils down to is the process of
-      *unification.
-      * We're trying to do it with a simple iterative algorithm, but the algorithm keeps getting more and more complex.
-      * Eventually I will replace this with a simple theorem prover and we'll have something powerful, but until then,
-      * dont rely on this code to do anything critical. - trent 8/7/2002
-      ******************************************************************************/
+/***************************************************************************/ /**
+  *
+  * \brief        Apply various simplifications such as constant folding. Also canonicalise by putting iteger
+  *                    constants on the right hand side of sums, adding of negative constants changed to subtracting
+  *                    positive constants, etc.  Changes << k to a multiply
+  * \note            User must ;//delete result
+  * \note            Address simplification (a[ m[ x ]] == x) is done separately
+  * \returns            Ptr to the simplified expression
+  *
+  * This code is so big, so weird and so lame it's not funny.  What this boils down to is the process of
+  *unification.
+  * We're trying to do it with a simple iterative algorithm, but the algorithm keeps getting more and more complex.
+  * Eventually I will replace this with a simple theorem prover and we'll have something powerful, but until then,
+  * dont rely on this code to do anything critical. - trent 8/7/2002
+  ******************************************************************************/
 #define DEBUG_SIMP 0                                                              // Set to 1 to print every change
-Exp *Exp::simplify() {
+SharedExp Exp::simplify() {
 #if DEBUG_SIMP
-    Exp *save = clone();
+    SharedExp save = clone();
 #endif
     bool bMod = false; // True if simplified at this or lower level
-    Exp *res = this;
+    SharedExp res = shared_from_this();
     // res = ExpTransformer::applyAllTo(res, bMod);
     // return res;
     do {
         bMod = false;
-        // Exp *before = res->clone();
+        // SharedExp before = res->clone();
         res = res->polySimplify(bMod); // Call the polymorphic simplify
                                        /*      if (bMod) {
                                                        LOG << "polySimplify hit: " << before << " to " << res << "\n";
@@ -2274,59 +2263,59 @@ Exp *Exp::simplify() {
   * \note            Address simplification (a[ m[ x ]] == x) is done separately
   * \returns            Ptr to the simplified expression
   ******************************************************************************/
-Exp *Unary::polySimplify(bool &bMod) {
-    Exp *res = this;
+SharedExp Unary::polySimplify(bool &bMod) {
+    SharedExp res(shared_from_this());
     subExp1 = subExp1->polySimplify(bMod);
 
     if (op == opNot || op == opLNot) {
         switch (subExp1->getOper()) {
         case opEquals:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opNotEqual);
             bMod = true;
             return res;
         case opNotEqual:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opEquals);
             bMod = true;
             return res;
         case opLess:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opGtrEq);
             bMod = true;
             return res;
         case opLessEq:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opGtr);
             bMod = true;
             return res;
         case opGtr:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opLessEq);
             bMod = true;
             return res;
         case opGtrEq:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opLess);
             bMod = true;
             return res;
         case opLessUns:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opGtrEqUns);
             bMod = true;
             return res;
         case opLessEqUns:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opGtrUns);
             bMod = true;
             return res;
         case opGtrUns:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opLessEqUns);
             bMod = true;
             return res;
         case opGtrEqUns:
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
             res->setOper(opLessUns);
             bMod = true;
             return res;
@@ -2344,8 +2333,8 @@ Exp *Unary::polySimplify(bool &bMod) {
         if (subOP == opIntConst) {
             // -k, ~k, or !k
             OPER op2 = op;
-            res = ((Unary *)res)->getSubExp1();
-            int k = ((Const *)res)->getInt();
+            res = res->getSubExp1();
+            int k = std::static_pointer_cast<Const>(res)->getInt();
             switch (op2) {
             case opNeg:
                 k = -k;
@@ -2361,11 +2350,11 @@ Exp *Unary::polySimplify(bool &bMod) {
             default:
                 break;
             }
-            ((Const *)res)->setInt(k);
+            std::static_pointer_cast<Const>(res)->setInt(k);
             bMod = true;
         } else if (op == subOP) {
-            res = ((Unary *)res)->getSubExp1();
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
+            res = res->getSubExp1();
             bMod = true;
             break;
         }
@@ -2373,8 +2362,8 @@ Exp *Unary::polySimplify(bool &bMod) {
     case opAddrOf:
         // check for a[m[x]], becomes x
         if (subExp1->getOper() == opMemOf) {
-            res = ((Unary *)res)->getSubExp1();
-            res = ((Unary *)res)->getSubExp1();
+            res = res->getSubExp1();
+            res = res->getSubExp1();
             bMod = true;
             return res;
         }
@@ -2393,11 +2382,11 @@ Exp *Unary::polySimplify(bool &bMod) {
 
     return res;
 }
-Exp * accessMember(Exp *parent,const std::shared_ptr<CompoundType> &c,int n) {
+SharedExp accessMember(SharedExp parent,const std::shared_ptr<CompoundType> &c,int n) {
     unsigned r = c->getOffsetRemainder(n * 8);
     QString nam = c->getNameAtOffset(n * 8);
     SharedType t = c->getTypeAtOffset(n * 8);
-    Exp *res = Binary::get(opMemberAccess, parent, Const::get(nam));
+    SharedExp res = Binary::get(opMemberAccess, parent, Const::get(nam));
     assert((r % 8) == 0);
     if(t->resolvesToCompound()) {
         res = accessMember(res,t->as<CompoundType>(),r/8);
@@ -2419,20 +2408,20 @@ Exp * accessMember(Exp *parent,const std::shared_ptr<CompoundType> &c,int n) {
     return res;
 
 }
-Exp * convertFromOffsetToCompound(Exp *parent,std::shared_ptr<CompoundType> &c,unsigned n) {
+SharedExp convertFromOffsetToCompound(SharedExp parent,std::shared_ptr<CompoundType> &c,unsigned n) {
     if (n * 8 >= c->getSize())
         return nullptr;
     QString nam = c->getNameAtOffset(n * 8);
     if ( !nam.isNull() && nam != "pad") {
-        Exp *l = Location::memOf(parent);
-        return new Unary(opAddrOf, accessMember(l,c,n));
+        SharedExp l = Location::memOf(parent);
+        return Unary::get(opAddrOf, accessMember(l,c,n));
     }
     return nullptr;
 }
-Exp *Binary::polySimplify(bool &bMod) {
+SharedExp Binary::polySimplify(bool &bMod) {
     assert(subExp1 && subExp2);
 
-    Exp *res = this;
+    SharedExp res = shared_from_this();
 
     subExp1 = subExp1->polySimplify(bMod);
     subExp2 = subExp2->polySimplify(bMod);
@@ -2442,8 +2431,8 @@ Exp *Binary::polySimplify(bool &bMod) {
 
     if ((opSub1 == opIntConst) && (opSub2 == opIntConst)) {
         // k1 op k2, where k1 and k2 are integer constants
-        int k1 = ((Const *)subExp1)->getInt();
-        int k2 = ((Const *)subExp2)->getInt();
+        int k1 = std::static_pointer_cast<Const>(subExp1)->getInt();
+        int k2 = std::static_pointer_cast<Const>(subExp2)->getInt();
         bool change = true;
         switch (op) {
         case opPlus:
@@ -2525,8 +2514,7 @@ Exp *Binary::polySimplify(bool &bMod) {
             change = false;
         }
         if (change) {
-            ; // delete res;
-            res = new Const(k1);
+            res = Const::get(k1);
             bMod = true;
             return res;
         }
@@ -2534,7 +2522,7 @@ Exp *Binary::polySimplify(bool &bMod) {
 
     if (((op == opBitXor) || (op == opMinus)) && (*subExp1 == *subExp2)) {
         // x ^ x or x - x: result is zero
-        res = new Const(0);
+        res = Const::get(0);
         bMod = true;
         return res;
     }
@@ -2549,7 +2537,7 @@ Exp *Binary::polySimplify(bool &bMod) {
     if (op == opEquals && *subExp1 == *subExp2) {
         // x == x: result is true
         ; // delete this;
-        res = new Terminal(opTrue);
+        res = std::make_shared<Terminal>(opTrue);
         bMod = true;
         return res;
     }
@@ -2559,9 +2547,7 @@ Exp *Binary::polySimplify(bool &bMod) {
     if (opSub1 == opIntConst && (op == opPlus || op == opMult || op == opMults || op == opBitOr || op == opBitAnd)) {
         commute();
         // Swap opSub1 and opSub2 as well
-        OPER t = opSub1;
-        opSub1 = opSub2;
-        opSub2 = t;
+        std::swap(opSub1,opSub2);
         // This is not counted as a modification
     }
 
@@ -2569,9 +2555,7 @@ Exp *Binary::polySimplify(bool &bMod) {
     if (subExp1->isBoolConst() && !subExp2->isBoolConst() && (op == opAnd || op == opOr)) {
         commute();
         // Swap opSub1 and opSub2 as well
-        OPER t = opSub1;
-        opSub1 = opSub2;
-        opSub2 = t;
+        std::swap(opSub1,opSub2);
         // This is not counted as a modification
     }
 
@@ -2586,19 +2570,22 @@ Exp *Binary::polySimplify(bool &bMod) {
 
     // check for (x + a) + b where a and b are constants, becomes x + a+b
     if (op == opPlus && opSub1 == opPlus && opSub2 == opIntConst && subExp1->getSubExp2()->getOper() == opIntConst) {
-        int n = ((Const *)subExp2)->getInt();
-        res = ((Binary *)res)->getSubExp1();
-        ((Const *)res->getSubExp2())->setInt(((Const *)res->getSubExp2())->getInt() + n);
+        int n = std::static_pointer_cast<Const>(subExp2)->getInt();
+        res = res->getSubExp1();
+        std::shared_ptr<Const> c_subexp(std::static_pointer_cast<Const>(res->getSubExp2()));
+        c_subexp->setInt(c_subexp->getInt() + n);
         bMod = true;
         return res;
     }
 
     // check for (x - a) + b where a and b are constants, becomes x + -a+b
     if (op == opPlus && opSub1 == opMinus && opSub2 == opIntConst && subExp1->getSubExp2()->getOper() == opIntConst) {
-        int n = ((Const *)subExp2)->getInt();
-        res = ((Binary *)res)->getSubExp1();
+
+        int n = std::static_pointer_cast<Const>(subExp2)->getInt();
+        res = res->getSubExp1();
         res->setOper(opPlus);
-        ((Const *)res->getSubExp2())->setInt((-((Const *)res->getSubExp2())->getInt()) + n);
+        std::shared_ptr<Const> c_subexp(std::static_pointer_cast<Const>(res->getSubExp2()));
+        c_subexp->setInt(-c_subexp->getInt() + n);
         bMod = true;
         return res;
     }
@@ -2607,16 +2594,16 @@ Exp *Binary::polySimplify(bool &bMod) {
     // same with +
     if ((op == opMinus || op == opPlus) && (opSub1 == opMults || opSub1 == opMult) &&
         *subExp2 == *subExp1->getSubExp1()) {
-        res = ((Binary *)res)->getSubExp1();
-        res->setSubExp2(Binary::get(op, res->getSubExp2(), new Const(1)));
+        res = res->getSubExp1();
+        res->setSubExp2(Binary::get(op, res->getSubExp2(), Const::get(1)));
         bMod = true;
         return res;
     }
 
     // check for x + (x * k), becomes x * (k+1)
     if (op == opPlus && (opSub2 == opMults || opSub2 == opMult) && *subExp1 == *subExp2->getSubExp1()) {
-        res = ((Binary *)res)->getSubExp2();
-        res->setSubExp2(Binary::get(opPlus, res->getSubExp2(), new Const(1)));
+        res = res->getSubExp2();
+        res->setSubExp2(Binary::get(opPlus, res->getSubExp2(), Const::get(1)));
         bMod = true;
         return res;
     }
@@ -2624,30 +2611,30 @@ Exp *Binary::polySimplify(bool &bMod) {
     // Turn a + -K into a - K (K is int const > 0)
     // Also a - -K into a + K (K is int const > 0)
     // Does not count as a change
-    if ((op == opPlus || op == opMinus) && opSub2 == opIntConst && ((Const *)subExp2)->getInt() < 0) {
-        ((Const *)subExp2)->setInt(-((Const *)subExp2)->getInt());
+    if ((op == opPlus || op == opMinus) && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() < 0) {
+        std::static_pointer_cast<Const>(subExp2)->setInt(-std::static_pointer_cast<const Const>(subExp2)->getInt());
         op = op == opPlus ? opMinus : opPlus;
     }
 
     // Check for exp + 0  or  exp - 0  or  exp | 0
-    if ((op == opPlus || op == opMinus || op == opBitOr) && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 0) {
-        res = ((Binary *)res)->getSubExp1();
+    if ((op == opPlus || op == opMinus || op == opBitOr) && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) {
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
 
     // Check for exp or false
     if (op == opOr && subExp2->isFalse()) {
-        res = ((Binary *)res)->getSubExp1();
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
 
-    // Check for exp * 0  or exp & 0
+    // Check for SharedExp 0  or exp & 0
     if ((op == opMult || op == opMults || op == opBitAnd) && opSub2 == opIntConst &&
-        ((Const *)subExp2)->getInt() == 0) {
+        std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) {
         ; // delete res;
-        res = new Const(0);
+        res = Const::get(0);
         bMod = true;
         return res;
     }
@@ -2655,52 +2642,52 @@ Exp *Binary::polySimplify(bool &bMod) {
     // Check for exp and false
     if (op == opAnd && subExp2->isFalse()) {
         ; // delete res;
-        res = new Terminal(opFalse);
+        res = Terminal::get(opFalse);
         bMod = true;
         return res;
     }
 
-    // Check for exp * 1
-    if ((op == opMult || op == opMults) && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 1) {
-        res = ((Unary *)res)->getSubExp1();
+    // Check for SharedExp 1
+    if ((op == opMult || op == opMults) && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 1) {
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
 
-    // Check for exp * x / x
+    // Check for SharedExp x / x
     if ((op == opDiv || op == opDivs) && (opSub1 == opMult || opSub1 == opMults) &&
         *subExp2 == *subExp1->getSubExp2()) {
-        res = ((Unary *)res)->getSubExp1();
-        res = ((Unary *)res)->getSubExp1();
+        res = res->getSubExp1();
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
 
     // Check for exp / 1, becomes exp
-    if ((op == opDiv || op == opDivs) && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 1) {
-        res = ((Binary *)res)->getSubExp1();
+    if ((op == opDiv || op == opDivs) && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 1) {
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
 
     // Check for exp % 1, becomes 0
-    if ((op == opMod || op == opMods) && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 1) {
-        res = new Const(0);
+    if ((op == opMod || op == opMods) && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 1) {
+        res = Const::get(0);
         bMod = true;
         return res;
     }
 
-    // Check for exp * x % x, becomes 0
+    // Check for SharedExp x % x, becomes 0
     if ((op == opMod || op == opMods) && (opSub1 == opMult || opSub1 == opMults) &&
         *subExp2 == *subExp1->getSubExp2()) {
-        res = new Const(0);
+        res = Const::get(0);
         bMod = true;
         return res;
     }
 
     // Check for exp AND -1 (bitwise AND)
-    if ((op == opBitAnd) && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == -1) {
-        res = ((Unary *)res)->getSubExp1();
+    if ((op == opBitAnd) && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == -1) {
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
@@ -2708,32 +2695,32 @@ Exp *Binary::polySimplify(bool &bMod) {
     // Check for exp AND TRUE (logical AND)
     if ((op == opAnd) &&
         // Is the below really needed?
-        (((opSub2 == opIntConst && ((Const *)subExp2)->getInt() != 0)) || subExp2->isTrue())) {
-        res = ((Unary *)res)->getSubExp1();
+        (((opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() != 0)) || subExp2->isTrue())) {
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
 
     // Check for exp OR TRUE (logical OR)
-    if ((op == opOr) && (((opSub2 == opIntConst && ((Const *)subExp2)->getInt() != 0)) || subExp2->isTrue())) {
+    if ((op == opOr) && (((opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() != 0)) || subExp2->isTrue())) {
         // delete res;
-        res = new Terminal(opTrue);
+        res = Terminal::get(opTrue);
         bMod = true;
         return res;
     }
 
     // Check for [exp] << k where k is a positive integer const
     int k;
-    if (op == opShiftL && opSub2 == opIntConst && ((k = ((Const *)subExp2)->getInt(), (k >= 0 && k < 32)))) {
+    if (op == opShiftL && opSub2 == opIntConst && ((k = std::static_pointer_cast<const Const>(subExp2)->getInt(), (k >= 0 && k < 32)))) {
         res->setOper(opMult);
-        ((Const *)subExp2)->setInt(1 << k);
+        std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
         bMod = true;
         return res;
     }
 
-    if (op == opShiftR && opSub2 == opIntConst && ((k = ((Const *)subExp2)->getInt(), (k >= 0 && k < 32)))) {
+    if (op == opShiftR && opSub2 == opIntConst && ((k = std::static_pointer_cast<const Const>(subExp2)->getInt(), (k >= 0 && k < 32)))) {
         res->setOper(opDiv);
-        ((Const *)subExp2)->setInt(1 << k);
+        std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
         bMod = true;
         return res;
     }
@@ -2743,10 +2730,10 @@ Exp *Binary::polySimplify(bool &bMod) {
         // doesn't count as a change
         if (    isComparison() &&
                         opSub1 == opNeg) {
-                Exp *e = subExp1;
+                SharedExp e = subExp1;
                 subExp1 = e->getSubExp1()->clone();
                 ;//delete e;
-                subExp2 = new Unary(opNeg, subExp2);
+                subExp2 = Unary::get(opNeg, subExp2);
         }
 
         // Check for (x + y) compare 0, becomes x compare -y
@@ -2760,121 +2747,97 @@ Exp *Binary::polySimplify(bool &bMod) {
                 subExp1 = b->subExp1;
                 b->subExp1 = 0;
                 ;//delete b;
-                subExp2 = new Unary(opNeg, subExp2);
+                subExp2 = Unary::get(opNeg, subExp2);
                 bMod = true;
                 return res;
         }
 */
     // Check for (x == y) == 1, becomes x == y
-    if (op == opEquals && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 1 && opSub1 == opEquals) {
-        ; // delete subExp2;
-        Binary *b = (Binary *)subExp1;
-        subExp2 = b->subExp2;
-        b->subExp2 = nullptr;
-        subExp1 = b->subExp1;
-        b->subExp1 = nullptr;
-        ; // delete b;
+    if (op == opEquals && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 1 && opSub1 == opEquals) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
         bMod = true;
         return res;
     }
 
     // Check for x + -y == 0, becomes x == y
-    if (op == opEquals && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 0 && opSub1 == opPlus &&
-        ((Binary *)subExp1)->subExp2->getOper() == opIntConst) {
-        Binary *b = (Binary *)subExp1;
-        int n = ((Const *)b->subExp2)->getInt();
+    if (op == opEquals && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 0 && opSub1 == opPlus &&
+        subExp1->getSubExp2()->getOper() == opIntConst) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        int n = std::static_pointer_cast<Const>(b->subExp2)->getInt();
         if (n < 0) {
-            ; // delete subExp2;
-            subExp2 = b->subExp2;
-            ((Const *)subExp2)->setInt(-((Const *)subExp2)->getInt());
-            b->subExp2 = nullptr;
-            subExp1 = b->subExp1;
-            b->subExp1 = nullptr;
-            ; // delete b;
+            subExp2 = std::move(b->subExp2);
+            std::static_pointer_cast<Const>(subExp2)->setInt(-std::static_pointer_cast<const Const>(subExp2)->getInt());
+            subExp1 = std::move(b->subExp1);
             bMod = true;
             return res;
         }
     }
 
     // Check for (x == y) == 0, becomes x != y
-    if (op == opEquals && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 0 && opSub1 == opEquals) {
-        ; // delete subExp2;
-        Binary *b = (Binary *)subExp1;
-        subExp2 = b->subExp2;
-        b->subExp2 = nullptr;
-        subExp1 = b->subExp1;
-        b->subExp1 = nullptr;
-        ; // delete b;
+    if (op == opEquals && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 0 && opSub1 == opEquals) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
         bMod = true;
         res->setOper(opNotEqual);
         return res;
     }
 
     // Check for (x == y) != 1, becomes x != y
-    if (op == opNotEqual && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 1 && opSub1 == opEquals) {
-        ; // delete subExp2;
-        Binary *b = (Binary *)subExp1;
-        subExp2 = b->subExp2;
-        b->subExp2 = nullptr;
-        subExp1 = b->subExp1;
-        b->subExp1 = nullptr;
-        ; // delete b;
+    if (op == opNotEqual && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 1 && opSub1 == opEquals) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
         bMod = true;
         res->setOper(opNotEqual);
         return res;
     }
 
     // Check for (x == y) != 0, becomes x == y
-    if (op == opNotEqual && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 0 && opSub1 == opEquals) {
-        res = ((Binary *)res)->getSubExp1();
+    if (op == opNotEqual && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 0 && opSub1 == opEquals) {
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
 
     // Check for (0 - x) != 0, becomes x != 0
-    if (op == opNotEqual && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 0 && opSub1 == opMinus &&
-        subExp1->getSubExp1()->isIntConst() && ((Const *)subExp1->getSubExp1())->getInt() == 0) {
+    if (op == opNotEqual && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 0 && opSub1 == opMinus &&
+        subExp1->getSubExp1()->isIntConst() && std::static_pointer_cast<const Const>(subExp1->getSubExp1())->getInt() == 0) {
         res = Binary::get(opNotEqual, subExp1->getSubExp2()->clone(), subExp2->clone());
         bMod = true;
         return res;
     }
 
     // Check for (x > y) == 0, becomes x <= y
-    if (op == opEquals && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 0 && opSub1 == opGtr) {
-        ; // delete subExp2;
-        Binary *b = (Binary *)subExp1;
-        subExp2 = b->subExp2;
-        b->subExp2 = nullptr;
-        subExp1 = b->subExp1;
-        b->subExp1 = nullptr;
-        ; // delete b;
+    if (op == opEquals && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 0 && opSub1 == opGtr) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
         bMod = true;
         res->setOper(opLessEq);
         return res;
     }
 
     // Check for (x >u y) == 0, becomes x <=u y
-    if (op == opEquals && opSub2 == opIntConst && ((Const *)subExp2)->getInt() == 0 && opSub1 == opGtrUns) {
-        ; // delete subExp2;
-        Binary *b = (Binary *)subExp1;
-        subExp2 = b->subExp2;
-        b->subExp2 = nullptr;
-        subExp1 = b->subExp1;
-        b->subExp1 = nullptr;
-        ; // delete b;
+    if (op == opEquals && opSub2 == opIntConst && std::static_pointer_cast<const Const>(subExp2)->getInt() == 0 && opSub1 == opGtrUns) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
         bMod = true;
         res->setOper(opLessEqUns);
         return res;
     }
 
-    Binary *b1 = dynamic_cast<Binary *>(subExp1);
-    Binary *b2 = dynamic_cast<Binary *>(subExp2);
+    auto b1 = std::dynamic_pointer_cast<Binary>(subExp1);
+    auto b2 = std::dynamic_pointer_cast<Binary>(subExp2);
     // Check for (x <= y) || (x == y), becomes x <= y
     if (op == opOr && opSub2 == opEquals &&
         (opSub1 == opGtrEq || opSub1 == opLessEq || opSub1 == opGtrEqUns || opSub1 == opLessEqUns) &&
         ((*b1->subExp1 == *b2->subExp1 && *b1->subExp2 == *b2->subExp2) ||
          (*b1->subExp1 == *b2->subExp2 && *b1->subExp2 == *b2->subExp1))) {
-        res = ((Binary *)res)->getSubExp1();
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
@@ -2888,7 +2851,7 @@ Exp *Binary::polySimplify(bool &bMod) {
 
     // check for (x & x), becomes x
     if (op == opBitAnd && *subExp1 == *subExp2) {
-        res = ((Binary *)res)->getSubExp1();
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
@@ -2896,24 +2859,24 @@ Exp *Binary::polySimplify(bool &bMod) {
     // check for a + a*n, becomes a*(n+1) where n is an int
     if (op == opPlus && opSub2 == opMult && *subExp1 == *subExp2->getSubExp1() &&
         subExp2->getSubExp2()->getOper() == opIntConst) {
-        res = ((Binary *)res)->getSubExp2();
-        ((Const *)res->getSubExp2())->setInt(((Const *)res->getSubExp2())->getInt() + 1);
+        res = res->getSubExp2();
+        res->subExp<Const,2>()->setInt(res->subExp<Const,2>()->getInt() + 1);
         bMod = true;
         return res;
     }
 
     // check for a*n*m, becomes a*(n*m) where n and m are ints
     if (op == opMult && opSub1 == opMult && opSub2 == opIntConst && subExp1->getSubExp2()->getOper() == opIntConst) {
-        int m = ((Const *)subExp2)->getInt();
-        res = ((Binary *)res)->getSubExp1();
-        ((Const *)res->getSubExp2())->setInt(((Const *)res->getSubExp2())->getInt() * m);
+        int m = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        res = res->getSubExp1();
+        res->subExp<Const,2>()->setInt(res->subExp<Const,2>()->getInt() * m);
         bMod = true;
         return res;
     }
 
     // check for !(a == b) becomes a != b
     if (op == opLNot && opSub1 == opEquals) {
-        res = ((Unary *)res)->getSubExp1();
+        res = res->getSubExp1();
         res->setOper(opNotEqual);
         bMod = true;
         return res;
@@ -2921,7 +2884,7 @@ Exp *Binary::polySimplify(bool &bMod) {
 
     // check for !(a != b) becomes a == b
     if (op == opLNot && opSub1 == opNotEqual) {
-        res = ((Unary *)res)->getSubExp1();
+        res = res->getSubExp1();
         res->setOper(opEquals);
         bMod = true;
         return res;
@@ -2949,18 +2912,18 @@ Exp *Binary::polySimplify(bool &bMod) {
     // becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
     SharedType ty = nullptr; // Type of subExp1
     if (subExp1->isSubscript()) {
-        Instruction *def = ((RefExp *)subExp1)->getDef();
+        Instruction *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();
         if (def) {
-            ty = def->getTypeFor(((RefExp *)subExp1)->getSubExp1());
+            ty = def->getTypeFor(subExp1->getSubExp1());
         }
     }
     if (op == opPlus && ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToCompound() &&
         opSub2 == opIntConst) {
-        unsigned n = (unsigned)((Const *)subExp2)->getInt();
+        unsigned n = (unsigned)std::static_pointer_cast<const Const>(subExp2)->getInt();
         std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
         res = convertFromOffsetToCompound(subExp1,c,n);
         if(res) {
-                LOG_VERBOSE(1) << "(trans1) replacing " << this << " with " << res << "\n";
+                LOG_VERBOSE(1) << "(trans1) replacing " << shared_from_this() << " with " << res << "\n";
                 bMod = true;
                 return res;
         }
@@ -2971,8 +2934,8 @@ Exp *Binary::polySimplify(bool &bMod) {
     // becomes &exp[x / b] + (x % b) where b is the size of the base type in bytes
     if (    op == opPlus &&
             subExp1->getType()) {
-        Exp *x = subExp2;
-        Exp *l = subExp1;
+        SharedExp x = subExp2;
+        SharedExp l = subExp1;
         SharedType ty = l->getType();
         if (    ty && ty->resolvesToPointer() &&
                 ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
@@ -2982,11 +2945,11 @@ Exp *Binary::polySimplify(bool &bMod) {
             assert(br == 0);
             if (x->getOper() != opIntConst || ((Const*)x)->getInt() >= b || a->getBaseType()->isArray()) {
                 res = Binary::get(opPlus,
-                                  new Unary(opAddrOf,
+                                  Unary::get(opAddrOf,
                                             Binary::get(opArrayIndex,
                                                         Location::memOf(l->clone()),
-                                                        Binary::get(opDiv, x->clone(), new Const(b)))),
-                                  Binary::get(opMod, x->clone(), new Const(b)));
+                                                        Binary::get(opDiv, x->clone(), Const::get(b)))),
+                                  Binary::get(opMod, x->clone(), Const::get(b)));
                 if (VERBOSE)
                     LOG << "replacing " << this << " with " << res << "\n";
                 if (l->getOper() == opSubscript) {
@@ -3003,19 +2966,19 @@ Exp *Binary::polySimplify(bool &bMod) {
     }
 #endif
 
-    if (op == opFMinus && subExp1->getOper() == opFltConst && ((Const *)subExp1)->getFlt() == 0.0) {
-        res = new Unary(opFNeg, subExp2);
+    if (op == opFMinus && subExp1->getOper() == opFltConst && std::static_pointer_cast<const Const>(subExp1)->getFlt() == 0.0) {
+        res = Unary::get(opFNeg, subExp2);
         bMod = true;
         return res;
     }
 
     if ((op == opPlus || op == opMinus) && (subExp1->getOper() == opMults || subExp1->getOper() == opMult) &&
         subExp2->getOper() == opIntConst && subExp1->getSubExp2()->getOper() == opIntConst) {
-        int n1 = ((Const *)subExp2)->getInt();
-        int n2 = ((Const *)subExp1->getSubExp2())->getInt();
+        int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        int n2 = subExp1->subExp<Const,2>()->getInt();
         if (n1 == n2) {
-            res = Binary::get(subExp1->getOper(), Binary::get(op, subExp1->getSubExp1()->clone(), new Const(1)),
-                              new Const(n1));
+            res = Binary::get(subExp1->getOper(), Binary::get(op, subExp1->getSubExp1()->clone(), Const::get(1)),
+                              Const::get(n1));
             bMod = true;
             return res;
         }
@@ -3023,14 +2986,14 @@ Exp *Binary::polySimplify(bool &bMod) {
 
     if ((op == opPlus || op == opMinus) && subExp1->getOper() == opPlus && subExp2->getOper() == opIntConst &&
         (subExp1->getSubExp2()->getOper() == opMults || subExp1->getSubExp2()->getOper() == opMult) &&
-        subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst) {
-        int n1 = ((Const *)subExp2)->getInt();
-        int n2 = ((Const *)subExp1->getSubExp2()->getSubExp2())->getInt();
+        subExp1->subExp<Exp,2,2>()->getOper() == opIntConst) {
+        int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        int n2 = subExp1->subExp<Const,2,2>()->getInt();
         if (n1 == n2) {
             res = Binary::get(opPlus, subExp1->getSubExp1(),
                               Binary::get(subExp1->getSubExp2()->getOper(),
-                                          Binary::get(op, subExp1->getSubExp2()->getSubExp1()->clone(), new Const(1)),
-                                          new Const(n1)));
+                                          Binary::get(op, subExp1->subExp<Exp,2,1>()->clone(), Const::get(1)),
+                                          Const::get(n1)));
             bMod = true;
             return res;
         }
@@ -3040,14 +3003,14 @@ Exp *Binary::polySimplify(bool &bMod) {
     // becomes: (x * a/c) + (y * b/c)
     if (op == opDiv && subExp1->getOper() == opPlus && subExp2->getOper() == opIntConst &&
         subExp1->getSubExp1()->getOper() == opMult && subExp1->getSubExp2()->getOper() == opMult &&
-        subExp1->getSubExp1()->getSubExp2()->getOper() == opIntConst &&
-        subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst) {
-        int a = ((Const *)subExp1->getSubExp1()->getSubExp2())->getInt();
-        int b = ((Const *)subExp1->getSubExp2()->getSubExp2())->getInt();
-        int c = ((Const *)subExp2)->getInt();
+        subExp1->subExp<Exp,1,2>()->getOper() == opIntConst &&
+        subExp1->subExp<Exp,2,2>()->getOper() == opIntConst) {
+        int a = subExp1->subExp<Const,1,2>()->getInt();
+        int b = subExp1->subExp<Const,2,2>()->getInt();
+        int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
         if ((a % c) == 0 && (b % c) == 0) {
-            res = Binary::get(opPlus, Binary::get(opMult, subExp1->getSubExp1()->getSubExp1(), new Const(a / c)),
-                              Binary::get(opMult, subExp1->getSubExp2()->getSubExp1(), new Const(b / c)));
+            res = Binary::get(opPlus, Binary::get(opMult, subExp1->getSubExp1()->getSubExp1(), Const::get(a / c)),
+                              Binary::get(opMult, subExp1->subExp<Exp,2,1>(), Const::get(b / c)));
             bMod = true;
             return res;
         }
@@ -3061,21 +3024,21 @@ Exp *Binary::polySimplify(bool &bMod) {
         subExp1->getSubExp1()->getOper() == opMult && subExp1->getSubExp2()->getOper() == opMult &&
         subExp1->getSubExp1()->getSubExp2()->getOper() == opIntConst &&
         subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst) {
-        int a = ((Const *)subExp1->getSubExp1()->getSubExp2())->getInt();
-        int b = ((Const *)subExp1->getSubExp2()->getSubExp2())->getInt();
-        int c = ((Const *)subExp2)->getInt();
+        int a = subExp1->subExp<Const,1,2>()->getInt();
+        int b = subExp1->subExp<Const,2,2>()->getInt();
+        int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
         if ((a % c) == 0 && (b % c) == 0) {
-            res = new Const(0);
+            res = Const::get(0);
             bMod = true;
             return res;
         }
         if ((a % c) == 0) {
-            res = Binary::get(opMod, subExp1->getSubExp2()->clone(), new Const(c));
+            res = Binary::get(opMod, subExp1->getSubExp2()->clone(), Const::get(c));
             bMod = true;
             return res;
         }
         if ((b % c) == 0) {
-            res = Binary::get(opMod, subExp1->getSubExp1()->clone(), new Const(c));
+            res = Binary::get(opMod, subExp1->getSubExp1()->clone(), Const::get(c));
             bMod = true;
             return res;
         }
@@ -3083,12 +3046,12 @@ Exp *Binary::polySimplify(bool &bMod) {
 
     // Check for 0 - (0 <u exp1) & exp2 => exp2
     if (op == opBitAnd && opSub1 == opMinus) {
-        Exp *leftOfMinus = ((Binary *)subExp1)->getSubExp1();
-        if (leftOfMinus->isIntConst() && ((Const *)leftOfMinus)->getInt() == 0) {
-            Exp *rightOfMinus = ((Binary *)subExp1)->getSubExp2();
+        SharedExp leftOfMinus = subExp1->getSubExp1();
+        if (leftOfMinus->isIntConst() && std::static_pointer_cast<const Const>(leftOfMinus)->getInt() == 0) {
+            SharedExp rightOfMinus = subExp1->getSubExp2();
             if (rightOfMinus->getOper() == opLessUns) {
-                Exp *leftOfLess = ((Binary *)rightOfMinus)->getSubExp1();
-                if (leftOfLess->isIntConst() && ((Const *)leftOfLess)->getInt() == 0) {
+                SharedExp leftOfLess = rightOfMinus->getSubExp1();
+                if (leftOfLess->isIntConst() && std::static_pointer_cast<const Const>(leftOfLess)->getInt() == 0) {
                     res = getSubExp2();
                     bMod = true;
                     return res;
@@ -3108,7 +3071,7 @@ Exp *Binary::polySimplify(bool &bMod) {
         else if (ty->getSize() != n)
             ty->setSize(n);
 #endif
-        res = ((Binary *)res)->getSubExp2();
+        res = res->getSubExp2();
         bMod = true;
         return res;
     }
@@ -3116,8 +3079,8 @@ Exp *Binary::polySimplify(bool &bMod) {
     return res;
 }
 
-Exp *Ternary::polySimplify(bool &bMod) {
-    Exp *res = this;
+SharedExp Ternary::polySimplify(bool &bMod) {
+    SharedExp res = shared_from_this();
 
     subExp1 = subExp1->polySimplify(bMod);
     subExp2 = subExp2->polySimplify(bMod);
@@ -3125,25 +3088,25 @@ Exp *Ternary::polySimplify(bool &bMod) {
 
     // p ? 1 : 0 -> p
     if (op == opTern && subExp2->getOper() == opIntConst && subExp3->getOper() == opIntConst) {
-        Const *s2 = (Const *)subExp2;
-        Const *s3 = (Const *)subExp3;
+        auto s2 = std::static_pointer_cast<Const>(subExp2);
+        auto s3 = std::static_pointer_cast<Const>(subExp3);
 
         if (s2->getInt() == 1 && s3->getInt() == 0) {
-            res = this->getSubExp1();
+            res = getSubExp1();
             bMod = true;
             return res;
         }
     }
 
     // 1 ? x : y -> x
-    if (op == opTern && subExp1->getOper() == opIntConst && ((Const *)subExp1)->getInt() == 1) {
+    if (op == opTern && subExp1->getOper() == opIntConst && std::static_pointer_cast<const Const>(subExp1)->getInt() == 1) {
         res = this->getSubExp2();
         bMod = true;
         return res;
     }
 
     // 0 ? x : y -> y
-    if (op == opTern && subExp1->getOper() == opIntConst && ((Const *)subExp1)->getInt() == 0) {
+    if (op == opTern && subExp1->getOper() == opIntConst && std::static_pointer_cast<const Const>(subExp1)->getInt() == 0) {
         res = this->getSubExp3();
         bMod = true;
         return res;
@@ -3169,25 +3132,25 @@ Exp *Ternary::polySimplify(bool &bMod) {
     }
 
     if (op == opItof && subExp3->getOper() == opIntConst && subExp2->getOper() == opIntConst &&
-        ((Const *)subExp2)->getInt() == 32) {
-        unsigned n = ((Const *)subExp3)->getInt();
-        res = new Const(*(float *)&n);
+        std::static_pointer_cast<const Const>(subExp2)->getInt() == 32) {
+        unsigned n = std::static_pointer_cast<const Const>(subExp3)->getInt();
+        res = Const::get(*(float *)&n);
         bMod = true;
         return res;
     }
 
     if (op == opFsize && subExp3->getOper() == opMemOf && subExp3->getSubExp1()->getOper() == opIntConst) {
-        ADDRESS u = ((Const *)subExp3->getSubExp1())->getAddr();
-        Location *l = dynamic_cast<Location *>(subExp3);
+        ADDRESS u = subExp3->subExp<Const,1>()->getAddr();
+        auto l = std::dynamic_pointer_cast<Location>(subExp3);
         UserProc *p = l->getProc();
         if (p) {
             Prog *prog = p->getProg();
             bool ok;
-            double d = prog->getFloatConstant(u, ok, ((Const *)subExp1)->getInt());
+            double d = prog->getFloatConstant(u, ok, std::static_pointer_cast<const Const>(subExp1)->getInt());
             if (ok) {
                 if (VERBOSE)
-                    LOG << "replacing " << subExp3 << " with " << d << " in " << this << "\n";
-                subExp3 = new Const(d);
+                    LOG << "replacing " << subExp3 << " with " << d << " in " << shared_from_this() << "\n";
+                subExp3 = Const::get(d);
                 bMod = true;
                 return res;
             }
@@ -3195,17 +3158,17 @@ Exp *Ternary::polySimplify(bool &bMod) {
     }
 
     if (op == opTruncu && subExp3->isIntConst()) {
-        int from = ((Const *)subExp1)->getInt();
-        int to = ((Const *)subExp2)->getInt();
-        unsigned int val = ((Const *)subExp3)->getInt();
+        int from = std::static_pointer_cast<const Const>(subExp1)->getInt();
+        int to = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        unsigned int val = std::static_pointer_cast<const Const>(subExp3)->getInt();
         if (from == 32) {
             if (to == 16) {
-                res = new Const(ADDRESS::g(val & 0xffff));
+                res = Const::get(ADDRESS::g(val & 0xffff));
                 bMod = true;
                 return res;
             }
             if (to == 8) {
-                res = new Const(ADDRESS::g(val & 0xff));
+                res = Const::get(ADDRESS::g(val & 0xff));
                 bMod = true;
                 return res;
             }
@@ -3213,17 +3176,17 @@ Exp *Ternary::polySimplify(bool &bMod) {
     }
 
     if (op == opTruncs && subExp3->isIntConst()) {
-        int from = ((Const *)subExp1)->getInt();
-        int to = ((Const *)subExp2)->getInt();
-        int val = ((Const *)subExp3)->getInt();
+        int from = std::static_pointer_cast<const Const>(subExp1)->getInt();
+        int to = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        int val = std::static_pointer_cast<const Const>(subExp3)->getInt();
         if (from == 32) {
             if (to == 16) {
-                res = new Const(val & 0xffff);
+                res = Const::get(val & 0xffff);
                 bMod = true;
                 return res;
             }
             if (to == 8) {
-                res = new Const(val & 0xff);
+                res = Const::get(val & 0xff);
                 bMod = true;
                 return res;
             }
@@ -3233,12 +3196,12 @@ Exp *Ternary::polySimplify(bool &bMod) {
     return res;
 }
 
-Exp *TypedExp::polySimplify(bool &bMod) {
-    Exp *res = this;
+SharedExp TypedExp::polySimplify(bool &bMod) {
+    SharedExp res = shared_from_this();
 
     if (subExp1->getOper() == opRegOf) {
         // type cast on a reg of.. hmm.. let's remove this
-        res = ((Unary *)res)->getSubExp1();
+        res = res->getSubExp1();
         bMod = true;
         return res;
     }
@@ -3247,10 +3210,10 @@ Exp *TypedExp::polySimplify(bool &bMod) {
     return res;
 }
 
-Exp *RefExp::polySimplify(bool &bMod) {
-    Exp *res = this;
+SharedExp RefExp::polySimplify(bool &bMod) {
+    SharedExp res = shared_from_this();
 
-    Exp *tmp = subExp1->polySimplify(bMod);
+    SharedExp tmp = subExp1->polySimplify(bMod);
     if (bMod) {
         subExp1 = tmp;
         return res;
@@ -3270,7 +3233,7 @@ Exp *RefExp::polySimplify(bool &bMod) {
     // FIXME: do we really want this now? Pentium specific, and only handles ax/eax (not al or ah)
     if (subExp1->isRegN(0) &&                                               // r0 (ax)
         def && def->isAssign() && ((Assign *)def)->getLeft()->isRegN(24)) { // r24 (eax)
-        res = new TypedExp(IntegerType::get(16), new RefExp(Location::regOf(24), def));
+        res = std::make_shared<TypedExp>(IntegerType::get(16), RefExp::get(Location::regOf(24), def));
         bMod = true;
         return res;
     }
@@ -3287,28 +3250,26 @@ Exp *RefExp::polySimplify(bool &bMod) {
   * \todo            Replace with a visitor some day
   * \returns            Ptr to the simplified expression
   ******************************************************************************/
-Exp *Unary::simplifyAddr() {
-    Exp *sub;
+SharedExp Unary::simplifyAddr() {
+    SharedExp sub;
     if (op == opMemOf && subExp1->isAddrOf()) {
-        Unary *s = (Unary *)getSubExp1();
-        return s->getSubExp1();
+        return getSubExp1()->getSubExp1();
     }
     if (op != opAddrOf) {
         // Not a[ anything ]. Recurse
         subExp1 = subExp1->simplifyAddr();
-        return this;
+        return shared_from_this();
     }
     if (subExp1->getOper() == opMemOf) {
-        Unary *s = (Unary *)getSubExp1();
-        return s->getSubExp1();
+        return getSubExp1()->getSubExp1();
     }
     if (subExp1->getOper() == opSize) {
         sub = subExp1->getSubExp2();
         if (sub->getOper() == opMemOf) {
             // Remove the a[
-            Binary *b = (Binary *)getSubExp1();
+            auto b = getSubExp1();
             // Remove the size[
-            Unary *u = (Unary *)b->getSubExp2();
+            auto u = b->getSubExp2();
             // Remove the m[
             return u->getSubExp1();
         }
@@ -3316,22 +3277,22 @@ Exp *Unary::simplifyAddr() {
 
     // a[ something else ]. Still recurse, just in case
     subExp1 = subExp1->simplifyAddr();
-    return this;
+    return shared_from_this();
 }
 
-Exp *Binary::simplifyAddr() {
+SharedExp Binary::simplifyAddr() {
     assert(subExp1 && subExp2);
 
     subExp1 = subExp1->simplifyAddr();
     subExp2 = subExp2->simplifyAddr();
-    return this;
+    return shared_from_this();
 }
 
-Exp *Ternary::simplifyAddr() {
+SharedExp Ternary::simplifyAddr() {
     subExp1 = subExp1->simplifyAddr();
     subExp2 = subExp2->simplifyAddr();
     subExp3 = subExp3->simplifyAddr();
-    return this;
+    return shared_from_this();
 }
 
 const char *Exp::getOperName() const { return operStrings[op]; }
@@ -3415,28 +3376,28 @@ QTextStream &operator<<(QTextStream &os, const Exp *p) {
   * \note        Could change top level expression
   * \returns     Fixed expression
   ******************************************************************************/
-Exp *Exp::fixSuccessor() {
+SharedExp Exp::fixSuccessor() {
     bool change;
-    Exp *result;
-    UniqExp search_expression(Unary::get(opSuccessor, Location::regOf(Terminal::get(opWild))));
+    SharedExp result;
+    UniqExp search_expression(new Unary(opSuccessor, Location::regOf(Terminal::get(opWild))));
     // Assume only one successor function in any 1 expression
     if (search(*search_expression, result)) {
         // Result has the matching expression, i.e. succ(r[K])
-        Exp *sub1 = ((Unary *)result)->getSubExp1();
+        SharedExp sub1 = result->getSubExp1();
         assert(sub1->getOper() == opRegOf);
-        Exp *sub2 = ((Unary *)sub1)->getSubExp1();
+        SharedExp sub2 = sub1->getSubExp1();
         assert(sub2->getOper() == opIntConst);
         // result     sub1    sub2
         // succ(      r[   Const K    ])
         // Note: we need to clone the r[K] part, since it will be ;//deleted as
         // part of the searchReplace below
-        Unary *replace = (Unary *)sub1->clone();
-        Const *c = (Const *)replace->getSubExp1();
+        auto replace = sub1->clone();
+        auto c = replace->subExp<Const,1>();
         c->setInt(c->getInt() + 1); // Do the increment
-        Exp *res = searchReplace(*result, replace, change);
+        SharedExp res = searchReplace(*result, replace, change);
         return res;
     }
-    return this;
+    return shared_from_this();
 }
 
 /***************************************************************************/ /**
@@ -3446,41 +3407,41 @@ Exp *Exp::fixSuccessor() {
   * \note            Does not handle truncation at present
   * \returns            Fixed expression
   ******************************************************************************/
-Exp *Exp::killFill() {
-    static Ternary srch1(opZfill, new Terminal(opWild), new Terminal(opWild), new Terminal(opWild));
-    static Ternary srch2(opSgnEx, new Terminal(opWild), new Terminal(opWild), new Terminal(opWild));
-    Exp *res = this;
-    std::list<Exp **> result;
+SharedExp Exp::killFill() {
+    static Ternary srch1(opZfill, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
+    static Ternary srch2(opSgnEx, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
+    SharedExp res = shared_from_this();
+    std::list<SharedExp*> result;
     doSearch(srch1, res, result, false);
     doSearch(srch2, res, result, false);
-    std::list<Exp **>::iterator it;
-    for (it = result.begin(); it != result.end(); it++) {
+    std::list<SharedExp*>::iterator it;
+    for (SharedExp* it : result) {
         // Kill the sign extend bits
-        **it = ((Ternary *)(**it))->getSubExp3();
+        *it = (*it)->getSubExp3();
     }
     return res;
 }
 
-bool Exp::isTemp() {
+bool Exp::isTemp() const {
     if (op == opTemp)
         return true;
     if (op != opRegOf)
         return false;
     // Some old code has r[tmpb] instead of just tmpb
-    Exp *sub = ((Unary *)this)->getSubExp1();
+    SharedConstExp sub = getSubExp1();
     return sub->op == opTemp;
 }
 
 // allZero is set if all subscripts in the whole expression are null or implicit; otherwise cleared
-Exp *Exp::removeSubscripts(bool &allZero) {
-    Exp *e = this;
+SharedExp Exp::removeSubscripts(bool &allZero) {
+    auto e = shared_from_this();
     LocationSet locs;
     e->addUsedLocs(locs);
     LocationSet::iterator xx;
     allZero = true;
     for (xx = locs.begin(); xx != locs.end(); xx++) {
         if ((*xx)->getOper() == opSubscript) {
-            RefExp *r1 = (RefExp *)*xx;
+            auto r1 = std::static_pointer_cast<RefExp>(*xx);
             Instruction *def = r1->getDef();
             if (!(def == nullptr || def->getNumber() == 0)) {
                 allZero = false;
@@ -3495,20 +3456,16 @@ Exp *Exp::removeSubscripts(bool &allZero) {
 
 // FIXME: if the wrapped expression does not convert to a location, the result is subscripted, which is probably not
 // what is wanted!
-Exp *Exp::fromSSAleft(UserProc *proc, Instruction *d) {
-    RefExp *r = new RefExp(this, d); // "Wrap" in a ref
+SharedExp Exp::fromSSAleft(UserProc *proc, Instruction *d) {
+    auto r = RefExp::get(shared_from_this(), d); // "Wrap" in a ref
     return r->accept(new ExpSsaXformer(proc));
 }
 
 // A helper class for comparing Exp*'s sensibly
-bool lessExpStar::operator()(const Exp *x, const Exp *y) const {
+bool lessExpStar::operator()(const SharedConstExp &x, const SharedConstExp &y) const {
     return (*x < *y); // Compare the actual Exps
 }
-bool lessExpShared::operator()(const std::shared_ptr<Exp> &x, const std::shared_ptr<Exp> &y) const {
-    return (*x < *y); // Compare the actual Exps
-}
-
-bool lessTI::operator()(const Exp *x, const Exp *y) const {
+bool lessTI::operator()(const SharedExp &x, const SharedExp &y) const {
     return (*x << *y); // Compare the actual Exps
 }
 
@@ -3516,15 +3473,26 @@ bool lessTI::operator()(const Exp *x, const Exp *y) const {
 //    genConstraints    //
 //    //    //    //    //    //
 
-Exp *Exp::genConstraints(Exp * /*result*/) {
+// Generate constraints for this Exp. NOTE: The behaviour is a bit different depending on whether or not
+// parameter result is a type constant or a type variable.
+// If the constraint is always satisfied, return true
+// If the constraint can never be satisfied, return false
+// Example: this is opMinus and result is <int>, constraints are:
+//     sub1 = <int> and sub2 = <int> or
+//     sub1 = <ptr> and sub2 = <ptr>
+// Example: this is opMinus and result is Tr (typeOf r), constraints are:
+//     sub1 = <int> and sub2 = <int> and Tr = <int> or
+//     sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
+//     sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
+SharedExp Exp::genConstraints(SharedExp /*result*/) {
     // Default case, no constraints -> return true
-    return new Terminal(opTrue);
+    return Terminal::get(opTrue);
 }
 
-Exp *Const::genConstraints(Exp *result) {
+SharedExp Const::genConstraints(SharedExp result) {
     if (result->isTypeVal()) {
         // result is a constant type, or possibly a partial type such as ptr(alpha)
-        SharedType t = ((TypeVal *)result)->getType();
+        SharedType t = result->subExp<TypeVal>()->getType();
         bool match = false;
         switch (op) {
         case opLongConst:
@@ -3556,10 +3524,10 @@ Exp *Const::genConstraints(Exp *result) {
         if (match) {
             // This constant may require a cast or a change of format. So we generate a constraint.
             // Don't clone 'this', so it can be co-erced after type analysis
-            return Binary::get(opEquals, new Unary(opTypeOf, this), result->clone());
+            return Binary::get(opEquals, Unary::get(opTypeOf, shared_from_this()), result->clone());
         } else
             // Doesn't match
-            return new Terminal(opFalse);
+            return Terminal::get(opFalse);
     }
     // result is a type variable, which is constrained by this constant
     SharedType t;
@@ -3570,14 +3538,14 @@ Exp *Const::genConstraints(Exp *result) {
         SharedType alph = PointerType::newPtrAlpha();
         return Binary::get(
             opOr, Binary::get(
-                      opAnd, Binary::get(opEquals, result->clone(), new TypeVal(intt)),
+                      opAnd, Binary::get(opEquals, result->clone(), TypeVal::get(intt)),
                       Binary::get(opEquals,
-                                  new Unary(opTypeOf,
+                                  Unary::get(opTypeOf,
                                             // Note: don't clone 'this', so we can change the Const after type analysis!
-                                            this),
-                                  new TypeVal(intt))),
-            Binary::get(opAnd, Binary::get(opEquals, result->clone(), new TypeVal(alph)),
-                        Binary::get(opEquals, new Unary(opTypeOf, this), new TypeVal(alph))));
+                                            shared_from_this()),
+                                  TypeVal::get(intt))),
+            Binary::get(opAnd, Binary::get(opEquals, result->clone(), TypeVal::get(alph)),
+                        Binary::get(opEquals, Unary::get(opTypeOf, shared_from_this()), TypeVal::get(alph))));
     }
     case opLongConst:
         t = IntegerType::get(64);
@@ -3591,15 +3559,15 @@ Exp *Const::genConstraints(Exp *result) {
     default:
         return nullptr;
     }
-    TypeVal *tv = new TypeVal(t);
-    Exp *e = Binary::get(opEquals, result->clone(), tv);
+    auto tv = TypeVal::get(t);
+    SharedExp e = Binary::get(opEquals, result->clone(), tv);
     return e;
 }
 
-Exp *Unary::genConstraints(Exp *result) {
+SharedExp Unary::genConstraints(SharedExp result) {
     if (result->isTypeVal()) {
         // TODO: need to check for conflicts
-        return new Terminal(opTrue);
+        return Terminal::get(opTrue);
     }
 
     switch (op) {
@@ -3607,14 +3575,14 @@ Exp *Unary::genConstraints(Exp *result) {
     case opParam: // Should be no params at constraint time
     case opGlobal:
     case opLocal:
-        return Binary::get(opEquals, new Unary(opTypeOf, this->clone()), result->clone());
+        return Binary::get(opEquals, Unary::get(opTypeOf, this->clone()), result->clone());
     default:
         break;
     }
-    return new Terminal(opTrue);
+    return Terminal::get(opTrue);
 }
 
-Exp *Ternary::genConstraints(Exp *result) {
+SharedExp Ternary::genConstraints(SharedExp result) {
     SharedType argHasToBe = nullptr;
     SharedType retHasToBe = nullptr;
     switch (op) {
@@ -3624,8 +3592,8 @@ Exp *Ternary::genConstraints(Exp *result) {
     case opSgnEx: {
         assert(subExp1->isIntConst());
         assert(subExp2->isIntConst());
-        int fromSize = ((Const *)subExp1)->getInt();
-        int toSize = ((Const *)subExp2)->getInt();
+        int fromSize = std::static_pointer_cast<const Const>(subExp1)->getInt();
+        int toSize = std::static_pointer_cast<const Const>(subExp2)->getInt();
         // Fall through
         switch (op) {
         case opFsize:
@@ -3651,66 +3619,66 @@ Exp *Ternary::genConstraints(Exp *result) {
     default:
         break;
     }
-    Exp *res = nullptr;
+    SharedExp res = nullptr;
     if (retHasToBe) {
         if (result->isTypeVal()) {
             // result is a constant type, or possibly a partial type such as
             // ptr(alpha)
-            SharedType t = ((TypeVal *)result)->getType();
+            SharedType t = result->subExp<TypeVal>()->getType();
             // Compare broad types
             if (!(*retHasToBe *= *t))
-                return new Terminal(opFalse);
+                return Terminal::get(opFalse);
             // else just constrain the arg
         } else {
             // result is a type variable, constrained by this Ternary
-            res = Binary::get(opEquals, result, new TypeVal(retHasToBe));
+            res = Binary::get(opEquals, result, TypeVal::get(retHasToBe));
         }
     }
     if (argHasToBe) {
         // Constrain the argument
-        Exp *con = subExp3->genConstraints(new TypeVal(argHasToBe));
+        SharedExp con = subExp3->genConstraints(TypeVal::get(argHasToBe));
         if (res)
             res = Binary::get(opAnd, res, con);
         else
             res = con;
     }
     if (res == nullptr)
-        return new Terminal(opTrue);
+        return Terminal::get(opTrue);
     return res;
 }
 
-Exp *RefExp::genConstraints(Exp *result) {
+SharedExp RefExp::genConstraints(SharedExp result) {
     OPER subOp = subExp1->getOper();
     switch (subOp) {
     case opRegOf:
     case opParam:
     case opGlobal:
     case opLocal:
-        return Binary::get(opEquals, new Unary(opTypeOf, this->clone()), result->clone());
+        return Binary::get(opEquals, Unary::get(opTypeOf, this->clone()), result->clone());
     default:
         break;
     }
-    return new Terminal(opTrue);
+    return Terminal::get(opTrue);
 }
 
 // Return a constraint that my subexpressions have to be of type typeval1 and typeval2 respectively
-Exp *Binary::constrainSub(TypeVal *typeVal1, TypeVal *typeVal2) {
+SharedExp Binary::constrainSub(const std::shared_ptr<TypeVal> &typeVal1, const std::shared_ptr<TypeVal> &typeVal2) {
     assert(subExp1 && subExp2);
 
-    Exp *con1 = subExp1->genConstraints(typeVal1);
-    Exp *con2 = subExp2->genConstraints(typeVal2);
+    SharedExp con1 = subExp1->genConstraints(typeVal1);
+    SharedExp con2 = subExp2->genConstraints(typeVal2);
     return Binary::get(opAnd, con1, con2);
 }
 
-Exp *Binary::genConstraints(Exp *result) {
+SharedExp Binary::genConstraints(SharedExp result) {
     assert(subExp1 && subExp2);
 
     SharedType restrictTo = nullptr;
     if (result->isTypeVal())
-        restrictTo = ((TypeVal *)result)->getType();
-    Exp *res = nullptr;
+        restrictTo = result->subExp<TypeVal>()->getType();
+    SharedExp res = nullptr;
     auto intType = IntegerType::get(0); // Wild size (=0)
-    TypeVal intVal(intType);
+    auto intVal = TypeVal::get(intType);
     switch (op) {
     case opFPlus:
     case opFMinus:
@@ -3718,11 +3686,11 @@ Exp *Binary::genConstraints(Exp *result) {
     case opFDiv: {
         if (restrictTo && !restrictTo->isFloat())
             // Result can only be float
-            return new Terminal(opFalse);
+            return Terminal::get(opFalse);
 
         // MVE: what about sizes?
         auto ft = FloatType::get();
-        TypeVal *ftv = new TypeVal(ft);
+        auto ftv = TypeVal::get(ft);
         res = constrainSub(ftv, ftv);
         if (!restrictTo)
             // Also constrain the result
@@ -3735,11 +3703,11 @@ Exp *Binary::genConstraints(Exp *result) {
     case opBitXor: {
         if (restrictTo && !restrictTo->isInteger())
             // Result can only be integer
-            return new Terminal(opFalse);
+            return Terminal::get(opFalse);
 
         // MVE: What about sizes?
         auto it = IntegerType::get(STD_SIZE, 0);
-        TypeVal *itv = new TypeVal(it);
+        auto itv = TypeVal::get(it);
         res = constrainSub(itv, itv);
         if (!restrictTo)
             // Also constrain the result
@@ -3750,28 +3718,28 @@ Exp *Binary::genConstraints(Exp *result) {
     case opPlus: {
         // A pointer to anything
         SharedType ptrType = PointerType::newPtrAlpha();
-        TypeVal ptrVal(ptrType); // Type value of ptr to anything
+        auto ptrVal=TypeVal::get(ptrType); // Type value of ptr to anything
         if (!restrictTo || restrictTo->isInteger()) {
             // int + int -> int
-            res = constrainSub(&intVal, &intVal);
+            res = constrainSub(intVal, intVal);
             if (!restrictTo)
-                res = Binary::get(opAnd, res, Binary::get(opEquals, result->clone(), intVal.clone()));
+                res = Binary::get(opAnd, res, Binary::get(opEquals, result->clone(), intVal->clone()));
         }
 
         if (!restrictTo || restrictTo->isPointer()) {
             // ptr + int -> ptr
-            Exp *res2 = constrainSub(&ptrVal, &intVal);
+            SharedExp res2 = constrainSub(ptrVal, intVal);
             if (!restrictTo)
-                res2 = Binary::get(opAnd, res2, Binary::get(opEquals, result->clone(), ptrVal.clone()));
+                res2 = Binary::get(opAnd, res2, Binary::get(opEquals, result->clone(), ptrVal->clone()));
             if (res)
                 res = Binary::get(opOr, res, res2);
             else
                 res = res2;
 
             // int + ptr -> ptr
-            res2 = constrainSub(&intVal, &ptrVal);
+            res2 = constrainSub(intVal, ptrVal);
             if (!restrictTo)
-                res2 = Binary::get(opAnd, res2, Binary::get(opEquals, result->clone(), ptrVal.clone()));
+                res2 = Binary::get(opAnd, res2, Binary::get(opEquals, result->clone(), ptrVal->clone()));
             if (res)
                 res = Binary::get(opOr, res, res2);
             else
@@ -3780,22 +3748,23 @@ Exp *Binary::genConstraints(Exp *result) {
 
         if (res)
             return res->simplify();
-        return new Terminal(opFalse);
+        return Terminal::get(opFalse);
     }
 
     case opMinus: {
         SharedType ptrType = PointerType::newPtrAlpha();
-        TypeVal ptrVal(ptrType);
+        auto ptrVal=TypeVal::get(ptrType);
+
         if (!restrictTo || restrictTo->isInteger()) {
             // int - int -> int
-            res = constrainSub(&intVal, &intVal);
+            res = constrainSub(intVal, intVal);
             if (!restrictTo)
-                res = Binary::get(opAnd, res, Binary::get(opEquals, result->clone(), intVal.clone()));
+                res = Binary::get(opAnd, res, Binary::get(opEquals, result->clone(), intVal->clone()));
 
             // ptr - ptr -> int
-            Exp *res2 = constrainSub(&ptrVal, &ptrVal);
+            SharedExp res2 = constrainSub(ptrVal, ptrVal);
             if (!restrictTo)
-                res2 = Binary::get(opAnd, res2, Binary::get(opEquals, result->clone(), intVal.clone()));
+                res2 = Binary::get(opAnd, res2, Binary::get(opEquals, result->clone(), intVal->clone()));
             if (res)
                 res = Binary::get(opOr, res, res2);
             else
@@ -3804,9 +3773,9 @@ Exp *Binary::genConstraints(Exp *result) {
 
         if (!restrictTo || restrictTo->isPointer()) {
             // ptr - int -> ptr
-            Exp *res2 = constrainSub(&ptrVal, &intVal);
+            SharedExp res2 = constrainSub(ptrVal, intVal);
             if (!restrictTo)
-                res2 = Binary::get(opAnd, res2, Binary::get(opEquals, result->clone(), ptrVal.clone()));
+                res2 = Binary::get(opAnd, res2, Binary::get(opEquals, result->clone(), ptrVal->clone()));
             if (res)
                 res = Binary::get(opOr, res, res2);
             else
@@ -3815,14 +3784,14 @@ Exp *Binary::genConstraints(Exp *result) {
 
         if (res)
             return res->simplify();
-        return new Terminal(opFalse);
+        return Terminal::get(opFalse);
     }
 
     case opSize: {
         // This used to be considered obsolete, but now, it is used to carry the size of memOf's from the decoder to
         // here
         assert(subExp1->isIntConst());
-        int sz = ((Const *)subExp1)->getInt();
+        int sz = std::static_pointer_cast<const Const>(subExp1)->getInt();
         if (restrictTo) {
             int rsz = restrictTo->getSize();
             if (rsz == 0) {
@@ -3830,22 +3799,22 @@ Exp *Binary::genConstraints(Exp *result) {
                 // with a known size
                 SharedType it = restrictTo->clone();
                 it->setSize(sz);
-                return Binary::get(opEquals, new Unary(opTypeOf, subExp2), new TypeVal(it));
+                return Binary::get(opEquals, Unary::get(opTypeOf, subExp2), TypeVal::get(it));
             }
-            return new Terminal((rsz == sz) ? opTrue : opFalse);
+            return Terminal::get((rsz == sz) ? opTrue : opFalse);
         }
         // We constrain the size but not the basic type
-        return Binary::get(opEquals, result->clone(), new TypeVal(SizeType::get(sz)));
+        return Binary::get(opEquals, result->clone(), TypeVal::get(SizeType::get(sz)));
     }
 
     default:
         break;
     }
-    return new Terminal(opTrue);
+    return Terminal::get(opTrue);
 }
 
-Exp *Location::polySimplify(bool &bMod) {
-    Exp *res = Unary::polySimplify(bMod);
+SharedExp Location::polySimplify(bool &bMod) {
+    SharedExp res = Unary::polySimplify(bMod);
 
     if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opAddrOf) {
         if (VERBOSE)
@@ -3869,19 +3838,19 @@ Exp *Location::polySimplify(bool &bMod) {
 void Location::getDefinitions(LocationSet &defs) {
     // This is a hack to fix aliasing (replace with something general)
     // FIXME! This is x86 specific too. Use -O for overlapped registers!
-    if (op == opRegOf && ((Const *)subExp1)->getInt() == 24) {
+    if (op == opRegOf && std::static_pointer_cast<const Const>(subExp1)->getInt() == 24) {
         defs.insert(Location::regOf(0));
     }
 }
 
 QString Const::getFuncName() const { return u.pp->getName(); }
 
-Exp *Unary::simplifyConstraint() {
+SharedExp Unary::simplifyConstraint() {
     subExp1 = subExp1->simplifyConstraint();
-    return this;
+    return shared_from_this();
 }
 
-Exp *Binary::simplifyConstraint() {
+SharedExp Binary::simplifyConstraint() {
     assert(subExp1 && subExp2);
 
     subExp1 = subExp1->simplifyConstraint();
@@ -3890,14 +3859,13 @@ Exp *Binary::simplifyConstraint() {
     case opEquals: {
         if (subExp1->isTypeVal() && subExp2->isTypeVal()) {
             // FIXME: ADHOC TA assumed
-            SharedType t1 = ((TypeVal *)subExp1)->getType();
-            SharedType t2 = ((TypeVal *)subExp2)->getType();
+            SharedType t1 = subExp1->subExp<TypeVal>()->getType();
+            SharedType t2 = subExp2->subExp<TypeVal>()->getType();
             if (!t1->isPointerToAlpha() && !t2->isPointerToAlpha()) {
-                delete this;
                 if (*t1 == *t2)
-                    return new Terminal(opTrue);
+                    return Terminal::get(opTrue);
                 else
-                    return new Terminal(opFalse);
+                    return Terminal::get(opFalse);
             }
         }
         break;
@@ -3910,7 +3878,7 @@ Exp *Binary::simplifyConstraint() {
     default:
         break;
     }
-    return this;
+    return shared_from_this();
 }
 
 //    //    //    //    //    //    //    //
@@ -3919,7 +3887,7 @@ Exp *Binary::simplifyConstraint() {
 //                            //
 //    //    //    //    //    //    //    //
 bool Unary::accept(ExpVisitor *v) {
-    bool override, ret = v->visit(this, override);
+    bool override, ret = v->visit(shared_from_base<Unary>(), override);
     if (override)
         return ret; // Override the rest of the accept logic
     if (ret)
@@ -3930,7 +3898,7 @@ bool Unary::accept(ExpVisitor *v) {
 bool Binary::accept(ExpVisitor *v) {
     assert(subExp1 && subExp2);
 
-    bool override, ret = v->visit(this, override);
+    bool override, ret = v->visit(shared_from_base<Binary>(), override);
     if (override)
         return ret;
     if (ret)
@@ -3941,7 +3909,7 @@ bool Binary::accept(ExpVisitor *v) {
 }
 
 bool Ternary::accept(ExpVisitor *v) {
-    bool override, ret = v->visit(this, override);
+    bool override, ret = v->visit(shared_from_base<Ternary>(), override);
     if (override)
         return ret;
     if (ret)
@@ -3956,7 +3924,7 @@ bool Ternary::accept(ExpVisitor *v) {
 // All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
 // function called each time is different for each class (because "this" is different each time)
 bool TypedExp::accept(ExpVisitor *v) {
-    bool override, ret = v->visit(this, override);
+    bool override, ret = v->visit(shared_from_base<TypedExp>(), override);
     if (override)
         return ret;
     if (ret)
@@ -3964,7 +3932,7 @@ bool TypedExp::accept(ExpVisitor *v) {
     return ret;
 }
 bool FlagDef::accept(ExpVisitor *v) {
-    bool override, ret = v->visit(this, override);
+    bool override, ret = v->visit(shared_from_base<FlagDef>(), override);
     if (override)
         return ret;
     if (ret)
@@ -3973,7 +3941,7 @@ bool FlagDef::accept(ExpVisitor *v) {
 }
 bool RefExp::accept(ExpVisitor *v) {
     bool override;
-    bool ret = v->visit(*this, override);
+    bool ret = v->visit(shared_from_base<RefExp>(), override);
     if (override)
         return ret;
     if (ret)
@@ -3981,7 +3949,7 @@ bool RefExp::accept(ExpVisitor *v) {
     return ret;
 }
 bool Location::accept(ExpVisitor *v) {
-    bool override = false, ret = v->visit(this, override);
+    bool override = false, ret = v->visit(shared_from_base<Location>(), override);
     if (override)
         return ret;
     if (ret)
@@ -3990,9 +3958,9 @@ bool Location::accept(ExpVisitor *v) {
 }
 
 // The following are similar, but don't have children that have to accept visitors
-bool Terminal::accept(ExpVisitor *v) { return v->visit(this); }
-bool Const::accept(ExpVisitor *v) { return v->visit(this); }
-bool TypeVal::accept(ExpVisitor *v) { return v->visit(this); }
+bool Terminal::accept(ExpVisitor *v) { return v->visit(shared_from_base<Terminal>()); }
+bool Const::accept(ExpVisitor *v) { return v->visit(shared_from_base<Const>()); }
+bool TypeVal::accept(ExpVisitor *v) { return v->visit(shared_from_base<TypeVal>()); }
 
 // FixProcVisitor class
 
@@ -4019,121 +3987,135 @@ void Exp::setConscripts(int n, bool bClear) {
 }
 
 // Strip size casts from an Exp
-Exp *Exp::stripSizes() {
+SharedExp Exp::stripSizes() {
     SizeStripper ss;
     return accept(&ss);
 }
 
-Exp *Unary::accept(ExpModifier *v) {
+SharedExp Unary::accept(ExpModifier *v) {
     // This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
     // postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
-    bool recur;
-    Unary *ret = (Unary *)v->preVisit(this, recur);
+    bool recur=false;
+    auto ret = std::dynamic_pointer_cast<Unary>(v->preVisit(shared_from_base<Unary>(), recur));
     if (recur)
         subExp1 = subExp1->accept(v);
+    assert(ret);
     return v->postVisit(ret);
 }
-Exp *Binary::accept(ExpModifier *v) {
+SharedExp Binary::accept(ExpModifier *v) {
     assert(subExp1 && subExp2);
 
     bool recur;
-    Exp *ret = v->preVisit(this, recur);
+    SharedExp ret = v->preVisit(shared_from_base<Binary>(), recur);
     if (recur)
         subExp1 = subExp1->accept(v);
     if (recur)
         subExp2 = subExp2->accept(v);
-    Binary *bret = dynamic_cast<Binary *>(ret);
-    Unary *uret = dynamic_cast<Unary *>(ret);
+    auto bret = std::dynamic_pointer_cast<Binary>(ret);
     if(bret)
         return v->postVisit(bret);
+    auto uret = std::dynamic_pointer_cast<Unary>(ret);
     if(uret)
         return v->postVisit(uret);
     Q_ASSERT(false);
     return nullptr;
 }
-Exp *Ternary::accept(ExpModifier *v) {
+SharedExp Ternary::accept(ExpModifier *v) {
     bool recur;
-    Ternary *ret = (Ternary *)v->preVisit(this, recur);
+    auto ret = std::static_pointer_cast<Ternary>(v->preVisit(shared_from_base<Ternary>(), recur));
     if (recur)
         subExp1 = subExp1->accept(v);
     if (recur)
         subExp2 = subExp2->accept(v);
     if (recur)
         subExp3 = subExp3->accept(v);
+    assert(std::dynamic_pointer_cast<Ternary>(ret));
     return v->postVisit(ret);
 }
 
-Exp *Location::accept(ExpModifier *v) {
+SharedExp Location::accept(ExpModifier *v) {
     // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
     // important here!  (it makes a call to a different visitor member function).
     bool recur;
-    Exp *ret = v->preVisit(this, recur);
+    SharedExp ret = v->preVisit(shared_from_base<Location>(), recur);
     if (recur)
         subExp1 = subExp1->accept(v);
-    Location * loc_ret = dynamic_cast<Location *>(ret);
+    auto loc_ret = std::dynamic_pointer_cast<Location>(ret);
     if(loc_ret)
         return v->postVisit(loc_ret);
-    RefExp * ref_ret = dynamic_cast<RefExp *>(ret);
+    auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
     if(ref_ret)
         return v->postVisit(ref_ret);
     assert(false);
     return nullptr;
 }
 
-Exp *RefExp::accept(ExpModifier *v) {
+SharedExp RefExp::accept(ExpModifier *v) {
     bool recur;
-    RefExp *ret = (RefExp *)v->preVisit(this, recur);
+    auto ret = v->preVisit(shared_from_base<RefExp>(), recur);
+    auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
     if (recur)
         subExp1 = subExp1->accept(v);
-    return v->postVisit(ret);
+    //TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
+    if(ref_ret)
+        return v->postVisit(ref_ret);
+    return ret;
 }
 
-Exp *FlagDef::accept(ExpModifier *v) {
+SharedExp FlagDef::accept(ExpModifier *v) {
     bool recur;
-    FlagDef *ret = (FlagDef *)v->preVisit(this, recur);
+    auto ret = v->preVisit(shared_from_base<FlagDef>(), recur);
+    auto flgdef_ret = std::dynamic_pointer_cast<FlagDef>(ret);
     if (recur)
         subExp1 = subExp1->accept(v);
-    return v->postVisit(ret);
+    assert(flgdef_ret);
+    return v->postVisit(flgdef_ret);
 }
 
-Exp *TypedExp::accept(ExpModifier *v) {
+SharedExp TypedExp::accept(ExpModifier *v) {
     bool recur;
-    TypedExp *ret = (TypedExp *)v->preVisit(this, recur);
+    auto ret = v->preVisit(shared_from_base<TypedExp>(), recur);
+    auto typedexp_ret = std::dynamic_pointer_cast<TypedExp>(ret);
     if (recur)
         subExp1 = subExp1->accept(v);
-    return v->postVisit(ret);
+    assert(typedexp_ret);
+    return v->postVisit(typedexp_ret);
 }
 
-Exp *Terminal::accept(ExpModifier *v) {
+SharedExp Terminal::accept(ExpModifier *v) {
     // This is important if we need to modify terminals
-    Exp *val = v->preVisit(this);
-    Terminal *term_res = dynamic_cast<Terminal *>(val);
+    SharedExp val = v->preVisit(shared_from_base<Terminal>());
+    auto term_res = std::dynamic_pointer_cast<Terminal>(val);
     if(term_res)
         return v->postVisit(term_res);
 
-    RefExp *ref_res = dynamic_cast<RefExp *>(val);
+    auto ref_res = std::dynamic_pointer_cast<RefExp>(val);
     if(ref_res)
         return v->postVisit(ref_res);
     assert(false);
     return nullptr;
 }
 
-Exp *Const::accept(ExpModifier *v) { return v->postVisit((Const *)v->preVisit(this)); }
+SharedExp Const::accept(ExpModifier *v) {
+    auto ret = v->preVisit(shared_from_base<Const>());
+    auto const_ret = std::dynamic_pointer_cast<Const>(ret);
+    assert(const_ret);
+    return v->postVisit(const_ret);
+}
 
-Exp *TypeVal::accept(ExpModifier *v) { return v->postVisit((TypeVal *)v->preVisit(this)); }
+SharedExp TypeVal::accept(ExpModifier *v) {
+    auto ret = v->preVisit(shared_from_base<TypeVal>());
+    auto typeval_ret = std::dynamic_pointer_cast<TypeVal>(ret);
+    assert(typeval_ret);
+    return v->postVisit(typeval_ret);
+}
 QTextStream &alignStream(QTextStream &str,int align) {
     str << qSetFieldWidth(align) << " " << qSetFieldWidth(0);
     return str;
 }
-void child(Exp *e, int ind) {
+void child(const SharedExp &e, int ind) {
     if (e == nullptr) {
         alignStream(LOG_STREAM(),ind+4) << "<nullptr>\n";
-        LOG_STREAM().flush();
-        return;
-    }
-    void *vt = *(void **)e;
-    if (vt == nullptr) {
-        alignStream(LOG_STREAM(),ind+4) << "<nullptr VT>\n";
         LOG_STREAM().flush();
         return;
     }
@@ -4216,17 +4198,17 @@ void RefExp::printx(int ind) const {
 }
 
 QString Exp::getAnyStrConst() {
-    Exp *e = this;
+    SharedExp e = shared_from_this();
     if (op == opAddrOf) {
-        e = ((Location *)this)->getSubExp1();
+        e = getSubExp1();
         if (e->op == opSubscript)
-            e = ((Unary *)e)->getSubExp1();
+            e = e->getSubExp1();
         if (e->op == opMemOf)
-            e = ((Location *)e)->getSubExp1();
+            e = e->getSubExp1();
     }
     if (e->op != opStrConst)
         return QString::null;
-    return ((Const *)e)->getStr();
+    return std::static_pointer_cast<const Const>(e)->getStr();
 }
 
 // Find the locations used by this expression. Use the UsedLocsFinder visitor class
@@ -4237,26 +4219,30 @@ void Exp::addUsedLocs(LocationSet &used, bool memOnly) {
 }
 
 // Subscript any occurrences of e with e{def} in this expression
-Exp *Exp::expSubscriptVar(Exp *e, Instruction *def) {
+SharedExp Exp::expSubscriptVar(const SharedExp &e, Instruction *def) {
     ExpSubscripter es(e, def);
     return accept(&es);
 }
 
 // Subscript any occurrences of e with e{-} in this expression Note: subscript with nullptr, not implicit assignments as
 // above
-Exp *Exp::expSubscriptValNull(Exp *e) { return expSubscriptVar(e, nullptr); }
-
-// Subscript all locations in this expression with their implicit assignments
-Exp *Exp::expSubscriptAllNull(/*Cfg* cfg*/) {
-    return expSubscriptVar(new Terminal(opWild), nullptr /* was nullptr, nullptr, cfg */);
+SharedExp Exp::expSubscriptValNull(const SharedExp &e) {
+    return expSubscriptVar(e, nullptr);
 }
 
-Location *Location::local(const QString &nam, UserProc *p) { return new Location(opLocal, new Const(nam), p); }
+// Subscript all locations in this expression with their implicit assignments
+SharedExp Exp::expSubscriptAllNull(/*Cfg* cfg*/) {
+    return expSubscriptVar(Terminal::get(opWild), nullptr /* was nullptr, nullptr, cfg */);
+}
+
+std::shared_ptr<Location> Location::local(const QString &nam, UserProc *p) {
+    return std::make_shared<Location>(opLocal, Const::get(nam), p);
+}
 
 // Don't put in exp.h, as this would require statement.h including before exp.h
-bool RefExp::isImplicitDef() { return def == nullptr || def->getKind() == STMT_IMPASSIGN; }
+bool RefExp::isImplicitDef() const { return def == nullptr || def->getKind() == STMT_IMPASSIGN; }
 
-Exp *Exp::bypass() {
+SharedExp Exp::bypass() {
     CallBypasser cb(nullptr);
     return accept(&cb);
 }
@@ -4264,7 +4250,7 @@ Exp *Exp::bypass() {
 void Exp::bypassComp() {
     if (op != opMemOf)
         return;
-    ((Location *)this)->setSubExp1(((Location *)this)->getSubExp1()->bypass());
+    setSubExp1(getSubExp1()->bypass());
 }
 
 int Exp::getComplexityDepth(UserProc *proc) {
@@ -4280,16 +4266,16 @@ int Exp::getMemDepth() {
 }
 
 // Propagate all possible statements to this expression
-Exp *Exp::propagateAll() {
+SharedExp Exp::propagateAll() {
     ExpPropagator ep;
     return accept(&ep);
 }
 
 // Propagate all possible statements to this expression, and repeat until there is no further change
-Exp *Exp::propagateAllRpt(bool &changed) {
+SharedExp Exp::propagateAllRpt(bool &changed) {
     ExpPropagator ep;
     changed = false;
-    Exp *ret = this;
+    SharedExp ret = shared_from_this();
     while (true) {
         ep.clearChanged(); // Want to know if changed this *last* accept()
         ret = ret->accept(&ep);

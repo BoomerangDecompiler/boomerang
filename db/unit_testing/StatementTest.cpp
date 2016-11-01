@@ -34,34 +34,35 @@
 #include "prog.h"
 #include "proc.h"
 
-CPPUNIT_TEST_SUITE_REGISTRATION(StatementTest);
+#define HELLO_PENTIUM baseDir.absoluteFilePath("tests/inputs/pentium/hello")
+#define GLOBAL1_PENTIUM baseDir.absoluteFilePath("tests/inputs/pentium/global1")
 
-#define HELLO_PENTIUM "test/pentium/hello"
-#define GLOBAL1_PENTIUM "test/pentium/global1"
+static bool logset = false;
+static QString TEST_BASE;
+static QDir baseDir;
 
 /***************************************************************************/ /**
-  * FUNCTION:        StatementTest::setUp
+  * FUNCTION:        StatementTest::initTestCase
   * OVERVIEW:        Set up some expressions for use with all the tests
   * NOTE:            Called before any tests
   * PARAMETERS:        <none>
   *
   *============================================================================*/
-static bool logset = false;
-void StatementTest::setUp() {
+void StatementTest::initTestCase() {
     if (!logset) {
+        TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
+        baseDir = QDir(TEST_BASE);
+        if (TEST_BASE.isEmpty()) {
+            qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
+            TEST_BASE = "..";
+            baseDir = QDir("..");
+        }
         logset = true;
+        Boomerang::get()->setProgPath(TEST_BASE);
+        Boomerang::get()->setPluginPath(TEST_BASE + "/out");
         Boomerang::get()->setLogger(new NullLogger());
     }
 }
-
-/***************************************************************************/ /**
-  * FUNCTION:        StatementTest::tearDown
-  * OVERVIEW:        Delete expressions created in setUp
-  * NOTE:            Called after all tests
-  * PARAMETERS:        <none>
-  *
-  *============================================================================*/
-void StatementTest::tearDown() {}
 
 /***************************************************************************/ /**
   * FUNCTION:        StatementTest::testEmpty
@@ -75,19 +76,21 @@ void StatementTest::testEmpty() {
     boo->setLogger(new FileLogger());
 
     // create Prog
-    Prog *prog = new Prog;
+    Prog *prog = new Prog("testEmpty");
     BinaryFileFactory bff;
-    BinaryFile *pBF = bff.Load(HELLO_PENTIUM); // Don't actually use it
+    QObject *pBF = bff.Load(HELLO_PENTIUM);
+    QVERIFY(pBF != 0);
     FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
     prog->setFrontEnd(pFE);
 
+    Module *m = *prog->begin();
+    QVERIFY(m!=nullptr);
     // create UserProc
-    std::string name = "test";
-    UserProc *proc = (UserProc *)prog->newProc("test", 0x123);
+    UserProc *proc = (UserProc *)m->getOrInsertFunction("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL *> *pRtls = new std::list<RTL *>();
-    std::list<Statement *> *ls = new std::list<Statement *>;
+    std::list<Instruction *> *ls = new std::list<Instruction *>;
     ls->push_back(new ReturnStatement);
     pRtls->push_back(new RTL(0x123));
     PBB bb = cfg->newBB(pRtls, RET, 0);

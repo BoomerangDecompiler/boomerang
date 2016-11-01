@@ -51,6 +51,7 @@ class Exp;
 
 typedef std::unique_ptr<Exp> UniqExp;
 typedef std::shared_ptr<Exp> SharedExp;
+typedef std::shared_ptr<const Exp> SharedConstExp;
 
 typedef std::shared_ptr<RTL> SharedRTL;
 
@@ -64,14 +65,15 @@ typedef std::shared_ptr<RTL> SharedRTL;
 
 //! class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
 //! functions not overridden by derived classes can be called
-class Exp : public Printable {
-  protected:
+class Exp : public Printable, public std::enable_shared_from_this<Exp> {
+
+protected:
     OPER op; // The operator (e.g. opPlus)
     mutable unsigned lexBegin = 0, lexEnd = 0;
     // Constructor, with ID
-    constexpr Exp(OPER _op) : op(_op) {}
+    Exp(OPER _op) : op(_op) {}
 
-  public:
+public:
     // Virtual destructor
     virtual ~Exp() {}
 
@@ -103,7 +105,7 @@ class Exp : public Printable {
     virtual void appendDotFile(QTextStream &os) = 0;
 
     //! Clone (make copy of self that can be deleted without affecting self)
-    virtual Exp *clone() const = 0;
+    virtual SharedExp clone() const = 0;
 
     // Comparison
     //! Type sensitive equality
@@ -113,7 +115,7 @@ class Exp : public Printable {
     //! Type insensitive less than. Class TypedExp overrides
     virtual bool operator<<(const Exp &o) const { return (*this < o); }
     //! Comparison ignoring subscripts
-    virtual bool operator*=(Exp &o) = 0;
+    virtual bool operator*=(const Exp &o) const = 0;
 
     //! Return the number of subexpressions. This is only needed in rare cases.
     //! Could use polymorphism for all those cases, but this is easier
@@ -138,17 +140,17 @@ class Exp : public Printable {
     //! True if this is a memory location (any memory nesting depth)
     bool isMemOf() const { return op == opMemOf; }
     //! True if this is an address of
-    bool isAddrOf() { return op == opAddrOf; }
+    bool isAddrOf() const { return op == opAddrOf; }
     //! True if this is an array expression
-    bool isArrayIndex() { return op == opArrayIndex; }
+    bool isArrayIndex() const { return op == opArrayIndex; }
     //! True if this is a struct member access
-    bool isMemberOf() { return op == opMemberAccess; }
+    bool isMemberOf() const { return op == opMemberAccess; }
     //! True if this is a temporary. Note some old code still has r[tmp]
-    bool isTemp();
+    bool isTemp() const;
     //! True if this is the anull Terminal (anulls next instruction)
-    bool isAnull() { return op == opAnull; }
+    bool isAnull() const { return op == opAnull; }
     //! True if this is the Nil Terminal (terminates lists; "NOP" expression)
-    bool isNil() { return op == opNil; }
+    bool isNil() const { return op == opNil; }
     //! True if this is %pc
     bool isPC() { return op == opPC; }
     //! True if is %afp, %afp+k, %afp-k, or a[m[<any of these]]
@@ -196,7 +198,7 @@ class Exp : public Printable {
     //! True if this is a comparison
     bool isComparison() {
         return op == opEquals || op == opNotEqual || op == opGtr || op == opLess || op == opGtrUns || op == opLessUns ||
-               op == opGtrEq || op == opLessEq || op == opGtrEqUns || op == opLessEqUns;
+                op == opGtrEq || op == opLessEq || op == opGtrEqUns || op == opLessEqUns;
     }
     //! True if this is a TypeVal
     bool isTypeVal() { return op == opTypeVal; }
@@ -213,10 +215,10 @@ class Exp : public Printable {
     // FIXME: are these used?
     // Matches this expression to the pattern, if successful returns a list of variable bindings, otherwise returns
     // nullptr
-    virtual Exp *match(Exp *pattern);
+    virtual SharedExp match(const SharedConstExp &pattern);
 
     //! match a string pattern
-    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings);
 
     //    //    //    //    //    //    //
     //    Search and Replace    //
@@ -224,27 +226,27 @@ class Exp : public Printable {
 
     //! Search for Exp *search in this Exp. If found, return true and return a ptr to the matching expression in
     //! result (useful with wildcards).
-    virtual bool search(const Exp &search, Exp *&result);
+    virtual bool search(const Exp &search, SharedExp &result);
 
     // Search for Exp search in this Exp. For each found, add a ptr to the matching expression in result (useful
     // with wildcards).      Does NOT clear result on entry
-    bool searchAll(const Exp &search, std::list<Exp *> &result);
+    bool searchAll(const Exp &search, std::list<SharedExp> &result);
 
     //! Search this Exp for *search; if found, replace with *replace
-    Exp *searchReplace(const Exp &search, Exp *replace, bool &change);
+    SharedExp searchReplace(const Exp &search, const SharedExp &replace, bool &change);
 
     //! Search *pSrc for *search; for all occurrences, replace with *replace
-    Exp *searchReplaceAll(const Exp &search, Exp *replace, bool &change, bool once = false);
+    SharedExp searchReplaceAll(const Exp &search, const SharedExp &replace, bool &change, bool once = false);
 
     // Mostly not for public use. Search for subexpression matches.
-    static void doSearch(const Exp &search, Exp *&pSrc, std::list<Exp **> &li, bool once);
+    static void doSearch(const Exp &search, SharedExp &pSrc, std::list<SharedExp *> &li, bool once);
 
     // As above.
-    virtual void doSearchChildren(const Exp &, std::list<Exp **> &, bool);
+    virtual void doSearchChildren(const Exp &, std::list<SharedExp *> &, bool);
 
     /// Propagate all possible assignments to components of this expression.
-    Exp *propagateAll();
-    Exp *propagateAllRpt(bool &changed); // As above, but keep propagating until no change
+    SharedExp propagateAll();
+    SharedExp propagateAllRpt(bool &changed); // As above, but keep propagating until no change
 
     //    //    //    //    //    //    //
     //      Sub expressions    //
@@ -253,28 +255,46 @@ class Exp : public Printable {
     // These are here so we can (optionally) prevent code clutter.
     // Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2.
     // However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
-    Exp *subExp(int v) {
-        switch(v) {
-        case 1: return getSubExp1();
-        case 2: return getSubExp1();
-        case 3: return getSubExp1();
+    template<class T>
+    std::shared_ptr<T> subExp() {
+        return shared_from_base<T>();
+    }
+    template<class T>
+    std::shared_ptr<const T> subExp() const { return const_cast<Exp *>(this)->subExp<T>(); }
+
+    template<class T,int SUB_IDX,int ...Path>
+    std::shared_ptr<T> subExp() {
+        switch(SUB_IDX) {
+        case 1: return getSubExp1()->subExp<T,Path...>();
+        case 2: return getSubExp2()->subExp<T,Path...>();
+        case 3: return getSubExp3()->subExp<T,Path...>();
         default:
             assert(false);
         }
     }
-    const Exp *subExp(int v) const { return const_cast<Exp *>(this)->subExp(v); }
-    virtual Exp *getSubExp1() { return nullptr; }
-    virtual const Exp *getSubExp1() const { return nullptr; }
-    virtual Exp *getSubExp2() { return nullptr; }
-    virtual const Exp *getSubExp2() const { return nullptr; }
-    virtual Exp *getSubExp3() { return nullptr; }
-    virtual const Exp *getSubExp3() const { return nullptr; }
-    virtual Exp *&refSubExp1();
-    virtual Exp *&refSubExp2();
-    virtual Exp *&refSubExp3();
-    virtual void setSubExp1(Exp * /*e*/) { assert(false); }
-    virtual void setSubExp2(Exp * /*e*/) { assert(false); }
-    virtual void setSubExp3(Exp * /*e*/) { assert(false); }
+    template<class T,int SUB_IDX,int ...Path>
+    std::shared_ptr<const T> subExp() const {
+        switch(SUB_IDX) {
+        case 1: return getSubExp1()->subExp<T,Path...>();
+        case 2: return getSubExp2()->subExp<T,Path...>();
+        case 3: return getSubExp3()->subExp<T,Path...>();
+        default:
+            assert(false);
+        }
+    }
+
+    virtual SharedExp getSubExp1() { return nullptr; }
+    virtual SharedConstExp getSubExp1() const { return nullptr; }
+    virtual SharedExp getSubExp2() { return nullptr; }
+    virtual SharedConstExp getSubExp2() const { return nullptr; }
+    virtual SharedExp getSubExp3() { return nullptr; }
+    virtual SharedConstExp getSubExp3() const { return nullptr; }
+    virtual SharedExp &refSubExp1();
+    virtual SharedExp &refSubExp2();
+    virtual SharedExp &refSubExp3();
+    virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
+    virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
+    virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
 
     // Get the complexity depth. Basically, add one for each unary, binary, or ternary
     int getComplexityDepth(UserProc *proc);
@@ -284,72 +304,61 @@ class Exp : public Printable {
     //    //    //    //    //    //    //
     //    Guarded assignment    //
     //    //    //    //    //    //    //
-    Exp *getGuard(); // Get the guard expression, or 0 if not
+    SharedExp getGuard(); // Get the guard expression, or 0 if not
 
     //    //    //    //    //    //    //    //    //
     //    Expression Simplification    //
     //    //    //    //    //    //    //    //    //
 
-    void partitionTerms(std::list<Exp *> &positives, std::list<Exp *> &negatives, std::vector<int> &integers,
+    void partitionTerms(std::list<SharedExp> &positives, std::list<SharedExp> &negatives, std::vector<int> &integers,
                         bool negate);
-    virtual Exp *simplifyArith() { return this; }
-    static Exp *Accumulate(std::list<Exp *> exprs);
+    virtual SharedExp simplifyArith() { return shared_from_this(); }
+    static SharedExp Accumulate(std::list<SharedExp> &exprs);
     // Simplify the expression
-    Exp *simplify();
-    virtual Exp *polySimplify(bool &bMod) {
+    SharedExp simplify();
+    virtual SharedExp polySimplify(bool &bMod) {
         bMod = false;
-        return this;
+        return shared_from_this();
     }
     // Just the address simplification a[ m[ any ]]
-    virtual Exp *simplifyAddr() { return this; }
-    virtual Exp *simplifyConstraint() { return this; }
-    Exp *fixSuccessor(); // succ(r2) -> r3
+    virtual SharedExp simplifyAddr() { return shared_from_this(); }
+    virtual SharedExp simplifyConstraint() { return shared_from_this(); }
+    SharedExp fixSuccessor(); // succ(r2) -> r3
     // Kill any zero fill, sign extend, or truncates
-    Exp *killFill();
+    SharedExp killFill();
 
     // Do the work of finding used locations. If memOnly set, only look inside m[...]
     void addUsedLocs(LocationSet &used, bool memOnly = false);
 
-    Exp *removeSubscripts(bool &allZero);
+    SharedExp removeSubscripts(bool &allZero);
 
     // Get number of definitions (statements this expression depends on)
     virtual int getNumRefs() { return 0; }
 
     // Convert from SSA form, where this is not subscripted (but defined at statement d)
     // Needs the UserProc for the symbol map
-    Exp *fromSSAleft(UserProc *proc, Instruction *d);
+    SharedExp fromSSAleft(UserProc *proc, Instruction *d);
 
-    // Generate constraints for this Exp. NOTE: The behaviour is a bit different depending on whether or not
-    // parameter result is a type constant or a type variable.
-    // If the constraint is always satisfied, return true
-    // If the constraint can never be satisfied, return false
-    // Example: this is opMinus and result is <int>, constraints are:
-    //     sub1 = <int> and sub2 = <int> or
-    //     sub1 = <ptr> and sub2 = <ptr>
-    // Example: this is opMinus and result is Tr (typeOf r), constraints are:
-    //     sub1 = <int> and sub2 = <int> and Tr = <int> or
-    //     sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
-    //     sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
-    virtual Exp *genConstraints(Exp *);
+    virtual SharedExp genConstraints(SharedExp restrictTo);
 
     // Visitation
     // Note: best to have accept() as pure virtual, so you don't forget to implement it for new subclasses of Exp
     virtual bool accept(ExpVisitor *v) = 0;
-    virtual Exp *accept(ExpModifier *v) = 0;
+    virtual SharedExp accept(ExpModifier *v) = 0;
     void fixLocationProc(UserProc *p);
     UserProc *findProc();
     // Set or clear the constant subscripts
     void setConscripts(int n, bool bClear);
-    Exp *stripSizes(); // Strip all size casts
+    SharedExp stripSizes(); // Strip all size casts
     // Subscript all e in this Exp with statement def:
-    Exp *expSubscriptVar(Exp *e, Instruction *def /*, Cfg* cfg */);
+    SharedExp expSubscriptVar(const SharedExp &e, Instruction *def /*, Cfg* cfg */);
     // Subscript all e in this Exp with 0 (implicit assignments)
-    Exp *expSubscriptValNull(Exp *e /*, Cfg* cfg */);
+    SharedExp expSubscriptValNull(const SharedExp &e /*, Cfg* cfg */);
     // Subscript all locations in this expression with their implicit assignments
-    Exp *expSubscriptAllNull(/*Cfg* cfg*/);
+    SharedExp expSubscriptAllNull(/*Cfg* cfg*/);
     // Perform call bypass and simple (assignment only) propagation to this exp
     // Note: can change this, so often need to clone before calling
-    Exp *bypass();
+    SharedExp bypass();
     void bypassComp();                  // As above, but only the xxx of m[xxx]
     bool containsFlags();               // Check if this exp contains any flag calls
     bool containsBadMemof(UserProc *p); // Check if this Exp contains a bare (non subscripted) memof
@@ -364,12 +373,20 @@ class Exp : public Printable {
     //! Push type information down the expression tree
     virtual void descendType(SharedType  /*parentType*/, bool & /*ch*/, Instruction * /*s*/) { assert(0); }
 
-  protected:
-    friend class XMLProgParser;
+protected:
+    template <typename CHILD>
+    std::shared_ptr<CHILD> shared_from_base()
+    {
+        return std::static_pointer_cast<CHILD>(shared_from_this());
+    }
 }; // class Exp
 
 // Not part of the Exp class, but logically belongs with it:
 QTextStream &operator<<(QTextStream &os, const Exp *p); // Print the Exp poited to by p
+inline QTextStream &operator<<(QTextStream &os, const SharedConstExp &p) {
+    os << p.get();
+    return os;
+}
 
 /***************************************************************************/ /**
   * Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
@@ -377,41 +394,41 @@ QTextStream &operator<<(QTextStream &os, const Exp *p); // Print the Exp poited 
 class Const : public Exp {
     union {
         int i;         // Integer
-                       // Note: although we have i and a as unions, both often use the same operator (opIntConst).
-                       // There is no opCodeAddr any more.
+        // Note: although we have i and a as unions, both often use the same operator (opIntConst).
+        // There is no opCodeAddr any more.
         ADDRESS a;     // void* conflated with unsigned int: needs fixing
         QWord ll;      // 64 bit integer
         double d;      // Double precision float
-//        const char *p; // Pointer to string
-                       // Don't store string: function could be renamed
+        //        const char *p; // Pointer to string
+        // Don't store string: function could be renamed
         Function *pp;      // Pointer to function
     } u;
     QString strin;
     int conscript; // like a subscript for constants
     SharedType type;    // Constants need types during type analysis
-  public:
+public:
     // Special constructors overloaded for the various constants
     Const(uint32_t i);
     Const(int i);
     Const(QWord ll);
     Const(ADDRESS a);
     Const(double d);
-//    Const(const char *p);
+    //    Const(const char *p);
     Const(const QString &p);
     Const(Function *p);
     // Copy constructor
     Const(const Const &o);
-    template <class T> static Const *get(T i) { return new Const(i); }
+    template <class T> static std::shared_ptr<Const> get(T i) { return std::make_shared<Const>(i); }
 
     // Nothing to destruct: Don't deallocate the string passed to constructor
 
     // Clone
-    virtual Exp *clone() const;
+    virtual SharedExp clone() const;
 
     // Compare
     virtual bool operator==(const Exp &o) const;
     virtual bool operator<(const Exp &o) const;
-    virtual bool operator*=(Exp &o);
+    virtual bool operator*=(const Exp &o) const;
 
     // Get the constant
     int getInt() const { return u.i; }
@@ -435,17 +452,17 @@ class Const : public Exp {
 
     virtual void print(QTextStream &os, bool = false) const;
     // Print "recursive" (extra parens not wanted at outer levels)
-    void printNoQuotes(QTextStream &os);
+    void printNoQuotes(QTextStream &os) const;
     virtual void printx(int ind) const;
 
     virtual void appendDotFile(QTextStream &of);
-    virtual Exp *genConstraints(Exp *restrictTo);
+    virtual SharedExp genConstraints(SharedExp restrictTo);
 
     // Visitation
     virtual bool accept(ExpVisitor *v);
-    virtual Exp *accept(ExpModifier *v);
+    virtual SharedExp accept(ExpModifier *v);
 
-    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings);
+    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings);
 
     int getConscript() { return conscript; }
     void setConscript(int cs) { conscript = cs; }
@@ -453,7 +470,7 @@ class Const : public Exp {
     virtual SharedType ascendType();
     virtual void descendType(SharedType parentType, bool &ch, Instruction *s);
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class Const
 
@@ -461,19 +478,19 @@ class Const : public Exp {
   * Terminal is a subclass of Exp, and holds special zero arity items such as opFlags (abstract flags register)
   ******************************************************************************/
 class Terminal : public Exp {
-  public:
+public:
     // Constructors
     Terminal(OPER op);
     Terminal(const Terminal &o); // Copy constructor
-    static Exp *get(OPER op) { return new Terminal(op); }
+    static SharedExp get(OPER op) { return std::make_shared<Terminal>(op); }
 
     // Clone
-    virtual Exp *clone() const override;
+    virtual SharedExp clone() const override;
 
     // Compare
     virtual bool operator==(const Exp &o) const override;
     virtual bool operator<(const Exp &o) const override;
-    virtual bool operator*=(Exp &o) override;
+    virtual bool operator*=(const Exp &o) const override;
     virtual void print(QTextStream &os, bool = false) const override;
     virtual void appendDotFile(QTextStream &of) override;
     virtual void printx(int ind) const override;
@@ -481,14 +498,14 @@ class Terminal : public Exp {
 
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
-    virtual Exp *accept(ExpModifier *v) override;
+    virtual SharedExp accept(ExpModifier *v) override;
 
     virtual SharedType ascendType() override;
     virtual void descendType(SharedType parentType, bool &ch, Instruction *s) override;
 
-    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings) override;
+    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) override;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class Terminal
 
@@ -496,26 +513,26 @@ class Terminal : public Exp {
   * Unary is a subclass of Exp, holding one subexpression
   ******************************************************************************/
 class Unary : public Exp {
-  protected:
-    Exp *subExp1; // One subexpression pointer
+protected:
+    SharedExp subExp1; // One subexpression pointer
 
     // Constructor, with just ID
     Unary(OPER op);
 
-  public:
+public:
     // Constructor, with ID and subexpression
-    Unary(OPER op, Exp *e);
+    Unary(OPER op, SharedExp e);
     // Copy constructor
     Unary(const Unary &o);
-    static Exp *get(OPER op, Exp *e1) { return new Unary(op, e1); }
+    static SharedExp get(OPER op, SharedExp e1) { return std::make_shared<Unary>(op, e1); }
 
     // Clone
-    virtual Exp *clone() const override;
+    virtual SharedExp clone() const override;
 
     // Compare
     virtual bool operator==(const Exp &o) const override;
     virtual bool operator<(const Exp &o) const override;
-    virtual bool operator*=(Exp &o) override;
+    bool operator*=(const Exp &o) const override;
 
     // Destructor
     virtual ~Unary();
@@ -529,37 +546,36 @@ class Unary : public Exp {
     virtual void printx(int ind) const override;
 
     // Set first subexpression
-    void setSubExp1(Exp *e) override;
-    void setSubExp1ND(Exp *e) { subExp1 = e; }
+    void setSubExp1(SharedExp e) override;
     // Get first subexpression
-    Exp *getSubExp1() override;
-    const Exp *getSubExp1() const override;
+    SharedExp getSubExp1() override;
+    SharedConstExp getSubExp1() const override;
     // Get a reference to subexpression 1
-    Exp *&refSubExp1() override;
+    SharedExp &refSubExp1() override;
 
-    virtual Exp *match(Exp *pattern) override;
-    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings) override;
+    virtual SharedExp match(const SharedConstExp &pattern) override;
+    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) override;
 
     // Search children
-    void doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once) override;
+    void doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) override;
 
     // Do the work of simplifying this expression
-    virtual Exp *polySimplify(bool &bMod) override;
-    Exp *simplifyArith() override;
-    Exp *simplifyAddr() override;
-    virtual Exp *simplifyConstraint() override;
+    virtual SharedExp polySimplify(bool &bMod) override;
+    SharedExp  simplifyArith() override;
+    SharedExp simplifyAddr() override;
+    virtual SharedExp simplifyConstraint() override;
 
     // Type analysis
-    virtual Exp *genConstraints(Exp *restrictTo) override;
+    SharedExp genConstraints(SharedExp restrictTo) override;
 
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
-    virtual Exp *accept(ExpModifier *v) override;
+    virtual SharedExp accept(ExpModifier *v) override;
 
     virtual SharedType ascendType() override;
     virtual void descendType(SharedType parentType, bool &ch, Instruction *s) override;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class Unary
 
@@ -567,26 +583,26 @@ class Unary : public Exp {
  * Binary is a subclass of Unary, holding two subexpressions
  */
 class Binary : public Unary {
-  protected:
-    Exp *subExp2; // Second subexpression pointer
+protected:
+    SharedExp subExp2; // Second subexpression pointer
 
     // Constructor, with ID
     Binary(OPER op);
 
-  public:
+public:
     // Constructor, with ID and subexpressions
-    Binary(OPER op, Exp *e1, Exp *e2);
+    Binary(OPER op, SharedExp e1, SharedExp e2);
     // Copy constructor
     Binary(const Binary &o);
-    static Binary *get(OPER op, Exp *e1, Exp *e2) { return new Binary(op, e1, e2); }
+    static std::shared_ptr<Binary> get(OPER op, SharedExp e1, SharedExp e2) { return std::make_shared<Binary>(op, e1, e2); }
 
     // Clone
-    virtual Exp *clone() const override;
+    virtual SharedExp clone() const override;
 
     // Compare
-    virtual bool operator==(const Exp &o) const override;
-    virtual bool operator<(const Exp &o) const override;
-    virtual bool operator*=(Exp &o) override;
+    bool operator==(const Exp &o) const override;
+    bool operator<(const Exp &o) const override;
+    bool operator*=(const Exp &o) const override;
 
     // Destructor
     virtual ~Binary();
@@ -601,39 +617,39 @@ class Binary : public Unary {
     virtual void printx(int ind) const override;
 
     // Set second subexpression
-    void setSubExp2(Exp *e) override;
+    void setSubExp2(SharedExp e) override;
     // Get second subexpression
-    Exp *getSubExp2() override;
-    const Exp *getSubExp2() const override;
+    SharedExp getSubExp2() override;
+    SharedConstExp getSubExp2() const override;
     void commute();     //!< Commute the two operands
-    Exp *&refSubExp2() override; //!< Get a reference to subexpression 2
+    SharedExp &refSubExp2() override; //!< Get a reference to subexpression 2
 
-    virtual Exp *match(Exp *pattern) override;
-    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings) override;
+    virtual SharedExp match(const SharedConstExp &pattern) override;
+    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) override;
 
     // Search children
-    void doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once) override;
+    void doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) override;
 
     // Do the work of simplifying this expression
-    virtual Exp *polySimplify(bool &bMod) override;
-    Exp *simplifyArith() override;
-    Exp *simplifyAddr() override;
-    virtual Exp *simplifyConstraint() override;
+    virtual SharedExp polySimplify(bool &bMod) override;
+    SharedExp simplifyArith() override;
+    SharedExp simplifyAddr() override;
+    virtual SharedExp simplifyConstraint() override;
 
     // Type analysis
-    virtual Exp *genConstraints(Exp *restrictTo) override;
+    SharedExp genConstraints(SharedExp restrictTo) override;
 
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
-    virtual Exp *accept(ExpModifier *v) override;
+    virtual SharedExp accept(ExpModifier *v) override;
 
     virtual SharedType ascendType() override;
     virtual void descendType(SharedType parentType, bool &ch, Instruction *s) override;
 
-  private:
-    Exp *constrainSub(TypeVal *typeVal1, TypeVal *typeVal2);
+private:
+    SharedExp constrainSub(const std::shared_ptr<TypeVal> &typeVal1, const std::shared_ptr<TypeVal> &typeVal2);
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class Binary
 
@@ -641,24 +657,24 @@ class Binary : public Unary {
   * Ternary is a subclass of Binary, holding three subexpressions
   ******************************************************************************/
 class Ternary : public Binary {
-    Exp *subExp3; // Third subexpression pointer
+    SharedExp subExp3; // Third subexpression pointer
 
     // Constructor, with operator
     Ternary(OPER op);
 
-  public:
+public:
     // Constructor, with operator and subexpressions
-    Ternary(OPER op, Exp *e1, Exp *e2, Exp *e3);
+    Ternary(OPER op, SharedExp e1, SharedExp e2, SharedExp e3);
     // Copy constructor
     Ternary(const Ternary &o);
 
     // Clone
-    virtual Exp *clone() const override;
+    virtual SharedExp clone() const override;
 
     // Compare
-    virtual bool operator==(const Exp &o) const override;
-    virtual bool operator<(const Exp &o) const override;
-    virtual bool operator*=(Exp &o) override;
+    bool operator==(const Exp &o) const override;
+    bool operator<(const Exp &o) const override;
+    bool operator*=(const Exp &o) const override;
 
     // Destructor
     virtual ~Ternary();
@@ -673,33 +689,33 @@ class Ternary : public Binary {
     virtual void printx(int ind) const override;
 
     // Set third subexpression
-    void setSubExp3(Exp *e) override;
+    void setSubExp3(SharedExp e) override;
     // Get third subexpression
-    Exp *getSubExp3() override;
-    const Exp *getSubExp3() const override;
+    SharedExp getSubExp3() override;
+    SharedConstExp getSubExp3() const override;
     // Get a reference to subexpression 3
-    Exp *&refSubExp3() override;
+    SharedExp &refSubExp3() override;
 
     // Search children
-    void doSearchChildren(const Exp &search, std::list<Exp **> &li, bool once) override;
+    void doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) override;
 
-    virtual Exp *polySimplify(bool &bMod) override;
-    Exp *simplifyArith() override;
-    Exp *simplifyAddr() override;
+    SharedExp polySimplify(bool &bMod) override;
+    SharedExp simplifyArith() override;
+    SharedExp simplifyAddr() override;
 
     // Type analysis
-    virtual Exp *genConstraints(Exp *restrictTo) override;
+    SharedExp genConstraints(SharedExp restrictTo) override;
 
     // Visitation
-    virtual bool accept(ExpVisitor *v) override;
-    virtual Exp *accept(ExpModifier *v) override;
+    bool accept(ExpVisitor *v) override;
+    SharedExp accept(ExpModifier *v) override;
 
-    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings) override;
+    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) override;
 
     virtual SharedType ascendType() override;
     virtual void descendType(SharedType /*parentType*/, bool &ch, Instruction *s) override;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class Ternary
 
@@ -709,26 +725,26 @@ class Ternary : public Binary {
 class TypedExp : public Unary {
     SharedType type;
 
-  public:
+public:
     // Constructor
     TypedExp();
     // Constructor, subexpression
-    TypedExp(Exp *e1);
+    TypedExp(SharedExp e1);
     // Constructor, type, and subexpression.
     // A rare const parameter allows the common case of providing a temporary,
     // e.g. foo = new TypedExp(Type(INTEGER), ...);
-    TypedExp(SharedType ty, Exp *e1);
+    TypedExp(SharedType ty, SharedExp e1);
     // Copy constructor
     TypedExp(TypedExp &o);
 
     // Clone
-    virtual Exp *clone() const override;
+    virtual SharedExp clone() const override;
 
     // Compare
-    virtual bool operator==(const Exp &o) const override;
-    virtual bool operator<(const Exp &o) const override;
-    virtual bool operator<<(const Exp &o) const override;
-    virtual bool operator*=(Exp &o) override;
+    bool operator==(const Exp &o) const override;
+    bool operator<(const Exp &o) const override;
+    bool operator<<(const Exp &o) const override;
+    bool operator*=(const Exp &o) const override;
 
     virtual void print(QTextStream &os, bool html = false) const override;
     virtual void appendDotFile(QTextStream &of) override;
@@ -740,16 +756,16 @@ class TypedExp : public Unary {
     virtual void setType(SharedType ty) { type = ty; }
 
     // polySimplify
-    virtual Exp *polySimplify(bool &bMod) override;
+    virtual SharedExp polySimplify(bool &bMod) override;
 
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
-    virtual Exp *accept(ExpModifier *v) override;
+    virtual SharedExp accept(ExpModifier *v) override;
 
     virtual SharedType ascendType() override;
     virtual void descendType(SharedType , bool &, Instruction *) override;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class TypedExp
 
@@ -759,16 +775,16 @@ class TypedExp : public Unary {
 class FlagDef : public Unary {
     SharedRTL rtl;
 
-  public:
-    FlagDef(Exp *params, SharedRTL rtl); // Constructor
+public:
+    FlagDef(SharedExp params, SharedRTL rtl); // Constructor
     virtual ~FlagDef();             // Destructor
     virtual void appendDotFile(QTextStream &of);
 
     // Visitation
     virtual bool accept(ExpVisitor *v);
-    virtual Exp *accept(ExpModifier *v);
+    virtual SharedExp accept(ExpModifier *v);
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class FlagDef
 
@@ -780,48 +796,48 @@ class FlagDef : public Unary {
   ******************************************************************************/
 class RefExp : public Unary {
     Instruction *def; // The defining statement
-
-  public:
     // Constructor with expression (e) and statement defining it (def)
-    RefExp(Exp *e, Instruction *def);
+
+public:
+    RefExp(SharedExp e, Instruction *def);
     // virtual ~RefExp()   {
     //                        def = nullptr;
     //                    }
-    static RefExp *get(Exp *e, Instruction *def) { return new RefExp(e, def); }
-    virtual Exp *clone() const override;
-    virtual bool operator==(const Exp &o) const override;
-    virtual bool operator<(const Exp &o) const override;
-    virtual bool operator*=(Exp &o) override;
+    static std::shared_ptr<RefExp> get(SharedExp e, Instruction *def);
+    SharedExp clone() const override;
+    bool operator==(const Exp &o) const override;
+    bool operator<(const Exp &o) const override;
+    bool operator*=(const Exp &o) const override;
 
     virtual void print(QTextStream &os, bool html = false) const override;
     virtual void printx(int ind) const override;
     // virtual int        getNumRefs() {return 1;}
     Instruction *getDef() { return def; } // Ugh was called getRef()
-    Exp *addSubscript(Instruction *_def) {
+    SharedExp addSubscript(Instruction *_def) {
         def = _def;
-        return this;
+        return shared_from_this();
     }
     void setDef(Instruction *_def) { /*assert(_def);*/
         def = _def;
     }
-    virtual Exp *genConstraints(Exp *restrictTo) override;
+    SharedExp genConstraints(SharedExp restrictTo) override;
     bool references(Instruction *s) { return def == s; }
-    virtual Exp *polySimplify(bool &bMod) override;
-    virtual Exp *match(Exp *pattern) override;
-    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings) override;
+    virtual SharedExp polySimplify(bool &bMod) override;
+    virtual SharedExp match(const SharedConstExp &pattern) override;
+    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) override;
 
     // Before type analysis, implicit definitions are nullptr.  During and after TA, they point to an implicit
     // assignment statement.  Don't implement here, since it would require #including of statement.h
-    bool isImplicitDef();
+    bool isImplicitDef() const;
 
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
-    virtual Exp *accept(ExpModifier *v) override;
+    virtual SharedExp accept(ExpModifier *v) override;
 
     virtual SharedType ascendType() override;
     virtual void descendType(SharedType parentType, bool &ch, Instruction *s) override;
 
-  protected:
+protected:
     RefExp() : Unary(opSubscript), def(nullptr) {}
     friend class XMLProgParser;
 }; // class RefExp
@@ -832,19 +848,19 @@ class RefExp : public Unary {
 class TypeVal : public Terminal {
     SharedType val;
 
-  public:
+public:
     TypeVal(SharedType ty);
     ~TypeVal();
-
+    static std::shared_ptr<TypeVal> get(const SharedType &st) { return std::make_shared<TypeVal>(st);}
     virtual SharedType getType() { return val; }
     virtual void setType(SharedType t) { val = t; }
-    virtual Exp *clone() const override;
-    virtual bool operator==(const Exp &o) const override;
-    virtual bool operator<(const Exp &o) const override;
-    virtual bool operator*=(Exp &o) override;
-    virtual void print(QTextStream &os, bool = false) const override;
-    virtual void printx(int ind) const override;
-    virtual Exp *genConstraints(Exp * /*restrictTo*/)  override {
+    virtual SharedExp clone() const override;
+    bool operator==(const Exp &o) const override;
+    bool operator<(const Exp &o) const override;
+    bool operator*=(const Exp &o) const override;
+    void print(QTextStream &os, bool = false) const override;
+    void printx(int ind) const override;
+    SharedExp genConstraints(SharedExp /*restrictTo*/) override {
         assert(0);
         return nullptr;
     } // Should not be constraining constraints
@@ -852,49 +868,49 @@ class TypeVal : public Terminal {
 
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
-    virtual Exp *accept(ExpModifier *v) override;
+    virtual SharedExp accept(ExpModifier *v) override;
 
-  protected:
+protected:
     friend class XMLProgParser;
 }; // class TypeVal
 
 class Location : public Unary {
-  protected:
+protected:
     UserProc *proc;
 
-  public:
+public:
     // Constructor with ID, subexpression, and UserProc*
-    Location(OPER op, Exp *e, UserProc *proc);
+    Location(OPER op, SharedExp e, UserProc *proc);
     // Copy constructor
     Location(Location &o);
     // Custom constructor
-    static Exp *get(OPER op, Exp *e, UserProc *proc) { return new Location(op, e, proc); }
-    static Exp *regOf(int r) { return get(opRegOf, Const::get(r), nullptr); }
-    static Exp *regOf(Exp *e) { return get(opRegOf, e, nullptr); }
-    static Exp *memOf(Exp *e, UserProc *p = nullptr) { return get(opMemOf, e, p); }
-    static Location *tempOf(Exp *e) { return new Location(opTemp, e, nullptr); }
-    static Exp *global(const char *nam, UserProc *p) { return get(opGlobal, Const::get(nam), p); }
-    static Exp *global(const QString &nam, UserProc *p) { return get(opGlobal, Const::get(nam), p); }
-    static Location *local(const QString &nam, UserProc *p);
-    static Exp *param(const char *nam, UserProc *p = nullptr) { return get(opParam, Const::get(nam), p); }
-    static Exp *param(const QString &nam, UserProc *p = nullptr) { return get(opParam, Const::get(nam), p); }
+    static SharedExp get(OPER op, SharedExp e, UserProc *proc) { return std::make_shared<Location>(op, e, proc); }
+    static SharedExp regOf(int r) { return get(opRegOf, Const::get(r), nullptr); }
+    static SharedExp regOf(SharedExp e) { return get(opRegOf, e, nullptr); }
+    static SharedExp memOf(SharedExp e, UserProc *p = nullptr) { return get(opMemOf, e, p); }
+    static std::shared_ptr<Location> tempOf(SharedExp e) { return std::make_shared<Location>(opTemp, e, nullptr); }
+    static SharedExp global(const char *nam, UserProc *p) { return get(opGlobal, Const::get(nam), p); }
+    static SharedExp global(const QString &nam, UserProc *p) { return get(opGlobal, Const::get(nam), p); }
+    static std::shared_ptr<Location> local(const QString &nam, UserProc *p);
+    static SharedExp param(const char *nam, UserProc *p = nullptr) { return get(opParam, Const::get(nam), p); }
+    static SharedExp param(const QString &nam, UserProc *p = nullptr) { return get(opParam, Const::get(nam), p); }
     // Clone
-    virtual Exp *clone() const override;
+    virtual SharedExp clone() const override;
 
     void setProc(UserProc *p) { proc = p; }
     UserProc *getProc() { return proc; }
 
-    virtual Exp *polySimplify(bool &bMod) override;
+    virtual SharedExp polySimplify(bool &bMod) override;
     virtual void getDefinitions(LocationSet &defs);
 
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
-    virtual Exp *accept(ExpModifier *v) override;
-    virtual bool match(const QString &pattern, std::map<QString, Exp *> &bindings) override;
+    virtual SharedExp accept(ExpModifier *v) override;
+    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) override;
 
-  protected:
+protected:
     friend class XMLProgParser;
     Location(OPER op) : Unary(op), proc(nullptr) {}
 }; // class Location
 
-typedef std::set<Exp *, lessExpStar> sExp;
+typedef std::set<SharedExp, lessExpStar> sExp;

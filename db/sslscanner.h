@@ -211,41 +211,10 @@
 #endif
 
 #ifndef YY_USE_CLASS
-#ifndef YY_SSLScanner_CURRENT_BUFFER
-#define YY_SSLScanner_CURRENT_BUFFER yy_current_buffer
-#endif
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-
-extern void YY_SSLScanner_RESTART YY_PROTO((YY_SSLScanner_IFILE * input_file));
-extern void YY_SSLScanner_SWITCH_TO_BUFFER YY_PROTO((YY_BUFFER_STATE new_buffer));
-extern void YY_SSLScanner_LOAD_BUFFER_STATE YY_PROTO((void));
-extern YY_BUFFER_STATE YY_SSLScanner_CREATE_BUFFER YY_PROTO((YY_SSLScanner_IFILE * file, int size));
-extern void YY_SSLScanner_DELETE_BUFFER YY_PROTO((YY_BUFFER_STATE b));
-extern void YY_SSLScanner_INIT_BUFFER YY_PROTO((YY_BUFFER_STATE b, YY_SSLScanner_IFILE * file));
-
-#if YY_SSLScanner_DEBUG != 0
-extern int YY_SSLScanner_DEBUG_FLAG;
-#endif
-extern YY_SSLScanner_CHAR *YY_SSLScanner_TEXT;
-extern int YY_SSLScanner_LENG;
-extern YY_SSLScanner_IFILE *YY_SSLScanner_IN;
-extern YY_SSLScanner_OFILE *YY_SSLScanner_OUT;
-#ifdef YY_SSLScanner_LEX_DEFINED
-extern YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM) YY_SSLScanner_LEX_PARAM_DEF
-#else
-#ifndef YY_DECL
-extern YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM) YY_SSLScanner_LEX_PARAM_DEF
-#else
-/* no declaration if oldstyle flex */
-#endif
-#endif
 #else
 
 #ifndef YY_SSLScanner_CURRENT_BUFFER
 #define YY_SSLScanner_CURRENT_BUFFER YY_CURRENT_BUFFER
-#endif
-#ifndef YY_SSLScanner_CLASS
-#define YY_SSLScanner_CLASS SSLScanner
 #endif
 #ifndef YY_SSLScanner_ECHO
 #define YY_SSLScanner_ECHO yy_echo
@@ -317,9 +286,6 @@ extern YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM) YY_SS
 #define YY_SSLScanner_WRAP_CODE return 1;
 #endif
 
-#ifndef YY_SSLScanner_INHERIT
-#define YY_SSLScanner_INHERIT
-#endif
 #ifndef YY_SSLScanner_MEMBERS
 #define YY_SSLScanner_MEMBERS
 #endif
@@ -337,7 +303,7 @@ extern YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM) YY_SS
 #endif
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
-class YY_SSLScanner_CLASS YY_SSLScanner_INHERIT {
+class SSLScanner {
   private: /* data */
     YY_SSLScanner_CHAR *yy_c_buf_p;
     YY_SSLScanner_CHAR yy_hold_char;
@@ -392,8 +358,8 @@ class YY_SSLScanner_CLASS YY_SSLScanner_INHERIT {
     YY_SSLScanner_IFILE *YY_SSLScanner_IN;
     YY_SSLScanner_OFILE *YY_SSLScanner_OUT;
     YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM);
-    YY_SSLScanner_CLASS(YY_SSLScanner_CONSTRUCTOR_PARAM);
-    virtual ~YY_SSLScanner_CLASS();
+    SSLScanner(YY_SSLScanner_CONSTRUCTOR_PARAM);
+    virtual ~SSLScanner();
 #if YY_SSLScanner_DEBUG != 0
     int YY_SSLScanner_DEBUG_FLAG;
 #endif

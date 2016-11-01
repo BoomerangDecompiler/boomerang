@@ -47,8 +47,8 @@ char *ConstraintMap::prints() {
 }
 
 void ConstraintMap::makeUnion(ConstraintMap &o) {
-    std::map<Exp *, Exp *, lessExpStar>::iterator it;
-    std::pair<std::map<Exp *, Exp *, lessExpStar>::iterator, bool> ret;
+    std::map<SharedExp, SharedExp, lessExpStar>::iterator it;
+    std::pair<std::map<SharedExp, SharedExp, lessExpStar>::iterator, bool> ret;
     for (it = o.cmap.begin(); it != o.cmap.end(); it++) {
         // Note: *it is a std::pair<Exp*, Exp*>
         ret = cmap.insert(*it);
@@ -57,9 +57,9 @@ void ConstraintMap::makeUnion(ConstraintMap &o) {
         if (ret.second == false) {
             // LOG_STREAM() << "ConstraintMap::makeUnion: want to overwrite " << ret.first->first
             // << " -> " << ret.first->second << " with " << it->first << " -> " << it->second << "\n";
-            TypeVal *Tret = (TypeVal *)ret.first->second;
+            auto Tret = std::static_pointer_cast<TypeVal>(ret.first->second);
             SharedType ty1 = Tret->getType();
-            TypeVal *Toth = (TypeVal *)it->second;
+            auto Toth = it->second->subExp<TypeVal>();
             SharedType ty2 = Toth->getType();
             if (ty1 && ty2 && *ty1 != *ty2) {
                 Tret->setType(ty1->mergeWith(ty2));
@@ -69,19 +69,19 @@ void ConstraintMap::makeUnion(ConstraintMap &o) {
     }
 }
 
-void ConstraintMap::constrain(Exp *loc1, Exp *loc2) { cmap[new Unary(opTypeOf, loc1)] = new Unary(opTypeOf, loc2); }
+void ConstraintMap::constrain(SharedExp loc1, SharedExp loc2) { cmap[Unary::get(opTypeOf, loc1)] = Unary::get(opTypeOf, loc2); }
 //! Insert a constraint given a location and a Type
-void ConstraintMap::constrain(Exp *loc, SharedType t) { cmap[new Unary(opTypeOf, loc)] = new TypeVal(t); }
+void ConstraintMap::constrain(SharedExp loc, SharedType t) { cmap[Unary::get(opTypeOf, loc)] = std::make_shared<TypeVal>(t); }
 //! Insert a constraint given two Types (at least one variable)
 void ConstraintMap::constrain(SharedType t1, SharedType t2) { // Example: alpha1 = alpha2
-    cmap[new TypeVal(t1)] = new TypeVal(t2);
+    cmap[std::make_shared<TypeVal>(t1)] = std::make_shared<TypeVal>(t2);
 }
 
 //! Insert a constraint given two locations (i.e. Tloc1 = Tloc2)
-void ConstraintMap::insert(Exp *term) {
+void ConstraintMap::insert(SharedExp term) {
     assert(term->isEquality());
-    Exp *lhs = ((Binary *)term)->getSubExp1();
-    Exp *rhs = ((Binary *)term)->getSubExp2();
+    SharedExp lhs = term->getSubExp1();
+    SharedExp rhs = term->getSubExp2();
     cmap[lhs] = rhs;
 }
 
@@ -104,11 +104,11 @@ char *EquateMap::prints() {
 
 // Substitute the given constraints into this map
 void ConstraintMap::substitute(ConstraintMap &other) {
-    std::map<Exp *, Exp *, lessExpStar>::iterator oo, cc;
+    std::map<SharedExp, SharedExp, lessExpStar>::iterator oo, cc;
     for (oo = other.cmap.begin(); oo != other.cmap.end(); oo++) {
         bool ch;
         for (cc = cmap.begin(); cc != cmap.end(); cc++) {
-            Exp *newVal = cc->second->searchReplaceAll(*oo->first, oo->second, ch);
+            SharedExp newVal = cc->second->searchReplaceAll(*oo->first, oo->second, ch);
             if (ch) {
                 if (*cc->first == *newVal)
                     // e.g. was <char*> = <alpha6> now <char*> = <char*>
@@ -118,7 +118,7 @@ void ConstraintMap::substitute(ConstraintMap &other) {
             } else
                 // The existing value
                 newVal = cc->second;
-            Exp *newKey = cc->first->searchReplaceAll(*oo->first, oo->second, ch);
+            SharedExp newKey = cc->first->searchReplaceAll(*oo->first, oo->second, ch);
             if (ch) {
                 cmap.erase(cc->first);
                 // Often end up with <char*> = <char*>
@@ -131,13 +131,13 @@ void ConstraintMap::substitute(ConstraintMap &other) {
 
 void ConstraintMap::substAlpha() {
     ConstraintMap alphaDefs;
-    std::map<Exp *, Exp *, lessExpStar>::iterator cc;
+    std::map<SharedExp, SharedExp, lessExpStar>::iterator cc;
     for (cc = cmap.begin(); cc != cmap.end(); cc++) {
         // Looking for entries with two TypeVals, where exactly one is an alpha
         if (!cc->first->isTypeVal() || !cc->second->isTypeVal())
             continue;
-        SharedType t1 = ((TypeVal *)cc->first)->getType();
-        SharedType t2 = ((TypeVal *)cc->second)->getType();
+        SharedType t1 = cc->first->subExp<TypeVal>()->getType();
+        SharedType t2 = cc->second->subExp<TypeVal>()->getType();
         int numAlpha = 0;
         if (t1->isPointerToAlpha())
             numAlpha++;
@@ -161,19 +161,19 @@ void ConstraintMap::substAlpha() {
 }
 
 Constraints::~Constraints() {
-    LocationSet::iterator cc;
-    for (cc = conSet.begin(); cc != conSet.end(); cc++) {
-        delete *cc;
-    }
+//    LocationSet::iterator cc;
+//    for (cc = conSet.begin(); cc != conSet.end(); cc++) {
+//        delete *cc;
+//    }
 }
 
 void Constraints::substIntoDisjuncts(ConstraintMap &in) {
     ConstraintMap::iterator kk;
     for (kk = in.begin(); kk != in.end(); kk++) {
-        Exp *from = kk->first;
-        Exp *to = kk->second;
+        SharedExp from = kk->first;
+        SharedExp to = kk->second;
         bool ch;
-        std::list<Exp *>::iterator dd;
+        std::list<SharedExp>::iterator dd;
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) {
             (*dd)->searchReplaceAll(*from, to, ch);
             *dd = (*dd)->simplifyConstraint();
@@ -192,12 +192,12 @@ void Constraints::substIntoEquates(ConstraintMap &in) {
         extra.clear();
         ConstraintMap::iterator kk;
         for (kk = cur.begin(); kk != cur.end(); kk++) {
-            Exp *lhs = kk->first;
-            std::map<Exp *, LocationSet, lessExpStar>::iterator it = equates.find(lhs);
+            SharedExp lhs = kk->first;
+            std::map<SharedExp, LocationSet, lessExpStar>::iterator it = equates.find(lhs);
             if (it != equates.end()) {
                 // Possibly new constraints that
                 // typeof(elements in it->second) == val
-                Exp *val = kk->second;
+                SharedExp val = kk->second;
                 LocationSet &ls = it->second;
                 LocationSet::iterator ll;
                 for (ll = ls.begin(); ll != ls.end(); ll++) {
@@ -206,19 +206,19 @@ void Constraints::substIntoEquates(ConstraintMap &in) {
                     if (ff != fixed.end()) {
                         if (!unify(val, ff->second, extra)) {
                             LOG_VERBOSE(DEBUG_TA) << "Constraint failure: " << *ll << " constrained to be "
-                                                  << ((TypeVal *)val)->getType()->getCtype() << " and "
-                                                  << ((TypeVal *)ff->second)->getType()->getCtype() << "\n";
+                                                  << val->subExp<TypeVal>()->getType()->getCtype() << " and "
+                                                  << ff->second->subExp<TypeVal>()->getType()->getCtype() << "\n";
                             return;
                         }
                     } else
                         extra[*ll] = val; // A new constant constraint
                 }
-                if (((TypeVal *)val)->getType()->isComplete()) {
+                if (val->subExp<TypeVal>()->getType()->isComplete()) {
                     // We have a complete type equal to one or more variables
                     // Remove the equate, and generate more fixed
                     // e.g. Ta = Tb,Tc and Ta = K => Tb=K, Tc=K
                     for (ll = ls.begin(); ll != ls.end(); ll++) {
-                        Exp *newFixed = Binary::get(opEquals,
+                        SharedExp newFixed = Binary::get(opEquals,
                                                     *ll,  // e.g. Tb
                                                     val); // e.g. K
                         extra.insert(newFixed);
@@ -237,12 +237,12 @@ void Constraints::substIntoEquates(ConstraintMap &in) {
 // But NOT (a or b) or (c or d)
 // Could also be just a (a conjunction, or a single constraint)
 // Note: remainder is changed by this function
-Exp *nextDisjunct(Exp *&remainder) {
+SharedExp nextDisjunct(SharedExp&remainder) {
     if (remainder == nullptr)
         return nullptr;
     if (remainder->isDisjunction()) {
-        Exp *d1 = ((Binary *)remainder)->getSubExp1();
-        Exp *d2 = ((Binary *)remainder)->getSubExp2();
+        SharedExp d1 = remainder->getSubExp1();
+        SharedExp d2 = remainder->getSubExp2();
         if (d1->isDisjunction()) {
             remainder = d1;
             return d2;
@@ -251,17 +251,17 @@ Exp *nextDisjunct(Exp *&remainder) {
         return d1;
     }
     // Else, we have one disjunct. Return it
-    Exp *ret = remainder;
+    SharedExp ret = remainder;
     remainder = nullptr;
     return ret;
 }
 
-Exp *nextConjunct(Exp *&remainder) {
+SharedExp nextConjunct(SharedExp&remainder) {
     if (remainder == nullptr)
         return nullptr;
     if (remainder->isConjunction()) {
-        Exp *c1 = ((Binary *)remainder)->getSubExp1();
-        Exp *c2 = ((Binary *)remainder)->getSubExp2();
+        SharedExp c1 = remainder->getSubExp1();
+        SharedExp c2 = remainder->getSubExp2();
         if (c1->isConjunction()) {
             remainder = c1;
             return c2;
@@ -270,7 +270,7 @@ Exp *nextConjunct(Exp *&remainder) {
         return c1;
     }
     // Else, we have one conjunct. Return it
-    Exp *ret = remainder;
+    SharedExp ret = remainder;
     remainder = nullptr;
     return ret;
 }
@@ -285,37 +285,36 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
     //           Tloc = alpha
     LocationSet::iterator cc;
     for (cc = conSet.begin(); cc != conSet.end(); cc++) {
-        Exp *c = *cc;
+        SharedExp c = *cc;
         if (!c->isEquality())
             continue;
-        Exp *left = ((Binary *)c)->getSubExp1();
+        SharedExp left = c->getSubExp1();
         if (!left->isTypeOf())
             continue;
-        Exp *leftSub = ((Unary *)left)->getSubExp1();
+        SharedExp leftSub = left->getSubExp1();
         if (!leftSub->isAddrOf())
             continue;
-        Exp *right = ((Binary *)c)->getSubExp2();
+        SharedExp right = c->getSubExp2();
         if (!right->isTypeVal())
             continue;
-        SharedType t = ((TypeVal *)right)->getType();
+        SharedType t = right->subExp<TypeVal>()->getType();
         if (!t->isPointer())
             continue;
         // Don't modify a key in a map
-        Exp *clone = c->clone();
+        SharedExp clone = c->clone();
         // left is typeof(addressof(something)) -> typeof(something)
-        left = ((Binary *)clone)->getSubExp1();
-        leftSub = ((Unary *)left)->getSubExp1();
-        Exp *something = ((Unary *)leftSub)->getSubExp1();
-        ((Unary *)left)->setSubExp1ND(something);
-        ((Unary *)leftSub)->setSubExp1ND(nullptr);
-        delete leftSub;
+        left = clone->getSubExp1();
+        leftSub = left->getSubExp1();
+        SharedExp something = leftSub->getSubExp1();
+        left->setSubExp1(something);
+        leftSub->setSubExp1(nullptr);
+        leftSub = nullptr;
         // right is <alpha*> -> <alpha>
-        right = ((Binary *)clone)->getSubExp2();
-        t = ((TypeVal *)right)->getType();
-        ((TypeVal *)right)->setType(t->as<PointerType>()->getPointsTo()->clone());
+        right = clone->getSubExp2();
+        t = right->subExp<TypeVal>()->getType();
+        right->subExp<TypeVal>()->setType(t->as<PointerType>()->getPointsTo()->clone());
         conSet.remove(c);
         conSet.insert(clone);
-        delete c;
     }
 
     // Sort constraints into a few categories. Disjunctions go to a special
@@ -324,7 +323,7 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
     // Constraint terms of the form Tx = Ty go into a map of LocationSets
     // called equates for fast lookup
     for (cc = conSet.begin(); cc != conSet.end(); cc++) {
-        Exp *c = *cc;
+        SharedExp c = *cc;
         if (c->isTrue())
             continue;
         if (c->isFalse()) {
@@ -336,11 +335,11 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
             continue;
         }
         // Break up conjunctions into terms
-        Exp *rem = c, *term;
+        SharedExp rem = c, term;
         while ((term = nextConjunct(rem)) != nullptr) {
             assert(term->isEquality());
-            Exp *lhs = ((Binary *)term)->getSubExp1();
-            Exp *rhs = ((Binary *)term)->getSubExp2();
+            SharedExp lhs = term->getSubExp1();
+            SharedExp rhs = term->getSubExp2();
             if (rhs->isTypeOf()) {
                 // Of the form typeof(x) = typeof(z)
                 // Insert into equates
@@ -356,7 +355,7 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
 
     {
         LOG << "\n" << disjunctions.size() << " disjunctions: ";
-        std::list<Exp *>::iterator dd;
+        std::list<SharedExp>::iterator dd;
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++)
             LOG << *dd << ",\n";
         LOG << "\n";
@@ -374,7 +373,7 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
     LOG << "\nAfter substitute fixed into equates:\n";
     {
         LOG << "\n" << disjunctions.size() << " disjunctions: ";
-        std::list<Exp *>::iterator dd;
+        std::list<SharedExp>::iterator dd;
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++)
             LOG << *dd << ",\n";
         LOG << "\n";
@@ -388,7 +387,7 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
     LOG << "\nAfter second substitute fixed into disjunctions:\n";
     {
         LOG << "\n" << disjunctions.size() << " disjunctions: ";
-        std::list<Exp *>::iterator dd;
+        std::list<SharedExp>::iterator dd;
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++)
             LOG << *dd << ",\n";
         LOG << "\n";
@@ -414,7 +413,7 @@ static int level = 0;
 // Constraints up to but not including iterator it have been unified.
 // The current solution is soln
 // The set of all solutions is in solns
-bool Constraints::doSolve(std::list<Exp *>::iterator it, ConstraintMap &soln, std::list<ConstraintMap> &solns) {
+bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap &soln, std::list<ConstraintMap> &solns) {
     LOG << "Begin doSolve at level " << ++level << "\n";
     LOG << "Soln now: " << soln.prints() << "\n";
     if (it == disjunctions.end()) {
@@ -423,7 +422,7 @@ bool Constraints::doSolve(std::list<Exp *>::iterator it, ConstraintMap &soln, st
         // if (soln.size() == 0)
         // Awkward. There is a trivial solution, but we have no constraints
         // So make a constraint of always-true
-        // soln.insert(new Terminal(opTrue));
+        // soln.insert(Terminal::get(opTrue));
         // Copy the fixed constraints
         soln.makeUnion(fixed);
         solns.push_back(soln);
@@ -431,19 +430,19 @@ bool Constraints::doSolve(std::list<Exp *>::iterator it, ConstraintMap &soln, st
         return true;
     }
 
-    Exp *dj = *it;
+    SharedExp dj = *it;
     // Iterate through each disjunction d of dj
-    Exp *rem1 = dj; // Remainder
+    SharedExp rem1 = dj; // Remainder
     bool anyUnified = false;
-    Exp *d;
+    SharedExp d;
     while ((d = nextDisjunct(rem1)) != nullptr) {
         LOG << " $$ d is " << d << ", rem1 is " << ((rem1 == nullptr) ? "NULL" : rem1->prints()) << " $$\n";
         // Match disjunct d against the fixed types; it could be compatible,
         // compatible and generate an additional constraint, or be
         // incompatible
         ConstraintMap extra; // Just for this disjunct
-        Exp *c;
-        Exp *rem2 = d;
+        SharedExp c;
+        SharedExp rem2 = d;
         bool unified = true;
         while ((c = nextConjunct(rem2)) != nullptr) {
             LOG << "   $$ c is " << c << ", rem2 is " << ((rem2 == nullptr) ? "NULL" : rem2->prints()) << " $$\n";
@@ -452,8 +451,8 @@ bool Constraints::doSolve(std::list<Exp *>::iterator it, ConstraintMap &soln, st
                 break;
             }
             assert(c->isEquality());
-            Exp *lhs = ((Binary *)c)->getSubExp1();
-            Exp *rhs = ((Binary *)c)->getSubExp2();
+            SharedExp lhs = c->getSubExp1();
+            SharedExp rhs = c->getSubExp2();
             extra.insert(lhs, rhs);
             ConstraintMap::iterator kk;
             kk = fixed.find(lhs);
@@ -491,12 +490,12 @@ bool Constraints::doSolve(std::list<Exp *>::iterator it, ConstraintMap &soln, st
     return anyUnified;
 }
 
-bool Constraints::unify(Exp *x, Exp *y, ConstraintMap &extra) {
+bool Constraints::unify(SharedExp x, SharedExp y, ConstraintMap &extra) {
     LOG << "Unifying " << x << " with " << y << " result ";
     assert(x->isTypeVal());
     assert(y->isTypeVal());
-    SharedType xtype = ((TypeVal *)x)->getType();
-    SharedType ytype = ((TypeVal *)y)->getType();
+    SharedType xtype = x->subExp<TypeVal>()->getType();
+    SharedType ytype = y->subExp<TypeVal>()->getType();
     if (xtype->isPointer() && ytype->isPointer()) {
         auto xPointsTo = xtype->as<PointerType>()->getPointsTo();
         auto yPointsTo = ytype->as<PointerType>()->getPointsTo();
@@ -539,35 +538,35 @@ bool Constraints::unify(Exp *x, Exp *y, ConstraintMap &extra) {
      T[Y] = <fixedtype*>
 */
 void Constraints::alphaSubst() {
-    std::list<Exp *>::iterator it;
+    std::list<SharedExp>::iterator it;
     for (it = disjunctions.begin(); it != disjunctions.end(); it++) {
         // This should be a conjuction of terms
         if (!(*it)->isConjunction())
             // A single term will do no good...
             continue;
         // Look for a term like alphaX* == fixedType*
-        Exp *temp = (*it)->clone();
-        Exp *term;
+        SharedExp temp = (*it)->clone();
+        SharedExp term;
         bool found = false;
-        Exp *trm1 = nullptr;
-        Exp *trm2 = nullptr;
+        SharedExp trm1 = nullptr;
+        SharedExp trm2 = nullptr;
         SharedType t1 = nullptr, t2;
         while ((term = nextConjunct(temp)) != nullptr) {
             if (!term->isEquality())
                 continue;
-            trm1 = ((Binary *)term)->getSubExp1();
+            trm1 = term->getSubExp1();
             if (!trm1->isTypeVal())
                 continue;
-            trm2 = ((Binary *)term)->getSubExp2();
+            trm2 = term->getSubExp2();
             if (!trm2->isTypeVal())
                 continue;
             // One of them has to be a pointer to an alpha
-            t1 = ((TypeVal *)trm1)->getType();
+            t1 = trm1->subExp<TypeVal>()->getType();
             if (t1->isPointerToAlpha()) {
                 found = true;
                 break;
             }
-            t2 = ((TypeVal *)trm2)->getType();
+            t2 = trm2->subExp<TypeVal>()->getType();
             if (t2->isPointerToAlpha()) {
                 found = true;
                 break;
@@ -576,7 +575,7 @@ void Constraints::alphaSubst() {
         if (!found)
             continue;
         // We have a alpha value; get the value
-        Exp *val, *alpha;
+        SharedExp val, alpha;
         if (t1->isPointerToAlpha()) {
             alpha = trm1;
             val = trm2;
@@ -594,7 +593,7 @@ void Constraints::alphaSubst() {
 
 void Constraints::print(QTextStream &os) {
     os << "\n" << (int)disjunctions.size() << " disjunctions: ";
-    std::list<Exp *>::iterator dd;
+    std::list<SharedExp>::iterator dd;
     for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++)
         os << *dd << ",\n";
     os << "\n";

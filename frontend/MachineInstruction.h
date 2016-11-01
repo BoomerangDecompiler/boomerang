@@ -4,10 +4,12 @@
 #include "types.h"
 #include <QString>
 #include <list>
+#include <memory>
 
 class Instruction;
 class RTLInstDict;
 class Exp;
+using SharedExp = std::shared_ptr<Exp>;
 class MachineOperand {
 
 };
@@ -15,8 +17,8 @@ struct MachineInstruction
 {
     QString opcode;
     ADDRESS location;
-    std::vector<Exp *> actuals;
-    MachineInstruction(QString op,ADDRESS pc,std::vector<Exp *> &&acts) : opcode(op),
+    std::vector<SharedExp> actuals;
+    MachineInstruction(QString op,ADDRESS pc,std::vector<SharedExp> &&acts) : opcode(op),
         location(pc),
         actuals(acts) {
     }

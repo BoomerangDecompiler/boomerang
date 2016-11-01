@@ -56,7 +56,7 @@ typedef std::list<BasicBlock *>::const_iterator BBC_IT;
 
 class Cfg {
     typedef std::set<CallStatement *> sCallStatement;
-    typedef std::map<Exp *, Instruction *, lessExpStar> mExpStatement;
+    typedef std::map<SharedExp, Instruction *, lessExpStar> mExpStatement;
     mutable bool WellFormed;
     bool structured;
     bool ImplicitsDone;
@@ -114,7 +114,7 @@ class Cfg {
     bool establishDFTOrder();
     bool establishRevDFTOrder();
 
-    int pbbToIndex(BasicBlock *pBB);
+    int pbbToIndex(const BasicBlock *pBB);
     void unTraverse();
     bool isWellFormed();
     bool isOrphan(ADDRESS uAddr);
@@ -123,8 +123,8 @@ class Cfg {
     void removeBB(BasicBlock *bb);
     void addCall(CallStatement *call);
     sCallStatement &getCalls();
-    void searchAndReplace(const Exp &search, Exp *replace);
-    bool searchAll(const Exp &search, std::list<Exp *> &result);
+    void searchAndReplace(const Exp &search, const SharedExp &replace);
+    bool searchAll(const Exp &search, std::list<SharedExp> &result);
     Exp *getReturnVal();
     void structure();
     void removeJunctionStatements();
@@ -184,16 +184,16 @@ class Cfg {
     /////////////////////////////////////////////////////////////////////////
     // Implicit assignments
     /////////////////////////////////////////////////////////////////////////
-    Instruction *findImplicitAssign(Exp *x);
-    Instruction *findTheImplicitAssign(Exp *x);
+    Instruction *findImplicitAssign(SharedExp x);
+    Instruction *findTheImplicitAssign(const SharedExp &x);
     Instruction *findImplicitParamAssign(Parameter *p);
-    void removeImplicitAssign(Exp *x);
+    void removeImplicitAssign(SharedExp x);
     bool implicitsDone() { return ImplicitsDone; }    //!<  True if implicits have been created
     void setImplicitsDone() { ImplicitsDone = true; } //!< Call when implicits have been created
     void findInterferences(ConnectionGraph &ig);
     void appendBBs(std::list<BasicBlock *> &worklist, std::set<BasicBlock *> &workset);
     void removeUsedGlobals(std::set<Global *> &unusedGlobals);
-    void bbSearchAll(Exp *search, std::list<Exp *> &result, bool ch);
+    void bbSearchAll(Exp *search, std::list<SharedExp> &result, bool ch);
 
     bool removeOrphanBBs();
 protected:

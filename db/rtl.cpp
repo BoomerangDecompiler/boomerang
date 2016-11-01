@@ -229,9 +229,9 @@ void RTL::simplify() {
         Instruction *s = *it;
         s->simplify();
         if (s->isBranch()) {
-            Exp *cond = ((BranchStatement *)s)->getCondExpr();
+            SharedExp cond = ((BranchStatement *)s)->getCondExpr();
             if (cond && cond->getOper() == opIntConst) {
-                if (((Const *)cond)->getInt() == 0) {
+                if (cond->subExp<Const>()->getInt() == 0) {
                     LOG_VERBOSE(1) << "removing branch with false condition at " << getAddress() << " " << *it << "\n";
                     it = this->erase(it);
                     continue;
@@ -241,8 +241,8 @@ void RTL::simplify() {
                 *it = new GotoStatement(((BranchStatement *)s)->getFixedDest());
             }
         } else if (s->isAssign()) {
-            Exp *guard = ((Assign *)s)->getGuard();
-            if (guard && (guard->isFalse() || (guard->isIntConst() && ((Const *)guard)->getInt() == 0))) {
+            SharedExp guard = ((Assign *)s)->getGuard();
+            if (guard && (guard->isFalse() || (guard->isIntConst() && guard->subExp<Const>()->getInt() == 0))) {
                 // This assignment statement can be deleted
                 LOG_VERBOSE(1) << "removing assignment with false guard at " << getAddress() << " " << *it << "\n";
                 it = erase(it);

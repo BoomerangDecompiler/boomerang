@@ -46,8 +46,8 @@ PPCFrontEnd::PPCFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : Fr
 // destructor
 PPCFrontEnd::~PPCFrontEnd() {}
 
-std::vector<Exp *> &PPCFrontEnd::getDefaultParams() {
-    static std::vector<Exp *> params;
+std::vector<SharedExp> &PPCFrontEnd::getDefaultParams() {
+    static std::vector<SharedExp> params;
     if (params.size() == 0) {
         for (int r = 31; r >= 0; r--) {
             params.push_back(Location::regOf(r));
@@ -56,8 +56,8 @@ std::vector<Exp *> &PPCFrontEnd::getDefaultParams() {
     return params;
 }
 
-std::vector<Exp *> &PPCFrontEnd::getDefaultReturns() {
-    static std::vector<Exp *> returns;
+std::vector<SharedExp> &PPCFrontEnd::getDefaultReturns() {
+    static std::vector<SharedExp> returns;
     if (returns.size() == 0) {
         for (int r = 31; r >= 0; r--) {
             returns.push_back(Location::regOf(r));

@@ -121,7 +121,7 @@ class BasicBlock {
     typedef std::vector<BasicBlock *>::iterator iEdgeIterator;
     typedef std::list<RTL *>::iterator rtlit;
     typedef std::list<RTL *>::reverse_iterator rtlrit;
-    typedef std::list<Exp *>::iterator elit;
+    typedef std::list<SharedExp >::iterator elit;
 
   protected:
     Function *Parent;
@@ -253,9 +253,9 @@ class BasicBlock {
         LastStatementNotAGotoError(Instruction *_stmt) : stmt(_stmt) {}
     };
 
-    Exp *getCond() noexcept(false);
-    void setCond(Exp *e) noexcept(false);
-    Exp *getDest() noexcept(false);
+    SharedExp getCond() noexcept(false);
+    void setCond(SharedExp e) noexcept(false);
+    SharedExp getDest() noexcept(false);
     bool isJmpZ(BasicBlock *dest);
     BasicBlock *getLoopBody();
     void simplify();
@@ -295,8 +295,8 @@ class BasicBlock {
     void processSwitch(UserProc *proc);
     int findNumCases();
     bool undoComputedBB(Instruction *stmt);
-    bool searchAll(const Exp &search_for, std::list<Exp *> &results);
-    bool searchAndReplace(const Exp &search, Exp *replace);
+    bool searchAll(const Exp &search_for, std::list<SharedExp > &results);
+    bool searchAndReplace(const Exp &search, SharedExp replace);
 
     void generateCode_Loop(HLLCode *hll, std::list<BasicBlock *> &gotoSet, int indLevel, UserProc *proc,
                            BasicBlock *latch, std::list<BasicBlock *> &followSet);
@@ -352,7 +352,7 @@ class BasicBlock {
             ListOfRTLs = new std::list<RTL *>;
         ListOfRTLs->push_back(rtl);
     }
-    void addLiveIn(Exp *e) { LiveIn.insert(e); }
+    void addLiveIn(SharedExp e) { LiveIn.insert(e); }
 
   private:
     /*

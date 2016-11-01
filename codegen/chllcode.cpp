@@ -177,11 +177,11 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         str << c.getFuncName();
         break;
     case opAddrOf: {
-        const Exp *sub = u.getSubExp1();
+        SharedConstExp sub = u.getSubExp1();
         if (sub->isGlobal()) {
             Prog *prog = m_proc->getProg();
 
-            auto con = static_cast<const Const *>(sub->getSubExp1());
+            auto con = std::static_pointer_cast<const Const>(sub->getSubExp1());
             SharedType gt = prog->getGlobalType(con->getStr());
             if (gt && (gt->isArray() || (gt->isPointer() && gt->as<PointerType>()->getPointsTo()->isChar()))) {
                 // Special C requirement: don't emit "&" for address of an array or char*
@@ -208,7 +208,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
     case opParam:
     case opGlobal:
     case opLocal: {
-        auto c1 = dynamic_cast<const Const *>(u.getSubExp1());
+        auto c1 = std::dynamic_pointer_cast<const Const>(u.getSubExp1());
         assert(c1 && c1->getOper() == opStrConst);
         str << c1->getStr();
     } break;
@@ -290,7 +290,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         str << " & ";
         if (b.getSubExp2()->getOper() == opIntConst) {
             // print it 0x2000 style
-            uint32_t val = uint32_t(((Const *)b.getSubExp2())->getInt());
+            uint32_t val = uint32_t(std::static_pointer_cast<const Const>(b.getSubExp2())->getInt());
             QString vanilla = QString("0x")+QString::number(val,16);
             QString negated = QString("~0x")+QString::number(~val,16);
             if(negated.size()<vanilla.size())
@@ -340,8 +340,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         // s1 >> last & 0xMASK
         openParen(str, curPrec, PREC_BIT_AND);
         appendExp(str, *t.getSubExp1(), PREC_BIT_SHIFT);
-        auto first = static_cast<const Const *>(t.getSubExp2());
-        auto last = static_cast<const Const *>(t.getSubExp3());
+        auto first = std::static_pointer_cast<const Const>(t.getSubExp2());
+        auto last = std::static_pointer_cast<const Const>(t.getSubExp3());
         str << " >> ";
         appendExp(str, *last, PREC_BIT_SHIFT);
         str << " & ";
@@ -392,7 +392,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             break;
         }
         assert(u.getSubExp1()->getOper() == opIntConst);
-        QString n(m_proc->getProg()->getRegName(((Const *)u.getSubExp1())->getInt()));
+        QString n(m_proc->getProg()->getRegName(std::static_pointer_cast<const Const>(u.getSubExp1())->getInt()));
         if (n.isEmpty()) {
             if (n[0] == '%')
                 str << n + 1;
@@ -409,7 +409,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         // Should never see this; temps should be mapped to locals now so that they get declared
         LOG_VERBOSE(1) << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
         // Emit the temp name, e.g. "tmp1"
-        str << ((Const *)u.getSubExp1())->getStr();
+        str << u.subExp<Const,1>()->getStr();
         break;
     case opItof:
         // TODO: MVE: needs work: float/double/long double.
@@ -422,7 +422,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         // TODO: needs work!
         if(t.getSubExp3()->isMemOf()) {
             assert(t.getSubExp1()->isIntConst());
-            int float_bits =  ((Const *)t.getSubExp1())->getInt();
+            int float_bits =  t.subExp<Const,1>()->getInt();
             if (Boomerang::get()->noDecompile) {
                 assert(t.getSubExp1()->isIntConst());
                 if (float_bits == 32)
@@ -607,7 +607,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         break;
     case opFlagCall: {
         assert(b.getSubExp1()->getOper() == opStrConst);
-        str << ((Const *)b.getSubExp1())->getStr();
+        str << b.subExp<Const,1>()->getStr();
         str << "(";
         auto l = b.getSubExp2();
         for (; l && l->getOper() == opList; l = l->getSubExp2()) {
@@ -619,8 +619,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
     } break;
     case opList: {
         int elems_on_line = 0; // try to limit line lengths
-        const Exp *b2 = &b;
-        const Exp *e2 = b.getSubExp2();
+        SharedConstExp b2 = b.shared_from_this();
+        SharedConstExp e2 = b.getSubExp2();
         str << "{ ";
         if (b.getSubExp1()->getOper() == opList)
             str << "\n ";
@@ -653,8 +653,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         //    ((Const*)t.getSubExp2())->getInt());
         // strcat(str, s); */
         if (t.getSubExp3()->isMemOf() && t.getSubExp1()->isIntConst() && t.getSubExp2()->isIntConst() &&
-            ((Const *)t.getSubExp2())->getInt() == 32) {
-            unsigned sz = (unsigned)((Const *)t.getSubExp1())->getInt();
+            t.subExp<Const,2>()->getInt() == 32) {
+            unsigned sz = (unsigned)t.subExp<Const,1>()->getInt();
             if (sz == 8 || sz == 16) {
                 bool close = false;
                 str << "*";
@@ -699,7 +699,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         }
 #endif
         if (u.getSubExp1()->getOper() == opTypedExp &&
-            *((const TypedExp &)u).getType() == *((const TypedExp *)u.getSubExp1())->getType()) {
+            *((const TypedExp &)u).getType() == *u.subExp<TypedExp,1>()->getType()) {
             // We have (type)(type)x: recurse with type(x)
             appendExp(str, *u.getSubExp1(), curPrec);
         } else if (u.getSubExp1()->getOper() == opMemOf) {
@@ -760,8 +760,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
     }
     case opSgnEx:
     case opTruncs: {
-        const Exp *s = t.getSubExp3();
-        int toSize = static_cast<const Const *>(t.getSubExp2())->getInt();
+        SharedConstExp s = t.getSubExp3();
+        int toSize = t.subExp<Const,2>()->getInt();
         switch (toSize) {
         case 8:
             str << "(char) ";
@@ -780,8 +780,8 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         break;
     }
     case opTruncu: {
-        const Exp *s = t.getSubExp3();
-        int toSize = ((const Const *)t.getSubExp2())->getInt();
+        SharedConstExp s = t.getSubExp3();
+        int toSize = t.subExp<Const,2>()->getInt();
         switch (toSize) {
         case 8:
             str << "(unsigned char) ";
@@ -801,9 +801,9 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
     }
     case opMachFtr: {
         str << "/* machine specific */ (int) ";
-        const Exp *sub = u.getSubExp1();
+        auto sub = u.subExp<Const,1>();
         assert(sub->isStrConst());
-        QString s = ((const Const *)sub)->getStr();
+        QString s = sub->getStr();
         if (s[0] == '%')  // e.g. %Y
             str << s.mid(1); // Just use Y
         else
@@ -869,7 +869,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         SharedType ty = nullptr;
 #endif
         if (ty == nullptr) {
-            LOG << "type failure: no type for subexp1 of " << &b << "\n";
+            LOG << "type failure: no type for subexp1 of " << b.shared_from_this() << "\n";
             // ty = b.getSubExp1()->getType();
             // No idea why this is hitting! - trentw
             // str << "/* type failure */ ";
@@ -886,7 +886,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             appendExp(str, *b.getSubExp1(), PREC_PRIM);
             str << ".";
         }
-        str << ((const Const *)b.getSubExp2())->getStr();
+        str << b.subExp<const Const,2>()->getStr();
     } break;
     case opArrayIndex:
         openParen(str, curPrec, PREC_PRIM);
@@ -980,7 +980,7 @@ void CHLLCode::appendTypeIdent(QTextStream &str, SharedType typ, QString ident) 
 void CHLLCode::reset() { lines.clear(); }
 
 /// Adds: while( \a cond) {
-void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond) {
+void CHLLCode::AddPretestedLoopHeader(int indLevel, const SharedExp &cond) {
     QString tgt;
     QTextStream s(&tgt);
     indent(s, indLevel);
@@ -1027,7 +1027,7 @@ void CHLLCode::AddPosttestedLoopHeader(int indLevel) {
 }
 
 /// Adds: } while (\a cond);
-void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond) {
+void CHLLCode::AddPosttestedLoopEnd(int indLevel, const SharedExp &cond) {
     QString tgt;
     QTextStream s(&tgt);
     indent(s, indLevel);
@@ -1038,7 +1038,7 @@ void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond) {
 }
 
 /// Adds: switch(\a cond) {
-void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond) {
+void CHLLCode::AddCaseCondHeader(int indLevel, const SharedExp &cond) {
     QString tgt;
     QTextStream s(&tgt);
     indent(s, indLevel);
@@ -1087,7 +1087,7 @@ void CHLLCode::AddCaseCondEnd(int indLevel) {
 }
 
 /// Adds: if(\a cond) {
-void CHLLCode::AddIfCondHeader(int indLevel, Exp *cond) {
+void CHLLCode::AddIfCondHeader(int indLevel, const SharedExp &cond) {
     QString tgt;
     QTextStream s(&tgt);
     indent(s, indLevel);
@@ -1107,7 +1107,7 @@ void CHLLCode::AddIfCondEnd(int indLevel) {
 }
 
 /// Adds: if(\a cond) {
-void CHLLCode::AddIfElseCondHeader(int indLevel, Exp *cond) {
+void CHLLCode::AddIfElseCondHeader(int indLevel, const SharedExp &cond) {
     QString tgt;
     QTextStream s(&tgt);
     indent(s, indLevel);
@@ -1218,7 +1218,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
     // Gerard: shouldn't these  3 types of statements be removed earlier?
     if (asgn->getLeft()->getOper() == opPC)
         return; // Never want to see assignments to %PC
-    Exp *result;
+    SharedExp result;
     if (asgn->getRight()->search(Terminal(opPC), result)) // Gerard: what's this?
         return;
     // ok I want this now
@@ -1229,8 +1229,8 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
     QTextStream s(&tgt);
     indent(s, indLevel);
     SharedType asgnType = asgn->getType();
-    Exp *lhs = asgn->getLeft();
-    Exp *rhs = asgn->getRight();
+    SharedExp lhs = asgn->getLeft();
+    SharedExp rhs = asgn->getRight();
     UserProc *proc = asgn->getProc();
 
     if (*lhs == *rhs)
@@ -1238,11 +1238,12 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 
     if (Boomerang::get()->noDecompile && isBareMemof(*rhs, proc) && lhs->getOper() == opRegOf &&
         m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
+        int wdth = lhs->subExp<Const,1>()->getInt();
         // add some fsize hints to rhs
-        if (((Const *)lhs->getSubExp1())->getInt() >= 32 && ((Const *)lhs->getSubExp1())->getInt() <= 63)
-            rhs = new Ternary(opFsize, new Const(32), new Const(32), rhs);
-        else if (((Const *)lhs->getSubExp1())->getInt() >= 64 && ((Const *)lhs->getSubExp1())->getInt() <= 87)
-            rhs = new Ternary(opFsize, new Const(64), new Const(64), rhs);
+        if (wdth >= 32 &&  wdth <= 63)
+            rhs = std::make_shared<Ternary>(opFsize, Const::get(32), Const::get(32), rhs);
+        else if (wdth >= 64 && wdth <= 87)
+            rhs = std::make_shared<Ternary>(opFsize, Const::get(64), Const::get(64), rhs);
     }
 
     if (Boomerang::get()->noDecompile && isBareMemof(*lhs, proc)) {
@@ -1252,15 +1253,16 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
             else
                 s << "DOUBLE_";
         } else if (rhs->getOper() == opFsize) {
-            if (((Const *)rhs->getSubExp2())->getInt() == 32)
+            if (rhs->subExp<Const,2>()->getInt() == 32)
                 s << "FLOAT_";
             else
                 s << "DOUBLE_";
         } else if (rhs->getOper() == opRegOf && m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
             // yes, this is a hack
-            if (((Const *)rhs->getSubExp1())->getInt() >= 32 && ((Const *)rhs->getSubExp1())->getInt() <= 63)
+            int wdth = rhs->subExp<Const,2>()->getInt();
+            if (wdth >= 32 && wdth <= 63)
                 s << "FLOAT_";
-            else if (((Const *)rhs->getSubExp1())->getInt() >= 64 && ((Const *)rhs->getSubExp1())->getInt() <= 87)
+            else if (wdth >= 64 && wdth <= 87)
                 s << "DOUBLE_";
         }
 
@@ -1276,18 +1278,18 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
     if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid())
         appendExp(s, TypedExp(asgnType, lhs), PREC_ASSIGN);
     else if (lhs->getOper() == opGlobal && asgn->getType()->isArray())
-        appendExp(s, Binary(opArrayIndex, lhs, new Const(0)), PREC_ASSIGN);
-    else if (lhs->getOper() == opAt && ((Ternary *)lhs)->getSubExp2()->isIntConst() &&
-             ((Ternary *)lhs)->getSubExp3()->isIntConst()) {
+        appendExp(s, Binary(opArrayIndex, lhs, Const::get(0)), PREC_ASSIGN);
+    else if (lhs->getOper() == opAt && lhs->getSubExp2()->isIntConst() &&
+             lhs->getSubExp3()->isIntConst()) {
         // exp1@[n:m] := rhs -> exp1 = exp1 & mask | rhs << m  where mask = ~((1 << m-n+1)-1)
-        Exp *exp1 = ((Ternary *)lhs)->getSubExp1();
-        int n = ((Const *)((Ternary *)lhs)->getSubExp2())->getInt();
-        int m = ((Const *)((Ternary *)lhs)->getSubExp3())->getInt();
+        SharedExp exp1 = lhs->getSubExp1();
+        int n = lhs->subExp<Const,2>()->getInt();
+        int m = lhs->subExp<Const,3>()->getInt();
         appendExp(s, *exp1, PREC_ASSIGN);
         s << " = ";
         int mask = ~(((1 << (m - n + 1)) - 1) << m); // MSVC winges without most of these parentheses
         rhs = Binary::get(opBitAnd, exp1,
-                          Binary::get(opBitOr, new Const(mask), Binary::get(opShiftL, rhs, new Const(m))));
+                          Binary::get(opBitOr, Const::get(mask), Binary::get(opShiftL, rhs, Const::get(m))));
         rhs = rhs->simplify();
         appendExp(s, *rhs, PREC_ASSIGN);
         s << ";";
@@ -1299,9 +1301,9 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
         // C has special syntax for this, eg += and ++
         // however it's not always acceptable for assigns to m[] (?)
         if (rhs->getSubExp2()->isIntConst() &&
-            (((Const *)rhs->getSubExp2())->getInt() == 1 || (asgn->getType()->isPointer() &&
+            (rhs->subExp<Const,2>()->getInt() == 1 || (asgn->getType()->isPointer() &&
                                                              asgn->getType()->as<PointerType>()->getPointsTo()->getSize() ==
-                                                                 (unsigned)((Const *)rhs->getSubExp2())->getInt() * 8)))
+                                                                 (unsigned)rhs->subExp<Const,2>()->getInt() * 8)))
             s << "++";
         else {
             s << " += ";
@@ -1334,7 +1336,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString &nam
     indent(s, indLevel);
     if (not results->empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
-        Exp *firstRet = ((Assignment *)*results->begin())->getLeft();
+        SharedExp firstRet = ((Assignment *)*results->begin())->getLeft();
         appendExp(s, *firstRet, PREC_ASSIGN);
         s << " = ";
     }
@@ -1351,7 +1353,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString &nam
         assert(arg_assign!=nullptr);
         SharedType t = arg_assign->getType();
         auto as_arg = arg_assign->getRight();
-        auto const_arg = dynamic_cast<const Const *>(as_arg);
+        auto const_arg = std::dynamic_pointer_cast<const Const>(as_arg);
         bool ok = true;
         if (t && t->isPointer() && std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
             Function *p = proc->getProg()->findProc(const_arg->getAddr());
@@ -1399,7 +1401,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString &nam
  * \todo Add the use of \a results like AddCallStatement.
  */
 // Ugh - almost the same as the above, but it needs to take an expression, // not a Proc*
-void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList * results) {
+void CHLLCode::AddIndCallStatement(int indLevel, const SharedExp &exp, StatementList &args, StatementList * results) {
     Q_UNUSED(results);
     //    FIXME: Need to use 'results', since we can infer some defines...
     QString tgt;
@@ -1412,7 +1414,7 @@ void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, 
     QString arg_tgt;
     for (Instruction * ss : args) {
         QTextStream arg_str(&arg_tgt);
-        Exp *arg = ((Assign *)ss)->getRight();
+        SharedExp arg = ((Assign *)ss)->getRight();
         appendExp(arg_str, *arg, PREC_COMMA);
         arg_strings<<arg_tgt;
         arg_tgt.clear();
@@ -1492,7 +1494,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
             s << "void ";
         else {
             unsigned int n = 0;
-            Exp *e = proc->getSignature()->getReturnExp(0);
+            SharedExp e = proc->getSignature()->getReturnExp(0);
             if (e->isRegN(Signature::getStackRegister(proc->getProg())))
                 n = 1;
             if (n < proc->getSignature()->getNumReturns())
@@ -1530,7 +1532,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
         else
             s << ", ";
         Assignment *as = (Assignment *)*pp;
-        Exp *left = as->getLeft();
+        SharedExp left = as->getLeft();
         SharedType ty = as->getType();
         if (ty == nullptr) {
             if (VERBOSE)
@@ -1539,7 +1541,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
         }
         QString name;
         if (left->isParam())
-            name = ((Const *)((Location *)left)->getSubExp1())->getStr();
+            name = left->subExp<Const,1>()->getStr();
         else {
             LOG << "ERROR: parameter " << left << " is not opParam!\n";
             name = "??";
@@ -1548,7 +1550,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open) {
             // C does this by default when you pass an array, i.e. you pass &array meaning array
             // Replace all m[param] with foo, param with foo, then foo with param
             ty = std::static_pointer_cast<PointerType>(ty)->getPointsTo();
-            Exp *foo = Const::get("foo123412341234");
+            SharedExp foo = Const::get("foo123412341234");
             m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
             m_proc->searchAndReplace(*left, foo);
             m_proc->searchAndReplace(*foo, left);
@@ -1580,10 +1582,10 @@ void CHLLCode::AddLocal(const QString &name, SharedType type, bool last) {
     QTextStream s(&tgt);
     indent(s, 1);
     appendTypeIdent(s, type, name);
-    const Exp *e = m_proc->expFromSymbol(name);
+    SharedConstExp e = m_proc->expFromSymbol(name);
     if (e) {
         // ? Should never see subscripts in the back end!
-        if (e->getOper() == opSubscript && ((RefExp *)e)->isImplicitDef() &&
+        if (e->getOper() == opSubscript && ((const RefExp *)e.get())->isImplicitDef() &&
             (e->getSubExp1()->getOper() == opParam || e->getSubExp1()->getOper() == opGlobal)) {
             s << " = ";
             appendExp(s, *e->getSubExp1(), PREC_NONE);
@@ -1606,7 +1608,7 @@ void CHLLCode::AddLocal(const QString &name, SharedType type, bool last) {
  * \param type The type of the global
  * \param init The initial value of the global.
  */
-void CHLLCode::AddGlobal(const QString &name, SharedType type, Exp *init) {
+void CHLLCode::AddGlobal(const QString &name, SharedType type, const SharedExp &init) {
     QString tgt;
     QTextStream s(&tgt);
     // Check for array types. These are declared differently in C than

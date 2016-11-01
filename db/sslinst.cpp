@@ -286,7 +286,7 @@ void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParam
             /* Rename so all the parameter names match */
             for (auto i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++) {
                 Location param(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
-                Exp *replace = Location::param(*i);
+                SharedExp replace = Location::param(*i);
                 sub.asgn->searchAndReplace(param, replace);
             }
             sub.funcParams = funcParams;
@@ -328,7 +328,7 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name) {
   ******************************************************************************/
 bool RTLInstDict::partialType(Exp *exp, Type &ty) {
     if (exp->isSizeCast()) {
-        ty = *IntegerType::get(((Const *)((Binary *)exp)->getSubExp1())->getInt());
+        ty = *IntegerType::get(exp->subExp<Const,1>()->getInt());
         return true;
     }
     if (exp->isFltConst()) {
@@ -347,7 +347,7 @@ bool RTLInstDict::partialType(Exp *exp, Type &ty) {
   * \returns   the instantiated list of Exps
   ******************************************************************************/
 std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString &name, ADDRESS natPC,
-                                                    const std::vector<Exp *> &actuals) {
+                                                    const std::vector<SharedExp> &actuals) {
     QTextStream q_cerr(stderr);
     // If -f is in force, use the fast (but not as precise) name instead
     QString lname = name;
@@ -379,7 +379,7 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString &name, ADDRE
   * \returns the instantiated list of Exps
   ******************************************************************************/
 std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS natPC, std::list<QString> &params,
-                                                    const std::vector<Exp *> &actuals) {
+                                                    const std::vector<SharedExp> &actuals) {
     Q_UNUSED(natPC);
     assert(params.size() == actuals.size());
 
@@ -391,7 +391,7 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL &rtl, ADDRESS natPC, s
     for (Instruction *ss : *newList) {
         // Search for the formals and replace them with the actuals
         auto param = params.begin();
-        std::vector<Exp *>::const_iterator actual = actuals.begin();
+        std::vector<SharedExp>::const_iterator actual = actuals.begin();
         for (; param != params.end(); param++, actual++) {
             /* Simple parameter - just construct the formal to search for */
             Location formal(opParam, Const::get(*param), nullptr); // Location::param(param->c_str());
@@ -423,9 +423,9 @@ class transPost {
     // Important because if not, we don't have to make any
     // substitutions at all
     bool isNew; // Not sure (MVE)
-    Exp *tmp;   // The temp to replace r[0]' with
-    Exp *post;  // The whole postvar expression. e.g. r[0]'
-    Exp *base;  // The base expression (e.g. r[0])
+    SharedExp tmp;   // The temp to replace r[0]' with
+    SharedExp post;  // The whole postvar expression. e.g. r[0]'
+    SharedExp base;  // The base expression (e.g. r[0])
     SharedType type; // The type of the temporary (needed for the final assign)
 };
 
@@ -449,7 +449,7 @@ class transPost {
 void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise) {
 
     // Map from var (could be any expression really) to details
-    std::map<Exp *, transPost, lessExpStar> vars;
+    std::map<SharedExp, transPost, lessExpStar> vars;
     int tmpcount = 1; // For making temp names unique
                       // Exp* matchParam(1,idParam);    // ? Was never used anyway
 
@@ -466,11 +466,11 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
     for (Instruction *rt : rts) {
         // ss appears to be a list of expressions to be searched
         // It is either the LHS and RHS of an assignment, or it's the parameters of a flag call
-        Exp *ss = nullptr;
+        SharedExp ss;
         if (rt->isAssign()) {
             Assign *rt_asgn((Assign *)rt);
-            Exp *lhs = rt_asgn->getLeft();
-            Exp *rhs = rt_asgn->getRight();
+            SharedExp lhs = rt_asgn->getLeft();
+            SharedExp rhs = rt_asgn->getRight();
 
             // Look for assignments to post-variables
             if (lhs && lhs->isPostVar()) {
@@ -502,11 +502,11 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
             // whole assignment on, I suppose)
             assert(lhs!=nullptr);
             assert(rhs!=nullptr);
-            ss = Binary::get(opList, lhs->clone(), Binary::get(opList, rhs->clone(), new Terminal(opNil)));
+            ss = Binary::get(opList, lhs->clone(), Binary::get(opList, rhs->clone(), Terminal::get(opNil)));
         } else if (rt->isFlagAssgn()) {
             Assign *rt_asgn = (Assign *)rt;
             //Exp *lhs = rt_asgn->getLeft();
-            Exp *rhs = rt_asgn->getRight();
+            auto rhs = rt_asgn->getRight();
             // An opFlagCall is assumed to be a Binary with a string and an opList of parameters
             ss = rhs->getSubExp2();
             assert(false); // was ss = (Binary *)((Binary *)rt)->getSubExp2();
@@ -529,14 +529,14 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
             for (auto cur = ss; !cur->isNil(); cur = cur->getSubExp2()) {
                 if (var.second.used)
                     break; // Don't bother; already know it's used
-                Exp *s = cur->getSubExp1();
+                SharedExp s = cur->getSubExp1();
                 if (!s)
                     continue;
                 if (*s == *var.second.base) {
                     var.second.used = true;
                     break;
                 }
-                std::list<Exp *> res1, res2;
+                std::list<SharedExp> res1, res2;
                 s->searchAll(*var.second.base, res1);
                 s->searchAll(*var.second.post, res2);
                 // Each match of a post will also match the base.
@@ -573,7 +573,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *> &rts, bool optimise
 
 #ifdef DEBUG_POSTVAR
     std::cout << "\nTo =>\n";
-    for (std::list<Exp *>::iterator p = rts->begin(); p != rts->end(); p++) {
+    for (std::list<SharedExp>::iterator p = rts->begin(); p != rts->end(); p++) {
         std::cout << setw(8) << " ";
         (*p)->print(std::cout);
         std::cout << "\n";

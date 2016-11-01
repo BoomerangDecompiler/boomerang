@@ -439,7 +439,7 @@ bool SparcFrontEnd::case_DD(ADDRESS &address, ptrdiff_t delta, DecodeResult &ins
         BB_rtls->push_back(inst.rtl);
         newBB = cfg->newBB(BB_rtls, BBTYPE::COMPJUMP, 0);
         bRet = false;
-        Exp *pDest = ((CaseStatement *)lastStmt)->getDest();
+        SharedExp pDest = ((CaseStatement *)lastStmt)->getDest();
         if (pDest == nullptr) { // Happens if already analysed (we are now redecoding)
             // SWITCH_INFO* psi = ((CaseStatement*)lastStmt)->getSwitchInfo();
             // processSwitch will update the BB type and number of outedges, decode arms, set out edges, etc
@@ -674,8 +674,8 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddr
     return true;
 }
 
-std::vector<Exp *> &SparcFrontEnd::getDefaultParams() {
-    static std::vector<Exp *> params;
+std::vector<SharedExp> &SparcFrontEnd::getDefaultParams() {
+    static std::vector<SharedExp> params;
     if (params.size() == 0) {
         // init arguments and return set to be all 31 machine registers
         // Important: because o registers are save in i registers, and
@@ -691,8 +691,8 @@ std::vector<Exp *> &SparcFrontEnd::getDefaultParams() {
     return params;
 }
 
-std::vector<Exp *> &SparcFrontEnd::getDefaultReturns() {
-    static std::vector<Exp *> returns;
+std::vector<SharedExp> &SparcFrontEnd::getDefaultReturns() {
+    static std::vector<SharedExp> returns;
     if (returns.size() == 0) {
         returns.push_back(Location::regOf(30));
         returns.push_back(Location::regOf(31));
@@ -918,18 +918,18 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                     // TODO: why would delay_inst.rtl->empty() be empty here ?
                     Instruction *a = delay_inst.rtl->empty() ? nullptr : delay_inst.rtl->back(); // Look at last
                     if (a && a->isAssign()) {
-                        Exp *lhs = ((Assign *)a)->getLeft();
+                        SharedExp lhs = ((Assign *)a)->getLeft();
                         if (lhs->isRegN(15)) { // %o7 is r[15]
                             // If it's an add, this is special. Example:
                             //     call foo
                             //     add %o7, K, %o7
                             // is equivalent to call foo / ba .+K
-                            Exp *rhs = ((Assign *)a)->getRight();
+                            SharedExp rhs = ((Assign *)a)->getRight();
                             auto o7(Location::regOf(15));
-                            if (rhs->getOper() == opPlus && (rhs->getSubExp2()->getOper() == opIntConst) &&
+                            if (rhs->getOper() == opPlus && (rhs->subExp<Exp,2>()->getOper() == opIntConst) &&
                                 (*rhs->getSubExp1() == *o7)) {
                                 // Get the constant
-                                int K = ((Const *)((Binary *)rhs)->getSubExp2())->getInt();
+                                int K = rhs->subExp<Const,2>()->getInt();
                                 case_CALL(uAddr, inst, delay_inst, BB_rtls, proc, callList, os, true);
                                 // We don't generate a goto; instead, we just decode from the new address
                                 // Note: the call to case_CALL has already incremented address by 8, so don't do again
@@ -1211,7 +1211,7 @@ void SparcFrontEnd::emitNop(std::list<RTL *> *pRtls, ADDRESS uAddr) {
 void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr) {
     // Emit %o7 = %pc
     Assign *a = new Assign(Location::regOf(15), // %o7 == r[15]
-                           new Terminal(opPC));
+                           Terminal::get(opPC));
     // Add the Exp to an RTL
     RTL *pRtl = new RTL(uAddr);
     pRtl->appendStmt(a);
@@ -1220,7 +1220,7 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr) {
 }
 
 // Append one assignment to a list of RTLs
-void SparcFrontEnd::appendAssignment(Exp *lhs, Exp *rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl) {
+void SparcFrontEnd::appendAssignment(const SharedExp &lhs, const SharedExp &rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl) {
     Assign *a = new Assign(type, lhs, rhs);
     // Create an RTL with this one Statement
     std::list<Instruction *> *lrt = new std::list<Instruction *>;
@@ -1233,8 +1233,8 @@ void SparcFrontEnd::appendAssignment(Exp *lhs, Exp *rhs, SharedType type, ADDRES
 /* Small helper function to build an expression with
  * *128* m[m[r[14]+64]] = m[r[8]] OP m[r[9]] */
 void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op) {
-    Exp *lhs = Location::memOf(Location::memOf(Binary::get(opPlus, Location::regOf(14), new Const(64))));
-    Exp *rhs = Binary::get(op, Location::memOf(Location::regOf(8)), Location::memOf(Location::regOf(9)));
+    SharedExp lhs = Location::memOf(Location::memOf(Binary::get(opPlus, Location::regOf(14), Const::get(64))));
+    SharedExp rhs = Binary::get(op, Location::memOf(Location::regOf(8)), Location::memOf(Location::regOf(9)));
     appendAssignment(lhs, rhs, FloatType::get(128), addr, lrtl);
 }
 
@@ -1260,7 +1260,7 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrt
     // if (progOptions.fastInstr == false)
     if (0) // TODO: SETTINGS!, also this has no influence on tests ?
         return helperFuncLong(dest, addr, lrtl, name);
-    Exp *rhs;
+    SharedExp rhs;
     if (name == ".umul") {
         // %o0 * %o1
         rhs = Binary::get(opMult, Location::regOf(8), Location::regOf(9));
@@ -1301,7 +1301,7 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrt
         return false;
     }
     // Need to make an RTAssgn with %o0 = rhs
-    Exp *lhs = Location::regOf(8);
+    SharedExp lhs = Location::regOf(8);
     Assign *a = new Assign(lhs, rhs);
     // Create an RTL with this one Exp
     std::list<Instruction *> *lrt = new std::list<Instruction *>;
@@ -1325,18 +1325,18 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS ad
     std::list<Instruction *> *ls = new std::list<Instruction *>;
 #ifdef V9_ONLY
     // tmp[tmpl] = sgnex(32, 64, r8) op sgnex(32, 64, r9)
-    Statement *a = new Assign(64, Location::tempOf(new Const("tmpl")),
+    Statement *a = new Assign(64, Location::tempOf(Const::get("tmpl")),
                               Binary::get(op, // opMult or opMults
                                           new Ternary(opSgnEx, Const(32), Const(64), Location::regOf(8)),
                                           new Ternary(opSgnEx, Const(32), Const(64), Location::regOf(9))));
     ls->push_back(a);
     // r8 = truncs(64, 32, tmp[tmpl]);
     a = new Assign(32, Location::regOf(8),
-                   new Ternary(opTruncs, new Const(64), new Const(32), Location::tempOf(new Const("tmpl"))));
+                   new Ternary(opTruncs, Const::get(64), Const::get(32), Location::tempOf(Const::get("tmpl"))));
     ls->push_back(a);
     // r9 = r[tmpl]@32:63;
     a = new Assign(32, Location::regOf(9),
-                   new Ternary(opAt, Location::tempOf(new Const("tmpl")), new Const(32), new Const(63)));
+                   new Ternary(opAt, Location::tempOf(Const::get("tmpl")), Const::get(32), Const::get(63)));
     ls->push_back(a);
 #else
     // BTL: The .umul and .mul support routines are used in V7 code. We implsment these using the V8 UMUL and SMUL
@@ -1346,15 +1346,15 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS ad
     //        on V9 although the high-order bits are also written into the 32 high-order bits of the 64 bit r[rd].
 
     // r[tmp] = r8 op r9
-    Assign *a = new Assign(Location::tempOf(new Const(const_cast<char *>("tmp"))),
+    Assign *a = new Assign(Location::tempOf(Const::get(const_cast<char *>("tmp"))),
                            Binary::get(op, // opMult or opMults
                                        Location::regOf(8), Location::regOf(9)));
     ls->push_back(a);
     // r8 = r[tmp];     /* low-order bits */
-    a = new Assign(Location::regOf(8), Location::tempOf(new Const(const_cast<char *>("tmp"))));
+    a = new Assign(Location::regOf(8), Location::tempOf(Const::get(const_cast<char *>("tmp"))));
     ls->push_back(a);
     // r9 = %Y;         /* high-order bits */
-    a = new Assign(Location::regOf(8), new Unary(opMachFtr, new Const(const_cast<char *>("%Y"))));
+    a = new Assign(Location::regOf(8), Unary::get(opMachFtr, Const::get(const_cast<char *>("%Y"))));
     ls->push_back(a);
 #endif /* V9_ONLY */
     RTL *rtl = new RTL(addr, ls);
@@ -1365,8 +1365,8 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS ad
 //! This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
 bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, QString &name) {
     Q_UNUSED(dest);
-    Exp *rhs;
-    Exp *lhs;
+    SharedExp rhs;
+    SharedExp lhs;
     if (name == ".umul") {
         gen32op32gives64(opMult, lrtl, addr);
         return true;

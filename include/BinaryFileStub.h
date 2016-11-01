@@ -4,16 +4,16 @@ class BinaryFileStub : public LoaderInterface {
   public:
     BinaryFileStub(); // Constructor
     virtual ~BinaryFileStub() {}
-    virtual void UnLoad() {}                               // Unload the image
+    void UnLoad() override {}                               // Unload the image
     bool GetNextMember() { return false; }                 // Load next member of archive
     bool Open(const char */*sName*/) { return false; } // Open for r/w; pv
-    void Close() {}                                // Close file opened with Open()
-    LOAD_FMT GetFormat() const;                    // Get format (e.g. LOADFMT_ELF)
-    MACHINE getMachine() const;                    // Get machine (e.g. MACHINE_SPARC)
+    void Close() override {}                                // Close file opened with Open()
+    LOAD_FMT GetFormat() const override;                    // Get format (e.g. LOADFMT_ELF)
+    MACHINE getMachine() const override;                    // Get machine (e.g. MACHINE_SPARC)
     QString getFilename() const { return m_pFileName; }
     bool isLibrary() const;
-    ADDRESS getImageBase();
-    size_t getImageSize();
+    ADDRESS getImageBase() override;
+    size_t getImageSize() override;
 
     // Header functions
     virtual ADDRESS GetFirstHeaderAddress(); // Get ADDRESS of main header
@@ -23,12 +23,12 @@ class BinaryFileStub : public LoaderInterface {
     //
     // Internal information
     // Dump headers, etc
-    virtual bool DisplayDetails(const char *fileName, FILE *f = stdout);
+    bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
 
     // Analysis functions
     virtual std::list<SectionInfo *> &GetEntryPoints(const char *pEntry = "main");
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+    ADDRESS GetMainEntryPoint() override;
+    ADDRESS GetEntryPoint() override;
 
     // Get a map from ADDRESS to const char*. This map contains the native
     // addresses and symbolic names of global data items (if any) which are
@@ -50,8 +50,8 @@ class BinaryFileStub : public LoaderInterface {
 
     const char *m_pFileName; // Pointer to input file name
   protected:
-    virtual bool LoadFromMemory(const QByteArray &/*data*/) { return false; }
-    virtual bool PostLoad(void *handle);         // Called after loading archive member
+    bool LoadFromMemory(QByteArray &/*data*/) override { return false; }
+    bool PostLoad(void *handle) override;         // Called after loading archive member
 
   private:
 };

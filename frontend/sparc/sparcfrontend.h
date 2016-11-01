@@ -41,8 +41,8 @@ class SparcFrontEnd : public FrontEnd {
          */
     virtual bool processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, bool fragment = false, bool spec = false);
 
-    virtual std::vector<Exp *> &getDefaultParams();
-    virtual std::vector<Exp *> &getDefaultReturns();
+    virtual std::vector<SharedExp> &getDefaultParams();
+    virtual std::vector<SharedExp> &getDefaultReturns();
 
     virtual ADDRESS getMainEntryPoint(bool &gotMain);
 
@@ -74,7 +74,7 @@ class SparcFrontEnd : public FrontEnd {
     void emitNop(std::list<RTL *> *pRtls, ADDRESS uAddr);
     void emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr);
     unsigned fetch4(unsigned char *ptr);
-    void appendAssignment(Exp *lhs, Exp *rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl);
+    void appendAssignment(const SharedExp &lhs, const SharedExp &rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl);
     void quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op);
 
     bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl);

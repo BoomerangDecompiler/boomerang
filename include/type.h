@@ -52,6 +52,7 @@ class LowerType;
 class Exp;
 class XMLProgParser;
 class DataIntervalMap;
+using SharedExp = std::shared_ptr<Exp>;
 
 enum eType {
     eVoid,
@@ -156,7 +157,7 @@ public:
     bool operator*=(const Type &other) const {           // Consider only
         return id == other.id;
     } // broad type
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
     // Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
     virtual SharedType mergeWith(SharedType  /*other*/) const {
         assert(false);
@@ -232,7 +233,7 @@ public:
     virtual bool operator==(const Type &other) const;
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
 
@@ -247,22 +248,22 @@ protected:
 
 class FuncType : public Type {
 private:
-    Signature *signature;
+    std::shared_ptr<Signature> signature;
 
 public:
-    FuncType(Signature *sig = nullptr);
+    static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature> &sig = nullptr) { return std::make_shared<FuncType>(sig);}
+    FuncType(const std::shared_ptr<Signature> &sig = nullptr);
     virtual ~FuncType();
     virtual bool isFunc() const { return true; }
 
     virtual SharedType clone() const;
 
-    Signature *getSignature() { return signature; }
-    void setSignature(Signature *sig) { signature = sig; }
-    static std::shared_ptr<FuncType> get(Signature *sig = nullptr) { return std::make_shared<FuncType>(sig);}
+    Signature *getSignature() { return signature.get(); }
+    void setSignature(std::shared_ptr<Signature> &sig) { signature = sig; }
     virtual bool operator==(const Type &other) const;
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
 
@@ -298,7 +299,7 @@ public:
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const override;
     virtual SharedType mergeWith(SharedType other) const  override;
-    virtual Exp *match(SharedType pattern)  override;
+    virtual SharedExp match(SharedType pattern)  override;
 
     virtual size_t getSize() const override; // Get size in bits
     virtual void setSize(size_t sz)  override { size = sz; }
@@ -339,7 +340,7 @@ public:
     virtual bool operator==(const Type &other) const override;
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const override;
-    virtual Exp *match(SharedType pattern) override;
+    virtual SharedExp match(SharedType pattern) override;
 
     virtual size_t getSize() const override;
     virtual void setSize(size_t sz)  override { size = sz; }
@@ -366,7 +367,7 @@ public:
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
 
@@ -390,7 +391,7 @@ public:
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
 
@@ -425,7 +426,7 @@ public:
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
     virtual void setSize(size_t sz) { assert(sz == STD_SIZE); }
@@ -468,7 +469,7 @@ public:
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
 
@@ -505,7 +506,7 @@ public:
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
 
@@ -565,7 +566,7 @@ public:
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
 
@@ -621,7 +622,7 @@ public:
     virtual bool operator==(const Type &other) const;
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const;
-    virtual Exp *match(SharedType pattern);
+    virtual SharedExp match(SharedType pattern);
 
     virtual size_t getSize() const;
 

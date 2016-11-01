@@ -55,16 +55,16 @@ void CfgTest::testDominators() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(FRONTIER_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog(FRONTIER_PENTIUM);
-    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+    Prog prog(FRONTIER_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
     Type::clearNamedTypes();
-    prog->setFrontEnd(pFE);
-    pFE->decode(prog);
+    prog.setFrontEnd(pFE);
+    pFE->decode(&prog);
 
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != NO_ADDRESS);
-    Module *m = *prog->begin();
+    Module *m = *prog.begin();
     QVERIFY(m!=nullptr);
     QVERIFY(m->size()>0);
 
@@ -94,7 +94,6 @@ void CfgTest::testDominators() {
     QCOMPARE(actual_st,expect_st);
 
     pBF->deleteLater();
-    delete pFE;
 }
 
     /***************************************************************************/ /**
@@ -111,17 +110,17 @@ void CfgTest::testSemiDominators() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(SEMI_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog(SEMI_PENTIUM);
-    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+    Prog prog(SEMI_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
     Type::clearNamedTypes();
-    prog->setFrontEnd(pFE);
-    pFE->decode(prog);
+    prog.setFrontEnd(pFE);
+    pFE->decode(&prog);
 
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != NO_ADDRESS);
 
-    Module *m = *prog->begin();
+    Module *m = *prog.begin();
     QVERIFY(m!=nullptr);
     QVERIFY(m->size()>0);
 
@@ -156,7 +155,6 @@ void CfgTest::testSemiDominators() {
     for (ii = DFset.begin(); ii != DFset.end(); ii++)
         actual << df->nodeToBB(*ii)->getLowAddr() << " ";
     QCOMPARE(actual_st,expected_st);
-    delete pFE;
 }
 
 /***************************************************************************/ /**
@@ -167,13 +165,13 @@ void CfgTest::testPlacePhi() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(FRONTIER_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog(FRONTIER_PENTIUM);
-    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+    Prog prog(FRONTIER_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
     Type::clearNamedTypes();
-    prog->setFrontEnd(pFE);
-    pFE->decode(prog);
+    prog.setFrontEnd(pFE);
+    pFE->decode(&prog);
 
-    Module *m = *prog->begin();
+    Module *m = *prog.begin();
     QVERIFY(m!=nullptr);
     QVERIFY(m->size()>0);
 
@@ -182,13 +180,13 @@ void CfgTest::testPlacePhi() {
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     cfg->sortByAddress();
-    prog->finishDecode();
+    prog.finishDecode();
     DataFlow *df = pProc->getDataFlow();
     df->dominators(cfg);
     df->placePhiFunctions(pProc);
 
     // m[r29 - 8] (x for this program)
-    Exp *e = new Unary(opMemOf, new Binary(opMinus, Location::regOf(29), new Const(4)));
+    SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(4)));
 
     // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
     QString actual_st;
@@ -198,7 +196,6 @@ void CfgTest::testPlacePhi() {
     for (ii = A_phi.begin(); ii != A_phi.end(); ++ii)
         actual << *ii << " ";
     QCOMPARE(actual_st,QString("7 8 10 15 20 21 "));
-    delete pFE;
 }
 
 /***************************************************************************/ /**
@@ -209,20 +206,20 @@ void CfgTest::testPlacePhi2() {
     BinaryFileFactory bff;
     QObject *pBF = bff.Load(IFTHEN_PENTIUM);
     QVERIFY(pBF != 0);
-    Prog *prog = new Prog(IFTHEN_PENTIUM);
-    FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+    Prog prog(IFTHEN_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
     Type::clearNamedTypes();
-    prog->setFrontEnd(pFE);
-    pFE->decode(prog);
+    prog.setFrontEnd(pFE);
+    pFE->decode(&prog);
 
-    Module *m = *prog->begin();
+    Module *m = *prog.begin();
     QVERIFY(m!=nullptr);
     QVERIFY(m->size()>0);
 
     UserProc *pProc = (UserProc *)(*m->begin());
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog->finishDecode();
+    prog.finishDecode();
 
     Cfg *cfg = pProc->getCFG();
     cfg->sortByAddress();
@@ -256,7 +253,7 @@ void CfgTest::testPlacePhi2() {
     QString actual_st;
     QTextStream actual(&actual_st);
     // m[r29 - 8]
-    Exp *e = new Unary(opMemOf, new Binary(opMinus, Location::regOf(29), new Const(8)));
+    SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(8)));
     std::set<int> &s = df->getA_phi(e);
     std::set<int>::iterator pp;
     for (pp = s.begin(); pp != s.end(); pp++)
@@ -268,19 +265,17 @@ void CfgTest::testPlacePhi2() {
         BBTYPE expectedType = BBTYPE::CALL;
         QCOMPARE(actualType, expectedType);
     }
-    delete e;
 
     expected = "";
     QString actual_st2;
     QTextStream actual2(&actual_st2);
     // m[r29 - 12]
-    e = new Unary(opMemOf, new Binary(opMinus, Location::regOf(29), new Const(12)));
+    e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(12)));
 
     std::set<int> &s2 = df->getA_phi(e);
     for (pp = s2.begin(); pp != s2.end(); pp++)
         actual2 << *pp << " ";
     QCOMPARE(actual_st2,expected);
-    delete e;
     delete pFE;
 }
 

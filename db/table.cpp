@@ -25,10 +25,10 @@ TABLE_TYPE Table::getType() const { return TableType; }
 
 OpTable::OpTable(const std::deque<QString> &ops) : Table(ops, OPTABLE) {}
 
-ExprTable::ExprTable(const std::deque<Exp *> &exprs) : Table(EXPRTABLE), expressions(exprs) {}
+ExprTable::ExprTable(const std::deque<SharedExp> &exprs) : Table(EXPRTABLE), expressions(exprs) {}
 
 ExprTable::~ExprTable(void) {
-    std::deque<Exp *>::iterator loc;
-    for (loc = expressions.begin(); loc != expressions.end(); ++loc)
-        delete (*loc);
+//    std::deque<SharedExp>::iterator loc;
+//    for (loc = expressions.begin(); loc != expressions.end(); ++loc)
+//        delete (*loc);
 }

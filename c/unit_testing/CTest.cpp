@@ -18,7 +18,7 @@ void CTest::testSignature() {
     AnsiCParser *p = new AnsiCParser(os, false);
     p->yyparse(PLAT_PENTIUM, CONV_C);
     QCOMPARE(p->signatures.size(),size_t(1));
-    Signature *sig = p->signatures.front();
+    auto sig = p->signatures.front();
     QCOMPARE(sig->getName(),QString("printf"));
     // The functions have two return parameters :
     // 0 - ESP
@@ -32,7 +32,6 @@ void CTest::testSignature() {
     QVERIFY(*sig->getParamType(0) == *t);
     QCOMPARE(sig->getParamName(0),QString("fmt"));
     QVERIFY(sig->hasEllipsis());
-    delete sig;
     delete p;
 }
 QTEST_MAIN(CTest)

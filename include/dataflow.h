@@ -60,22 +60,22 @@ class DataFlow {
      * Inserting phi-functions
      */
     // Array of sets of locations defined in BB n
-    std::vector<std::set<Exp *, lessExpStar>> A_orig;
+    std::vector<std::set<SharedExp , lessExpStar>> A_orig;
     // Map from expression to set of block numbers
-    std::map<Exp *, std::set<int>, lessExpStar> defsites;
+    std::map<SharedExp , std::set<int>, lessExpStar> defsites;
     // Set of block numbers defining all variables
     std::set<int> defallsites;
     // Array of sets of BBs needing phis
-    std::map<Exp *, std::set<int>, lessExpStar> A_phi;
+    std::map<SharedExp , std::set<int>, lessExpStar> A_phi;
     // A Boomerang requirement: Statements defining particular subscripted locations
-    std::map<Exp *, Instruction *, lessExpStar> defStmts;
+    std::map<SharedExp , Instruction *, lessExpStar> defStmts;
 
     /*
      * Renaming variables
      */
     // The stack which remembers the last definition of an expression.
     // A map from expression (Exp*) to a stack of (pointers to) Statements
-    std::map<Exp *, std::deque<Instruction *>, lessExpStar> Stacks;
+    std::map<SharedExp , std::deque<Instruction *>, lessExpStar> Stacks;
 
     // Initially false, meaning that locals and parameters are not renamed and hence not propagated.
     // When true, locals and parameters can be renamed if their address does not escape the local procedure.
@@ -100,11 +100,11 @@ class DataFlow {
     bool doesDominate(int n, int w);
     void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
     bool canRenameLocalsParams() { return renameLocalsAndParams; }
-    bool canRename(Exp *e, UserProc *proc);
+    bool canRename(SharedExp e, UserProc *proc);
     void convertImplicits(Cfg *cfg);
     // Find the locations used by a live, dominating phi-function. Also removes dead phi-funcions
     void findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
-                          std::map<Exp *, PhiAssign *, lessExpStar> &defdByPhi);
+                          std::map<SharedExp , PhiAssign *, lessExpStar> &defdByPhi);
     void setDominanceNums(int n, int &currNum); // Set the dominance statement number
     void clearA_phi() { A_phi.clear(); }
 
@@ -114,7 +114,7 @@ class DataFlow {
     BasicBlock *nodeToBB(size_t node) { return BBs[node]; }
     int getIdom(size_t node) { return idom[node]; }
     int getSemi(size_t node) { return semi[node]; }
-    std::set<int> &getA_phi(Exp *e) { return A_phi[e]; }
+    std::set<int> &getA_phi(SharedExp e) { return A_phi[e]; }
 
     // For debugging:
     void dumpStacks();
@@ -174,23 +174,23 @@ class DefCollector {
     iterator end() { return defs.end(); }
     const_iterator begin() const { return defs.begin(); }
     const_iterator end() const { return defs.end(); }
-    bool existsOnLeft(Exp *e) { return defs.definesLoc(e); }
+    bool existsOnLeft(SharedExp e) { return defs.definesLoc(e); }
 
     /*
      * Update the definitions with the current set of reaching definitions
      * proc is the enclosing procedure
      */
-    void updateDefs(std::map<Exp *, std::deque<Instruction *>, lessExpStar> &Stacks, UserProc *proc);
+    void updateDefs(std::map<SharedExp , std::deque<Instruction *>, lessExpStar> &Stacks, UserProc *proc);
 
     /**
      * Find the definition for a location. If not found, return nullptr
      */
-    Exp *findDefFor(Exp *e);
+    SharedExp findDefFor(SharedExp e);
 
     /**
      * Search and replace all occurrences
      */
-    void searchReplaceAll(const Exp &from, Exp *to, bool &change);
+    void searchReplaceAll(const Exp &from, SharedExp to, bool &change);
 }; // class DefCollector
 
 /**
@@ -236,7 +236,7 @@ class UseCollector {
     /*
      * Insert a new member
      */
-    void insert(Exp *e) { locs.insert(e); }
+    void insert(SharedExp e) { locs.insert(e); }
     void print(QTextStream &os, bool html = false) const;
     char *prints() const;
     void dump();
@@ -247,7 +247,7 @@ class UseCollector {
     typedef LocationSet::iterator iterator;
     iterator begin() { return locs.begin(); }
     iterator end() { return locs.end(); }
-    bool exists(Exp *e) { return locs.exists(e); } // True if e is in the collection
+    bool exists(SharedExp e) { return locs.exists(e); } // True if e is in the collection
     LocationSet &getLocSet() { return locs; }
 
   public:
@@ -255,7 +255,7 @@ class UseCollector {
      * Add a new use from Statement u
      */
     void updateLocs(Instruction *u);
-    void remove(Exp *loc) { // Remove the given location
+    void remove(SharedExp loc) { // Remove the given location
         locs.remove(loc);
     }
     void remove(iterator it) { // Remove the current location

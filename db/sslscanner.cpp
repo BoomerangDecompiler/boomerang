@@ -343,18 +343,18 @@ static void yyunput YY_PROTO((YY_SSLScanner_CHAR c, YY_SSLScanner_CHAR * buf_ptr
 #else
 /* c++ */
 #ifndef YY_SSLScanner_ECHO_NOCODE
-void YY_SSLScanner_CLASS::yy___echo() { YY_SSLScanner_ECHO_CODE }
+void SSLScanner::yy___echo() { YY_SSLScanner_ECHO_CODE }
 #endif
 #ifndef YY_SSLScanner_INPUT_NOCODE
-int YY_SSLScanner_CLASS::yy___input(char *buffer, int &result, int max_size) { YY_SSLScanner_INPUT_CODE }
+int SSLScanner::yy___input(char *buffer, int &result, int max_size) { YY_SSLScanner_INPUT_CODE }
 #endif
 #ifndef YY_SSLScanner_FATAL_ERROR_NOCODE
-void YY_SSLScanner_CLASS::yy___fatal_error(char *msg) { YY_SSLScanner_FATAL_ERROR_CODE }
+void SSLScanner::yy___fatal_error(char *msg) { YY_SSLScanner_FATAL_ERROR_CODE }
 #endif
 #ifndef YY_SSLScanner_WRAP_NOCODE
-int YY_SSLScanner_CLASS::yy___wrap() { YY_SSLScanner_WRAP_CODE }
+int SSLScanner::yy___wrap() { YY_SSLScanner_WRAP_CODE }
 #endif
-void YY_SSLScanner_CLASS::yy_initialize() {
+void SSLScanner::yy_initialize() {
     yy___in = 0;
     yy___out = 0;
     yy_init = 1;
@@ -371,11 +371,11 @@ void YY_SSLScanner_CLASS::yy_initialize() {
 #endif
 }
 
-YY_SSLScanner_CLASS::YY_SSLScanner_CLASS(YY_SSLScanner_CONSTRUCTOR_PARAM) YY_SSLScanner_CONSTRUCTOR_INIT {
+SSLScanner::SSLScanner(YY_SSLScanner_CONSTRUCTOR_PARAM) YY_SSLScanner_CONSTRUCTOR_INIT {
     yy_initialize();
     YY_SSLScanner_CONSTRUCTOR_CODE;
 }
-YY_SSLScanner_CLASS::~YY_SSLScanner_CLASS() {
+SSLScanner::~SSLScanner() {
     YY_SSLScanner_DESTRUCTOR_CODE;
     if (YY_SSLScanner_CURRENT_BUFFER)
         YY_SSLScanner_DELETE_BUFFER(YY_SSLScanner_CURRENT_BUFFER);
@@ -630,7 +630,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM) YY_SSLScanne
 YY_DECL
 #endif
 #else
-YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM)
+YY_SSLScanner_LEX_RETURN SSLScanner::YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM)
 
 #endif
 {
@@ -1421,7 +1421,7 @@ YY_SSLScanner_LEX_RETURN YY_SSLScanner_CLASS::YY_SSLScanner_LEX(YY_SSLScanner_LE
 #ifndef YY_USE_CLASS
 static int yy_get_next_buffer()
 #else
-int YY_SSLScanner_CLASS::yy_get_next_buffer()
+int SSLScanner::yy_get_next_buffer()
 #endif
 {
     YY_SSLScanner_CHAR *dest = YY_SSLScanner_CURRENT_BUFFER->yy_ch_buf;
@@ -1494,7 +1494,7 @@ int YY_SSLScanner_CLASS::yy_get_next_buffer()
 #ifndef YY_USE_CLASS
 static yy_state_type yy_get_previous_state()
 #else
-long YY_SSLScanner_CLASS::yy_get_previous_state_()
+long SSLScanner::yy_get_previous_state_()
 #endif
 {
     yy_state_type yy_current_state;
@@ -1539,7 +1539,7 @@ static yy_state_type yy_try_NUL_trans(yy_state_type yy_current_state)
 static yy_state_type yy_try_NUL_trans(yy_current_state) register yy_state_type yy_current_state;
 #endif
 #else
-long YY_SSLScanner_CLASS::yy_try_NUL_trans_(long yy_current_state_)
+long SSLScanner::yy_try_NUL_trans_(long yy_current_state_)
 #endif
 {
 #ifndef YY_USE_CLASS
@@ -1575,7 +1575,7 @@ static void yyunput(c, yy_bp) YY_SSLScanner_CHAR c;
 YY_SSLScanner_CHAR *yy_bp;
 #endif
 #else
-void YY_SSLScanner_CLASS::yyunput(YY_SSLScanner_CHAR c, YY_SSLScanner_CHAR *yy_bp)
+void SSLScanner::yyunput(YY_SSLScanner_CHAR c, YY_SSLScanner_CHAR *yy_bp)
 #endif
 {
     YY_SSLScanner_CHAR *yy_cp = yy_c_buf_p;
@@ -1618,7 +1618,7 @@ static int yyinput()
 static int input()
 #endif
 #else
-int YY_SSLScanner_CLASS::input()
+int SSLScanner::input()
 #endif
 {
     int c;
@@ -1670,7 +1670,7 @@ int YY_SSLScanner_CLASS::input()
                 YY_FATAL_ERROR("unexpected last match in input()");
 #endif
 #else
-                YY_FATAL_ERROR("unexpected last match in YY_SSLScanner_CLASS::input()");
+                YY_FATAL_ERROR("unexpected last match in SSLScanner::input()");
 #endif
             }
         }
@@ -1689,7 +1689,7 @@ void YY_SSLScanner_RESTART(YY_SSLScanner_IFILE *input_file)
 void YY_SSLScanner_RESTART(input_file) YY_SSLScanner_IFILE *input_file;
 #endif
 #else
-void YY_SSLScanner_CLASS::YY_SSLScanner_RESTART(YY_SSLScanner_IFILE *input_file)
+void SSLScanner::YY_SSLScanner_RESTART(YY_SSLScanner_IFILE *input_file)
 #endif
 {
     YY_SSLScanner_INIT_BUFFER(YY_SSLScanner_CURRENT_BUFFER, input_file);
@@ -1703,7 +1703,7 @@ void YY_SSLScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer)
 void YY_SSLScanner_SWITCH_TO_BUFFER(new_buffer) YY_BUFFER_STATE new_buffer;
 #endif
 #else
-void YY_SSLScanner_CLASS::YY_SSLScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer)
+void SSLScanner::YY_SSLScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer)
 #endif
 {
     if (YY_SSLScanner_CURRENT_BUFFER == new_buffer)
@@ -1734,7 +1734,7 @@ void YY_SSLScanner_LOAD_BUFFER_STATE(void)
 void YY_SSLScanner_LOAD_BUFFER_STATE()
 #endif
 #else
-void YY_SSLScanner_CLASS::YY_SSLScanner_LOAD_BUFFER_STATE()
+void SSLScanner::YY_SSLScanner_LOAD_BUFFER_STATE()
 #endif
 {
     yy_n_chars = YY_SSLScanner_CURRENT_BUFFER->yy_n_chars;
@@ -1751,7 +1751,7 @@ YY_BUFFER_STATE YY_SSLScanner_CREATE_BUFFER(file, size) YY_SSLScanner_IFILE *fil
 int size;
 #endif
 #else
-YY_BUFFER_STATE YY_SSLScanner_CLASS::YY_SSLScanner_CREATE_BUFFER(YY_SSLScanner_IFILE *file, int size)
+YY_BUFFER_STATE SSLScanner::YY_SSLScanner_CREATE_BUFFER(YY_SSLScanner_IFILE *file, int size)
 #endif
 {
     YY_BUFFER_STATE b;
@@ -1783,7 +1783,7 @@ void YY_SSLScanner_DELETE_BUFFER(YY_BUFFER_STATE b)
 void YY_SSLScanner_DELETE_BUFFER(b) YY_BUFFER_STATE b;
 #endif
 #else
-void YY_SSLScanner_CLASS::YY_SSLScanner_DELETE_BUFFER(YY_BUFFER_STATE b)
+void SSLScanner::YY_SSLScanner_DELETE_BUFFER(YY_BUFFER_STATE b)
 #endif
 {
     if (b == YY_SSLScanner_CURRENT_BUFFER)
@@ -1801,7 +1801,7 @@ void YY_SSLScanner_INIT_BUFFER(b, file) YY_BUFFER_STATE b;
 YY_SSLScanner_IFILE *file;
 #endif
 #else
-void YY_SSLScanner_CLASS::YY_SSLScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_SSLScanner_IFILE *file)
+void SSLScanner::YY_SSLScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_SSLScanner_IFILE *file)
 #endif
 {
     b->yy_input_file = file;

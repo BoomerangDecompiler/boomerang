@@ -25,6 +25,7 @@ struct DecodeResult;
 class PentiumDecoder : public NJMCDecoder {
   public:
     PentiumDecoder(Prog *prog);
+    virtual ~PentiumDecoder() = default;
     virtual DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta);
     virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta);
 
@@ -33,9 +34,9 @@ class PentiumDecoder : public NJMCDecoder {
      * Various functions to decode the operands of an instruction into
      * a SemStr representation.
      */
-    Exp *dis_Eaddr(ADDRESS pc, int size = 0);
-    Exp *dis_Mem(ADDRESS ps);
-    Exp *addReloc(Exp *e);
+    SharedExp dis_Eaddr(ADDRESS pc, int size = 0);
+    SharedExp dis_Mem(ADDRESS ps);
+    SharedExp addReloc(const SharedExp &e);
 
     bool isFuncPrologue(ADDRESS hostPC);
 

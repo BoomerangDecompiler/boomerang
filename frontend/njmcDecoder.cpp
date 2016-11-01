@@ -49,35 +49,28 @@ NJMCDecoder::NJMCDecoder(Prog *prg) : prog(prg),Image(Boomerang::get()->getImage
   * \param   ... - Semantic String ptrs representing actual operands
   * \returns an instantiated list of Exps
   ******************************************************************************/
-std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name, ...) {
+std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name, const std::initializer_list<SharedExp> &args) {
     // Get the signature of the instruction and extract its parts
     std::pair<QString, unsigned> sig = RTLDict.getSignature(name);
     QString opcode = sig.first;
     unsigned numOperands = sig.second;
-
+    //assert(numOperands==args.size());
     // Put the operands into a vector
-    std::vector<Exp *> actuals(numOperands);
-    va_list args;
-    va_start(args, name);
-    for (unsigned i = 0; i < numOperands; i++)
-        actuals[i] = va_arg(args, Exp *);
-    va_end(args);
+    std::vector<SharedExp> actuals(args);
 
     if (DEBUG_DECODER) {
         QTextStream q_cout(stdout);
         // Display a disassembly of this instruction if requested
         q_cout << pc << ": " << name << " ";
-        for (std::vector<Exp *>::iterator itd = actuals.begin(); itd != actuals.end(); itd++) {
-            if ((*itd)->isIntConst()) {
-                int val = ((Const *)(*itd))->getInt();
+        for (const SharedExp & itd : actuals) {
+            if (itd->isIntConst()) {
+                int val = itd->subExp<Const>()->getInt();
                 if (val > 100 || val < -100)
                     q_cout << "0x" << QString::number(val,16);
                 else
                     q_cout << val;
             } else
-                (*itd)->print(q_cout);
-            if (itd != actuals.end() - 1)
-                q_cout << ", ";
+                itd->print(q_cout);
         }
         q_cout << '\n';
     }
@@ -95,7 +88,7 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
   *          ... - Exp* representing actual operands
   * \returns an instantiated list of Exps
   ******************************************************************************/
-Exp *NJMCDecoder::instantiateNamedParam(char *name, ...) {
+SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_list<SharedExp> &args) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
         LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
         return nullptr;
@@ -108,13 +101,11 @@ Exp *NJMCDecoder::instantiateNamedParam(char *name, ...) {
     }
     // Start with the RHS
     assert(ent.asgn->getKind() == STMT_ASSIGN);
-    Exp *result = ((Assign *)ent.asgn)->getRight()->clone();
-
-    va_list args;
-    va_start(args, name);
+    SharedExp result = ((Assign *)ent.asgn)->getRight()->clone();
+    auto arg_iter=args.begin();
     for (auto &elem : ent.params) {
         Location formal(opParam, Const::get(elem), nullptr);
-        Exp *actual = va_arg(args, Exp *);
+        SharedExp actual = *arg_iter++;
         bool change;
         result = result->searchReplaceAll(formal, actual, change);
     }
@@ -132,7 +123,7 @@ Exp *NJMCDecoder::instantiateNamedParam(char *name, ...) {
   * \param   ... - Exp* representing actual operands
   * \returns an instantiated list of Exps
   ******************************************************************************/
-void NJMCDecoder::substituteCallArgs(char *name, Exp **exp, ...) {
+void NJMCDecoder::substituteCallArgs(char *name, SharedExp*exp, const std::initializer_list<SharedExp> &args) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
         LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
         return;
@@ -142,12 +133,10 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp **exp, ...) {
                 LOG_STREAM() << "Attempt to instantiate expressionless parameter '" << name << "'\n";
                 return;
         }*/
-
-    va_list args;
-    va_start(args, exp);
+    auto arg_iter=args.begin();
     for (auto &elem : ent.funcParams) {
         Location formal(opParam, Const::get(elem), nullptr);
-        Exp *actual = va_arg(args, Exp *);
+        SharedExp actual = *arg_iter++;
         bool change;
         *exp = (*exp)->searchReplaceAll(formal, actual, change);
     }
@@ -175,9 +164,8 @@ void DecodeResult::reset() {
   * \param   regNum - the register number, e.g. 0 for eax
   * \returns the Exp* for the register NUMBER (e.g. "int 36" for %f4)
   ******************************************************************************/
-Exp *NJMCDecoder::dis_Reg(int regNum) {
-    Exp *expr = Location::regOf(regNum);
-    return expr;
+SharedExp NJMCDecoder::dis_Reg(int regNum) {
+    return Location::regOf(regNum);
 }
 
 /***************************************************************************/ /**
@@ -185,9 +173,8 @@ Exp *NJMCDecoder::dis_Reg(int regNum) {
   * \param        num - a number
   * \returns             the Exp* representation of the given number
   ******************************************************************************/
-Exp *NJMCDecoder::dis_Num(unsigned num) {
-    Exp *expr = new Const(num); // TODO: what about signed values ?
-    return expr;
+SharedExp NJMCDecoder::dis_Num(unsigned num) {
+    return Const::get(num); // TODO: what about signed values ?
 }
 
 /***************************************************************************/ /**
@@ -220,7 +207,7 @@ void NJMCDecoder::unconditionalJump(const char *name, int size, ADDRESS relocd, 
   * \param   stmts list of statements (?)
   * \param   result ref to decoder result object
   ******************************************************************************/
-void NJMCDecoder::computedJump(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
+void NJMCDecoder::computedJump(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
                                DecodeResult &result) {
     result.rtl = new RTL(pc, stmts);
     result.numBytes = size;
@@ -240,7 +227,7 @@ void NJMCDecoder::computedJump(const char *name, int size, Exp *dest, ADDRESS pc
   * \param   stmts list of statements (?)
   * \param   result ref to decoder result object
   ******************************************************************************/
-void NJMCDecoder::computedCall(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
+void NJMCDecoder::computedCall(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
                                DecodeResult &result) {
     result.rtl = new RTL(pc, stmts);
     result.numBytes = size;

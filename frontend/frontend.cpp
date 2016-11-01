@@ -203,7 +203,7 @@ void FrontEnd::checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, 
     assert(ty->isFunc());
     UserProc *proc = (UserProc *)Program->setNewProc(addr);
     assert(proc);
-    Signature *sig = ty->as<FuncType>()->getSignature()->clone();
+    auto sig = ty->as<FuncType>()->getSignature()->clone();
     const IBinarySymbol *p_sym  = BinarySymbols->find(addr);
     QString sym = p_sym ? p_sym->getName() : QString("");
     if (!sym.isEmpty())
@@ -423,20 +423,16 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     ifs.close();
 }
 
-Signature *FrontEnd::getDefaultSignature(const QString &name) {
-    Signature *signature = nullptr;
+std::shared_ptr<Signature> FrontEnd::getDefaultSignature(const QString &name) {
     // Get a default library signature
     if (isWin32())
-        signature = Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name);
-    else {
-        signature = Signature::instantiate(getFrontEndId(), CONV_C, name);
-    }
-    return signature;
+        return Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name);
+    return Signature::instantiate(getFrontEndId(), CONV_C, name);
 }
 
 // get a library signature by name
-Signature *FrontEnd::getLibSignature(const QString &name) {
-    Signature *signature;
+std::shared_ptr<Signature> FrontEnd::getLibSignature(const QString &name) {
+    std::shared_ptr<Signature> signature;
     // Look up the name in the librarySignatures map
     auto it = LibrarySignatures.find(name);
     if (it == LibrarySignatures.end()) {
@@ -474,10 +470,10 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
         *ss = call;
     }
 }
-bool FrontEnd::refersToImportedFunction(Exp *pDest)
+bool FrontEnd::refersToImportedFunction(const SharedExp &pDest)
 {
-    if(pDest && pDest->getOper() == opMemOf && pDest->getSubExp1()->getOper() == opIntConst) {
-        auto symbol = BinarySymbols->find(((Const *)pDest->getSubExp1())->getAddr());
+    if(pDest && pDest->getOper() == opMemOf && pDest->subExp<Exp,1>()->getOper() == opIntConst) {
+        auto symbol = BinarySymbols->find(pDest->subExp<Const,1>()->getAddr());
         if(symbol && symbol->isImportedFunction())
             return true;
     }
@@ -632,7 +628,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                     const QString &nam(refHints[pRtl->getAddress()]);
                     ADDRESS gu = Program->getGlobalAddr(nam);
                     if (gu != NO_ADDRESS) {
-                        s->searchAndReplace(Const(gu), new Unary(opAddrOf, Location::global(nam, pProc)));
+                        s->searchAndReplace(Const(gu), Unary::get(opAddrOf, Location::global(nam, pProc)));
                     }
                 }
                 s->simplify();
@@ -678,7 +674,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                 }
 
                 case STMT_CASE: {
-                    Exp *pDest = stmt_jump->getDest();
+                    SharedExp pDest = stmt_jump->getDest();
                     if (pDest == nullptr) { // Happens if already analysed (now redecoding)
                         // SWITCH_INFO* psi = ((CaseStatement*)stmt_jump)->getSwitchInfo();
                         BB_rtls->push_back(pRtl);
@@ -693,7 +689,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         LOG_VERBOSE(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
                         // jump to a library function
                         // replace with a call ret
-                        auto *sym = BinarySymbols->find(((Const *)pDest->getSubExp1())->getAddr());
+                        auto *sym = BinarySymbols->find(pDest->subExp<Const,1>()->getAddr());
                         assert(sym==nullptr);
                         QString func = sym->getName();
                         CallStatement *call = new CallStatement;
@@ -732,7 +728,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus &&
                             pDest->getSubExp1()->getSubExp2()->isIntConst()) {
                             // assume subExp2 is a jump table
-                            ADDRESS jmptbl = ((Const *)pDest->getSubExp1()->getSubExp2())->getAddr();
+                            ADDRESS jmptbl = pDest->subExp<Const,1,2>()->getAddr();
                             unsigned int i;
                             for (i = 0;; i++) {
                                 ADDRESS uDest = ADDRESS::g(Image->readNative4(jmptbl + i * 4));
@@ -785,7 +781,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                     // Check for a dynamic linked library function
                     if (refersToImportedFunction(call->getDest())) {
                         // Dynamic linked proc pointers are treated as static.
-                        ADDRESS linked_addr = ((Const *)call->getDest()->getSubExp1())->getAddr();
+                        ADDRESS linked_addr = call->getDest()->subExp<Const,1>()->getAddr();
                         QString nam = BinarySymbols->find(linked_addr)->getName();
                         Function *p = pProc->getProg()->getLibraryProc(nam);
                         call->setDestProc(p);
@@ -814,7 +810,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                                     if ( nullptr!=stmt_jump &&
                                         refersToImportedFunction(stmt_jump->getDest())) { // Is it an "DynamicLinkedProcPointer"?
                                         // Yes, it's a library function. Look up it's name.
-                                        ADDRESS a = ((Const *)stmt_jump->getDest()->getSubExp1())->getAddr();
+                                        ADDRESS a = stmt_jump->getDest()->subExp<Const,1>()->getAddr();
                                         QString nam = BinarySymbols->find(a)->getName();
                                         // Assign the proc to the call
                                         Function *p = pProc->getProg()->getLibraryProc(nam);
@@ -824,7 +820,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                                         }
                                         call->setDestProc(p);
                                         call->setIsComputed(false);
-                                        call->setDest(Location::memOf(new Const(a)));
+                                        call->setDest(Location::memOf(Const::get(a)));
                                     }
                                 }
                             }
@@ -881,7 +877,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         // invalid instructions, and getting invalid stack height errors
                         QString name = Program->symbolByAddress(uNewAddr);
                         if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
-                            ADDRESS a = ((Const *)call->getDest()->getSubExp1())->getAddr();
+                            ADDRESS a = call->getDest()->subExp<Const,1>()->getAddr();
                             name = BinarySymbols->find(a)->getName();
                         }
                         if (!name.isEmpty() && noReturnCallDest(name)) {

@@ -68,7 +68,6 @@ ElfBinaryFile::ElfBinaryFile() : next_extern(ADDRESS::g(0L)) {
 ElfBinaryFile::~ElfBinaryFile() {
     // Delete the array of import stubs
     delete  []m_pImportStubs;
-    delete  []m_pImage;
     delete  []m_sh_link;
     delete  []m_sh_info;
 }

@@ -103,23 +103,22 @@ public:
      */
     virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) = 0;
     RTLInstDict &getRTLDict() { return RTLDict; }
-    void computedJump(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
+    void computedJump(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
                       DecodeResult &result);
-    void computedCall(const char *name, int size, Exp *dest, ADDRESS pc, std::list<Instruction *> *stmts,
+    void computedCall(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
                       DecodeResult &result);
     Prog *getProg() { return prog; }
 
 protected:
-    std::list<Instruction *> *instantiate(ADDRESS pc, const char *name, ...);
+    std::list<Instruction *> *instantiate(ADDRESS pc, const char *name, const std::initializer_list<SharedExp> &args={});
 
-    Exp *instantiateNamedParam(char *name, ...);
-
-    void substituteCallArgs(char *name, Exp **exp, ...);
+    SharedExp instantiateNamedParam(char *name, const std::initializer_list<SharedExp> &args);
+    void substituteCallArgs(char *name, SharedExp * exp, const std::initializer_list<SharedExp> &args);
     void unconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
                            std::list<Instruction *> *stmts, DecodeResult &result);
 
-    Exp *dis_Num(unsigned num);
-    Exp *dis_Reg(int regNum);
+    SharedExp dis_Num(unsigned num);
+    SharedExp dis_Reg(int regNum);
 
     // Public dictionary of instruction patterns, and other information summarised from the SSL file
     // (e.g. source machine's endianness)

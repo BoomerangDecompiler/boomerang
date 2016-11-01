@@ -15,7 +15,7 @@ Log &Log::operator<<(const Instruction *s) {
     return *this;
 }
 
-Log &Log::operator<<(const Exp *e) {
+Log &Log::operator<<(const SharedConstExp &e) {
     QString tgt;
     QTextStream st(&tgt);
     e->print(st);

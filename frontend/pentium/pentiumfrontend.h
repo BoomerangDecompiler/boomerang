@@ -23,8 +23,8 @@ class PentiumFrontEnd : public FrontEnd {
 
     virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
 
-    virtual std::vector<Exp *> &getDefaultParams();
-    virtual std::vector<Exp *> &getDefaultReturns();
+    virtual std::vector<SharedExp> &getDefaultParams();
+    virtual std::vector<SharedExp> &getDefaultReturns();
 
     virtual ADDRESS getMainEntryPoint(bool &gotMain);
 
@@ -37,12 +37,12 @@ class PentiumFrontEnd : public FrontEnd {
     /*
          * Emit a set instruction.
          */
-    void emitSet(std::list<RTL *> *pRtls, std::list<RTL *>::iterator &itRtl, ADDRESS uAddr, Exp *pLHS, Exp *cond);
+    void emitSet(std::list<RTL *> *pRtls, std::list<RTL *>::iterator &itRtl, ADDRESS uAddr, SharedExp pLHS, SharedExp cond);
 
     /*
          * Handle the case of being in state 23 and encountering a set instruction.
          */
-    void State25(Exp *pLHS, Exp *pRHS, std::list<RTL *> *pRtls, std::list<RTL *>::iterator &rit, ADDRESS uAddr);
+    void State25(SharedExp pLHS, SharedExp pRHS, std::list<RTL *> *pRtls, std::list<RTL *>::iterator &rit, ADDRESS uAddr);
 
     int idPF; // Parity flag
 
@@ -62,7 +62,7 @@ class PentiumFrontEnd : public FrontEnd {
     bool isDecAh(RTL *r);
     bool isSetX(Instruction *s);
     bool isAssignFromTern(Instruction *s);
-    void bumpRegisterAll(Exp *e, int min, int max, int delta, int mask);
+    void bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask);
     unsigned fetch4(unsigned char *ptr);
     bool decodeSpecial(ADDRESS pc, DecodeResult &r);
     bool decodeSpecial_out(ADDRESS pc, DecodeResult &r);

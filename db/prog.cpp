@@ -183,14 +183,14 @@ void Prog::generateDotFile() {
 
 void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, HLLCode *code)
 {
-    code->AddGlobal("start_" + section_name, IntegerType::get(32, -1), new Const(section_start));
-    code->AddGlobal(section_name + "_size", IntegerType::get(32, -1), new Const(size ? size : (unsigned int)-1));
-    Exp *l = new Terminal(opNil);
+    code->AddGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
+    code->AddGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
+    auto l = Terminal::get(opNil);
     for (unsigned int i = 0; i < size; i++) {
         int n = Image->readNative1(section_start + size - 1 - i);
         if (n < 0)
             n = 256 + n;
-        l = Binary::get(opList, new Const(n), l);
+        l = Binary::get(opList, Const::get(n), l);
     }
     code->AddGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
 }
@@ -223,13 +223,13 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) {
 
                 }
                 code->AddGlobal("source_endianness", IntegerType::get(STD_SIZE),
-                                new Const(getFrontEndId() != PLAT_PENTIUM));
+                                Const::get(getFrontEndId() != PLAT_PENTIUM));
                 (*os) << "#include \"boomerang.h\"\n\n";
                 global = true;
             }
             for (Global *elem : globals) {
                 // Check for an initial value
-                Exp *e = elem->getInitialValue(this);
+                auto e = elem->getInitialValue(this);
                 //                if (e) {
                 code->AddGlobal(elem->getName(), elem->getType(), e);
                 global = true;
@@ -354,8 +354,7 @@ void Prog::generateCode(QTextStream &os) {
     HLLCode *code = Boomerang::get()->getHLLCode();
     for (Global *glob : globals) {
         // Check for an initial value
-        Exp *e = nullptr;
-        e = glob->getInitialValue(this);
+        auto e = glob->getInitialValue(this);
         if (e)
             code->AddGlobal(glob->getName(), glob->getType(), e);
     }
@@ -569,7 +568,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
             assert(pSymInfo->Register == 8); // ebp
             proc->getSignature()->addParameter(
                         ty, pSymInfo->Name,
-                        Location::memOf(Binary::get(opPlus, Location::regOf(28), new Const((int)pSymInfo->Address - 4))));
+                        Location::memOf(Binary::get(opPlus, Location::regOf(28), Const::get((int)pSymInfo->Address - 4))));
         } else if (pSymInfo->Flags & SYMFLAG_REGISTER) {
             proc->getSignature()->addParameter(ty, pSymInfo->Name, Location::regOf(debugRegister(pSymInfo->Register)));
         }
@@ -578,7 +577,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
         assert(pSymInfo->Flags & SYMFLAG_REGREL);
         assert(pSymInfo->Register == 8);
         Exp *memref =
-                Location::memOf(Binary::get(opMinus, Location::regOf(28), new Const(-((int)pSymInfo->Address - 4))));
+                Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(-((int)pSymInfo->Address - 4))));
         SharedType ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
         u->addLocal(ty, pSymInfo->Name, memref);
     }
@@ -665,11 +664,17 @@ LibProc *Prog::getLibraryProc(const QString &nam) {
 //! Get the front end id used to make this prog
 platform Prog::getFrontEndId() { return DefaultFrontend->getFrontEndId(); }
 
-Signature *Prog::getDefaultSignature(const char *name) { return DefaultFrontend->getDefaultSignature(name); }
+std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name) {
+    return DefaultFrontend->getDefaultSignature(name);
+}
 
-std::vector<Exp *> &Prog::getDefaultParams() { return DefaultFrontend->getDefaultParams(); }
+std::vector<SharedExp> &Prog::getDefaultParams() {
+    return DefaultFrontend->getDefaultParams();
+}
 
-std::vector<Exp *> &Prog::getDefaultReturns() { return DefaultFrontend->getDefaultReturns(); }
+std::vector<SharedExp> &Prog::getDefaultReturns() {
+    return DefaultFrontend->getDefaultReturns();
+}
 //! Returns true if this is a win32 program
 bool Prog::isWin32() {
     if (!DefaultFrontend)
@@ -1121,7 +1126,7 @@ void Prog::removeUnusedGlobals() {
     LOG_VERBOSE(1) << "removing unused globals\n";
 
     // seach for used globals
-    std::list<Exp *> usedGlobals;
+    std::list<SharedExp> usedGlobals;
     for(Module *module : ModuleList) {
         for (Function *pp : *module) {
             if (pp->isLib())
@@ -1151,10 +1156,10 @@ void Prog::removeUnusedGlobals() {
     Global *usedGlobal;
 
     globals.clear();
-    for (Exp *e : usedGlobals) {
+    for (const SharedExp &e : usedGlobals) {
         if (DEBUG_UNUSED)
             LOG << " " << e << " is used\n";
-        QString name(((Const *)e->getSubExp1())->getStr());
+        QString name(e->subExp<Const,1>()->getStr());
         usedGlobal = namedGlobals[name];
         if (usedGlobal) {
             globals.insert(usedGlobal);
@@ -1476,7 +1481,7 @@ Global::~Global() {
     // Do-nothing d'tor
 }
 //! Get the initial value as an expression (or nullptr if not initialised)
-Exp *Global::getInitialValue(Prog *prog) const {
+SharedExp Global::getInitialValue(Prog *prog) const {
     const IBinarySection *si = prog->getSectionInfoByAddr(uaddr);
     // TODO: see what happens when we skip Bss check here
     if (si && si->isAddressBss(uaddr))
@@ -1489,24 +1494,23 @@ Exp *Global::getInitialValue(Prog *prog) const {
 }
 
 QString Global::toString() const {
-    Exp *init = getInitialValue(Parent);
+    auto init = getInitialValue(Parent);
     QString res = QString("%1 %2 at %3 initial value %4")
             .arg(type->toString())
             .arg(nam)
             .arg(uaddr.toString())
             .arg((init ? init->prints() : "<none>"));
-    delete init;
     return res;
 }
-Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
-    Exp *e = nullptr;
+SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
+    SharedExp e = nullptr;
     const IBinarySection *si = getSectionInfoByAddr(uaddr);
     if (si == nullptr)
         return nullptr;
     if (type->resolvesToPointer()) {
         ADDRESS init = ADDRESS::g(readNative4(uaddr));
         if (init.isZero())
-            return new Const(0);
+            return Const::get(0);
         QString nam = getGlobalName(init);
         if (!nam.isEmpty())
             // TODO: typecast?
@@ -1514,19 +1518,19 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
         if (type->as<PointerType>()->getPointsTo()->resolvesToChar()) {
             const char *str = getStringConstant(init);
             if (str != nullptr)
-                return new Const(str);
+                return Const::get(str);
         }
     }
     if (type->resolvesToCompound()) {
         std::shared_ptr<CompoundType> c = type->as<CompoundType>();
-        Exp *n = e = new Terminal(opNil);
+        auto n = e = Terminal::get(opNil);
         for (unsigned int i = 0; i < c->getNumTypes(); i++) {
             ADDRESS addr = uaddr + c->getOffsetTo(i) / 8;
             SharedType t = c->getType(i);
-            Exp *v = readNativeAs(addr, t);
+            auto v = readNativeAs(addr, t);
             if (v == nullptr) {
                 LOG << "unable to read native address " << addr << " as type " << t->getCtype() << "\n";
-                v = new Const(-1);
+                v = Const::get(-1);
             }
             if (n->isNil()) {
                 n = Binary::get(opList, v, n);
@@ -1543,7 +1547,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
         const char *str = getStringConstant(uaddr, true);
         if (str) {
             // Make a global string
-            return new Const(str);
+            return Const::get(str);
         }
     }
     if (type->resolvesToArray()) {
@@ -1556,9 +1560,9 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
             assert(base_sz);
             nelems /= base_sz;
         }
-        Exp *n = e = new Terminal(opNil);
+        auto n = e = Terminal::get(opNil);
         for (int i = 0; nelems == -1 || i < nelems; i++) {
-            Exp *v = readNativeAs(uaddr + i * base_sz, type->as<ArrayType>()->getBaseType());
+            auto v = readNativeAs(uaddr + i * base_sz, type->as<ArrayType>()->getBaseType());
             if (v == nullptr)
                 break;
             if (n->isNil()) {
@@ -1570,7 +1574,7 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
                 n = n->getSubExp2();
             }
             // "null" terminated
-            if (nelems == -1 && v->isConst() && ((Const *)v)->getInt() == 0)
+            if (nelems == -1 && v->isConst() && v->subExp<Const>()->getInt() == 0)
                 break;
         }
     }
@@ -1582,23 +1586,23 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
             size = type->as<SizeType>()->getSize();
         switch (size) {
         case 8:
-            return new Const(Image->readNative1(uaddr));
+            return Const::get(Image->readNative1(uaddr));
         case 16:
             // Note: must respect endianness
-            return new Const(Image->readNative2(uaddr));
+            return Const::get(Image->readNative2(uaddr));
         case 32:
-            return new Const(Image->readNative4(uaddr));
+            return Const::get(Image->readNative4(uaddr));
         case 64:
-            return new Const(Image->readNative8(uaddr));
+            return Const::get(Image->readNative8(uaddr));
         }
     }
     if (!type->resolvesToFloat())
         return e;
     switch (type->as<FloatType>()->getSize()) {
     case 32:
-        return new Const(Image->readNativeFloat4(uaddr));
+        return Const::get(Image->readNativeFloat4(uaddr));
     case 64:
-        return new Const(Image->readNativeFloat8(uaddr));
+        return Const::get(Image->readNativeFloat8(uaddr));
     }
     return e;
 }
@@ -1633,13 +1637,13 @@ void Prog::decodeFragment(UserProc *proc, ADDRESS a) {
   *
   * \returns processed Exp
   ******************************************************************************/
-Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
+SharedExp Prog::addReloc(SharedExp e, ADDRESS lc) {
     assert(e->isConst());
 
     if (!pLoaderIface->IsRelocationAt(lc))
         return e;
 
-    Const *c = (Const *)e;
+    auto c = e->subExp<Const>();
     // relocations have been applied to the constant, so if there is a
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
@@ -1651,19 +1655,19 @@ Exp *Prog::addReloc(Exp *e, ADDRESS lc) {
             Global *global = new Global(SizeType::get(sz * 8), c_addr, bin_sym->getName(),this);
             globals.insert(global);
         }
-        return new Unary(opAddrOf, Location::global(bin_sym->getName(), nullptr));
+        return Unary::get(opAddrOf, Location::global(bin_sym->getName(), nullptr));
     } else {
         const char *str = getStringConstant(c_addr);
         if (str)
-            e = new Const(str);
+            e = Const::get(str);
         else {
             // check for accesses into the middle of symbols
             for (IBinarySymbol *it : *BinarySymbols) {
                 unsigned int sz = it->getSize();
                 if (it->getLocation() < c_addr && (it->getLocation() + sz) > c_addr) {
                     int off = (c->getAddr() - it->getLocation()).m_value;
-                    e = Binary::get(opPlus, new Unary(opAddrOf, Location::global(it->getName(), nullptr)),
-                                    new Const(off));
+                    e = Binary::get(opPlus, Unary::get(opAddrOf, Location::global(it->getName(), nullptr)),
+                                    Const::get(off));
                     break;
                 }
             }

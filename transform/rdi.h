@@ -15,7 +15,7 @@
 class RDIExpTransformer : public ExpTransformer {
   public:
     RDIExpTransformer() {}
-    virtual Exp *applyTo(Exp *e, bool &bMod);
+    virtual SharedExp applyTo(SharedExp e, bool &bMod);
 };
 
 #endif

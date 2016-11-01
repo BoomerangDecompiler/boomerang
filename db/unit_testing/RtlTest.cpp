@@ -45,7 +45,7 @@ void RtlTest::initTestCase() {
   * OVERVIEW:        Test appendExp and printing of RTLs
   ******************************************************************************/
 void RtlTest::testAppend() {
-    Assign *a = new Assign(Location::regOf(8), new Binary(opPlus, Location::regOf(9), new Const(99)));
+    Assign *a = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
     RTL r;
     r.appendStmt(a);
     QString res;
@@ -64,9 +64,9 @@ void RtlTest::testAppend() {
   * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
   ******************************************************************************/
 void RtlTest::testClone() {
-    Assign *a1 = new Assign(Location::regOf(8), new Binary(opPlus, Location::regOf(9), new Const(99)));
-    Assign *a2 = new Assign(IntegerType::get(16), new Location(opParam, new Const("x"), nullptr),
-                            new Location(opParam, new Const("y"), nullptr));
+    Assign *a1 = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
+    Assign *a2 = new Assign(IntegerType::get(16), Location::get(opParam, Const::get("x"), nullptr),
+                            Location::get(opParam, Const::get("y"), nullptr));
     std::list<Instruction *> ls;
     ls.push_back(a1);
     ls.push_back(a2);
@@ -253,8 +253,8 @@ void RtlTest::testVisitor() {
 
 void RtlTest::testSetConscripts() {
     // m[1000] = m[1000] + 1000
-    Instruction *s1 = new Assign(Location::memOf(new Const(1000), 0),
-                               new Binary(opPlus, Location::memOf(new Const(1000), nullptr), new Const(1000)));
+    Instruction *s1 = new Assign(Location::memOf(Const::get(1000), 0),
+                               Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000)));
 
     // "printf("max is %d", (local0 > 0) ? local0 : global1)
     CallStatement *s2 = new CallStatement();
@@ -263,8 +263,8 @@ void RtlTest::testSetConscripts() {
     Function *proc = new UserProc(m, "printf", ADDRESS::g(0x2000)); // Making a true LibProc is problematic
     s2->setDestProc(proc);
     s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call
-    Exp *e1 = new Const("max is %d");
-    Exp *e2 = new Ternary(opTern, new Binary(opGtr, Location::local("local0", nullptr), new Const(0)),
+    SharedExp e1 = Const::get("max is %d");
+    SharedExp e2 = std::make_shared<Ternary>(opTern, Binary::get(opGtr, Location::local("local0", nullptr), Const::get(0)),
                           Location::local("local0", nullptr), Location::global("global1", nullptr));
     StatementList args;
     args.append(new Assign(Location::regOf(8), e1));

@@ -532,17 +532,17 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 15: {
-        yyval.param_list = new std::list<Parameter *>();
+        yyval.param_list = new std::list<std::shared_ptr<Parameter> >();
         yyval.param_list->push_back(yyvsp[0].param);
 
         break;
     }
     case 16: {
-        yyval.param_list = new std::list<Parameter *>();
+        yyval.param_list = new std::list<std::shared_ptr<Parameter>>();
         break;
     }
     case 17: {
-        yyval.param_list = new std::list<Parameter *>();
+        yyval.param_list = new std::list<std::shared_ptr<Parameter>>();
         break;
     }
     case 18: {
@@ -577,7 +577,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 24: {
-        yyval.exp = new Const(yyvsp[0].ival);
+        yyval.exp = Const::get(yyvsp[0].ival);
 
         break;
     }
@@ -601,7 +601,7 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
                      */
             yyvsp[-1].type_ident->ty = PointerType::get(yyvsp[-1].type_ident->ty);
         }
-        yyval.param = new Parameter(yyvsp[-1].type_ident->ty, yyvsp[-1].type_ident->nam);
+        yyval.param = std::make_shared<Parameter>(yyvsp[-1].type_ident->ty, yyvsp[-1].type_ident->nam);
         if (yyvsp[0].bound) {
             switch (yyvsp[0].bound->kind) {
             case 0:
@@ -612,22 +612,22 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 28: {
-        Signature *sig = Signature::instantiate(plat, cc, nullptr);
+        std::shared_ptr<Signature> sig = Signature::instantiate(plat, cc, nullptr);
         sig->addReturn(yyvsp[-7].type);
         for (auto &elem : *yyvsp[-1].param_list)
             if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
-                delete elem;
+                elem = nullptr;
             }
         delete yyvsp[-1].param_list;
-        yyval.param = new Parameter(PointerType::get(FuncType::get(sig)), yyvsp[-4].str);
+        yyval.param = std::make_shared<Parameter>(PointerType::get(FuncType::get(sig)), yyvsp[-4].str);
 
         break;
     }
     case 29: {
-        yyval.param = new Parameter(std::make_shared<VoidType>(), "...");
+        yyval.param = std::make_shared<Parameter>(std::make_shared<VoidType>(), "...");
         break;
     }
     case 30: {
@@ -635,14 +635,14 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 31: {
-        Signature *sig = Signature::instantiate(plat, cc, nullptr);
+        auto sig = Signature::instantiate(plat, cc, nullptr);
         sig->addReturn(yyvsp[-8].type);
         for (auto &elem : *yyvsp[-2].param_list)
             if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
-                delete elem;
+                elem = nullptr;
             }
         delete yyvsp[-2].param_list;
         Type::addNamedType(yyvsp[-5].str, PointerType::get(FuncType::get(sig)));
@@ -650,14 +650,14 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 32: {
-        Signature *sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam);
+        auto sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam);
         sig->addReturn(yyvsp[-4].type_ident->ty);
         for (auto &elem : *yyvsp[-2].param_list)
             if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
-                delete elem;
+                elem = nullptr;
             }
         delete yyvsp[-2].param_list;
         Type::addNamedType(yyvsp[-4].type_ident->nam, FuncType::get(sig));
@@ -689,14 +689,14 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
     }
     case 36: {
         /* Use the passed calling convention (cc) */
-        Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam);
+        auto sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam);
         sig->addReturn(yyvsp[-3].type_ident->ty);
         for (auto &elem : *yyvsp[-1].param_list)
             if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
-                delete elem;
+                elem = nullptr;
             }
         delete yyvsp[-1].param_list;
         yyval.sig = sig;
@@ -704,14 +704,14 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
         break;
     }
     case 37: {
-        Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->nam);
+        auto sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->nam);
         sig->addReturn(yyvsp[-3].type_ident->ty);
         for (auto &elem : *yyvsp[-1].param_list)
             if (elem->name() != "...")
                 sig->addParameter(elem);
             else {
                 sig->addEllipsis();
-                delete elem;
+                elem = nullptr;
             }
         delete yyvsp[-1].param_list;
         yyval.sig = sig;
@@ -724,15 +724,15 @@ int AnsiCParser::yyparse(platform plat, callconv cc) {
             sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
         if (yyvsp[-4].custom_options->sp)
             sig->setSP(yyvsp[-4].custom_options->sp);
-        for (Parameter *it : *yyvsp[-1].param_list)
+        for (std::shared_ptr<Parameter> &it : *yyvsp[-1].param_list)
             if (it->name() != "...") {
                 sig->addParameter(it);
             } else {
                 sig->addEllipsis();
-                delete it;
+                it = nullptr;
             }
         delete yyvsp[-1].param_list;
-        yyval.sig = sig;
+        yyval.sig = std::shared_ptr<Signature>(sig);
 
         break;
     }

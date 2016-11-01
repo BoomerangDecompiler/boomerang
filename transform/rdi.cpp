@@ -23,7 +23,7 @@
 #include <map>       // In decideType()
 #include <sstream>   // Need gcc 3.0 or better
 
-Exp *RDIExpTransformer::applyTo(Exp *e, bool &bMod) {
+SharedExp RDIExpTransformer::applyTo(SharedExp e, bool &bMod) {
     if (e->getOper() == opAddrOf && e->getSubExp1()->getOper() == opMemOf) {
         e = e->getSubExp1()->getSubExp1()->clone();
         bMod = true;

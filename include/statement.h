@@ -120,7 +120,7 @@ enum BRANCH_TYPE {
  */
 class Instruction {
 protected:
-    typedef std::map<Exp *, int, lessExpStar> mExpInt;
+    typedef std::map<SharedExp , int, lessExpStar> mExpInt;
     BasicBlock *Parent; // contains a pointer to the enclosing BB
     UserProc *proc;     // procedure containing this statement
     int Number;         // Statement number for printing
@@ -215,7 +215,7 @@ public:
 
     // set the left for forExp to newExp
 
-    virtual bool definesLoc(Exp * /*loc*/) { return false; } // True if this Statement defines loc
+    virtual bool definesLoc(SharedExp  /*loc*/) { return false; } // True if this Statement defines loc
 
     // returns true if this statement uses the given expression
     virtual bool usesExp(const Exp &) = 0;
@@ -229,11 +229,11 @@ public:
     void dump();    // For debugging
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result) = 0;
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) = 0;
+    virtual bool search(const Exp &search, SharedExp &result) = 0;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result) = 0;
 
     // general search and replace. Set cc true to change collectors as well. Return true if any change
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) = 0; // TODO: consider constness
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) = 0; // TODO: consider constness
 
     // True if can propagate to expression e in this Statement.
     static bool canPropagateToExp(Exp &e);
@@ -267,7 +267,7 @@ public:
 
     // Data flow based type analysis
     virtual void dfaTypeAnalysis(bool & /*ch*/) {} // Use the type information in this Statement
-    SharedType meetWithFor(SharedType ty, Exp *e, bool &ch); // Meet the type associated with e with ty
+    SharedType meetWithFor(SharedType ty, SharedExp e, bool &ch); // Meet the type associated with e with ty
 
 public:
 
@@ -286,12 +286,12 @@ public:
     void addUsedLocs(LocationSet &used, bool cc = false, bool memOnly = false);
     bool addUsedLocals(LocationSet &used);
     void bypass();
-    bool replaceRef(Exp *e, Assignment *def, bool &convert);
-    void findConstants(std::list<Const *> &lc);
+    bool replaceRef(SharedExp e, Assignment *def, bool &convert);
+    void findConstants(std::list<std::shared_ptr<Const> > &lc);
     int setConscripts(int n);
     void clearConscripts();
     void stripSizes();
-    void subscriptVar(Exp *e, Instruction *def /*, Cfg* cfg */);
+    void subscriptVar(SharedExp e, Instruction *def /*, Cfg* cfg */);
 
     // Cast the constant num to type ty. If a change was made, return true
     bool castConst(int num, SharedType ty);
@@ -303,16 +303,16 @@ public:
 
     //! Get the type for the definition, if any, for expression e in this statement
     //! Overridden only by Assignment and CallStatement, and ReturnStatement.
-    virtual SharedType getTypeFor(Exp *) { return nullptr; }
+    virtual SharedType getTypeFor(SharedExp ) { return nullptr; }
     //! Set the type for the definition of e in this Statement
-    virtual void setTypeFor(Exp *, SharedType ) { assert(0); }
+    virtual void setTypeFor(SharedExp , SharedType ) { assert(0); }
 
     // virtual    Type*    getType() {return nullptr;}            // Assignment, ReturnStatement and
     // virtual    void    setType(Type* t) {assert(0);}        // CallStatement override
 
-    bool doPropagateTo(Exp *e, Assignment *def, bool &convert);
-    bool calcMayAlias(Exp *e1, Exp *e2, int size);
-    bool mayAlias(Exp *e1, Exp *e2, int size);
+    bool doPropagateTo(SharedExp e, Assignment *def, bool &convert);
+    bool calcMayAlias(SharedExp e1, SharedExp e2, int size);
+    bool mayAlias(SharedExp e1, SharedExp e2, int size);
 
     friend class XMLProgParser;
 }; // class Statement
@@ -345,12 +345,12 @@ public:
  ****************************************************************************/
 class Assignment : public TypingStatement {
 protected:
-    Exp *lhs; // The left hand side
+    SharedExp lhs; // The left hand side
 public:
     // Constructor, subexpression
-    Assignment(Exp *lhs);
+    Assignment(SharedExp lhs);
     // Constructor, type, and subexpression
-    Assignment(SharedType ty, Exp *lhs);
+    Assignment(SharedType ty, SharedExp lhs);
     // Destructor
     virtual ~Assignment();
 
@@ -371,32 +371,32 @@ public:
     virtual void print(QTextStream &os, bool html = false) const;
     virtual void printCompact(QTextStream &os, bool html = false) const = 0; // Without statement number
 
-    virtual SharedType getTypeFor(Exp *e);          // Get the type for this assignment. It should define e
-    virtual void setTypeFor(Exp *e, SharedType ty); // Set the type for this assignment. It should define e
+    virtual SharedType getTypeFor(SharedExp e);          // Get the type for this assignment. It should define e
+    virtual void setTypeFor(SharedExp e, SharedType ty); // Set the type for this assignment. It should define e
 
     virtual bool usesExp(const Exp &e); // PhiAssign and ImplicitAssign don't override
 
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &defs);
-    virtual bool definesLoc(Exp *loc); // True if this Statement defines loc
+    virtual bool definesLoc(SharedExp loc); // True if this Statement defines loc
 
     // get how to access this lvalue
-    virtual Exp *getLeft() { return lhs; } // Note: now only defined for Assignments, not all Statements
-    virtual const Exp *getLeft() const { return lhs; }
+    virtual SharedExp getLeft() { return lhs; } // Note: now only defined for Assignments, not all Statements
+    virtual const SharedExp &getLeft() const { return lhs; }
 
-    virtual Exp *getRight() = 0;
+    virtual SharedExp getRight() = 0;
     // set the lhs to something new
-    void setLeft(Exp *e) { lhs = e; }
+    void setLeft(SharedExp e) { lhs = e; }
 
     // memory depth
     int getMemDepth();
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result) = 0;
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) = 0;
+    virtual bool search(const Exp &search, SharedExp &result) = 0;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result) = 0;
 
     // general search and replace
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) = 0;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) = 0;
     void generateCode(HLLCode *, BasicBlock *, int /*indLevel*/) {}
 
     // simpify internal expressions
@@ -418,14 +418,14 @@ public:
  * Assign an ordinary assignment with left and right sides
  ***************************************************************************/
 class Assign : public Assignment {
-    Exp *rhs;
-    Exp *guard;
+    SharedExp rhs;
+    SharedExp guard;
 
 public:
     // Constructor, subexpressions
-    Assign(Exp *lhs, Exp *r, Exp *guard = nullptr);
+    Assign(SharedExp lhs, SharedExp r, SharedExp guard = nullptr);
     // Constructor, type and subexpressions
-    Assign(SharedType ty, Exp *lhs, Exp *r, Exp *guard = nullptr);
+    Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard = nullptr);
     // Default constructor, for XML parser
     Assign() : Assignment(nullptr), rhs(nullptr), guard(nullptr) {}
     // Copy constructor
@@ -437,11 +437,11 @@ public:
     virtual Instruction * clone() const override;
 
     // get how to replace this statement in a use
-    virtual Exp *getRight() override { return rhs; }
-    Exp *&getRightRef() { return rhs; }
+    virtual SharedExp getRight() override { return rhs; }
+    SharedExp &getRightRef() { return rhs; }
 
     // set the rhs to something new
-    void setRight(Exp *e) { rhs = e; }
+    void setRight(SharedExp e) { rhs = e; }
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor) override;
@@ -452,19 +452,19 @@ public:
     virtual void printCompact(QTextStream &os, bool html = false) const override; // Without statement number
 
     // Guard
-    void setGuard(Exp *g) { guard = g; }
-    Exp *getGuard() { return guard; }
+    void setGuard(SharedExp g) { guard = g; }
+    SharedExp getGuard() { return guard; }
     bool isGuarded() { return guard != nullptr; }
 
     virtual bool usesExp(const Exp &e) override;
     virtual bool isDefinition()  override { return true; }
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result) override;
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
+    virtual bool search(const Exp &search, SharedExp &result) override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result) override;
 
     // general search and replace
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     // memory depth
     int getMemDepth();
@@ -485,10 +485,10 @@ public:
     virtual void genConstraints(LocationSet &cons) override;
 
     // Data flow based type analysis
-    void dfaTypeAnalysis(bool &ch);
+    void dfaTypeAnalysis(bool &ch) override;
 
     // FIXME: I suspect that this was only used by adhoc TA, and can be deleted
-    bool match(const char *pattern, std::map<QString, Exp *> &bindings);
+    bool match(const char *pattern, std::map<QString, SharedExp > &bindings);
 
     friend class XMLProgParser;
 }; // class Assign
@@ -499,7 +499,7 @@ struct PhiInfo {
     // A default constructor is required because CFG changes (?) can cause access to elements of the vector that
     // are beyond the current end, creating gaps which have to be initialised to zeroes so that they can be skipped
     PhiInfo() {} //: def(0), e(0) not initializing to help valgrind find locations of unset vals
-    Exp *e;      // The expression for the thing being defined (never subscripted)
+    SharedExp e;      // The expression for the thing being defined (never subscripted)
     void def(Instruction *def) { m_def = def; /*assert(def);*/ }
     Instruction *def() { return m_def; }
     const Instruction *def() const { return m_def; }
@@ -527,8 +527,8 @@ public:
 private:
     Definitions DefVec; // A vector of information about definitions
 public:
-    PhiAssign(Exp *lhs) : Assignment(lhs) { Kind = STMT_PHIASSIGN; }
-    PhiAssign(SharedType ty, Exp *lhs) : Assignment(ty, lhs) { Kind = STMT_PHIASSIGN; }
+    PhiAssign(SharedExp lhs) : Assignment(lhs) { Kind = STMT_PHIASSIGN; }
+    PhiAssign(SharedType ty, SharedExp lhs) : Assignment(ty, lhs) { Kind = STMT_PHIASSIGN; }
     // Copy constructor (not currently used or implemented)
     PhiAssign(Assign &o);
     virtual ~PhiAssign() {}
@@ -537,7 +537,7 @@ public:
     virtual Instruction * clone() const;
 
     // get how to replace this statement in a use
-    virtual Exp *getRight() { return nullptr; }
+    virtual SharedExp getRight() { return nullptr; }
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor *visitor);
@@ -548,11 +548,11 @@ public:
     virtual void printCompact(QTextStream &os, bool html = false) const;
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result);
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
+    virtual bool search(const Exp &search, SharedExp &result);
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result);
 
     // general search and replace
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false);
 
     // simplify all the uses/defs in this Statement
     virtual void simplify();
@@ -575,7 +575,7 @@ public:
         return DefVec[idx].def();
     }
     PhiInfo &getAt(BasicBlock *idx);
-    void putAt(BasicBlock *idx, Instruction *d, Exp *e);
+    void putAt(BasicBlock *idx, Instruction *d, SharedExp e);
     void simplifyRefs();
     virtual size_t getNumDefs() { return DefVec.size(); }
     Definitions &getDefs() { return DefVec; }
@@ -591,10 +591,10 @@ public:
     iterator erase(iterator it) { return DefVec.erase(it); }
 
     // Convert this phi assignment to an ordinary assignment
-    void convertToAssign(Exp *rhs);
+    void convertToAssign(SharedExp rhs);
 
     // Generate a list of references for the parameters
-    void enumerateParams(std::list<Exp *> &le);
+    void enumerateParams(std::list<SharedExp > &le);
 
 protected:
     friend class XMLProgParser;
@@ -604,8 +604,8 @@ protected:
 // globals.  That way, you can always find the type of a subscripted variable by looking in its defining Assignment
 class ImplicitAssign : public Assignment {
 public:
-    ImplicitAssign(Exp *lhs);
-    ImplicitAssign(SharedType ty, Exp *lhs);
+    ImplicitAssign(SharedExp lhs);
+    ImplicitAssign(SharedType ty, SharedExp lhs);
     ImplicitAssign(ImplicitAssign &o);
     virtual ~ImplicitAssign();
 
@@ -613,16 +613,16 @@ public:
     void dfaTypeAnalysis(bool &ch);
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result);
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
+    virtual bool search(const Exp &search, SharedExp &result);
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result);
 
     // general search and replace
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false);
 
     virtual void printCompact(QTextStream &os, bool html = false) const;
 
     // Statement and Assignment functions
-    virtual Exp *getRight() { return nullptr; }
+    virtual SharedExp getRight() { return nullptr; }
     virtual void simplify() {}
 
     // Visitation
@@ -639,7 +639,7 @@ public:
   * *==========================================================================*/
 class BoolAssign : public Assignment {
     BRANCH_TYPE jtCond; // the condition for setting true
-    Exp *pCond;         // Exp representation of the high level
+    SharedExp pCond;         // Exp representation of the high level
     // condition: e.g. r[8] == 5
     bool bFloat;        // True if condition uses floating point CC
     int Size;           // The size of the dest
@@ -664,10 +664,10 @@ public:
     void setFloat(bool b) { bFloat = b; }
 
     // Set and return the Exp representing the HL condition
-    Exp *getCondExpr();
-    void setCondExpr(Exp *pss);
+    SharedExp getCondExpr();
+    void setCondExpr(SharedExp pss);
     // As above, no delete (for subscripting)
-    void setCondExprND(Exp *e) { pCond = e; }
+    void setCondExprND(SharedExp e) { pCond = e; }
     int getSize() { return Size; } // Return the size of the assignment
     void makeSigned();
 
@@ -678,11 +678,11 @@ public:
     // Statement functions
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &def);
-    virtual Exp *getRight() { return getCondExpr(); }
+    virtual SharedExp getRight() { return getCondExpr(); }
     virtual bool usesExp(const Exp &e);
-    virtual bool search(const Exp &search, Exp *&result);
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool search(const Exp &search, SharedExp &result);
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result);
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false);
     // a hack for the SETS macro
     void setLeftFromList(std::list<Instruction *> *stmts);
 
@@ -695,11 +695,11 @@ public:
 // of a location. Note that dataflow can't decide which local variable (in the decompiled output) is being taken,
 // if there is more than one local variable sharing the same memory address (separated then by type).
 class ImpRefStatement : public TypingStatement {
-    Exp *addressExp; // The expression representing the address of the location referenced
+    SharedExp addressExp; // The expression representing the address of the location referenced
 public:
     // Constructor, subexpression
-    ImpRefStatement(SharedType ty, Exp *a) : TypingStatement(ty), addressExp(a) { Kind = STMT_IMPREF; }
-    Exp *getAddressExp() { return addressExp; }
+    ImpRefStatement(SharedType ty, SharedExp a) : TypingStatement(ty), addressExp(a) { Kind = STMT_IMPREF; }
+    SharedExp getAddressExp() { return addressExp; }
     SharedType getType() { return type; }
     void meetWith(SharedType ty, bool &ch); // Meet the internal type with ty. Set ch if a change
 
@@ -711,9 +711,9 @@ public:
     virtual bool accept(StmtPartModifier *) override;
     virtual bool isDefinition()  override { return false; }
     virtual bool usesExp(const Exp &)  override { return false; }
-    virtual bool search(const Exp &, Exp *&) override;
-    virtual bool searchAll(const Exp &, std::list<Exp *, std::allocator<Exp *>> &) override;
-    virtual bool searchAndReplace(const Exp &, Exp *, bool cc = false) override;
+    virtual bool search(const Exp &, SharedExp &) override;
+    virtual bool searchAll(const Exp &, std::list<SharedExp , std::allocator<SharedExp >> &) override;
+    virtual bool searchAndReplace(const Exp &, SharedExp , bool cc = false) override;
     virtual void generateCode(HLLCode *, BasicBlock *, int)  override {}
     virtual void simplify() override;
     virtual void print(QTextStream &os, bool html = false) const override;
@@ -731,13 +731,13 @@ public:
  *===========================================================================*/
 class GotoStatement : public Instruction {
 protected:
-    Exp *pDest;        // Destination of a jump or call. This is the absolute destination for both
+    SharedExp pDest;        // Destination of a jump or call. This is the absolute destination for both
     // static and dynamic CTIs.
     bool m_isComputed; // True if this is a CTI with a computed destination address.
     // NOTE: This should be removed, once CaseStatement and HLNwayCall are implemented
     // properly.
-    Const *constDest() { return ((Const *)pDest); }
-    const Const *constDest() const { return ((const Const *)pDest); }
+    std::shared_ptr<Const> constDest() { return std::static_pointer_cast<Const>(pDest); }
+    const std::shared_ptr<const Const> constDest() const { return std::static_pointer_cast<const Const>(pDest); }
 
 public:
     GotoStatement();
@@ -754,10 +754,10 @@ public:
 
     // Set and return the destination of the jump. The destination is either an Exp, or an ADDRESS that
     // is converted to a Exp.
-    void setDest(Exp *pd);
+    void setDest(SharedExp pd);
     void setDest(ADDRESS addr);
-    virtual Exp *getDest();
-    virtual const Exp *getDest() const;
+    virtual SharedExp getDest();
+    virtual const SharedExp getDest() const;
 
     ADDRESS getFixedDest() const;
     void adjustFixedDest(int delta);
@@ -770,14 +770,14 @@ public:
     virtual void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    virtual bool search(const Exp &, Exp *&) override;
+    virtual bool search(const Exp &, SharedExp &) override;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result) override;
 
     // code generation
     virtual void generateCode(HLLCode *, BasicBlock *, int) override;
@@ -812,11 +812,11 @@ public:
     void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    bool search(const Exp & /*search*/, Exp *& /*result*/)  override { return false; }
-    bool searchAll(const Exp & /*search*/, std::list<Exp *> & /*result*/)  override { return false; }
+    bool search(const Exp & /*search*/, SharedExp & /*result*/)  override { return false; }
+    bool searchAll(const Exp & /*search*/, std::list<SharedExp > & /*result*/)  override { return false; }
 
     //! general search and replace. Set cc true to change collectors as well. Return true if any change
-    bool searchAndReplace(const Exp & /*search*/, Exp * /*replace*/, bool /*cc*/ = false)  override { return false; }
+    bool searchAndReplace(const Exp & /*search*/, SharedExp  /*replace*/, bool /*cc*/ = false)  override { return false; }
 
     void generateCode(HLLCode * /*hll*/, BasicBlock * /*pbb*/, int /*indLevel*/)  override {}
 
@@ -831,7 +831,7 @@ public:
   *==============================================================================*/
 class BranchStatement : public GotoStatement {
     BRANCH_TYPE jtCond; // The condition for jumping
-    Exp * pCond;         // The Exp representation of the high level condition: e.g., r[8] == 5
+    SharedExp  pCond;         // The Exp representation of the high level condition: e.g., r[8] == 5
     bool bFloat;        // True if uses floating point CC
     // jtCond seems to be mainly needed for the Pentium weirdness.
     // Perhaps bFloat, jtCond, and size could one day be merged into a type
@@ -858,8 +858,8 @@ public:
     void setFloat(bool b) { bFloat = b; }
 
     // Set and return the Exp representing the HL condition
-    Exp *getCondExpr();
-    void setCondExpr(Exp *pe);
+    SharedExp getCondExpr();
+    void setCondExpr(SharedExp pe);
 
     BasicBlock *getFallBB();
     BasicBlock *getTakenBB();
@@ -870,32 +870,32 @@ public:
     // signed conditional branch
     void makeSigned();
 
-    virtual void print(QTextStream &os, bool html = false) const override;
+    void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result)  override;
+    bool search(const Exp &search, SharedExp &result)  override;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
+    bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
+    bool searchAll(const Exp &search, std::list<SharedExp > &result) override;
 
     // code generation
-    virtual void generateCode(HLLCode *, BasicBlock *, int) override;
+    void generateCode(HLLCode *, BasicBlock *, int) override;
 
     // dataflow analysis
-    virtual bool usesExp(const Exp &e) override;
+    bool usesExp(const Exp &e) override;
 
     // simplify all the uses/defs in this Statememt
-    virtual void simplify() override;
+    void simplify() override;
 
     // Generate constraints
-    virtual void genConstraints(LocationSet &cons) override;
+    void genConstraints(LocationSet &cons) override;
 
     // Data flow based type analysis
-    void dfaTypeAnalysis(bool &ch);
+    void dfaTypeAnalysis(bool &ch) override;
 
     friend class XMLProgParser;
 }; // class BranchStatement
@@ -905,7 +905,7 @@ public:
   * of the jump, it has a switch variable Exp.
   ******************************************************************************/
 struct SWITCH_INFO {
-    Exp *pSwitchVar; // Ptr to Exp repres switch var, e.g. v[7]
+    SharedExp pSwitchVar; // Ptr to Exp repres switch var, e.g. v[7]
     char chForm;     // Switch form: 'A', 'O', 'R', 'H', or 'F' etc
     int iLower;      // Lower bound of the switch variable
     int iUpper;      // Upper bound for the switch variable
@@ -937,11 +937,11 @@ public:
     virtual void print(QTextStream &os, bool html = false) const;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false);
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false);
 
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result);
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result);
 
     // code generation
     virtual void generateCode(HLLCode *, BasicBlock *, int);
@@ -977,7 +977,7 @@ class CallStatement : public GotoStatement {
 
     // The signature for this call. NOTE: this used to be stored in the Proc, but this does not make sense when
     // the proc happens to have varargs
-    Signature *signature;
+    std::shared_ptr<Signature> signature;
 
     // A UseCollector object to collect the live variables at this call. Used as part of the calculation of
     // results
@@ -1014,33 +1014,33 @@ public:
     StatementList &getArguments() { return arguments; } // Return call's arguments
     void updateArguments();                             // Update the arguments based on a callee change
     // Exp        *getDefineExp(int i);
-    int findDefine(Exp *e); // Still needed temporarily for ad hoc type analysis
-    void removeDefine(Exp *e);
+    int findDefine(SharedExp e); // Still needed temporarily for ad hoc type analysis
+    void removeDefine(SharedExp e);
     void addDefine(ImplicitAssign *as); // For testing
-    // void        ignoreReturn(Exp *e);
+    // void        ignoreReturn(SharedExp e);
     // void        ignoreReturn(int n);
-    // void        addReturn(Exp *e, Type* ty = nullptr);
+    // void        addReturn(SharedExp e, Type* ty = nullptr);
     void updateDefines();         // Update the defines based on a callee change
     StatementList *calcResults(); // Calculate defines(this) isect live(this)
     ReturnStatement *getCalleeReturn() { return calleeReturn; }
     void setCalleeReturn(ReturnStatement *ret) { calleeReturn = ret; }
     bool isChildless() const;
-    Exp *getProven(Exp *e);
-    Signature *getSignature() { return signature; }
-    void setSignature(Signature *sig) { signature = sig;} ///< Only used by range analysis
+    SharedExp getProven(SharedExp e);
+    std::shared_ptr<Signature> getSignature() { return signature; }
+    void setSignature(std::shared_ptr<Signature> sig) { signature = sig;} ///< Only used by range analysis
     // Localise the various components of expression e with reaching definitions to this call
     // Note: can change e so usually need to clone the argument
     // Was called substituteParams
-    Exp *localiseExp(Exp *e);
-    void localiseComp(Exp *e); // Localise only xxx of m[xxx]
+    SharedExp localiseExp(SharedExp e);
+    void localiseComp(SharedExp e); // Localise only xxx of m[xxx]
     // Do the call bypass logic e.g. r28{20} -> r28{17} + 4 (where 20 is this CallStatement)
     // Set ch if changed (bypassed)
-    Exp *bypassRef(RefExp *r, bool &ch);
+    SharedExp bypassRef(const std::shared_ptr<RefExp> &r, bool &ch);
     void clearUseCollector() { useCol.clear(); }
-    void addArgument(Exp *e, UserProc *proc);
-    Exp *findDefFor(Exp *e); // Find the reaching definition for expression e
-    Exp *getArgumentExp(int i);
-    void setArgumentExp(int i, Exp *e);
+    void addArgument(SharedExp e, UserProc *proc);
+    SharedExp findDefFor(SharedExp e); // Find the reaching definition for expression e
+    SharedExp getArgumentExp(int i);
+    void setArgumentExp(int i, SharedExp e);
     void setNumArguments(int i);
     int getNumArguments();
     void removeArgument(int i);
@@ -1053,14 +1053,14 @@ public:
     virtual void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    virtual bool search(const Exp &search, Exp *&result) override;
+    virtual bool search(const Exp &search, SharedExp &result) override;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result) override;
 
     // Set and return whether the call is effectively followed by a return.
     // E.g. on Sparc, whether there is a restore in the delay slot.
@@ -1069,8 +1069,8 @@ public:
 
     // Set and return the list of Exps that occur *after* the call (the
     // list of exps in the RTL occur before the call). Useful for odd patterns.
-    void setPostCallExpList(std::list<Exp *> *le);
-    std::list<Exp *> *getPostCallExpList();
+    void setPostCallExpList(std::list<SharedExp > *le);
+    std::list<SharedExp > *getPostCallExpList();
 
     // Set and return the destination proc.
     void setDestProc(Function *dest);
@@ -1080,7 +1080,7 @@ public:
     virtual void genConstraints(LocationSet &cons) override;
 
     // Data flow based type analysis
-    void dfaTypeAnalysis(bool &ch);
+    void dfaTypeAnalysis(bool &ch) override;
 
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) override;
@@ -1092,7 +1092,7 @@ public:
     virtual bool isDefinition() override;
     virtual void getDefinitions(LocationSet &defs) override;
 
-    virtual bool definesLoc(Exp *loc) override; // True if this Statement defines loc
+    virtual bool definesLoc(SharedExp loc) override; // True if this Statement defines loc
 
     // get how to replace this statement in a use
     // virtual Exp*        getRight() { return nullptr; }
@@ -1107,12 +1107,12 @@ public:
     // Insert actual arguments to match formal parameters
     // void        insertArguments(InstructionSet& rs);
 
-    virtual SharedType getTypeFor(Exp *e) override;             // Get the type defined by this Statement for this location
-    virtual void setTypeFor(Exp *e, SharedType ty) override;    // Set the type for this location, defined in this statement
+    virtual SharedType getTypeFor(SharedExp e) override;             // Get the type defined by this Statement for this location
+    virtual void setTypeFor(SharedExp e, SharedType ty) override;    // Set the type for this location, defined in this statement
     DefCollector *getDefCollector() { return &defCol; } // Return pointer to the def collector object
     UseCollector *getUseCollector() { return &useCol; } // Return pointer to the use collector object
-    void useBeforeDefine(Exp *x) { useCol.insert(x); }  // Add x to the UseCollector for this call
-    void removeLiveness(Exp *e) { useCol.remove(e); }   // Remove e from the UseCollector
+    void useBeforeDefine(SharedExp x) { useCol.insert(x); }  // Add x to the UseCollector for this call
+    void removeLiveness(SharedExp e) { useCol.remove(e); }   // Remove e from the UseCollector
     void removeAllLive() { useCol.clear(); }            // Remove all livenesses
     //        Exp*        fromCalleeContext(Exp* e);            // Convert e from callee to caller (this) context
     StatementList &getDefines() { return defines; } // Get list of locations defined by this call
@@ -1127,7 +1127,7 @@ public:
 private:
     // Private helper functions for the above
     void addSigParam(SharedType ty, bool isScanf);
-    Assign *makeArgAssign(SharedType ty, Exp *e);
+    Assign *makeArgAssign(SharedType ty, SharedExp e);
     bool objcSpecificProcessing(const QString &formatStr);
 
 protected:
@@ -1187,25 +1187,25 @@ public:
     virtual void print(QTextStream &os, bool html = false) const override;
 
     // general search
-    virtual bool search(const Exp &, Exp *&) override;
+    virtual bool search(const Exp &, SharedExp &) override;
 
     // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp &search, Exp *replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this statement and adds them to a given list
-    virtual bool searchAll(const Exp &search, std::list<Exp *> &result) override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp > &result) override;
 
     // returns true if this statement uses the given expression
     virtual bool usesExp(const Exp &e) override;
 
     virtual void getDefinitions(LocationSet &defs) override;
 
-    void removeModified(Exp *loc); // Remove from modifieds AND from returns
-    void removeReturn(Exp *loc);   // Remove from returns only
+    void removeModified(SharedExp loc); // Remove from modifieds AND from returns
+    void removeReturn(SharedExp loc);   // Remove from returns only
     void addReturn(Assignment *a);
 
-    SharedType getTypeFor(Exp *e) override;
-    void setTypeFor(Exp *e, SharedType ty) override;
+    SharedType getTypeFor(SharedExp e) override;
+    void setTypeFor(SharedExp e, SharedType ty) override;
 
     // simplify all the uses/defs in this Statement
     virtual void simplify() override;
@@ -1213,7 +1213,7 @@ public:
     virtual bool isDefinition()  override { return true; }
 
     // Get a subscripted version of e from the collector
-    Exp *subscriptWithDef(Exp *e);
+    SharedExp subscriptWithDef(SharedExp e);
 
     // Make a deep copy, and make the copy a derived object if needed.
     virtual Instruction * clone() const override;
@@ -1224,13 +1224,13 @@ public:
     virtual bool accept(StmtModifier *visitor) override;
     virtual bool accept(StmtPartModifier *visitor) override;
 
-    virtual bool definesLoc(Exp *loc) override; // True if this Statement defines loc
+    virtual bool definesLoc(SharedExp loc) override; // True if this Statement defines loc
 
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) override;
 
     // Exp        *getReturnExp(int n) { return returns[n]; }
-    // void        setReturnExp(int n, Exp *e) { returns[n] = e; }
+    // void        setReturnExp(int n, SharedExp e) { returns[n] = e; }
     // void        setSigArguments();                     // Set returns based on signature
     DefCollector *getCollector() { return &col; } // Return pointer to the collector object
 
@@ -1239,9 +1239,9 @@ public:
     void setRetAddr(ADDRESS r) { retAddr = r; }
 
     // Find definition for e (in the collector)
-    Exp *findDefFor(Exp *e) { return col.findDefFor(e); }
+    SharedExp findDefFor(SharedExp e) { return col.findDefFor(e); }
 
-    virtual void dfaTypeAnalysis(bool &ch);
+    void dfaTypeAnalysis(bool &ch) override;
 
     // Remove the stack pointer and return a statement list
     StatementList *getCleanReturns();

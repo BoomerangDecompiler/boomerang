@@ -19,13 +19,13 @@
 class Range : public Printable {
 protected:
     int stride, lowerBound, upperBound;
-    Exp *base;
+    SharedExp base;
 
 public:
     Range();
-    Range(int stride, int lowerBound, int upperBound, Exp *base);
+    Range(int stride, int lowerBound, int upperBound, SharedExp base);
 
-    Exp *getBase() const { return base; }
+    SharedExp getBase() const { return base; }
     int getStride() const { return stride; }
     int getLowerBound() const { return lowerBound; }
     int getUpperBound() const { return upperBound; }
@@ -39,18 +39,18 @@ public:
 };
 class RangeMap : public Printable {
 protected:
-    std::map<Exp *, Range, lessExpStar> ranges;
+    std::map<SharedExp, Range, lessExpStar> ranges;
 
 public:
     RangeMap() {}
-    void addRange(Exp *loc, Range &r) { ranges[loc] = r; }
-    bool hasRange(Exp *loc) { return ranges.find(loc) != ranges.end(); }
-    Range &getRange(Exp *loc);
+    void addRange(SharedExp loc, Range &r) { ranges[loc] = r; }
+    bool hasRange(const SharedExp &loc) { return ranges.find(loc) != ranges.end(); }
+    Range &getRange(const SharedExp &loc);
     void unionwith(RangeMap &other);
     void widenwith(RangeMap &other);
     QString toString() const;
     void print() const;
-    Exp *substInto(Exp *e, std::set<Exp *, lessExpStar> *only = nullptr) const;
+    SharedExp substInto(SharedExp e, std::set<SharedExp, lessExpStar> *only = nullptr) const;
     void killAllMemOfs();
     void clear() { ranges.clear(); }
     bool isSubset(RangeMap &other);
@@ -120,15 +120,15 @@ struct RangeVisitor : public StmtVisitor {
         RangeMap input;
         if (insn->getBB()->getNumInEdges() == 0) {
             // setup input for start of procedure
-            Range ra24(1, 0, 0, new Unary(opInitValueOf, Location::regOf(24)));
-            Range ra25(1, 0, 0, new Unary(opInitValueOf, Location::regOf(25)));
-            Range ra26(1, 0, 0, new Unary(opInitValueOf, Location::regOf(26)));
-            Range ra27(1, 0, 0, new Unary(opInitValueOf, Location::regOf(27)));
-            Range ra28(1, 0, 0, new Unary(opInitValueOf, Location::regOf(28)));
-            Range ra29(1, 0, 0, new Unary(opInitValueOf, Location::regOf(29)));
-            Range ra30(1, 0, 0, new Unary(opInitValueOf, Location::regOf(30)));
-            Range ra31(1, 0, 0, new Unary(opInitValueOf, Location::regOf(31)));
-            Range rpc(1, 0, 0, new Unary(opInitValueOf, Terminal::get(opPC)));
+            Range ra24(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(24)));
+            Range ra25(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(25)));
+            Range ra26(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(26)));
+            Range ra27(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(27)));
+            Range ra28(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(28)));
+            Range ra29(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(29)));
+            Range ra30(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(30)));
+            Range ra31(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(31)));
+            Range rpc(1, 0, 0, Unary::get(opInitValueOf, Terminal::get(opPC)));
             input.addRange(Location::regOf(24), ra24);
             input.addRange(Location::regOf(25), ra25);
             input.addRange(Location::regOf(26), ra26);
@@ -190,11 +190,11 @@ struct RangeVisitor : public StmtVisitor {
         static Unary search_term(opTemp, Terminal::get(opWild));
         static Unary search_regof(opRegOf, Terminal::get(opWild));
         RangeMap output = getInputRanges(insn);
-        Exp *a_lhs = insn->getLeft()->clone();
+        auto a_lhs = insn->getLeft()->clone();
         if (a_lhs->isFlags()) {
             // special hacks for flags
             assert(insn->getRight()->isFlagCall());
-            Exp *a_rhs = insn->getRight()->clone();
+            auto a_rhs = insn->getRight()->clone();
             if (a_rhs->getSubExp2()->getSubExp1()->isMemOf())
                 a_rhs->getSubExp2()->getSubExp1()->setSubExp1(
                             output.substInto(a_rhs->getSubExp2()->getSubExp1()->getSubExp1()));
@@ -207,15 +207,15 @@ struct RangeVisitor : public StmtVisitor {
         } else {
             if (a_lhs->isMemOf())
                 a_lhs->setSubExp1(output.substInto(a_lhs->getSubExp1()->clone()));
-            Exp *a_rhs = output.substInto(insn->getRight()->clone());
+            auto a_rhs = output.substInto(insn->getRight()->clone());
             if (a_rhs->isMemOf() && a_rhs->getSubExp1()->getOper() == opInitValueOf &&
                     a_rhs->getSubExp1()->getSubExp1()->isRegOfK() &&
-                    ((Const *)a_rhs->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 28)
-                a_rhs = new Unary(opInitValueOf, Terminal::get(opPC)); // nice hack
+                    a_rhs->subExp<Const,1,1,1>()->getInt() == 28)
+                a_rhs = Unary::get(opInitValueOf, Terminal::get(opPC)); // nice hack
             if (VERBOSE && DEBUG_RANGE_ANALYSIS)
                 LOG << "a_rhs is " << a_rhs << "\n";
             if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
-                ADDRESS c = ((Const *)a_rhs->getSubExp1())->getAddr();
+                ADDRESS c = a_rhs->subExp<Const,1>()->getAddr();
                 if (insn->getProc()->getProg()->isDynamicLinkedProcPointer(c)) {
                     const QString &nam(insn->getProc()->getProg()->GetDynamicProcName(c));
                     if (!nam.isEmpty()) {
@@ -243,7 +243,7 @@ struct RangeVisitor : public StmtVisitor {
             if ((a_rhs->getOper() == opPlus || a_rhs->getOper() == opMinus) && a_rhs->getSubExp2()->isIntConst() &&
                     output.hasRange(a_rhs->getSubExp1())) {
                 Range &r = output.getRange(a_rhs->getSubExp1());
-                int c = ((Const *)a_rhs->getSubExp2())->getInt();
+                int c = a_rhs->subExp<Const,2>()->getInt();
                 if (a_rhs->getOper() == opPlus) {
                     Range ra(1, r.getLowerBound() != Range::MIN ? r.getLowerBound() + c : Range::MIN,
                              r.getUpperBound() != Range::MAX ? r.getUpperBound() + c : Range::MAX, r.getBase());
@@ -257,11 +257,11 @@ struct RangeVisitor : public StmtVisitor {
                 if (output.hasRange(a_rhs)) {
                     output.addRange(a_lhs, output.getRange(a_rhs));
                 } else {
-                    Exp *result;
+                    SharedExp result;
                     if (a_rhs->getMemDepth() == 0 && !a_rhs->search(search_regof, result) &&
                             !a_rhs->search(search_term, result)) {
                         if (a_rhs->isIntConst()) {
-                            Range ra(1, ((Const *)a_rhs)->getInt(), ((Const *)a_rhs)->getInt(), Const::get(0));
+                            Range ra(1, a_rhs->subExp<Const>()->getInt(), a_rhs->subExp<Const>()->getInt(), Const::get(0));
                             output.addRange(a_lhs, ra);
                         } else {
                             Range ra(1, 0, 0, a_rhs);
@@ -290,7 +290,7 @@ struct RangeVisitor : public StmtVisitor {
     bool visit(BranchStatement * stmt) {
         RangeMap output = getInputRanges(stmt);
 
-        Exp *e = nullptr;
+        SharedExp e = nullptr;
         // try to hack up a useful expression for this branch
         OPER op = stmt->getCondExpr()->getOper();
         if (op == opLess || op == opLessEq || op == opGtr || op == opGtrEq || op == opLessUns || op == opLessEqUns ||
@@ -312,7 +312,7 @@ struct RangeVisitor : public StmtVisitor {
         updateRanges(stmt,output);
         output = getInputRanges(stmt);
         if (e)
-            limitOutputWithCondition(stmt,output, (new Unary(opNot, e))->simplify());
+            limitOutputWithCondition(stmt,output, (Unary::get(opNot, e))->simplify());
         updateRanges(stmt,output, true);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS)
@@ -325,20 +325,20 @@ struct RangeVisitor : public StmtVisitor {
         ;
         if (stmt->getDestProc() == nullptr) {
             // note this assumes the call is only to one proc.. could be bad.
-            Exp *d = output.substInto(stmt->getDest()->clone());
+            auto d = output.substInto(stmt->getDest()->clone());
             if (d->isIntConst() || d->isStrConst()) {
                 if (d->isIntConst()) {
-                    ADDRESS dest = ((Const *)d)->getAddr();
+                    ADDRESS dest = d->subExp<Const>()->getAddr();
                     stmt->setDestProc(stmt->getProc()->getProg()->setNewProc(dest));
                 } else {
-                    stmt->setDestProc(stmt->getProc()->getProg()->getLibraryProc(((Const *)d)->getStr()));
+                    stmt->setDestProc(stmt->getProc()->getProg()->getLibraryProc(d->subExp<Const>()->getStr()));
                 }
                 if (stmt->getDestProc()) {
-                    Signature *sig = stmt->getDestProc()->getSignature();
+                    auto sig = stmt->getDestProc()->getSignature();
                     stmt->setDest(d);
                     stmt->getArguments().clear();
                     for (size_t i = 0; i < sig->getNumParams(); i++) {
-                        Exp *a = sig->getParamExp(i);
+                        auto a = sig->getParamExp(i);
                         Assign *as = new Assign(VoidType::get(), a->clone(), a->clone());
                         as->setProc(stmt->getProc());
                         as->setBB(stmt->getBB());
@@ -362,7 +362,7 @@ struct RangeVisitor : public StmtVisitor {
                 while (prev) {
                     if (prev->isAssign() && ((Assign *)prev)->getLeft()->isMemOf() &&
                             ((Assign *)prev)->getLeft()->getSubExp1()->isRegOfK() &&
-                            ((Const *)((Assign *)prev)->getLeft()->getSubExp1()->getSubExp1())->getInt() == 28 &&
+                            ((Assign *)prev)->getLeft()->subExp<Const,1,1>()->getInt() == 28 &&
                             ((Assign *)prev)->getRight()->getOper() != opPC) {
                         c += 4;
                     }
@@ -379,12 +379,12 @@ struct RangeVisitor : public StmtVisitor {
             } else if (!stmt->getDestProc()->isLib()) {
                 UserProc *p = (UserProc *)stmt->getDestProc();
                 LOG_VERBOSE(1) << "== checking for number of bytes popped ==\n" << *p << "== end it ==\n";
-                Exp *eq = p->getProven(Location::regOf(28));
+                SharedExp eq = p->getProven(Location::regOf(28));
                 if (eq) {
                     LOG_VERBOSE(1) << "found proven " << eq << "\n";
                     if (eq->getOper() == opPlus && *eq->getSubExp1() == *Location::regOf(28) &&
                             eq->getSubExp2()->isIntConst()) {
-                        c = ((Const *)eq->getSubExp2())->getInt();
+                        c = eq->subExp<Const,2>()->getInt();
                     } else
                         eq = nullptr;
                 }
@@ -413,12 +413,12 @@ struct RangeVisitor : public StmtVisitor {
                     if (last && last->isAssign()) {
                         // LOG << "checking last statement " << last << " for number of bytes popped\n";
                         Assign *a = (Assign *)last;
-                        assert(a->getLeft()->isRegOfK() && ((Const *)a->getLeft()->getSubExp1())->getInt() == 28);
-                        Exp *t = a->getRight()->clone()->simplifyArith();
+                        assert(a->getLeft()->isRegOfK() && (a->getLeft()->subExp<Const,1>()->getInt() == 28));
+                        auto t = a->getRight()->clone()->simplifyArith();
                         assert(t->getOper() == opPlus && t->getSubExp1()->isRegOfK() &&
-                               ((Const *)t->getSubExp1()->getSubExp1())->getInt() == 28);
+                               (t->subExp<Const,1,1>()->getInt() == 28));
                         assert(t->getSubExp2()->isIntConst());
-                        c = ((Const *)t->getSubExp2())->getInt();
+                        c = t->subExp<Const,2>()->getInt();
                     }
                 }
             }
@@ -491,14 +491,14 @@ private:
             return tgt->getRanges(b);
         return tgt->getBranchRange(b);
     }
-    void limitOutputWithCondition(BranchStatement */*stmt*/,RangeMap &output, Exp *e) {
+    void limitOutputWithCondition(BranchStatement */*stmt*/,RangeMap &output, const SharedExp &e) {
         assert(e);
         if (!output.hasRange(e->getSubExp1()))
             return;
         Range &r = output.getRange(e->getSubExp1());
-        if (!(e->getSubExp2()->isIntConst() && r.getBase()->isIntConst() && ((Const *)r.getBase())->getInt() == 0))
+        if (!(e->getSubExp2()->isIntConst() && r.getBase()->isIntConst() && r.getBase()->subExp<Const>()->getInt() == 0))
             return;
-        int c = ((Const *)e->getSubExp2())->getInt();
+        int c = e->subExp<Const,2>()->getInt();
         switch (e->getOper()) {
         case opLess:
         case opLessUns: {
@@ -639,14 +639,14 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc &UF) {
         if (!a->getLeft()->isMemOf())
             continue;
         RangeMap &rm = RangeData->getRanges(st);
-        Exp *p = rm.substInto(a->getLeft()->getSubExp1()->clone());
+        SharedExp p = rm.substInto(a->getLeft()->getSubExp1()->clone());
         if (rm.hasRange(p)) {
             Range &r = rm.getRange(p);
             LOG_STREAM(LL_Default) << "got p " << p << " with range ";
             LOG_STREAM(LL_Default) << r.toString();
             LOG_STREAM(LL_Default) << "\n";
             if (r.getBase()->getOper() == opInitValueOf && r.getBase()->getSubExp1()->isRegOfK() &&
-                    ((Const *)r.getBase()->getSubExp1()->getSubExp1())->getInt() == 28) {
+                    r.getBase()->subExp<Const,1,1>()->getInt() == 28) {
                 RTL *rtl = a->getBB()->getRTLWithStatement(a);
                 LOG << "interesting stack reference at " << rtl->getAddress() << " " << a << "\n";
             }
@@ -658,19 +658,19 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc &UF) {
 
 Range::Range() : stride(1), lowerBound(MIN), upperBound(MAX) { base = Const::get(0); }
 
-Range::Range(int stride, int lowerBound, int upperBound, Exp *base)
+Range::Range(int stride, int lowerBound, int upperBound, SharedExp base)
     : stride(stride), lowerBound(lowerBound), upperBound(upperBound), base(base) {
     if (lowerBound == upperBound && lowerBound == 0 && (base->getOper() == opMinus || base->getOper() == opPlus) &&
             base->getSubExp2()->isIntConst()) {
-        this->lowerBound = ((Const *)base->getSubExp2())->getInt();
+        this->lowerBound = base->subExp<Const,2>()->getInt();
         if (base->getOper() == opMinus)
             this->lowerBound = -this->lowerBound;
         this->upperBound = this->lowerBound;
         this->base = base->getSubExp1();
     } else {
         if (base == nullptr)
-            // NOTE: was "base = new Const(0);"
-            this->base = new Const(0);
+            // NOTE: was "base = Const::get(0);"
+            this->base = Const::get(0);
         if (lowerBound > upperBound)
             this->upperBound = lowerBound;
         if (upperBound < lowerBound)
@@ -682,13 +682,13 @@ QString Range::toString() const {
     QString res;
     QTextStream os(&res);
     assert(lowerBound <= upperBound);
-    if (base->isIntConst() && ((Const *)base)->getInt() == 0 && lowerBound == MIN && upperBound == MAX) {
+    if (base->isIntConst() && base->subExp<Const>()->getInt() == 0 && lowerBound == MIN && upperBound == MAX) {
         os << "T";
         return res;
     }
     bool needPlus = false;
     if (lowerBound == upperBound) {
-        if (!base->isIntConst() || ((Const *)base)->getInt() != 0) {
+        if (!base->isIntConst() || base->subExp<Const>()->getInt() != 0) {
             if (lowerBound != 0) {
                 os << lowerBound;
                 needPlus = true;
@@ -713,7 +713,7 @@ QString Range::toString() const {
         os << "]";
         needPlus = true;
     }
-    if (!base->isIntConst() || ((Const *)base)->getInt() != 0) {
+    if (!base->isIntConst() || base->subExp<Const>()->getInt() != 0) {
         if (needPlus)
             os << " + ";
         base->print(os);
@@ -727,8 +727,8 @@ void Range::unionWith(Range &r) {
     assert(base && r.base);
     if (base->getOper() == opMinus && r.base->getOper() == opMinus && *base->getSubExp1() == *r.base->getSubExp1() &&
             base->getSubExp2()->isIntConst() && r.base->getSubExp2()->isIntConst()) {
-        int c1 = ((Const *)base->getSubExp2())->getInt();
-        int c2 = ((Const *)r.base->getSubExp2())->getInt();
+        int c1 = base->subExp<Const,2>()->getInt();
+        int c2 = r.base->subExp<Const,2>()->getInt();
         if (c1 != c2) {
             if (lowerBound == r.lowerBound && upperBound == r.upperBound && lowerBound == 0) {
                 lowerBound = std::min(-c1, -c2);
@@ -779,7 +779,7 @@ void Range::widenWith(Range &r) {
     if (VERBOSE && DEBUG_RANGE_ANALYSIS)
         LOG_STREAM(LL_Default) << toString();
 }
-Range &RangeMap::getRange(Exp *loc) {
+Range &RangeMap::getRange(const SharedExp &loc) {
     if (ranges.find(loc) == ranges.end()) {
         return *(new Range(1, Range::MIN, Range::MAX, Const::get(0)));
     }
@@ -808,22 +808,22 @@ void RangeMap::widenwith(RangeMap &other) {
 
 QString RangeMap::toString() const {
     QStringList res;
-    for (const std::pair<Exp *,Range> & elem : ranges) {
+    for (const std::pair<SharedExp,Range> & elem : ranges) {
         res += QString("%1 -> %2").arg(elem.first->toString()).arg(elem.second.toString());
     }
     return res.join(", ");
 }
 
-Exp *RangeMap::substInto(Exp *e, std::set<Exp *, lessExpStar> *only) const {
+SharedExp RangeMap::substInto(SharedExp e, std::set<SharedExp, lessExpStar> *only) const {
     bool changes;
     int count = 0;
     do {
         changes = false;
-        for (const std::pair<Exp *,Range> & elem : ranges) {
+        for (const std::pair<SharedExp,Range> & elem : ranges) {
             if (only && only->find(elem.first) == only->end())
                 continue;
             bool change = false;
-            Exp *eold = nullptr;
+            SharedExp eold = nullptr;
             if (DEBUG_RANGE_ANALYSIS)
                 eold = e->clone();
             if (elem.second.getLowerBound() == elem.second.getUpperBound()) {
@@ -831,7 +831,7 @@ Exp *RangeMap::substInto(Exp *e, std::set<Exp *, lessExpStar> *only) const {
                 // elem.second.getBase() instead of a clone.
                 e = e->searchReplaceAll(*elem.first,
                                         (Binary::get(opPlus, elem.second.getBase(),
-                                                     new Const(elem.second.getLowerBound())))->simplify(),
+                                                     Const::get(elem.second.getLowerBound())))->simplify(),
                                         change);
             }
             if (change) {
@@ -863,7 +863,7 @@ bool Range::operator==(Range &other) {
 
 // return true if this range map is a subset of the other range map
 bool RangeMap::isSubset(RangeMap &other) {
-    for (std::pair<Exp *, Range> it : ranges) {
+    for (std::pair<SharedExp, Range> it : ranges) {
         if (other.ranges.find(it.first) == other.ranges.end()) {
             if (VERBOSE && DEBUG_RANGE_ANALYSIS)
                 LOG << "did not find " << it.first << " in other, not a subset\n";

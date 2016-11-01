@@ -99,7 +99,7 @@ bool InstructionSet::exists(Instruction *s) {
 }
 
 // Find a definition for loc in this Statement set. Return true if found
-bool InstructionSet::definesLoc(Exp *loc) {
+bool InstructionSet::definesLoc(SharedExp loc) {
     for (auto const &elem : *this) {
         if ((elem)->definesLoc(loc))
             return true;
@@ -224,16 +224,16 @@ bool AssignSet::exists(Assign *a) {
 }
 
 // Find a definition for loc in this Assign set. Return true if found
-bool AssignSet::definesLoc(Exp *loc) {
-    Assign *as = new Assign(loc, Terminal::get(opWild));
-    iterator ff = find(as);
+bool AssignSet::definesLoc(SharedExp loc) {
+    Assign as(loc, Terminal::get(opWild));
+    iterator ff = find(&as);
     return ff != end();
 }
 
 // Find a definition for loc on the LHS in this Assign set. If found, return pointer to the Assign with that LHS
-Assign *AssignSet::lookupLoc(Exp *loc) {
-    Assign *as = new Assign(loc, Terminal::get(opWild));
-    iterator ff = find(as);
+Assign *AssignSet::lookupLoc(SharedExp loc) {
+    Assign as(loc, Terminal::get(opWild));
+    iterator ff = find(&as);
     if (ff == end())
         return nullptr;
     return *ff;
@@ -304,7 +304,7 @@ bool AssignSet::operator<(const AssignSet &o) const {
 // Assignment operator
 LocationSet &LocationSet::operator=(const LocationSet &o) {
     lset.clear();
-    std::set<Exp *, lessExpStar>::const_iterator it;
+    std::set<SharedExp , lessExpStar>::const_iterator it;
     for (it = o.lset.begin(); it != o.lset.end(); it++) {
         lset.insert((*it)->clone());
     }
@@ -313,7 +313,7 @@ LocationSet &LocationSet::operator=(const LocationSet &o) {
 
 // Copy constructor
 LocationSet::LocationSet(const LocationSet &o) {
-    std::set<Exp *, lessExpStar>::const_iterator it;
+    std::set<SharedExp , lessExpStar>::const_iterator it;
     for (it = o.lset.begin(); it != o.lset.end(); it++)
         lset.insert((*it)->clone());
 }
@@ -321,7 +321,7 @@ LocationSet::LocationSet(const LocationSet &o) {
 char *LocationSet::prints() {
     QString tgt;
     QTextStream ost(&tgt);
-    std::set<Exp *, lessExpStar>::iterator it;
+    std::set<SharedExp , lessExpStar>::iterator it;
     for (it = lset.begin(); it != lset.end(); it++) {
         if (it != lset.begin())
             ost << ",\t";
@@ -338,7 +338,7 @@ void LocationSet::dump() {
 }
 
 void LocationSet::print(QTextStream &os) const {
-    std::set<Exp *, lessExpStar>::iterator it;
+    std::set<SharedExp , lessExpStar>::iterator it;
     for (it = lset.begin(); it != lset.end(); it++) {
         if (it != lset.begin())
             os << ",\t";
@@ -346,8 +346,8 @@ void LocationSet::print(QTextStream &os) const {
     }
 }
 //! \param given is not modified, and could be const'd if not for std::set requirements
-void LocationSet::remove(Exp *given) {
-    std::set<Exp *, lessExpStar>::iterator it = lset.find(given);
+void LocationSet::remove(SharedExp given) {
+    std::set<SharedExp , lessExpStar>::iterator it = lset.find(given);
     if (it == lset.end())
         return;
     // LOG_STREAM() << "LocationSet::remove at " << std::hex << (unsigned)this << " of " << *it << "\n";
@@ -383,7 +383,7 @@ void LocationSet::makeUnion(LocationSet &other) {
 
 // Make this set the set difference of itself and other
 void LocationSet::makeDiff(LocationSet &other) {
-    std::set<Exp *, lessExpStar>::iterator it;
+    std::set<SharedExp , lessExpStar>::iterator it;
     for (it = other.lset.begin(); it != other.lset.end(); it++) {
         lset.erase(*it);
     }
@@ -393,7 +393,7 @@ bool LocationSet::operator==(const LocationSet &o) const {
     // We want to compare the locations, not the pointers
     if (size() != o.size())
         return false;
-    std::set<Exp *, lessExpStar>::const_iterator it1, it2;
+    std::set<SharedExp , lessExpStar>::const_iterator it1, it2;
     for (it1 = lset.begin(), it2 = o.lset.begin(); it1 != lset.end(); it1++, it2++) {
         if (!(**it1 == **it2))
             return false;
@@ -401,34 +401,34 @@ bool LocationSet::operator==(const LocationSet &o) const {
     return true;
 }
 
-bool LocationSet::exists(Exp *e) { return lset.find(e) != lset.end(); }
+bool LocationSet::exists(SharedExp e) { return lset.find(e) != lset.end(); }
 
 // This set is assumed to be of subscripted locations (e.g. a Collector), and we want to find the unsubscripted
 // location e in the set
-Exp *LocationSet::findNS(Exp *e) {
+SharedExp LocationSet::findNS(SharedExp e) {
     // Note: can't search with a wildcard, since it doesn't have the weak ordering required (I think)
-    RefExp r(e, nullptr);
+    auto r(RefExp::get(e, nullptr));
     // Note: the below assumes that nullptr is less than any other pointer
-    iterator it = lset.lower_bound(&r);
+    iterator it = lset.lower_bound(r);
     if (it == lset.end())
         return nullptr;
-    if ((*((RefExp *)*it)->getSubExp1() == *e))
+    if ((*(*it)->getSubExp1() == *e))
         return *it;
     else
         return nullptr;
 }
 
 // Given an unsubscripted location e, return true if e{-} or e{0} exists in the set
-bool LocationSet::existsImplicit(Exp *e) {
-    RefExp r(e, nullptr);
-    iterator it = lset.lower_bound(&r); // First element >= r
+bool LocationSet::existsImplicit(SharedExp e) {
+    auto r(RefExp::get(e, nullptr));
+    iterator it = lset.lower_bound(r); // First element >= r
     // Note: the below relies on the fact that nullptr is less than any other pointer. Try later entries in the set:
     while (it != lset.end()) {
         if (!(*it)->isSubscript())
             return false;                            // Looking for e{something} (could be e.g. %pc)
-        if (!(*((RefExp *)*it)->getSubExp1() == *e)) // Gone past e{anything}?
+        if (!(*(*it)->getSubExp1() == *e)) // Gone past e{anything}?
             return false;                            // Yes, then e{-} or e{0} cannot exist
-        if (((RefExp *)*it)->isImplicitDef())        // Check for e{-} or e{0}
+        if ((*it)->subExp<RefExp>()->isImplicitDef())        // Check for e{-} or e{0}
             return true;                             // Found
         ++it;                                        // Else check next entry
     }
@@ -437,10 +437,10 @@ bool LocationSet::existsImplicit(Exp *e) {
 
 // Find a location with a different def, but same expression. For example, pass r28{10},
 // return true if r28{20} in the set. If return true, dr points to the first different ref
-bool LocationSet::findDifferentRef(RefExp *e, Exp *&dr) {
+bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp> &e, SharedExp & dr) {
     assert(e);
-    RefExp search(e->getSubExp1()->clone(), (Instruction *)-1);
-    std::set<Exp *, lessExpStar>::iterator pos = lset.find(&search);
+    auto search = RefExp::get(e->getSubExp1()->clone(), (Instruction *)-1);
+    std::set<SharedExp , lessExpStar>::iterator pos = lset.find(search);
     if (pos == lset.end())
         return false;
     while (pos != lset.end()) {
@@ -463,23 +463,23 @@ bool LocationSet::findDifferentRef(RefExp *e, Exp *&dr) {
 
 // Add a subscript (to definition d) to each element
 void LocationSet::addSubscript(Instruction *d /* , Cfg* cfg */) {
-    std::set<Exp *, lessExpStar>::iterator it;
-    std::set<Exp *, lessExpStar> newSet;
-    for (it = lset.begin(); it != lset.end(); it++)
-        newSet.insert((*it)->expSubscriptVar(*it, d /* , cfg */));
+    std::set<SharedExp , lessExpStar>::iterator it;
+    std::set<SharedExp , lessExpStar> newSet;
+    for (SharedExp it : lset)
+        newSet.insert(it->expSubscriptVar(it, d /* , cfg */));
     lset = newSet; // Replace the old set!
                    // Note: don't delete the old exps; they are copied in the new set
 }
 
 // Substitute s into all members of the set
 void LocationSet::substitute(Assign &a) {
-    Exp *lhs = a.getLeft();
+    auto lhs = a.getLeft();
     if (lhs == nullptr)
         return;
-    Exp *rhs = a.getRight();
+    SharedExp rhs = a.getRight();
     if (rhs == nullptr)
         return; // ? Will this ever happen?
-    std::set<Exp *, lessExpStar>::iterator it;
+    std::set<SharedExp , lessExpStar>::iterator it;
     // Note: it's important not to change the pointer in the set of pointers to expressions, without removing and
     // inserting again. Otherwise, the set becomes out of order, and operations such as set comparison fail!
     // To avoid any funny behaviour when iterating the loop, we use the following two sets
@@ -488,8 +488,8 @@ void LocationSet::substitute(Assign &a) {
     LocationSet insertSet;       // These will be inserted after the loop
     bool change;
     for (it = lset.begin(); it != lset.end(); it++) {
-        Exp *loc = *it;
-        Exp *replace;
+        SharedExp loc = *it;
+        SharedExp replace;
         if (loc->search(*lhs, replace)) {
             if (rhs->isTerminal()) {
                 // This is no longer a location of interest (e.g. %pc)
@@ -523,9 +523,9 @@ void LocationSet::substitute(Assign &a) {
     makeDiff(removeAndDelete); // These are to be removed as well
     makeUnion(insertSet);      // Insert the items to be added
     // Now delete the expressions that are no longer needed
-    std::set<Exp *, lessExpStar>::iterator dd;
-    for (dd = removeAndDelete.lset.begin(); dd != removeAndDelete.lset.end(); dd++)
-        delete *dd; // Plug that memory leak
+//    std::set<SharedExp , lessExpStar>::iterator dd;
+//    for (dd = removeAndDelete.lset.begin(); dd != removeAndDelete.lset.end(); dd++)
+//        delete *dd; // Plug that memory leak
 }
 
 //
@@ -622,7 +622,7 @@ void StatementList::makeCloneOf(StatementList &o) {
 
 // Return true if loc appears on the left of any statements in this list
 // Note: statements in this list are assumed to be assignments
-bool StatementList::existsOnLeft(Exp *loc) {
+bool StatementList::existsOnLeft(SharedExp loc) {
     for (auto &elem : *this) {
         if (*((Assignment *)elem)->getLeft() == *loc)
             return true;
@@ -632,7 +632,7 @@ bool StatementList::existsOnLeft(Exp *loc) {
 
 //! Remove the first definition where loc appears on the left
 //! \note statements in this list are assumed to be assignments
-void StatementList::removeDefOf(Exp *loc) {
+void StatementList::removeDefOf(SharedExp loc) {
     for (iterator it = begin(); it != end(); it++) {
         if (*((Assignment *)*it)->getLeft() == *loc) {
             erase(it);
@@ -642,16 +642,16 @@ void StatementList::removeDefOf(Exp *loc) {
 }
 
 // Find the first Assignment with loc on the LHS
-Assignment *StatementList::findOnLeft(Exp *loc) {
+Assignment *StatementList::findOnLeft(SharedExp loc) {
     if (empty())
         return nullptr;
     for (auto &elem : *this) {
-        Exp *left = ((Assignment *)elem)->getLeft();
+        SharedExp left = ((Assignment *)elem)->getLeft();
         if (*left == *loc)
             return (Assignment *)elem;
         if (left->isLocal()) {
-            Location *l = (Location *)left;
-            const Exp *e = l->getProc()->expFromSymbol(((Const *)l->getSubExp1())->getStr());
+            auto l = left->subExp<Location>();
+            SharedConstExp e = l->getProc()->expFromSymbol(l->subExp<Const,1>()->getStr());
             if (e && ((*e == *loc) || (e->isSubscript() && *e->getSubExp1() == *loc))) {
                 return (Assignment *)elem;
             }
@@ -661,10 +661,10 @@ Assignment *StatementList::findOnLeft(Exp *loc) {
 }
 
 void LocationSet::diff(LocationSet *o) {
-    std::set<Exp *, lessExpStar>::iterator it;
+    std::set<SharedExp , lessExpStar>::iterator it;
     bool printed2not1 = false;
     for (it = o->lset.begin(); it != o->lset.end(); it++) {
-        Exp *oe = *it;
+        SharedExp oe = *it;
         if (lset.find(oe) == lset.end()) {
             if (!printed2not1) {
                 printed2not1 = true;
@@ -677,7 +677,7 @@ void LocationSet::diff(LocationSet *o) {
         LOG_STREAM() << "\n";
     bool printed1not2 = false;
     for (it = lset.begin(); it != lset.end(); it++) {
-        Exp *e = *it;
+        SharedExp e = *it;
         if (o->lset.find(e) == o->lset.end()) {
             if (!printed1not2) {
                 printed1not2 = true;
@@ -692,21 +692,21 @@ void LocationSet::diff(LocationSet *o) {
 
 //    class ConnectionGraph
 
-void ConnectionGraph::add(Exp *a, Exp *b) {
+void ConnectionGraph::add(SharedExp a, SharedExp b) {
     iterator ff = emap.find(a);
     while (ff != emap.end() && *ff->first == *a) {
         if (*ff->second == *b)
             return; // Don't add a second entry
         ++ff;
     }
-    std::pair<Exp *, Exp *> pr;
+    std::pair<SharedExp , SharedExp > pr;
     pr.first = a;
     pr.second = b;
     emap.insert(pr);
 }
 
-std::vector<Exp *> ConnectionGraph::allConnected(Exp *a) {
-    std::vector<Exp *> res;
+std::vector<SharedExp > ConnectionGraph::allConnected(SharedExp a) {
+    std::vector<SharedExp > res;
     const_iterator ff = emap.find(a);
     while (ff != emap.end() && *ff->first == *a) {
         res.push_back(ff->second);
@@ -714,21 +714,21 @@ std::vector<Exp *> ConnectionGraph::allConnected(Exp *a) {
     }
     return res;
 }
-void ConnectionGraph::connect(Exp *a, Exp *b) {
+void ConnectionGraph::connect(SharedExp a, SharedExp b) {
     // if a is connected to c,d and e, 'b' should also be connected to c,d and e
-    std::vector<Exp *> a_connections = allConnected(a);
-    std::vector<Exp *> b_connections = allConnected(b);
+    std::vector<SharedExp > a_connections = allConnected(a);
+    std::vector<SharedExp > b_connections = allConnected(b);
     add(a, b);
-    for(Exp * e : b_connections) {
+    for(const SharedExp &e : b_connections) {
         add(a,e);
     }
     add(b, a);
-    for(Exp * e : a_connections) {
+    for(SharedExp  e : a_connections) {
         add(e,b);
     }
 }
 //! Return a count of locations connected to \a e
-int ConnectionGraph::count(Exp *e) const {
+int ConnectionGraph::count(SharedExp e) const {
     const_iterator ff = emap.find(e);
     int n = 0;
     while (ff != emap.end() && *ff->first == *e) {
@@ -738,7 +738,7 @@ int ConnectionGraph::count(Exp *e) const {
     return n;
 }
 //! Return true if a is connected to b
-bool ConnectionGraph::isConnected(Exp *a, const Exp &b) const {
+bool ConnectionGraph::isConnected(SharedExp a, const Exp &b) const {
     const_iterator ff = emap.find(a);
     while (ff != emap.end() && *ff->first == *a) {
         if (*ff->second == b)
@@ -748,9 +748,24 @@ bool ConnectionGraph::isConnected(Exp *a, const Exp &b) const {
     return false;
 }
 
+bool ConnectionGraph::allRefsHaveDefs() const
+{
+    for (auto iter : *this) {
+        const SharedExp &fr(iter.first);
+        const SharedExp &sc(iter.second);
+        assert(std::dynamic_pointer_cast<RefExp>(fr));
+        assert(std::dynamic_pointer_cast<RefExp>(sc));
+        if(nullptr==std::static_pointer_cast<RefExp>(fr)->getDef())
+            return false;
+        if(nullptr==std::static_pointer_cast<RefExp>(sc)->getDef())
+            return false;
+    }
+    return true;
+}
+
 // Modify the map so that a <-> b becomes a <-> c
 //! Update the map that used to be a <-> b, now it is a <-> c
-void ConnectionGraph::update(Exp *a, Exp *b, Exp *c) {
+void ConnectionGraph::update(SharedExp a, SharedExp b, SharedExp c) {
     // find a->b
     iterator ff = emap.find(a);
     while (ff != emap.end() && *ff->first == *a) {
@@ -775,7 +790,7 @@ void ConnectionGraph::update(Exp *a, Exp *b, Exp *c) {
 // Remove the mapping at *aa, and return a valid iterator for looping
 ConnectionGraph::iterator ConnectionGraph::remove(iterator aa) {
     assert(aa != emap.end());
-    Exp *b = aa->second;
+    SharedExp b = aa->second;
     emap.erase(aa++);
     iterator bb = emap.find(b);
     assert(bb != emap.end());

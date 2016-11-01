@@ -23,9 +23,11 @@
 #include <vector>
 #include <cassert>
 #include "statement.h" // For CallStatement::RetLocs
+#include <memory>
 
 class BasicBlock;
 class Exp;
+using SharedExp = std::shared_ptr<Exp>;
 class UserProc;
 class Function;
 class Type;
@@ -61,7 +63,7 @@ class HLLCode {
       */
 
     // pretested loops
-    virtual void AddPretestedLoopHeader(int indLevel, Exp *cond) = 0;
+    virtual void AddPretestedLoopHeader(int indLevel, const SharedExp & cond) = 0;
     virtual void AddPretestedLoopEnd(int indLevel) = 0;
 
     // endless loops
@@ -70,21 +72,21 @@ class HLLCode {
 
     // posttested loops
     virtual void AddPosttestedLoopHeader(int indLevel) = 0;
-    virtual void AddPosttestedLoopEnd(int indLevel, Exp *cond) = 0;
+    virtual void AddPosttestedLoopEnd(int indLevel, const SharedExp & cond) = 0;
 
     // case conditionals "nways"
-    virtual void AddCaseCondHeader(int indLevel, Exp *cond) = 0;
+    virtual void AddCaseCondHeader(int indLevel, const SharedExp &cond) = 0;
     virtual void AddCaseCondOption(int indLevel, Exp &opt) = 0;
     virtual void AddCaseCondOptionEnd(int indLevel) = 0;
     virtual void AddCaseCondElse(int indLevel) = 0;
     virtual void AddCaseCondEnd(int indLevel) = 0;
 
     // if conditions
-    virtual void AddIfCondHeader(int indLevel, Exp *cond) = 0;
+    virtual void AddIfCondHeader(int indLevel, const SharedExp &cond) = 0;
     virtual void AddIfCondEnd(int indLevel) = 0;
 
     // if else conditions
-    virtual void AddIfElseCondHeader(int indLevel, Exp *cond) = 0;
+    virtual void AddIfElseCondHeader(int indLevel, const SharedExp &cond) = 0;
     virtual void AddIfElseCondOption(int indLevel) = 0;
     virtual void AddIfElseCondEnd(int indLevel) = 0;
 
@@ -102,14 +104,14 @@ class HLLCode {
     virtual void AddAssignmentStatement(int indLevel, Assign *s) = 0;
     virtual void AddCallStatement(int indLevel, Function *proc, const QString &name, StatementList &args,
                                   StatementList *results) = 0;
-    virtual void AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList *results) = 0;
+    virtual void AddIndCallStatement(int indLevel, const SharedExp &exp, StatementList &args, StatementList *results) = 0;
     virtual void AddReturnStatement(int indLevel, StatementList *rets) = 0;
 
     // procedure related
     virtual void AddProcStart(UserProc *proc) = 0;
     virtual void AddProcEnd() = 0;
     virtual void AddLocal(const QString &name, SharedType type, bool last = false) = 0;
-    virtual void AddGlobal(const QString &name, SharedType type, Exp *init = nullptr) = 0;
+    virtual void AddGlobal(const QString &name, SharedType type, const SharedExp &init = nullptr) = 0;
     virtual void AddPrototype(UserProc *proc) = 0;
 
     // comments
@@ -242,7 +244,7 @@ class BlockSyntaxNode : public SyntaxNode {
 class IfThenSyntaxNode : public SyntaxNode {
   protected:
     SyntaxNode *pThen;
-    Exp *cond;
+    SharedExp cond;
 
   public:
     IfThenSyntaxNode();
@@ -264,8 +266,8 @@ class IfThenSyntaxNode : public SyntaxNode {
         return pThen->getEnclosingLoop(pFor, cur);
     }
 
-    void setCond(Exp *e) { cond = e; }
-    Exp *getCond() { return cond; }
+    void setCond(SharedExp e) { cond = e; }
+    SharedExp getCond() { return cond; }
     void setThen(SyntaxNode *n) { pThen = n; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;
@@ -278,7 +280,7 @@ class IfThenElseSyntaxNode : public SyntaxNode {
   protected:
     SyntaxNode *pThen;
     SyntaxNode *pElse;
-    Exp *cond;
+    SharedExp cond;
 
   public:
     IfThenElseSyntaxNode();
@@ -306,7 +308,7 @@ class IfThenElseSyntaxNode : public SyntaxNode {
     virtual SyntaxNode *clone() override;
     virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
-    void setCond(Exp *e) { cond = e; }
+    void setCond(SharedExp e) { cond = e; }
     void setThen(SyntaxNode *n) { pThen = n; }
     void setElse(SyntaxNode *n) { pElse = n; }
 
@@ -319,7 +321,7 @@ class IfThenElseSyntaxNode : public SyntaxNode {
 class PretestedLoopSyntaxNode : public SyntaxNode {
   protected:
     SyntaxNode *pBody;
-    Exp *cond;
+    SharedExp cond;
 
   public:
     PretestedLoopSyntaxNode();
@@ -339,7 +341,7 @@ class PretestedLoopSyntaxNode : public SyntaxNode {
     virtual SyntaxNode *clone() override;
     virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
-    void setCond(Exp *e) { cond = e; }
+    void setCond(SharedExp e) { cond = e; }
     void setBody(SyntaxNode *n) { pBody = n; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;
@@ -351,7 +353,7 @@ class PretestedLoopSyntaxNode : public SyntaxNode {
 class PostTestedLoopSyntaxNode : public SyntaxNode {
   protected:
     SyntaxNode *pBody;
-    Exp *cond;
+    SharedExp cond;
 
   public:
     PostTestedLoopSyntaxNode();
@@ -371,7 +373,7 @@ class PostTestedLoopSyntaxNode : public SyntaxNode {
     virtual SyntaxNode *clone() override;
     virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) override;
 
-    void setCond(Exp *e) { cond = e; }
+    void setCond(SharedExp e) { cond = e; }
     void setBody(SyntaxNode *n) { pBody = n; }
 
     virtual SyntaxNode *findNodeFor(BasicBlock *bb) override;

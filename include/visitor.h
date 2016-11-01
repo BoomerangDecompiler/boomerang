@@ -71,38 +71,38 @@ class ExpVisitor {
 
     // visitor functions return false to abandon iterating through the expression (terminate the search)
     // Set override true to not do the usual recursion into children
-    virtual bool visit(Unary * /*e*/, bool &override) {
+    virtual bool visit( const std::shared_ptr<Unary> & /*e*/, bool &override) {
         override = false;
         return true;
     }
-    virtual bool visit(Binary * /*e*/, bool &override) {
+    virtual bool visit( const std::shared_ptr<Binary> & /*e*/, bool &override) {
         override = false;
         return true;
     }
-    virtual bool visit(Ternary * /*e*/, bool &override) {
+    virtual bool visit( const std::shared_ptr<Ternary> & /*e*/, bool &override) {
         override = false;
         return true;
     }
-    virtual bool visit(TypedExp * /*e*/, bool &override) {
+    virtual bool visit( const std::shared_ptr<TypedExp> & /*e*/, bool &override) {
         override = false;
         return true;
     }
-    virtual bool visit(FlagDef * /*e*/, bool &override) {
+    virtual bool visit( const std::shared_ptr<FlagDef> & /*e*/, bool &override) {
         override = false;
         return true;
     }
-    virtual bool visit(RefExp & /*e*/, bool &override) {
+    virtual bool visit(const std::shared_ptr<RefExp> & /*e*/, bool &override) {
         override = false;
         return true;
     }
-    virtual bool visit(Location * /*e*/, bool &override) {
+    virtual bool visit( const std::shared_ptr<Location> & /*e*/, bool &override) {
         override = false;
         return true;
     }
     // These three have zero arity, so there is nothing to override
-    virtual bool visit(Const * /*e*/) { return true; }
-    virtual bool visit(Terminal * /*e*/) { return true; }
-    virtual bool visit(TypeVal * /*e*/) { return true; }
+    virtual bool visit( const std::shared_ptr<Const> & /*e*/) { return true; }
+    virtual bool visit( const std::shared_ptr<Terminal> & /*e*/) { return true; }
+    virtual bool visit( const std::shared_ptr<TypeVal> & /*e*/) { return true; }
 };
 
 // This class visits subexpressions, and if a location, sets the UserProc
@@ -112,7 +112,7 @@ class FixProcVisitor : public ExpVisitor {
 
   public:
     void setProc(UserProc *p) { proc = p; }
-    virtual bool visit(Location *e, bool &override);
+    virtual bool visit( const std::shared_ptr<Location> &e, bool &override);
     // All other virtual functions inherit from ExpVisitor, i.e. they just visit their children recursively
 };
 
@@ -123,7 +123,7 @@ class GetProcVisitor : public ExpVisitor {
   public:
     GetProcVisitor() { proc = nullptr; } // Constructor
     UserProc *getProc() { return proc; }
-    virtual bool visit(Location *e, bool &override);
+    virtual bool visit( const std::shared_ptr<Location> &e, bool &override);
     // All others inherit and visit their children
 };
 
@@ -135,9 +135,9 @@ class SetConscripts : public ExpVisitor {
   public:
     SetConscripts(int n, bool _bClear) : bInLocalGlobal(false), bClear(_bClear) { curConscript = n; }
     int getLast() { return curConscript; }
-    virtual bool visit(Const *e);
-    virtual bool visit(Location *e, bool &override);
-    virtual bool visit(Binary *b, bool &override);
+    virtual bool visit( const std::shared_ptr<Const> &e);
+    virtual bool visit( const std::shared_ptr<Location> &e, bool &override);
+    virtual bool visit( const std::shared_ptr<Binary> &b, bool &override);
     // All other virtual functions inherit from ExpVisitor: return true
 };
 
@@ -148,59 +148,59 @@ class SetConscripts : public ExpVisitor {
  */
 class ExpModifier {
   protected:
-    bool mod; // Set if there is any change. Don't have to implement
+    bool mod = false; // Set if there is any change. Don't have to implement
   public:
-    ExpModifier() { mod = false; }
-    virtual ~ExpModifier() {}
+    ExpModifier() = default;
+    virtual ~ExpModifier() = default;
     bool isMod() { return mod; }
     void clearMod() { mod = false; }
 
     // visitor functions
     // Most times these won't be needed. You only need to override the ones that make a change.
     // preVisit comes before modifications to the children (if any)
-    virtual Exp *preVisit(Unary *e, bool &recur) {
+    virtual SharedExp preVisit(const std::shared_ptr<Unary> &e, bool &recur) {
         recur = true;
         return e;
     }
-    virtual Exp *preVisit(Binary *e, bool &recur) {
+    virtual SharedExp preVisit(const std::shared_ptr<Binary> &e, bool &recur) {
         recur = true;
         return e;
     }
-    virtual Exp *preVisit(Ternary *e, bool &recur) {
+    virtual SharedExp preVisit(const std::shared_ptr<Ternary> &e, bool &recur) {
         recur = true;
         return e;
     }
-    virtual Exp *preVisit(TypedExp *e, bool &recur) {
+    virtual SharedExp preVisit(const std::shared_ptr<TypedExp> &e, bool &recur) {
         recur = true;
         return e;
     }
-    virtual Exp *preVisit(FlagDef *e, bool &recur) {
+    virtual SharedExp preVisit(const std::shared_ptr<FlagDef> &e, bool &recur) {
         recur = true;
         return e;
     }
-    virtual Exp *preVisit(RefExp *e, bool &recur) {
+    virtual SharedExp preVisit(const std::shared_ptr<RefExp> &e, bool &recur) {
         recur = true;
         return e;
     }
-    virtual Exp *preVisit(Location *e, bool &recur) {
+    virtual SharedExp preVisit(const std::shared_ptr<Location> &e, bool &recur) {
         recur = true;
         return e;
     }
-    virtual Exp *preVisit(Const *e) { return e; }
-    virtual Exp *preVisit(Terminal *e) { return e; }
-    virtual Exp *preVisit(TypeVal *e) { return e; }
+    virtual SharedExp preVisit(const std::shared_ptr<Const> &e) { return e; }
+    virtual SharedExp preVisit(const std::shared_ptr<Terminal> &e) { return e; }
+    virtual SharedExp preVisit(const std::shared_ptr<TypeVal> &e) { return e; }
 
     // postVisit comes after modifications to the children (if any)
-    virtual Exp *postVisit(Unary *e) { return e; }
-    virtual Exp *postVisit(Binary *e) { return e; }
-    virtual Exp *postVisit(Ternary *e) { return e; }
-    virtual Exp *postVisit(TypedExp *e) { return e; }
-    virtual Exp *postVisit(FlagDef *e) { return e; }
-    virtual Exp *postVisit(RefExp *e) { return e; }
-    virtual Exp *postVisit(Location *e) { return e; }
-    virtual Exp *postVisit(Const *e) { return e; }
-    virtual Exp *postVisit(Terminal *e) { return e; }
-    virtual Exp *postVisit(TypeVal *e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<Unary> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<Binary> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<Ternary> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<TypedExp> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<FlagDef> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<RefExp> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<Location> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<Const> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<Terminal> &e) { return e; }
+    virtual SharedExp postVisit(const std::shared_ptr<TypeVal> &e) { return e; }
 };
 
 /*
@@ -378,64 +378,65 @@ class SimpExpModifier : public ExpModifier {
     }
     unsigned getUnchanged() { return unchanged; }
     bool isTopChanged() { return !(unchanged & mask); }
-    virtual Exp *preVisit(Unary *e, bool &recur) {
+    SharedExp preVisit(const std::shared_ptr<Unary> &e, bool &recur) override {
         recur = true;
         mask <<= 1;
         return e;
     }
-    virtual Exp *preVisit(Binary *e, bool &recur) {
+    SharedExp preVisit(const std::shared_ptr<Binary> &e, bool &recur) override {
         recur = true;
         mask <<= 1;
         return e;
     }
-    virtual Exp *preVisit(Ternary *e, bool &recur) {
+    SharedExp preVisit(const std::shared_ptr<Ternary> &e, bool &recur) override {
         recur = true;
         mask <<= 1;
         return e;
     }
-    virtual Exp *preVisit(TypedExp *e, bool &recur) {
+    SharedExp preVisit(const std::shared_ptr<TypedExp> &e, bool &recur) override {
         recur = true;
         mask <<= 1;
         return e;
     }
-    virtual Exp *preVisit(FlagDef *e, bool &recur) {
+    SharedExp preVisit(const std::shared_ptr<FlagDef> &e, bool &recur) override {
         recur = true;
         mask <<= 1;
         return e;
     }
-    virtual Exp *preVisit(RefExp *e, bool &recur) {
+    SharedExp preVisit(const std::shared_ptr<RefExp> &e, bool &recur) override {
         recur = true;
         mask <<= 1;
         return e;
     }
-    virtual Exp *preVisit(Location *e, bool &recur) {
+    SharedExp preVisit(const std::shared_ptr<Location> &e, bool &recur) override {
         recur = true;
         mask <<= 1;
         return e;
     }
-    virtual Exp *preVisit(Const *e) {
-        mask <<= 1;
-        return e;
-    }
-    virtual Exp *preVisit(Terminal *e) {
-        mask <<= 1;
-        return e;
-    }
-    virtual Exp *preVisit(TypeVal *e) {
+    SharedExp preVisit(const std::shared_ptr<Const> &e)  override {
         mask <<= 1;
         return e;
     }
 
-    virtual Exp *postVisit(Unary *e);
-    virtual Exp *postVisit(Binary *e);
-    virtual Exp *postVisit(Ternary *e);
-    virtual Exp *postVisit(TypedExp *e);
-    virtual Exp *postVisit(FlagDef *e);
-    virtual Exp *postVisit(RefExp *e);
-    virtual Exp *postVisit(Location *e);
-    virtual Exp *postVisit(Const *e);
-    virtual Exp *postVisit(Terminal *e);
-    virtual Exp *postVisit(TypeVal *e);
+    SharedExp preVisit( const std::shared_ptr<Terminal> &e) override {
+        mask <<= 1;
+        return e;
+    }
+    SharedExp preVisit( const std::shared_ptr<TypeVal> &e)  override {
+        mask <<= 1;
+        return e;
+    }
+
+    SharedExp postVisit(const std::shared_ptr<Unary> &e) override;
+    SharedExp postVisit(const std::shared_ptr<Binary> &e) override;
+    SharedExp postVisit(const std::shared_ptr<Ternary> &e) override;
+    SharedExp postVisit(const std::shared_ptr<TypedExp> &e) override;
+    SharedExp postVisit(const std::shared_ptr<FlagDef> &e) override;
+    SharedExp postVisit(const std::shared_ptr<RefExp> &e) override;
+    SharedExp postVisit(const std::shared_ptr<Location> &e) override;
+    SharedExp postVisit(const std::shared_ptr<Const> &e) override;
+    SharedExp postVisit(const std::shared_ptr<Terminal> &e) override;
+    SharedExp postVisit(const std::shared_ptr<TypeVal> &e) override;
 };
 
 // A modifying visitor to process all references in an expression, bypassing calls (and phi statements if they have been
@@ -447,8 +448,8 @@ class CallBypasser : public SimpExpModifier {
     Instruction *enclosingStmt; // Statement that is being modified at present, for debugging only
   public:
     CallBypasser(Instruction *enclosing) : enclosingStmt(enclosing) {}
-    virtual Exp *postVisit(RefExp *e);
-    virtual Exp *postVisit(Location *e);
+    virtual SharedExp postVisit(const std::shared_ptr<RefExp> &e);
+    virtual SharedExp postVisit(const std::shared_ptr<Location> &e);
 };
 
 class UsedLocsFinder : public ExpVisitor {
@@ -462,9 +463,9 @@ class UsedLocsFinder : public ExpVisitor {
     void setMemOnly(bool b) { memOnly = b; }
     bool isMemOnly() { return memOnly; }
 
-    virtual bool visit(RefExp &e, bool &override);
-    virtual bool visit(Location *e, bool &override);
-    virtual bool visit(Terminal *e);
+    bool visit(const std::shared_ptr<RefExp> &e, bool &override) override;
+    bool visit( const std::shared_ptr<Location> &e, bool &override) override;
+    bool visit( const std::shared_ptr<Terminal> &e) override;
 };
 
 // This class differs from the above in these ways:
@@ -482,9 +483,9 @@ class UsedLocalFinder : public ExpVisitor {
     LocationSet *getLocSet() { return used; }
     bool wasAllFound() { return all; }
 
-    virtual bool visit(Location *e, bool &override);
-    virtual bool visit(TypedExp *e, bool &override);
-    virtual bool visit(Terminal *e);
+    virtual bool visit( const std::shared_ptr<Location> &e, bool &override);
+    virtual bool visit( const std::shared_ptr<TypedExp> &e, bool &override);
+    virtual bool visit( const std::shared_ptr<Terminal> &e);
 };
 
 class UsedLocsVisitor : public StmtExpVisitor {
@@ -508,15 +509,15 @@ class UsedLocsVisitor : public StmtExpVisitor {
 };
 
 class ExpSubscripter : public ExpModifier {
-    Exp *search;
+    SharedExp search;
     Instruction *def;
 
   public:
-    ExpSubscripter(Exp *s, Instruction *d) : search(s), def(d) {}
-    virtual Exp *preVisit(Location *e, bool &recur);
-    virtual Exp *preVisit(Binary *e, bool &recur);
-    virtual Exp *preVisit(Terminal *e);
-    virtual Exp *preVisit(RefExp *e, bool &recur);
+    ExpSubscripter(const SharedExp &s, Instruction *d) : search(s), def(d) {}
+    SharedExp preVisit(const std::shared_ptr<Location> &e, bool &recur) override;
+    SharedExp preVisit(const std::shared_ptr<Binary> &e, bool &recur) override;
+    SharedExp preVisit(const std::shared_ptr<Terminal> &e) override;
+    SharedExp preVisit(const std::shared_ptr<RefExp> &e, bool &recur) override;
 };
 
 class StmtSubscripter : public StmtModifier {
@@ -536,7 +537,7 @@ class SizeStripper : public ExpModifier {
     SizeStripper() {}
     virtual ~SizeStripper() {}
 
-    virtual Exp *preVisit(Binary *b, bool &recur);
+    SharedExp preVisit(const std::shared_ptr<Binary> &b, bool &recur) override;
 };
 
 class ExpConstCaster : public ExpModifier {
@@ -549,18 +550,18 @@ class ExpConstCaster : public ExpModifier {
     virtual ~ExpConstCaster() {}
     bool isChanged() { return changed; }
 
-    virtual Exp *preVisit(Const *c);
+    SharedExp preVisit(const std::shared_ptr<Const> &c) override;
 };
 
 class ConstFinder : public ExpVisitor {
-    std::list<Const *> &lc;
+    std::list<std::shared_ptr<Const> > &lc;
 
   public:
-    ConstFinder(std::list<Const *> &_lc) : lc(_lc) {}
+    ConstFinder(std::list<std::shared_ptr<Const>> &_lc) : lc(_lc) {}
     virtual ~ConstFinder() {}
 
-    virtual bool visit(Const *e);
-    virtual bool visit(Location *e, bool &override);
+    virtual bool visit( const std::shared_ptr<Const> &e);
+    virtual bool visit( const std::shared_ptr<Location> &e, bool &override);
 };
 
 class StmtConstFinder : public StmtExpVisitor {
@@ -574,17 +575,17 @@ class StmtConstFinder : public StmtExpVisitor {
 class DfaLocalMapper : public ExpModifier {
     UserProc *proc;
     Prog *prog;
-    Signature *sig;          // Look up once (from proc) for speed
-    bool processExp(Exp *e); // Common processing here
+    std::shared_ptr<Signature> sig;          // Look up once (from proc) for speed
+    bool processExp(const SharedExp &e); // Common processing here
   public:
     bool change; // True if changed this statement
 
     DfaLocalMapper(UserProc *proc);
 
-    Exp *preVisit(Location *e, bool &recur); // To process m[X]
-    //        Exp*        preVisit(Unary*    e, bool& recur);        // To process a[X]
-    Exp *preVisit(Binary *e, bool &recur);   // To look for sp -+ K
-    Exp *preVisit(TypedExp *e, bool &recur); // To prevent processing TypedExps more than once
+    SharedExp preVisit(const std::shared_ptr<Location> &e, bool &recur) override; // To process m[X]
+    //        Exp*        preVisit( const std::shared_ptr<Unary> &    e, bool& recur);        // To process a[X]
+    SharedExp preVisit(const std::shared_ptr<Binary> &e, bool &recur) override;   // To look for sp -+ K
+    SharedExp preVisit(const std::shared_ptr<TypedExp> &e, bool &recur) override; // To prevent processing TypedExps more than once
 };
 
 #if 0 // FIXME: deleteme
@@ -612,7 +613,7 @@ class ImplicitConverter : public ExpModifier {
 
   public:
     ImplicitConverter(Cfg *cfg) : m_cfg(cfg) {}
-    Exp *postVisit(RefExp *e);
+    SharedExp postVisit(const std::shared_ptr<RefExp> &e);
 };
 
 class StmtImplicitConverter : public StmtModifier {
@@ -629,10 +630,10 @@ class Localiser : public SimpExpModifier {
     CallStatement *call; // The call to localise to
   public:
     Localiser(CallStatement *c) : call(c) {}
-    Exp *preVisit(RefExp *e, bool &recur);
-    Exp *preVisit(Location *e, bool &recur);
-    Exp *postVisit(Location *e);
-    Exp *postVisit(Terminal *e);
+    SharedExp preVisit(const std::shared_ptr<RefExp> &e, bool &recur);
+    SharedExp preVisit(const std::shared_ptr<Location> &e, bool &recur);
+    SharedExp postVisit(const std::shared_ptr<Location> &e);
+    SharedExp postVisit(const std::shared_ptr<Terminal> &e);
 };
 
 class ComplexityFinder : public ExpVisitor {
@@ -643,10 +644,10 @@ class ComplexityFinder : public ExpVisitor {
     ComplexityFinder(UserProc *p) : count(0), proc(p) {}
     int getDepth() { return count; }
 
-    virtual bool visit(Unary *, bool &override);
-    virtual bool visit(Binary *, bool &override);
-    virtual bool visit(Ternary *, bool &override);
-    virtual bool visit(Location *e, bool &override);
+    virtual bool visit( const std::shared_ptr<Unary> &, bool &override);
+    virtual bool visit( const std::shared_ptr<Binary> &, bool &override);
+    virtual bool visit( const std::shared_ptr<Ternary> &, bool &override);
+    virtual bool visit( const std::shared_ptr<Location> &e, bool &override);
 };
 
 // Used by range analysis
@@ -655,7 +656,7 @@ class MemDepthFinder : public ExpVisitor {
 
   public:
     MemDepthFinder() : depth(0) {}
-    virtual bool visit(Location *e, bool &override);
+    virtual bool visit( const std::shared_ptr<Location> &e, bool &override);
     int getDepth() { return depth; }
 };
 
@@ -668,7 +669,7 @@ class ExpPropagator : public SimpExpModifier {
     ExpPropagator() : change(false) {}
     bool isChanged() { return change; }
     void clearChanged() { change = false; }
-    Exp *postVisit(RefExp *e);
+    SharedExp postVisit(const std::shared_ptr<RefExp> &e) override;
 };
 
 // Test an address expression (operand of a memOf) for primitiveness (i.e. if it is possible to SSA rename the memOf
@@ -679,8 +680,8 @@ class PrimitiveTester : public ExpVisitor {
   public:
     PrimitiveTester() : result(true) {} // Initialise result true: need AND of all components
     bool getResult() { return result; }
-    bool visit(Location *, bool &override);
-    bool visit(RefExp &e, bool &override);
+    bool visit( const std::shared_ptr<Location> &e, bool &override);
+    bool visit(const std::shared_ptr<RefExp> &e, bool &override);
 };
 
 // Test if an expression (usually the RHS on an assignment) contains memory expressions. If so, it may not be safe to
@@ -692,14 +693,14 @@ class ExpHasMemofTester : public ExpVisitor {
   public:
     ExpHasMemofTester(UserProc *p) : result(false), proc(p) {}
     bool getResult() { return result; }
-    bool visit(Location *e, bool &override);
+    bool visit( const std::shared_ptr<Location> &e, bool &override);
 };
 
 class TempToLocalMapper : public ExpVisitor {
     UserProc *proc; // Proc object for storing the symbols
   public:
     TempToLocalMapper(UserProc *p) : proc(p) {}
-    bool visit(Location *e, bool &override);
+    bool visit( const std::shared_ptr<Location> &e, bool &override);
 };
 
 // Name registers and temporaries
@@ -709,7 +710,7 @@ class ExpRegMapper : public ExpVisitor {
 
   public:
     ExpRegMapper(UserProc *proc);
-    bool visit(RefExp &e, bool &override);
+    bool visit(const std::shared_ptr<RefExp> &e, bool &override) override;
 };
 
 class StmtRegMapper : public StmtExpVisitor {
@@ -726,17 +727,17 @@ class ConstGlobalConverter : public ExpModifier {
     Prog *prog; // Pointer to the Prog object, for reading memory
   public:
     ConstGlobalConverter(Prog *pg) : prog(pg) {}
-    virtual Exp *preVisit(RefExp *e, bool &recur);
+    SharedExp preVisit(const std::shared_ptr<RefExp> &e, bool &recur)  override;
 };
 
 // Count the number of times a reference expression is used. Increments the count multiple times if the same reference
 // expression appears multiple times (so can't use UsedLocsFinder for this)
 class ExpDestCounter : public ExpVisitor {
-    std::map<Exp *, int, lessExpStar> &destCounts;
+    std::map<SharedExp, int, lessExpStar> &destCounts;
 
   public:
-    ExpDestCounter(std::map<Exp *, int, lessExpStar> &dc) : destCounts(dc) {}
-    bool visit(RefExp &e, bool &override) override;
+    ExpDestCounter(std::map<SharedExp, int, lessExpStar> &dc) : destCounts(dc) {}
+    bool visit(const std::shared_ptr<RefExp> &e, bool &override) override;
 };
 
 // FIXME: do I need to count collectors? All the visitors and modifiers should be refactored to conditionally visit
@@ -756,7 +757,7 @@ class FlagsFinder : public ExpVisitor {
     bool isFound() { return found; }
 
   private:
-    virtual bool visit(Binary *e, bool &override);
+    virtual bool visit( const std::shared_ptr<Binary> &e, bool &override);
 };
 
 // Search an expression for a bad memof (non subscripted or not linked with a symbol, i.e. local or parameter)
@@ -769,19 +770,19 @@ class BadMemofFinder : public ExpVisitor {
     bool isFound() { return found; }
 
   private:
-    virtual bool visit(Location *e, bool &override);
-    virtual bool visit(RefExp &e, bool &override);
+    virtual bool visit( const std::shared_ptr<Location> &e, bool &override);
+    virtual bool visit(const std::shared_ptr<RefExp> &e, bool &override);
 };
 
 class ExpCastInserter : public ExpModifier {
     UserProc *proc; // The enclising UserProc
   public:
     ExpCastInserter(UserProc *p) : proc(p) {}
-    static void checkMemofType(Exp *memof, SharedType memofType);
-    virtual Exp *postVisit(RefExp *e);
-    virtual Exp *postVisit(Binary *e);
-    virtual Exp *postVisit(Const *e);
-    virtual Exp *preVisit(TypedExp *e, bool &recur) {
+    static void checkMemofType(const SharedExp &memof, SharedType memofType);
+    SharedExp postVisit(const std::shared_ptr<RefExp> &e) override;
+    SharedExp postVisit(const std::shared_ptr<Binary> &e) override;
+    SharedExp postVisit(const std::shared_ptr<Const> &e) override;
+    SharedExp preVisit(const std::shared_ptr<TypedExp> &e, bool &recur)  override {
         recur = false;
         return e;
     } // Don't consider if already cast
@@ -808,7 +809,7 @@ class ExpSsaXformer : public ExpModifier {
     ExpSsaXformer(UserProc *p) : proc(p) {}
     UserProc *getProc() { return proc; }
 
-    virtual Exp *postVisit(RefExp *e);
+    virtual SharedExp postVisit(const std::shared_ptr<RefExp> &e);
 };
 
 class StmtSsaXformer : public StmtModifier {

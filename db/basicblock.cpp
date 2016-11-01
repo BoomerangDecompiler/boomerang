@@ -695,7 +695,7 @@ void BasicBlock::getStatements(StatementList &stmts) const {
  */
 
 /*! Get the condition */
-Exp *BasicBlock::getCond() {
+SharedExp BasicBlock::getCond() {
     // the condition will be in the last rtl
     assert(ListOfRTLs);
     RTL *last = ListOfRTLs->back();
@@ -708,7 +708,7 @@ Exp *BasicBlock::getCond() {
 }
 
 /*! Get the destiantion, if any */
-Exp *BasicBlock::getDest() noexcept(false) {
+SharedExp BasicBlock::getDest() noexcept(false) {
     // The destianation will be in the last rtl
     assert(ListOfRTLs);
     RTL *lastRtl = ListOfRTLs->back();
@@ -729,7 +729,7 @@ Exp *BasicBlock::getDest() noexcept(false) {
     throw LastStatementNotAGotoError(lastStmt);
 }
 /*! set the condition */
-void BasicBlock::setCond(Exp *e) noexcept(false) {
+void BasicBlock::setCond(SharedExp e) noexcept(false) {
     // the condition will be in the last rtl
     assert(ListOfRTLs);
     RTL *last = ListOfRTLs->back();
@@ -927,7 +927,7 @@ void BasicBlock::generateCode_Loop(HLLCode *hll, std::list<BasicBlock *> &gotoSe
         WriteBB(hll, indLevel);
 
         // write the 'while' predicate
-        Exp *cond = getCond();
+        SharedExp cond = getCond();
         if (OutEdges[BTHEN] == LoopFollow) {
             cond = Unary::get(opNot, cond);
             cond = cond->simplify();
@@ -1130,7 +1130,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
             // Write the switch header (i.e. "switch(var) {")
             hll->AddCaseCondHeader(indLevel, psi->pSwitchVar);
         } else {
-            Exp *cond = getCond();
+            SharedExp cond = getCond();
             if (!cond)
                 cond = Const::get(ADDRESS::g(0xfeedface)); // hack, but better than a crash
             if (ConditionHeaderType == IfElse) {
@@ -1258,7 +1258,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
         if (OutEdges.size() != 1) {
             BasicBlock *other = OutEdges[1];
             LOG << "found seq with more than one outedge!\n";
-            auto const_dest = static_cast<Const *>(getDest());
+            auto const_dest = std::static_pointer_cast<Const>(getDest());
             if (const_dest->isIntConst() && const_dest->getAddr() == child->getLowAddr()) {
                 other = child;
                 child = OutEdges[1];
@@ -1505,13 +1505,15 @@ void BasicBlock::prependStmt(Instruction *s, UserProc *proc) {
 // This is a helper function that is not directly declared in the BasicBlock class
 void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig, UserProc * /*proc*/) {
     // For each location to be considered
-    for (Exp *u : ls) {
+    for (SharedExp u : ls) {
         if (!u->isSubscript())
             continue; // Only interested in subscripted vars
-        RefExp *r = (RefExp *)u;
+        auto r = std::static_pointer_cast<RefExp>(u);
         // Interference if we can find a live variable which differs only in the reference
-        Exp *dr;
+        SharedExp dr;
         if (liveLocs.findDifferentRef(r, dr)) {
+            assert(dr->subExp<RefExp>()->getDef()!=nullptr);
+            assert(u->subExp<RefExp>()->getDef()!=nullptr);
             // We have an interference between r and dr. Record it
             ig.connect(r, dr);
             if (VERBOSE || DEBUG_LIVENESS)
@@ -1587,6 +1589,7 @@ bool BasicBlock::calcLiveness(ConnectionGraph &ig, UserProc *myProc) {
 // liveout gets all the livenesses, and phiLocs gets a subset of these, which are due to phi statements at the top of
 // successors
 void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet &phiLocs) {
+    Cfg *cfg(((UserProc *)Parent)->getCFG());
     liveout.clear();
     for (BasicBlock *currBB : OutEdges) {
         // First add the non-phi liveness
@@ -1601,6 +1604,10 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet &phiLocs) {
             if (!st->isPhi())
                 continue;
             PhiAssign *pa = (PhiAssign *)st;
+            for(std::pair<const BasicBlock *, PhiInfo> v : pa->getDefs()) {
+                if(-1!=cfg->pbbToIndex(v.first))
+                    qDebug() << "Someone removed BB that defined the PHI! Need to update PhiAssign defs";
+            }
             // Get the jth operand to the phi function; it has a use from BB *this
             // assert(j>=0);
             Instruction *def = pa->getStmtAt(this);
@@ -1630,7 +1637,8 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet &phiLocs) {
                     }
                 }
             }
-            Exp *r = RefExp::get(pa->getLeft()->clone(), def);
+            SharedExp r = RefExp::get(pa->getLeft()->clone(), def);
+            assert(def);
             liveout.insert(r);
             phiLocs.insert(r);
             if (DEBUG_LIVENESS)
@@ -1666,30 +1674,30 @@ int BasicBlock::whichPred(BasicBlock *pred) {
 // With array processing, we get a new form, call it form 'a' (don't confuse with form 'A'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // TODO: use initializer lists
-static Exp *forma =
+static SharedExp forma =
     RefExp::get(Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), (Instruction *)-1), Terminal::get(opWild)),
                 (Instruction *)-1);
 
 // Pattern: m[<expr> * 4 + T ]
-static Exp *formA = Location::memOf(
+static SharedExp formA = Location::memOf(
     Binary::get(opPlus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)), Terminal::get(opWildIntConst)));
 
 // With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
-static Exp *formo =
+static SharedExp formo =
     RefExp::get(Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), (Instruction *)-1), Terminal::get(opWild)),
                 (Instruction *)-1);
 
 // Pattern: m[<expr> * 4 + T ] + T
-static Exp *formO =
+static SharedExp formO =
     Binary::get(opPlus, Location::memOf(Binary::get(opPlus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)),
                                                     Terminal::get(opWildIntConst))),
                 Terminal::get(opWildIntConst));
 
 // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
 // where k is a small constant, typically 28 or 20
-static Exp *formR = Binary::get(
+static SharedExp formR = Binary::get(
     opPlus, Terminal::get(opPC),
     Location::memOf(Binary::get(
         opPlus, Terminal::get(opPC),
@@ -1697,50 +1705,59 @@ static Exp *formR = Binary::get(
 
 // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
 // where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static Exp *formr = Binary::get(
+static SharedExp formr = Binary::get(
     opPlus, Terminal::get(opPC),
     Location::memOf(Binary::get(opPlus, Terminal::get(opPC),
                                 Binary::get(opMinus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)),
                                             Terminal::get(opWildIntConst)))));
 
-static Exp *hlForms[] = {forma, formA, formo, formO, formR, formr};
-static char chForms[] = {'a', 'A', 'o', 'O', 'R', 'r'};
-
+struct SwitchForm {
+    SharedConstExp pattern;
+    char type;
+};
+SwitchForm hlForms[] = {
+    {forma,'a'},
+    {formA,'A'},
+    {formo,'o'},
+    {formO,'O'},
+    {formR,'R'},
+    {formr,'r'}
+};
 // Vcall high level patterns
 // Pattern 0: global<wild>[0]
-static Exp *vfc_funcptr =
+static SharedExp vfc_funcptr =
     Binary::get(opArrayIndex, Location::get(opGlobal, Terminal::get(opWildStrConst), nullptr), Const::get(0));
 
 // Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
 // K1 is vtable offset, K2 is virtual function offset (could come from m[A2], if A2 is in read-only memory
-static Exp *vfc_both = Location::memOf(
+static SharedExp vfc_both = Location::memOf(
     Binary::get(opPlus, Location::memOf(Binary::get(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst))),
                 Terminal::get(opWildIntConst)));
 
 // Pattern 2: m[ m[ <expr> ] + K2]
-static Exp *vfc_vto =
+static SharedExp vfc_vto =
     Location::memOf(Binary::get(opPlus, Location::memOf(Terminal::get(opWild)), Terminal::get(opWildIntConst)));
 
 // Pattern 3: m[ m[ <expr> + K1] ]
-static Exp *vfc_vfo =
+static SharedExp vfc_vfo =
     Location::memOf(Location::memOf(Binary::get(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst))));
 
 // Pattern 4: m[ m[ <expr> ] ]
-static Exp *vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
+static SharedExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
 
-static Exp *hlVfc[] = {vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none};
+static SharedExp hlVfc[] = {vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none};
 
-void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
+void findSwParams(char form, SharedExp e, SharedExp & expr, ADDRESS &T) {
     switch (form) {
     case 'a': {
         // Pattern: <base>{}[<index>]{}
         e = e->getSubExp1();
-        Exp *base = e->getSubExp1();
+        SharedExp base = e->getSubExp1();
         if (base->isSubscript())
             base = base->getSubExp1();
-        auto con = static_cast<Const *>(base->getSubExp1());
+        auto con = base->subExp<Const,1>();
         QString gloName = con->getStr();
-        UserProc *p = static_cast<Location *>(base)->getProc();
+        UserProc *p = std::static_pointer_cast<Location>(base)->getProc();
         Prog *prog = p->getProg();
         T = prog->getGlobalAddr(gloName);
         expr = e->getSubExp2();
@@ -1751,21 +1768,21 @@ void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
         if (e->isSubscript())
             e = e->getSubExp1();
         // b will be (<expr> * 4) + T
-        Exp *b = e->getSubExp1();
-        T = static_cast<Const *>(b->getSubExp2())->getAddr();
+        SharedExp b = e->getSubExp1();
+        T = b->subExp<Const,2>()->getAddr();
         b = b->getSubExp1(); // b is now <expr> * 4
         expr = b->getSubExp1();
         break;
     }
     case 'O': { // Form O
         // Pattern: m[<expr> * 4 + T ] + T
-        T = static_cast<Const *>(e->getSubExp2())->getAddr();
+        T = e->subExp<Const,2>()->getAddr();
         // l = m[<expr> * 4 + T ]:
-        Exp *l = e->getSubExp1();
+        SharedExp l = e->getSubExp1();
         if (l->isSubscript())
             l = l->getSubExp1();
         // b = <expr> * 4 + T:
-        Exp *b = l->getSubExp1();
+        SharedExp b = l->getSubExp1();
         // b = <expr> * 4:
         b = b->getSubExp1();
         // expr = <expr>:
@@ -1776,11 +1793,11 @@ void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
         // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
         T = ADDRESS::g(0L); // ?
         // l = m[%pc  + (<expr> * 4) + k]:
-        Exp *l = e->getSubExp2();
+        SharedExp l = e->getSubExp2();
         if (l->isSubscript())
             l = l->getSubExp1();
         // b = %pc    + (<expr> * 4) + k:
-        Exp *b = l->getSubExp1();
+        SharedExp b = l->getSubExp1();
         // b = (<expr> * 4) + k:
         b = b->getSubExp2();
         // b = <expr> * 4:
@@ -1793,9 +1810,9 @@ void findSwParams(char form, Exp *e, Exp *&expr, ADDRESS &T) {
         // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
         T = ADDRESS::g(0L); // ?
         // b = %pc + m[%pc + ((<expr> * 4) - k)]:
-        Exp *b = e->getSubExp1();
+        SharedExp b = e->getSubExp1();
         // l = m[%pc + ((<expr> * 4) - k)]:
-        Exp *l = b->getSubExp2();
+        SharedExp l = b->getSubExp2();
         if (l->isSubscript())
             l = l->getSubExp1();
         // b = %pc + ((<expr> * 4) - k)
@@ -1833,13 +1850,13 @@ int BasicBlock::findNumCases() {
         RTL *lastRtl = in->ListOfRTLs->back();
         assert(not lastRtl->empty());
         BranchStatement *lastStmt = (BranchStatement *)lastRtl->back();
-        Exp *pCond = lastStmt->getCondExpr();
+        SharedExp pCond = lastStmt->getCondExpr();
         if (pCond->getArity() != 2)
             continue;
-        Exp *rhs = pCond->getSubExp2();
+        SharedExp rhs = pCond->getSubExp2();
         if (!rhs->isIntConst())
             continue;
-        int k = static_cast<Const *>(rhs)->getInt();
+        int k = std::static_pointer_cast<Const>(rhs)->getInt();
         OPER op = pCond->getOper();
         if (op == opGtr || op == opGtrUns)
             return k + 1;
@@ -1863,9 +1880,9 @@ static void findConstantValues(const Instruction *s, std::list<int> &dests) {
         for (const auto &it : *((PhiAssign *)s))
             findConstantValues(it.second.def(), dests);
     } else if (s->isAssign()) {
-        Exp *rhs = ((Assign *)s)->getRight();
+        SharedExp rhs = ((Assign *)s)->getRight();
         if (rhs->isIntConst())
-            dests.push_back(((Const *)rhs)->getInt());
+            dests.push_back(rhs->subExp<Const>()->getInt());
     }
 }
 // Find indirect jumps and calls
@@ -1918,12 +1935,12 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
         // now we'll assume no alias problems and force the propagation
         bool convert; // FIXME: uninitialized value passed to propagateTo
         lastStmt->propagateTo(convert, nullptr, nullptr, true /* force */);
-        Exp *e = lastStmt->getDest();
-        int n = sizeof(hlForms) / sizeof(Exp *);
+        SharedExp e = lastStmt->getDest();
+
         char form = 0;
-        for (int i = 0; i < n; i++) {
-            if (*e *= *hlForms[i]) { // *= compare ignores subscripts
-                form = chForms[i];
+        for (auto &val : hlForms) {
+            if (*e *= *val.pattern) { // *= compare ignores subscripts
+                form = val.type;
                 if (DEBUG_SWITCH)
                     LOG << "indirect jump matches form " << form << "\n";
                 break;
@@ -1933,7 +1950,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             SWITCH_INFO *swi = new SWITCH_INFO;
             swi->chForm = form;
             ADDRESS T;
-            Exp *expr;
+            SharedExp expr;
             findSwParams(form, e, expr, T);
             if (expr) {
                 swi->uTable = T;
@@ -1966,12 +1983,12 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
                 swi->iUpper = swi->iNumTable - 1;
                 swi->iLower = 0;
                 if (expr->getOper() == opMinus && expr->getSubExp2()->isIntConst()) {
-                    swi->iLower = static_cast<Const *>(expr->getSubExp2())->getInt();
+                    swi->iLower = std::static_pointer_cast<Const>(expr->getSubExp2())->getInt();
                     swi->iUpper += swi->iLower;
                     expr = expr->getSubExp1();
                 }
                 swi->pSwitchVar = expr;
-                lastStmt->setDest((Exp *)nullptr);
+                lastStmt->setDest((SharedExp)nullptr);
                 lastStmt->setSwitchInfo(swi);
                 return swi->iNumTable != 0;
             }
@@ -1979,12 +1996,12 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             // Did not match a switch pattern. Perhaps it is a Fortran style goto with constants at the leaves of the
             // phi tree. Basically, a location with a reference, e.g. m[r28{-} - 16]{87}
             if (e->isSubscript()) {
-                Exp *sub = e->getSubExp1();
+                SharedExp sub = e->getSubExp1();
                 if (sub->isLocation()) {
                     // Yes, we have <location>{ref}. Follow the tree and store the constant values that <location>
                     // could be assigned to in dests
                     std::list<int> dests;
-                    findConstantValues(((RefExp *)e)->getDef(), dests);
+                    findConstantValues(std::static_pointer_cast<RefExp>(e)->getDef(), dests);
                     // The switch info wants an array of native addresses
                     size_t num_dests = dests.size();
                     if (num_dests) {
@@ -1997,7 +2014,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
                         swi->iNumTable = num_dests;
                         swi->iLower = 1;         // Not used, except to compute
                         swi->iUpper = num_dests; // the number of options
-                        lastStmt->setDest((Exp *)nullptr);
+                        lastStmt->setDest((SharedExp)nullptr);
                         lastStmt->setSwitchInfo(swi);
                         return true;
                     }
@@ -2012,7 +2029,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             LOG << "decodeIndirectJmp: COMPCALL:\n" << lastRtl->prints() << "\n";
         assert(not lastRtl->empty());
         CallStatement *lastStmt = (CallStatement *)lastRtl->back();
-        Exp *e = lastStmt->getDest();
+        SharedExp e = lastStmt->getDest();
         // Indirect calls may sometimes not be propagated to, because of limited propagation (-l switch).
         // Propagate to e, but only keep the changes if the expression matches (don't want excessive propagation to
         // a genuine function pointer expression, even though it's hard to imagine).
@@ -2028,7 +2045,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
         if (DEBUG_SWITCH)
             LOG << "decodeIndirect: propagated and const global converted call expression is " << e << "\n";
 
-        int n = sizeof(hlVfc) / sizeof(Exp *);
+        int n = sizeof(hlVfc) / sizeof(SharedExp);
         bool recognised = false;
         int i;
         for (i = 0; i < n; i++) {
@@ -2043,7 +2060,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             return false;
         lastStmt->setDest(e); // Keep the changes to the indirect call expression
         int K1, K2;
-        Exp *vtExp, *t1;
+        SharedExp vtExp, t1;
         Prog *prog = proc->getProg();
         switch (i) {
         case 0: {
@@ -2055,12 +2072,12 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
                 e = e->getSubExp1();
             e = e->getSubExp1(); // e is global<name>{0}[0]
             t1 = e->getSubExp2();
-            auto t1_const = static_cast<Const *>(t1);
+            auto t1_const = std::static_pointer_cast<Const>(t1);
             if (e->isArrayIndex() && (t1->isIntConst()) && t1_const->getInt() == 0)
                 e = e->getSubExp1(); // e is global<name>{0}
             if (e->isSubscript())
                 e = e->getSubExp1();                            // e is global<name>
-            Const *con = static_cast<Const *>(e->getSubExp1()); // e is <name>
+            std::shared_ptr<Const> con = std::static_pointer_cast<Const>(e->getSubExp1()); // e is <name>
             Global *glo = prog->getGlobal(con->getStr());
             assert(glo);
             // Set the type to pointer to function, if not already
@@ -2080,15 +2097,15 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             if (e->isSubscript())
                 e = e->getSubExp1();
             e = e->getSubExp1();        // e = m[r27{25} + 8]{-} + 8
-            Exp *rhs = e->getSubExp2(); // rhs = 8
-            K2 = ((Const *)rhs)->getInt();
-            Exp *lhs = e->getSubExp1(); // lhs = m[r27{25} + 8]{-}
+            SharedExp rhs = e->getSubExp2(); // rhs = 8
+            K2 = std::static_pointer_cast<Const>(rhs)->getInt();
+            SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25} + 8]{-}
             if (lhs->isSubscript())
                 lhs = lhs->getSubExp1(); // lhs = m[r27{25} + 8]
             vtExp = lhs;
             lhs = lhs->getSubExp1(); // lhs =   r27{25} + 8
-            Exp *CK1 = lhs->getSubExp2();
-            K1 = ((Const *)CK1)->getInt();
+            SharedExp CK1 = lhs->getSubExp2();
+            K1 = std::static_pointer_cast<Const>(CK1)->getInt();
             break;
         }
         case 2: {
@@ -2096,9 +2113,9 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             if (e->isSubscript())
                 e = e->getSubExp1();
             e = e->getSubExp1();        // e = m[r27{25}]{-} + 8
-            Exp *rhs = e->getSubExp2(); // rhs = 8
-            K2 = ((Const *)rhs)->getInt();
-            Exp *lhs = e->getSubExp1(); // lhs = m[r27{25}]{-}
+            SharedExp rhs = e->getSubExp2(); // rhs = 8
+            K2 = std::static_pointer_cast<Const>(rhs)->getInt();
+            SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25}]{-}
             if (lhs->isSubscript())
                 lhs = lhs->getSubExp1(); // lhs = m[r27{25}]
             vtExp = lhs;
@@ -2114,10 +2131,10 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
             if (e->isSubscript())
                 e = e->getSubExp1(); // e = m[r27{25} + 8]
             vtExp = e;
-            Exp *lhs = e->getSubExp1(); // lhs =   r27{25} + 8
+            SharedExp lhs = e->getSubExp1(); // lhs =   r27{25} + 8
             // Exp* object = ((Binary*)lhs)->getSubExp1();
-            Exp *CK1 = lhs->getSubExp2();
-            K1 = ((Const *)CK1)->getInt();
+            SharedExp CK1 = lhs->getSubExp2();
+            K1 = std::static_pointer_cast<Const>(CK1)->getInt();
             break;
         }
         case 4: {
@@ -2135,7 +2152,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
         }
         default:
             K1 = K2 = -1; // Suppress warnings
-            vtExp = (Exp *)-1;
+            vtExp = nullptr;
         }
         if (DEBUG_SWITCH)
             LOG << "form " << i << ": from statement " << lastStmt->getNumber() << " get e = " << lastStmt->getDest()
@@ -2150,7 +2167,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc) {
         // Danger. For now, only do if -ic given
         bool decodeThru = Boomerang::get()->decodeThruIndCall;
         if (decodeThru && vtExp && vtExp->isIntConst()) {
-            ADDRESS addr = ((Const *)vtExp)->getAddr();
+            ADDRESS addr = std::static_pointer_cast<Const>(vtExp)->getAddr();
             ADDRESS pfunc = ADDRESS::g(prog->readNative4(addr));
             if (prog->findProc(pfunc) == nullptr) {
                 // A new, undecoded procedure
@@ -2290,11 +2307,11 @@ bool BasicBlock::undoComputedBB(Instruction *stmt) {
   *                 appended to it
   * \returns true if there were any matches
   ******************************************************************************/
-bool BasicBlock::searchAll(const Exp &search_for, std::list<Exp *> &results) {
+bool BasicBlock::searchAll(const Exp &search_for, std::list<SharedExp> &results) {
     bool ch = false;
     for (RTL *rtl_it : *ListOfRTLs) {
         for (Instruction *e : *rtl_it) {
-            Exp *res; // searchAll can be used here too, would it change anything ?
+            SharedExp res; // searchAll can be used here too, would it change anything ?
             if (e->search(search_for, res)) {
                 ch = true;
                 results.push_back(res);
@@ -2310,7 +2327,7 @@ bool BasicBlock::searchAll(const Exp &search_for, std::list<Exp *> &results) {
   * \param replace the expression with which to replace it
   * \returns true if replacement took place
   ******************************************************************************/
-bool BasicBlock::searchAndReplace(const Exp &search, Exp *replace) {
+bool BasicBlock::searchAndReplace(const Exp &search, SharedExp replace) {
     bool ch = false;
 
     for (RTL *rtl_it : *ListOfRTLs) {

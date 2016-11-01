@@ -85,7 +85,7 @@ void TypeTest::testCompound() {
     FrontEnd *pFE = new PentiumFrontEnd(pBF, new Prog(HELLO_WINDOWS), &bff);
     pFE->readLibraryCatalog(); // Read definitions
 
-    Signature *paintSig = pFE->getLibSignature("BeginPaint");
+    auto paintSig = pFE->getLibSignature("BeginPaint");
     // Second argument should be an LPPAINTSTRUCT
     auto ty = paintSig->getParamType(1);
     QString p = ty->getCtype();

@@ -1,5 +1,4 @@
 PROJECT(Boomerang)
-include(ExternalProject)
 ###############################################################################
 # Settings related to build system, and target directories
 ###############################################################################

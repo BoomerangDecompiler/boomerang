@@ -76,14 +76,14 @@ public:
         if (m_firstCaller == nullptr)
             m_firstCaller = p;
     }
-    Signature *getSignature() { return signature; } //!< Returns a pointer to the Signature
-    void setSignature(Signature *sig) { signature = sig; }
+    std::shared_ptr<Signature> getSignature() { return signature; } //!< Returns a pointer to the Signature
+    void setSignature(std::shared_ptr<Signature> sig) { signature = sig; }
 
     virtual void renameParam(const char *oldName, const char *newName);
 
-    void matchParams(std::list<Exp *> &, UserProc &);
+    void matchParams(std::list<SharedExp> &, UserProc &);
 
-    std::list<Type> *getParamTypeList(const std::list<Exp *> &);
+    std::list<Type> *getParamTypeList(const std::list<SharedExp> &);
     virtual bool isLib() { return false; } //!< Return true if this is a library proc
     virtual bool isNoReturn() = 0;         //!< Return true if this procedure doesn't return
 
@@ -92,10 +92,10 @@ public:
      */
     friend QTextStream &operator<<(QTextStream &os, const Function &proc);
 
-    virtual Exp *getProven(Exp *left) = 0;   //!< Get the RHS, if any, that is proven for left
-    virtual Exp *getPremised(Exp *left) = 0; //!< Get the RHS, if any, that is premised for left
-    virtual bool isPreserved(Exp *e) = 0;    //!< Return whether e is preserved by this proc
-    void setProvenTrue(Exp *fact);
+    virtual SharedExp getProven(SharedExp left) = 0;   //!< Get the RHS, if any, that is proven for left
+    virtual SharedExp getPremised(SharedExp left) = 0; //!< Get the RHS, if any, that is premised for left
+    virtual bool isPreserved(SharedExp e) = 0;    //!< Return whether e is preserved by this proc
+    void setProvenTrue(SharedExp fact);
 
     /**
      * Get the callers
@@ -107,9 +107,9 @@ public:
     void addCaller(CallStatement *caller) { callerSet.insert(caller); }
     void addCallers(std::set<UserProc *> &callers);
 
-    void removeParameter(Exp *e);
-    virtual void removeReturn(Exp *e);
-    // virtual void        addReturn(Exp *e);
+    void removeParameter(SharedExp e);
+    virtual void removeReturn(SharedExp e);
+    // virtual void        addReturn(SharedExp e);
     //        void        sortParameters();
 
     virtual void printCallGraphXML(QTextStream &os, int depth, bool = true);
@@ -123,10 +123,10 @@ public:
 private:
     virtual void deleteCFG() {}
 protected:
-    typedef std::map<Exp *, Exp *, lessExpStar> mExpExp;
+    typedef std::map<SharedExp, SharedExp, lessExpStar> mExpExp;
     bool Visited;
     Prog *prog;
-    Signature *signature;
+    std::shared_ptr<Signature> signature;
     ///////////////////////////////////////////////////
     // Persistent state
     ///////////////////////////////////////////////////
@@ -154,12 +154,12 @@ protected:
 
 public:
     LibProc(Module *mod, const QString &name, ADDRESS address);
-    virtual ~LibProc();
+    virtual ~LibProc() = default;
     bool isLib() { return true; } //!< Return true, since is a library proc
     virtual bool isNoReturn();
-    virtual Exp *getProven(Exp *left);
-    virtual Exp *getPremised(Exp * /*left*/) { return nullptr; } //!< Get the RHS that is premised for left
-    virtual bool isPreserved(Exp *e);                            //!< Return whether e is preserved by this proc
+    virtual SharedExp getProven(SharedExp left);
+    virtual SharedExp getPremised(SharedExp /*left*/) { return nullptr; } //!< Get the RHS that is premised for left
+    virtual bool isPreserved(SharedExp e);                            //!< Return whether e is preserved by this proc
     void getInternalStatements(StatementList &internal);
 
 protected:
@@ -219,7 +219,7 @@ public:
      * It is a *multi*map because one location can have several default names differentiated by type.
      * E.g. r24 -> eax for int, r24 -> eax_1 for float
      */
-    typedef std::multimap<const Exp *, Exp *, lessExpStar> SymbolMap;
+    typedef std::multimap<SharedConstExp, SharedExp, lessExpStar> SymbolMap;
 
 private:
     SymbolMap symbolMap;
@@ -307,11 +307,11 @@ public:
     void markAsNonChildless(const std::shared_ptr<ProcSet> &cs);
 
     void updateCalls();
-    void branchAnalysis();
+    bool branchAnalysis();
     void fixUglyBranches();
     void placePhiFunctions() { df.placePhiFunctions(this); }
     bool doRenameBlockVars(int pass, bool clearStacks = false);
-    bool canRename(Exp *e) { return df.canRename(e, this); }
+    bool canRename(SharedExp e) { return df.canRename(e, this); }
 
     Instruction *getStmtAtLex(unsigned int begin, unsigned int end);
 
@@ -322,15 +322,15 @@ public:
     void findPreserveds();
     void findSpPreservation();
     void removeSpAssignsIfPossible();
-    void removeMatchingAssignsIfPossible(Exp *e);
+    void removeMatchingAssignsIfPossible(SharedExp e);
     void updateReturnTypes();
     void fixCallAndPhiRefs();
     void initialParameters();
     void mapLocalsAndParams();
     void findFinalParameters();
     int nextParamNum() { return ++nextParam; }
-    void addParameter(Exp *e, SharedType ty);
-    void insertParameter(Exp *e, SharedType ty);
+    void addParameter(SharedExp e, SharedType ty);
+    void insertParameter(SharedExp e, SharedType ty);
     //        void        addNewReturns(int depth);
     void updateArguments();
     void updateCallDefines();
@@ -342,19 +342,19 @@ public:
     // void        mapExpressionsToParameters();   ///< must be in SSA form
     void mapExpressionsToLocals(bool lastPass = false);
     void addParameterSymbols();
-    bool isLocal(Exp *e);
-    bool isLocalOrParam(Exp *e);
-    bool isLocalOrParamPattern(Exp *e);
+    bool isLocal(SharedExp e);
+    bool isLocalOrParam(const SharedExp &e);
+    bool isLocalOrParamPattern(const SharedExp &e);
     bool existsLocal(const QString &name);
-    bool isAddressEscapedVar(Exp *e) { return addressEscapedVars.exists(e); }
-    bool isPropagatable(Exp *e);
+    bool isAddressEscapedVar(const SharedExp &e) { return addressEscapedVars.exists(e); }
+    bool isPropagatable(const SharedExp &e);
     void assignProcsToCalls();
     void finalSimplify();
     void eliminateDuplicateArgs();
 
 private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList &stmts);
-    QString newLocalName(Exp &e);
+    QString newLocalName(const SharedExp &e);
 
 public:
     bool removeNullStatements();
@@ -380,7 +380,7 @@ public:
 
     void fromSSAform();
     void findPhiUnites(ConnectionGraph &pu);
-    void insertAssignAfter(Instruction *s, Exp *left, Exp *right);
+    void insertAssignAfter(Instruction *s, SharedExp left, SharedExp right);
     void removeSubscriptsFromSymbols();
     void removeSubscriptsFromParameters();
 
@@ -395,22 +395,22 @@ public:
 
     // For the final pass of removing returns that are never used
     // typedef    std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
-    bool doesParamChainToCall(Exp *param, UserProc *p, ProcSet *Visited);
-    bool isRetNonFakeUsed(CallStatement *c, Exp *loc, UserProc *p, ProcSet *Visited);
+    bool doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *Visited);
+    bool isRetNonFakeUsed(CallStatement *c, SharedExp loc, UserProc *p, ProcSet *Visited);
 
     bool removeRedundantParameters();
     bool removeRedundantReturns(std::set<UserProc *> &removeRetSet);
-    bool checkForGainfulUse(Exp *e, ProcSet &Visited);
+    bool checkForGainfulUse(SharedExp e, ProcSet &Visited);
     void updateForUseChange(std::set<UserProc *> &removeRetSet);
-    bool prove(Binary * query, bool conditional = false);
+    bool prove(const std::shared_ptr<Binary> &query, bool conditional = false);
 
-    bool prover(Exp *query, std::set<PhiAssign *> &lastPhis, std::map<PhiAssign *, Exp *> &cache,
+    bool prover(SharedExp query, std::set<PhiAssign *> &lastPhis, std::map<PhiAssign *, SharedExp> &cache,
                 PhiAssign *lastPhi = nullptr);
     void promoteSignature();
     void getStatements(StatementList &stmts) const;
-    virtual void removeReturn(Exp *e) override;
+    virtual void removeReturn(SharedExp e) override;
     void removeStatement(Instruction *stmt);
-    bool searchAll(const Exp &search, std::list<Exp *> &result);
+    bool searchAll(const Exp &search, std::list<SharedExp> &result);
 
     void getDefinitions(LocationSet &defs);
     void addImplicitAssigns();
@@ -419,34 +419,34 @@ public:
     StatementList &getParameters() { return parameters; }
     StatementList &getModifieds() { return theReturnStatement->getModifieds(); }
 
-    Exp *getSymbolExp(Exp *le, SharedType ty = nullptr, bool lastPass = false);
-    Exp *newLocal(SharedType ty, Exp &e, char *nam = nullptr);
-    void addLocal(SharedType ty, const QString &nam, Exp *e);
+    SharedExp getSymbolExp(SharedExp le, SharedType ty = nullptr, bool lastPass = false);
+    SharedExp newLocal(SharedType ty, const SharedExp &e, char *nam = nullptr);
+    void addLocal(SharedType ty, const QString &nam, SharedExp e);
     SharedType getLocalType(const QString &nam);
     void setLocalType(const QString &nam, SharedType ty);
     SharedType getParamType(const QString &nam);
-    const Exp *expFromSymbol(const QString &nam) const;
-    void mapSymbolTo(const Exp *from, Exp *to);
-    void mapSymbolToRepl(const Exp *from, Exp *oldTo, Exp *newTo);
-    void removeSymbolMapping(const Exp *from, Exp *to);
-    Exp *getSymbolFor(const Exp *e, SharedType ty);
-    QString lookupSym(const Exp &e, SharedType ty);
-    QString lookupSymFromRef(RefExp &r);
-    QString lookupSymFromRefAny(RefExp &r);
-    QString lookupParam(Exp *e);
-    void checkLocalFor(RefExp &r);
-    SharedType getTypeForLocation(const Exp *e);
-    const SharedType getTypeForLocation(const Exp *e) const;
-    QString findLocal(Exp &e, SharedType ty);
-    QString findLocalFromRef(RefExp &r);
-    QString findFirstSymbol(Exp *e);
+    SharedConstExp expFromSymbol(const QString &nam) const;
+    void mapSymbolTo(const SharedConstExp &from, SharedExp to);
+    void mapSymbolToRepl(const SharedConstExp &from, SharedExp oldTo, SharedExp newTo);
+    void removeSymbolMapping(const SharedConstExp &from, SharedExp to);
+    SharedExp getSymbolFor(const SharedConstExp &e, SharedType ty);
+    QString lookupSym(const SharedConstExp &e, SharedType ty);
+    QString lookupSymFromRef(const std::shared_ptr<RefExp> &r);
+    QString lookupSymFromRefAny(const std::shared_ptr<RefExp> &r);
+    QString lookupParam(SharedExp e);
+    void checkLocalFor(const std::shared_ptr<RefExp> &r);
+    SharedType getTypeForLocation(const SharedConstExp &e);
+    const SharedType getTypeForLocation(const SharedConstExp &e) const;
+    QString findLocal(const SharedExp &e, SharedType ty);
+    QString findLocalFromRef(const std::shared_ptr<RefExp> &r);
+    QString findFirstSymbol(const SharedExp &e);
     int getNumLocals() { return (int)locals.size(); }
     QString getLocalName(int n);
-    QString getSymbolName(Exp *e);
+    QString getSymbolName(SharedExp e);
     void renameLocal(const char *oldName, const char *newName);
     virtual void renameParam(const char *oldName, const char *newName) override;
 
-    QString getRegName(Exp *r);
+    QString getRegName(SharedExp r);
     void setParamType(const char *nam, SharedType ty);
     void setParamType(int idx, SharedType ty);
 
@@ -459,15 +459,15 @@ public:
     bool containsAddr(ADDRESS uAddr);
     //! Change BB containing this statement from a COMPCALL to a CALL.
     void undoComputedBB(Instruction *stmt) { cfg->undoComputedBB(stmt); }
-    virtual Exp *getProven(Exp *left) override;
-    virtual Exp *getPremised(Exp *left) override;
+    virtual SharedExp getProven(SharedExp left) override;
+    virtual SharedExp getPremised(SharedExp left) override;
     //! Set a location as a new premise, i.e. assume e=e
-    void setPremise(Exp *e) {
+    void setPremise(SharedExp e) {
         e = e->clone();
         recurPremises[e] = e;
     }
-    void killPremise(Exp *e) { recurPremises.erase(e); }
-    virtual bool isPreserved(Exp *e) override;
+    void killPremise(const SharedExp &e) { recurPremises.erase(e); }
+    virtual bool isPreserved(SharedExp e) override;
 
     virtual void printCallGraphXML(QTextStream &os, int depth, bool recurse = true) override;
     void printDecodedXML();
@@ -476,12 +476,12 @@ public:
     void printXML();
     void printUseGraph();
 
-    bool searchAndReplace(const Exp &search, Exp *replace);
+    bool searchAndReplace(const Exp &search, SharedExp replace);
     void castConst(int num, SharedType ty);
     /// Add a location to the UseCollector; this means this location is used before defined,
     /// and hence is an *initial* parameter.
     /// \note final parameters don't use this information; it's only for handling recursion.
-    void useBeforeDefine(Exp *loc) { procUseCollector.insert(loc); }
+    void useBeforeDefine(const SharedExp &loc) { procUseCollector.insert(loc); }
     void processDecodedICTs();
 
 private:
@@ -495,9 +495,9 @@ public:
         theReturnStatement->setRetAddr(r);
     }
     ReturnStatement *getTheReturnStatement() { return theReturnStatement; }
-    bool filterReturns(Exp *e);
-    bool filterParams(Exp *e);
-    void setImplicitRef(Instruction *s, Exp *a, SharedType ty);
+    bool filterReturns(SharedExp e);
+    bool filterParams(SharedExp e);
+    void setImplicitRef(Instruction *s, SharedExp a, SharedType ty);
 
     void verifyPHIs();
     void debugPrintAll(const char *c);

@@ -56,7 +56,7 @@ public:
         return (addr > uaddr) && (addr <= (uaddr + getType()->getBytes()));
     }
     const QString &getName() const { return nam; }
-    Exp *getInitialValue(Prog *prog) const;
+    SharedExp getInitialValue(Prog *prog) const;
     QString toString() const;
 
 protected:
@@ -133,10 +133,10 @@ public:
     platform getFrontEndId();
 
 
-    Signature *getDefaultSignature(const char *name);
+    std::shared_ptr<Signature> getDefaultSignature(const char *name);
 
-    std::vector<Exp *> &getDefaultParams();
-    std::vector<Exp *> &getDefaultReturns();
+    std::vector<SharedExp> &getDefaultParams();
+    std::vector<SharedExp> &getDefaultReturns();
     bool isWin32();
     QString getGlobalName(ADDRESS uaddr);
     ADDRESS getGlobalAddr(const QString &nam);
@@ -168,7 +168,7 @@ public:
     int readNative1(ADDRESS a);
     int readNative2(ADDRESS a);
     int readNative4(ADDRESS a);
-    Exp *readNativeAs(ADDRESS uaddr, SharedType type);
+    SharedExp readNativeAs(ADDRESS uaddr, SharedType type);
 
     bool isDynamicLinkedProcPointer(ADDRESS dest);
     const QString &GetDynamicProcName(ADDRESS uNative);
@@ -192,7 +192,7 @@ public:
     //! Add the given RTL to the front end's map from address to aldready-decoded-RTL
     void addDecodedRtl(ADDRESS a, RTL *rtl) { DefaultFrontend->addDecodedRtl(a, rtl); }
 
-    Exp *addReloc(Exp *e, ADDRESS lc);
+    SharedExp addReloc(SharedExp e, ADDRESS lc);
 
     // Public booleans that are set if and when a register jump or call is
     // found, respectively

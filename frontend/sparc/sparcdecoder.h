@@ -23,7 +23,7 @@ class Prog;
 struct DecodeResult;
 class SparcMachine {
 public:
-    Exp *dis_RegRhs(uint8_t reg_no);
+    SharedExp dis_RegRhs(uint8_t reg_no);
 };
 
 class SparcDecoder : public NJMCDecoder {
@@ -55,9 +55,9 @@ public:
          * Various functions to decode the operands of an instruction into
          * a SemStr representation.
          */
-    Exp *dis_Eaddr(ADDRESS pc, int size = 0);
-    Exp *dis_RegImm(ADDRESS pc);
-    Exp *dis_RegLhs(unsigned r);
+    SharedExp dis_Eaddr(ADDRESS pc, int size = 0);
+    SharedExp dis_RegImm(ADDRESS pc);
+    SharedExp dis_RegLhs(unsigned r);
 
     RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
     bool isFuncPrologue(ADDRESS hostPC);

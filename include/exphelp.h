@@ -18,6 +18,8 @@
 #include <map>
 #include <memory>
 class Exp;
+using SharedExp = std::shared_ptr<Exp>;
+using SharedConstExp = std::shared_ptr<const Exp>;
 class Assign;
 class Assignment;
 
@@ -25,20 +27,16 @@ class Assignment;
  * A class for comparing Exp*s (comparing the actual expressions)
  * Type sensitive
  */
-struct lessExpStar : public std::binary_function<Exp *, Exp *, bool> {
-    bool operator()(const Exp *x, const Exp *y) const;
-};
-
-struct lessExpShared : public std::binary_function<std::shared_ptr<Exp>, std::shared_ptr<Exp>, bool> {
-    bool operator()(const std::shared_ptr<Exp> &x, const std::shared_ptr<Exp> &y) const;
+struct lessExpStar : public std::binary_function<const SharedConstExp &, const SharedConstExp &, bool> {
+    bool operator()(const SharedConstExp &x, const SharedConstExp &y) const;
 };
 
 /**
  * A class for comparing Exp*s (comparing the actual expressions)
  * Type insensitive
  */
-struct lessTI : public std::binary_function<Exp *, Exp *, bool> {
-    bool operator()(const Exp *x, const Exp *y) const;
+struct lessTI : public std::binary_function<const SharedExp &, const SharedExp &, bool> {
+    bool operator()(const SharedExp &x, const SharedExp &y) const;
 };
 
 //! Compare assignments by their left hand sides (only). Implemented in statement.cpp

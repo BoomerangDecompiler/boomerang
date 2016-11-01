@@ -8,7 +8,9 @@
 
 #pragma once
 #include <list>
+#include <memory>
 class Exp;
+using SharedExp = std::shared_ptr<Exp>;
 class ExpTransformer {
   protected:
     static std::list<ExpTransformer *> transformers;
@@ -19,6 +21,6 @@ class ExpTransformer {
 
     static void loadAll();
 
-    virtual Exp *applyTo(Exp *e, bool &bMod) = 0;
-    static Exp *applyAllTo(Exp *e, bool &bMod);
+    virtual SharedExp applyTo(SharedExp e, bool &bMod) = 0;
+    static SharedExp applyAllTo(const SharedExp &e, bool &bMod);
 };

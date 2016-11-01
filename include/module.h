@@ -100,7 +100,7 @@ public:
     Function *              getFunction(const QString &name);
     Function *              getFunction(ADDRESS loc);
 
-    Signature *             getLibSignature(const QString &name);
+    std::shared_ptr<Signature> getLibSignature(const QString &name);
 protected:
     friend class XMLProgParser;
 };

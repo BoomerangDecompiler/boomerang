@@ -76,20 +76,20 @@ class Win32Signature : public Signature {
     Win32Signature(const QString &nam);
     Win32Signature(Signature &old);
     virtual ~Win32Signature() {}
-    virtual Signature *clone() override;
+    virtual std::shared_ptr<Signature> clone() override;
     virtual bool operator==(Signature &other) override;
     static bool qualified(UserProc *p, Signature &candidate);
 
-    virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+    void addReturn(SharedType type, SharedExp e = nullptr) override;
+    void addParameter(SharedType type, const QString &nam = QString::null, const SharedExp &e = nullptr,
                               const QString &boundMax = "") override;
-    virtual Exp *getArgumentExp(int n) override;
+    virtual SharedExp getArgumentExp(int n) override;
 
-    virtual Signature *promote(UserProc *) override;
-    virtual Exp *getStackWildcard() override;
+    virtual std::shared_ptr<Signature> promote(UserProc *) override;
+    virtual SharedExp getStackWildcard() override;
     virtual int getStackRegister() noexcept(false) override { return 28; }
-    virtual Exp *getProven(Exp *left) override;
-    virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
+    virtual SharedExp getProven(SharedExp left) override;
+    virtual bool isPreserved(SharedExp e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
 
     virtual bool isPromoted() override { return true; }
@@ -103,9 +103,9 @@ class Win32TcSignature : public Win32Signature {
   public:
     Win32TcSignature(const QString &nam);
     Win32TcSignature(Signature &old);
-    virtual Exp *getArgumentExp(int n) override;
-    virtual Exp *getProven(Exp *left) override;
-    virtual Signature *clone() override;
+    virtual SharedExp getArgumentExp(int n) override;
+    virtual SharedExp getProven(SharedExp left) override;
+    virtual std::shared_ptr<Signature> clone() override;
     virtual platform getPlatform() override { return PLAT_PENTIUM; }
     virtual callconv getConvention() override { return CONV_THISCALL; }
 }; // Class Win32TcSignature
@@ -116,20 +116,20 @@ class PentiumSignature : public Signature {
     PentiumSignature(const QString &nam);
     PentiumSignature(Signature &old);
     virtual ~PentiumSignature() {}
-    virtual Signature *clone() override;
+    virtual std::shared_ptr<Signature>clone() override;
     virtual bool operator==(Signature &other) override;
     static bool qualified(UserProc *p, Signature &);
 
-    virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+    virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, const SharedExp &e = nullptr,
                               const QString &boundMax = "") override;
-    virtual Exp *getArgumentExp(int n) override;
+    virtual SharedExp getArgumentExp(int n) override;
 
-    virtual Signature *promote(UserProc *) override;
-    virtual Exp *getStackWildcard() override;
+    virtual std::shared_ptr<Signature> promote(UserProc *) override;
+    virtual SharedExp getStackWildcard() override;
     virtual int getStackRegister() noexcept(false) override { return 28; }
-    virtual Exp *getProven(Exp *left) override;
-    virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
+    virtual SharedExp getProven(SharedExp left) override;
+    virtual bool isPreserved(SharedExp e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
     virtual bool isPromoted() override { return true; }
     virtual platform getPlatform() override { return PLAT_PENTIUM; }
@@ -143,25 +143,25 @@ class SparcSignature : public Signature {
     SparcSignature(const QString &nam);
     SparcSignature(Signature &old);
     virtual ~SparcSignature() {}
-    virtual Signature *clone() override;
+    virtual std::shared_ptr<Signature>clone() override;
     virtual bool operator==(Signature &other) override;
     static bool qualified(UserProc *p, Signature &);
 
-    virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+    virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, const SharedExp &e = nullptr,
                               const QString &boundMax = "") override;
-    virtual Exp *getArgumentExp(int n) override;
+    virtual SharedExp getArgumentExp(int n) override;
 
-    virtual Signature *promote(UserProc *) override;
-    virtual Exp *getStackWildcard() override;
+    virtual std::shared_ptr<Signature> promote(UserProc *) override;
+    virtual SharedExp getStackWildcard() override;
     virtual int getStackRegister() noexcept(false) override { return 14; }
-    virtual Exp *getProven(Exp *left) override;
-    virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
+    virtual SharedExp getProven(SharedExp left) override;
+    virtual bool isPreserved(SharedExp e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
     // Stack offsets can be negative (inherited) or positive:
     virtual bool isLocalOffsetPositive() override { return true; }
     // An override for testing locals
-    virtual bool isAddrOfStackLocal(Prog *prog, Exp *e) override;
+    virtual bool isAddrOfStackLocal(Prog *prog, const SharedExp &e) override;
     virtual bool isPromoted() override { return true; }
     virtual platform getPlatform() override { return PLAT_SPARC; }
     virtual callconv getConvention() override { return CONV_C; }
@@ -173,8 +173,8 @@ class SparcLibSignature : public SparcSignature {
   public:
     SparcLibSignature(const QString &nam) : SparcSignature(nam) {}
     SparcLibSignature(Signature &old);
-    virtual Signature *clone() override;
-    virtual Exp *getProven(Exp *left) override;
+    virtual std::shared_ptr<Signature>clone() override;
+    virtual SharedExp getProven(SharedExp left) override;
 }; // class SparcLibSignature
 
 class PPCSignature : public Signature {
@@ -182,24 +182,24 @@ class PPCSignature : public Signature {
     PPCSignature(const QString &name);
     PPCSignature(Signature &old);
     virtual ~PPCSignature() {}
-    virtual Signature *clone() override;
+    virtual std::shared_ptr<Signature>clone() override;
     static bool qualified(UserProc *p, Signature &);
-    virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    virtual Exp *getArgumentExp(int n) override;
-    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+    virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
+    virtual SharedExp getArgumentExp(int n) override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, const SharedExp &e = nullptr,
                               const QString &boundMax = "") override;
-    virtual Exp *getStackWildcard() override;
+    virtual SharedExp getStackWildcard() override;
     virtual int getStackRegister() noexcept(false) override { return 1; }
-    virtual Exp *getProven(Exp *left) override;
-    virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
+    virtual SharedExp getProven(SharedExp left) override;
+    virtual bool isPreserved(SharedExp e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
     virtual bool isLocalOffsetPositive() override { return true; }
     virtual bool isPromoted() override { return true; }
     virtual platform getPlatform() override { return PLAT_PPC; }
     virtual callconv getConvention() override { return CONV_C; }
-    Signature *promote(UserProc * /*p*/) override {
+    std::shared_ptr<Signature> promote(UserProc * /*p*/) override {
         // No promotions from here up, obvious idea would be c++ name mangling
-        return this;
+        return shared_from_this();
     }
 };
 class MIPSSignature : public Signature {
@@ -207,16 +207,16 @@ class MIPSSignature : public Signature {
     MIPSSignature(const QString &name);
     MIPSSignature(Signature &old);
     virtual ~MIPSSignature() {}
-    virtual Signature *clone() override;
+    virtual std::shared_ptr<Signature>clone() override;
     static bool qualified(UserProc *p, Signature &);
-    virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    virtual Exp *getArgumentExp(int n) override;
-    virtual void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+    virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
+    virtual SharedExp getArgumentExp(int n) override;
+    virtual void addParameter(SharedType type, const QString &nam = QString::null, const SharedExp &e = nullptr,
                               const QString &boundMax = "") override;
-    virtual Exp *getStackWildcard() override;
+    virtual SharedExp getStackWildcard() override;
     virtual int getStackRegister() noexcept(false) override { return 29; }
-    virtual Exp *getProven(Exp *left) override;
-    virtual bool isPreserved(Exp *e) override;                    // Return whether e is preserved by this proc
+    virtual SharedExp getProven(SharedExp left) override;
+    virtual bool isPreserved(SharedExp e) override;                    // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
     virtual bool isLocalOffsetPositive() override { return true; }
     virtual bool isPromoted() override { return true; }
@@ -228,19 +228,19 @@ class ST20Signature : public Signature {
     ST20Signature(const QString &name);
     ST20Signature(Signature &old);
     virtual ~ST20Signature() {}
-    Signature *clone() override;
+    std::shared_ptr<Signature>clone() override;
     virtual bool operator==(Signature &other) override;
     static bool qualified(UserProc *p, Signature &);
 
-    virtual void addReturn(SharedType type, Exp *e = nullptr) override;
-    void addParameter(SharedType type, const QString &nam = QString::null, Exp *e = nullptr,
+    virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
+    void addParameter(SharedType type, const QString &nam = QString::null, const SharedExp & e = nullptr,
                       const QString &boundMax = "") override;
-    Exp *getArgumentExp(int n) override;
+    SharedExp getArgumentExp(int n) override;
 
-    virtual Signature *promote(UserProc *) override;
-    virtual Exp *getStackWildcard() override;
+    virtual std::shared_ptr<Signature> promote(UserProc *) override;
+    virtual SharedExp getStackWildcard() override;
     virtual int getStackRegister() noexcept(false) override { return 3; }
-    virtual Exp *getProven(Exp *left) override;
+    virtual SharedExp getProven(SharedExp left) override;
     virtual bool isPromoted() override { return true; }
     // virtual bool isLocalOffsetPositive() {return true;}
     virtual platform getPlatform() override { return PLAT_ST20; }
@@ -264,31 +264,23 @@ CallingConvention::Win32TcSignature::Win32TcSignature(const QString &nam) : Win3
 }
 
 CallingConvention::Win32TcSignature::Win32TcSignature(Signature &old) : Win32Signature(old) {}
-
-static void cloneVec(std::vector<Parameter *> &from, std::vector<Parameter *> &to) {
+template<class Cloneable>
+static void cloneVec(std::vector<std::shared_ptr<Cloneable> > &from, std::vector<std::shared_ptr<Cloneable> > &to) {
     unsigned n = from.size();
     to.resize(n);
     for (unsigned i = 0; i < n; i++)
         to[i] = from[i]->clone();
 }
 
-static void cloneVec(Returns &from, Returns &to) {
-    unsigned n = from.size();
-    to.resize(n);
-    for (unsigned i = 0; i < n; i++)
-        to[i] = from[i]->clone();
+std::shared_ptr<Parameter> Parameter::clone() {
+    return std::make_shared<Parameter>(type->clone(), m_name, exp->clone(), boundMax);
 }
-
-Parameter::~Parameter() {
-    delete exp;
-}
-Parameter *Parameter::clone() { return new Parameter(type->clone(), m_name, exp->clone(), boundMax); }
 
 void Parameter::setBoundMax(const QString &nam) {
     boundMax = nam;
 }
 
-Signature *CallingConvention::Win32Signature::clone() {
+std::shared_ptr<Signature> CallingConvention::Win32Signature::clone() {
     Win32Signature *n = new Win32Signature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -301,10 +293,10 @@ Signature *CallingConvention::Win32Signature::clone() {
     else
         n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
-Signature *CallingConvention::Win32TcSignature::clone() {
+std::shared_ptr<Signature>CallingConvention::Win32TcSignature::clone() {
     Win32TcSignature *n = new Win32TcSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -317,13 +309,13 @@ Signature *CallingConvention::Win32TcSignature::clone() {
     else
         n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
 bool CallingConvention::Win32Signature::operator==(Signature &other) { return Signature::operator==(other); }
 
-static Exp *savedReturnLocation = Location::memOf(Location::regOf(28));
-static Exp *stackPlusFour = Binary::get(opPlus, Location::regOf(28), new Const(4));
+static SharedExp savedReturnLocation = Location::memOf(Location::regOf(28));
+static SharedExp stackPlusFour = Binary::get(opPlus, Location::regOf(28), Const::get(4));
 
 bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature & /*candidate*/) {
     platform plat = p->getProg()->getFrontEndId();
@@ -334,12 +326,12 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature & /*can
         LOG << "consider promotion to stdc win32 signature for " << p->getName() << "\n";
 
     bool gotcorrectret1, gotcorrectret2 = false;
-    Exp *provenPC = p->getProven(new Terminal(opPC));
+    SharedExp provenPC = p->getProven(Terminal::get(opPC));
     gotcorrectret1 = provenPC && (*provenPC == *savedReturnLocation);
     if (gotcorrectret1) {
         if (VERBOSE)
             LOG << "got pc = m[r[28]]\n";
-        Exp *provenSP = p->getProven(Location::regOf(28));
+        SharedExp provenSP = p->getProven(Location::regOf(28));
         gotcorrectret2 = provenSP && *provenSP == *stackPlusFour;
         if (gotcorrectret2 && VERBOSE)
             LOG << "got r[28] = r[28] + 4\n";
@@ -349,7 +341,7 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature & /*can
     return gotcorrectret1 && gotcorrectret2;
 }
 
-void CallingConvention::Win32Signature::addReturn(SharedType type, Exp *e) {
+void CallingConvention::Win32Signature::addReturn(SharedType type, SharedExp e) {
     if (type->isVoid())
         return;
     if (e == nullptr) {
@@ -361,61 +353,57 @@ void CallingConvention::Win32Signature::addReturn(SharedType type, Exp *e) {
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::Win32Signature::addParameter(SharedType type, const QString &nam, Exp *e,
+void CallingConvention::Win32Signature::addParameter(SharedType type, const QString &nam, const SharedExp &e,
                                                      const QString &boundMax) {
-    if (e == nullptr) {
-        e = getArgumentExp(params.size());
-    }
-    Signature::addParameter(type, nam, e, boundMax);
+    Signature::addParameter(type, nam, e ? e : getArgumentExp(params.size()), boundMax);
 }
 
-Exp *CallingConvention::Win32Signature::getArgumentExp(int n) {
+SharedExp CallingConvention::Win32Signature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
-    Exp *esp = Location::regOf(28);
+    SharedExp esp = Location::regOf(28);
     if (params.size() != 0 && *params[0]->getExp() == *esp)
         n--;
-    Exp *e = Location::memOf(Binary::get(opPlus, esp, new Const((n + 1) * 4)));
+    SharedExp e = Location::memOf(Binary::get(opPlus, esp, Const::get((n + 1) * 4)));
     return e;
 }
 
-Exp *CallingConvention::Win32TcSignature::getArgumentExp(int n) {
+SharedExp CallingConvention::Win32TcSignature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
-    Exp *esp = Location::regOf(28);
+    SharedExp esp = Location::regOf(28);
     if (!params.empty() && *params[0]->getExp() == *esp)
         n--;
     if (n == 0) {
-        delete esp;
         // It's the first parameter, register ecx
         return Location::regOf(25);
     }
     // Else, it is m[esp+4n)]
-    Exp *e = Location::memOf(Binary::get(opPlus, esp, new Const(n * 4)));
+    SharedExp e = Location::memOf(Binary::get(opPlus, esp, Const::get(n * 4)));
     return e;
 }
 
-Signature *CallingConvention::Win32Signature::promote(UserProc * /*p*/) {
+std::shared_ptr<Signature> CallingConvention::Win32Signature::promote(UserProc * /*p*/) {
     // no promotions from win32 signature up, yet.
     // a possible thing to investigate would be COM objects
-    return this;
+    return shared_from_this();
 }
 
-Exp *CallingConvention::Win32Signature::getStackWildcard() {
+SharedExp CallingConvention::Win32Signature::getStackWildcard() {
     // Note: m[esp + -8] is simplified to m[esp - 8] now
-    return Location::memOf(Binary::get(opMinus, Location::regOf(28), new Terminal(opWild)));
+    return Location::memOf(Binary::get(opMinus, Location::regOf(28), Terminal::get(opWild)));
 }
 
-Exp *CallingConvention::Win32Signature::getProven(Exp *left) {
+SharedExp CallingConvention::Win32Signature::getProven(SharedExp left) {
     int nparams = params.size();
     if (nparams > 0 && *params[0]->getExp() == *Location::regOf(28)) {
         nparams--;
     }
     if (left->isRegOfK()) {
-        switch (((Const *)left->getSubExp1())->getInt()) {
+        switch (left->subExp<Const,1>()->getInt()) {
         case 28: // esp
             // Note: assumes callee pop... not true for cdecl functions!
-            return Binary::get(opPlus, Location::regOf(28), new Const(4 + nparams * 4));
+            return Binary::get(opPlus, Location::regOf(28), Const::get(4 + nparams * 4));
         case 27: // ebx
             return Location::regOf(27);
         case 29: // ebp
@@ -430,9 +418,9 @@ Exp *CallingConvention::Win32Signature::getProven(Exp *left) {
     return nullptr;
 }
 
-bool CallingConvention::Win32Signature::isPreserved(Exp *e) {
+bool CallingConvention::Win32Signature::isPreserved(SharedExp e) {
     if (e->isRegOfK()) {
-        switch (((Const *)e->getSubExp1())->getInt()) {
+        switch (e->subExp<Const,1>()->getInt()) {
         case 29: // ebp
         case 27: // ebx
         case 30: // esi
@@ -473,15 +461,15 @@ void CallingConvention::Win32Signature::setLibraryDefines(StatementList *defs) {
     defs->append(new ImplicitAssign(Location::regOf(28))); // esp
 }
 
-Exp *CallingConvention::Win32TcSignature::getProven(Exp *left) {
+SharedExp CallingConvention::Win32TcSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        if (((Const *)left->getSubExp1())->getInt() == 28) {
+        if (left->subExp<Const,1>()->getInt() == 28) {
             int nparams = params.size();
             if (nparams > 0 && *params[0]->getExp() == *Location::regOf(28)) {
                 nparams--;
             }
             // r28 += 4 + nparams*4 - 4        (-4 because ecx is register param)
-            return Binary::get(opPlus, Location::regOf(28), new Const(4 + nparams * 4 - 4));
+            return Binary::get(opPlus, Location::regOf(28), Const::get(4 + nparams * 4 - 4));
         }
     }
     // Else same as for standard Win32 signature
@@ -496,7 +484,7 @@ CallingConvention::StdC::PentiumSignature::PentiumSignature(const QString &nam) 
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Signature(old) {}
 
-Signature *CallingConvention::StdC::PentiumSignature::clone() {
+std::shared_ptr<Signature> CallingConvention::StdC::PentiumSignature::clone() {
     PentiumSignature *n = new PentiumSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -510,7 +498,7 @@ Signature *CallingConvention::StdC::PentiumSignature::clone() {
         n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
 bool CallingConvention::StdC::PentiumSignature::operator==(Signature &other) { return Signature::operator==(other); }
@@ -559,7 +547,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
 #endif
 }
 
-void CallingConvention::StdC::PentiumSignature::addReturn(SharedType type, Exp *e) {
+void CallingConvention::StdC::PentiumSignature::addReturn(SharedType type, SharedExp e) {
     if (type->isVoid())
         return;
     if (e == nullptr) {
@@ -571,40 +559,37 @@ void CallingConvention::StdC::PentiumSignature::addReturn(SharedType type, Exp *
     Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::PentiumSignature::addParameter(SharedType type, const QString &nam, Exp *e,
+void CallingConvention::StdC::PentiumSignature::addParameter(SharedType type, const QString &nam, const SharedExp &e,
                                                              const QString &boundMax) {
-    if (e == nullptr) {
-        e = getArgumentExp(params.size());
-    }
-    Signature::addParameter(type, nam, e, boundMax);
+    Signature::addParameter(type, nam, e ? e : getArgumentExp(params.size()), boundMax);
 }
 
-Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) {
+SharedExp CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
-    Exp *esp = Location::regOf(28);
+    SharedExp esp = Location::regOf(28);
     if (params.size() != 0 && *params[0]->getExp() == *esp)
         n--;
-    Exp *e = Location::memOf(Binary::get(opPlus, esp, new Const((n + 1) * 4)));
+    SharedExp e = Location::memOf(Binary::get(opPlus, esp, Const::get((n + 1) * 4)));
     return e;
 }
 
-Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc * /*p*/) {
+std::shared_ptr<Signature> CallingConvention::StdC::PentiumSignature::promote(UserProc * /*p*/) {
     // No promotions from here up, obvious idea would be c++ name mangling
-    return this;
+    return shared_from_this();
 }
 
-Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard() {
+SharedExp CallingConvention::StdC::PentiumSignature::getStackWildcard() {
     // Note: m[esp + -8] is simplified to m[esp - 8] now
-    return Location::memOf(Binary::get(opMinus, Location::regOf(28), new Terminal(opWild)));
+    return Location::memOf(Binary::get(opMinus, Location::regOf(28), Terminal::get(opWild)));
 }
 
-Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left) {
+SharedExp CallingConvention::StdC::PentiumSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = ((Const *)left->getSubExp1())->getInt();
+        int r = left->subExp<Const,1>()->getInt();
         switch (r) {
         case 28:                                                           // esp
-            return Binary::get(opPlus, Location::regOf(28), new Const(4)); // esp+4
+            return Binary::get(opPlus, Location::regOf(28), Const::get(4)); // esp+4
         case 29:
         case 30:
         case 31:
@@ -615,9 +600,9 @@ Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left) {
     return nullptr;
 }
 
-bool CallingConvention::StdC::PentiumSignature::isPreserved(Exp *e) {
+bool CallingConvention::StdC::PentiumSignature::isPreserved(SharedExp e) {
     if (e->isRegOfK()) {
-        switch (((Const *)e->getSubExp1())->getInt()) {
+        switch (e->subExp<Const,1>()->getInt()) {
         case 29: // ebp
         case 27: // ebx
         case 30: // esi
@@ -667,7 +652,7 @@ CallingConvention::StdC::PPCSignature::PPCSignature(const QString &nam) : Signat
 
 CallingConvention::StdC::PPCSignature::PPCSignature(Signature &old) : Signature(old) {}
 
-Signature *CallingConvention::StdC::PPCSignature::clone() {
+std::shared_ptr<Signature> CallingConvention::StdC::PPCSignature::clone() {
     PPCSignature *n = new PPCSignature(name);
     cloneVec(params, n->params);
     // n->implicitParams = implicitParams;
@@ -681,23 +666,23 @@ Signature *CallingConvention::StdC::PPCSignature::clone() {
         n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
-Exp *CallingConvention::StdC::PPCSignature::getArgumentExp(int n) {
+SharedExp CallingConvention::StdC::PPCSignature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
-    Exp *e;
+    SharedExp e;
     if (n >= 8) {
         // PPCs pass the ninth and subsequent parameters at m[%r1+8],
         // m[%r1+12], etc.
-        e = Location::memOf(Binary::get(opPlus, Location::regOf(1), new Const(8 + (n - 8) * 4)));
+        e = Location::memOf(Binary::get(opPlus, Location::regOf(1), Const::get(8 + (n - 8) * 4)));
     } else
         e = Location::regOf(3 + n);
     return e;
 }
 
-void CallingConvention::StdC::PPCSignature::addReturn(SharedType type, Exp *e) {
+void CallingConvention::StdC::PPCSignature::addReturn(SharedType type, SharedExp e) {
     if (type->isVoid())
         return;
     if (e == nullptr) {
@@ -707,21 +692,18 @@ void CallingConvention::StdC::PPCSignature::addReturn(SharedType type, Exp *e) {
 }
 
 void CallingConvention::StdC::PPCSignature::addParameter(SharedType type, const QString &nam,
-                                                         Exp *e, const QString &boundMax) {
-    if (e == nullptr) {
-        e = getArgumentExp(params.size());
-    }
-    Signature::addParameter(type, nam, e, boundMax);
+                                                         const SharedExp &e, const QString &boundMax) {
+    Signature::addParameter(type, nam, e ? e : getArgumentExp(params.size()), boundMax);
 }
 
-Exp *CallingConvention::StdC::PPCSignature::getStackWildcard() {
+SharedExp CallingConvention::StdC::PPCSignature::getStackWildcard() {
     // m[r1 - WILD]
-    return Location::memOf(Binary::get(opMinus, Location::regOf(1), new Terminal(opWild)));
+    return Location::memOf(Binary::get(opMinus, Location::regOf(1), Terminal::get(opWild)));
 }
 
-Exp *CallingConvention::StdC::PPCSignature::getProven(Exp *left) {
+SharedExp CallingConvention::StdC::PPCSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = ((Const *)((Location *)left)->getSubExp1())->getInt();
+        int r = left->subExp<Const,1>()->getInt();
         switch (r) {
         case 1: // stack
             return left;
@@ -730,9 +712,9 @@ Exp *CallingConvention::StdC::PPCSignature::getProven(Exp *left) {
     return nullptr;
 }
 
-bool CallingConvention::StdC::PPCSignature::isPreserved(Exp *e) {
+bool CallingConvention::StdC::PPCSignature::isPreserved(SharedExp e) {
     if (e->isRegOfK()) {
-        int r = ((Const *)e->getSubExp1())->getInt();
+        int r = e->subExp<Const,1>()->getInt();
         return r == 1;
     }
     return false;
@@ -756,7 +738,7 @@ CallingConvention::StdC::ST20Signature::ST20Signature(const QString &nam) : Sign
 
 CallingConvention::StdC::ST20Signature::ST20Signature(Signature &old) : Signature(old) {}
 
-Signature *CallingConvention::StdC::ST20Signature::clone() {
+std::shared_ptr<Signature> CallingConvention::StdC::ST20Signature::clone() {
     ST20Signature *n = new ST20Signature(name);
     n->params = params;
     n->returns = returns;
@@ -766,23 +748,23 @@ Signature *CallingConvention::StdC::ST20Signature::clone() {
     n->preferedReturn = preferedReturn;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
 bool CallingConvention::StdC::ST20Signature::operator==(Signature &other) { return Signature::operator==(other); }
 
-Exp *CallingConvention::StdC::ST20Signature::getArgumentExp(int n) {
+SharedExp CallingConvention::StdC::ST20Signature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
     // m[%sp+4], etc.
-    Exp *sp = Location::regOf(3);
+    SharedExp sp = Location::regOf(3);
     if (params.size() != 0 && *params[0]->getExp() == *sp)
         n--;
-    Exp *e = Location::memOf(Binary::get(opPlus, sp, new Const((n + 1) * 4)));
+    SharedExp e = Location::memOf(Binary::get(opPlus, sp, Const::get((n + 1) * 4)));
     return e;
 }
 
-void CallingConvention::StdC::ST20Signature::addReturn(SharedType type, Exp *e) {
+void CallingConvention::StdC::ST20Signature::addReturn(SharedType type, SharedExp e) {
     if (type->isVoid())
         return;
     if (e == nullptr) {
@@ -791,31 +773,28 @@ void CallingConvention::StdC::ST20Signature::addReturn(SharedType type, Exp *e) 
     Signature::addReturn(type, e);
 }
 
-Signature *CallingConvention::StdC::ST20Signature::promote(UserProc * /*p*/) {
+std::shared_ptr<Signature> CallingConvention::StdC::ST20Signature::promote(UserProc * /*p*/) {
     // No promotions from here up, obvious idea would be c++ name mangling
-    return this;
+    return shared_from_this();
 }
 
 void CallingConvention::StdC::ST20Signature::addParameter(SharedType type, const QString &nam,
-                                                          Exp *e, const QString &boundMax) {
-    if (e == nullptr) {
-        e = getArgumentExp(params.size());
-    }
-    Signature::addParameter(type, nam, e, boundMax);
+                                                          const SharedExp &e, const QString &boundMax) {
+    Signature::addParameter(type, nam, e ? e : getArgumentExp(params.size()), boundMax);
 }
 
-Exp *CallingConvention::StdC::ST20Signature::getStackWildcard() {
+SharedExp CallingConvention::StdC::ST20Signature::getStackWildcard() {
     // m[r1 - WILD]
-    return Location::memOf(Binary::get(opMinus, Location::regOf(3), new Terminal(opWild)));
+    return Location::memOf(Binary::get(opMinus, Location::regOf(3), Terminal::get(opWild)));
 }
 
 #if 1
-Exp *CallingConvention::StdC::ST20Signature::getProven(Exp *left) {
+SharedExp CallingConvention::StdC::ST20Signature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = ((Const *)left->getSubExp1())->getInt();
+        int r = left->subExp<Const,1>()->getInt();
         switch (r) {
         case 3:
-            // return Binary::get(opPlus, Location::regOf(3), new Const(4));
+            // return Binary::get(opPlus, Location::regOf(3), Const::get(4));
             return left;
         case 0:
         case 1:
@@ -827,7 +806,7 @@ Exp *CallingConvention::StdC::ST20Signature::getProven(Exp *left) {
     return nullptr;
 }
 #else
-Exp *CallingConvention::StdC::ST20Signature::getProven(Exp *left) {
+SharedExp CallingConvention::StdC::ST20Signature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
         int r = ((Const *)((Location *)left)->getSubExp1())->getInt();
         switch (r) {
@@ -871,7 +850,7 @@ CallingConvention::StdC::SparcSignature::SparcSignature(const QString &nam) : Si
 
 CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) : Signature(old) {}
 
-Signature *CallingConvention::StdC::SparcSignature::clone() {
+std::shared_ptr<Signature> CallingConvention::StdC::SparcSignature::clone() {
     SparcSignature *n = new SparcSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -885,10 +864,10 @@ Signature *CallingConvention::StdC::SparcSignature::clone() {
         n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
-Signature *CallingConvention::StdC::SparcLibSignature::clone() {
+std::shared_ptr<Signature> CallingConvention::StdC::SparcLibSignature::clone() {
     SparcLibSignature *n = new SparcLibSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -901,7 +880,7 @@ Signature *CallingConvention::StdC::SparcLibSignature::clone() {
     else
         n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
 bool CallingConvention::StdC::SparcSignature::operator==(Signature &other) { return Signature::operator==(other); }
@@ -938,7 +917,7 @@ CallingConvention::StdC::MIPSSignature::MIPSSignature(const QString &name) : Sig
     Signature::addReturn(Location::regOf(2));
 }
 
-Signature *CallingConvention::StdC::MIPSSignature::clone()
+std::shared_ptr<Signature> CallingConvention::StdC::MIPSSignature::clone()
 {
     MIPSSignature *n = new MIPSSignature(name);
     cloneVec(params, n->params);
@@ -953,7 +932,7 @@ Signature *CallingConvention::StdC::MIPSSignature::clone()
         n->preferedReturn = nullptr;
     n->preferedParams = preferedParams;
     n->unknown = unknown;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
 bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature & /*candidate*/) {
@@ -970,7 +949,7 @@ bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature & 
     return true;
 }
 
-void CallingConvention::StdC::MIPSSignature::addReturn(SharedType type, Exp *e)
+void CallingConvention::StdC::MIPSSignature::addReturn(SharedType type, SharedExp e)
 {
     if (type->isVoid())
         return;
@@ -985,11 +964,11 @@ void CallingConvention::StdC::MIPSSignature::addReturn(SharedType type, Exp *e)
     Signature::addReturn(type, e);
 }
 
-Exp *CallingConvention::StdC::MIPSSignature::getArgumentExp(int n)
+SharedExp CallingConvention::StdC::MIPSSignature::getArgumentExp(int n)
 {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
-    Exp *e;
+    SharedExp e;
     if (n >= 4) {
         // MIPS abi - pass the 4th and subsequent parameters at m[%sp+home_locations],
         // theo sp +0 .. home_locations contains a 'shadow' set of locations for first parameters
@@ -997,41 +976,38 @@ Exp *CallingConvention::StdC::MIPSSignature::getArgumentExp(int n)
         //
         e = Location::memOf(Binary::get(opPlus,
                                         Location::regOf(29), // %o6 == %sp
-                                        new Const(4*4 + (n - 4) * 4)));
+                                        Const::get(4*4 + (n - 4) * 4)));
     } else
         e = Location::regOf((int)(8 + n));
     return e;
 
 }
 
-void CallingConvention::StdC::MIPSSignature::addParameter(SharedType type, const QString &nam, Exp *e, const QString &boundMax)
+void CallingConvention::StdC::MIPSSignature::addParameter(SharedType type, const QString &nam, const SharedExp &e, const QString &boundMax)
 {
-    if (e == nullptr) {
-        e = getArgumentExp(params.size());
-    }
-    Signature::addParameter(type, nam, e, boundMax);
+    Signature::addParameter(type, nam, e ? e : getArgumentExp(params.size()), boundMax);
 }
 
-Exp *CallingConvention::StdC::MIPSSignature::getStackWildcard()
+SharedExp CallingConvention::StdC::MIPSSignature::getStackWildcard()
 {
     // m[%sp - WILD]
-    return Location::memOf(Binary::get(opMinus, Location::regOf(getStackRegister()), new Terminal(opWild)));
+    return Location::memOf(Binary::get(opMinus, Location::regOf(getStackRegister()), Terminal::get(opWild)));
 }
 
-Exp *CallingConvention::StdC::MIPSSignature::getProven(Exp *left)
+SharedExp CallingConvention::StdC::MIPSSignature::getProven(SharedExp left)
 {
     if (left->isRegOfK()) {
-        int r = ((Const *)((Location *)left)->getSubExp1())->getInt();
+        int r = left->subExp<Const,1>()->getInt();
         if(r==getStackRegister())
             return left;
     }
     return nullptr;
 }
 
-bool CallingConvention::StdC::MIPSSignature::isPreserved(Exp *e)
+bool CallingConvention::StdC::MIPSSignature::isPreserved(SharedExp e)
 {
     if (e->isRegOfK()) {
-        int r = ((Const *)e->getSubExp1())->getInt();
+        int r = e->subExp<Const,1>()->getInt();
         return r == getStackRegister();
     }
     return false;
@@ -1047,7 +1023,7 @@ void CallingConvention::StdC::MIPSSignature::setLibraryDefines(StatementList *de
     defs->append(new ImplicitAssign(Location::regOf(30)));
 }
 
-void CallingConvention::StdC::SparcSignature::addReturn(SharedType type, Exp *e) {
+void CallingConvention::StdC::SparcSignature::addReturn(SharedType type, SharedExp e) {
     if (type->isVoid())
         return;
     if (e == nullptr) {
@@ -1057,40 +1033,37 @@ void CallingConvention::StdC::SparcSignature::addReturn(SharedType type, Exp *e)
 }
 
 void CallingConvention::StdC::SparcSignature::addParameter(SharedType type, const QString &nam,
-                                                           Exp *e, const QString &boundMax) {
-    if (e == nullptr) {
-        e = getArgumentExp(params.size());
-    }
-    Signature::addParameter(type, nam, e, boundMax);
+                                                           const SharedExp &e, const QString &boundMax) {
+    Signature::addParameter(type, nam, e ? e : getArgumentExp(params.size()), boundMax);
 }
 
-Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(int n) {
+SharedExp CallingConvention::StdC::SparcSignature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
-    Exp *e;
+    SharedExp e;
     if (n >= 6) {
         // SPARCs pass the seventh and subsequent parameters at m[%sp+92],
         // m[%esp+96], etc.
         e = Location::memOf(Binary::get(opPlus,
                                         Location::regOf(14), // %o6 == %sp
-                                        new Const(92 + (n - 6) * 4)));
+                                        Const::get(92 + (n - 6) * 4)));
     } else
         e = Location::regOf(8 + n);
     return e;
 }
 
-Signature *CallingConvention::StdC::SparcSignature::promote(UserProc * /*p*/) {
+std::shared_ptr<Signature> CallingConvention::StdC::SparcSignature::promote(UserProc * /*p*/) {
     // no promotions from here up, obvious example would be name mangling
-    return this;
+    return shared_from_this();
 }
 
-Exp *CallingConvention::StdC::SparcSignature::getStackWildcard() {
-    return Location::memOf(Binary::get(opPlus, Location::regOf(14), new Terminal(opWild)));
+SharedExp CallingConvention::StdC::SparcSignature::getStackWildcard() {
+    return Location::memOf(Binary::get(opPlus, Location::regOf(14), Terminal::get(opWild)));
 }
 
-Exp *CallingConvention::StdC::SparcSignature::getProven(Exp *left) {
+SharedExp CallingConvention::StdC::SparcSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = ((Const *)((Location *)left)->getSubExp1())->getInt();
+        int r = left->subExp<Const,1>()->getInt();
         switch (r) {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
         case 14: // sp
@@ -1109,9 +1082,9 @@ Exp *CallingConvention::StdC::SparcSignature::getProven(Exp *left) {
     return nullptr;
 }
 
-bool CallingConvention::StdC::SparcSignature::isPreserved(Exp *e) {
+bool CallingConvention::StdC::SparcSignature::isPreserved(SharedExp e) {
     if (e->isRegOfK()) {
-        int r = ((Const *)((Location *)e)->getSubExp1())->getInt();
+        int r = e->subExp<Const,1>()->getInt();
         switch (r) {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
         case 14: // sp
@@ -1140,9 +1113,9 @@ void CallingConvention::StdC::SparcSignature::setLibraryDefines(StatementList *d
         defs->append(new ImplicitAssign(Location::regOf(r))); // o0-o7 (r8-r15) modified
 }
 
-Exp *CallingConvention::StdC::SparcLibSignature::getProven(Exp *left) {
+SharedExp CallingConvention::StdC::SparcLibSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = ((Const *)((Location *)left)->getSubExp1())->getInt();
+        int r = left->subExp<Const,1>()->getInt();
         switch (r) {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
         case 14:
@@ -1191,8 +1164,8 @@ void CustomSignature::setSP(int nsp) {
     }
 }
 
-Signature *Signature::clone() {
-    Signature *n = new Signature(name);
+std::shared_ptr<Signature> Signature::clone() {
+    auto n = std::make_shared<Signature>(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
     cloneVec(returns, n->returns);
@@ -1206,7 +1179,7 @@ Signature *Signature::clone() {
     return n;
 }
 
-Signature *CustomSignature::clone() {
+std::shared_ptr<Signature> CustomSignature::clone() {
     CustomSignature *n = new CustomSignature(name);
     cloneVec(params, n->params);
     // cloneVec(implicitParams, n->implicitParams);
@@ -1220,7 +1193,7 @@ Signature *CustomSignature::clone() {
     n->preferedParams = preferedParams;
     n->unknown = unknown;
     n->sigFile = sigFile;
-    return n;
+    return std::shared_ptr<Signature>(n);
 }
 
 bool Signature::operator==(Signature &other) {
@@ -1228,13 +1201,12 @@ bool Signature::operator==(Signature &other) {
     if (params.size() != other.params.size())
         return false;
     // Only care about the first return location (at present)
-    std::vector<Parameter *>::iterator it1, it2;
-    for (it1 = params.begin(), it2 = other.params.begin(); it1 != params.end(); it1++, it2++)
+    for (auto it1 = params.begin(), it2 = other.params.begin(); it1 != params.end(); it1++, it2++)
         if (!(**it1 == **it2))
             return false;
     if (returns.size() != other.returns.size())
         return false;
-    std::vector<Return *>::iterator rr1, rr2;
+    std::vector<std::shared_ptr<Return> >::iterator rr1, rr2;
     for (rr1 = returns.begin(), rr2 = other.returns.begin(); rr1 != returns.end(); ++rr1, ++rr2)
         if (!(**rr1 == **rr2))
             return false;
@@ -1247,9 +1219,9 @@ void Signature::setName(const QString &nam) { name = nam; }
 
 void Signature::addParameter(const char *nam /*= nullptr*/) { addParameter(VoidType::get(), nam); }
 
-void Signature::addParameter(Exp *e, SharedType ty) { addParameter(ty, nullptr, e); }
+void Signature::addParameter(const SharedExp &e, SharedType ty) { addParameter(ty, nullptr, e); }
 
-void Signature::addParameter(SharedType type, const QString &nam /*= nullptr*/, Exp *e /*= nullptr*/,
+void Signature::addParameter(SharedType type, const QString &nam /*= nullptr*/, const SharedExp &e /*= nullptr*/,
                              const QString &boundMax /*= ""*/) {
     if (e == nullptr) {
         LOG_STREAM() << "No expression for parameter ";
@@ -1282,15 +1254,14 @@ void Signature::addParameter(SharedType type, const QString &nam /*= nullptr*/, 
         }
         new_name = s;
     }
-    Parameter *p = new Parameter(type, new_name, e, boundMax);
-    addParameter(p);
+    addParameter(std::make_shared<Parameter>(type, new_name, e, boundMax));
     // addImplicitParametersFor(p);
 }
 
-void Signature::addParameter(Parameter *param) {
+void Signature::addParameter(std::shared_ptr<Parameter> param) {
     SharedType ty = param->getType();
     QString nam = param->name();
-    Exp *e = param->getExp();
+    SharedExp e = param->getExp();
 
     if (nam.isEmpty())
         nam = QString::null;
@@ -1301,7 +1272,7 @@ void Signature::addParameter(Parameter *param) {
         params.push_back(param);
 }
 
-void Signature::removeParameter(Exp *e) {
+void Signature::removeParameter(const SharedExp &e) {
     int i = findParam(e);
     if (i != -1)
         removeParameter(i);
@@ -1328,7 +1299,7 @@ const QString &Signature::getParamName(size_t n) {
     return params[n]->name();
 }
 
-Exp *Signature::getParamExp(int n) {
+SharedExp Signature::getParamExp(int n) {
     assert(n < (int)params.size());
     return params[n]->getExp();
 }
@@ -1361,7 +1332,7 @@ void Signature::setParamType(const char *nam, SharedType ty) {
     params[idx]->setType(ty);
 }
 
-void Signature::setParamType(Exp *e, SharedType ty) {
+void Signature::setParamType(const SharedExp &e, SharedType ty) {
     int idx = findParam(e);
     if (idx == -1) {
         LOG << "could not set type for unknown parameter expression " << e << "\n";
@@ -1372,10 +1343,10 @@ void Signature::setParamType(Exp *e, SharedType ty) {
 
 void Signature::setParamName(int n, const char *name) { params[n]->name(name); }
 
-void Signature::setParamExp(int n, Exp *e) { params[n]->setExp(e); }
+void Signature::setParamExp(int n, SharedExp e) { params[n]->setExp(e); }
 
 // Return the index for the given expression, or -1 if not found
-int Signature::findParam(Exp *e) {
+int Signature::findParam(const SharedExp &e) {
     for (unsigned i = 0; i < getNumParams(); i++)
         if (*getParamExp(i) == *e)
             return i;
@@ -1397,26 +1368,26 @@ int Signature::findParam(const QString &nam) {
     return -1;
 }
 
-int Signature::findReturn(Exp *e) {
+int Signature::findReturn(SharedExp e) {
     for (unsigned i = 0; i < getNumReturns(); i++)
         if (*returns[i]->exp == *e)
             return (int)i;
     return -1;
 }
 
-void Signature::addReturn(SharedType type, Exp *exp) {
+void Signature::addReturn(SharedType type, SharedExp exp) {
     assert(exp);
-    addReturn(new Return(type, exp));
+    addReturn(std::make_shared<Return>(type, exp));
     //    rettype = type->clone();
 }
 
 // Deprecated. Use the above version.
-void Signature::addReturn(Exp *exp) {
+void Signature::addReturn(SharedExp exp) {
     // addReturn(exp->getType() ? exp->getType() : new IntegerType(), exp);
     addReturn(PointerType::get(VoidType::get()), exp);
 }
 
-void Signature::removeReturn(Exp *e) {
+void Signature::removeReturn(SharedExp e) {
     int i = findReturn(e);
     if (i != -1) {
         for (unsigned j = i + 1; j < returns.size(); j++)
@@ -1430,75 +1401,62 @@ void Signature::setReturnType(size_t n, SharedType ty) {
         returns[n]->type = ty;
 }
 
-Exp *Signature::getArgumentExp(int n) { return getParamExp(n); }
+SharedExp Signature::getArgumentExp(int n) {
+    return getParamExp(n);
+}
 //! any signature can be promoted to a higher level signature, if available
-Signature *Signature::promote(UserProc *p) {
+std::shared_ptr<Signature> Signature::promote(UserProc *p) {
     // FIXME: the whole promotion idea needs a redesign...
     if (CallingConvention::Win32Signature::qualified(p, *this)) {
-        Signature *sig = new CallingConvention::Win32Signature(*this);
-        //        sig->analyse(p);
-        delete this;
-        return sig;
+        return std::shared_ptr<Signature>(new CallingConvention::Win32Signature(*this));
     }
 
     if (CallingConvention::StdC::PentiumSignature::qualified(p, *this)) {
-        Signature *sig = new CallingConvention::StdC::PentiumSignature(*this);
-        //        sig->analyse(p);
-        delete this;
-        return sig;
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::PentiumSignature(*this));
     }
 
     if (CallingConvention::StdC::SparcSignature::qualified(p, *this)) {
-        Signature *sig = new CallingConvention::StdC::SparcSignature(*this);
-        //        sig->analyse(p);
-        delete this;
-        return sig;
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::SparcSignature(*this));
     }
 
     if (CallingConvention::StdC::PPCSignature::qualified(p, *this)) {
-        Signature *sig = new CallingConvention::StdC::PPCSignature(*this);
-        //        sig->analyse(p);
-        delete this;
-        return sig;
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::PPCSignature(*this));
     }
 
     if (CallingConvention::StdC::ST20Signature::qualified(p, *this)) {
-        Signature *sig = new CallingConvention::StdC::ST20Signature(*this);
-        //        sig->analyse(p);
-        delete this;
-        return sig;
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::ST20Signature(*this));
     }
 
-    return this;
+    return shared_from_this();
 }
 
-Signature *Signature::instantiate(platform plat, callconv cc, const QString &nam) {
+std::shared_ptr<Signature> Signature::instantiate(platform plat, callconv cc, const QString &nam) {
     switch (plat) {
     case PLAT_PENTIUM:
         if (cc == CONV_PASCAL)
             // For now, assume the only pascal calling convention pentium signatures will be Windows
-            return new CallingConvention::Win32Signature(nam);
+            return std::shared_ptr<Signature>(new CallingConvention::Win32Signature(nam));
         else if (cc == CONV_THISCALL)
-            return new CallingConvention::Win32TcSignature(nam);
+            return std::shared_ptr<Signature>(new CallingConvention::Win32TcSignature(nam));
         else
-            return new CallingConvention::StdC::PentiumSignature(nam);
+            return std::shared_ptr<Signature>(new CallingConvention::StdC::PentiumSignature(nam));
     case PLAT_SPARC:
         if(cc == CONV_PASCAL)
             cc = CONV_C;
         assert(cc == CONV_C);
-        return new CallingConvention::StdC::SparcSignature(nam);
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::SparcSignature(nam));
     case PLAT_PPC:
         if(cc == CONV_PASCAL)
             cc = CONV_C;
-        return new CallingConvention::StdC::PPCSignature(nam);
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::PPCSignature(nam));
     case PLAT_ST20:
         if(cc == CONV_PASCAL)
             cc = CONV_C;
-        return new CallingConvention::StdC::ST20Signature(nam);
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::ST20Signature(nam));
     case PLAT_MIPS:
         if(cc == CONV_PASCAL)
             cc = CONV_C;
-        return new CallingConvention::StdC::MIPSSignature(nam);
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::MIPSSignature(nam));
     // insert other conventions here
     default:
         qCritical() << "unknown signature: " << conventionName(cc) << " " << platformName(plat) << "\n";
@@ -1508,7 +1466,6 @@ Signature *Signature::instantiate(platform plat, callconv cc, const QString &nam
 }
 
 Signature::~Signature() {
-    qDeleteAll(params);
 }
 
 void Signature::print(QTextStream &out, bool /*html*/) const {
@@ -1518,7 +1475,7 @@ void Signature::print(QTextStream &out, bool /*html*/) const {
     {
         out << "{ ";
         unsigned n = 0;
-        for (const Return *rr : returns) {
+        for (const std::shared_ptr<Return> &rr : returns) {
             out << rr->type->getCtype() << " " << rr->exp;
             if (n != returns.size() - 1)
                 out << ",";
@@ -1589,7 +1546,7 @@ bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreac
 }
 
 // Special for Mike: find the location where the first outgoing (actual) parameter is conventionally held
-Exp *Signature::getFirstArgLoc(Prog *prog) {
+SharedExp Signature::getFirstArgLoc(Prog *prog) {
     MACHINE mach = prog->getMachine();
     switch (mach) {
     case MACHINE_SPARC: {
@@ -1600,7 +1557,7 @@ Exp *Signature::getFirstArgLoc(Prog *prog) {
         // CallingConvention::StdC::PentiumSignature sig("");
         // Exp* e = sig.getArgumentExp(0);
         // For now, need to work around how the above appears to be the wrong thing!
-        Exp *e = Location::memOf(Location::regOf(28));
+        SharedExp e = Location::memOf(Location::regOf(28));
         return e;
     }
     case MACHINE_ST20: {
@@ -1618,7 +1575,7 @@ Exp *Signature::getFirstArgLoc(Prog *prog) {
 // A bit of a cludge. Problem is that we can't call the polymorphic getReturnExp() until signature promotion has
 // happened. For the switch logic, that happens way too late. So for now, we have this cludge.
 // This is very very hacky! (trent)
-/*static*/ Exp *Signature::getReturnExp2(LoaderInterface *pBF) {
+/*static*/ SharedExp Signature::getReturnExp2(LoaderInterface *pBF) {
     switch (pBF->getMachine()) {
     case MACHINE_SPARC:
         return Location::regOf(8);
@@ -1669,7 +1626,7 @@ void Signature::setABIdefines(Prog *prog, StatementList *defs) {
 }
 
 // Get the expected argument location, based solely on the machine of the input program
-Exp *Signature::getEarlyParamExp(int n, Prog *prog) {
+SharedExp Signature::getEarlyParamExp(int n, Prog *prog) {
     MACHINE mach = prog->getMachine();
     switch (mach) {
     case MACHINE_SPARC: {
@@ -1694,11 +1651,11 @@ Exp *Signature::getEarlyParamExp(int n, Prog *prog) {
 
 StatementList &Signature::getStdRetStmt(Prog *prog) {
     // pc := m[r[28]]
-    static Assign pent1ret(new Terminal(opPC), Location::memOf(Location::regOf(28)));
+    static Assign pent1ret(Terminal::get(opPC), Location::memOf(Location::regOf(28)));
     // r[28] := r[28] + 4
-    static Assign pent2ret(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), new Const(4)));
-    static Assign st20_1ret(new Terminal(opPC), Location::memOf(Location::regOf(3)));
-    static Assign st20_2ret(Location::regOf(3), Binary::get(opPlus, Location::regOf(3), new Const(16)));
+    static Assign pent2ret(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(4)));
+    static Assign st20_1ret(Terminal::get(opPC), Location::memOf(Location::regOf(3)));
+    static Assign st20_2ret(Location::regOf(3), Binary::get(opPlus, Location::regOf(3), Const::get(16)));
     MACHINE mach = prog->getMachine();
     switch (mach) {
     case MACHINE_SPARC:
@@ -1749,72 +1706,72 @@ Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, a
 stack pointer register
 Also, I believe that the PA/RISC stack grows away from 0
 */
-bool Signature::isStackLocal(Prog *prog, Exp *e) {
+bool Signature::isStackLocal(Prog *prog, SharedExp e) {
     // e must be m[...]
     if (e->isSubscript())
         return isStackLocal(prog, e->getSubExp1());
     if (!e->isMemOf())
         return false;
-    Exp *addr = ((Location *)e)->getSubExp1();
+    SharedExp addr = e->getSubExp1();
     return isAddrOfStackLocal(prog, addr);
 }
 
-bool Signature::isAddrOfStackLocal(Prog *prog, Exp *e) {
+bool Signature::isAddrOfStackLocal(Prog *prog, const SharedExp &e) {
     OPER op = e->getOper();
     if (op == opAddrOf)
         return isStackLocal(prog, e->getSubExp1());
     // e must be sp -/+ K or just sp
-    static Exp *sp = Location::regOf(getStackRegister(prog));
+    static SharedExp sp = Location::regOf(getStackRegister(prog));
     if (op != opMinus && op != opPlus) {
         // Matches if e is sp or sp{0} or sp{-}
         return (*e == *sp ||
-                (e->isSubscript() && ((RefExp *)e)->isImplicitDef() && *((RefExp *)e)->getSubExp1() == *sp));
+                (e->isSubscript() && e->subExp<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp));
     }
     if (op == opMinus && !isLocalOffsetNegative())
         return false;
     if (op == opPlus && !isLocalOffsetPositive())
         return false;
-    Exp *sub1 = ((Binary *)e)->getSubExp1();
-    Exp *sub2 = ((Binary *)e)->getSubExp2();
+    SharedExp sub1 = e->getSubExp1();
+    SharedExp sub2 = e->getSubExp2();
     // e must be <sub1> +- K
     if (!sub2->isIntConst())
         return false;
     // first operand must be sp or sp{0} or sp{-}
     if (sub1->isSubscript()) {
-        if (!((RefExp *)sub1)->isImplicitDef())
+        if (!sub1->subExp<RefExp>()->isImplicitDef())
             return false;
-        sub1 = ((RefExp *)sub1)->getSubExp1();
+        sub1 = sub1->getSubExp1();
     }
     return *sub1 == *sp;
 }
 
 // An override for the SPARC: [sp+0] .. [sp+88] are local variables (effectively), but [sp + >=92] are memory parameters
-bool CallingConvention::StdC::SparcSignature::isAddrOfStackLocal(Prog *prog, Exp *e) {
+bool CallingConvention::StdC::SparcSignature::isAddrOfStackLocal(Prog *prog, const SharedExp &e) {
     OPER op = e->getOper();
     if (op == opAddrOf)
         return isStackLocal(prog, e->getSubExp1());
     // e must be sp -/+ K or just sp
-    static Exp *sp = Location::regOf(14);
+    static SharedExp sp = Location::regOf(14);
     if (op != opMinus && op != opPlus) {
         // Matches if e is sp or sp{0} or sp{-}
         return (*e == *sp ||
-                (e->isSubscript() && ((RefExp *)e)->isImplicitDef() && *((RefExp *)e)->getSubExp1() == *sp));
+                (e->isSubscript() && e->subExp<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp));
     }
-    Exp *sub1 = ((Binary *)e)->getSubExp1();
-    Exp *sub2 = ((Binary *)e)->getSubExp2();
+    SharedExp sub1 = e->getSubExp1();
+    SharedExp sub2 = e->getSubExp2();
     // e must be <sub1> +- K
     if (!sub2->isIntConst())
         return false;
     // first operand must be sp or sp{0} or sp{-}
     if (sub1->isSubscript()) {
-        if (!((RefExp *)sub1)->isImplicitDef())
+        if (!sub1->subExp<RefExp>()->isImplicitDef())
             return false;
-        sub1 = ((RefExp *)sub1)->getSubExp1();
+        sub1 = sub1->getSubExp1();
     }
     if (!(*sub1 == *sp))
         return false;
     // SPARC specific test: K must be < 92; else it is a parameter
-    int K = ((Const *)sub2)->getInt();
+    int K = sub2->subExp<Const>()->getInt();
     return K < 92;
 }
 
@@ -1850,8 +1807,8 @@ bool Signature::argumentCompare(Assignment &a, Assignment &b) {
 }
 
 bool CallingConvention::StdC::PentiumSignature::returnCompare(Assignment &a, Assignment &b) {
-    Exp *la = a.getLeft();
-    Exp *lb = b.getLeft();
+    SharedExp la = a.getLeft();
+    SharedExp lb = b.getLeft();
     // Eax is the preferred return location
     if (la->isRegN(24))
         return true; // r24 is less than anything
@@ -1868,10 +1825,10 @@ bool CallingConvention::StdC::PentiumSignature::returnCompare(Assignment &a, Ass
     return *la < *lb;
 }
 
-static Unary spPlus64(opMemOf, Binary::get(opPlus, Location::regOf(14), new Const(64)));
+static Unary spPlus64(opMemOf, Binary::get(opPlus, Location::regOf(14), Const::get(64)));
 bool CallingConvention::StdC::SparcSignature::returnCompare(Assignment &a, Assignment &b) {
-    Exp *la = a.getLeft();
-    Exp *lb = b.getLeft();
+    SharedExp la = a.getLeft();
+    SharedExp lb = b.getLeft();
     // %o0 (r8) is the preferred return location
     if (la->isRegN(8))
         return true; // r24 is less than anything
@@ -1902,19 +1859,19 @@ bool CallingConvention::StdC::SparcSignature::returnCompare(Assignment &a, Assig
 
 // From m[sp +- K] return K (or -K for subtract). sp could be subscripted with {-}
 // Helper function for the below
-int stackOffset(Exp *e, int sp) {
+int stackOffset(SharedExp e, int sp) {
     int ret = 0;
     if (e->isMemOf()) {
-        Exp *sub = ((Location *)e)->getSubExp1();
+        SharedExp sub = e->getSubExp1();
         OPER op = sub->getOper();
         if (op == opPlus || op == opMinus) {
-            Exp *op1 = ((Binary *)sub)->getSubExp1();
+            SharedExp op1 = sub->getSubExp1();
             if (op1->isSubscript())
-                op1 = ((RefExp *)op1)->getSubExp1();
+                op1 = op1->getSubExp1();
             if (op1->isRegN(sp)) {
-                Exp *op2 = ((Binary *)sub)->getSubExp2();
+                SharedExp op2 = sub->getSubExp2();
                 if (op2->isIntConst())
-                    ret = ((Const *)op2)->getInt();
+                    ret = op2->subExp<Const>()->getInt();
                 if (op == opMinus)
                     ret = -ret;
             }
@@ -1924,8 +1881,8 @@ int stackOffset(Exp *e, int sp) {
 }
 
 bool CallingConvention::StdC::PentiumSignature::argumentCompare(Assignment &a, Assignment &b) {
-    Exp *la = a.getLeft();
-    Exp *lb = b.getLeft();
+    SharedExp la = a.getLeft();
+    SharedExp lb = b.getLeft();
     int ma = stackOffset(la, 28);
     int mb = stackOffset(lb, 28);
 
@@ -1941,17 +1898,17 @@ bool CallingConvention::StdC::PentiumSignature::argumentCompare(Assignment &a, A
 }
 
 bool CallingConvention::StdC::SparcSignature::argumentCompare(Assignment &a, Assignment &b) {
-    Exp *la = a.getLeft();
-    Exp *lb = b.getLeft();
+    SharedExp la = a.getLeft();
+    SharedExp lb = b.getLeft();
     // %o0-$o5 (r8-r13) are the preferred argument locations
     int ra = 0, rb = 0;
     if (la->isRegOf()) {
-        int r = ((Const *)((Location *)la)->getSubExp1())->getInt();
+        int r = la->subExp<Const,1>()->getInt();
         if (r >= 8 && r <= 13)
             ra = r;
     }
     if (lb->isRegOf()) {
-        int r = ((Const *)((Location *)lb)->getSubExp1())->getInt();
+        int r = lb->subExp<Const,1>()->getInt();
         if (r >= 8 && r <= 13)
             rb = r;
     }
@@ -1976,7 +1933,8 @@ bool CallingConvention::StdC::SparcSignature::argumentCompare(Assignment &a, Ass
 }
 
 // Class Return methods
-Return *Return::clone() { return new Return(type->clone(), exp->clone()); }
+std::shared_ptr<Return> Return::clone() {
+    return std::make_shared<Return>(type->clone(), SharedExp(exp->clone())); }
 
 bool Return::operator==(Return &other) {
     if (!(*type == *other.type))
@@ -1986,7 +1944,7 @@ bool Return::operator==(Return &other) {
     return true;
 }
 
-SharedType Signature::getTypeFor(Exp *e) {
+SharedType Signature::getTypeFor(SharedExp e) {
     size_t n = returns.size();
     for (size_t i = 0; i < n; ++i) {
         if (*returns[i]->exp == *e)

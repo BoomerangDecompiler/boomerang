@@ -97,7 +97,7 @@ QString InsOptionElem::getinspattern(void) {
     return (nextelem != nullptr) ? ('\'' + elemname + '\'' + nextelem->getinspattern()) : ('\'' + elemname + '\'');
 }
 
-InsListElem::InsListElem(const QString &name, Table *t, const QString &idx) : InsNameElem(name) {
+InsListElem::InsListElem(const QString &name, const std::shared_ptr<Table> &t, const QString &idx) : InsNameElem(name) {
     indexname = idx;
     thetable = t;
 }

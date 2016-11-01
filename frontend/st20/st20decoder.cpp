@@ -91,7 +91,7 @@ DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
                         //#line 71 "frontend/machine/st20/decoder.m"
 
-                        stmts = instantiate(pc, name, new Const(total + oper));
+                        stmts = instantiate(pc, name, {Const::get(total + oper)});
                     }
 
                     break;
@@ -122,7 +122,7 @@ DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
                     total += oper;
 
-                    stmts = instantiate(pc, "call", new Const(total));
+                    stmts = instantiate(pc, "call", {Const::get(total)});
 
                     CallStatement *newCall = new CallStatement;
 
@@ -148,7 +148,7 @@ DecodeResult &ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
 
                     // br->setCondExpr(dis_Reg(0));
 
-                    br->setCondExpr(Binary::get(opEquals, dis_Reg(0), new Const(0)));
+                    br->setCondExpr(Binary::get(opEquals, dis_Reg(0), Const::get(0)));
 
                     result.rtl = new RTL(pc, stmts);
 

@@ -29,6 +29,8 @@
 #include <queue>
 #include <fstream>
 #include <QMap>
+#include <memory>
+
 class UserProc;
 class Function;
 class RTL;
@@ -43,6 +45,8 @@ class Signature;
 class Instruction;
 class CallStatement;
 class SymTab;
+using SharedExp = std::shared_ptr<Exp>;
+using SharedConstExp = std::shared_ptr<const Exp>;
 
 // Control flow types
 enum INSTTYPE {
@@ -76,7 +80,7 @@ protected:
     // The queue of addresses still to be processed
     TargetQueue targetQueue;
     // Public map from function name (string) to signature.
-    QMap<QString, Signature *> LibrarySignatures;
+    QMap<QString, std::shared_ptr<Signature> > LibrarySignatures;
     // Map from address to meaningful name
     std::map<ADDRESS, QString> refHints;
     // Map from address to previously decoded RTLs for decoded indirect control transfer instructions
@@ -120,13 +124,13 @@ public:
     void readLibraryCatalog();                                  //!< read from default catalog
 
     // lookup a library signature by name
-    Signature *getLibSignature(const QString &name);
+    std::shared_ptr<Signature> getLibSignature(const QString &name);
 
     // return a signature that matches the architecture best
-    Signature *getDefaultSignature(const QString &name);
+    std::shared_ptr<Signature> getDefaultSignature(const QString &name);
 
-    virtual std::vector<Exp *> &getDefaultParams() = 0;
-    virtual std::vector<Exp *> &getDefaultReturns() = 0;
+    virtual std::vector<SharedExp> &getDefaultParams() = 0;
+    virtual std::vector<SharedExp> &getDefaultReturns() = 0;
 
     /*
      * Decode all undecoded procedures and return a new program containing them.
@@ -200,7 +204,7 @@ public:
                             RTL *pRtl);
     void checkEntryPoint(std::vector<ADDRESS> &entrypoints, ADDRESS addr, const char *type);
 private:
-    bool refersToImportedFunction(Exp *pDest);
+    bool refersToImportedFunction(const SharedExp &pDest);
     SymTab * BinarySymbols;
 }; // class FrontEnd
 

@@ -185,9 +185,9 @@ class Context {
     Instruction *stmt;
     Parameter *param;
     // ImplicitParameter *implicitParam;
-    Return *ret;
+    std::shared_ptr<Return> ret;
     SharedType type;
-    Exp *exp, *symbol;
+    SharedExp exp, symbol;
     std::list<Function *> procs;
 
     Context(int tag)

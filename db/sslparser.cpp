@@ -76,21 +76,21 @@ void *alloca();
 #include "boomerang.h"
 
 OPER strToTerm(const QString &s);                       // Convert string to a Terminal (if possible)
-Exp *listExpToExp(std::list<Exp *> *le);       // Convert a STL list of Exp* to opList
-Exp *listStrToExp(std::list<QString> *ls); // Convert a STL list of strings to opList
+SharedExp listExpToExp(std::list<SharedExp> *le);       // Convert a STL list of Exp* to opList
+SharedExp listStrToExp(std::list<QString> *ls); // Convert a STL list of strings to opList
 
 /*apres const  */
 SSLParser::SSLParser(const QString &sslFile, bool trace) : sslFile(sslFile), bFloat(false) {
 #if YY_SSLParser_DEBUG != 0
     YY_SSLParser_DEBUG_FLAG = 0;
 #endif
-    std::fstream *fin = new std::fstream(sslFile.toStdString(), std::ios::in);
+    m_fin = new std::fstream(sslFile.toStdString(), std::ios::in);
     theScanner = nullptr;
-    if (!*fin) {
+    if (!*m_fin) {
         LOG_STREAM() << "can't open `" << sslFile << "' for reading\n";
         return;
     }
-    theScanner = new SSLScanner(*fin, trace);
+    theScanner = new SSLScanner(*m_fin, trace);
     if (trace)
         yydebug = 1;
 }
@@ -726,7 +726,7 @@ SSLParser::
         break;
     }
     case 2: {
-        the_asgn = new Assign(new Terminal(opNil), yyvsp[0].exp);
+        the_asgn = new Assign(Terminal::get(opNil), yyvsp[0].exp);
         ;
         break;
     }
@@ -744,6 +744,7 @@ SSLParser::
         // Note: the below copies the list of strings!
         Dict.DetParamMap[yyvsp[-4].str].params = *yyvsp[-1].parmlist;
         Dict.DetParamMap[yyvsp[-4].str].kind = PARAM_VARIANT;
+        delete yyvsp[-1].parmlist;
         // delete $4;
         ;
         break;
@@ -751,7 +752,7 @@ SSLParser::
     case 18: {
         std::map<QString, InsNameElem *> m;
         ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
-        Instruction *asgn = new Assign(yyvsp[-1].typ, new Terminal(opNil), yyvsp[0].exp);
+        Instruction *asgn = new Assign(yyvsp[-1].typ, Terminal::get(opNil), yyvsp[0].exp);
         // Note: The below 2 copy lists of strings (to be deleted below!)
         param.params = *yyvsp[-3].parmlist;
         param.funcParams = *yyvsp[-2].parmlist;
@@ -760,8 +761,8 @@ SSLParser::
 
         if (param.funcParams.size() != 0)
             param.kind = PARAM_LAMBDA;
-        // delete $2;
-        // delete $3;
+        delete yyvsp[-2].parmlist;
+        delete yyvsp[-3].parmlist;
         ;
         break;
     }
@@ -872,7 +873,7 @@ SSLParser::
                     yyerror("Name reglist declared twice\n");
                 Dict.addRegister(*loc, x, yyvsp[-5].num, bFloat);
             }
-            // delete $2;
+            delete yyvsp[-8].strlist;
         };
         break;
     }
@@ -884,7 +885,7 @@ SSLParser::
             Dict.addRegister(*loc, yyvsp[0].num, yyvsp[-3].num, bFloat);
         }
         // delete $2;
-        ;
+        delete yyvsp[-6].strlist;
         break;
     }
     case 33: {
@@ -901,7 +902,8 @@ SSLParser::
     }
     case 35: {
         // Note: $2 is a list of strings
-        Dict.FlagFuncs[yyvsp[-5].str] = new FlagDef(listStrToExp(yyvsp[-4].parmlist), yyvsp[-1].rtlist);
+        Dict.FlagFuncs[yyvsp[-5].str] = std::make_shared<FlagDef>(listStrToExp(yyvsp[-4].parmlist), yyvsp[-1].rtlist);
+        delete yyvsp[-4].parmlist;
         ;
         break;
     }
@@ -930,20 +932,20 @@ SSLParser::
         break;
     }
     case 39: {
-        yyval.tab = new Table(*yyvsp[0].namelist);
-        // delete $1;
+        yyval.tab = std::make_shared<Table>(*yyvsp[0].namelist);
+        delete yyvsp[0].namelist;
         ;
         break;
     }
     case 40: {
-        yyval.tab = new OpTable(*yyvsp[0].namelist);
-        // delete $1;
+        yyval.tab = std::make_shared<OpTable>(*yyvsp[0].namelist);
+        delete yyvsp[0].namelist;
         ;
         break;
     }
     case 41: {
-        yyval.tab = new ExprTable(*yyvsp[0].exprlist);
-        // delete $1;
+        yyval.tab = std::make_shared<ExprTable>(*yyvsp[0].exprlist);
+        delete yyvsp[0].exprlist;
         ;
         break;
     }
@@ -954,8 +956,8 @@ SSLParser::
         for (i = yyvsp[-1].namelist->begin(); i != yyvsp[-1].namelist->end(); i++)
             for (j = yyvsp[0].namelist->begin(); j != yyvsp[0].namelist->end(); j++)
                 yyval.namelist->push_back((*i) + (*j));
-        // delete $1;
-        // delete $2;
+        delete yyvsp[-1].namelist;
+        delete yyvsp[0].namelist;
         ;
         break;
     }
@@ -968,7 +970,7 @@ SSLParser::
         // want to append $3 to $1
         // The following causes a massive warning message about mixing signed and unsigned
         yyvsp[-2].namelist->insert(yyvsp[-2].namelist->end(), yyvsp[0].namelist->begin(), yyvsp[0].namelist->end());
-        // delete $3;
+        delete yyvsp[0].namelist;
         yyval.namelist = yyvsp[-2].namelist;
         ;
         break;
@@ -1077,7 +1079,7 @@ SSLParser::
         break;
     }
     case 61: {
-        yyval.exprlist = new std::deque<Exp *>;
+        yyval.exprlist = new std::deque<SharedExp>;
         yyval.exprlist->push_back(yyvsp[-1].exp);
         ;
         break;
@@ -1091,6 +1093,7 @@ SSLParser::
     case 63: {
         // This function expands the tables and saves the expanded RTLs to the dictionary
         expandTables(yyvsp[-3].insel, yyvsp[-1].parmlist, yyvsp[0].rtlist, Dict);
+        delete yyvsp[-1].parmlist;
         ;
         break;
     }
@@ -1204,7 +1207,8 @@ SSLParser::
             bool bFloat = yyvsp[-2].str=="SETFFLAGS";
             OPER op = bFloat ? opFflags : opFlags;
             yyval.regtransfer = new Assign(
-                new Terminal(op), Binary::get(opFlagCall, Const::get(yyvsp[-2].str), listExpToExp(yyvsp[-1].explist)));
+                Terminal::get(op), Binary::get(opFlagCall, Const::get(yyvsp[-2].str), listExpToExp(yyvsp[-1].explist)));
+            delete yyvsp[-1].explist;
         } else {
             yyerror(qPrintable(yyvsp[-2].str+" is not declared as a flag function.\n"));
         };
@@ -1236,7 +1240,7 @@ SSLParser::
     }
     case 83: {
         /*            std::list<Exp*>* tmp = new std::list<Exp*>;
-                        Unary* pFlag = new Unary(opIdRegOf, Dict.RegMap[$1]);
+                        Unary* pFlag = Unary::get(opIdRegOf, Dict.RegMap[$1]);
                         tmp->push_back(pFlag);
                         $$ = tmp;
 */ yyval.explist = 0;
@@ -1277,13 +1281,13 @@ SSLParser::
         break;
     }
     case 89: {
-        yyval.explist = new std::list<Exp *>;
+        yyval.explist = new std::list<SharedExp>;
         yyval.explist->push_back(yyvsp[0].exp);
         ;
         break;
     }
     case 90: {
-        yyval.explist = new std::list<Exp *>;
+        yyval.explist = new std::list<SharedExp>;
         ;
         break;
     }
@@ -1301,12 +1305,12 @@ SSLParser::
         break;
     }
     case 93: {
-        yyval.regtransfer = new Assign(new Terminal(opNil), new Terminal(opFpush));
+        yyval.regtransfer = new Assign(Terminal::get(opNil), Terminal::get(opFpush));
         ;
         break;
     }
     case 94: {
-        yyval.regtransfer = new Assign(new Terminal(opNil), new Terminal(opFpop));
+        yyval.regtransfer = new Assign(Terminal::get(opNil), Terminal::get(opFpop));
         ;
         break;
     }
@@ -1316,12 +1320,12 @@ SSLParser::
         break;
     }
     case 96: {
-        yyval.exp = new Const(yyvsp[0].num);
+        yyval.exp = Const::get(yyvsp[0].num);
         ;
         break;
     }
     case 97: {
-        yyval.exp = new Const(yyvsp[0].dbl);
+        yyval.exp = Const::get(yyvsp[0].dbl);
         ;
         break;
     }
@@ -1336,43 +1340,43 @@ SSLParser::
         break;
     }
     case 100: {
-        yyval.exp = new Ternary(opTern, yyvsp[-5].exp, yyvsp[-3].exp, yyvsp[-1].exp);
+        yyval.exp = std::make_shared<Ternary>(opTern, yyvsp[-5].exp, yyvsp[-3].exp, yyvsp[-1].exp);
         ;
         break;
     }
     case 101: {
-        yyval.exp = new Unary(opAddrOf, yyvsp[-1].exp);
+        yyval.exp = Unary::get(opAddrOf, yyvsp[-1].exp);
         ;
         break;
     }
     case 102: {
         yyval.exp =
-            new Ternary(strToOper(yyvsp[-6].str), new Const(yyvsp[-5].num), new Const(yyvsp[-3].num), yyvsp[-1].exp);
+            std::make_shared<Ternary>(strToOper(yyvsp[-6].str), Const::get(yyvsp[-5].num), Const::get(yyvsp[-3].num), yyvsp[-1].exp);
         ;
         break;
     }
     case 103: {
-        yyval.exp = new Unary(opFtrunc, yyvsp[-1].exp);
+        yyval.exp = Unary::get(opFtrunc, yyvsp[-1].exp);
         ;
         break;
     }
     case 104: {
-        yyval.exp = new Unary(opFabs, yyvsp[-1].exp);
+        yyval.exp = Unary::get(opFabs, yyvsp[-1].exp);
         ;
         break;
     }
     case 105: {
-        yyval.exp = new Terminal(opFpush);
+        yyval.exp = Terminal::get(opFpush);
         ;
         break;
     }
     case 106: {
-        yyval.exp = new Terminal(opFpop);
+        yyval.exp = Terminal::get(opFpop);
         ;
         break;
     }
     case 107: {
-        yyval.exp = new Unary(strToOper(yyvsp[-2].str), yyvsp[-1].exp);
+        yyval.exp = Unary::get(strToOper(yyvsp[-2].str), yyvsp[-1].exp);
         ;
         break;
     }
@@ -1385,11 +1389,11 @@ SSLParser::
         } else if (TableDict[yyvsp[-2].str]->getType() != EXPRTABLE) {
             yyerror(qPrintable(QString("table  %1  is not an expression table but appears to be used as one.\n").
                                arg(yyvsp[-2].str)));
-        } else if (((ExprTable *)TableDict[yyvsp[-2].str])->expressions.size() <
+        } else if (((ExprTable *)TableDict[yyvsp[-2].str].get())->expressions.size() <
                    indexrefmap[yyvsp[-1].str]->ntokens()) {
             yyerror(qPrintable(QString("table %1  (%2) is too small to use %3 (%4) as an index.\n").
                                arg(yyvsp[-2].str).
-                    arg(((ExprTable *)TableDict[yyvsp[-2].str])->expressions.size()).
+                    arg(((ExprTable *)TableDict[yyvsp[-2].str].get())->expressions.size()).
                     arg(yyvsp[-1].str).
                     arg(indexrefmap[yyvsp[-1].str]->ntokens())
                     ));
@@ -1430,7 +1434,7 @@ SSLParser::
         break;
     }
     case 111: {
-        yyval.exp = new Unary(opSignExt, yyvsp[-1].exp);
+        yyval.exp = Unary::get(opSignExt, yyvsp[-1].exp);
         ;
         break;
     }
@@ -1440,22 +1444,22 @@ SSLParser::
         if (yyvsp[0].num == STD_SIZE)
             yyval.exp = yyvsp[-1].exp;
         else
-            yyval.exp = Binary::get(opSize, new Const(yyvsp[0].num), yyvsp[-1].exp);
+            yyval.exp = Binary::get(opSize, Const::get(yyvsp[0].num), yyvsp[-1].exp);
         ;
         break;
     }
     case 113: {
-        yyval.exp = new Unary(opNot, yyvsp[0].exp);
+        yyval.exp = Unary::get(opNot, yyvsp[0].exp);
         ;
         break;
     }
     case 114: {
-        yyval.exp = new Unary(opLNot, yyvsp[0].exp);
+        yyval.exp = Unary::get(opLNot, yyvsp[0].exp);
         ;
         break;
     }
     case 115: {
-        yyval.exp = new Unary(opFNeg, yyvsp[0].exp);
+        yyval.exp = Unary::get(opFNeg, yyvsp[0].exp);
         ;
         break;
     }
@@ -1498,8 +1502,8 @@ SSLParser::
                                .arg(yyvsp[-2].str)));
         }
         yyval.exp =
-            new Ternary(opOpTable, Const::get(yyvsp[-3].str), Const::get(yyvsp[-2].str),
-                        Binary::get(opList, yyvsp[-4].exp, Binary::get(opList, yyvsp[0].exp, new Terminal(opNil))));
+            std::make_shared<Ternary>(opOpTable, Const::get(yyvsp[-3].str), Const::get(yyvsp[-2].str),
+                        Binary::get(opList, yyvsp[-4].exp, Binary::get(opList, yyvsp[0].exp, Terminal::get(opNil))));
         ;
         break;
     }
@@ -1518,9 +1522,9 @@ SSLParser::
             // A special register, e.g. %npc or %CF. Return a Terminal for it
             OPER op = strToTerm(yyvsp[0].str);
             if (op) {
-                yyval.exp = new Terminal(op);
+                yyval.exp = Terminal::get(op);
             } else {
-                yyval.exp = new Unary(
+                yyval.exp = Unary::get(
                             opMachFtr, // Machine specific feature
                                       Const::get(yyvsp[0].str));
             }
@@ -1550,12 +1554,12 @@ SSLParser::
     }
     case 127: {
         // This is a mixture of the param: PARM {} match and the value_op: NAME {} match
-        Exp *s;
+        SharedExp s;
         std::set<QString>::iterator it = Dict.ParamSet.find(yyvsp[0].str);
         if (it != Dict.ParamSet.end()) {
-            s = new Location(opParam, Const::get(yyvsp[0].str), nullptr);
+            s = Location::get(opParam, Const::get(yyvsp[0].str), nullptr);
         } else if (ConstTable.find(yyvsp[0].str) != ConstTable.end()) {
-            s = new Const(ConstTable[yyvsp[0].str]);
+            s = Const::get(ConstTable[yyvsp[0].str]);
         } else {
             yyerror(qPrintable(QString("`%1' is not a constant, definition or a parameter of this instruction\n")
                                .arg(yyvsp[0].str)));
@@ -1567,17 +1571,17 @@ SSLParser::
         break;
     }
     case 128: {
-        yyval.exp = new Ternary(opAt, yyvsp[-6].exp, yyvsp[-3].exp, yyvsp[-1].exp);
+        yyval.exp = std::make_shared<Ternary>(opAt, yyvsp[-6].exp, yyvsp[-3].exp, yyvsp[-1].exp);
         ;
         break;
     }
     case 129: {
-        yyval.exp = Location::tempOf(new Const(yyvsp[0].str));
+        yyval.exp = Location::tempOf(Const::get(yyvsp[0].str));
         ;
         break;
     }
     case 130: {
-        yyval.exp = new Unary(opPostVar, yyvsp[-1].exp);
+        yyval.exp = Unary::get(opPostVar, yyvsp[-1].exp);
         ;
         break;
     }

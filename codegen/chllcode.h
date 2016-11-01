@@ -118,7 +118,7 @@ class CHLLCode : public HLLCode {
                  */
 
     // pretested loops (cond is optional because it is in the bb [somewhere])
-    virtual void AddPretestedLoopHeader(int indLevel, Exp *cond);
+    virtual void AddPretestedLoopHeader(int indLevel, const SharedExp &cond);
     virtual void AddPretestedLoopEnd(int indLevel);
 
     // endless loops
@@ -127,21 +127,21 @@ class CHLLCode : public HLLCode {
 
     // posttested loops
     virtual void AddPosttestedLoopHeader(int indLevel);
-    virtual void AddPosttestedLoopEnd(int indLevel, Exp *cond);
+    virtual void AddPosttestedLoopEnd(int indLevel, const SharedExp &cond);
 
     // case conditionals "nways"
-    virtual void AddCaseCondHeader(int indLevel, Exp *cond);
+    virtual void AddCaseCondHeader(int indLevel, const SharedExp &cond);
     virtual void AddCaseCondOption(int indLevel, Exp &opt);
     virtual void AddCaseCondOptionEnd(int indLevel);
     virtual void AddCaseCondElse(int indLevel);
     virtual void AddCaseCondEnd(int indLevel);
 
     // if conditions
-    virtual void AddIfCondHeader(int indLevel, Exp *cond);
+    virtual void AddIfCondHeader(int indLevel, const SharedExp &cond);
     virtual void AddIfCondEnd(int indLevel);
 
     // if else conditions
-    virtual void AddIfElseCondHeader(int indLevel, Exp *cond);
+    virtual void AddIfElseCondHeader(int indLevel, const SharedExp &cond);
     virtual void AddIfElseCondOption(int indLevel);
     virtual void AddIfElseCondEnd(int indLevel);
 
@@ -159,14 +159,14 @@ class CHLLCode : public HLLCode {
     virtual void AddAssignmentStatement(int indLevel, Assign *asgn);
     virtual void AddCallStatement(int indLevel, Function *proc, const QString &name, StatementList &args,
                                   StatementList *results);
-    virtual void AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList *results);
+    virtual void AddIndCallStatement(int indLevel, const SharedExp &exp, StatementList &args, StatementList *results);
     virtual void AddReturnStatement(int indLevel, StatementList *rets);
 
     // proc related
     virtual void AddProcStart(UserProc *proc);
     virtual void AddProcEnd();
     virtual void AddLocal(const QString &name, SharedType type, bool last = false);
-    virtual void AddGlobal(const QString &name, SharedType type, Exp *init = nullptr);
+    virtual void AddGlobal(const QString &name, SharedType type, const SharedExp &init = nullptr);
     virtual void AddPrototype(UserProc *proc);
 
   private:

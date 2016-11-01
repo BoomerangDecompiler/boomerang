@@ -87,7 +87,7 @@ class MachOBinaryFile : public QObject,
   public:
     std::map<QString, ObjcModule> &getObjcModules() override  { return modules; }
 
-    bool LoadFromMemory(QByteArray &data);
+    bool LoadFromMemory(QByteArray &data) override;
 
   private:
     bool PostLoad(void *handle) override;  // Called after archive member loaded

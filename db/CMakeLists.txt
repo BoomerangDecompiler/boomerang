@@ -61,7 +61,7 @@ SET(SRC
         statement.cpp
         table.cpp
         visitor.cpp
-        xmlprogparser.cpp
+#        xmlprogparser.cpp
 )
 IF(BUILD_TESTING)
 ADD_SUBDIRECTORY(unit_testing)

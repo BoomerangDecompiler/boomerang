@@ -220,17 +220,18 @@ int Boomerang::processCommand(QStringList &args) {
             return 1;
         }
         QString fname = args[1];
-        XMLProgParser *p = new XMLProgParser();
-        Prog *pr = p->parse(fname);
-        if (pr == nullptr) {
-            // try guessing
-            pr = p->parse(outputPath + fname + "/" + fname + ".xml");
-            if (pr == nullptr) {
-                err_stream << "failed to read xml " << fname << "\n";
-                return 1;
-            }
-        }
-        prog = pr;
+        assert(!"TODO: use cereal");
+//        XMLProgParser *p = new XMLProgParser();
+//        Prog *pr = p->parse(fname);
+//        if (pr == nullptr) {
+//            // try guessing
+//            pr = p->parse(outputPath + fname + "/" + fname + ".xml");
+//            if (pr == nullptr) {
+//                err_stream << "failed to read xml " << fname << "\n";
+//                return 1;
+//            }
+//        }
+//        prog = pr;
         break;
     }
     case CT_save: {
@@ -238,8 +239,9 @@ int Boomerang::processCommand(QStringList &args) {
             err_stream << "need to load or decode before save!\n";
             return 1;
         }
-        XMLProgParser *p = new XMLProgParser();
-        p->persistToXML(prog);
+        assert(!"TODO: use cereal");
+//        XMLProgParser *p = new XMLProgParser();
+//        p->persistToXML(prog);
         break;
     }
     case CT_decompile: {
@@ -766,8 +768,9 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
 
     if (loadBeforeDecompile) {
         LOG_STREAM() << "loading persisted state...\n";
-        XMLProgParser *p = new XMLProgParser();
-        prog = p->parse(fname);
+        assert(!"TODO: use cereal");
+//        XMLProgParser *p = new XMLProgParser();
+//        prog = p->parse(fname);
     } else
     {
         prog = loadAndDecode(fname, pname);
@@ -777,8 +780,9 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
 
     if (saveBeforeDecompile) {
         LOG_STREAM() << "saving persistable state...\n";
-        XMLProgParser *p = new XMLProgParser();
-        p->persistToXML(prog);
+        assert(!"TODO: use cereal");
+//        XMLProgParser *p = new XMLProgParser();
+//        p->persistToXML(prog);
     }
 
     if (stopBeforeDecompile)
@@ -827,9 +831,10 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
  * \param prog The Prog object to save.
  */
 void Boomerang::persistToXML(Prog *prog) {
-    LOG << "saving persistable state...\n";
-    XMLProgParser *p = new XMLProgParser();
-    p->persistToXML(prog);
+    assert(!"TODO: use cereal");
+//    LOG << "saving persistable state...\n";
+//    XMLProgParser *p = new XMLProgParser();
+//    p->persistToXML(prog);
 }
 /**
  * Loads the state of a Prog object from a XML file.
@@ -837,9 +842,11 @@ void Boomerang::persistToXML(Prog *prog) {
  * \return The loaded Prog object.
  */
 Prog *Boomerang::loadFromXML(const char *fname) {
-    LOG << "loading persistable state...\n";
-    XMLProgParser *p = new XMLProgParser();
-    return p->parse(fname);
+    assert(!"TODO: use cereal");
+//    LOG << "loading persistable state...\n";
+//    XMLProgParser *p = new XMLProgParser();
+//    return p->parse(fname);
+    return nullptr;
 }
 
 void Boomerang::miniDebugger(UserProc *p, const char *description)

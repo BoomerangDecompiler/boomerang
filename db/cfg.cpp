@@ -1070,7 +1070,7 @@ bool Cfg::isOrphan(ADDRESS uAddr) {
   * \param pBB - BasicBlock to find
   * \returns     Index, or -1 for unknown PBB
   ******************************************************************************/
-int Cfg::pbbToIndex(BasicBlock *pBB) {
+int Cfg::pbbToIndex(const BasicBlock *pBB) {
     BB_IT it = m_listBB.begin();
     int i = 0;
     while (it != m_listBB.end()) {
@@ -1102,13 +1102,13 @@ Cfg::sCallStatement &Cfg::getCalls() { return CallSites; }
   * \param search a location to search for
   * \param replace the expression with which to replace it
   ******************************************************************************/
-void Cfg::searchAndReplace(const Exp &search, Exp *replace) {
+void Cfg::searchAndReplace(const Exp &search, const SharedExp &replace) {
     for (BasicBlock *bb : m_listBB) {
         bb->searchAndReplace(search, replace);
     }
 }
 
-bool Cfg::searchAll(const Exp &search, std::list<Exp *> &result) {
+bool Cfg::searchAll(const Exp &search, std::list<SharedExp> &result) {
     bool ch = false;
     for (BasicBlock *bb : m_listBB) {
         ch |= bb->searchAll(search, result);
@@ -1677,7 +1677,7 @@ void Cfg::generateDotFile(QTextStream &of) {
             break;
         case BBTYPE::NWAY: {
             of << "nway";
-            Exp *de = pbb->getDest();
+            SharedExp de = pbb->getDest();
             if (de) {
                 of << "\\n";
                 of << de;
@@ -2019,9 +2019,9 @@ void Cfg::undoComputedBB(Instruction *stmt) {
     }
 }
 //! Find or create an implicit assign for x
-Instruction *Cfg::findImplicitAssign(Exp *x) {
+Instruction *Cfg::findImplicitAssign(SharedExp x) {
     Instruction *def;
-    std::map<Exp *, Instruction *, lessExpStar>::iterator it = implicitMap.find(x);
+    std::map<SharedExp, Instruction *, lessExpStar>::iterator it = implicitMap.find(x);
     if (it == implicitMap.end()) {
         // A use with no explicit definition. Create a new implicit assignment
         x = x->clone(); // In case the original gets changed
@@ -2038,7 +2038,7 @@ Instruction *Cfg::findImplicitAssign(Exp *x) {
     return def;
 }
 //! Find the existing implicit assign for x (if any)
-Instruction *Cfg::findTheImplicitAssign(Exp *x) {
+Instruction *Cfg::findTheImplicitAssign(const SharedExp &x) {
     // As per the above, but don't create an implicit if it doesn't already exist
     auto it = implicitMap.find(x);
     if (it == implicitMap.end())
@@ -2048,7 +2048,7 @@ Instruction *Cfg::findTheImplicitAssign(Exp *x) {
 //! Find exiting implicit assign for parameter p
 Instruction *Cfg::findImplicitParamAssign(Parameter *param) {
     // As per the above, but for parameters (signatures don't get updated with opParams)
-    Exp *n = param->getExp();
+    SharedExp n = param->getExp();
     //TODO: implicitMap contains subscripted values -> m[r28{0}+4]
     // but the Parameter expresions are not subscripted, so, they are not found
     // with a simple:
@@ -2060,7 +2060,7 @@ Instruction *Cfg::findImplicitParamAssign(Parameter *param) {
             break;
     }
     if (it == implicitMap.end()) {
-        Exp *eParam = Location::param(param->name());
+        SharedExp eParam = Location::param(param->name());
         it = implicitMap.find(eParam);
     }
     if (it == implicitMap.end())
@@ -2068,7 +2068,7 @@ Instruction *Cfg::findImplicitParamAssign(Parameter *param) {
     return it->second;
 }
 //! Remove an existing implicit assignment for x
-void Cfg::removeImplicitAssign(Exp *x) {
+void Cfg::removeImplicitAssign(SharedExp x) {
     auto it = implicitMap.find(x);
     assert(it != implicitMap.end());
     Instruction *ia = it->second;

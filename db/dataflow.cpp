@@ -204,9 +204,9 @@ void DataFlow::computeDF(int n) {
     DF[n] = S;
 } // end computeDF
 
-bool DataFlow::canRename(Exp *e, UserProc *proc) {
+bool DataFlow::canRename(SharedExp e, UserProc *proc) {
     if (e->isSubscript())
-        e = ((RefExp *)e)->getSubExp1(); // Look inside refs
+        e = e->getSubExp1(); // Look inside refs
     if (e->isRegOf())
         return true; // Always rename registers
     if (e->isTemp())
@@ -234,7 +234,7 @@ bool DataFlow::canRename(Exp *e, UserProc *proc) {
 
 // For debugging
 void DataFlow::dumpA_phi() {
-    std::map<Exp *, std::set<int>, lessExpStar>::iterator zz;
+    std::map<SharedExp, std::set<int>, lessExpStar>::iterator zz;
     LOG_STREAM() << "A_phi:\n";
     for (zz = A_phi.begin(); zz != A_phi.end(); ++zz) {
         LOG_STREAM() << zz->first << " -> ";
@@ -259,10 +259,13 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
     bucket.resize(0);
     defsites.clear(); // Clear defsites map,
     defallsites.clear();
-    for(std::set<Exp *, lessExpStar> &se : A_orig) {
-        for(Exp * e : se) {
-            if(A_phi.find(e)==A_phi.end())
-                delete e;
+    for(std::set<SharedExp, lessExpStar> &se : A_orig) {
+        for(auto iter= se.begin(),fin=se.end(); iter!=fin; ) {
+            if(A_phi.find(*iter)==A_phi.end()) {
+                iter = se.erase(iter);
+            }
+            else
+                ++iter;
         }
     }
     A_orig.clear();   // and A_orig,
@@ -287,7 +290,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
             s->getDefinitions(ls);
             if (s->isCall() && ((CallStatement *)s)->isChildless()) // If this is a childless call
                 defallsites.insert(n);                              // then this block defines every variable
-            for (Exp *exp : ls) {
+            for (const SharedExp &exp : ls) {
                 if (canRename(exp, proc)) {
                     A_orig[n].insert(exp->clone());
                     defStmts[exp] = s;
@@ -299,15 +302,15 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
     // For each node n
     for (n = 0; n < numBB; n++) {
         // For each variable a in A_orig[n]
-        for (Exp *a : A_orig[n]) {
+        for (const SharedExp &a : A_orig[n]) {
             defsites[a].insert(n);
         }
     }
 
     // For each variable a (in defsites, i.e. defined anywhere)
-    std::map<Exp *, std::set<int>, lessExpStar>::iterator mm;
+    std::map<SharedExp, std::set<int>, lessExpStar>::iterator mm;
     for (mm = defsites.begin(); mm != defsites.end(); mm++) {
-        Exp *a = (*mm).first; // *mm is pair<Exp*, set<int>>
+        SharedExp a = (*mm).first; // *mm is pair<Exp*, set<int>>
 
         // Special processing for define-alls
         // for each n in defallsites
@@ -333,7 +336,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
                     continue;
                 // Insert trivial phi function for a at top of block y: a := phi()
                 change = true;
-                Instruction *as = new PhiAssign(a->clone());
+                Instruction *as = new PhiAssign(SharedExp(a->clone()));
                 BasicBlock *Ybb = BBs[y];
                 Ybb->prependStmt(as, proc);
                 // A_phi[a] <- A_phi[a] U {y}
@@ -349,7 +352,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
     return change;
 } // end placePhiFunctions
 
-static Exp *defineAll = new Terminal(opDefineAll); // An expression representing <all>
+static SharedExp defineAll = Terminal::get(opDefineAll); // An expression representing <all>
 
 // There is an entry in stacks[defineAll] that represents the latest definition from a define-all source. It is needed
 // for variables that don't have a definition as yet (i.e. stacks[x].empty() is true). As soon as a real definition to
@@ -388,7 +391,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             LocationSet locs;
             if (S->isPhi()) {
                 PhiAssign *pa = (PhiAssign *)S;
-                Exp *phiLeft = pa->getLeft();
+                SharedExp phiLeft = pa->getLeft();
                 if (phiLeft->isMemOf() || phiLeft->isRegOf())
                     phiLeft->getSubExp1()->addUsedLocs(locs);
                 // A phi statement may use a location defined in a childless call, in which case its use collector
@@ -403,7 +406,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             }
             LocationSet::iterator xx;
             for (xx = locs.begin(); xx != locs.end(); xx++) {
-                Exp *x = *xx;
+                SharedExp x = *xx;
                 // Don't rename memOfs that are not renamable according to the current policy
                 if (!canRename(x, proc))
                     continue;
@@ -412,8 +415,8 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                     // No renaming required, but redo the usage analysis, in case this is a new return, and also because
                     // we may have just removed all call livenesses
                     // Update use information in calls, and in the proc (for parameters)
-                    Exp *base = ((RefExp *)x)->getSubExp1();
-                    def = ((RefExp *)x)->getDef();
+                    SharedExp base = x->getSubExp1();
+                    def = std::static_pointer_cast<RefExp>(x)->getDef();
                     if (def && def->isCall()) {
                         // Calls have UseCollectors for locations that are used before definition at the call
                         ((CallStatement *)def)->useBeforeDefine(base->clone());
@@ -444,7 +447,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 // Replace the use of x with x{def} in S
                 changed = true;
                 if (S->isPhi()) {
-                    Exp *phiLeft = ((PhiAssign *)S)->getLeft();
+                    SharedExp phiLeft = ((PhiAssign *)S)->getLeft();
                     phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(x, def /*, this*/));
                 } else {
                     S->subscriptVar(x, def /*, this */);
@@ -468,7 +471,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
         S->getDefinitions(defs);
         LocationSet::iterator dd;
         for (dd = defs.begin(); dd != defs.end(); dd++) {
-            Exp *a = *dd;
+            SharedExp a = *dd;
             // Don't consider a if it cannot be renamed
             bool suitable = canRename(a, proc);
             if (suitable) {
@@ -484,7 +487,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             }
             // FIXME: MVE: do we need this awful hack?
             if (a->getOper() == opLocal) {
-                const Exp *a1 = S->getProc()->expFromSymbol(((Const *)a->getSubExp1())->getStr());
+                SharedConstExp a1 = S->getProc()->expFromSymbol(std::static_pointer_cast<Const>(a->getSubExp1())->getStr());
                 assert(a1);
                 // Stacks already has a definition for a (as just the bare local)
                 if (suitable) {
@@ -493,7 +496,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             }
         }
         // Special processing for define-alls (presently, only childless calls).
-        // But note that only everythings at the current memory level are defined!
+        // But note that only 'everythings' at the current memory level are defined!
         if (S->isCall() && ((CallStatement *)S)->isChildless() && !Boomerang::get()->assumeABI) {
             // S is a childless call (and we're not assuming ABI compliance)
             Stacks[defineAll]; // Ensure that there is an entry for defineAll
@@ -519,7 +522,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 continue;
             // Suppose the jth operand of the phi is 'a'
             // For now, just get the LHS
-            Exp *a = pa->getLeft();
+            SharedExp a = pa->getLeft();
 
             // Only consider variables that can be renamed
             if (!canRename(a, proc))
@@ -537,7 +540,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     // Note: linear search!
     size_t numBB = proc->getCFG()->getNumBBs();
     for (size_t X = 0; X < numBB; X++) {
-        if (idom[X] == n)
+        if (idom[X] == n) // if 'n' is immediate dominator of X
             renameBlockVars(proc, X);
     }
 
@@ -589,7 +592,7 @@ void DataFlow::dumpStacks() {
 }
 
 void DataFlow::dumpDefsites() {
-    std::map<Exp *, std::set<int>, lessExpStar>::iterator dd;
+    std::map<SharedExp, std::set<int>, lessExpStar>::iterator dd;
     for (dd = defsites.begin(); dd != defsites.end(); ++dd) {
         LOG_STREAM() << dd->first;
         std::set<int>::iterator ii;
@@ -604,18 +607,18 @@ void DataFlow::dumpA_orig() {
     int n = A_orig.size();
     for (int i = 0; i < n; ++i) {
         LOG_STREAM() << i;
-        for (Exp *ee : A_orig[i])
+        for (const SharedExp &ee : A_orig[i])
             LOG_STREAM() << " " << ee;
         LOG_STREAM() << "\n";
     }
 }
 
-void DefCollector::updateDefs(std::map<Exp *, std::deque<Instruction *>, lessExpStar> &Stacks, UserProc *proc) {
+void DefCollector::updateDefs(std::map<SharedExp, std::deque<Instruction *>, lessExpStar> &Stacks, UserProc *proc) {
     for (auto it = Stacks.begin(); it != Stacks.end(); it++) {
         if (it->second.empty())
             continue; // This variable's definition doesn't reach here
         // Create an assignment of the form loc := loc{def}
-        RefExp *re = new RefExp(it->first->clone(), it->second.back());
+        auto re = RefExp::get(it->first->clone(), it->second.back());
         Assign *as = new Assign(it->first->clone(), re);
         as->setProc(proc); // Simplify sometimes needs this
         insert(as);
@@ -624,10 +627,10 @@ void DefCollector::updateDefs(std::map<Exp *, std::deque<Instruction *>, lessExp
 }
 
 // Find the definition for e that reaches this Collector. If none reaches here, return nullptr
-Exp *DefCollector::findDefFor(Exp *e) {
+SharedExp DefCollector::findDefFor(SharedExp e) {
     iterator it;
     for (it = defs.begin(); it != defs.end(); ++it) {
-        Exp *lhs = (*it)->getLeft();
+        SharedExp lhs = (*it)->getLeft();
         if (*lhs == *e)
             return (*it)->getRight();
     }
@@ -724,7 +727,7 @@ void DefCollector::makeCloneOf(const DefCollector &other) {
         defs.insert((Assign *)(elem)->clone());
 }
 
-void DefCollector::searchReplaceAll(const Exp &from, Exp *to, bool &change) {
+void DefCollector::searchReplaceAll(const Exp &from, SharedExp to, bool &change) {
     iterator it;
     for (it = defs.begin(); it != defs.end(); ++it)
         change |= (*it)->searchAndReplace(from, to);
@@ -736,8 +739,8 @@ void UseCollector::fromSSAform(UserProc *proc, Instruction *def) {
     iterator it;
     ExpSsaXformer esx(proc);
     for (it = locs.begin(); it != locs.end(); ++it) {
-        RefExp *ref = new RefExp(*it, def); // Wrap it in a def
-        Exp *ret = ref->accept(&esx);
+        auto ref = RefExp::get(*it, def); // Wrap it in a def
+        SharedExp ret = ref->accept(&esx);
         // If there is no change, ret will equal *it again (i.e. fromSSAform just removed the subscript)
         if (ret != *it) { // Pointer comparison
             // There was a change; we want to replace *it with ret
@@ -764,7 +767,7 @@ bool UseCollector::operator==(UseCollector &other) {
 }
 
 void DefCollector::insert(Assign *a) {
-    Exp *l = a->getLeft();
+    SharedExp l = a->getLeft();
     if (existsOnLeft(l))
         return;
     defs.insert(a);
@@ -772,29 +775,29 @@ void DefCollector::insert(Assign *a) {
 
 void DataFlow::convertImplicits(Cfg *cfg) {
     // Convert statements in A_phi from m[...]{-} to m[...]{0}
-    std::map<Exp *, std::set<int>, lessExpStar> A_phi_copy = A_phi; // Object copy
+    std::map<SharedExp, std::set<int>, lessExpStar> A_phi_copy = A_phi; // Object copy
     ImplicitConverter ic(cfg);
     A_phi.clear();
-    for (std::pair<Exp *, std::set<int>> it : A_phi_copy) {
-        Exp *e = it.first->clone();
+    for (std::pair<SharedExp, std::set<int>> it : A_phi_copy) {
+        SharedExp e = it.first->clone();
         e = e->accept(&ic);
         A_phi[e] = it.second; // Copy the set (doesn't have to be deep)
     }
 
-    std::map<Exp *, std::set<int>, lessExpStar> defsites_copy = defsites; // Object copy
+    std::map<SharedExp, std::set<int>, lessExpStar> defsites_copy = defsites; // Object copy
     defsites.clear();
-    for (std::pair<Exp *, std::set<int>> dd : defsites_copy) {
-        Exp *e = dd.first->clone();
+    for (std::pair<SharedExp, std::set<int>> dd : defsites_copy) {
+        SharedExp e = dd.first->clone();
         e = e->accept(&ic);
         defsites[e] = dd.second; // Copy the set (doesn't have to be deep)
     }
 
-    std::vector<std::set<Exp *, lessExpStar>> A_orig_copy = A_orig;
+    std::vector<std::set<SharedExp, lessExpStar>> A_orig_copy = A_orig;
     A_orig.clear();
-    for (std::set<Exp *, lessExpStar> &se : A_orig_copy) {
-        std::set<Exp *, lessExpStar> se_new;
-        for (Exp *ee : se) {
-            Exp *e = ee->clone();
+    for (std::set<SharedExp, lessExpStar> &se : A_orig_copy) {
+        std::set<SharedExp, lessExpStar> se_new;
+        for (const SharedExp &ee : se) {
+            SharedExp e = ee->clone();
             e = e->accept(&ic);
             se_new.insert(e);
         }
@@ -816,7 +819,7 @@ void DataFlow::convertImplicits(Cfg *cfg) {
 // it. Remember that each location is defined only once, so that's the time to decide if it is dominated by a phi use or
 // not.
 void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
-                                std::map<Exp *, PhiAssign *, lessExpStar> &defdByPhi) {
+                                std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi) {
     // For each statement this BB
     BasicBlock::rtlit rit;
     StatementList::iterator sit;
@@ -829,32 +832,32 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &u
             PhiAssign::iterator it;
             for (it = pa->begin(); it != pa->end(); ++it) {
                 if (it->second.e) {
-                    RefExp *re = new RefExp(it->second.e, it->second.def());
+                    auto re = RefExp::get(it->second.e, it->second.def());
                     usedByDomPhi0.insert(re);
                 }
             }
             // Insert an entry into the defdByPhi map
-            RefExp *wrappedLhs = new RefExp(pa->getLeft(), pa);
+            auto wrappedLhs = RefExp::get(pa->getLeft(), pa);
             defdByPhi[wrappedLhs] = pa;
             // Fall through to the below, because phi uses are also legitimate uses
         }
         LocationSet ls;
         S->addUsedLocs(ls);
         // Consider uses of this statement
-        for (Exp *it : ls) {
+        for (const SharedExp &it : ls) {
             // Remove this entry from the map, since it is not unused
             defdByPhi.erase(it);
         }
         // Now process any definitions
         ls.clear();
         S->getDefinitions(ls);
-        for (Exp *it : ls) {
-            RefExp wrappedDef(it, S);
+        for (const SharedExp &it : ls) {
+            auto wrappedDef(RefExp::get(it, S));
             // If this definition is in the usedByDomPhi0 set, then it is in fact dominated by a phi use, so move it to
             // the final usedByDomPhi set
-            if (usedByDomPhi0.find(&wrappedDef) != usedByDomPhi0.end()) {
-                usedByDomPhi0.remove(&wrappedDef);
-                usedByDomPhi.insert(new RefExp(it,S));
+            if (usedByDomPhi0.find(wrappedDef) != usedByDomPhi0.end()) {
+                usedByDomPhi0.remove(wrappedDef);
+                usedByDomPhi.insert(RefExp::get(it,S));
             }
         }
     }

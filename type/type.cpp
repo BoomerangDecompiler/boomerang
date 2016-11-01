@@ -48,7 +48,7 @@ Type::Type(eType _id) : id(_id) {}
 
 VoidType::VoidType() : Type(eVoid) {}
 
-FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig) {}
+FuncType::FuncType(const std::shared_ptr<Signature> & sig) : Type(eFunc), signature(sig) {}
 
 FloatType::FloatType(int sz) : Type(eFloat), size(sz) {}
 std::shared_ptr<FloatType> FloatType::get(int sz) { return std::make_shared<FloatType>(sz); }
@@ -566,24 +566,24 @@ bool LowerType::operator<(const Type &other) const {
   * \param        pattern - Type to match
   * \returns            Exp list of bindings if match or nullptr
   ******************************************************************************/
-Exp *Type::match(SharedType pattern) {
+SharedExp Type::match(SharedType pattern) {
     if (pattern->isNamed()) {
         LOG << "type match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
-        return Binary::get(opList, Binary::get(opEquals, new Unary(opVar, new Const(pattern->as<NamedType>()->getName())),
-                                               new TypeVal(this->clone())),
-                           new Terminal(opNil));
+        return Binary::get(opList, Binary::get(opEquals, Unary::get(opVar, Const::get(pattern->as<NamedType>()->getName())),
+                                               std::make_shared<TypeVal>(this->clone())),
+                           Terminal::get(opNil));
     }
     return nullptr;
 }
 
-Exp *IntegerType::match(SharedType pattern) { return Type::match(pattern); }
-Exp *FloatType::match(SharedType pattern)   { return Type::match(pattern); }
-Exp *BooleanType::match(SharedType pattern) { return Type::match(pattern); }
-Exp *CharType::match(SharedType pattern)    { return Type::match(pattern); }
-Exp *VoidType::match(SharedType pattern)    { return Type::match(pattern); }
-Exp *FuncType::match(SharedType pattern)    { return Type::match(pattern); }
+SharedExp IntegerType::match(SharedType pattern) { return Type::match(pattern); }
+SharedExp FloatType::match(SharedType pattern)   { return Type::match(pattern); }
+SharedExp BooleanType::match(SharedType pattern) { return Type::match(pattern); }
+SharedExp CharType::match(SharedType pattern)    { return Type::match(pattern); }
+SharedExp VoidType::match(SharedType pattern)    { return Type::match(pattern); }
+SharedExp FuncType::match(SharedType pattern)    { return Type::match(pattern); }
 
-Exp *PointerType::match(SharedType pattern) {
+SharedExp PointerType::match(SharedType pattern) {
     if (pattern->isPointer()) {
         LOG << "got pointer match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
         return points_to->match(pattern->as<PointerType>()->getPointsTo());
@@ -591,17 +591,17 @@ Exp *PointerType::match(SharedType pattern) {
     return Type::match(pattern);
 }
 
-Exp *ArrayType::match(SharedType pattern) {
+SharedExp ArrayType::match(SharedType pattern) {
     if (pattern->isArray())
         return BaseType->match(pattern);
     return Type::match(pattern);
 }
 
-Exp *NamedType::match(SharedType pattern) { return Type::match(pattern); }
+SharedExp NamedType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *CompoundType::match(SharedType pattern) { return Type::match(pattern); }
+SharedExp CompoundType::match(SharedType pattern) { return Type::match(pattern); }
 
-Exp *UnionType::match(SharedType pattern) { return Type::match(pattern); }
+SharedExp UnionType::match(SharedType pattern) { return Type::match(pattern); }
 
 /***************************************************************************/ /**
   *
@@ -1319,11 +1319,11 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
 
     // Check for existing locals that need to be updated
     if (ty->resolvesToCompound() || ty->resolvesToArray()) {
-        Exp *rsp = Location::regOf(proc->getSignature()->getStackRegister());
-        RefExp *rsp0 = new RefExp(rsp, proc->getCFG()->findTheImplicitAssign(rsp)); // sp{0}
+        SharedExp rsp = Location::regOf(proc->getSignature()->getStackRegister());
+        auto rsp0 = RefExp::get(rsp, proc->getCFG()->findTheImplicitAssign(rsp)); // sp{0}
         for (it = it1; it != it2; ++it) {
             // Check if there is an existing local here
-            Exp *locl = Location::memOf(Binary::get(opPlus, rsp0->clone(), new Const(it->first.native())));
+            SharedExp locl = Location::memOf(Binary::get(opPlus, rsp0->clone(), Const::get(it->first.native())));
             locl->simplifyArith(); // Convert m[sp{0} + -4] to m[sp{0} - 4]
             SharedType elemTy;
             int bitOffset = (it->first - addr).m_value / 8;
@@ -1331,14 +1331,14 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString &name, Share
                 elemTy = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
             else
                 elemTy = ty->as<ArrayType>()->getBaseType();
-            QString locName = proc->findLocal(*locl, elemTy);
+            QString locName = proc->findLocal(locl, elemTy);
             if (!locName.isNull() && ty->resolvesToCompound()) {
                 auto c = ty->as<CompoundType>();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
                 QString memName = c->getNameAtOffset(bitOffset);
-                Exp *s = Location::memOf(Binary::get(opPlus, rsp0->clone(), new Const(addr)));
+                SharedExp s = Location::memOf(Binary::get(opPlus, rsp0->clone(), Const::get(addr)));
                 s->simplifyArith();
-                Exp *memberExp = Binary::get(opMemberAccess, s, new Const(memName));
+                SharedExp memberExp = Binary::get(opMemberAccess, s, Const::get(memName));
                 proc->mapSymbolTo(locl, memberExp);
             } else {
                 // FIXME: to be completed

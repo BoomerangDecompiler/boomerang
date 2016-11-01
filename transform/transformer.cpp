@@ -33,15 +33,15 @@ std::list<ExpTransformer *> ExpTransformer::transformers;
 
 ExpTransformer::ExpTransformer() { transformers.push_back(this); }
 
-std::list<Exp *> cache;
+std::list<SharedExp> cache;
 
-Exp *ExpTransformer::applyAllTo(Exp *p, bool &bMod) {
+SharedExp ExpTransformer::applyAllTo(const SharedExp &p, bool &bMod) {
     for (auto &elem : cache)
         if (*(elem)->getSubExp1() == *p)
             return (elem)->getSubExp2()->clone();
 
-    Exp *e = p->clone();
-    Exp *subs[3];
+    SharedExp e = p->clone();
+    SharedExp subs[3];
     subs[0] = e->getSubExp1();
     subs[1] = e->getSubExp2();
     subs[2] = e->getSubExp3();

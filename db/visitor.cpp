@@ -20,7 +20,7 @@
 
 // FixProcVisitor class
 
-bool FixProcVisitor::visit(Location *l, bool &override) {
+bool FixProcVisitor::visit( const std::shared_ptr<Location> &l, bool &override) {
     l->setProc(proc); // Set the proc, but only for Locations
     override = false; // Use normal accept logic
     return true;
@@ -28,7 +28,7 @@ bool FixProcVisitor::visit(Location *l, bool &override) {
 
 // GetProcVisitor class
 
-bool GetProcVisitor::visit(Location *l, bool &override) {
+bool GetProcVisitor::visit( const std::shared_ptr<Location> &l, bool &override) {
     proc = l->getProc();
     override = false;
     return proc == nullptr; // Continue recursion only if failed so far
@@ -36,7 +36,7 @@ bool GetProcVisitor::visit(Location *l, bool &override) {
 
 // SetConscripts class
 
-bool SetConscripts::visit(Const *c) {
+bool SetConscripts::visit( const std::shared_ptr<Const> &c) {
     if (!bInLocalGlobal) {
         if (bClear)
             c->setConscript(0);
@@ -47,7 +47,7 @@ bool SetConscripts::visit(Const *c) {
     return true; // Continue recursion
 }
 
-bool SetConscripts::visit(Location *l, bool &override) {
+bool SetConscripts::visit( const std::shared_ptr<Location> &l, bool &override) {
     OPER op = l->getOper();
     if (op == opLocal || op == opGlobal || op == opRegOf || op == opParam)
         bInLocalGlobal = true;
@@ -55,7 +55,7 @@ bool SetConscripts::visit(Location *l, bool &override) {
     return true; // Continue recursion
 }
 
-bool SetConscripts::visit(Binary *b, bool &override) {
+bool SetConscripts::visit( const std::shared_ptr<Binary> &b, bool &override) {
     OPER op = b->getOper();
     if (op == opSize)
         bInLocalGlobal = true;
@@ -144,9 +144,9 @@ void PhiStripper::visit(PhiAssign * /*s*/, bool &recur) {
     recur = true;
 }
 
-Exp *CallBypasser::postVisit(RefExp *r) {
+SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp> &r) {
     // If child was modified, simplify now
-    Exp *ret = r;
+    SharedExp ret = r;
     if (!(unchanged & mask))
         ret = r->simplify();
     mask >>= 1;
@@ -154,8 +154,9 @@ Exp *CallBypasser::postVisit(RefExp *r) {
     Instruction *def = r->getDef();
     CallStatement *call = dynamic_cast<CallStatement *>(def);
     if (call ) {
+        assert(std::dynamic_pointer_cast<RefExp>(ret));
         bool ch;
-        ret = call->bypassRef((RefExp *)ret, ch);
+        ret = call->bypassRef(std::static_pointer_cast<RefExp>(ret), ch);
         if (ch) {
             unchanged &= ~mask;
             mod = true;
@@ -169,87 +170,87 @@ Exp *CallBypasser::postVisit(RefExp *r) {
     return ret;
 }
 
-Exp *CallBypasser::postVisit(Location *e) {
+SharedExp CallBypasser::postVisit(const std::shared_ptr<Location> &e) {
     // Hack to preserve a[m[x]]. Can likely go when ad hoc TA goes.
     bool isAddrOfMem = e->isAddrOf() && e->getSubExp1()->isMemOf();
     if (isAddrOfMem)
         return e;
-    Exp *ret = e;
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
     return ret;
 }
 
-Exp *SimpExpModifier::postVisit(Location *e) {
-    Exp *ret = e;
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Location> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp *SimpExpModifier::postVisit(RefExp *e) {
-    Exp *ret = e;
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<RefExp> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp *SimpExpModifier::postVisit(Unary *e) {
-    Exp *ret = e;
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Unary> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp *SimpExpModifier::postVisit(Binary *e) {
-    Exp *ret = e;
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Binary> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplifyArith()->simplify();
     mask >>= 1;
     return ret;
 }
-Exp *SimpExpModifier::postVisit(Ternary *e) {
-    Exp *ret = e;
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Ternary> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp *SimpExpModifier::postVisit(TypedExp *e) {
-    Exp *ret = e;
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<TypedExp> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp *SimpExpModifier::postVisit(FlagDef *e) {
-    Exp *ret = e;
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<FlagDef> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
     return ret;
 }
-Exp *SimpExpModifier::postVisit(Const *e) {
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Const> &e) {
     mask >>= 1;
     return e;
 }
-Exp *SimpExpModifier::postVisit(TypeVal *e) {
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<TypeVal> &e) {
     mask >>= 1;
     return e;
 }
-Exp *SimpExpModifier::postVisit(Terminal *e) {
+SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Terminal> &e) {
     mask >>= 1;
     return e;
 }
 
 // Add used locations finder
-bool UsedLocsFinder::visit(Location *e, bool &override) {
+bool UsedLocsFinder::visit( const std::shared_ptr<Location> &e, bool &override) {
     if (!memOnly)
-        used->insert(e); // All locations visited are used
+        used->insert(e->shared_from_this()); // All locations visited are used
     if (e->isMemOf()) {
         // Example: m[r28{10} - 4]    we use r28{10}
-        Exp *child = e->getSubExp1();
+        SharedExp child = e->getSubExp1();
         // Care! Need to turn off the memOnly flag for work inside the m[...], otherwise everything will get ignored
         bool wasMemOnly = memOnly;
         memOnly = false;
@@ -261,7 +262,7 @@ bool UsedLocsFinder::visit(Location *e, bool &override) {
     return true; // Continue looking for other locations
 }
 
-bool UsedLocsFinder::visit(Terminal *e) {
+bool UsedLocsFinder::visit( const std::shared_ptr<Terminal> &e) {
     if (memOnly)
         return true; // Only interested in m[...]
     switch (e->getOper()) {
@@ -283,20 +284,20 @@ bool UsedLocsFinder::visit(Terminal *e) {
     return true; // Always continue recursion
 }
 
-bool UsedLocsFinder::visit(RefExp &arg, bool &override) {
+bool UsedLocsFinder::visit(const std::shared_ptr<RefExp> &arg, bool &override) {
     if (memOnly) {
         override = false; // Look inside the ref for m[...]
         return true;      // Don't count this reference
     }
-    RefExp *e = &arg;
+    std::shared_ptr<RefExp> e = arg;
     if(used->find(e)==used->end()) {
         //e = (RefExp *)arg.clone();
-        used->insert(&arg); // This location is used
+        used->insert(e); // This location is used
     }
     // However, e's subexpression is NOT used ...
     override = true;
     // ... unless that is a m[x], array[x] or .x, in which case x (not m[x]/array[x]/refd.x) is used
-    Exp *refd = e->getSubExp1();
+    SharedExp refd = e->getSubExp1();
     if (refd->isMemOf()) {
         refd->getSubExp1()->accept(this);
     } else if (refd->isArrayIndex()) {
@@ -308,7 +309,7 @@ bool UsedLocsFinder::visit(RefExp &arg, bool &override) {
     return true;
 }
 
-bool UsedLocalFinder::visit(Location *e, bool &override) {
+bool UsedLocalFinder::visit( const std::shared_ptr<Location> &e, bool &override) {
     override = false;
 #if 0
     char* sym = proc->lookupSym(e);
@@ -322,24 +323,22 @@ bool UsedLocalFinder::visit(Location *e, bool &override) {
     return true;     // Continue looking for other locations
 }
 
-bool UsedLocalFinder::visit(TypedExp *e, bool &override) {
+bool UsedLocalFinder::visit( const std::shared_ptr<TypedExp> &e, bool &override) {
     override = false;
     SharedType ty = e->getType();
     // Assumption: (cast)exp where cast is of pointer type means that exp is the address of a local
     if (ty->resolvesToPointer()) {
-        Exp *sub = e->getSubExp1();
-        Exp *mof = Location::memOf(sub);
-        if (!proc->findLocal(*mof, ty).isNull()) {
+        SharedExp sub = e->getSubExp1();
+        SharedExp mof = Location::memOf(sub);
+        if (!proc->findLocal(mof, ty).isNull()) {
             used->insert(mof);
             override = true;
         }
-        else
-            delete mof;
     }
     return true;
 }
 
-bool UsedLocalFinder::visit(Terminal *e) {
+bool UsedLocalFinder::visit( const std::shared_ptr<Terminal> &e) {
     if (e->getOper() == opDefineAll)
         all = true;
     QString sym = proc->findFirstSymbol(e);
@@ -349,13 +348,13 @@ bool UsedLocalFinder::visit(Terminal *e) {
 }
 
 bool UsedLocsVisitor::visit(Assign *s, bool &override) {
-    Exp *lhs = s->getLeft();
-    Exp *rhs = s->getRight();
+    SharedExp lhs = s->getLeft();
+    SharedExp rhs = s->getRight();
     if (rhs)
         rhs->accept(ev);
     // Special logic for the LHS. Note: PPC can have r[tmp + 30] on LHS
     if (lhs->isMemOf() || lhs->isRegOf()) {
-        Exp *child = ((Location *)lhs)->getSubExp1(); // m[xxx] uses xxx
+        SharedExp child = lhs->getSubExp1(); // m[xxx] uses xxx
         // Care! Don't want the memOnly flag when inside a m[...]. Otherwise, nothing will be found
         // Also beware that ev may be a UsedLocalFinder now
         UsedLocsFinder *ulf = dynamic_cast<UsedLocsFinder *>(ev);
@@ -366,26 +365,26 @@ bool UsedLocsVisitor::visit(Assign *s, bool &override) {
             ulf->setMemOnly(wasMemOnly);
         }
     } else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
-        Exp *subExp1 = ((Binary *)lhs)->getSubExp1(); // array(base, index) and member(base, offset)?? use
+        SharedExp subExp1 = lhs->getSubExp1(); // array(base, index) and member(base, offset)?? use
         subExp1->accept(ev);                          // base and index
-        Exp *subExp2 = ((Binary *)lhs)->getSubExp2();
+        SharedExp subExp2 = lhs->getSubExp2();
         subExp2->accept(ev);
     } else if (lhs->getOper() == opAt) { // foo@[first:last] uses foo, first, and last
-        Exp *subExp1 = ((Ternary *)lhs)->getSubExp1();
+        SharedExp subExp1 = lhs->getSubExp1();
         subExp1->accept(ev);
-        Exp *subExp2 = ((Ternary *)lhs)->getSubExp2();
+        SharedExp subExp2 = lhs->getSubExp2();
         subExp2->accept(ev);
-        Exp *subExp3 = ((Ternary *)lhs)->getSubExp3();
+        SharedExp subExp3 = lhs->getSubExp3();
         subExp3->accept(ev);
     }
     override = true; // Don't do the usual accept logic
     return true;     // Continue the recursion
 }
 bool UsedLocsVisitor::visit(PhiAssign *s, bool &override) {
-    Exp *lhs = s->getLeft();
+    SharedExp lhs = s->getLeft();
     // Special logic for the LHS
     if (lhs->isMemOf()) {
-        Exp *child = ((Location *)lhs)->getSubExp1();
+        SharedExp child = lhs->getSubExp1();
         UsedLocsFinder *ulf = dynamic_cast<UsedLocsFinder *>(ev);
         if (ulf) {
             bool wasMemOnly = ulf->isMemOnly();
@@ -394,9 +393,9 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool &override) {
             ulf->setMemOnly(wasMemOnly);
         }
     } else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
-        Exp *subExp1 = ((Binary *)lhs)->getSubExp1();
+        SharedExp subExp1 = lhs->getSubExp1();
         subExp1->accept(ev);
-        Exp *subExp2 = ((Binary *)lhs)->getSubExp2();
+        SharedExp subExp2 = lhs->getSubExp2();
         subExp2->accept(ev);
     }
 
@@ -406,7 +405,7 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool &override) {
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
         assert(v.second.e);
-        RefExp *temp = RefExp::get(v.second.e, (Instruction *)v.second.def());
+        auto temp = RefExp::get(v.second.e, (Instruction *)v.second.def());
         temp->accept(ev);
     }
 
@@ -414,10 +413,10 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool &override) {
     return true;     // Continue the recursion
 }
 bool UsedLocsVisitor::visit(ImplicitAssign *s, bool &override) {
-    Exp *lhs = s->getLeft();
+    SharedExp lhs = s->getLeft();
     // Special logic for the LHS
     if (lhs->isMemOf()) {
-        Exp *child = ((Location *)lhs)->getSubExp1();
+        SharedExp child = lhs->getSubExp1();
         UsedLocsFinder *ulf = dynamic_cast<UsedLocsFinder *>(ev);
         if (ulf) {
             bool wasMemOnly = ulf->isMemOnly();
@@ -426,9 +425,9 @@ bool UsedLocsVisitor::visit(ImplicitAssign *s, bool &override) {
             ulf->setMemOnly(wasMemOnly);
         }
     } else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
-        Exp *subExp1 = ((Binary *)lhs)->getSubExp1();
+        SharedExp subExp1 = lhs->getSubExp1();
         subExp1->accept(ev);
-        Exp *subExp2 = ((Binary *)lhs)->getSubExp2();
+        SharedExp subExp2 = lhs->getSubExp2();
         subExp2->accept(ev);
     }
     override = true; // Don't do the usual accept logic
@@ -436,7 +435,7 @@ bool UsedLocsVisitor::visit(ImplicitAssign *s, bool &override) {
 }
 
 bool UsedLocsVisitor::visit(CallStatement *s, bool &override) {
-    Exp *pDest = s->getDest();
+    SharedExp pDest = s->getDest();
     if (pDest)
         pDest->accept(ev);
     StatementList::iterator it;
@@ -472,20 +471,20 @@ bool UsedLocsVisitor::visit(ReturnStatement *s, bool &override) {
     // Insert a phantom use of "everything" here, so that we can find out if any childless calls define something that
     // may end up being returned
     // FIXME: Not here! Causes locals to never get removed. Find out where this belongs, if anywhere:
-    //((UsedLocsFinder*)ev)->getLocSet()->insert(new Terminal(opDefineAll));
+    //((UsedLocsFinder*)ev)->getLocSet()->insert(Terminal::get(opDefineAll));
 
     override = true; // Don't do the normal accept logic
     return true;     // Continue the recursion
 }
 
 bool UsedLocsVisitor::visit(BoolAssign *s, bool &override) {
-    Exp *pCond = s->getCondExpr();
+    SharedExp pCond = s->getCondExpr();
     if (pCond)
         pCond->accept(ev); // Condition is used
-    Exp *lhs = s->getLeft();
+    SharedExp lhs = s->getLeft();
     assert(lhs);
     if (lhs->isMemOf()) { // If dest is of form m[x]...
-        Exp *x = ((Location *)lhs)->getSubExp1();
+        SharedExp x = lhs->getSubExp1();
         UsedLocsFinder *ulf = dynamic_cast<UsedLocsFinder *>(ev);
         if (ulf) {
             bool wasMemOnly = ulf->isMemOnly();
@@ -494,9 +493,9 @@ bool UsedLocsVisitor::visit(BoolAssign *s, bool &override) {
             ulf->setMemOnly(wasMemOnly);
         }
     } else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
-        Exp *subExp1 = ((Binary *)lhs)->getSubExp1();
+        SharedExp subExp1 = lhs->getSubExp1();
         subExp1->accept(ev);
-        Exp *subExp2 = ((Binary *)lhs)->getSubExp2();
+        SharedExp subExp2 = lhs->getSubExp2();
         subExp2->accept(ev);
     }
     override = true; // Don't do the normal accept logic
@@ -506,73 +505,73 @@ bool UsedLocsVisitor::visit(BoolAssign *s, bool &override) {
 //
 // Expression subscripter
 //
-Exp *ExpSubscripter::preVisit(Location *e, bool &recur) {
+SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Location> &e, bool &recur) {
     if (*e == *search) {
         recur = e->isMemOf();      // Don't double subscript unless m[...]
-        return new RefExp(e, def); // Was replaced by postVisit below
+        return RefExp::get(e, def); // Was replaced by postVisit below
     }
     recur = true;
     return e;
 }
 
-Exp *ExpSubscripter::preVisit(Binary *e, bool &recur) {
+SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Binary> &e, bool &recur) {
     // array[index] is like m[addrexp]: requires a subscript
     if (e->isArrayIndex() && *e == *search) {
         recur = true;              // Check the index expression
-        return new RefExp(e, def); // Was replaced by postVisit below
+        return RefExp::get(e, def); // Was replaced by postVisit below
     }
     recur = true;
     return e;
 }
 
-Exp *ExpSubscripter::preVisit(Terminal *e) {
+SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Terminal> &e) {
     if (*e == *search)
-        return new RefExp(e, def);
+        return RefExp::get(e, def);
     return e;
 }
 
-Exp *ExpSubscripter::preVisit(RefExp *e, bool &recur) {
+SharedExp ExpSubscripter::preVisit(const std::shared_ptr<RefExp> &e, bool &recur) {
     recur = false; // Don't look inside... not sure about this
     return e;
 }
 
 // The Statement subscripter class
 void StmtSubscripter::visit(Assign *s, bool &recur) {
-    Exp *rhs = s->getRight();
+    SharedExp rhs = s->getRight();
     s->setRight(rhs->accept(mod));
     // Don't subscript the LHS of an assign, ever
-    Exp *lhs = s->getLeft();
+    SharedExp lhs = s->getLeft();
     if (lhs->isMemOf() || lhs->isRegOf()) {
-        ((Location *)lhs)->setSubExp1(((Location *)lhs)->getSubExp1()->accept(mod));
+        lhs->setSubExp1(lhs->getSubExp1()->accept(mod));
     }
     recur = false;
 }
 void StmtSubscripter::visit(PhiAssign *s, bool &recur) {
-    Exp *lhs = s->getLeft();
+    SharedExp lhs = s->getLeft();
     if (lhs->isMemOf()) {
-        ((Location *)lhs)->setSubExp1(((Location *)lhs)->getSubExp1()->accept(mod));
+        lhs->setSubExp1(lhs->getSubExp1()->accept(mod));
     }
     recur = false;
 }
 void StmtSubscripter::visit(ImplicitAssign *s, bool &recur) {
-    Exp *lhs = s->getLeft();
+    SharedExp lhs = s->getLeft();
     if (lhs->isMemOf()) {
-        ((Location *)lhs)->setSubExp1(((Location *)lhs)->getSubExp1()->accept(mod));
+        lhs->setSubExp1(lhs->getSubExp1()->accept(mod));
     }
     recur = false;
 }
 void StmtSubscripter::visit(BoolAssign *s, bool &recur) {
-    Exp *lhs = s->getLeft();
+    SharedExp lhs = s->getLeft();
     if (lhs->isMemOf()) {
-        ((Location *)lhs)->setSubExp1(((Location *)lhs)->getSubExp1()->accept(mod));
+        lhs->setSubExp1(lhs->getSubExp1()->accept(mod));
     }
-    Exp *rhs = s->getCondExpr();
+    SharedExp rhs = s->getCondExpr();
     s->setCondExpr(rhs->accept(mod));
     recur = false;
 }
 
 void StmtSubscripter::visit(CallStatement *s, bool &recur) {
-    Exp *pDest = s->getDest();
+    SharedExp pDest = s->getDest();
     if (pDest)
         s->setDest(pDest->accept(mod));
     // Subscript the ordinary arguments
@@ -586,7 +585,7 @@ void StmtSubscripter::visit(CallStatement *s, bool &recur) {
 }
 
 // Size stripper
-Exp *SizeStripper::preVisit(Binary *b, bool &recur) {
+SharedExp SizeStripper::preVisit(const std::shared_ptr<Binary> &b, bool &recur) {
     recur = true; // Visit the binary's children
     if (b->isSizeCast())
         // Could be a size cast of a size cast
@@ -594,20 +593,20 @@ Exp *SizeStripper::preVisit(Binary *b, bool &recur) {
     return b;
 }
 
-Exp *ExpConstCaster::preVisit(Const *c) {
+SharedExp ExpConstCaster::preVisit(const std::shared_ptr<Const> &c) {
     if (c->getConscript() == num) {
         changed = true;
-        return new TypedExp(ty, c);
+        return std::make_shared<TypedExp>(ty, c);
     }
     return c;
 }
 
 // This is the code (apart from definitions) to find all constants in a Statement
-bool ConstFinder::visit(Const *e) {
+bool ConstFinder::visit( const std::shared_ptr<Const> &e) {
     lc.push_back(e);
     return true;
 }
-bool ConstFinder::visit(Location *e, bool &override) {
+bool ConstFinder::visit( const std::shared_ptr<Location> &e, bool &override) {
     if (e->isMemOf())
         override = false; // We DO want to see constants in memofs
     else
@@ -617,7 +616,7 @@ bool ConstFinder::visit(Location *e, bool &override) {
 
 // This is in the POST visit function, because it's important to process any child expressions first.
 // Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a nullptr definition for r28.
-Exp *ImplicitConverter::postVisit(RefExp *e) {
+SharedExp ImplicitConverter::postVisit(const std::shared_ptr<RefExp> &e) {
     if (e->getDef() == nullptr)
         e->setDef(m_cfg->findImplicitAssign(e->getSubExp1()));
     return e;
@@ -636,24 +635,24 @@ void StmtImplicitConverter::visit(PhiAssign *s, bool &recur) {
 }
 
 // Localiser. Subscript a location with the definitions that reach the call, or with {-} if none
-Exp *Localiser::preVisit(RefExp *e, bool &recur) {
+SharedExp Localiser::preVisit(const std::shared_ptr<RefExp> &e, bool &recur) {
     recur = false; // Don't recurse into already subscripted variables
     mask <<= 1;
     return e;
 }
 
-Exp *Localiser::preVisit(Location *e, bool &recur) {
+SharedExp Localiser::preVisit(const std::shared_ptr<Location> &e, bool &recur) {
     recur = true;
     mask <<= 1;
     return e;
 }
 
-Exp *Localiser::postVisit(Location *e) {
-    Exp *ret = e;
+SharedExp Localiser::postVisit(const std::shared_ptr<Location> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
-    Exp *r = call->findDefFor(ret);
+    SharedExp r = call->findDefFor(ret);
     if (r) {
         ret = r->clone();
         if (0 && EXPERIMENTAL) { // FIXME: check if sometimes needed
@@ -666,27 +665,27 @@ Exp *Localiser::postVisit(Location *e) {
         unchanged &= ~mask;
         mod = true;
     } else
-        ret = new RefExp(ret, nullptr); // No definition reaches, so subscript with {-}
+        ret = RefExp::get(ret, nullptr); // No definition reaches, so subscript with {-}
     return ret;
 }
 
 // Want to be able to localise a few terminals, in particular <all>
-Exp *Localiser::postVisit(Terminal *e) {
-    Exp *ret = e;
+SharedExp Localiser::postVisit(const std::shared_ptr<Terminal> &e) {
+    SharedExp ret = e;
     if (!(unchanged & mask))
         ret = e->simplify();
     mask >>= 1;
-    Exp *r = call->findDefFor(ret);
+    SharedExp r = call->findDefFor(ret);
     if (r) {
         ret = r->clone()->bypass();
         unchanged &= ~mask;
         mod = true;
     } else
-        ret = new RefExp(ret, nullptr); // No definition reaches, so subscript with {-}
+        ret = RefExp::get(ret, nullptr); // No definition reaches, so subscript with {-}
     return ret;
 }
 
-bool ComplexityFinder::visit(Location *e, bool &override) {
+bool ComplexityFinder::visit( const std::shared_ptr<Location> &e, bool &override) {
     if (proc && proc->findFirstSymbol(e) != nullptr) {
         // This is mapped to a local. Count it as zero, not about 3 (m[r28+4] -> memof, regof, plus)
         override = true;
@@ -697,23 +696,23 @@ bool ComplexityFinder::visit(Location *e, bool &override) {
     override = false;
     return true;
 }
-bool ComplexityFinder::visit(Unary * /*e*/, bool &override) {
+bool ComplexityFinder::visit( const std::shared_ptr<Unary> & /*e*/, bool &override) {
     count++;
     override = false;
     return true;
 }
-bool ComplexityFinder::visit(Binary * /*e*/, bool &override) {
+bool ComplexityFinder::visit( const std::shared_ptr<Binary> & /*e*/, bool &override) {
     count++;
     override = false;
     return true;
 }
-bool ComplexityFinder::visit(Ternary * /*e*/, bool &override) {
+bool ComplexityFinder::visit( const std::shared_ptr<Ternary> & /*e*/, bool &override) {
     count++;
     override = false;
     return true;
 }
 
-bool MemDepthFinder::visit(Location *e, bool &override) {
+bool MemDepthFinder::visit( const std::shared_ptr<Location> &e, bool &override) {
     if (e->isMemOf())
         ++depth;
     override = false;
@@ -721,23 +720,23 @@ bool MemDepthFinder::visit(Location *e, bool &override) {
 }
 
 // Ugh! This is still a separate propagation mechanism from Statement::propagateTo().
-Exp *ExpPropagator::postVisit(RefExp *e) {
+SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp> &e) {
     // No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
     // have been renamed, and we never would get here
     if (!Instruction::canPropagateToExp(*e)) // Check of the definition statement is suitable for propagating
         return e;
     Instruction *def = e->getDef();
-    Exp *res = e;
+    SharedExp res = e;
     if (def && def->isAssign()) {
-        Exp *lhs = ((Assign *)def)->getLeft();
-        Exp *rhs = ((Assign *)def)->getRight();
+        SharedExp lhs = ((Assign *)def)->getLeft();
+        SharedExp rhs = ((Assign *)def)->getRight();
         bool ch;
         res = e->searchReplaceAll(RefExp(lhs, def), rhs->clone(), ch);
         if (ch) {
             change = true;      // Record this change
             unchanged &= ~mask; // Been changed now (so simplify parent)
             if (res->isSubscript())
-                res = postVisit((RefExp *)res); // Recursively propagate more if possible
+                res = postVisit(std::static_pointer_cast<RefExp>(res)); // Recursively propagate more if possible
         }
     }
     return res;
@@ -750,17 +749,17 @@ Exp *ExpPropagator::postVisit(RefExp *e) {
 //   References to the results of calls are considered primitive... but only if bypassed?
 //   Other references considered non primitive
 // Start with result=true, must find primitivity in all components
-bool PrimitiveTester::visit(Location * /*e*/, bool &override) {
+bool PrimitiveTester::visit( const std::shared_ptr<Location> & /*e*/, bool &override) {
     // We reached a bare (unsubscripted) location. This is certainly not primitive
     override = true;
     result = false;
     return false; // No need to continue searching
 }
 
-bool PrimitiveTester::visit(RefExp &e, bool &override) {
-    Instruction *def = e.getDef();
+bool PrimitiveTester::visit(const std::shared_ptr<RefExp> &e, bool &override) {
+    Instruction *def = e->getDef();
     // If defined by a call, e had better not be a memory location (crude approximation for now)
-    if (def == nullptr || def->getNumber() == 0 || (def->isCall() && !e.getSubExp1()->isMemOf())) {
+    if (def == nullptr || def->getNumber() == 0 || (def->isCall() && !e->getSubExp1()->isMemOf())) {
         // Implicit definitions are always primitive
         // The results of calls are always primitive
         override = true; // Don't recurse into the reference
@@ -773,7 +772,7 @@ bool PrimitiveTester::visit(RefExp &e, bool &override) {
     return true;
 }
 
-bool ExpHasMemofTester::visit(Location *e, bool &override) {
+bool ExpHasMemofTester::visit( const std::shared_ptr<Location> &e, bool &override) {
     if (e->isMemOf()) {
         override = true; // Don't recurse children (not needed surely)
         result = true;   // Found a memof
@@ -783,10 +782,10 @@ bool ExpHasMemofTester::visit(Location *e, bool &override) {
     return true;
 }
 
-bool TempToLocalMapper::visit(Location *e, bool &override) {
+bool TempToLocalMapper::visit( const std::shared_ptr<Location> &e, bool &override) {
     if (e->isTemp()) {
         // We have a temp subexpression; get its name
-        QString tempName = ((Const *)e->getSubExp1())->getStr();
+        QString tempName = e->subExp<Const,1>()->getStr();
         SharedType ty = Type::getTempType(tempName); // Types for temps strictly depend on the name
         // This call will do the mapping from the temp to a new local:
         proc->getSymbolExp(e, ty, true);
@@ -799,8 +798,8 @@ ExpRegMapper::ExpRegMapper(UserProc *p) : proc(p) { prog = proc->getProg(); }
 
 // The idea here is to map the default of a register to a symbol with the type of that first use. If the register is
 // not involved in any conflicts, it will use this name by default
-bool ExpRegMapper::visit(RefExp &e, bool &override) {
-    Exp *base = e.getSubExp1();
+bool ExpRegMapper::visit(const std::shared_ptr<RefExp> &e, bool &override) {
+    SharedExp base = e->getSubExp1();
     if (base->isRegOf() || proc->isLocalOrParamPattern(base)) // Don't convert if e.g. a global
         proc->checkLocalFor(e);
     override = true; // Don't examine the r[] inside
@@ -809,8 +808,8 @@ bool ExpRegMapper::visit(RefExp &e, bool &override) {
 
 bool StmtRegMapper::common(Assignment *stmt, bool &override) {
     // In case lhs is a reg or m[reg] such that reg is otherwise unused
-    Exp *lhs = stmt->getLeft();
-    RefExp *re = new RefExp(lhs, stmt);
+    SharedExp lhs = stmt->getLeft();
+    auto re = RefExp::get(lhs, stmt);
     re->accept((ExpRegMapper *)ev);
     override = false;
     return true;
@@ -823,45 +822,45 @@ bool StmtRegMapper::visit(BoolAssign *stmt, bool &override) { return common(stmt
 
 // Constant global converter. Example: m[m[r24{16} + m[0x8048d60]{-}]{-}]{-} -> m[m[r24{16} + 32]{-}]{-}
 // Allows some complex variations to be matched to standard indirect call forms
-Exp *ConstGlobalConverter::preVisit(RefExp *e, bool &recur) {
+SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp> &e, bool &recur) {
     Instruction *def = e->getDef();
-    Exp *base, *addr, *idx, *glo;
+    SharedExp base, addr, idx, glo;
     if (def == nullptr || def->isImplicit()) {
         if ((base = e->getSubExp1(), base->isMemOf()) &&
-            (addr = ((Location *)base)->getSubExp1(), addr->isIntConst())) {
+            (addr = base->getSubExp1(), addr->isIntConst())) {
             // We have a m[K]{-}
-            ADDRESS K = ((Const *)addr)->getAddr(); // TODO: use getAddr
+            ADDRESS K = addr->subExp<Const>()->getAddr(); // TODO: use getAddr
             int value = prog->readNative4(K);
             recur = false;
-            return new Const(value);
+            return Const::get(value);
         } else if (base->isGlobal()) {
             // We have a glo{-}
-            QString gname = ((Const *)(base->getSubExp1()))->getStr();
+            QString gname = base->subExp<Const,1>()->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             int value = prog->readNative4(gloValue);
             recur = false;
-            return new Const(value);
-        } else if (base->isArrayIndex() && (idx = ((Binary *)base)->getSubExp2(), idx->isIntConst()) &&
-                   (glo = ((Binary *)base)->getSubExp1(), glo->isGlobal())) {
+            return Const::get(value);
+        } else if (base->isArrayIndex() && (idx = base->getSubExp2(), idx->isIntConst()) &&
+                   (glo = base->getSubExp1(), glo->isGlobal())) {
             // We have a glo[K]{-}
-            int K = ((Const *)idx)->getInt();
-            QString gname = ((Const *)(glo->getSubExp1()))->getStr();
+            int K = idx->subExp<Const>()->getInt();
+            QString gname = glo->subExp<Const,1>()->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             SharedType gloType = prog->getGlobal(gname)->getType();
             assert(gloType->isArray());
             SharedType componentType = gloType->as<ArrayType>()->getBaseType();
             int value = prog->readNative4(gloValue + K * (componentType->getSize() / 8));
             recur = false;
-            return new Const(value);
+            return Const::get(value);
         }
     }
     recur = true;
     return e;
 }
 
-bool ExpDestCounter::visit(RefExp &e, bool &override) {
-    if (Instruction::canPropagateToExp(e))
-        destCounts[e.clone()]++;
+bool ExpDestCounter::visit(const std::shared_ptr<RefExp> &e, bool &override) {
+    if (Instruction::canPropagateToExp(*e))
+        destCounts[e->clone()]++;
     override = false; // Continue searching my children
     return true;      // Continue visiting the rest of Exp* e
 }
@@ -871,7 +870,7 @@ bool StmtDestCounter::visit(PhiAssign * /*stmt*/, bool &override) {
     return true;
 }
 
-bool FlagsFinder::visit(Binary *e, bool &override) {
+bool FlagsFinder::visit( const std::shared_ptr<Binary> &e, bool &override) {
     if (e->isFlagCall()) {
         found = true;
         return false; // Don't continue searching
@@ -881,7 +880,7 @@ bool FlagsFinder::visit(Binary *e, bool &override) {
 }
 
 // Search for bare memofs (not subscripted) in the expression
-bool BadMemofFinder::visit(Location *e, bool &override) {
+bool BadMemofFinder::visit( const std::shared_ptr<Location> &e, bool &override) {
     if (e->isMemOf()) {
         found = true; // A bare memof
         return false;
@@ -890,11 +889,11 @@ bool BadMemofFinder::visit(Location *e, bool &override) {
     return true; // Continue searching
 }
 
-bool BadMemofFinder::visit(RefExp &e, bool &override) {
-    Exp *base = e.getSubExp1();
+bool BadMemofFinder::visit(const std::shared_ptr<RefExp> &e, bool &override) {
+    SharedExp base = e->getSubExp1();
     if (base->isMemOf()) {
         // Beware: it may be possible to have a bad memof inside a subscripted one
-        Exp *addr = ((Location *)base)->getSubExp1();
+        SharedExp addr = base->getSubExp1();
         addr->accept(this);
         if (found)
             return false; // Don't continue searching
@@ -915,20 +914,20 @@ bool BadMemofFinder::visit(RefExp &e, bool &override) {
 
 // Check the type of the address expression of memof to make sure it is compatible with the given memofType.
 // memof may be changed internally to include a TypedExp, which will emit as a cast
-void ExpCastInserter::checkMemofType(Exp *memof, SharedType memofType) {
-    Exp *addr = ((Unary *)memof)->getSubExp1();
+void ExpCastInserter::checkMemofType(const SharedExp &memof, SharedType memofType) {
+    SharedExp addr = memof->getSubExp1();
     if (addr->isSubscript()) {
-        Exp *addrBase = ((RefExp *)addr)->getSubExp1();
-        SharedType actType = ((RefExp *)addr)->getDef()->getTypeFor(addrBase);
+        SharedExp addrBase = addr->getSubExp1();
+        SharedType actType = addr->subExp<RefExp>()->getDef()->getTypeFor(addrBase);
         SharedType expectedType = PointerType::get(memofType);
         if (!actType->isCompatibleWith(*expectedType)) {
-            ((Unary *)memof)->setSubExp1(new TypedExp(expectedType, addrBase));
+            memof->setSubExp1(std::make_shared<TypedExp>(expectedType, addrBase));
         }
     }
 }
 
-Exp *ExpCastInserter::postVisit(RefExp *e) {
-    Exp *base = e->getSubExp1();
+SharedExp ExpCastInserter::postVisit(const std::shared_ptr<RefExp> &e) {
+    SharedExp base = e->getSubExp1();
     if (base->isMemOf()) {
         // Check to see if the address expression needs type annotation
         Instruction *def = e->getDef();
@@ -942,7 +941,7 @@ Exp *ExpCastInserter::postVisit(RefExp *e) {
     return e;
 }
 
-static Exp *checkSignedness(Exp *e, int reqSignedness) {
+static SharedExp checkSignedness(SharedExp e, int reqSignedness) {
     SharedType ty = e->ascendType();
     int currSignedness = 0;
     bool isInt = ty->resolvesToInteger();
@@ -959,12 +958,12 @@ static Exp *checkSignedness(Exp *e, int reqSignedness) {
         else
             newtype = IntegerType::get(std::static_pointer_cast<IntegerType>(ty)->getSize(), reqSignedness); // Transfer size
         newtype->setSigned(reqSignedness);
-        return new TypedExp(newtype, e);
+        return std::make_shared<TypedExp>(newtype, e);
     }
     return e;
 }
 
-Exp *ExpCastInserter::postVisit(Binary *e) {
+SharedExp ExpCastInserter::postVisit(const std::shared_ptr<Binary> &e) {
     OPER op = e->getOper();
     switch (op) {
     // This case needed for e.g. test/pentium/switch_gcc:
@@ -993,12 +992,12 @@ Exp *ExpCastInserter::postVisit(Binary *e) {
     return e;
 }
 
-Exp *ExpCastInserter::postVisit(Const *e) {
+SharedExp ExpCastInserter::postVisit(const std::shared_ptr<Const> &e) {
     if (e->isIntConst()) {
         bool naturallySigned = e->getInt() < 0;
         SharedType ty = e->getType();
         if (naturallySigned && ty->isInteger() && !ty->as<IntegerType>()->isSigned()) {
-            return new TypedExp(IntegerType::get(ty->as<IntegerType>()->getSize(), -1), e);
+            return std::make_shared<TypedExp>(IntegerType::get(ty->as<IntegerType>()->getSize(), -1), e);
         }
     }
     return e;
@@ -1009,7 +1008,7 @@ bool StmtCastInserter::visit(PhiAssign *s) { return common(s); }
 bool StmtCastInserter::visit(ImplicitAssign *s) { return common(s); }
 bool StmtCastInserter::visit(BoolAssign *s) { return common(s); }
 bool StmtCastInserter::common(Assignment *s) {
-    Exp *lhs = s->getLeft();
+    SharedExp lhs = s->getLeft();
     if (lhs->isMemOf()) {
         SharedType memofType = s->getType();
         ExpCastInserter::checkMemofType(lhs, memofType);
@@ -1017,8 +1016,8 @@ bool StmtCastInserter::common(Assignment *s) {
     return true;
 }
 
-Exp *ExpSsaXformer::postVisit(RefExp *e) {
-    QString sym = proc->lookupSymFromRefAny(*e);
+SharedExp ExpSsaXformer::postVisit(const std::shared_ptr<RefExp> &e) {
+    QString sym = proc->lookupSymFromRefAny(e);
     if (!sym.isNull())
         return Location::local(sym, proc);
     // We should not get here: all locations should be replaced with Locals or Parameters
@@ -1028,17 +1027,16 @@ Exp *ExpSsaXformer::postVisit(RefExp *e) {
 
 // Common code for the left hand side of assignments
 void StmtSsaXformer::commonLhs(Assignment *as) {
-    Exp *lhs = as->getLeft();
+    SharedExp lhs = as->getLeft();
     lhs = lhs->accept((ExpSsaXformer *)mod); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
-    RefExp re(lhs, as);
-    QString sym = proc->lookupSymFromRefAny(re);
+    QString sym = proc->lookupSymFromRefAny(RefExp::get(lhs,as));
     if (!sym.isNull())
         as->setLeft(Location::local(sym, proc));
 }
 
 void StmtSsaXformer::visit(BoolAssign *s, bool &recur) {
     commonLhs(s);
-    Exp *pCond = s->getCondExpr();
+    SharedExp pCond = s->getCondExpr();
     pCond = pCond->accept((ExpSsaXformer *)mod);
     s->setCondExpr(pCond);
     recur = false; // TODO: verify recur setting
@@ -1046,7 +1044,7 @@ void StmtSsaXformer::visit(BoolAssign *s, bool &recur) {
 
 void StmtSsaXformer::visit(Assign *s, bool &recur) {
     commonLhs(s);
-    Exp *rhs = s->getRight();
+    SharedExp rhs = s->getRight();
     rhs = rhs->accept(mod);
     s->setRight(rhs);
     recur = false; // TODO: verify recur setting
@@ -1063,8 +1061,7 @@ void StmtSsaXformer::visit(PhiAssign *s, bool &recur) {
     UserProc *proc = ((ExpSsaXformer *)mod)->getProc();
     for (auto &v : *s) {
         assert(v.second.e != nullptr);
-        RefExp r(v.second.e, v.second.def());
-        QString sym = proc->lookupSymFromRefAny(r);
+        QString sym = proc->lookupSymFromRefAny(RefExp::get(v.second.e, v.second.def()));
         if (!sym.isNull())
             v.second.e = Location::local(sym, proc); // Some may be parameters, but hopefully it won't matter
     }
@@ -1072,7 +1069,7 @@ void StmtSsaXformer::visit(PhiAssign *s, bool &recur) {
 }
 
 void StmtSsaXformer::visit(CallStatement *s, bool &recur) {
-    Exp *pDest = s->getDest();
+    SharedExp pDest = s->getDest();
     if (pDest) {
         pDest = pDest->accept((ExpSsaXformer *)mod);
         s->setDest(pDest);
@@ -1088,17 +1085,17 @@ void StmtSsaXformer::visit(CallStatement *s, bool &recur) {
     for (ss = defines.begin(); ss != defines.end(); ++ss) {
         Assignment *as = ((Assignment *)*ss);
         // FIXME: use of fromSSAleft is deprecated
-        Exp *e = as->getLeft()->fromSSAleft(((ExpSsaXformer *)mod)->getProc(), s);
+        SharedExp e = as->getLeft()->fromSSAleft(((ExpSsaXformer *)mod)->getProc(), s);
         // FIXME: this looks like a HACK that can go:
         Function *procDest = s->getDestProc();
         if (procDest && procDest->isLib() && e->isLocal()) {
             UserProc *proc = s->getProc(); // Enclosing proc
-            SharedType lty = proc->getLocalType(((Const *)e->getSubExp1())->getStr());
+            SharedType lty = proc->getLocalType(e->subExp<Const,1>()->getStr());
             SharedType ty = as->getType();
             if (ty && lty && *ty != *lty) {
                 LOG << "local " << e << " has type " << lty->getCtype() << " that doesn't agree with type of define "
                     << ty->getCtype() << " of a library, why?\n";
-                proc->setLocalType(((Const *)e->getSubExp1())->getStr(), ty);
+                proc->setLocalType(e->subExp<Const,1>()->getStr(), ty);
             }
         }
         as->setLeft(e);
@@ -1124,7 +1121,7 @@ DfaLocalMapper::DfaLocalMapper(UserProc *proc) : proc(proc) {
 }
 
 // Common processing for the two main cases (visiting a Location or a Binary)
-bool DfaLocalMapper::processExp(Exp *e) {
+bool DfaLocalMapper::processExp(const SharedExp &e) {
     if (proc->isLocalOrParamPattern(e)) { // Check if this is an appropriate pattern for local variables
         if (sig->isStackLocal(prog, e)) {
             change = true; // We've made a mapping
@@ -1142,7 +1139,7 @@ bool DfaLocalMapper::processExp(Exp *e) {
     return true;
 }
 
-Exp *DfaLocalMapper::preVisit(Location *e, bool &recur) {
+SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Location> &e, bool &recur) {
 
     recur = true;
     if (e->isMemOf() && proc->findFirstSymbol(e) == nullptr) { // Need the 2nd test to ensure change set correctly
@@ -1151,23 +1148,23 @@ Exp *DfaLocalMapper::preVisit(Location *e, bool &recur) {
     return e;
 }
 
-Exp *DfaLocalMapper::preVisit(Binary *e, bool &recur) {
+SharedExp DfaLocalMapper::preVisit(const  std::shared_ptr<Binary> &e, bool &recur) {
 #if 1
     // Check for sp -/+ K
-    Exp *memOf_e = Location::memOf(e);
+    SharedExp memOf_e = Location::memOf(e);
     if (proc->findFirstSymbol(memOf_e) != nullptr) {
         recur = false; // Already done; don't recurse
         return e;
     } else {
         recur = processExp(memOf_e);             // Process m[this]
         if (!recur)                              // If made a change this visit,
-            return new Unary(opAddrOf, memOf_e); // change to a[m[this]]
+            return Unary::get(opAddrOf, memOf_e); // change to a[m[this]]
     }
 #endif
     return e;
 }
 
-Exp *DfaLocalMapper::preVisit(TypedExp *e, bool &recur) {
+SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<TypedExp> &e, bool &recur) {
     // Assume it's already been done correctly, so don't recurse into this
     recur = false;
     return e;

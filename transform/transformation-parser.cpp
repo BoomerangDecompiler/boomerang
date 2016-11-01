@@ -118,7 +118,7 @@ typedef struct {
     int ival;
     char *str;
     SharedType type;
-    Exp *exp;
+    SharedExp exp;
 } yy_TransformationParser_stype;
 #define YY_TransformationParser_STYPE yy_TransformationParser_stype
 
@@ -1154,7 +1154,7 @@ YY_TransformationParser_PARSE_PARAM_DEF
             break;}
         case 8:
 
-        { yyval.exp = new Unary(opAddrOf, yyvsp[-1].exp);
+        { yyval.exp = Unary::get(opAddrOf, yyvsp[-1].exp);
             ;
             break;}
         case 9:
@@ -1219,21 +1219,21 @@ YY_TransformationParser_PARSE_PARAM_DEF
             break;}
         case 21:
 
-        { yyval.exp = new Const(yyvsp[0].ival);
+        { yyval.exp = Const::get(yyvsp[0].ival);
             ;
             break;}
         case 22:
 
-        { yyval.exp = Binary::get(opFlagCall, new Const(yyvsp[-2].str), yyvsp[-1].exp);
+        { yyval.exp = Binary::get(opFlagCall, Const::get(yyvsp[-2].str), yyvsp[-1].exp);
             ;
             break;}
         case 23:
 
         {
             if (strlen(yyvsp[0].str) > 2 && yyvsp[0].str[0] == 'o' && yyvsp[0].str[1] == 'p')
-                yyval.exp = new Const(yyvsp[0].str); // treat op* as a string constant
+                yyval.exp = Const::get(yyvsp[0].str); // treat op* as a string constant
             else
-                yyval.exp = new Unary(opVar, new Const(yyvsp[0].str));
+                yyval.exp = Unary::get(opVar, Const::get(yyvsp[0].str));
             ;
             break;}
         case 24:
@@ -1243,42 +1243,42 @@ YY_TransformationParser_PARSE_PARAM_DEF
             break;}
         case 25:
 
-        { yyval.exp = new Unary(opKindOf, yyvsp[-1].exp);
+        { yyval.exp = Unary::get(opKindOf, yyvsp[-1].exp);
             ;
             break;}
         case 26:
 
-        { yyval.exp = new Unary(opTypeOf, yyvsp[-1].exp);
+        { yyval.exp = Unary::get(opTypeOf, yyvsp[-1].exp);
             ;
             break;}
         case 27:
 
-        { yyval.exp = new Unary(opNeg, yyvsp[0].exp);
+        { yyval.exp = Unary::get(opNeg, yyvsp[0].exp);
             ;
             break;}
         case 28:
 
-        { yyval.exp = new Unary(opLNot, yyvsp[0].exp);
+        { yyval.exp = Unary::get(opLNot, yyvsp[0].exp);
             ;
             break;}
         case 29:
 
-        { yyval.exp = new TypeVal(yyvsp[0].type);
+        { yyval.exp = TypeVal::get(yyvsp[0].type);
             ;
             break;}
         case 30:
 
-        { yyval.exp = Binary::get(opList, yyvsp[-2].exp, Binary::get(opList, yyvsp[0].exp, new Terminal(opNil)));
+        { yyval.exp = Binary::get(opList, yyvsp[-2].exp, Binary::get(opList, yyvsp[0].exp, Terminal::get(opNil)));
             ;
             break;}
         case 31:
 
-        { yyval.exp = new Terminal(opTrue);
+        { yyval.exp = Terminal::get(opTrue);
             ;
             break;}
         case 32:
 
-        { yyval.exp = new Terminal(opFalse);
+        { yyval.exp = Terminal::get(opFalse);
             ;
             break;}
         case 33:

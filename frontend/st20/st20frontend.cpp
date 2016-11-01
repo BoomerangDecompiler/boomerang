@@ -47,8 +47,8 @@ ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : 
 // destructor
 ST20FrontEnd::~ST20FrontEnd() {}
 
-std::vector<Exp *> &ST20FrontEnd::getDefaultParams() {
-    static std::vector<Exp *> params;
+std::vector<SharedExp> &ST20FrontEnd::getDefaultParams() {
+    static std::vector<SharedExp> params;
     if (params.size() == 0) {
 #if 0
         for (int r=0; r<=2; r++) {
@@ -60,12 +60,12 @@ std::vector<Exp *> &ST20FrontEnd::getDefaultParams() {
     return params;
 }
 
-std::vector<Exp *> &ST20FrontEnd::getDefaultReturns() {
-    static std::vector<Exp *> returns;
+std::vector<SharedExp> &ST20FrontEnd::getDefaultReturns() {
+    static std::vector<SharedExp> returns;
     if (returns.size() == 0) {
         returns.push_back(Location::regOf(0));
         returns.push_back(Location::regOf(3));
-        //        returns.push_back(new Terminal(opPC));
+        //        returns.push_back(Terminal::get(opPC));
     }
     return returns;
 }

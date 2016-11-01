@@ -19,20 +19,20 @@
 class SSLScanner;
 
 struct yy_SSLParser_stype {
-    Exp *exp;
+    SharedExp exp;
     QString str;
     int32_t num;
     double dbl;
     Instruction *regtransfer;
     SharedType typ;
 
-    Table *tab;
+    std::shared_ptr<Table> tab;
     std::shared_ptr<InsNameElem> insel;
     std::list<QString> *parmlist=nullptr;
     std::list<QString> *strlist=nullptr;
-    std::deque<Exp *> *exprlist;
+    std::deque<SharedExp> *exprlist;
     std::deque<QString> *namelist=nullptr;
-    std::list<Exp *> *explist;
+    std::list<SharedExp> *explist;
     std::shared_ptr<RTL> rtlist;
 };
 #define YY_SSLParser_DEBUG 1
@@ -141,7 +141,7 @@ class SSLParser {
     static Instruction *parseExp(const char *str); /* Parse an expression or assignment from a string */
     /* The code for expanding tables and saving to the dictionary */
     void expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict &Dict);
-    Exp *makeSuccessor(Exp *e); /* Get successor (of register expression) */
+    SharedExp makeSuccessor(SharedExp e); /* Get successor (of register expression) */
 
     /*
     * The scanner.
@@ -149,6 +149,8 @@ class SSLParser {
     SSLScanner *theScanner;
 
   protected:
+    std::fstream *m_fin;
+
     /*
     * The file from which the SSL spec is read.
     */
@@ -172,7 +174,7 @@ class SSLParser {
     /*
     * Maps table names to Table's.
     */
-    std::map<QString, Table *> TableDict;
+    std::map<QString, std::shared_ptr<Table> > TableDict;
 
     /*
     * True when FLOAT keyword seen; false when INTEGER keyword seen

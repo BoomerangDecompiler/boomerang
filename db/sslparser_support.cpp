@@ -54,8 +54,8 @@ SSLParser::~SSLParser() {
     std::map<QString, Table *>::iterator loc;
     if (theScanner != nullptr)
         delete theScanner;
-    for (loc = TableDict.begin(); loc != TableDict.end(); loc++)
-        delete loc->second;
+    TableDict.clear();
+    delete m_fin;
 }
 
 /***************************************************************************/ /**
@@ -212,10 +212,10 @@ OPER strToTerm(const QString &s) {
   * \param le  the list of expressions
   * \returns The opList Expression
   ******************************************************************************/
-Exp *listExpToExp(std::list<Exp *> *le) {
-    Exp *e;
-    Exp **cur = &e;
-    Exp *end = new Terminal(opNil); // Terminate the chain
+SharedExp listExpToExp(std::list<SharedExp> *le) {
+    SharedExp e;
+    SharedExp*cur = &e;
+    SharedExp end = Terminal::get(opNil); // Terminate the chain
     for (auto &elem : *le) {
         *cur = Binary::get(opList, elem, end);
         // cur becomes the address of the address of the second subexpression
@@ -233,15 +233,15 @@ Exp *listExpToExp(std::list<Exp *> *le) {
   * \param   ls - the list of strings
   * \returns The opList expression
   ******************************************************************************/
-Exp *listStrToExp(std::list<QString> *ls) {
-    Exp *e;
-    Exp **cur = &e;
-    Exp *end = new Terminal(opNil); // Terminate the chain
+SharedExp listStrToExp(std::list<QString> *ls) {
+    SharedExp e;
+    SharedExp * cur = &e;
+    SharedExp end = Terminal::get(opNil); // Terminate the chain
     for (auto &l : *ls) {
-        *cur = Binary::get(opList, new Location(opParam, Const::get(l), nullptr), end);
+        *cur = Binary::get(opList, Location::get(opParam, Const::get(l), nullptr), end);
         cur = &(*cur)->refSubExp2();
     }
-    *cur = new Terminal(opNil); // Terminate the chain
+    *cur = Terminal::get(opNil); // Terminate the chain
     return e;
 }
 
@@ -267,40 +267,40 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
         // Need to make substitutions to a copy of the RTL
         RTL rtl = *o_rtlist; // deep copy of contents
         for (Instruction *s : rtl) {
-            std::list<Exp *> le;
+            std::list<SharedExp> le;
             // Expression tables
             assert(s->getKind() == STMT_ASSIGN);
             if (((Assign *)s)->searchAll(srchExpr, le)) {
-                std::list<Exp *>::iterator it;
+                std::list<SharedExp>::iterator it;
                 for (it = le.begin(); it != le.end(); it++) {
-                    QString tbl = ((Const *)(*it)->getSubExp1())->getStr();
-                    QString idx = ((Const *)(*it)->getSubExp2())->getStr();
-                    Exp *repl = ((ExprTable *)(TableDict[tbl]))->expressions[indexrefmap[idx]->getvalue()];
+                    QString tbl = (*it)->subExp<Const,1>()->getStr();
+                    QString idx = (*it)->subExp<Const,2>()->getStr();
+                    SharedExp repl = ((ExprTable *)TableDict[tbl].get())->expressions[indexrefmap[idx]->getvalue()];
                     s->searchAndReplace(**it, repl);
                 }
             }
             // Operator tables
-            Exp *res;
+            SharedExp res;
             while (s->search(srchOp, res)) {
-                Ternary *t;
+                std::shared_ptr<Ternary> t;
                 if (res->getOper() == opTypedExp)
-                    t = (Ternary *)res->getSubExp1();
+                    t = res->subExp<Ternary,1>();
                 else
-                    t = (Ternary *)res;
+                    t = res->subExp<Ternary>();
                 assert(t->getOper() == opOpTable);
                 // The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
                 // (and we want to replace it with e1 OP e2)
-                QString tbl = ((Const *)t->getSubExp1())->getStr();
-                QString idx = ((Const *)t->getSubExp2())->getStr();
+                QString tbl = t->subExp<Const,1>()->getStr();
+                QString idx = t->subExp<Const,2>()->getStr();
                 // The expressions to operate on are in the list
-                Binary *b = (Binary *)t->getSubExp3();
+                auto b = t->subExp<Binary,3>();
                 assert(b->getOper() == opList);
-                Exp *e1 = b->getSubExp1();
-                Exp *e2 = b->getSubExp2(); // This should be an opList too
+                SharedExp e1 = b->getSubExp1();
+                SharedExp e2 = b->getSubExp2(); // This should be an opList too
                 assert(b->getOper() == opList);
                 e2 = e2->getSubExp1();
-                QString ops = ((OpTable *)(TableDict[tbl]))->Records[indexrefmap[idx]->getvalue()];
-                Exp *repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
+                QString ops = ((OpTable *)TableDict[tbl].get())->Records[indexrefmap[idx]->getvalue()];
+                SharedExp repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
                 s->searchAndReplace(*res, repl);
             }
         }
@@ -325,4 +325,4 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
   * \param      e  The expression to find the successor of
   * \returns             The modified expression
   ******************************************************************************/
-Exp *SSLParser::makeSuccessor(Exp *e) { return new Unary(opSuccessor, e); }
+SharedExp SSLParser::makeSuccessor(SharedExp e) { return Unary::get(opSuccessor, e); }

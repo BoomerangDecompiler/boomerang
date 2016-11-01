@@ -26,10 +26,12 @@
 #include <list>
 #include <set>
 #include <vector>
+#include <memory>
 
 class Instruction;
 class Assign;
 class Exp;
+using SharedExp = std::shared_ptr<Exp>;
 class RefExp;
 class Cfg;
 class LocationSet;
@@ -46,10 +48,10 @@ class InstructionSet : public std::set<Instruction *> {
     bool isSubSetOf(InstructionSet &other); // Subset relation
 
     bool remove(Instruction *s);                   // Removal; rets false if not found
-    bool removeIfDefines(Exp *given);            // Remove if given exp is defined
+    bool removeIfDefines(SharedExp given);            // Remove if given exp is defined
     bool removeIfDefines(InstructionSet &given);   // Remove if any given is def'd
     bool exists(Instruction *s);                   // Search; returns false if !found
-    bool definesLoc(Exp *loc);                   // Search; returns true if any
+    bool definesLoc(SharedExp loc);                   // Search; returns true if any
                                                  // statement defines loc
     bool operator<(const InstructionSet &o) const; // Compare if less
     void print(QTextStream &os) const;          // Print to os
@@ -67,11 +69,11 @@ class AssignSet : public std::set<Assign *, lessAssign> {
     void makeIsect(AssignSet &other);       // Set intersection
     bool isSubSetOf(AssignSet &other);      // Subset relation
     bool remove(Assign *a);                 // Removal; rets false if not found
-    bool removeIfDefines(Exp *given);       // Remove if given exp is defined
+    bool removeIfDefines(SharedExp given);       // Remove if given exp is defined
     bool removeIfDefines(AssignSet &given); // Remove if any given is def'd
     bool exists(Assign *s);                 // Search; returns false if !found
-    bool definesLoc(Exp *loc);              // Search; returns true if any assignment defines loc
-    Assign *lookupLoc(Exp *loc);            // Search for loc on LHS, return ptr to Assign if found
+    bool definesLoc(SharedExp loc);              // Search; returns true if any assignment defines loc
+    Assign *lookupLoc(SharedExp loc);            // Search for loc on LHS, return ptr to Assign if found
 
     bool operator<(const AssignSet &o) const; // Compare if less
     void print(QTextStream &os) const;       // Print to os
@@ -94,15 +96,15 @@ class StatementList : public std::list<Instruction *> {
     void append(StatementList &sl);             // Append whole StatementList
     void append(InstructionSet &sl);              // Append whole InstructionSet
     bool remove(Instruction *s);                  // Removal; rets false if not found
-    void removeDefOf(Exp *loc);                 // Remove definitions of loc
+    void removeDefOf(SharedExp loc);                 // Remove definitions of loc
     // This one is needed where you remove in the middle of a loop
     // Use like this: it = mystatementlist.erase(it);
     bool exists(Instruction *s);          //!< Search; returns false if not found
     char *prints();                     //!< Print to string (for debugging)
     void dump();                        //!< Print to standard error for debugging
     void makeCloneOf(StatementList &o); //!< Make this a clone of o
-    bool existsOnLeft(Exp *loc);        //!< True if loc exists on the LHS of any Assignment in this list
-    Assignment *findOnLeft(Exp *loc);   //!< Return the first stmt with loc on the LHS
+    bool existsOnLeft(SharedExp loc);        //!< True if loc exists on the LHS of any Assignment in this list
+    Assignment *findOnLeft(SharedExp loc);   //!< Return the first stmt with loc on the LHS
 };                                      // class StatementList
 
 class StatementVec {
@@ -142,11 +144,11 @@ class LocationSet {
     // by expression value. If this is not done, then two expressions with the same value (say r[10])
     // but that happen to have different addresses (because they came from different statements)
     // would both be stored in the set (instead of the required set behaviour, where only one is stored)
-    std::set<Exp *, lessExpStar> lset;
+    std::set<SharedExp, lessExpStar> lset;
 
   public:
-    typedef std::set<Exp *, lessExpStar>::iterator iterator;
-    typedef std::set<Exp *, lessExpStar>::const_iterator const_iterator;
+    typedef std::set<SharedExp, lessExpStar>::iterator iterator;
+    typedef std::set<SharedExp, lessExpStar>::const_iterator const_iterator;
     LocationSet() {}                              // Default constructor
     ~LocationSet() {}                             // virtual destructor kills warning
     LocationSet(const LocationSet &o);            // Copy constructor
@@ -158,8 +160,8 @@ class LocationSet {
     iterator end() { return lset.end(); }
     const_iterator begin() const { return lset.begin(); }
     const_iterator end() const { return lset.begin(); }
-    void insert(Exp *loc) { lset.insert(loc); }  // Insert the given location
-    void remove(Exp *loc);                       // Remove the given location
+    void insert(SharedExp loc) { lset.insert(loc); }  // Insert the given location
+    void remove(SharedExp loc);                       // Remove the given location
     void remove(iterator ll) { lset.erase(ll); } // Remove location, given iterator
     void removeIfDefines(InstructionSet &given);   // Remove locs defined in given
     size_t size() const { return lset.size(); }  // Number of elements
@@ -169,14 +171,14 @@ class LocationSet {
     char *prints();                              // Print to string for debugging
     void dump();
     void diff(LocationSet *o);   // Diff 2 location sets to LOG_STREAM()
-    bool exists(Exp *e);         // Return true if the location exists in the set
-    Exp *findNS(Exp *e);         // Find location e (no subscripts); nullptr if not found
-    bool existsImplicit(Exp *e); // Search for location e{-} or e{0} (e has no subscripts)
+    bool exists(SharedExp e);         // Return true if the location exists in the set
+    SharedExp findNS(SharedExp e);         // Find location e (no subscripts); nullptr if not found
+    bool existsImplicit(SharedExp e); // Search for location e{-} or e{0} (e has no subscripts)
     // Return an iterator to the found item (or end() if not). Only really makes sense if e has a wildcard
-    iterator find(Exp *e) { return lset.find(e); }
+    iterator find(SharedExp e) { return lset.find(e); }
     // Find a location with a different def, but same expression. For example, pass r28{10},
     // return true if r28{20} in the set. If return true, dr points to the first different ref
-    bool findDifferentRef(RefExp *e, Exp *&dr);
+    bool findDifferentRef(const std::shared_ptr<RefExp> &e, SharedExp &dr);
     void addSubscript(Instruction *def /* , Cfg* cfg */); // Add a subscript to all elements
 };                                                      // class LocationSet
 
@@ -187,25 +189,26 @@ class LocationSet {
 // space efficient manner), but then you still need maps from expression to bit number. So here a standard map is used,
 // and when a -> b is inserted, b->a is redundantly inserted.
 class ConnectionGraph {
-    std::multimap<Exp *, Exp *, lessExpStar> emap; // The map
+    std::multimap<SharedExp , SharedExp , lessExpStar> emap; // The map
   public:
-    typedef std::multimap<Exp *, Exp *, lessExpStar>::iterator iterator;
-    typedef std::multimap<Exp *, Exp *, lessExpStar>::const_iterator const_iterator;
+    typedef std::multimap<SharedExp , SharedExp , lessExpStar>::iterator iterator;
+    typedef std::multimap<SharedExp , SharedExp , lessExpStar>::const_iterator const_iterator;
     ConnectionGraph() {}
 
-    void add(Exp *a, Exp *b); // Add pair with check for existing
-    void connect(Exp *a, Exp *b);
+    void add(SharedExp a, SharedExp b); // Add pair with check for existing
+    void connect(SharedExp a, SharedExp b);
     iterator begin() { return emap.begin(); }
     iterator end() { return emap.end(); }
     const_iterator begin() const { return emap.begin(); }
     const_iterator end() const { return emap.end(); }
-    int count(Exp *a) const;
-    bool isConnected(Exp *a, const Exp &b) const;
-    void update(Exp *a, Exp *b, Exp *c);
+    int count(SharedExp a) const;
+    bool isConnected(SharedExp a, const Exp &b) const;
+    bool allRefsHaveDefs() const;
+    void update(SharedExp a, SharedExp b, SharedExp c);
     iterator remove(iterator aa); // Remove the mapping at *aa
     void dump() const;            // Dump for debugging
 private:
-    std::vector<Exp *> allConnected(Exp *a);
+    std::vector<SharedExp > allConnected(SharedExp a);
 };
 QTextStream &operator<<(QTextStream &os, const AssignSet *as);
 QTextStream &operator<<(QTextStream &os, const InstructionSet *ss);

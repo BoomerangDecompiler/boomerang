@@ -262,8 +262,8 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> 
                 BlockSyntaxNode *b1 = (BlockSyntaxNode *)this->clone();
                 b1 = (BlockSyntaxNode *)b1->replace(statements[i + 1], nullptr);
                 IfThenSyntaxNode *nif = new IfThenSyntaxNode();
-                Exp *cond = b->getBB()->getCond();
-                cond = new Unary(opLNot, cond->clone());
+                SharedExp cond = b->getBB()->getCond();
+                cond = Unary::get(opLNot, cond->clone());
                 cond = cond->simplify();
                 nif->setCond(cond);
                 nif->setThen(statements[i + 1]->clone());
@@ -549,8 +549,6 @@ PretestedLoopSyntaxNode::PretestedLoopSyntaxNode() : pBody(nullptr), cond(nullpt
 PretestedLoopSyntaxNode::~PretestedLoopSyntaxNode() {
     if (pBody)
         delete pBody;
-    if (cond)
-        delete cond;
 }
 
 SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/) {
@@ -621,8 +619,6 @@ PostTestedLoopSyntaxNode::PostTestedLoopSyntaxNode() : pBody(nullptr), cond(null
 PostTestedLoopSyntaxNode::~PostTestedLoopSyntaxNode() {
     if (pBody)
         delete pBody;
-    if (cond)
-        delete cond;
 }
 
 SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/) {
