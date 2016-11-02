@@ -60,7 +60,7 @@ class ElfBinaryFile : public QObject, public LoaderInterface {
 
     ADDRESS NativeToHostAddress(ADDRESS uNative);
 
-    bool LoadFromMemory(QByteArray &img);
+    bool LoadFromMemory(QByteArray &img) override;
 
   private:
     // Apply relocations; important when compiled without -fPIC

@@ -196,7 +196,7 @@ public:
 protected:
     void processIAT();
     void readDebugData(QString exename);
-    bool LoadFromMemory(QByteArray &arr);
+    bool LoadFromMemory(QByteArray &arr) override;
 private:
     bool PostLoad(void *handle) override;  // Called after archive member loaded
     void findJumps(ADDRESS curr); // Find names for jumps to IATs

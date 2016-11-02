@@ -4274,9 +4274,7 @@ void UserProc::reverseStrengthReduction() {
                         Instruction *second = p->back().def();
                         if (first == as) {
                             // want the increment in second
-                            Instruction *tmp = first;
-                            first = second;
-                            second = tmp;
+                            std::swap(first,second);
                         }
                         // first must be of form x := 0
                         if (first && first->isAssign() && ((Assign *)first)->getRight()->isIntConst() &&

@@ -1435,28 +1435,28 @@ std::shared_ptr<Signature> Signature::instantiate(platform plat, callconv cc, co
     case PLAT_PENTIUM:
         if (cc == CONV_PASCAL)
             // For now, assume the only pascal calling convention pentium signatures will be Windows
-            return std::shared_ptr<Signature>(new CallingConvention::Win32Signature(nam));
+            return std::make_shared<CallingConvention::Win32Signature>(nam);
         else if (cc == CONV_THISCALL)
-            return std::shared_ptr<Signature>(new CallingConvention::Win32TcSignature(nam));
+            return std::make_shared<CallingConvention::Win32TcSignature>(nam);
         else
-            return std::shared_ptr<Signature>(new CallingConvention::StdC::PentiumSignature(nam));
+            return std::make_shared<CallingConvention::StdC::PentiumSignature>(nam);
     case PLAT_SPARC:
         if(cc == CONV_PASCAL)
             cc = CONV_C;
         assert(cc == CONV_C);
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::SparcSignature(nam));
+        return std::make_shared<CallingConvention::StdC::SparcSignature>(nam);
     case PLAT_PPC:
         if(cc == CONV_PASCAL)
             cc = CONV_C;
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::PPCSignature(nam));
+        return std::make_shared<CallingConvention::StdC::PPCSignature>(nam);
     case PLAT_ST20:
         if(cc == CONV_PASCAL)
             cc = CONV_C;
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::ST20Signature(nam));
+        return std::make_shared<CallingConvention::StdC::ST20Signature>(nam);
     case PLAT_MIPS:
         if(cc == CONV_PASCAL)
             cc = CONV_C;
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::MIPSSignature(nam));
+        return std::make_shared<CallingConvention::StdC::MIPSSignature>(nam);
     // insert other conventions here
     default:
         qCritical() << "unknown signature: " << conventionName(cc) << " " << platformName(plat) << "\n";

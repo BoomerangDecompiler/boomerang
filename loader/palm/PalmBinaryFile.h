@@ -66,7 +66,7 @@ class PalmBinaryFile : public QObject, public LoaderInterface {
     //    bool        IsDynamicLinkedProc(ADDRESS wNative);
     //    ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
-    bool LoadFromMemory(QByteArray &data);
+    bool LoadFromMemory(QByteArray &data) override;
 
 private:
     void addTrapSymbols();

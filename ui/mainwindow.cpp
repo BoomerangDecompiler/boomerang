@@ -198,10 +198,10 @@ void MainWindow::currentTabTextChanged() {
 void MainWindow::on_actionOpen_triggered() {
     QString filename = QFileDialog::getOpenFileName(this, tr("Select a file to open..."));
     if (!filename.isEmpty()) {
-        QTextEdit *n = new QTextEdit();
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
             return;
+        QTextEdit *n = new QTextEdit();
         QTextStream in(&file);
         QString contents = in.readAll();
         file.close();

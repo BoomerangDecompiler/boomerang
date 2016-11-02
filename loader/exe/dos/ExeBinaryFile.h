@@ -89,7 +89,7 @@ public:
     bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
 
     void initialize(IBoomerang *sys) override;
-    bool LoadFromMemory(QByteArray &data);
+    bool LoadFromMemory(QByteArray &data) override;
 private:
     exeHeader *m_pHeader; // Pointer to header
     Byte *m_pImage;       // Pointer to image
