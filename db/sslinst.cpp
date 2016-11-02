@@ -328,7 +328,7 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name) {
   ******************************************************************************/
 bool RTLInstDict::partialType(Exp *exp, Type &ty) {
     if (exp->isSizeCast()) {
-        ty = *IntegerType::get(exp->subExp<Const,1>()->getInt());
+        ty = *IntegerType::get(exp->access<Const,1>()->getInt());
         return true;
     }
     if (exp->isFltConst()) {

@@ -41,7 +41,7 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs) {
         SharedType ty = nullptr; // Note: will cause a segfault
 #endif
         // probably need to make this func take bits in future
-        int offset = p2->subExp<Const>()->getInt() * 8;
+        int offset = p2->access<Const>()->getInt() * 8;
         QString member = ty->as<CompoundType>()->getNameAtOffset(offset);
         SharedExp result = Const::get(member);
         bool change;
@@ -64,7 +64,7 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs) {
 #else
         SharedType ty = nullptr; // Note: will cause a segfault
 #endif
-        QString member = p2->subExp<Const>()->getStr();
+        QString member = p2->access<Const>()->getStr();
         int offset = ty->as<CompoundType>()->getOffsetTo(member) / 8;
         SharedExp result = Const::get(offset);
         bool change;
@@ -81,8 +81,8 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs) {
         SharedExp p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
         assert(p1->getOper() == opIntConst);
         assert(p2->getOper() == opIntConst);
-        int a = p1->subExp<Const>()->getInt();
-        int b = p2->subExp<Const>()->getInt();
+        int a = p1->access<Const>()->getInt();
+        int b = p2->access<Const>()->getInt();
         SharedExp result = Const::get(a + b);
         bool change;
         rhs = rhs->searchReplace(*callw, result->clone(), change);
@@ -95,7 +95,7 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs) {
     if (rhs->search(*callw, call)) {
         SharedExp p1 = applyFuncs(call->getSubExp2());
         assert(p1->getOper() == opIntConst);
-        int a = p1->subExp<Const>()->getInt();
+        int a = p1->access<Const>()->getInt();
         SharedExp result = Const::get(-a);
         bool change;
         rhs = rhs->searchReplace(*callw, result->clone(), change);

@@ -12,6 +12,7 @@
 #include "frontend.h"
 #include "sparcfrontend.h"
 #include "cfg.h"
+#include "rtl.h"
 #include "BinaryFile.h"
 #include "BinaryFileStub.h"
 #include "boomerang.h"

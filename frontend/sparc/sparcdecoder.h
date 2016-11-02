@@ -15,9 +15,9 @@
 
 #ifndef SPARCDECODER
 #define SPARCDECODER
-#include <cstddef>
+#include "njmcDecoder.h"
 
-#include "decoder.h"
+#include <cstddef>
 
 class Prog;
 struct DecodeResult;
@@ -29,32 +29,20 @@ public:
 class SparcDecoder : public NJMCDecoder {
     SparcMachine *machine;
 public:
-    /* Constructor
-         */
     SparcDecoder(Prog *prog);
+    DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+    int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta)  override;
 
     /*
-         * Decodes the machine instruction at pc and returns an RTL instance for
-         * the instruction.
-         */
-    virtual DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta);
-
-    /*
-         * Disassembles the machine instruction at pc and returns the number of
-         * bytes disassembled. Assembler output goes to global _assembly
-         */
-    virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta);
-
-    /*
-         * Indicates whether the instruction at the given address is a restore instruction.
-         */
+     * Indicates whether the instruction at the given address is a restore instruction.
+     */
     bool isRestore(ADDRESS hostPC);
 
   private:
     /*
-         * Various functions to decode the operands of an instruction into
-         * a SemStr representation.
-         */
+     * Various functions to decode the operands of an instruction into
+     * a SemStr representation.
+     */
     SharedExp dis_Eaddr(ADDRESS pc, int size = 0);
     SharedExp dis_RegImm(ADDRESS pc);
     SharedExp dis_RegLhs(unsigned r);

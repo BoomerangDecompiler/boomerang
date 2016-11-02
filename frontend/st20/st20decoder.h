@@ -14,6 +14,8 @@
 
 #ifndef ST20DECODER
 #define ST20DECODER
+
+#include "njmcDecoder.h"
 #include "rtl.h"
 
 #include <cstddef>
@@ -22,23 +24,12 @@ class Prog;
 class NJMCDecoder;
 struct DecodeResult;
 class Instruction;
+
 class ST20Decoder : public NJMCDecoder {
   public:
-    /* Default constructor
-         */
     ST20Decoder(Prog *prog);
-
-    /**
-         * Decodes the machine instruction at pc and returns an RTL instance for
-         * the instruction.
-         */
-    virtual DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta);
-
-    /*
-         * Disassembles the machine instruction at pc and returns the number of
-         * bytes disassembled. Assembler output goes to global _assembly
-         */
-    virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta);
+    DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+    int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta)  override;
 
   private:
     /*

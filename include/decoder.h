@@ -14,13 +14,13 @@
   * OVERVIEW:   The interface to the instruction decoder.
   ******************************************************************************/
 
-#ifndef _DECODER_H_
-#define _DECODER_H_
+#pragma once
+
+#include "types.h"
 
 #include <list>
 #include <cstddef>
-#include "types.h"
-#include "rtl.h"
+#include <QtCore/QString>
 
 class Exp;
 class RTL;
@@ -51,8 +51,14 @@ enum ICLASS {
   ******************************************************************************/
 struct DecodeResult {
     //! Resets all the fields to their default values.
-    void reset();
-
+    void reset() {
+        numBytes = 0;
+        type = NCT;
+        valid = true;
+        rtl = nullptr;
+        reDecode = false;
+        forceOutEdge = ADDRESS::g(0L);
+    }
     //! The number of bytes decoded in the main instruction
     int numBytes;
 
@@ -82,92 +88,24 @@ struct DecodeResult {
      */
     ADDRESS forceOutEdge;
 };
-
-/***************************************************************************/ /**
-  * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
-  ******************************************************************************/
-class NJMCDecoder {
-protected:
-    Prog *prog;
-    class IBinaryImage *Image;
+/**
+ * @brief The IInstructionTranslator class - responsible for translating raw bytes to Instruction lists
+ */
+class IInstructionTranslator {
 public:
-    NJMCDecoder(Prog *prog);
-    virtual ~NJMCDecoder() {}
-
+    virtual ~IInstructionTranslator() = default;
     //! Decodes the machine instruction at pc and returns an RTL instance for the instruction.
     virtual DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta) = 0;
 
+    //! Returns machine-specific register name given it's index
+    virtual QString getRegName(int idx) const = 0;
+    //! Returns index of the named register
+    virtual int getRegIdx(const QString &name) const = 0;
+    //! Returns size of register in bits
+    virtual int getRegSize(int idx) const = 0;
     /**
      * Disassembles the machine instruction at pc and returns the number of bytes disassembled.
      * Assembler output goes to global _assembly
      */
     virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) = 0;
-    RTLInstDict &getRTLDict() { return RTLDict; }
-    void computedJump(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
-                      DecodeResult &result);
-    void computedCall(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
-                      DecodeResult &result);
-    Prog *getProg() { return prog; }
-
-protected:
-    std::list<Instruction *> *instantiate(ADDRESS pc, const char *name, const std::initializer_list<SharedExp> &args={});
-
-    SharedExp instantiateNamedParam(char *name, const std::initializer_list<SharedExp> &args);
-    void substituteCallArgs(char *name, SharedExp * exp, const std::initializer_list<SharedExp> &args);
-    void unconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
-                           std::list<Instruction *> *stmts, DecodeResult &result);
-
-    SharedExp dis_Num(unsigned num);
-    SharedExp dis_Reg(int regNum);
-
-    // Public dictionary of instruction patterns, and other information summarised from the SSL file
-    // (e.g. source machine's endianness)
-    RTLInstDict RTLDict;
 };
-
-// Function used to guess whether a given pc-relative address is the start of a function
-
-/*
- * Does the instruction at the given offset correspond to a caller prologue?
- * \note Implemented in the decoder.m files
- */
-bool isFuncPrologue(ADDRESS hostPC);
-
-/***************************************************************************/ /**
-  * These are the macros that each of the .m files depend upon.
-  ******************************************************************************/
-#define DEBUG_DECODER (Boomerang::get()->debugDecoder)
-#define SHOW_ASM(output)                                                                                               \
-    if (DEBUG_DECODER)                                                                                                 \
-    LOG_STREAM() << pc << ": " << output << '\n';
-
-/*
- * addresstoPC returns the raw number as the address.  PC could be an
- * abstract type, in our case, PC is the raw address.
- */
-#define addressToPC(pc) pc
-
-// Macros for branches. Note: don't put inside a "match" statement, since
-// the ordering is changed and multiple copies may be made
-
-#define COND_JUMP(name, size, relocd, cond)                                                                            \
-    result.rtl = new RTL(pc, stmts);                                                                                   \
-    BranchStatement *jump = new BranchStatement;                                                                       \
-    result.rtl->appendStmt(jump);                                                                                      \
-    result.numBytes = size;                                                                                            \
-    jump->setDest((relocd - ADDRESS::g(delta)).native());                                                              \
-    jump->setCondType(cond);                                                                                           \
-    SHOW_ASM(name << " " << relocd.native())
-
-// This one is X86 specific
-#define SETS(name, dest, cond)                                                                                         \
-    BoolAssign *bs = new BoolAssign(8);                                                                                \
-    bs->setLeftFromList(stmts);                                                                                        \
-    stmts->clear();                                                                                                    \
-    result.rtl = new RTL(pc, stmts);                                                                                   \
-    result.rtl->appendStmt(bs);                                                                                        \
-    bs->setCondType(cond);                                                                                             \
-    result.numBytes = 3;                                                                                               \
-    SHOW_ASM(name << " " << dest)
-
-#endif

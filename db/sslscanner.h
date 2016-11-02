@@ -52,10 +52,6 @@
 //#line 29 "sslscanner.l"
 #include "sslparser.h"
 #define MAX_LINE 1024 // the longest SSL spec line
-//#line 43 "sslscanner.l"
-#define YY_SSLScanner_CONSTRUCTOR_PARAM std::istream &ins, bool trace
-//#line 44 "sslscanner.l"
-#define YY_SSLScanner_CONSTRUCTOR_INIT  : theLine(1), traceLines(trace), in(ins)
 //#line 45 "sslscanner.l"
 #define YY_SSLScanner_CONSTRUCTOR_CODE
 //#line 46 "sslscanner.l"
@@ -289,14 +285,8 @@
 #ifndef YY_SSLScanner_MEMBERS
 #define YY_SSLScanner_MEMBERS
 #endif
-#ifndef YY_SSLScanner_CONSTRUCTOR_PARAM
-#define YY_SSLScanner_CONSTRUCTOR_PARAM
-#endif
 #ifndef YY_SSLScanner_CONSTRUCTOR_CODE
 #define YY_SSLScanner_CONSTRUCTOR_CODE
-#endif
-#ifndef YY_SSLScanner_CONSTRUCTOR_INIT
-#define YY_SSLScanner_CONSTRUCTOR_INIT
 #endif
 #ifndef YY_SSLScanner_DESTRUCTOR_CODE
 #define YY_SSLScanner_DESTRUCTOR_CODE
@@ -358,7 +348,7 @@ class SSLScanner {
     YY_SSLScanner_IFILE *YY_SSLScanner_IN;
     YY_SSLScanner_OFILE *YY_SSLScanner_OUT;
     YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM);
-    SSLScanner(YY_SSLScanner_CONSTRUCTOR_PARAM);
+    SSLScanner(std::istream &ins, bool trace);
     virtual ~SSLScanner();
 #if YY_SSLScanner_DEBUG != 0
     int YY_SSLScanner_DEBUG_FLAG;

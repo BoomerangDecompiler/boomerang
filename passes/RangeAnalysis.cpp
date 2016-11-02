@@ -210,12 +210,12 @@ struct RangeVisitor : public StmtVisitor {
             auto a_rhs = output.substInto(insn->getRight()->clone());
             if (a_rhs->isMemOf() && a_rhs->getSubExp1()->getOper() == opInitValueOf &&
                     a_rhs->getSubExp1()->getSubExp1()->isRegOfK() &&
-                    a_rhs->subExp<Const,1,1,1>()->getInt() == 28)
+                    a_rhs->access<Const,1,1,1>()->getInt() == 28)
                 a_rhs = Unary::get(opInitValueOf, Terminal::get(opPC)); // nice hack
             if (VERBOSE && DEBUG_RANGE_ANALYSIS)
                 LOG << "a_rhs is " << a_rhs << "\n";
             if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
-                ADDRESS c = a_rhs->subExp<Const,1>()->getAddr();
+                ADDRESS c = a_rhs->access<Const,1>()->getAddr();
                 if (insn->getProc()->getProg()->isDynamicLinkedProcPointer(c)) {
                     const QString &nam(insn->getProc()->getProg()->GetDynamicProcName(c));
                     if (!nam.isEmpty()) {
@@ -243,7 +243,7 @@ struct RangeVisitor : public StmtVisitor {
             if ((a_rhs->getOper() == opPlus || a_rhs->getOper() == opMinus) && a_rhs->getSubExp2()->isIntConst() &&
                     output.hasRange(a_rhs->getSubExp1())) {
                 Range &r = output.getRange(a_rhs->getSubExp1());
-                int c = a_rhs->subExp<Const,2>()->getInt();
+                int c = a_rhs->access<Const,2>()->getInt();
                 if (a_rhs->getOper() == opPlus) {
                     Range ra(1, r.getLowerBound() != Range::MIN ? r.getLowerBound() + c : Range::MIN,
                              r.getUpperBound() != Range::MAX ? r.getUpperBound() + c : Range::MAX, r.getBase());
@@ -261,7 +261,7 @@ struct RangeVisitor : public StmtVisitor {
                     if (a_rhs->getMemDepth() == 0 && !a_rhs->search(search_regof, result) &&
                             !a_rhs->search(search_term, result)) {
                         if (a_rhs->isIntConst()) {
-                            Range ra(1, a_rhs->subExp<Const>()->getInt(), a_rhs->subExp<Const>()->getInt(), Const::get(0));
+                            Range ra(1, a_rhs->access<Const>()->getInt(), a_rhs->access<Const>()->getInt(), Const::get(0));
                             output.addRange(a_lhs, ra);
                         } else {
                             Range ra(1, 0, 0, a_rhs);
@@ -328,10 +328,10 @@ struct RangeVisitor : public StmtVisitor {
             auto d = output.substInto(stmt->getDest()->clone());
             if (d->isIntConst() || d->isStrConst()) {
                 if (d->isIntConst()) {
-                    ADDRESS dest = d->subExp<Const>()->getAddr();
+                    ADDRESS dest = d->access<Const>()->getAddr();
                     stmt->setDestProc(stmt->getProc()->getProg()->setNewProc(dest));
                 } else {
-                    stmt->setDestProc(stmt->getProc()->getProg()->getLibraryProc(d->subExp<Const>()->getStr()));
+                    stmt->setDestProc(stmt->getProc()->getProg()->getLibraryProc(d->access<Const>()->getStr()));
                 }
                 if (stmt->getDestProc()) {
                     auto sig = stmt->getDestProc()->getSignature();
@@ -362,7 +362,7 @@ struct RangeVisitor : public StmtVisitor {
                 while (prev) {
                     if (prev->isAssign() && ((Assign *)prev)->getLeft()->isMemOf() &&
                             ((Assign *)prev)->getLeft()->getSubExp1()->isRegOfK() &&
-                            ((Assign *)prev)->getLeft()->subExp<Const,1,1>()->getInt() == 28 &&
+                            ((Assign *)prev)->getLeft()->access<Const,1,1>()->getInt() == 28 &&
                             ((Assign *)prev)->getRight()->getOper() != opPC) {
                         c += 4;
                     }
@@ -384,7 +384,7 @@ struct RangeVisitor : public StmtVisitor {
                     LOG_VERBOSE(1) << "found proven " << eq << "\n";
                     if (eq->getOper() == opPlus && *eq->getSubExp1() == *Location::regOf(28) &&
                             eq->getSubExp2()->isIntConst()) {
-                        c = eq->subExp<Const,2>()->getInt();
+                        c = eq->access<Const,2>()->getInt();
                     } else
                         eq = nullptr;
                 }
@@ -413,12 +413,12 @@ struct RangeVisitor : public StmtVisitor {
                     if (last && last->isAssign()) {
                         // LOG << "checking last statement " << last << " for number of bytes popped\n";
                         Assign *a = (Assign *)last;
-                        assert(a->getLeft()->isRegOfK() && (a->getLeft()->subExp<Const,1>()->getInt() == 28));
+                        assert(a->getLeft()->isRegOfK() && (a->getLeft()->access<Const,1>()->getInt() == 28));
                         auto t = a->getRight()->clone()->simplifyArith();
                         assert(t->getOper() == opPlus && t->getSubExp1()->isRegOfK() &&
-                               (t->subExp<Const,1,1>()->getInt() == 28));
+                               (t->access<Const,1,1>()->getInt() == 28));
                         assert(t->getSubExp2()->isIntConst());
-                        c = t->subExp<Const,2>()->getInt();
+                        c = t->access<Const,2>()->getInt();
                     }
                 }
             }
@@ -496,9 +496,9 @@ private:
         if (!output.hasRange(e->getSubExp1()))
             return;
         Range &r = output.getRange(e->getSubExp1());
-        if (!(e->getSubExp2()->isIntConst() && r.getBase()->isIntConst() && r.getBase()->subExp<Const>()->getInt() == 0))
+        if (!(e->getSubExp2()->isIntConst() && r.getBase()->isIntConst() && r.getBase()->access<Const>()->getInt() == 0))
             return;
-        int c = e->subExp<Const,2>()->getInt();
+        int c = e->access<Const,2>()->getInt();
         switch (e->getOper()) {
         case opLess:
         case opLessUns: {
@@ -646,7 +646,7 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc &UF) {
             LOG_STREAM(LL_Default) << r.toString();
             LOG_STREAM(LL_Default) << "\n";
             if (r.getBase()->getOper() == opInitValueOf && r.getBase()->getSubExp1()->isRegOfK() &&
-                    r.getBase()->subExp<Const,1,1>()->getInt() == 28) {
+                    r.getBase()->access<Const,1,1>()->getInt() == 28) {
                 RTL *rtl = a->getBB()->getRTLWithStatement(a);
                 LOG << "interesting stack reference at " << rtl->getAddress() << " " << a << "\n";
             }
@@ -662,7 +662,7 @@ Range::Range(int stride, int lowerBound, int upperBound, SharedExp base)
     : stride(stride), lowerBound(lowerBound), upperBound(upperBound), base(base) {
     if (lowerBound == upperBound && lowerBound == 0 && (base->getOper() == opMinus || base->getOper() == opPlus) &&
             base->getSubExp2()->isIntConst()) {
-        this->lowerBound = base->subExp<Const,2>()->getInt();
+        this->lowerBound = base->access<Const,2>()->getInt();
         if (base->getOper() == opMinus)
             this->lowerBound = -this->lowerBound;
         this->upperBound = this->lowerBound;
@@ -682,13 +682,13 @@ QString Range::toString() const {
     QString res;
     QTextStream os(&res);
     assert(lowerBound <= upperBound);
-    if (base->isIntConst() && base->subExp<Const>()->getInt() == 0 && lowerBound == MIN && upperBound == MAX) {
+    if (base->isIntConst() && base->access<Const>()->getInt() == 0 && lowerBound == MIN && upperBound == MAX) {
         os << "T";
         return res;
     }
     bool needPlus = false;
     if (lowerBound == upperBound) {
-        if (!base->isIntConst() || base->subExp<Const>()->getInt() != 0) {
+        if (!base->isIntConst() || base->access<Const>()->getInt() != 0) {
             if (lowerBound != 0) {
                 os << lowerBound;
                 needPlus = true;
@@ -713,7 +713,7 @@ QString Range::toString() const {
         os << "]";
         needPlus = true;
     }
-    if (!base->isIntConst() || base->subExp<Const>()->getInt() != 0) {
+    if (!base->isIntConst() || base->access<Const>()->getInt() != 0) {
         if (needPlus)
             os << " + ";
         base->print(os);
@@ -727,8 +727,8 @@ void Range::unionWith(Range &r) {
     assert(base && r.base);
     if (base->getOper() == opMinus && r.base->getOper() == opMinus && *base->getSubExp1() == *r.base->getSubExp1() &&
             base->getSubExp2()->isIntConst() && r.base->getSubExp2()->isIntConst()) {
-        int c1 = base->subExp<Const,2>()->getInt();
-        int c2 = r.base->subExp<Const,2>()->getInt();
+        int c1 = base->access<Const,2>()->getInt();
+        int c2 = r.base->access<Const,2>()->getInt();
         if (c1 != c2) {
             if (lowerBound == r.lowerBound && upperBound == r.upperBound && lowerBound == 0) {
                 lowerBound = std::min(-c1, -c2);

@@ -926,10 +926,10 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                             // is equivalent to call foo / ba .+K
                             SharedExp rhs = ((Assign *)a)->getRight();
                             auto o7(Location::regOf(15));
-                            if (rhs->getOper() == opPlus && (rhs->subExp<Exp,2>()->getOper() == opIntConst) &&
+                            if (rhs->getOper() == opPlus && (rhs->access<Exp,2>()->getOper() == opIntConst) &&
                                 (*rhs->getSubExp1() == *o7)) {
                                 // Get the constant
-                                int K = rhs->subExp<Const,2>()->getInt();
+                                int K = rhs->access<Const,2>()->getInt();
                                 case_CALL(uAddr, inst, delay_inst, BB_rtls, proc, callList, os, true);
                                 // We don't generate a goto; instead, we just decode from the new address
                                 // Note: the call to case_CALL has already incremented address by 8, so don't do again

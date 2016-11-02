@@ -371,7 +371,7 @@ void SSLScanner::yy_initialize() {
 #endif
 }
 
-SSLScanner::SSLScanner(YY_SSLScanner_CONSTRUCTOR_PARAM) YY_SSLScanner_CONSTRUCTOR_INIT {
+SSLScanner::SSLScanner(std::istream &ins, bool trace) : theLine(1), traceLines(trace), in(ins) {
     yy_initialize();
     YY_SSLScanner_CONSTRUCTOR_CODE;
 }

@@ -400,7 +400,7 @@ SharedExp CallingConvention::Win32Signature::getProven(SharedExp left) {
         nparams--;
     }
     if (left->isRegOfK()) {
-        switch (left->subExp<Const,1>()->getInt()) {
+        switch (left->access<Const,1>()->getInt()) {
         case 28: // esp
             // Note: assumes callee pop... not true for cdecl functions!
             return Binary::get(opPlus, Location::regOf(28), Const::get(4 + nparams * 4));
@@ -420,7 +420,7 @@ SharedExp CallingConvention::Win32Signature::getProven(SharedExp left) {
 
 bool CallingConvention::Win32Signature::isPreserved(SharedExp e) {
     if (e->isRegOfK()) {
-        switch (e->subExp<Const,1>()->getInt()) {
+        switch (e->access<Const,1>()->getInt()) {
         case 29: // ebp
         case 27: // ebx
         case 30: // esi
@@ -463,7 +463,7 @@ void CallingConvention::Win32Signature::setLibraryDefines(StatementList *defs) {
 
 SharedExp CallingConvention::Win32TcSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        if (left->subExp<Const,1>()->getInt() == 28) {
+        if (left->access<Const,1>()->getInt() == 28) {
             int nparams = params.size();
             if (nparams > 0 && *params[0]->getExp() == *Location::regOf(28)) {
                 nparams--;
@@ -586,7 +586,7 @@ SharedExp CallingConvention::StdC::PentiumSignature::getStackWildcard() {
 
 SharedExp CallingConvention::StdC::PentiumSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = left->subExp<Const,1>()->getInt();
+        int r = left->access<Const,1>()->getInt();
         switch (r) {
         case 28:                                                           // esp
             return Binary::get(opPlus, Location::regOf(28), Const::get(4)); // esp+4
@@ -602,7 +602,7 @@ SharedExp CallingConvention::StdC::PentiumSignature::getProven(SharedExp left) {
 
 bool CallingConvention::StdC::PentiumSignature::isPreserved(SharedExp e) {
     if (e->isRegOfK()) {
-        switch (e->subExp<Const,1>()->getInt()) {
+        switch (e->access<Const,1>()->getInt()) {
         case 29: // ebp
         case 27: // ebx
         case 30: // esi
@@ -703,7 +703,7 @@ SharedExp CallingConvention::StdC::PPCSignature::getStackWildcard() {
 
 SharedExp CallingConvention::StdC::PPCSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = left->subExp<Const,1>()->getInt();
+        int r = left->access<Const,1>()->getInt();
         switch (r) {
         case 1: // stack
             return left;
@@ -714,7 +714,7 @@ SharedExp CallingConvention::StdC::PPCSignature::getProven(SharedExp left) {
 
 bool CallingConvention::StdC::PPCSignature::isPreserved(SharedExp e) {
     if (e->isRegOfK()) {
-        int r = e->subExp<Const,1>()->getInt();
+        int r = e->access<Const,1>()->getInt();
         return r == 1;
     }
     return false;
@@ -791,7 +791,7 @@ SharedExp CallingConvention::StdC::ST20Signature::getStackWildcard() {
 #if 1
 SharedExp CallingConvention::StdC::ST20Signature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = left->subExp<Const,1>()->getInt();
+        int r = left->access<Const,1>()->getInt();
         switch (r) {
         case 3:
             // return Binary::get(opPlus, Location::regOf(3), Const::get(4));
@@ -997,7 +997,7 @@ SharedExp CallingConvention::StdC::MIPSSignature::getStackWildcard()
 SharedExp CallingConvention::StdC::MIPSSignature::getProven(SharedExp left)
 {
     if (left->isRegOfK()) {
-        int r = left->subExp<Const,1>()->getInt();
+        int r = left->access<Const,1>()->getInt();
         if(r==getStackRegister())
             return left;
     }
@@ -1007,7 +1007,7 @@ SharedExp CallingConvention::StdC::MIPSSignature::getProven(SharedExp left)
 bool CallingConvention::StdC::MIPSSignature::isPreserved(SharedExp e)
 {
     if (e->isRegOfK()) {
-        int r = e->subExp<Const,1>()->getInt();
+        int r = e->access<Const,1>()->getInt();
         return r == getStackRegister();
     }
     return false;
@@ -1063,7 +1063,7 @@ SharedExp CallingConvention::StdC::SparcSignature::getStackWildcard() {
 
 SharedExp CallingConvention::StdC::SparcSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = left->subExp<Const,1>()->getInt();
+        int r = left->access<Const,1>()->getInt();
         switch (r) {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
         case 14: // sp
@@ -1084,7 +1084,7 @@ SharedExp CallingConvention::StdC::SparcSignature::getProven(SharedExp left) {
 
 bool CallingConvention::StdC::SparcSignature::isPreserved(SharedExp e) {
     if (e->isRegOfK()) {
-        int r = e->subExp<Const,1>()->getInt();
+        int r = e->access<Const,1>()->getInt();
         switch (r) {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
         case 14: // sp
@@ -1115,7 +1115,7 @@ void CallingConvention::StdC::SparcSignature::setLibraryDefines(StatementList *d
 
 SharedExp CallingConvention::StdC::SparcLibSignature::getProven(SharedExp left) {
     if (left->isRegOfK()) {
-        int r = left->subExp<Const,1>()->getInt();
+        int r = left->access<Const,1>()->getInt();
         switch (r) {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
         case 14:
@@ -1725,7 +1725,7 @@ bool Signature::isAddrOfStackLocal(Prog *prog, const SharedExp &e) {
     if (op != opMinus && op != opPlus) {
         // Matches if e is sp or sp{0} or sp{-}
         return (*e == *sp ||
-                (e->isSubscript() && e->subExp<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp));
+                (e->isSubscript() && e->access<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp));
     }
     if (op == opMinus && !isLocalOffsetNegative())
         return false;
@@ -1738,7 +1738,7 @@ bool Signature::isAddrOfStackLocal(Prog *prog, const SharedExp &e) {
         return false;
     // first operand must be sp or sp{0} or sp{-}
     if (sub1->isSubscript()) {
-        if (!sub1->subExp<RefExp>()->isImplicitDef())
+        if (!sub1->access<RefExp>()->isImplicitDef())
             return false;
         sub1 = sub1->getSubExp1();
     }
@@ -1755,7 +1755,7 @@ bool CallingConvention::StdC::SparcSignature::isAddrOfStackLocal(Prog *prog, con
     if (op != opMinus && op != opPlus) {
         // Matches if e is sp or sp{0} or sp{-}
         return (*e == *sp ||
-                (e->isSubscript() && e->subExp<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp));
+                (e->isSubscript() && e->access<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp));
     }
     SharedExp sub1 = e->getSubExp1();
     SharedExp sub2 = e->getSubExp2();
@@ -1764,14 +1764,14 @@ bool CallingConvention::StdC::SparcSignature::isAddrOfStackLocal(Prog *prog, con
         return false;
     // first operand must be sp or sp{0} or sp{-}
     if (sub1->isSubscript()) {
-        if (!sub1->subExp<RefExp>()->isImplicitDef())
+        if (!sub1->access<RefExp>()->isImplicitDef())
             return false;
         sub1 = sub1->getSubExp1();
     }
     if (!(*sub1 == *sp))
         return false;
     // SPARC specific test: K must be < 92; else it is a parameter
-    int K = sub2->subExp<Const>()->getInt();
+    int K = sub2->access<Const>()->getInt();
     return K < 92;
 }
 
@@ -1871,7 +1871,7 @@ int stackOffset(SharedExp e, int sp) {
             if (op1->isRegN(sp)) {
                 SharedExp op2 = sub->getSubExp2();
                 if (op2->isIntConst())
-                    ret = op2->subExp<Const>()->getInt();
+                    ret = op2->access<Const>()->getInt();
                 if (op == opMinus)
                     ret = -ret;
             }
@@ -1903,12 +1903,12 @@ bool CallingConvention::StdC::SparcSignature::argumentCompare(Assignment &a, Ass
     // %o0-$o5 (r8-r13) are the preferred argument locations
     int ra = 0, rb = 0;
     if (la->isRegOf()) {
-        int r = la->subExp<Const,1>()->getInt();
+        int r = la->access<Const,1>()->getInt();
         if (r >= 8 && r <= 13)
             ra = r;
     }
     if (lb->isRegOf()) {
-        int r = lb->subExp<Const,1>()->getInt();
+        int r = lb->access<Const,1>()->getInt();
         if (r >= 8 && r <= 13)
             rb = r;
     }

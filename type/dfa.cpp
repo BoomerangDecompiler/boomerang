@@ -111,7 +111,7 @@ void DFA_TypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
         SharedExp t = rr->getSubExp1();            // idx*K1 + K2
         SharedExp l = t->getSubExp1(); // idx*K1
         SharedExp r = t->getSubExp2(); // K2
-        ADDRESS K2 = r->subExp<Const>()->getAddr().native();
+        ADDRESS K2 = r->access<Const>()->getAddr().native();
         SharedExp idx = l->getSubExp1();
 
         // Replace with the array expression
@@ -154,12 +154,12 @@ void DFA_TypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
         SharedExp sub = lhs->getSubExp1();
         if (sub->isIntConst()) {
             // We have a m[K] := -
-            ADDRESS K = sub->subExp<Const>()->getAddr();
+            ADDRESS K = sub->access<Const>()->getAddr();
             prog->globalUsed(K, iType);
         }
     } else if (lhs->isGlobal()) {
         assert(std::dynamic_pointer_cast<Location>(lhs) != nullptr);
-        QString gname = lhs->subExp<Const,1>()->getStr();
+        QString gname = lhs->access<Const,1>()->getStr();
         prog->setGlobalType(gname, iType);
     }
 }
@@ -281,7 +281,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function * f) {
                         // idx + K
                         auto bin_rr = std::dynamic_pointer_cast<Binary>(elem);
                         assert(bin_rr);
-                        auto constK = bin_rr->subExp<Const,2>();
+                        auto constK = bin_rr->access<Const,2>();
                         // Note: keep searching till we find the pattern with this constant, since other constants may
                         // not be used as pointer to array type.
                         if (constK != con)
@@ -340,7 +340,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function * f) {
             } else {
                 // Assume an implicit reference
                 addrExp = ((ImpRefStatement *)s)->getAddressExp();
-                if (addrExp->isTypedExp() && addrExp->subExp<TypedExp>()->getType()->resolvesToPointer())
+                if (addrExp->isTypedExp() && addrExp->access<TypedExp>()->getType()->resolvesToPointer())
                     addrExp = addrExp->getSubExp1();
                 typeExp = ((ImpRefStatement *)s)->getType();
                 // typeExp should be a pointer expression, or a union of pointer types
@@ -354,7 +354,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function * f) {
             if (addrExp && proc->getSignature()->isAddrOfStackLocal(_prog, addrExp)) {
                 int addr = 0;
                 if (addrExp->getArity() == 2 && proc->getSignature()->isOpCompatStackLocal(addrExp->getOper())) {
-                    auto K = addrExp->subExp<Const,2>();
+                    auto K = addrExp->access<Const,2>();
                     if (K->isConst()) {
                         addr = K->getInt();
                         if (addrExp->getOper() == opMinus)
@@ -871,7 +871,7 @@ void CallStatement::dfaTypeAnalysis(bool &ch) {
                     if (tyt->resolvesToPointer() && tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
                             tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded())
                         tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->setLength(
-                                    param->getRight()->subExp<Const>()->getInt());
+                                    param->getRight()->access<Const>()->getInt());
                     break;
                 }
         }
@@ -1214,10 +1214,10 @@ SharedType Unary::ascendType() {
 SharedType Ternary::ascendType() {
     switch (op) {
     case opFsize:
-        return FloatType::get(subExp2->subExp<Const>()->getInt());
+        return FloatType::get(subExp2->access<Const>()->getInt());
     case opZfill:
     case opSgnEx: {
-        int toSize = subExp2->subExp<Const>()->getInt();
+        int toSize = subExp2->access<Const>()->getInt();
         return Type::newIntegerLikeType(toSize, op == opZfill ? -1 : 1);
     }
 
@@ -1378,9 +1378,9 @@ static bool match_l1_K(SharedExp in,std::vector<SharedExp> &matches) {
     auto as_bin = std::dynamic_pointer_cast<Binary>(in->getSubExp1());
     if(!as_bin || as_bin->getOper()!=opPlus)
         return false;
-    if(!as_bin->getSubExp2()->isIntConst())
+    if(!as_bin->access<Exp,2>()->isIntConst())
         return false;
-    if(!as_bin->getSubExp1()->isSubscript())
+    if(!as_bin->access<Exp,1>()->isSubscript())
         return false;
     auto refexp= std::static_pointer_cast<RefExp>(as_bin->getSubExp1());
     if(!refexp->getSubExp1()->isLocation())
@@ -1404,7 +1404,7 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
                 as_bin->getSubExp1()->getSubExp2()->isIntConst()) {
             SharedExp leftOfPlus = as_bin->getSubExp1();
             // We would expect the stride to be the same size as the base type
-            size_t stride = leftOfPlus->subExp<Const,2>()->getInt();
+            size_t stride = leftOfPlus->access<Const,2>()->getInt();
             if (DEBUG_TA && stride * 8 != parentType->getSize())
                 LOG << "type WARNING: apparent array reference at " << shared_from_this() << " has stride " << stride * 8
                     << " bits, but parent type " << parentType->getCtype() << " has size " << parentType->getSize()
@@ -1413,14 +1413,14 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
             SharedExp x = leftOfPlus->getSubExp1();
             x->descendType(IntegerType::get(parentType->getSize(), 0), ch, s);
             // K2 is of type <array of parentType>
-            auto constK2 = subExp1->subExp<Const,2>();
+            auto constK2 = subExp1->access<Const,2>();
             ADDRESS intK2 = ADDRESS::g(constK2->getInt()); // TODO: use getAddr ?
             constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
         } else if (match_l1_K(shared_from_this(),matches)) {
             // m[l1 + K]
-            auto l1 = std::static_pointer_cast<Location>(matches[0]);
+            auto l1 = std::static_pointer_cast<Location>(matches[0]->access<Location,1>());
             SharedType l1Type = l1->ascendType();
-            int K = matches[1]->subExp<Const>()->getInt();
+            int K = matches[1]->access<Const>()->getInt();
             if (l1Type->resolvesToPointer()) {
                 // This is a struct reference m[ptr + K]; ptr points to the struct and K is an offset into it
                 // First find out if we already have struct information
@@ -1453,7 +1453,7 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
         break;
     case opGlobal: {
         Prog *prog = s->getProc()->getProg();
-        QString name = subExp1->subExp<Const>()->getStr();
+        QString name = subExp1->access<Const>()->getStr();
         SharedType ty = prog->getGlobalType(name);
         if (ty) {
             ty = ty->meetWith(parentType, ch);
@@ -1470,11 +1470,11 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
 void Ternary::descendType(SharedType /*parentType*/, bool &ch, Instruction *s) {
     switch (op) {
     case opFsize:
-        subExp3->descendType(FloatType::get(subExp1->subExp<Const>()->getInt()), ch, s);
+        subExp3->descendType(FloatType::get(subExp1->access<Const>()->getInt()), ch, s);
         break;
     case opZfill:
     case opSgnEx: {
-        int fromSize = subExp1->subExp<Const>()->getInt();
+        int fromSize = subExp1->access<Const>()->getInt();
         SharedType fromType;
         fromType = Type::newIntegerLikeType(fromSize, op == opZfill ? -1 : 1);
         subExp3->descendType(fromType, ch, s);

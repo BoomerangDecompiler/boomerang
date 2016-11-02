@@ -101,7 +101,7 @@ bool PentiumFrontEnd::isSetX(Instruction *s) {
     SharedExp s3 = rhs->getSubExp3();
     if (!s2->isIntConst() || s3->isIntConst())
         return false;
-    return s2->subExp<Const>()->getInt() == 1 && s3->subExp<Const>()->getInt() == 0;
+    return s2->access<Const>()->getInt() == 1 && s3->access<Const>()->getInt() == 0;
 }
 /***************************************************************************/ /**
   * \fn      isAssignFromTern
@@ -139,11 +139,11 @@ void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, 
     // subexpression (in some odd cases)
     Exp::doSearch(*Location::regOf(Terminal::get(opWild)), exp, li, false);
     for (SharedExp *it : li) {
-        int reg = (*it)->subExp<Const,1>()->getInt();
+        int reg = (*it)->access<Const,1>()->getInt();
         if ((min <= reg) && (reg <= max)) {
             // Replace the K in r[ K] with a new K
             // **it is a reg[K]
-            auto K = (*it)->subExp<Const,1>();
+            auto K = (*it)->access<Const,1>();
             K->setInt(min + ((reg - min + delta) & mask));
         }
     }
@@ -362,7 +362,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int &tos, Cfg *pCfg) {
                     //                    TypedExp* te = (TypedExp*)cur->getSubExp1();
                     SharedExp s = cur->getSubExp1();
                     if (s->isRegOfK()) {
-                        auto c = s->subExp<Const,1>();
+                        auto c = s->access<Const,1>();
                         int K = c->getInt(); // Old register number
                         // Change to new register number, if in range
                         if ((K >= 32) && (K <= 39))
@@ -512,7 +512,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
         if (not inst.rtl->empty())
             cs = (CallStatement *)((inst.rtl->back()->getKind() == STMT_CALL) ? inst.rtl->back() : nullptr);
         const IBinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
-                    Symbols->find(cs->getDest()->subExp<Const,1>()->getAddr()) : nullptr;
+                    Symbols->find(cs->getDest()->access<Const,1>()->getAddr()) : nullptr;
         if (sym && sym->isImportedFunction() && sym->getName() == "GetModuleHandleA" ) {
             int oNumBytes = inst.numBytes;
             inst = decodeInstruction(addr + oNumBytes);
@@ -549,7 +549,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool &gotMain) {
                 SharedExp rhs = a->getRight();
                 assert(rhs->isIntConst());
                 gotMain = true;
-                return ADDRESS::g(rhs->subExp<Const>()->getInt()); // TODO: use getAddr ?
+                return ADDRESS::g(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
             }
         } else
             conseq = 0; // Must be consequitive
@@ -618,7 +618,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc) {
                 if (firstStmt->isAssign()) {
                     SharedExp lhs = ((Assign *)firstStmt)->getLeft();
                     if (lhs->isMachFtr()) {
-                        auto sub = lhs->subExp<Const,1>();
+                        auto sub = lhs->access<Const,1>();
                         QString str = sub->getStr();
                         if (str.startsWith("%SKIP")) {
                             toBranches(addr, lastRtl, cfg, rtl, bb, it);
@@ -655,7 +655,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
             SharedExp l = *li;
             if (!l->isRegOfK())
                 continue;
-            int n = l->subExp<Const,1>()->getInt();
+            int n = l->access<Const,1>()->getInt();
             usedRegs.insert(n);
         }
     }
@@ -686,7 +686,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc) {
         SharedExp lhs = ((Assignment *)s)->getLeft();
         if (!lhs->isRegOf())
             continue;
-        auto c = lhs->subExp<Const,1>();
+        auto c = lhs->access<Const,1>();
         assert(c->isIntConst());
         int r = c->getInt();
         int off = r & 3;      // Offset into the array of 4 registers
@@ -844,8 +844,8 @@ bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult &r) {
     r.type = NCT;
     r.reDecode = false;
     r.rtl = new RTL(pc);
-    SharedExp dx = Location::regOf(decoder->getRTLDict().RegMap["%dx"]);
-    SharedExp al = Location::regOf(decoder->getRTLDict().RegMap["%al"]);
+    SharedExp dx = Location::regOf(decoder->getRegIdx("%dx"));
+    SharedExp al = Location::regOf(decoder->getRegIdx("%al"));
     CallStatement *call = new CallStatement();
     call->setDestProc(Program->getLibraryProc("outp"));
     call->setArgumentExp(0, dx);
@@ -942,9 +942,9 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 
         ADDRESS a;
         if (found->isIntConst())
-            a = found->subExp<Const>()->getInt();
+            a = found->access<Const>()->getInt();
         else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
-            QString name = found->subExp<Const,1,1>()->getStr();
+            QString name = found->access<Const,1,1>()->getStr();
             if (Program->getGlobal(name) == nullptr)
                 continue;
             a = Program->getGlobalAddr(name);
@@ -1003,7 +1003,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
                              asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(28) &&
                              asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
                         if (asgn->getRight()->isIntConst()) {
-                            int n = asgn->getRight()->subExp<Const>()->getInt();
+                            int n = asgn->getRight()->access<Const>()->getInt();
                             if (n == 0) {
                                 found = true;
                                 break;

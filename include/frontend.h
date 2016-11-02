@@ -34,7 +34,7 @@
 class UserProc;
 class Function;
 class RTL;
-class NJMCDecoder;
+class IInstructionTranslator;
 class BasicBlock;
 class Exp;
 class TypedExp;
@@ -59,7 +59,6 @@ enum INSTTYPE {
     I_COMPCALL  // computed call
 };
 
-typedef bool (*PHELPER)(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl);
 class IBinaryImage;
 class FrontEnd {
 
@@ -67,7 +66,7 @@ protected:
     IBinaryImage *Image;
     //      const int NOP_SIZE;            // Size of a no-op instruction (in bytes)
     //      const int NOP_INST;            // No-op pattern
-    NJMCDecoder *decoder; // The decoder
+    IInstructionTranslator *decoder; // The decoder
     /***************************************/
     // Loader interfaces
     /***************************************/
@@ -117,7 +116,7 @@ public:
     virtual void extraProcessCall(CallStatement * /*call*/, std::list<RTL *> * /*BB_rtls*/) {}
 
     // Accessor function to get the decoder.
-    NJMCDecoder *getDecoder() { return decoder; }
+    IInstructionTranslator *getDecoder() { return decoder; }
 
     void readLibrarySignatures(const char *sPath, callconv cc); //!< Read library signatures from a file.
     void readLibraryCatalog(const QString &sPath);                 //!< read from a catalog
@@ -143,12 +142,6 @@ public:
     // Decode a fragment of a procedure, e.g. for each destination of a switch statement
     void decodeFragment(UserProc *proc, ADDRESS a);
 
-    /**
-     * This is the main function for decoding a procedure. It is usually overridden in the derived
-     * class to do source machine specific things.  If frag is set, we are decoding just a fragment of the proc
-     * (e.g. each arm of a switch statement is decoded). If spec is set, this is a speculative decode.
-     * Returns true on a good decode
-     */
     virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
 
     /**
@@ -167,13 +160,13 @@ public:
      */
     std::vector<ADDRESS> getEntryPoints();
 
-    /**
-     * Get an instance of a class derived from FrontEnd, returning a pointer to the object of
-     * that class. Do this by guessing the machine for the binary file whose name is sName, loading the
-     * appropriate library using dlopen/dlsym, running the "construct" function in that library, and returning
-     * the result.
-     */
-    static FrontEnd *getInstanceFor(const char *sName, void *&dlHandle, QObject *pLoader, NJMCDecoder *&decoder);
+//    /**
+//     * Get an instance of a class derived from FrontEnd, returning a pointer to the object of
+//     * that class. Do this by guessing the machine for the binary file whose name is sName, loading the
+//     * appropriate library using dlopen/dlsym, running the "construct" function in that library, and returning
+//     * the result.
+//     */
+//    static FrontEnd *getInstanceFor(const char *sName, void *&dlHandle, QObject *pLoader, IInstructionTranslator *&decoder);
     static void closeInstance(void *dlHandle); //!<Close the library opened by getInstanceFor
     Prog *getProg();                           //! Get a Prog object (for testing and not decoding)
 
@@ -215,25 +208,5 @@ private:
   * These functions are implemented in the files front<XXX> where XXX is a
   * platform name such as sparc or pentium.
   ******************************************************************************/
-
-/*
- * Intialise the procedure decoder and analyser.
- */
-void initFront();
-
-/*
- * Decode one RTL
- */
-RTL *decodeRtl(ADDRESS address, int delta, NJMCDecoder *decoder);
-
-/**
- * This decodes a given procedure. It performs the analysis to recover switch statements, call
- * parameters and return types etc.
- * If keep is false, discard the decoded procedure (only need this to find code other than main that is
- * reachable from _start, for coverage and speculative decoding)
- * If spec is true, then we are speculatively decoding (i.e. if there is an illegal instruction, we just bail
- * out)
- */
-bool decodeProc(ADDRESS uAddr, FrontEnd &fe, bool keep = true, bool spec = false);
 
 #endif // #ifndef __FRONTEND_H__

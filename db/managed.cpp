@@ -428,7 +428,7 @@ bool LocationSet::existsImplicit(SharedExp e) {
             return false;                            // Looking for e{something} (could be e.g. %pc)
         if (!(*(*it)->getSubExp1() == *e)) // Gone past e{anything}?
             return false;                            // Yes, then e{-} or e{0} cannot exist
-        if ((*it)->subExp<RefExp>()->isImplicitDef())        // Check for e{-} or e{0}
+        if ((*it)->access<RefExp>()->isImplicitDef())        // Check for e{-} or e{0}
             return true;                             // Found
         ++it;                                        // Else check next entry
     }
@@ -650,8 +650,8 @@ Assignment *StatementList::findOnLeft(SharedExp loc) {
         if (*left == *loc)
             return (Assignment *)elem;
         if (left->isLocal()) {
-            auto l = left->subExp<Location>();
-            SharedConstExp e = l->getProc()->expFromSymbol(l->subExp<Const,1>()->getStr());
+            auto l = left->access<Location>();
+            SharedConstExp e = l->getProc()->expFromSymbol(l->access<Const,1>()->getStr());
             if (e && ((*e == *loc) || (e->isSubscript() && *e->getSubExp1() == *loc))) {
                 return (Assignment *)elem;
             }

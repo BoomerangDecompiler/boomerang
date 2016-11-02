@@ -11,6 +11,7 @@
 #include "sparcfrontend.h"
 #include "pentiumfrontend.h"
 #include "decoder.h"
+#include "rtl.h"
 #include "proc.h"
 #include "prog.h"
 #include "visitor.h"

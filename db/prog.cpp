@@ -1159,7 +1159,7 @@ void Prog::removeUnusedGlobals() {
     for (const SharedExp &e : usedGlobals) {
         if (DEBUG_UNUSED)
             LOG << " " << e << " is used\n";
-        QString name(e->subExp<Const,1>()->getStr());
+        QString name(e->access<Const,1>()->getStr());
         usedGlobal = namedGlobals[name];
         if (usedGlobal) {
             globals.insert(usedGlobal);
@@ -1574,7 +1574,7 @@ SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type) {
                 n = n->getSubExp2();
             }
             // "null" terminated
-            if (nelems == -1 && v->isConst() && v->subExp<Const>()->getInt() == 0)
+            if (nelems == -1 && v->isConst() && v->access<Const>()->getInt() == 0)
                 break;
         }
     }
@@ -1643,7 +1643,7 @@ SharedExp Prog::addReloc(SharedExp e, ADDRESS lc) {
     if (!pLoaderIface->IsRelocationAt(lc))
         return e;
 
-    auto c = e->subExp<Const>();
+    auto c = e->access<Const>();
     // relocations have been applied to the constant, so if there is a
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.

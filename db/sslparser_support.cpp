@@ -24,6 +24,7 @@ class SSLScanner;
   *
   ******************************************************************************/
 SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(false) {
+    m_fin = nullptr;
     theScanner = new SSLScanner(in, trace);
     if (trace)
         yydebug = 1;
@@ -273,8 +274,8 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
             if (((Assign *)s)->searchAll(srchExpr, le)) {
                 std::list<SharedExp>::iterator it;
                 for (it = le.begin(); it != le.end(); it++) {
-                    QString tbl = (*it)->subExp<Const,1>()->getStr();
-                    QString idx = (*it)->subExp<Const,2>()->getStr();
+                    QString tbl = (*it)->access<Const,1>()->getStr();
+                    QString idx = (*it)->access<Const,2>()->getStr();
                     SharedExp repl = ((ExprTable *)TableDict[tbl].get())->expressions[indexrefmap[idx]->getvalue()];
                     s->searchAndReplace(**it, repl);
                 }
@@ -284,16 +285,16 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::lis
             while (s->search(srchOp, res)) {
                 std::shared_ptr<Ternary> t;
                 if (res->getOper() == opTypedExp)
-                    t = res->subExp<Ternary,1>();
+                    t = res->access<Ternary,1>();
                 else
-                    t = res->subExp<Ternary>();
+                    t = res->access<Ternary>();
                 assert(t->getOper() == opOpTable);
                 // The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
                 // (and we want to replace it with e1 OP e2)
-                QString tbl = t->subExp<Const,1>()->getStr();
-                QString idx = t->subExp<Const,2>()->getStr();
+                QString tbl = t->access<Const,1>()->getStr();
+                QString idx = t->access<Const,2>()->getStr();
                 // The expressions to operate on are in the list
-                auto b = t->subExp<Binary,3>();
+                auto b = t->access<Binary,3>();
                 assert(b->getOper() == opList);
                 SharedExp e1 = b->getSubExp1();
                 SharedExp e2 = b->getSubExp2(); // This should be an opList too

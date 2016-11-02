@@ -13,7 +13,8 @@
   * \file       njmcDecoder.cpp
   * \brief   This file contains the machine independent decoding functionality.
   ******************************************************************************/
-#include "decoder.h"
+
+#include "njmcDecoder.h"
 #include "rtl.h"
 #include "exp.h"
 #include "register.h"
@@ -64,7 +65,7 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
         q_cout << pc << ": " << name << " ";
         for (const SharedExp & itd : actuals) {
             if (itd->isIntConst()) {
-                int val = itd->subExp<Const>()->getInt();
+                int val = itd->access<Const>()->getInt();
                 if (val > 100 || val < -100)
                     q_cout << "0x" << QString::number(val,16);
                 else
@@ -142,17 +143,7 @@ void NJMCDecoder::substituteCallArgs(char *name, SharedExp*exp, const std::initi
     }
 }
 
-/***************************************************************************/ /**
-  * \brief       Resets the fields of a DecodeResult to their default values.
-  ******************************************************************************/
-void DecodeResult::reset() {
-    numBytes = 0;
-    type = NCT;
-    valid = true;
-    rtl = nullptr;
-    reDecode = false;
-    forceOutEdge = ADDRESS::g(0L);
-}
+
 
 /***************************************************************************/ /**
   * These are functions used to decode instruction operands into
@@ -236,4 +227,31 @@ void NJMCDecoder::computedCall(const char *name, int size, SharedExp dest, ADDRE
     call->setIsComputed(true);
     result.rtl->appendStmt(call);
     SHOW_ASM(name << " " << dest)
+}
+
+QString NJMCDecoder::getRegName(int idx) const
+{
+    static QString nullres;
+    for (const std::pair<QString,int> &elem : RTLDict.RegMap)
+        if (elem.second == idx)
+            return elem.first;
+    return nullres;
+}
+
+int NJMCDecoder::getRegSize(int idx) const {
+    auto iter = RTLDict.DetRegMap.find(idx);
+    if (iter == RTLDict.DetRegMap.end())
+        return 32;
+    return iter->second.g_size();
+}
+
+int NJMCDecoder::getRegIdx(const QString & name) const
+{
+    auto iter = RTLDict.RegMap.find(name);
+    if (iter == RTLDict.RegMap.end())
+    {
+        assert(!"Failed to find named register");
+        return -1;
+    }
+    return iter->second;
 }

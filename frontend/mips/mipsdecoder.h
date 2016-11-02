@@ -20,8 +20,9 @@
 
 #ifndef MIPSDECODER
 #define MIPSDECODER
+
+#include "njmcDecoder.h"
 #include <cstddef>
-#include "decoder.h"
 
 class Prog;
 struct DecodeResult;

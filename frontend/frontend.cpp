@@ -124,20 +124,15 @@ void FrontEnd::AddSymbol(ADDRESS addr, const QString &nam) {
 FrontEnd::~FrontEnd() {
     if (pbff)
         pbff->UnLoad(); // Unload the BinaryFile library with dlclose() or FreeLibrary()
+    ldrIface = nullptr;
 }
 
 QString FrontEnd::getRegName(int idx) const {
-    static QString nullres;
-    for (const std::pair<QString,int> &elem : decoder->getRTLDict().RegMap)
-        if (elem.second == idx)
-            return elem.first;
-    return nullres;
+    return decoder->getRegName(idx);
 }
 
 int FrontEnd::getRegSize(int idx) {
-    if (decoder->getRTLDict().DetRegMap.find(idx) == decoder->getRTLDict().DetRegMap.end())
-        return 32;
-    return decoder->getRTLDict().DetRegMap[idx].g_size();
+    return decoder->getRegSize(idx);
 }
 
 bool FrontEnd::isWin32() { return ldrIface->GetFormat() == LOADFMT_PE; }
@@ -472,8 +467,8 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
 }
 bool FrontEnd::refersToImportedFunction(const SharedExp &pDest)
 {
-    if(pDest && pDest->getOper() == opMemOf && pDest->subExp<Exp,1>()->getOper() == opIntConst) {
-        auto symbol = BinarySymbols->find(pDest->subExp<Const,1>()->getAddr());
+    if(pDest && pDest->getOper() == opMemOf && pDest->access<Exp,1>()->getOper() == opIntConst) {
+        auto symbol = BinarySymbols->find(pDest->access<Const,1>()->getAddr());
         if(symbol && symbol->isImportedFunction())
             return true;
     }
@@ -482,6 +477,10 @@ bool FrontEnd::refersToImportedFunction(const SharedExp &pDest)
 /***************************************************************************/ /**
   *
   * \brief      Process a procedure, given a native (source machine) address.
+  *
+  * This is the main function for decoding a procedure. It is usually overridden in the derived
+  * class to do source machine specific things.  If frag is set, we are decoding just a fragment of the proc
+  * (e.g. each arm of a switch statement is decoded). If spec is set, this is a speculative decode.
   * \param uAddr - the address at which the procedure starts
   * \param pProc - the procedure object
   * \param frag - if true, this is just a fragment of a procedure
@@ -689,7 +688,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         LOG_VERBOSE(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
                         // jump to a library function
                         // replace with a call ret
-                        auto *sym = BinarySymbols->find(pDest->subExp<Const,1>()->getAddr());
+                        auto *sym = BinarySymbols->find(pDest->access<Const,1>()->getAddr());
                         assert(sym==nullptr);
                         QString func = sym->getName();
                         CallStatement *call = new CallStatement;
@@ -728,7 +727,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus &&
                             pDest->getSubExp1()->getSubExp2()->isIntConst()) {
                             // assume subExp2 is a jump table
-                            ADDRESS jmptbl = pDest->subExp<Const,1,2>()->getAddr();
+                            ADDRESS jmptbl = pDest->access<Const,1,2>()->getAddr();
                             unsigned int i;
                             for (i = 0;; i++) {
                                 ADDRESS uDest = ADDRESS::g(Image->readNative4(jmptbl + i * 4));
@@ -781,7 +780,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                     // Check for a dynamic linked library function
                     if (refersToImportedFunction(call->getDest())) {
                         // Dynamic linked proc pointers are treated as static.
-                        ADDRESS linked_addr = call->getDest()->subExp<Const,1>()->getAddr();
+                        ADDRESS linked_addr = call->getDest()->access<Const,1>()->getAddr();
                         QString nam = BinarySymbols->find(linked_addr)->getName();
                         Function *p = pProc->getProg()->getLibraryProc(nam);
                         call->setDestProc(p);
@@ -810,7 +809,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                                     if ( nullptr!=stmt_jump &&
                                         refersToImportedFunction(stmt_jump->getDest())) { // Is it an "DynamicLinkedProcPointer"?
                                         // Yes, it's a library function. Look up it's name.
-                                        ADDRESS a = stmt_jump->getDest()->subExp<Const,1>()->getAddr();
+                                        ADDRESS a = stmt_jump->getDest()->access<Const,1>()->getAddr();
                                         QString nam = BinarySymbols->find(a)->getName();
                                         // Assign the proc to the call
                                         Function *p = pProc->getProg()->getLibraryProc(nam);
@@ -877,7 +876,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                         // invalid instructions, and getting invalid stack height errors
                         QString name = Program->symbolByAddress(uNewAddr);
                         if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
-                            ADDRESS a = call->getDest()->subExp<Const,1>()->getAddr();
+                            ADDRESS a = call->getDest()->access<Const,1>()->getAddr();
                             name = BinarySymbols->find(a)->getName();
                         }
                         if (!name.isEmpty() && noReturnCallDest(name)) {
@@ -1024,21 +1023,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
         LOG << "finished processing proc " << pProc->getName() << " at address " << pProc->getNativeAddress() << "\n";
 
     return true;
-}
-
-/***************************************************************************/ /**
-  *
-  * \brief      Decode the RTL at the given address
-  * \param      address - native address of the instruction
-  * \param      delta - difference between host and native addresses
-  * \param      decoder - decoder object
-  * \note       Only called from findCoverage()
-  * \returns    a pointer to the decoded RTL
-  ******************************************************************************/
-RTL *decodeRtl(ADDRESS address, int delta, NJMCDecoder *decoder) {
-    DecodeResult inst = decoder->decodeInstruction(address, delta);
-    RTL *rtl = inst.rtl;
-    return rtl;
 }
 
 /***************************************************************************/ /**

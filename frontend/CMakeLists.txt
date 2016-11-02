@@ -4,6 +4,7 @@ SET(SRC
     TargetQueue.cpp
     MachineInstruction
     njmcDecoder.cpp
+    njmcDecoder.h
     pentium/pentiumdecoder.cpp #-fno-exceptions
     pentium/pentiumfrontend.cpp
     ppc/ppcdecoder.cpp

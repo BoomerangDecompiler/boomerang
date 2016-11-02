@@ -74,8 +74,8 @@ bool Instruction::calcMayAlias(SharedExp e1, SharedExp e2, int size) {
     SharedExp e2a = e2->getSubExp1();
     // constant memory accesses
     if (e1a->isIntConst() && e2a->isIntConst()) {
-        ADDRESS a1 = e1a->subExp<Const>()->getAddr();
-        ADDRESS a2 = e2a->subExp<Const>()->getAddr();
+        ADDRESS a1 = e1a->access<Const>()->getAddr();
+        ADDRESS a2 = e2a->access<Const>()->getAddr();
         ptrdiff_t diff = (a1 - a2).m_value;
         if (diff < 0)
             diff = -diff;
@@ -85,8 +85,8 @@ bool Instruction::calcMayAlias(SharedExp e1, SharedExp e2, int size) {
     // same left op constant memory accesses
     if (e1a->getArity() == 2 && e1a->getOper() == e2a->getOper() && e1a->getSubExp2()->isIntConst() &&
         e2a->getSubExp2()->isIntConst() && *e1a->getSubExp1() == *e2a->getSubExp1()) {
-        int i1 = e1a->subExp<Const,2>()->getInt();
-        int i2 = e2a->subExp<Const,2>()->getInt();
+        int i1 = e1a->access<Const,2>()->getInt();
+        int i2 = e2a->access<Const,2>()->getInt();
         int diff = i1 - i2;
         if (diff < 0)
             diff = -diff;
@@ -97,7 +97,7 @@ bool Instruction::calcMayAlias(SharedExp e1, SharedExp e2, int size) {
     if ((e2a->getOper() == opPlus || e2a->getOper() == opMinus) && *e1a == *e2a->getSubExp1() &&
         e2a->getSubExp2()->isIntConst()) {
         int i1 = 0;
-        int i2 = e2a->subExp<Const,2>()->getInt();
+        int i2 = e2a->access<Const,2>()->getInt();
         int diff = i1 - i2;
         if (diff < 0)
             diff = -diff;
@@ -300,8 +300,8 @@ bool Instruction::propagateTo(bool &convert, std::map<SharedExp, int, lessExpSta
             SharedExp e = *ll;
             if (!canPropagateToExp(*e))
                 continue;
-            assert(dynamic_cast<Assignment *>(e->subExp<RefExp>()->getDef())!=nullptr);
-            Assignment *def = (Assignment *)(e->subExp<RefExp>()->getDef());
+            assert(dynamic_cast<Assignment *>(e->access<RefExp>()->getDef())!=nullptr);
+            Assignment *def = (Assignment *)(e->access<RefExp>()->getDef());
             SharedExp rhs = def->getRight();
             // If force is true, ignore the fact that a memof should not be propagated (for switch analysis)
             if (rhs->containsBadMemof(proc) && !(force && rhs->isMemOf()))
@@ -344,7 +344,7 @@ bool Instruction::propagateTo(bool &convert, std::map<SharedExp, int, lessExpSta
                         // so we use findNS()
                         SharedExp OW = usedByDomPhi->findNS(rhsBase);
                         if (OW) {
-                            Instruction *OWdef = OW->subExp<RefExp>()->getDef();
+                            Instruction *OWdef = OW->access<RefExp>()->getDef();
                             if (!OWdef->isAssign())
                                 continue;
                             SharedExp lhsOWdef = ((Assign *)OWdef)->getLeft();
@@ -415,10 +415,10 @@ bool Instruction::propagateFlagsTo() {
             SharedExp e = *ll;
             if (!e->isSubscript())
                 continue; // e.g. %pc
-            Assignment *def = dynamic_cast<Assignment *>(e->subExp<RefExp>()->getDef());
+            Assignment *def = dynamic_cast<Assignment *>(e->access<RefExp>()->getDef());
             if ( def == nullptr || nullptr == def->getRight() ) // process if it has definition with rhs
                 continue;
-            SharedExp base = e->subExp<RefExp,1>();
+            SharedExp base = e->access<Exp,1>(); // Either RefExp or Location ?
             if (base->isFlags() || base->isMainFlag()) {
                 change |= doPropagateTo(e, def, convert);
             }
@@ -467,7 +467,7 @@ bool Instruction::replaceRef(SharedExp e, Assignment * def, bool &convert) {
     if (base->getOper() == opCF && lhs->isFlags()) {
         if (!rhs->isFlagCall())
             return false;
-        QString str = rhs->subExp<Const,1>()->getStr();
+        QString str = rhs->access<Const,1>()->getStr();
         //FIXME: check SUBFLAGSFL handling, and implement it if needed
         if (str.startsWith("SUBFLAGS") && str!="SUBFLAGSFL") {
             /* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
@@ -494,7 +494,7 @@ bool Instruction::replaceRef(SharedExp e, Assignment * def, bool &convert) {
     if (base->getOper() == opZF && lhs->isFlags()) {
         if (!rhs->isFlagCall())
             return false;
-        QString str = rhs->subExp<Const,1>()->getStr();
+        QString str = rhs->access<Const,1>()->getStr();
         if (str.startsWith("SUBFLAGS") && str!="SUBFLAGSFL") {
             // for zf we're only interested in if the result part of the subflags is equal to zero
             SharedExp relExp = Binary::get(opEquals,
@@ -531,7 +531,7 @@ bool Instruction::isNullStatement() {
     SharedExp right = ((Assign *)this)->getRight();
     if (right->isSubscript()) {
         // Must refer to self to be null
-        return this == right->subExp<RefExp>()->getDef();
+        return this == right->access<RefExp>()->getDef();
     } else
         // Null if left == right
         return *((Assign *)this)->getLeft() == *right;
@@ -1115,10 +1115,10 @@ bool condToRelational(SharedExp &pCond, BRANCH_TYPE jtCond) {
     pCond->print(os);
 
     OPER condOp = pCond->getOper();
-    if (condOp == opFlagCall && pCond->subExp<Const,1>()->getStr().startsWith("SUBFLAGS")) {
+    if (condOp == opFlagCall && pCond->access<Const,1>()->getStr().startsWith("SUBFLAGS")) {
         OPER op = opWild;
         // Special for PPC unsigned compares; may be other cases in the future
-        bool makeUns = pCond->subExp<Const,1>()->getStr().startsWith("SUBFLAGSNL");
+        bool makeUns = pCond->access<Const,1>()->getStr().startsWith("SUBFLAGSNL");
         switch (jtCond) {
         case BRANCH_JE:
             op = opEquals;
@@ -1191,7 +1191,7 @@ bool condToRelational(SharedExp &pCond, BRANCH_TYPE jtCond) {
                                 pCond->getSubExp2()->getSubExp1()->clone(),                // P1
                                 pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone()); // P2
         }
-    } else if (condOp == opFlagCall && pCond->subExp<Const,1>()->getStr().startsWith("LOGICALFLAGS")) {
+    } else if (condOp == opFlagCall && pCond->access<Const,1>()->getStr().startsWith("LOGICALFLAGS")) {
         // Exp *e = pCond;
         OPER op = opWild;
         switch (jtCond) {
@@ -1264,7 +1264,7 @@ bool condToRelational(SharedExp &pCond, BRANCH_TYPE jtCond) {
             if (flagsParam->getOper() == opBitAnd) {
                 SharedExp setFlagsParam = flagsParam->getSubExp2();
                 if (setFlagsParam->isIntConst())
-                    mask = setFlagsParam->subExp<Const>()->getInt();
+                    mask = setFlagsParam->access<Const>()->getInt();
             }
             SharedExp at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
             // Sometimes the mask includes the 0x4 bit, but we expect that to be off all the time. So effectively
@@ -1299,7 +1299,7 @@ bool condToRelational(SharedExp &pCond, BRANCH_TYPE jtCond) {
         if (op != opWild) {
             pCond = Binary::get(op, pCond->getSubExp2()->getSubExp1()->clone(), Const::get(0));
         }
-    } else if (condOp == opFlagCall && pCond->subExp<Const,1>()->getStr().startsWith("SETFFLAGS")) {
+    } else if (condOp == opFlagCall && pCond->access<Const,1>()->getStr().startsWith("SETFFLAGS")) {
         // Exp *e = pCond;
         OPER op = opWild;
         switch (jtCond) {
@@ -1354,7 +1354,7 @@ bool condToRelational(SharedExp &pCond, BRANCH_TYPE jtCond) {
         if (left->getOper() == opBitXor && right->isIntConst()) {
             SharedExp r2 = left->getSubExp2();
             if (r2->isIntConst()) {
-                int k2 = r2->subExp<Const>()->getInt();
+                int k2 = r2->access<Const>()->getInt();
                 if (k2 == 0x40) {
                     hasXor40 = true;
                     left = left->getSubExp1();
@@ -1364,11 +1364,11 @@ bool condToRelational(SharedExp &pCond, BRANCH_TYPE jtCond) {
         if (left->getOper() == opBitAnd && right->isIntConst()) {
             SharedExp left1 = left->getSubExp1();
             SharedExp left2 = left->getSubExp2();
-            int k = right->subExp<Const>()->getInt();
+            int k = right->access<Const>()->getInt();
             // Only interested in 40, 1
             k &= 0x41;
             if (left1->getOper() == opFlagCall && left2->isIntConst()) {
-                int mask = left2->subExp<Const>()->getInt();
+                int mask = left2->access<Const>()->getInt();
                 // Only interested in 1, 40
                 mask &= 0x41;
                 OPER op = opWild;
@@ -1811,7 +1811,7 @@ void CallStatement::print(QTextStream & os, bool html) const {
         os << "*no dest*";
     else {
         if (pDest->isIntConst())
-            os << "0x" << QString::number(pDest->subExp<Const>()->getInt(),16);
+            os << "0x" << QString::number(pDest->access<Const>()->getInt(),16);
         else
             pDest->print(os, html); // Could still be an expression
     }
@@ -1997,16 +1997,16 @@ bool CallStatement::convertToDirect() {
     bool convertIndirect = false;
     SharedExp e = pDest;
     if (pDest->isSubscript()) {
-        Instruction *def = e->subExp<RefExp>()->getDef();
+        Instruction *def = e->access<RefExp>()->getDef();
         if (def && !def->isImplicit())
             return false; // If an already defined global, don't convert
         e = e->getSubExp1();
     }
-    if (e->getOper() == opArrayIndex && e->getSubExp2()->isIntConst() && e->subExp<Const,2>()->getInt() == 0)
+    if (e->getOper() == opArrayIndex && e->getSubExp2()->isIntConst() && e->access<Const,2>()->getInt() == 0)
         e = e->getSubExp1();
     // Can actually have name{0}[0]{0} !!
     if (e->isSubscript())
-        e = e->subExp<RefExp,1>();
+        e = e->access<RefExp,1>();
     if (e->isIntConst()) {
         // ADDRESS u = (ADDRESS)((Const*)e)->getInt();
         // Just convert it to a direct call!
@@ -2016,7 +2016,7 @@ bool CallStatement::convertToDirect() {
         SharedExp sub = e->getSubExp1();
         if (sub->isIntConst()) {
             // m[K]: convert it to a global right here
-            ADDRESS u = ADDRESS::g(sub->subExp<Const>()->getInt());
+            ADDRESS u = ADDRESS::g(sub->access<Const>()->getInt());
             proc->getProg()->globalUsed(u);
             QString nam = proc->getProg()->newGlobalName(u);
             e = Location::global(nam, proc);
@@ -2026,7 +2026,7 @@ bool CallStatement::convertToDirect() {
     if (!e->isGlobal()) {
         return false;
     }
-    QString nam = e->subExp<Const,1>()->getStr();
+    QString nam = e->access<Const,1>()->getStr();
     Prog *prog = proc->getProg();
     ADDRESS gloAddr = prog->getGlobalAddr(nam);
     ADDRESS dest = ADDRESS::g(prog->readNative4(gloAddr));
@@ -2155,7 +2155,7 @@ SharedExp processConstant(SharedExp e, SharedType  t, Prog * prog, UserProc * pr
     // char* and a constant
     if (e->isIntConst()) {
         if (nt && (nt->getName() == "LPCWSTR")) {
-            ADDRESS u = e->subExp<Const>()->getAddr();
+            ADDRESS u = e->access<Const>()->getAddr();
             // TODO: wide char string processing
             LOG << "possible wide char string at " << u << "\n";
         }
@@ -2163,7 +2163,7 @@ SharedExp processConstant(SharedExp e, SharedType  t, Prog * prog, UserProc * pr
             auto pt = t->as<PointerType>();
             SharedType points_to = pt->getPointsTo();
             if (t->isCString()) {
-                ADDRESS u = e->subExp<Const>()->getAddr();
+                ADDRESS u = e->access<Const>()->getAddr();
                 if (!u.isZero()) { // can't do anything with nullptr
                     const char *str = prog->getStringConstant(u, true);
                     if (str) {
@@ -2181,7 +2181,7 @@ SharedExp processConstant(SharedExp e, SharedType  t, Prog * prog, UserProc * pr
                 }
             }
             if (points_to->resolvesToFunc()) {
-                ADDRESS a = e->subExp<Const>()->getAddr();
+                ADDRESS a = e->access<Const>()->getAddr();
                 if (VERBOSE || 1)
                     LOG << "found function pointer with constant value "
                         << "of type " << pt->getCtype() << " in statement at addr " << stmt
@@ -2245,7 +2245,7 @@ void CallStatement::setTypeFor(SharedExp e, SharedType ty) {
     SharedExp ref = defCol.findDefFor(e);
     if (ref == nullptr || !ref->isSubscript())
         return;
-    Instruction *def = ref->subExp<RefExp>()->getDef();
+    Instruction *def = ref->access<RefExp>()->getDef();
     if (def == nullptr)
         return;
     def->setTypeFor(e, ty);
@@ -2278,7 +2278,7 @@ bool CallStatement::objcSpecificProcessing(const QString &formatStr) {
                 SharedType ty = getArgumentType(i);
                 LOG << "arg " << i << " e: " << e << " ty: " << ty << "\n";
                 if (!(ty->isPointer() && (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) && e->isIntConst())) {
-                    ADDRESS addr = ADDRESS::g(e->subExp<Const>()->getInt());
+                    ADDRESS addr = ADDRESS::g(e->access<Const>()->getInt());
                     LOG << "addr: " << addr << "\n";
                     if (proc->getProg()->isStringConstant(addr)) {
                         LOG << "making arg " << i << " of call c*\n";
@@ -2333,7 +2333,7 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
     }
     if (formatExp->isSubscript()) {
         // Maybe it's defined to be a Const string
-        Instruction *def = formatExp->subExp<RefExp>()->getDef();
+        Instruction *def = formatExp->access<RefExp>()->getDef();
         if (def == nullptr)
             return false; // Not all nullptr refs get converted to implicits
         if (def->isAssign()) {
@@ -2341,7 +2341,7 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
             SharedExp rhs = ((Assign *)def)->getRight();
             if (rhs == nullptr || !rhs->isStrConst())
                 return false;
-            formatStr = rhs->subExp<Const>()->getStr();
+            formatStr = rhs->access<Const>()->getStr();
         } else if (def->isPhi()) {
             // More likely. Example: switch_gcc. Only need ONE candidate format string
             PhiAssign *pa = (PhiAssign *)def;
@@ -2352,7 +2352,7 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
                 SharedExp rhs = ((Assign *)def)->getRight();
                 if (rhs == nullptr || !rhs->isStrConst())
                     continue;
-                formatStr = rhs->subExp<Const>()->getStr();
+                formatStr = rhs->access<Const>()->getStr();
                 break;
             }
             if (formatStr.isNull())
@@ -2360,7 +2360,7 @@ bool CallStatement::ellipsisProcessing(Prog * prog) {
         } else
             return false;
     } else if (formatExp->isStrConst()) {
-        formatStr = formatExp->subExp<Const>()->getStr();
+        formatStr = formatExp->access<Const>()->getStr();
     } else
         return false;
     if (objcSpecificProcessing(formatStr))
@@ -2833,9 +2833,9 @@ void BoolAssign::setLeftFromList(std::list<Instruction *> * stmts) {
 
 Assignment::Assignment(SharedExp _lhs) : TypingStatement(VoidType::get()), lhs(_lhs) {
     if (lhs && lhs->isRegOf()) {
-        int n = lhs->subExp<Const,1>()->getInt();
-        if (lhs->subExp<Location>()->getProc()) {
-            type = SizeType::get(lhs->subExp<Location>()->getProc()->getProg()->getRegSize(n));
+        int n = lhs->access<Const,1>()->getInt();
+        if (lhs->access<Location>()->getProc()) {
+            type = SizeType::get(lhs->access<Location>()->getProc()->getProg()->getRegSize(n));
         }
     }
 }
@@ -2921,7 +2921,7 @@ void Assign::simplify() {
         guard = guard->simplify();
 
     // Perhaps the guard can go away
-    if (guard && (guard->isTrue() || (guard->isIntConst() && guard->subExp<Const>()->getInt() == 1)))
+    if (guard && (guard->isTrue() || (guard->isIntConst() && guard->access<Const>()->getInt() == 1)))
         guard = nullptr; // No longer a guarded assignment
 
     if (lhs->getOper() == opMemOf) {
@@ -3388,12 +3388,12 @@ void BranchStatement::genConstraints(LocationSet & cons) {
     SharedExp Ta;
     SharedExp Tb;
     if (a->isSizeCast()) {
-        opsType->setSize(a->subExp<Const,1>()->getInt());
+        opsType->setSize(a->access<Const,1>()->getInt());
         Ta = Unary::get(opTypeOf, a->getSubExp2());
     } else
         Ta = Unary::get(opTypeOf, a);
     if (b->isSizeCast()) {
-        opsType->setSize(b->subExp<Const,1>()->getInt());
+        opsType->setSize(b->access<Const,1>()->getInt());
         Tb = Unary::get(opTypeOf, b->getSubExp2());
     } else
         Tb = Unary::get(opTypeOf, b);
@@ -4183,7 +4183,7 @@ void ReturnStatement::updateReturns() {
         // Preserveds are NOT returns (nothing changes, so what are we returning?)
         // Check if it is a preserved location, e.g. r29 := r29{-}
         SharedExp rhs = as->getRight();
-        if (rhs->isSubscript() && rhs->subExp<RefExp>()->isImplicitDef() && *rhs->getSubExp1() == *lhs)
+        if (rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef() && *rhs->getSubExp1() == *lhs)
             continue; // Filter out the preserveds
 #endif
 

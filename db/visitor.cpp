@@ -250,7 +250,7 @@ bool UsedLocsFinder::visit( const std::shared_ptr<Location> &e, bool &override) 
         used->insert(e->shared_from_this()); // All locations visited are used
     if (e->isMemOf()) {
         // Example: m[r28{10} - 4]    we use r28{10}
-        SharedExp child = e->getSubExp1();
+        SharedExp child = e->access<Exp,1>();
         // Care! Need to turn off the memOnly flag for work inside the m[...], otherwise everything will get ignored
         bool wasMemOnly = memOnly;
         memOnly = false;
@@ -785,7 +785,7 @@ bool ExpHasMemofTester::visit( const std::shared_ptr<Location> &e, bool &overrid
 bool TempToLocalMapper::visit( const std::shared_ptr<Location> &e, bool &override) {
     if (e->isTemp()) {
         // We have a temp subexpression; get its name
-        QString tempName = e->subExp<Const,1>()->getStr();
+        QString tempName = e->access<Const,1>()->getStr();
         SharedType ty = Type::getTempType(tempName); // Types for temps strictly depend on the name
         // This call will do the mapping from the temp to a new local:
         proc->getSymbolExp(e, ty, true);
@@ -829,13 +829,13 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp> &e, bool 
         if ((base = e->getSubExp1(), base->isMemOf()) &&
             (addr = base->getSubExp1(), addr->isIntConst())) {
             // We have a m[K]{-}
-            ADDRESS K = addr->subExp<Const>()->getAddr(); // TODO: use getAddr
+            ADDRESS K = addr->access<Const>()->getAddr(); // TODO: use getAddr
             int value = prog->readNative4(K);
             recur = false;
             return Const::get(value);
         } else if (base->isGlobal()) {
             // We have a glo{-}
-            QString gname = base->subExp<Const,1>()->getStr();
+            QString gname = base->access<Const,1>()->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             int value = prog->readNative4(gloValue);
             recur = false;
@@ -843,8 +843,8 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp> &e, bool 
         } else if (base->isArrayIndex() && (idx = base->getSubExp2(), idx->isIntConst()) &&
                    (glo = base->getSubExp1(), glo->isGlobal())) {
             // We have a glo[K]{-}
-            int K = idx->subExp<Const>()->getInt();
-            QString gname = glo->subExp<Const,1>()->getStr();
+            int K = idx->access<Const>()->getInt();
+            QString gname = glo->access<Const,1>()->getStr();
             ADDRESS gloValue = prog->getGlobalAddr(gname);
             SharedType gloType = prog->getGlobal(gname)->getType();
             assert(gloType->isArray());
@@ -918,7 +918,7 @@ void ExpCastInserter::checkMemofType(const SharedExp &memof, SharedType memofTyp
     SharedExp addr = memof->getSubExp1();
     if (addr->isSubscript()) {
         SharedExp addrBase = addr->getSubExp1();
-        SharedType actType = addr->subExp<RefExp>()->getDef()->getTypeFor(addrBase);
+        SharedType actType = addr->access<RefExp>()->getDef()->getTypeFor(addrBase);
         SharedType expectedType = PointerType::get(memofType);
         if (!actType->isCompatibleWith(*expectedType)) {
             memof->setSubExp1(std::make_shared<TypedExp>(expectedType, addrBase));
@@ -1090,12 +1090,12 @@ void StmtSsaXformer::visit(CallStatement *s, bool &recur) {
         Function *procDest = s->getDestProc();
         if (procDest && procDest->isLib() && e->isLocal()) {
             UserProc *proc = s->getProc(); // Enclosing proc
-            SharedType lty = proc->getLocalType(e->subExp<Const,1>()->getStr());
+            SharedType lty = proc->getLocalType(e->access<Const,1>()->getStr());
             SharedType ty = as->getType();
             if (ty && lty && *ty != *lty) {
                 LOG << "local " << e << " has type " << lty->getCtype() << " that doesn't agree with type of define "
                     << ty->getCtype() << " of a library, why?\n";
-                proc->setLocalType(e->subExp<Const,1>()->getStr(), ty);
+                proc->setLocalType(e->access<Const,1>()->getStr(), ty);
             }
         }
         as->setLeft(e);

@@ -182,7 +182,7 @@ public:
     //! Get the index for this var
     int getVarIndex();
     //! True if this is a terminal
-    virtual bool isTerminal() { return false; }
+    virtual bool isTerminal() const { return false; }
     //! True if this is the constant "true"
     bool isTrue() const { return op == opTrue; }
     //! True if this is the constant "false"
@@ -256,28 +256,28 @@ public:
     // Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2.
     // However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
     template<class T>
-    std::shared_ptr<T> subExp() {
+    std::shared_ptr<T> access() {
         return shared_from_base<T>();
     }
     template<class T>
-    std::shared_ptr<const T> subExp() const { return const_cast<Exp *>(this)->subExp<T>(); }
+    std::shared_ptr<const T> access() const { return const_cast<Exp *>(this)->access<T>(); }
 
     template<class T,int SUB_IDX,int ...Path>
-    std::shared_ptr<T> subExp() {
+    std::shared_ptr<T> access() {
         switch(SUB_IDX) {
-        case 1: return getSubExp1()->subExp<T,Path...>();
-        case 2: return getSubExp2()->subExp<T,Path...>();
-        case 3: return getSubExp3()->subExp<T,Path...>();
+        case 1: return getSubExp1()->access<T,Path...>();
+        case 2: return getSubExp2()->access<T,Path...>();
+        case 3: return getSubExp3()->access<T,Path...>();
         default:
             assert(false);
         }
     }
     template<class T,int SUB_IDX,int ...Path>
-    std::shared_ptr<const T> subExp() const {
+    std::shared_ptr<const T> access() const {
         switch(SUB_IDX) {
-        case 1: return getSubExp1()->subExp<T,Path...>();
-        case 2: return getSubExp2()->subExp<T,Path...>();
-        case 3: return getSubExp3()->subExp<T,Path...>();
+        case 1: return getSubExp1()->access<T,Path...>();
+        case 2: return getSubExp2()->access<T,Path...>();
+        case 3: return getSubExp3()->access<T,Path...>();
         default:
             assert(false);
         }
@@ -485,25 +485,25 @@ public:
     static SharedExp get(OPER op) { return std::make_shared<Terminal>(op); }
 
     // Clone
-    virtual SharedExp clone() const override;
+    SharedExp clone() const override;
 
     // Compare
-    virtual bool operator==(const Exp &o) const override;
-    virtual bool operator<(const Exp &o) const override;
-    virtual bool operator*=(const Exp &o) const override;
-    virtual void print(QTextStream &os, bool = false) const override;
-    virtual void appendDotFile(QTextStream &of) override;
-    virtual void printx(int ind) const override;
-    virtual bool isTerminal()  override { return true; }
+    bool operator==(const Exp &o) const override;
+    bool operator<(const Exp &o) const override;
+    bool operator*=(const Exp &o) const override;
+    void print(QTextStream &os, bool = false) const override;
+    void appendDotFile(QTextStream &of) override;
+    void printx(int ind) const override;
+    bool isTerminal() const override { return true; }
 
     // Visitation
-    virtual bool accept(ExpVisitor *v) override;
-    virtual SharedExp accept(ExpModifier *v) override;
+    bool accept(ExpVisitor *v) override;
+    SharedExp accept(ExpModifier *v) override;
 
-    virtual SharedType ascendType() override;
-    virtual void descendType(SharedType parentType, bool &ch, Instruction *s) override;
+    SharedType ascendType() override;
+    void descendType(SharedType parentType, bool &ch, Instruction *s) override;
 
-    virtual bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) override;
+    bool match(const QString &pattern, std::map<QString, SharedConstExp> &bindings) override;
 
 protected:
     friend class XMLProgParser;

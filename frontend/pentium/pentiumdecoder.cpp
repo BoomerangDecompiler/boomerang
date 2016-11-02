@@ -10686,7 +10686,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
                             stmts = instantiate(pc,"CALL.Jvod", {dis_Num(relocd.m_value)});
                             // Fix the last assignment, which is now %pc := %pc + (K + hostPC)
                             Assign *last = (Assign *)stmts->back();
-                            auto reloc = last->getRight()->subExp<Const,2>();
+                            auto reloc = last->getRight()->access<Const,2>();
                             assert(reloc->isIntConst());
                             // Subtract off the host pc
                             reloc->setInt(reloc->getInt() - hostPC.m_value);

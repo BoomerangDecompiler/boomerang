@@ -14,9 +14,9 @@
   ******************************************************************************/
 #ifndef PPCDECODER
 #define PPCDECODER
-#include <cstdlib>
+#include "njmcDecoder.h"
 
-#include "decoder.h"
+#include <cstdlib>
 
 class Prog;
 
@@ -24,26 +24,14 @@ struct DecodeResult;
 
 class PPCDecoder : public NJMCDecoder {
   public:
-    /* Default constructor
-         */
     PPCDecoder(Prog *prog);
-
-    /*
-         * Decodes the machine instruction at pc and returns an RTL instance for
-         * the instruction.
-         */
-    virtual DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta);
-
-    /*
-         * Disassembles the machine instruction at pc and returns the number of
-         * bytes disassembled. Assembler output goes to global _assembly
-         */
-    virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta);
+    DecodeResult &decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+    int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) override;
 
   private:
     /*
-             * Various functions to decode the operands of an instruction into an Exp* representation.
-             */
+     * Various functions to decode the operands of an instruction into an Exp* representation.
+     */
     Exp *dis_Eaddr(ADDRESS pc, int size = 0);
     Exp *dis_RegImm(ADDRESS pc);
     SharedExp dis_Reg(unsigned r);

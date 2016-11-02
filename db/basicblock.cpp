@@ -1512,8 +1512,8 @@ void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig
         // Interference if we can find a live variable which differs only in the reference
         SharedExp dr;
         if (liveLocs.findDifferentRef(r, dr)) {
-            assert(dr->subExp<RefExp>()->getDef()!=nullptr);
-            assert(u->subExp<RefExp>()->getDef()!=nullptr);
+            assert(dr->access<RefExp>()->getDef()!=nullptr);
+            assert(u->access<RefExp>()->getDef()!=nullptr);
             // We have an interference between r and dr. Record it
             ig.connect(r, dr);
             if (VERBOSE || DEBUG_LIVENESS)
@@ -1755,7 +1755,7 @@ void findSwParams(char form, SharedExp e, SharedExp & expr, ADDRESS &T) {
         SharedExp base = e->getSubExp1();
         if (base->isSubscript())
             base = base->getSubExp1();
-        auto con = base->subExp<Const,1>();
+        auto con = base->access<Const,1>();
         QString gloName = con->getStr();
         UserProc *p = std::static_pointer_cast<Location>(base)->getProc();
         Prog *prog = p->getProg();
@@ -1769,14 +1769,14 @@ void findSwParams(char form, SharedExp e, SharedExp & expr, ADDRESS &T) {
             e = e->getSubExp1();
         // b will be (<expr> * 4) + T
         SharedExp b = e->getSubExp1();
-        T = b->subExp<Const,2>()->getAddr();
+        T = b->access<Const,2>()->getAddr();
         b = b->getSubExp1(); // b is now <expr> * 4
         expr = b->getSubExp1();
         break;
     }
     case 'O': { // Form O
         // Pattern: m[<expr> * 4 + T ] + T
-        T = e->subExp<Const,2>()->getAddr();
+        T = e->access<Const,2>()->getAddr();
         // l = m[<expr> * 4 + T ]:
         SharedExp l = e->getSubExp1();
         if (l->isSubscript())
@@ -1882,7 +1882,7 @@ static void findConstantValues(const Instruction *s, std::list<int> &dests) {
     } else if (s->isAssign()) {
         SharedExp rhs = ((Assign *)s)->getRight();
         if (rhs->isIntConst())
-            dests.push_back(rhs->subExp<Const>()->getInt());
+            dests.push_back(rhs->access<Const>()->getInt());
     }
 }
 // Find indirect jumps and calls

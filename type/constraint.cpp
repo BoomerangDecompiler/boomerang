@@ -59,7 +59,7 @@ void ConstraintMap::makeUnion(ConstraintMap &o) {
             // << " -> " << ret.first->second << " with " << it->first << " -> " << it->second << "\n";
             auto Tret = std::static_pointer_cast<TypeVal>(ret.first->second);
             SharedType ty1 = Tret->getType();
-            auto Toth = it->second->subExp<TypeVal>();
+            auto Toth = it->second->access<TypeVal>();
             SharedType ty2 = Toth->getType();
             if (ty1 && ty2 && *ty1 != *ty2) {
                 Tret->setType(ty1->mergeWith(ty2));
@@ -136,8 +136,8 @@ void ConstraintMap::substAlpha() {
         // Looking for entries with two TypeVals, where exactly one is an alpha
         if (!cc->first->isTypeVal() || !cc->second->isTypeVal())
             continue;
-        SharedType t1 = cc->first->subExp<TypeVal>()->getType();
-        SharedType t2 = cc->second->subExp<TypeVal>()->getType();
+        SharedType t1 = cc->first->access<TypeVal>()->getType();
+        SharedType t2 = cc->second->access<TypeVal>()->getType();
         int numAlpha = 0;
         if (t1->isPointerToAlpha())
             numAlpha++;
@@ -206,14 +206,14 @@ void Constraints::substIntoEquates(ConstraintMap &in) {
                     if (ff != fixed.end()) {
                         if (!unify(val, ff->second, extra)) {
                             LOG_VERBOSE(DEBUG_TA) << "Constraint failure: " << *ll << " constrained to be "
-                                                  << val->subExp<TypeVal>()->getType()->getCtype() << " and "
-                                                  << ff->second->subExp<TypeVal>()->getType()->getCtype() << "\n";
+                                                  << val->access<TypeVal>()->getType()->getCtype() << " and "
+                                                  << ff->second->access<TypeVal>()->getType()->getCtype() << "\n";
                             return;
                         }
                     } else
                         extra[*ll] = val; // A new constant constraint
                 }
-                if (val->subExp<TypeVal>()->getType()->isComplete()) {
+                if (val->access<TypeVal>()->getType()->isComplete()) {
                     // We have a complete type equal to one or more variables
                     // Remove the equate, and generate more fixed
                     // e.g. Ta = Tb,Tc and Ta = K => Tb=K, Tc=K
@@ -297,7 +297,7 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
         SharedExp right = c->getSubExp2();
         if (!right->isTypeVal())
             continue;
-        SharedType t = right->subExp<TypeVal>()->getType();
+        SharedType t = right->access<TypeVal>()->getType();
         if (!t->isPointer())
             continue;
         // Don't modify a key in a map
@@ -311,8 +311,8 @@ bool Constraints::solve(std::list<ConstraintMap> &solns) {
         leftSub = nullptr;
         // right is <alpha*> -> <alpha>
         right = clone->getSubExp2();
-        t = right->subExp<TypeVal>()->getType();
-        right->subExp<TypeVal>()->setType(t->as<PointerType>()->getPointsTo()->clone());
+        t = right->access<TypeVal>()->getType();
+        right->access<TypeVal>()->setType(t->as<PointerType>()->getPointsTo()->clone());
         conSet.remove(c);
         conSet.insert(clone);
     }
@@ -494,8 +494,8 @@ bool Constraints::unify(SharedExp x, SharedExp y, ConstraintMap &extra) {
     LOG << "Unifying " << x << " with " << y << " result ";
     assert(x->isTypeVal());
     assert(y->isTypeVal());
-    SharedType xtype = x->subExp<TypeVal>()->getType();
-    SharedType ytype = y->subExp<TypeVal>()->getType();
+    SharedType xtype = x->access<TypeVal>()->getType();
+    SharedType ytype = y->access<TypeVal>()->getType();
     if (xtype->isPointer() && ytype->isPointer()) {
         auto xPointsTo = xtype->as<PointerType>()->getPointsTo();
         auto yPointsTo = ytype->as<PointerType>()->getPointsTo();
@@ -561,12 +561,12 @@ void Constraints::alphaSubst() {
             if (!trm2->isTypeVal())
                 continue;
             // One of them has to be a pointer to an alpha
-            t1 = trm1->subExp<TypeVal>()->getType();
+            t1 = trm1->access<TypeVal>()->getType();
             if (t1->isPointerToAlpha()) {
                 found = true;
                 break;
             }
-            t2 = trm2->subExp<TypeVal>()->getType();
+            t2 = trm2->access<TypeVal>()->getType();
             if (t2->isPointerToAlpha()) {
                 found = true;
                 break;
