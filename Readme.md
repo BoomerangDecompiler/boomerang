@@ -4,10 +4,8 @@ Welcome to boomerang decompiler
 [![Join the chat at https://gitter.im/nemerle/boomerang](https://badges.gitter.im/nemerle/boomerang.svg)](https://gitter.im/nemerle/boomerang?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This repository is now connected to continous integration server:
-<http://boomerang.nemerle.eu>
-Generated documentation is available at <http://boomerang.nemerle.eu/job/Boomerang-next/doxygen/>
-
-The pre-compiled windows version is available at <http://nemerle.eu/boomerang.zip>
+<http://jenkins.nemerle.eu>
+Generated documentation is available at <http://jenkins.nemerle.eu/job/boomerang/doxygen/>
 
 This is an experimental branch of boomerang project, the inital goals are:
 
