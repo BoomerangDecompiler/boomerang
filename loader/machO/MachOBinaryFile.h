@@ -88,7 +88,7 @@ class MachOBinaryFile : public QObject,
     std::map<QString, ObjcModule> &getObjcModules() override  { return modules; }
 
     bool LoadFromMemory(QByteArray &data) override;
-
+    int canLoad(QIODevice &dev) const override;
   private:
     bool PostLoad(void *handle) override;  // Called after archive member loaded
     void findJumps(ADDRESS curr); // Find names for jumps to IATs

@@ -211,19 +211,6 @@ QTextStream &operator<<(QTextStream &os, const RTL *r) {
     return os;
 }
 
-/***************************************************************************/ /**
-  * \brief      Return true if this RTL affects the condition codes
-  * \note          Assumes that if there is a flag call Exp, then it is the last
-  * \returns           Boolean as above
-  ******************************************************************************/
-bool RTL::areFlagsAffected() {
-    if (this->empty())
-        return false;
-    Instruction *e = this->back();
-    // If it is a flag call, then the CCs are affected
-    return e->isFlagAssgn();
-}
-
 void RTL::simplify() {
     for (iterator it = begin(); it != end();) {
         Instruction *s = *it;

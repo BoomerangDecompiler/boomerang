@@ -23,6 +23,7 @@
 #define __EXEBINARYFILE_H__
 
 #include "BinaryFile.h"
+class QFile;
 #pragma pack(push,1)
 typedef struct { /*        PSP structure                 */
     SWord int20h;       /* interrupt 20h                        */
@@ -90,6 +91,7 @@ public:
 
     void initialize(IBoomerang *sys) override;
     bool LoadFromMemory(QByteArray &data) override;
+    int canLoad(QIODevice & fl) const override;
 private:
     exeHeader *m_pHeader; // Pointer to header
     Byte *m_pImage;       // Pointer to image

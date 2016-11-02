@@ -67,7 +67,7 @@ class PalmBinaryFile : public QObject, public LoaderInterface {
     //    ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
     bool LoadFromMemory(QByteArray &data) override;
-
+    int canLoad(QIODevice &dev) const override;
 private:
     void addTrapSymbols();
     unsigned char *m_pImage; //!< Points to loaded image

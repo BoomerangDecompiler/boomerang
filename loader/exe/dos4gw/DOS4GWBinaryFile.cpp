@@ -277,6 +277,26 @@ bool DOS4GWBinaryFile::LoadFromMemory(QByteArray &data) {
 
     return true;
 }
+#define TESTMAGIC2(buf, off, a, b) (buf[off] == a && buf[off + 1] == b)
+#define TESTMAGIC4(buf, off, a, b, c, d) (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
+
+int DOS4GWBinaryFile::canLoad(QIODevice & fl) const
+{
+    unsigned char buf[64];
+    fl.read((char *)buf,sizeof(buf));
+
+    if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
+        int peoff = LMMH(buf[0x3C]);
+        if (peoff != 0 && fl.seek(peoff) ) {
+            fl.read((char *)buf,4);
+            if (TESTMAGIC2(buf, 0, 'L', 'E')) {
+                /* Win32 VxD (Linear Executable) or DOS4GW app */
+                return 2 + 4 + 2;
+            }
+        }
+    }
+    return 0;
+}
 
 // Clean up and unload the binary image
 void DOS4GWBinaryFile::UnLoad() {}

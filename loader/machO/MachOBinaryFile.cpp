@@ -391,6 +391,19 @@ bool MachOBinaryFile::LoadFromMemory(QByteArray &img) {
     return true;
 }
 
+int MachOBinaryFile::canLoad(QIODevice & dev) const
+{
+    unsigned char buf[8];
+    dev.read((char *)buf,sizeof(buf));
+    if ((buf[0] == 0xfe && buf[1] == 0xed && buf[2] == 0xfa && buf[3] == 0xce) ||
+               (buf[0] == 0xce && buf[1] == 0xfa && buf[2] == 0xed && buf[3] == 0xfe) ||
+               (buf[0] == 0xca && buf[1] == 0xfe && buf[2] == 0xba && buf[3] == 0xbe)) {
+        /* Mach-O Mac OS-X binary */
+        return 4;
+    }
+    return 0;
+}
+
 // Clean up and unload the binary image
 void MachOBinaryFile::UnLoad() {}
 

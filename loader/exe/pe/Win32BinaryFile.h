@@ -173,7 +173,8 @@ public:
     // Internal information
     // Dump headers, etc
     bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
-
+    bool LoadFromMemory(QByteArray &arr) override;
+    int canLoad(QIODevice & fl) const override;
 protected:
     int win32Read2(short *ps) const; // Read 2 bytes from native addr
     int win32Read4(int *pi) const;   // Read 4 bytes from native addr
@@ -196,7 +197,6 @@ public:
 protected:
     void processIAT();
     void readDebugData(QString exename);
-    bool LoadFromMemory(QByteArray &arr) override;
 private:
     bool PostLoad(void *handle) override;  // Called after archive member loaded
     void findJumps(ADDRESS curr); // Find names for jumps to IATs

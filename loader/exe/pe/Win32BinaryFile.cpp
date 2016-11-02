@@ -70,14 +70,16 @@ struct SectionParam {
 #define IMAGE_SCN_MEM_WRITE 0x80000000
 #endif
 
-Win32BinaryFile::Win32BinaryFile() : mingw_main(false) {
+Win32BinaryFile::Win32BinaryFile() : mingw_main(false),base(nullptr) {
 }
 
 Win32BinaryFile::~Win32BinaryFile() {
     if(base)
         free(base);
+    base = nullptr;
 }
 void Win32BinaryFile::initialize(IBoomerang *sys) {
+    UnLoad();
     Image = sys->getImage();
     Symbols = sys->getSymbols();
 }
@@ -525,6 +527,25 @@ bool Win32BinaryFile::LoadFromMemory(QByteArray &arr) {
     return true;
 
 }
+#define TESTMAGIC2(buf, off, a, b) (buf[off] == a && buf[off + 1] == b)
+#define TESTMAGIC4(buf, off, a, b, c, d) (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
+
+int Win32BinaryFile::canLoad(QIODevice & fl) const
+{
+    unsigned char buf[64];
+    fl.read((char *)buf,sizeof(buf));
+    if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
+        int peoff = LMMH(buf[0x3C]);
+        if (peoff != 0 && fl.seek(peoff) ) {
+            fl.read((char *)buf,4);
+            if (TESTMAGIC4(buf, 0, 'P', 'E', 0, 0)) {
+                /* Win32 Binary */
+                return 2 + 4 + 4;
+            }
+        }
+    }
+    return 0;
+}
 
 // Used above for a hack to find jump instructions pointing to IATs.
 // Heuristic: start just before the "start" entry point looking for FF 25 opcodes followed by a pointer to an import
@@ -563,7 +584,14 @@ void Win32BinaryFile::findJumps(ADDRESS curr) {
 }
 
 // Clean up and unload the binary image
-void Win32BinaryFile::UnLoad() {}
+void Win32BinaryFile::UnLoad() {
+    m_cbImage=0;
+    m_cReloc=0;
+    if(base)
+        free(base);
+    base = nullptr;
+
+}
 
 bool Win32BinaryFile::PostLoad(void *handle) {
     Q_UNUSED(handle);

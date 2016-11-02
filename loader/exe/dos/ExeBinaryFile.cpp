@@ -23,6 +23,7 @@
 #include "IBinaryImage.h"
 
 #include <QBuffer>
+#include <QFile>
 #include <cassert>
 
 ExeBinaryFile::ExeBinaryFile() {
@@ -204,4 +205,20 @@ ADDRESS ExeBinaryFile::GetMainEntryPoint() { return NO_ADDRESS; }
 ADDRESS ExeBinaryFile::GetEntryPoint() {
     // Check this...
     return ADDRESS::g((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
+}
+
+#define TESTMAGIC2(buf, off, a, b) (buf[off] == a && buf[off + 1] == b)
+#define LMMH(x)                                                                                                        \
+    ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) +          \
+    ((unsigned)((Byte *)(&x))[3] << 24))
+
+int ExeBinaryFile::canLoad(QIODevice & fl) const
+{
+    unsigned char buf[4];
+    fl.read((char *)buf,sizeof(buf));
+
+    if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
+        return 2;
+    }
+    return 0;
 }

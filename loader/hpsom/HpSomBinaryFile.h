@@ -117,9 +117,8 @@ public:
     //        bool        IsDynamicLinkedProc(ADDRESS wNative);
     //        ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
-protected:
     bool LoadFromMemory(QByteArray &data) override;
-
+    int canLoad(QIODevice &dev) const override;
 private:
     // Private method to get the start and length of a given subspace
     std::pair<ADDRESS, int> getSubspaceInfo(const char *ssname);

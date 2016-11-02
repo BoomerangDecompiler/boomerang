@@ -34,6 +34,7 @@
 #include <cstring>
 #include <inttypes.h>
 #include <QBuffer>
+#include <QFile>
 
 struct SectionParam {
     QString Name;
@@ -875,4 +876,13 @@ bool ElfBinaryFile::IsRelocationAt(ADDRESS uNative) {
         break; // Not implemented
     }
     return false;
+}
+#define TESTMAGIC4(buf, off, a, b, c, d) (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
+
+int ElfBinaryFile::canLoad(QIODevice & fl) const {
+    QByteArray contents = fl.read(4);
+    if (TESTMAGIC4(contents.data(), 0, '\177', 'E', 'L', 'F')) {
+        return 4;
+    }
+    return 0;
 }

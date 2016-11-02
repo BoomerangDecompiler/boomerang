@@ -91,10 +91,14 @@ enum MACHINE {
 };
 
 class BinaryFileFactory {
+    std::vector<QObject *> m_loader_plugins;
     QObject *getInstanceFor(const QString &sName);
     static QString m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
-
+    void populatePlugins();
 public:
+    BinaryFileFactory() {
+        populatePlugins();
+    }
     static void setBasePath(const QString &path) { m_base_path = path; } //!< sets the base directory for plugin search
     QObject *Load(const QString &sName);
     void UnLoad();
@@ -126,6 +130,7 @@ public:
     virtual LOAD_FMT GetFormat() const = 0;   //!< Get the format (e.g. LOADFMT_ELF)
     virtual MACHINE getMachine() const = 0;   //!< Get the expected machine (e.g. MACHINE_PENTIUM)
     virtual bool LoadFromMemory(QByteArray &data) = 0;
+    virtual int canLoad(QIODevice &data) const = 0;
 
     /// Return the virtual address at which the binary expects to be loaded.
     /// For position independent / relocatable code this should be NO_ADDDRESS

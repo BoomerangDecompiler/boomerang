@@ -389,6 +389,18 @@ bool HpSomBinaryFile::LoadFromMemory(QByteArray &imgdata) {
     return true;
 }
 
+int HpSomBinaryFile::canLoad(QIODevice & dev) const
+{
+    unsigned char buf[64];
+    dev.read((char *)buf,sizeof(buf));
+    if (buf[0] == 0x02 && buf[2] == 0x01 && (buf[1] == 0x10 || buf[1] == 0x0B) &&
+               (buf[3] == 0x07 || buf[3] == 0x08 || buf[4] == 0x0B)) {
+        /* HP Som binary */
+        return 5;
+    }
+    return 0;
+}
+
 void HpSomBinaryFile::UnLoad() {
     if (m_pImage) {
         delete[] m_pImage;

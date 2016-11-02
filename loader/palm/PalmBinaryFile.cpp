@@ -253,6 +253,17 @@ bool PalmBinaryFile::LoadFromMemory(QByteArray &img) {
     Symbols->create(GetMainEntryPoint(),"PilotMain").setAttr("EntryPoint",true);
     return true;
 }
+#define TESTMAGIC4(buf, off, a, b, c, d) (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
+int PalmBinaryFile::canLoad(QIODevice & dev) const
+{
+    unsigned char buf[64];
+    dev.read((char *)buf,sizeof(buf));
+    if (TESTMAGIC4(buf, 0x3C, 'a', 'p', 'p', 'l') || TESTMAGIC4(buf, 0x3C, 'p', 'a', 'n', 'l')) {
+        /* PRC Palm-pilot binary */
+        return 8;
+    }
+    return 0;
+}
 
 void PalmBinaryFile::UnLoad() {
 }

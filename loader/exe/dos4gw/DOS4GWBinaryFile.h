@@ -16,7 +16,7 @@
 
 #include "BinaryFile.h"
 #include <string>
-
+class QFile;
 /**
  * This file contains the definition of the DOS4GWBinaryFile class, and some
  * other definitions specific to the exe version of the BinaryFile object
@@ -143,7 +143,7 @@ public:
     ADDRESS GetEntryPoint() override;
     DWord getDelta();
     bool LoadFromMemory(QByteArray &data) override;
-
+    int canLoad(QIODevice &fl) const override;
     //
     //        --        --        --        --        --        --        --        --        --
     //
@@ -160,9 +160,9 @@ private:
     bool PostLoad(void *handle) override; //!< Called after archive member loaded
 
     Header *m_pHeader;      // Pointer to header
-    LXHeader *m_pLXHeader;  // Pointer to lx header
-    LXObject *m_pLXObjects; // Pointer to lx objects
-    LXPage *m_pLXPages;     // Pointer to lx pages
+    LXHeader *m_pLXHeader=nullptr;  // Pointer to lx header
+    LXObject *m_pLXObjects=nullptr; // Pointer to lx objects
+    LXPage *m_pLXPages=nullptr;     // Pointer to lx pages
     int m_cbImage;          // Size of image
     // int        m_cReloc;                // Number of relocation entries
     // DWord*    m_pRelocTable;            // The relocation table

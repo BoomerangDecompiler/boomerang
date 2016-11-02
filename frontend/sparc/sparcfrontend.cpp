@@ -532,9 +532,8 @@ bool SparcFrontEnd::case_SCD(ADDRESS &address, ptrdiff_t delta, ADDRESS hiAddres
         LOG_STREAM() << "Warning: instruction at " << address << " not copied to true leg of preceeding branch\n";
         return true;
     }
-
-    if (!delay_inst.rtl->areFlagsAffected()) {
-        // SCD; flags not affected. Put delay inst first
+    // If delay_insn decoded to empty list ( NOP) or if it isn't a flag assign => Put delay inst first
+    if (delay_inst.rtl->empty() || !delay_inst.rtl->back()->isFlagAssgn()) {
         if (delay_inst.type != NOP) {
             // Emit delay instr
             BB_rtls->push_back(delay_inst.rtl);

@@ -64,7 +64,6 @@ public:
     // Common enquiry methods
     ADDRESS getAddress() { return nativeAddr; }    //!< Return RTL's native address
     void setAddress(ADDRESS a) { nativeAddr = a; } //!< Set the address
-    bool areFlagsAffected();                       //!< True if flags are affected
 
     // Statement list editing methods
     void appendStmt(Instruction *s); // Add s to end of RTL.
