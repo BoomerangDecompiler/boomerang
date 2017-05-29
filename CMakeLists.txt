@@ -126,7 +126,7 @@ link_directories(
     "${CMAKE_CURRENT_BINARY_DIR}/loader"
 )
 
-add_subdirectory(util)
+
 add_subdirectory(c)
 add_subdirectory(codegen)
 add_subdirectory(db)
