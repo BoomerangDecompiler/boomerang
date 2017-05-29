@@ -45,7 +45,10 @@ set(COMMON_COMPILE_OPTIONS "")
 if (CMAKE_CXX_COMPILER MATCHES cl.exe)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 else ()
-	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic -Wfatal-errors -Wshadow -Wformat=2 -Wformat-signedness")
+	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic -Wfatal-errors -Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs")
+	
+	#TODO Enable more warnings
+	#-Wnull-dereference (GCC6)
     
     if (CMAKE_CXX_COMPILER MATCHES clang)
         #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
@@ -111,7 +114,6 @@ include_directories(
     "${CMAKE_CURRENT_BINARY_DIR}/include"
     ${Qt5Core_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
-    "${PROJECT_SOURCE_DIR}/3rd_party/include"
 )
 
 link_directories(
