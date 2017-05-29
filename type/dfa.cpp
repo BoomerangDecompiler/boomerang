@@ -376,12 +376,15 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function * f) {
 
 bool DFA_TypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
 {
+    Q_UNUSED(sig);
+    Q_UNUSED(cfg);
     assert(false);
     return false;
 }
 
 bool DFA_TypeRecovery::dfaTypeAnalysis(Instruction *i)
 {
+    Q_UNUSED(i);
     assert(false);
     return false;
 }

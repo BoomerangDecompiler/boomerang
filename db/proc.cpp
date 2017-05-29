@@ -1689,7 +1689,7 @@ void UserProc::remUnusedStmtEtc() {
 
     updateCalls(); // Or just updateArguments?
 
-    bool removedbbs = branchAnalysis();
+    branchAnalysis();
     fixUglyBranches();
 
     debugPrintAll("after remove unused statements etc");

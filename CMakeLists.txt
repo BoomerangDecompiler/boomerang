@@ -40,17 +40,21 @@ ENDIF (BUILD_TESTING)
 # Compiler specific flags section
 ###############################################################################
 
+set(COMMON_COMPILE_OPTIONS "")
+
 if (CMAKE_CXX_COMPILER MATCHES cl.exe)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 else ()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11 -pedantic" )
+	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -pedantic -Werror")
+    
     if (CMAKE_CXX_COMPILER MATCHES clang)
-        #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
+        #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
     else ()
         #add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
     endif ()
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra" )
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS} -std=c++11")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${COMMON_COMPILE_OPTIONS}")
     add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG
 endif ()
 
