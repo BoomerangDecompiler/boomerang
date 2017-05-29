@@ -24,6 +24,7 @@ SET(SRC
     st20/st20frontend.cpp
     st20/st20frontend.h
 )
+
 set(SSL_FILES
   machine/st20/st20.ssl
   machine/mips/mips.ssl
@@ -33,22 +34,24 @@ set(SSL_FILES
   machine/sparc/sparc.ssl
 )
 
-foreach( ssl_file ${SSL_FILES} )
-  add_custom_command(
-    OUTPUT "${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}"
-    COMMAND cmake -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/${ssl_file}"
-    "${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${ssl_file}"
-  )
-  list( APPEND ssl_files_dest "${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}" )
+foreach(ssl_file ${SSL_FILES})
+	add_custom_command(
+		OUTPUT "${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}"
+		COMMAND cmake -E copy
+		"${CMAKE_CURRENT_SOURCE_DIR}/${ssl_file}"
+		"${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}"
+		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${ssl_file}"
+	)
+	list( APPEND ssl_files_dest "${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}" )
 endforeach()
+
 add_custom_target( CopySSLs ALL DEPENDS ${ssl_files_dest} )
 
-ADD_LIBRARY(frontend STATIC ${SRC})
+add_library(frontend STATIC ${SRC})
 add_dependencies(frontend CopySSLs)
 qt5_use_modules(frontend Core)
 
-IF(BUILD_TESTING)
-ADD_SUBDIRECTORY(unit_testing)
-ENDIF()
+if (BUILD_TESTING)
+	add_subdirectory(unit_testing)
+endif ()
+
