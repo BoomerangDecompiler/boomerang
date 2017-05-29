@@ -1,7 +1,10 @@
-SET(boomerang_c_codegen_sources
-        chllcode.cpp
-        syntax.cpp
-chllcode.h
+
+set(boomerang_c_codegen_sources
+    chllcode.cpp
+    syntax.cpp
+	chllcode.h
 )
-ADD_LIBRARY(codegen STATIC ${boomerang_c_codegen_sources})
+
+add_library(codegen STATIC ${boomerang_c_codegen_sources})
 qt5_use_modules(codegen Core)
+
