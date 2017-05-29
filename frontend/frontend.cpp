@@ -730,11 +730,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                             ADDRESS jmptbl = pDest->access<Const,1,2>()->getAddr();
                             unsigned int i;
                             for (i = 0;; i++) {
-                                ADDRESS uDest = ADDRESS::g(Image->readNative4(jmptbl + i * 4));
-                                if (Image->getLimitTextLow() <= uDest && uDest < Image->getLimitTextHigh()) {
-                                    LOG << "  guessed uDest " << uDest << "\n";
-                                    targetQueue.visit(pCfg, uDest, pBB);
-                                    pCfg->addOutEdge(pBB, uDest, true);
+                                ADDRESS destAddr = ADDRESS::g(Image->readNative4(jmptbl + i * 4));
+                                if (Image->getLimitTextLow() <= destAddr && destAddr < Image->getLimitTextHigh()) {
+                                    LOG << "  guessed uDest " << destAddr << "\n";
+                                    targetQueue.visit(pCfg, destAddr, pBB);
+                                    pCfg->addOutEdge(pBB, destAddr, true);
                                 } else
                                     break;
                             }
@@ -803,11 +803,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                                 if (first_statement) {
                                     first_statement->setProc(pProc);
                                     first_statement->simplify();
-                                    CaseStatement *stmt_jump = dynamic_cast<CaseStatement *>(first_statement);
+                                    CaseStatement *case_stmt = dynamic_cast<CaseStatement *>(first_statement);
                                     // In fact it's a computed (looked up) jump, so the jump seems to be a case
                                     // statement.
-                                    if ( nullptr!=stmt_jump &&
-                                        refersToImportedFunction(stmt_jump->getDest())) { // Is it an "DynamicLinkedProcPointer"?
+                                    if ( nullptr!=case_stmt &&
+                                        refersToImportedFunction(case_stmt->getDest())) { // Is it an "DynamicLinkedProcPointer"?
                                         // Yes, it's a library function. Look up it's name.
                                         ADDRESS a = stmt_jump->getDest()->access<Const,1>()->getAddr();
                                         QString nam = BinarySymbols->find(a)->getName();
@@ -896,9 +896,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
                                 // Constuct the RTLs for the new basic block
                                 std::list<RTL *> *rtls = new std::list<RTL *>();
                                 // The only RTL in the basic block is one with a ReturnStatement
-                                std::list<Instruction *> *sl = new std::list<Instruction *>;
-                                sl->push_back(new ReturnStatement());
-                                rtls->push_back(new RTL(pRtl->getAddress() + 1, sl));
+                                std::list<Instruction *> *instrList = new std::list<Instruction *>;
+                                instrList->push_back(new ReturnStatement());
+                                rtls->push_back(new RTL(pRtl->getAddress() + 1, instrList));
 
                                 BasicBlock *returnBB = pCfg->newBB(rtls, BBTYPE::RET, 0);
                                 // Add out edge from call to return
@@ -970,10 +970,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
             if (sequentialDecode && pCfg->existsBB(uAddr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
-                    BasicBlock *pBB = pCfg->newBB(BB_rtls, BBTYPE::FALL, 1);
+                    BasicBlock *bb = pCfg->newBB(BB_rtls, BBTYPE::FALL, 1);
                     // Add an out edge to this address
-                    if (pBB) {
-                        pCfg->addOutEdge(pBB, uAddr);
+                    if (bb) {
+                        pCfg->addOutEdge(bb, uAddr);
                         BB_rtls = nullptr; // Need new list of RTLs
                     }
                 }

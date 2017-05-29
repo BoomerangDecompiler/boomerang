@@ -39,7 +39,7 @@
 #include <cassert>
 #include <iomanip> // For setfill etc
 #include <sstream>
-PPCFrontEnd::PPCFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : FrontEnd(pBF, prog, pbff) {
+PPCFrontEnd::PPCFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *_pbff) : FrontEnd(pBF, prog, _pbff) {
     decoder = new PPCDecoder(prog);
 }
 

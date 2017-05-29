@@ -40,7 +40,7 @@
 #include <iomanip> // For setfill etc
 #include <sstream>
 
-ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *pbff) : FrontEnd(pBF, prog, pbff) {
+ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *_pbff) : FrontEnd(pBF, prog, _pbff) {
     decoder = new ST20Decoder(prog);
 }
 

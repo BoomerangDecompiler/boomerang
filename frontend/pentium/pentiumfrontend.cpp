@@ -133,7 +133,6 @@ bool PentiumFrontEnd::isAssignFromTern(Instruction *s) {
   ******************************************************************************/
 void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask) {
     std::list<SharedExp*> li;
-    std::list<SharedExp*>::iterator it;
     SharedExp exp = e;
     // Use doSearch, which is normally an internal method of Exp, to avoid problems of replacing the wrong
     // subexpression (in some odd cases)

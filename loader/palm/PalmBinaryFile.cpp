@@ -401,10 +401,10 @@ ADDRESS PalmBinaryFile::GetMainEntryPoint() {
         res = findPattern(startupCode, CWCallMain, sizeof(CWCallMain) / sizeof(SWord), 60);
         if (res) {
             // Get the addil operand
-            int addilOp = Read4((int32_t *)(res+5));
+            int _addilOp = Read4((int32_t *)(res+5));
             // That operand plus the address of that operand is PilotMain
             ADDRESS offset_loc = ADDRESS::n((char *)(res+5)-(char *)startCode);
-            return offset_loc + addilOp; //ADDRESS::host_ptr(res) + 10 + addilOp - delta;
+            return offset_loc + _addilOp; //ADDRESS::host_ptr(res) + 10 + addilOp - delta;
         } else {
             fprintf(stderr, "Could not find call to PilotMain in CW app\n");
             return ADDRESS::g(0L);

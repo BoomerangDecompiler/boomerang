@@ -1144,19 +1144,19 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int &indent) {
                     // This is new branch of an existing cycle
                     child = c->cycleGrp;
                     // Find first element f of path that is in c->cycleGrp
-                    ProcList::iterator pi;
+                    ProcList::iterator _pi;
                     Function *f = nullptr;
-                    for (pi = path->begin(); pi != path->end(); ++pi) {
-                        if (c->cycleGrp->find(*pi) != c->cycleGrp->end()) {
-                            f = *pi;
+                    for (_pi = path->begin(); _pi != path->end(); ++_pi) {
+                        if (c->cycleGrp->find(*_pi) != c->cycleGrp->end()) {
+                            f = *_pi;
                             break;
                         }
                     }
                     assert(f);
                     // Insert every proc after f to the end of path into child
                     // There must be at least one element in the list (this proc), so the ++pi should be safe
-                    while (++pi != path->end()) {
-                        child->insert(*pi);
+                    while (++_pi != path->end()) {
+                        child->insert(*_pi);
                     }
                 }
                 // point cycleGrp for each element of child to child, unioning in each element's cycleGrp
@@ -1469,17 +1469,17 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent) {
         Boomerang::get()->alertDecompileDebugPoint(this, "before propagating statements");
 
         // Propagate
-        bool convert; // True when indirect call converted to direct
+        bool _convert; // True when indirect call converted to direct
         do {
-            convert = false;
+            _convert = false;
             LOG_VERBOSE(1) << "propagating at pass " << pass << "\n";
-            change |= propagateStatements(convert, pass);
+            change |= propagateStatements(_convert, pass);
             change |= doRenameBlockVars(pass, true);
             // If you have an indirect to direct call conversion, some propagations that were blocked by
             // the indirect call might now succeed, and may be needed to prevent alias problems
             // FIXME: I think that the below, and even the convert parameter to propagateStatements(), is no longer
             // needed - MVE
-            if (convert) {
+            if (_convert) {
                 if (VERBOSE)
                     LOG << "\nabout to restart propagations and dataflow at pass " << pass
                         << " due to conversion of indirect to direct call(s)\n\n";
@@ -1488,7 +1488,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent) {
                 LOG_SEPARATE(getName()) << "\nafter rename (2) of " << getName() << ":\n" << *this
                                         << "\ndone after rename (2) of " << getName() << ":\n\n";
             }
-        } while (convert);
+        } while (_convert);
 
         printXML();
         if (VERBOSE) {
@@ -3007,7 +3007,7 @@ void UserProc::countRefs(RefCounter &refCounts) {
             LOG << "counting references in " << s << "\n";
         LocationSet refs;
         s->addUsedLocs(refs, false); // Ignore uses in collectors
-        LocationSet::iterator rr;
+
         for (const SharedExp &rr : refs) {
             if (rr->isSubscript()) {
                 Instruction *def = rr->access<RefExp>()->getDef();
@@ -3882,7 +3882,7 @@ void UserProc::conTypeAnalysis() {
     }
 
     // Just use the first solution, if there is one
-    Prog *prog = getProg();
+    Prog *_prog = getProg();
     if (!solns.empty()) {
         ConstraintMap &cm = *solns.begin();
         for (cc = cm.begin(); cc != cm.end(); cc++) {
@@ -3898,7 +3898,7 @@ void UserProc::conTypeAnalysis() {
             if (loc->isGlobal()) {
                 QString nam = loc->access<Const,1>()->getStr();
                 if (!ty->resolvesToVoid())
-                    prog->setGlobalType(nam, ty->clone());
+                    _prog->setGlobalType(nam, ty->clone());
             } else if (loc->isLocal()) {
                 QString nam = loc->access<Const,1>()->getStr();
                 setLocalType(nam, ty);
@@ -3912,7 +3912,7 @@ void UserProc::conTypeAnalysis() {
                     con->setOper(opFltConst);
                 } else if (ty->isCString()) {
                     // Convert to a string
-                    const char *str = prog->getStringConstant(ADDRESS::g(val), true);
+                    const char *str = _prog->getStringConstant(ADDRESS::g(val), true);
                     if (str) {
                         // Make a string
                         con->setStr(str);
@@ -5232,7 +5232,6 @@ void UserProc::updateForUseChange(std::set<UserProc *> &removeRetSet) {
         if (DEBUG_UNUSED)
             LOG << "%%%  parameters changed for " << getName() << "\n";
         std::set<CallStatement *> &callers = getCallers();
-        std::set<CallStatement *>::iterator cc;
         for (CallStatement *cc : callers) {
             cc->updateArguments();
             // Schedule the callers for analysis

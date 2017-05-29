@@ -42,7 +42,7 @@
  ********************************************************************************/
 void MIPSDecoder::unused(int /*x*/) {}
 
-MIPSDecoder::MIPSDecoder(Prog *prog) : NJMCDecoder(prog) {
+MIPSDecoder::MIPSDecoder(Prog *_prog) : NJMCDecoder(_prog) {
     QDir base_dir=Boomerang::get()->getProgDir();
     RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/mips/mips.ssl"));
 }

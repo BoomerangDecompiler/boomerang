@@ -48,8 +48,8 @@ void DataFlow::DFS(int p, size_t n) {
         // For each successor w of n
         BasicBlock *bb = BBs[n];
         const std::vector<BasicBlock *> &outEdges = bb->getOutEdges();
-        for (BasicBlock * bb : outEdges) {
-            DFS(n, indices[bb]);
+        for (BasicBlock * _bb : outEdges) {
+            DFS(n, indices[_bb]);
         }
     }
 }
@@ -280,8 +280,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
 
     // We need to create A_orig[n] for all n, the array of sets of locations defined at BB n
     // Recreate each call because propagation and other changes make old data invalid
-    unsigned n;
-    for (n = 0; n < numBB; n++) {
+    for (unsigned int n = 0; n < numBB; n++) {
         BasicBlock::rtlit rit;
         StatementList::iterator sit;
         BasicBlock *bb = BBs[n];
@@ -300,7 +299,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc) {
     }
 
     // For each node n
-    for (n = 0; n < numBB; n++) {
+    for (unsigned int n = 0; n < numBB; n++) {
         // For each variable a in A_orig[n]
         for (const SharedExp &a : A_orig[n]) {
             defsites[a].insert(n);

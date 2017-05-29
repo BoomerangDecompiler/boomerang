@@ -463,7 +463,6 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp> &e, SharedExp &
 
 // Add a subscript (to definition d) to each element
 void LocationSet::addSubscript(Instruction *d /* , Cfg* cfg */) {
-    std::set<SharedExp , lessExpStar>::iterator it;
     std::set<SharedExp , lessExpStar> newSet;
     for (SharedExp it : lset)
         newSet.insert(it->expSubscriptVar(it, d /* , cfg */));

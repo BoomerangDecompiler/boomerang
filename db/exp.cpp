@@ -58,34 +58,34 @@ Const::Const(const Const &o) : Exp(o.op) {
     strin = o.strin;
 }
 
-Terminal::Terminal(OPER op) : Exp(op) {}
+Terminal::Terminal(OPER _op) : Exp(_op) {}
 Terminal::Terminal(const Terminal &o) : Exp(o.op) {} // Copy constructor
 
-Unary::Unary(OPER op) : Exp(op) /*,subExp1(nullptr)*/ {
+Unary::Unary(OPER _op) : Exp(_op) /*,subExp1(nullptr)*/ {
     // pointer uninitialized to help out finding usages of null pointers ?
     assert(op != opRegOf);
 }
 
-Unary::Unary(OPER op, SharedExp e) : Exp(op), subExp1(e) { assert(subExp1); }
+Unary::Unary(OPER _op, SharedExp _e) : Exp(_op), subExp1(_e) { assert(subExp1); }
 Unary::Unary(const Unary &o) : Exp(o.op) {
     subExp1 = o.subExp1->clone();
     assert(subExp1);
 }
 
-Binary::Binary(OPER op) : Unary(op) {
+Binary::Binary(OPER _op) : Unary(_op) {
     // Initialise the 2nd pointer. The first pointer is initialised in the Unary constructor
     // subExp2 = 0;
 }
-Binary::Binary(OPER op, SharedExp e1, SharedExp e2) : Unary(op, e1), subExp2(e2) { assert(subExp1 && subExp2); }
+Binary::Binary(OPER _op, SharedExp _e1, SharedExp _e2) : Unary(_op, _e1), subExp2(_e2) { assert(subExp1 && subExp2); }
 Binary::Binary(const Binary &o) : Unary(op) {
     setSubExp1(subExp1->clone());
     subExp2 = o.subExp2->clone();
     assert(subExp1 && subExp2);
 }
 
-Ternary::Ternary(OPER op) : Binary(op) { subExp3 = nullptr; }
-Ternary::Ternary(OPER op, SharedExp e1, SharedExp e2, SharedExp e3) : Binary(op, e1, e2) {
-    subExp3 = e3;
+Ternary::Ternary(OPER _op) : Binary(_op) { subExp3 = nullptr; }
+Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3) : Binary(_op, _e1, _e2) {
+    subExp3 = _e3;
     assert(subExp1 && subExp2 && subExp3);
 }
 Ternary::Ternary(const Ternary &o) : Binary(o.op) {
@@ -103,7 +103,7 @@ TypedExp::TypedExp(TypedExp &o) : Unary(opTypedExp) {
     type = o.type->clone();
 }
 
-FlagDef::FlagDef(SharedExp params, SharedRTL rtl) : Unary(opFlagDef, params), rtl(rtl) {}
+FlagDef::FlagDef(SharedExp params, SharedRTL _rtl) : Unary(opFlagDef, params), rtl(_rtl) {}
 
 RefExp::RefExp(SharedExp e, Instruction *d) : Unary(opSubscript, e), def(d) { assert(e); }
 
@@ -119,9 +119,10 @@ TypeVal::TypeVal(SharedType ty) : Terminal(opTypeVal), val(ty) {}
  * \param exp - child expression
  * \param p - enclosing procedure, if null this constructor will try to find it.
  */
-Location::Location(OPER op, SharedExp exp, UserProc *p) : Unary(op, exp), proc(p) {
+Location::Location(OPER _op, SharedExp exp, UserProc *_p) : Unary(_op, exp), proc(_p) {
     assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
-    if (p == nullptr) {
+
+    if (_p == nullptr) {
         // eep.. this almost always causes problems
         SharedExp e = exp;
         if (e) {
@@ -2156,12 +2157,12 @@ SharedExp Binary::simplifyArith() {
             // Just positives
             return Exp::Accumulate(positives);
         } else {
-            OPER op = opPlus;
+            OPER _op = opPlus;
             if (sum < 0) {
-                op = opMinus;
+                _op = opMinus;
                 sum = -sum;
             }
-            return Binary::get(op, Exp::Accumulate(positives), Const::get(sum));
+            return Binary::get(_op, Exp::Accumulate(positives), Const::get(sum));
         }
     }
     // Some positives, some negatives
@@ -2170,12 +2171,12 @@ SharedExp Binary::simplifyArith() {
         return Binary::get(opMinus, Exp::Accumulate(positives), Exp::Accumulate(negatives));
     }
     // General case: some positives, some negatives, a sum
-    OPER op = opPlus;
+    OPER _op = opPlus;
     if (sum < 0) {
-        op = opMinus; // Return (pos - negs) - sum
+        _op = opMinus; // Return (pos - negs) - sum
         sum = -sum;
     }
-    return Binary::get(op, Binary::get(opMinus, Exp::Accumulate(positives), Exp::Accumulate(negatives)),
+    return Binary::get(_op, Binary::get(opMinus, Exp::Accumulate(positives), Exp::Accumulate(negatives)),
                        Const::get(sum));
 }
 
@@ -3415,7 +3416,6 @@ SharedExp Exp::killFill() {
     std::list<SharedExp*> result;
     doSearch(srch1, res, result, false);
     doSearch(srch2, res, result, false);
-    std::list<SharedExp*>::iterator it;
     for (SharedExp* it : result) {
         // Kill the sign extend bits
         *it = (*it)->getSubExp3();

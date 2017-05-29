@@ -80,7 +80,7 @@ SharedExp listExpToExp(std::list<SharedExp> *le);       // Convert a STL list of
 SharedExp listStrToExp(std::list<QString> *ls); // Convert a STL list of strings to opList
 
 /*apres const  */
-SSLParser::SSLParser(const QString &sslFile, bool trace) : sslFile(sslFile), bFloat(false) {
+SSLParser::SSLParser(const QString &_sslFile, bool _trace) : sslFile(_sslFile), bFloat(false) {
 #if YY_SSLParser_DEBUG != 0
     YY_SSLParser_DEBUG_FLAG = 0;
 #endif
@@ -90,8 +90,8 @@ SSLParser::SSLParser(const QString &sslFile, bool trace) : sslFile(sslFile), bFl
         LOG_STREAM() << "can't open `" << sslFile << "' for reading\n";
         return;
     }
-    theScanner = new SSLScanner(*m_fin, trace);
-    if (trace)
+    theScanner = new SSLScanner(*m_fin, _trace);
+    if (_trace)
         yydebug = 1;
 }
 
@@ -1204,8 +1204,8 @@ SSLParser::
         std::ostringstream o;
         if (Dict.FlagFuncs.find(yyvsp[-2].str) != Dict.FlagFuncs.end()) {
             // Note: SETFFLAGS assigns to the floating point flags. All others to the integer flags
-            bool bFloat = yyvsp[-2].str=="SETFFLAGS";
-            OPER op = bFloat ? opFflags : opFlags;
+            const bool isFloatOp = yyvsp[-2].str=="SETFFLAGS";
+            OPER op = isFloatOp ? opFflags : opFlags;
             yyval.regtransfer = new Assign(
                 Terminal::get(op), Binary::get(opFlagCall, Const::get(yyvsp[-2].str), listExpToExp(yyvsp[-1].explist)));
             delete yyvsp[-1].explist;

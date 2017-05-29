@@ -2,7 +2,7 @@
 #include "DecompilerThread.h"
 
 #include <QtWidgets>
-RTLEditor::RTLEditor(Decompiler *decompiler, const QString &name) : decompiler(decompiler), name(name) {
+RTLEditor::RTLEditor(Decompiler *_decompiler, const QString &_name) : decompiler(_decompiler), name(_name) {
     updateContents();
     setMouseTracking(true);
     setReadOnly(true);
@@ -17,8 +17,8 @@ void RTLEditor::updateContents() {
 }
 
 void RTLEditor::mouseMoveEvent(QMouseEvent *event) {
-    QString name = anchorAt(event->pos());
-    if (!name.isEmpty())
+    QString _name = anchorAt(event->pos());
+    if (!_name.isEmpty())
         QApplication::setOverrideCursor(Qt::PointingHandCursor);
     else
         QApplication::restoreOverrideCursor();
@@ -26,9 +26,9 @@ void RTLEditor::mouseMoveEvent(QMouseEvent *event) {
 
 void RTLEditor::mousePressEvent(QMouseEvent *event) {
     // allow clicking on subscripts
-    QString name = anchorAt(event->pos());
-    if (!name.isEmpty()) {
-        scrollToAnchor(name.mid(1));
+    QString _name = anchorAt(event->pos());
+    if (!_name.isEmpty()) {
+        scrollToAnchor(_name.mid(1));
         return;
     }
     QTextEdit::mousePressEvent(event);

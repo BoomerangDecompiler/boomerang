@@ -910,7 +910,7 @@ public:
 
 protected:
     friend class XMLProgParser;
-    Location(OPER op) : Unary(op), proc(nullptr) {}
+    Location(OPER _op) : Unary(_op), proc(nullptr) {}
 }; // class Location
 
 typedef std::set<SharedExp, lessExpStar> sExp;
