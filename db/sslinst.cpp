@@ -271,8 +271,8 @@ void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParam
         } else if (!haveCount) {
             haveCount = true;
             char buf[10];
-            for (unsigned i = 1; i <= sub.funcParams.size(); i++) {
-                sprintf(buf, "__lp%d", i);
+            for (unsigned int i = 1; i <= sub.funcParams.size(); i++) {
+                sprintf(buf, "__lp%u", i);
                 funcParams.push_back(buf);
             }
         }

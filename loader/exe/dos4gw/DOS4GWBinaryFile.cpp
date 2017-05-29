@@ -202,9 +202,10 @@ bool DOS4GWBinaryFile::LoadFromMemory(QByteArray &data) {
     for (unsigned n = 0; n < numSections; n++) {
         if (LMMH(m_pLXObjects[n].ObjectFlags) & 0x40) {
 
-            printf("vsize %x reloc %x flags %x page %i npage %i\n", LMMH(m_pLXObjects[n].VirtualSize),
+            printf("vsize %x reloc %x flags %x page %u npage %u\n", LMMH(m_pLXObjects[n].VirtualSize),
                    LMMH(m_pLXObjects[n].RelocBaseAddr), LMMH(m_pLXObjects[n].ObjectFlags),
                    LMMH(m_pLXObjects[n].PageTblIdx), LMMH(m_pLXObjects[n].NumPageTblEntries));
+
             SectionParam sect;
             sect.Name = QString("seg%i").arg(n); // no section names in LX
             sect.from = LMMH(m_pLXObjects[n].RelocBaseAddr);

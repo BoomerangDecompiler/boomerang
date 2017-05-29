@@ -135,8 +135,11 @@ bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
     if (strncmp(m_pImage, "\x7F"
                 "ELF",
                 4) != 0) {
-        fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n", pHeader->e_ident[0], pHeader->e_ident[1],
-                pHeader->e_ident[2], pHeader->e_ident[3]);
+        fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n",
+                (unsigned int)pHeader->e_ident[0],
+                (unsigned int)pHeader->e_ident[1],
+                (unsigned int)pHeader->e_ident[2],
+                (unsigned int)pHeader->e_ident[3]);
         return 0;
     }
     if ((pHeader->endianness != 1) && (pHeader->endianness != 2)) {
@@ -179,12 +182,12 @@ bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
         // Get section information.
         Elf32_Shdr *pShdr = m_pShdrs + i;
         if ((char *)pShdr > m_pImage + m_lImageSize) {
-            fprintf(stderr,"section %d header is outside the image size\n",i);
+            fprintf(stderr,"section %u header is outside the image size\n",i);
             return false;
         }
         pName = m_pStrings + elfRead4(&pShdr->sh_name);
         if (pName > m_pImage + m_lImageSize) {
-            fprintf(stderr,"name for section %d is outside the image size\n",i);
+            fprintf(stderr,"name for section %u is outside the image size\n",i);
             return false;
         }
 
@@ -568,7 +571,7 @@ MACHINE ElfBinaryFile::getMachine() const {
         return (MACHINE)-1;
     }
     // An unknown machine type
-    fprintf(stderr,"Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n",machine,machine);
+    fprintf(stderr,"Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n",machine, (unsigned int)machine);
     fprintf(stderr,"(Please add a description for this type, thanks!)\n");
     return (MACHINE)-1;
 }

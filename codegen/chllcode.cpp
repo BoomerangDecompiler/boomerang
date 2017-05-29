@@ -98,7 +98,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             if (rem == 0 || rem == 99 || K > -128) {
                 // A multiple of 100, or one less; use 4000000000U style
                 char num[16];
-                sprintf(num, "%u", K);
+                sprintf(num, "%u", (unsigned int)K);
                 str << num << "U";
             } else {
                 // Output it in 0xF0000000 style

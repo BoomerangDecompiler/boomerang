@@ -36,8 +36,13 @@
 #include <QFile>
 #include <QBuffer>
 #define DEBUG_MACHO_LOADER 0
-#define DEBUG_PRINT(...) \
-            do { if (DEBUG_MACHO_LOADER) fprintf(stderr, __VA_ARGS__); } while (0)
+
+#if DEBUG_MACHO_LOADER
+#  define DEBUG_PRINT(...) \
+    do { if (DEBUG_MACHO_LOADER) fprintf(stderr, __VA_ARGS__); } while (0)
+#else
+#  define DEBUG_PRINT(...)
+#endif
 
 namespace {
 
@@ -107,15 +112,12 @@ bool MachOBinaryFile::LoadFromMemory(QByteArray &img) {
         for (int i = 0; i < nimages; i++) {
             int fbh = 8 + i * 5 * 4;
             unsigned int cputype = BE4(fbh);
-            unsigned int offset = BE4(fbh + 8);
-            unsigned int cpusubtype = BE4(fbh + 4);
-            unsigned int size = BE4(fbh + 12);
-            unsigned int pad = BE4(fbh + 16);
+            unsigned int offset  = BE4(fbh + 8);
             DEBUG_PRINT("cputype: %08x\n", cputype);
-            DEBUG_PRINT("cpusubtype: %08x\n", cpusubtype);
-            DEBUG_PRINT("offset: %08x\n", offset);
-            DEBUG_PRINT("size: %08x\n", size);
-            DEBUG_PRINT("pad: %08x\n", pad);
+            DEBUG_PRINT("cpusubtype: %08x\n", BE4(fbh + 4));
+            DEBUG_PRINT("offset: %08x\n", BE4(fbh + 8));
+            DEBUG_PRINT("size: %08x\n", BE4(fbh + 12));
+            DEBUG_PRINT("pad: %08x\n", BE4(fbh + 16));
 
             if (cputype == 0x7) // i386
                 imgoffs = offset;
