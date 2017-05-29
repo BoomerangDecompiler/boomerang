@@ -1,4 +1,4 @@
-INCLUDE_DIRECTORIES(../c/) # used by FrontEnd::readLibrarySignatures
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/c/) # used by FrontEnd::readLibrarySignatures
 SET(SRC
     frontend.cpp
     TargetQueue.cpp

@@ -1,4 +1,4 @@
-include_directories(../c/) # used by prog.cpp
+include_directories(${CMAKE_SOURCE_DIR}/src/c/) # used by prog.cpp
 
 set(INCLUDES
 	../include/basicblock.h
