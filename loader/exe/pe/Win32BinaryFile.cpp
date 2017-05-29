@@ -70,7 +70,7 @@ struct SectionParam {
 #define IMAGE_SCN_MEM_WRITE 0x80000000
 #endif
 
-Win32BinaryFile::Win32BinaryFile() : mingw_main(false),base(nullptr) {
+Win32BinaryFile::Win32BinaryFile() : base(nullptr), mingw_main(false) {
 }
 
 Win32BinaryFile::~Win32BinaryFile() {

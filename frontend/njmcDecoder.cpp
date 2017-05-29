@@ -54,8 +54,10 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
     // Get the signature of the instruction and extract its parts
     std::pair<QString, unsigned> sig = RTLDict.getSignature(name);
     QString opcode = sig.first;
-    unsigned numOperands = sig.second;
-    //assert(numOperands==args.size());
+    unsigned int numOperands = sig.second;
+    assert(numOperands==args.size());
+    Q_UNUSED(numOperands);
+    
     // Put the operands into a vector
     std::vector<SharedExp> actuals(args);
 

@@ -2277,7 +2277,7 @@ void BasicBlock::processSwitch(UserProc *proc) {
     for (ADDRESS addr : dests) {
         char tmp[1024];
         count++;
-        sprintf(tmp, "before decoding fragment %i of %zi (%" PRIxPTR ")", count, dests.size(), addr.m_value);
+        sprintf(tmp, "before decoding fragment %i of %zu (%" PRIxPTR ")", count, dests.size(), addr.m_value);
         Boomerang::get()->alertDecompileDebugPoint(proc, tmp);
         prog->decodeFragment(proc, addr);
     }

@@ -527,8 +527,8 @@ public:
 private:
     Definitions DefVec; // A vector of information about definitions
 public:
-    PhiAssign(SharedExp lhs) : Assignment(lhs) { Kind = STMT_PHIASSIGN; }
-    PhiAssign(SharedType ty, SharedExp lhs) : Assignment(ty, lhs) { Kind = STMT_PHIASSIGN; }
+    PhiAssign(SharedExp _lhs) : Assignment(_lhs) { Kind = STMT_PHIASSIGN; }
+    PhiAssign(SharedType ty, SharedExp _lhs) : Assignment(ty, _lhs) { Kind = STMT_PHIASSIGN; }
     // Copy constructor (not currently used or implemented)
     PhiAssign(Assign &o);
     virtual ~PhiAssign() {}

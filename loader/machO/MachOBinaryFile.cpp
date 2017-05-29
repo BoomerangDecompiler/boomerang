@@ -36,8 +36,13 @@
 #include <QFile>
 #include <QBuffer>
 #define DEBUG_MACHO_LOADER 0
-#define DEBUG_PRINT(...) \
-            do { if (DEBUG_MACHO_LOADER) fprintf(stderr, __VA_ARGS__); } while (0)
+
+#if DEBUG_MACHO_LOADER
+#  define DEBUG_PRINT(...) \
+    do { if (DEBUG_MACHO_LOADER) fprintf(stderr, __VA_ARGS__); } while (0)
+#else
+#  define DEBUG_PRINT(...)
+#endif
 
 namespace {
 
@@ -107,15 +112,12 @@ bool MachOBinaryFile::LoadFromMemory(QByteArray &img) {
         for (int i = 0; i < nimages; i++) {
             int fbh = 8 + i * 5 * 4;
             unsigned int cputype = BE4(fbh);
-            unsigned int offset = BE4(fbh + 8);
-            unsigned int cpusubtype = BE4(fbh + 4);
-            unsigned int size = BE4(fbh + 12);
-            unsigned int pad = BE4(fbh + 16);
+            unsigned int offset  = BE4(fbh + 8);
             DEBUG_PRINT("cputype: %08x\n", cputype);
-            DEBUG_PRINT("cpusubtype: %08x\n", cpusubtype);
-            DEBUG_PRINT("offset: %08x\n", offset);
-            DEBUG_PRINT("size: %08x\n", size);
-            DEBUG_PRINT("pad: %08x\n", pad);
+            DEBUG_PRINT("cpusubtype: %08x\n", BE4(fbh + 4));
+            DEBUG_PRINT("offset: %08x\n", BE4(fbh + 8));
+            DEBUG_PRINT("size: %08x\n", BE4(fbh + 12));
+            DEBUG_PRINT("pad: %08x\n", BE4(fbh + 16));
 
             if (cputype == 0x7) // i386
                 imgoffs = offset;
@@ -345,22 +347,22 @@ bool MachOBinaryFile::LoadFromMemory(QByteArray &img) {
                     m->name = name;
                     for (unsigned j = 0; j < BMMHW(symtab->cls_def_cnt); j++) {
                         struct objc_class *def = (struct objc_class *)(base + BMMH(symtab->defs[j]) - loaded_addr.m_value);
-                        char *name = (char *)(ADDRESS::value_type(base) + BMMH(def->name) - loaded_addr.m_value);
+                        char *_name = (char *)(ADDRESS::value_type(base) + BMMH(def->name) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                         fprintf(stdout, "  class %s\n", name);
 #endif
-                        ObjcClass *cl = &m->classes[name];
-                        cl->name = name;
+                        ObjcClass *cl = &m->classes[_name];
+                        cl->name = _name;
                         struct objc_ivar_list *ivars = (struct objc_ivar_list *)(base + BMMH(def->ivars) - loaded_addr.m_value);
                         for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(ivars->ivar_count)); k++) {
                             struct objc_ivar *ivar = &ivars->ivar_list[k];
-                            char *name = (char *)(ADDRESS::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.m_value);
+                            char *name2  = (char *)(ADDRESS::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.m_value);
                             char *types = (char *)(ADDRESS::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                             fprintf(stdout, "    ivar %s %s %x\n", name, types, BMMH(ivar->ivar_offset));
 #endif
-                            ObjcIvar *iv = &cl->ivars[name];
-                            iv->name = name;
+                            ObjcIvar *iv = &cl->ivars[name2];
+                            iv->name = name2;
                             iv->type = types;
                             iv->offset = BMMH(ivar->ivar_offset);
                         }
@@ -369,13 +371,13 @@ bool MachOBinaryFile::LoadFromMemory(QByteArray &img) {
                                 (struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr.m_value);
                                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(methods->method_count)); k++) {
                                     struct objc_method *method = &methods->method_list[k];
-                                    char *name = (char *)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.m_value);
+                                    char *name3 = (char *)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.m_value);
                                     char *types = (char *)(intptr_t(base) + BMMH(method->method_types) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
                                     fprintf(stdout, "    method %s %s %x\n", name, types, BMMH((void *)method->method_imp));
 #endif
-                                    ObjcMethod *me = &cl->methods[name];
-                                    me->name = name;
+                                    ObjcMethod *me = &cl->methods[name3];
+                                    me->name = name3;
                                     me->types = types;
                                     me->addr = ADDRESS::g(BMMH(method->method_imp));
                                 }

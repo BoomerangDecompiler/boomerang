@@ -133,7 +133,6 @@ bool PentiumFrontEnd::isAssignFromTern(Instruction *s) {
   ******************************************************************************/
 void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask) {
     std::list<SharedExp*> li;
-    std::list<SharedExp*>::iterator it;
     SharedExp exp = e;
     // Use doSearch, which is normally an internal method of Exp, to avoid problems of replacing the wrong
     // subexpression (in some odd cases)
@@ -239,7 +238,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *pCfg) {
 
         // Loop through each RTL this BB
         std::list<RTL *> *BB_rtls = pBB->getRTLs();
-        if (BB_rtls == 0) {
+        if (BB_rtls == nullptr) {
             // For example, incomplete BB
             return;
         }

@@ -723,7 +723,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
     Q_UNUSED(fragment);
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
-    TargetQueue targetQueue;
+    TargetQueue _targetQueue;
 
     // Similarly, we have a set of CallStatement pointers. These may be
     // disregarded if this is a speculative decode that fails (i.e. an illegal
@@ -746,12 +746,12 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
-    targetQueue.initial(uAddr);
+    _targetQueue.initial(uAddr);
 
     // Get the next address from which to continue decoding and go from
     // there. Exit the loop if there are no more addresses or they all
     // correspond to locations that have been decoded.
-    while ((uAddr = targetQueue.nextAddress(*cfg)) != NO_ADDRESS) {
+    while ((uAddr = _targetQueue.nextAddress(*cfg)) != NO_ADDRESS) {
 
         // The list of RTLs for the current basic block
         std::list<RTL *> *BB_rtls = new std::list<RTL *>();
@@ -864,7 +864,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 // Construct the new basic block and save its destination
                 // address if it hasn't been visited already
                 BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-                handleBranch(uAddr + 8, Image->getLimitTextHigh(), pBB, cfg, targetQueue);
+                handleBranch(uAddr + 8, Image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 
                 // There is no fall through branch.
                 sequentialDecode = false;
@@ -877,7 +877,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 BB_rtls->push_back(inst.rtl);
 
                 BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-                handleBranch(stmt_jump->getFixedDest(), Image->getLimitTextHigh(), pBB, cfg, targetQueue);
+                handleBranch(stmt_jump->getFixedDest(), Image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 
                 // There is no fall through branch.
                 sequentialDecode = false;
@@ -959,7 +959,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                     } else {
                         // This is a non-call followed by an NCT/NOP
                         case_SD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(), inst, delay_inst,
-                                BB_rtls, cfg, targetQueue, os);
+                                BB_rtls, cfg, _targetQueue, os);
 
                         // There is no fall through branch.
                         sequentialDecode = false;
@@ -1004,7 +1004,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                         callList.push_back((CallStatement *)inst.rtl->back());
                     } else {
                         BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-                        handleBranch(dest, Image->getLimitTextHigh(), pBB, cfg, targetQueue);
+                        handleBranch(dest, Image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 
                         // There is no fall through branch.
                         sequentialDecode = false;
@@ -1040,7 +1040,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 case NOP:
                 case NCT: {
                     sequentialDecode = case_DD(uAddr, Image->getTextDelta(), inst, delay_inst, BB_rtls,
-                                               targetQueue, proc, callList);
+                                               _targetQueue, proc, callList);
                     break;
                 }
                 default:
@@ -1070,14 +1070,14 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                 case NOP:
                 case NCT: {
                     sequentialDecode = case_SCD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(), inst,
-                                                delay_inst, BB_rtls, cfg, targetQueue);
+                                                delay_inst, BB_rtls, cfg, _targetQueue);
                     break;
                 }
                 default:
                     if (delay_inst.rtl->back()->getKind() == STMT_CALL) {
                         // Assume it's the move/call/move pattern
                         sequentialDecode = case_SCD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(),
-                                                    inst, delay_inst, BB_rtls, cfg, targetQueue);
+                                                    inst, delay_inst, BB_rtls, cfg, _targetQueue);
                         break;
                     }
                     case_unhandled_stub(uAddr);
@@ -1108,7 +1108,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
                     }
                     // Visit the destination of the branch; add "true" leg
                     ADDRESS uDest = stmt_jump->getFixedDest();
-                    handleBranch(uDest, Image->getLimitTextHigh(), pBB, cfg, targetQueue);
+                    handleBranch(uDest, Image->getLimitTextHigh(), pBB, cfg, _targetQueue);
                     // Add the "false" leg: point past the delay inst
                     cfg->addOutEdge(pBB, uAddr + 8);
                     uAddr += 8;      // Skip branch and delay
@@ -1118,7 +1118,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream &os, 
 
                 case NCT: {
                     sequentialDecode = case_SCDAN(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(),
-                                                  inst, delay_inst, BB_rtls, cfg, targetQueue);
+                                                  inst, delay_inst, BB_rtls, cfg, _targetQueue);
                     break;
                 }
 

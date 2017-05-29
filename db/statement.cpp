@@ -1271,25 +1271,25 @@ bool condToRelational(SharedExp &pCond, BRANCH_TYPE jtCond) {
             // the branch is for any one of the (one or two) bits being on. For example, if the mask is 0x41, we
             // are branching of less (0x1) or equal (0x41).
             mask &= 0x41;
-            OPER op;
+            OPER _op;
             switch (mask) {
             case 0:
                 LOG << "WARNING: unhandled pentium branch if parity with pCond = " << pCond << "\n";
                 return false;
             case 1:
-                op = opLess;
+                _op = opLess;
                 break;
             case 0x40:
-                op = opEquals;
+                _op = opEquals;
                 break;
             case 0x41:
-                op = opLessEq;
+                _op = opLessEq;
                 break;
             default:
-                op = opWild; // Not possible, but avoid a compiler warning
+                _op = opWild; // Not possible, but avoid a compiler warning
                 break;
             }
-            pCond = Binary::get(op, at_opFlagsCall_List->getSubExp1()->clone(),
+            pCond = Binary::get(_op, at_opFlagsCall_List->getSubExp1()->clone(),
                                 at_opFlagsCall_List->getSubExp2()->getSubExp1()->clone());
             return true; // This is a floating point comparison
         }
@@ -2252,11 +2252,11 @@ void CallStatement::setTypeFor(SharedExp e, SharedType ty) {
 }
 
 bool CallStatement::objcSpecificProcessing(const QString &formatStr) {
-    Function *proc = getDestProc();
-    if (!proc)
+    Function *_proc = getDestProc();
+    if (!_proc)
         return false;
 
-    QString name(proc->getName());
+    QString name(_proc->getName());
     if (name == "objc_msgSend") {
         if (!formatStr.isNull()) {
             int format = getNumArguments() - 1;
@@ -2280,12 +2280,12 @@ bool CallStatement::objcSpecificProcessing(const QString &formatStr) {
                 if (!(ty->isPointer() && (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) && e->isIntConst())) {
                     ADDRESS addr = ADDRESS::g(e->access<Const>()->getInt());
                     LOG << "addr: " << addr << "\n";
-                    if (proc->getProg()->isStringConstant(addr)) {
+                    if (_proc->getProg()->isStringConstant(addr)) {
                         LOG << "making arg " << i << " of call c*\n";
                         setArgumentType(i, PointerType::get(CharType::get()));
                         change = true;
-                    } else if (proc->getProg()->isCFStringConstant(addr)) {
-                        ADDRESS addr2 = ADDRESS::g(proc->getProg()->readNative4(addr + 8));
+                    } else if (_proc->getProg()->isCFStringConstant(addr)) {
+                        ADDRESS addr2 = ADDRESS::g(_proc->getProg()->readNative4(addr + 8));
                         LOG << "arg " << i << " of call is a cfstring\n";
                         setArgumentType(i, PointerType::get(CharType::get()));
                         // TODO: we'd really like to change this to CFSTR(addr)
@@ -2839,12 +2839,12 @@ Assignment::Assignment(SharedExp _lhs) : TypingStatement(VoidType::get()), lhs(_
         }
     }
 }
-Assignment::Assignment(SharedType ty, SharedExp lhs) : TypingStatement(ty), lhs(lhs) {}
+Assignment::Assignment(SharedType ty, SharedExp _lhs) : TypingStatement(ty), lhs(_lhs) {}
 Assignment::~Assignment() {}
 
-Assign::Assign(SharedExp lhs, SharedExp r, SharedExp guard) : Assignment(lhs), rhs(r), guard(guard) { Kind = STMT_ASSIGN; }
+Assign::Assign(SharedExp _lhs, SharedExp r, SharedExp _guard) : Assignment(_lhs), rhs(r), guard(_guard) { Kind = STMT_ASSIGN; }
 
-Assign::Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard) : Assignment(ty, lhs), rhs(r), guard(guard) {
+Assign::Assign(SharedType ty, SharedExp _lhs, SharedExp r, SharedExp _guard) : Assignment(ty, _lhs), rhs(r), guard(_guard) {
     Kind = STMT_ASSIGN;
 }
 Assign::Assign(Assign & o) : Assignment(lhs->clone()) {
@@ -2860,9 +2860,9 @@ Assign::Assign(Assign & o) : Assignment(lhs->clone()) {
 
 // Implicit Assignment
 //! Constructor and subexpression
-ImplicitAssign::ImplicitAssign(SharedExp lhs) : Assignment(lhs) { Kind = STMT_IMPASSIGN; }
+ImplicitAssign::ImplicitAssign(SharedExp _lhs) : Assignment(_lhs) { Kind = STMT_IMPASSIGN; }
 //! Constructor, type, and subexpression
-ImplicitAssign::ImplicitAssign(SharedType ty, SharedExp lhs) : Assignment(ty, lhs) { Kind = STMT_IMPASSIGN; }
+ImplicitAssign::ImplicitAssign(SharedType ty, SharedExp _lhs) : Assignment(ty, _lhs) { Kind = STMT_IMPASSIGN; }
 ImplicitAssign::ImplicitAssign(ImplicitAssign & o) : Assignment(o.type ? o.type->clone() : nullptr, o.lhs->clone()) {
     Kind = STMT_IMPASSIGN;
 }
@@ -3292,7 +3292,6 @@ void CallStatement::genConstraints(LocationSet & cons) {
         if ((name == "printf" || name == "scanf") && !(str = arg0->getAnyStrConst()).isNull()) {
             // actually have to parse it
             int n = 1; // Number of %s plus 1 = number of args
-            QString p = str;
             int percent_idx=0;
             while ((percent_idx = str.indexOf('%',percent_idx))!=-1) {
                 percent_idx++;
@@ -3348,9 +3347,9 @@ void CallStatement::genConstraints(LocationSet & cons) {
                         t = PointerType::get(t);
                     // Generate a constraint for the parameter
                     auto tv = TypeVal::get(t);
-                    StatementList::iterator aa = arguments.begin();
-                    std::advance(aa, n);
-                    SharedExp argn = ((Assign *)*aa)->getRight();
+                    StatementList::iterator _aa = arguments.begin();
+                    std::advance(_aa, n);
+                    SharedExp argn = ((Assign *)*_aa)->getRight();
                     SharedExp con = argn->genConstraints(tv);
                     cons.insert(con);
                 }

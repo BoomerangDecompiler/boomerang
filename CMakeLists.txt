@@ -40,18 +40,33 @@ ENDIF (BUILD_TESTING)
 # Compiler specific flags section
 ###############################################################################
 
-if (CMAKE_CXX_COMPILER MATCHES cl.exe)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
-else ()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11 -pedantic" )
-    if (CMAKE_CXX_COMPILER MATCHES clang)
-        #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
-    else ()
-        #add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
-    endif ()
+set(COMMON_COMPILE_OPTIONS "")
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra" )
+if (CMAKE_CXX_COMPILER MATCHES cl.exe) # MSVC
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
+elseif (CMAKE_CXX_COMPILER MATCHES clang)
+	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
+	#add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
+else ()
+	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic -Wfatal-errors \
+		-Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs -Wstrict-overflow=2")
+		
+	# other warnings:
+	#-fstrict-aliasing  # This will not work with *reinterpret-cast<float*>(&int)
+    #-Wsuggest-attribute=const|pure|etc. -Wcast-qual -Wsuggest-override # TODO
+	#-Wundef -Wzero-as-null-pointer-constant #does not compile with boost
+	
+	# Enable additional warnings for GCC6+
+	if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+		set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_PTIONS} \
+			-Wnull-dereference -Walloc-zero -Walloca -Wduplicated-branches -Wduplicated-cond")
+	endif ()
+	
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS} -std=c++11")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${COMMON_COMPILE_OPTIONS}")
+    
     add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG
+    #add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
 endif ()
 
 if (MSVC)
@@ -107,7 +122,6 @@ include_directories(
     "${CMAKE_CURRENT_BINARY_DIR}/include"
     ${Qt5Core_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
-    "${PROJECT_SOURCE_DIR}/3rd_party/include"
 )
 
 link_directories(

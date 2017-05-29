@@ -40450,7 +40450,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
         (void)0; /*placeholder for label*/
     }
     //#line 2125 "frontend/machine/pentium/decoder.m"
-    if (result.rtl == 0)
+    if (result.rtl == nullptr)
         result.rtl = new RTL(pc, stmts);
     assert(nextPC >= hostPC);
     result.numBytes = int((nextPC - hostPC).m_value);
@@ -40762,7 +40762,7 @@ DWord PentiumDecoder::getDword(intptr_t lc)
   * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
   *
   ******************************************************************************/
-PentiumDecoder::PentiumDecoder(Prog *prog) : NJMCDecoder(prog) {
+PentiumDecoder::PentiumDecoder(Prog *_prog) : NJMCDecoder(_prog) {
     QDir base_dir=Boomerang::get()->getProgDir();
     RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/pentium/pentium.ssl"));
 }

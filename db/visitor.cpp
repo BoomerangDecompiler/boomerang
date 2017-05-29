@@ -1058,12 +1058,12 @@ void StmtSsaXformer::visit(ImplicitAssign *s, bool &recur) {
 void StmtSsaXformer::visit(PhiAssign *s, bool &recur) {
     commonLhs(s);
 
-    UserProc *proc = ((ExpSsaXformer *)mod)->getProc();
+    UserProc *_proc = ((ExpSsaXformer *)mod)->getProc();
     for (auto &v : *s) {
         assert(v.second.e != nullptr);
-        QString sym = proc->lookupSymFromRefAny(RefExp::get(v.second.e, v.second.def()));
+        QString sym = _proc->lookupSymFromRefAny(RefExp::get(v.second.e, v.second.def()));
         if (!sym.isNull())
-            v.second.e = Location::local(sym, proc); // Some may be parameters, but hopefully it won't matter
+            v.second.e = Location::local(sym, _proc); // Some may be parameters, but hopefully it won't matter
     }
     recur = false; // TODO: verify recur setting
 }
@@ -1089,13 +1089,13 @@ void StmtSsaXformer::visit(CallStatement *s, bool &recur) {
         // FIXME: this looks like a HACK that can go:
         Function *procDest = s->getDestProc();
         if (procDest && procDest->isLib() && e->isLocal()) {
-            UserProc *proc = s->getProc(); // Enclosing proc
-            SharedType lty = proc->getLocalType(e->access<Const,1>()->getStr());
+            UserProc *_proc = s->getProc(); // Enclosing proc
+            SharedType lty = _proc->getLocalType(e->access<Const,1>()->getStr());
             SharedType ty = as->getType();
             if (ty && lty && *ty != *lty) {
                 LOG << "local " << e << " has type " << lty->getCtype() << " that doesn't agree with type of define "
                     << ty->getCtype() << " of a library, why?\n";
-                proc->setLocalType(e->access<Const,1>()->getStr(), ty);
+                _proc->setLocalType(e->access<Const,1>()->getStr(), ty);
             }
         }
         as->setLeft(e);
@@ -1114,7 +1114,7 @@ void StmtSsaXformer::visit(CallStatement *s, bool &recur) {
 // when at a sum or difference, check for the address of locals high level pattern that is a pointer
 
 // Map expressions to locals, some with names like param3
-DfaLocalMapper::DfaLocalMapper(UserProc *proc) : proc(proc) {
+DfaLocalMapper::DfaLocalMapper(UserProc *_proc) : proc(_proc) {
     sig = proc->getSignature();
     prog = proc->getProg();
     change = false;

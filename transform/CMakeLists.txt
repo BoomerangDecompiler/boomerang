@@ -1,4 +1,3 @@
-include_directories(${PROJECT_SOURCE_DIR}/platform/include/db)
 
 message(WARN " TODO: Make transformation engine a part of the platform.")
 

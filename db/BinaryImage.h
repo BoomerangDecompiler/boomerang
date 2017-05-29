@@ -5,6 +5,7 @@
 
 #include <boost/icl/interval_map.hpp>
 
+
 struct SectionHolder {
     SectionHolder() : val(nullptr) {}
     SectionHolder(SectionInfo *inf) : val(inf) {}

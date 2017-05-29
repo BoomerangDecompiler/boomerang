@@ -658,8 +658,8 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc &UF) {
 
 Range::Range() : stride(1), lowerBound(MIN), upperBound(MAX) { base = Const::get(0); }
 
-Range::Range(int stride, int lowerBound, int upperBound, SharedExp base)
-    : stride(stride), lowerBound(lowerBound), upperBound(upperBound), base(base) {
+Range::Range(int _stride, int _lowerBound, int _upperBound, SharedExp _base)
+    : stride(_stride), lowerBound(_lowerBound), upperBound(_upperBound), base(_base) {
     if (lowerBound == upperBound && lowerBound == 0 && (base->getOper() == opMinus || base->getOper() == opPlus) &&
             base->getSubExp2()->isIntConst()) {
         this->lowerBound = base->access<Const,2>()->getInt();

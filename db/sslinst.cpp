@@ -271,8 +271,8 @@ void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParam
         } else if (!haveCount) {
             haveCount = true;
             char buf[10];
-            for (unsigned i = 1; i <= sub.funcParams.size(); i++) {
-                sprintf(buf, "__lp%d", i);
+            for (unsigned int i = 1; i <= sub.funcParams.size(); i++) {
+                sprintf(buf, "__lp%u", i);
                 funcParams.push_back(buf);
             }
         }
@@ -285,9 +285,9 @@ void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParam
         } else if (funcParams != sub.funcParams && sub.asgn != nullptr) {
             /* Rename so all the parameter names match */
             for (auto i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++) {
-                Location param(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
+                Location paramLoc(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
                 SharedExp replace = Location::param(*i);
-                sub.asgn->searchAndReplace(param, replace);
+                sub.asgn->searchAndReplace(paramLoc, replace);
             }
             sub.funcParams = funcParams;
         }

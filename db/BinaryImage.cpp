@@ -95,22 +95,23 @@ QWord BinaryImage::readNative8(ADDRESS nat) { // TODO: lifted from Win32 loader,
     const IBinarySection * si = getSectionInfoByAddr(nat);
     if (si == nullptr)
         return 0;
-    int raw[2];
+
+    QWord raw = 0;
 #ifdef WORDS_BIGENDIAN     // This tests the  host     machine
     if (si->Endiannes) { // This tests the source machine
 #else
     if (si->getEndian()==0) {
 #endif // Balance }
         // Source and host are same endianness
-        raw[0] = readNative4(nat);
-        raw[1] = readNative4(nat + 4);
+        raw |= (QWord)readNative4(nat);
+        raw |= (QWord)readNative4(nat + 4) << 32;
     } else {
         // Source and host are different endianness
-        raw[1] = readNative4(nat);
-        raw[0] = readNative4(nat + 4);
+        raw |= (QWord)readNative4(nat + 4);
+        raw |= (QWord)readNative4(nat)     << 32;
     }
     // return reinterpret_cast<long long>(*raw);       // Note: cast, not convert!!
-    return *(QWord *)raw;
+    return raw;
 }
 // Read 4 bytes as a float
 float BinaryImage::readNativeFloat4(ADDRESS nat) {

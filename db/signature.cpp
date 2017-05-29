@@ -913,7 +913,7 @@ bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature & /
     return true;
 }
 
-CallingConvention::StdC::MIPSSignature::MIPSSignature(const QString &name) : Signature(name) {
+CallingConvention::StdC::MIPSSignature::MIPSSignature(const QString &_name) : Signature(_name) {
     Signature::addReturn(Location::regOf(2));
 }
 
@@ -1341,7 +1341,7 @@ void Signature::setParamType(const SharedExp &e, SharedType ty) {
     params[idx]->setType(ty);
 }
 
-void Signature::setParamName(int n, const char *name) { params[n]->name(name); }
+void Signature::setParamName(int n, const char *_name) { params[n]->name(_name); }
 
 void Signature::setParamExp(int n, SharedExp e) { params[n]->setExp(e); }
 

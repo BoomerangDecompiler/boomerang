@@ -376,12 +376,15 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function * f) {
 
 bool DFA_TypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
 {
+    Q_UNUSED(sig);
+    Q_UNUSED(cfg);
     assert(false);
     return false;
 }
 
 bool DFA_TypeRecovery::dfaTypeAnalysis(Instruction *i)
 {
+    Q_UNUSED(i);
     assert(false);
     return false;
 }
@@ -677,7 +680,7 @@ SharedType UnionType::meetWith(SharedType other, bool &ch, bool bHighestPtr) con
         LOG << "WARNING! attempt to union " << getCtype() << " with pointer to self!\n";
         return ((UnionType *)this)->shared_from_this();
     }
-    std::list<UnionElement>::iterator it;
+
     //    int subtypes_count = 0;
     //    for (it = li.begin(); it != li.end(); ++it) {
     //        Type &v(*it->type);
@@ -1452,13 +1455,13 @@ void Unary::descendType(SharedType parentType, bool &ch, Instruction *s) {
             subExp1->descendType(parentType->as<PointerType>()->getPointsTo(), ch, s);
         break;
     case opGlobal: {
-        Prog *prog = s->getProc()->getProg();
+        Prog *_prog = s->getProc()->getProg();
         QString name = subExp1->access<Const>()->getStr();
-        SharedType ty = prog->getGlobalType(name);
+        SharedType ty = _prog->getGlobalType(name);
         if (ty) {
             ty = ty->meetWith(parentType, ch);
             if(ch)
-                prog->setGlobalType(name, ty);
+                _prog->setGlobalType(name, ty);
         }
         break;
     }

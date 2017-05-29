@@ -367,8 +367,8 @@ public:
     // Data flow based type analysis (implemented in type/dfa.cpp)
     // Pull type information up the expression tree
     virtual SharedType ascendType() {
-        assert(0);
-        return 0;
+        assert(false);
+        return nullptr;
     }
     //! Push type information down the expression tree
     virtual void descendType(SharedType  /*parentType*/, bool & /*ch*/, Instruction * /*s*/) { assert(0); }
@@ -910,7 +910,7 @@ public:
 
 protected:
     friend class XMLProgParser;
-    Location(OPER op) : Unary(op), proc(nullptr) {}
+    Location(OPER _op) : Unary(_op), proc(nullptr) {}
 }; // class Location
 
 typedef std::set<SharedExp, lessExpStar> sExp;

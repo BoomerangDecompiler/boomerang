@@ -119,7 +119,7 @@ unsigned elf_hash(const char *o0) {
 } // extern "C"
 // Return true for a good load
 bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
-    int i;
+    int off;
     //    if (m_bArchive) {
     //        // This is a member of an archive. Should not be using this function at all
     //        return false;
@@ -135,8 +135,11 @@ bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
     if (strncmp(m_pImage, "\x7F"
                 "ELF",
                 4) != 0) {
-        fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n", pHeader->e_ident[0], pHeader->e_ident[1],
-                pHeader->e_ident[2], pHeader->e_ident[3]);
+        fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n",
+                (unsigned int)pHeader->e_ident[0],
+                (unsigned int)pHeader->e_ident[1],
+                (unsigned int)pHeader->e_ident[2],
+                (unsigned int)pHeader->e_ident[3]);
         return 0;
     }
     if ((pHeader->endianness != 1) && (pHeader->endianness != 2)) {
@@ -147,23 +150,23 @@ bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
     m_elfEndianness = pHeader->endianness - 1;
 
     // Set up program header pointer (in case needed)
-    i = elfRead4(&pHeader->e_phoff);
-    if (i)
-        m_pPhdrs = (Elf32_Phdr *)(m_pImage + i);
+    off = elfRead4(&pHeader->e_phoff);
+    if (off)
+        m_pPhdrs = (Elf32_Phdr *)(m_pImage + off);
 
     // Set up section header pointer
-    i = elfRead4(&pHeader->e_shoff);
-    if (i)
-        m_pShdrs = (Elf32_Shdr *)(m_pImage + i);
+    off = elfRead4(&pHeader->e_shoff);
+    if (off)
+        m_pShdrs = (Elf32_Shdr *)(m_pImage + off);
 
     // Set up section header string table pointer
     // NOTE: it does not appear that endianness affects shorts.. they are always in little endian format
     // Gerard: I disagree. I need the elfRead on linux/i386
-    i = elfRead2(&pHeader->e_shstrndx); // pHeader->e_shstrndx;
-    if (i)
-        m_pStrings = m_pImage + elfRead4(&m_pShdrs[i].sh_offset);
+    off = elfRead2(&pHeader->e_shstrndx); // pHeader->e_shstrndx;
+    if (off)
+        m_pStrings = m_pImage + elfRead4(&m_pShdrs[off].sh_offset);
 
-    i = 1;       // counter - # sects. Start @ 1, total Image->GetNumSections()
+    off = 1;       // counter - # sects. Start @ 1, total Image->GetNumSections()
     char *pName; // Section's name
 
     // Number of sections
@@ -175,16 +178,16 @@ bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
     bool bGotCode = false; // True when have seen a code sect
     ADDRESS arbitaryLoadAddr = ADDRESS::g(0x08000000);
 
-    for (unsigned i = 0; i < numSections; i++) {
+    for (unsigned int i = 0; i < numSections; i++) {
         // Get section information.
         Elf32_Shdr *pShdr = m_pShdrs + i;
         if ((char *)pShdr > m_pImage + m_lImageSize) {
-            fprintf(stderr,"section %d header is outside the image size\n",i);
+            fprintf(stderr,"section %u header is outside the image size\n",i);
             return false;
         }
         pName = m_pStrings + elfRead4(&pShdr->sh_name);
         if (pName > m_pImage + m_lImageSize) {
-            fprintf(stderr,"name for section %d is outside the image size\n",i);
+            fprintf(stderr,"name for section %u is outside the image size\n",i);
             return false;
         }
 
@@ -197,9 +200,9 @@ bool ElfBinaryFile::LoadFromMemory(QByteArray &img) {
         sect.Code = false;
         sect.Data = false;
         sect.ReadOnly = false;
-        int off = elfRead4(&pShdr->sh_offset);
-        if (off)
-            sect.image_ptr = ADDRESS::host_ptr(m_pImage + off);
+        int _off = elfRead4(&pShdr->sh_offset);
+        if (_off)
+            sect.image_ptr = ADDRESS::host_ptr(m_pImage + _off);
         sect.SourceAddr = elfRead4(&pShdr->sh_addr);
         sect.Size = elfRead4(&pShdr->sh_size);
         if (sect.SourceAddr.isZero() && strncmp(pName, ".rel", 4)) {
@@ -568,7 +571,7 @@ MACHINE ElfBinaryFile::getMachine() const {
         return (MACHINE)-1;
     }
     // An unknown machine type
-    fprintf(stderr,"Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n",machine,machine);
+    fprintf(stderr,"Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n",machine, (unsigned int)machine);
     fprintf(stderr,"(Please add a description for this type, thanks!)\n");
     return (MACHINE)-1;
 }

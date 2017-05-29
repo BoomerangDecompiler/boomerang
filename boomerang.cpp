@@ -831,6 +831,7 @@ int Boomerang::decompile(const QString &fname, const char *pname) {
  * \param prog The Prog object to save.
  */
 void Boomerang::persistToXML(Prog *prog) {
+    Q_UNUSED(prog);
     assert(!"TODO: use cereal");
 //    LOG << "saving persistable state...\n";
 //    XMLProgParser *p = new XMLProgParser();
@@ -842,6 +843,7 @@ void Boomerang::persistToXML(Prog *prog) {
  * \return The loaded Prog object.
  */
 Prog *Boomerang::loadFromXML(const char *fname) {
+    Q_UNUSED(fname);
     assert(!"TODO: use cereal");
 //    LOG << "loading persistable state...\n";
 //    XMLProgParser *p = new XMLProgParser();
