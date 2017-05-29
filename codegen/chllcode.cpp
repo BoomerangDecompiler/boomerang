@@ -710,7 +710,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
             PointerType *pty = nullptr;
 #endif
             // pty = T(x)
-            SharedType tt = ((TypedExp &)u).getType();
+            SharedType tt = ((const TypedExp &)u).getType();
             if (pty != nullptr &&
                 (*pty->getPointsTo() == *tt || (tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
                 str << "*";

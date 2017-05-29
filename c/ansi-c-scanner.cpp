@@ -182,15 +182,15 @@ void YY_AnsiCScanner_CLASS::yy___fatal_error(const char *msg) { YY_AnsiCScanner_
 int YY_AnsiCScanner_CLASS::yy___wrap() { YY_AnsiCScanner_WRAP_CODE }
 #endif
 void YY_AnsiCScanner_CLASS::yy_initialize() {
-    yy___in = 0;
-    yy___out = 0;
+    yy___in = nullptr;
+    yy___out = nullptr;
     yy_init = 1;
     yy_start = 0;
-    yy___text = 0;
+    yy___text = nullptr;
     yy___leng = 0;
-    YY_AnsiCScanner_CURRENT_BUFFER = 0;
+    YY_AnsiCScanner_CURRENT_BUFFER = nullptr;
     yy_did_buffer_switch_on_eof = 0;
-    yy_c_buf_p = 0;
+    yy_c_buf_p = nullptr;
     yy_hold_char = 0;
     yy_n_chars = 0;
 #if YY_AnsiCScanner_DEBUG != 0
@@ -1388,7 +1388,7 @@ YY_BUFFER_STATE YY_AnsiCScanner_CLASS::YY_AnsiCScanner_CREATE_BUFFER(YY_AnsiCSca
 
 void YY_AnsiCScanner_CLASS::YY_AnsiCScanner_DELETE_BUFFER(YY_BUFFER_STATE b) {
     if (b == YY_AnsiCScanner_CURRENT_BUFFER)
-        YY_AnsiCScanner_CURRENT_BUFFER = (YY_BUFFER_STATE)0;
+        YY_AnsiCScanner_CURRENT_BUFFER = (YY_BUFFER_STATE)nullptr;
 
     free((char *)b->yy_ch_buf);
     free((char *)b);

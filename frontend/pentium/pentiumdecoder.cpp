@@ -40450,7 +40450,7 @@ DecodeResult &PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta) {
         (void)0; /*placeholder for label*/
     }
     //#line 2125 "frontend/machine/pentium/decoder.m"
-    if (result.rtl == 0)
+    if (result.rtl == nullptr)
         result.rtl = new RTL(pc, stmts);
     assert(nextPC >= hostPC);
     result.numBytes = int((nextPC - hostPC).m_value);

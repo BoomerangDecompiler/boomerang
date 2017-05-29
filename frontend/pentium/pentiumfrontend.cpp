@@ -238,7 +238,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *pCfg) {
 
         // Loop through each RTL this BB
         std::list<RTL *> *BB_rtls = pBB->getRTLs();
-        if (BB_rtls == 0) {
+        if (BB_rtls == nullptr) {
             // For example, incomplete BB
             return;
         }

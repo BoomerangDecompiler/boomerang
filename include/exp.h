@@ -367,8 +367,8 @@ public:
     // Data flow based type analysis (implemented in type/dfa.cpp)
     // Pull type information up the expression tree
     virtual SharedType ascendType() {
-        assert(0);
-        return 0;
+        assert(false);
+        return nullptr;
     }
     //! Push type information down the expression tree
     virtual void descendType(SharedType  /*parentType*/, bool & /*ch*/, Instruction * /*s*/) { assert(0); }

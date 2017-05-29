@@ -135,7 +135,7 @@ class Cfg {
     void undoComputedBB(Instruction *stmt);
 
   private:
-    BasicBlock *splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewBB = 0, bool bDelRtls = false);
+    BasicBlock *splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewBB = nullptr, bool bDelRtls = false);
     void completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete = false);
     bool checkEntryBB();
 
