@@ -113,7 +113,8 @@ endif (GIT_FOUND)
 configure_file(include/config.h.cmake include/config.h)
 
 include_directories(
-    .
+    "${CMAKE_SOURCE_DIR}"
+    "${CMAKE_SOURCE_DIR}/src"
     "${PROJECT_SOURCE_DIR}/3rd_party"
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_BINARY_DIR}/include"
@@ -127,8 +128,6 @@ link_directories(
 )
 
 
-
-add_subdirectory(codegen)
 add_subdirectory(db)
 add_subdirectory(frontend)
 add_subdirectory(type)
