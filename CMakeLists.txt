@@ -127,8 +127,8 @@ link_directories(
     "${CMAKE_CURRENT_BINARY_DIR}/loader"
 )
 
+add_subdirectory(src)
 
-add_subdirectory(db)
 add_subdirectory(frontend)
 add_subdirectory(type)
 add_subdirectory(transform)
@@ -138,10 +138,15 @@ if (BUILD_TESTING)
 	add_subdirectory(unit_testing)
 endif (BUILD_TESTING)
 
-add_subdirectory(src)
+
 
 add_subdirectory(loader)
 add_subdirectory(ui)
+
+# run regression suite by 'run check'
+add_custom_target(check "./full_regression.sh"
+	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
 
 
 # copy function signatures to output directory

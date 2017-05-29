@@ -4,7 +4,7 @@ set(pass_SOURCES
 	RangeAnalysis
 )
 
-include_directories(../db)
+include_directories(${CMAKE_SOURCE_DIR}/src/db)
 
 add_library(boomerang_passes ${pass_SOURCES})
 
