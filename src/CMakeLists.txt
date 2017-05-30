@@ -7,3 +7,4 @@ add_subdirectory(codegen)
 add_subdirectory(db)
 
 add_subdirectory(type)
+add_subdirectory(transform)
