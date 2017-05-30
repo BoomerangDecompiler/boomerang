@@ -539,7 +539,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &/*os*/, 
             // Decode the inst at uAddr.
             inst = decodeInstruction(uAddr);
             if(!inst.valid || inst.rtl->empty()) {
-                qDebug() << "Valid but undecoded instruction at " << QString::number(uAddr.m_value,16);
+                qDebug() << "Valid but undecoded instruction at" << uAddr.toString();
             }
 
             // If invalid and we are speculating, just exit

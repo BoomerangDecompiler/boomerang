@@ -87,8 +87,8 @@ struct ADDRESS {        /* pointer. size depends on platform */
     friend QTextStream& operator<< (QTextStream& os, const ADDRESS& mdv);
     QString toString(bool zerofill=false) const {
         if(zerofill)
-            return QString("%1").arg(m_value,8,16,QChar('0'));
-        return QString::number(m_value,16);
+            return "0x" + QString("%1").arg(m_value,8,16,QChar('0'));
+        return "0x" + QString::number(m_value,16);
     }
     // operator intptr_t() const {return int(m_value);}
 };
