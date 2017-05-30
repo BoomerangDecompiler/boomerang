@@ -8,3 +8,5 @@ add_subdirectory(db)
 
 add_subdirectory(type)
 add_subdirectory(transform)
+add_subdirectory(passes)
+

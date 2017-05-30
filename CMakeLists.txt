@@ -131,8 +131,6 @@ add_subdirectory(src)
 
 add_subdirectory(frontend) # TODO
 
-add_subdirectory(passes)
-
 if (BUILD_TESTING)
 	add_subdirectory(unit_testing)
 endif (BUILD_TESTING)
