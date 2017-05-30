@@ -10,3 +10,4 @@ add_subdirectory(type)
 add_subdirectory(transform)
 add_subdirectory(passes)
 
+add_subdirectory(loader)

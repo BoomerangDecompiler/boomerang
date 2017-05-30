@@ -135,9 +135,6 @@ if (BUILD_TESTING)
 	add_subdirectory(unit_testing)
 endif (BUILD_TESTING)
 
-
-
-add_subdirectory(loader)
 add_subdirectory(ui)
 
 # run regression suite by 'run check'
