@@ -129,8 +129,8 @@ link_directories(
 
 add_subdirectory(src)
 
-add_subdirectory(frontend)
-add_subdirectory(type)
+add_subdirectory(frontend) # TODO
+
 add_subdirectory(transform)
 add_subdirectory(passes)
 

@@ -5,3 +5,5 @@ add_subdirectory(util)
 add_subdirectory(c)
 add_subdirectory(codegen)
 add_subdirectory(db)
+
+add_subdirectory(type)

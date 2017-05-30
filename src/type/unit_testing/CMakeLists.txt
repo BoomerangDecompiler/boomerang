@@ -5,8 +5,8 @@ set(target_INCLUDE_DIR
 )
 
 include_directories(${target_INCLUDE_DIR}
-    ../../frontend/sparc
-    ../../frontend/pentium
+    ${CMAKE_SOURCE_DIR}/frontend/sparc
+    ${CMAKE_SOURCE_DIR}/frontend/pentium
 )
 
 set(test_LIBRARIES
