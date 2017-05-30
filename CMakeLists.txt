@@ -156,3 +156,9 @@ set_target_properties(boom_base PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED
 add_subdirectory(loader)
 add_subdirectory(ui)
 
+
+# copy function signatures to output directory
+add_custom_target(COPY_FILES ALL)
+add_custom_command(TARGET COPY_FILES POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/signatures ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/signatures)
+
