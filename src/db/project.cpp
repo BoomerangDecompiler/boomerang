@@ -3,23 +3,28 @@
 #include <cassert>
 Project::~Project()
 {
-    delete Image;
+	delete Image;
 }
 
-bool Project::serializeTo(QIODevice &/*dev*/)
+
+bool Project::serializeTo(QIODevice& /*dev*/)
 {
-    assert(false);
-    return false;
+	assert(false);
+	return false;
 }
 
-bool Project::serializeFrom(QIODevice &/*dev*/)
+
+bool Project::serializeFrom(QIODevice& /*dev*/)
 {
-    return false;
+	return false;
 }
+
 
 IBinaryImage *Project::image()
 {
-    if(!Image)
-        Image = new BinaryImage;
-    return Image;
+	if (!Image) {
+		Image = new BinaryImage;
+	}
+
+	return Image;
 }

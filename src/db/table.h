@@ -8,10 +8,10 @@
  */
 
 /***************************************************************************/ /**
-  * \file       table.h
-  * \brief   Provides the definition of class Table and children used by
-  *               the SSL parser
-  ******************************************************************************/
+ * \file       table.h
+ * \brief   Provides the definition of class Table and children used by
+ *               the SSL parser
+ ******************************************************************************/
 #ifndef TABLE_H
 #define TABLE_H
 
@@ -20,35 +20,42 @@
 #include <memory>
 
 // Kinds of SSL specification tables
-enum TABLE_TYPE { NAMETABLE, OPTABLE, EXPRTABLE };
-
-class Table {
-    typedef std::deque<QString> tRecords;
-
-  public:
-    Table(const std::deque<QString> &recs, TABLE_TYPE t = NAMETABLE);
-    Table(TABLE_TYPE t);
-    virtual ~Table() {}
-    TABLE_TYPE getType() const;
-    tRecords Records;
-
-  private:
-    TABLE_TYPE TableType;
+enum TABLE_TYPE
+{
+	NAMETABLE, OPTABLE, EXPRTABLE
 };
 
-class OpTable : public Table {
-  public:
-    OpTable(const std::deque<QString> &ops);
+class Table
+{
+	typedef std::deque<QString> tRecords;
+
+public:
+	Table(const std::deque<QString>& recs, TABLE_TYPE t = NAMETABLE);
+	Table(TABLE_TYPE t);
+	virtual ~Table() {}
+	TABLE_TYPE getType() const;
+
+	tRecords Records;
+
+private:
+	TABLE_TYPE TableType;
+};
+
+class OpTable : public Table
+{
+public:
+	OpTable(const std::deque<QString>& ops);
 };
 
 class Exp;
 using SharedExp = std::shared_ptr<Exp>;
 
-class ExprTable : public Table {
-  public:
-    ExprTable(const std::deque<SharedExp> &exprs);
-    ~ExprTable(void);
-    std::deque<SharedExp> expressions;
+class ExprTable : public Table
+{
+public:
+	ExprTable(const std::deque<SharedExp>& exprs);
+	~ExprTable(void);
+	std::deque<SharedExp> expressions;
 };
 
 #endif

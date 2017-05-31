@@ -1,10 +1,11 @@
 /*
  * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
  */
+
 /***************************************************************************/ /**
-  * \file    generic.cpp
-  * \brief   Implementation of the RDIExpTransformer and related classes.
-  ******************************************************************************/
+ * \file    generic.cpp
+ * \brief   Implementation of the RDIExpTransformer and related classes.
+ ******************************************************************************/
 
 #include "rdi.h"
 
@@ -23,10 +24,12 @@
 #include <map>       // In decideType()
 #include <sstream>   // Need gcc 3.0 or better
 
-SharedExp RDIExpTransformer::applyTo(SharedExp e, bool &bMod) {
-    if (e->getOper() == opAddrOf && e->getSubExp1()->getOper() == opMemOf) {
-        e = e->getSubExp1()->getSubExp1()->clone();
-        bMod = true;
-    }
-    return e;
+SharedExp RDIExpTransformer::applyTo(SharedExp e, bool& bMod)
+{
+	if ((e->getOper() == opAddrOf) && (e->getSubExp1()->getOper() == opMemOf)) {
+		e    = e->getSubExp1()->getSubExp1()->clone();
+		bMod = true;
+	}
+
+	return e;
 }

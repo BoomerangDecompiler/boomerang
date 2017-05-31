@@ -15,51 +15,51 @@
 #include <map>
 #include <memory>
 
-class InsNameElem {
-
+class InsNameElem
+{
 public:
-    InsNameElem(const QString &name);
-    virtual ~InsNameElem(void);
-    virtual size_t ntokens(void);
-    virtual QString getinstruction(void);
-    virtual QString getinspattern(void);
-    virtual void getrefmap(std::map<QString, InsNameElem *> &m);
+	InsNameElem(const QString& name);
+	virtual ~InsNameElem(void);
+	virtual size_t ntokens(void);
+	virtual QString getinstruction(void);
+	virtual QString getinspattern(void);
+	virtual void getrefmap(std::map<QString, InsNameElem *>& m);
 
-    int ninstructions(void);
-    void append(std::shared_ptr<InsNameElem> next);
-    bool increment(void);
-    void reset(void);
-    int getvalue(void) const;
+	int ninstructions(void);
+	void append(std::shared_ptr<InsNameElem> next);
+	bool increment(void);
+	void reset(void);
+	int getvalue(void) const;
 
 protected:
-    std::shared_ptr<InsNameElem> nextelem;
-    QString elemname;
-    size_t value;
+	std::shared_ptr<InsNameElem> nextelem;
+	QString elemname;
+	size_t value;
 };
 
-class InsOptionElem : public InsNameElem {
-
+class InsOptionElem : public InsNameElem
+{
 public:
-    InsOptionElem(const QString &name);
-    virtual size_t ntokens(void) override;
-    virtual QString getinstruction(void) override;
-    virtual QString getinspattern(void) override;
+	InsOptionElem(const QString& name);
+	virtual size_t ntokens(void) override;
+	virtual QString getinstruction(void) override;
+	virtual QString getinspattern(void) override;
 };
 
-class InsListElem : public InsNameElem {
-
+class InsListElem : public InsNameElem
+{
 public:
-    InsListElem(const QString &name, const std::shared_ptr<Table> &t, const QString &idx);
-    virtual size_t ntokens(void) override;
-    virtual QString getinstruction(void) override;
-    virtual QString getinspattern(void) override;
-    virtual void getrefmap(std::map<QString, InsNameElem *> &m) override;
+	InsListElem(const QString& name, const std::shared_ptr<Table>& t, const QString& idx);
+	virtual size_t ntokens(void) override;
+	virtual QString getinstruction(void) override;
+	virtual QString getinspattern(void) override;
+	virtual void getrefmap(std::map<QString, InsNameElem *>& m) override;
 
-    QString getindex(void) const;
+	QString getindex(void) const;
 
 protected:
-    QString indexname;
-    std::shared_ptr<Table> thetable;
+	QString indexname;
+	std::shared_ptr<Table> thetable;
 };
 
 #endif

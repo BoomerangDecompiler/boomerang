@@ -21,6 +21,7 @@
  *
  * @APPLE_LICENSE_HEADER_END@
  */
+
 /*
  *    objc-runtime.h
  *    Copyright 1988-1996, NeXT Software, Inc.
@@ -35,27 +36,30 @@
 
 typedef struct objc_symtab *Symtab;
 
-struct objc_symtab {
-    uint32_t sel_ref_cnt;
-    SEL *refs;
-    unsigned short cls_def_cnt;
-    unsigned short cat_def_cnt;
-    uint32_t defs[1]; /* variable size */
+struct objc_symtab
+{
+	uint32_t       sel_ref_cnt;
+	SEL            *refs;
+	unsigned short cls_def_cnt;
+	unsigned short cat_def_cnt;
+	uint32_t       defs[1]; /* variable size */
 };
 
 typedef struct objc_module *Module;
 
-struct objc_module {
-    uint32_t version;
-    uint32_t size;
-    uint32_t name;
-    uint32_t symtab;
+struct objc_module
+{
+	uint32_t version;
+	uint32_t size;
+	uint32_t name;
+	uint32_t symtab;
 };
 
-struct objc_super {
-    id receiver;
-    // Class class;
-    Class pclass;
+struct objc_super
+{
+	id    receiver;
+	// Class class;
+	Class pclass;
 };
 
 /* kernel operations */
@@ -63,20 +67,26 @@ struct objc_super {
 OBJC_EXPORT id objc_getClass(const char *name);
 OBJC_EXPORT id objc_getMetaClass(const char *name);
 OBJC_EXPORT id objc_msgSend(id self, SEL op, ...);
+
 #if defined(WINNT) || defined(__cplusplus)
 // The compiler on NT is broken when dealing with structure-returns.
 // Help out the compiler group by tweaking the prototype.
 OBJC_EXPORT id objc_msgSend_stret(id self, SEL op, ...);
+
 #else
 OBJC_EXPORT void objc_msgSend_stret(void *stretAddr, id self, SEL op, ...);
+
 #endif
 OBJC_EXPORT id objc_msgSendSuper(struct objc_super *super, SEL op, ...);
+
 #if defined(WINNT) || defined(__cplusplus)
 // The compiler on NT is broken when dealing with structure-returns.
 // Help out the compiler group by tweaking the prototype.
 OBJC_EXPORT id objc_msgSendSuper_stret(struct objc_super *super, SEL op, ...);
+
 #else
 OBJC_EXPORT void objc_msgSendSuper_stret(void *stretAddr, struct objc_super *super, SEL op, ...);
+
 #endif
 
 /* forwarding operations */
@@ -85,39 +95,40 @@ OBJC_EXPORT id objc_msgSendv(id self, SEL op, unsigned arg_size, marg_list arg_f
 OBJC_EXPORT void objc_msgSendv_stret(void *stretAddr, id self, SEL op, unsigned arg_size, marg_list arg_frame);
 
 /*
-    getting all the classes in the application...
-
-    int objc_getClassList(buffer, bufferLen)
-    classes is an array of Class values (which are pointers)
-        which will be filled by the function; if this
-        argument is nullptr, no copying is done, only the
-        return value is returned
-    bufferLen is the number of Class values the given buffer
-        can hold; if the buffer is not large enough to
-        hold all the classes, the buffer is filled to
-        the indicated capacity with some arbitrary subset
-        of the known classes, which could be different
-        from call to call
-    returns the number of classes, which is the number put
-        in the buffer if the buffer was large enough,
-        or the length the buffer should have been
-
-    int numClasses = 0, newNumClasses = objc_getClassList(nullptr, 0);
-    Class *classes = nullptr;
-    while (numClasses < newNumClasses) {
-        numClasses = newNumClasses;
-        classes = realloc(classes, sizeof(Class) * numClasses);
-        newNumClasses = objc_getClassList(classes, numClasses);
-    }
-    // now, can use the classes list; if nullptr, there are no classes
-    free(classes);
-
-*/
+ *  getting all the classes in the application...
+ *
+ *  int objc_getClassList(buffer, bufferLen)
+ *  classes is an array of Class values (which are pointers)
+ *      which will be filled by the function; if this
+ *      argument is nullptr, no copying is done, only the
+ *      return value is returned
+ *  bufferLen is the number of Class values the given buffer
+ *      can hold; if the buffer is not large enough to
+ *      hold all the classes, the buffer is filled to
+ *      the indicated capacity with some arbitrary subset
+ *      of the known classes, which could be different
+ *      from call to call
+ *  returns the number of classes, which is the number put
+ *      in the buffer if the buffer was large enough,
+ *      or the length the buffer should have been
+ *
+ *  int numClasses = 0, newNumClasses = objc_getClassList(nullptr, 0);
+ *  Class *classes = nullptr;
+ *  while (numClasses < newNumClasses) {
+ *      numClasses = newNumClasses;
+ *      classes = realloc(classes, sizeof(Class) * numClasses);
+ *      newNumClasses = objc_getClassList(classes, numClasses);
+ *  }
+ *  // now, can use the classes list; if nullptr, there are no classes
+ *  free(classes);
+ *
+ */
 OBJC_EXPORT int objc_getClassList(Class *buffer, int bufferLen);
 
-#define OBSOLETE_OBJC_GETCLASSES 1
+#define OBSOLETE_OBJC_GETCLASSES    1
 #if OBSOLETE_OBJC_GETCLASSES
 OBJC_EXPORT void *objc_getClasses(void);
+
 #endif
 
 OBJC_EXPORT id objc_lookUpClass(const char *name);

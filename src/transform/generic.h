@@ -1,26 +1,31 @@
 /*
  * Copyright (C) 2004, Trent Waddington
  */
+
 /***************************************************************************/ /**
-  * \file       generic.h
-  * \brief   Provides the definition for the generic exp tranformer.
-  ******************************************************************************/
+ * \file       generic.h
+ * \brief   Provides the definition for the generic exp tranformer.
+ ******************************************************************************/
 
 #ifndef GENERIC_EXP_TRANSFORMER_H
 #define GENERIC_EXP_TRANSFORMER_H
 
 #include "transformer.h"
 
-class GenericExpTransformer : public ExpTransformer {
-  protected:
-    SharedExp match, where, become;
+class GenericExpTransformer : public ExpTransformer
+{
+protected:
+	SharedExp match, where, become;
 
-    bool checkCond(SharedExp cond, SharedExp bindings);
-    SharedExp applyFuncs(SharedExp rhs);
+	bool checkCond(SharedExp cond, SharedExp bindings);
+	SharedExp applyFuncs(SharedExp rhs);
 
-  public:
-    GenericExpTransformer(SharedExp _match, SharedExp _where, SharedExp _become) : match(_match), where(_where), become(_become) {}
-    virtual SharedExp applyTo(SharedExp e, bool &bMod);
+public:
+	GenericExpTransformer(SharedExp _match, SharedExp _where, SharedExp _become)
+		: match(_match)
+		, where(_where)
+		, become(_become) {}
+	virtual SharedExp applyTo(SharedExp e, bool& bMod);
 };
 
 #endif

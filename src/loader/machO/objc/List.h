@@ -21,14 +21,15 @@
  *
  * @APPLE_LICENSE_HEADER_END@
  */
+
 /*
-    List.h
-    Copyright 1988-1996 NeXT Software, Inc.
-
-    DEFINED AS:    A common class
-    HEADER FILES:    objc/List.h
-
-*/
+ *  List.h
+ *  Copyright 1988-1996 NeXT Software, Inc.
+ *
+ *  DEFINED AS:    A common class
+ *  HEADER FILES:    objc/List.h
+ *
+ */
 
 #warning The API in this header is obsoleted by NSArray.
 
@@ -38,10 +39,10 @@
 #import <objc/Object.h>
 
 @interface List : Object {
-  @public
-    id *dataPtr;          /* data of the List object */
-    unsigned numElements; /* Actual number of elements */
-    unsigned maxElements; /* Total allocated elements */
+	@public
+	id       *dataPtr;    /* data of the List object */
+	unsigned numElements; /* Actual number of elements */
+	unsigned maxElements; /* Total allocated elements */
 }
 
 /* Creating, freeing */
@@ -103,10 +104,13 @@
 
 @end
 
-typedef struct { @defs(List) } NXListId;
+typedef struct
+{
+	@defs(List)
+} NXListId;
 
-#define NX_ADDRESS(x) (((NXListId *)(x))->dataPtr)
+#define NX_ADDRESS(x)    (((NXListId *)(x))->dataPtr)
 
-#define NX_NOT_IN_LIST 0xffffffff
+#define NX_NOT_IN_LIST    0xffffffff
 
 #endif /* _OBJC_LIST_H_ */

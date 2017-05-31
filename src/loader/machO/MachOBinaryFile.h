@@ -10,7 +10,7 @@
 
 /** \file MachOBinaryFile.h
  * \brief This file contains the definition of the class MachOBinaryFile.
-*/
+ */
 
 #ifndef __MACHOBINARYFILE_H__
 #define __MACHOBINARYFILE_H__
@@ -28,79 +28,81 @@
 // Given a little endian value x, load its value assuming big endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the parameter is not a pointer
-#define _BMMH(x)                                                                                                       \
-    ((unsigned)((Byte *)(&x))[3] + ((unsigned)((Byte *)(&x))[2] << 8) + ((unsigned)((Byte *)(&x))[1] << 16) +          \
-     ((unsigned)((Byte *)(&x))[0] << 24))
+#define _BMMH(x)																							  \
+	((unsigned)((Byte *)(&x))[3] + ((unsigned)((Byte *)(&x))[2] << 8) + ((unsigned)((Byte *)(&x))[1] << 16) + \
+	 ((unsigned)((Byte *)(&x))[0] << 24))
 // With this one, x IS a pounsigneder
-#define _BMMH2(x)                                                                                                      \
-    ((unsigned)((Byte *)(x))[3] + ((unsigned)((Byte *)(x))[2] << 8) + ((unsigned)((Byte *)(x))[1] << 16) +             \
-     ((unsigned)((Byte *)(x))[0] << 24))
+#define _BMMH2(x)																						   \
+	((unsigned)((Byte *)(x))[3] + ((unsigned)((Byte *)(x))[2] << 8) + ((unsigned)((Byte *)(x))[1] << 16) + \
+	 ((unsigned)((Byte *)(x))[0] << 24))
 
-#define _BMMHW(x) (((unsigned)((Byte *)(&x))[1]) + ((unsigned)((Byte *)(&x))[0] << 8))
+#define _BMMHW(x)    (((unsigned)((Byte *)(&x))[1]) + ((unsigned)((Byte *)(&x))[0] << 8))
 
 struct mach_header;
 
 class MachOBinaryFile : public QObject,
-                        public LoaderInterface,
-                        public ObjcAccessInterface {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-    Q_INTERFACES(LoaderInterface)
-    Q_INTERFACES(ObjcAccessInterface)
+						public LoaderInterface,
+						public ObjcAccessInterface
+{
+	Q_OBJECT
+	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
+	Q_INTERFACES(LoaderInterface)
+	Q_INTERFACES(ObjcAccessInterface)
 
-  public:
-    MachOBinaryFile();                    // Default constructor
-    virtual ~MachOBinaryFile();           // Destructor
-    void initialize(IBoomerang *sys) override;
-    bool Open(const char *sName); // Open the file for r/w; ???
-    void Close() override;                 // Close file opened with Open()
-    void UnLoad() override;                // Unload the image
-    LOAD_FMT GetFormat() const override;   // Get format (i.e. LOADFMT_MACHO)
-    MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_PPC)
-    bool isLibrary() const;
-    ADDRESS getImageBase() override;
-    size_t getImageSize() override;
+public:
+	MachOBinaryFile();                   // Default constructor
+	virtual ~MachOBinaryFile();          // Destructor
+	void initialize(IBoomerang *sys) override;
+	bool Open(const char *sName);        // Open the file for r/w; ???
+	void Close() override;               // Close file opened with Open()
+	void UnLoad() override;              // Unload the image
+	LOAD_FMT GetFormat() const override; // Get format (i.e. LOADFMT_MACHO)
+	MACHINE getMachine() const override; // Get machine (i.e. MACHINE_PPC)
+	bool isLibrary() const;
+	ADDRESS getImageBase() override;
+	size_t getImageSize() override;
 
-    ADDRESS GetMainEntryPoint() override;
-    ADDRESS GetEntryPoint() override;
-    DWord getDelta();
+	ADDRESS GetMainEntryPoint() override;
+	ADDRESS GetEntryPoint() override;
+	DWord getDelta();
 
-    //
-    //        --        --        --        --        --        --        --        --        --
-    //
-    // Internal information
-    // Dump headers, etc
-    bool DisplayDetails(const char *fileName, FILE *f = stdout) override ;
+	//
+	//        --        --        --        --        --        --        --        --        --
+	//
+	// Internal information
+	// Dump headers, etc
+	bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
 
-  protected:
-    int machORead2(short *ps) const; // Read 2 bytes from native addr
-    int machORead4(int *pi) const;   // Read 4 bytes from native addr
+protected:
+	int machORead2(short *ps) const; // Read 2 bytes from native addr
+	int machORead4(int *pi) const;   // Read 4 bytes from native addr
 
-    // void *            BMMH(void *x);
-    //    char *              BMMH(char *x);
-    //    const char *        BMMH(const char *x);
-    // unsigned int        BMMH(long int & x);
-    int32_t BMMH(int32_t x);
-    uint32_t BMMH(uint32_t x);
-    unsigned short BMMHW(unsigned short x);
+	// void *            BMMH(void *x);
+	//    char *              BMMH(char *x);
+	//    const char *        BMMH(const char *x);
+	// unsigned int        BMMH(long int & x);
+	int32_t BMMH(int32_t x);
+	uint32_t BMMH(uint32_t x);
+	unsigned short BMMHW(unsigned short x);
 
-  public:
-    std::map<QString, ObjcModule> &getObjcModules() override  { return modules; }
+public:
+	std::map<QString, ObjcModule>& getObjcModules() override  { return modules; }
 
-    bool LoadFromMemory(QByteArray &data) override;
-    int canLoad(QIODevice &dev) const override;
-  private:
-    bool PostLoad(void *handle) override;  // Called after archive member loaded
-    void findJumps(ADDRESS curr); // Find names for jumps to IATs
+	bool LoadFromMemory(QByteArray& data) override;
+	int canLoad(QIODevice& dev) const override;
 
-    char *base;                 // Beginning of the loaded image
-    ADDRESS entrypoint, loaded_addr;
-    unsigned loaded_size;
-    MACHINE machine;
-    bool swap_bytes;
-    std::map<QString, ObjcModule> modules;
-    std::vector<struct section> sections;
-    class IBinaryImage *Image;
-    class IBinarySymbolTable *Symbols;
+private:
+	bool PostLoad(void *handle) override; // Called after archive member loaded
+	void findJumps(ADDRESS curr);         // Find names for jumps to IATs
+
+	char *base;                           // Beginning of the loaded image
+	ADDRESS entrypoint, loaded_addr;
+	unsigned loaded_size;
+	MACHINE machine;
+	bool swap_bytes;
+	std::map<QString, ObjcModule> modules;
+	std::vector<struct section> sections;
+	class IBinaryImage *Image;
+	class IBinarySymbolTable *Symbols;
 };
 #endif // ifndef __MACHOBINARYFILE_H__

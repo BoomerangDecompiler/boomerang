@@ -10,13 +10,14 @@
 
 /** \file DOS4GWBinaryFile.h
  * \brief This file contains the definition of the class DOS4GWBinaryFile.
-*/
+ */
 
 #pragma once
 
 #include "BinaryFile.h"
 #include <string>
 class QFile;
+
 /**
  * This file contains the definition of the DOS4GWBinaryFile class, and some
  * other definitions specific to the exe version of the BinaryFile object
@@ -30,144 +31,154 @@ class QFile;
 // Given a little endian value x, load its value assuming little endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
-#define LMMH(x)                                                                                                        \
-    ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) +          \
-    ((unsigned)((Byte *)(&x))[3] << 24))
+#define LMMH(x)																								  \
+	((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
+	 ((unsigned)((Byte *)(&x))[3] << 24))
 // With this one, x IS a pounsigneder
-#define LMMH2(x)                                                                                                       \
-    ((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + ((unsigned)((Byte *)(x))[2] << 16) +             \
-    ((unsigned)((Byte *)(x))[3] << 24))
-#define LMMHw(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8))
+#define LMMH2(x)																						   \
+	((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + ((unsigned)((Byte *)(x))[2] << 16) + \
+	 ((unsigned)((Byte *)(x))[3] << 24))
+#define LMMHw(x)    ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8))
 
 
-typedef struct {/* exe file header, just the signature really */
-    Byte sigLo; /* .EXE signature: 0x4D 0x5A     */
-    Byte sigHi;
+typedef struct  /* exe file header, just the signature really */
+{
+	Byte sigLo; /* .EXE signature: 0x4D 0x5A     */
+	Byte sigHi;
 } Header;
 
 // The following structures should have their members byte aligned
 #pragma pack(push,1)
-typedef struct {
-    Byte sigLo;
-    Byte sigHi;
-    Byte byteord;
-    Byte wordord;
-    DWord formatlvl;
-    SWord cputype;
-    SWord ostype;
-    DWord modulever;
-    DWord moduleflags;
-    DWord modulenumpages;
-    DWord eipobjectnum;
-    DWord eip;
-    DWord espobjectnum;
-    DWord esp;
-    DWord pagesize;
-    DWord pageoffsetshift;
-    DWord fixupsectionsize;
-    DWord fixupsectionchksum;
-    DWord loadersectionsize;
-    DWord loadersectionchksum;
-    DWord objtbloffset;
-    DWord numobjsinmodule;
-    DWord objpagetbloffset;
-    DWord objiterpagesoffset;
-    DWord resourcetbloffset;
-    DWord numresourcetblentries;
-    DWord residentnametbloffset;
-    DWord entrytbloffset;
-    DWord moduledirectivesoffset;
-    DWord nummoduledirectives;
-    DWord fixuppagetbloffset;
-    DWord fixuprecordtbloffset;
-    DWord importtbloffset;
-    DWord numimportmoduleentries;
-    DWord importproctbloffset;
-    DWord perpagechksumoffset;
-    DWord datapagesoffset;
-    DWord numpreloadpages;
-    DWord nonresnametbloffset;
-    DWord nonresnametbllen;
-    DWord nonresnametblchksum;
-    DWord autodsobjectnum;
-    DWord debuginfooffset;
-    DWord debuginfolen;
-    DWord numinstancepreload;
-    DWord numinstancedemand;
-    DWord heapsize;
+typedef struct
+{
+	Byte  sigLo;
+	Byte  sigHi;
+	Byte  byteord;
+	Byte  wordord;
+	DWord formatlvl;
+	SWord cputype;
+	SWord ostype;
+	DWord modulever;
+	DWord moduleflags;
+	DWord modulenumpages;
+	DWord eipobjectnum;
+	DWord eip;
+	DWord espobjectnum;
+	DWord esp;
+	DWord pagesize;
+	DWord pageoffsetshift;
+	DWord fixupsectionsize;
+	DWord fixupsectionchksum;
+	DWord loadersectionsize;
+	DWord loadersectionchksum;
+	DWord objtbloffset;
+	DWord numobjsinmodule;
+	DWord objpagetbloffset;
+	DWord objiterpagesoffset;
+	DWord resourcetbloffset;
+	DWord numresourcetblentries;
+	DWord residentnametbloffset;
+	DWord entrytbloffset;
+	DWord moduledirectivesoffset;
+	DWord nummoduledirectives;
+	DWord fixuppagetbloffset;
+	DWord fixuprecordtbloffset;
+	DWord importtbloffset;
+	DWord numimportmoduleentries;
+	DWord importproctbloffset;
+	DWord perpagechksumoffset;
+	DWord datapagesoffset;
+	DWord numpreloadpages;
+	DWord nonresnametbloffset;
+	DWord nonresnametbllen;
+	DWord nonresnametblchksum;
+	DWord autodsobjectnum;
+	DWord debuginfooffset;
+	DWord debuginfolen;
+	DWord numinstancepreload;
+	DWord numinstancedemand;
+	DWord heapsize;
 } LXHeader;
 
-typedef struct {
-    DWord VirtualSize;
-    DWord RelocBaseAddr;
-    DWord ObjectFlags;
-    DWord PageTblIdx;
-    DWord NumPageTblEntries;
-    DWord Reserved1;
+typedef struct
+{
+	DWord VirtualSize;
+	DWord RelocBaseAddr;
+	DWord ObjectFlags;
+	DWord PageTblIdx;
+	DWord NumPageTblEntries;
+	DWord Reserved1;
 } LXObject;
 
-typedef struct {
-    DWord pagedataoffset;
-    SWord datasize;
-    SWord flags;
+typedef struct
+{
+	DWord pagedataoffset;
+	SWord datasize;
+	SWord flags;
 } LXPage;
 
 // this is correct for internal fixups only
-typedef struct {
-    unsigned char src;
-    unsigned char flags;
-    short srcoff;
-    //    unsigned char object;         // these are now variable length
-    //    unsigned short trgoff;
+typedef struct
+{
+	unsigned char src;
+	unsigned char flags;
+	short         srcoff;
+	//    unsigned char object;         // these are now variable length
+	//    unsigned short trgoff;
 } LXFixup;
 
 #pragma pack(pop)
 
-class DOS4GWBinaryFile : public QObject, public LoaderInterface {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-    Q_INTERFACES(LoaderInterface)
+class DOS4GWBinaryFile : public QObject, public LoaderInterface
+{
+	Q_OBJECT
+	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
+	Q_INTERFACES(LoaderInterface)
 public:
-    DOS4GWBinaryFile();
-    ~DOS4GWBinaryFile();          // Destructor
-    void Close() override;                 // Close file opened with Open()
-    void UnLoad() override;                // Unload the image
-    LOAD_FMT GetFormat() const override;   // Get format (i.e.
-    // LOADFMT_DOS4GW)
-    MACHINE getMachine() const override; // Get machine (i.e.
-    // MACHINE_Pentium)
-    ADDRESS getImageBase() override;
-    size_t getImageSize() override;
+	DOS4GWBinaryFile();
+	~DOS4GWBinaryFile();                 // Destructor
+	void Close() override;               // Close file opened with Open()
+	void UnLoad() override;              // Unload the image
+	LOAD_FMT GetFormat() const override; // Get format (i.e.
 
-    ADDRESS GetMainEntryPoint() override;
-    ADDRESS GetEntryPoint() override;
-    DWord getDelta();
-    bool LoadFromMemory(QByteArray &data) override;
-    int canLoad(QIODevice &fl) const override;
-    //
-    //        --        --        --        --        --        --        --        --        --
-    //
-    // Internal information
-    // Dump headers, etc
-    virtual bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
+	// LOADFMT_DOS4GW)
+	MACHINE getMachine() const override; // Get machine (i.e.
 
-    void initialize(IBoomerang *sys) override;
+	// MACHINE_Pentium)
+	ADDRESS getImageBase() override;
+	size_t getImageSize() override;
+
+	ADDRESS GetMainEntryPoint() override;
+	ADDRESS GetEntryPoint() override;
+	DWord getDelta();
+	bool LoadFromMemory(QByteArray& data) override;
+	int canLoad(QIODevice& fl) const override;
+
+	//
+	//        --        --        --        --        --        --        --        --        --
+	//
+	// Internal information
+	// Dump headers, etc
+	virtual bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
+
+	void initialize(IBoomerang *sys) override;
+
 protected:
-    int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
-    int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
+	int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
+	int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
 
 private:
-    bool PostLoad(void *handle) override; //!< Called after archive member loaded
+	bool PostLoad(void *handle) override; //!< Called after archive member loaded
 
-    Header *m_pHeader;      // Pointer to header
-    LXHeader *m_pLXHeader=nullptr;  // Pointer to lx header
-    LXObject *m_pLXObjects=nullptr; // Pointer to lx objects
-    LXPage *m_pLXPages=nullptr;     // Pointer to lx pages
-    int m_cbImage;          // Size of image
-    // int        m_cReloc;                // Number of relocation entries
-    // DWord*    m_pRelocTable;            // The relocation table
-    char *base; // Beginning of the loaded image
-    // Map from address of dynamic pointers to library procedure names:
-    class IBinarySymbolTable *Symbols;
-    class IBinaryImage *Image;
+	Header *m_pHeader;                    // Pointer to header
+	LXHeader *m_pLXHeader  = nullptr;     // Pointer to lx header
+	LXObject *m_pLXObjects = nullptr;     // Pointer to lx objects
+	LXPage *m_pLXPages     = nullptr;     // Pointer to lx pages
+	int m_cbImage;                        // Size of image
+	// int        m_cReloc;                // Number of relocation entries
+	// DWord*    m_pRelocTable;            // The relocation table
+	char *base; // Beginning of the loaded image
+	// Map from address of dynamic pointers to library procedure names:
+	class IBinarySymbolTable *Symbols;
+	class IBinaryImage *Image;
 };

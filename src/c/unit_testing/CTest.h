@@ -1,6 +1,7 @@
 #include <QtTest/QTest>
-class CTest : public QObject {
-    Q_OBJECT
+class CTest : public QObject
+{
+	Q_OBJECT
 private slots:
-    void testSignature();
+	void testSignature();
 };

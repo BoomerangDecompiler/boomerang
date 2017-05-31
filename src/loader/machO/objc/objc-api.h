@@ -25,12 +25,12 @@
 
 #if !defined(OBJC_EXPORT)
 #if defined(__cplusplus)
-#define OBJC_EXPORT extern "C"
+#define OBJC_EXPORT    extern "C"
 #else
-#define OBJC_EXPORT extern
+#define OBJC_EXPORT    extern
 #endif
 #endif
 
 #if !defined(OBJC_IMPORT)
-#define OBJC_IMPORT extern
+#define OBJC_IMPORT    extern
 #endif

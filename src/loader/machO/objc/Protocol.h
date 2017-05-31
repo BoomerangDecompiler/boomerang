@@ -21,30 +21,33 @@
  *
  * @APPLE_LICENSE_HEADER_END@
  */
+
 /*
-    Protocol.h
-    Copyright 1991-1996 NeXT Software, Inc.
-*/
+ *  Protocol.h
+ *  Copyright 1991-1996 NeXT Software, Inc.
+ */
 
 #ifndef _OBJC_PROTOCOL_H_
 #define _OBJC_PROTOCOL_H_
 
 #import <objc/Object.h>
 
-struct objc_method_description {
-    SEL name;
-    char *types;
+struct objc_method_description
+{
+	SEL  name;
+	char *types;
 };
-struct objc_method_description_list {
-    int count;
-    struct objc_method_description list[1];
+struct objc_method_description_list
+{
+	int                            count;
+	struct objc_method_description list[1];
 };
 
 @interface Protocol : Object {
-  @private
-    char *protocol_name;
-    struct objc_protocol_list *protocol_list;
-    struct objc_method_description_list *instance_methods, *class_methods;
+	@private
+	char *protocol_name;
+	struct objc_protocol_list           *protocol_list;
+	struct objc_method_description_list *instance_methods, *class_methods;
 }
 
 /* Obtaining attributes intrinsic to the protocol */
