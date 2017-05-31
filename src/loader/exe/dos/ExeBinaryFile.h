@@ -70,6 +70,7 @@ class ExeBinaryFile : public QObject, public LoaderInterface
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
 	Q_INTERFACES(LoaderInterface)
+
 public:
 	ExeBinaryFile();                       // Default constructor
 	void UnLoad() override;                // Unload the image

@@ -16,6 +16,7 @@ public:
 class DfaTest : public QObject
 {
 	Q_OBJECT
+
 private slots:
 	void testMeetInt();
 	void testMeetSize();

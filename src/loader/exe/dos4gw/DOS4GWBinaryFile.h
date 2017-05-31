@@ -134,6 +134,7 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
 	Q_INTERFACES(LoaderInterface)
+
 public:
 	DOS4GWBinaryFile();
 	~DOS4GWBinaryFile();                 // Destructor

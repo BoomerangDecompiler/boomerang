@@ -3,6 +3,7 @@
 class CfgTest : public QObject
 {
 	Q_OBJECT
+
 protected:
 	Cfg *m_prog;
 

@@ -59,6 +59,7 @@ struct BinarySymbol : public IBinarySymbol
 class SymTab : public IBinarySymbolTable
 {
 	friend struct BinarySymbol;
+
 private:
 	// The map indexed by address.
 	std::map<ADDRESS, BinarySymbol *> amap;

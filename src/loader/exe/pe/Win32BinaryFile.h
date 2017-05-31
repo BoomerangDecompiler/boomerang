@@ -158,6 +158,7 @@ class Win32BinaryFile : public QObject, public LoaderInterface
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
 	Q_INTERFACES(LoaderInterface)
+
 public:
 	Win32BinaryFile();
 	virtual ~Win32BinaryFile();

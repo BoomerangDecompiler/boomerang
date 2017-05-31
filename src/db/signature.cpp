@@ -89,6 +89,7 @@ namespace CallingConvention
 class Win32Signature : public Signature
 {
 	// Win32Signature is for non-thiscall signatures: all parameters pushed
+
 public:
 	Win32Signature(const QString& nam);
 	Win32Signature(Signature& old);
@@ -119,6 +120,7 @@ class Win32TcSignature : public Win32Signature
 {
 	// Win32TcSignature is for "thiscall" signatures, i.e. those that have register ecx as the first parameter
 	// Only needs to override a few member functions; the rest can inherit from Win32Signature
+
 public:
 	Win32TcSignature(const QString& nam);
 	Win32TcSignature(Signature& old);

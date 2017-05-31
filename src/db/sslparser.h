@@ -123,6 +123,7 @@ public:
 		FCHS                    = 309
 		/* enum token */
 	}; /* end of enum declaration */
+
 public:
 	int yyparse(RTLInstDict& Dict);
 	virtual void yyerror(const char *msg);
@@ -132,9 +133,11 @@ public:
 	int yynerrs;
 	int yychar;
 #if YY_SSLParser_DEBUG != 0
+
 public:
 	int YY_SSLParser_DEBUG_FLAG; /*  nonzero means print parse trace    */
 #endif
+
 public:
 	SSLParser(const QString& sslFile, bool trace);
 

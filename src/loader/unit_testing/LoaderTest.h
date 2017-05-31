@@ -3,7 +3,9 @@
 class LoaderTest : public QObject
 {
 	Q_OBJECT
+
 protected:
+
 private slots:
 	void testSparcLoad();
 	void testPentiumLoad();

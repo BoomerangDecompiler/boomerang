@@ -12,6 +12,7 @@ protected:
 	ADDRESS location;
 	SharedType type;
 	QVariantMap Attributes;
+
 public:
 	BinarySymbol(BinarySymbols *p)
 		: Parent(p)
@@ -19,6 +20,7 @@ public:
 	}
 
 	// IBinarySymbol interface
+
 public:
 	IBinarySymbol& setName(const QString& name) override;
 	IBinarySymbol& setAttr(const QString& name, const QVariant&)  override;
@@ -27,9 +29,11 @@ public:
 class BinarySymbols : public IBinarySymbolTable
 {
 	friend class BinarySymbol;
+
 public:
 	BinarySymbols();
 	// IBinarySymbols interface
+
 public:
 	virtual IBinarySymbol& addSymbol(ADDRESS a);
 	virtual bool hasSymbolAt(ADDRESS a);
@@ -40,6 +44,7 @@ public:
 	virtual void removeEntryPoint(ADDRESS);
 	void addImport(ADDRESS) override;
 	virtual void addExport(ADDRESS);
+
 private:
 	std::vector<BinarySymbol *> Symbols;
 	QMap<QString, BinarySymbol *> NameToSymbolMap;

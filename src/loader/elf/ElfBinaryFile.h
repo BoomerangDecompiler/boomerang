@@ -39,6 +39,7 @@ class ElfBinaryFile : public QObject, public LoaderInterface
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
 	Q_INTERFACES(LoaderInterface)
+
 public:
 	ElfBinaryFile(); // Constructor
 	void UnLoad() override;

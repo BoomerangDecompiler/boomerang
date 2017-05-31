@@ -2,6 +2,7 @@
 class RtlTest : public QObject
 {
 public:
+
 private slots:
 	void testAppend();
 	void testClone();

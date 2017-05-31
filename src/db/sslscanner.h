@@ -300,7 +300,7 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
 class SSLScanner
 {
-private:   /* data */
+private:    /* data */
 	YY_SSLScanner_CHAR *yy_c_buf_p;
 	YY_SSLScanner_CHAR yy_hold_char;
 	int yy_n_chars;
@@ -308,7 +308,7 @@ private:   /* data */
 	int yy_start;
 	int yy_did_buffer_switch_on_eof;
 
-private:   /* functions */
+private:    /* functions */
 	void yy_initialize();
 	int input();
 
@@ -320,7 +320,7 @@ private:   /* functions */
 	long yy_get_previous_state_(void);
 	long yy_try_NUL_trans_(long current_state_);
 
-protected:   /* non virtual */
+protected:    /* non virtual */
 	YY_BUFFER_STATE YY_SSLScanner_CURRENT_BUFFER;
 	void YY_SSLScanner_RESTART(YY_SSLScanner_IFILE *input_file);
 	void YY_SSLScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer);
@@ -329,7 +329,7 @@ protected:   /* non virtual */
 	void YY_SSLScanner_DELETE_BUFFER(YY_BUFFER_STATE b);
 	void YY_SSLScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_SSLScanner_IFILE *file);
 
-protected:   /* virtual */
+protected:    /* virtual */
 	virtual void YY_SSLScanner_ECHO()
 #ifdef YY_SSLScanner_ECHO_PURE
 		= 0
@@ -362,7 +362,8 @@ public:
 #if YY_SSLScanner_DEBUG != 0
 	int YY_SSLScanner_DEBUG_FLAG;
 #endif
-public:   /* added members */
+
+public:    /* added members */
 	YY_SSLScanner_MEMBERS
 };
 #endif

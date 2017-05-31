@@ -210,6 +210,7 @@ public:
 //#line 185 "/usr/local/lib/bison.h"
 		/* enum token */
 	};  /* end of enum declaration */
+
 public:
 	int YY_TransformationParser_PARSE(YY_TransformationParser_PARSE_PARAM);
 	virtual void YY_TransformationParser_ERROR(char *msg) YY_TransformationParser_ERROR_BODY;
@@ -232,14 +233,19 @@ public:
 	int YY_TransformationParser_CHAR;
 #endif
 #if YY_TransformationParser_DEBUG != 0
+
 public:
 	int YY_TransformationParser_DEBUG_FLAG; /*  nonzero means print parse trace    */
 #endif
+
 public:
 	TransformationParser(YY_TransformationParser_CONSTRUCTOR_PARAM);
+
 public:
+
 private:
 	TransformationScanner *theScanner;
+
 public:
 	virtual ~TransformationParser();
 };

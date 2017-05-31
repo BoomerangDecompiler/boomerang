@@ -136,6 +136,7 @@ private:
 	std::set<ADDRESS> imports;   // Set of imported proc addr's
 	class IBinaryImage *Image;
 	// LoaderInterface interface
+
 public:
 
 	void processSymbols();

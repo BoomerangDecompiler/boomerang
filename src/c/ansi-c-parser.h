@@ -194,6 +194,7 @@ public:
 		//#line 185 "/usr/local/lib/bison.h"
 		/* enum token */
 	}; /* end of enum declaration */
+
 public:
 	int yyparse(platform plat, callconv cc);
 	virtual void yyerror(const char *msg);
@@ -203,13 +204,16 @@ public:
 	int yynerrs;
 	int yychar;
 #if YY_AnsiCParser_DEBUG != 0
+
 public:
 	int yydebug; /*  nonzero means print parse trace    */
 #endif
+
 public:
 	AnsiCParser(std::istream& in, bool trace);
 
 public:
+
 private:
 	AnsiCScanner *theScanner;
 

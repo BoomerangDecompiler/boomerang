@@ -311,7 +311,7 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
 class YY_AnsiCScanner_CLASS YY_AnsiCScanner_INHERIT
 {
-private:   /* data */
+private:    /* data */
 	YY_AnsiCScanner_CHAR *yy_c_buf_p;
 	YY_AnsiCScanner_CHAR yy_hold_char;
 	int yy_n_chars;
@@ -319,7 +319,7 @@ private:   /* data */
 	int yy_start;
 	int yy_did_buffer_switch_on_eof;
 
-private:   /* functions */
+private:    /* functions */
 	void yy_initialize();
 	int input();
 
@@ -331,7 +331,7 @@ private:   /* functions */
 	long yy_get_previous_state_(void);
 	long yy_try_NUL_trans_(long current_state_);
 
-protected:   /* non virtual */
+protected:    /* non virtual */
 	YY_BUFFER_STATE YY_AnsiCScanner_CURRENT_BUFFER;
 	void YY_AnsiCScanner_RESTART(YY_AnsiCScanner_IFILE *input_file);
 	void YY_AnsiCScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer);
@@ -340,7 +340,7 @@ protected:   /* non virtual */
 	void YY_AnsiCScanner_DELETE_BUFFER(YY_BUFFER_STATE b);
 	void YY_AnsiCScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_AnsiCScanner_IFILE *file);
 
-protected:   /* virtual */
+protected:    /* virtual */
 	virtual void YY_AnsiCScanner_ECHO();
 	virtual int YY_AnsiCScanner_INPUT(char *buf, int& result, int max_size);
 	virtual void YY_AnsiCScanner_FATAL_ERROR(const char *msg);
@@ -358,7 +358,8 @@ public:
 #if YY_AnsiCScanner_DEBUG != 0
 	int YY_AnsiCScanner_DEBUG_FLAG;
 #endif
-public:   /* added members */
+
+public:    /* added members */
 	YY_AnsiCScanner_MEMBERS
 };
 #endif
