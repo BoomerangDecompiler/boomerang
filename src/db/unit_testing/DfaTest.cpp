@@ -217,21 +217,21 @@ void DfaTest::testMeetUnion()
 	u1->addType(i32, "bow");
 	u1->addType(flt, "wow");
 	u2->addType(flt2, "gorm");
-	QCOMPARE(u1->getCtype(), QString("union { int bow; float wow; }"));
+	QCOMPARE(u1->getCtype(), QString("union { float wow; int bow; }"));
 
 	bool ch  = false;
 	auto res = u1->meetWith(j32, ch, false);
 	QVERIFY(ch == false);
-	QCOMPARE(res->getCtype(), QString("union { int bow; float wow; }"));
+	QCOMPARE(res->getCtype(), QString("union { float wow; int bow; }"));
 
 	ch  = false;
 	res = u1->meetWith(flt, ch, false);
 	QVERIFY(ch == false);
-	QCOMPARE(res->getCtype(), QString("union { int bow; float wow; }"));
+	QCOMPARE(res->getCtype(), QString("union { float wow; int bow; }"));
 
 	res = u1->meetWith(u2, ch, false);
 	QVERIFY(ch == false);
-	QCOMPARE(u1->getCtype(), QString("union { int bow; float wow; }"));
+	QCOMPARE(u1->getCtype(), QString("union { float wow; int bow; }"));
 
 	// Note: this test relies on the int in the union having signedness 1
 	res = u1->meetWith(u32, ch, false);

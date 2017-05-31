@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SectionInfo.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 
 #include <boost/icl/interval_map.hpp>
 
@@ -37,10 +37,11 @@ public:
 public:
 	BinaryImage();
 	~BinaryImage();
+
 	// IBinaryImage interface
 	void reset() override;
 
-	size_t GetNumSections() const override { return Sections.size(); }
+	size_t getNumSections() const override { return m_sections.size(); }
 	ADDRESS                  imageToSource(ADDRESS); /// convert image address ( host pointer into image data ) to valid Source machine ADDRESS
 	ADDRESS                  sourceToImage(ADDRESS); /// convert Source machine ADDRESS into valid image ADDRESS
 
@@ -48,7 +49,11 @@ public:
 	int readNative2(ADDRESS nat) override;
 	int readNative4(ADDRESS nat) override;
 	QWord readNative8(ADDRESS nat) override;
+
+	/// Read 4 bytes as a float
 	float readNativeFloat4(ADDRESS nat) override;
+
+	/// Read 8 bytes as a double value
 	double readNativeFloat8(ADDRESS nat) override;
 	void writeNative4(ADDRESS nat, uint32_t n) override;
 	void calculateTextLimits() override;
@@ -56,29 +61,32 @@ public:
 	/// Find the section, given an address in the section
 	const IBinarySection *getSectionInfoByAddr(ADDRESS uEntry) const override;
 
-	int GetSectionIndexByName(const QString& sName) override;
-	IBinarySection *GetSectionInfoByName(const QString& sName) override;
+	/// Find section index given name, or -1 if not found
+	int getSectionIndexByName(const QString& sName) override;
 
-	const IBinarySection *GetSectionInfo(int idx) const override { return Sections[idx]; }
+	IBinarySection *getSectionInfoByName(const QString& sName) override;
+
+	const IBinarySection *getSectionInfo(int idx) const override { return m_sections[idx]; }
 	bool isReadOnly(ADDRESS uEntry) override;
 	ADDRESS getLimitTextLow() override;
 	ADDRESS getLimitTextHigh() override;
 
-	ptrdiff_t getTextDelta() override { return TextDelta; }
+	ptrdiff_t getTextDelta() override { return m_textDelta; }
 
 	SectionInfo *createSection(const QString& name, ADDRESS from, ADDRESS to) override;
 
-	iterator begin()       override { return Sections.begin(); }
-	const_iterator begin() const override { return Sections.begin(); }
-	iterator end()       override { return Sections.end(); }
-	const_iterator end() const override { return Sections.end(); }
-	size_t size()  const override { return Sections.size(); }
-	bool empty() const override { return Sections.empty(); }
+	iterator begin()             override { return m_sections.begin(); }
+	const_iterator begin() const override { return m_sections.begin(); }
+	iterator end()               override { return m_sections.end(); }
+	const_iterator end()   const override { return m_sections.end(); }
+
+	size_t size() const override { return m_sections.size(); }
+	bool empty()  const override { return m_sections.empty(); }
 
 private:
-	ADDRESS                  limitTextLow;
-	ADDRESS                  limitTextHigh;
-	ptrdiff_t                TextDelta;
-	MapAddressRangeToSection SectionMap;
-	SectionListType          Sections; ///< The section info
+	ADDRESS                  m_limitTextLow;
+	ADDRESS                  m_limitTextHigh;
+	ptrdiff_t                m_textDelta;
+	MapAddressRangeToSection m_sectionMap;
+	SectionListType          m_sections; ///< The section info
 };

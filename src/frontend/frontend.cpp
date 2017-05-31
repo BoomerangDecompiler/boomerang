@@ -36,7 +36,7 @@
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "ansi-c-parser.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "db/SymTab.h"
 
 #include <QtCore/QDir>

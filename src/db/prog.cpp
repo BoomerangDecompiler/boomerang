@@ -279,7 +279,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 				for (int j = 0; sections[j]; j++) {
 					QString str = ".";
 					str += sections[j];
-					IBinarySection *info = Image->GetSectionInfoByName(str);
+					IBinarySection *info = Image->getSectionInfoByName(str);
 
 					if (info) {
 						generateDataSectionCode(sections[j], info->sourceAddr(), info->size(), code);

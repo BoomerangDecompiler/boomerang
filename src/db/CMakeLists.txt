@@ -28,7 +28,6 @@ set(INCLUDES
 	../include/signature.h
 	../include/transformer.h
 	../include/util.h
-	../include/IBinaryImage.h
 	../include/IBinarySymbols.h
 	../include/IBoomerang.h
 	../include/IProject.h
@@ -38,6 +37,7 @@ set(INCLUDES
 set(SRC
 	SymTab
 	SectionInfo
+	IBinaryImage.h
 	BinaryImage
 	basicblock.h
     basicblock.cpp

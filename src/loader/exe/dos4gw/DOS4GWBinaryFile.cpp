@@ -23,7 +23,7 @@
 #include "DOS4GWBinaryFile.h"
 #include "boom_base/BinaryFile.h"
 #include "include/IBoomerang.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 
 #include "include/config.h"
@@ -101,14 +101,14 @@ ADDRESS DOS4GWBinaryFile::getMainEntryPoint()
 	bool gotSubEbp   = false;                                 // True if see sub ebp, ebp
 	bool lastWasCall = false;                                 // True if the last instruction was a call
 
-	IBinarySection *si = Image->GetSectionInfoByName("seg0"); // Assume the first section is text
+	IBinarySection *si = Image->getSectionInfoByName("seg0"); // Assume the first section is text
 
 	if (si == nullptr) {
-		si = Image->GetSectionInfoByName(".text");
+		si = Image->getSectionInfoByName(".text");
 	}
 
 	if (si == nullptr) {
-		si = Image->GetSectionInfoByName("CODE");
+		si = Image->getSectionInfoByName("CODE");
 	}
 
 	assert(si);

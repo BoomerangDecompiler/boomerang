@@ -1,7 +1,7 @@
 #include "DecompilerThread.h"
 
 #include "boom_base/log.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "boom_base/log.h"
 #include "include/prog.h"
 #include "include/frontend.h"

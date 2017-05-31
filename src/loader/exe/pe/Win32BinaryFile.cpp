@@ -37,7 +37,7 @@ namespace dbghelp
 #include "Win32BinaryFile.h"
 
 #include "boom_base/BinaryFile.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 #include "include/IBoomerang.h"
 #include "include/config.h"
@@ -140,10 +140,10 @@ ADDRESS Win32BinaryFile::getMainEntryPoint()
 	int           gap;              // Number of instructions from the last ordinary call
 	int           borlandState = 0; // State machine for Borland
 
-	IBinarySection *si = Image->GetSectionInfoByName(".text");
+	IBinarySection *si = Image->getSectionInfoByName(".text");
 
 	if (si == nullptr) {
-		si = Image->GetSectionInfoByName("CODE");
+		si = Image->getSectionInfoByName("CODE");
 	}
 
 	assert(si);
@@ -712,10 +712,10 @@ int Win32BinaryFile::canLoad(QIODevice& fl) const
 void Win32BinaryFile::findJumps(ADDRESS curr)
 {
 	int            cnt  = 0; // Count of bytes with no match
-	IBinarySection *sec = Image->GetSectionInfoByName(".text");
+	IBinarySection *sec = Image->getSectionInfoByName(".text");
 
 	if (sec == nullptr) {
-		sec = Image->GetSectionInfoByName("CODE");
+		sec = Image->getSectionInfoByName("CODE");
 	}
 
 	assert(sec);

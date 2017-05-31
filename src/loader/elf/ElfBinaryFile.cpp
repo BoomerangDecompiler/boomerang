@@ -22,7 +22,7 @@
 #include "include/config.h"
 #include "include/util.h"
 #include "include/IBoomerang.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 
 #include <QtCore/QDebug>
@@ -328,7 +328,7 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	}
 
 	// Save the relocation to symbol table info
-	IBinarySection *pRel = Image->GetSectionInfoByName(".rela.text");
+	IBinarySection *pRel = Image->getSectionInfoByName(".rela.text");
 
 	if (pRel) {
 		m_bAddend = true;                                  // Remember its a relA table
@@ -337,7 +337,7 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	}
 	else {
 		m_bAddend = false;
-		pRel      = Image->GetSectionInfoByName(".rel.text");
+		pRel      = Image->getSectionInfoByName(".rel.text");
 
 		if (pRel) {
 			// SetRelocInfo(pRel);
@@ -346,7 +346,7 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	}
 
 	// Find the PLT limits. Required for IsDynamicLinkedProc(), e.g.
-	IBinarySection *pPlt = Image->GetSectionInfoByName(".plt");
+	IBinarySection *pPlt = Image->getSectionInfoByName(".plt");
 
 	if (pPlt) {
 		m_uPltMin = pPlt->sourceAddr();
@@ -389,13 +389,13 @@ const char *ElfBinaryFile::GetStrPtr(int idx, int offset)
 // typically minimise the number of entries to search
 ADDRESS ElfBinaryFile::findRelPltOffset(int i)
 {
-	const IBinarySection *siPlt    = Image->GetSectionInfoByName(".plt");
+	const IBinarySection *siPlt    = Image->getSectionInfoByName(".plt");
 	ADDRESS              addrPlt   = siPlt ? siPlt->sourceAddr() : ADDRESS::g(0L);
-	const IBinarySection *siRelPlt = Image->GetSectionInfoByName(".rel.plt");
+	const IBinarySection *siRelPlt = Image->getSectionInfoByName(".rel.plt");
 	int sizeRelPlt = 8; // Size of each entry in the .rel.plt table
 
 	if (siRelPlt == nullptr) {
-		siRelPlt   = Image->GetSectionInfoByName(".rela.plt");
+		siRelPlt   = Image->getSectionInfoByName(".rela.plt");
 		sizeRelPlt = 12; // Size of each entry in the .rela.plt table is 12 bytes
 	}
 
@@ -465,7 +465,7 @@ void ElfBinaryFile::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 	static QString       current_file;
 	bool                 imported = sym.SectionIdx == SHT_NULL;
 	bool                 local    = sym.Binding == STB_LOCAL || sym.Binding == STB_WEAK;
-	const IBinarySection *siPlt   = Image->GetSectionInfoByName(".plt");
+	const IBinarySection *siPlt   = Image->getSectionInfoByName(".plt");
 
 	if (sym.Value.isZero() && siPlt) { //&& i < max_i_for_hack) {
 		// Special hack for gcc circa 3.3.3: (e.g. test/pentium/settest).  The value in the dynamic symbol table
@@ -658,11 +658,11 @@ ADDRESS ElfBinaryFile::getEntryPoint()
 // FIXME: the below assumes a fixed delta
 ADDRESS ElfBinaryFile::NativeToHostAddress(ADDRESS uNative)
 {
-	if (Image->GetNumSections() == 0) {
+	if (Image->getNumSections() == 0) {
 		return ADDRESS::g(0L);
 	}
 
-	return Image->GetSectionInfo(1)->hostAddr() - Image->GetSectionInfo(1)->sourceAddr() + uNative;
+	return Image->getSectionInfo(1)->hostAddr() - Image->getSectionInfo(1)->sourceAddr() + uNative;
 }
 
 
@@ -741,7 +741,7 @@ QStringList ElfBinaryFile::getDependencyList()
 {
 	QStringList    result;
 	ADDRESS        stringtab = NO_ADDRESS;
-	IBinarySection *dynsect  = Image->GetSectionInfoByName(".dynamic");
+	IBinarySection *dynsect  = Image->getSectionInfoByName(".dynamic");
 
 	if (dynsect == nullptr) {
 		return result; /* no dynamic section = statically linked */

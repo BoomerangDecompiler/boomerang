@@ -36,7 +36,7 @@
 #include "../microX86dis.c"
 #include "LoaderTest.h"
 #include "boom_base/log.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "boom_base/log.h"
 
 #include <QLibrary>
@@ -88,12 +88,12 @@ void LoaderTest::testSparcLoad()
 	IBinaryImage         *sect_iface = Boomerang::get()->getImage();
 	QVERIFY(sect_iface != nullptr);
 
-	n = sect_iface->GetNumSections();
+	n = sect_iface->getNumSections();
 	ost << "Number of sections = " << n << "\r\n\t";
 	// Just use the first (real one) and last sections
-	si = sect_iface->GetSectionInfo(1);
+	si = sect_iface->getSectionInfo(1);
 	ost << si->getName() << "\t";
-	si = sect_iface->GetSectionInfo(n - 1);
+	si = sect_iface->getSectionInfo(n - 1);
 	ost << si->getName();
 	// Note: the string below needs to have embedded tabs. Edit with caution!
 	QString expected("Number of sections = 28\r\n\t"
@@ -122,11 +122,11 @@ void LoaderTest::testPentiumLoad()
 	QVERIFY(sect_iface != nullptr);
 	int n;
 	const IBinarySection *si;
-	n = sect_iface->GetNumSections();
+	n = sect_iface->getNumSections();
 	ost << "Number of sections = " << n << "\r\n\t";
-	si = sect_iface->GetSectionInfo(1);
+	si = sect_iface->getSectionInfo(1);
 	ost << si->getName() << "\t";
-	si = sect_iface->GetSectionInfo(n - 1);
+	si = sect_iface->getSectionInfo(n - 1);
 	ost << si->getName();
 	// Note: the string below needs to have embedded tabs. Edit with caution!
 	// (And slightly different string to the sparc test, e.g. rel vs rela)
@@ -157,11 +157,11 @@ void LoaderTest::testHppaLoad()
 	QVERIFY(sect_iface != nullptr);
 	int n;
 	const IBinarySection *si;
-	n = sect_iface->GetNumSections();
+	n = sect_iface->getNumSections();
 	ost << "Number of sections = " << n << "\r\n";
 
 	for (int i = 0; i < n; i++) {
-		si = sect_iface->GetSectionInfo(i);
+		si = sect_iface->getSectionInfo(i);
 		ost << si->getName() << "\t";
 	}
 
@@ -192,11 +192,11 @@ void LoaderTest::testPalmLoad()
 	QVERIFY(sect_iface != nullptr);
 	int n;
 	const IBinarySection *si;
-	n = sect_iface->GetNumSections();
+	n = sect_iface->getNumSections();
 	ost << "Number of sections = " << n << "\r\n";
 
 	for (int i = 0; i < n; i++) {
-		si = sect_iface->GetSectionInfo(i);
+		si = sect_iface->getSectionInfo(i);
 		ost << si->getName() << "\t";
 	}
 

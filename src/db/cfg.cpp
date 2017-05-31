@@ -506,12 +506,12 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewB
 		std::vector<BasicBlock *> ins(pNewBB->m_inEdges);
 		int label = pNewBB->m_labelNum;
 		// Copy over the details now, completing the bottom BB
-		*pNewBB = *pBB;           // Assign the BB, copying fields. This will set m_bIncomplete false
-		                          // Replace the in edges (likely only one)
+		*pNewBB = *pBB;             // Assign the BB, copying fields. This will set m_bIncomplete false
+		                            // Replace the in edges (likely only one)
 		pNewBB->m_inEdges  = ins;
 		pNewBB->m_labelNum = label; // Replace the label (must be one, since we are splitting this BB!)
-		                          // The "bottom" BB now starts at the implicit label
-		                          // We need to create a new list of RTLs, as per above
+		                            // The "bottom" BB now starts at the implicit label
+		                            // We need to create a new list of RTLs, as per above
 		pNewBB->setRTLs(new std::list<RTL *>(ri, pBB->m_listOfRTLs->end()));
 	}
 
@@ -1608,7 +1608,7 @@ void Cfg::findImmedPDom()
 		}
 
 		for (auto& oEdge : oEdges) {
-			succNode         = oEdge;
+			succNode           = oEdge;
 			curNode->m_immPDom = commonPDom(curNode->m_immPDom, succNode);
 		}
 	}
@@ -1838,7 +1838,7 @@ void Cfg::structLoops()
 
 			if ((pred->getCaseHead() == curNode->getCaseHead()) &&                         // ii)
 				(pred->getLoopHead() == curNode->getLoopHead()) &&                         // iii)
-				(!latch || (latch->m_ord > pred->m_ord)) &&                                    // vi)
+				(!latch || (latch->m_ord > pred->m_ord)) &&                                // vi)
 				!(pred->getLoopHead() && (pred->getLoopHead()->getLatchNode() == pred)) && // v)
 				pred->hasBackEdgeTo(curNode)) {                                            // i)
 				latch = pred;

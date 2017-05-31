@@ -29,7 +29,7 @@ SeparateLogger::SeparateLogger(const QString& v)
 }
 
 
-Log & Log::operator<<(const Instruction *s)
+Log& Log::operator<<(const Instruction *s)
 {
 	QString     tgt;
 	QTextStream st(&tgt);

@@ -20,7 +20,7 @@
 
 #include "boom_base/BinaryFile.h"
 #include "include/IBoomerang.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 #include "include/config.h"
 #include "nlist.h"

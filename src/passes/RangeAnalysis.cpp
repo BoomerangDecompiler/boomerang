@@ -2,7 +2,7 @@
 
 #include "include/proc.h"
 #include "boom_base/log.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "boom_base/log.h"
 #include "include/util.h"
 #include "include/cfg.h"

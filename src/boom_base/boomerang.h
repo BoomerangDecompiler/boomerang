@@ -116,24 +116,24 @@ private:
 	std::set<Watcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 
 	/**
-     * Prints help for the interactive mode.
-     */
+	 * Prints help for the interactive mode.
+	 */
 	void helpcmd() const;
 
-    /**
-    * Initializes the Boomerang object.
-    * The default settings are:
-    * - All options disabled
-    * - Infinite propagations
-    * - A maximum memory depth of 99
-    * - The path to the executable is "./"
-    * - The output directory is "./output/"
-    * - Main log stream is output on stderr
-    */
+	/**
+	 * Initializes the Boomerang object.
+	 * The default settings are:
+	 * - All options disabled
+	 * - Infinite propagations
+	 * - A maximum memory depth of 99
+	 * - The path to the executable is "./"
+	 * - The output directory is "./output/"
+	 * - Main log stream is output on stderr
+	 */
 	Boomerang();
 	virtual ~Boomerang();
 
-    /// This is a mini command line debugger.  Feel free to expand it.
+	/// This is a mini command line debugger.  Feel free to expand it.
 	void miniDebugger(UserProc *p, const char *description);
 
 public:
@@ -147,49 +147,49 @@ public:
 	IBinarySymbolTable *getSymbols() override;
 
 	IProject *project()  override { return m_currentProject; }
-	
+
 	/**
-     * Parse and execute a command supplied in interactive mode.
-     *
-     * \param args        The array of argument strings.
-     *
-     * \return A value indicating what happened.
-     *
-     * \retval 0 Success
-     * \retval 1 Failure
-     * \retval 2 The user exited with \a quit or \a exit
-     */
+	 * Parse and execute a command supplied in interactive mode.
+	 *
+	 * \param args        The array of argument strings.
+	 *
+	 * \return A value indicating what happened.
+	 *
+	 * \retval 0 Success
+	 * \retval 1 Failure
+	 * \retval 2 The user exited with \a quit or \a exit
+	 */
 	int processCommand(QStringList& args);
 	static const char *getVersionStr();
-    
-    /// \returns the Log object associated with the object.
+
+	/// \returns the Log object associated with the object.
 	Log& log();
 
 	SeparateLogger separate_log(const QString&);
 	Log& if_verbose_log(int verbosity_level);
 
 	void setLogger(Log *l);
-    
-    /**
-     * Sets the directory in which Boomerang creates its output files.  The directory will be created if it doesn't exist.
-     *
-     * \param path        the path to the directory
-     *
-     * \retval true Success.
-     * \retval false The directory could not be created.
-     */
+
+	/**
+	 * Sets the directory in which Boomerang creates its output files.  The directory will be created if it doesn't exist.
+	 *
+	 * \param path        the path to the directory
+	 *
+	 * \retval true Success.
+	 * \retval false The directory could not be created.
+	 */
 	bool setOutputDirectory(const QString& path);
 
-    /**
-     * Returns the HLLCode for the given proc.
-     * \return The HLLCode for the specified UserProc.
-     */
+	/**
+	 * Returns the HLLCode for the given proc.
+	 * \return The HLLCode for the specified UserProc.
+	 */
 	HLLCode *getHLLCode(UserProc *p = nullptr);
-    
-    /// Set the path where the %Boomerang executable will search for plugins.
+
+	/// Set the path where the %Boomerang executable will search for plugins.
 	void setPluginPath(const QString& p);
-    
-    /// Set the path to the %Boomerang executable.
+
+	/// Set the path to the %Boomerang executable.
 	void setProgPath(const QString& p);
 
 	/// Get the path to the %Boomerang executable.
@@ -205,48 +205,48 @@ public:
 	const QString& getOutputPath() { return m_outputPath; }
 
 	/**
-     * Loads the executable file and decodes it.
-     *
-     * \param fname The name of the file to load.
-     * \param pname How the Prog will be named.
-     *
-     * \returns A Prog object.
-     */
+	 * Loads the executable file and decodes it.
+	 *
+	 * \param fname The name of the file to load.
+	 * \param pname How the Prog will be named.
+	 *
+	 * \returns A Prog object.
+	 */
 	Prog *loadAndDecode(const QString& fname, const char *pname = nullptr);
-    
-    /**
-     * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
-     * After decompilation the elapsed time is printed to LOG_STREAM().
-     *
-     * \param fname The name of the file to load.
-     * \param pname The name that will be given to the Proc.
-     *
-     * \return Zero on success, nonzero on faillure.
-     */
+
+	/**
+	 * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
+	 * After decompilation the elapsed time is printed to LOG_STREAM().
+	 *
+	 * \param fname The name of the file to load.
+	 * \param pname The name that will be given to the Proc.
+	 *
+	 * \return Zero on success, nonzero on faillure.
+	 */
 	int decompile(const QString& fname, const char *pname = nullptr);
 
 	/// Add a Watcher to the set of Watchers for this Boomerang object.
 	void addWatcher(Watcher *watcher) { m_watchers.insert(watcher); }
 
 	/**
-     * Saves the state of the Prog object to a XML file.
-     * \param prog The Prog object to save.
-     */
+	 * Saves the state of the Prog object to a XML file.
+	 * \param prog The Prog object to save.
+	 */
 	void persistToXML(Prog *prog);
-    
-    /**
-     * Loads the state of a Prog object from a XML file.
-     * \param fname The name of the XML file.
-     * \return The loaded Prog object.
-     */
+
+	/**
+	 * Loads the state of a Prog object from a XML file.
+	 * \param fname The name of the XML file.
+	 * \return The loaded Prog object.
+	 */
 	Prog *loadFromXML(const char *fname);
 
-    /**
-     * Adds information about functions and classes from Objective-C modules to the Prog object.
-     *
-     * \param modules A map from name to the Objective-C modules.
-     * \param prog The Prog object to add the information to.
-     */
+	/**
+	 * Adds information about functions and classes from Objective-C modules to the Prog object.
+	 *
+	 * \param modules A map from name to the Objective-C modules.
+	 * \param prog The Prog object to add the information to.
+	 */
 	void objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog);
 
 	/// Alert the watchers that decompilation has completed.
@@ -394,11 +394,11 @@ public:
 
 	void alertDecompileDebugPoint(UserProc *p, const char *description);
 
-    /// Return TextStream to which given \a level of messages shoudl be directed
-    /// \param level - describes the message level TODO: describe message levels
+	/// Return TextStream to which given \a level of messages shoudl be directed
+	/// \param level - describes the message level TODO: describe message levels
 	QTextStream& getLogStream(int level = LL_Default); ///< Return overall logging target
-	
-    QString filename() const;
+
+	QString filename() const;
 
 public:
 	// Command line flags
@@ -429,7 +429,7 @@ public:
 	int maxMemDepth        = 99;
 	bool noParameterNames  = false;
 	bool stopAtDebugPoints = false;
-    
+
 	/// When true, attempt to decode main, all children, and all procs.
 	/// \a decodeMain is set when there are no -e or -E switches given
 	bool decodeMain          = true;

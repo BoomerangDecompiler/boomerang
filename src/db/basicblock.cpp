@@ -62,7 +62,7 @@ BasicBlock::BasicBlock(Function *parent)
 	, m_unstructuredType(Structured)
 	, m_overlappedRegProcessingDone(false) // others
 {
-	   m_parent = parent;
+	m_parent = parent;
 }
 
 
@@ -76,7 +76,7 @@ BasicBlock::~BasicBlock()
 
 		// and delete the list
 		delete m_listOfRTLs;
-		      m_listOfRTLs = nullptr;
+		m_listOfRTLs = nullptr;
 	}
 }
 
@@ -90,7 +90,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 	, m_outEdges(bb.m_outEdges)
 	, m_targetOutEdges(bb.m_targetOutEdges)
 	,// From Doug's code
-	   m_ord(bb.m_ord)
+	m_ord(bb.m_ord)
 	, m_revOrd(bb.m_revOrd)
 	, m_inEdgesVisited(bb.m_inEdgesVisited)
 	, m_numForwardInEdges(bb.m_numForwardInEdges)
@@ -109,7 +109,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 	, m_unstructuredType(bb.m_unstructuredType)
 {
 	setRTLs(bb.m_listOfRTLs);
-	   m_parent = bb.m_parent;
+	m_parent = bb.m_parent;
 }
 
 
@@ -135,9 +135,9 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType,
 		assert(iNumOutEdges >= 2);
 	}
 
-	   m_outEdges.reserve(iNumOutEdges); // Reserve the space; values added with AddOutEdge()
-	   m_parent         = parent;
-	   m_targetOutEdges = iNumOutEdges;
+	m_outEdges.reserve(iNumOutEdges);    // Reserve the space; values added with AddOutEdge()
+	m_parent         = parent;
+	m_targetOutEdges = iNumOutEdges;
 	// Set the RTLs
 	setRTLs(pRtls);
 }
@@ -165,14 +165,14 @@ bool BasicBlock::isTraversed()
 
 void BasicBlock::setTraversed(bool bTraversed)
 {
-	   m_traversedMarker = bTraversed;
+	m_traversedMarker = bTraversed;
 }
 
 
 void BasicBlock::setRTLs(std::list<RTL *> *rtls)
 {
 	// should we delete old ones here? breaks some things - trent
-	   m_listOfRTLs = rtls;
+	m_listOfRTLs = rtls;
 
 	// Used to set the link between the last instruction (a call) and this BB if this is a call BB
 }
@@ -186,15 +186,15 @@ BBTYPE BasicBlock::getType()
 
 void BasicBlock::updateType(BBTYPE bbType, uint32_t iNumOutEdges)
 {
-	   m_nodeType       = bbType;
-	   m_targetOutEdges = iNumOutEdges;
+	m_nodeType       = bbType;
+	m_targetOutEdges = iNumOutEdges;
 	// m_OutEdges.resize(iNumOutEdges);
 }
 
 
 void BasicBlock::setJumpReqd()
 {
-	   m_jumpReqd = true;
+	m_jumpReqd = true;
 }
 
 
@@ -419,7 +419,7 @@ const std::vector<BasicBlock *>& BasicBlock::getOutEdges()
 
 void BasicBlock::setInEdge(size_t i, BasicBlock *pNewInEdge)
 {
-	   m_inEdges[i] = pNewInEdge;
+	m_inEdges[i] = pNewInEdge;
 }
 
 
@@ -427,11 +427,11 @@ void BasicBlock::setOutEdge(size_t i, BasicBlock *pNewOutEdge)
 {
 	if (m_outEdges.empty()) {
 		assert(i == 0);
-		      m_outEdges.push_back(pNewOutEdge); // TODO: why is it allowed to set new edge in empty m_OutEdges array ?
+		m_outEdges.push_back(pNewOutEdge);       // TODO: why is it allowed to set new edge in empty m_OutEdges array ?
 	}
 	else {
 		assert(i < m_outEdges.size());
-		      m_outEdges[i] = pNewOutEdge;
+		m_outEdges[i] = pNewOutEdge;
 	}
 }
 
@@ -461,7 +461,7 @@ BasicBlock *BasicBlock::getCorrectOutEdge(ADDRESS a)
 
 void BasicBlock::addInEdge(BasicBlock *pNewInEdge)
 {
-	   m_inEdges.push_back(pNewInEdge);
+	m_inEdges.push_back(pNewInEdge);
 }
 
 
@@ -488,7 +488,7 @@ void BasicBlock::deleteEdge(BasicBlock *edge)
 
 	for (auto it = m_outEdges.begin(); it != m_outEdges.end(); it++) {
 		if (*it == edge) {
-			         m_outEdges.erase(it);
+			m_outEdges.erase(it);
 			break;
 		}
 	}
@@ -498,10 +498,10 @@ void BasicBlock::deleteEdge(BasicBlock *edge)
 unsigned BasicBlock::getDFTOrder(int& first, int& last)
 {
 	first++;
-	   m_DFTfirst = first;
+	m_DFTfirst = first;
 
 	unsigned numTraversed = 1;
-	   m_traversedMarker = true;
+	m_traversedMarker = true;
 
 	for (BasicBlock *child : m_outEdges) {
 		if (child->m_traversedMarker == false) {
@@ -510,7 +510,7 @@ unsigned BasicBlock::getDFTOrder(int& first, int& last)
 	}
 
 	last++;
-	   m_DFTlast = last;
+	m_DFTlast = last;
 
 	return numTraversed;
 }
@@ -519,10 +519,10 @@ unsigned BasicBlock::getDFTOrder(int& first, int& last)
 unsigned BasicBlock::getRevDFTOrder(int& first, int& last)
 {
 	first++;
-	   m_DFTrevfirst = first;
+	m_DFTrevfirst = first;
 
 	unsigned numTraversed = 1;
-	   m_traversedMarker = true;
+	m_traversedMarker = true;
 
 	for (BasicBlock *parent : m_inEdges) {
 		if (parent->m_traversedMarker == false) {
@@ -531,7 +531,7 @@ unsigned BasicBlock::getRevDFTOrder(int& first, int& last)
 	}
 
 	last++;
-	   m_DFTrevlast = last;
+	m_DFTrevlast = last;
 
 	return numTraversed;
 }
@@ -747,8 +747,6 @@ void BasicBlock::getStatements(StatementList& stmts) const
  *
  * Adapted for Boomerang by Trent Waddington, 20 June 2002.
  */
-
-
 SharedExp BasicBlock::getCond()
 {
 	// the condition will be in the last rtl
@@ -884,19 +882,19 @@ void BasicBlock::simplify()
 		assert(m_outEdges.size() > 1);
 
 		if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-			         m_nodeType = BBTYPE::FALL;
+			m_nodeType = BBTYPE::FALL;
 		}
 		else {
 			RTL *last = m_listOfRTLs->back();
 
 			if (last->size() == 0) {
-				            m_nodeType = BBTYPE::FALL;
+				m_nodeType = BBTYPE::FALL;
 			}
 			else if (last->back()->isGoto()) {
-				            m_nodeType = BBTYPE::ONEWAY;
+				m_nodeType = BBTYPE::ONEWAY;
 			}
 			else if (!last->back()->isBranch()) {
-				            m_nodeType = BBTYPE::FALL;
+				m_nodeType = BBTYPE::FALL;
 			}
 		}
 
@@ -908,9 +906,9 @@ void BasicBlock::simplify()
 			}
 
 			BasicBlock *redundant = m_outEdges[0];
-			         m_outEdges[0] = m_outEdges[1];
-			         m_outEdges.resize(1);
-			         m_targetOutEdges = 1;
+			m_outEdges[0] = m_outEdges[1];
+			m_outEdges.resize(1);
+			m_targetOutEdges = 1;
 			LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
 			std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
 			redundant->m_inEdges.clear();
@@ -936,8 +934,8 @@ void BasicBlock::simplify()
 			LOG_VERBOSE(1) << "turning TWOWAY into ONEWAY: " << m_outEdges[0]->getLowAddr() << " "
 						   << m_outEdges[1]->getLowAddr() << "\n";
 			BasicBlock *redundant = m_outEdges[1];
-			         m_outEdges.resize(1);
-			         m_targetOutEdges = 1;
+			m_outEdges.resize(1);
+			m_targetOutEdges = 1;
 			LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
 			std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
 			redundant->m_inEdges.clear();
@@ -1026,7 +1024,7 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
 	}
 
 	// save the indentation level that this node was written at
-	   m_indentLevel = indLevel;
+	m_indentLevel = indLevel;
 }
 
 
@@ -1061,13 +1059,13 @@ void BasicBlock::generateCode_Loop(HLLCode *hll, std::list<BasicBlock *>& gotoSe
 
 		// if code has not been generated for the latch node, generate it now
 		if (m_latchNode->m_traversed != DFS_CODEGEN) {
-			         m_latchNode->m_traversed = DFS_CODEGEN;
-			         m_latchNode->WriteBB(hll, indLevel + 1);
+			m_latchNode->m_traversed = DFS_CODEGEN;
+			m_latchNode->WriteBB(hll, indLevel + 1);
 		}
 
 		// rewrite the body of the block (excluding the predicate) at the next nesting level after making sure
 		// another label won't be generated
-		      m_emitHLLLabel = false;
+		m_emitHLLLabel = false;
 		WriteBB(hll, indLevel + 1);
 
 		// write the loop tail
@@ -1086,22 +1084,22 @@ void BasicBlock::generateCode_Loop(HLLCode *hll, std::list<BasicBlock *>& gotoSe
 		// for the loop body.
 		if (m_structuringType == LoopCond) {
 			// set the necessary flags so that generateCode can successfully be called again on this node
-			         m_structuringType = Cond;
-			         m_traversed       = UNTRAVERSED;
+			m_structuringType = Cond;
+			m_traversed       = UNTRAVERSED;
 			generateCode(hll, indLevel + 1, m_latchNode, followSet, gotoSet, proc);
 		}
 		else {
 			WriteBB(hll, indLevel + 1);
 
 			// write the code for the body of the loop
-			         m_outEdges[0]->generateCode(hll, indLevel + 1, m_latchNode, followSet, gotoSet, proc);
+			m_outEdges[0]->generateCode(hll, indLevel + 1, m_latchNode, followSet, gotoSet, proc);
 		}
 
 		if (m_loopHeaderType == PostTested) {
 			// if code has not been generated for the latch node, generate it now
 			if (m_latchNode->m_traversed != DFS_CODEGEN) {
-				            m_latchNode->m_traversed = DFS_CODEGEN;
-				            m_latchNode->WriteBB(hll, indLevel + 1);
+				m_latchNode->m_traversed = DFS_CODEGEN;
+				m_latchNode->WriteBB(hll, indLevel + 1);
 			}
 
 			// hll->AddPosttestedLoopEnd(indLevel, getCond());
@@ -1114,8 +1112,8 @@ void BasicBlock::generateCode_Loop(HLLCode *hll, std::list<BasicBlock *>& gotoSe
 
 			// if code has not been generated for the latch node, generate it now
 			if (m_latchNode->m_traversed != DFS_CODEGEN) {
-				            m_latchNode->m_traversed = DFS_CODEGEN;
-				            m_latchNode->WriteBB(hll, indLevel + 1);
+				m_latchNode->m_traversed = DFS_CODEGEN;
+				m_latchNode->WriteBB(hll, indLevel + 1);
 			}
 
 			// write the closing bracket for an endless loop
@@ -1129,7 +1127,7 @@ void BasicBlock::generateCode_Loop(HLLCode *hll, std::list<BasicBlock *>& gotoSe
 		followSet.resize(followSet.size() - 1);
 
 		if (m_loopFollow->m_traversed != DFS_CODEGEN) {
-			         m_loopFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
+			m_loopFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
 		}
 		else{
 			emitGotoAndLabel(hll, indLevel, m_loopFollow);
@@ -1169,7 +1167,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 		return;
 	}
 	else{
-		      m_traversed = DFS_CODEGEN;
+		m_traversed = DFS_CODEGEN;
 	}
 
 	// if this is a latchNode and the current indentation level is the same as the first node in the loop, then this
@@ -1182,7 +1180,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 		}
 		else {
 			// unset its traversed flag
-			         m_traversed = UNTRAVERSED;
+			m_traversed = UNTRAVERSED;
 
 			emitGotoAndLabel(hll, indLevel, this);
 			return;
@@ -1202,7 +1200,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 		{
 			// reset this back to LoopCond if it was originally of this type
 			if (m_latchNode) {
-				        m_structuringType = LoopCond;
+				m_structuringType = LoopCond;
 			}
 
 			// for 2 way conditional headers that are effectively jumps into
@@ -1508,8 +1506,8 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 {
 	// timestamp the current node with the current time and set its traversed
 	// flag
-	   m_traversed     = DFS_LNUM;
-	   m_loopStamps[0] = time;
+	m_traversed     = DFS_LNUM;
+	m_loopStamps[0] = time;
 
 	// recurse on unvisited children and set inedges for all children
 	for (BasicBlock *out : m_outEdges) {
@@ -1524,10 +1522,10 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 	}
 
 	// set the the second loopStamp value
-	   m_loopStamps[1] = ++time;
+	m_loopStamps[1] = ++time;
 
 	// add this node to the ordering structure as well as recording its position within the ordering
-	   m_ord = (int)order.size();
+	m_ord = (int)order.size();
 	order.push_back(this);
 }
 
@@ -1535,26 +1533,26 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 void BasicBlock::setRevLoopStamps(int& time)
 {
 	// timestamp the current node with the current time and set its traversed flag
-	   m_traversed        = DFS_RNUM;
-	   m_revLoopStamps[0] = time;
+	m_traversed        = DFS_RNUM;
+	m_revLoopStamps[0] = time;
 
 	// recurse on the unvisited children in reverse order
 	for (int i = (int)m_outEdges.size() - 1; i >= 0; i--) {
 		// recurse on this child if it hasn't already been visited
 		if (m_outEdges[i]->m_traversed != DFS_RNUM) {
-			         m_outEdges[i]->setRevLoopStamps(++time);
+			m_outEdges[i]->setRevLoopStamps(++time);
 		}
 	}
 
 	// set the the second loopStamp value
-	   m_revLoopStamps[1] = ++time;
+	m_revLoopStamps[1] = ++time;
 }
 
 
 void BasicBlock::setRevOrder(std::vector<BasicBlock *>& order)
 {
 	// Set this node as having been traversed during the post domimator DFS ordering traversal
-	   m_traversed = DFS_PDOM;
+	m_traversed = DFS_PDOM;
 
 	// recurse on unvisited children
 	for (BasicBlock *in : m_inEdges) {
@@ -1565,7 +1563,7 @@ void BasicBlock::setRevOrder(std::vector<BasicBlock *>& order)
 
 	// add this node to the ordering structure and record the post dom. order of this node as its index within this
 	// ordering structure
-	   m_revOrd = (int)order.size();
+	m_revOrd = (int)order.size();
 	order.push_back(this);
 }
 
@@ -1574,18 +1572,18 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
 {
 	assert(!m_caseHead);
 
-	   m_traversed = DFS_CASE;
+	m_traversed = DFS_CASE;
 
 	// don't tag this node if it is the case header under investigation
 	if (this != head) {
-		      m_caseHead = head;
+		m_caseHead = head;
 	}
 
 	// if this is a nested case header, then it's member nodes will already have been tagged so skip straight to its
 	// follow
 	if ((getType() == BBTYPE::NWAY) && (this != head)) {
 		if (m_condFollow && (m_condFollow->m_traversed != DFS_CASE) && (m_condFollow != follow)) {
-			         m_condFollow->setCaseHead(head, follow);
+			m_condFollow->setCaseHead(head, follow);
 		}
 	}
 	else {
@@ -1608,27 +1606,27 @@ void BasicBlock::setStructType(structType s)
 	// if-then-else etc.)
 	if (s == Cond) {
 		if (getType() == BBTYPE::NWAY) {
-			         m_conditionHeaderType = Case;
+			m_conditionHeaderType = Case;
 		}
 		else if (m_outEdges[BELSE] == m_condFollow) {
-			         m_conditionHeaderType = IfThen;
+			m_conditionHeaderType = IfThen;
 		}
 		else if (m_outEdges[BTHEN] == m_condFollow) {
-			         m_conditionHeaderType = IfElse;
+			m_conditionHeaderType = IfElse;
 		}
 		else {
-			         m_conditionHeaderType = IfThenElse;
+			m_conditionHeaderType = IfThenElse;
 		}
 	}
 
-	   m_structuringType = s;
+	m_structuringType = s;
 }
 
 
 void BasicBlock::setUnstructType(unstructType us)
 {
 	assert((m_structuringType == Cond || m_structuringType == LoopCond) && m_conditionHeaderType != Case);
-	   m_unstructuredType = us;
+	m_unstructuredType = us;
 }
 
 
@@ -1642,12 +1640,12 @@ unstructType BasicBlock::getUnstructType()
 void BasicBlock::setLoopType(LoopType l)
 {
 	assert(m_structuringType == Loop || m_structuringType == LoopCond);
-	   m_loopHeaderType = l;
+	m_loopHeaderType = l;
 
 	// set the structured class (back to) just Loop if the loop type is PreTested OR it's PostTested and is a single
 	// block loop
 	if ((m_loopHeaderType == PreTested) || ((m_loopHeaderType == PostTested) && (this == m_latchNode))) {
-		      m_structuringType = Loop;
+		m_structuringType = Loop;
 	}
 }
 
@@ -1662,7 +1660,7 @@ LoopType BasicBlock::getLoopType()
 void BasicBlock::setCondType(CondType c)
 {
 	assert(m_structuringType == Cond || m_structuringType == LoopCond);
-	   m_conditionHeaderType = c;
+	m_conditionHeaderType = c;
 }
 
 
@@ -1683,9 +1681,9 @@ bool BasicBlock::inLoop(BasicBlock *header, BasicBlock *latch)
 	// this node is within the header and the latch is within this when using the forward loop stamps OR
 	// this node is within the header and the latch is within this when using the reverse loop stamps
 	return this == latch || (header->m_loopStamps[0] < m_loopStamps[0] && m_loopStamps[1] < header->m_loopStamps[1] &&
-							                      m_loopStamps[0] < latch->m_loopStamps[0] && latch->m_loopStamps[1] < m_loopStamps[1]) ||
+							 m_loopStamps[0] < latch->m_loopStamps[0] && latch->m_loopStamps[1] < m_loopStamps[1]) ||
 		   (header->m_revLoopStamps[0] < m_revLoopStamps[0] && m_revLoopStamps[1] < header->m_revLoopStamps[1] &&
-			         m_revLoopStamps[0] < latch->m_revLoopStamps[0] && latch->m_revLoopStamps[1] < m_revLoopStamps[1]);
+			m_revLoopStamps[0] < latch->m_revLoopStamps[0] && latch->m_revLoopStamps[1] < m_revLoopStamps[1]);
 }
 
 
@@ -1726,7 +1724,7 @@ void BasicBlock::prependStmt(Instruction *s, UserProc *proc)
 	// Otherwise, prepend a new RTL
 	std::list<Instruction *> listStmt = { s };
 	RTL *rtl = new RTL(ADDRESS::g(0L), &listStmt);
-	   m_listOfRTLs->push_front(rtl);
+	m_listOfRTLs->push_front(rtl);
 }
 
 
@@ -1829,7 +1827,7 @@ bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc *myProc)
 
 	// liveIn is what we calculated last time
 	if (!(liveLocs == m_liveIn)) {
-		      m_liveIn = liveLocs;
+		m_liveIn = liveLocs;
 		return true; // A change
 	}
 
@@ -2147,7 +2145,7 @@ int BasicBlock::findNumCases()
 	// should actually search from the statement to i
 	for (BasicBlock *in : m_inEdges) {          // For each in-edge
 		if (in->m_nodeType != BBTYPE::TWOWAY) { // look for a two-way BB
-			continue;                         // Ignore all others
+			continue;                           // Ignore all others
 		}
 
 		assert(in->m_listOfRTLs && in->m_listOfRTLs->size());
@@ -2694,9 +2692,9 @@ void BasicBlock::processSwitch(UserProc *proc)
 			assert(int(m_outEdges.size()) >= (iNum - i));
 			size_t remove_from_this = m_outEdges.size() - (iNum - i);
 			// remove last (iNum - i) out edges
-			         m_outEdges.erase(m_outEdges.begin() + remove_from_this, m_outEdges.end());
+			m_outEdges.erase(m_outEdges.begin() + remove_from_this, m_outEdges.end());
 			//            iNumOut        -= (iNum - i);
-			         m_targetOutEdges -= (iNum - i);
+			m_targetOutEdges -= (iNum - i);
 			break;
 #else
 			iNumOut--;
@@ -2724,7 +2722,7 @@ bool BasicBlock::undoComputedBB(Instruction *stmt)
 
 	for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
 		if (*rr == stmt) {
-			         m_nodeType = BBTYPE::CALL;
+			m_nodeType = BBTYPE::CALL;
 			LOG << "undoComputedBB for statement " << stmt << "\n";
 			return true;
 		}

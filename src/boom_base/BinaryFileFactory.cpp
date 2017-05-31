@@ -11,7 +11,7 @@
 #include "boomerang.h"
 
 #include "include/project.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 
 #include <QDir>

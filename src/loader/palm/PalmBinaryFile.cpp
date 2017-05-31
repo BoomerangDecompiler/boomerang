@@ -16,7 +16,7 @@
 
 #include "palmsystraps.h"
 #include "include/IBoomerang.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 
 #include <cassert>
@@ -165,14 +165,14 @@ bool PalmBinaryFile::loadFromMemory(QByteArray& img)
 	}
 
 	// Create a separate, uncompressed, initialised data section
-	IBinarySection *pData = Image->GetSectionInfoByName("data0");
+	IBinarySection *pData = Image->getSectionInfoByName("data0");
 
 	if (pData == nullptr) {
 		fprintf(stderr, "No data section!\n");
 		return false;
 	}
 
-	IBinarySection *pCode0 = Image->GetSectionInfoByName("code0");
+	IBinarySection *pCode0 = Image->getSectionInfoByName("code0");
 
 	if (pCode0 == nullptr) {
 		fprintf(stderr, "No code 0 section!\n");
@@ -398,7 +398,7 @@ void PalmBinaryFile::addTrapSymbols()
 std::pair<ADDRESS, unsigned> PalmBinaryFile::GetGlobalPointerInfo()
 {
 	ADDRESS              agp = ADDRESS::g(0L);
-	const IBinarySection *ps = Image->GetSectionInfoByName("data0");
+	const IBinarySection *ps = Image->getSectionInfoByName("data0");
 
 	if (ps) {
 		agp = ps->sourceAddr();
@@ -494,7 +494,7 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
 // For Palm binaries, this is PilotMain.
 ADDRESS PalmBinaryFile::getMainEntryPoint()
 {
-	IBinarySection *psect = Image->GetSectionInfoByName("code1");
+	IBinarySection *psect = Image->getSectionInfoByName("code1");
 
 	if (psect == nullptr) {
 		return ADDRESS::g(0L); // Failed

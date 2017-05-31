@@ -20,7 +20,7 @@
 #include "ExeBinaryFile.h"
 
 #include "include/IBoomerang.h"
-#include "include/IBinaryImage.h"
+#include "db/IBinaryImage.h"
 
 #include <QBuffer>
 #include <QFile>

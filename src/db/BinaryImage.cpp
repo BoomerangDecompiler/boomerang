@@ -74,13 +74,13 @@ BinaryImage::~BinaryImage()
 
 void BinaryImage::reset()
 {
-	SectionMap.clear();
+	m_sectionMap.clear();
 
-	for (IBinarySection *si : Sections) {
+	for (IBinarySection *si : m_sections) {
 		delete si;
 	}
 
-	Sections.clear();
+	m_sections.clear();
 }
 
 
@@ -89,7 +89,7 @@ char BinaryImage::readNative1(ADDRESS nat)
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
 	if (si == nullptr) {
-		qDebug() << "Target Memory access in unmapped Section " << nat.m_value;
+		qDebug() << "Target Memory access in unmapped section " << nat.m_value;
 		return -1;
 	}
 
@@ -154,7 +154,6 @@ QWord BinaryImage::readNative8(ADDRESS nat)   // TODO: lifted from Win32 loader,
 }
 
 
-// Read 4 bytes as a float
 float BinaryImage::readNativeFloat4(ADDRESS nat)
 {
 	int raw = readNative4(nat);
@@ -165,7 +164,6 @@ float BinaryImage::readNativeFloat4(ADDRESS nat)
 }
 
 
-// Read 8 bytes as a float
 double BinaryImage::readNativeFloat8(ADDRESS nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
@@ -224,11 +222,11 @@ void BinaryImage::writeNative4(ADDRESS nat, uint32_t n)
 
 void BinaryImage::calculateTextLimits()
 {
-	limitTextLow  = ADDRESS::g(0xFFFFFFFF);
-	limitTextHigh = ADDRESS::g(0L);
-	TextDelta     = 0;
+	m_limitTextLow  = ADDRESS::g(0xFFFFFFFF);
+	m_limitTextHigh = ADDRESS::g(0L);
+	m_textDelta     = 0;
 
-	for (IBinarySection *pSect : Sections) {
+	for (IBinarySection *pSect : m_sections) {
 		if (!pSect->isCode()) {
 			continue;
 		}
@@ -241,25 +239,23 @@ void BinaryImage::calculateTextLimits()
 			continue;
 		}
 
-		if (pSect->sourceAddr() < limitTextLow) {
-			limitTextLow = pSect->sourceAddr();
+		if (pSect->sourceAddr() < m_limitTextLow) {
+			m_limitTextLow = pSect->sourceAddr();
 		}
 
 		ADDRESS hiAddress = pSect->sourceAddr() + pSect->size();
 
-		if (hiAddress > limitTextHigh) {
-			limitTextHigh = hiAddress;
+		if (hiAddress > m_limitTextHigh) {
+			m_limitTextHigh = hiAddress;
 		}
 
 		ptrdiff_t host_native_diff = (pSect->hostAddr() - pSect->sourceAddr()).m_value;
 
-		if (TextDelta == 0) {
-			TextDelta = host_native_diff;
+		if (m_textDelta == 0) {
+			m_textDelta = host_native_diff;
 		}
-		else {
-			if (TextDelta != host_native_diff) {
-				fprintf(stderr, "warning: textDelta different for section %s (ignoring).\n", qPrintable(pSect->getName()));
-			}
+		else if (m_textDelta != host_native_diff) {
+			fprintf(stderr, "warning: textDelta different for section %s (ignoring).\n", qPrintable(pSect->getName()));
 		}
 	}
 }
@@ -271,9 +267,9 @@ const IBinarySection *BinaryImage::getSectionInfoByAddr(ADDRESS uEntry) const
 		qDebug() << "getSectionInfoByAddr with non-Source ADDRESS";
 	}
 
-	auto iter = SectionMap.find(uEntry);
+	auto iter = m_sectionMap.find(uEntry);
 
-	if (iter == SectionMap.end()) {
+	if (iter == m_sectionMap.end()) {
 		return nullptr;
 	}
 
@@ -281,11 +277,10 @@ const IBinarySection *BinaryImage::getSectionInfoByAddr(ADDRESS uEntry) const
 }
 
 
-/// Find section index given name, or -1 if not found
-int BinaryImage::GetSectionIndexByName(const QString& sName)
+int BinaryImage::getSectionIndexByName(const QString& sName)
 {
-	for (int32_t i = Sections.size() - 1; i >= 0; --i) {
-		if (Sections[i]->getName() == sName) {
+	for (int32_t i = m_sections.size() - 1; i >= 0; --i) {
+		if (m_sections[i]->getName() == sName) {
 			return i;
 		}
 	}
@@ -294,15 +289,15 @@ int BinaryImage::GetSectionIndexByName(const QString& sName)
 }
 
 
-IBinarySection *BinaryImage::GetSectionInfoByName(const QString& sName)
+IBinarySection *BinaryImage::getSectionInfoByName(const QString& sName)
 {
-	int i = GetSectionIndexByName(sName);
+	int i = getSectionIndexByName(sName);
 
 	if (i == -1) {
 		return nullptr;
 	}
 
-	return Sections[i];
+	return m_sections[i];
 }
 
 
@@ -325,7 +320,7 @@ bool BinaryImage::isReadOnly(ADDRESS uEntry)
 
 ADDRESS BinaryImage::getLimitTextLow()
 {
-	auto interval = SectionMap.begin()->first;
+	auto interval = m_sectionMap.begin()->first;
 
 	return interval.lower();
 }
@@ -333,7 +328,7 @@ ADDRESS BinaryImage::getLimitTextLow()
 
 ADDRESS BinaryImage::getLimitTextHigh()
 {
-	auto interval = SectionMap.rbegin()->first;
+	auto interval = m_sectionMap.rbegin()->first;
 
 	return interval.upper();
 }
@@ -348,9 +343,9 @@ SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRE
 //    for(auto iter = SectionMap.begin(),e=SectionMap.end(); iter!=e; ++iter) {
 //        qDebug() << iter->first.lower().toString() << " - "<< iter->first.upper().toString();
 //    }
-	auto clash_with = SectionMap.find(boost::icl::interval<ADDRESS>::right_open(from, to));
+	auto clash_with = m_sectionMap.find(boost::icl::interval<ADDRESS>::right_open(from, to));
 
-	if (clash_with != SectionMap.end()) {
+	if (clash_with != m_sectionMap.end()) {
 		qDebug() << "Segment" << name << "would intersect existing one" << (*clash_with->second).getName();
 		return nullptr;
 	}
@@ -358,8 +353,8 @@ SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRE
 	SectionInfo *sect = new SectionInfo(name);
 	sect->uNativeAddr  = from;
 	sect->uSectionSize = (to - from).m_value;
-	Sections.push_back(sect);
+	m_sections.push_back(sect);
 
-	SectionMap.add(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), sect));
+	m_sectionMap.add(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), sect));
 	return sect;
 }

@@ -13,14 +13,16 @@ public:
 	typedef SectionListType::iterator         iterator;
 	typedef SectionListType::const_iterator   const_iterator;
 
+public:
 	virtual ~IBinaryImage() {}
+
 	virtual void reset() = 0;
 	virtual IBinarySection *createSection(const QString& name, ADDRESS from, ADDRESS to) = 0;
 	virtual const IBinarySection *getSectionInfoByAddr(ADDRESS uEntry) const             = 0;
-	virtual int GetSectionIndexByName(const QString& sName)            = 0;
-	virtual IBinarySection *GetSectionInfoByName(const QString& sName) = 0;
-	virtual const IBinarySection *GetSectionInfo(int idx) const        = 0;
-	virtual size_t GetNumSections() const = 0;
+	virtual int getSectionIndexByName(const QString& sName)            = 0;
+	virtual IBinarySection *getSectionInfoByName(const QString& sName) = 0;
+	virtual const IBinarySection *getSectionInfo(int idx) const        = 0;
+	virtual size_t getNumSections() const = 0;
 	virtual void calculateTextLimits()    = 0;
 	virtual ADDRESS getLimitTextLow()     = 0;
 	virtual ADDRESS getLimitTextHigh()    = 0;
