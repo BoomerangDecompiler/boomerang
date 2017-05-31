@@ -172,7 +172,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc *pProc,
 
 	// Clear the pointer used by the caller prologue code to access the last
 	// call rtl of this procedure
-	//decoder.resetLastCall();
+	// decoder.resetLastCall();
 
 	while ((uAddr = nextAddress(targets, pCfg)) != 0) {
 		// The list of RTLs for the current basic block

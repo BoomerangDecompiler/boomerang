@@ -447,8 +447,8 @@ ADDRESS ElfBinaryFile::findRelPltOffset(int i)
 			return addrPlt + plt_offset;
 
 			return addrPlt + pltEntrySize * (curr + 1);
-			//return ADDRESS::n(elfRead4(pEntry));
-			//return addrPlt + 0xC * (curr + 1);
+			// return ADDRESS::n(elfRead4(pEntry));
+			// return addrPlt + 0xC * (curr + 1);
 		}
 
 		if (--curr < 0) {
@@ -467,7 +467,7 @@ void ElfBinaryFile::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 	bool                 local    = sym.Binding == STB_LOCAL || sym.Binding == STB_WEAK;
 	const IBinarySection *siPlt   = Image->getSectionInfoByName(".plt");
 
-	if (sym.Value.isZero() && siPlt) { //&& i < max_i_for_hack) {
+	if (sym.Value.isZero() && siPlt) { // && i < max_i_for_hack) {
 		// Special hack for gcc circa 3.3.3: (e.g. test/pentium/settest).  The value in the dynamic symbol table
 		// is zero!  I was assuming that index i in the dynamic symbol table would always correspond to index i
 		// in the .plt section, but for fedora2_true, this doesn't work. So we have to look in the .rel[a].plt
@@ -484,7 +484,7 @@ void ElfBinaryFile::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 	const IBinarySymbol *symbol = sym.Value.isZero() ? Symbols->find(sym.Name) : Symbols->find(sym.Value);
 
 	// Ensure no overwriting (except functions)
-	if (symbol != nullptr) { //TODO: if symbol already exists
+	if (symbol != nullptr) { // TODO: if symbol already exists
 		return;
 	}
 
@@ -898,7 +898,7 @@ void ElfBinaryFile::applyRelocations()
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
-				//ADDRESS destNatOrigin = ADDRESS::g(0L), destHostOrigin = ADDRESS::g(0L);
+				// ADDRESS destNatOrigin = ADDRESS::g(0L), destHostOrigin = ADDRESS::g(0L);
 				for (unsigned u = 0; u < size; u += sizeof(Elf32_Rela)) {
 					Elf32_Rela r;
 					r.r_offset = elfRead4(pReloc++);
@@ -906,7 +906,7 @@ void ElfBinaryFile::applyRelocations()
 					r.r_addend = elfRead4(pReloc++);
 					unsigned char relType = (unsigned char)r.r_info;
 
-					//unsigned symTabIndex = r.r_info >> 8;
+					// unsigned symTabIndex = r.r_info >> 8;
 					switch (relType)
 					{
 					case 0: // R_386_NONE: just ignore (common)
@@ -1021,7 +1021,7 @@ void ElfBinaryFile::applyRelocations()
 								// if (S == (e_type == E_REL ? 0x8000000 : 0)) {
 								S = nextFakeLibAddr--; // Allocate a new fake address
 								Symbols->create(S, pName);
-								//}
+								// }
 							}
 							else if (e_type == E_REL) {
 								nsec = elfRead2(&symOrigin[symTabIndex].st_shndx);

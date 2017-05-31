@@ -784,7 +784,7 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 		}
 
 		if (bitsize == new_size) {
-			//same size, prefer Int/Float over SizeType
+			// same size, prefer Int/Float over SizeType
 			if (!BaseType->isSize() && other->isSize()) {
 				return std::const_pointer_cast<Type>(this->shared_from_this());
 			}

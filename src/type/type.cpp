@@ -30,7 +30,7 @@
 
 extern char               debug_buffer[]; // For prints functions
 QMap<QString, SharedType> Type::namedTypes;
-//QMap<QString, SharedType > Type::namedTypes;
+// QMap<QString, SharedType > Type::namedTypes;
 
 bool Type::isCString()
 {
@@ -798,14 +798,14 @@ bool Type::operator!=(const Type& other) const
 // bool IntegerType::operator-=(const Type& other) const {
 //        if (!other.isInteger()) return false;
 //        return size == ((IntegerType&)other).size;
-//}
+// }
 
 // bool FloatType::operator-=(const Type& other) const {
 //        if (!other.isFloat()) return false;
 //        if (size > 64 && ((FloatType&)other).size > 64)
 //        return true;
 //        return size == ((FloatType&)other).size;
-//}
+// }
 
 /***************************************************************************/ /**
  *

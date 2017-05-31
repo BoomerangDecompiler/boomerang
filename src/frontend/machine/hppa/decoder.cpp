@@ -1,7 +1,7 @@
 #define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 #include <assert.h>
 
-//#line 1 "machine/hppa/decoder.m"
+// #line 1 "machine/hppa/decoder.m"
 
 /***************************************************************************/ /**
  * \file       decoder.m
@@ -64,11 +64,11 @@ bool is_null(ADDRESS hostPC)
 {
 	bool res;
 
-	//#line 71 "machine/hppa/decoder.m"
+	// #line 71 "machine/hppa/decoder.m"
 	{
 		dword MATCH_p =
 
-			//#line 71 "machine/hppa/decoder.m"
+			// #line 71 "machine/hppa/decoder.m"
 			hostPC;
 		unsigned MATCH_w_32_0;
 		{
@@ -145,14 +145,14 @@ bool is_null(ADDRESS hostPC)
 			case 59:
 
 				if ((MATCH_w_32_0 >> 1 & 0x1) /* n_30 at 0 */ == 1) {
-					//#line 76 "machine/hppa/decoder.m"
+					// #line 76 "machine/hppa/decoder.m"
 
 					res = true;
 				}
 
 				/*opt-block+*/
 				else{
-					//#line 73 "machine/hppa/decoder.m"
+					// #line 73 "machine/hppa/decoder.m"
 
 					res = false;
 				}
@@ -171,7 +171,7 @@ MATCH_finished_e:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 80 "machine/hppa/decoder.m"
+	// #line 80 "machine/hppa/decoder.m"
 
 	return res;
 }
@@ -402,11 +402,11 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 	else {
 		// Branches and other high level instructions
 
-		//#line 313 "machine/hppa/decoder.m"
+		// #line 313 "machine/hppa/decoder.m"
 		{
 			dword MATCH_p =
 
-				//#line 313 "machine/hppa/decoder.m"
+				// #line 313 "machine/hppa/decoder.m"
 				hostPC;
 			char     *MATCH_name;
 			unsigned MATCH_w_32_0;
@@ -488,7 +488,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 						unsigned t_27  = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 						nextPC = 4 + MATCH_p;
 
-						//#line 470 "machine/hppa/decoder.m"
+						// #line 470 "machine/hppa/decoder.m"
 						{
 							// Decode the instruction
 
@@ -532,7 +532,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 											  ((sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) & 0x7ffff) << 13);
 						nextPC = 4 + MATCH_p;
 
-						//#line 369 "machine/hppa/decoder.m"
+						// #line 369 "machine/hppa/decoder.m"
 						{
 							int condvalue;
 
@@ -588,7 +588,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 											  ((sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) & 0x7ffff) << 13);
 						nextPC = 4 + MATCH_p;
 
-						//#line 349 "machine/hppa/decoder.m"
+						// #line 349 "machine/hppa/decoder.m"
 						{
 							int condvalue;
 
@@ -685,7 +685,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 											  ((sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) & 0x7ffff) << 13);
 						nextPC = 4 + MATCH_p;
 
-						//#line 409 "machine/hppa/decoder.m"
+						// #line 409 "machine/hppa/decoder.m"
 						{
 							int condvalue;
 
@@ -739,7 +739,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 											  ((sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) & 0x7ffff) << 13);
 						nextPC = 4 + MATCH_p;
 
-						//#line 428 "machine/hppa/decoder.m"
+						// #line 428 "machine/hppa/decoder.m"
 						{
 							int condvalue;
 
@@ -794,7 +794,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 											  (sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) << 18);
 						nextPC = 4 + MATCH_p;
 
-						//#line 315 "machine/hppa/decoder.m"
+						// #line 315 "machine/hppa/decoder.m"
 						{
 							HLJump *jump;
 
@@ -839,7 +839,7 @@ MATCH_label_d0:
 			{
 				nextPC = MATCH_p;
 
-				//#line 494 "machine/hppa/decoder.m"
+				// #line 494 "machine/hppa/decoder.m"
 				{
 					// Low level instruction
 
@@ -858,7 +858,7 @@ MATCH_label_d1:
 				unsigned t_11 = (MATCH_w_32_0 >> 16 & 0x1f) /* t_11 at 0 */;
 				nextPC = 4 + MATCH_p;
 
-				//#line 483 "machine/hppa/decoder.m"
+				// #line 483 "machine/hppa/decoder.m"
 				{
 					// Decode the instruction
 
@@ -896,7 +896,7 @@ MATCH_label_d2:
 									  ((sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) & 0x7ffff) << 13);
 				nextPC = 4 + MATCH_p;
 
-				//#line 447 "machine/hppa/decoder.m"
+				// #line 447 "machine/hppa/decoder.m"
 				{
 					int condvalue;
 
@@ -957,7 +957,7 @@ MATCH_label_d3:
 									  ((sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) & 0x7ffff) << 13);
 				nextPC = 4 + MATCH_p;
 
-				//#line 389 "machine/hppa/decoder.m"
+				// #line 389 "machine/hppa/decoder.m"
 				{
 					int condvalue;
 
@@ -1010,7 +1010,7 @@ MATCH_label_d4:
 									  ((sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) & 0x7ffff) << 13);
 				nextPC = 4 + MATCH_p;
 
-				//#line 332 "machine/hppa/decoder.m"
+				// #line 332 "machine/hppa/decoder.m"
 				{
 					int condvalue;
 
@@ -1047,7 +1047,7 @@ MATCH_finished_d:
 			(void)0; /*placeholder for label*/
 		}
 
-		//#line 499 "machine/hppa/decoder.m"
+		// #line 499 "machine/hppa/decoder.m"
 	}
 
 	return result;
@@ -1077,11 +1077,11 @@ SemStr *NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 {
 	SemStr *result;
 
-	//#line 519 "machine/hppa/decoder.m"
+	// #line 519 "machine/hppa/decoder.m"
 	{
 		dword MATCH_p =
 
-			//#line 519 "machine/hppa/decoder.m"
+			// #line 519 "machine/hppa/decoder.m"
 			hostpc;
 		unsigned MATCH_w_32_0;
 		{
@@ -1112,7 +1112,7 @@ SemStr *NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 
 				case 48:
 
-					//#line 524 "machine/hppa/decoder.m"
+					// #line 524 "machine/hppa/decoder.m"
 					{
 						result = instantiateNamedParam("bitpos_sar", dis_Num(0));
 					}
@@ -1124,7 +1124,7 @@ SemStr *NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 					if ((MATCH_w_32_0 >> 13 & 0x1) /* d_18 at 0 */ == 0) {
 						unsigned p = (MATCH_w_32_0 >> 21 & 0x1f) /* p_06 at 0 */;
 
-						//#line 521 "machine/hppa/decoder.m"
+						// #line 521 "machine/hppa/decoder.m"
 						{
 							result = instantiateNamedParam("bitpos_fix", dis_Num(p));
 						}
@@ -1151,7 +1151,7 @@ MATCH_finished_c:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 528 "machine/hppa/decoder.m"
+	// #line 528 "machine/hppa/decoder.m"
 	return result;
 }
 
@@ -1160,11 +1160,11 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 {
 	SemStr *result;
 
-	//#line 533 "machine/hppa/decoder.m"
+	// #line 533 "machine/hppa/decoder.m"
 	{
 		dword MATCH_p =
 
-			//#line 533 "machine/hppa/decoder.m"
+			// #line 533 "machine/hppa/decoder.m"
 			hostpc;
 		unsigned MATCH_w_32_0;
 		{
@@ -1234,7 +1234,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 						unsigned i = (sign_extend((MATCH_w_32_0 & 0x1) /* i_31 at 0 */, 1) << 4) +
 									 (MATCH_w_32_0 >> 1 & 0xf) /* im4_27 at 0 */;
 
-						//#line 553 "machine/hppa/decoder.m"
+						// #line 553 "machine/hppa/decoder.m"
 						{
 							result = instantiateNamedParam("s_addr_r_im", dis_Num(i));
 						}
@@ -1251,7 +1251,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 						if ((MATCH_w_32_0 >> 13 & 0x1) /* u_18 at 0 */ == 1) {
 							unsigned x = (MATCH_w_32_0 >> 16 & 0x1f) /* x_11 at 0 */;
 
-							//#line 538 "machine/hppa/decoder.m"
+							// #line 538 "machine/hppa/decoder.m"
 							{
 								result = instantiateNamedParam("x_addr_s_byte", dis_Reg(x));
 							}
@@ -1267,7 +1267,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 						if ((MATCH_w_32_0 >> 13 & 0x1) /* u_18 at 0 */ == 1) {
 							unsigned x = (MATCH_w_32_0 >> 16 & 0x1f) /* x_11 at 0 */;
 
-							//#line 541 "machine/hppa/decoder.m"
+							// #line 541 "machine/hppa/decoder.m"
 							{
 								result = instantiateNamedParam("x_addr_s_hwrd", dis_Reg(x));
 							}
@@ -1376,7 +1376,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 					unsigned i = (sign_extend((MATCH_w_32_0 & 0x1) /* i_31 at 0 */, 1) << 13) +
 								 (MATCH_w_32_0 >> 1 & 0x1fff) /* im13_18 at 0 */;
 
-					//#line 556 "machine/hppa/decoder.m"
+					// #line 556 "machine/hppa/decoder.m"
 					{
 						result = instantiateNamedParam("l_addr_16_old", dis_Num(i));
 					}
@@ -1391,7 +1391,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 								 (sign_extend((MATCH_w_32_0 & 0x1) /* w_31 at 0 */, 1) << 16) +
 								 (MATCH_w_32_0 >> 3 & 0x3ff) /* w10_19 at 0 */;
 
-					//#line 559 "machine/hppa/decoder.m"
+					// #line 559 "machine/hppa/decoder.m"
 					{
 						result = instantiateNamedParam("l_addr_17_old", dis_Num(i));
 					}
@@ -1414,7 +1414,7 @@ MATCH_label_b1:
 		{
 			unsigned x = (MATCH_w_32_0 >> 16 & 0x1f) /* x_11 at 0 */;
 
-			//#line 535 "machine/hppa/decoder.m"
+			// #line 535 "machine/hppa/decoder.m"
 			{
 				result = instantiateNamedParam("x_addr_nots", dis_Reg(x));
 			}
@@ -1426,7 +1426,7 @@ MATCH_label_b2:
 		{
 			unsigned x = (MATCH_w_32_0 >> 16 & 0x1f) /* x_11 at 0 */;
 
-			//#line 544 "machine/hppa/decoder.m"
+			// #line 544 "machine/hppa/decoder.m"
 			{
 				result = instantiateNamedParam("x_addr_s_word", dis_Reg(x));
 			}
@@ -1438,7 +1438,7 @@ MATCH_label_b3:
 		{
 			unsigned x = (MATCH_w_32_0 >> 16 & 0x1f) /* x_11 at 0 */;
 
-			//#line 547 "machine/hppa/decoder.m"
+			// #line 547 "machine/hppa/decoder.m"
 			{
 				result = instantiateNamedParam("x_addr_s_dwrd", dis_Reg(x));
 			}
@@ -1451,7 +1451,7 @@ MATCH_label_b4:
 			unsigned i = (sign_extend((MATCH_w_32_0 >> 16 & 0x1) /* im1_15 at 0 */, 1) << 4) +
 						 (MATCH_w_32_0 >> 17 & 0xf) /* im4_11 at 0 */;
 
-			//#line 550 "machine/hppa/decoder.m"
+			// #line 550 "machine/hppa/decoder.m"
 			{
 				result = instantiateNamedParam("s_addr_im_r", dis_Num(i));
 			}
@@ -1462,7 +1462,7 @@ MATCH_finished_b:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 563 "machine/hppa/decoder.m"
+	// #line 563 "machine/hppa/decoder.m"
 	return result;
 }
 
@@ -1481,11 +1481,11 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 {
 	SemStr *result = nullptr;
 
-	//#line 578 "machine/hppa/decoder.m"
+	// #line 578 "machine/hppa/decoder.m"
 	{
 		dword MATCH_p =
 
-			//#line 578 "machine/hppa/decoder.m"
+			// #line 578 "machine/hppa/decoder.m"
 			hostPC;
 		unsigned MATCH_w_32_0;
 		{
@@ -1524,7 +1524,7 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 							if ((MATCH_w_32_0 >> 13 & 0x1) /* a_18 at 0 */ == 1) {
 								if ((12 <= (MATCH_w_32_0 >> 6 & 0xf)) /* ext4_22 at 0 */ &&
 									((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */ < 14)) {
-									//#line 593 "machine/hppa/decoder.m"
+									// #line 593 "machine/hppa/decoder.m"
 									result = instantiateNamedParam("c_y_addr_me");
 								}
 
@@ -1535,7 +1535,7 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 							}
 							else if ((12 <= (MATCH_w_32_0 >> 6 & 0xf)) /* ext4_22 at 0 */ &&
 									 ((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */ < 14)) {
-								//#line 591 "machine/hppa/decoder.m"
+								// #line 591 "machine/hppa/decoder.m"
 								result = instantiateNamedParam("c_y_addr_m");
 							}
 
@@ -1547,13 +1547,13 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 						else if ((12 <= (MATCH_w_32_0 >> 6 & 0xf)) /* ext4_22 at 0 */ &&
 								 ((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */ < 14)) {
 							if ((MATCH_w_32_0 >> 13 & 0x1) /* a_18 at 0 */ == 1) {
-								//#line 589 "machine/hppa/decoder.m"
+								// #line 589 "machine/hppa/decoder.m"
 								result = instantiateNamedParam("c_y_addr_e");
 							}
 
 							/*opt-block+*/
 							else{
-								//#line 595 "machine/hppa/decoder.m"
+								// #line 595 "machine/hppa/decoder.m"
 								result = instantiateNamedParam("c_y_addr_none");
 							}
 						}
@@ -1621,7 +1621,7 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 				case 26:
 				case 27:
 
-					//#line 597 "machine/hppa/decoder.m"
+					// #line 597 "machine/hppa/decoder.m"
 
 					{
 						result = instantiateNamedParam("c_l_addr_none");
@@ -1644,7 +1644,7 @@ MATCH_label_a0:
 MATCH_label_a1:
 		(void)0; /*placeholder for label*/
 
-		//#line 587 "machine/hppa/decoder.m"
+		// #line 587 "machine/hppa/decoder.m"
 
 		{
 			result = instantiateNamedParam("c_x_addr_notm");
@@ -1655,7 +1655,7 @@ MATCH_label_a1:
 MATCH_label_a2:
 		(void)0; /*placeholder for label*/
 
-		//#line 585 "machine/hppa/decoder.m"
+		// #line 585 "machine/hppa/decoder.m"
 
 		{
 			result = instantiateNamedParam("c_x_addr_m");
@@ -1666,7 +1666,7 @@ MATCH_label_a2:
 MATCH_label_a3:
 		(void)0; /*placeholder for label*/
 
-		//#line 583 "machine/hppa/decoder.m"
+		// #line 583 "machine/hppa/decoder.m"
 
 		{
 			result = instantiateNamedParam("c_s_addr_notm");
@@ -1677,7 +1677,7 @@ MATCH_label_a3:
 MATCH_label_a4:
 		(void)0; /*placeholder for label*/
 
-		//#line 581 "machine/hppa/decoder.m"
+		// #line 581 "machine/hppa/decoder.m"
 
 		{
 			result = instantiateNamedParam("c_s_addr_ma");
@@ -1688,7 +1688,7 @@ MATCH_label_a4:
 MATCH_label_a5:
 		(void)0; /*placeholder for label*/
 
-		//#line 579 "machine/hppa/decoder.m"
+		// #line 579 "machine/hppa/decoder.m"
 
 		{
 			result = instantiateNamedParam("c_s_addr_mb");
@@ -1700,7 +1700,7 @@ MATCH_finished_a:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 601 "machine/hppa/decoder.m"
+	// #line 601 "machine/hppa/decoder.m"
 	return result;
 }
 

@@ -113,7 +113,7 @@ public:
 		YY_AnsiCParser_NULL_TOKEN = 0
 
 		                            /* //#line 185 "/usr/local/lib/bison.h" */
-		                            //#line 485 "ansi-c-parser.h"
+		                            // #line 485 "ansi-c-parser.h"
 		,
 		PREINCLUDE                = 258,
 		PREDEFINE                 = 259,
@@ -192,7 +192,7 @@ public:
 		BREAK                     = 332,
 		RETURN                    = 333
 
-		//#line 185 "/usr/local/lib/bison.h"
+		// #line 185 "/usr/local/lib/bison.h"
 		/* enum token */
 	}; /* end of enum declaration */
 

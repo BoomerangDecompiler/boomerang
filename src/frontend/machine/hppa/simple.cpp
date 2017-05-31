@@ -1,7 +1,7 @@
 #define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 #include <assert.h>
 
-//#line 2 "machine/hppa/simple.m"
+// #line 2 "machine/hppa/simple.m"
 #include "global.h"
 #include "include/decoder.h"
 
@@ -19,7 +19,7 @@ DWord getDword(ADDRESS lc)
 
 void NJMCDecoder::dis_faddr(ADDRESS faddr)
 {
-	//#line 23 "machine/hppa/simple.m"
+	// #line 23 "machine/hppa/simple.m"
 	{
 		dword MATCH_p =
 
@@ -61,13 +61,13 @@ MATCH_finished_d:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 34 "machine/hppa/simple.m"
+	// #line 34 "machine/hppa/simple.m"
 }
 
 
 void NJMCDecoder::dis_c_faddr(ADDRESS c_faddr)
 {
-	//#line 37 "machine/hppa/simple.m"
+	// #line 37 "machine/hppa/simple.m"
 	{
 		dword MATCH_p =
 
@@ -160,7 +160,7 @@ MATCH_finished_c:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 65 "machine/hppa/simple.m"
+	// #line 65 "machine/hppa/simple.m"
 }
 
 
@@ -190,7 +190,7 @@ void NJMCDecoder::dis_flt_fmt(int fmt)
 
 void dis_flt_c3(int& d_fmt, int& d_r1, int& d_r2, int& d_t, ADDRESS con)
 {
-	//#line 79 "machine/hppa/simple.m"
+	// #line 79 "machine/hppa/simple.m"
 	{
 		dword MATCH_p =
 
@@ -248,7 +248,7 @@ MATCH_finished_b:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 91 "machine/hppa/simple.m"
+	// #line 91 "machine/hppa/simple.m"
 }
 
 
@@ -262,7 +262,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 
 	astr = _assembly + sprintf(_assembly, "%x: %08x  ", pc, *(unsigned *)hostPC);
 
-	//#line 101 "machine/hppa/simple.m"
+	// #line 101 "machine/hppa/simple.m"
 	{
 		dword MATCH_p =
 
@@ -482,7 +482,7 @@ MATCH_finished_a:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 132 "machine/hppa/simple.m"
+	// #line 132 "machine/hppa/simple.m"
 
 	return 4;
 }

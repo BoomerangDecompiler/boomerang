@@ -1,7 +1,7 @@
 #define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 #include <assert.h>
 
-//#line 2 "machine/sparc/disassembler.m"
+// #line 2 "machine/sparc/disassembler.m"
 
 /***************************************************************************/ /**
  * \file       disassembler.m
@@ -51,7 +51,7 @@ char *NJMCDecoder::dis_RegImm(ADDRESS pc)
 {
 	static char _buffer[11];
 
-	//#line 54 "machine/sparc/disassembler.m"
+	// #line 54 "machine/sparc/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -80,7 +80,7 @@ MATCH_finished_c:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 59 "machine/sparc/disassembler.m"
+	// #line 59 "machine/sparc/disassembler.m"
 	return _buffer;
 }
 
@@ -95,7 +95,7 @@ char *NJMCDecoder::dis_Eaddr(ADDRESS pc)
 {
 	static char _buffer[21];
 
-	//#line 73 "machine/sparc/disassembler.m"
+	// #line 73 "machine/sparc/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -148,7 +148,7 @@ MATCH_finished_b:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 84 "machine/sparc/disassembler.m"
+	// #line 84 "machine/sparc/disassembler.m"
 	return _buffer;
 }
 
@@ -171,7 +171,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 	sprintf(_assembly, "%X: %08X  ", pc, getDword(hostPC));
 	char *str = _assembly + strlen(_assembly);
 
-	//#line 105 "machine/sparc/disassembler.m"
+	// #line 105 "machine/sparc/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -180,39 +180,39 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		char        *MATCH_name;
 		static char *MATCH_name_cond_1[] =
 		{
-			"BN", "BE",  "BLE", "BL",  "BLEU", "BCS", "BNEG", "BVS",
-			"BA", "BNE", "BG",  "BGE", "BGU",  "BCC", "BPOS", "BVC",
+			"BN", "BE",  "BLE",  "BL",   "BLEU",  "BCS",  "BNEG", "BVS",
+			"BA", "BNE", "BG",   "BGE",  "BGU",   "BCC",  "BPOS", "BVC",
 		};
 		static char *MATCH_name_cond_2[] =
 		{
-			"BN,a", "BE,a",  "BLE,a", "BL,a",  "BLEU,a", "BCS,a", "BNEG,a", "BVS,a",
-			"BA,a", "BNE,a", "BG,a",  "BGE,a", "BGU,a",  "BCC,a", "BPOS,a", "BVC,a",
+			"BN,a", "BE,a",  "BLE,a",  "BL,a",   "BLEU,a",  "BCS,a",  "BNEG,a", "BVS,a",
+			"BA,a", "BNE,a", "BG,a",   "BGE,a",  "BGU,a",   "BCC,a",  "BPOS,a", "BVC,a",
 		};
 		static char *MATCH_name_cond_3[] =
 		{
-			"FBN", "FBNE", "FBLG", "FBUL", "FBL",   "FBUG", "FBG",   "FBU",
-			"FBA", "FBE",  "FBUE", "FBGE", "FBUGE", "FBLE", "FBULE", "FBO",
+			"FBN", "FBNE", "FBLG",  "FBUL", "FBL",   "FBUG",   "FBG",   "FBU",
+			"FBA", "FBE",  "FBUE",  "FBGE", "FBUGE", "FBLE",   "FBULE", "FBO",
 		};
 		static char *MATCH_name_cond_4[] =
 		{
-			"FBN,a", "FBNE,a", "FBLG,a", "FBUL,a", "FBL,a",   "FBUG,a", "FBG,a",   "FBU,a",
-			"FBA,a", "FBE,a",  "FBUE,a", "FBGE,a", "FBUGE,a", "FBLE,a", "FBULE,a", "FBO,a",
+			"FBN,a", "FBNE,a", "FBLG,a",  "FBUL,a", "FBL,a",   "FBUG,a",   "FBG,a",   "FBU,a",
+			"FBA,a", "FBE,a",  "FBUE,a",  "FBGE,a", "FBUGE,a", "FBLE,a",   "FBULE,a", "FBO,a",
 		};
 		static char *MATCH_name_cond_5[] =
 		{
-			"CBN", "CB123", "CB12", "CB13", "CB1",   "CB23", "CB2",   "CB3",
-			"CBA", "CB0",   "CB03", "CB02", "CB023", "CB01", "CB013", "CB012",
+			"CBN", "CB123", "CB12",   "CB13", "CB1",   "CB23",   "CB2",   "CB3",
+			"CBA", "CB0",   "CB03",   "CB02", "CB023", "CB01",   "CB013", "CB012",
 		};
 		static char *MATCH_name_cond_6[] =
 		{
-			"CBN,a", "CB123,a", "CB12,a", "CB13,a", "CB1,a",   "CB23,a", "CB2,a",   "CB3,a",
-			"CBA,a", "CB0,a",   "CB03,a", "CB02,a", "CB023,a", "CB01,a", "CB013,a", "CB012,a",
+			"CBN,a", "CB123,a", "CB12,a",   "CB13,a", "CB1,a",   "CB23,a",   "CB2,a",   "CB3,a",
+			"CBA,a", "CB0,a",   "CB03,a",   "CB02,a", "CB023,a", "CB01,a",   "CB013,a", "CB012,a",
 		};
 		static char *MATCH_name_rs1_43[] =
 		{
-			"RDY",  "JMPL", "JMPL", "JMPL", "JMPL",    "JMPL", "JMPL", "JMPL", "JMPL", "JMPL", "JMPL",
-			"JMPL", "JMPL", "JMPL", "JMPL", (char *)0, "JMPL", "JMPL", "JMPL", "JMPL", "JMPL", "JMPL",
-			"JMPL", "JMPL", "JMPL", "JMPL", "JMPL",    "JMPL", "JMPL", "JMPL", "JMPL",
+			"RDY",  "JMPL",  "JMPL", "JMPL", "JMPL",    "JMPL",    "JMPL", "JMPL", "JMPL", "JMPL", "JMPL",
+			"JMPL", "JMPL",  "JMPL", "JMPL", (char *)0, "JMPL",    "JMPL", "JMPL", "JMPL", "JMPL", "JMPL",
+			"JMPL", "JMPL",  "JMPL", "JMPL", "JMPL",    "JMPL",    "JMPL", "JMPL", "JMPL",
 		};
 		static char *MATCH_name_op3_44[] =
 		{
@@ -224,30 +224,30 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_opf_49[] =
 		{
-			(char *)0, "FMOVs",   (char *)0, (char *)0, (char *)0, "FNEGs",   (char *)0, (char *)0, (char *)0,
-			"FABSs",   (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "FSQRTs",  (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, "FADDs",   "FADDd",   "FADDq",   (char *)0, "FSUBs",   "FSUBd",   "FSUBq",
-			(char *)0, "FMULs",   "FMULd",   "FMULq",   (char *)0, "FDIVs",   "FDIVd",   "FDIVq",   (char *)0,
-			"FCMPs",   "FCMPd",   "FCMPq",   (char *)0, "FCMPEs",  "FCMPEd",  "FCMPEq",  (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "FiTOs",   (char *)0,
-			"FdTOs",   "FqTOs",   "FiTOd",   "FsTOd",   (char *)0, "FqTOd",   "FiTOq",   "FsTOq",   "FdTOq",
-			(char *)0, (char *)0, "FsTOi",   "FdTOi",   "FqTOi",
+			(char *)0, "FMOVs",     (char *)0,   (char *)0,   (char *)0,   "FNEGs",     (char *)0,   (char *)0,  (char *)0,
+			"FABSs",   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   "FSQRTs",    (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   "FADDs",     "FADDd",     "FADDq",     (char *)0,   "FSUBs",     "FSUBd",    "FSUBq",
+			(char *)0, "FMULs",     "FMULd",     "FMULq",     (char *)0,   "FDIVs",     "FDIVd",     "FDIVq",    (char *)0,
+			"FCMPs",   "FCMPd",     "FCMPq",     (char *)0,   "FCMPEs",    "FCMPEd",    "FCMPEq",    (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,  (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   (char *)0,   "FiTOs",    (char *)0,
+			"FdTOs",   "FqTOs",     "FiTOd",     "FsTOd",     (char *)0,   "FqTOd",     "FiTOq",     "FsTOq",    "FdTOq",
+			(char *)0, (char *)0,   "FsTOi",     "FdTOi",     "FqTOi",
 		};
 		static char *MATCH_name_i_50[] =
 		{
@@ -265,8 +265,8 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_cond_55[] =
 		{
-			"TN", "TE",  "TLE", "TL",  "TLEU", "TCS", "TNEG", "TVS",
-			"TA", "TNE", "TG",  "TGE", "TGU",  "TCC", "TPOS", "TVC",
+			"TN", "TE",  "TLE",  "TL",   "TLEU",  "TCS",  "TNEG", "TVS",
+			"TA", "TNE", "TG",   "TGE",  "TGU",   "TCC",  "TPOS", "TVC",
 		};
 		static char *MATCH_name_i_61[] =
 		{
@@ -2288,7 +2288,7 @@ MATCH_finished_a:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 287 "machine/sparc/disassembler.m"
+	// #line 287 "machine/sparc/disassembler.m"
 
 	return(nextPC - hostPC);
 }

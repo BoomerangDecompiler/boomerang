@@ -1,7 +1,7 @@
 #define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 #include <assert.h>
 
-//#line 2 "machine/hppa/decoder_low.m"
+// #line 2 "machine/hppa/decoder_low.m"
 
 /***************************************************************************/ /**
  * \file        decoder_low.m
@@ -59,7 +59,7 @@ bool c_c_n(ADDRESS hostpc)
 {
 	bool result = true;
 
-	//#line 60 "machine/hppa/decoder_low.m"
+	// #line 60 "machine/hppa/decoder_low.m"
 	{
 		dword MATCH_p =
 
@@ -353,7 +353,7 @@ MATCH_finished_e:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 65 "machine/hppa/decoder_low.m"
+	// #line 65 "machine/hppa/decoder_low.m"
 	return result;
 }
 
@@ -362,14 +362,14 @@ SemStr *NJMCDecoder::c_c(ADDRESS hostpc, int& cond)
 {
 	static const char *c_c_names[] =
 	{
-		"c_c_no",  "c_c_eq", "c_c_l",   "c_c_le", "c_c_ul", "c_c_ule",
-		"c_c_sv",  "c_c_od", "c_c_yes", "c_c_ne", "c_c_ge", "c_c_g",
-		"c_c_uge", "c_c_ug", "c_c_nsv", "c_c_ev"
+		"c_c_no",  "c_c_eq",  "c_c_l",   "c_c_le",   "c_c_ul", "c_c_ule",
+		"c_c_sv",  "c_c_od",  "c_c_yes", "c_c_ne",   "c_c_ge", "c_c_g",
+		"c_c_uge", "c_c_ug",  "c_c_nsv", "c_c_ev"
 	};
 	static const int cmpib_codes[] = { 4, 1, 2, 3, 12, 9, 10, 11 };
 	static const int sep_codes[]   = { 0, 1, 2, 7, 8, 9, 10, 15 };
 
-	//#line 76 "machine/hppa/decoder_low.m"
+	// #line 76 "machine/hppa/decoder_low.m"
 	{
 		dword MATCH_p =
 
@@ -674,7 +674,7 @@ MATCH_finished_d:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 109 "machine/hppa/decoder_low.m"
+	// #line 109 "machine/hppa/decoder_low.m"
 	return instantiateNamedParam(c_c_names[cond]);
 }
 
@@ -685,7 +685,7 @@ unsigned long c_wcr(ADDRESS hostpc, char **garble)
 	unsigned long regl;
 
 
-//#line 115 "machine/hppa/decoder_low.m"
+// #line 115 "machine/hppa/decoder_low.m"
 	{
 		dword MATCH_p =
 
@@ -734,7 +734,7 @@ MATCH_label_c0: (void)0;   /*placeholder for label*/
 		{
 			regl = 0;
 
-			//sprintf("#c_WCR%08X#", getDword(hostpc));
+			// sprintf("#c_WCR%08X#", getDword(hostpc));
 		}
 
 
@@ -744,7 +744,7 @@ MATCH_label_c0: (void)0;   /*placeholder for label*/
 MATCH_finished_c: (void)0;   /*placeholder for label*/
 	}
 
-//#line 129 "machine/hppa/decoder_low.m"
+// #line 129 "machine/hppa/decoder_low.m"
 	return regl;
 #else
 	return 0;
@@ -755,7 +755,7 @@ MATCH_finished_c: (void)0;   /*placeholder for label*/
 void c_null(ADDRESS hostpc, char **garble)
 {
 #if 0
-//#line 137 "machine/hppa/decoder_low.m"
+// #line 137 "machine/hppa/decoder_low.m"
 	{
 		dword MATCH_p =
 
@@ -817,7 +817,7 @@ void c_null(ADDRESS hostpc, char **garble)
 
 #line 144 "machine/hppa/decoder_low.m"
 				{
-					//printf("#c_NULL%08X#", getDword(hostpc));
+					// printf("#c_NULL%08X#", getDword(hostpc));
 				}
 
 
@@ -872,7 +872,7 @@ void c_null(ADDRESS hostpc, char **garble)
 MATCH_finished_b: (void)0;   /*placeholder for label*/
 	}
 
-//#line 148 "machine/hppa/decoder_low.m"
+// #line 148 "machine/hppa/decoder_low.m"
 #endif
 }
 
@@ -897,7 +897,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 	list<RT *> *RTs = nullptr;
 	int        condvalue;
 
-	//#line 170 "machine/hppa/decoder_low.m"
+	// #line 170 "machine/hppa/decoder_low.m"
 	{
 		dword MATCH_p =
 
@@ -906,34 +906,34 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		char        *MATCH_name;
 		static char *MATCH_name_ext8_19_0[] =
 		{
-			"BREAK",   (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "RFI",     (char *)0, (char *)0,
-			(char *)0, (char *)0, "RFI.r",   (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "SSM",
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "RSM",     (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, "MFIA",    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "MTCTL",   "MTSM",    (char *)0, (char *)0,
+			"BREAK",   (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, "RFI",     (char *)0,     (char *)0,
+			(char *)0, (char *)0,   "RFI.r",   (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     "SSM",
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, "RSM",         (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, "MFIA",      (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    "MTCTL",   "MTSM",    (char *)0,     (char *)0,
 			"MTSARCM",
 		};
 		static char *MATCH_name_ext5_11_1[] =
 		{
-			"SYNC",    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, "SYNCDMA",
+			"SYNC",    (char *)0,    (char *)0, (char *)0, (char *)0, (char *)0,
+			(char *)0, (char *)0,    (char *)0, (char *)0, "SYNCDMA",
 		};
 		static char *MATCH_name_ext_17_2[] =
 		{
@@ -941,14 +941,14 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		};
 		static char *MATCH_name_ext4_22_55[] =
 		{
-			"LDBS", "LDHS", "LDWS", "LDDS", "LDDAS", "LDCDS",  "LDWAS", "LDCWS",
-			"STBS", "STHS", "STWS", "STDS", "STBYS", "STDBYS", "STWAS", "STWDS",
+			"LDBS", "LDHS", "LDWS", "LDDS", "LDDAS", "LDCDS",  "LDWAS",  "LDCWS",
+			"STBS", "STHS", "STWS", "STDS", "STBYS", "STDBYS", "STWAS",  "STWDS",
 		};
 		static char *MATCH_name_op_58[] =
 		{
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "LDIL", (char *)0,
-			"ADDIL",   (char *)0, (char *)0, "LDO",     (char *)0, (char *)0, "LDB",     "LDH",     "LDW",  "LDWM",
-			(char *)0, (char *)0, (char *)0, (char *)0, "STB",     "STH",     "STW",     "STWM",
+			(char *)0, (char *)0,   (char *)0, (char *)0, (char *)0,     (char *)0, (char *)0, (char *)0,  "LDIL",    (char *)0,
+			"ADDIL",   (char *)0,   (char *)0, "LDO",     (char *)0,     (char *)0, "LDB",     "LDH",      "LDW",     "LDWM",
+			(char *)0, (char *)0,   (char *)0, (char *)0, "STB",         "STH",     "STW",     "STWM",
 		};
 		static char *MATCH_name_sub_16_71[] =
 		{
@@ -2792,7 +2792,7 @@ MATCH_finished_a:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 337 "machine/hppa/decoder_low.m"
+	// #line 337 "machine/hppa/decoder_low.m"
 
 	result.numBytes = (nextPC - hostPC);
 	return RTs;

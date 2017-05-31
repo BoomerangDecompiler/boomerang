@@ -3,7 +3,7 @@
 #ifndef YY_TransformationParser_h_included
 #define YY_TransformationParser_h_included
 
-//#line 1 "/usr/local/lib/bison.h"
+// #line 1 "/usr/local/lib/bison.h"
 /* before anything */
 #ifdef c_plusplus
 #ifndef __cplusplus
@@ -19,7 +19,7 @@
 #include <cstdio>
 
 /* #line 14 "/usr/local/lib/bison.h" */
-//#line 21 "transformation-parser.h"
+// #line 21 "transformation-parser.h"
 #define YY_TransformationParser_DEBUG    1
 #define YY_TransformationParser_PARSE_PARAM
 #define YY_TransformationParser_CONSTRUCTOR_PARAM \
@@ -52,7 +52,7 @@ struct yy_TransformationParser_stype
 
 #define YY_TransformationParser_STYPE    yy_TransformationParser_stype
 
-//#line 14 "/usr/local/lib/bison.h"
+// #line 14 "/usr/local/lib/bison.h"
 /* %{ and %header{ and %union, during decl */
 #ifndef YY_TransformationParser_COMPATIBILITY
 #define  YY_TransformationParser_COMPATIBILITY    0
@@ -165,7 +165,7 @@ public:
 		YY_TransformationParser_NULL_TOKEN = 0
 
 /* #line 185 "/usr/local/lib/bison.h" */
-//#line 354 "transformation-parser.h"
+// #line 354 "transformation-parser.h"
 		, SIZEOF                           = 258
 		, KIND                             = 259
 		, POINTER                          = 260
@@ -211,7 +211,7 @@ public:
 		, BOOL_FALSE                       = 300
 
 
-//#line 185 "/usr/local/lib/bison.h"
+// #line 185 "/usr/local/lib/bison.h"
 		/* enum token */
 	};  /* end of enum declaration */
 
@@ -277,5 +277,5 @@ public:
 /* END */
 
 /* #line 236 "/usr/local/lib/bison.h" */
-//#line 454 "transformation-parser.h"
+// #line 454 "transformation-parser.h"
 #endif

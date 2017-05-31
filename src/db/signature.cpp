@@ -2551,7 +2551,7 @@ bool Parameter::operator==(Parameter& other)
 
 // bool CallingConvention::StdC::HppaSignature::isLocalOffsetPositive() {
 //      return true;
-//}
+// }
 
 bool Signature::isOpCompatStackLocal(OPER op)
 {

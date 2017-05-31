@@ -191,7 +191,7 @@ void FrontEnd::readLibraryCatalog(const QString& sPath)
 
 	if (!file.open(QFile::ReadOnly | QFile::Text)) {
 		qCritical() << "can't open `" << sPath << "'\n";
-		exit(1); //TODO: this should not exit, just inform the caller about the problem
+		exit(1); // TODO: this should not exit, just inform the caller about the problem
 	}
 
 	QTextStream inf(&file);

@@ -325,7 +325,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 			// is: how do you know this function returns a struct at decode time?
 			// If forceOutEdge is set, set offset to 0 and no out-edge will be added yet
 			int offset = !inst.forceOutEdge.isZero() ? 0 :
-			             //(call_stmt->returnsStruct() ? 12 : 8);
+			             // (call_stmt->returnsStruct() ? 12 : 8);
 			             // MVE: FIXME!
 						 8;
 

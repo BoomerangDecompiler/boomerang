@@ -151,7 +151,7 @@ bool ExeBinaryFile::loadFromMemory(QByteArray& data)
 	}
 
 	fp.close();
-	//TODO: prevent overlapping of those 3 sections
+	// TODO: prevent overlapping of those 3 sections
 	IBinarySection *header = Image->createSection("$HEADER", ADDRESS::n(0x4000), ADDRESS::n(0x4000) + sizeof(exeHeader));
 	header->setHostAddr(ADDRESS::host_ptr(m_pHeader))
 	   .setEntrySize(1);
@@ -183,7 +183,7 @@ void ExeBinaryFile::unload()
 
 //    // No symbol table handled at present
 //    return nullptr;
-//}
+// }
 bool ExeBinaryFile::displayDetails(const char *fileName, FILE *f
                                    /* = stdout */)
 {

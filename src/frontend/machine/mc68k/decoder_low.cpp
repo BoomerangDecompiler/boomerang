@@ -1,7 +1,7 @@
 #define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 #include <assert.h>
 
-//#line 2 "machine/mc68k/decoder_low.m"
+// #line 2 "machine/mc68k/decoder_low.m"
 
 /***************************************************************************/ /**
  * \file       decoder_low.m
@@ -252,7 +252,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 	// The list of instantiated RTs.
 	list<RT *> *RTs = nullptr;
 
-	//#line 217 "machine/mc68k/decoder_low.m"
+	// #line 217 "machine/mc68k/decoder_low.m"
 	{
 		dword MATCH_p =
 
@@ -557,18 +557,18 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		};
 		static char *MATCH_name_cond_96[] =
 		{
-			"st",  "sf",  "shi", "sls", "scc", "scs", "sne", "seq",
-			"svc", "svs", "spl", "smi", "sge", "slt", "sgt", "sle",
+			"st",  "sf",  "shi",  "sls", "scc", "scs", "sne", "seq",
+			"svc", "svs", "spl",  "smi", "sge", "slt", "sgt", "sle",
 		};
 		static char *MATCH_name_cond_97[] =
 		{
-			"dbt",  "dbf",  "dbhi", "dbls", "dbcc", "dbcs", "dbne", "dbeq",
-			"dbvc", "dbvs", "dbpl", "dbmi", "dbge", "dblt", "dbgt", "dble",
+			"dbt",  "dbf",  "dbhi",  "dbls", "dbcc", "dbcs", "dbne", "dbeq",
+			"dbvc", "dbvs", "dbpl",  "dbmi", "dbge", "dblt", "dbgt", "dble",
 		};
 		static char *MATCH_name_cond_98[] =
 		{
-			"st.ex",  "sf.ex",  "shi.ex", "sls.ex", "scc.ex", "scs.ex", "sne.ex", "seq.ex",
-			"svc.ex", "svs.ex", "spl.ex", "smi.ex", "sge.ex", "slt.ex", "sgt.ex", "sle.ex",
+			"st.ex",  "sf.ex",  "shi.ex",  "sls.ex", "scc.ex", "scs.ex", "sne.ex", "seq.ex",
+			"svc.ex", "svs.ex", "spl.ex",  "smi.ex", "sge.ex", "slt.ex", "sgt.ex", "sle.ex",
 		};
 		static char *MATCH_name_cond_99[] =
 		{
@@ -12397,7 +12397,7 @@ MATCH_finished_a:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 1135 "machine/mc68k/decoder_low.m"
+	// #line 1135 "machine/mc68k/decoder_low.m"
 
 	result.numBytes += 2; // Count the main opcode
 	return RTs;

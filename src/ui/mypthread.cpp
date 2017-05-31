@@ -38,7 +38,7 @@
 // pthread_create_type *orig = NULL;
 
 // extern "C" void *pthread_create(void *a, void *b, void *c, void *d)
-//{
+// {
 //    if (c != (void*)GC_start_routine)
 //        return GC_pthread_create(a, b, c, d);
 //    else {
@@ -56,4 +56,4 @@
 //        }
 //        return (*orig)(a, b, c, d);
 //    }
-//}
+// }

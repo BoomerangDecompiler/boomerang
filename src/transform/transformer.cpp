@@ -88,7 +88,7 @@ SharedExp ExpTransformer::applyAllTo(const SharedExp& p, bool& bMod)
 		bMod |= mod;
 	}
 
-	//} while (mod);
+	// } while (mod);
 
 	cache.push_back(Binary::get(opEquals, p->clone(), e->clone()));
 	return e;

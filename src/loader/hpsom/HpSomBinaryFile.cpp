@@ -433,9 +433,9 @@ bool HpSomBinaryFile::loadFromMemory(QByteArray& imgdata)
 	plt_record *PLTs = (plt_record *)(pltStart + deltaData).m_value;
 
 	for ( ; u < numImports; u++, v++) {
-		//TODO: this is a mess, needs someone who actually knows how the SOM's PLT contents are structured
+		// TODO: this is a mess, needs someone who actually knows how the SOM's PLT contents are structured
 		continue;
-		//TODO: add some type info to the imported symbols
+		// TODO: add some type info to the imported symbols
 		// Add it to the set of imports; needed by IsDynamicLinkedProc()
 		Symbols->create(ADDRESS::n(UINT4(&PLTs[v].value)), pDlStrings + UINT4(&import_list[u].name))
 		   .setAttr("Imported", true).setAttr("Function", true);

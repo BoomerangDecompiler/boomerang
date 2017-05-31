@@ -121,7 +121,7 @@ void Function::eraseFromParent()
 	// Delete the cfg etc.
 	Parent->getFunctionList().remove(this);
 	this->deleteCFG();
-	delete this;  //Delete ourselves
+	delete this;  // Delete ourselves
 }
 
 
@@ -841,7 +841,7 @@ void UserProc::printAST(SyntaxNode *a)
 	QFile tgt(s);
 
 	if (!tgt.open(QFile::WriteOnly)) {
-		return; //TODO: report error ?
+		return; // TODO: report error ?
 	}
 
 	QTextStream of(&tgt);
@@ -1579,7 +1579,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 			recursionGroupAnalysis(path, indent); // Includes remUnusedStmtEtc on all procs in cycleGrp
 			setStatus(PROC_FINAL);
 			Boomerang::get()->alertEndDecompile(this);
-			child->clear(); //delete child;
+			child->clear(); // delete child;
 			child = std::make_shared<ProcSet>();
 		}
 	}
@@ -2154,7 +2154,7 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
 			// if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
 			//    ll++;
 			//    continue;
-			//}
+			// }
 			if (asLeft && (asLeft->getOper() == opGlobal)) {
 				// assignments to globals must always be kept
 				ll++;
@@ -2296,7 +2296,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 	bool convert;
 
 	for (p = cycleGrp->begin(); p != cycleGrp->end(); ++p) {
-		//(*p)->initialParameters();                    // FIXME: I think this needs to be mapping locals and params now
+		// (*p)->initialParameters();                    // FIXME: I think this needs to be mapping locals and params now
 		(*p)->mapLocalsAndParams();
 		(*p)->updateArguments();
 		(*p)->propagateStatements(convert, 0); // Need to propagate into arguments
@@ -2995,14 +2995,14 @@ void UserProc::trimParameters(int depth)
 		if (!s->isCall() || (((CallStatement *)s)->getDestProc() != this)) {
 			for (int i = 0; i < totparams; i++) {
 				SharedExp p, *pe;
-				//if (i < nparams) {
+				// if (i < nparams) {
 				p  = Location::param(signature->getParamName(i), this);
 				pe = signature->getParamExp(i);
 
-				//} else {
+				// } else {
 				//    p = Location::param(signature->getImplicitParamName( i - nparams), this);
 				//    pe = signature->getImplicitParamExp(i - nparams);
-				//}
+				// }
 				if (!referenced[i] && (excluded.find(s) == excluded.end()) &&
 				    // Search for the named parameter (e.g. param1), and just in case, also for the expression
 				    // (e.g. r8{0})
@@ -3698,7 +3698,7 @@ SharedType UserProc::getParamType(const QString& nam)
 // void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty) {
 //    TypedExp *te = new TypedExp(ty, Location::local(nam, this));
 //    mapSymbolTo(e, te);
-//}
+// }
 
 /// As above but with replacement
 void UserProc::mapSymbolToRepl(const SharedConstExp& from, SharedExp oldTo, SharedExp newTo)
@@ -4909,7 +4909,7 @@ void Function::addCallers(std::set<UserProc *>& callers)
 //            continue;
 //        addCallee(callee);
 //    }
-//}
+// }
 
 void UserProc::conTypeAnalysis()
 {
@@ -5756,7 +5756,7 @@ QString UserProc::findLocalFromRef(const std::shared_ptr<RefExp>& r)
 	Instruction *def = r->getDef();
 	SharedExp   base = r->getSubExp1();
 	SharedType  ty   = def->getTypeFor(base);
-	//QString name = lookupSym(*base, ty); ?? this actually worked a bit
+	// QString name = lookupSym(*base, ty); ?? this actually worked a bit
 	QString name = lookupSym(r, ty);
 
 	if (name.isNull()) {
@@ -6668,7 +6668,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 
 		for (CallStatement *cc : callers) {
 #ifdef RECURSION_WIP
-//TODO: prevent function from blocking it's own removals, needs more work
+// TODO: prevent function from blocking it's own removals, needs more work
 			if (cc->getProc()->doesRecurseTo(this)) {
 				continue;
 			}

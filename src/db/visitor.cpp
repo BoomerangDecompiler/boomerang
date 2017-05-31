@@ -433,7 +433,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& arg, bool& override)
 	std::shared_ptr<RefExp> e = arg;
 
 	if (used->find(e) == used->end()) {
-		//e = (RefExp *)arg.clone();
+		// e = (RefExp *)arg.clone();
 		used->insert(e); // This location is used
 	}
 
@@ -677,7 +677,7 @@ bool UsedLocsVisitor::visit(ReturnStatement *s, bool& override)
 	// Insert a phantom use of "everything" here, so that we can find out if any childless calls define something that
 	// may end up being returned
 	// FIXME: Not here! Causes locals to never get removed. Find out where this belongs, if anywhere:
-	//((UsedLocsFinder*)ev)->getLocSet()->insert(Terminal::get(opDefineAll));
+	// ((UsedLocsFinder*)ev)->getLocSet()->insert(Terminal::get(opDefineAll));
 
 	override = true; // Don't do the normal accept logic
 	return true;     // Continue the recursion

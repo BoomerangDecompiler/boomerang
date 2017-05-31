@@ -1221,26 +1221,26 @@ bool RangeMap::isSubset(RangeMap& other)
 }
 
 
-//Log &Log::operator<<(const Range *r) {
+// Log &Log::operator<<(const Range *r) {
 //    QString tgt;
 //    QTextStream st(&tgt);
 //    r->print(st);
 //    *this << tgt;
 //    return *this;
-//}
+// }
 
-//Log &Log::operator<<(const Range &r) {
+// Log &Log::operator<<(const Range &r) {
 //    QString tgt;
 //    QTextStream st(&tgt);
 //    r.print(st);
 //    *this << tgt;
 //    return *this;
-//}
+// }
 
-//Log &Log::operator<<(const RangeMap &r) {
+// Log &Log::operator<<(const RangeMap &r) {
 //    QString tgt;
 //    QTextStream st(&tgt);
 //    r.print(st);
 //    *this << tgt;
 //    return *this;
-//}
+// }

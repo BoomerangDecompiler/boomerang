@@ -176,7 +176,7 @@ enum OPER
 	// Added for range analysis
 	opInitValueOf, // The initial value of a location, typically the stack pointer
 
-	//---------------------- "The line" --------------------------//
+	// ---------------------- "The line" --------------------------//
 	// All id's greater or equal to idMachSpec are assumed to be source machine
 	// specific. If any of these are left by the time the back end is called,
 	// then these need to have local variables assigned for them

@@ -96,7 +96,7 @@ private:
 
 public:
 	typedef std::map<ADDRESS, BinarySymbol *> mAddressToSymbol;
-	//Prog();
+	// Prog();
 	virtual ~Prog();
 	Prog(const QString& name);
 	void setFrontEnd(FrontEnd *_pFE);

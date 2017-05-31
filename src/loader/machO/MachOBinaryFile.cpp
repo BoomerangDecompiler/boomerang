@@ -57,8 +57,8 @@ struct SectionParam
 };
 }
 
-//#define DEBUG_MACHO_LOADER
-//#define DEBUG_MACHO_LOADER_OBJC
+// #define DEBUG_MACHO_LOADER
+// #define DEBUG_MACHO_LOADER_OBJC
 
 MachOBinaryFile::MachOBinaryFile()
 {
@@ -153,7 +153,7 @@ bool MachOBinaryFile::loadFromMemory(QByteArray& img)
 	}
 
 	header = (mach_header *)(img.data() + imgoffs);// new mach_header;
-	//fp.read((char *)header, sizeof(mach_header));
+	// fp.read((char *)header, sizeof(mach_header));
 
 	if ((header->magic != MH_MAGIC) && (_BMMH(header->magic) != MH_MAGIC)) {
 		qWarning() << "error loading file, bad Mach-O magic";
@@ -388,7 +388,7 @@ bool MachOBinaryFile::loadFromMemory(QByteArray& img)
 			bool    is_stab  = (sym_type & N_STAB) != 0;
 
 			if (is_stab) {
-				continue; //TODO: handle stab symbols !
+				continue; // TODO: handle stab symbols !
 			}
 
 			DEBUG_PRINT("symbol %s at %x type %x\n", name, BMMH(symbols[i].n_value), sym_type & N_TYPE);
@@ -544,7 +544,7 @@ int MachOBinaryFile::machORead4(int *pi) const
 
 // unsigned int MachOBinaryFile::BMMH(long int & x) {
 //    if (swap_bytes) return _BMMH(x); else return x;
-//}
+// }
 
 int32_t MachOBinaryFile::BMMH(int32_t x)
 {

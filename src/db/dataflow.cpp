@@ -895,7 +895,7 @@ char *UseCollector::prints() const
 }
 
 
-///Print to string or stdout (for debugging)
+/// Print to string or stdout (for debugging)
 char *DefCollector::prints() const
 {
 	QString     tgt;

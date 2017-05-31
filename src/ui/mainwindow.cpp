@@ -1141,5 +1141,5 @@ void MainWindow::on_cmb_typeRecoveryEngine_currentIndexChanged(int index)
 	}
 
 
-	//boom->project()->typeEngine(ptr);
+	// boom->project()->typeEngine(ptr);
 }

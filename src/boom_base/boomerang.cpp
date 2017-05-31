@@ -571,7 +571,7 @@ int Boomerang::processCommand(QStringList& args)
 			prog->getRootCluster()->printTree(out_stream);
 			out_stream << "\n\tlibprocs:\n";
 
-			//TODO: print module name before function's ?
+			// TODO: print module name before function's ?
 			for (const Module *module : *prog) {
 				for (Function *func : *module) {
 					if (func->isLib()) {

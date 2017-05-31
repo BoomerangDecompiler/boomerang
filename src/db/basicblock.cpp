@@ -312,7 +312,7 @@ void BasicBlock::print(QTextStream& os, bool html)
 
 		os << "Synthetic out edge(s) to ";
 
-		//assert(TargetOutEdges == OutEdges.size());
+		// assert(TargetOutEdges == OutEdges.size());
 		for (BasicBlock *outEdge : m_outEdges) {
 			if (outEdge && outEdge->m_labelNum) {
 				os << "L" << outEdge->m_labelNum << " ";

@@ -38,7 +38,7 @@
 #include <cstring>
 #include <algorithm> // For remove()
 
-//#define DEBUG_SSLPARSER 1
+// #define DEBUG_SSLPARSER 1
 
 /***************************************************************************/ /**
  * \brief        Constructor
@@ -600,7 +600,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *>& rts, bool optimise
 		}
 		else if (rt->isFlagAssgn()) {
 			Assign *rt_asgn = (Assign *)rt;
-			//Exp *lhs = rt_asgn->getLeft();
+			// Exp *lhs = rt_asgn->getLeft();
 			auto rhs = rt_asgn->getRight();
 			// An opFlagCall is assumed to be a Binary with a string and an opList of parameters
 			ss = rhs->getSubExp2();

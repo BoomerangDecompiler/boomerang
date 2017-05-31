@@ -31,7 +31,7 @@
 //        return *this;
 //    }
 //    virtual ~NullLogger() {};
-//};
+// };
 #include "include/prog.h"
 #include "include/proc.h"
 

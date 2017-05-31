@@ -1,7 +1,7 @@
 #define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 #include <assert.h>
 
-//#line 2 "machine/hppa/disassembler.m"
+// #line 2 "machine/hppa/disassembler.m"
 
 /***************************************************************************/ /**
  * \file     disassembler.m
@@ -51,11 +51,11 @@ const char *GetSym(unsigned pc);
 const char *GetReloc(unsigned pc);
 
 #define ANAME    apre += sprintf(apre, "%s", name);
-//#define APREF(x)    apre += sprintf( apre, "%s", x );
-//#define AARGs(x)    astr += sprintf( astr, "%s", x );
-//#define AARGd(x)    astr += sprintf( astr, "%d", x );
-//#define AARGf(f, x) astr += sprintf( astr, " ## f ## ", x );
-//#define Acom        astr += sprintf( astr, "," );
+// #define APREF(x)    apre += sprintf( apre, "%s", x );
+// #define AARGs(x)    astr += sprintf( astr, "%s", x );
+// #define AARGd(x)    astr += sprintf( astr, "%d", x );
+// #define AARGf(f, x) astr += sprintf( astr, " ## f ## ", x );
+// #define Acom        astr += sprintf( astr, "," );
 #define CONS(x)      strcat(constrName, x);
 #define IGNORE(x)    not_used(*(int *)&x);
 
@@ -112,7 +112,7 @@ int dis_c_c_n(ADDRESS hostpc)
 {
 	int result = 0;
 
-	//#line 105 "machine/hppa/disassembler.m"
+	// #line 105 "machine/hppa/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -406,7 +406,7 @@ MATCH_finished_h:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 110 "machine/hppa/disassembler.m"
+	// #line 110 "machine/hppa/disassembler.m"
 	return result;
 }
 
@@ -419,18 +419,18 @@ void NJMCDecoder::dis_c_c(ADDRESS hostpc)
 	 *                          ,",*TR",",*!=",",*>=",",*EV"}; */
 	static char *cmpsubw[] =
 	{
-		"",    ",=",  ",<",  ",<=", ",<<",  ",<<=", ",SV",  ",OD",
-		",TR", ",<>", ",>=", ",>",  ",>>=", ",>>",  ",NSV", ",EV"
+		"",    ",=",    ",<",  ",<=",  ",<<",   ",<<=",  ",SV",   ",OD",
+		",TR", ",<>",   ",>=", ",>",   ",>>=",  ",>>",   ",NSV",  ",EV"
 	};
 	static char *cmpsubdw[] =
 	{
-		"",     ",*=",  ",*<",  ",*<=", ",*<<",  ",*<<=", ",*SV",  ",*OD",
-		",*TR", ",*<>", ",*>=", ",*>",  ",*>>=", ",*>>",  ",*NSV", ",*EV"
+		"",     ",*=",     ",*<",  ",*<=",  ",*<<",   ",*<<=",  ",*SV",   ",*OD",
+		",*TR", ",*<>",    ",*>=", ",*>",   ",*>>=",  ",*>>",   ",*NSV",  ",*EV"
 	};
 	/*  static char *bitw[]  = {",<", ",>="};*/
 	/*  static char *bitdw[] = {",*<", ",*>="};*/
 
-	//#line 129 "machine/hppa/disassembler.m"
+	// #line 129 "machine/hppa/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -737,13 +737,13 @@ MATCH_finished_g:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 165 "machine/hppa/disassembler.m"
+	// #line 165 "machine/hppa/disassembler.m"
 }
 
 
 void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 {
-	//#line 169 "machine/hppa/disassembler.m"
+	// #line 169 "machine/hppa/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -1078,7 +1078,7 @@ MATCH_finished_f:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 216 "machine/hppa/disassembler.m"
+	// #line 216 "machine/hppa/disassembler.m"
 }
 
 
@@ -1086,7 +1086,7 @@ void NJMCDecoder::dis_c_wcr(ADDRESS hostpc)
 {
 	unsigned long regl;
 
-	//#line 220 "machine/hppa/disassembler.m"
+	// #line 220 "machine/hppa/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -1147,14 +1147,14 @@ MATCH_finished_e:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 236 "machine/hppa/disassembler.m"
+	// #line 236 "machine/hppa/disassembler.m"
 	astr += sprintf(astr, "%s", cr_06_names[regl]);
 }
 
 
 void NJMCDecoder::dis_c_null(ADDRESS hostpc)
 {
-	//#line 240 "machine/hppa/disassembler.m"
+	// #line 240 "machine/hppa/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -1269,13 +1269,13 @@ MATCH_finished_d:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 252 "machine/hppa/disassembler.m"
+	// #line 252 "machine/hppa/disassembler.m"
 }
 
 
 void NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 {
-	//#line 255 "machine/hppa/disassembler.m"
+	// #line 255 "machine/hppa/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -1356,13 +1356,13 @@ MATCH_finished_c:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 268 "machine/hppa/disassembler.m"
+	// #line 268 "machine/hppa/disassembler.m"
 }
 
 
 void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 {
-	//#line 271 "machine/hppa/disassembler.m"
+	// #line 271 "machine/hppa/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -1624,7 +1624,7 @@ MATCH_finished_b:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 327 "machine/hppa/disassembler.m"
+	// #line 327 "machine/hppa/disassembler.m"
 }
 
 
@@ -1667,7 +1667,7 @@ char *NJMCDecoder::dis_freg(int regNum)
 
 
 // void NJMCDecoder::dis_faddr(ADDRESS faddr)
-//{
+// {
 //    match faddr to
 //        | index_faddr (x, s, b) => {
 //            astr += sprintf(astr, " %s(%s,%s)", b_06_names[x], s2_16_names[s],
@@ -1680,7 +1680,7 @@ char *NJMCDecoder::dis_freg(int regNum)
 //            strcat(constrName, "sdisps_faddr ");
 //        }
 //    endmatch
-//}
+// }
 
 int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 {
@@ -1690,7 +1690,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 	*(astr = adata)   = '\0';
 	apre += sprintf(apre, "%x: %08x  ", pc, *(unsigned *)hostPC);
 
-	//#line 372 "machine/hppa/disassembler.m"
+	// #line 372 "machine/hppa/disassembler.m"
 	{
 		dword MATCH_p =
 
@@ -1699,34 +1699,34 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		char        *MATCH_name;
 		static char *MATCH_name_ext8_19_0[] =
 		{
-			"BREAK",   (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, "MFSP",    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "RFI",     (char *)0, (char *)0,
-			(char *)0, (char *)0, "RFI.r",   (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "SSM",
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "RSM",     (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "LDSID",   (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, "MFIA",    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, "MTSP",    "MTCTL",   "MTSM",    (char *)0, (char *)0,
+			"BREAK",   (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, "MFSP",      (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  "RFI",     (char *)0,     (char *)0,
+			(char *)0, (char *)0,   "RFI.r",      (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     "SSM",
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, "RSM",         (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, "LDSID",       (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    "MFIA",      (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   (char *)0,    (char *)0,  (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,    (char *)0,   "MTSP",       "MTCTL",    "MTSM",    (char *)0,     (char *)0,
 			"MTSARCM",
 		};
 		static char *MATCH_name_ext5_11_1[] =
 		{
-			"SYNC",    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0, (char *)0, (char *)0, "SYNCDMA",
+			"SYNC",    (char *)0,    (char *)0, (char *)0, (char *)0, (char *)0,
+			(char *)0, (char *)0,    (char *)0, (char *)0, "SYNCDMA",
 		};
 		static char *MATCH_name_ext_17_2[] =
 		{
@@ -1734,14 +1734,14 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_ext4_22_55[] =
 		{
-			"LDBS", "LDHS", "LDWS", "LDDS", "LDDAS", "LDCDS",  "LDWAS", "LDCWS",
-			"STBS", "STHS", "STWS", "STDS", "STBYS", "STDBYS", "STWAS", "STWDS",
+			"LDBS", "LDHS", "LDWS", "LDDS", "LDDAS", "LDCDS",  "LDWAS",  "LDCWS",
+			"STBS", "STHS", "STWS", "STDS", "STBYS", "STDBYS", "STWAS",  "STWDS",
 		};
 		static char *MATCH_name_op_58[] =
 		{
-			(char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "LDIL", (char *)0,
-			"ADDIL",   (char *)0, (char *)0, "LDO",     (char *)0, (char *)0, "LDB",     "LDH",     "LDW",  "LDWM",
-			(char *)0, (char *)0, (char *)0, (char *)0, "STB",     "STH",     "STW",     "STWM",
+			(char *)0, (char *)0,   (char *)0, (char *)0, (char *)0,     (char *)0, (char *)0, (char *)0,  "LDIL",    (char *)0,
+			"ADDIL",   (char *)0,   (char *)0, "LDO",     (char *)0,     (char *)0, "LDB",     "LDH",      "LDW",     "LDWM",
+			(char *)0, (char *)0,   (char *)0, (char *)0, "STB",         "STH",     "STW",     "STWM",
 		};
 		static char *MATCH_name_sub_16_71[] =
 		{
@@ -4184,7 +4184,7 @@ MATCH_finished_a:
 		(void)0; /*placeholder for label*/
 	}
 
-	//#line 725 "machine/hppa/disassembler.m"
+	// #line 725 "machine/hppa/disassembler.m"
 	// Output the two pieces, and make an attempt to have the second column
 	// line up (but not have too big a gap between them). 28 seems OK
 	sprintf(_assembly, "%s%*s%s", aprefix, 28 - strlen(aprefix), " ", adata);

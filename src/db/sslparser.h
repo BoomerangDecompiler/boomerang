@@ -40,7 +40,7 @@ struct yy_SSLParser_stype
 
 #define YY_SSLParser_DEBUG    1
 /* use no goto to be clean in C++ */
-//#define YY_SSLParser_USE_GOTO 0
+// #define YY_SSLParser_USE_GOTO 0
 
 #ifndef YY_SSLParser_PURE
 #endif
@@ -52,7 +52,7 @@ struct yy_SSLParser_stype
 #endif
 #ifndef YY_SSLParser_LSP_NEEDED
 
-//#line 70 "/usr/local/lib/bison.h"
+// #line 70 "/usr/local/lib/bison.h"
 /* YY_SSLParser_LSP_NEEDED*/
 #endif
 /* DEFAULT STYPE*/

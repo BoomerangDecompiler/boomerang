@@ -622,7 +622,7 @@ bool Instruction::replaceRef(SharedExp e, Assignment *def, bool& convert)
 
 		QString str = rhs->access<Const, 1>()->getStr();
 
-		//FIXME: check SUBFLAGSFL handling, and implement it if needed
+		// FIXME: check SUBFLAGSFL handling, and implement it if needed
 		if (str.startsWith("SUBFLAGS") && (str != "SUBFLAGSFL")) {
 			/* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
 			 * the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
@@ -3283,7 +3283,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 	bool isScanf = name.contains("scanf");
 	int  p_idx   = 0;
 
-	//TODO: use qregularexpression to match scanf arguments
+	// TODO: use qregularexpression to match scanf arguments
 	while ((p_idx = formatStr.indexOf('%', p_idx)) != -1) {
 		p_idx++;                   // Point past the %
 		bool veryLong = false;     // %lld or %L
@@ -4906,7 +4906,7 @@ bool PhiAssign::accept(StmtExpVisitor *visitor)
 
 	for (auto& v : DefVec) {
 		assert(v.second.e != nullptr);
-		//RefExp *re = RefExp::get(v.second.e, v.second.def());
+		// RefExp *re = RefExp::get(v.second.e, v.second.def());
 		ret = RefExp::get(v.second.e, v.second.def())->accept(visitor->ev);
 
 		if (ret == false) {

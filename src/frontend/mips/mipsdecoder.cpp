@@ -1,6 +1,6 @@
 #define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 
-//#line 1 "frontend/machine/mips/decoder.m"
+// #line 1 "frontend/machine/mips/decoder.m"
 
 /****************************************************************
  *

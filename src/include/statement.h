@@ -23,7 +23,6 @@
  * CallStatement_/  /   /    \ \________
  *     PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
  */
-//#include "include/exp.h"        // No! This is (almost) the bottom of the #include hierarchy
 #include "include/config.h"
 
 #include "memo.h"
@@ -31,9 +30,9 @@
 #include "include/types.h"
 #include "include/managed.h"
 #include "include/dataflow.h"  // For embedded objects DefCollector and UseCollector
-//#include "boom_base/log.h" // For USE_DOMINANCE_NUMS etc
 
 #include <QtCore/QTextStream>
+
 #include <vector>
 #include <set>
 #include <list>
@@ -144,7 +143,7 @@ public:
 	Instruction()
 		: Parent(nullptr)
 		, proc(nullptr)
-		, Number(0) {}                                           //, parent(nullptr)
+		, Number(0) {}                                           // , parent(nullptr)
 	virtual ~Instruction() {}
 
 	// get/set the enclosing BB, etc
@@ -190,7 +189,7 @@ public:
 		return Kind == STMT_ASSIGN || Kind == STMT_PHIASSIGN || Kind == STMT_IMPASSIGN || Kind == STMT_BOOLASSIGN;
 	}
 
-	bool isPhi() const { return Kind == STMT_PHIASSIGN; } ///< true    if this statement is a phi assignment
+	bool isPhi() const { return Kind == STMT_PHIASSIGN; }      ///< true    if this statement is a phi assignment
 	bool isImplicit() const { return Kind == STMT_IMPASSIGN; } ///< true if this statement is an implicit assignment
 	bool isFlagAssgn();                                   ///< true if this statment is a flags assignment
 
@@ -523,7 +522,7 @@ struct PhiInfo
 {
 	// A default constructor is required because CFG changes (?) can cause access to elements of the vector that
 	// are beyond the current end, creating gaps which have to be initialised to zeroes so that they can be skipped
-	PhiInfo() {} //: def(0), e(0) not initializing to help valgrind find locations of unset vals
+	PhiInfo() {} // : def(0), e(0) not initializing to help valgrind find locations of unset vals
 	SharedExp         e; // The expression for the thing being defined (never subscripted)
 	void              def(Instruction *def) { m_def = def; /*assert(def);*/ }
 	Instruction       *def() { return m_def; }

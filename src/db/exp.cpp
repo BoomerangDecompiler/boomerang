@@ -25,7 +25,6 @@
 #include "operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 #include "include/util.h"
 #include "boom_base/log.h"
-//#include "include/transformer.h"
 #include "include/visitor.h"
 #include "boom_base/log.h"
 #include <QRegularExpression>
@@ -72,7 +71,7 @@ Const::Const(double d)
 }
 
 
-//Const::Const(const char *p) : Exp(opStrConst), conscript(0), type(VoidType::get()) { u.p = p; }
+// Const::Const(const char *p) : Exp(opStrConst), conscript(0), type(VoidType::get()) { u.p = p; }
 Const::Const(const QString& p)
 	: Exp(opStrConst)
 	, conscript(0)
@@ -1889,7 +1888,7 @@ void Unary::print(QTextStream& os, bool html) const
 		}
 
 	// Temp: just print the string, no quotes
-	case opGlobal: //[[clang::fallthrough]];
+	case opGlobal: // [[clang::fallthrough]];
 	case opLocal:
 	case opParam:
 		// Print a more concise form than param["foo"] (just foo)
@@ -2601,7 +2600,7 @@ static QRegularExpression variableRegexp("[a-zA-Z0-9]+");
 // TODO use regexp ?
 #define ISVARIABLE_S(x)	\
 	(strspn((x.c_str()), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == (x).length())
-//#define DEBUG_MATCH
+// #define DEBUG_MATCH
 
 int tlstrchr(const QString& str, char ch)
 {
@@ -2622,7 +2621,7 @@ int tlstrchr(const QString& str, char ch)
 
 		if (braces.contains(str[i])) {
 			QChar end_brace = braces[str[i]];
-			++i; //from next char
+			++i; // from next char
 
 			for ( ; i < e; ++i) {
 				if (str[i] == end_brace) {
@@ -5602,7 +5601,7 @@ SharedExp RefExp::accept(ExpModifier *v)
 		subExp1 = subExp1->accept(v);
 	}
 
-	//TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
+	// TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
 	if (ref_ret) {
 		return v->postVisit(ref_ret);
 	}

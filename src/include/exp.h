@@ -22,11 +22,10 @@
 #include "include/types.h"    // For ADDRESS, etc
 #include "include/type.h"     // The Type class for typed expressions
 #include "include/util.h"
-//#include "include/statement.h"    // For StmtSet etc
 #include "exphelp.h"
-//#include "memo.h"
 
 #include <QtCore/QString>
+
 #include <cstdio>  // For sprintf
 #include <list>
 #include <vector>

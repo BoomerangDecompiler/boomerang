@@ -279,7 +279,7 @@ void RtlTest::testVisitor()
 //    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == false);
 //    pBF->UnLoad();
 //    delete pFE;
-//}
+// }
 
 void RtlTest::testSetConscripts()
 {

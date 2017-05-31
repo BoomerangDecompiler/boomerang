@@ -670,8 +670,8 @@ bool Win32BinaryFile::loadFromMemory(QByteArray& arr)
 	ADDRESS start = getEntryPoint();
 	findJumps(start);
 
-	//TODO: loading debuging data should be an optional step, decision should be made 'upstream'
-	//readDebugData();
+	// TODO: loading debuging data should be an optional step, decision should be made 'upstream'
+	// readDebugData();
 	return true;
 }
 
@@ -779,14 +779,14 @@ bool Win32BinaryFile::postLoad(void *handle)
 
 char *SymTagEnums[] =
 {
-	"SymTagNull",            "SymTagExe",            "SymTagCompiland",    "SymTagCompilandDetails",
-	"SymTagCompilandEnv",    "SymTagFunction",       "SymTagBlock",        "SymTagData",
-	"SymTagAnnotation",      "SymTagLabel",          "SymTagPublicSymbol", "SymTagUDT",
-	"SymTagEnum",            "SymTagFunctionType",   "SymTagPointerType",  "SymTagArrayType",
-	"SymTagBaseType",        "SymTagTypedef",        "SymTagBaseClass",    "SymTagFriend",
-	"SymTagFunctionArgType", "SymTagFuncDebugStart", "SymTagFuncDebugEnd", "SymTagUsingNamespace",
-	"SymTagVTableShape",     "SymTagVTable",         "SymTagCustom",       "SymTagThunk",
-	"SymTagCustomType",      "SymTagManagedType",    "SymTagDimension"
+	"SymTagNull",            "SymTagExe",                     "SymTagCompiland",             "SymTagCompilandDetails",
+	"SymTagCompilandEnv",    "SymTagFunction",                "SymTagBlock",                 "SymTagData",
+	"SymTagAnnotation",      "SymTagLabel",                   "SymTagPublicSymbol",          "SymTagUDT",
+	"SymTagEnum",            "SymTagFunctionType",            "SymTagPointerType",           "SymTagArrayType",
+	"SymTagBaseType",        "SymTagTypedef",                 "SymTagBaseClass",             "SymTagFriend",
+	"SymTagFunctionArgType", "SymTagFuncDebugStart",          "SymTagFuncDebugEnd",          "SymTagUsingNamespace",
+	"SymTagVTableShape",     "SymTagVTable",                  "SymTagCustom",                "SymTagThunk",
+	"SymTagCustomType",      "SymTagManagedType",             "SymTagDimension"
 };
 
 enum SymTagEnum
@@ -826,7 +826,7 @@ enum SymTagEnum
 
 char *basicTypes[] =
 {
-	"notype",        "void", "char", "WCHAR", "??", "??", "int", "unsigned int", "float", "bcd", "bool", "??", "??",
+	"notype",        "void",        "char", "WCHAR", "??", "??", "int", "unsigned int", "float", "bcd", "bool", "??", "??",
 	"long"
 	"unsigned long",
 };

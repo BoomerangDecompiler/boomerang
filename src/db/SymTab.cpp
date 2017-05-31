@@ -90,7 +90,7 @@ const IBinarySymbol *SymTab::find(const QString& s) const
 
 bool BinarySymbol::rename(const QString& s)
 {
-	//TODO: this code assumes only one BinarySymbolTable instance exists
+	// TODO: this code assumes only one BinarySymbolTable instance exists
 	SymTab *sym_tab = (SymTab *)Boomerang::get()->getSymbols();
 
 	if (sym_tab->smap.find(s) != sym_tab->smap.end()) {

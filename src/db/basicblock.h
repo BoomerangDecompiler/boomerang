@@ -311,7 +311,7 @@ public:
 	 ******************************************************************************/
 	const std::vector<BasicBlock *>& getOutEdges();
 
-	void clearOutEdges() { m_outEdges.clear(); } ///<called when noreturn call is found
+	void clearOutEdges() { m_outEdges.clear(); } ///< called when noreturn call is found
 
 	/***************************************************************************/ /**
 	 * \brief Change the given in-edge (0 is first) to the given value

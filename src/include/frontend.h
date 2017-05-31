@@ -100,7 +100,7 @@ public:
 
 	// Add a "hint" that an instruction at the given address references a named global
 	void addRefHint(ADDRESS addr, const QString& nam) { refHints[addr] = nam; }
-	virtual ~FrontEnd(); ///<Destructor. Virtual to mute a warning
+	virtual ~FrontEnd(); ///< Destructor. Virtual to mute a warning
 
 	// returns a symbolic name for a register index
 	QString getRegName(int idx) const;
@@ -177,7 +177,7 @@ public:
 //     * the result.
 //     */
 //    static FrontEnd *getInstanceFor(const char *sName, void *&dlHandle, QObject *pLoader, IInstructionTranslator *&decoder);
-	static void closeInstance(void *dlHandle); ///<Close the library opened by getInstanceFor
+	static void closeInstance(void *dlHandle); ///< Close the library opened by getInstanceFor
 	Prog *getProg();                           /// Get a Prog object (for testing and not decoding)
 
 	/**

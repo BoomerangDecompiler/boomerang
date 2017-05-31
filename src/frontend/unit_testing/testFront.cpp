@@ -14,7 +14,6 @@
 
 #include "FrontSparcTest.h"
 #include "FrontPentTest.h"
-//#include "FrontendTest.h"
 #include "include/prog.h"
 #include <iostream>
 

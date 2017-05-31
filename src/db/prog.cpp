@@ -811,7 +811,7 @@ void Prog::removeProc(const QString& name)
 	if (f && (f != (Function *)-1)) {
 		f->removeFromParent();
 		Boomerang::get()->alertRemove(f);
-		//FIXME: this function removes the function from module, but it leaks it
+		// FIXME: this function removes the function from module, but it leaks it
 	}
 }
 

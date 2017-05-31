@@ -87,7 +87,7 @@ public:
 	void setProc(UserProc *proc);
 	void clear();
 
-	size_t getNumBBs() { return m_listBB.size(); } ///<Get the number of BBs
+	size_t getNumBBs() { return m_listBB.size(); } ///< Get the number of BBs
 	Cfg& operator=(const Cfg& other);        /* Copy constructor */
 
 	BasicBlock *newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges) noexcept(false);
