@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2002, Trent Waddington
  *
@@ -16,9 +17,6 @@
   * Concrete implementations of this class provide specific language
   * bindings for a single procedure in the program.
   ******************************************************************************/
-
-#ifndef _HLLCODE_H_
-#define _HLLCODE_H_
 
 #include <vector>
 #include <cassert>
@@ -412,4 +410,3 @@ class InfiniteLoopSyntaxNode : public SyntaxNode {
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *> &successors) override;
 }; // class InfiniteLoopSyntaxNode
 
-#endif

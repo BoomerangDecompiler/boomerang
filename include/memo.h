@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2004, Trent Waddington
  *
@@ -12,9 +13,8 @@
  * \brief    declaration of the memo class.
  ******************************************************************************/
 
-#ifndef MEMO_H
-#define MEMO_H
 #include <list>
+
 class Memo {
   public:
     Memo(int m) : mId(m) {}
@@ -42,5 +42,3 @@ class Memoisable {
     std::list<Memo *> memos;
     std::list<Memo *>::iterator cur_memo;
 };
-
-#endif

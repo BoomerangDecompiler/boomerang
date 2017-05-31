@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2002, Trent Waddington
  *
@@ -24,9 +25,6 @@
  * http://boomerang.sourceforge.net.
  *
  */
-
-#ifndef BOOMERANG_H
-#define BOOMERANG_H
 
 #include "msvc_fixes.h"
 
@@ -311,4 +309,3 @@ public:
 #define DEBUG_SWITCH (Boomerang::get()->debugSwitch)
 #define EXPERIMENTAL (Boomerang::get()->experimental)
 
-#endif

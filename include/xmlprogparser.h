@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2004, Trent Waddington
  *
@@ -11,8 +12,6 @@
  * \file        XMLProgParser.h
  * OVERVIEW:    parses persisted XML output and creates a new prog.
  ******************************************************************************/
-#ifndef _XMLPROGPARSER_H_
-#define _XMLPROGPARSER_H_
 
 #include <string>
 #include <list>
@@ -165,5 +164,3 @@ class XMLProgParser {
     void *findId(const char *id);
     SharedType findType(const QStringRef &id);
 };
-
-#endif

@@ -1,5 +1,5 @@
-#ifndef __hppa_pat_H__
-#define __hppa_pat_H__
+#pragma once
+
 class InstructionPatterns {
   private:
     static int R0;
@@ -53,4 +53,3 @@ class InstructionPatterns {
     static bool s_addr_im_r$c_s_addr_mb(ADDRESS &lc, int &a, bool a_isVAR);
     static bool s_addr_im_r$c_s_addr_notm(ADDRESS &lc, int &a, bool a_isVAR);
 };
-#endif

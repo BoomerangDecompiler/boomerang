@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2003, Mike Van Emmerik
  *
@@ -11,9 +12,6 @@
   * \file       exphelp.h
   * OVERVIEW:   Element comparison functions for expressions and statements
   ******************************************************************************/
-
-#ifndef __EXPHELP_H__
-#define __EXPHELP_H__
 
 #include <map>
 #include <memory>
@@ -50,4 +48,3 @@ struct lessAssign : public std::binary_function<Assign *, Assign *, bool> {
     bool operator()(const Assign *x, const Assign *y) const;
 };
 
-#endif // __EXPHELP_H__

@@ -1,3 +1,4 @@
+#pragma once
 /****************************************************************
 *
 * FILENAME
@@ -17,9 +18,6 @@
 *   $Id$
 *
 *****************************************************************/
-
-#ifndef MIPSFRONTEND_H
-#define MIPSFRONTEND_H
 
 // Class MIPSFrontEnd: derived from FrontEnd, with source machine specific
 // behaviour
@@ -48,5 +46,3 @@ class MIPSFrontEnd : public FrontEnd {
 
     virtual ADDRESS getMainEntryPoint(bool &gotMain);
 };
-
-#endif

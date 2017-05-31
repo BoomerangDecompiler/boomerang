@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2000-2001, The University of Queensland
  * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
@@ -14,8 +15,6 @@
   *                recording high level types
   ******************************************************************************/
 
-#ifndef __TYPE_H__
-#define __TYPE_H__
 #include "memo.h"
 #include "types.h" // For STD_SIZE
 
@@ -799,5 +798,3 @@ inline std::shared_ptr<const NamedType> Type::as<NamedType>() const {
     assert(res);
     return res;
 }
-
-#endif // __TYPE_H__

@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2005-2006, Mike Van Emmerik
  *
@@ -11,9 +12,6 @@
   * \file  dataflow.h
   * \brief Interface for SSA based data flow analysis
   ******************************************************************************/
-
-#ifndef _DATAFLOW_H_
-#define _DATAFLOW_H_
 
 #include "exphelp.h" // For lessExpStar, etc
 #include "managed.h" // For LocationSet
@@ -264,5 +262,3 @@ class UseCollector {
     void fromSSAform(UserProc *proc, Instruction *def); // Translate out of SSA form
     bool operator==(UseCollector &other);
 }; // class UseCollector
-
-#endif // _DATAFLOW_H_

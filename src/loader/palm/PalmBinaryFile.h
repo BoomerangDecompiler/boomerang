@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2000-2001, The University of Queensland
  *
@@ -10,8 +12,6 @@
 /** \file PalmBinaryFile.h
  * \brief This file contains the definition of the class PalmBinaryFile.
  */
-#ifndef __PALMBINARYFILE_H__
-#define __PALMBINARYFILE_H__
 
 /***************************************************************************/ /**
  * Dependencies.
@@ -80,5 +80,3 @@ private:
 	class IBinaryImage *Image;
 	class IBinarySymbolTable *Symbols;
 };
-
-#endif // #ifndef __PALMBINARYFILE_H__

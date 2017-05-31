@@ -1,5 +1,4 @@
-#ifndef IBINARYIMAGE_H
-#define IBINARYIMAGE_H
+#pragma once
 
 #include "types.h"
 
@@ -42,4 +41,3 @@ public:
     virtual bool                    empty() const =0;
 
 };
-#endif // IBINARYIMAGE_H

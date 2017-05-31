@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef FLEX_HEADER_ansi_c_scanner_h
 #define FLEX_HEADER_ansi_c_scanner_h
 #define YY_AnsiCScanner_CHAR    char

@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2005, Mike Van Emmerik
  *
@@ -11,9 +12,6 @@
   * \file       st20decoder.h
   * \brief   The definition of the instruction decoder for ST20.
   ******************************************************************************/
-
-#ifndef ST20DECODER
-#define ST20DECODER
 
 #include "njmcDecoder.h"
 #include "rtl.h"
@@ -48,5 +46,3 @@ class ST20Decoder : public NJMCDecoder {
     SWord getWord(intptr_t lc);
     Byte getByte(intptr_t lc);
 };
-
-#endif

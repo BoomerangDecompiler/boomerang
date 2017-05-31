@@ -1,5 +1,4 @@
-#ifndef MACHINEINSTRUCTION_H
-#define MACHINEINSTRUCTION_H
+#pragma once
 
 #include "types.h"
 #include <QString>
@@ -29,4 +28,3 @@ public:
     virtual Exp *convertOperand(MachineOperand *Operand)=0;
     virtual std::list<Instruction *> *convertInstruction(MachineInstruction *Insn)=0;
 };
-#endif // MACHINEINSTRUCTION_H

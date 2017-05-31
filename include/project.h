@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2014-    Boomerang Project
  *
@@ -12,8 +13,6 @@
   * \file     project.h
   * \brief    This file contains the definition for the Project class
   ******************************************************************************/
-#ifndef __PROJECT_H__
-#define __PROJECT_H__
 
 #include "IProject.h"
 
@@ -40,4 +39,3 @@ public:
     ITypeRecovery *typeEngine() override { return type_recovery_engine; }
     void typeEngine(ITypeRecovery *e) override { type_recovery_engine=e; }
 };
-#endif

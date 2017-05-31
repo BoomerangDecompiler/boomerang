@@ -1,3 +1,4 @@
+#pragma once
 /****************************************************************
 *
 * FILENAME
@@ -17,9 +18,6 @@
 *   $Id$
 *
 *****************************************************************/
-
-#ifndef MIPSDECODER
-#define MIPSDECODER
 
 #include "njmcDecoder.h"
 #include <cstddef>
@@ -62,5 +60,3 @@ class MIPSDecoder : public NJMCDecoder {
     DWord        getDword(ADDRESS lc);
 #endif
 };
-
-#endif

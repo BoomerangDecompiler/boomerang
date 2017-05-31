@@ -1,5 +1,5 @@
-#ifndef __sparc_pat_H__
-#define __sparc_pat_H__
+#pragma once
+
 class InstructionPatterns {
   private:
     static int SP;
@@ -56,4 +56,4 @@ class InstructionPatterns {
     static bool rmode(ADDRESS &lc, int &a, bool a_isVAR);
     static bool sethi(ADDRESS &lc, int &a, bool a_isVAR, int &b, bool b_isVAR);
 };
-#endif
+

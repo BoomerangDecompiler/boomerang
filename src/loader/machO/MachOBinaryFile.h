@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2000, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -11,9 +13,6 @@
 /** \file MachOBinaryFile.h
  * \brief This file contains the definition of the class MachOBinaryFile.
  */
-
-#ifndef __MACHOBINARYFILE_H__
-#define __MACHOBINARYFILE_H__
 
 #include "BinaryFile.h"
 #include <string>
@@ -105,4 +104,3 @@ private:
 	class IBinaryImage *Image;
 	class IBinarySymbolTable *Symbols;
 };
-#endif // ifndef __MACHOBINARYFILE_H__

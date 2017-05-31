@@ -1,5 +1,5 @@
-#ifndef IBINARYSYMBOLS_H
-#define IBINARYSYMBOLS_H
+#pragma once
+
 #include "types.h"
 
 #include <memory>
@@ -52,4 +52,3 @@ public:
     //    virtual void addImport(ADDRESS) = 0; //! mark address as containing pointer to imported function
     //    virtual void addExport(ADDRESS) = 0; //! mark address as being exported
 };
-#endif // IBINARYSYMBOLS_H

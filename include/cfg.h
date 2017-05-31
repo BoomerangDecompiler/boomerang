@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 1997-2005, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -13,9 +14,6 @@
   * \file    cfg.h
   * \brief   Interface for a control flow graph, based on basic block nodes.
   ******************************************************************************/
-
-#ifndef _CFG_H_
-#define _CFG_H_
 
 #include "types.h"
 #include "exphelp.h"    // For lessExpStar
@@ -201,4 +199,3 @@ protected:
     friend class XMLProgParser;
 }; /* Cfg */
 
-#endif

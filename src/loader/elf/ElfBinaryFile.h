@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 1998-2001, The University of Queensland
  *
@@ -11,8 +13,6 @@
  * \brief This file contains the definition of the class ElfBinaryFile.
  */
 
-#ifndef __ELFBINARYFILE_H__
-#define __ELFBINARYFILE_H__
 
 /***************************************************************************/ /**
  * Dependencies.
@@ -120,5 +120,3 @@ private:
 	void markImports();
 	void processSymbol(Translated_ElfSym& sym, int e_type, int i);
 };
-
-#endif // #ifndef __ELFBINARYFILE_H__

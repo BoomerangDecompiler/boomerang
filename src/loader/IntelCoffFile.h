@@ -1,5 +1,4 @@
-#ifndef __INTELCOFFFILE_H__
-#define __INTELCOFFFILE_H__
+#pragma once
 
 #include <stdint.h>
 #include "BinaryFile.h"

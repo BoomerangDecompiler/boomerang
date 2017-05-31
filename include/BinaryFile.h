@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 1997-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -14,8 +15,6 @@
  * @brief: This file contains the definition of the abstract class BinaryFile
 */
 
-#ifndef __BINARYFILE_H__
-#define __BINARYFILE_H__
 
 /***************************************************************************/ /**
   * Dependencies.
@@ -163,5 +162,3 @@ struct LoaderPluginWrapper {
     QObject *plugin;
     template <class T> T *iface() { return plugin ? qobject_cast<T *>(plugin) : nullptr; }
 };
-
-#endif // #ifndef __BINARYFILE_H__

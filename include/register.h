@@ -1,5 +1,4 @@
-#ifndef __REG_H__
-#define __REG_H__
+#pragma once
 /*
  * Copyright (C) 2000-2001, The University of Queensland
  *
@@ -81,4 +80,3 @@ class Register {
     bool flt; //!< True if this is a floating point register
 };
 
-#endif

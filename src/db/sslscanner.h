@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef FLEX_HEADER_sslscanner_h
 #define FLEX_HEADER_sslscanner_h
 #define YY_SSLScanner_CHAR    char

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2001, The University of Queensland
  *
@@ -6,8 +8,6 @@
  * WARRANTIES.
  *
  */
-#ifndef INSNAMEELEM_H
-#define INSNAMEELEM_H
 
 #include "table.h"
 
@@ -61,5 +61,3 @@ protected:
 	QString indexname;
 	std::shared_ptr<Table> thetable;
 };
-
-#endif

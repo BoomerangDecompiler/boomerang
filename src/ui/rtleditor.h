@@ -1,6 +1,4 @@
-
-#ifndef RTLEDITOR_H
-#define RTLEDITOR_H
+#pragma once
 
 #include <QtCore/QString>
 #include <QtWidgets/QTextEdit>
@@ -29,5 +27,3 @@ class RTLEditor : public QTextEdit {
     Decompiler *decompiler;
     QString name;
 };
-
-#endif

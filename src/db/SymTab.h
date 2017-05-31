@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2005, Mike Van Emmerik
  *
@@ -18,8 +20,6 @@
  * if the strings are ever changed, then the map's internal rb-tree becomes invalid.
  ******************************************************************************/
 
-#ifndef __SYMTAB_H__
-#define __SYMTAB_H__
 #include "IBinarySymbols.h"
 
 #include "types.h"
@@ -85,4 +85,3 @@ public:
 	bool empty() const { return SymbolList.empty(); }
 	void clear() override;
 };
-#endif // __SYMTAB_H__

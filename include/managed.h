@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2003, Mike Van Emmerik
  *
@@ -19,8 +20,6 @@
   *                ConnectionGraph
   *==============================================================================================*/
 
-#ifndef __MANAGED_H__
-#define __MANAGED_H__
 #include "exphelp.h" // For lessExpStar
 
 #include <list>
@@ -210,7 +209,7 @@ class ConnectionGraph {
 private:
     std::vector<SharedExp > allConnected(SharedExp a);
 };
+
 QTextStream &operator<<(QTextStream &os, const AssignSet *as);
 QTextStream &operator<<(QTextStream &os, const InstructionSet *ss);
 QTextStream &operator<<(QTextStream &os, const LocationSet *ls);
-#endif // #ifdef __MANAGED_H__

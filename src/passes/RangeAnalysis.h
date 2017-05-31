@@ -1,5 +1,5 @@
-#ifndef RANGEANALYSIS_H
-#define RANGEANALYSIS_H
+#pragma once
+
 #include "Pass.h"
 #include <map>
 class Cfg;
@@ -19,5 +19,3 @@ private:
     RangePrivateData * RangeData;
     void logSuspectMemoryDefs(UserProc &UF);
 };
-
-#endif // RANGEANALYSIS_H

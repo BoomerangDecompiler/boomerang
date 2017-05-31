@@ -1,5 +1,4 @@
-#ifndef PPCFRONTEND_H
-#define PPCFRONTEND_H
+#pragma once
 
 // Class PPCFrontEnd: derived from FrontEnd, with source machine specific
 // behaviour
@@ -32,4 +31,3 @@ class PPCFrontEnd : public FrontEnd {
     virtual ADDRESS getMainEntryPoint(bool &gotMain);
 };
 
-#endif

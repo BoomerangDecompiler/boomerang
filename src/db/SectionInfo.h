@@ -1,5 +1,5 @@
-#ifndef SECTIONINFO_H
-#define SECTIONINFO_H
+#pragma once
+
 #include "types.h"
 #include "IBinarySection.h"
 
@@ -61,6 +61,3 @@ public:
 private:
 	SectionInfoImpl *Impl;
 };
-
-
-#endif // SECTIONINFO_H

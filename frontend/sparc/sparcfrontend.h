@@ -1,6 +1,4 @@
-
-#ifndef SPARCFRONTEND_H
-#define SPARCFRONTEND_H
+#pragma once
 
 // Class SparcFrontEnd: derived from FrontEnd, with source machine specific
 // behaviour
@@ -86,5 +84,3 @@ class SparcFrontEnd : public FrontEnd {
     DecodeResult nop_inst;
     class IBinarySymbolTable *SymbolTable;
 };
-
-#endif

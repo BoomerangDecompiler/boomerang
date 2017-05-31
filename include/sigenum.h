@@ -1,7 +1,5 @@
+#pragma once
 // Needed by both signature.h and frontend.h
-#ifndef __SIGENUM__
-#define __SIGENUM__
-
 enum platform { PLAT_PENTIUM, PLAT_SPARC, PLAT_M68K, PLAT_PARISC, PLAT_PPC, PLAT_MIPS, PLAT_ST20, PLAT_GENERIC };
 
 enum callconv {
@@ -11,5 +9,3 @@ enum callconv {
     CONV_FASTCALL, // MSVC fastcall convention ECX,EDX,stack, callee pop
     CONV_NONE
 };
-
-#endif // __SIGENUM__

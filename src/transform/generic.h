@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2004, Trent Waddington
  */
@@ -6,9 +8,6 @@
  * \file       generic.h
  * \brief   Provides the definition for the generic exp tranformer.
  ******************************************************************************/
-
-#ifndef GENERIC_EXP_TRANSFORMER_H
-#define GENERIC_EXP_TRANSFORMER_H
 
 #include "transformer.h"
 
@@ -27,5 +26,3 @@ public:
 		, become(_become) {}
 	virtual SharedExp applyTo(SharedExp e, bool& bMod);
 };
-
-#endif

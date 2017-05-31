@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 1996-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -13,8 +14,6 @@
   * \brief   The implementation of the instruction decoder for Sparc.
   ******************************************************************************/
 
-#ifndef SPARCDECODER
-#define SPARCDECODER
 #include "njmcDecoder.h"
 
 #include <cstddef>
@@ -52,4 +51,3 @@ public:
     DWord getDword(ADDRESS lc);
 };
 
-#endif

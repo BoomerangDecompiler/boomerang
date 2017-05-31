@@ -1,3 +1,5 @@
+#pragma once
+
 /* * Copyright (C) 2000-2001, The University of Queensland
  *
  * See the file "LICENSE.TERMS" for information on usage and
@@ -9,8 +11,6 @@
 /** \file HpSomBinaryFile.h
  * \brief This file contains the definition of the class HpSomBinaryFile.
  */
-#ifndef __HPSOMBINARYFILE_H__
-#define __HPSOMBINARYFILE_H__
 
 /***************************************************************************/ /**
  * Dependencies.
@@ -138,8 +138,5 @@ private:
 	// LoaderInterface interface
 
 public:
-
 	void processSymbols();
 };
-
-#endif // #ifndef __HPSOMBINARYFILE_H__

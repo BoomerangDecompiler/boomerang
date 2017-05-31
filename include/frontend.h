@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 1998-2005, The University of Queensland
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
@@ -16,9 +17,6 @@
   *           the front end: decoding machine instructions into a control flow graph populated with low and high level
   *           RTLs.
   ******************************************************************************/
-#ifndef __FRONTEND_H__
-#define __FRONTEND_H__
-
 #include "types.h"
 #include "sigenum.h" // For enums platform and cc
 #include "BinaryFile.h"
@@ -208,5 +206,3 @@ private:
   * These functions are implemented in the files front<XXX> where XXX is a
   * platform name such as sparc or pentium.
   ******************************************************************************/
-
-#endif // #ifndef __FRONTEND_H__

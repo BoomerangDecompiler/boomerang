@@ -1,5 +1,4 @@
-#ifndef IBOOMERANG_H
-#define IBOOMERANG_H
+#pragma once
 /***************************************************************************/ /**
   * \file       IBoomerang.h
   *   Interface for the core system, accessible from all plugins
@@ -15,4 +14,3 @@ public:
     virtual IProject *project() = 0;
 };
 
-#endif // IBOOMERANG_H

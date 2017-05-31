@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2004, Trent Waddington
  *
@@ -14,9 +15,6 @@
   * Object Oriented Programming concept of a Class is a Module.
   * Modules can contain other Modules to form a tree.
   ******************************************************************************/
-
-#ifndef __MODULE_H__
-#define __MODULE_H__
 
 #include "memo.h"
 #include "type.h"
@@ -132,4 +130,3 @@ struct ClassModFactory : public ModuleFactory {
         return new Class(name,_parent,fe);
     }
 };
-#endif /*__MODULE_H__*/

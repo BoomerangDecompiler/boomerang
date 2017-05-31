@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * machine/sparc/sparc.h - Emulator interface file
  *
@@ -5,8 +7,6 @@
  *   machine/sparc/sparc-core.spec            (Wed Nov 28 09:33:18 2001)
  *   machine/sparc/sparc.ssl                  (Wed Nov 28 09:33:21 2001)
  */
-#ifndef sparc_emu_H
-#define sparc_emu_H
 
 #include <stdlib.h>
 
@@ -267,8 +267,5 @@ struct RegisterFile {
 };
 
 extern RegisterFile regs;
-;
 
 extern char *mem;
-
-#endif /* !sparc_emu_H */

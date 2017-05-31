@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 1998-2001, The University of Queensland
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
@@ -14,9 +15,6 @@
   * OVERVIEW:   Interface for the procedure classes, which are used to store information about variables in the
   *                procedure such as parameters and locals.
   ******************************************************************************/
-
-#ifndef _PROC_H_
-#define _PROC_H_
 
 #include "exp.h" // For lessExpStar
 #include "cfg.h" // For cfg->simplify()
@@ -507,5 +505,3 @@ protected:
     void setCFG(Cfg *c) { cfg = c; }
 }; // class UserProc
 Log &operator<<(Log &out, const UserProc &c);
-
-#endif

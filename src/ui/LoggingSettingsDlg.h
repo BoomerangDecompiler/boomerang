@@ -1,5 +1,4 @@
-#ifndef LOGGINGSETTINGSDLG_H
-#define LOGGINGSETTINGSDLG_H
+#pragma once
 
 #include <QDialog>
 
@@ -26,5 +25,3 @@ private slots:
 private:
     Ui::LoggingSettingsDlg *ui;
 };
-
-#endif // LOGGINGSETTINGSDLG_H

@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2002, Trent Waddington
  *
@@ -13,9 +14,7 @@
   *               This class provides methods which are specific for the C language binding.
   *               I guess this will be the most popular output language unless we do C++.
   ******************************************************************************/
-
-#ifndef _CHLLCODE_H_
-#define _CHLLCODE_H_
+  
 #include "hllcode.h"
 #include <string>
 #include <sstream>
@@ -114,8 +113,8 @@ class CHLLCode : public HLLCode {
     virtual void reset();
 
     /*
-                 * Functions to add new code
-                 */
+     * Functions to add new code
+     */
 
     // pretested loops (cond is optional because it is in the bb [somewhere])
     virtual void AddPretestedLoopHeader(int indLevel, const SharedExp &cond);
@@ -181,4 +180,3 @@ class CHLLCode : public HLLCode {
     virtual void print(QTextStream &os);
 };
 
-#endif

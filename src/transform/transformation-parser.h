@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef YY_TransformationParser_h_included
 #define YY_TransformationParser_h_included
 

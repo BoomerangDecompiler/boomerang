@@ -1,5 +1,4 @@
-#ifndef ST20FRONTEND_H
-#define ST20FRONTEND_H
+#pragma once
 
 // Class ST20FrontEnd: derived from FrontEnd, with source machine specific
 // behaviour
@@ -32,4 +31,3 @@ class ST20FrontEnd : public FrontEnd {
     virtual ADDRESS getMainEntryPoint(bool &gotMain);
 };
 
-#endif

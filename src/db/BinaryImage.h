@@ -1,5 +1,5 @@
-#ifndef BINARYIMAGE_H
-#define BINARYIMAGE_H
+#pragma once
+
 #include "SectionInfo.h"
 #include "IBinaryImage.h"
 
@@ -81,6 +81,3 @@ private:
 	MapAddressRangeToSection SectionMap;
 	SectionListType          Sections; //!< The section info
 };
-
-
-#endif // BINARYIMAGE_H

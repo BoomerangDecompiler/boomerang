@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2000, Sun Microsystems, Inc
  * Copyright (C) 2000, The University of Queensland
@@ -14,8 +16,6 @@
  *             Based on code from the Metrowerks Compiler, PalmOS 2.0 support
  ******************************************************************************/
 
-#ifndef _SYSTRAPS_H_
-#define _SYSTRAPS_H_
 #include <QString>
 
 #define sysTrapBase       0xA000
@@ -289,5 +289,3 @@ const QString trapNames[] =
 	"FrmSetObjectBounds",           "WinSetColors",                    "FlpDispatch",
 	"FlpEmDispatch"
 };
-
-#endif

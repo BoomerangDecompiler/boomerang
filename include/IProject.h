@@ -1,4 +1,5 @@
-#ifndef IPROJECT
+#pragma once
+
 #define IPROJECT
 
 class IBinaryImage;
@@ -16,5 +17,4 @@ public:
     virtual ITypeRecovery *typeEngine() = 0;
 };
 
-#endif // IPROJECT
 

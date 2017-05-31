@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 1998-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -13,8 +14,6 @@
  * \file        prog.h
  * OVERVIEW:    interface for the program object.
  ******************************************************************************/
-#ifndef _PROG_H_
-#define _PROG_H_
 
 #include <map>
 #include "BinaryFile.h"
@@ -22,6 +21,7 @@
 #include "type.h"
 #include "module.h"
 #include "util.h"
+
 // TODO: refactor Prog Global handling into separate class
 class RTLInstDict;
 class Function;
@@ -232,5 +232,3 @@ protected:
 
     friend class XMLProgParser;
 }; // class Prog
-
-#endif

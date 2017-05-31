@@ -1,5 +1,4 @@
-#ifndef ELFTYPES_H
-#define ELFTYPES_H
+#pragma once
 
 /** \file ElfTypes.h
  * \brief This file contains the elf format support structures
@@ -222,6 +221,3 @@ typedef struct
 #define DT_NEEDED    1 // A needed link-type object
 
 #define E_REL        1 // Relocatable file type
-
-
-#endif // ELFTYPES_H

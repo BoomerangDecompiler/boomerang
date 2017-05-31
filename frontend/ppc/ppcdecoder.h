@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 1996-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -12,8 +13,7 @@
   * \file       ppcdecoder.h
   * \brief   The implementation of the instruction decoder for PPC.
   ******************************************************************************/
-#ifndef PPCDECODER
-#define PPCDECODER
+  
 #include "njmcDecoder.h"
 
 #include <cstdlib>
@@ -41,5 +41,3 @@ class PPCDecoder : public NJMCDecoder {
     bool isFuncPrologue(ADDRESS);
     DWord getDword(ADDRESS lc);
 };
-
-#endif

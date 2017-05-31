@@ -1,6 +1,4 @@
-
-#ifndef LOG_H
-#define LOG_H
+#pragma once
 
 #include <QString>
 #include <memory>
@@ -57,4 +55,3 @@ public:
     }
 };
 
-#endif

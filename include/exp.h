@@ -65,8 +65,8 @@ typedef std::shared_ptr<RTL> SharedRTL;
 
 //! class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
 //! functions not overridden by derived classes can be called
-class Exp : public Printable, public std::enable_shared_from_this<Exp> {
-
+class Exp : public Printable, public std::enable_shared_from_this<Exp>
+{
 protected:
     OPER op; // The operator (e.g. opPlus)
     mutable unsigned lexBegin = 0, lexEnd = 0;

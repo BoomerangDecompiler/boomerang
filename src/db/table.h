@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2001, The University of Queensland
  *
@@ -12,8 +14,6 @@
  * \brief   Provides the definition of class Table and children used by
  *               the SSL parser
  ******************************************************************************/
-#ifndef TABLE_H
-#define TABLE_H
 
 #include <QString>
 #include <deque>
@@ -57,5 +57,3 @@ public:
 	~ExprTable(void);
 	std::deque<SharedExp> expressions;
 };
-
-#endif

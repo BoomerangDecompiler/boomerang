@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 1998-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -18,9 +20,6 @@
  * and these may be implemented in the future. The debug info may
  * even be exposed as another pseudo section
  */
-
-#ifndef __EXEBINARYFILE_H__
-#define __EXEBINARYFILE_H__
 
 #include "BinaryFile.h"
 class QFile;
@@ -108,5 +107,3 @@ private:
 	class IBinaryImage *Image;
 	class IBinarySymbolTable *Symbols;
 };
-
-#endif // ifndef __EXEBINARYFILE_H__

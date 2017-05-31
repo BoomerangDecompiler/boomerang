@@ -1,5 +1,5 @@
-#ifndef __mc68k_pat_H__
-#define __mc68k_pat_H__
+#pragma once
+
 class InstructionPatterns {
   private:
     static int SP;
@@ -42,4 +42,3 @@ class InstructionPatterns {
     static bool trap(ADDRESS &lc, int &a, bool a_isVAR);
     static bool unlk(ADDRESS &lc, int &a, bool a_isVAR);
 };
-#endif

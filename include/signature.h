@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2002, Trent Waddington
  */
@@ -14,9 +15,6 @@
   *considered.
   *    - MVE Jun 2005.
   */
-
-#ifndef __SIGNATURE_H_
-#define __SIGNATURE_H_
 
 #include "operator.h"
 #include "type.h"
@@ -265,4 +263,3 @@ class CustomSignature : public Signature {
     virtual int getStackRegister() noexcept(false) override { return sp; }
 };
 
-#endif

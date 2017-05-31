@@ -1,5 +1,4 @@
-#ifndef PENTFRONTEND_H
-#define PENTFRONTEND_H
+#pragma once
 
 #include "frontend.h" // In case included bare, e.g. ProcTest.cpp
 
@@ -73,4 +72,3 @@ class PentiumFrontEnd : public FrontEnd {
     virtual void extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls);
 };
 
-#endif

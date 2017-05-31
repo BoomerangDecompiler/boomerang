@@ -1,5 +1,5 @@
-#ifndef BINARYSYMBOLS_H
-#define BINARYSYMBOLS_H
+#pragma once
+
 #include "IBinarySymbols.h"
 #include <QMap>
 #include <QVariantMap>

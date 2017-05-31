@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2002, Trent Waddington
  *
@@ -11,9 +12,6 @@
   * \file       statement.h
   * OVERVIEW:   The Statement and related classes (was dataflow.h)
   ******************************************************************************/
-
-#ifndef _STATEMENT_H_
-#define _STATEMENT_H_
 
 /* Class hierarchy:   Statement@            (@ = abstract)
                     __/   |   \________________________
@@ -1252,4 +1250,3 @@ public:
     friend class XMLProgParser;
 }; // class ReturnStatement
 
-#endif // __STATEMENT_H__

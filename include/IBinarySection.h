@@ -1,5 +1,4 @@
-#ifndef IBINARYSECTION_H
-#define IBINARYSECTION_H
+#pragma once
 /***************************************************************************/ /**
   * \file       IBinarySection.h
   *   Interface definition for Sections
@@ -47,4 +46,3 @@ struct IBinarySection {
 
 };
 
-#endif // IBINARYSECTION_H

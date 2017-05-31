@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 2004-2006, Mike Van Emmerik and Trent Waddington
  */
@@ -30,9 +31,6 @@
   * do anything. Unfortunately, the visit functions are members of the Visitor (or Modifier) classes, and so have to
   * use public functions of the target classes.
   */
-
-#ifndef __VISITOR_H__
-#define __VISITOR_H__
 
 #include "exp.h" // Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
                  // ExpModifier::preVisit()
@@ -827,4 +825,3 @@ class StmtSsaXformer : public StmtModifier {
     virtual void visit(CallStatement *s, bool &recur);
 };
 
-#endif // #ifndef __VISITOR_H__
