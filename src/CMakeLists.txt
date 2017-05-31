@@ -11,3 +11,4 @@ add_subdirectory(transform)
 add_subdirectory(passes)
 
 add_subdirectory(loader)
+add_subdirectory(ui)

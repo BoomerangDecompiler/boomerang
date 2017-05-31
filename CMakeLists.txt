@@ -135,7 +135,6 @@ if (BUILD_TESTING)
 	add_subdirectory(unit_testing)
 endif (BUILD_TESTING)
 
-add_subdirectory(ui)
 
 # run regression suite by 'run check'
 add_custom_target(check "./full_regression.sh"
