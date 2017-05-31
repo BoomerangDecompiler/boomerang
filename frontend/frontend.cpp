@@ -48,7 +48,6 @@
 #include <cstdarg> // For varargs
 #include <sstream>
 
-using namespace std;
 /***************************************************************************/ /**
   *
   * \brief      Construct the FrontEnd object

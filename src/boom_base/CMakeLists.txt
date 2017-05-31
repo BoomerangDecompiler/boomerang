@@ -2,7 +2,7 @@
 set(boom_base_SRC
 	boomerang.cpp
 	log.cpp
-	"${CMAKE_SOURCE_DIR}/src/loader/BinaryFileFactory.cpp"
+	BinaryFileFactory.cpp
 )
 
 add_library(boom_base ${boom_base_SRC})

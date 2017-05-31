@@ -5,7 +5,6 @@
 #include <QDebug>
 #include <algorithm>
 
-using namespace boost::icl;
 namespace
 {
 /***************************************************************************/ /**
@@ -349,7 +348,7 @@ SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRE
 //    for(auto iter = SectionMap.begin(),e=SectionMap.end(); iter!=e; ++iter) {
 //        qDebug() << iter->first.lower().toString() << " - "<< iter->first.upper().toString();
 //    }
-	auto clash_with = SectionMap.find(interval<ADDRESS>::right_open(from, to));
+	auto clash_with = SectionMap.find(boost::icl::interval<ADDRESS>::right_open(from, to));
 
 	if (clash_with != SectionMap.end()) {
 		qDebug() << "Segment" << name << "would intersect existing one" << (*clash_with->second).getName();
@@ -361,6 +360,6 @@ SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRE
 	sect->uSectionSize = (to - from).m_value;
 	Sections.push_back(sect);
 
-	SectionMap.add(std::make_pair(interval<ADDRESS>::right_open(from, to), sect));
+	SectionMap.add(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), sect));
 	return sect;
 }

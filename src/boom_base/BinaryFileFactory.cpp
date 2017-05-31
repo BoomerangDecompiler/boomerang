@@ -23,7 +23,6 @@
 	((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
 	 ((unsigned)((Byte *)(&x))[3] << 24))
 
-using namespace std;
 QString BinaryFileFactory::m_base_path = "";
 
 QObject *BinaryFileFactory::Load(const QString& sName)

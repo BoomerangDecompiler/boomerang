@@ -40,7 +40,6 @@
 #include <algorithm>
 #include <cstring>
 #include <inttypes.h>
-using namespace std;
 
 /**********************************
 * BasicBlock methods

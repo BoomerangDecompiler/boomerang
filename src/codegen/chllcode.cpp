@@ -34,7 +34,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <memory>
-using namespace std;
+
 static int codegen_progress = 0;
 static bool isBareMemof(const Exp &e, UserProc *proc);
 // extern char *operStrings[];
@@ -737,7 +737,7 @@ void CHLLCode::appendExp(QTextStream &str, const Exp &exp, PREC curPrec, bool un
         } else {
             // Check for (tt)b where tt is a pointer; could be &local
             SharedType tt = ((TypedExp &)u).getType();
-            if (dynamic_pointer_cast<PointerType>(tt)) {
+            if (std::dynamic_pointer_cast<PointerType>(tt)) {
 #ifdef SYMS_IN_BACK_END
                 const char *sym = m_proc->lookupSym(Location::memOf(b));
                 if (sym) {
