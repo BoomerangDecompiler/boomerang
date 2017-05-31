@@ -10,7 +10,7 @@
 #include "include/frontend.h"
 #include "include/proc.h"
 #include "include/prog.h"
-#include "include/dataflow.h"
+#include "db/dataflow.h"
 #include "frontend/pentium/pentiumfrontend.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"

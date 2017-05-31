@@ -21,7 +21,7 @@
 #include "db/cfg.h" // For cfg->simplify()
 
 #include "memo.h"
-#include "include/dataflow.h"  // For class UseCollector
+#include "db/dataflow.h"  // For class UseCollector
 #include "include/statement.h" // For embedded ReturnStatement pointer, etc
 
 #include <list>

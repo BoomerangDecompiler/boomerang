@@ -29,7 +29,7 @@
 #include "exphelp.h" // For lessExpStar, lessAssignment etc
 #include "include/types.h"
 #include "include/managed.h"
-#include "include/dataflow.h"  // For embedded objects DefCollector and UseCollector
+#include "db/dataflow.h"  // For embedded objects DefCollector and UseCollector
 
 #include <QtCore/QTextStream>
 

@@ -9,7 +9,6 @@ set(INCLUDES
 	../include/statement.h
 	../include/type.h
 	../include/visitor.h
-	../include/dataflow.h
 	../include/exphelp.h
 	../include/operator.h
 	../include/prog.h
@@ -42,6 +41,7 @@ set(SRC
     basicblock.cpp
     cfg.h
     cfg.cpp
+    dataflow.h
     dataflow.cpp
     exp.cpp
     insnameelem.cpp
