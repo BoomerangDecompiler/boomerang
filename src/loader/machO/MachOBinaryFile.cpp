@@ -18,7 +18,7 @@
 
 #include "MachOBinaryFile.h"
 
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include "include/IBoomerang.h"
 #include "include/IBinaryImage.h"
 #include "include/IBinarySymbols.h"

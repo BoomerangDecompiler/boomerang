@@ -4,6 +4,8 @@
 #include <memory>
 #include <fstream>
 
+#include "boom_base/boomerang.h"
+
 class Instruction;
 class Exp;
 class LocationSet;
@@ -54,4 +56,3 @@ public:
         return *this;
     }
 };
-

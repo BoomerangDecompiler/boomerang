@@ -15,7 +15,7 @@
 #include <sstream>
 #include "ProgTest.h"
 #include "pentiumfrontend.h"
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ProgTest);
 

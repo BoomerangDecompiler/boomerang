@@ -2,7 +2,7 @@
 #include <cstdio>
 
 #include "include/config.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "commandlinedriver.h"
 
 CommandlineDriver::CommandlineDriver(QObject *parent) : QObject(parent), m_kill_timer(this) {

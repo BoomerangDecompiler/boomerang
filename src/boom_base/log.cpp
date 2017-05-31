@@ -1,9 +1,9 @@
-#include "include/log.h"
+#include "boom_base/log.h"
 #include "include/statement.h"
 #include "include/rtl.h"
 #include "include/exp.h"
 #include "include/managed.h"
-#include "include/boomerang.h"
+#include "boom_base/boomerang.h"
 
 #include <QTextStream>
 #include <sstream>

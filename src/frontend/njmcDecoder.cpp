@@ -21,8 +21,8 @@
 #include "include/cfg.h"
 #include "include/proc.h"
 #include "include/prog.h"
-#include "include/BinaryFile.h"
-#include "include/boomerang.h"
+#include "boom_base/BinaryFile.h"
+#include "boom_base/log.h"
 #include "include/util.h"
 
 #include <cassert>

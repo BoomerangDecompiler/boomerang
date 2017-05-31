@@ -16,9 +16,9 @@
 #include "include/register.h"
 #include "include/rtl.h"
 #include "include/proc.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/transformer.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 
 #include <cassert>
 #include <numeric>   // For accumulate

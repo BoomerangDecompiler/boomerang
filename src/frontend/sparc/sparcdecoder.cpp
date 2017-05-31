@@ -28,8 +28,8 @@
 #include "include/prog.h"
 #include "include/proc.h"
 #include "include/rtl.h"
-#include "include/BinaryFile.h" // For SymbolByAddress()
-#include "include/boomerang.h"
+#include "boom_base/BinaryFile.h" // For SymbolByAddress()
+#include "boom_base/log.h"
 
 #include <cassert>
 #include <cstring>

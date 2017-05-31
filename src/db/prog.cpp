@@ -31,14 +31,14 @@
 #include "include/util.h" // For lockFileWrite etc
 #include "include/register.h"
 #include "include/rtl.h"
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "include/signature.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "ansi-c-parser.h"
 #include "include/config.h"
 #include "include/managed.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 #include "BinaryImage.h"
 #include "db/SymTab.h"
 

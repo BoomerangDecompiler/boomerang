@@ -73,7 +73,7 @@ void *alloca();
 
 #include "sslscanner.h"
 #include "include/operator.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 
 OPER strToTerm(const QString &s);                       // Convert string to a Terminal (if possible)
 SharedExp listExpToExp(std::list<SharedExp> *le);       // Convert a STL list of Exp* to opList

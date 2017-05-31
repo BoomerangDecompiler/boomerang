@@ -15,8 +15,8 @@
 #include "include/statement.h"
 #include "sigenum.h"
 #include "include/signature.h"
-#include "include/boomerang.h"
-#include "include/log.h"
+#include "boom_base/log.h"
+#include "boom_base/log.h"
 #include "include/basicblock.h"
 #include "include/frontend.h"
 

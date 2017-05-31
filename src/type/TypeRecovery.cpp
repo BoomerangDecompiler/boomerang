@@ -1,8 +1,8 @@
 #include "TypeRecovery.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/proc.h"
 #include "include/prog.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 
 void TypeRecoveryCommon::recoverProgramTypes(Prog * v)
 {

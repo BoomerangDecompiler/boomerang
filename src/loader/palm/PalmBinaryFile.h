@@ -17,7 +17,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include <QtCore/QObject>
 
 class PalmBinaryFile : public QObject, public LoaderInterface

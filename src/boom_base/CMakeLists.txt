@@ -1,8 +1,12 @@
 
 set(boom_base_SRC
+	boomerang.h
 	boomerang.cpp
+	log.h
 	log.cpp
+	BinaryFile.h
 	BinaryFileFactory.cpp
+	BinaryFileStub.h
 )
 
 add_library(boom_base ${boom_base_SRC})

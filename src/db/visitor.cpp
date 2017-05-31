@@ -10,8 +10,8 @@
 
 #include "include/exp.h"
 #include "include/statement.h"
-#include "include/log.h"
-#include "include/boomerang.h" // For VERBOSE
+#include "boom_base/log.h"
+#include "boom_base/log.h" // For VERBOSE
 #include "include/proc.h"
 #include "include/signature.h"
 #include "include/prog.h"

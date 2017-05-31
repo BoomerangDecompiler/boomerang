@@ -62,8 +62,8 @@
 #include "include/prog.h" // For findProc()
 #include "include/util.h"
 #include "include/hllcode.h"
-#include "include/boomerang.h"
-#include "include/log.h"
+#include "boom_base/log.h"
+#include "boom_base/log.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

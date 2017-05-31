@@ -37,7 +37,7 @@
 #include "include/prog.h"
 #include "include/exp.h"
 #include "include/proc.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/statement.h"
 
 #define DIS_R8	  (dis_Reg(r8+8))

@@ -16,7 +16,7 @@
 
 #include "pentiumfrontend.h"
 #include "include/types.h"
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include "include/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 #include "include/frontend.h"
@@ -30,10 +30,10 @@
 #include "include/proc.h"
 #include "include/signature.h"
 #include "include/prog.h"       // For findProc()
-#include "include/BinaryFile.h" // For SymbolByAddress()
-#include "include/boomerang.h"
+#include "boom_base/BinaryFile.h" // For SymbolByAddress()
+#include "boom_base/log.h"
 #include "include/basicblock.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 
 #include <cassert>
 #include <cstring>

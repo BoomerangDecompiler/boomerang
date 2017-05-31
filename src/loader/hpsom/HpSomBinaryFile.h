@@ -16,7 +16,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include "include/IBinarySymbols.h"
 #include <set>
 

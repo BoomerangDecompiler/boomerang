@@ -6,8 +6,10 @@
  * loader class dynamically.
  */
 
-#include "include/BinaryFile.h"
-#include "include/boomerang.h"
+#include "BinaryFile.h"
+#include "log.h"
+#include "boomerang.h"
+
 #include "include/project.h"
 #include "include/IBinaryImage.h"
 #include "include/IBinarySymbols.h"

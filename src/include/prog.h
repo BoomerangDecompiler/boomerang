@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 #include <map>
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "include/type.h"
 #include "include/module.h"

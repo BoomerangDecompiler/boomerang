@@ -1,4 +1,4 @@
-#include "include/log.h"
+#include "boom_base/log.h"
 
 #include <QtTest/QTest>
 #include <iostream>

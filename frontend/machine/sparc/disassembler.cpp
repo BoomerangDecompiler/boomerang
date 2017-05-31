@@ -18,7 +18,7 @@
 #include "global.h"
 #include "include/decoder.h"
 #include "sparc-names.h"
-#include "include/BinaryFile.h" // For SymbolByAddress()
+#include "boom_base/BinaryFile.h" // For SymbolByAddress()
 
 // Globals in driver disasm.cc file
 extern char _assembly[81];

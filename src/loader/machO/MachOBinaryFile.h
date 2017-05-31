@@ -14,7 +14,7 @@
  * \brief This file contains the definition of the class MachOBinaryFile.
  */
 
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include <string>
 #include <vector>
 

@@ -41,8 +41,8 @@
 #include "include/proc.h"
 #include "sparcdecoder.h"
 #include "include/rtl.h"
-#include "include/BinaryFile.h"		// For SymbolByAddress()
-#include "include/boomerang.h"
+#include "boom_base/BinaryFile.h"		// For SymbolByAddress()
+#include "boom_base/log.h"
 
 #define DIS_ROI		(dis_RegImm(roi))
 #define DIS_ADDR	(dis_Eaddr(addr))

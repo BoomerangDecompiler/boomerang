@@ -1,4 +1,4 @@
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 
 class BinaryFileStub : public LoaderInterface {
   public:

@@ -2,7 +2,6 @@ include_directories(../c/) # used by prog.cpp
 
 set(INCLUDES
 	../include/basicblock.h
-	../include/boomerang.h
 	../include/exp.h
 	../include/hllcode.h
 	../include/memo.h
@@ -11,18 +10,15 @@ set(INCLUDES
 	../include/statement.h
 	../include/type.h
 	../include/visitor.h
-	../include/BinaryFile.h
 	../include/cfg.h
 	../include/dataflow.h
 	../include/exphelp.h
-	../include/log.h
 	../include/operator.h
 	../include/prog.h
 	../include/sigenum.h
 	../include/TargetQueue.h
 	../include/types.h
 	../include/xmlprogparser.h
-	../include/BinaryFileStub.h
 	../include/module.h
 	../include/decoder.h
 	../include/frontend.h
@@ -38,6 +34,7 @@ set(INCLUDES
 	../include/IBoomerang.h
 	../include/IProject.h
 )
+
 
 set(SRC
 	SymTab

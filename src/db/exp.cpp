@@ -24,10 +24,10 @@
 #include "include/prog.h"
 #include "operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 #include "include/util.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 //#include "include/transformer.h"
 #include "include/visitor.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 #include <QRegularExpression>
 #include <iomanip>          // For std::setw etc
 

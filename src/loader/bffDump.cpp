@@ -19,7 +19,7 @@
 
 // Include all binary file headers for different binary-file formats
 // so that we can support them all.
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 
 int main(int argc, char *argv[])
 {

@@ -30,7 +30,7 @@
 #include "include/types.h"
 #include "include/managed.h"
 #include "include/dataflow.h"  // For embedded objects DefCollector and UseCollector
-//#include "include/boomerang.h" // For USE_DOMINANCE_NUMS etc
+//#include "boom_base/log.h" // For USE_DOMINANCE_NUMS etc
 
 #include <QtCore/QTextStream>
 #include <vector>

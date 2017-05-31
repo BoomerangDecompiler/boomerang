@@ -18,7 +18,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 struct Elf32_Phdr;
 
 struct Elf32_Shdr;

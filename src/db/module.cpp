@@ -1,6 +1,6 @@
 #include "include/module.h"
 
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/proc.h"
 #include "include/prog.h"
 
@@ -23,7 +23,7 @@ namespace dbghelp
 #undef NO_ADDRESS
 #define NO_ADDRESS    ADDRESS::g(-1)
 #include <iostream>
-#include "include/log.h"
+#include "boom_base/log.h"
 #endif
 
 #if defined(_WIN32) && !defined(__MINGW32__)

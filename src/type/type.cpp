@@ -21,8 +21,8 @@
 #include "include/cfg.h"
 #include "include/proc.h"
 #include "include/signature.h"
-#include "include/boomerang.h"
-#include "include/log.h"
+#include "boom_base/log.h"
+#include "boom_base/log.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

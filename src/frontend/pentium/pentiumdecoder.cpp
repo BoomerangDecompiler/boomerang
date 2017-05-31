@@ -20,7 +20,7 @@
 #include "include/prog.h"
 #include "include/exp.h"
 #include "include/proc.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/statement.h"
 
 #include <cassert>

@@ -36,7 +36,7 @@ namespace dbghelp
 #endif
 #include "Win32BinaryFile.h"
 
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include "include/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 #include "include/IBoomerang.h"

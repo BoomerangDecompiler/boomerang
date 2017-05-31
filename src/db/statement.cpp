@@ -19,13 +19,13 @@
 #include "include/proc.h"
 #include "include/prog.h"
 #include "include/basicblock.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/rtl.h" // For debugging code
 #include "include/util.h"
 #include "include/signature.h"
 #include "include/visitor.h"
 #include "include/dataflow.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 #include "include/hllcode.h"
 
 #include <cassert>

@@ -6,7 +6,7 @@
 #include "include/proc.h"
 #include "include/prog.h"
 #include "include/signature.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 
 class Prog;
 

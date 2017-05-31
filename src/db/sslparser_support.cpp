@@ -8,7 +8,7 @@
 #include "include/util.h" // E.g. str()
 #include "include/statement.h"
 #include "include/exp.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 
 #include <cassert>
 #include <sstream>

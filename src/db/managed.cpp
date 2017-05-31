@@ -19,8 +19,8 @@
 #include "include/managed.h"
 #include "include/statement.h"
 #include "include/exp.h"
-#include "include/log.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
+#include "boom_base/log.h"
 #include "include/proc.h"
 
 extern char debug_buffer[]; // For prints functions

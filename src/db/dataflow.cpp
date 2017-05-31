@@ -17,10 +17,10 @@
 #include "include/cfg.h"
 #include "include/proc.h"
 #include "include/exp.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/statement.h"
 #include "include/visitor.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 #include "include/basicblock.h"
 #include "include/frontend.h"
 

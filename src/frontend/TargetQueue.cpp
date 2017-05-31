@@ -1,7 +1,7 @@
 #include "include/TargetQueue.h"
 
-#include "include/boomerang.h"
-#include "include/log.h"
+#include "boom_base/log.h"
+#include "boom_base/log.h"
 #include "include/cfg.h"
 
 /***************************************************************************/ /**

@@ -23,15 +23,15 @@
 #include "sparcfrontend.h"
 
 #include "include/basicblock.h"
-#include "include/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
-#include "include/boomerang.h"
+#include "boom_base/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
+#include "boom_base/log.h"
 #include "include/IBinaryImage.h"
 #include "include/IBinarySymbols.h"
 #include "include/cfg.h"
 #include "include/decoder.h"
 #include "include/exp.h"
 #include "include/frontend.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 #include "include/proc.h"
 #include "include/prog.h"
 #include "include/register.h"

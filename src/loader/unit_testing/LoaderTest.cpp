@@ -35,9 +35,9 @@
 
 #include "../microX86dis.c"
 #include "LoaderTest.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/IBinaryImage.h"
-#include "include/log.h"
+#include "boom_base/log.h"
 
 #include <QLibrary>
 #include <QTextStream>

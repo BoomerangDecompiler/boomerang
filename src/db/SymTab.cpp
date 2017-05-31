@@ -13,10 +13,13 @@
  *                so that symbols can be accessed by symbol or by name
  ******************************************************************************/
 #include "SymTab.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
+#include "boom_base/boomerang.h"
 
 #include <QDebug>
 #include <cassert>
+
+
 SymTab::SymTab()
 {
 }

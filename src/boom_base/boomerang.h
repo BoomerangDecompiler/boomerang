@@ -26,12 +26,12 @@
  *
  */
 
-#include "msvc_fixes.h"
+#include "include/msvc_fixes.h"
 
 #include "include/config.h"
 #include "include/types.h"
 #include "include/IBoomerang.h"
-#include "IProject.h"
+#include "include/IProject.h"
 
 #include <QObject>
 #include <QDir>
@@ -52,6 +52,7 @@ class ObjcModule;
 class IBinaryImage;
 class IBinarySymbolTable;
 class Project;
+
 enum LogLevel {
     LL_Debug = 0,
     LL_Default=1,

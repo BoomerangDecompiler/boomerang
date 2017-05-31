@@ -12,11 +12,11 @@
  */
 
 #include "TypeTest.h"
-#include "include/BinaryFile.h" // Ugh - needed before frontend.h
+#include "boom_base/BinaryFile.h" // Ugh - needed before frontend.h
 #include "frontend/pentium/pentiumfrontend.h"
 #include "include/signature.h"
-#include "include/boomerang.h"
-#include "include/log.h"
+#include "boom_base/log.h"
+#include "boom_base/log.h"
 #include "include/prog.h"
 #include "include/proc.h"
 

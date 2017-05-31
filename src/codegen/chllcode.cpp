@@ -22,10 +22,11 @@
 #include "include/hllcode.h"
 #include "chllcode.h"
 #include "include/signature.h"
-#include "include/boomerang.h"
+#include "boom_base/log.h"
 #include "include/type.h"
 #include "include/util.h"
-#include "include/log.h"
+#include "boom_base/log.h"
+#include "boom_base/boomerang.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>

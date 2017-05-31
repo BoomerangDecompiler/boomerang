@@ -43,7 +43,7 @@
 #include "csr.h"
 #include "include/frontend.h"
 #include "include/decoder.h"
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 
 /***************************************************************************/ /**
   * Globals and enumerated types used for decoding.

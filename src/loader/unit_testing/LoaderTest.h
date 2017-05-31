@@ -1,4 +1,4 @@
-#include "include/BinaryFile.h"
+#include "boom_base/BinaryFile.h"
 #include <QtTest/QTest>
 class LoaderTest : public QObject
 {
