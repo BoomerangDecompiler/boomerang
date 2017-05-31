@@ -11,23 +11,26 @@
 class FrontEnd;
 class ST20Decoder;
 struct DecodeResult;
+
 class CallStatement;
 
-class ST20FrontEnd : public FrontEnd {
-  public:
-    ST20FrontEnd(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
-    /**
-         * Virtual destructor.
-         */
-    virtual ~ST20FrontEnd();
+class ST20FrontEnd : public FrontEnd
+{
+public:
+	ST20FrontEnd(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
 
-    virtual platform getFrontEndId() { return PLAT_ST20; }
+	/**
+	 * Virtual destructor.
+	 */
+	virtual ~ST20FrontEnd();
 
-    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
+	virtual platform getFrontEndId() { return PLAT_ST20; }
 
-    virtual std::vector<SharedExp> &getDefaultParams();
-    virtual std::vector<SharedExp> &getDefaultReturns();
+	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
 
-    virtual ADDRESS getMainEntryPoint(bool &gotMain);
+	virtual std::vector<SharedExp>& getDefaultParams();
+
+	virtual std::vector<SharedExp>& getDefaultReturns();
+
+	virtual ADDRESS getMainEntryPoint(bool& gotMain);
 };
-

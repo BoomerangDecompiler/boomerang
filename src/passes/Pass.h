@@ -4,9 +4,12 @@ class Function;
 class Pass
 {
 public:
-    Pass();
+	Pass();
 };
-class FunctionPass : public Pass {
-    virtual bool runOnFunction(Function &F)=0;
+
+class FunctionPass : public Pass
+{
+	virtual bool runOnFunction(Function& F) = 0;
 };
+
 #endif // PASS_H

@@ -2,26 +2,27 @@
 
 #include <QDialog>
 
-namespace Ui {
+namespace Ui
+{
 class LoggingSettingsDlg;
 }
 
 class LoggingSettingsDlg : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit LoggingSettingsDlg(QWidget *parent = 0);
-    ~LoggingSettingsDlg();
+	explicit LoggingSettingsDlg(QWidget *parent = 0);
+	~LoggingSettingsDlg();
 
 protected:
-    void changeEvent(QEvent *e);
+	void changeEvent(QEvent *e);
 
 private slots:
-    void on_btnApply_clicked();
+	void on_btnApply_clicked();
 
-    void on_btnOk_clicked();
+	void on_btnOk_clicked();
 
 private:
-    Ui::LoggingSettingsDlg *ui;
+	Ui::LoggingSettingsDlg *ui;
 };

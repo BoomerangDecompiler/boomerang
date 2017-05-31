@@ -10,15 +10,16 @@
  */
 
 /***************************************************************************/ /**
-  * \file       ppcfrontend.cpp
-  * \brief   This file contains routines to manage the decoding of ppc
-  *               instructions and the instantiation to RTLs, removing sparc
-  *               dependent features such as delay slots in the process. These
-  *               functions replace Frontend.cc for decoding sparc instructions.
-  ******************************************************************************/
+ * \file       ppcfrontend.cpp
+ * \brief   This file contains routines to manage the decoding of ppc
+ *               instructions and the instantiation to RTLs, removing sparc
+ *               dependent features such as delay slots in the process. These
+ *               functions replace Frontend.cc for decoding sparc instructions.
+ ******************************************************************************/
+
 /***************************************************************************/ /**
-  * Dependencies.
-  ******************************************************************************/
+ * Dependencies.
+ ******************************************************************************/
 
 #include "ppcfrontend.h"
 
@@ -39,56 +40,78 @@
 #include <cassert>
 #include <iomanip> // For setfill etc
 #include <sstream>
-PPCFrontEnd::PPCFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *_pbff) : FrontEnd(pBF, prog, _pbff) {
-    decoder = new PPCDecoder(prog);
+PPCFrontEnd::PPCFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *_pbff)
+	: FrontEnd(pBF, prog, _pbff)
+{
+	decoder = new PPCDecoder(prog);
 }
+
 
 // destructor
-PPCFrontEnd::~PPCFrontEnd() {}
-
-std::vector<SharedExp> &PPCFrontEnd::getDefaultParams() {
-    static std::vector<SharedExp> params;
-    if (params.size() == 0) {
-        for (int r = 31; r >= 0; r--) {
-            params.push_back(Location::regOf(r));
-        }
-    }
-    return params;
+PPCFrontEnd::~PPCFrontEnd()
+{
 }
 
-std::vector<SharedExp> &PPCFrontEnd::getDefaultReturns() {
-    static std::vector<SharedExp> returns;
-    if (returns.size() == 0) {
-        for (int r = 31; r >= 0; r--) {
-            returns.push_back(Location::regOf(r));
-        }
-    }
-    return returns;
+
+std::vector<SharedExp>& PPCFrontEnd::getDefaultParams()
+{
+	static std::vector<SharedExp> params;
+
+	if (params.size() == 0) {
+		for (int r = 31; r >= 0; r--) {
+			params.push_back(Location::regOf(r));
+		}
+	}
+
+	return params;
 }
 
-ADDRESS PPCFrontEnd::getMainEntryPoint(bool &gotMain) {
-    gotMain = true;
-    ADDRESS start = ldrIface->GetMainEntryPoint();
-    if (start != NO_ADDRESS)
-        return start;
 
-    start = ldrIface->GetEntryPoint();
-    gotMain = false;
-    if (start == NO_ADDRESS)
-        return NO_ADDRESS;
+std::vector<SharedExp>& PPCFrontEnd::getDefaultReturns()
+{
+	static std::vector<SharedExp> returns;
 
-    gotMain = true;
-    return start;
+	if (returns.size() == 0) {
+		for (int r = 31; r >= 0; r--) {
+			returns.push_back(Location::regOf(r));
+		}
+	}
+
+	return returns;
 }
 
-bool PPCFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag /* = false */,
-                              bool spec /* = false */) {
 
-    // Call the base class to do most of the work
-    if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec))
-        return false;
-    // This will get done twice; no harm
-    pProc->setEntryBB();
+ADDRESS PPCFrontEnd::getMainEntryPoint(bool& gotMain)
+{
+	gotMain = true;
+	ADDRESS start = ldrIface->GetMainEntryPoint();
 
-    return true;
+	if (start != NO_ADDRESS) {
+		return start;
+	}
+
+	start   = ldrIface->GetEntryPoint();
+	gotMain = false;
+
+	if (start == NO_ADDRESS) {
+		return NO_ADDRESS;
+	}
+
+	gotMain = true;
+	return start;
+}
+
+
+bool PPCFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+							  bool spec /* = false */)
+{
+	// Call the base class to do most of the work
+	if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+		return false;
+	}
+
+	// This will get done twice; no harm
+	pProc->setEntryBB();
+
+	return true;
 }

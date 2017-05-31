@@ -10,15 +10,16 @@
  */
 
 /***************************************************************************/ /**
-  * \file       st20frontend.cpp
-  * \brief   This file contains routines to manage the decoding of st20
-  *               instructions and the instantiation to RTLs, removing st20
-  *               dependent features such as delay slots in the process. These
-  *               functions replace Frontend.cc for decoding sparc instructions.
-  ******************************************************************************/
+ * \file       st20frontend.cpp
+ * \brief   This file contains routines to manage the decoding of st20
+ *               instructions and the instantiation to RTLs, removing st20
+ *               dependent features such as delay slots in the process. These
+ *               functions replace Frontend.cc for decoding sparc instructions.
+ ******************************************************************************/
+
 /***************************************************************************/ /**
-  * Dependencies.
-  ******************************************************************************/
+ * Dependencies.
+ ******************************************************************************/
 
 #include "st20frontend.h"
 
@@ -40,59 +41,81 @@
 #include <iomanip> // For setfill etc
 #include <sstream>
 
-ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *_pbff) : FrontEnd(pBF, prog, _pbff) {
-    decoder = new ST20Decoder(prog);
+ST20FrontEnd::ST20FrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *_pbff)
+	: FrontEnd(pBF, prog, _pbff)
+{
+	decoder = new ST20Decoder(prog);
 }
+
 
 // destructor
-ST20FrontEnd::~ST20FrontEnd() {}
+ST20FrontEnd::~ST20FrontEnd()
+{
+}
 
-std::vector<SharedExp> &ST20FrontEnd::getDefaultParams() {
-    static std::vector<SharedExp> params;
-    if (params.size() == 0) {
+
+std::vector<SharedExp>& ST20FrontEnd::getDefaultParams()
+{
+	static std::vector<SharedExp> params;
+
+	if (params.size() == 0) {
 #if 0
-        for (int r=0; r<=2; r++) {
-            params.push_back(Location::regOf(r));
-        }
+		for (int r = 0; r <= 2; r++) {
+			params.push_back(Location::regOf(r));
+		}
 #endif
-        params.push_back(Location::memOf(Location::regOf(3)));
-    }
-    return params;
+		params.push_back(Location::memOf(Location::regOf(3)));
+	}
+
+	return params;
 }
 
-std::vector<SharedExp> &ST20FrontEnd::getDefaultReturns() {
-    static std::vector<SharedExp> returns;
-    if (returns.size() == 0) {
-        returns.push_back(Location::regOf(0));
-        returns.push_back(Location::regOf(3));
-        //        returns.push_back(Terminal::get(opPC));
-    }
-    return returns;
+
+std::vector<SharedExp>& ST20FrontEnd::getDefaultReturns()
+{
+	static std::vector<SharedExp> returns;
+
+	if (returns.size() == 0) {
+		returns.push_back(Location::regOf(0));
+		returns.push_back(Location::regOf(3));
+		//        returns.push_back(Terminal::get(opPC));
+	}
+
+	return returns;
 }
 
-ADDRESS ST20FrontEnd::getMainEntryPoint(bool &gotMain) {
-    gotMain = true;
-    ADDRESS start = ldrIface->GetMainEntryPoint();
-    if (start != NO_ADDRESS)
-        return start;
 
-    start = ldrIface->GetEntryPoint();
-    gotMain = false;
-    if (start == NO_ADDRESS)
-        return NO_ADDRESS;
+ADDRESS ST20FrontEnd::getMainEntryPoint(bool& gotMain)
+{
+	gotMain = true;
+	ADDRESS start = ldrIface->GetMainEntryPoint();
 
-    gotMain = true;
-    return start;
+	if (start != NO_ADDRESS) {
+		return start;
+	}
+
+	start   = ldrIface->GetEntryPoint();
+	gotMain = false;
+
+	if (start == NO_ADDRESS) {
+		return NO_ADDRESS;
+	}
+
+	gotMain = true;
+	return start;
 }
 
-bool ST20FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag /* = false */,
-                               bool spec /* = false */) {
 
-    // Call the base class to do most of the work
-    if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec))
-        return false;
-    // This will get done twice; no harm
-    pProc->setEntryBB();
+bool ST20FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+							   bool spec /* = false */)
+{
+	// Call the base class to do most of the work
+	if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+		return false;
+	}
 
-    return true;
+	// This will get done twice; no harm
+	pProc->setEntryBB();
+
+	return true;
 }

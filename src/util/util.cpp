@@ -10,10 +10,10 @@
  */
 
 /***************************************************************************/ /**
-  * \file       util.cc
-  * \brief   This file contains miscellaneous functions that don't belong to
-  *             any particular subsystem of UQBT.
-  ******************************************************************************/
+ * \file       util.cc
+ * \brief   This file contains miscellaneous functions that don't belong to
+ *             any particular subsystem of UQBT.
+ ******************************************************************************/
 
 #include "include/util.h"
 #include "include/types.h"
@@ -26,28 +26,52 @@
 
 // Turn things like newline, return, tab into \n, \r, \t etc
 // Note: assumes a C or C++ back end...
-QString escapeStr(const QString &inp) {
-    static QMap<char,QString> replacements {
-        {'\n',"\\n"}, {'\t',"\\t"}, {'\v',"\\v"}, {'\b',"\\b"}, {'\r',"\\r"}, {'\f',"\\f"}, {'\a',"\\a"},
-        {'"',"\\\""}
-    };
+QString escapeStr(const QString& inp)
+{
+	static QMap<char, QString> replacements {
+		{
+			'\n', "\\n"
+		}, {
+			'\t', "\\t"
+		}, {
+			'\v', "\\v"
+		}, {
+			'\b', "\\b"
+		}, {
+			'\r', "\\r"
+		}, {
+			'\f', "\\f"
+		}, {
+			'\a', "\\a"
+		},
+		{
+			'"', "\\\""
+		}
+	};
 
-    QString res;
-    for( char c : inp.toLocal8Bit()) {
-        if(isprint(c) && c!='\"') {
-            res += QChar(c);
-            continue;
-        }
-        if(replacements.contains(c)) {
-            res += replacements[c];
-        }
-        else
-            res += "\\" +QString::number(c,16);
-    }
-    return res;
+	QString res;
+
+	for (char c : inp.toLocal8Bit()) {
+		if (isprint(c) && (c != '\"')) {
+			res += QChar(c);
+			continue;
+		}
+
+		if (replacements.contains(c)) {
+			res += replacements[c];
+		}
+		else{
+			res += "\\" + QString::number(c, 16);
+		}
+	}
+
+	return res;
 }
-QTextStream& operator<<(QTextStream& os, const ADDRESS& mdv) {
-    //TODO: properly format ADDRESS : 0-fill to max width.
-    os << QString::number(mdv.m_value,16);
-    return os;
+
+
+QTextStream& operator<<(QTextStream& os, const ADDRESS& mdv)
+{
+	//TODO: properly format ADDRESS : 0-fill to max width.
+	os << QString::number(mdv.m_value, 16);
+	return os;
 }

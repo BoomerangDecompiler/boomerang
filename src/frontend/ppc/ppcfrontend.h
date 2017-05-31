@@ -11,23 +11,26 @@
 class FrontEnd;
 class PPCDecoder;
 struct DecodeResult;
+
 class CallStatement;
 
-class PPCFrontEnd : public FrontEnd {
-  public:
-    PPCFrontEnd(QObject *pLoader, Prog *Program, BinaryFileFactory *pbff);
-    /**
-         * Virtual destructor.
-         */
-    virtual ~PPCFrontEnd();
+class PPCFrontEnd : public FrontEnd
+{
+public:
+	PPCFrontEnd(QObject *pLoader, Prog *Program, BinaryFileFactory *pbff);
 
-    virtual platform getFrontEndId() { return PLAT_PPC; }
+	/**
+	 * Virtual destructor.
+	 */
+	virtual ~PPCFrontEnd();
 
-    virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream &os, bool frag = false, bool spec = false);
+	virtual platform getFrontEndId() { return PLAT_PPC; }
 
-    virtual std::vector<SharedExp> &getDefaultParams();
-    virtual std::vector<SharedExp> &getDefaultReturns();
+	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
 
-    virtual ADDRESS getMainEntryPoint(bool &gotMain);
+	virtual std::vector<SharedExp>& getDefaultParams();
+
+	virtual std::vector<SharedExp>& getDefaultReturns();
+
+	virtual ADDRESS getMainEntryPoint(bool& gotMain);
 };
-
