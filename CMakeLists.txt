@@ -4,11 +4,6 @@ project(Boomerang)
 # Settings related to build system, and target directories
 ###############################################################################
 cmake_minimum_required(VERSION 3.1)
-cmake_policy(SET CMP0020 OLD)
-
-if (POLICY CMP0043)
-	cmake_policy(SET CMP0043 OLD)
-endif ()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_scripts)
 
@@ -59,7 +54,8 @@ else ()
 	# Enable additional warnings for GCC6+
 	if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
 		set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_PTIONS} \
-			-Wnull-dereference -Walloc-zero -Walloca -Wduplicated-branches -Wduplicated-cond")
+			-Wnull-dereference -Wduplicated-cond")
+			#-Walloc-zero -Walloca -Wduplicated-branches 
 	endif ()
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS} -std=c++11")
@@ -78,12 +74,13 @@ include(TestBigEndian)
 # Find Qt
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Xml REQUIRED)
-find_package(Threads REQUIRED)
+find_package(Threads)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
+#Does not work with Ubuntu 17.04 and gcc 6.3
+#TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 
 ###############################################################################
 # Defines section
