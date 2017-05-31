@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "BinaryFile.h"
+#include "include/BinaryFile.h"
 #include <string>
 
 /**

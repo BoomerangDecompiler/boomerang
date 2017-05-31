@@ -21,18 +21,18 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "types.h"
-#include "statement.h"
-#include "exp.h"
-#include "register.h"
-#include "type.h"
-#include "rtl.h"
-#include "cfg.h"
-#include "proc.h"
-#include "prog.h"
+#include "include/types.h"
+#include "include/statement.h"
+#include "include/exp.h"
+#include "include/register.h"
+#include "include/type.h"
+#include "include/rtl.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/prog.h"
 #include "sslparser.h"
-#include "boomerang.h"
-#include "util.h"
+#include "include/boomerang.h"
+#include "include/util.h"
 
 #include <cassert>
 #include <cstring>

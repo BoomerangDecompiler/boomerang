@@ -109,27 +109,7 @@ if (GIT_FOUND)
 endif (GIT_FOUND)
 
 
-# generate config.h
-configure_file(include/config.h.cmake include/config.h)
-
-include_directories(
-    "${CMAKE_SOURCE_DIR}"
-    "${CMAKE_SOURCE_DIR}/src"
-    "${PROJECT_SOURCE_DIR}/3rd_party"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_BINARY_DIR}/include"
-    ${Qt5Core_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIR}
-)
-
-link_directories(
-    "${PROJECT_SOURCE_DIR}/3rd_party/lib"
-    "${CMAKE_CURRENT_BINARY_DIR}/loader"
-)
-
 add_subdirectory(src)
-
-add_subdirectory(frontend) # TODO
 
 if (BUILD_TESTING)
 	add_subdirectory(unit_testing)

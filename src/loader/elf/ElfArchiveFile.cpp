@@ -13,7 +13,7 @@
  */
 
 #include "global.h"
-#include "BinaryFile.h"
+#include "include/BinaryFile.h"
 
 ElfArchiveFile::ElfArchiveFile()   // Constructor
 {

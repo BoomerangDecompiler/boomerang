@@ -1,0 +1,42 @@
+# 386 makefile fragment
+PENT_DIR  := machine/pentium
+PENT_SPEC := $(PENT_DIR)/386-core.spec
+PENT_DIS  := $(PENT_SPEC) $(PENT_DIR)/386dis.spec
+PENT_PAT  := $(PENT_DIR)/386.pat
+PENT_PAL  := $(PENT_DIR)/386.pal
+PENT_SSL  := $(PENT_DIR)/80386.ssl
+PENT_SRC  := $(PENT_DIR)/decoder_low.cc $(PENT_DIR)/decoder.cc \
+	     $(PENT_DIR)/front386.cc $(PENT_DIR)/386.pat.cc \
+	     rtl/cti386.cc
+PENT_MAT  := $(PENT_DIR)/decoder_low.m $(PENT_DIR)/decoder.m \
+	     $(PENT_DIR)/386.pat.m
+PENT_INC  := $(PENT_DIR)/386.pat.h
+
+ARCH_OBJ  += $(PENT_SRC:%.cc=%.o)
+DISASM_OBJ+= $(PENT_DIR)/disassembler.o
+DISASM_BIN:= pentiumDis
+PROC_DIR  += $(PENT_DIR)
+EMU_C_OBJ := dynamic/emu/x86emu.o dynamic/emu/x86stub_c.o
+EMU_JAVA_OBJ := dynamic/emu/x86java_c.o  # To be written
+EMU_BIN   := x86emu
+
+ifeq (0, ${REMOTE})
+$(PENT_DIR)/decoder.cc: $(PENT_DIS) $(PENT_DIR)/decoder.m
+	${MLTK} $^ 2> mltk.err
+$(PENT_DIR)/decoder_low.cc: $(PENT_DIS) $(PENT_DIR)/decoder_low.m
+	${MLTK} $^ 2> mltk.err
+$(PENT_DIR)/386.pat.cc: $(PENT_DIS) $(PENT_DIR)/386.pat.m
+	${MLTK} $^ 2> mltk.err
+$(PENT_DIR)/disassembler.cc: $(PENT_DIS) $(PENT_DIR)/disassembler.m
+	${MLTK} $^ 2> mltk.err
+
+dynamic/emu/x86emu.m: dynamic/tools/genemu $(PENT_DIR)/386-core-2.spec $(PENT_DIR)/80386-2.ssl
+	dynamic/tools/genemu -o $@ $(PENT_DIR)/386-core-2.spec $(PENT_DIR)/80386-2.ssl
+
+dynamic/emu/x86emu.cc: $(PENT_DIR)/386-core-2.spec dynamic/emu/x86emu.m
+	${MLTK} $^ 2> mltk.err
+endif
+
+$(PENT_DIR)/disassembler.o: $(PENT_DIR)/disassembler.cc
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -DDISASM -c -o $@ $<
+

@@ -10,7 +10,7 @@
  *              tranformer.
  ******************************************************************************/
 
-#include "transformer.h"
+#include "include/transformer.h"
 
 class RDIExpTransformer : public ExpTransformer
 {

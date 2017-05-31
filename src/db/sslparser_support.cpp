@@ -1,14 +1,14 @@
 #include "sslparser.h"
 #include "sslscanner.h"
-#include "config.h"
-#include "types.h"
-#include "rtl.h"
+#include "include/config.h"
+#include "include/types.h"
+#include "include/rtl.h"
 #include "table.h"
 #include "insnameelem.h"
-#include "util.h" // E.g. str()
-#include "statement.h"
-#include "exp.h"
-#include "boomerang.h"
+#include "include/util.h" // E.g. str()
+#include "include/statement.h"
+#include "include/exp.h"
+#include "include/boomerang.h"
 
 #include <cassert>
 #include <sstream>

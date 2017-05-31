@@ -16,8 +16,8 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "BinaryFile.h"
-#include "IBinarySymbols.h"
+#include "include/BinaryFile.h"
+#include "include/IBinarySymbols.h"
 #include <set>
 
 struct import_entry

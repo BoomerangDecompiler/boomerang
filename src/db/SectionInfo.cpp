@@ -1,6 +1,6 @@
 #include "SectionInfo.h"
-#include "boomerang.h"
-#include "IBinaryImage.h"
+#include "include/boomerang.h"
+#include "include/IBinaryImage.h"
 
 #include <QVariantMap>
 #include <QDebug>

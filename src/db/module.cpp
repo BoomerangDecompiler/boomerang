@@ -1,10 +1,10 @@
-#include "module.h"
+#include "include/module.h"
 
-#include "boomerang.h"
-#include "proc.h"
-#include "prog.h"
+#include "include/boomerang.h"
+#include "include/proc.h"
+#include "include/prog.h"
 
-#include "signature.h"
+#include "include/signature.h"
 
 #include <QDir>
 #include <QString>
@@ -23,7 +23,7 @@ namespace dbghelp
 #undef NO_ADDRESS
 #define NO_ADDRESS    ADDRESS::g(-1)
 #include <iostream>
-#include "log.h"
+#include "include/log.h"
 #endif
 
 #if defined(_WIN32) && !defined(__MINGW32__)

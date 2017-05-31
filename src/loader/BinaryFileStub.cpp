@@ -2,7 +2,7 @@
 
 #include "BinaryFileStub.h"
 #include <cassert>
-#include "boomerang.h"
+#include "include/boomerang.h"
 
 // text segment of hello pentium
 static unsigned char pent_hello_text[] =

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IBinarySymbols.h"
+#include "include/IBinarySymbols.h"
 #include <QMap>
 #include <QVariantMap>
 class BinarySymbols;

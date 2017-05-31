@@ -6,11 +6,11 @@
  * loader class dynamically.
  */
 
-#include "BinaryFile.h"
-#include "boomerang.h"
-#include "project.h"
-#include "IBinaryImage.h"
-#include "IBinarySymbols.h"
+#include "include/BinaryFile.h"
+#include "include/boomerang.h"
+#include "include/project.h"
+#include "include/IBinaryImage.h"
+#include "include/IBinarySymbols.h"
 
 #include <QDir>
 #include <QPluginLoader>

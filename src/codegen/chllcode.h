@@ -15,7 +15,7 @@
   *               I guess this will be the most popular output language unless we do C++.
   ******************************************************************************/
   
-#include "hllcode.h"
+#include "include/hllcode.h"
 #include <string>
 #include <sstream>
 

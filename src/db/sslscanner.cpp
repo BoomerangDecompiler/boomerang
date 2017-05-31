@@ -46,7 +46,7 @@
 #define YY_USE_CLASS
 #endif
 #ifndef _MSDOS
-#include <osfcn.h>
+#include "include/osfcn.h"
 #endif
 #else /* ! __cplusplus */
 #ifdef __STDC__
@@ -67,8 +67,8 @@ int read();
 #define YY_USE_CONST
 #endif
 #include <cstdio>
-#include "operator.h"
-#include "boomerang.h"
+#include "include/operator.h"
+#include "include/boomerang.h"
 
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */

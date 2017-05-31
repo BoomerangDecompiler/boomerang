@@ -1,6 +1,6 @@
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "exp.h"
+#include "include/exp.h"
 
 class ExpTest : public CPPUNIT_NS::TestFixture
 {

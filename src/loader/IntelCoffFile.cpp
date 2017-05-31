@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <assert.h>
-#include "config.h"
+#include "include/config.h"
 
 struct PACKED struc_coff_sect // segment information, 40 bytes
 {

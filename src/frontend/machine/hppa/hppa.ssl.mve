@@ -1,0 +1,378 @@
+###############################################################################
+# FILE:     hppa.ssl
+# OVERVIEW: This file contains a semantic description of the pa/risc processor.
+#
+# (C) 2001 The University of Queensland, BT group
+################################################################################
+
+# $Revision$
+
+#    Apr 01 - Simon: Created
+# 01 May 01 - Mike: Worked around a problem with BORR_VAL; ARITH_CB needed {};
+#               added dummy SUBFLAGS; added integer registers
+# 08 May 01 - Mike: "CC0" -> "" for now (fixes OR instruction); various changes
+#               mainly to arguments to get hello world working
+# 09 May 01 - Cristina: added some branching instrs to SSL spec
+# 13 May 01 - Mike: Added another temp hack for ADD.l
+# 28 Jun 01 - Mike: Mods for V1.1 opcodes
+<<<<<<< hppa.ssl
+# 29 Jun 01 - Mike: Added floating point registers; fp loads and stores
+=======
+# 17 Jul 01 - Simon: Updated arith instructions
+>>>>>>> 1.8
+
+# Note: but numbers here are standard, i.e. 0 is LSB
+INTEGER
+  [ %r0,  %r1,  %r2,  %r3,  %r4,  %r5,  %r6,  %r7,
+    %r8,  %r9,  %r10, %r11, %r12, %r13, %r14, %r15,
+    %r16, %r17, %r18, %r19, %r20, %r21, %r22, %r23,
+    %r24, %r25, %r26, %r27, %r28, %r29, %r30, %r31 ][32] -> 0..31,
+  [ %fd0,  %fd1,  %fd2,  %fd3,  %fd4,  %fd5,  %fd6,  %fd7,
+    %fd8,  %fd9,  %fd10, %fd11, %fd12, %fd13, %fd14, %fd15,
+    %fd16, %fd17, %fd18, %fd19, %fd20, %fd21, %fd22, %fd23,
+    %fd24, %fd25, %fd26, %fd27, %fd28, %fd29, %fd30, %fd31 ][64] -> 32..63,
+    %fr0  [32] -> 64  SHARES %fd0@[32..63],
+    %fr0R [32] -> 96  SHARES %fd0@[ 0..31],
+    %fr1  [32] -> 65  SHARES %fd1@[32..63],
+    %fr1R [32] -> 97  SHARES %fd1@[ 0..31],
+    %fr2  [32] -> 66  SHARES %fd2@[32..63],
+    %fr2R [32] -> 98  SHARES %fd2@[ 0..31],
+    %fr3  [32] -> 67  SHARES %fd3@[32..63],
+    %fr3R [32] -> 99  SHARES %fd3@[ 0..31],
+    %fr4  [32] -> 68  SHARES %fd4@[32..63],
+    %fr4R [32] -> 100 SHARES %fd4@[ 0..31],
+    %fr5  [32] -> 69  SHARES %fd5@[32..63],
+    %fr5R [32] -> 101 SHARES %fd5@[ 0..31],
+    %fr6  [32] -> 70  SHARES %fd6@[32..63],
+    %fr6R [32] -> 102 SHARES %fd6@[ 0..31],
+    %fr7  [32] -> 71  SHARES %fd7@[32..63],
+    %fr7R [32] -> 103 SHARES %fd7@[ 0..31],
+    %fr8  [32] -> 72  SHARES %fd8@[32..63],
+    %fr8R [32] -> 104 SHARES %fd8@[ 0..31],
+    %fr9  [32] -> 73  SHARES %fd9@[32..63],
+    %fr9R [32] -> 105 SHARES %fd9@[ 0..31],
+    %fr10 [32] -> 74  SHARES %fd10@[32..63],
+    %fr10R[32] -> 106 SHARES %fd10@[ 0..31],
+    %fr11 [32] -> 75  SHARES %fd11@[32..63],
+    %fr11R[32] -> 107 SHARES %fd11@[ 0..31],
+    %fr12 [32] -> 76  SHARES %fd12@[32..63],
+    %fr12R[32] -> 108 SHARES %fd12@[ 0..31],
+    %fr13 [32] -> 77  SHARES %fd13@[32..63],
+    %fr13R[32] -> 109 SHARES %fd13@[ 0..31],
+    %fr14 [32] -> 78  SHARES %fd14@[32..63],
+    %fr14R[32] -> 110 SHARES %fd14@[ 0..31],
+    %fr15 [32] -> 79  SHARES %fd15@[32..63],
+    %fr15R[32] -> 111 SHARES %fd15@[ 0..31],
+    %fr16 [32] -> 80  SHARES %fd16@[32..63],
+    %fr16R[32] -> 112 SHARES %fd16@[ 0..31],
+    %fr17 [32] -> 81  SHARES %fd17@[32..63],
+    %fr17R[32] -> 113 SHARES %fd17@[ 0..31],
+    %fr18 [32] -> 82  SHARES %fd18@[32..63],
+    %fr18R[32] -> 114 SHARES %fd18@[ 0..31],
+    %fr19 [32] -> 83  SHARES %fd19@[32..63],
+    %fr19R[32] -> 115 SHARES %fd19@[ 0..31],
+    %fr20 [32] -> 84  SHARES %fd20@[32..63],
+    %fr20R[32] -> 116 SHARES %fd20@[ 0..31],
+    %fr21 [32] -> 85  SHARES %fd21@[32..63],
+    %fr21R[32] -> 117 SHARES %fd21@[ 0..31],
+    %fr22 [32] -> 86  SHARES %fd22@[32..63],
+    %fr22R[32] -> 118 SHARES %fd22@[ 0..31],
+    %fr23 [32] -> 87  SHARES %fd23@[32..63],
+    %fr23R[32] -> 119 SHARES %fd23@[ 0..31],
+    %fr24 [32] -> 88  SHARES %fd24@[32..63],
+    %fr24R[32] -> 120 SHARES %fd24@[ 0..31],
+    %fr25 [32] -> 89  SHARES %fd25@[32..63],
+    %fr25R[32] -> 121 SHARES %fd25@[ 0..31],
+    %fr26 [32] -> 90  SHARES %fd26@[32..63],
+    %fr26R[32] -> 122 SHARES %fd26@[ 0..31],
+    %fr27 [32] -> 91  SHARES %fd27@[32..63],
+    %fr27R[32] -> 123 SHARES %fd27@[ 0..31],
+    %fr28 [32] -> 92  SHARES %fd28@[32..63],
+    %fr28R[32] -> 124 SHARES %fd28@[ 0..31],
+    %fr29 [32] -> 93  SHARES %fd29@[32..63],
+    %fr29R[32] -> 125 SHARES %fd29@[ 0..31],
+    %fr30 [32] -> 94  SHARES %fd30@[32..63],
+    %fr30R[32] -> 126 SHARES %fd30@[ 0..31],
+    %fr31 [32] -> 95  SHARES %fd31@[32..63],
+    %fr31R[32] -> 127 SHARES %fd31@[ 0..31],
+    %sp[32] -> 30,          # Aliases
+    %rp[32] -> 2,           # Return value register
+    %dp[32] -> 27,          # Global data pointer
+      
+    %CF[1]   -> -1,         # The main, 32 bit carry flag
+     %pc[32] -> -1,
+    %npc[32] -> -1;
+
+CARRY_BORROWS(one, two, three) {
+    _
+};
+
+<<<<<<< hppa.ssl
+LOGFLAGS(one) {
+    _
+};
+
+=======
+>>>>>>> 1.8
+
+OPERAND
+<<<<<<< hppa.ssl
+   c_addr := {c_addr_ma, c_addr_mb, c_addr_s, c_addr_m, c_addr_sm,
+              c_addr_none },
+   faddr := { ins_faddr_x_s, ins_faddr_x_m, ins_faddr_x_sm, ins_faddr_x_def,
+                ins_faddr_s_mb, ins_faddr_s_ma, ins_faddr_s_def},
+   c_c := {c_cmpb_w, c_cmpb_dw};
+=======
+    c_addr := { c_addr_ma, c_addr_mb, c_addr_s, c_addr_m, c_addr_sm,
+              c_addr_none },
+    c_cb := { c_cb_c, c_cb_b, c_cb_none },
+    c_cb_c      [ ] *1* %CF,
+    c_cb_b      [ ] *1* 0 - %CF,
+    c_cb_none   [ ] *1* 0,
+    c_tsv := { c_tsv_tsv, c_tsv_none },
+    c_tc := { c_tc_tc, c_tc_none },
+>>>>>>> 1.8
+
+<<<<<<< hppa.ssl
+OPERAND
+#   c_cmpb_w c3_16 [p1 p2]     *32* { c3_16 = 0 } 0;
+#                              *32* { c3_16 = 1 } p1 = p2;
+#                              *32* { c3_16 = 2 } p1 < p2;
+#                              *32* { c3_16 = 3 } p1 <= p2;
+#                              *32* { c3_16 = 4 } p1 <u p2;
+#                              *32* { c3_16 = 5 } p1 <=u p2
+# Conditions 6 and 7 don't make sense in a comparison fashion.
+# If we need these, we can either do a quite complex comparison, or
+# implement an overflow type of flag
+
+
+ins_faddr_s_mb  d,s,b       *32* b + d,
+ins_faddr_s_ma  d,s,b       *32* b,
+ins_faddr_s_def d,s,b       *32* b + d,
+
+ins_faddr_x_s   x,s,b       *32* b + (x << 3),
+ins_faddr_x_m   x,s,b       *32* b,
+ins_faddr_x_sm  x,s,b       *32* b + (x << 3),
+ins_faddr_x_def x,s,b       *32* b;
+=======
+    c_hadd := { c_hadd_ss, c_hadd_us, c_hadd_none };
+>>>>>>> 1.8
+
+<<<<<<< hppa.ssl
+
+#COND_ARITH  := { "0", "1", "%ZF", "~%ZF",
+#                 "%NF ^ %OF", "~(%NF ^ %OF)", "%ZF | (%NF ^ %OF)", "~(%ZF & (%NF ^ %OF))",
+#                 "~%CF", "%CF", "%ZF | ~%CF", "~%ZF & %CF",
+#                 "%OF", "~%OF", "%NF", "~%NF" };
+#CONDC_ARITH := { "%ZF", "~%ZF",
+#                 "%NF ^ %OF", "~(%NF ^ %OF)", "%ZF | (%NF ^ %OF)", "~(%ZF & (%NF ^ %OF))",
+#                 "~%CF", "%CF", "%ZF | ~%CF", "~%ZF & %CF",
+#                 "%OF", "~%OF", "%NF", "~%NF" };
+=======
+OPERAND
+    c_c := {    c_c_no,
+                c_c_eq,
+                c_c_l,
+                c_c_le,
+                c_c_ul,
+                c_c_ule,
+                c_c_sv,
+                c_c_od,
+
+                c_c_yes,
+                c_c_ne,
+                c_c_ge,
+                c_c_g,
+                c_c_uge,
+                c_c_ug,
+                c_c_nsv,
+                c_c_ev
+        },
+    
+    c_c_no  [ r1, r2, t ] *1* 0,
+    c_c_yes [ r1, r2, t ] *1* 1,
+    c_c_eq  [ r1, r2, t ] *1* t = 0,
+    c_c_ne  [ r1, r2, t ] *1* t ~= 0,
+    c_c_l   [ r1, r2, t ] *1* t < 0,
+    c_c_ge  [ r1, r2, t ] *1* t >= 0,
+    c_c_le  [ r1, r2, t ] *1* t <= 0,
+    c_c_g   [ r1, r2, t ] *1* t > 0,
+    c_c_ul  [ r1, r2, t ] *1* ~%CF,
+    c_c_uge [ r1, r2, t ] *1* %CF,
+    c_c_ule [ r1, r2, t ] *1* (~%CF or (t = 0)),
+    c_c_ug  [ r1, r2, t ] *1* (%CF and (t ~= 0)),
+    c_c_sv  [ r1, r2, t ] *1* 0,
+    c_c_nsv [ r1, r2, t ] *1* 1,
+    c_c_od  [ r1, r2, t ] *1* (t | 1),
+    c_c_ev  [ r1, r2, t ] *1* ~(t | 1);
+
+#COND_ARITH  := { "0", "1", "%ZF", "~%ZF",
+#                 "%NF ^ %OF", "~(%NF ^ %OF)", "%ZF | (%NF ^ %OF)", "~(%ZF & (%NF ^ %OF))",
+#                 "~%CF", "%CF", "%ZF | ~%CF", "~%ZF & %CF",
+#                 "%OF", "~%OF", "%NF", "~%NF" };
+#CONDC_ARITH := { "%ZF", "~%ZF",
+#                 "%NF ^ %OF", "~(%NF ^ %OF)", "%ZF | (%NF ^ %OF)", "~(%ZF & (%NF ^ %OF))",
+#                 "~%CF", "%CF", "%ZF | ~%CF", "~%ZF & %CF",
+#                 "%OF", "~%OF", "%NF", "~%NF" };
+>>>>>>> 1.8
+
+SHIFT_VAL   := { "1", "2", "3" };
+
+CARRY_VAL  := { "%CF", "0" };
+BORR_VAL   := { "%CF", "1" };
+
+SHLADDS := { "SHLADD1", "SHLADD2", "SHLADD3" };
+
+sub_b := { "SUB_b", "SUB_b_v" };
+subs := { "SUB", sub_b };
+
+<<<<<<< hppa.ssl
+=======
+SUB             r1, r2, t, c_c
+                *32* r[tmp1] := r[r1] - r[r2];
+sub_b[x]        r1, r2, t, c_c
+                *32* r[tmp1] := r[r1] - r[r2] + (1 - %CF);
+subs[x]         r1, r2, t, c_c
+                CARRY_BORROWS(r[tmp1], r[r1], r[r2])
+                *32* %npc := [ c_c(r[r1], r[r2], r[tmp1]) ? %npc + 4: %npc ]
+                *32* %pc := [ c_c(r[r1], r[r2], r[tmp1]) ? %pc + 4: %pc ]
+                *32* r[t] := r[tmp1];
+>>>>>>> 1.8
+
+add_c := { "ADD_c", "ADD_c_v" };
+adds := { "ADD", add_c };
+
+<<<<<<< hppa.ssl
+=======
+ADD             r1, r2, t, c_c
+                *32* r[tmp1] := r[r1] + r[r2];
+add_c[x]        r1, r2, t, c_c
+                *32* r[tmp1] := r[r1] + r[r2] + %CF;
+adds[x]         r1, r2, t, c_c
+                CARRY_BORROWS(r[tmp1], r[r1], r[r2])
+                *32* %npc := [ c_c(r[r1], r[r2], r[tmp1]) ? %npc + 4: %npc ]
+                *32* %pc := [ c_c(r[r1], r[r2], r[tmp1]) ? %pc + 4: %pc ]
+                *32* r[t] := r[tmp1];
+>>>>>>> 1.8
+
+<<<<<<< hppa.ssl
+SUB INS_BORR[x]SUB_1[y]              r1, r2, t
+#               *32* r[tmp1] := r[r1] - r[r2] + BORR_VAL[x]
+                *32* r[tmp1] := r[r1] - r[r2] + BORR_VAL[x] - 1
+                SUBFLAGS(r[tmp1], r[r1], r[r2]);
+
+ADD INS_CARRY[x]ADD_1[y]             r1, r2, t
+                *32* r[tmp1] := r[r1] + r[r2] + CARRY_VAL[x]
+                ADDFLAGS(r[tmp1], r[r1], r[r2]);
+
+#SHLADDS[a]SHLADDS_1[x]               r1, r2, t
+#                *32* r[tmp1] := (r[r1] << SHIFT_VAL[a]) + r[r2]
+#                SHLADDFLAGS(r[tmp1], r[r1], SHIFT_VAL[a], r[r2]);
+
+# Temporary HACKs
+OR              r1, r2, t
+                *32* r[t] := r[r1] | r[r2]
+                LOGFLAGS(r[t]);
+ADDL            r1, r2, t
+                *32* r[t] := r[r1] + r[r2];
+=======
+ADDL            r1, r2, t, c_c
+                *32* r[t] := r[r1] + r[r2];
+>>>>>>> 1.8
+
+<<<<<<< hppa.ssl
+OR INS_COND[cc] r1, r2, t
+                *32* r[t] := r[r1] | r[r2]
+                LOGFLAGS(r[t]);
+
+ARITH_TSV[x]                         r1, r2, t
+                _ ; # (in aristocratic english voice) release .. the hounds
+ARITH_TC[x]                          r1, r2, t
+                _ ; # it's a trap! it's a trap! pull back! pull back!
+ARITH_STR[x]                         r1, r2, t 
+                *32* r[t] := r[tmp1];
+
+ARITH_CB[x]                          r1, r2, t
+                CARRY_BORROWS(r[tmp1], r[r1], r[r2]);
+=======
+ADDIL           imm21, r1
+                *32* r[%r1] := r[r1] + imm21;
+>>>>>>> 1.8
+
+<<<<<<< hppa.ssl
+#AL_NUL[x]INS_CONDC[cc]            r1, r2, t
+#                *32* %npc := [ CONDC_AL[cc] ? %npc + 4 : %npc ];
+AL_NUL[x]"CC1"  r1, r2, t
+                *32* %npc := %npc + 4;
+
+=======
+SHLADDS[a]      r1, r2, t, c_c
+                *32* r[tmp1] := (r[r1] << SHIFT_VAL[a]) + r[r2]
+                CARRY_BORROWS(r[tmp1], r[r1], SHIFT_VAL[a], r[r2]);
+
+SHRPW           r1, r2, sa, t, c_c
+                *32* r[t] := fsize(64, 32, ((fsize(32, 64, r[r1]) << 32) |
+                                            (fsize(32, 64, r[r2]))) >> sa);
+                
+OR              r1, r2, t, c_c
+                *32* r[t] := r[r1] | r[r2];
+
+AND             r1, r2, t, c_c
+                *32* r[t] := r[r1] & r[r2];
+                
+ANDCM           r1, r2, t, c_c
+                *32* r[t] := r[r1] & ~r[r2];
+>>>>>>> 1.8
+
+
+
+NOP
+                _ ;
+
+#
+# Loads and Stores
+#
+LDIL            i, t
+                *32* r[t] := i;
+
+LDO             d, b, t
+                *32* r[t] := d + r[b];
+
+
+LDW_MA := { "MA", "M", "SM" };
+
+LDW'M'          addr, t
+                *32* r[t] := m[addr];
+
+STW'M'          r1, addr
+                *32* m[addr] := r[r1]{32};
+
+#
+# Branches
+#
+# BL: branch and link
+
+BL              ubr_target, t_06
+                *32* r[tmp1] := %pc  
+                *32* %pc := %npc
+                *32* %npc := r[tmp1] + ubr_target
+                *32* r[t_06] := %npc + 4; 
+
+#B.l c_null, ubr_target!, t_06     *32* r[tmp] := %pc 
+#                                    *32* %pc := %npc
+#                                    *32* %npc := r[tmp] + ubr_target! 
+#                                    *32* r[t_06] := %npc + 8
+
+BV              x_reg, base_reg 
+                *32* %pc := %npc 
+                *32* %npc := r[base_reg] + (r[x_reg] << 3); 
+
+#BV.n            x_reg, base_reg
+#                *32* %pc := r[base_reg] + (r[x_reg] << 3) 
+#                *32* %npc := %pc + 4; 
+
+FSTDX           faddr, t_27
+#                *32*  faddr();
+                *64*  m[ r[tmpoff] ] := t_27;
+
+                

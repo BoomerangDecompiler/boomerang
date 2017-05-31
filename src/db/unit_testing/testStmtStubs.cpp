@@ -1,12 +1,12 @@
 #include <iostream>
 #include <string>
-#include "type.h"
-#include "types.h"
-#include "cfg.h"
-#include "proc.h"
-#include "prog.h"
-#include "signature.h"
-#include "boomerang.h"
+#include "include/type.h"
+#include "include/types.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/prog.h"
+#include "include/signature.h"
+#include "include/boomerang.h"
 #include "pentiumfrontend.h"
 
 class Prog;

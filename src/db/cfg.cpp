@@ -49,21 +49,21 @@
 /***************************************************************************/ /**
  * Dependencies.
  ******************************************************************************/
-#include "cfg.h"
+#include "include/cfg.h"
 
-#include "types.h"
-#include "statement.h"
-#include "signature.h"
-#include "exp.h"
-#include "register.h"
-#include "basicblock.h"
-#include "rtl.h"
-#include "proc.h" // For Proc::setTailCaller()
-#include "prog.h" // For findProc()
-#include "util.h"
-#include "hllcode.h"
-#include "boomerang.h"
-#include "log.h"
+#include "include/types.h"
+#include "include/statement.h"
+#include "include/signature.h"
+#include "include/exp.h"
+#include "include/register.h"
+#include "include/basicblock.h"
+#include "include/rtl.h"
+#include "include/proc.h" // For Proc::setTailCaller()
+#include "include/prog.h" // For findProc()
+#include "include/util.h"
+#include "include/hllcode.h"
+#include "include/boomerang.h"
+#include "include/log.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

@@ -56,25 +56,25 @@
 * Dependencies.
 ******************************************************************************/
 
-#include "proc.h"
+#include "include/proc.h"
 
-#include "types.h"
-#include "type.h"
-#include "module.h"
-#include "statement.h"
-#include "register.h"
-#include "rtl.h"
-#include "prog.h"
-#include "hllcode.h"
-#include "BinaryFile.h"
-#include "frontend.h"
-#include "util.h"
-#include "signature.h"
-#include "boomerang.h"
+#include "include/types.h"
+#include "include/type.h"
+#include "include/module.h"
+#include "include/statement.h"
+#include "include/register.h"
+#include "include/rtl.h"
+#include "include/prog.h"
+#include "include/hllcode.h"
+#include "include/BinaryFile.h"
+#include "include/frontend.h"
+#include "include/util.h"
+#include "include/signature.h"
+#include "include/boomerang.h"
 #include "type/constraint.h"
-#include "visitor.h"
-#include "log.h"
-#include "basicblock.h"
+#include "include/visitor.h"
+#include "include/log.h"
+#include "include/basicblock.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>

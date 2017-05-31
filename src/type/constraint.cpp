@@ -13,13 +13,13 @@
   ******************************************************************************/
 
 #include "constraint.h"
-#include "managed.h"
-#include "exp.h"
-#include "boomerang.h"
-#include "log.h"
-#include "proc.h"
-#include "prog.h"
-#include "type.h"
+#include "include/managed.h"
+#include "include/exp.h"
+#include "include/boomerang.h"
+#include "include/log.h"
+#include "include/proc.h"
+#include "include/prog.h"
+#include "include/type.h"
 #include <sstream>
 #include <cstring>
 

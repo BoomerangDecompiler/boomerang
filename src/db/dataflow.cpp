@@ -12,17 +12,17 @@
  * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
-#include "dataflow.h"
+#include "include/dataflow.h"
 
-#include "cfg.h"
-#include "proc.h"
-#include "exp.h"
-#include "boomerang.h"
-#include "statement.h"
-#include "visitor.h"
-#include "log.h"
-#include "basicblock.h"
-#include "frontend.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/exp.h"
+#include "include/boomerang.h"
+#include "include/statement.h"
+#include "include/visitor.h"
+#include "include/log.h"
+#include "include/basicblock.h"
+#include "include/frontend.h"
 
 #include <QtCore/QDebug>
 #include <sstream>

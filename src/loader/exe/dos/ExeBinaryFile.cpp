@@ -19,8 +19,8 @@
  */
 #include "ExeBinaryFile.h"
 
-#include "IBoomerang.h"
-#include "IBinaryImage.h"
+#include "include/IBoomerang.h"
+#include "include/IBinaryImage.h"
 
 #include <QBuffer>
 #include <QFile>

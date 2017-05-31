@@ -6,19 +6,19 @@
  * \file    xmlprogparser.cpp
  * \brief   Implementation of the XMLProgParser and related classes.
  ******************************************************************************/
-#include "xmlprogparser.h"
-#include "type.h"
-#include "module.h"
-#include "prog.h"
-#include "proc.h"
-#include "rtl.h"
-#include "statement.h"
+#include "include/xmlprogparser.h"
+#include "include/type.h"
+#include "include/module.h"
+#include "include/prog.h"
+#include "include/proc.h"
+#include "include/rtl.h"
+#include "include/statement.h"
 #include "sigenum.h"
-#include "signature.h"
-#include "boomerang.h"
-#include "log.h"
-#include "basicblock.h"
-#include "frontend.h"
+#include "include/signature.h"
+#include "include/boomerang.h"
+#include "include/log.h"
+#include "include/basicblock.h"
+#include "include/frontend.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QDebug>

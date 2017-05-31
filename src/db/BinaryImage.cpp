@@ -1,6 +1,6 @@
 #include "BinaryImage.h"
-#include "types.h"
-#include "config.h"
+#include "include/types.h"
+#include "include/config.h"
 
 #include <QDebug>
 #include <algorithm>

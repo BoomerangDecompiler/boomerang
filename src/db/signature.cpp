@@ -12,20 +12,20 @@
  * \brief   Implementation of the classes that describe a procedure signature
  ******************************************************************************/
 
-#include "signature.h"
+#include "include/signature.h"
 
-#include "type.h"
-#include "signature.h"
-#include "exp.h"
-#include "prog.h"
-#include "BinaryFile.h"
-#include "frontend.h"
-#include "util.h"
-#include "cfg.h"
-#include "proc.h"
-#include "boomerang.h"
-#include "log.h"
-#include "managed.h"
+#include "include/type.h"
+#include "include/signature.h"
+#include "include/exp.h"
+#include "include/prog.h"
+#include "include/BinaryFile.h"
+#include "include/frontend.h"
+#include "include/util.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/boomerang.h"
+#include "include/log.h"
+#include "include/managed.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

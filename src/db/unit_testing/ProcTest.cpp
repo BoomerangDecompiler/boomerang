@@ -12,13 +12,13 @@
  */
 
 #include "ProcTest.h"
-#include "BinaryFile.h"
+#include "include/BinaryFile.h"
 #include "BinaryFileStub.h"
 #include "pentiumfrontend.h"
 
 #include <sstream>
 #include <map>
-#include "prog.h"
+#include "include/prog.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ProcTest);
 

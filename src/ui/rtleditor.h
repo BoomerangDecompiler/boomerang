@@ -3,7 +3,7 @@
 #include <QtCore/QString>
 #include <QtWidgets/QTextEdit>
 
-#include "types.h"
+#include "include/types.h"
 #include <vector>
 #include <map>
 #include <set>

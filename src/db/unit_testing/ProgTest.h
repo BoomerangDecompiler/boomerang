@@ -1,6 +1,6 @@
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "prog.h"
+#include "include/prog.h"
 
 class ProgTest : public CPPUNIT_NS::TestFixture
 {

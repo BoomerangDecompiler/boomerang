@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
-#include "types.h"
+#include "include/types.h"
 #include <vector>
 #include <map>
 #include <set>

@@ -13,16 +13,16 @@
   * \file       type.cpp
   * \brief   Implementation of the Type class: low level type information
   ******************************************************************************/
-#include "type.h"
+#include "include/type.h"
 
-#include "types.h"
-#include "util.h"
-#include "exp.h"
-#include "cfg.h"
-#include "proc.h"
-#include "signature.h"
-#include "boomerang.h"
-#include "log.h"
+#include "include/types.h"
+#include "include/util.h"
+#include "include/exp.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/signature.h"
+#include "include/boomerang.h"
+#include "include/log.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

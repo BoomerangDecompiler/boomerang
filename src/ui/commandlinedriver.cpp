@@ -1,8 +1,8 @@
 #include <QtCore>
 #include <cstdio>
 
-#include "config.h"
-#include "boomerang.h"
+#include "include/config.h"
+#include "include/boomerang.h"
 #include "commandlinedriver.h"
 
 CommandlineDriver::CommandlineDriver(QObject *parent) : QObject(parent), m_kill_timer(this) {

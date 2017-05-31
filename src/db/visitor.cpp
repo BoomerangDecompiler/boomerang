@@ -6,15 +6,15 @@
  * \file       visitor.cpp
  * \brief   Provides the implementation for the various visitor and modifier classes.
  ******************************************************************************/
-#include "visitor.h"
+#include "include/visitor.h"
 
-#include "exp.h"
-#include "statement.h"
-#include "log.h"
-#include "boomerang.h" // For VERBOSE
-#include "proc.h"
-#include "signature.h"
-#include "prog.h"
+#include "include/exp.h"
+#include "include/statement.h"
+#include "include/log.h"
+#include "include/boomerang.h" // For VERBOSE
+#include "include/proc.h"
+#include "include/signature.h"
+#include "include/prog.h"
 
 #include <QtCore/QDebug>
 #include <sstream>

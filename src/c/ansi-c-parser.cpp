@@ -45,11 +45,11 @@
 #include <list>
 #include <string>
 
-#include "exp.h"
-#include "type.h"
-#include "cfg.h"
-#include "proc.h"
-#include "signature.h"
+#include "include/exp.h"
+#include "include/type.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/signature.h"
 
 class AnsiCScanner;
 class SymbolMods;

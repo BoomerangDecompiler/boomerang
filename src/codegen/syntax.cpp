@@ -1,11 +1,11 @@
-#include "hllcode.h"
+#include "include/hllcode.h"
 
-#include "prog.h"
-#include "exp.h"
-#include "cfg.h"
-#include "basicblock.h"
-#include "statement.h"
-#include "boomerang.h"
+#include "include/prog.h"
+#include "include/exp.h"
+#include "include/cfg.h"
+#include "include/basicblock.h"
+#include "include/statement.h"
+#include "include/boomerang.h"
 
 #include <iomanip> // For setfill etc
 #include <cstring>

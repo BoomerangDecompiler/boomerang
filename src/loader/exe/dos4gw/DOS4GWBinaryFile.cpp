@@ -21,12 +21,12 @@
  */
 
 #include "DOS4GWBinaryFile.h"
-#include "BinaryFile.h"
-#include "IBoomerang.h"
-#include "IBinaryImage.h"
-#include "IBinarySymbols.h"
+#include "include/BinaryFile.h"
+#include "include/IBoomerang.h"
+#include "include/IBinaryImage.h"
+#include "include/IBinarySymbols.h"
 
-#include "config.h"
+#include "include/config.h"
 
 #include <cassert>
 #include <cstring>

@@ -15,9 +15,9 @@
 #include "PalmBinaryFile.h"
 
 #include "palmsystraps.h"
-#include "IBoomerang.h"
-#include "IBinaryImage.h"
-#include "IBinarySymbols.h"
+#include "include/IBoomerang.h"
+#include "include/IBinaryImage.h"
+#include "include/IBinarySymbols.h"
 
 #include <cassert>
 #include <cstring>

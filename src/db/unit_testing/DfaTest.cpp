@@ -5,8 +5,8 @@
  */
 #include "DfaTest.h"
 
-#include "boomerang.h"
-#include "type.h"
+#include "include/boomerang.h"
+#include "include/type.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QProcessEnvironment>

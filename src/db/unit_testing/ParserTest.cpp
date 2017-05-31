@@ -5,8 +5,8 @@
  ******************************************************************************/
 #include "ParserTest.h"
 #include "sslparser.h"
-#include "log.h"
-#include "boomerang.h"
+#include "include/log.h"
+#include "include/boomerang.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QProcessEnvironment>

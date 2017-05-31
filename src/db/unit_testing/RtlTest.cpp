@@ -4,19 +4,19 @@
  *                tests the RTL and derived classes
  ******************************************************************************/
 #include "RtlTest.h"
-#include "statement.h"
-#include "exp.h"
-#include "BinaryFile.h"
-#include "frontend.h"
-#include "sparcfrontend.h"
-#include "pentiumfrontend.h"
-#include "decoder.h"
-#include "rtl.h"
-#include "proc.h"
-#include "prog.h"
-#include "visitor.h"
-#include "log.h"
-#include "boomerang.h"
+#include "include/statement.h"
+#include "include/exp.h"
+#include "include/BinaryFile.h"
+#include "include/frontend.h"
+#include "frontend/sparc/sparcfrontend.h"
+#include "frontend/pentium/pentiumfrontend.h"
+#include "include/decoder.h"
+#include "include/rtl.h"
+#include "include/proc.h"
+#include "include/prog.h"
+#include "include/visitor.h"
+#include "include/log.h"
+#include "include/boomerang.h"
 
 #include <sstream>
 

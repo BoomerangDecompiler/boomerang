@@ -15,9 +15,9 @@
  *
  * Holds detailed information about a single register.
  ******************************************************************************/
-#include "register.h"
+#include "include/register.h"
 
-#include "type.h"
+#include "include/type.h"
 
 #include <cassert>
 #include <cstring>

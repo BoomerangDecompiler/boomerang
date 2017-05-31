@@ -9,14 +9,14 @@
 
 #include "rdi.h"
 
-#include "types.h"
-#include "statement.h"
-#include "cfg.h"
-#include "exp.h"
-#include "register.h"
-#include "rtl.h"
-#include "proc.h"
-#include "transformer.h"
+#include "include/types.h"
+#include "include/statement.h"
+#include "include/cfg.h"
+#include "include/exp.h"
+#include "include/register.h"
+#include "include/rtl.h"
+#include "include/proc.h"
+#include "include/transformer.h"
 
 #include <cassert>
 #include <numeric>   // For accumulate

@@ -1,0 +1,133 @@
+#
+# Copyright (C) 1998-2001, The University of Queensland
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
+#=====================================================================
+# FILE:       sparc.pal
+# OVERVIEW:   A PAL specification for the SPARC architecture.
+#=====================================================================
+
+# 07/01/00 - Mike: Added the _large patterns to various sections, so they
+#                  get parameters, have %afp substitution, etc
+# 14 Apr 00 - Mike: Return locations for INTEGER and FLOAT have .size now
+# 30 Apr 00 - Mike: Added "none" to PARAMETERS section
+# 19 Oct 01 - Mike: Commented out INTEGER.16 and INTEGER.8; must have entries
+#                  here *only* if different register numbers are involved
+
+
+FRAME ABSTRACTION
+    INIT = %sp
+
+    new_reg_win
+    same_reg_win
+    {
+        %fp -> %afp - locals
+    }
+
+    new_reg_win_large
+    same_reg_win_large
+    {
+        %fp -> %afp - (hiVal + loVal)
+    }
+
+LOCALS
+    new_reg_win
+    same_reg_win
+    {
+        locals
+    }
+
+    new_reg_win_large
+    same_reg_win_large
+    {
+        hiVal + loVal
+    }
+
+PARAMETERS
+
+    CALLER
+    none
+    {
+        AGGREGATE -> m[%afp + 64]
+        REGISTERS -> %o0 %o1 %o2 %o3 %o4 %o5
+        STACK     -> BASE = [%afp + 92]
+                     OFFSET = 4
+    }
+
+    new_reg_win
+    {
+        AGGREGATE -> m[%afp - locals + 64]
+        REGISTERS -> %i0 %i1 %i2 %i3 %i4 %i5
+        STACK     -> BASE = [%afp - locals + 92] 
+                     OFFSET = 4
+    }
+
+    same_reg_win
+    {
+        AGGREGATE -> m[%afp - locals + 64]
+        REGISTERS -> %o0 %o1 %o2 %o3 %o4 %o5
+        STACK     -> BASE = [%afp - locals + 92] 
+                     OFFSET = 4
+    }
+
+    new_reg_win_large
+    {
+        AGGREGATE -> m[%afp - (hiVal+loVal) + 64]
+        REGISTERS -> %i0 %i1 %i2 %i3 %i4 %i5
+        STACK     -> BASE = [%afp - (hiVal+loVal) + 92] 
+                     OFFSET = 4
+    }
+
+    same_reg_win_large
+    {
+        AGGREGATE -> m[%afp - (hiVal+loVal) + 64]
+        REGISTERS -> %o0 %o1 %o2 %o3 %o4 %o5
+        STACK     -> BASE = [%afp - (hiVal+loVal) + 92] 
+                     OFFSET = 4
+    }
+
+
+RETURNS
+# Note: even though functions with save/restore return integer locations in %i0,
+# we use the STD_RET_ pseudo instruction for these, which copies %i0 to %o0.
+# This simulates the semantics of the restore (for the purposes of return
+# location), so we don't need a separate set of locations for these functions
+    ret_reg_val
+    ret_imm_val
+    leaf_ret
+#   move_call_move
+    std_ret
+#   jmp_restore_reg         # Can't put these here since they are caller
+#   jmp_restore_imm         # prologues
+    CALLER
+    {
+        INTEGER.32  IN %o0
+#        INTEGER.16  IN %o0
+#        INTEGER.8   IN %o0
+        ADDRESS     IN %o0
+        FLOAT.32    IN %f0
+        FLOAT.64    IN %f0to1
+    }
+
+# These are locations in a caller's stack that a callee may write to.
+PARENT STACK
+    new_reg_win
+    same_reg_win
+    {
+        %afp - locals + 68 TO %afp - locals + 88 STEP 4
+    }
+
+    new_reg_win_large
+    same_reg_win_large
+    {
+        %afp - (hiVal+loVal) + 68 TO %afp - (hiVal+loVal) + 88 STEP 4
+    }
+
+    none
+    {
+        %afp + 68 TO %afp + 88 STEP 4
+    }

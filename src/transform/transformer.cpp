@@ -7,18 +7,18 @@
  * OVERVIEW:    Implementation of the Transformer and related classes.
  ******************************************************************************/
 
-#include "transformer.h"
+#include "include/transformer.h"
 
-#include "types.h"
-#include "statement.h"
-#include "cfg.h"
-#include "exp.h"
-#include "register.h"
-#include "rtl.h"
-#include "proc.h"
-#include "boomerang.h"
+#include "include/types.h"
+#include "include/statement.h"
+#include "include/cfg.h"
+#include "include/exp.h"
+#include "include/register.h"
+#include "include/rtl.h"
+#include "include/proc.h"
+#include "include/boomerang.h"
 #include "rdi.h"
-#include "log.h"
+#include "include/log.h"
 #include "transformation-parser.h"
 
 #include <QtCore/QFile>

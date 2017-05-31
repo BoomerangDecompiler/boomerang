@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
-#include "types.h"
-#include "cfg.h"
-#include "proc.h"
-#include "prog.h"
-#include "boomerang.h"
+#include "include/types.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/prog.h"
+#include "include/boomerang.h"
 #include "analysis.h"
 
 #include "typeStubs.cpp"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "BinaryFile.h"
+#include "include/BinaryFile.h"
 #include "SymTab.h"
 
 #define PACKED    __attribute__((packed))

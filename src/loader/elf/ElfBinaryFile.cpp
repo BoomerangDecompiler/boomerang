@@ -19,11 +19,11 @@
 #include "ElfBinaryFile.h"
 
 #include "ElfTypes.h"
-#include "config.h"
-#include "util.h"
-#include "IBoomerang.h"
-#include "IBinaryImage.h"
-#include "IBinarySymbols.h"
+#include "include/config.h"
+#include "include/util.h"
+#include "include/IBoomerang.h"
+#include "include/IBinaryImage.h"
+#include "include/IBinarySymbols.h"
 
 #include <QtCore/QDebug>
 #include <sys/types.h> // Next three for open()

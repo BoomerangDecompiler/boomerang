@@ -25,10 +25,12 @@
 #ifndef YY_USE_CLASS
 #define YY_USE_CLASS
 #endif
-#include <osfcn.h>
+
+#include "include/osfcn.h"
+
 #include <cstdio>
 #include <cstring>
-#include "util.h"
+#include "include/util.h"
 
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */

@@ -15,14 +15,14 @@
 #include <sstream>
 #include <map>
 #include "StatementTest.h"
-#include "cfg.h"
-#include "rtl.h"
+#include "include/cfg.h"
+#include "include/rtl.h"
 #include "pentiumfrontend.h"
-#include "boomerang.h"
-#include "exp.h"
-#include "managed.h"
-#include "log.h"
-#include "signature.h"
+#include "include/boomerang.h"
+#include "include/exp.h"
+#include "include/managed.h"
+#include "include/log.h"
+#include "include/signature.h"
 
 // class NullLogger : public Log {
 // public:
@@ -32,8 +32,8 @@
 //    }
 //    virtual ~NullLogger() {};
 //};
-#include "prog.h"
-#include "proc.h"
+#include "include/prog.h"
+#include "include/proc.h"
 
 #define HELLO_PENTIUM      baseDir.absoluteFilePath("tests/inputs/pentium/hello")
 #define GLOBAL1_PENTIUM    baseDir.absoluteFilePath("tests/inputs/pentium/global1")

@@ -1,42 +1,42 @@
-include_directories(${CMAKE_SOURCE_DIR}/src/c/) # used by prog.cpp
+include_directories(../c/) # used by prog.cpp
 
 set(INCLUDES
-	${CMAKE_SOURCE_DIR}/include/basicblock.h
-	${CMAKE_SOURCE_DIR}/include/boomerang.h
-	${CMAKE_SOURCE_DIR}/include/exp.h
-	${CMAKE_SOURCE_DIR}/include/hllcode.h
-	${CMAKE_SOURCE_DIR}/include/memo.h
-	${CMAKE_SOURCE_DIR}/include/proc.h
-	${CMAKE_SOURCE_DIR}/include/rtl.h
-	${CMAKE_SOURCE_DIR}/include/statement.h
-	${CMAKE_SOURCE_DIR}/include/type.h
-	${CMAKE_SOURCE_DIR}/include/visitor.h
-	${CMAKE_SOURCE_DIR}/include/BinaryFile.h
-	${CMAKE_SOURCE_DIR}/include/cfg.h
-	${CMAKE_SOURCE_DIR}/include/dataflow.h
-	${CMAKE_SOURCE_DIR}/include/exphelp.h
-	${CMAKE_SOURCE_DIR}/include/log.h
-	${CMAKE_SOURCE_DIR}/include/operator.h
-	${CMAKE_SOURCE_DIR}/include/prog.h
-	${CMAKE_SOURCE_DIR}/include/sigenum.h
-	${CMAKE_SOURCE_DIR}/include/TargetQueue.h
-	${CMAKE_SOURCE_DIR}/include/types.h
-	${CMAKE_SOURCE_DIR}/include/xmlprogparser.h
-	${CMAKE_SOURCE_DIR}/include/BinaryFileStub.h
-	${CMAKE_SOURCE_DIR}/include/module.h
-	${CMAKE_SOURCE_DIR}/include/decoder.h
-	${CMAKE_SOURCE_DIR}/include/frontend.h
-	${CMAKE_SOURCE_DIR}/include/managed.h
-	${CMAKE_SOURCE_DIR}/include/osfcn.h
-	${CMAKE_SOURCE_DIR}/include/project.h
-	${CMAKE_SOURCE_DIR}/include/register.h
-	${CMAKE_SOURCE_DIR}/include/signature.h
-	${CMAKE_SOURCE_DIR}/include/transformer.h
-	${CMAKE_SOURCE_DIR}/include/util.h
-	${CMAKE_SOURCE_DIR}/include/IBinaryImage.h
-	${CMAKE_SOURCE_DIR}/include/IBinarySymbols.h
-	${CMAKE_SOURCE_DIR}/include/IBoomerang.h
-	${CMAKE_SOURCE_DIR}/include/IProject.h
+	../include/basicblock.h
+	../include/boomerang.h
+	../include/exp.h
+	../include/hllcode.h
+	../include/memo.h
+	../include/proc.h
+	../include/rtl.h
+	../include/statement.h
+	../include/type.h
+	../include/visitor.h
+	../include/BinaryFile.h
+	../include/cfg.h
+	../include/dataflow.h
+	../include/exphelp.h
+	../include/log.h
+	../include/operator.h
+	../include/prog.h
+	../include/sigenum.h
+	../include/TargetQueue.h
+	../include/types.h
+	../include/xmlprogparser.h
+	../include/BinaryFileStub.h
+	../include/module.h
+	../include/decoder.h
+	../include/frontend.h
+	../include/managed.h
+	../include/osfcn.h
+	../include/project.h
+	../include/register.h
+	../include/signature.h
+	../include/transformer.h
+	../include/util.h
+	../include/IBinaryImage.h
+	../include/IBinarySymbols.h
+	../include/IBoomerang.h
+	../include/IProject.h
 )
 
 set(SRC

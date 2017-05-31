@@ -20,7 +20,7 @@
  * 01 May 02 - Mike: Mods for boomerang
  */
 
-#include "types.h"
+#include "include/types.h"
 #include "insnameelem.h"
 
 #include <cassert>

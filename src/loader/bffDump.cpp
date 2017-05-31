@@ -19,7 +19,7 @@
 
 // Include all binary file headers for different binary-file formats
 // so that we can support them all.
-#include "BinaryFile.h"
+#include "include/BinaryFile.h"
 
 int main(int argc, char *argv[])
 {

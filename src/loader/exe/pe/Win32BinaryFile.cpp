@@ -36,11 +36,11 @@ namespace dbghelp
 #endif
 #include "Win32BinaryFile.h"
 
-#include "BinaryFile.h"
-#include "IBinaryImage.h"
-#include "IBinarySymbols.h"
-#include "IBoomerang.h"
-#include "config.h"
+#include "include/BinaryFile.h"
+#include "include/IBinaryImage.h"
+#include "include/IBinarySymbols.h"
+#include "include/IBoomerang.h"
+#include "include/config.h"
 
 #include <cstring>
 #include <cstdlib>

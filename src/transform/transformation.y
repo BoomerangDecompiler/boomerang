@@ -34,16 +34,16 @@ public: \
   #include <cstdlib>
   #include <list>
   #include <string>
-  #include "exp.h"
-  #include "type.h"
-  #include "cfg.h"
-  #include "proc.h"
-  #include "signature.h"
+  #include "include/exp.h"
+  #include "include/type.h"
+  #include "include/cfg.h"
+  #include "include/proc.h"
+  #include "include/signature.h"
   // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
   #if defined(_MSC_VER) && _MSC_VER <= 1100
-  #include "rtl.h"
+  #include "include/rtl.h"
   #endif
-  #include "transformer.h"
+  #include "include/transformer.h"
   #include "generic.h"
 
   class TransformationScanner;

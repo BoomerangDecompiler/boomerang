@@ -12,9 +12,11 @@
   * OVERVIEW:   Definition of objects related to type constraints
   ******************************************************************************/
 
-#include "statement.h"
-#include "exphelp.h"
+#include "include/statement.h"
+#include "include/exphelp.h"
+
 #include <sstream>
+
 class Exp;
 class Instruction;
 // This class represents fixed constraints (e.g. Ta = <int>, Tb = <alpha2*>),

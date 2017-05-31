@@ -18,7 +18,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "BinaryFile.h"
+#include "include/BinaryFile.h"
 struct Elf32_Phdr;
 
 struct Elf32_Shdr;

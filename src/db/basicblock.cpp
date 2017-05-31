@@ -17,23 +17,23 @@
 /***************************************************************************/ /**
  * Dependencies.
  ******************************************************************************/
-#include "basicblock.h"
+#include "include/basicblock.h"
 
-#include "config.h"
-#include "types.h"
-#include "statement.h"
-#include "exp.h"
-#include "cfg.h"
-#include "register.h"
-#include "rtl.h"
-#include "hllcode.h"
-#include "proc.h"
-#include "prog.h"
-#include "util.h"
-#include "boomerang.h"
-#include "type.h"
-#include "log.h"
-#include "visitor.h"
+#include "include/config.h"
+#include "include/types.h"
+#include "include/statement.h"
+#include "include/exp.h"
+#include "include/cfg.h"
+#include "include/register.h"
+#include "include/rtl.h"
+#include "include/hllcode.h"
+#include "include/proc.h"
+#include "include/prog.h"
+#include "include/util.h"
+#include "include/boomerang.h"
+#include "include/type.h"
+#include "include/log.h"
+#include "include/visitor.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

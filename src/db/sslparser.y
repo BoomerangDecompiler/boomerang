@@ -39,7 +39,7 @@
 
 // stuff to go in sslparser.h
 %header{
-#include "config.h"
+#include "include/config.h"
 #ifdef HAVE_LIBGC
 #include "gc.h"
 #else
@@ -51,12 +51,12 @@
 #endif
 
 #include <sstream>
-#include "types.h"
-#include "rtl.h"
+#include "include/types.h"
+#include "include/rtl.h"
 #include "table.h"
 #include "insnameelem.h"
-#include "util.h"			// E.g. str()
-#include "statement.h"
+#include "include/util.h"			// E.g. str()
+#include "include/statement.h"
 
 #ifdef _WIN32
 #include <malloc.h>

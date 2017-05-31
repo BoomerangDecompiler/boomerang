@@ -1,4 +1,4 @@
-#include "cfg.h"
+#include "include/cfg.h"
 #include <QtTest/QTest>
 class CfgTest : public QObject
 {

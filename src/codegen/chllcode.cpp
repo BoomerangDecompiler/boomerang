@@ -13,19 +13,19 @@
   *               I guess this will be the most popular output language unless we do C++.
   ******************************************************************************/
 
-#include "msvc_fixes.h"
-#include "cfg.h"
-#include "statement.h"
-#include "exp.h"
-#include "proc.h"
-#include "prog.h"
-#include "hllcode.h"
+#include "include/msvc_fixes.h"
+#include "include/cfg.h"
+#include "include/statement.h"
+#include "include/exp.h"
+#include "include/proc.h"
+#include "include/prog.h"
+#include "include/hllcode.h"
 #include "chllcode.h"
-#include "signature.h"
-#include "boomerang.h"
-#include "type.h"
-#include "util.h"
-#include "log.h"
+#include "include/signature.h"
+#include "include/boomerang.h"
+#include "include/type.h"
+#include "include/util.h"
+#include "include/log.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>

@@ -6,15 +6,15 @@
 
 #include "CfgTest.h"
 
-#include "BinaryFile.h"
-#include "frontend.h"
-#include "proc.h"
-#include "prog.h"
-#include "dataflow.h"
-#include "pentiumfrontend.h"
-#include "log.h"
-#include "boomerang.h"
-#include "basicblock.h"
+#include "include/BinaryFile.h"
+#include "include/frontend.h"
+#include "include/proc.h"
+#include "include/prog.h"
+#include "include/dataflow.h"
+#include "frontend/pentium/pentiumfrontend.h"
+#include "include/log.h"
+#include "include/boomerang.h"
+#include "include/basicblock.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

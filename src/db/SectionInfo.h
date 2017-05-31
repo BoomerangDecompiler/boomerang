@@ -1,9 +1,10 @@
 #pragma once
 
-#include "types.h"
-#include "IBinarySection.h"
+#include "include/types.h"
+#include "include/IBinarySection.h"
 
 #include <QString>
+
 class QVariant;
 struct SectionInfoImpl;
 

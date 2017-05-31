@@ -1,17 +1,17 @@
 #pragma once
 
-#include "exp.h"
+#include "include/exp.h"
 /* before anything */
 #define YY_USE_CLASS
 #include <cstdio>
 
-#include "config.h"
-#include "types.h"
-#include "rtl.h"
+#include "include/config.h"
+#include "include/types.h"
+#include "include/rtl.h"
 #include "table.h"
 #include "insnameelem.h"
-#include "util.h" // E.g. str()
-#include "statement.h"
+#include "include/util.h" // E.g. str()
+#include "include/statement.h"
 
 #include <cassert>
 #include <sstream>

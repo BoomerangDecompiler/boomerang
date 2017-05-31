@@ -15,13 +15,13 @@
 #include <sstream>
 #include <cstring>
 
-#include "types.h"
-#include "managed.h"
-#include "statement.h"
-#include "exp.h"
-#include "log.h"
-#include "boomerang.h"
-#include "proc.h"
+#include "include/types.h"
+#include "include/managed.h"
+#include "include/statement.h"
+#include "include/exp.h"
+#include "include/log.h"
+#include "include/boomerang.h"
+#include "include/proc.h"
 
 extern char debug_buffer[]; // For prints functions
 

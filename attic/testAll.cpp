@@ -5,7 +5,7 @@
 #include <cppunit/TestResult.h>
 #include <cppunit/TestResultCollector.h>
 #include <cppunit/TestRunner.h>
-#include "config.h"
+#include "include/config.h"
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #else

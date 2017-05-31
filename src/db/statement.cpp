@@ -12,21 +12,21 @@
  * \brief   Implementation of the Statement and related classes.
  *               (Was dataflow.cpp a long time ago)
  ******************************************************************************/
-#include "statement.h"
+#include "include/statement.h"
 
-#include "exp.h"
-#include "cfg.h"
-#include "proc.h"
-#include "prog.h"
-#include "basicblock.h"
-#include "boomerang.h"
-#include "rtl.h" // For debugging code
-#include "util.h"
-#include "signature.h"
-#include "visitor.h"
-#include "dataflow.h"
-#include "log.h"
-#include "hllcode.h"
+#include "include/exp.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/prog.h"
+#include "include/basicblock.h"
+#include "include/boomerang.h"
+#include "include/rtl.h" // For debugging code
+#include "include/util.h"
+#include "include/signature.h"
+#include "include/visitor.h"
+#include "include/dataflow.h"
+#include "include/log.h"
+#include "include/hllcode.h"
 
 #include <cassert>
 #include <cstring>

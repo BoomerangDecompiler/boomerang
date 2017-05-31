@@ -21,7 +21,7 @@
  * even be exposed as another pseudo section
  */
 
-#include "BinaryFile.h"
+#include "include/BinaryFile.h"
 class QFile;
 #pragma pack(push,1)
 typedef struct           /*        PSP structure                 */

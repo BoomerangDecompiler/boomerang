@@ -1,0 +1,34 @@
+# HP PA-Risc makefile fragment
+HPPA_DIR  := machine/hppa
+HPPA_SPEC := $(HPPA_DIR)/hppa.spec
+HPPA_DIS  := $(HPPA_SPEC) $(HPPA_DIR)/hppadis.spec
+HPPA_PAT  := $(HPPA_DIR)/hppa.pat
+HPPA_PAL  := $(HPPA_DIR)/hppa.pal
+HPPA_SSL  := $(HPPA_DIR)/hppa.ssl
+HPPA_SRC  := $(HPPA_DIR)/decoder_low.cc $(HPPA_DIR)/decoder.cc \
+	     $(HPPA_DIR)/hppa-names.cc $(HPPA_DIR)/fronthppa.cc \
+	     rtl/ctihppa.cc $(HPPA_DIR)/hppa.pat.cc
+HPPA_MAT  := $(HPPA_DIR)/decoder_low.m $(HPPA_DIR)/decoder.m \
+	     $(HPPA_DIR)/hppa.pat.m $(HPPA_DIR)/disassembler.m
+HPPA_INC  := $(HPPA_DIR)/hppa-names.h $(HPPA_DIR)/hppa.pat.h
+
+ARCH_OBJ  += $(HPPA_SRC:%.cc=%.o)
+DISASM_OBJ+= $(HPPA_DIR)/disassembler.o $(HPPA_DIR)/hppa-names.o
+DISASM_BIN:= hppaDis
+PROC_DIR  += $(HPPA_DIR) 
+
+ifeq (0, ${REMOTE})
+$(HPPA_DIR)/decoder.cc: $(HPPA_DIS) $(HPPA_DIR)/decoder.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+$(HPPA_DIR)/decoder_low.cc: $(HPPA_DIS) $(HPPA_DIR)/decoder_low.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+$(HPPA_DIR)/hppa.pat.cc: $(HPPA_DIS) $(HPPA_DIR)/hppa.pat.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+$(HPPA_DIR)/hppaemu.cc: $(HPPA_DIS) $(HPPA_DIR)/hppaemu.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+$(HPPA_DIR)/disassembler.cc: $(HPPA_DIS) $(HPPA_DIR)/disassembler.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+endif
+
+$(HPPA_DIR)/disassembler.o: $(HPPA_DIR)/disassembler.cc
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -DDISASM -c -o $@ $<

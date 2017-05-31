@@ -20,9 +20,9 @@
  * if the strings are ever changed, then the map's internal rb-tree becomes invalid.
  ******************************************************************************/
 
-#include "IBinarySymbols.h"
+#include "include/IBinarySymbols.h"
+#include "include/types.h"
 
-#include "types.h"
 #include <QVariantMap>
 #include <memory>
 #include <map>

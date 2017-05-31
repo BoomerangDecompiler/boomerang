@@ -103,12 +103,12 @@ void *alloca ();
 
 #include <list>
 #include <string>
-#include "exp.h"
-#include "type.h"
-#include "cfg.h"
-#include "proc.h"
-#include "signature.h"
-#include "transformer.h"
+#include "include/exp.h"
+#include "include/type.h"
+#include "include/cfg.h"
+#include "include/proc.h"
+#include "include/signature.h"
+#include "include/transformer.h"
 #include "generic.h"
 
 class TransformationScanner;

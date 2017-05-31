@@ -24,8 +24,8 @@ IS			(u|U|l|L)*
 #include "transformation-parser.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"		// For MSVC 5.00
-#include "rtl.h"
+#include "include/signature.h"		// For MSVC 5.00
+#include "include/rtl.h"
 #endif
 #define MAX_LINE 1024      // the longest line
 %}

@@ -15,8 +15,8 @@
   *             any particular subsystem of UQBT.
   ******************************************************************************/
 
-#include "util.h"
-#include "types.h"
+#include "include/util.h"
+#include "include/types.h"
 
 #include <QString>
 #include <QMap>

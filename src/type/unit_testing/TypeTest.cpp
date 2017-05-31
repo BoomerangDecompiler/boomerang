@@ -12,13 +12,13 @@
  */
 
 #include "TypeTest.h"
-#include "BinaryFile.h" // Ugh - needed before frontend.h
-#include "pentiumfrontend.h"
-#include "signature.h"
-#include "boomerang.h"
-#include "log.h"
-#include "prog.h"
-#include "proc.h"
+#include "include/BinaryFile.h" // Ugh - needed before frontend.h
+#include "frontend/pentium/pentiumfrontend.h"
+#include "include/signature.h"
+#include "include/boomerang.h"
+#include "include/log.h"
+#include "include/prog.h"
+#include "include/proc.h"
 
 #include <QTextStream>
 #include <QDir>

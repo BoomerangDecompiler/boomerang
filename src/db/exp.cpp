@@ -13,21 +13,21 @@
 #include <map>       // In decideType()
 #include <sstream>   // Need gcc 3.0 or better
 #include <cstring>
-#include "types.h"
-#include "statement.h"
-#include "cfg.h"
-#include "exp.h"
-#include "register.h"
-#include "rtl.h" // E.g. class ParamEntry in decideType()
-#include "proc.h"
-#include "signature.h"
-#include "prog.h"
+#include "include/types.h"
+#include "include/statement.h"
+#include "include/cfg.h"
+#include "include/exp.h"
+#include "include/register.h"
+#include "include/rtl.h" // E.g. class ParamEntry in decideType()
+#include "include/proc.h"
+#include "include/signature.h"
+#include "include/prog.h"
 #include "operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
-#include "util.h"
-#include "boomerang.h"
-//#include "transformer.h"
-#include "visitor.h"
-#include "log.h"
+#include "include/util.h"
+#include "include/boomerang.h"
+//#include "include/transformer.h"
+#include "include/visitor.h"
+#include "include/log.h"
 #include <QRegularExpression>
 #include <iomanip>          // For std::setw etc
 

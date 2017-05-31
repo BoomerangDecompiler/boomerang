@@ -1,13 +1,13 @@
 #include "DecompilerThread.h"
 
-#include "boomerang.h"
-#include "IBinaryImage.h"
-#include "log.h"
-#include "prog.h"
-#include "frontend.h"
-#include "proc.h"
-#include "signature.h"
-#include "module.h"
+#include "include/boomerang.h"
+#include "include/IBinaryImage.h"
+#include "include/log.h"
+#include "include/prog.h"
+#include "include/frontend.h"
+#include "include/proc.h"
+#include "include/signature.h"
+#include "include/module.h"
 
 #include <QtWidgets>
 #include <QtCore>

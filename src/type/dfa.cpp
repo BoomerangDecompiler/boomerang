@@ -13,17 +13,17 @@
   ******************************************************************************/
 #include "dfa.h"
 
-#include "config.h"
+#include "include/config.h"
 
-#include "type.h"
-#include "boomerang.h"
-#include "signature.h"
-#include "exp.h"
-#include "prog.h"
-#include "visitor.h"
-#include "log.h"
-#include "proc.h"
-#include "util.h"
+#include "include/type.h"
+#include "include/boomerang.h"
+#include "include/signature.h"
+#include "include/exp.h"
+#include "include/prog.h"
+#include "include/visitor.h"
+#include "include/log.h"
+#include "include/proc.h"
+#include "include/util.h"
 
 #include <sstream>
 #include <cstring>

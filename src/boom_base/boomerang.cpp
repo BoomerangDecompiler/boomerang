@@ -7,21 +7,21 @@
  * \brief   Command line processing for the Boomerang decompiler
  ******************************************************************************/
 
-#include "boomerang.h"
+#include "include/boomerang.h"
 
 #include "db/BinaryImage.h"
 #include "db/SymTab.h"
-#include "config.h"
-#include "prog.h"
-#include "proc.h"
-#include "BinaryFile.h"
-#include "frontend.h"
-#include "signature.h"
-//#include "transformer.h"
-#include "log.h"
-#include "xmlprogparser.h"
+#include "include/config.h"
+#include "include/prog.h"
+#include "include/proc.h"
+#include "include/BinaryFile.h"
+#include "include/frontend.h"
+#include "include/signature.h"
+//#include "include/transformer.h"
+#include "include/log.h"
+#include "include/xmlprogparser.h"
 #include "codegen/chllcode.h"
-#include "project.h"
+#include "include/project.h"
 
 // For the -nG switch to disable the garbage collector
 #ifdef HAVE_LIBGC
