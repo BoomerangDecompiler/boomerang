@@ -6193,7 +6193,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										default:
 											assert(0);
 										} /* (MATCH_w_8_16 >> 6 & 0x3)
-									       * -- mod at 16 --*/
+										   * -- mod at 16 --*/
 									}
 									else{
 										goto MATCH_label_c64; /*opt-block+*/
@@ -17629,7 +17629,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											default:
 												assert(0);
 											} /* (MATCH_w_8_16 & 0x7)
-										       * -- col at 16 --*/
+											   * -- col at 16 --*/
 										}
 										else{
 											switch ((MATCH_w_8_16 & 0x7)
@@ -17730,7 +17730,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											default:
 												assert(0);
 											} /* (MATCH_w_8_16 & 0x7)
-										       * -- col at 16 --*/
+											   * -- col at 16 --*/
 										}
 
 										break;
@@ -23710,7 +23710,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										default:
 											assert(0);
 										} /* (MATCH_w_8_16 >> 6 & 0x3)
-									       * -- mod at 16 --*/
+										   * -- mod at 16 --*/
 									}
 									else{
 										goto MATCH_label_c64; /*opt-block+*/
@@ -24873,7 +24873,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										default:
 											assert(0);
 										} /* (MATCH_w_8_16 >> 6 & 0x3)
-									       * -- mod at 16 --*/
+										   * -- mod at 16 --*/
 									}
 									else{
 										goto MATCH_label_c64; /*opt-block+*/

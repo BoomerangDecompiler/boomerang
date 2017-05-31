@@ -131,7 +131,7 @@ FrontEnd *FrontEnd::Load(const QString& fname, Prog *prog)
 		return nullptr;
 	}
 
-	QObject *pBF = pbff->Load(fname);
+	QObject *pBF = pbff->load(fname);
 
 	if (pBF == nullptr) {
 		return nullptr;
@@ -152,7 +152,7 @@ void FrontEnd::AddSymbol(ADDRESS addr, const QString& nam)
 FrontEnd::~FrontEnd()
 {
 	if (pbff) {
-		pbff->UnLoad(); // Unload the BinaryFile library with dlclose() or FreeLibrary()
+		pbff->unload(); // Unload the BinaryFile library with dlclose() or FreeLibrary()
 	}
 
 	ldrIface = nullptr;
@@ -173,7 +173,7 @@ int FrontEnd::getRegSize(int idx)
 
 bool FrontEnd::isWin32()
 {
-	return ldrIface->GetFormat() == LOADFMT_PE;
+	return ldrIface->getFormat() == LOADFMT_PE;
 }
 
 
@@ -249,7 +249,7 @@ void FrontEnd::readLibraryCatalog()
 	}
 
 	// TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
-	if (ldrIface->GetFormat() == LOADFMT_MACHO) {
+	if (ldrIface->getFormat() == LOADFMT_MACHO) {
 		sList = sig_dir.absoluteFilePath("objc.hs");
 		readLibraryCatalog(sList);
 	}
@@ -1057,7 +1057,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 							callList.push_back(call);
 						}
 						else { // Static call
-							// Find the address of the callee.
+							   // Find the address of the callee.
 							ADDRESS uNewAddr = call->getFixedDest();
 
 							// Calls with 0 offset (i.e. call the next instruction) are simply pushing the PC to the

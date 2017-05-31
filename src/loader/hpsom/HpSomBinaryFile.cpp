@@ -253,7 +253,7 @@ void HpSomBinaryFile::processSymbols()
 }
 
 
-bool HpSomBinaryFile::LoadFromMemory(QByteArray& imgdata)
+bool HpSomBinaryFile::loadFromMemory(QByteArray& imgdata)
 {
 	QBuffer fp(&imgdata);
 
@@ -494,7 +494,7 @@ int HpSomBinaryFile::canLoad(QIODevice& dev) const
 }
 
 
-void HpSomBinaryFile::UnLoad()
+void HpSomBinaryFile::unload()
 {
 	if (m_pImage) {
 		delete[] m_pImage;
@@ -503,20 +503,20 @@ void HpSomBinaryFile::UnLoad()
 }
 
 
-ADDRESS HpSomBinaryFile::GetEntryPoint()
+ADDRESS HpSomBinaryFile::getEntryPoint()
 {
 	assert(0); /* FIXME: Someone who understands this file please implement */
 	return ADDRESS::g(0L);
 }
 
 
-void HpSomBinaryFile::Close()
+void HpSomBinaryFile::close()
 {
 	// Not implemented yet
 }
 
 
-bool HpSomBinaryFile::PostLoad(void *handle)
+bool HpSomBinaryFile::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	// Not needed: for archives only
@@ -524,7 +524,7 @@ bool HpSomBinaryFile::PostLoad(void *handle)
 }
 
 
-LOAD_FMT HpSomBinaryFile::GetFormat() const
+LOAD_FMT HpSomBinaryFile::getFormat() const
 {
 	return LOADFMT_PAR;
 }
@@ -645,7 +645,7 @@ std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap()
 }
 
 
-ADDRESS HpSomBinaryFile::GetMainEntryPoint()
+ADDRESS HpSomBinaryFile::getMainEntryPoint()
 {
 	auto sym = Symbols->find("main");
 

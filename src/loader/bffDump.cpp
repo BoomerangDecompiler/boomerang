@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	// Load the file
 
 	BinaryFileFactory bff;
-	QObject           *plug = bff.Load(argv[1]);
+	QObject           *plug = bff.load(argv[1]);
 
 	if (plug == nullptr) {
 		return 2;
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	// in the derived class (ElfBinaryFile in this case), then
 	// uncomment the commented code below to display section information.
 
-	ldr_iface->DisplayDetails(argv[0], stdout);
+	ldr_iface->displayDetails(argv[0], stdout);
 
 	// This is an alternative way of displaying binary-file information
 	// by using individual sections.  The above approach is more general.

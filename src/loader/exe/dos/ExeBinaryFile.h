@@ -72,28 +72,28 @@ class ExeBinaryFile : public QObject, public LoaderInterface
 
 public:
 	ExeBinaryFile();                       // Default constructor
-	void UnLoad() override;                // Unload the image
-	void Close() override;                 // Close file opened with Open()
-	bool PostLoad(void *handle) override;  // For archive files only
-	LOAD_FMT GetFormat() const override;   // Get format (i.e. LOADFMT_EXE)
+	void unload() override;                // Unload the image
+	void close() override;                 // Close file opened with Open()
+	bool postLoad(void *handle) override;  // For archive files only
+	LOAD_FMT getFormat() const override;   // Get format (i.e. LOADFMT_EXE)
 	MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_PENTIUM)
 
 	ADDRESS getImageBase() override;
 	size_t getImageSize() override;
 
 	// Analysis functions
-	ADDRESS GetMainEntryPoint() override;
-	ADDRESS GetEntryPoint() override;
+	ADDRESS getMainEntryPoint() override;
+	ADDRESS getEntryPoint() override;
 
 	//
 	//  --  --  --  --  --  --  --  --  --  --  --
 	//
 	// Internal information
 	// Dump headers, etc
-	bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
+	bool displayDetails(const char *fileName, FILE *f = stdout) override;
 
 	void initialize(IBoomerang *sys) override;
-	bool LoadFromMemory(QByteArray& data) override;
+	bool loadFromMemory(QByteArray& data) override;
 	int canLoad(QIODevice& fl) const override;
 
 private:

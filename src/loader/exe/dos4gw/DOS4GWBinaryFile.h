@@ -138,9 +138,9 @@ class DOS4GWBinaryFile : public QObject, public LoaderInterface
 public:
 	DOS4GWBinaryFile();
 	~DOS4GWBinaryFile();                 // Destructor
-	void Close() override;               // Close file opened with Open()
-	void UnLoad() override;              // Unload the image
-	LOAD_FMT GetFormat() const override; // Get format (i.e.
+	void close() override;               // Close file opened with Open()
+	void unload() override;              // Unload the image
+	LOAD_FMT getFormat() const override; // Get format (i.e.
 
 	// LOADFMT_DOS4GW)
 	MACHINE getMachine() const override; // Get machine (i.e.
@@ -149,10 +149,10 @@ public:
 	ADDRESS getImageBase() override;
 	size_t getImageSize() override;
 
-	ADDRESS GetMainEntryPoint() override;
-	ADDRESS GetEntryPoint() override;
+	ADDRESS getMainEntryPoint() override;
+	ADDRESS getEntryPoint() override;
 	DWord getDelta();
-	bool LoadFromMemory(QByteArray& data) override;
+	bool loadFromMemory(QByteArray& data) override;
 	int canLoad(QIODevice& fl) const override;
 
 	//
@@ -160,7 +160,7 @@ public:
 	//
 	// Internal information
 	// Dump headers, etc
-	virtual bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
+	virtual bool displayDetails(const char *fileName, FILE *f = stdout) override;
 
 	void initialize(IBoomerang *sys) override;
 
@@ -169,7 +169,7 @@ protected:
 	int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
 
 private:
-	bool PostLoad(void *handle) override; //!< Called after archive member loaded
+	bool postLoad(void *handle) override; //!< Called after archive member loaded
 
 	Header *m_pHeader;                    // Pointer to header
 	LXHeader *m_pLXHeader  = nullptr;     // Pointer to lx header

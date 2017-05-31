@@ -102,7 +102,7 @@ public:
 	DecompilerThread()
 		: QThread()
 		, Parent(nullptr)
-    {}
+	{}
 
 	Decompiler *getDecompiler();
 

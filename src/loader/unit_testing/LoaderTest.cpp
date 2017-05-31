@@ -80,7 +80,7 @@ void LoaderTest::testSparcLoad()
 
 	// Load SPARC hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_SPARC);
+	QObject           *pBF = bff.load(HELLO_SPARC);
 
 	QVERIFY(pBF != nullptr);
 	int n;
@@ -99,7 +99,7 @@ void LoaderTest::testSparcLoad()
 	QString expected("Number of sections = 28\r\n\t"
 					 ".hash\t.stab.indexstr");
 	QCOMPARE(actual, expected);
-	bff.UnLoad();
+	bff.unload();
 	delete pBF;
 }
 
@@ -115,7 +115,7 @@ void LoaderTest::testPentiumLoad()
 
 	// Load Pentium hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_PENTIUM);
+	QObject           *pBF = bff.load(HELLO_PENTIUM);
 
 	QVERIFY(pBF != nullptr);
 	IBinaryImage *sect_iface = Boomerang::get()->getImage();
@@ -134,7 +134,7 @@ void LoaderTest::testPentiumLoad()
 					 ".note.ABI-tag\t.strtab");
 
 	QCOMPARE(actual, expected);
-	bff.UnLoad();
+	bff.unload();
 	delete pBF;
 }
 
@@ -150,7 +150,7 @@ void LoaderTest::testHppaLoad()
 
 	// Load HPPA hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_HPPA);
+	QObject           *pBF = bff.load(HELLO_HPPA);
 
 	QVERIFY(pBF != nullptr);
 	IBinaryImage *sect_iface = Boomerang::get()->getImage();
@@ -169,7 +169,7 @@ void LoaderTest::testHppaLoad()
 	QString expected("Number of sections = 3\r\n"
 					 "$TEXT$\t$DATA$\t$BSS$\t");
 	QCOMPARE(actual, expected);
-	bff.UnLoad();
+	bff.unload();
 	delete pBF;
 }
 
@@ -185,7 +185,7 @@ void LoaderTest::testPalmLoad()
 
 	// Load Palm Starter.prc
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(STARTER_PALM);
+	QObject           *pBF = bff.load(STARTER_PALM);
 
 	QVERIFY(pBF != nullptr);
 	IBinaryImage *sect_iface = Boomerang::get()->getImage();
@@ -205,7 +205,7 @@ void LoaderTest::testPalmLoad()
 					 "code1\tMBAR1000\ttFRM1000\tTalt1001\t"
 					 "data0\tcode0\ttAIN1000\ttver1000\t");
 	QCOMPARE(actual, expected);
-	bff.UnLoad();
+	bff.unload();
 	delete pBF;
 }
 
@@ -298,17 +298,17 @@ void LoaderTest::testWinLoad()
 
 	// Borland
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(SWITCH_BORLAND);
+	QObject           *pBF = bff.load(SWITCH_BORLAND);
 	QVERIFY(pBF != nullptr);
 	LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
 	QVERIFY(ldr_iface != nullptr);
-	ADDRESS     addr = ldr_iface->GetMainEntryPoint();
+	ADDRESS     addr = ldr_iface->getMainEntryPoint();
 	QString     actual;
 	QTextStream ost4(&actual);
 	ost4 << addr;
 	QString expected("401150");
 	QCOMPARE(actual, expected);
-	bff.UnLoad();
+	bff.unload();
 }
 
 

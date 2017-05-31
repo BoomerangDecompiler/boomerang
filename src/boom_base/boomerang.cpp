@@ -17,7 +17,6 @@
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "include/signature.h"
-//#include "include/transformer.h"
 #include "boom_base/log.h"
 #include "include/xmlprogparser.h"
 #include "codegen/chllcode.h"
@@ -31,40 +30,29 @@
 #include <QtCore/QDebug>
 #include <ctime>
 
+
 Boomerang *Boomerang::boomerang = nullptr;
 
-/**
- * Initializes the Boomerang object.
- * The default settings are:
- * - All options disabled
- * - Infinite propagations
- * - A maximum memory depth of 99
- * - The path to the executable is "./"
- * - The output directory is "./output/"
- * - Main log stream is output on stderr
- */
+
 Boomerang::Boomerang()
-	: progPath("./")
-	, outputPath("./output/")
+	: m_progPath("./")
+	, m_outputPath("./output/")
 	, LogStream(stdout)
 	, ErrStream(stderr)
 {
-	currentProject = new Project;
+	m_currentProject = new Project;
 }
 
 
 Boomerang::~Boomerang()
 {
-	delete currentProject;
+	delete m_currentProject;
 }
 
 
-/**
- * \returns the Log object associated with the object.
- */
 Log& Boomerang::log()
 {
-	return *logger;
+	return *m_logger;
 }
 
 
@@ -79,11 +67,11 @@ Log& Boomerang::if_verbose_log(int verbosity_level)
 	static NullLogger null_log;
 
 	if (verbosity_level == 2) {
-		return *logger;
+		return *m_logger;
 	}
 
 	if ((verbosity_level == 1) && VERBOSE) {
-		return *logger;
+		return *m_logger;
 	}
 	else{
 		return null_log;
@@ -93,47 +81,17 @@ Log& Boomerang::if_verbose_log(int verbosity_level)
 
 void Boomerang::setLogger(Log *l)
 {
-	delete logger;
-	logger = l;
+	delete m_logger;
+	m_logger = l;
 }
 
 
-/**
- * Sets the outputfile to be the file "log" in the default output directory.
- */
-FileLogger::FileLogger()
-	: out((Boomerang::get()->getOutputPath() + "log").toStdString())
-{
-}
-
-
-SeparateLogger::SeparateLogger(const QString& v)
-{
-	static QMap<QString, int> versions;
-
-	if (!versions.contains(v)) {
-		versions[v] = 0;
-	}
-
-	QDir    outDir(Boomerang::get()->getOutputPath());
-	QString full_path = outDir.absoluteFilePath(QString("%1_%2.log").arg(v).arg(versions[v]++, 2, 10, QChar('0')));
-	out = new std::ofstream(full_path.toStdString());
-}
-
-
-/**
- * Returns the HLLCode for the given proc.
- * \return The HLLCode for the specified UserProc.
- */
 HLLCode *Boomerang::getHLLCode(UserProc *p)
 {
 	return new CHLLCode(p);
 }
 
 
-/**
- * Prints help for the interactive mode.
- */
 void Boomerang::helpcmd() const
 {
 	QTextStream c_out(stdout);
@@ -256,17 +214,6 @@ static CommandType commandNameToID(const QString& _cmd)
 }
 
 
-/**
- * Parse and execute a command supplied in interactive mode.
- *
- * \param args        The array of argument strings.
- *
- * \return A value indicating what happened.
- *
- * \retval 0 Success
- * \retval 1 Failure
- * \retval 2 The user exited with \a quit or \a exit
- */
 int Boomerang::processCommand(QStringList& args)
 {
 	static Prog *prog = nullptr;
@@ -766,50 +713,34 @@ int Boomerang::processCommand(QStringList& args)
 }
 
 
-/**
- * Set the path to the %Boomerang executable.
- *
- */
 void Boomerang::setProgPath(const QString& p)
 {
-	progPath   = p + "/";
-	outputPath = progPath + "/output/"; // Default output path (can be overridden with -o below)
+	m_progPath   = p + "/";
+	m_outputPath = m_progPath + "/output/";    // Default output path (can be overridden with -o below)
 }
 
 
-/**
- * Set the path where the %Boomerang executable will search for plugins.
- *
- */
 void Boomerang::setPluginPath(const QString& p)
 {
 	BinaryFileFactory::setBasePath(p);
 }
 
 
-/**
- * Sets the directory in which Boomerang creates its output files.  The directory will be created if it doesn't exist.
- *
- * \param path        the path to the directory
- *
- * \retval true Success.
- * \retval false The directory could not be created.
- */
 bool Boomerang::setOutputDirectory(const QString& path)
 {
-	outputPath = path;
+	m_outputPath = path;
 
-	if (!outputPath.endsWith(QDir::separator())) {
-		outputPath += QDir::separator();
+	if (!m_outputPath.endsWith(QDir::separator())) {
+		m_outputPath += QDir::separator();
 	}
 
 	// Create the output directory, if needed
 	if (!createDirectory(path)) {
-		qWarning() << "Warning! Could not create path " << outputPath << "!\n";
+		qWarning() << "Warning! Could not create path " << m_outputPath << "!\n";
 		return false;
 	}
 
-	if (logger == nullptr) {
+	if (m_logger == nullptr) {
 		setLogger(new FileLogger());
 	}
 
@@ -817,12 +748,6 @@ bool Boomerang::setOutputDirectory(const QString& path)
 }
 
 
-/**
- * Adds information about functions and classes from Objective-C modules to the Prog object.
- *
- * \param modules A map from name to the Objective-C modules.
- * \param prog The Prog object to add the information to.
- */
 void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
 {
 	LOG_VERBOSE(1) << "Adding Objective-C information to Prog.\n";
@@ -864,14 +789,6 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *p
 }
 
 
-/**
- * Loads the executable file and decodes it.
- *
- * \param fname The name of the file to load.
- * \param pname How the Prog will be named.
- *
- * \returns A Prog object.
- */
 Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
 	QTextStream q_cout(stdout);
@@ -894,7 +811,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 
 	fe->readLibraryCatalog(); // Needed before readSymbolFile()
 
-	for (auto& elem : symbolFiles) {
+	for (auto& elem : m_symbolFiles) {
 		q_cout << "reading symbol file " << elem << "\n";
 		prog->readSymbolFile(elem);
 	}
@@ -910,12 +827,12 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 	}
 
 	// Entry points from -e (and -E) switch(es)
-	for (auto& elem : entrypoints) {
+	for (auto& elem : m_entryPoints) {
 		q_cout << "decoding specified entrypoint " << elem << "\n";
 		prog->decodeEntryPoint(elem);
 	}
 
-	if (entrypoints.size() == 0) { // no -e or -E given
+	if (m_entryPoints.size() == 0) { // no -e or -E given
 		if (decodeMain) {
 			q_cout << "decoding entry point...\n";
 		}
@@ -954,15 +871,6 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 }
 
 
-/**
- * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
- * After decompilation the elapsed time is printed to LOG_STREAM().
- *
- * \param fname The name of the file to load.
- * \param pname The name that will be given to the Proc.
- *
- * \return Zero on success, nonzero on faillure.
- */
 int Boomerang::decompile(const QString& fname, const char *pname)
 {
 	Prog   *prog;
@@ -970,7 +878,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 
 	time(&start);
 
-	if (logger == nullptr) {
+	if (m_logger == nullptr) {
 		setLogger(new FileLogger());
 	}
 
@@ -1028,7 +936,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 	q_cout << "generating code...\n";
 	prog->generateCode();
 
-	q_cout << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
+	q_cout << "output written to " << m_outputPath << prog->getRootCluster()->getName() << "\n";
 
 	time_t end;
 	time(&end);
@@ -1051,10 +959,6 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 }
 
 
-/**
- * Saves the state of the Prog object to a XML file.
- * \param prog The Prog object to save.
- */
 void Boomerang::persistToXML(Prog *prog)
 {
 	Q_UNUSED(prog);
@@ -1065,11 +969,6 @@ void Boomerang::persistToXML(Prog *prog)
 }
 
 
-/**
- * Loads the state of a Prog object from a XML file.
- * \param fname The name of the XML file.
- * \return The loaded Prog object.
- */
 Prog *Boomerang::loadFromXML(const char *fname)
 {
 	Q_UNUSED(fname);
@@ -1161,18 +1060,18 @@ Boomerang *Boomerang::get()
 
 IBinaryImage *Boomerang::getImage()
 {
-	assert(nullptr != currentProject);
-	return currentProject->image();
+	assert(nullptr != m_currentProject);
+	return m_currentProject->image();
 }
 
 
 IBinarySymbolTable *Boomerang::getSymbols()
 {
-	if (!Symbols) {
-		Symbols = new SymTab;
+	if (!m_symbols) {
+		m_symbols = new SymTab;
 	}
 
-	return Symbols;
+	return m_symbols;
 }
 
 
@@ -1182,14 +1081,12 @@ void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
 		miniDebugger(p, description);
 	}
 
-	for (Watcher *elem : watchers) {
+	for (Watcher *elem : m_watchers) {
 		elem->alertDecompileDebugPoint(p, description);
 	}
 }
 
 
-//! Return TextStream to which given \a level of messages shoudl be directed
-//! \param level - describes the message level TODO: describe message levels
 QTextStream& Boomerang::getLogStream(int level)
 {
 	if (level >= LL_Error) {

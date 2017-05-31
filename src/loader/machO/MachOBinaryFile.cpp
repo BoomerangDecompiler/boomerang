@@ -87,19 +87,19 @@ bool MachOBinaryFile::Open(const char *sName)
 }
 
 
-void MachOBinaryFile::Close()
+void MachOBinaryFile::close()
 {
-	UnLoad();
+	unload();
 }
 
 
-ADDRESS MachOBinaryFile::GetEntryPoint()
+ADDRESS MachOBinaryFile::getEntryPoint()
 {
 	return entrypoint;
 }
 
 
-ADDRESS MachOBinaryFile::GetMainEntryPoint()
+ADDRESS MachOBinaryFile::getMainEntryPoint()
 {
 	auto symbol = Symbols->find("main");
 
@@ -119,7 +119,7 @@ ADDRESS MachOBinaryFile::GetMainEntryPoint()
 
 #define BE4(x)    ((magic[(x)] << 24) | (magic[(x) + 1] << 16) | (magic[(x) + 2] << 8) | (magic[(x) + 3]))
 
-bool MachOBinaryFile::LoadFromMemory(QByteArray& img)
+bool MachOBinaryFile::loadFromMemory(QByteArray& img)
 {
 	QBuffer fp(&img);
 
@@ -463,7 +463,7 @@ bool MachOBinaryFile::LoadFromMemory(QByteArray& img)
 
 	// Give the entry point a symbol
 	// ADDRESS entry = GetMainEntryPoint();
-	entrypoint = GetMainEntryPoint();
+	entrypoint = getMainEntryPoint();
 
 	return true;
 }
@@ -487,19 +487,19 @@ int MachOBinaryFile::canLoad(QIODevice& dev) const
 
 
 // Clean up and unload the binary image
-void MachOBinaryFile::UnLoad()
+void MachOBinaryFile::unload()
 {
 }
 
 
-bool MachOBinaryFile::PostLoad(void *handle)
+bool MachOBinaryFile::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	return false;
 }
 
 
-bool MachOBinaryFile::DisplayDetails(const char *fileName, FILE *f
+bool MachOBinaryFile::displayDetails(const char *fileName, FILE *f
                                      /* = stdout */)
 {
 	Q_UNUSED(fileName);
@@ -579,7 +579,7 @@ unsigned short MachOBinaryFile::BMMHW(unsigned short x)
 }
 
 
-LOAD_FMT MachOBinaryFile::GetFormat() const
+LOAD_FMT MachOBinaryFile::getFormat() const
 {
 	return LOADFMT_MACHO;
 }

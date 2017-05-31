@@ -17,6 +17,7 @@ struct Printable;
 
 using SharedType     = std::shared_ptr<Type>;
 using SharedConstExp = std::shared_ptr<const Exp>;
+
 class Log
 {
 public:
@@ -37,6 +38,7 @@ public:
 	virtual ~Log() {}
 };
 
+/// Sets the outputfile to be the file "log" in the default output directory.
 class FileLogger : public Log
 {
 protected:

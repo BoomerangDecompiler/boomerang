@@ -58,7 +58,7 @@ void FrontSparcTest::test1()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_SPARC);
+	QObject           *pBF = bff.load(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(HELLO_SPARC);
@@ -131,7 +131,7 @@ void FrontSparcTest::test2()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_SPARC);
+	QObject           *pBF = bff.load(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(HELLO_SPARC);
@@ -180,7 +180,7 @@ void FrontSparcTest::test3()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_SPARC);
+	QObject           *pBF = bff.load(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(HELLO_SPARC);
@@ -245,7 +245,7 @@ void FrontSparcTest::testBranch()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(BRANCH_SPARC);
+	QObject           *pBF = bff.load(BRANCH_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(BRANCH_SPARC);
@@ -287,7 +287,7 @@ void FrontSparcTest::testBranch()
 void FrontSparcTest::testDelaySlot()
 {
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(BRANCH_SPARC);
+	QObject           *pBF = bff.load(BRANCH_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(BRANCH_SPARC);

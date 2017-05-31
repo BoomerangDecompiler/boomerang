@@ -8,6 +8,7 @@
 class IBinaryImage;
 class IBinarySymbolTable;
 class IProject;
+
 class IBoomerang
 {
 public:

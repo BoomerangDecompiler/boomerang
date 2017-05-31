@@ -155,7 +155,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 					exit(1);
 				}
 
-				boom.entrypoints.push_back(addr);
+				boom.m_entryPoints.push_back(addr);
 			}
 			break;
 
@@ -328,7 +328,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 		case 's':
 			{
 				if (arg[2] == 'f') {
-					boom.symbolFiles.push_back(args[i + 1]);
+					boom.m_symbolFiles.push_back(args[i + 1]);
 					i++;
 					break;
 				}

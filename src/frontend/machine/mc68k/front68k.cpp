@@ -273,7 +273,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc *pProc,
 					processSwitch(pBB, delta, pCfg, targets, pBF);
 				}
 				else {  // Computed jump
-					   // Not a switch statement
+					    // Not a switch statement
 					ostrstream ost;
 					string     sKind("JUMP");
 

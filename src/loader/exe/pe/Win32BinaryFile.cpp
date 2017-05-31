@@ -90,19 +90,19 @@ Win32BinaryFile::~Win32BinaryFile()
 
 void Win32BinaryFile::initialize(IBoomerang *sys)
 {
-	UnLoad();
+	unload();
 	Image   = sys->getImage();
 	Symbols = sys->getSymbols();
 }
 
 
-void Win32BinaryFile::Close()
+void Win32BinaryFile::close()
 {
-	UnLoad();
+	unload();
 }
 
 
-ADDRESS Win32BinaryFile::GetEntryPoint()
+ADDRESS Win32BinaryFile::getEntryPoint()
 {
 	return ADDRESS::g(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
 }
@@ -111,7 +111,7 @@ ADDRESS Win32BinaryFile::GetEntryPoint()
 // This is a bit of a hack, but no more than the rest of Windows :-O  The pattern is to look for an indirect call (FF 15
 // opcode) to exit; within 10 instructions before that should be the call to WinMain (with no other calls inbetween).
 // This pattern should work for "old style" and "new style" PE executables, as well as console mode PE files.
-ADDRESS Win32BinaryFile::GetMainEntryPoint()
+ADDRESS Win32BinaryFile::getMainEntryPoint()
 {
 	auto aMain = Symbols->find("main");
 
@@ -554,7 +554,7 @@ void Win32BinaryFile::readDebugData(QString exename)
 }
 
 
-bool Win32BinaryFile::LoadFromMemory(QByteArray& arr)
+bool Win32BinaryFile::loadFromMemory(QByteArray& arr)
 {
 	const char *data     = arr.constData();
 	const char *data_end = arr.constData() + arr.size();
@@ -657,7 +657,7 @@ bool Win32BinaryFile::LoadFromMemory(QByteArray& arr)
 	//    (LMMH(m_pPEHeader->ExportTableRVA) + base);
 
 	// Give the entry point a symbol
-	ADDRESS entry = GetMainEntryPoint();
+	ADDRESS entry = getMainEntryPoint();
 
 	if (entry != NO_ADDRESS) {
 		if (!Symbols->find(entry)) {
@@ -667,7 +667,7 @@ bool Win32BinaryFile::LoadFromMemory(QByteArray& arr)
 
 	// Give a name to any jumps you find to these import entries
 	// NOTE: VERY early MSVC specific!! Temporary till we can think of a better way.
-	ADDRESS start = GetEntryPoint();
+	ADDRESS start = getEntryPoint();
 	findJumps(start);
 
 	//TODO: loading debuging data should be an optional step, decision should be made 'upstream'
@@ -755,7 +755,7 @@ void Win32BinaryFile::findJumps(ADDRESS curr)
 
 
 // Clean up and unload the binary image
-void Win32BinaryFile::UnLoad()
+void Win32BinaryFile::unload()
 {
 	m_cbImage = 0;
 	m_cReloc  = 0;
@@ -768,7 +768,7 @@ void Win32BinaryFile::UnLoad()
 }
 
 
-bool Win32BinaryFile::PostLoad(void *handle)
+bool Win32BinaryFile::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	return false;
@@ -941,7 +941,7 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID Us
 #endif
 
 
-bool Win32BinaryFile::DisplayDetails(const char *fileName, FILE *f /* = stdout */)
+bool Win32BinaryFile::displayDetails(const char *fileName, FILE *f /* = stdout */)
 {
 	Q_UNUSED(fileName);
 	Q_UNUSED(f);
@@ -1136,7 +1136,7 @@ bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative)
 }
 
 
-ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative)
+ADDRESS Win32BinaryFile::isJumpToAnotherAddr(ADDRESS uNative)
 {
 	if ((Image->readNative1(uNative) & 0xff) != 0xe9) {
 		return NO_ADDRESS;
@@ -1146,7 +1146,7 @@ ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative)
 }
 
 
-LOAD_FMT Win32BinaryFile::GetFormat() const
+LOAD_FMT Win32BinaryFile::getFormat() const
 {
 	return LOADFMT_PE;
 }

@@ -162,16 +162,16 @@ class Win32BinaryFile : public QObject, public LoaderInterface
 public:
 	Win32BinaryFile();
 	virtual ~Win32BinaryFile();
-	void Close() override;                 //!< Close file opened with Open()
-	void UnLoad() override;                //!< Unload the image
-	LOAD_FMT GetFormat() const override;   //!< Get format (i.e.LOADFMT_Win32)
+	void close() override;                 //!< Close file opened with Open()
+	void unload() override;                //!< Unload the image
+	LOAD_FMT getFormat() const override;   //!< Get format (i.e.LOADFMT_Win32)
 	MACHINE getMachine() const override;   //!< Get machine (i.e. MACHINE_Pentium)
 	ADDRESS getImageBase() override;
 	size_t getImageSize() override;
 	bool isLibrary() const;
 
-	ADDRESS GetMainEntryPoint() override;
-	ADDRESS GetEntryPoint() override;
+	ADDRESS getMainEntryPoint() override;
+	ADDRESS getEntryPoint() override;
 	DWord getDelta();
 
 	//
@@ -179,8 +179,8 @@ public:
 	//
 	// Internal information
 	// Dump headers, etc
-	bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
-	bool LoadFromMemory(QByteArray& arr) override;
+	bool displayDetails(const char *fileName, FILE *f = stdout) override;
+	bool loadFromMemory(QByteArray& arr) override;
 	int canLoad(QIODevice& fl) const override;
 
 protected:
@@ -190,7 +190,7 @@ protected:
 public:
 
 	bool IsStaticLinkedLibProc(ADDRESS uNative);
-	ADDRESS IsJumpToAnotherAddr(ADDRESS uNative) override;
+	ADDRESS isJumpToAnotherAddr(ADDRESS uNative) override;
 
 	bool IsMinGWsAllocStack(ADDRESS uNative);
 	bool IsMinGWsFrameInit(ADDRESS uNative);
@@ -207,7 +207,7 @@ protected:
 	void readDebugData(QString exename);
 
 private:
-	bool PostLoad(void *handle) override; // Called after archive member loaded
+	bool postLoad(void *handle) override; // Called after archive member loaded
 	void findJumps(ADDRESS curr);         // Find names for jumps to IATs
 
 	Header *m_pHeader;                    // Pointer to header

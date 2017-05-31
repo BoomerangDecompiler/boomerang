@@ -47,12 +47,12 @@ class ElfBinaryFile : public QObject, public LoaderInterface
 
 public:
 	ElfBinaryFile(); // Constructor
-	void UnLoad() override;
+	void unload() override;
 
 	~ElfBinaryFile() override;
 	void initialize(IBoomerang *sys) override;
-	void Close() override;
-	LOAD_FMT GetFormat() const override;
+	void close() override;
+	LOAD_FMT getFormat() const override;
 	MACHINE getMachine() const override;
 	bool isLibrary() const;
 	QStringList getDependencyList();
@@ -60,18 +60,18 @@ public:
 	size_t getImageSize() override;
 
 	// Relocation functions
-	bool IsRelocationAt(ADDRESS uNative) override;
+	bool isRelocationAt(ADDRESS uNative) override;
 
 	// Write an ELF object file for a given procedure
 	void writeObjectFile(QString& path, const char *name, void *ptxt, int txtsz, RelocMap& reloc);
 
 	// Analysis functions
-	virtual ADDRESS GetMainEntryPoint() override;
-	virtual ADDRESS GetEntryPoint() override;
+	virtual ADDRESS getMainEntryPoint() override;
+	virtual ADDRESS getEntryPoint() override;
 
 	ADDRESS NativeToHostAddress(ADDRESS uNative);
 
-	bool LoadFromMemory(QByteArray& img) override;
+	bool loadFromMemory(QByteArray& img) override;
 
 	int canLoad(QIODevice& fl) const override;
 
@@ -86,7 +86,7 @@ private:
 	void AddSyms(int secIndex);
 	void AddRelocsAsSyms(uint32_t secIndex);
 	void SetRelocInfo(SectionInfo *pSect);
-	bool PostLoad(void *handle) override; // Called after archive member loaded
+	bool postLoad(void *handle) override; // Called after archive member loaded
 
 	// Search the .rel[a].plt section for an entry with symbol table index i.
 	// If found, return the native address of the associated PLT entry.

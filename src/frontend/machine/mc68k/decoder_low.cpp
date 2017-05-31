@@ -97,7 +97,7 @@ void chopDotex(char *name)
 	strcpy(sslName, name);
 
 	if (name[l - 3] == '.') { // Has .ex
-		l -= 3;             // Discard the .ex
+		l -= 3;               // Discard the .ex
 	}
 
 	sslName[l] = '\0';
@@ -124,7 +124,7 @@ void chopBoth(char *name)
 	strcpy(sslName, name);
 
 	if (name[l - 3] == '.') { // Has .ex
-		l -= 3;             // Discard the .ex
+		l -= 3;               // Discard the .ex
 	}
 
 	sslName[l]     = '\0';
@@ -2865,7 +2865,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								default:
 									assert(0);
 								} /* (MATCH_w_16_0 >> 9 & 0x7)
-						           *  -- reg1 at 0 --*/
+								   *  -- reg1 at 0 --*/
 							}
 						}
 						else{
@@ -5117,8 +5117,8 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = MATCH_name_adrm_68[(MATCH_w_16_0 >> 3 & 0x7)
 								                                /* adrm at 0 */];
 								{
-									char *name = MATCH_name;
-									unsigned n = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+									char     *name = MATCH_name;
+									unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 499 "machine/mc68k/decoder_low.m"
 									{
@@ -6356,8 +6356,8 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 				if ((2 <= (MATCH_w_16_0 >> 8 & 0xf)) /* cond at 0 */ && ((MATCH_w_16_0 >> 8 & 0xf) /* cond at 0 */ < 16)) {
 					MATCH_name = MATCH_name_cond_99[(MATCH_w_16_0 >> 8 & 0xf) /* cond at 0 */];
 					{
-						char *name = MATCH_name;
-						unsigned a = addressToPC(MATCH_p);
+						char     *name = MATCH_name;
+						unsigned a     = addressToPC(MATCH_p);
 
 #line 729 "machine/mc68k/decoder_low.m"
 						{
@@ -6370,8 +6370,8 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 				else {
 					MATCH_name = MATCH_name_cond_99[(MATCH_w_16_0 >> 8 & 0xf) /* cond at 0 */];
 					{
-						char *name = MATCH_name;
-						unsigned a = addressToPC(MATCH_p);
+						char     *name = MATCH_name;
+						unsigned a     = addressToPC(MATCH_p);
 
 #line 721 "machine/mc68k/decoder_low.m"
 						{
@@ -8227,9 +8227,9 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							MATCH_name = MATCH_name_adrm_140[(MATCH_w_16_0 >> 3 & 0x7)
 							                                 /* adrm at 0 */];
 							{
-								char *name  = MATCH_name;
-								unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-								unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+								char     *name = MATCH_name;
+								unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+								unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 970 "machine/mc68k/decoder_low.m"
 								{
@@ -8243,9 +8243,9 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							MATCH_name = MATCH_name_adrm_116[(MATCH_w_16_0 >> 3 & 0x7)
 							                                 /* adrm at 0 */];
 							{
-								char *name  = MATCH_name;
-								unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-								unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+								char     *name = MATCH_name;
+								unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+								unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 974 "machine/mc68k/decoder_low.m"
 								{
@@ -8314,9 +8314,9 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							MATCH_name = MATCH_name_adrm_118[(MATCH_w_16_0 >> 3 & 0x7)
 							                                 /* adrm at 0 */];
 							{
-								char *name  = MATCH_name;
-								unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-								unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+								char     *name = MATCH_name;
+								unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+								unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 978 "machine/mc68k/decoder_low.m"
 								{
@@ -10193,9 +10193,9 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 MATCH_label_a0:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned i8 = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
 
 #line 227 "machine/mc68k/decoder_low.m"
 			{
@@ -10243,9 +10243,9 @@ MATCH_label_a1:
 MATCH_label_a2:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned ea  = addressToPC(MATCH_p);
-			unsigned i16 = (MATCH_w_16_16 & 0xffff) /* d16 at 16 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned i16   = (MATCH_w_16_16 & 0xffff) /* d16 at 16 */;
 
 #line 246 "machine/mc68k/decoder_low.m"
 			{
@@ -10265,9 +10265,9 @@ MATCH_label_a2:
 MATCH_label_a3:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned ea  = addressToPC(MATCH_p);
-			unsigned i32 = ((MATCH_w_16_16 & 0xffff) /* d16 at 16 */ << 16) + (MATCH_w_16_32 & 0xffff) /* d16 at 32 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned i32   = ((MATCH_w_16_16 & 0xffff) /* d16 at 16 */ << 16) + (MATCH_w_16_32 & 0xffff) /* d16 at 32 */;
 
 #line 263 "machine/mc68k/decoder_low.m"
 			{
@@ -10287,9 +10287,9 @@ MATCH_label_a3:
 MATCH_label_a4:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned i8 = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
 
 #line 297 "machine/mc68k/decoder_low.m"
 			{
@@ -10311,9 +10311,9 @@ MATCH_label_a4:
 MATCH_label_a5:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 280 "machine/mc68k/decoder_low.m"
 			{
@@ -10337,10 +10337,10 @@ MATCH_label_a5:
 MATCH_label_a6:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned i8  = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
-			unsigned x   = 4 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
+			unsigned x     = 4 + addressToPC(MATCH_p);
 
 #line 239 "machine/mc68k/decoder_low.m"
 			{
@@ -10356,10 +10356,10 @@ MATCH_label_a6:
 MATCH_label_a7:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned i16 = (MATCH_w_16_16 & 0xffff) /* d16 at 16 */;
-			unsigned x   = 4 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned i16   = (MATCH_w_16_16 & 0xffff) /* d16 at 16 */;
+			unsigned x     = 4 + addressToPC(MATCH_p);
 
 #line 256 "machine/mc68k/decoder_low.m"
 			{
@@ -10375,10 +10375,10 @@ MATCH_label_a7:
 MATCH_label_a8:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned i32 = ((MATCH_w_16_16 & 0xffff) /* d16 at 16 */ << 16) + (MATCH_w_16_32 & 0xffff) /* d16 at 32 */;
-			unsigned x   = 6 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned i32   = ((MATCH_w_16_16 & 0xffff) /* d16 at 16 */ << 16) + (MATCH_w_16_32 & 0xffff) /* d16 at 32 */;
+			unsigned x     = 6 + addressToPC(MATCH_p);
 
 #line 272 "machine/mc68k/decoder_low.m"
 			{
@@ -10412,10 +10412,10 @@ MATCH_label_a9:
 MATCH_label_a10:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned i8  = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
-			unsigned x   = 4 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
+			unsigned x     = 4 + addressToPC(MATCH_p);
 
 #line 307 "machine/mc68k/decoder_low.m"
 			{
@@ -10447,10 +10447,10 @@ MATCH_label_a11:
 MATCH_label_a12:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 291 "machine/mc68k/decoder_low.m"
 			{
@@ -10464,8 +10464,8 @@ MATCH_label_a12:
 MATCH_label_a13:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned i8 = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
+			char     *name = MATCH_name;
+			unsigned i8    = (MATCH_w_16_16 & 0xff) /* disp8 at 16 */;
 
 #line 220 "machine/mc68k/decoder_low.m"
 			{
@@ -10479,9 +10479,9 @@ MATCH_label_a13:
 MATCH_label_a14:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned ea  = addressToPC(MATCH_p);
-			unsigned ea2 = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned ea2   = addressToPC(MATCH_p);
 
 #line 342 "machine/mc68k/decoder_low.m"
 			{
@@ -10567,10 +10567,10 @@ MATCH_label_a14:
 MATCH_label_a15:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned ea2 = addressToPC(MATCH_p);
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea2   = addressToPC(MATCH_p);
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 383 "machine/mc68k/decoder_low.m"
 			{
@@ -10598,10 +10598,10 @@ MATCH_label_a15:
 MATCH_label_a16:
 		(void)0; /*placeholder for label*/
 		{
-			char *name    = MATCH_name;
-			unsigned d32  = ((MATCH_w_16_16 & 0xffff) /* d16 at 16 */ << 16) + (MATCH_w_16_32 & 0xffff) /* d16 at 32 */;
-			unsigned ea2  = addressToPC(MATCH_p);
-			unsigned eaxl = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned d32   = ((MATCH_w_16_16 & 0xffff) /* d16 at 16 */ << 16) + (MATCH_w_16_32 & 0xffff) /* d16 at 32 */;
+			unsigned ea2   = addressToPC(MATCH_p);
+			unsigned eaxl  = addressToPC(MATCH_p);
 
 #line 395 "machine/mc68k/decoder_low.m"
 			{
@@ -10631,10 +10631,10 @@ MATCH_label_a16:
 MATCH_label_a17:
 		(void)0; /*placeholder for label*/
 		{
-			char *name    = MATCH_name;
-			unsigned ea   = addressToPC(MATCH_p);
-			unsigned eax2 = addressToPC(MATCH_p);
-			unsigned x2   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned eax2  = addressToPC(MATCH_p);
+			unsigned x2    = 2 + addressToPC(MATCH_p);
 
 #line 408 "machine/mc68k/decoder_low.m"
 			{
@@ -10664,11 +10664,11 @@ MATCH_label_a17:
 MATCH_label_a18:
 		(void)0; /*placeholder for label*/
 		{
-			char *name    = MATCH_name;
-			unsigned eax  = addressToPC(MATCH_p);
-			unsigned eax2 = addressToPC(MATCH_p);
-			unsigned x    = 2 + addressToPC(MATCH_p);
-			unsigned x2   = 4 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned eax2  = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
+			unsigned x2    = 4 + addressToPC(MATCH_p);
 
 #line 421 "machine/mc68k/decoder_low.m"
 			{
@@ -10694,11 +10694,11 @@ MATCH_label_a18:
 MATCH_label_a19:
 		(void)0; /*placeholder for label*/
 		{
-			char *name    = MATCH_name;
-			unsigned d32  = ((MATCH_w_16_16 & 0xffff) /* d16 at 16 */ << 16) + (MATCH_w_16_32 & 0xffff) /* d16 at 32 */;
-			unsigned eax2 = addressToPC(MATCH_p);
-			unsigned eaxl = addressToPC(MATCH_p);
-			unsigned x2   = 6 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned d32   = ((MATCH_w_16_16 & 0xffff) /* d16 at 16 */ << 16) + (MATCH_w_16_32 & 0xffff) /* d16 at 32 */;
+			unsigned eax2  = addressToPC(MATCH_p);
+			unsigned eaxl  = addressToPC(MATCH_p);
+			unsigned x2    = 6 + addressToPC(MATCH_p);
 
 #line 432 "machine/mc68k/decoder_low.m"
 			{
@@ -10724,8 +10724,8 @@ MATCH_label_a19:
 MATCH_label_a20:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 444 "machine/mc68k/decoder_low.m"
 			{
@@ -10751,9 +10751,9 @@ MATCH_label_a20:
 MATCH_label_a21:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 455 "machine/mc68k/decoder_low.m"
 			{
@@ -10767,8 +10767,8 @@ MATCH_label_a21:
 MATCH_label_a22:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 460 "machine/mc68k/decoder_low.m"
 			{
@@ -10786,9 +10786,9 @@ MATCH_label_a22:
 MATCH_label_a23:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 467 "machine/mc68k/decoder_low.m"
 			{
@@ -10802,8 +10802,8 @@ MATCH_label_a23:
 MATCH_label_a24:
 		(void)0; /*placeholder for label*/
 		{
-			char *name = MATCH_name;
-			unsigned n = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 504 "machine/mc68k/decoder_low.m"
 			{
@@ -10827,8 +10827,8 @@ MATCH_label_a24:
 MATCH_label_a25:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 485 "machine/mc68k/decoder_low.m"
 			{
@@ -10846,9 +10846,9 @@ MATCH_label_a25:
 MATCH_label_a26:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 492 "machine/mc68k/decoder_low.m"
 			{
@@ -10900,8 +10900,8 @@ MATCH_label_a28:
 MATCH_label_a29:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 472 "machine/mc68k/decoder_low.m"
 			{
@@ -10967,9 +10967,9 @@ MATCH_label_a31:
 MATCH_label_a32:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 479 "machine/mc68k/decoder_low.m"
 			{
@@ -11015,8 +11015,8 @@ MATCH_label_a34:
 MATCH_label_a35:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 531 "machine/mc68k/decoder_low.m"
 			{
@@ -11032,9 +11032,9 @@ MATCH_label_a35:
 MATCH_label_a36:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 537 "machine/mc68k/decoder_low.m"
 			{
@@ -11046,8 +11046,8 @@ MATCH_label_a36:
 MATCH_label_a37:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 519 "machine/mc68k/decoder_low.m"
 			{
@@ -11065,9 +11065,9 @@ MATCH_label_a37:
 MATCH_label_a38:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 526 "machine/mc68k/decoder_low.m"
 			{
@@ -11111,9 +11111,9 @@ MATCH_label_a40:
 MATCH_label_a41:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 837 "machine/mc68k/decoder_low.m"
 			{
@@ -11131,10 +11131,10 @@ MATCH_label_a41:
 MATCH_label_a42:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 845 "machine/mc68k/decoder_low.m"
 			{
@@ -11162,9 +11162,9 @@ MATCH_label_a43:
 MATCH_label_a44:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 629 "machine/mc68k/decoder_low.m"
 			{
@@ -11190,10 +11190,10 @@ MATCH_label_a44:
 MATCH_label_a45:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned i8  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 639 "machine/mc68k/decoder_low.m"
 			{
@@ -11213,9 +11213,9 @@ MATCH_label_a45:
 MATCH_label_a46:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 646 "machine/mc68k/decoder_low.m"
 			{
@@ -11244,7 +11244,7 @@ MATCH_label_a46:
 					strcat(sslName, "qa"); // addqw -> addqa
 				}
 
-				if (!b) { // Can't use else
+				if (!b) {              // Can't use else
 					chop2ndLast(name); // addqw -> addw
 				}
 
@@ -11258,10 +11258,10 @@ MATCH_label_a46:
 MATCH_label_a47:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned i8  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 667 "machine/mc68k/decoder_low.m"
 			{
@@ -11279,9 +11279,9 @@ MATCH_label_a47:
 MATCH_label_a48:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 674 "machine/mc68k/decoder_low.m"
 			{
@@ -11310,7 +11310,7 @@ MATCH_label_a48:
 					strcat(sslName, "qa"); // subl -> subqa
 				}
 
-				if (!b) { // Can't use else
+				if (!b) {              // Can't use else
 					chop2ndLast(name); // addqw -> addw
 				}
 
@@ -11324,10 +11324,10 @@ MATCH_label_a48:
 MATCH_label_a49:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned i8  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 695 "machine/mc68k/decoder_low.m"
 			{
@@ -11345,8 +11345,8 @@ MATCH_label_a49:
 MATCH_label_a50:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 707 "machine/mc68k/decoder_low.m"
 			{
@@ -11368,9 +11368,9 @@ MATCH_label_a50:
 MATCH_label_a51:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned i16 = (MATCH_w_16_16 & 0xffff) /* d16 at 16 */;
-			unsigned n   = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned i16   = (MATCH_w_16_16 & 0xffff) /* d16 at 16 */;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 701 "machine/mc68k/decoder_low.m"
 			{
@@ -11386,9 +11386,9 @@ MATCH_label_a51:
 MATCH_label_a52:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 716 "machine/mc68k/decoder_low.m"
 			{
@@ -11400,9 +11400,9 @@ MATCH_label_a52:
 MATCH_label_a53:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 823 "machine/mc68k/decoder_low.m"
 			{
@@ -11422,9 +11422,9 @@ MATCH_label_a53:
 MATCH_label_a54:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 851 "machine/mc68k/decoder_low.m"
 			{
@@ -11442,9 +11442,9 @@ MATCH_label_a54:
 MATCH_label_a55:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 739 "machine/mc68k/decoder_low.m"
 			{
@@ -11466,10 +11466,10 @@ MATCH_label_a55:
 MATCH_label_a56:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 831 "machine/mc68k/decoder_low.m"
 			{
@@ -11483,10 +11483,10 @@ MATCH_label_a56:
 MATCH_label_a57:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 858 "machine/mc68k/decoder_low.m"
 			{
@@ -11500,10 +11500,10 @@ MATCH_label_a57:
 MATCH_label_a58:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 748 "machine/mc68k/decoder_low.m"
 			{
@@ -11515,9 +11515,9 @@ MATCH_label_a58:
 MATCH_label_a59:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 753 "machine/mc68k/decoder_low.m"
 			{
@@ -11541,9 +11541,9 @@ MATCH_label_a59:
 MATCH_label_a60:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 762 "machine/mc68k/decoder_low.m"
 			{
@@ -11579,9 +11579,9 @@ MATCH_label_a60:
 MATCH_label_a61:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 865 "machine/mc68k/decoder_low.m"
 			{
@@ -11601,10 +11601,10 @@ MATCH_label_a61:
 MATCH_label_a62:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 873 "machine/mc68k/decoder_low.m"
 			{
@@ -11618,9 +11618,9 @@ MATCH_label_a62:
 MATCH_label_a63:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 879 "machine/mc68k/decoder_low.m"
 			{
@@ -11638,10 +11638,10 @@ MATCH_label_a63:
 MATCH_label_a64:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 887 "machine/mc68k/decoder_low.m"
 			{
@@ -11655,9 +11655,9 @@ MATCH_label_a64:
 MATCH_label_a65:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 893 "machine/mc68k/decoder_low.m"
 			{
@@ -11675,10 +11675,10 @@ MATCH_label_a65:
 MATCH_label_a66:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 901 "machine/mc68k/decoder_low.m"
 			{
@@ -11692,9 +11692,9 @@ MATCH_label_a66:
 MATCH_label_a67:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 983 "machine/mc68k/decoder_low.m"
 			{
@@ -11714,10 +11714,10 @@ MATCH_label_a67:
 MATCH_label_a68:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 991 "machine/mc68k/decoder_low.m"
 			{
@@ -11731,9 +11731,9 @@ MATCH_label_a68:
 MATCH_label_a69:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 997 "machine/mc68k/decoder_low.m"
 			{
@@ -11751,10 +11751,10 @@ MATCH_label_a69:
 MATCH_label_a70:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 1005 "machine/mc68k/decoder_low.m"
 			{
@@ -11768,9 +11768,9 @@ MATCH_label_a70:
 MATCH_label_a71:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 1011 "machine/mc68k/decoder_low.m"
 			{
@@ -11788,10 +11788,10 @@ MATCH_label_a71:
 MATCH_label_a72:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 1019 "machine/mc68k/decoder_low.m"
 			{
@@ -11805,9 +11805,9 @@ MATCH_label_a72:
 MATCH_label_a73:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 909 "machine/mc68k/decoder_low.m"
 			{
@@ -11827,10 +11827,10 @@ MATCH_label_a73:
 MATCH_label_a74:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 917 "machine/mc68k/decoder_low.m"
 			{
@@ -11844,9 +11844,9 @@ MATCH_label_a74:
 MATCH_label_a75:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 777 "machine/mc68k/decoder_low.m"
 			{
@@ -11868,9 +11868,9 @@ MATCH_label_a75:
 MATCH_label_a76:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 785 "machine/mc68k/decoder_low.m"
 			{
@@ -11906,9 +11906,9 @@ MATCH_label_a76:
 MATCH_label_a77:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 800 "machine/mc68k/decoder_low.m"
 			{
@@ -11930,9 +11930,9 @@ MATCH_label_a77:
 MATCH_label_a78:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 808 "machine/mc68k/decoder_low.m"
 			{
@@ -11968,9 +11968,9 @@ MATCH_label_a78:
 MATCH_label_a79:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 923 "machine/mc68k/decoder_low.m"
 			{
@@ -11988,10 +11988,10 @@ MATCH_label_a79:
 MATCH_label_a80:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 930 "machine/mc68k/decoder_low.m"
 			{
@@ -12005,9 +12005,9 @@ MATCH_label_a80:
 MATCH_label_a81:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 936 "machine/mc68k/decoder_low.m"
 			{
@@ -12023,10 +12023,10 @@ MATCH_label_a81:
 MATCH_label_a82:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 942 "machine/mc68k/decoder_low.m"
 			{
@@ -12038,9 +12038,9 @@ MATCH_label_a82:
 MATCH_label_a83:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 947 "machine/mc68k/decoder_low.m"
 			{
@@ -12056,10 +12056,10 @@ MATCH_label_a83:
 MATCH_label_a84:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 953 "machine/mc68k/decoder_low.m"
 			{
@@ -12071,9 +12071,9 @@ MATCH_label_a84:
 MATCH_label_a85:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
 
 #line 958 "machine/mc68k/decoder_low.m"
 			{
@@ -12089,10 +12089,10 @@ MATCH_label_a85:
 MATCH_label_a86:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned n   = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 964 "machine/mc68k/decoder_low.m"
 			{
@@ -12104,9 +12104,9 @@ MATCH_label_a86:
 MATCH_label_a87:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1060 "machine/mc68k/decoder_low.m"
 			{
@@ -12122,9 +12122,9 @@ MATCH_label_a87:
 MATCH_label_a88:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1092 "machine/mc68k/decoder_low.m"
 			{
@@ -12140,9 +12140,9 @@ MATCH_label_a88:
 MATCH_label_a89:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1071 "machine/mc68k/decoder_low.m"
 			{
@@ -12156,9 +12156,9 @@ MATCH_label_a89:
 MATCH_label_a90:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1103 "machine/mc68k/decoder_low.m"
 			{
@@ -12172,9 +12172,9 @@ MATCH_label_a90:
 MATCH_label_a91:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1081 "machine/mc68k/decoder_low.m"
 			{
@@ -12188,9 +12188,9 @@ MATCH_label_a91:
 MATCH_label_a92:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1113 "machine/mc68k/decoder_low.m"
 			{
@@ -12204,8 +12204,8 @@ MATCH_label_a92:
 MATCH_label_a93:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 1026 "machine/mc68k/decoder_low.m"
 			{
@@ -12237,9 +12237,9 @@ MATCH_label_a93:
 MATCH_label_a94:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 1038 "machine/mc68k/decoder_low.m"
 			{
@@ -12253,9 +12253,9 @@ MATCH_label_a94:
 MATCH_label_a95:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1066 "machine/mc68k/decoder_low.m"
 			{
@@ -12269,9 +12269,9 @@ MATCH_label_a95:
 MATCH_label_a96:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1098 "machine/mc68k/decoder_low.m"
 			{
@@ -12285,9 +12285,9 @@ MATCH_label_a96:
 MATCH_label_a97:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1076 "machine/mc68k/decoder_low.m"
 			{
@@ -12301,9 +12301,9 @@ MATCH_label_a97:
 MATCH_label_a98:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1108 "machine/mc68k/decoder_low.m"
 			{
@@ -12317,9 +12317,9 @@ MATCH_label_a98:
 MATCH_label_a99:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned i8 = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n  = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned i8    = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n     = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1086 "machine/mc68k/decoder_low.m"
 			{
@@ -12333,9 +12333,9 @@ MATCH_label_a99:
 MATCH_label_a100:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned n  = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
-			unsigned n2 = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
+			char     *name = MATCH_name;
+			unsigned n     = (MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */;
+			unsigned n2    = (MATCH_w_16_0 & 0x7) /* reg2 at 0 */;
 
 #line 1118 "machine/mc68k/decoder_low.m"
 			{
@@ -12349,8 +12349,8 @@ MATCH_label_a100:
 MATCH_label_a101:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned ea = addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned ea    = addressToPC(MATCH_p);
 
 #line 1043 "machine/mc68k/decoder_low.m"
 			{
@@ -12380,9 +12380,9 @@ MATCH_label_a101:
 MATCH_label_a102:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned eax = addressToPC(MATCH_p);
-			unsigned x   = 2 + addressToPC(MATCH_p);
+			char     *name = MATCH_name;
+			unsigned eax   = addressToPC(MATCH_p);
+			unsigned x     = 2 + addressToPC(MATCH_p);
 
 #line 1054 "machine/mc68k/decoder_low.m"
 			{

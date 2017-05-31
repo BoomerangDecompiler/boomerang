@@ -190,7 +190,7 @@ public:
 		return Kind == STMT_ASSIGN || Kind == STMT_PHIASSIGN || Kind == STMT_IMPASSIGN || Kind == STMT_BOOLASSIGN;
 	}
 
-	bool isPhi() const { return Kind == STMT_PHIASSIGN; }      //!< true    if this statement is a phi assignment
+	bool isPhi() const { return Kind == STMT_PHIASSIGN; } //!< true    if this statement is a phi assignment
 	bool isImplicit() const { return Kind == STMT_IMPASSIGN; } //!< true if this statement is an implicit assignment
 	bool isFlagAssgn();                                   //!< true if this statment is a flags assignment
 

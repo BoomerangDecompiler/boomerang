@@ -89,10 +89,10 @@ public:
 	virtual ~HpSomBinaryFile();
 	void initialize(IBoomerang *sys) override;
 
-	void UnLoad() override;                // Unload the image
-	void Close() override;                 // Close file opened with Open()
-	bool PostLoad(void *handle) override;  // For archive files only
-	LOAD_FMT GetFormat() const override;   // Get format i.e. LOADFMT_PALM
+	void unload() override;                // Unload the image
+	void close() override;                 // Close file opened with Open()
+	bool postLoad(void *handle) override;  // For archive files only
+	LOAD_FMT getFormat() const override;   // Get format i.e. LOADFMT_PALM
 	MACHINE getMachine() const override;   // Get format i.e. MACHINE_HPRISC
 
 	bool isLibrary() const;
@@ -118,13 +118,13 @@ public:
 	// virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
 	// Analysis functions
-	ADDRESS GetMainEntryPoint() override;
-	ADDRESS GetEntryPoint() override;
+	ADDRESS getMainEntryPoint() override;
+	ADDRESS getEntryPoint() override;
 
 	//        bool        IsDynamicLinkedProc(ADDRESS wNative);
 	//        ADDRESS     NativeToHostAddress(ADDRESS uNative);
 
-	bool LoadFromMemory(QByteArray& data) override;
+	bool loadFromMemory(QByteArray& data) override;
 	int canLoad(QIODevice& dev) const override;
 
 private:

@@ -2194,7 +2194,7 @@ void NJMCDecoder::pNonzeroByte(ADDRESS pc)
 SemStr *NJMCDecoder::alEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -2314,9 +2314,9 @@ MATCH_finished_nd:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -2386,7 +2386,7 @@ MATCH_finished_kd:
 SemStr *NJMCDecoder::amEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int delta, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -2542,9 +2542,9 @@ MATCH_finished_id:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -2587,9 +2587,9 @@ MATCH_finished_gd:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pPcIndex(d8, iT, iR, iS, pc + 2, size);
 				}
@@ -2746,7 +2746,7 @@ MATCH_finished_ad:
 SemStr *NJMCDecoder::awlEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int delta, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -2890,9 +2890,9 @@ MATCH_finished_yc:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -2935,9 +2935,9 @@ MATCH_finished_wc:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pPcIndex(d8, iT, iR, iS, pc + 2, size);
 				}
@@ -3052,7 +3052,7 @@ MATCH_finished_rc:
 SemStr *NJMCDecoder::cEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int delta, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -3180,9 +3180,9 @@ MATCH_finished_pc:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -3225,9 +3225,9 @@ MATCH_finished_nc:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pPcIndex(d8, iT, iR, iS, pc + 2, size);
 				}
@@ -3297,7 +3297,7 @@ MATCH_finished_kc:
 SemStr *NJMCDecoder::dEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int delta, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -3453,9 +3453,9 @@ MATCH_finished_ic:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -3498,9 +3498,9 @@ MATCH_finished_gc:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pPcIndex(d8, iT, iR, iS, pc + 2, size);
 				}
@@ -3657,7 +3657,7 @@ MATCH_finished_ac:
 SemStr *NJMCDecoder::daEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -3777,9 +3777,9 @@ MATCH_finished_yb:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -3849,7 +3849,7 @@ MATCH_finished_vb:
 SemStr *NJMCDecoder::dBEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int delta, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -3981,9 +3981,9 @@ MATCH_finished_tb:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -4026,9 +4026,9 @@ MATCH_finished_rb:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pPcIndex(d8, iT, iR, iS, pc + 2, size);
 				}
@@ -4140,7 +4140,7 @@ MATCH_finished_nb:
 SemStr *NJMCDecoder::dWEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int delta, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -4272,9 +4272,9 @@ MATCH_finished_lb:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -4317,9 +4317,9 @@ MATCH_finished_jb:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pPcIndex(d8, iT, iR, iS, pc + 2, size);
 				}
@@ -4410,7 +4410,7 @@ MATCH_finished_fb:
 SemStr *NJMCDecoder::maEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -4530,9 +4530,9 @@ MATCH_finished_db:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -4602,7 +4602,7 @@ MATCH_finished_ab:
 SemStr *NJMCDecoder::msEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int delta, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -4762,9 +4762,9 @@ MATCH_finished_y:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -4807,9 +4807,9 @@ MATCH_finished_w:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pPcIndex(d8, iT, iR, iS, pc + 2, size);
 				}
@@ -4918,7 +4918,7 @@ MATCH_finished_s:
 SemStr *NJMCDecoder::msEAXL(ADDRESS eaxl, int d32, DecodeResult& result, ADDRESS pc, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eaxl;
@@ -5004,7 +5004,7 @@ MATCH_finished_r:
 SemStr *NJMCDecoder::mdEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int size)
 {
 	SemStr *ret;
-	int reg1, mode;
+	int    reg1, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -5131,9 +5131,9 @@ MATCH_finished_p:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg1, iT, iR, iS, size);
 				}
@@ -5203,7 +5203,7 @@ MATCH_finished_m:
 SemStr *NJMCDecoder::mrEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int delta, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -5331,9 +5331,9 @@ MATCH_finished_k:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}
@@ -5376,9 +5376,9 @@ MATCH_finished_i:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pPcIndex(d8, iT, iR, iS, pc + 2, size);
 				}
@@ -5448,7 +5448,7 @@ MATCH_finished_f:
 SemStr *NJMCDecoder::rmEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS pc, int size)
 {
 	SemStr *ret;
-	int reg2, mode;
+	int    reg2, mode;
 
 	{
 		dword MATCH_p = eax;
@@ -5568,9 +5568,9 @@ MATCH_finished_d:
 				MATCH_w_16_0 = getWord(MATCH_p);
 				{
 					int /* [~128..127] */ d8 = sign_extend((MATCH_w_16_0 & 0xff) /* disp8 at 0 */, 8);
-					unsigned iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
-					unsigned iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
-					unsigned iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
+					unsigned              iR = (MATCH_w_16_0 >> 12 & 0x7) /* iReg at 0 */;
+					unsigned              iS = (MATCH_w_16_0 >> 11 & 0x1) /* iSize at 0 */;
+					unsigned              iT = (MATCH_w_16_0 >> 15 & 0x1) /* iType at 0 */;
 
 					ret = pAIndex(d8, reg2, iT, iR, iS, size);
 				}

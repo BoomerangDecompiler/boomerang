@@ -12,7 +12,7 @@
  */
 
 /**
- * \file: BinaryFile.h
+ * @file: BinaryFile.h
  * @brief: This file contains the definition of the abstract class BinaryFile
  */
 
@@ -24,7 +24,6 @@
 #include "include/types.h"
 #include "db/SectionInfo.h"
 
-//#include "SymTab.h"    // Was used for relocaton stuff
 #include <QStringList>
 #include <QDebug>
 #include <QString>
@@ -35,9 +34,11 @@
 #include <string>
 #include <vector>
 #include <cstdio> // For FILE
-// Given a pointer p, returns the 16 bits (halfword) in the two bytes
-// starting at p.
+
+/// Given a pointer p, returns the 16 bits (halfword) in the two bytes
+/// starting at p.
 #define LH(p)    ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
+
 class IBoomerang;
 
 // Objective-C stuff
@@ -70,8 +71,8 @@ public:
 	std::map<QString, ObjcClass> classes;
 };
 
-// This enum allows a sort of run time type identification, without using
-// compiler specific features
+/// This enum allows a sort of run time type identification, without using
+/// compiler specific features
 enum LOAD_FMT
 {
 	LOADFMT_ELF,
@@ -97,24 +98,30 @@ enum MACHINE
 	MACHINE_68K
 };
 
+
 class BinaryFileFactory
 {
-	std::vector<QObject *> m_loader_plugins;
-	QObject *getInstanceFor(const QString& sName);
+private:
+	static QString m_basePath; ///< path from which the executable is being ran, used to find lib/ directory
+	std::vector<QObject *> m_loaderPlugins;
 
-	static QString m_base_path; //!< path from which the executable is being ran, used to find lib/ directory
+	/**
+	 * Test all plugins against the file, select the one with the best match, and then return an
+	 * instance of the appropriate subclass.
+	 * @param sName - name of the file to load
+	 * @return Instance of the plugin that can load the file with given @p sName
+	 */
+	QObject *getInstanceFor(const QString& sName);
 	void populatePlugins();
 
 public:
-	BinaryFileFactory()
-	{
-		populatePlugins();
-	}
+	BinaryFileFactory();
 
-	static void setBasePath(const QString& path) { m_base_path = path; } //!< sets the base directory for plugin search
-	QObject *Load(const QString& sName);
-	void UnLoad();
+	static void setBasePath(const QString& path) { m_basePath = path; } //!< sets the base directory for plugin search
+	QObject *load(const QString& sName);
+	void unload();
 };
+
 
 #define LoaderInterface_iid    "org.boomerang.LoaderInterface"
 #define ObjcInterface_iid      "org.boomerang.LoaderInterface.ObjC"
@@ -131,6 +138,7 @@ public:
 
 Q_DECLARE_INTERFACE(ObjcAccessInterface, ObjcInterface_iid)
 
+
 class LoaderInterface
 {
 public:
@@ -140,11 +148,11 @@ public:
 	// General loader functions
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual void initialize(IBoomerang *sys) = 0;
-	virtual void UnLoad() = 0;                         //!< Unload the file. Pure virtual
-	virtual void Close()  = 0;                         //!< Close file opened with Open()
-	virtual LOAD_FMT GetFormat() const            = 0; //!< Get the format (e.g. LOADFMT_ELF)
+	virtual void unload() = 0;                         //!< Unload the file. Pure virtual
+	virtual void close()  = 0;                         //!< Close file opened with Open()
+	virtual LOAD_FMT getFormat() const            = 0; //!< Get the format (e.g. LOADFMT_ELF)
 	virtual MACHINE getMachine() const            = 0; //!< Get the expected machine (e.g. MACHINE_PENTIUM)
-	virtual bool LoadFromMemory(QByteArray& data) = 0;
+	virtual bool loadFromMemory(QByteArray& data) = 0;
 	virtual int canLoad(QIODevice& data) const    = 0;
 
 	/// Return the virtual address at which the binary expects to be loaded.
@@ -152,18 +160,21 @@ public:
 	virtual ADDRESS getImageBase() = 0;
 	virtual size_t getImageSize()  = 0; //!< Return the total size of the loaded image
 
-	virtual bool IsRelocationAt(ADDRESS /*uNative*/) { return false; }
+	virtual bool isRelocationAt(ADDRESS /*uNative*/) { return false; }
 
-	virtual ADDRESS IsJumpToAnotherAddr(ADDRESS /*uNative*/) { return NO_ADDRESS; }
+	virtual ADDRESS isJumpToAnotherAddr(ADDRESS /*uNative*/) { return NO_ADDRESS; }
 	virtual bool hasDebugInfo() { return false; }
 
-	virtual ADDRESS GetMainEntryPoint() = 0;
-	virtual ADDRESS GetEntryPoint()     = 0; //!< Return the "real" entry point, ie where execution of the program begins
+	/// @returns the address of main()/WinMain() etc.
+	virtual ADDRESS getMainEntryPoint() = 0;
+
+	/// @returns the "real" entry point, ie where execution of the program begins
+	virtual ADDRESS getEntryPoint() = 0;
 
 	///////////////////////////////////////////////////////////////////////////////
 	// Internal information
 	// Dump headers, etc
-	virtual bool DisplayDetails(const char * /*fileName*/, FILE * /*f*/ /* = stdout */)
+	virtual bool displayDetails(const char * /*fileName*/, FILE * /*f*/ /* = stdout */)
 	{
 		return false; // Should always be overridden
 		// Should display file header, program
@@ -174,13 +185,15 @@ public:
 	// Special load function for archive members
 
 protected:
-	virtual bool PostLoad(void *handle) = 0; //!< Called after loading archive member
+	virtual bool postLoad(void *handle) = 0; ///< Called after loading archive member
 };
 
 Q_DECLARE_INTERFACE(LoaderInterface, LoaderInterface_iid)
+
+
 struct LoaderPluginWrapper
 {
-	QObject *plugin;
+	QObject *m_plugin;
 	template<class T>
-	T *iface() { return plugin ? qobject_cast<T *>(plugin) : nullptr; }
+	T *iface() { return m_plugin ? qobject_cast<T *>(m_plugin) : nullptr; }
 };

@@ -85,7 +85,7 @@ void StatementTest::testEmpty()
 	// create Prog
 	Prog              *prog = new Prog("testEmpty");
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_PENTIUM);
+	QObject           *pBF = bff.load(HELLO_PENTIUM);
 	QVERIFY(pBF != 0);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);

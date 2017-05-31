@@ -895,7 +895,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 	ADDRESS nextPC;
 
 	list<RT *> *RTs = nullptr;
-	int condvalue;
+	int        condvalue;
 
 	//#line 170 "machine/hppa/decoder_low.m"
 	{
@@ -903,7 +903,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 
 #line 170 "machine/hppa/decoder_low.m"
 			hostPC;
-		char *MATCH_name;
+		char        *MATCH_name;
 		static char *MATCH_name_ext8_19_0[] =
 		{
 			"BREAK",   (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0,
@@ -1021,7 +1021,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_ext8_19_0[(MATCH_w_32_0 >> 5 & 0xff)
 						                                  /* ext8_19 at 0 */];
 						{
-							char *name       = MATCH_name;
+							char     *name   = MATCH_name;
 							unsigned im13_06 = (MATCH_w_32_0 >> 13 & 0x1fff) /* im13_06 at 0 */;
 							unsigned im5_27  = (MATCH_w_32_0 & 0x1f) /* im5_27 at 0 */;
 							nextPC = 4 + MATCH_p;
@@ -1158,7 +1158,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_ext_17_2[(MATCH_w_32_0 >> 14 & 0x1)
 						                                 /* ext_17 at 0 */];
 						{
-							char *name     = MATCH_name;
+							char     *name = MATCH_name;
 							unsigned cmplt = addressToPC(MATCH_p);
 							unsigned t_27  = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 							nextPC = 4 + MATCH_p;
@@ -1184,7 +1184,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_ext8_19_0[(MATCH_w_32_0 >> 5 & 0xff)
 						                                  /* ext8_19 at 0 */];
 						{
-							char *name       = MATCH_name;
+							char     *name   = MATCH_name;
 							unsigned im10_06 = (MATCH_w_32_0 >> 16 & 0x3ff) /* im10_06 at 0 */;
 							unsigned t_27    = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 							nextPC = 4 + MATCH_p;
@@ -1201,8 +1201,8 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_ext8_19_0[(MATCH_w_32_0 >> 5 & 0xff)
 						                                  /* ext8_19 at 0 */];
 						{
-							char *name    = MATCH_name;
-							unsigned t_27 = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
+							char     *name = MATCH_name;
+							unsigned t_27  = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 							nextPC = 4 + MATCH_p;
 
 #line 299 "machine/hppa/decoder_low.m"
@@ -1221,7 +1221,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_ext8_19_0[(MATCH_w_32_0 >> 5 & 0xff)
 						                                  /* ext8_19 at 0 */];
 						{
-							char *name     = MATCH_name;
+							char     *name = MATCH_name;
 							unsigned ct_06 = (MATCH_w_32_0 >> 21 & 0x1f) /* cr_06 at 0 */;
 							unsigned r_11  = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
 							nextPC = 4 + MATCH_p;
@@ -1239,8 +1239,8 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_ext8_19_0[(MATCH_w_32_0 >> 5 & 0xff)
 						                                  /* ext8_19 at 0 */];
 						{
-							char *name    = MATCH_name;
-							unsigned r_11 = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
+							char     *name = MATCH_name;
+							unsigned r_11  = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
 							nextPC = 4 + MATCH_p;
 
 #line 290 "machine/hppa/decoder_low.m"
@@ -1679,7 +1679,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 			case 8:
 				MATCH_name = MATCH_name_op_58[(MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */];
 				{
-					char *name     = MATCH_name;
+					char     *name = MATCH_name;
 					unsigned imm21 = ((MATCH_w_32_0 >> 12 & 0x3) /* im2_18 at 0 */ << 11) +
 									 ((MATCH_w_32_0 >> 16 & 0x1f) /* im5_11 at 0 */ << 13) +
 									 ((MATCH_w_32_0 >> 14 & 0x3) /* im2_16 at 0 */ << 18) +
@@ -1737,7 +1737,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 			case 10:
 				MATCH_name = MATCH_name_op_58[(MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */];
 				{
-					char *name     = MATCH_name;
+					char     *name = MATCH_name;
 					unsigned imm21 = ((MATCH_w_32_0 >> 12 & 0x3) /* im2_18 at 0 */ << 11) +
 									 ((MATCH_w_32_0 >> 16 & 0x1f) /* im5_11 at 0 */ << 13) +
 									 ((MATCH_w_32_0 >> 14 & 0x3) /* im2_16 at 0 */ << 18) +
@@ -1805,10 +1805,10 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_sub_16_71[(MATCH_w_32_0 >> 13 & 0x7)
 						                                  /* sub_16 at 0 */];
 						{
-							char *name   = MATCH_name;
-							unsigned fmt = (MATCH_w_32_0 >> 11 & 0x3) /* fmt_19 at 0 */;
-							unsigned rf  = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
-							unsigned tf  = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
+							char     *name = MATCH_name;
+							unsigned fmt   = (MATCH_w_32_0 >> 11 & 0x3) /* fmt_19 at 0 */;
+							unsigned rf    = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+							unsigned tf    = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 							nextPC = 4 + MATCH_p;
 
 #line 304 "machine/hppa/decoder_low.m"
@@ -1827,11 +1827,11 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_sub_14_72[(MATCH_w_32_0 >> 15 & 0x7)
 						                                  /* sub_14 at 0 */];
 						{
-							char *name  = MATCH_name;
-							unsigned df = (MATCH_w_32_0 >> 13 & 0x3) /* df_17 at 0 */;
-							unsigned rf = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
-							unsigned sf = (MATCH_w_32_0 >> 11 & 0x3) /* sf_19 at 0 */;
-							unsigned tf = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
+							char     *name = MATCH_name;
+							unsigned df    = (MATCH_w_32_0 >> 13 & 0x3) /* df_17 at 0 */;
+							unsigned rf    = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+							unsigned sf    = (MATCH_w_32_0 >> 11 & 0x3) /* sf_19 at 0 */;
+							unsigned tf    = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 							nextPC = 4 + MATCH_p;
 
 #line 308 "machine/hppa/decoder_low.m"
@@ -1922,7 +1922,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 			case 13:
 				MATCH_name = MATCH_name_op_58[(MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */];
 				{
-					char *name     = MATCH_name;
+					char     *name = MATCH_name;
 					unsigned b     = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 					unsigned ldisp = (sign_extend((MATCH_w_32_0 & 0x1) /* i_31 at 0 */, 1) << 13) +
 									 (MATCH_w_32_0 >> 1 & 0x1fff) /* im13_18 at 0 */;
@@ -1952,10 +1952,10 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_sub_14_75[(MATCH_w_32_0 >> 15 & 0x7)
 						                                  /* sub_14 at 0 */];
 						{
-							char *name  = MATCH_name;
-							unsigned df = (MATCH_w_32_0 >> 13 & 0x3) /* df_17 at 0 */;
-							unsigned rf = ((MATCH_w_32_0 >> 7 & 0x1) /* r1_24 at 0 */ << 5) +
-										  (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+							char     *name = MATCH_name;
+							unsigned df    = (MATCH_w_32_0 >> 13 & 0x3) /* df_17 at 0 */;
+							unsigned rf    = ((MATCH_w_32_0 >> 7 & 0x1) /* r1_24 at 0 */ << 5) +
+											 (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
 							unsigned sf = (MATCH_w_32_0 >> 11 & 0x3) /* sf_19 at 0 */;
 							unsigned tf = ((MATCH_w_32_0 >> 6 & 0x1) /* t_25 at 0 */ << 5) +
 										  (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
@@ -2107,7 +2107,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 			case 19:
 				MATCH_name = MATCH_name_op_58[(MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */];
 				{
-					char *name      = MATCH_name;
+					char     *name  = MATCH_name;
 					unsigned b      = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 					unsigned c_addr = addressToPC(MATCH_p);
 					unsigned r_11   = (MATCH_w_32_0 >> 16 & 0x1f) /* t_11 at 0 */;
@@ -2130,7 +2130,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 			case 27:
 				MATCH_name = MATCH_name_op_58[(MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */];
 				{
-					char *name      = MATCH_name;
+					char     *name  = MATCH_name;
 					unsigned b      = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 					unsigned c_addr = addressToPC(MATCH_p);
 					unsigned r_11   = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
@@ -2206,12 +2206,12 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_se_21_90[(MATCH_w_32_0 >> 10 & 0x1)
 						                                 /* se_21 at 0 */];
 						{
-							char *name   = MATCH_name;
-							unsigned c   = addressToPC(MATCH_p);
-							unsigned len = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
-							unsigned p   = (MATCH_w_32_0 >> 5 & 0x1f) /* pos5_22 at 0 */;
-							unsigned r   = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
-							unsigned t   = (MATCH_w_32_0 >> 16 & 0x1f) /* t_11 at 0 */;
+							char     *name = MATCH_name;
+							unsigned c     = addressToPC(MATCH_p);
+							unsigned len   = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
+							unsigned p     = (MATCH_w_32_0 >> 5 & 0x1f) /* pos5_22 at 0 */;
+							unsigned r     = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+							unsigned t     = (MATCH_w_32_0 >> 16 & 0x1f) /* t_11 at 0 */;
 							nextPC = 4 + MATCH_p;
 
 #line 236 "machine/hppa/decoder_low.m"
@@ -2225,11 +2225,11 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_se_21_89[(MATCH_w_32_0 >> 10 & 0x1)
 						                                 /* se_21 at 0 */];
 						{
-							char *name   = MATCH_name;
-							unsigned c   = addressToPC(MATCH_p);
-							unsigned len = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
-							unsigned r   = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
-							unsigned t   = (MATCH_w_32_0 >> 16 & 0x1f) /* t_11 at 0 */;
+							char     *name = MATCH_name;
+							unsigned c     = addressToPC(MATCH_p);
+							unsigned len   = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
+							unsigned r     = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+							unsigned t     = (MATCH_w_32_0 >> 16 & 0x1f) /* t_11 at 0 */;
 							nextPC = 4 + MATCH_p;
 
 #line 232 "machine/hppa/decoder_low.m"
@@ -2246,12 +2246,12 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 					MATCH_name = MATCH_name_p_20_88[(MATCH_w_32_0 >> 11 & 0x1)
 					                                /* p_20 at 0 */];
 					{
-						char *name  = MATCH_name;
-						unsigned c  = addressToPC(MATCH_p);
-						unsigned p  = 31 - (MATCH_w_32_0 >> 5 & 0x1f) /* pos5_22 at 0 */;
-						unsigned r1 = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
-						unsigned r2 = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
-						unsigned t  = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
+						char     *name = MATCH_name;
+						unsigned c     = addressToPC(MATCH_p);
+						unsigned p     = 31 - (MATCH_w_32_0 >> 5 & 0x1f) /* pos5_22 at 0 */;
+						unsigned r1    = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
+						unsigned r2    = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+						unsigned t     = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 						nextPC = 4 + MATCH_p;
 
 #line 228 "machine/hppa/decoder_low.m"
@@ -2265,11 +2265,11 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 					MATCH_name = MATCH_name_p_20_88[(MATCH_w_32_0 >> 11 & 0x1)
 					                                /* p_20 at 0 */];
 					{
-						char *name  = MATCH_name;
-						unsigned c  = addressToPC(MATCH_p);
-						unsigned r1 = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
-						unsigned r2 = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
-						unsigned t  = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
+						char     *name = MATCH_name;
+						unsigned c     = addressToPC(MATCH_p);
+						unsigned r1    = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
+						unsigned r2    = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+						unsigned t     = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 						nextPC = 4 + MATCH_p;
 
 #line 224 "machine/hppa/decoder_low.m"
@@ -2290,9 +2290,9 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_se_21_94[(MATCH_w_32_0 >> 10 & 0x1)
 						                                 /* se_21 at 0 */];
 						{
-							char *name = MATCH_name;
-							unsigned c = addressToPC(MATCH_p);
-							unsigned i =
+							char     *name = MATCH_name;
+							unsigned c     = addressToPC(MATCH_p);
+							unsigned i     =
 								((sign_extend((MATCH_w_32_0 >> 16 & 0x1) /* im1_15 at 0 */, 1) & 0xfffffff) << 4) +
 								(MATCH_w_32_0 >> 17 & 0xf) /* im4_11 at 0 */;
 							unsigned len = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
@@ -2311,9 +2311,9 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						MATCH_name = MATCH_name_se_21_93[(MATCH_w_32_0 >> 10 & 0x1)
 						                                 /* se_21 at 0 */];
 						{
-							char *name = MATCH_name;
-							unsigned c = addressToPC(MATCH_p);
-							unsigned i =
+							char     *name = MATCH_name;
+							unsigned c     = addressToPC(MATCH_p);
+							unsigned i     =
 								((sign_extend((MATCH_w_32_0 >> 16 & 0x1) /* im1_15 at 0 */, 1) & 0xfffffff) << 4) +
 								(MATCH_w_32_0 >> 17 & 0xf) /* im4_11 at 0 */;
 							unsigned len = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
@@ -2333,12 +2333,12 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 					MATCH_name = MATCH_name_se_21_92[(MATCH_w_32_0 >> 10 & 0x1)
 					                                 /* se_21 at 0 */];
 					{
-						char *name   = MATCH_name;
-						unsigned c   = addressToPC(MATCH_p);
-						unsigned len = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
-						unsigned p   = 31 - (MATCH_w_32_0 >> 5 & 0x1f) /* pos5_22 at 0 */;
-						unsigned r   = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
-						unsigned t   = (MATCH_w_32_0 >> 21 & 0x1f) /* t_06 at 0 */;
+						char     *name = MATCH_name;
+						unsigned c     = addressToPC(MATCH_p);
+						unsigned len   = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
+						unsigned p     = 31 - (MATCH_w_32_0 >> 5 & 0x1f) /* pos5_22 at 0 */;
+						unsigned r     = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
+						unsigned t     = (MATCH_w_32_0 >> 21 & 0x1f) /* t_06 at 0 */;
 						nextPC = 4 + MATCH_p;
 
 #line 244 "machine/hppa/decoder_low.m"
@@ -2352,11 +2352,11 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 					MATCH_name = MATCH_name_se_21_91[(MATCH_w_32_0 >> 10 & 0x1)
 					                                 /* se_21 at 0 */];
 					{
-						char *name   = MATCH_name;
-						unsigned c   = addressToPC(MATCH_p);
-						unsigned len = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
-						unsigned r   = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
-						unsigned t   = (MATCH_w_32_0 >> 21 & 0x1f) /* t_06 at 0 */;
+						char     *name = MATCH_name;
+						unsigned c     = addressToPC(MATCH_p);
+						unsigned len   = 32 - (MATCH_w_32_0 & 0x1f) /* clen5_27 at 0 */;
+						unsigned r     = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
+						unsigned t     = (MATCH_w_32_0 >> 21 & 0x1f) /* t_06 at 0 */;
 						nextPC = 4 + MATCH_p;
 
 #line 240 "machine/hppa/decoder_low.m"
@@ -2390,7 +2390,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 					else {
 						MATCH_name = "BLR";
 						{
-							char *name     = MATCH_name;
+							char     *name = MATCH_name;
 							unsigned nulli = addressToPC(MATCH_p);
 							unsigned t_06  = (MATCH_w_32_0 >> 21 & 0x1f) /* t_06 at 0 */;
 							unsigned x_11  = (MATCH_w_32_0 >> 16 & 0x1f) /* x_11 at 0 */;
@@ -2421,7 +2421,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 				case 5:
 					MATCH_name = "BL.LONG";
 					{
-						char *name          = MATCH_name;
+						char     *name      = MATCH_name;
 						unsigned nulli      = addressToPC(MATCH_p);
 						unsigned ubr_target = 8 + ((MATCH_w_32_0 >> 3 & 0x3ff) /* w10_19 at 0 */ << 2) +
 											  ((MATCH_w_32_0 >> 2 & 0x1) /* w_29 at 0 */ << 12) +
@@ -2453,7 +2453,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 					else {
 						MATCH_name = "BV";
 						{
-							char *name     = MATCH_name;
+							char     *name = MATCH_name;
 							unsigned b_06  = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 							unsigned nulli = addressToPC(MATCH_p);
 							unsigned x_11  = (MATCH_w_32_0 >> 16 & 0x1f) /* x_11 at 0 */;
@@ -2529,7 +2529,7 @@ MATCH_label_a1:
 MATCH_label_a2:
 		(void)0; /*placeholder for label*/
 		{
-			char *name     = MATCH_name;
+			char     *name = MATCH_name;
 			unsigned cmplt = addressToPC(MATCH_p);
 			unsigned r_06  = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
 			unsigned r_11  = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
@@ -2548,7 +2548,7 @@ MATCH_label_a2:
 MATCH_label_a3:
 		(void)0; /*placeholder for label*/
 		{
-			char *name      = MATCH_name;
+			char     *name  = MATCH_name;
 			unsigned b      = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 			unsigned c_addr = addressToPC(MATCH_p);
 			unsigned s      = (MATCH_w_32_0 >> 14 & 0x3) /* s2_16 at 0 */;
@@ -2566,7 +2566,7 @@ MATCH_label_a3:
 MATCH_label_a4:
 		(void)0; /*placeholder for label*/
 		{
-			char *name      = MATCH_name;
+			char     *name  = MATCH_name;
 			unsigned b      = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 			unsigned c_addr = addressToPC(MATCH_p);
 			unsigned r_11   = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
@@ -2584,7 +2584,7 @@ MATCH_label_a4:
 MATCH_label_a5:
 		(void)0; /*placeholder for label*/
 		{
-			char *name      = MATCH_name;
+			char     *name  = MATCH_name;
 			unsigned b      = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 			unsigned c_addr = addressToPC(MATCH_p);
 			unsigned s      = (MATCH_w_32_0 >> 14 & 0x3) /* s2_16 at 0 */;
@@ -2602,7 +2602,7 @@ MATCH_label_a5:
 MATCH_label_a6:
 		(void)0; /*placeholder for label*/
 		{
-			char *name      = MATCH_name;
+			char     *name  = MATCH_name;
 			unsigned b      = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 			unsigned c_addr = addressToPC(MATCH_p);
 			unsigned r_27   = ((MATCH_w_32_0 >> 6 & 0x1) /* r_25 at 0 */ << 5) + (MATCH_w_32_0 & 0x1f) /* r_27 at 0 */;
@@ -2620,7 +2620,7 @@ MATCH_label_a6:
 MATCH_label_a7:
 		(void)0; /*placeholder for label*/
 		{
-			char *name      = MATCH_name;
+			char     *name  = MATCH_name;
 			unsigned b      = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 			unsigned c_addr = addressToPC(MATCH_p);
 			unsigned s      = (MATCH_w_32_0 >> 14 & 0x3) /* s2_16 at 0 */;
@@ -2638,7 +2638,7 @@ MATCH_label_a7:
 MATCH_label_a8:
 		(void)0; /*placeholder for label*/
 		{
-			char *name      = MATCH_name;
+			char     *name  = MATCH_name;
 			unsigned b      = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 			unsigned c_addr = addressToPC(MATCH_p);
 			unsigned r_27   = (MATCH_w_32_0 & 0x1f) /* r_27 at 0 */;
@@ -2656,11 +2656,11 @@ MATCH_label_a8:
 MATCH_label_a9:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned df = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
-			unsigned rf = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
-			unsigned sf = (MATCH_w_32_0 >> 11 & 0x3) /* fmt_19 at 0 */;
-			unsigned tf = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
+			char     *name = MATCH_name;
+			unsigned df    = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
+			unsigned rf    = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+			unsigned sf    = (MATCH_w_32_0 >> 11 & 0x3) /* fmt_19 at 0 */;
+			unsigned tf    = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
 			nextPC = 4 + MATCH_p;
 
 #line 312 "machine/hppa/decoder_low.m"
@@ -2673,11 +2673,11 @@ MATCH_label_a9:
 MATCH_label_a10:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned fmt = (MATCH_w_32_0 >> 11 & 0x3) /* fmt_19 at 0 */;
-			unsigned fr1 = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
-			unsigned fr2 = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
-			unsigned frt = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
+			char     *name = MATCH_name;
+			unsigned fmt   = (MATCH_w_32_0 >> 11 & 0x3) /* fmt_19 at 0 */;
+			unsigned fr1   = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
+			unsigned fr2   = (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
+			unsigned frt   = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
 			nextPC = 4 + MATCH_p;
 
 #line 316 "machine/hppa/decoder_low.m"
@@ -2690,9 +2690,9 @@ MATCH_label_a10:
 MATCH_label_a11:
 		(void)0; /*placeholder for label*/
 		{
-			char *name  = MATCH_name;
-			unsigned df = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
-			unsigned rf =
+			char     *name = MATCH_name;
+			unsigned df    = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
+			unsigned rf    =
 				((MATCH_w_32_0 >> 7 & 0x1) /* r1_24 at 0 */ << 5) + (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
 			unsigned sf = (MATCH_w_32_0 >> 11 & 0x1) /* f_20 at 0 */;
 			unsigned tf =
@@ -2709,9 +2709,9 @@ MATCH_label_a11:
 MATCH_label_a12:
 		(void)0; /*placeholder for label*/
 		{
-			char *name   = MATCH_name;
-			unsigned fmt = (MATCH_w_32_0 >> 11 & 0x1) /* f_20 at 0 */;
-			unsigned fr1 =
+			char     *name = MATCH_name;
+			unsigned fmt   = (MATCH_w_32_0 >> 11 & 0x1) /* f_20 at 0 */;
+			unsigned fr1   =
 				((MATCH_w_32_0 >> 7 & 0x1) /* r1_24 at 0 */ << 5) + (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
 			unsigned fr2 =
 				((MATCH_w_32_0 >> 12 & 0x1) /* f_19 at 0 */ << 5) + (MATCH_w_32_0 >> 16 & 0x1f) /* r_11 at 0 */;
@@ -2728,7 +2728,7 @@ MATCH_label_a12:
 MATCH_label_a13:
 		(void)0; /*placeholder for label*/
 		{
-			char *name     = MATCH_name;
+			char     *name = MATCH_name;
 			unsigned cmplt = addressToPC(MATCH_p);
 			unsigned imm11 = (sign_extend((MATCH_w_32_0 & 0x1) /* i_31 at 0 */, 1) << 10) +
 							 (MATCH_w_32_0 >> 1 & 0x3ff) /* im10_21 at 0 */;
@@ -2748,7 +2748,7 @@ MATCH_label_a13:
 MATCH_label_a14:
 		(void)0; /*placeholder for label*/
 		{
-			char *name          = MATCH_name;
+			char     *name      = MATCH_name;
 			unsigned nulli      = addressToPC(MATCH_p);
 			unsigned t_06       = (MATCH_w_32_0 >> 21 & 0x1f) /* t_06 at 0 */;
 			unsigned ubr_target = 8 + ((MATCH_w_32_0 >> 3 & 0x3ff) /* w10_19 at 0 */ << 2) +
@@ -2771,7 +2771,7 @@ MATCH_label_a14:
 MATCH_label_a15:
 		(void)0; /*placeholder for label*/
 		{
-			char *name     = MATCH_name;
+			char     *name = MATCH_name;
 			unsigned b_06  = (MATCH_w_32_0 >> 21 & 0x1f) /* b_06 at 0 */;
 			unsigned nulli = addressToPC(MATCH_p);
 			unsigned p_31  = (MATCH_w_32_0 & 0x1) /* p_31 at 0 */;

@@ -7901,8 +7901,8 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 			case 46:
 				MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
 				{
-					const char *name            = MATCH_name;
-					int /* [~32768..32767] */ d = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+					const char                *name = MATCH_name;
+					int /* [~32768..32767] */ d     = sign_extend((MATCH_w_32_0 & 0xffff), 16);
 					unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f);
 					unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f);
 					nextPC = MATCH_p + 4;
@@ -7948,8 +7948,8 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 			case 47:
 				MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
 				{
-					const char *name            = MATCH_name;
-					int /* [~32768..32767] */ d = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+					const char                *name = MATCH_name;
+					int /* [~32768..32767] */ d     = sign_extend((MATCH_w_32_0 & 0xffff), 16);
 					unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f);
 					unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f);
 					nextPC = MATCH_p + 4;
@@ -7974,8 +7974,8 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 			case 51:
 				MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
 				{
-					const char *name            = MATCH_name;
-					int /* [~32768..32767] */ d = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+					const char                *name = MATCH_name;
+					int /* [~32768..32767] */ d     = sign_extend((MATCH_w_32_0 & 0xffff), 16);
 					unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f);
 					unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f);
 					nextPC = MATCH_p + 4;
@@ -7994,8 +7994,8 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 			case 55:
 				MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
 				{
-					const char *name            = MATCH_name;
-					int /* [~32768..32767] */ d = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+					const char                *name = MATCH_name;
+					int /* [~32768..32767] */ d     = sign_extend((MATCH_w_32_0 & 0xffff), 16);
 					unsigned fs = (MATCH_w_32_0 >> 21 & 0x1f);
 					unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f);
 					nextPC = MATCH_p + 4;
@@ -8973,8 +8973,8 @@ MATCH_label_a0:
 MATCH_label_a1:
 		(void)0; /*placeholder for label*/
 		{
-			unsigned BIcr   = (MATCH_w_32_0 >> 18 & 0x7);
-			ADDRESS reladdr = addressToPC(MATCH_p) + ADDRESS::g(4 * (MATCH_w_32_0 >> 2 & 0x3fff));
+			unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+			ADDRESS  reladdr = addressToPC(MATCH_p) + ADDRESS::g(4 * (MATCH_w_32_0 >> 2 & 0x3fff));
 			nextPC = MATCH_p + 4;
 
 			//#line 303 "frontend/machine/ppc/decoder.m"
@@ -8993,7 +8993,7 @@ MATCH_label_a2:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+			unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
 			nextPC = MATCH_p + 4;
 
 			//#line 341 "frontend/machine/ppc/decoder.m"
@@ -9014,9 +9014,9 @@ MATCH_label_a3:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned crbA    = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned crbB    = (MATCH_w_32_0 >> 11 & 0x1f);
-			unsigned crbD    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   crbA  = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   crbB  = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   crbD  = (MATCH_w_32_0 >> 21 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 168 "frontend/machine/ppc/decoder.m"
@@ -9029,11 +9029,11 @@ MATCH_label_a4:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned beg     = (MATCH_w_32_0 >> 6 & 0x1f);
-			unsigned end     = (MATCH_w_32_0 >> 1 & 0x1f);
-			unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned rs      = (MATCH_w_32_0 >> 21 & 0x1f);
-			unsigned uimm    = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   beg   = (MATCH_w_32_0 >> 6 & 0x1f);
+			unsigned   end   = (MATCH_w_32_0 >> 1 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rs    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   uimm  = (MATCH_w_32_0 >> 11 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 189 "frontend/machine/ppc/decoder.m"
@@ -9046,10 +9046,10 @@ MATCH_label_a5:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned crfd    = (MATCH_w_32_0 >> 23 & 0x7);
-			unsigned l       = (MATCH_w_32_0 >> 21 & 0x1);
-			unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   crfd  = (MATCH_w_32_0 >> 23 & 0x7);
+			unsigned   l     = (MATCH_w_32_0 >> 21 & 0x1);
+			unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 233 "frontend/machine/ppc/decoder.m"
@@ -9064,7 +9064,7 @@ MATCH_label_a6:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 186 "frontend/machine/ppc/decoder.m"
@@ -9077,9 +9077,9 @@ MATCH_label_a7:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
-			unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 146 "frontend/machine/ppc/decoder.m"
@@ -9092,9 +9092,9 @@ MATCH_label_a8:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned ra      = (MATCH_w_32_0 >> 21 & 0x1f);
-			unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
-			unsigned rd      = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   rd    = (MATCH_w_32_0 >> 16 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 144 "frontend/machine/ppc/decoder.m"
@@ -9107,8 +9107,8 @@ MATCH_label_a9:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned ra      = (MATCH_w_32_0 >> 21 & 0x1f);
-			unsigned rd      = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   rd    = (MATCH_w_32_0 >> 16 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 125 "frontend/machine/ppc/decoder.m"
@@ -9127,9 +9127,9 @@ MATCH_label_a10:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
-			unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 149 "frontend/machine/ppc/decoder.m"
@@ -9144,8 +9144,8 @@ MATCH_label_a11:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
-			unsigned uimm    = ((MATCH_w_32_0 >> 11 & 0x1f) << 5) + (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   uimm  = ((MATCH_w_32_0 >> 11 & 0x1f) << 5) + (MATCH_w_32_0 >> 16 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 170 "frontend/machine/ppc/decoder.m"
@@ -9158,8 +9158,8 @@ MATCH_label_a12:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned rs      = (MATCH_w_32_0 >> 21 & 0x1f);
-			unsigned uimm    = ((MATCH_w_32_0 >> 11 & 0x1f) << 5) + (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rs    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   uimm  = ((MATCH_w_32_0 >> 11 & 0x1f) << 5) + (MATCH_w_32_0 >> 16 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 173 "frontend/machine/ppc/decoder.m"
@@ -9194,9 +9194,9 @@ MATCH_label_a13:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned fd      = (MATCH_w_32_0 >> 21 & 0x1f);
-			unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   fd    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 246 "frontend/machine/ppc/decoder.m"
@@ -9210,9 +9210,9 @@ MATCH_label_a14:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned fs      = (MATCH_w_32_0 >> 21 & 0x1f);
-			unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   fs    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 252 "frontend/machine/ppc/decoder.m"
@@ -9226,9 +9226,9 @@ MATCH_label_a15:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned rs      = (MATCH_w_32_0 >> 21 & 0x1f);
-			unsigned uimm    = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rs    = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   uimm  = (MATCH_w_32_0 >> 11 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 347 "frontend/machine/ppc/decoder.m"
@@ -9241,9 +9241,9 @@ MATCH_label_a16:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
-			unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 120 "frontend/machine/ppc/decoder.m"
@@ -9256,9 +9256,9 @@ MATCH_label_a17:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned fa      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned fb      = (MATCH_w_32_0 >> 11 & 0x1f);
-			unsigned fd      = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   fa    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   fb    = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   fd    = (MATCH_w_32_0 >> 21 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 262 "frontend/machine/ppc/decoder.m"
@@ -9276,9 +9276,9 @@ MATCH_label_a18:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned crfd    = (MATCH_w_32_0 >> 23 & 0x7);
-			unsigned fa      = (MATCH_w_32_0 >> 16 & 0x1f);
-			unsigned fb      = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   crfd  = (MATCH_w_32_0 >> 23 & 0x7);
+			unsigned   fa    = (MATCH_w_32_0 >> 16 & 0x1f);
+			unsigned   fb    = (MATCH_w_32_0 >> 11 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 256 "frontend/machine/ppc/decoder.m"
@@ -9292,8 +9292,8 @@ MATCH_label_a19:
 		(void)0; /*placeholder for label*/
 		{
 			const char *name = MATCH_name;
-			unsigned fb      = (MATCH_w_32_0 >> 11 & 0x1f);
-			unsigned fd      = (MATCH_w_32_0 >> 21 & 0x1f);
+			unsigned   fb    = (MATCH_w_32_0 >> 11 & 0x1f);
+			unsigned   fd    = (MATCH_w_32_0 >> 21 & 0x1f);
 			nextPC = MATCH_p + 4;
 
 			//#line 259 "frontend/machine/ppc/decoder.m"

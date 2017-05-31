@@ -579,7 +579,7 @@ PentiumFrontEnd::~PentiumFrontEnd()
  ******************************************************************************/
 ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 {
-	ADDRESS start = ldrIface->GetMainEntryPoint();
+	ADDRESS start = ldrIface->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		gotMain = true;
@@ -587,7 +587,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 	}
 
 	gotMain = false;
-	start   = ldrIface->GetEntryPoint();
+	start   = ldrIface->getEntryPoint();
 
 	if (start.isZero() || (start == NO_ADDRESS)) {
 		return NO_ADDRESS;
@@ -597,7 +597,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 	int     conseq    = 0;
 	ADDRESS addr      = start;
 
-	IBinarySymbolTable *Symbols = Boomerang::get()->getSymbols();
+	IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
 	// Look for 3 calls in a row in the first 100 instructions, with no other instructions between them.
 	// This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA followed by
 	// a push of eax and then the call to main.  Or a call to __libc_start_main
@@ -618,7 +618,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 		}
 
 		const IBinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
-								   Symbols->find(cs->getDest()->access<Const, 1>()->getAddr()) : nullptr;
+								   symbols->find(cs->getDest()->access<Const, 1>()->getAddr()) : nullptr;
 
 		if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
 			int oNumBytes = inst.numBytes;
@@ -634,7 +634,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 						CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
 
 						if (toMain && (toMain->getFixedDest() != NO_ADDRESS)) {
-							Symbols->create(toMain->getFixedDest(), "WinMain");
+							symbols->create(toMain->getFixedDest(), "WinMain");
 							gotMain = true;
 							return toMain->getFixedDest();
 						}
@@ -683,7 +683,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 	} while (--instCount);
 
 	// Last chance check: look for _main (e.g. Borland programs)
-	const IBinarySymbol *sym = Symbols->find("_main");
+	const IBinarySymbol *sym = symbols->find("_main");
 
 	if (sym) {
 		return sym->getLocation();
@@ -692,7 +692,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 	// Not ideal; we must return start
 	LOG_STREAM(2) << "main function not found\n";
 
-	if (Symbols->find(start) == nullptr) {
+	if (symbols->find(start) == nullptr) {
 		this->AddSymbol(start, "_start");
 	}
 

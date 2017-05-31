@@ -38,7 +38,7 @@ void ExeBinaryFile::initialize(IBoomerang *sys)
 }
 
 
-bool ExeBinaryFile::LoadFromMemory(QByteArray& data)
+bool ExeBinaryFile::loadFromMemory(QByteArray& data)
 {
 	QBuffer fp(&data);
 	int     i, cb;
@@ -169,7 +169,7 @@ bool ExeBinaryFile::LoadFromMemory(QByteArray& data)
 
 
 // Clean up and unload the binary image
-void ExeBinaryFile::UnLoad()
+void ExeBinaryFile::unload()
 {
 	delete m_pHeader;
 	delete[] m_pImage;
@@ -184,7 +184,7 @@ void ExeBinaryFile::UnLoad()
 //    // No symbol table handled at present
 //    return nullptr;
 //}
-bool ExeBinaryFile::DisplayDetails(const char *fileName, FILE *f
+bool ExeBinaryFile::displayDetails(const char *fileName, FILE *f
                                    /* = stdout */)
 {
 	Q_UNUSED(fileName);
@@ -194,7 +194,7 @@ bool ExeBinaryFile::DisplayDetails(const char *fileName, FILE *f
 }
 
 
-LOAD_FMT ExeBinaryFile::GetFormat() const
+LOAD_FMT ExeBinaryFile::getFormat() const
 {
 	return LOADFMT_EXE;
 }
@@ -206,13 +206,13 @@ MACHINE ExeBinaryFile::getMachine() const
 }
 
 
-void ExeBinaryFile::Close()
+void ExeBinaryFile::close()
 {
 	// Not implemented yet
 }
 
 
-bool ExeBinaryFile::PostLoad(void *handle)
+bool ExeBinaryFile::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	// Not needed: for archives only
@@ -233,13 +233,13 @@ size_t ExeBinaryFile::getImageSize()
 
 
 // Should be doing a search for this
-ADDRESS ExeBinaryFile::GetMainEntryPoint()
+ADDRESS ExeBinaryFile::getMainEntryPoint()
 {
 	return NO_ADDRESS;
 }
 
 
-ADDRESS ExeBinaryFile::GetEntryPoint()
+ADDRESS ExeBinaryFile::getEntryPoint()
 {
 	// Check this...
 	return ADDRESS::g((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));

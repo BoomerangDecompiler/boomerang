@@ -53,16 +53,16 @@ public:
 	virtual ~MachOBinaryFile();          // Destructor
 	void initialize(IBoomerang *sys) override;
 	bool Open(const char *sName);        // Open the file for r/w; ???
-	void Close() override;               // Close file opened with Open()
-	void UnLoad() override;              // Unload the image
-	LOAD_FMT GetFormat() const override; // Get format (i.e. LOADFMT_MACHO)
+	void close() override;               // Close file opened with Open()
+	void unload() override;              // Unload the image
+	LOAD_FMT getFormat() const override; // Get format (i.e. LOADFMT_MACHO)
 	MACHINE getMachine() const override; // Get machine (i.e. MACHINE_PPC)
 	bool isLibrary() const;
 	ADDRESS getImageBase() override;
 	size_t getImageSize() override;
 
-	ADDRESS GetMainEntryPoint() override;
-	ADDRESS GetEntryPoint() override;
+	ADDRESS getMainEntryPoint() override;
+	ADDRESS getEntryPoint() override;
 	DWord getDelta();
 
 	//
@@ -70,7 +70,7 @@ public:
 	//
 	// Internal information
 	// Dump headers, etc
-	bool DisplayDetails(const char *fileName, FILE *f = stdout) override;
+	bool displayDetails(const char *fileName, FILE *f = stdout) override;
 
 protected:
 	int machORead2(short *ps) const; // Read 2 bytes from native addr
@@ -87,11 +87,11 @@ protected:
 public:
 	std::map<QString, ObjcModule>& getObjcModules() override  { return modules; }
 
-	bool LoadFromMemory(QByteArray& data) override;
+	bool loadFromMemory(QByteArray& data) override;
 	int canLoad(QIODevice& dev) const override;
 
 private:
-	bool PostLoad(void *handle) override; // Called after archive member loaded
+	bool postLoad(void *handle) override; // Called after archive member loaded
 	void findJumps(ADDRESS curr);         // Find names for jumps to IATs
 
 	char *base;                           // Beginning of the loaded image

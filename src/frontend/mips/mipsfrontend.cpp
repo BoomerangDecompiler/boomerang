@@ -81,13 +81,13 @@ std::vector<SharedExp>& MIPSFrontEnd::getDefaultReturns()
 ADDRESS MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	gotMain = true;
-	ADDRESS start = ldrIface->GetMainEntryPoint();
+	ADDRESS start = ldrIface->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		return start;
 	}
 
-	start   = ldrIface->GetEntryPoint();
+	start   = ldrIface->getEntryPoint();
 	gotMain = false;
 
 	if (start == NO_ADDRESS) {

@@ -695,7 +695,7 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
 					LOG_STREAM() << "HACK! BAD POINTER 2\n";
 				}
 
-				if (thisBase == otherBase) { // Note: compare pointers
+				if (thisBase == otherBase) {                          // Note: compare pointers
 					return ((PointerType *)this)->shared_from_this(); // Crude attempt to prevent stack overflow
 				}
 
@@ -1088,7 +1088,7 @@ SharedType Instruction::meetWithFor(SharedType ty, SharedExp e, bool& ch)
 
 SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = false */) const
 {
-	assert(!resolvesToUnion()); // `this' should not be a UnionType
+	assert(!resolvesToUnion());     // `this' should not be a UnionType
 
 	if (other->resolvesToUnion()) { // Put all the hard union logic in one place
 		return other->meetWith(((Type *)this)->shared_from_this(), ch, bHighestPtr)->clone();
@@ -2317,7 +2317,7 @@ bool UnionType::isCompatible(const Type& other, bool all) const
 
 	if (other.resolvesToUnion()) {
 		if (this == &other) { // Note: pointer comparison
-			return true;   // Avoid infinite recursion
+			return true;      // Avoid infinite recursion
 		}
 
 		const UnionType& otherUnion((const UnionType&)other);

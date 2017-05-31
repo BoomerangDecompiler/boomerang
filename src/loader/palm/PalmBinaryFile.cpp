@@ -102,7 +102,7 @@ struct SectionParams
 };
 }
 
-bool PalmBinaryFile::LoadFromMemory(QByteArray& img)
+bool PalmBinaryFile::loadFromMemory(QByteArray& img)
 {
 	long size = img.size();
 
@@ -301,7 +301,7 @@ bool PalmBinaryFile::LoadFromMemory(QByteArray& img)
 	// May as well make the native address zero; certainly the offset in the
 	// file is no longer appropriate (and is confusing)
 	// pData->sourceAddr() = 0;
-	Symbols->create(GetMainEntryPoint(), "PilotMain").setAttr("EntryPoint", true);
+	Symbols->create(getMainEntryPoint(), "PilotMain").setAttr("EntryPoint", true);
 	return true;
 }
 
@@ -322,32 +322,32 @@ int PalmBinaryFile::canLoad(QIODevice& dev) const
 }
 
 
-void PalmBinaryFile::UnLoad()
+void PalmBinaryFile::unload()
 {
 }
 
 
-ADDRESS PalmBinaryFile::GetEntryPoint()
+ADDRESS PalmBinaryFile::getEntryPoint()
 {
 	assert(0); /* FIXME: Need to be implemented */
 	return ADDRESS::g(0L);
 }
 
 
-void PalmBinaryFile::Close()
+void PalmBinaryFile::close()
 {
 	// Not implemented yet
 }
 
 
-bool PalmBinaryFile::PostLoad(void */*handle*/)
+bool PalmBinaryFile::postLoad(void */*handle*/)
 {
 	// Not needed: for archives only
 	return false;
 }
 
 
-LOAD_FMT PalmBinaryFile::GetFormat() const
+LOAD_FMT PalmBinaryFile::getFormat() const
 {
 	return LOADFMT_PALM;
 }
@@ -492,7 +492,7 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
 
 // Find the native address for the start of the main entry function.
 // For Palm binaries, this is PilotMain.
-ADDRESS PalmBinaryFile::GetMainEntryPoint()
+ADDRESS PalmBinaryFile::getMainEntryPoint()
 {
 	IBinarySection *psect = Image->GetSectionInfoByName("code1");
 

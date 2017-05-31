@@ -59,7 +59,7 @@ void FrontPentTest::test1()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_PENT);
+	QObject           *pBF = bff.load(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(HELLO_PENT);
@@ -108,7 +108,7 @@ void FrontPentTest::test2()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_PENT);
+	QObject           *pBF = bff.load(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(HELLO_PENT);
@@ -149,7 +149,7 @@ void FrontPentTest::test3()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(HELLO_PENT);
+	QObject           *pBF = bff.load(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(HELLO_PENT);
@@ -189,7 +189,7 @@ void FrontPentTest::testBranch()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(BRANCH_PENT);
+	QObject           *pBF = bff.load(BRANCH_PENT);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(BRANCH_PENT);
@@ -233,7 +233,7 @@ void FrontPentTest::testFindMain()
 	// Test the algorithm for finding main, when there is a call to __libc_start_main
 	// Also tests the loader hack
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.Load(FEDORA2_TRUE);
+	QObject           *pBF = bff.load(FEDORA2_TRUE);
 
 	QVERIFY(pBF != 0);
 	Prog            *prog  = new Prog(FEDORA2_TRUE);
@@ -246,11 +246,11 @@ void FrontPentTest::testFindMain()
 	ADDRESS addr     = pFE->getMainEntryPoint(found);
 	ADDRESS expected = ADDRESS::n(0x8048b10);
 	QCOMPARE(addr, expected);
-	iface->Close();
-	bff.UnLoad();
+	iface->close();
+	bff.unload();
 	delete pFE;
 
-	pBF = bff.Load(FEDORA3_TRUE);
+	pBF = bff.load(FEDORA3_TRUE);
 	QVERIFY(pBF != nullptr);
 	pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -258,11 +258,11 @@ void FrontPentTest::testFindMain()
 	addr     = pFE->getMainEntryPoint(found);
 	expected = ADDRESS::n(0x8048c4a);
 	QCOMPARE(addr, expected);
-	iface->Close();
-	bff.UnLoad();
+	iface->close();
+	bff.unload();
 	delete pFE;
 
-	pBF = bff.Load(SUSE_TRUE);
+	pBF = bff.load(SUSE_TRUE);
 	QVERIFY(pBF != nullptr);
 	pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -270,9 +270,9 @@ void FrontPentTest::testFindMain()
 	addr     = pFE->getMainEntryPoint(found);
 	expected = ADDRESS::n(0x8048b60);
 	QCOMPARE(addr, expected);
-	iface->Close();
+	iface->close();
 
-	bff.UnLoad();
+	bff.unload();
 	delete pFE;
 }
 

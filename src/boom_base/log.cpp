@@ -8,6 +8,27 @@
 #include <QTextStream>
 #include <sstream>
 
+
+FileLogger::FileLogger()
+	: out((Boomerang::get()->getOutputPath() + "log").toStdString())
+{
+}
+
+
+SeparateLogger::SeparateLogger(const QString& v)
+{
+	static QMap<QString, int> versions;
+
+	if (!versions.contains(v)) {
+		versions[v] = 0;
+	}
+
+	QDir    outDir(Boomerang::get()->getOutputPath());
+	QString full_path = outDir.absoluteFilePath(QString("%1_%2.log").arg(v).arg(versions[v]++, 2, 10, QChar('0')));
+	out = new std::ofstream(full_path.toStdString());
+}
+
+
 Log & Log::operator<<(const Instruction *s)
 {
 	QString     tgt;

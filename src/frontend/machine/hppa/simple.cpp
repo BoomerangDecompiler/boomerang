@@ -433,7 +433,7 @@ MATCH_label_a0:
 MATCH_label_a1:
 		(void)0; /*placeholder for label*/
 		{
-			char *name       = MATCH_name;
+			char     *name   = MATCH_name;
 			unsigned c_faddr = addressToPC(MATCH_p);
 			unsigned faddr   = addressToPC(MATCH_p);
 			unsigned t_27    = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;
@@ -458,7 +458,7 @@ MATCH_label_a1:
 MATCH_label_a2:
 		(void)0; /*placeholder for label*/
 		{
-			char *name       = MATCH_name;
+			char     *name   = MATCH_name;
 			unsigned c_faddr = addressToPC(MATCH_p);
 			unsigned faddr   = addressToPC(MATCH_p);
 			unsigned r       = (MATCH_w_32_0 & 0x1f) /* t_27 at 0 */;

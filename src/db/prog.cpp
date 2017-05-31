@@ -583,7 +583,7 @@ Function *Prog::setNewProc(ADDRESS uAddr)
 		return pProc; // Yes, we are done
 	}
 
-	ADDRESS other = pLoaderIface->IsJumpToAnotherAddr(uAddr);
+	ADDRESS other = pLoaderIface->isJumpToAnotherAddr(uAddr);
 
 	if (other != NO_ADDRESS) {
 		uAddr = other;
@@ -2277,7 +2277,7 @@ SharedExp Prog::addReloc(SharedExp e, ADDRESS lc)
 {
 	assert(e->isConst());
 
-	if (!pLoaderIface->IsRelocationAt(lc)) {
+	if (!pLoaderIface->isRelocationAt(lc)) {
 		return e;
 	}
 

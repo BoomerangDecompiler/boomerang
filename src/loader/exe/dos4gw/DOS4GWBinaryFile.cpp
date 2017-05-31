@@ -65,19 +65,19 @@ void DOS4GWBinaryFile::initialize(IBoomerang *sys)
 }
 
 
-void DOS4GWBinaryFile::Close()
+void DOS4GWBinaryFile::close()
 {
-	UnLoad();
+	unload();
 }
 
 
-ADDRESS DOS4GWBinaryFile::GetEntryPoint()
+ADDRESS DOS4GWBinaryFile::getEntryPoint()
 {
 	return ADDRESS::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
 }
 
 
-ADDRESS DOS4GWBinaryFile::GetMainEntryPoint()
+ADDRESS DOS4GWBinaryFile::getMainEntryPoint()
 {
 	const IBinarySymbol *sym = Symbols->find("main");
 
@@ -180,7 +180,7 @@ ADDRESS DOS4GWBinaryFile::GetMainEntryPoint()
 }
 
 
-bool DOS4GWBinaryFile::LoadFromMemory(QByteArray& data)
+bool DOS4GWBinaryFile::loadFromMemory(QByteArray& data)
 {
 	QBuffer buf(&data);
 
@@ -386,19 +386,19 @@ int DOS4GWBinaryFile::canLoad(QIODevice& fl) const
 
 
 // Clean up and unload the binary image
-void DOS4GWBinaryFile::UnLoad()
+void DOS4GWBinaryFile::unload()
 {
 }
 
 
-bool DOS4GWBinaryFile::PostLoad(void *handle)
+bool DOS4GWBinaryFile::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	return false;
 }
 
 
-bool DOS4GWBinaryFile::DisplayDetails(const char *fileName, FILE *f
+bool DOS4GWBinaryFile::displayDetails(const char *fileName, FILE *f
                                       /* = stdout */)
 {
 	Q_UNUSED(fileName);
@@ -428,7 +428,7 @@ int DOS4GWBinaryFile::dos4gwRead4(int *pi) const
 }
 
 
-LOAD_FMT DOS4GWBinaryFile::GetFormat() const
+LOAD_FMT DOS4GWBinaryFile::getFormat() const
 {
 	return LOADFMT_LX;
 }
