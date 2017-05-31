@@ -64,8 +64,8 @@ public:
 
 struct RangePrivateData
 {
-	std::map<Instruction *, RangeMap>     SavedInputRanges; //!< overestimation of ranges of locations
-	std::map<Instruction *, RangeMap>     Ranges;           //!< saved overestimation of ranges of locations
+	std::map<Instruction *, RangeMap>     SavedInputRanges; ///< overestimation of ranges of locations
+	std::map<Instruction *, RangeMap>     Ranges;           ///< saved overestimation of ranges of locations
 	std::map<BranchStatement *, RangeMap> BranchRanges;
 	RangeMap&                             getRanges(Instruction *insn)
 	{

@@ -601,10 +601,10 @@ bool Instruction::doPropagateTo(SharedExp e, Assignment *def, bool& convert)
 }
 
 
-//! replace a use of def->getLeft() by def->getRight() in this statement
-//! replaces a use in this statement with an expression from an ordinary assignment
-//! \returns true if change
-//! \note Internal use only
+/// replace a use of def->getLeft() by def->getRight() in this statement
+/// replaces a use in this statement with an expression from an ordinary assignment
+/// \returns true if change
+/// \note Internal use only
 bool Instruction::replaceRef(SharedExp e, Assignment *def, bool& convert)
 {
 	SharedExp rhs = def->getRight();
@@ -769,7 +769,7 @@ GotoStatement::~GotoStatement()
 }
 
 
-//!< Return the fixed destination of this CTI.
+///< Return the fixed destination of this CTI.
 
 /***************************************************************************/ /**
  * \brief Get the fixed destination of this CTI. Assumes destination
@@ -2205,7 +2205,7 @@ SharedExp CallStatement::getProven(SharedExp e)
 }
 
 
-//! Localise only components of e, i.e. xxx if e is m[xxx]
+/// Localise only components of e, i.e. xxx if e is m[xxx]
 void CallStatement::localiseComp(SharedExp e)
 {
 	if (e->isMemOf()) {
@@ -2214,9 +2214,9 @@ void CallStatement::localiseComp(SharedExp e)
 }
 
 
-//! Substitute the various components of expression e with the appropriate reaching definitions.
-//! Used in e.g. fixCallBypass (via the CallBypasser). Locations defined in this call are replaced with their proven
-//! values, which are in terms of the initial values at the start of the call (reaching definitions at the call)
+/// Substitute the various components of expression e with the appropriate reaching definitions.
+/// Used in e.g. fixCallBypass (via the CallBypasser). Locations defined in this call are replaced with their proven
+/// values, which are in terms of the initial values at the start of the call (reaching definitions at the call)
 SharedExp CallStatement::localiseExp(SharedExp e)
 {
 	if (!defCol.isInitialised()) {
@@ -2230,9 +2230,9 @@ SharedExp CallStatement::localiseExp(SharedExp e)
 }
 
 
-//! Find the definition for the given expression, using the embedded Collector object
-//! Was called findArgument(), and used implicit arguments and signature parameters
-//! \note must only operator on unsubscripted locations, otherwise it is invalid
+/// Find the definition for the given expression, using the embedded Collector object
+/// Was called findArgument(), and used implicit arguments and signature parameters
+/// \note must only operator on unsubscripted locations, otherwise it is invalid
 SharedExp CallStatement::findDefFor(SharedExp e)
 {
 	return defCol.findDefFor(e);
@@ -3839,14 +3839,14 @@ Instruction *BoolAssign::clone() const
 }
 
 
-//! visit this Statement
+/// visit this Statement
 bool BoolAssign::accept(StmtVisitor *visitor)
 {
 	return visitor->visit(this);
 }
 
 
-//! code generation
+/// code generation
 void BoolAssign::generateCode(HLLCode *hll, BasicBlock * /*pbb*/, int indLevel)
 {
 	assert(lhs);
@@ -3857,7 +3857,7 @@ void BoolAssign::generateCode(HLLCode *hll, BasicBlock * /*pbb*/, int indLevel)
 }
 
 
-//! simplify all the uses/defs in this Statement
+/// simplify all the uses/defs in this Statement
 void BoolAssign::simplify()
 {
 	if (pCond) {
@@ -3997,7 +3997,7 @@ Assign::Assign(Assign& o)
 
 
 // Implicit Assignment
-//! Constructor and subexpression
+/// Constructor and subexpression
 ImplicitAssign::ImplicitAssign(SharedExp _lhs)
 	: Assignment(_lhs)
 {
@@ -4005,7 +4005,7 @@ ImplicitAssign::ImplicitAssign(SharedExp _lhs)
 }
 
 
-//! Constructor, type, and subexpression
+/// Constructor, type, and subexpression
 ImplicitAssign::ImplicitAssign(SharedType ty, SharedExp _lhs)
 	: Assignment(ty, _lhs)
 {
@@ -4826,7 +4826,7 @@ void BranchStatement::genConstraints(LocationSet& cons)
 }
 
 
-//! Set or clear the constant subscripts (using a visitor)
+/// Set or clear the constant subscripts (using a visitor)
 int Instruction::setConscripts(int n)
 {
 	StmtConscriptSetter scs(n, false);
@@ -4855,7 +4855,7 @@ bool Instruction::castConst(int num, SharedType ty)
 }
 
 
-//! Strip all size casts
+/// Strip all size casts
 void Instruction::stripSizes()
 {
 	SizeStripper ss;
@@ -5501,8 +5501,8 @@ bool BoolAssign::accept(StmtPartModifier *v)
 }
 
 
-//! Fix references to the returns of call statements
-//! Bypass calls for references in this statement
+/// Fix references to the returns of call statements
+/// Bypass calls for references in this statement
 void Instruction::bypass()
 {
 	CallBypasser     cb(this);
@@ -5516,13 +5516,13 @@ void Instruction::bypass()
 }
 
 
-//! Find the locations used by expressions in this Statement.
-//! Use the StmtExpVisitor and UsedLocsFinder visitor classes
-//! Adds (inserts) all locations (registers or memory etc) used by this statement
-//! Set \a cc to true to count the uses in collectors
-//! \param used set of used locations
-//! \param cc count collectors
-//! \param memOnly - only add memory references.
+/// Find the locations used by expressions in this Statement.
+/// Use the StmtExpVisitor and UsedLocsFinder visitor classes
+/// Adds (inserts) all locations (registers or memory etc) used by this statement
+/// Set \a cc to true to count the uses in collectors
+/// \param used set of used locations
+/// \param cc count collectors
+/// \param memOnly - only add memory references.
 void Instruction::addUsedLocs(LocationSet& used, bool cc /* = false */, bool memOnly /*= false */)
 {
 	UsedLocsFinder  ulf(used, memOnly);
@@ -5532,8 +5532,8 @@ void Instruction::addUsedLocs(LocationSet& used, bool cc /* = false */, bool mem
 }
 
 
-//! Special version of Statement::addUsedLocs for finding used locations.
-//! \return true if defineAll was found
+/// Special version of Statement::addUsedLocs for finding used locations.
+/// \return true if defineAll was found
 bool Instruction::addUsedLocals(LocationSet& used)
 {
 	UsedLocalFinder ulf(used, proc);
@@ -5544,7 +5544,7 @@ bool Instruction::addUsedLocals(LocationSet& used)
 }
 
 
-//! For all expressions in this Statement, replace any e with e{def}
+/// For all expressions in this Statement, replace any e with e{def}
 void Instruction::subscriptVar(SharedExp e, Instruction *def /*, Cfg* cfg */)
 {
 	ExpSubscripter  es(e, def /*, cfg*/);
@@ -5554,7 +5554,7 @@ void Instruction::subscriptVar(SharedExp e, Instruction *def /*, Cfg* cfg */)
 }
 
 
-//! Find all constants in this statement
+/// Find all constants in this statement
 void Instruction::findConstants(std::list<std::shared_ptr<Const> >& lc)
 {
 	ConstFinder     cf(lc);

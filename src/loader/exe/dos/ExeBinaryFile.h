@@ -102,8 +102,8 @@ private:
 	int m_cbImage;        // Size of image
 	int m_cReloc;         // Number of relocation entries
 	DWord *m_pRelocTable; // The relocation table
-	ADDRESS m_uInitPC;    //!< Initial program counter
-	ADDRESS m_uInitSP;    //!< Initial stack pointer
+	ADDRESS m_uInitPC;    ///< Initial program counter
+	ADDRESS m_uInitSP;    ///< Initial stack pointer
 	class IBinaryImage *Image;
 	class IBinarySymbolTable *Symbols;
 };

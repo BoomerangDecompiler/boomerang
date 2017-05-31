@@ -35,7 +35,7 @@ struct BinarySymbol : public IBinarySymbol
 	ADDRESS              Location;
 	SharedType           type;
 	size_t               Size;
-	//! it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
+	/// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
 	mutable QVariantMap  attributes;
 
 	const QString&       getName() const override { return Name; }
@@ -74,8 +74,8 @@ public:
 	BinarySymbol *getOrCreateSymbol();
 
 	IBinarySymbol& create(ADDRESS a, const QString& s, bool local = false) override;
-	const IBinarySymbol *find(ADDRESS a) const override;        //!< Find an entry by address; nullptr if none
-	const IBinarySymbol *find(const QString& s) const override; //!< Find an entry by name; NO_ADDRESS if none
+	const IBinarySymbol *find(ADDRESS a) const override;        ///< Find an entry by address; nullptr if none
+	const IBinarySymbol *find(const QString& s) const override; ///< Find an entry by name; NO_ADDRESS if none
 
 	SymbolListType& getSymbolList() { return SymbolList; }
 	iterator begin()       override { return SymbolList.begin(); }

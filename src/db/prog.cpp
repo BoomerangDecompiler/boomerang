@@ -140,7 +140,7 @@ Prog::~Prog()
 }
 
 
-//! Assign a name to this program
+/// Assign a name to this program
 void Prog::setName(const char *name)
 {
 	m_name = name;
@@ -154,7 +154,7 @@ QString Prog::getName()
 }
 
 
-//! Well form all the procedures/cfgs in this program
+/// Well form all the procedures/cfgs in this program
 bool Prog::wellForm()
 {
 	bool wellformed = true;
@@ -173,7 +173,7 @@ bool Prog::wellForm()
 
 
 // was in analysis.cpp
-//! last fixes after decoding everything
+/// last fixes after decoding everything
 void Prog::finishDecode()
 {
 	for (Module *module : ModuleList) {
@@ -195,7 +195,7 @@ void Prog::finishDecode()
 }
 
 
-//! Generate dotty file
+/// Generate dotty file
 void Prog::generateDotFile()
 {
 	assert(!Boomerang::get()->dotFile.isEmpty());
@@ -517,7 +517,7 @@ void Prog::generateCode(QTextStream& os)
 }
 
 
-//! Print this program (primarily for debugging)
+/// Print this program (primarily for debugging)
 void Prog::print(QTextStream& out)
 {
 	for (Module *module : ModuleList) {
@@ -539,7 +539,7 @@ void Prog::print(QTextStream& out)
 }
 
 
-//! clear the prog object \note deletes everything!
+/// clear the prog object \note deletes everything!
 void Prog::clear()
 {
 	m_name = "";
@@ -885,7 +885,7 @@ Function *Prog::findProc(const QString& name) const
 }
 
 
-//! lookup a library procedure by name; create if does not exist
+/// lookup a library procedure by name; create if does not exist
 LibProc *Prog::getLibraryProc(const QString& nam)
 {
 	Function *p = findProc(nam);
@@ -898,7 +898,7 @@ LibProc *Prog::getLibraryProc(const QString& nam)
 }
 
 
-//! Get the front end id used to make this prog
+/// Get the front end id used to make this prog
 platform Prog::getFrontEndId()
 {
 	return DefaultFrontend->getFrontEndId();
@@ -923,7 +923,7 @@ std::vector<SharedExp>& Prog::getDefaultReturns()
 }
 
 
-//! Returns true if this is a win32 program
+/// Returns true if this is a win32 program
 bool Prog::isWin32()
 {
 	if (!DefaultFrontend) {
@@ -934,7 +934,7 @@ bool Prog::isWin32()
 }
 
 
-//! Get a global variable if possible, looking up the loader's symbol table if necessary
+/// Get a global variable if possible, looking up the loader's symbol table if necessary
 QString Prog::getGlobalName(ADDRESS uaddr)
 {
 	// FIXME: inefficient
@@ -948,7 +948,7 @@ QString Prog::getGlobalName(ADDRESS uaddr)
 }
 
 
-//! Dump the globals to stderr for debugging
+/// Dump the globals to stderr for debugging
 void Prog::dumpGlobals()
 {
 	for (Global *glob : globals) {
@@ -957,7 +957,7 @@ void Prog::dumpGlobals()
 }
 
 
-//! Get a named global variable if possible, looking up the loader's symbol table if necessary
+/// Get a named global variable if possible, looking up the loader's symbol table if necessary
 ADDRESS Prog::getGlobalAddr(const QString& nam)
 {
 	Global *glob = getGlobal(nam);
@@ -986,7 +986,7 @@ Global *Prog::getGlobal(const QString& nam)
 }
 
 
-//! Indicate that a given global has been seen used in the program.
+/// Indicate that a given global has been seen used in the program.
 bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
 {
 	for (Global *glob : globals) {
@@ -1050,7 +1050,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
 }
 
 
-//! Make an array type for the global array at u. Mainly, set the length sensibly
+/// Make an array type for the global array at u. Mainly, set the length sensibly
 std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t)
 {
 	QString nam = newGlobalName(u);
@@ -1074,7 +1074,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t)
 }
 
 
-//! Guess a global's type based on its name and address
+/// Guess a global's type based on its name and address
 SharedType Prog::guessGlobalType(const QString& nam, ADDRESS u)
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
@@ -1122,7 +1122,7 @@ SharedType Prog::guessGlobalType(const QString& nam, ADDRESS u)
 }
 
 
-//! Make up a name for a new global at address \a uaddr (or return an existing name if address already used)
+/// Make up a name for a new global at address \a uaddr (or return an existing name if address already used)
 QString Prog::newGlobalName(ADDRESS uaddr)
 {
 	QString nam = getGlobalName(uaddr);
@@ -1137,7 +1137,7 @@ QString Prog::newGlobalName(ADDRESS uaddr)
 }
 
 
-//! Get the type of a global variable
+/// Get the type of a global variable
 SharedType Prog::getGlobalType(const QString& nam)
 {
 	for (Global *gl : globals) {
@@ -1150,7 +1150,7 @@ SharedType Prog::getGlobalType(const QString& nam)
 }
 
 
-//! Set the type of a global variable
+/// Set the type of a global variable
 void Prog::setGlobalType(const QString& nam, SharedType ty)
 {
 	// FIXME: inefficient
@@ -1167,7 +1167,7 @@ void Prog::setGlobalType(const QString& nam, SharedType ty)
 
 // get a string constant at a given address if appropriate
 // if knownString, it is already known to be a char*
-//! get a string constant at a give address if appropriate
+/// get a string constant at a give address if appropriate
 const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */)
 {
 	const IBinarySection *si = Image->getSectionInfoByAddr(uaddr);
@@ -1476,7 +1476,7 @@ void Prog::decodeEverythingUndecoded()
 }
 
 
-//! Do the main non-global decompilation steps
+/// Do the main non-global decompilation steps
 void Prog::decompile()
 {
 	Boomerang *boom = Boomerang::get();
@@ -1562,7 +1562,7 @@ void Prog::decompile()
 }
 
 
-//! As the name suggests, removes globals unused in the decompiled code.
+/// As the name suggests, removes globals unused in the decompiled code.
 void Prog::removeUnusedGlobals()
 {
 	LOG_VERBOSE(1) << "removing unused globals\n";
@@ -1681,7 +1681,7 @@ bool Prog::removeUnusedReturns()
 
 
 // Have to transform out of SSA form after the above final pass
-//! Convert from SSA form
+/// Convert from SSA form
 void Prog::fromSSAform()
 {
 	for (Module *module : ModuleList) {
@@ -1709,7 +1709,7 @@ void Prog::fromSSAform()
 }
 
 
-//! Constraint based type analysis
+/// Constraint based type analysis
 void Prog::conTypeAnalysis()
 {
 	if (VERBOSE || DEBUG_TA) {
@@ -2045,7 +2045,7 @@ Global::~Global()
 }
 
 
-//! Get the initial value as an expression (or nullptr if not initialised)
+/// Get the initial value as an expression (or nullptr if not initialised)
 SharedExp Global::getInitialValue(Prog *prog) const
 {
 	const IBinarySection *si = prog->getSectionInfoByAddr(uaddr);
@@ -2237,7 +2237,7 @@ void Global::meetType(SharedType ty)
 }
 
 
-//! Re-decode this proc from scratch
+/// Re-decode this proc from scratch
 void Prog::reDecode(UserProc *proc)
 {
 	QTextStream os(stderr); // rtl output target

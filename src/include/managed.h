@@ -102,12 +102,12 @@ public:
 
 	// This one is needed where you remove in the middle of a loop
 	// Use like this: it = mystatementlist.erase(it);
-	bool exists(Instruction *s);           //!< Search; returns false if not found
-	char *prints();                        //!< Print to string (for debugging)
-	void dump();                           //!< Print to standard error for debugging
-	void makeCloneOf(StatementList& o);    //!< Make this a clone of o
-	bool existsOnLeft(SharedExp loc);      //!< True if loc exists on the LHS of any Assignment in this list
-	Assignment *findOnLeft(SharedExp loc); //!< Return the first stmt with loc on the LHS
+	bool exists(Instruction *s);           ///< Search; returns false if not found
+	char *prints();                        ///< Print to string (for debugging)
+	void dump();                           ///< Print to standard error for debugging
+	void makeCloneOf(StatementList& o);    ///< Make this a clone of o
+	bool existsOnLeft(SharedExp loc);      ///< True if loc exists on the LHS of any Assignment in this list
+	Assignment *findOnLeft(SharedExp loc); ///< Return the first stmt with loc on the LHS
 };                                         // class StatementList
 
 class StatementVec

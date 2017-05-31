@@ -110,10 +110,10 @@ private:
 
 	IBinaryImage *m_image         = nullptr;
 	IBinarySymbolTable *m_symbols = nullptr;
-	QString m_progPath;               //!< String with the path to the boomerang executable.
-	QString m_outputPath;             //!< The path where all output files are created.
-	Log *m_logger = nullptr;          //!< Takes care of the log messages.
-	std::set<Watcher *> m_watchers;   //!< The watchers which are interested in this decompilation.
+	QString m_progPath;               ///< String with the path to the boomerang executable.
+	QString m_outputPath;             ///< The path where all output files are created.
+	Log *m_logger = nullptr;          ///< Takes care of the log messages.
+	std::set<Watcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 
 	/**
      * Prints help for the interactive mode.
@@ -394,9 +394,9 @@ public:
 
 	void alertDecompileDebugPoint(UserProc *p, const char *description);
 
-    //! Return TextStream to which given \a level of messages shoudl be directed
-    //! \param level - describes the message level TODO: describe message levels
-	QTextStream& getLogStream(int level = LL_Default); //!< Return overall logging target
+    /// Return TextStream to which given \a level of messages shoudl be directed
+    /// \param level - describes the message level TODO: describe message levels
+	QTextStream& getLogStream(int level = LL_Default); ///< Return overall logging target
 	
     QString filename() const;
 

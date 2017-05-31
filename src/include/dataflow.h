@@ -147,7 +147,7 @@ class DefCollector
 	 * associated CallStatement
 	 */
 	bool initialised;
-	AssignSet defs; //!< The set of definitions.
+	AssignSet defs; ///< The set of definitions.
 
 public:
 	DefCollector()

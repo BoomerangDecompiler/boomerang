@@ -14,8 +14,8 @@ class QString;
 struct IBinarySection
 {
 	virtual ~IBinarySection() {}
-	virtual ADDRESS         hostAddr() const              = 0; //!< address of this section's data in the allocated memory
-	virtual ADDRESS         sourceAddr() const            = 0; //!< section's address in Source machine's 'coordinates'
+	virtual ADDRESS         hostAddr() const              = 0; ///< address of this section's data in the allocated memory
+	virtual ADDRESS         sourceAddr() const            = 0; ///< section's address in Source machine's 'coordinates'
 	virtual uint32_t        size() const                  = 0;
 	virtual uint8_t         getEndian() const             = 0;
 	virtual bool            isReadOnly() const            = 0;

@@ -70,11 +70,11 @@ public:
 	/** Set the mapped offset. This is the bit number where this register starts,
 	 * e.g. for register %ah, this is 8. For COVERS regisers, this is 0 */
 	void s_mappedOffset(int i) { mappedOffset = i; }
-	//! Get the mapped index (see above)
+	/// Get the mapped index (see above)
 	int g_mappedIndex() const { return mappedIndex; }
-	//! Get the mapped offset (see above)
+	/// Get the mapped offset (see above)
 	int g_mappedOffset() const { return mappedOffset; }
-	//! Get a bool which is true if this is a floating point register
+	/// Get a bool which is true if this is a floating point register
 	bool isFloat() const { return flt; }
 
 private:
@@ -83,5 +83,5 @@ private:
 	void *address;
 	int mappedIndex;
 	int mappedOffset;
-	bool flt; //!< True if this is a floating point register
+	bool flt; ///< True if this is a floating point register
 };

@@ -64,8 +64,8 @@ public:
 	RTL& operator=(const RTL& other);
 
 	// Common enquiry methods
-	ADDRESS getAddress() { return nativeAddr; }    //!< Return RTL's native address
-	void setAddress(ADDRESS a) { nativeAddr = a; } //!< Set the address
+	ADDRESS getAddress() { return nativeAddr; }    ///< Return RTL's native address
+	void setAddress(ADDRESS a) { nativeAddr = a; } ///< Set the address
 
 	// Statement list editing methods
 	void appendStmt(Instruction *s); // Add s to end of RTL.
@@ -128,14 +128,14 @@ typedef enum
 class ParamEntry
 {
 public:
-	std::list<QString> params;          //!< PARAM_VARIANT & PARAM_ASGN only */
-	std::list<QString> funcParams;      //!< PARAM_LAMBDA - late bound params */
-	Instruction *asgn = nullptr;        //!< PARAM_ASGN only */
-	bool lhs          = false;          //!< True if this param ever appears on the LHS of an expression */
+	std::list<QString> params;          ///< PARAM_VARIANT & PARAM_ASGN only */
+	std::list<QString> funcParams;      ///< PARAM_LAMBDA - late bound params */
+	Instruction *asgn = nullptr;        ///< PARAM_ASGN only */
+	bool lhs          = false;          ///< True if this param ever appears on the LHS of an expression */
 	ParamKind kind    = PARAM_SIMPLE;
-	SharedType regType;                 //!< Type of r[this], if any (void otherwise)
-	std::set<int> regIdx;               //!< Values this param can take as an r[param]
-	int mark = 0;                       //!< Traversal mark. (free temporary use, basically)
+	SharedType regType;                 ///< Type of r[this], if any (void otherwise)
+	std::set<int> regIdx;               ///< Values this param can take as an r[param]
+	int mark = 0;                       ///< Traversal mark. (free temporary use, basically)
 
 protected:
 	SharedType m_type;
@@ -174,36 +174,36 @@ public:
 	void fixupParams();
 
 public:
-	//! A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
+	/// A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
 	std::map<QString, int, std::less<QString> > RegMap;
 
-	//! Similar to r_map but stores more info about a register such as its size, its addresss etc (see register.h).
+	/// Similar to r_map but stores more info about a register such as its size, its addresss etc (see register.h).
 	std::map<int, Register, std::less<int> > DetRegMap;
 
-	//! A map from symbolic representation of a special (non-addressable) register to a Register object
+	/// A map from symbolic representation of a special (non-addressable) register to a Register object
 	std::map<QString, Register, std::less<QString> > SpecialRegMap;
 
-	//! A set of parameter names, to make sure they are declared (?).
-	//! Was map from string to SemTable index
+	/// A set of parameter names, to make sure they are declared (?).
+	/// Was map from string to SemTable index
 	std::set<QString> ParamSet;
 
-	//! Parameter (instruction operand, more like addressing mode) details (where given)
+	/// Parameter (instruction operand, more like addressing mode) details (where given)
 	QMap<QString, ParamEntry> DetParamMap;
 
-	//! The maps which summarise the semantics (.ssl) file
+	/// The maps which summarise the semantics (.ssl) file
 	std::map<QString, SharedExp> FlagFuncs;
 	std::map<QString, std::pair<int, void *> *> DefMap;
 	std::map<int, SharedExp> AliasMap;
 
-	//! Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
+	/// Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
 	std::map<QString, QString> fastMap;
 
 	bool bigEndian; // True if this source is big endian
 
-	//! The actual dictionary.
+	/// The actual dictionary.
 	std::map<QString, TableEntry, std::less<QString> > idict;
 
-	//! An RTL describing the machine's basic fetch-execute cycle
+	/// An RTL describing the machine's basic fetch-execute cycle
 	SharedRTL fetchExecCycle;
 
 	void fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark);

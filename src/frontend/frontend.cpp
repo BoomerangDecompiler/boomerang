@@ -480,7 +480,7 @@ void FrontEnd::decode(Prog *prg, ADDRESS a)
 }
 
 
-//! \a a should be the address of an UserProc
+/// \a a should be the address of an UserProc
 void FrontEnd::decodeOnly(Prog *prg, ADDRESS a)
 {
 	assert(Program == prg);

@@ -736,7 +736,7 @@ bool ElfBinaryFile::isLibrary() const
 }
 
 
-//! Return a list of library names which the binary file depends on
+/// Return a list of library names which the binary file depends on
 QStringList ElfBinaryFile::getDependencyList()
 {
 	QStringList    result;

@@ -64,8 +64,8 @@ typedef std::shared_ptr<RTL>         SharedRTL;
  * separate classes, derived from Exp.
  */
 
-//! class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
-//! functions not overridden by derived classes can be called
+/// class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
+/// functions not overridden by derived classes can be called
 class Exp : public Printable, public std::enable_shared_from_this<Exp>
 {
 protected:
@@ -79,8 +79,8 @@ public:
 	// Virtual destructor
 	virtual ~Exp() {}
 
-	//! Return the operator. Note: I'd like to make this protected, but then subclasses don't seem to be able to use
-	//! it (at least, for subexpressions)
+	/// Return the operator. Note: I'd like to make this protected, but then subclasses don't seem to be able to use
+	/// it (at least, for subexpressions)
 	OPER getOper() const { return op; }
 	const char *getOperName() const;
 
@@ -92,139 +92,139 @@ public:
 	unsigned getLexEnd() const { return lexEnd; }
 	QString toString() const override;
 
-	//! Print the expression to the given stream
+	/// Print the expression to the given stream
 	virtual void print(QTextStream& os, bool html = false) const = 0;
 	void printt(QTextStream& os) const;
-	void printAsHL(QTextStream& os); //!< Print with v[5] as v5
+	void printAsHL(QTextStream& os); ///< Print with v[5] as v5
 	char *prints();                  // Print to string (for debugging and logging)
 	void dump();                     // Print to standard error (for debugging)
 
-	//! Recursive print: don't want parens at the top level
+	/// Recursive print: don't want parens at the top level
 	virtual void printr(QTextStream& os, bool html = false) const { print(os, html); }
 	// But most classes want standard
 	// For debugging: print in indented hex. In gdb: "p x->printx(0)"
 	virtual void printx(int ind) const = 0;
 
-	//! Display as a dotty graph
+	/// Display as a dotty graph
 	void createDotFile(const char *name);
 	virtual void appendDotFile(QTextStream& os) = 0;
 
-	//! Clone (make copy of self that can be deleted without affecting self)
+	/// Clone (make copy of self that can be deleted without affecting self)
 	virtual SharedExp clone() const = 0;
 
 	// Comparison
-	//! Type sensitive equality
+	/// Type sensitive equality
 	virtual bool operator==(const Exp& o) const = 0;
 
-	//! Type sensitive less than
+	/// Type sensitive less than
 	virtual bool operator<(const Exp& o) const = 0;
 
-	//! Type insensitive less than. Class TypedExp overrides
+	/// Type insensitive less than. Class TypedExp overrides
 	virtual bool operator<<(const Exp& o) const { return(*this < o); }
-	//! Comparison ignoring subscripts
+	/// Comparison ignoring subscripts
 	virtual bool operator*=(const Exp& o) const = 0;
 
-	//! Return the number of subexpressions. This is only needed in rare cases.
-	//! Could use polymorphism for all those cases, but this is easier
+	/// Return the number of subexpressions. This is only needed in rare cases.
+	/// Could use polymorphism for all those cases, but this is easier
 	virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc
 
 	//    //    //    //    //    //    //
 	//     Enquiry functions    //
 	//    //    //    //    //    //    //
 
-	//! True if this is a call to a flag function
+	/// True if this is a call to a flag function
 	bool isFlagCall() const { return op == opFlagCall; }
-	//! True if this represents one of the abstract flags locations, int or float
+	/// True if this represents one of the abstract flags locations, int or float
 	bool isFlags() const { return op == opFlags || op == opFflags; }
-	//! True if is one of the main 4 flags
+	/// True if is one of the main 4 flags
 	bool isMainFlag() const { return op >= opZF && op <= opOF; }
-	//! True if this is a register location
+	/// True if this is a register location
 	bool isRegOf() const { return op == opRegOf; }
-	//! True if this is a register location with a constant index
+	/// True if this is a register location with a constant index
 	bool isRegOfK();
 
-	//! True if this is a specific numeric register
+	/// True if this is a specific numeric register
 	bool isRegN(int n) const;
 
-	//! True if this is a memory location (any memory nesting depth)
+	/// True if this is a memory location (any memory nesting depth)
 	bool isMemOf() const { return op == opMemOf; }
-	//! True if this is an address of
+	/// True if this is an address of
 	bool isAddrOf() const { return op == opAddrOf; }
-	//! True if this is an array expression
+	/// True if this is an array expression
 	bool isArrayIndex() const { return op == opArrayIndex; }
-	//! True if this is a struct member access
+	/// True if this is a struct member access
 	bool isMemberOf() const { return op == opMemberAccess; }
-	//! True if this is a temporary. Note some old code still has r[tmp]
+	/// True if this is a temporary. Note some old code still has r[tmp]
 	bool isTemp() const;
 
-	//! True if this is the anull Terminal (anulls next instruction)
+	/// True if this is the anull Terminal (anulls next instruction)
 	bool isAnull() const { return op == opAnull; }
-	//! True if this is the Nil Terminal (terminates lists; "NOP" expression)
+	/// True if this is the Nil Terminal (terminates lists; "NOP" expression)
 	bool isNil() const { return op == opNil; }
-	//! True if this is %pc
+	/// True if this is %pc
 	bool isPC() { return op == opPC; }
-	//! True if is %afp, %afp+k, %afp-k, or a[m[<any of these]]
+	/// True if is %afp, %afp+k, %afp-k, or a[m[<any of these]]
 	bool isAfpTerm();
 
-	//! True if is int const
+	/// True if is int const
 	bool isIntConst() const { return op == opIntConst; }
-	//! True if is string const
+	/// True if is string const
 	bool isStrConst() const { return op == opStrConst; }
-	//! Get string constant even if mangled
+	/// Get string constant even if mangled
 	QString getAnyStrConst();
 
-	//! True if is flt point const
+	/// True if is flt point const
 	bool isFltConst() const { return op == opFltConst; }
-	//! True if inteter or string constant
+	/// True if inteter or string constant
 	bool isConst() const { return op == opIntConst || op == opStrConst; }
-	//! True if is a post-var expression (var_op' in SSL file)
+	/// True if is a post-var expression (var_op' in SSL file)
 	bool isPostVar() const { return op == opPostVar; }
-	//! True if this is an opSize (size case; deprecated)
+	/// True if this is an opSize (size case; deprecated)
 	bool isSizeCast() const { return op == opSize; }
-	//! True if this is a subscripted expression (SSA)
+	/// True if this is a subscripted expression (SSA)
 	bool isSubscript() const { return op == opSubscript; }
 	// True if this is a phi assignmnet (SSA)
 	//        bool        isPhi() {return op == opPhi;}
-	//! True if this is a local variable
+	/// True if this is a local variable
 	bool isLocal() const { return op == opLocal; }
-	//! True if this is a global variable
+	/// True if this is a global variable
 	bool isGlobal() const { return op == opGlobal; }
-	//! True if this is a typeof
+	/// True if this is a typeof
 	bool isTypeOf() const { return op == opTypeOf; }
-	//! Get the index for this var
+	/// Get the index for this var
 	int getVarIndex();
 
-	//! True if this is a terminal
+	/// True if this is a terminal
 	virtual bool isTerminal() const { return false; }
-	//! True if this is the constant "true"
+	/// True if this is the constant "true"
 	bool isTrue() const { return op == opTrue; }
-	//! True if this is the constant "false"
+	/// True if this is the constant "false"
 	bool isFalse() const { return op == opFalse; }
-	//! True if this is a disjunction, i.e. x or y
+	/// True if this is a disjunction, i.e. x or y
 	bool isDisjunction() const { return op == opOr; }
-	//! True if this is a conjunction, i.e. x and y
+	/// True if this is a conjunction, i.e. x and y
 	bool isConjunction() const { return op == opAnd; }
-	//! True if this is a boolean constant
+	/// True if this is a boolean constant
 	bool isBoolConst() { return op == opTrue || op == opFalse; }
-	//! True if this is an equality (== or !=)
+	/// True if this is an equality (== or !=)
 	bool isEquality() { return op == opEquals /*|| op == opNotEqual*/; }
-	//! True if this is a comparison
+	/// True if this is a comparison
 	bool isComparison()
 	{
 		return op == opEquals || op == opNotEqual || op == opGtr || op == opLess || op == opGtrUns || op == opLessUns ||
 			   op == opGtrEq || op == opLessEq || op == opGtrEqUns || op == opLessEqUns;
 	}
 
-	//! True if this is a TypeVal
+	/// True if this is a TypeVal
 	bool isTypeVal() { return op == opTypeVal; }
-	//! True if this is a machine feature
+	/// True if this is a machine feature
 	bool isMachFtr() { return op == opMachFtr; }
-	//! True if this is a parameter. Note: opParam has two meanings: a SSL parameter, or a function parameter
+	/// True if this is a parameter. Note: opParam has two meanings: a SSL parameter, or a function parameter
 	bool isParam() { return op == opParam; }
 
-	//! True if this is a location
+	/// True if this is a location
 	bool isLocation() { return op == opMemOf || op == opRegOf || op == opGlobal || op == opLocal || op == opParam; }
-	//! True if this is a typed expression
+	/// True if this is a typed expression
 	bool isTypedExp() const { return op == opTypedExp; }
 
 	// FIXME: are these used?
@@ -232,25 +232,25 @@ public:
 	// nullptr
 	virtual SharedExp match(const SharedConstExp& pattern);
 
-	//! match a string pattern
+	/// match a string pattern
 	virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings);
 
 	//    //    //    //    //    //    //
 	//    Search and Replace    //
 	//    //    //    //    //    //    //
 
-	//! Search for Exp *search in this Exp. If found, return true and return a ptr to the matching expression in
-	//! result (useful with wildcards).
+	/// Search for Exp *search in this Exp. If found, return true and return a ptr to the matching expression in
+	/// result (useful with wildcards).
 	virtual bool search(const Exp& search, SharedExp& result);
 
 	// Search for Exp search in this Exp. For each found, add a ptr to the matching expression in result (useful
 	// with wildcards).      Does NOT clear result on entry
 	bool searchAll(const Exp& search, std::list<SharedExp>& result);
 
-	//! Search this Exp for *search; if found, replace with *replace
+	/// Search this Exp for *search; if found, replace with *replace
 	SharedExp searchReplace(const Exp& search, const SharedExp& replace, bool& change);
 
-	//! Search *pSrc for *search; for all occurrences, replace with *replace
+	/// Search *pSrc for *search; for all occurrences, replace with *replace
 	SharedExp searchReplaceAll(const Exp& search, const SharedExp& replace, bool& change, bool once = false);
 
 	// Mostly not for public use. Search for subexpression matches.
@@ -419,7 +419,7 @@ public:
 		return nullptr;
 	}
 
-	//! Push type information down the expression tree
+	/// Push type information down the expression tree
 	virtual void descendType(SharedType /*parentType*/, bool& /*ch*/, Instruction * /*s*/) { assert(0); }
 
 protected:
@@ -688,8 +688,8 @@ public:
 	// Get second subexpression
 	SharedExp getSubExp2() override;
 	SharedConstExp getSubExp2() const override;
-	void commute();                   //!< Commute the two operands
-	SharedExp& refSubExp2() override; //!< Get a reference to subexpression 2
+	void commute();                   ///< Commute the two operands
+	SharedExp& refSubExp2() override; ///< Get a reference to subexpression 2
 
 	virtual SharedExp match(const SharedConstExp& pattern) override;
 	virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;

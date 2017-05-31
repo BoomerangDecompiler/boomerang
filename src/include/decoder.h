@@ -53,7 +53,7 @@ enum ICLASS
  ******************************************************************************/
 struct DecodeResult
 {
-	//! Resets all the fields to their default values.
+	/// Resets all the fields to their default values.
 	void    reset()
 	{
 		numBytes     = 0;
@@ -64,13 +64,13 @@ struct DecodeResult
 		forceOutEdge = ADDRESS::g(0L);
 	}
 
-	//! The number of bytes decoded in the main instruction
+	/// The number of bytes decoded in the main instruction
 	int     numBytes;
 
-	//! The RTL constructed (if any).
+	/// The RTL constructed (if any).
 	RTL     *rtl;
 
-	//! Indicates whether or not a valid instruction was decoded.
+	/// Indicates whether or not a valid instruction was decoded.
 	bool    valid;
 
 	/**
@@ -101,16 +101,16 @@ class IInstructionTranslator
 {
 public:
 	virtual ~IInstructionTranslator() = default;
-	//! Decodes the machine instruction at pc and returns an RTL instance for the instruction.
+	/// Decodes the machine instruction at pc and returns an RTL instance for the instruction.
 	virtual DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) = 0;
 
-	//! Returns machine-specific register name given it's index
+	/// Returns machine-specific register name given it's index
 	virtual QString getRegName(int idx) const = 0;
 
-	//! Returns index of the named register
+	/// Returns index of the named register
 	virtual int getRegIdx(const QString& name) const = 0;
 
-	//! Returns size of register in bits
+	/// Returns size of register in bits
 	virtual int getRegSize(int idx) const = 0;
 
 	/**

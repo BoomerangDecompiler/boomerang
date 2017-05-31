@@ -1996,7 +1996,7 @@ SharedExp Signature::getArgumentExp(int n)
 }
 
 
-//! any signature can be promoted to a higher level signature, if available
+/// any signature can be promoted to a higher level signature, if available
 std::shared_ptr<Signature> Signature::promote(UserProc *p)
 {
 	// FIXME: the whole promotion idea needs a redesign...

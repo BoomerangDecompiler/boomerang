@@ -169,7 +169,7 @@ protected:
 	int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
 
 private:
-	bool postLoad(void *handle) override; //!< Called after archive member loaded
+	bool postLoad(void *handle) override; ///< Called after archive member loaded
 
 	Header *m_pHeader;                    // Pointer to header
 	LXHeader *m_pLXHeader  = nullptr;     // Pointer to lx header

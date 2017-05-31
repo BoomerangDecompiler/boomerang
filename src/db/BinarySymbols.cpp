@@ -7,8 +7,8 @@ BinarySymbols::BinarySymbols()
 }
 
 
-//! mark address as containing pointer to imported function
-//! the function name and possibly type should be contained in binarysymbols table
+/// mark address as containing pointer to imported function
+/// the function name and possibly type should be contained in binarysymbols table
 void BinarySymbols::addImport(ADDRESS addr)
 {
 	assert(false);

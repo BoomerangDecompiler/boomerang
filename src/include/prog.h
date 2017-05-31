@@ -175,9 +175,9 @@ public:
 	double getFloatConstant(ADDRESS uaddr, bool& ok, int bits = 64);
 
 	// Hacks for Mike
-	//! Get a code for the machine e.g. MACHINE_SPARC
+	/// Get a code for the machine e.g. MACHINE_SPARC
 	MACHINE getMachine() { return pLoaderIface->getMachine(); }
-	//! Get a symbol from an address
+	/// Get a symbol from an address
 	QString symbolByAddress(ADDRESS dest);
 
 	const IBinarySection *getSectionInfoByAddr(ADDRESS a);
@@ -216,7 +216,7 @@ public:
 	Module *getDefaultModule(const QString& name);
 	bool moduleUsed(Module *c);
 
-	//! Add the given RTL to the front end's map from address to aldready-decoded-RTL
+	/// Add the given RTL to the front end's map from address to aldready-decoded-RTL
 	void addDecodedRtl(ADDRESS a, RTL *rtl) { DefaultFrontend->addDecodedRtl(a, rtl); }
 
 	SharedExp addReloc(SharedExp e, ADDRESS lc);
@@ -245,18 +245,18 @@ signals:
 	void rereadLibSignatures();
 
 protected:
-	QObject *pLoaderPlugin;    //!< Pointer to the instance returned by loader plugin
+	QObject *pLoaderPlugin;    ///< Pointer to the instance returned by loader plugin
 	LoaderInterface *pLoaderIface = nullptr;
-	FrontEnd *DefaultFrontend; //!< Pointer to the FrontEnd object for the project
+	FrontEnd *DefaultFrontend; ///< Pointer to the FrontEnd object for the project
 
 	/* Persistent state */
 	QString m_name;             // name of the program
 	QString m_path;             // its full path
 	// FIXME: is a set of Globals the most appropriate data structure? Surely not.
-	std::set<Global *> globals; //!< globals to print at code generation time
-	DataIntervalMap globalMap;  //!< Map from address to DataInterval (has size, name, type)
-	int m_iNumberedProc;        //!< Next numbered proc will use this
-	Module *m_rootCluster;      //!< Root of the cluster tree
+	std::set<Global *> globals; ///< globals to print at code generation time
+	DataIntervalMap globalMap;  ///< Map from address to DataInterval (has size, name, type)
+	int m_iNumberedProc;        ///< Next numbered proc will use this
+	Module *m_rootCluster;      ///< Root of the cluster tree
 
 	friend class XMLProgParser;
 }; // class Prog

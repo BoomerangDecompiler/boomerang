@@ -117,7 +117,7 @@ private:
 public:
 	BinaryFileFactory();
 
-	static void setBasePath(const QString& path) { m_basePath = path; } //!< sets the base directory for plugin search
+	static void setBasePath(const QString& path) { m_basePath = path; } ///< sets the base directory for plugin search
 	QObject *load(const QString& sName);
 	void unload();
 };
@@ -148,17 +148,17 @@ public:
 	// General loader functions
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual void initialize(IBoomerang *sys) = 0;
-	virtual void unload() = 0;                         //!< Unload the file. Pure virtual
-	virtual void close()  = 0;                         //!< Close file opened with Open()
-	virtual LOAD_FMT getFormat() const            = 0; //!< Get the format (e.g. LOADFMT_ELF)
-	virtual MACHINE getMachine() const            = 0; //!< Get the expected machine (e.g. MACHINE_PENTIUM)
+	virtual void unload() = 0;                         ///< Unload the file. Pure virtual
+	virtual void close()  = 0;                         ///< Close file opened with Open()
+	virtual LOAD_FMT getFormat() const            = 0; ///< Get the format (e.g. LOADFMT_ELF)
+	virtual MACHINE getMachine() const            = 0; ///< Get the expected machine (e.g. MACHINE_PENTIUM)
 	virtual bool loadFromMemory(QByteArray& data) = 0;
 	virtual int canLoad(QIODevice& data) const    = 0;
 
 	/// Return the virtual address at which the binary expects to be loaded.
 	/// For position independent / relocatable code this should be NO_ADDDRESS
 	virtual ADDRESS getImageBase() = 0;
-	virtual size_t getImageSize()  = 0; //!< Return the total size of the loaded image
+	virtual size_t getImageSize()  = 0; ///< Return the total size of the loaded image
 
 	virtual bool isRelocationAt(ADDRESS /*uNative*/) { return false; }
 

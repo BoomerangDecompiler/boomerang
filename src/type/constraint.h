@@ -29,55 +29,55 @@ class ConstraintMap
 public:
 	typedef std::map<SharedExp, SharedExp, lessExpStar>::iterator iterator;
 
-	//! Return true if the given expression is in the map
+	/// Return true if the given expression is in the map
 	bool isFound(SharedExp e) { return cmap.find(e) != cmap.end(); }
-	//! Return an iterator to the given left hand side Exp
+	/// Return an iterator to the given left hand side Exp
 	iterator find(SharedExp e) { return cmap.find(e); }
-	//! Lookup a given left hand side Exp (e.g. given Tlocal1, return <char*>)
+	/// Lookup a given left hand side Exp (e.g. given Tlocal1, return <char*>)
 	SharedExp& operator[](SharedExp e) { return cmap[e]; }
-	//! Return the number of constraints in the map
+	/// Return the number of constraints in the map
 	size_t size() { return cmap.size(); }
-	//! Empty the map
+	/// Empty the map
 	void clear() { cmap.clear(); }
-	//! Return iterators for the begin() and end() of the map
+	/// Return iterators for the begin() and end() of the map
 	iterator begin() { return cmap.begin(); }
 	iterator end() { return cmap.end(); }
 	void constrain(SharedExp loc1, SharedExp loc2);
 	void constrain(SharedExp loc, SharedType t);
 	void constrain(SharedType t1, SharedType t2);
 
-	//! Insert a constraint given an equality expression
-	//! e.g. Tlocal1 = <char*>
+	/// Insert a constraint given an equality expression
+	/// e.g. Tlocal1 = <char*>
 	void insert(SharedExp term);
 
-	//! Insert a constraint given left and right hand sides (as type Exps)
+	/// Insert a constraint given left and right hand sides (as type Exps)
 	void insert(SharedExp lhs, SharedExp rhs) { cmap[lhs] = rhs; }
-	//! Union with another constraint map
+	/// Union with another constraint map
 	void makeUnion(ConstraintMap& o);
 
-	//! Print to the given stream
+	/// Print to the given stream
 	void print(QTextStream& os);
 
-	//! Print to the debug buffer, and return that buffer
+	/// Print to the debug buffer, and return that buffer
 	char *prints();
 
-	//! Substitute the given constraints into this map
+	/// Substitute the given constraints into this map
 	void substitute(ConstraintMap& other);
 
-	//! For this solution, we need to find disjunctions of the form
-	//! \code
-	//! <alphaN> = <type>      or
-	//! <type>    = <alphaN>
-	//! \endcode
-	//! and substitute these into each part of the solution
+	/// For this solution, we need to find disjunctions of the form
+	/// \code
+	/// <alphaN> = <type>      or
+	/// <type>    = <alphaN>
+	/// \endcode
+	/// and substitute these into each part of the solution
 	void substAlpha();
 };
 
-//! A class used for fast location of a constraint
-//!
-//! An equation like Ta = Tb is inserted into this class twice (i.e. as
-//! Ta = Tb and also as Tb = Ta. So to find out if Ta is involved in an
-//! equate, only have to look up Ta in the map (on the LHS, which is fast)
+/// A class used for fast location of a constraint
+///
+/// An equation like Ta = Tb is inserted into this class twice (i.e. as
+/// Ta = Tb and also as Tb = Ta. So to find out if Ta is involved in an
+/// equate, only have to look up Ta in the map (on the LHS, which is fast)
 class EquateMap
 {
 	std::map<SharedExp, LocationSet, lessExpStar> emap;
@@ -104,9 +104,9 @@ class Constraints
 {
 	LocationSet conSet;
 	std::list<SharedExp> disjunctions;
-	//! Map from location to a fixed type (could be a pointer to a variable type, i.e. an alpha).
+	/// Map from location to a fixed type (could be a pointer to a variable type, i.e. an alpha).
 	ConstraintMap fixed;
-	//! EquateMap of locations that are equal
+	/// EquateMap of locations that are equal
 	EquateMap equates;
 
 public:
@@ -118,23 +118,23 @@ public:
 
 	LocationSet& getConstraints() { return conSet; }
 	void addConstraints(LocationSet& con) { conSet.makeUnion(con); }
-	//! Substitute the given constraintMap into the disjuncts
+	/// Substitute the given constraintMap into the disjuncts
 	void substIntoDisjuncts(ConstraintMap& in);
 
-	//! Substitute the given constraintMap into the equates
+	/// Substitute the given constraintMap into the equates
 	void substIntoEquates(ConstraintMap& in);
 	void alphaSubst();
 
-	//! Solve the constraints. If they can be solved, return true and put
-	//! a copy of the solution (in the form of a set of T\<location\> = \<type\>)
-	//! into solns
+	/// Solve the constraints. If they can be solved, return true and put
+	/// a copy of the solution (in the form of a set of T\<location\> = \<type\>)
+	/// into solns
 	bool solve(std::list<ConstraintMap>& solns);
 
 private:
 	bool doSolve(std::list<SharedExp>::iterator it, ConstraintMap& extra, std::list<ConstraintMap>& solns);
 
-	//! Test for compatibility of these types. Sometimes, they are compatible
-	//! with an extra constraint (e.g. alpha3* is compatible with alpha4* with
-	//! the extra constraint that alpha3 == alpha4)
+	/// Test for compatibility of these types. Sometimes, they are compatible
+	/// with an extra constraint (e.g. alpha3* is compatible with alpha4* with
+	/// the extra constraint that alpha3 == alpha4)
 	bool unify(SharedExp x, SharedExp y, ConstraintMap& extra);
 };

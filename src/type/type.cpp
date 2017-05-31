@@ -1666,7 +1666,7 @@ bool Type::isPointerToAlpha()
 }
 
 
-//! Print in *i32* format
+/// Print in *i32* format
 void Type::starPrint(QTextStream& os)
 {
 	os << "*" << this << "*";
@@ -1977,7 +1977,7 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size)
 
 
 // With the forced parameter: are we forcing the name, the type, or always both?
-//! Add a new data item
+/// Add a new data item
 void DataIntervalMap::addItem(ADDRESS addr, QString name, SharedType ty, bool forced /* = false */)
 {
 	if (name.isNull()) {

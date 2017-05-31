@@ -632,7 +632,7 @@ void UserProc::printUseGraph()
 }
 
 
-//! Get the first procedure that calls this procedure (or null for main/start).
+/// Get the first procedure that calls this procedure (or null for main/start).
 Function *Function::getFirstCaller()
 {
 	if ((m_firstCaller == nullptr) && (m_firstCallerAddr != NO_ADDRESS)) {
@@ -662,7 +662,7 @@ LibProc::LibProc(Module *mod, const QString& name, ADDRESS uNative)
 }
 
 
-//! Get the RHS that is proven for left
+/// Get the RHS that is proven for left
 SharedExp LibProc::getProven(SharedExp left)
 {
 	// Just use the signature information (all we have, after all)
@@ -827,7 +827,7 @@ SyntaxNode *UserProc::getAST()
 }
 
 
-//! Print ast to a file
+/// Print ast to a file
 void UserProc::printAST(SyntaxNode *a)
 {
 	static int count = 1;
@@ -2024,7 +2024,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 *    R e m o v e   u n u s e d   s t a t e m e n t s    *
 *                                                    *
 *    *    *    *    *    *    *    *    *    *    *    *    *    */
-//! Remove unused statements.
+/// Remove unused statements.
 void UserProc::remUnusedStmtEtc()
 {
 	bool convert;
@@ -2712,7 +2712,7 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
  * To be called after decoding all procs.
  * was in: analyis.cpp
  */
-//! find the procs the calls point to
+/// find the procs the calls point to
 void UserProc::assignProcsToCalls()
 {
 	std::list<BasicBlock *>::iterator it;
@@ -2757,7 +2757,7 @@ void UserProc::assignProcsToCalls()
  * Perform final simplifications
  * was in: analyis.cpp
  */
-//! perform final simplifications
+/// perform final simplifications
 void UserProc::finalSimplify()
 {
 	std::list<BasicBlock *>::iterator it;
@@ -2958,7 +2958,7 @@ void UserProc::findFinalParameters()
 
 
 #if 0 // FIXME: not currently used; do we want this any more?
-//! Trim parameters. If depth not given or == -1, perform at all depths
+/// Trim parameters. If depth not given or == -1, perform at all depths
 void UserProc::trimParameters(int depth)
 {
 	if (signature->isForced()) {
@@ -3091,7 +3091,7 @@ void Function::removeReturn(SharedExp e)
 }
 
 
-//! Add the parameter to the signature
+/// Add the parameter to the signature
 void UserProc::addParameter(SharedExp e, SharedType ty)
 {
 	// In case it's already an implicit argument:
@@ -3800,7 +3800,7 @@ QString UserProc::getLocalName(int n)
 }
 
 
-//! As getLocalName, but look for expression \a e
+/// As getLocalName, but look for expression \a e
 QString UserProc::getSymbolName(SharedExp e)
 {
 	SymbolMap::iterator it = symbolMap.find(e);
@@ -5092,7 +5092,7 @@ SharedExp UserProc::getPremised(SharedExp left)
 }
 
 
-//! Return whether e is preserved by this proc
+/// Return whether e is preserved by this proc
 bool UserProc::isPreserved(SharedExp e)
 {
 	return provenTrue.find(e) != provenTrue.end() && *provenTrue[e] == *e;
@@ -5180,7 +5180,7 @@ void UserProc::addImplicitAssigns()
 
 
 // e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
-//! Find the implicit definition for \a e and lookup a symbol
+/// Find the implicit definition for \a e and lookup a symbol
 QString UserProc::lookupParam(SharedExp e)
 {
 	// Originally e.g. m[esp+K]
@@ -5197,7 +5197,7 @@ QString UserProc::lookupParam(SharedExp e)
 }
 
 
-//! Lookup a specific symbol for the given ref
+/// Lookup a specific symbol for the given ref
 QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
 {
 	Instruction *def = r->getDef();
@@ -5213,7 +5213,7 @@ QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
 }
 
 
-//! Lookup a specific symbol if any, else the general one if any
+/// Lookup a specific symbol if any, else the general one if any
 QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
 {
 	Instruction *def = r->getDef();
@@ -5276,7 +5276,7 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
 }
 
 
-//! Print just the symbol map
+/// Print just the symbol map
 void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
 {
 	if (html) {
@@ -5331,7 +5331,7 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 }
 
 
-//! For debugging
+/// For debugging
 void UserProc::dumpSymbolMap()
 {
 	SymbolMap::iterator it;
@@ -5344,7 +5344,7 @@ void UserProc::dumpSymbolMap()
 }
 
 
-//! For debugging
+/// For debugging
 void UserProc::dumpSymbolMapx()
 {
 	SymbolMap::iterator it;
@@ -5358,7 +5358,7 @@ void UserProc::dumpSymbolMapx()
 }
 
 
-//! For debugging
+/// For debugging
 void UserProc::testSymbolMap()
 {
 	SymbolMap::iterator it1, it2;
@@ -5393,7 +5393,7 @@ void UserProc::dumpLocals()
 }
 
 
-//! Update the arguments in calls
+/// Update the arguments in calls
 void UserProc::updateArguments()
 {
 	Boomerang::get()->alertDecompiling(this);
@@ -5420,7 +5420,7 @@ void UserProc::updateArguments()
 }
 
 
-//! Update the defines in calls
+/// Update the defines in calls
 void UserProc::updateCallDefines()
 {
 	if (VERBOSE) {
@@ -5443,13 +5443,13 @@ void UserProc::updateCallDefines()
 }
 
 
-//! Replace simple global constant references
-//! Statement level transform :
-//! PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
-//! ACTION:
-//!     $tmp_addr = assgn.rhs.sub(1);
-//!     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
-//!     statement.rhs.replace_with(Const($tmp_val))
+/// Replace simple global constant references
+/// Statement level transform :
+/// PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
+/// ACTION:
+///     $tmp_addr = assgn.rhs.sub(1);
+///     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
+///     statement.rhs.replace_with(Const($tmp_val))
 void UserProc::replaceSimpleGlobalConstants()
 {
 	LOG_VERBOSE(1) << "### replace simple global constants for " << getName() << " ###\n";
@@ -6159,7 +6159,7 @@ bool UserProc::inductivePreservation(UserProc * /*topOfCycle*/)
 }
 
 
-//! True if e represents a stack local variable
+/// True if e represents a stack local variable
 bool UserProc::isLocal(SharedExp e)
 {
 	if (!e->isMemOf()) {
@@ -6177,7 +6177,7 @@ bool UserProc::isLocal(SharedExp e)
 }
 
 
-//! True if e can be propagated
+/// True if e can be propagated
 bool UserProc::isPropagatable(const SharedExp& e)
 {
 	if (addressEscapedVars.exists(e)) {
@@ -6188,7 +6188,7 @@ bool UserProc::isPropagatable(const SharedExp& e)
 }
 
 
-//! True if e represents a stack local or stack param
+/// True if e represents a stack local or stack param
 bool UserProc::isLocalOrParam(const SharedExp& e)
 {
 	if (isLocal(e)) {
@@ -6200,7 +6200,7 @@ bool UserProc::isLocalOrParam(const SharedExp& e)
 
 
 // Is this m[sp{-} +/- K]?
-//! True if e could represent a stack local or stack param
+/// True if e could represent a stack local or stack param
 bool UserProc::isLocalOrParamPattern(const SharedExp& e)
 {
 	if (!e->isMemOf()) {
@@ -6503,7 +6503,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
 
 
 // See comments three procedures above
-//! Remove redundant parameters. Return true if remove any
+/// Remove redundant parameters. Return true if remove any
 bool UserProc::removeRedundantParameters()
 {
 	if (signature->isForced()) {
@@ -6842,7 +6842,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 }
 
 
-//! Clear the useCollectors (in this Proc, and all calls).
+/// Clear the useCollectors (in this Proc, and all calls).
 void UserProc::clearUses()
 {
 	if (VERBOSE) {
@@ -7049,7 +7049,7 @@ void UserProc::setImplicitRef(Instruction *s, SharedExp a, SharedType ty)
 }
 
 
-//! eliminate duplicate arguments
+/// eliminate duplicate arguments
 void UserProc::eliminateDuplicateArgs()
 {
 	if (VERBOSE) {
@@ -7073,7 +7073,7 @@ void UserProc::eliminateDuplicateArgs()
 }
 
 
-//! Remove all liveness info in UseCollectors in calls
+/// Remove all liveness info in UseCollectors in calls
 void UserProc::removeCallLiveness()
 {
 	if (VERBOSE) {
@@ -7148,7 +7148,7 @@ void Function::setProvenTrue(SharedExp fact)
 }
 
 
-//! Map expressions to locals and initial parameters
+/// Map expressions to locals and initial parameters
 void UserProc::mapLocalsAndParams()
 {
 	Boomerang::get()->alertDecompileDebugPoint(this, "before mapping locals from dfa type analysis");
@@ -7233,7 +7233,7 @@ void UserProc::setDominanceNumbers()
 
 
 #endif
-//! Find the locations united by Phi-functions
+/// Find the locations united by Phi-functions
 void UserProc::findPhiUnites(ConnectionGraph& pu)
 {
 	StatementList stmts;
@@ -7291,7 +7291,7 @@ QString UserProc::getRegName(SharedExp r)
 }
 
 
-//! Find the type of the local or parameter \a e
+/// Find the type of the local or parameter \a e
 SharedType UserProc::getTypeForLocation(const SharedConstExp& e)
 {
 	QString name = e->access<Const, 1>()->getStr();
@@ -7395,14 +7395,14 @@ void UserProc::nameParameterPhis()
 }
 
 
-//! True if a local exists with name \a name
+/// True if a local exists with name \a name
 bool UserProc::existsLocal(const QString& name)
 {
 	return locals.find(name) != locals.end();
 }
 
 
-//! Check if \a r is already mapped to a local, else add one
+/// Check if \a r is already mapped to a local, else add one
 void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
 {
 	if (!lookupSymFromRefAny(r).isNull()) {

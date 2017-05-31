@@ -90,21 +90,21 @@ void ConstraintMap::constrain(SharedExp loc1, SharedExp loc2)
 }
 
 
-//! Insert a constraint given a location and a Type
+/// Insert a constraint given a location and a Type
 void ConstraintMap::constrain(SharedExp loc, SharedType t)
 {
 	cmap[Unary::get(opTypeOf, loc)] = std::make_shared<TypeVal>(t);
 }
 
 
-//! Insert a constraint given two Types (at least one variable)
+/// Insert a constraint given two Types (at least one variable)
 void ConstraintMap::constrain(SharedType t1, SharedType t2)   // Example: alpha1 = alpha2
 {
 	cmap[std::make_shared<TypeVal>(t1)] = std::make_shared<TypeVal>(t2);
 }
 
 
-//! Insert a constraint given two locations (i.e. Tloc1 = Tloc2)
+/// Insert a constraint given two locations (i.e. Tloc1 = Tloc2)
 void ConstraintMap::insert(SharedExp term)
 {
 	assert(term->isEquality());

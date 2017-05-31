@@ -177,24 +177,24 @@ public:
 	unsigned int getLexBegin() { return LexBegin; }
 	unsigned int getLexEnd() { return LexEnd; }
 
-	//! returns true if this statement defines anything
+	/// returns true if this statement defines anything
 	virtual bool isDefinition() = 0;
-	bool isNullStatement(); //!< true if is a null statement
+	bool isNullStatement(); ///< true if is a null statement
 
 	virtual bool isTyping() { return false; } // Return true if a TypingStatement
-	//! true if this statement is a standard assign
+	/// true if this statement is a standard assign
 	bool isAssign() const { return Kind == STMT_ASSIGN; }
-	//! true if this statement is a any kind of assignment
+	/// true if this statement is a any kind of assignment
 	bool isAssignment()
 	{
 		return Kind == STMT_ASSIGN || Kind == STMT_PHIASSIGN || Kind == STMT_IMPASSIGN || Kind == STMT_BOOLASSIGN;
 	}
 
-	bool isPhi() const { return Kind == STMT_PHIASSIGN; } //!< true    if this statement is a phi assignment
-	bool isImplicit() const { return Kind == STMT_IMPASSIGN; } //!< true if this statement is an implicit assignment
-	bool isFlagAssgn();                                   //!< true if this statment is a flags assignment
+	bool isPhi() const { return Kind == STMT_PHIASSIGN; } ///< true    if this statement is a phi assignment
+	bool isImplicit() const { return Kind == STMT_IMPASSIGN; } ///< true if this statement is an implicit assignment
+	bool isFlagAssgn();                                   ///< true if this statment is a flags assignment
 
-	bool isImpRef() const { return Kind == STMT_IMPREF; } //!< true of this statement is an implicit reference
+	bool isImpRef() const { return Kind == STMT_IMPREF; } ///< true of this statement is an implicit reference
 
 	virtual bool isGoto() { return Kind == STMT_GOTO; }
 	virtual bool isBranch() { return Kind == STMT_BRANCH; }
@@ -202,27 +202,27 @@ public:
 	// true if this statement is a junction
 	bool isJunction() const { return Kind == STMT_JUNCTION; }
 
-	//! true if this statement is a call
+	/// true if this statement is a call
 	bool isCall() { return Kind == STMT_CALL; }
 
-	//! true if this statement is a BoolAssign
+	/// true if this statement is a BoolAssign
 	bool isBool() { return Kind == STMT_BOOLASSIGN; }
 
-	//! true if this statement is a ReturnStatement
+	/// true if this statement is a ReturnStatement
 	bool isReturn() { return Kind == STMT_RET; }
 
-	//! true if this statement is a decoded ICT.
-	//! \note for now, it only represents decoded indirect jump instructions
+	/// true if this statement is a decoded ICT.
+	/// \note for now, it only represents decoded indirect jump instructions
 	bool isHL_ICT() { return Kind == STMT_CASE; }
 
 	bool isCase() { return Kind == STMT_CASE; }
 
-	//! true if this is a fpush/fpop
+	/// true if this is a fpush/fpop
 	bool isFpush();
 	bool isFpop();
 
-	//! Classes with no definitions (e.g. GotoStatement and children) don't override this
-	//! returns a set of locations defined by this statement in a LocationSet argument.
+	/// Classes with no definitions (e.g. GotoStatement and children) don't override this
+	/// returns a set of locations defined by this statement in a LocationSet argument.
 	virtual void getDefinitions(LocationSet& /*def*/) {}
 
 	// set the left for forExp to newExp
@@ -256,26 +256,26 @@ public:
 
 	// code generation
 	virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) = 0;
-	virtual void simplify() = 0; //!< simpify internal expressions
+	virtual void simplify() = 0; ///< simpify internal expressions
 
-	//! simplify internal address expressions (a[m[x]] -> x) etc
-	//! Only Assignments override at present
+	/// simplify internal address expressions (a[m[x]] -> x) etc
+	/// Only Assignments override at present
 	virtual void simplifyAddr() {}
 
-	//! map registers and temporaries to local variables
+	/// map registers and temporaries to local variables
 	void mapRegistersToLocals();
 
-	//! The last part of the fromSSA logic: replace subscripted locations with suitable local variables
+	/// The last part of the fromSSA logic: replace subscripted locations with suitable local variables
 	void replaceSubscriptsWithLocals();
 
-	//! insert casts where needed, since fromSSA will erase type information
+	/// insert casts where needed, since fromSSA will erase type information
 	void insertCasts();
 
 	// fixSuccessor
 	// Only Assign overrides at present
 	virtual void fixSuccessor() {}
 
-	//! Generate constraints (for constraint based type analysis)
+	/// Generate constraints (for constraint based type analysis)
 	virtual void genConstraints(LocationSet& /*cons*/) {}
 
 	// Data flow based type analysis
@@ -314,10 +314,10 @@ public:
 
 	// End Statement visitation functions
 
-	//! Get the type for the definition, if any, for expression e in this statement
-	//! Overridden only by Assignment and CallStatement, and ReturnStatement.
+	/// Get the type for the definition, if any, for expression e in this statement
+	/// Overridden only by Assignment and CallStatement, and ReturnStatement.
 	virtual SharedType getTypeFor(SharedExp) { return nullptr; }
-	//! Set the type for the definition of e in this Statement
+	/// Set the type for the definition of e in this Statement
 	virtual void setTypeFor(SharedExp, SharedType) { assert(0); }
 
 	// virtual    Type*    getType() {return nullptr;}            // Assignment, ReturnStatement and
@@ -790,7 +790,7 @@ public:
 	GotoStatement(ADDRESS jumpDest);
 	virtual ~GotoStatement();
 
-	virtual Instruction *clone() const override;  //!< Make a deep copy, and make the copy a derived object if needed.
+	virtual Instruction *clone() const override;  ///< Make a deep copy, and make the copy a derived object if needed.
 
 	// Accept a visitor to this Statement
 	virtual bool accept(StmtVisitor *visitor) override;
@@ -862,7 +862,7 @@ public:
 	bool search(const Exp& /*search*/, SharedExp& /*result*/)  override { return false; }
 	bool searchAll(const Exp& /*search*/, std::list<SharedExp>& /*result*/)  override { return false; }
 
-	//! general search and replace. Set cc true to change collectors as well. Return true if any change
+	/// general search and replace. Set cc true to change collectors as well. Return true if any change
 	bool searchAndReplace(const Exp& /*search*/, SharedExp /*replace*/, bool /*cc*/ = false)  override { return false; }
 
 	void generateCode(HLLCode * /*hll*/, BasicBlock * /*pbb*/, int /*indLevel*/)  override {}

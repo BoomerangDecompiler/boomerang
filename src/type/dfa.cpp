@@ -1294,7 +1294,7 @@ void BranchStatement::dfaTypeAnalysis(bool& ch)
 }
 
 
-//! Data flow based type analysis
+/// Data flow based type analysis
 void ImplicitAssign::dfaTypeAnalysis(bool& ch)
 {
 	Assignment::dfaTypeAnalysis(ch);
@@ -2030,9 +2030,9 @@ void Terminal::descendType(SharedType /*parentType*/, bool& /*ch*/, Instruction 
 }
 
 
-//! Data flow based type analysis.
-//! Meet the parameters with their current types.
-//! \returns true if a change
+/// Data flow based type analysis.
+/// Meet the parameters with their current types.
+/// \returns true if a change
 bool Signature::dfaTypeAnalysis(Cfg *cfg)
 {
 	bool ch = false;

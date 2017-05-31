@@ -1553,7 +1553,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS ad
 }
 
 
-//! This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
+/// This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
 bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, QString& name)
 {
 	Q_UNUSED(dest);

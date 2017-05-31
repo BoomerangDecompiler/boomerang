@@ -41,8 +41,8 @@ public:
 	void reset() override;
 
 	size_t GetNumSections() const override { return Sections.size(); }
-	ADDRESS                  imageToSource(ADDRESS); //! convert image address ( host pointer into image data ) to valid Source machine ADDRESS
-	ADDRESS                  sourceToImage(ADDRESS); //! convert Source machine ADDRESS into valid image ADDRESS
+	ADDRESS                  imageToSource(ADDRESS); /// convert image address ( host pointer into image data ) to valid Source machine ADDRESS
+	ADDRESS                  sourceToImage(ADDRESS); /// convert Source machine ADDRESS into valid image ADDRESS
 
 	char readNative1(ADDRESS nat) override;
 	int readNative2(ADDRESS nat) override;
@@ -53,7 +53,7 @@ public:
 	void writeNative4(ADDRESS nat, uint32_t n) override;
 	void calculateTextLimits() override;
 
-	//! Find the section, given an address in the section
+	/// Find the section, given an address in the section
 	const IBinarySection *getSectionInfoByAddr(ADDRESS uEntry) const override;
 
 	int GetSectionIndexByName(const QString& sName) override;
@@ -80,5 +80,5 @@ private:
 	ADDRESS                  limitTextHigh;
 	ptrdiff_t                TextDelta;
 	MapAddressRangeToSection SectionMap;
-	SectionListType          Sections; //!< The section info
+	SectionListType          Sections; ///< The section info
 };

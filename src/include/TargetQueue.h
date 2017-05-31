@@ -5,7 +5,7 @@
 #include <queue>
 class Cfg;
 class BasicBlock;
-//! Put the target queue logic into this small class
+/// Put the target queue logic into this small class
 class TargetQueue
 {
 	std::queue<ADDRESS> targets;

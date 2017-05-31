@@ -93,14 +93,14 @@ public:
 	 */
 	FrontEnd(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
 	static FrontEnd *instantiate(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
-	static FrontEnd *Load(const QString& fname, Prog *prog); //!< Load a binary
+	static FrontEnd *Load(const QString& fname, Prog *prog); ///< Load a binary
 
-	//! Add a symbol to the loader
+	/// Add a symbol to the loader
 	void AddSymbol(ADDRESS addr, const QString& nam);
 
 	// Add a "hint" that an instruction at the given address references a named global
 	void addRefHint(ADDRESS addr, const QString& nam) { refHints[addr] = nam; }
-	virtual ~FrontEnd(); //!<Destructor. Virtual to mute a warning
+	virtual ~FrontEnd(); ///<Destructor. Virtual to mute a warning
 
 	// returns a symbolic name for a register index
 	QString getRegName(int idx) const;
@@ -124,9 +124,9 @@ public:
 	// Accessor function to get the decoder.
 	IInstructionTranslator *getDecoder() { return decoder; }
 
-	void readLibrarySignatures(const char *sPath, callconv cc); //!< Read library signatures from a file.
-	void readLibraryCatalog(const QString& sPath);              //!< read from a catalog
-	void readLibraryCatalog();                                  //!< read from default catalog
+	void readLibrarySignatures(const char *sPath, callconv cc); ///< Read library signatures from a file.
+	void readLibraryCatalog(const QString& sPath);              ///< read from a catalog
+	void readLibraryCatalog();                                  ///< read from default catalog
 
 	// lookup a library signature by name
 	std::shared_ptr<Signature> getLibSignature(const QString& name);
@@ -177,8 +177,8 @@ public:
 //     * the result.
 //     */
 //    static FrontEnd *getInstanceFor(const char *sName, void *&dlHandle, QObject *pLoader, IInstructionTranslator *&decoder);
-	static void closeInstance(void *dlHandle); //!<Close the library opened by getInstanceFor
-	Prog *getProg();                           //! Get a Prog object (for testing and not decoding)
+	static void closeInstance(void *dlHandle); ///<Close the library opened by getInstanceFor
+	Prog *getProg();                           /// Get a Prog object (for testing and not decoding)
 
 	/**
 	 * Create a Return or a Oneway BB if a return statement already exists

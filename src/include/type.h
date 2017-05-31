@@ -839,9 +839,9 @@ public:
 
 struct DataInterval
 {
-	size_t     size; //!< The size of this type in bytes
-	QString    name; //!< The name of the variable
-	SharedType type; //!< The type of the variable
+	size_t     size; ///< The size of this type in bytes
+	QString    name; ///< The name of the variable
+	SharedType type; ///< The type of the variable
 };
 
 typedef std::pair<const ADDRESS, DataInterval> DataIntervalEntry; // For result of find() below
@@ -854,10 +854,10 @@ class DataIntervalMap
 public:
 	DataIntervalMap() {}
 	typedef std::map<ADDRESS, DataInterval>::iterator iterator;
-	void setProc(UserProc *p) { proc = p; }    //!< Initialise the proc pointer
-	DataIntervalEntry *find(ADDRESS addr);     //!< Find the DataInterval at address addr, or nullptr if none
-	iterator find_it(ADDRESS addr);            //!< Return an iterator to the entry for it, or end() if none
-	bool isClear(ADDRESS addr, unsigned size); //!< True if from addr for size bytes is clear
+	void setProc(UserProc *p) { proc = p; }    ///< Initialise the proc pointer
+	DataIntervalEntry *find(ADDRESS addr);     ///< Find the DataInterval at address addr, or nullptr if none
+	iterator find_it(ADDRESS addr);            ///< Return an iterator to the entry for it, or end() if none
+	bool isClear(ADDRESS addr, unsigned size); ///< True if from addr for size bytes is clear
 	void addItem(ADDRESS addr, QString name, SharedType ty, bool forced = false);
 	void deleteItem(ADDRESS addr);             // Mainly for testing?
 	void expandItem(ADDRESS addr, unsigned size);

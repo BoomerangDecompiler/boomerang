@@ -162,10 +162,10 @@ class Win32BinaryFile : public QObject, public LoaderInterface
 public:
 	Win32BinaryFile();
 	virtual ~Win32BinaryFile();
-	void close() override;                 //!< Close file opened with Open()
-	void unload() override;                //!< Unload the image
-	LOAD_FMT getFormat() const override;   //!< Get format (i.e.LOADFMT_Win32)
-	MACHINE getMachine() const override;   //!< Get machine (i.e. MACHINE_Pentium)
+	void close() override;                 ///< Close file opened with Open()
+	void unload() override;                ///< Unload the image
+	LOAD_FMT getFormat() const override;   ///< Get format (i.e.LOADFMT_Win32)
+	MACHINE getMachine() const override;   ///< Get machine (i.e. MACHINE_Pentium)
 	ADDRESS getImageBase() override;
 	size_t getImageSize() override;
 	bool isLibrary() const;

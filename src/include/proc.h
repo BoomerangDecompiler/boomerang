@@ -71,11 +71,11 @@ public:
 	ADDRESS getNativeAddress() const;
 	void setNativeAddress(ADDRESS a);
 
-	Prog *getProg() { return prog; } //!< Get the program this procedure belongs to.
+	Prog *getProg() { return prog; } ///< Get the program this procedure belongs to.
 	void setProg(Prog *p) { prog = p; }
 	Function *getFirstCaller();
 
-	//! Set the first procedure that calls this procedure (or null for main/start).
+	/// Set the first procedure that calls this procedure (or null for main/start).
 	void setFirstCaller(Function *p)
 	{
 		if (m_firstCaller == nullptr) {
@@ -83,7 +83,7 @@ public:
 		}
 	}
 
-	std::shared_ptr<Signature> getSignature() { return signature; } //!< Returns a pointer to the Signature
+	std::shared_ptr<Signature> getSignature() { return signature; } ///< Returns a pointer to the Signature
 	void setSignature(std::shared_ptr<Signature> sig) { signature = sig; }
 
 	virtual void renameParam(const char *oldName, const char *newName);
@@ -92,17 +92,17 @@ public:
 
 	std::list<Type> *getParamTypeList(const std::list<SharedExp>&);
 
-	virtual bool isLib() { return false; } //!< Return true if this is a library proc
-	virtual bool isNoReturn() = 0;         //!< Return true if this procedure doesn't return
+	virtual bool isLib() { return false; } ///< Return true if this is a library proc
+	virtual bool isNoReturn() = 0;         ///< Return true if this procedure doesn't return
 
 	/**
 	 * OutPut operator for a Proc object.
 	 */
 	friend QTextStream& operator<<(QTextStream& os, const Function& proc);
 
-	virtual SharedExp getProven(SharedExp left)   = 0; //!< Get the RHS, if any, that is proven for left
-	virtual SharedExp getPremised(SharedExp left) = 0; //!< Get the RHS, if any, that is premised for left
-	virtual bool isPreserved(SharedExp e)         = 0; //!< Return whether e is preserved by this proc
+	virtual SharedExp getProven(SharedExp left)   = 0; ///< Get the RHS, if any, that is proven for left
+	virtual SharedExp getPremised(SharedExp left) = 0; ///< Get the RHS, if any, that is premised for left
+	virtual bool isPreserved(SharedExp e)         = 0; ///< Return whether e is preserved by this proc
 	void setProvenTrue(SharedExp fact);
 
 	/**
@@ -111,7 +111,7 @@ public:
 	 */
 	std::set<CallStatement *>& getCallers() { return callerSet; }
 
-	//! Add to the set of callers
+	/// Add to the set of callers
 	void addCaller(CallStatement *caller) { callerSet.insert(caller); }
 	void addCallers(std::set<UserProc *>& callers);
 
@@ -168,12 +168,12 @@ protected:
 public:
 	LibProc(Module *mod, const QString& name, ADDRESS address);
 	virtual ~LibProc() = default;
-	bool isLib() { return true; } //!< Return true, since is a library proc
+	bool isLib() { return true; } ///< Return true, since is a library proc
 	virtual bool isNoReturn();
 	virtual SharedExp getProven(SharedExp left);
 
-	virtual SharedExp getPremised(SharedExp /*left*/) { return nullptr; } //!< Get the RHS that is premised for left
-	virtual bool isPreserved(SharedExp e);                            //!< Return whether e is preserved by this proc
+	virtual SharedExp getPremised(SharedExp /*left*/) { return nullptr; } ///< Get the RHS that is premised for left
+	virtual bool isPreserved(SharedExp e);                            ///< Return whether e is preserved by this proc
 	void getInternalStatements(StatementList& internal);
 
 protected:
@@ -206,7 +206,7 @@ class UserProc : public Function
 {
 protected:
 	friend class XMLProgParser;
-	Cfg *cfg; //!< The control flow graph.
+	Cfg *cfg; ///< The control flow graph.
 
 	/**
 	 * The status of this user procedure.
@@ -224,8 +224,8 @@ protected:
 	 */
 	std::map<QString, SharedType> locals;
 
-	int nextLocal = 0; //!< Number of the next local. Can't use locals.size() because some get deleted
-	int nextParam = 0; //!< Number for param1, param2, etc
+	int nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
+	int nextParam = 0; ///< Number for param1, param2, etc
 
 public:
 
@@ -274,9 +274,9 @@ public:
 	void setDecoded();
 	void unDecode();
 
-	//! Returns a pointer to the CFG object.
+	/// Returns a pointer to the CFG object.
 	Cfg *getCFG() { return cfg; }
-	//! Returns a pointer to the DataFlow object.
+	/// Returns a pointer to the DataFlow object.
 	DataFlow *getDataFlow() { return &df; }
 	void deleteCFG() override;
 	virtual bool isNoReturn() override;
@@ -285,7 +285,7 @@ public:
 	void printAST(SyntaxNode *a = nullptr);
 
 	DataIntervalMap& localsMap() { return localTable; }
-	//! Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
+	/// Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
 	bool isDecoded() { return status >= PROC_DECODED; }
 	bool isDecompiled() { return status >= PROC_FINAL; }
 	bool isEarlyRecursive() const { return cycleGrp != nullptr && status <= PROC_INCYCLE; }
@@ -311,7 +311,7 @@ public:
 	void dumpLocals(QTextStream& os, bool html = false) const;
 	void dumpLocals();
 
-	//! simplify the statements in this proc
+	/// simplify the statements in this proc
 	void simplify() { cfg->simplify(); }
 	std::shared_ptr<ProcSet> decompile(ProcList *path, int& indent);
 	void initialiseDecompile();
@@ -485,19 +485,19 @@ public:
 	BasicBlock *getEntryBB();
 	void setEntryBB();
 
-	//! Get the callees.
+	/// Get the callees.
 	std::list<Function *>& getCallees() { return calleeList; }
 	void addCallee(Function *callee);
 
 	// void                addCallees(std::list<UserProc*>& callees);
 	bool containsAddr(ADDRESS uAddr);
 
-	//! Change BB containing this statement from a COMPCALL to a CALL.
+	/// Change BB containing this statement from a COMPCALL to a CALL.
 	void undoComputedBB(Instruction *stmt) { cfg->undoComputedBB(stmt); }
 	virtual SharedExp getProven(SharedExp left) override;
 	virtual SharedExp getPremised(SharedExp left) override;
 
-	//! Set a location as a new premise, i.e. assume e=e
+	/// Set a location as a new premise, i.e. assume e=e
 	void setPremise(SharedExp e)
 	{
 		e = e->clone();
@@ -525,7 +525,7 @@ public:
 
 private:
 	ReturnStatement *theReturnStatement;
-	mutable int DFGcount; //!< used in dotty output
+	mutable int DFGcount; ///< used in dotty output
 
 public:
 	ADDRESS getTheReturnAddr() { return theReturnStatement == nullptr ? NO_ADDRESS : theReturnStatement->getRetAddr(); }

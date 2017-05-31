@@ -50,7 +50,7 @@ QTextStream& operator<<(QTextStream& os, const LocationSet *ls)
 // InstructionSet methods
 //
 
-//! Make this set the union of itself and other
+/// Make this set the union of itself and other
 void InstructionSet::makeUnion(InstructionSet& other)
 {
 	std::set<Instruction *>::iterator it;
@@ -61,7 +61,7 @@ void InstructionSet::makeUnion(InstructionSet& other)
 }
 
 
-//! Make this set the difference of itself and other
+/// Make this set the difference of itself and other
 void InstructionSet::makeDiff(InstructionSet& other)
 {
 	std::set<Instruction *>::iterator it;
@@ -72,7 +72,7 @@ void InstructionSet::makeDiff(InstructionSet& other)
 }
 
 
-//! Make this set the intersection of itself and other
+/// Make this set the intersection of itself and other
 void InstructionSet::makeIsect(InstructionSet& other)
 {
 	std::set<Instruction *>::iterator it, ff;
@@ -88,8 +88,8 @@ void InstructionSet::makeIsect(InstructionSet& other)
 }
 
 
-//! Check for the subset relation, i.e. are all my elements also in the set
-//! other. Effectively (this intersect other) == this
+/// Check for the subset relation, i.e. are all my elements also in the set
+/// other. Effectively (this intersect other) == this
 bool InstructionSet::isSubSetOf(InstructionSet& other)
 {
 	std::set<Instruction *>::iterator it, ff;
@@ -498,7 +498,7 @@ void LocationSet::print(QTextStream& os) const
 }
 
 
-//! \param given is not modified, and could be const'd if not for std::set requirements
+/// \param given is not modified, and could be const'd if not for std::set requirements
 void LocationSet::remove(SharedExp given)
 {
 	std::set<SharedExp, lessExpStar>::iterator it = lset.find(given);
@@ -900,8 +900,8 @@ bool StatementList::existsOnLeft(SharedExp loc)
 }
 
 
-//! Remove the first definition where loc appears on the left
-//! \note statements in this list are assumed to be assignments
+/// Remove the first definition where loc appears on the left
+/// \note statements in this list are assumed to be assignments
 void StatementList::removeDefOf(SharedExp loc)
 {
 	for (iterator it = begin(); it != end(); it++) {
@@ -1038,7 +1038,7 @@ void ConnectionGraph::connect(SharedExp a, SharedExp b)
 }
 
 
-//! Return a count of locations connected to \a e
+/// Return a count of locations connected to \a e
 int ConnectionGraph::count(SharedExp e) const
 {
 	const_iterator ff = emap.find(e);
@@ -1053,7 +1053,7 @@ int ConnectionGraph::count(SharedExp e) const
 }
 
 
-//! Return true if a is connected to b
+/// Return true if a is connected to b
 bool ConnectionGraph::isConnected(SharedExp a, const Exp& b) const
 {
 	const_iterator ff = emap.find(a);
@@ -1092,7 +1092,7 @@ bool ConnectionGraph::allRefsHaveDefs() const
 
 
 // Modify the map so that a <-> b becomes a <-> c
-//! Update the map that used to be a <-> b, now it is a <-> c
+/// Update the map that used to be a <-> b, now it is a <-> c
 void ConnectionGraph::update(SharedExp a, SharedExp b, SharedExp c)
 {
 	// find a->b

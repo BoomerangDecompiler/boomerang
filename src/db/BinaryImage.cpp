@@ -281,7 +281,7 @@ const IBinarySection *BinaryImage::getSectionInfoByAddr(ADDRESS uEntry) const
 }
 
 
-//! Find section index given name, or -1 if not found
+/// Find section index given name, or -1 if not found
 int BinaryImage::GetSectionIndexByName(const QString& sName)
 {
 	for (int32_t i = Sections.size() - 1; i >= 0; --i) {

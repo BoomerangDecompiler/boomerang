@@ -87,7 +87,7 @@ public:
 	void setProc(UserProc *proc);
 	void clear();
 
-	size_t getNumBBs() { return m_listBB.size(); } //!<Get the number of BBs
+	size_t getNumBBs() { return m_listBB.size(); } ///<Get the number of BBs
 	Cfg& operator=(const Cfg& other);        /* Copy constructor */
 
 	BasicBlock *newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges) noexcept(false);
@@ -135,7 +135,7 @@ public:
 	void structure();
 	void removeJunctionStatements();
 
-	//! return a bb given an address
+	/// return a bb given an address
 	BasicBlock *bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
 	void simplify();
 	void undoComputedBB(Instruction *stmt);
@@ -196,8 +196,8 @@ public:
 	Instruction *findImplicitParamAssign(Parameter *p);
 	void removeImplicitAssign(SharedExp x);
 
-	bool implicitsDone() { return ImplicitsDone; }    //!<  True if implicits have been created
-	void setImplicitsDone() { ImplicitsDone = true; } //!< Call when implicits have been created
+	bool implicitsDone() { return ImplicitsDone; }    ///<  True if implicits have been created
+	void setImplicitsDone() { ImplicitsDone = true; } ///< Call when implicits have been created
 	void findInterferences(ConnectionGraph& ig);
 	void appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& workset);
 	void removeUsedGlobals(std::set<Global *>& unusedGlobals);

@@ -40,7 +40,7 @@ struct lessTI : public std::binary_function<const SharedExp&, const SharedExp&, 
 	bool operator()(const SharedExp& x, const SharedExp& y) const;
 };
 
-//! Compare assignments by their left hand sides (only). Implemented in statement.cpp
+/// Compare assignments by their left hand sides (only). Implemented in statement.cpp
 struct lessAssignment : public std::binary_function<Assignment *, Assignment *, bool>
 {
 	bool operator()(const Assignment *x, const Assignment *y) const;

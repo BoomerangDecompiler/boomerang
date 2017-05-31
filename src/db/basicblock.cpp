@@ -1080,7 +1080,7 @@ BasicBlock *BasicBlock::getLoopBody()
 }
 
 
-//! establish if this bb is an ancestor of another BB
+/// establish if this bb is an ancestor of another BB
 bool BasicBlock::isAncestorOf(BasicBlock *other)
 {
 	return((LoopStamps[0] < other->LoopStamps[0] && LoopStamps[1] > other->LoopStamps[1]) ||
@@ -1185,7 +1185,7 @@ void BasicBlock::simplify()
 }
 
 
-//! establish if this bb has a back edge to the given destination
+/// establish if this bb has a back edge to the given destination
 bool BasicBlock::hasBackEdgeTo(BasicBlock *dest)
 {
 	//    assert(HasEdgeTo(dest) || dest == this);
@@ -1949,8 +1949,8 @@ char *BasicBlock::getStmtNumber()
 }
 
 
-//! Prepend an assignment (usually a PhiAssign or ImplicitAssign)
-//! \a proc is the enclosing Proc
+/// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
+/// \a proc is the enclosing Proc
 void BasicBlock::prependStmt(Instruction *s, UserProc *proc)
 {
 	assert(Parent == proc);
@@ -2480,7 +2480,7 @@ static void findConstantValues(const Instruction *s, std::list<int>& dests)
 
 
 // Find indirect jumps and calls
-//! Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible decode extra code and return true
+/// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible decode extra code and return true
 bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 {
 #define CHECK_REAL_PHI_LOOPS    0

@@ -349,7 +349,7 @@ Function *Module::getFunction(ADDRESS loc)
 }
 
 
-//! Get a library signature for a given name (used when creating a new library proc).
+/// Get a library signature for a given name (used when creating a new library proc).
 std::shared_ptr<Signature> Module::getLibSignature(const QString& name)
 {
 	return CurrentFrontend->getLibSignature(name);

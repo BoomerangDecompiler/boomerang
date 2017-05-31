@@ -843,7 +843,7 @@ void UseCollector::print(QTextStream& os, bool html) const
 
 
 #define DEFCOL_COLS    120
-//! Print the collected locations to stream os
+/// Print the collected locations to stream os
 void DefCollector::print(QTextStream& os, bool html) const
 {
 	iterator it;
@@ -895,7 +895,7 @@ char *UseCollector::prints() const
 }
 
 
-//!Print to string or stdout (for debugging)
+///Print to string or stdout (for debugging)
 char *DefCollector::prints() const
 {
 	QString     tgt;

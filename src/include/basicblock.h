@@ -136,61 +136,61 @@ public:
 protected:
 	Function *Parent;
 	/* general basic block information */
-	BBTYPE NodeType = BBTYPE::INVALID;      //!< type of basic block
-	std::list<RTL *> *ListOfRTLs = nullptr; //!< Ptr to list of RTLs
-	int LabelNum     = 0;                   //!< Nonzero if start of BB needs label
+	BBTYPE NodeType = BBTYPE::INVALID;      ///< type of basic block
+	std::list<RTL *> *ListOfRTLs = nullptr; ///< Ptr to list of RTLs
+	int LabelNum     = 0;                   ///< Nonzero if start of BB needs label
 	bool LabelNeeded = false;
-	bool Incomplete  = true;                //!< True if not yet complete
-	bool JumpReqd    = false;               //!< True if jump required for "fall through"
+	bool Incomplete  = true;                ///< True if not yet complete
+	bool JumpReqd    = false;               ///< True if jump required for "fall through"
 
 	/* in-edges and out-edges */
-	std::vector<BasicBlock *> InEdges;  //!< Vector of in-edges
-	std::vector<BasicBlock *> OutEdges; //!< Vector of out-edges
-	size_t TargetOutEdges;              //!< support resize() of vectors!
+	std::vector<BasicBlock *> InEdges;  ///< Vector of in-edges
+	std::vector<BasicBlock *> OutEdges; ///< Vector of out-edges
+	size_t TargetOutEdges;              ///< support resize() of vectors!
 
 	/* for traversal */
-	bool TraversedMarker = false; //!< traversal marker
+	bool TraversedMarker = false; ///< traversal marker
 
 	/* Liveness */
-	LocationSet LiveIn;                  //!< Set of locations live at BB start
+	LocationSet LiveIn;                  ///< Set of locations live at BB start
 
 	/*
 	 * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
 	 * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
 	 */
-	int DFTfirst = 0; //!< depth-first traversal first visit
-	int DFTlast  = 0; //!< depth-first traversal last visit
-	int DFTrevfirst;  //!< reverse depth-first traversal first visit
-	int DFTrevlast;   //!< reverse depth-first traversal last visit
+	int DFTfirst = 0; ///< depth-first traversal first visit
+	int DFTlast  = 0; ///< depth-first traversal last visit
+	int DFTrevfirst;  ///< reverse depth-first traversal first visit
+	int DFTrevlast;   ///< reverse depth-first traversal last visit
 
 	/* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
 	 */
-	int Ord;                             //!< node's position within the ordering structure
-	int RevOrd;                          //!< position within ordering structure for the reverse graph
-	int InEdgesVisited;                  //!< counts the number of in edges visited during a DFS
-	int NumForwardInEdges;               //!< inedges to this node that aren't back edges
-	int LoopStamps[2], RevLoopStamps[2]; //!< used for structuring analysis
-	travType Traversed;                  //!< traversal flag for the numerous DFS's
-	bool HllLabel;                       //!< emit a label for this node when generating HL code?
-	QString LabelStr;                    //!< the high level label for this node (if needed)
-	int IndentLevel;                     //!< the indentation level of this node in the final code
+	int Ord;                             ///< node's position within the ordering structure
+	int RevOrd;                          ///< position within ordering structure for the reverse graph
+	int InEdgesVisited;                  ///< counts the number of in edges visited during a DFS
+	int NumForwardInEdges;               ///< inedges to this node that aren't back edges
+	int LoopStamps[2], RevLoopStamps[2]; ///< used for structuring analysis
+	travType Traversed;                  ///< traversal flag for the numerous DFS's
+	bool HllLabel;                       ///< emit a label for this node when generating HL code?
+	QString LabelStr;                    ///< the high level label for this node (if needed)
+	int IndentLevel;                     ///< the indentation level of this node in the final code
 
 	/* high level structuring */
-	SBBTYPE LoopCondType = NONE; //!< type of conditional to treat this loop header as (if any)
-	SBBTYPE StructType   = NONE; //!< structured type of this node
+	SBBTYPE LoopCondType = NONE; ///< type of conditional to treat this loop header as (if any)
+	SBBTYPE StructType   = NONE; ///< structured type of this node
 	// analysis information
-	BasicBlock *ImmPDom;         //!< immediate post dominator
-	BasicBlock *LoopHead;        //!< head of the most nested enclosing loop
-	BasicBlock *CaseHead;        //!< head of the most nested enclosing case
-	BasicBlock *CondFollow;      //!< follow of a conditional header
-	BasicBlock *LoopFollow;      //!< follow of a loop header
-	BasicBlock *LatchNode;       //!< latching node of a loop header
+	BasicBlock *ImmPDom;         ///< immediate post dominator
+	BasicBlock *LoopHead;        ///< head of the most nested enclosing loop
+	BasicBlock *CaseHead;        ///< head of the most nested enclosing case
+	BasicBlock *CondFollow;      ///< follow of a conditional header
+	BasicBlock *LoopFollow;      ///< follow of a loop header
+	BasicBlock *LatchNode;       ///< latching node of a loop header
 
 	// Structured type of the node
-	structType StructuringType;    //!< the structuring class (Loop, Cond , etc)
-	unstructType UnstructuredType; //!< the restructured type of a conditional header
-	LoopType LoopHeaderType;       //!< the loop type of a loop header
-	CondType ConditionHeaderType;  //!< the conditional type of a conditional header
+	structType StructuringType;    ///< the structuring class (Loop, Cond , etc)
+	unstructType UnstructuredType; ///< the restructured type of a conditional header
+	LoopType LoopHeaderType;       ///< the loop type of a loop header
+	CondType ConditionHeaderType;  ///< the conditional type of a conditional header
 	// true if processing for overlapped registers on statements in this BB
 	// has been completed.
 	bool overlappedRegProcessingDone = false;
@@ -234,7 +234,7 @@ public:
 
 	const std::vector<BasicBlock *>& getOutEdges();
 
-	void clearOutEdges() { OutEdges.clear(); } //!<called when noreturn call is found
+	void clearOutEdges() { OutEdges.clear(); } ///<called when noreturn call is found
 	void setInEdge(size_t i, BasicBlock *newIn);
 	void setOutEdge(size_t i, BasicBlock *newInEdge);
 	BasicBlock *getOutEdge(size_t i);
@@ -349,7 +349,7 @@ protected:
 	BasicBlock *getCondFollow() { return CondFollow; }
 	bool hasBackEdgeTo(BasicBlock *dest);
 
-	//! establish if this bb has any back edges leading FROM it
+	/// establish if this bb has any back edges leading FROM it
 	bool hasBackEdge()
 	{
 		for (auto bb : OutEdges) {

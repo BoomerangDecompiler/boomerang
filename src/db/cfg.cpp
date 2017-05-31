@@ -2503,7 +2503,7 @@ void Cfg::undoComputedBB(Instruction *stmt)
 }
 
 
-//! Find or create an implicit assign for x
+/// Find or create an implicit assign for x
 Instruction *Cfg::findImplicitAssign(SharedExp x)
 {
 	Instruction *def;
@@ -2529,7 +2529,7 @@ Instruction *Cfg::findImplicitAssign(SharedExp x)
 }
 
 
-//! Find the existing implicit assign for x (if any)
+/// Find the existing implicit assign for x (if any)
 Instruction *Cfg::findTheImplicitAssign(const SharedExp& x)
 {
 	// As per the above, but don't create an implicit if it doesn't already exist
@@ -2543,7 +2543,7 @@ Instruction *Cfg::findTheImplicitAssign(const SharedExp& x)
 }
 
 
-//! Find exiting implicit assign for parameter p
+/// Find exiting implicit assign for parameter p
 Instruction *Cfg::findImplicitParamAssign(Parameter *param)
 {
 	// As per the above, but for parameters (signatures don't get updated with opParams)
@@ -2575,7 +2575,7 @@ Instruction *Cfg::findImplicitParamAssign(Parameter *param)
 }
 
 
-//! Remove an existing implicit assignment for x
+/// Remove an existing implicit assignment for x
 void Cfg::removeImplicitAssign(SharedExp x)
 {
 	auto it = implicitMap.find(x);
