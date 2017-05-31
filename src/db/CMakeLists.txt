@@ -9,7 +9,6 @@ set(INCLUDES
 	../include/statement.h
 	../include/type.h
 	../include/visitor.h
-	../include/cfg.h
 	../include/dataflow.h
 	../include/exphelp.h
 	../include/operator.h
@@ -41,6 +40,7 @@ set(SRC
 	IBinarySymbols.h
 	basicblock.h
     basicblock.cpp
+    cfg.h
     cfg.cpp
     dataflow.cpp
     exp.cpp

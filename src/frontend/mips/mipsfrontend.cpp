@@ -23,7 +23,7 @@
 #include "include/exp.h"
 #include "include/register.h"
 #include "include/rtl.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "include/prog.h"
 #include "include/decoder.h"

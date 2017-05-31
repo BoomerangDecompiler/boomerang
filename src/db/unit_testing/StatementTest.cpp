@@ -15,7 +15,7 @@
 #include <sstream>
 #include <map>
 #include "StatementTest.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/rtl.h"
 #include "pentiumfrontend.h"
 #include "boom_base/log.h"

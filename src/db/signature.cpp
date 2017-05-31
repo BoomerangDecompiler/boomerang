@@ -21,7 +21,7 @@
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "include/util.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"

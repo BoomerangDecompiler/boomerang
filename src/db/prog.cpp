@@ -26,7 +26,7 @@
 #include "include/statement.h"
 #include "include/hllcode.h"
 #include "include/exp.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "include/util.h" // For lockFileWrite etc
 #include "include/register.h"

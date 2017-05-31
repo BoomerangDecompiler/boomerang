@@ -14,7 +14,7 @@
  ******************************************************************************/
 
 #include "include/msvc_fixes.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/statement.h"
 #include "include/exp.h"
 #include "include/proc.h"

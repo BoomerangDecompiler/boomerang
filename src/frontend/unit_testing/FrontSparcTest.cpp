@@ -11,7 +11,7 @@
 #include "include/prog.h"
 #include "include/frontend.h"
 #include "sparcfrontend.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/rtl.h"
 #include "boom_base/BinaryFile.h"
 #include "boom_base/BinaryFileStub.h"

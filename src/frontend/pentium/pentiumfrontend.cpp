@@ -25,7 +25,7 @@
 #include "pentiumdecoder.h"
 #include "include/register.h"
 #include "include/type.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/exp.h"
 #include "include/proc.h"
 #include "include/signature.h"

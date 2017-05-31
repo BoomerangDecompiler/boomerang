@@ -18,7 +18,7 @@
 #include "include/rtl.h"
 #include "include/exp.h"
 #include "include/register.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "include/prog.h"
 #include "boom_base/BinaryFile.h"

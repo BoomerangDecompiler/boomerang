@@ -10,7 +10,7 @@
 
 #include "include/exp.h"
 #include "include/type.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "include/signature.h"
 #include "include/util.h"

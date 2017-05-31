@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include "include/types.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "include/prog.h"
 #include "boom_base/log.h"

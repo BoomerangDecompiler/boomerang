@@ -11,7 +11,7 @@
 
 #include "include/types.h"
 #include "include/statement.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/exp.h"
 #include "include/register.h"
 #include "include/rtl.h"

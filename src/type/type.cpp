@@ -18,7 +18,7 @@
 #include "include/types.h"
 #include "include/util.h"
 #include "include/exp.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "include/signature.h"
 #include "boom_base/log.h"

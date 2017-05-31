@@ -14,7 +14,7 @@
 
 #include "include/dataflow.h"
 
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "include/exp.h"
 #include "boom_base/log.h"
@@ -212,7 +212,7 @@ bool DataFlow::doesDominate(int n, int w)
 void DataFlow::computeDF(int n)
 {
 	std::set<int> S;
-	/* THis loop computes DF_local[n] */
+	/* This loop computes DF_local[n] */
 	// for each node y in succ(n)
 	BasicBlock *bb = BBs[n];
 	const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();

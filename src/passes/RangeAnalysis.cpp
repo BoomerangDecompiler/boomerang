@@ -5,7 +5,7 @@
 #include "db/IBinaryImage.h"
 #include "boom_base/log.h"
 #include "include/util.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "db/basicblock.h"
 #include "include/rtl.h"
 #include "include/type.h"

@@ -23,7 +23,7 @@
 #include "include/types.h"
 #include "include/statement.h"
 #include "include/exp.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/register.h"
 #include "include/rtl.h"
 #include "include/hllcode.h"

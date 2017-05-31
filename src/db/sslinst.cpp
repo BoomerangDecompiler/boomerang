@@ -27,7 +27,7 @@
 #include "include/register.h"
 #include "include/type.h"
 #include "include/rtl.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/proc.h"
 #include "include/prog.h"
 #include "sslparser.h"

@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include "include/exp.h" // For lessExpStar
-#include "include/cfg.h" // For cfg->simplify()
+#include "db/cfg.h" // For cfg->simplify()
 
 #include "memo.h"
 #include "include/dataflow.h"  // For class UseCollector

@@ -27,7 +27,7 @@
 #include "boom_base/log.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
-#include "include/cfg.h"
+#include "db/cfg.h"
 #include "include/decoder.h"
 #include "include/exp.h"
 #include "include/frontend.h"
