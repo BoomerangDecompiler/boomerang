@@ -17,7 +17,7 @@
 #include "HpSomBinaryFile.h"
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
-#include "include/IBinarySymbols.h"
+#include "db/IBinarySymbols.h"
 
 #include <QString>
 #include <cstddef>

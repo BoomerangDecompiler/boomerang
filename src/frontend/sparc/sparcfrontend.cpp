@@ -26,7 +26,7 @@
 #include "boom_base/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
 #include "boom_base/log.h"
 #include "db/IBinaryImage.h"
-#include "include/IBinarySymbols.h"
+#include "db/IBinarySymbols.h"
 #include "include/cfg.h"
 #include "include/decoder.h"
 #include "include/exp.h"

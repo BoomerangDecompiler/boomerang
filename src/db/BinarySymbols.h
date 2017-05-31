@@ -1,6 +1,6 @@
 #pragma once
 
-#include "include/IBinarySymbols.h"
+#include "db/IBinarySymbols.h"
 #include <QMap>
 #include <QVariantMap>
 class BinarySymbols;
@@ -33,7 +33,6 @@ class BinarySymbols : public IBinarySymbolTable
 
 public:
 	BinarySymbols();
-	// IBinarySymbols interface
 
 public:
 	virtual IBinarySymbol& addSymbol(ADDRESS a);
@@ -47,9 +46,9 @@ public:
 	virtual void addExport(ADDRESS);
 
 private:
-	std::vector<BinarySymbol *> Symbols;
-	QMap<QString, BinarySymbol *> NameToSymbolMap;
-	QMap<ADDRESS, BinarySymbol *> AddressToSymbolMap;
+	std::vector<BinarySymbol *> m_symbols;
+	QMap<QString, BinarySymbol *> m_nameToSymbolMap;
+	QMap<ADDRESS, BinarySymbol *> m_addressToSymbolMap;
 };
 
 #endif // BINARYSYMBOLS_H

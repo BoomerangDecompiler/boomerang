@@ -17,26 +17,26 @@ void BinarySymbols::addImport(ADDRESS addr)
 
 IBinarySymbol& BinarySymbols::addSymbol(ADDRESS a)
 {
-	if (AddressToSymbolMap.contains(a)) {
+	if (m_addressToSymbolMap.contains(a)) {
 		qDebug() << "Attempt to insert a symbol twice";
-		return *AddressToSymbolMap[a];
+		return *m_addressToSymbolMap[a];
 	}
 
 	Symbols.push_back(new BinarySymbol(this));
-	AddressToSymbolMap[a] = Symbols.back();
-	return *Symbols.back();
+	m_addressToSymbolMap[a] = m_symbols.back();
+	return *m_symbols.back();
 }
 
 
 bool BinarySymbols::hasSymbolAt(ADDRESS a)
 {
-	return AddressToSymbolMap.contains(a);
+	return m_addressToSymbolMap.contains(a);
 }
 
 
 bool BinarySymbols::hasSymbol(const QString& name)
 {
-	return NameToSymbolMap.contains(name);
+	return m_nameToSymbolMap.contains(name);
 }
 
 

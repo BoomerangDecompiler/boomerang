@@ -12,7 +12,7 @@
 
 #include "include/project.h"
 #include "db/IBinaryImage.h"
-#include "include/IBinarySymbols.h"
+#include "db/IBinarySymbols.h"
 
 #include <QDir>
 #include <QPluginLoader>

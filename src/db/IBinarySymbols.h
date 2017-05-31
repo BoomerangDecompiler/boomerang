@@ -27,13 +27,15 @@ public:
 };
 
 class QString;
-typedef std::shared_ptr<class Type>          SharedType;
+typedef std::shared_ptr<class Type> SharedType;
+
+
 class IBinarySymbolTable
 {
 public:
-	typedef std::vector<IBinarySymbol *>     SymbolListType;
-	typedef SymbolListType::iterator         iterator;
-	typedef SymbolListType::const_iterator   const_iterator;
+	typedef std::vector<IBinarySymbol *>   SymbolListType;
+	typedef SymbolListType::iterator       iterator;
+	typedef SymbolListType::const_iterator const_iterator;
 
 public:
 	virtual const IBinarySymbol *find(ADDRESS a) const        = 0; ///< Find an entry by address; nullptr if none

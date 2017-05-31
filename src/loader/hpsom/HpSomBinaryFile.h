@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "boom_base/BinaryFile.h"
-#include "include/IBinarySymbols.h"
+#include "db/IBinarySymbols.h"
 #include <set>
 
 struct import_entry

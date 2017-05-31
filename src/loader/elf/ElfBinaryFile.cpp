@@ -23,7 +23,7 @@
 #include "include/util.h"
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
-#include "include/IBinarySymbols.h"
+#include "db/IBinarySymbols.h"
 
 #include <QtCore/QDebug>
 #include <sys/types.h> // Next three for open()

@@ -38,7 +38,7 @@ namespace dbghelp
 
 #include "boom_base/BinaryFile.h"
 #include "db/IBinaryImage.h"
-#include "include/IBinarySymbols.h"
+#include "db/IBinarySymbols.h"
 #include "include/IBoomerang.h"
 #include "include/config.h"
 
@@ -779,13 +779,13 @@ bool Win32BinaryFile::postLoad(void *handle)
 
 char *SymTagEnums[] =
 {
-	"SymTagNull",            "SymTagExe",                     "SymTagCompiland",             "SymTagCompilandDetails",
-	"SymTagCompilandEnv",    "SymTagFunction",                "SymTagBlock",                 "SymTagData",
-	"SymTagAnnotation",      "SymTagLabel",                   "SymTagPublicSymbol",          "SymTagUDT",
-	"SymTagEnum",            "SymTagFunctionType",            "SymTagPointerType",           "SymTagArrayType",
-	"SymTagBaseType",        "SymTagTypedef",                 "SymTagBaseClass",             "SymTagFriend",
-	"SymTagFunctionArgType", "SymTagFuncDebugStart",          "SymTagFuncDebugEnd",          "SymTagUsingNamespace",
-	"SymTagVTableShape",     "SymTagVTable",                  "SymTagCustom",                "SymTagThunk",
+	"SymTagNull",            "SymTagExe",                     "SymTagCompiland",                      "SymTagCompilandDetails",
+	"SymTagCompilandEnv",    "SymTagFunction",                "SymTagBlock",                          "SymTagData",
+	"SymTagAnnotation",      "SymTagLabel",                   "SymTagPublicSymbol",                   "SymTagUDT",
+	"SymTagEnum",            "SymTagFunctionType",            "SymTagPointerType",                    "SymTagArrayType",
+	"SymTagBaseType",        "SymTagTypedef",                 "SymTagBaseClass",                      "SymTagFriend",
+	"SymTagFunctionArgType", "SymTagFuncDebugStart",          "SymTagFuncDebugEnd",                   "SymTagUsingNamespace",
+	"SymTagVTableShape",     "SymTagVTable",                  "SymTagCustom",                         "SymTagThunk",
 	"SymTagCustomType",      "SymTagManagedType",             "SymTagDimension"
 };
 
@@ -826,7 +826,7 @@ enum SymTagEnum
 
 char *basicTypes[] =
 {
-	"notype",        "void",        "char", "WCHAR", "??", "??", "int", "unsigned int", "float", "bcd", "bool", "??", "??",
+	"notype",        "void",        "char",        "WCHAR", "??", "??", "int", "unsigned int", "float", "bcd", "bool", "??", "??",
 	"long"
 	"unsigned long",
 };

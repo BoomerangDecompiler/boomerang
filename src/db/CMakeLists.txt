@@ -28,7 +28,6 @@ set(INCLUDES
 	../include/signature.h
 	../include/transformer.h
 	../include/util.h
-	../include/IBinarySymbols.h
 	../include/IBoomerang.h
 	../include/IProject.h
 )
@@ -39,6 +38,7 @@ set(SRC
 	SectionInfo
 	IBinaryImage.h
 	BinaryImage
+	IBinarySymbols.h
 	basicblock.h
     basicblock.cpp
     cfg.cpp

@@ -315,8 +315,8 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 			char        *MATCH_name;
 			static char *MATCH_name_cond_12[] =
 			{
-				"bra", (char *)0, "bhi",     "bls", "bcc", "bcs", "bne", "beq",
-				"bvc", "bvs",     "bpl",     "bmi", "bge", "blt", "bgt", "ble",
+				"bra", (char *)0, "bhi",     "bls",     "bcc", "bcs", "bne", "beq",
+				"bvc", "bvs",     "bpl",     "bmi",     "bge", "blt", "bgt", "ble",
 			};
 			unsigned /* [0..65535] */ MATCH_w_16_0;
 			{

@@ -557,18 +557,18 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		};
 		static char *MATCH_name_cond_96[] =
 		{
-			"st",  "sf",  "shi",  "sls", "scc", "scs", "sne", "seq",
-			"svc", "svs", "spl",  "smi", "sge", "slt", "sgt", "sle",
+			"st",  "sf",  "shi",  "sls",  "scc", "scs", "sne", "seq",
+			"svc", "svs", "spl",  "smi",  "sge", "slt", "sgt", "sle",
 		};
 		static char *MATCH_name_cond_97[] =
 		{
-			"dbt",  "dbf",  "dbhi",  "dbls", "dbcc", "dbcs", "dbne", "dbeq",
-			"dbvc", "dbvs", "dbpl",  "dbmi", "dbge", "dblt", "dbgt", "dble",
+			"dbt",  "dbf",  "dbhi",  "dbls",  "dbcc", "dbcs", "dbne", "dbeq",
+			"dbvc", "dbvs", "dbpl",  "dbmi",  "dbge", "dblt", "dbgt", "dble",
 		};
 		static char *MATCH_name_cond_98[] =
 		{
-			"st.ex",  "sf.ex",  "shi.ex",  "sls.ex", "scc.ex", "scs.ex", "sne.ex", "seq.ex",
-			"svc.ex", "svs.ex", "spl.ex",  "smi.ex", "sge.ex", "slt.ex", "sgt.ex", "sle.ex",
+			"st.ex",  "sf.ex",  "shi.ex",  "sls.ex",  "scc.ex", "scs.ex", "sne.ex", "seq.ex",
+			"svc.ex", "svs.ex", "spl.ex",  "smi.ex",  "sge.ex", "slt.ex", "sgt.ex", "sle.ex",
 		};
 		static char *MATCH_name_cond_99[] =
 		{

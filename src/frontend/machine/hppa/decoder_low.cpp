@@ -362,9 +362,9 @@ SemStr *NJMCDecoder::c_c(ADDRESS hostpc, int& cond)
 {
 	static const char *c_c_names[] =
 	{
-		"c_c_no",  "c_c_eq",  "c_c_l",   "c_c_le",   "c_c_ul", "c_c_ule",
-		"c_c_sv",  "c_c_od",  "c_c_yes", "c_c_ne",   "c_c_ge", "c_c_g",
-		"c_c_uge", "c_c_ug",  "c_c_nsv", "c_c_ev"
+		"c_c_no",  "c_c_eq",  "c_c_l",    "c_c_le",   "c_c_ul",   "c_c_ule",
+		"c_c_sv",  "c_c_od",  "c_c_yes",  "c_c_ne",   "c_c_ge",   "c_c_g",
+		"c_c_uge", "c_c_ug",  "c_c_nsv",  "c_c_ev"
 	};
 	static const int cmpib_codes[] = { 4, 1, 2, 3, 12, 9, 10, 11 };
 	static const int sep_codes[]   = { 0, 1, 2, 7, 8, 9, 10, 15 };
@@ -906,34 +906,34 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		char        *MATCH_name;
 		static char *MATCH_name_ext8_19_0[] =
 		{
-			"BREAK",   (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, "RFI",     (char *)0,     (char *)0,
-			(char *)0, (char *)0,   "RFI.r",   (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     "SSM",
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, "RSM",         (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, "MFIA",      (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    (char *)0, (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0, (char *)0,   (char *)0,    "MTCTL",   "MTSM",    (char *)0,     (char *)0,
+			"BREAK",   (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    "RFI",     (char *)0,     (char *)0,
+			(char *)0, (char *)0,   "RFI.r",     (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     "SSM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, "RSM",         (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   "MFIA",      (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      "MTCTL",      "MTSM",    (char *)0,     (char *)0,
 			"MTSARCM",
 		};
 		static char *MATCH_name_ext5_11_1[] =
 		{
-			"SYNC",    (char *)0,    (char *)0, (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0,    (char *)0, (char *)0, "SYNCDMA",
+			"SYNC",    (char *)0,    (char *)0,    (char *)0, (char *)0, (char *)0,
+			(char *)0, (char *)0,    (char *)0,    (char *)0, "SYNCDMA",
 		};
 		static char *MATCH_name_ext_17_2[] =
 		{
@@ -946,9 +946,9 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		};
 		static char *MATCH_name_op_58[] =
 		{
-			(char *)0, (char *)0,   (char *)0, (char *)0, (char *)0,     (char *)0, (char *)0, (char *)0,  "LDIL",    (char *)0,
-			"ADDIL",   (char *)0,   (char *)0, "LDO",     (char *)0,     (char *)0, "LDB",     "LDH",      "LDW",     "LDWM",
-			(char *)0, (char *)0,   (char *)0, (char *)0, "STB",         "STH",     "STW",     "STWM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0, (char *)0,     (char *)0,     (char *)0, (char *)0,  "LDIL",     (char *)0,
+			"ADDIL",   (char *)0,   (char *)0,   "LDO",     (char *)0,     (char *)0,     "LDB",     "LDH",      "LDW",      "LDWM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0, "STB",         "STH",         "STW",     "STWM",
 		};
 		static char *MATCH_name_sub_16_71[] =
 		{

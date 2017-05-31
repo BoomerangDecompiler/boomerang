@@ -18,7 +18,7 @@
 #include "include/types.h"
 #include "boom_base/BinaryFile.h"
 #include "db/IBinaryImage.h"
-#include "include/IBinarySymbols.h"
+#include "db/IBinarySymbols.h"
 #include "include/frontend.h"
 #include "include/rtl.h"
 #include "include/decoder.h" // prototype for decodeInstruction()
