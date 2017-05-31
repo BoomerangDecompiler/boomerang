@@ -13,6 +13,7 @@ public:
 
 	virtual ~ErrLogger() {}
 };
+
 class DfaTest : public QObject
 {
 	Q_OBJECT

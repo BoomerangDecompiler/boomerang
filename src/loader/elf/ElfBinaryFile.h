@@ -20,10 +20,15 @@
 
 #include "BinaryFile.h"
 struct Elf32_Phdr;
+
 struct Elf32_Shdr;
+
 struct Elf32_Rel;
+
 struct Elf32_Sym;
+
 struct Translated_ElfSym;
+
 class QFile;
 
 using RelocMap = std::map<ADDRESS, QString, std::less<ADDRESS> >;

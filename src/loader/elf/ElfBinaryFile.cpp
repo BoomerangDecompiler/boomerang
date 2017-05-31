@@ -49,6 +49,7 @@ struct SectionParam
 	ADDRESS  image_ptr;
 	unsigned uType;             // Type of section (format dependent)
 };
+
 // not part of anonymous namespace, since it would create an ambiguity
 // anonymous_namespace::Translated_ElfSym vs. ElfTypes.h/Translated_ElfSym declarations
 struct Translated_ElfSym

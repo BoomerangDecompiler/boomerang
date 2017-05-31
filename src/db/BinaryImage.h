@@ -23,6 +23,7 @@ struct SectionHolder
 		throw std::runtime_error("Cannot aggregate SectionInfos !");
 	}
 };
+
 struct BinaryImage : public IBinaryImage
 {
 protected:

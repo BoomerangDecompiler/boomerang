@@ -6,6 +6,7 @@
 #include <QString>
 class QVariant;
 struct SectionInfoImpl;
+
 //! SectionInfo structure - All information about the sections is contained in these
 //! structures.
 struct SectionInfo : public IBinarySection

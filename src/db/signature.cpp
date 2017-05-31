@@ -239,6 +239,7 @@ public:
 		return shared_from_this();
 	}
 };
+
 class MIPSSignature : public Signature
 {
 public:
@@ -263,6 +264,7 @@ public:
 	virtual platform getPlatform() override { return PLAT_MIPS; }
 	virtual callconv getConvention() override { return CONV_C; }
 };
+
 class ST20Signature : public Signature
 {
 public:

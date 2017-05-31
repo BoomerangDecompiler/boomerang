@@ -6144,6 +6144,7 @@ void CallStatement::updateDefines()
 class ArgSourceProvider
 {
 	enum Src { SRC_LIB, SRC_CALLEE, SRC_COL };
+
 	Src src;
 	CallStatement *call;
 	int i, n;                       // For SRC_LIB

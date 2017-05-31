@@ -31,10 +31,14 @@ struct PACKED coff_symbol // symbol information, 18 bytes
 			uint32_t zeros;
 			uint32_t offset;
 		}
+
 			 e;
+
 		char name[8];
 	}
+
 				  e;
+
 #define csym_name      e.name
 #define csym_zeros     e.e.zeros
 #define csym_offset    e.e.offset

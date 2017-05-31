@@ -37,6 +37,7 @@ struct objc_method_description
 	SEL  name;
 	char *types;
 };
+
 struct objc_method_description_list
 {
 	int                            count;

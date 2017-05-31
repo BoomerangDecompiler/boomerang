@@ -50,6 +50,7 @@ struct objc_class
 	uint32_t          cache;       // struct objc_cache *
 	uint32_t          protocols;   // struct objc_protocol_list *
 };
+
 #define CLS_GETINFO(cls, infomask)    ((cls)->info & (infomask))
 #define CLS_SETINFO(cls, infomask)    ((cls)->info |= (infomask))
 

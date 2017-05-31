@@ -364,6 +364,7 @@ public:
 public:    /* added members */
 	YY_AnsiCScanner_MEMBERS
 };
+
 #endif
 
 /* declaration of externs for public use of yylex scanner */

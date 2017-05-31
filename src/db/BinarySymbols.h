@@ -26,6 +26,7 @@ public:
 	IBinarySymbol& setAttr(const QString& name, const QVariant&)  override;
 	IBinarySymbol& setSize(size_t sz) override;
 };
+
 class BinarySymbols : public IBinarySymbolTable
 {
 	friend class BinarySymbol;
@@ -50,4 +51,5 @@ private:
 	QMap<QString, BinarySymbol *> NameToSymbolMap;
 	QMap<ADDRESS, BinarySymbol *> AddressToSymbolMap;
 };
+
 #endif // BINARYSYMBOLS_H

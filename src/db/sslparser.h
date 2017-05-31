@@ -37,6 +37,7 @@ struct yy_SSLParser_stype
 	std::list<SharedExp>         *explist;
 	std::shared_ptr<RTL>         rtlist;
 };
+
 #define YY_SSLParser_DEBUG    1
 /* use no goto to be clean in C++ */
 //#define YY_SSLParser_USE_GOTO 0
@@ -191,4 +192,5 @@ protected:
 	 */
 	bool bFloat;
 };
+
 /* END */

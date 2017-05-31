@@ -56,6 +56,7 @@ struct BinarySymbol : public IBinarySymbol
 	bool isImported() const override;
 	QString belongsToSourceFile() const override;
 };
+
 class SymTab : public IBinarySymbolTable
 {
 	friend struct BinarySymbol;

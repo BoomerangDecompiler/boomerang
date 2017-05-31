@@ -368,6 +368,7 @@ public:
 public:    /* added members */
 	YY_SSLScanner_MEMBERS
 };
+
 #endif
 
 /* declaration of externs for public use of yylex scanner */

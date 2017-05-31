@@ -385,6 +385,7 @@ public:
 public:    /* added members */
 	YY_TransformationScanner_MEMBERS
 };
+
 #endif
 
 

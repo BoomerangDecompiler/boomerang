@@ -16,6 +16,7 @@ struct coff_header
 	uint16_t coff_opthead_size;
 	uint16_t coff_flags;
 }
+
 PACKED;
 
 class IntelCoffFile : public BinaryFile

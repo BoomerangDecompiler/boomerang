@@ -53,6 +53,7 @@ enum ElfRelocKind
 	R_386_GOTOFF    = 9,
 	R_386_GOTPC     = 10
 };
+
 #define R_SPARC_NONE        0
 #define R_SPARC_8           1
 #define R_SPARC_16          2
@@ -163,6 +164,7 @@ struct Elf32_Sym
 	unsigned char st_other;
 	short         st_shndx;
 };
+
 #pragma pack(pop)
 
 struct Elf32_Rel
@@ -170,6 +172,7 @@ struct Elf32_Rel
 	unsigned r_offset;
 	int      r_info;
 };
+
 struct Elf32_Rela
 {
 	unsigned r_offset;
@@ -191,12 +194,14 @@ enum ElfSymType
 	STT_FILE    = 4,
 	STT_COMMON  = 5
 };
+
 enum ElfSymBinding
 {
 	STB_LOCAL  = 0,
 	STB_GLOBAL = 1,
 	STB_WEAK   = 2
 };
+
 enum ElfSymVisibility
 {
 	STV_DEFAULT   = 0,
@@ -204,6 +209,7 @@ enum ElfSymVisibility
 	STV_HIDDEN    = 2,
 	STV_PROTECTED = 3
 };
+
 typedef struct
 {
 	short d_tag; /* how to interpret value */

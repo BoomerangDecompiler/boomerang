@@ -182,21 +182,22 @@ bool createDirectory(const QString& dir)
 
 enum CommandType
 {
-	CT_unknown  =-1,
-	CT_decode   =1,
-	CT_load     =2,
-	CT_save     =3,
-	CT_decompile=4,
-	CT_codegen  =5,
-	CT_move     =6,
-	CT_add      =7,
-	CT_delete   =8,
-	CT_rename   =9,
-	CT_info     =10,
-	CT_print    =11,
-	CT_exit     =12,
-	CT_help     =13
+	CT_unknown   = -1,
+	CT_decode    = 1,
+	CT_load      = 2,
+	CT_save      = 3,
+	CT_decompile = 4,
+	CT_codegen   = 5,
+	CT_move      = 6,
+	CT_add       = 7,
+	CT_delete    = 8,
+	CT_rename    = 9,
+	CT_info      = 10,
+	CT_print     = 11,
+	CT_exit      = 12,
+	CT_help      = 13
 };
+
 static CommandType commandNameToID(const QString& _cmd)
 {
 	if (_cmd == "decode") {

@@ -2250,6 +2250,7 @@ struct SwitchForm
 	SharedConstExp pattern;
 	char           type;
 };
+
 SwitchForm hlForms[] =
 {
 	{ forma, 'a' },
