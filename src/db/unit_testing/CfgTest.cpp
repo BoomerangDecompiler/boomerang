@@ -14,7 +14,7 @@
 #include "frontend/pentium/pentiumfrontend.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

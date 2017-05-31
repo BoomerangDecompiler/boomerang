@@ -1,7 +1,6 @@
 include_directories(../c/) # used by prog.cpp
 
 set(INCLUDES
-	../include/basicblock.h
 	../include/exp.h
 	../include/hllcode.h
 	../include/memo.h
@@ -40,6 +39,7 @@ set(SRC
 	SymTab
 	SectionInfo
 	BinaryImage
+	basicblock.h
     basicblock.cpp
     cfg.cpp
     dataflow.cpp

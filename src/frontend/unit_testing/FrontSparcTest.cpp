@@ -16,7 +16,7 @@
 #include "boom_base/BinaryFile.h"
 #include "boom_base/BinaryFileStub.h"
 #include "boom_base/log.h"
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 #include "boom_base/log.h"
 
 #include <QDir>

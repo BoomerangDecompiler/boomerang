@@ -74,7 +74,7 @@
 #include "type/constraint.h"
 #include "include/visitor.h"
 #include "boom_base/log.h"
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>

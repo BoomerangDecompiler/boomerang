@@ -32,7 +32,7 @@
 #include "include/prog.h"         // For findProc()
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()
 #include "boom_base/log.h"
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 #include "boom_base/log.h"
 
 #include <cassert>

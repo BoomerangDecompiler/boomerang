@@ -22,7 +22,7 @@
 
 #include "sparcfrontend.h"
 
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 #include "boom_base/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
 #include "boom_base/log.h"
 #include "include/IBinaryImage.h"

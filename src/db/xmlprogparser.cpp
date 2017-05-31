@@ -17,7 +17,7 @@
 #include "include/signature.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 #include "include/frontend.h"
 
 #include <QtCore/QFile>
@@ -1132,32 +1132,32 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes& attr)
 		BasicBlock *h = (BasicBlock *)findId(attr.value(QLatin1Literal("immPDom")));
 
 		if (h) {
-			bb->ImmPDom = h;
+			bb->m_immPDom = h;
 		}
 		h = (BasicBlock *)findId(attr.value(QLatin1Literal("loopHead")));
 
 		if (h) {
-			bb->LoopHead = h;
+			bb->m_loopHead = h;
 		}
 		h = (BasicBlock *)findId(attr.value(QLatin1Literal("caseHead")));
 
 		if (h) {
-			bb->CaseHead = h;
+			bb->m_caseHead = h;
 		}
 		h = (BasicBlock *)findId(attr.value(QLatin1Literal("condFollow")));
 
 		if (h) {
-			bb->CondFollow = h;
+			bb->m_condFollow = h;
 		}
 		h = (BasicBlock *)findId(attr.value(QLatin1Literal("loopFollow")));
 
 		if (h) {
-			bb->LoopFollow = h;
+			bb->m_loopFollow = h;
 		}
 		h = (BasicBlock *)findId(attr.value(QLatin1Literal("latchNode")));
 
 		if (h) {
-			bb->LatchNode = h;
+			bb->m_latchNode = h;
 		}
 		return;
 	}
@@ -1168,142 +1168,142 @@ void XMLProgParser::start_bb(const QXmlStreamAttributes& attr)
 	QStringRef str = attr.value(QLatin1Literal("nodeType"));
 
 	if (!str.isEmpty()) {
-		bb->NodeType = (BBTYPE)str.toInt();
+		bb->m_nodeType = (BBTYPE)str.toInt();
 	}
 	str = attr.value(QLatin1Literal("labelNum"));
 
 	if (!str.isEmpty()) {
-		bb->LabelNum = str.toInt();
+		bb->m_labelNum = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("labelneeded"));
 
 	if (!str.isEmpty()) {
-		bb->LabelNeeded = str.toInt() > 0;
+		bb->m_labelNeeded = str.toInt() > 0;
 	}
 	str = attr.value(QLatin1Literal("incomplete"));
 
 	if (!str.isEmpty()) {
-		bb->Incomplete = str.toInt() > 0;
+		bb->m_incomplete = str.toInt() > 0;
 	}
 	str = attr.value(QLatin1Literal("jumpreqd"));
 
 	if (!str.isEmpty()) {
-		bb->JumpReqd = str.toInt() > 0;
+		bb->m_jumpReqd = str.toInt() > 0;
 	}
 	str = attr.value(QLatin1Literal("m_traversed"));
 
 	if (!str.isEmpty()) {
-		bb->TraversedMarker = str.toInt() > 0;
+		bb->m_traversedMarker = str.toInt() > 0;
 	}
 	str = attr.value(QLatin1Literal("DFTfirst"));
 
 	if (!str.isEmpty()) {
-		bb->DFTfirst = str.toInt();
+		bb->m_DFTfirst = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("DFTlast"));
 
 	if (!str.isEmpty()) {
-		bb->DFTlast = str.toInt();
+		bb->m_DFTlast = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("DFTrevfirst"));
 
 	if (!str.isEmpty()) {
-		bb->DFTrevfirst = str.toInt();
+		bb->m_DFTrevfirst = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("DFTrevlast"));
 
 	if (!str.isEmpty()) {
-		bb->DFTrevlast = str.toInt();
+		bb->m_DFTrevlast = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("structType"));
 
 	if (!str.isEmpty()) {
-		bb->StructType = (SBBTYPE)str.toInt();
+		bb->m_structType = (SBBTYPE)str.toInt();
 	}
 	str = attr.value(QLatin1Literal("loopCondType"));
 
 	if (!str.isEmpty()) {
-		bb->LoopCondType = (SBBTYPE)str.toInt();
+		bb->m_loopCondType = (SBBTYPE)str.toInt();
 	}
 	str = attr.value(QLatin1Literal("ord"));
 
 	if (!str.isEmpty()) {
-		bb->Ord = str.toInt();
+		bb->m_ord = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("revOrd"));
 
 	if (!str.isEmpty()) {
-		bb->RevOrd = str.toInt();
+		bb->m_revOrd = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("inEdgesVisited"));
 
 	if (!str.isEmpty()) {
-		bb->InEdgesVisited = str.toInt();
+		bb->m_inEdgesVisited = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("numForwardInEdges"));
 
 	if (!str.isEmpty()) {
-		bb->NumForwardInEdges = str.toInt();
+		bb->m_numForwardInEdges = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("loopStamp1"));
 
 	if (!str.isEmpty()) {
-		bb->LoopStamps[0] = str.toInt();
+		bb->m_loopStamps[0] = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("loopStamp2"));
 
 	if (!str.isEmpty()) {
-		bb->LoopStamps[1] = str.toInt();
+		bb->m_loopStamps[1] = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("revLoopStamp1"));
 
 	if (!str.isEmpty()) {
-		bb->RevLoopStamps[0] = str.toInt();
+		bb->m_revLoopStamps[0] = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("revLoopStamp2"));
 
 	if (!str.isEmpty()) {
-		bb->RevLoopStamps[1] = str.toInt();
+		bb->m_revLoopStamps[1] = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("traversed"));
 
 	if (!str.isEmpty()) {
-		bb->Traversed = (travType)str.toInt();
+		bb->m_traversed = (travType)str.toInt();
 	}
 	str = attr.value(QLatin1Literal("hllLabel"));
 
 	if (!str.isEmpty()) {
-		bb->HllLabel = str.toInt() > 0;
+		bb->m_emitHLLLabel = str.toInt() > 0;
 	}
 	str = attr.value(QLatin1Literal("labelStr"));
 
 	if (!str.isEmpty()) {
-		bb->LabelStr = str.toString();
+		bb->m_labelStr = str.toString();
 	}
 	str = attr.value(QLatin1Literal("indentLevel"));
 
 	if (!str.isEmpty()) {
-		bb->IndentLevel = str.toInt();
+		bb->m_indentLevel = str.toInt();
 	}
 	str = attr.value(QLatin1Literal("sType"));
 
 	if (!str.isEmpty()) {
-		bb->StructuringType = (structType)str.toInt();
+		bb->m_structuringType = (structType)str.toInt();
 	}
 	str = attr.value(QLatin1Literal("usType"));
 
 	if (!str.isEmpty()) {
-		bb->UnstructuredType = (unstructType)str.toInt();
+		bb->m_unstructuredType = (unstructType)str.toInt();
 	}
 	str = attr.value(QLatin1Literal("lType"));
 
 	if (!str.isEmpty()) {
-		bb->LoopHeaderType = (LoopType)str.toInt();
+		bb->m_loopHeaderType = (LoopType)str.toInt();
 	}
 	str = attr.value(QLatin1Literal("cType"));
 
 	if (!str.isEmpty()) {
-		bb->ConditionHeaderType = (CondType)str.toInt();
+		bb->m_conditionHeaderType = (CondType)str.toInt();
 	}
 }
 
@@ -3382,71 +3382,71 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const BasicBlock *bb)
 {
 	out.writeStartElement("order");
 	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(bb).m_value));
-	out.writeAttribute("nodeType", QString::number((int)bb->NodeType));
-	out.writeAttribute("labelNum", QString::number(bb->LabelNum));
-	out.writeAttribute("labelneeded", QString::number(bb->LabelNeeded));
-	out.writeAttribute("incomplete", QString::number(bb->Incomplete));
-	out.writeAttribute("jumpreqd", QString::number(bb->JumpReqd));
-	out.writeAttribute("m_traversed", QString::number(bb->TraversedMarker));
-	out.writeAttribute("jumpreqd", QString::number(bb->JumpReqd));
-	out.writeAttribute("DFTfirst", QString::number(bb->DFTfirst));
-	out.writeAttribute("DFTlast", QString::number(bb->DFTlast));
-	out.writeAttribute("DFTrevfirst", QString::number(bb->DFTrevfirst));
-	out.writeAttribute("DFTrevlast", QString::number(bb->DFTrevlast));
-	out.writeAttribute("structType", QString::number(bb->StructType));
-	out.writeAttribute("loopCondType", QString::number(bb->LoopCondType));
-	out.writeAttribute("ord", QString::number(bb->Ord));
-	out.writeAttribute("revOrd", QString::number(bb->RevOrd));
-	out.writeAttribute("inEdgesVisited", QString::number(bb->InEdgesVisited));
-	out.writeAttribute("numForwardInEdges", QString::number(bb->NumForwardInEdges));
-	out.writeAttribute("loopStamp1", QString::number(bb->LoopStamps[0]));
-	out.writeAttribute("loopStamp2", QString::number(bb->LoopStamps[1]));
-	out.writeAttribute("revLoopStamp1", QString::number(bb->RevLoopStamps[0]));
-	out.writeAttribute("revLoopStamp2", QString::number(bb->RevLoopStamps[1]));
-	out.writeAttribute("traversed", QString::number((int)bb->Traversed));
-	out.writeAttribute("hllLabel", QString::number((int)bb->HllLabel));
+	out.writeAttribute("nodeType", QString::number((int)bb->m_nodeType));
+	out.writeAttribute("labelNum", QString::number(bb->m_labelNum));
+	out.writeAttribute("labelneeded", QString::number(bb->m_labelNeeded));
+	out.writeAttribute("incomplete", QString::number(bb->m_incomplete));
+	out.writeAttribute("jumpreqd", QString::number(bb->m_jumpReqd));
+	out.writeAttribute("m_traversed", QString::number(bb->m_traversedMarker));
+	out.writeAttribute("jumpreqd", QString::number(bb->m_jumpReqd));
+	out.writeAttribute("DFTfirst", QString::number(bb->m_DFTfirst));
+	out.writeAttribute("DFTlast", QString::number(bb->m_DFTlast));
+	out.writeAttribute("DFTrevfirst", QString::number(bb->m_DFTrevfirst));
+	out.writeAttribute("DFTrevlast", QString::number(bb->m_DFTrevlast));
+	out.writeAttribute("structType", QString::number(bb->m_structType));
+	out.writeAttribute("loopCondType", QString::number(bb->m_loopCondType));
+	out.writeAttribute("ord", QString::number(bb->m_ord));
+	out.writeAttribute("revOrd", QString::number(bb->m_revOrd));
+	out.writeAttribute("inEdgesVisited", QString::number(bb->m_inEdgesVisited));
+	out.writeAttribute("numForwardInEdges", QString::number(bb->m_numForwardInEdges));
+	out.writeAttribute("loopStamp1", QString::number(bb->m_loopStamps[0]));
+	out.writeAttribute("loopStamp2", QString::number(bb->m_loopStamps[1]));
+	out.writeAttribute("revLoopStamp1", QString::number(bb->m_revLoopStamps[0]));
+	out.writeAttribute("revLoopStamp2", QString::number(bb->m_revLoopStamps[1]));
+	out.writeAttribute("traversed", QString::number((int)bb->m_traversed));
+	out.writeAttribute("hllLabel", QString::number((int)bb->m_emitHLLLabel));
 
-	if (!bb->LabelStr.isEmpty()) {
-		out.writeAttribute("labelStr", bb->LabelStr);
+	if (!bb->m_labelStr.isEmpty()) {
+		out.writeAttribute("labelStr", bb->m_labelStr);
 	}
-	out.writeAttribute("indentLevel", QString::number(bb->IndentLevel));
+	out.writeAttribute("indentLevel", QString::number(bb->m_indentLevel));
 
 	// note the rediculous duplication here
-	if (bb->ImmPDom) {
-		out.writeAttribute("immPDom", QString::number(ADDRESS::host_ptr(bb->ImmPDom).m_value));
+	if (bb->m_immPDom) {
+		out.writeAttribute("immPDom", QString::number(ADDRESS::host_ptr(bb->m_immPDom).m_value));
 	}
 
-	if (bb->LoopHead) {
-		out.writeAttribute("loopHead", QString::number(ADDRESS::host_ptr(bb->LoopHead).m_value));
+	if (bb->m_loopHead) {
+		out.writeAttribute("loopHead", QString::number(ADDRESS::host_ptr(bb->m_loopHead).m_value));
 	}
 
-	if (bb->CaseHead) {
-		out.writeAttribute("caseHead", QString::number(ADDRESS::host_ptr(bb->CaseHead).m_value));
+	if (bb->m_caseHead) {
+		out.writeAttribute("caseHead", QString::number(ADDRESS::host_ptr(bb->m_caseHead).m_value));
 	}
 
-	if (bb->CondFollow) {
-		out.writeAttribute("condFollow", QString::number(ADDRESS::host_ptr(bb->CondFollow).m_value));
+	if (bb->m_condFollow) {
+		out.writeAttribute("condFollow", QString::number(ADDRESS::host_ptr(bb->m_condFollow).m_value));
 	}
 
-	if (bb->LoopFollow) {
-		out.writeAttribute("loopFollow", QString::number(ADDRESS::host_ptr(bb->LoopFollow).m_value));
+	if (bb->m_loopFollow) {
+		out.writeAttribute("loopFollow", QString::number(ADDRESS::host_ptr(bb->m_loopFollow).m_value));
 	}
 
-	if (bb->LatchNode) {
-		out.writeAttribute("latchNode", QString::number(ADDRESS::host_ptr(bb->LatchNode).m_value));
+	if (bb->m_latchNode) {
+		out.writeAttribute("latchNode", QString::number(ADDRESS::host_ptr(bb->m_latchNode).m_value));
 	}
-	out.writeAttribute("sType", QString::number((int)bb->StructuringType));
-	out.writeAttribute("usType", QString::number((int)bb->UnstructuredType));
-	out.writeAttribute("lType", QString::number((int)bb->LoopHeaderType));
-	out.writeAttribute("cType", QString::number((int)bb->ConditionHeaderType));
+	out.writeAttribute("sType", QString::number((int)bb->m_structuringType));
+	out.writeAttribute("usType", QString::number((int)bb->m_unstructuredType));
+	out.writeAttribute("lType", QString::number((int)bb->m_loopHeaderType));
+	out.writeAttribute("cType", QString::number((int)bb->m_conditionHeaderType));
 
-	for (auto& elem : bb->InEdges) {
+	for (auto& elem : bb->m_inEdges) {
 		out.writeStartElement("inedge");
 		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
 		out.writeEndElement();
 	}
 
-	for (auto& elem : bb->OutEdges) {
+	for (auto& elem : bb->m_outEdges) {
 		out.writeStartElement("outedge");
 		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
 		out.writeEndElement();
@@ -3454,14 +3454,14 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const BasicBlock *bb)
 
 	LocationSet::iterator it;
 
-	for (it = bb->LiveIn.begin(); it != bb->LiveIn.end(); it++) {
+	for (it = bb->m_liveIn.begin(); it != bb->m_liveIn.end(); it++) {
 		out.writeStartElement("livein");
 		persistToXML(out, *it);
 		out.writeEndElement();
 	}
 
-	if (bb->ListOfRTLs) {
-		for (auto& elem : *bb->ListOfRTLs) {
+	if (bb->m_listOfRTLs) {
+		for (auto& elem : *bb->m_listOfRTLs) {
 			persistToXML(out, elem);
 		}
 	}

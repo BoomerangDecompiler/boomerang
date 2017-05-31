@@ -21,7 +21,7 @@
 #include "include/statement.h"
 #include "include/visitor.h"
 #include "boom_base/log.h"
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 #include "include/frontend.h"
 
 #include <QtCore/QDebug>

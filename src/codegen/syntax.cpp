@@ -3,7 +3,7 @@
 #include "include/prog.h"
 #include "include/exp.h"
 #include "include/cfg.h"
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 #include "include/statement.h"
 #include "boom_base/log.h"
 #include "boom_base/boomerang.h"

@@ -25,7 +25,7 @@
 #include "include/rtl.h"
 #include "boom_base/BinaryFile.h"
 #include "include/decoder.h"
-#include "include/basicblock.h"
+#include "db/basicblock.h"
 #include "sparc/sparcfrontend.h"
 #include "pentium/pentiumfrontend.h"
 #include "ppc/ppcfrontend.h"
