@@ -10,7 +10,7 @@
 #include "include/type.h"
 #include "db/module.h"
 #include "include/prog.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/rtl.h"
 #include "include/statement.h"
 #include "sigenum.h"
@@ -521,7 +521,7 @@ void XMLProgParser::start_libproc(const QXmlStreamAttributes& attr)
 		Module *c = (Module *)findId(attr.value(QLatin1Literal("cluster")));
 
 		if (c) {
-			stack.front()->proc->Parent = c;
+			stack.front()->proc->m_parent = c;
 		}
 		return;
 	}
@@ -530,7 +530,7 @@ void XMLProgParser::start_libproc(const QXmlStreamAttributes& attr)
 	QStringRef address = attr.value(QLatin1Literal("address"));
 
 	if (!address.isEmpty()) {
-		stack.front()->proc->address = ADDRESS::g(address.toInt());
+		stack.front()->proc->m_address = ADDRESS::g(address.toInt());
 	}
 	address = attr.value(QLatin1Literal("firstCallerAddress"));
 
@@ -593,7 +593,7 @@ void XMLProgParser::start_userproc(const QXmlStreamAttributes& attr)
 		Module *c = (Module *)findId(attr.value(QLatin1Literal("cluster")));
 
 		if (c) {
-			u->Parent = c;
+			u->m_parent = c;
 		}
 		ReturnStatement *r = (ReturnStatement *)findId(attr.value(QLatin1Literal("retstmt")));
 
@@ -609,12 +609,12 @@ void XMLProgParser::start_userproc(const QXmlStreamAttributes& attr)
 	QStringRef address = attr.value(QLatin1Literal("address"));
 
 	if (!address.isEmpty()) {
-		proc->address = ADDRESS::g(address.toInt());
+		proc->m_address = ADDRESS::g(address.toInt());
 	}
 	address = attr.value(QLatin1Literal("status"));
 
 	if (!address.isEmpty()) {
-		proc->status = (ProcStatus)address.toInt();
+		proc->m_status = (ProcStatus)address.toInt();
 	}
 	address = attr.value(QLatin1Literal("firstCallerAddress"));
 
@@ -668,7 +668,7 @@ void XMLProgParser::addToContext_userproc(Context *c, int e)
 		break;
 
 	case e_local:
-		userproc->locals[stack.front()->str] = stack.front()->type;
+		userproc->m_locals[stack.front()->str] = stack.front()->type;
 		break;
 
 	case e_symbol:
@@ -2896,26 +2896,26 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, LibProc *proc)
 {
 	out.writeStartElement("libproc");
 	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).m_value));
-	out.writeAttribute("address", QString::number(proc->address.m_value));
+	out.writeAttribute("address", QString::number(proc->m_address.m_value));
 	out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value));
 
 	if (proc->m_firstCaller) {
 		out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value));
 	}
 
-	if (proc->Parent) {
-		out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->Parent).m_value));
+	if (proc->m_parent) {
+		out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->m_parent).m_value));
 	}
 
 	persistToXML(out, proc->signature);
 
-	for (auto const& elem : proc->callerSet) {
+	for (auto const& elem : proc->m_callerSet) {
 		out.writeStartElement("caller");
 		out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).m_value));
 		out.writeEndElement();
 	}
 
-	for (auto& elem : proc->provenTrue) {
+	for (auto& elem : proc->m_provenTrue) {
 		out.writeStartElement("proven_true");
 		persistToXML(out, elem.first);
 		persistToXML(out, elem.second);
@@ -2929,16 +2929,16 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, UserProc *proc)
 {
 	out.writeStartElement("userproc");
 	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).m_value));
-	out.writeAttribute("address", QString::number(proc->address.m_value));
-	out.writeAttribute("status", QString::number((int)proc->status));
+	out.writeAttribute("address", QString::number(proc->m_address.m_value));
+	out.writeAttribute("status", QString::number((int)proc->m_status));
 	out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value));
 
 	if (proc->m_firstCaller) {
 		out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value));
 	}
 
-	if (proc->Parent) {
-		out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->Parent).m_value));
+	if (proc->m_parent) {
+		out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->m_parent).m_value));
 	}
 
 	if (proc->theReturnStatement) {
@@ -2947,20 +2947,20 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, UserProc *proc)
 
 	persistToXML(out, proc->signature);
 
-	for (auto const& elem : proc->callerSet) {
+	for (auto const& elem : proc->m_callerSet) {
 		out.writeStartElement("caller");
 		out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).m_value));
 		out.writeEndElement();
 	}
 
-	for (auto& elem : proc->provenTrue) {
+	for (auto& elem : proc->m_provenTrue) {
 		out.writeStartElement("proven_true");
 		persistToXML(out, elem.first);
 		persistToXML(out, elem.second);
 		out.writeEndElement();
 	}
 
-	for (auto& elem : proc->locals) {
+	for (auto& elem : proc->m_locals) {
 		out.writeStartElement("local");
 		out.writeAttribute("name", (elem).first);
 		out.writeStartElement("type");
@@ -2969,7 +2969,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, UserProc *proc)
 		out.writeEndElement();
 	}
 
-	for (auto& elem : proc->symbolMap) {
+	for (auto& elem : proc->m_symbolMap) {
 		out.writeStartElement("symbol");
 		out.writeStartElement("exp");
 		persistToXML(out, (elem).first);
@@ -2980,13 +2980,13 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, UserProc *proc)
 		out.writeEndElement();
 	}
 
-	for (auto& elem : proc->calleeList) {
+	for (auto& elem : proc->m_calleeList) {
 		out.writeStartElement("callee");
 		out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(elem).m_value));
 		out.writeEndElement();
 	}
 
-	persistToXML(out, proc->cfg);
+	persistToXML(out, proc->m_cfg);
 
 	out.writeEndElement();
 }

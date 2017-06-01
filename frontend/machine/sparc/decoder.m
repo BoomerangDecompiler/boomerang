@@ -38,7 +38,7 @@
 #include "include/decoder.h"
 #include "db/exp.h"
 #include "include/prog.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "sparcdecoder.h"
 #include "include/rtl.h"
 #include "boom_base/BinaryFile.h"		// For SymbolByAddress()

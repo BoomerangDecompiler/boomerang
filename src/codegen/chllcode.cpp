@@ -17,7 +17,7 @@
 #include "db/cfg.h"
 #include "include/statement.h"
 #include "db/exp.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/prog.h"
 #include "include/hllcode.h"
 #include "chllcode.h"

@@ -27,7 +27,7 @@
 #include "include/hllcode.h"
 #include "db/exp.h"
 #include "db/cfg.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/util.h" // For lockFileWrite etc
 #include "include/register.h"
 #include "include/rtl.h"

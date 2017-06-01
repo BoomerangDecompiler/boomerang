@@ -19,7 +19,7 @@
 #include "db/exp.h"
 #include "include/register.h"
 #include "include/rtl.h" // E.g. class ParamEntry in decideType()
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/signature.h"
 #include "include/prog.h"
 #include "operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it

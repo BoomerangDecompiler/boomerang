@@ -37,7 +37,7 @@
 #include "ss.h"
 #include "include/rtl.h"
 #include "db/cfg.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/prog.h"
 #include "options.h"
 #include "csr.h"

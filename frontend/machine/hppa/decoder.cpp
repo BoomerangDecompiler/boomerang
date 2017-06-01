@@ -36,7 +36,7 @@
  */
 
 #include "global.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/prog.h"
 #include "include/decoder.h"
 #include "ss.h"

@@ -15,7 +15,7 @@
 #include "db/dataflow.h"
 
 #include "db/cfg.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "db/exp.h"
 #include "boom_base/log.h"
 #include "include/statement.h"

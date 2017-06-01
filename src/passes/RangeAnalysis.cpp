@@ -1,6 +1,6 @@
 #include "RangeAnalysis.h"
 
-#include "include/proc.h"
+#include "db/proc.h"
 #include "boom_base/log.h"
 #include "db/IBinaryImage.h"
 #include "boom_base/log.h"

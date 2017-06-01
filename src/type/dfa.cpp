@@ -22,7 +22,7 @@
 #include "include/prog.h"
 #include "include/visitor.h"
 #include "boom_base/log.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/util.h"
 
 #include <sstream>

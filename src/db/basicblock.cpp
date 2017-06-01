@@ -27,7 +27,7 @@
 #include "include/register.h"
 #include "include/rtl.h"
 #include "include/hllcode.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/prog.h"
 #include "include/util.h"
 #include "boom_base/log.h"

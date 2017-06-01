@@ -22,7 +22,7 @@
 #include "include/frontend.h"
 #include "include/util.h"
 #include "db/cfg.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "include/managed.h"

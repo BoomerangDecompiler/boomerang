@@ -33,7 +33,7 @@
 #include "include/prog.h"
 #include "ss.h"
 #include "include/rtl.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "csr.h"
 #include "mc68k.pat.h"
 

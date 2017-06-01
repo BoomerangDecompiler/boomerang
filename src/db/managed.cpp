@@ -21,7 +21,7 @@
 #include "db/exp.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
-#include "include/proc.h"
+#include "db/proc.h"
 
 extern char debug_buffer[]; // For prints functions
 
@@ -455,7 +455,7 @@ LocationSet::LocationSet(const LocationSet& o)
 }
 
 
-char *LocationSet::prints()
+char *LocationSet::prints() const
 {
 	QString     tgt;
 	QTextStream ost(&tgt);
@@ -476,7 +476,7 @@ char *LocationSet::prints()
 }
 
 
-void LocationSet::dump()
+void LocationSet::dump() const
 {
 	QTextStream ost(stderr);
 
@@ -577,7 +577,7 @@ bool LocationSet::operator==(const LocationSet& o) const
 }
 
 
-bool LocationSet::exists(SharedExp e)
+bool LocationSet::exists(SharedExp e) const
 {
 	return lset.find(e) != lset.end();
 }
@@ -606,7 +606,7 @@ SharedExp LocationSet::findNS(SharedExp e)
 
 
 // Given an unsubscripted location e, return true if e{-} or e{0} exists in the set
-bool LocationSet::existsImplicit(SharedExp e)
+bool LocationSet::existsImplicit(SharedExp e) const
 {
 	auto     r(RefExp::get(e, nullptr));
 	iterator it = lset.lower_bound(r); // First element >= r
@@ -886,9 +886,7 @@ void StatementList::makeCloneOf(StatementList& o)
 }
 
 
-// Return true if loc appears on the left of any statements in this list
-// Note: statements in this list are assumed to be assignments
-bool StatementList::existsOnLeft(SharedExp loc)
+bool StatementList::existsOnLeft(const SharedExp& loc) const
 {
 	for (auto& elem : *this) {
 		if (*((Assignment *)elem)->getLeft() == *loc) {
@@ -941,7 +939,7 @@ Assignment *StatementList::findOnLeft(SharedExp loc)
 }
 
 
-void LocationSet::diff(LocationSet *o)
+void LocationSet::printDiff(LocationSet *o) const
 {
 	std::set<SharedExp, lessExpStar>::iterator it;
 	bool printed2not1 = false;

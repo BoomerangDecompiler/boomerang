@@ -27,7 +27,7 @@
 #include "include/type.h"
 #include "db/cfg.h"
 #include "db/exp.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/signature.h"
 #include "include/prog.h"         // For findProc()
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()

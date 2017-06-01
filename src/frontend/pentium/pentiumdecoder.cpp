@@ -21,7 +21,7 @@
 #include "include/decoder.h"
 #include "include/prog.h"
 #include "db/exp.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "boom_base/log.h"
 #include "include/statement.h"
 

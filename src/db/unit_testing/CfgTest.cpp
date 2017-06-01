@@ -8,7 +8,7 @@
 
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/prog.h"
 #include "db/dataflow.h"
 #include "frontend/pentium/pentiumfrontend.h"

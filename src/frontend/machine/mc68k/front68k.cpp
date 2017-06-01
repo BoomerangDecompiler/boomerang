@@ -31,7 +31,7 @@
 #include "db/cfg.h"
 #include "ss.h"
 #include "include/prog.h" // For findProc()
-#include "include/proc.h"
+#include "db/proc.h"
 #include "options.h"
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()
 #include "csr.h"                  // For class CalleeEpilogue

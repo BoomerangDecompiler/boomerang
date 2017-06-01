@@ -26,7 +26,7 @@
 #include "include/register.h"
 #include "db/basicblock.h"
 #include "include/rtl.h"
-#include "include/proc.h" // For Proc::setTailCaller()
+#include "db/proc.h" // For Proc::setTailCaller()
 #include "include/prog.h" // For findProc()
 #include "include/util.h"
 #include "include/hllcode.h"

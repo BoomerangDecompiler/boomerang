@@ -12,7 +12,7 @@
 #include "include/statement.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h" // For VERBOSE
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/signature.h"
 #include "include/prog.h"
 

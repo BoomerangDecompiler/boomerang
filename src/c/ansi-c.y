@@ -40,7 +40,7 @@ public: \
   #include "db/exp.h"
   #include "include/type.h"
   #include "db/cfg.h"
-  #include "include/proc.h"
+  #include "db/proc.h"
   #include "include/signature.h"
   // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
   #if defined(_MSC_VER) && _MSC_VER <= 1100

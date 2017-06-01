@@ -5,7 +5,7 @@
 #include "boom_base/log.h"
 #include "include/prog.h"
 #include "include/frontend.h"
-#include "include/proc.h"
+#include "db/proc.h"
 #include "include/signature.h"
 #include "db/module.h"
 

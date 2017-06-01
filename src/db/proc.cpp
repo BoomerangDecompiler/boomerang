@@ -18,45 +18,11 @@
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
  ******************************************************************************/
 
-/***************************************************************************/ /**
- * \class Proc
- *
- * \var Function::Visited
- * \brief For printCallGraphXML
- * \var Function::prog
- * \brief Program containing this procedure.
- * \var Function::signature
- * \brief The formal signature of this procedure.
- * This information is determined
- * either by the common.hs file (for a library function) or by analysis.
- * \note This belongs in the CALL, because the same procedure can have different
- * signatures if it happens to have varargs. Temporarily here till it can be permanently
- * moved.
- * \var Function::address
- * Procedure's address.
- * \var Function::m_firstCaller
- * first procedure to call this procedure.
- * \var Function::m_firstCallerAddr
- * can only be used once.
- * \var Function::provenTrue
- * All the expressions that have been proven true.
- * (Could perhaps do with a list of some that are proven false)
- * Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
- * \var Function::recurPremises
- * Premises for recursion group analysis. This is a preservation
- * that is assumed true only for definitions by calls reached in the proof. It also
- * prevents infinite looping of this proof logic.
- * \var Function::callerSet
- * Set of callers (CallStatements that call this procedure).
- * \var Function::cluster
- * Cluster this procedure is contained within.
- ******************************************************************************/
-
 /******************************************************************************
 * Dependencies.
 ******************************************************************************/
 
-#include "include/proc.h"
+#include "db/proc.h"
 
 #include "include/types.h"
 #include "include/type.h"
@@ -117,9 +83,9 @@ Function::~Function()
 void Function::eraseFromParent()
 {
 	// Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
-	Parent->setLocationMap(getNativeAddress(), (Function *)-1);
+	m_parent->setLocationMap(getNativeAddress(), (Function *)-1);
 	// Delete the cfg etc.
-	Parent->getFunctionList().remove(this);
+	m_parent->getFunctionList().remove(this);
 	this->deleteCFG();
 	delete this;  // Delete ourselves
 }
@@ -134,13 +100,13 @@ void Function::eraseFromParent()
  *
  ******************************************************************************/
 Function::Function(ADDRESS uNative, Signature *sig, Module *mod)
-	: signature(sig)
-	, address(uNative)
+	: m_signature(sig)
+	, m_address(uNative)
 	, m_firstCaller(nullptr)
-	, Parent(mod)
+	, m_parent(mod)
 {
 	assert(mod);
-	prog = mod->getParent();
+	m_prog = mod->getParent();
 }
 
 
@@ -151,8 +117,8 @@ Function::Function(ADDRESS uNative, Signature *sig, Module *mod)
  ******************************************************************************/
 QString Function::getName() const
 {
-	assert(signature);
-	return signature->getName();
+	assert(m_signature);
+	return m_signature->getName();
 }
 
 
@@ -164,8 +130,8 @@ QString Function::getName() const
  ******************************************************************************/
 void Function::setName(const QString& nam)
 {
-	assert(signature);
-	signature->setName(nam);
+	assert(m_signature);
+	m_signature->setName(nam);
 }
 
 
@@ -176,7 +142,7 @@ void Function::setName(const QString& nam)
  ******************************************************************************/
 ADDRESS Function::getNativeAddress() const
 {
-	return address;
+	return m_address;
 }
 
 
@@ -188,47 +154,24 @@ ADDRESS Function::getNativeAddress() const
  ******************************************************************************/
 void Function::setNativeAddress(ADDRESS a)
 {
-	address = a;
+	m_address = a;
 }
 
 
-bool LibProc::isNoReturn()
+bool LibProc::isNoReturn() const
 {
-	return FrontEnd::noReturnCallDest(getName()) || signature->isNoReturn();
+	return FrontEnd::noReturnCallDest(getName()) || m_signature->isNoReturn();
 }
 
 
-/**
- * \var UserProc::cycleGrp
- * Pointer to a set of procedures involved in a recursion group.
- * \note Each procedure in the cycle points to the same set! However, there can be several separate cycles.
- * E.g. in test/source/recursion.c, there is a cycle with f and g, while another is being built up (it only
- * has c, d, and e at the point where the f-g cycle is found).
- * \var UserProc::stmtNumber
- * Current statement number. Makes it easier to split decompile() into smaller pieces.
- * \var UserProc::theReturnStatement
- * We ensure that there is only one return statement now. See code in frontend/frontend.cpp handling case
- * STMT_RET. If no return statement, this will be nullptr.
- * \var  UserProc::parameters
- * The list of parameters, ordered and filtered.
- * Note that a LocationList could be used, but then there would be nowhere to store the types (for DFA based TA)
- * The RHS is just ignored; the list is of ImplicitAssigns.
- * DESIGN ISSUE: it would be nice for the parameters' implicit assignments to be the sole definitions, i.e. not
- * need other implicit assignments for these. But the targets of RefExp's are not expected to change address,
- * so they are not suitable at present (since the addresses regularly get changed as the parameters get
- * recreated).
- * \var UserProc::col
- * A collector for initial parameters (locations used before being defined).  Note that final parameters don't
- * use this; it's only of use during group decompilation analysis (sorting out recursion)
- */
-bool UserProc::isNoReturn()
+bool UserProc::isNoReturn() const
 {
 	// undecoded procs are assumed to always return (and define everything)
 	if (!this->isDecoded()) {
 		return false;
 	}
 
-	BasicBlock *exitbb = cfg->getExitBB();
+	BasicBlock *exitbb = m_cfg->getExitBB();
 
 	if (exitbb == nullptr) {
 		return true;
@@ -252,17 +195,11 @@ bool UserProc::isNoReturn()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Return true if this procedure contains the given address
- * \param uAddr address to search for
- * \returns          true if it does
- ******************************************************************************/
-bool UserProc::containsAddr(ADDRESS uAddr)
+bool UserProc::containsAddr(ADDRESS uAddr) const
 {
 	BB_IT it;
 
-	for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+	for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
 		if (bb->getRTLs() && (bb->getLowAddr() <= uAddr) && (bb->getHiAddr() >= uAddr)) {
 			return true;
 		}
@@ -274,66 +211,16 @@ bool UserProc::containsAddr(ADDRESS uAddr)
 
 void Function::renameParam(const char *oldName, const char *newName)
 {
-	signature->renameParam(oldName, newName);
+	m_signature->renameParam(oldName, newName);
 }
 
 
-/**
- * Modify actuals so that it is now the list of locations that must
- * be passed to this procedure. The modification will be to either add
- * dummy locations to actuals, delete from actuals, or leave it
- * unchanged.
- * Add "dummy" params: this will be required when there are
- *     less live outs at a call site than the number of parameters
- *     expected by the procedure called. This will be a result of
- *     one of two things:
- *     i) a value returned by a preceeding call is used as a
- *        parameter and as such is not detected as defined by the
- *        procedure. E.g.:
- *
- *           foo(bar(x));
- *
- *        Here, the result of bar(x) is used as the first and only
- *        parameter to foo. On some architectures (such as SPARC),
- *        the location used as the first parameter (e.g. %o0) is
- *        also the location in which a value is returned. So, the
- *        call to bar defines this location implicitly as shown in
- *        the following SPARC assembly that may be generated by from
- *        the above code:
- *
- *            mov      x, %o0
- *            call  bar
- *            nop
- *            call  foo
- *
- *       As can be seen, there is no definition of %o0 after the
- *       call to bar and before the call to foo. Adding the integer
- *       return location is therefore a good guess for the dummy
- *       location to add (but may occasionally be wrong).
- *
- *    ii) uninitialised variables are used as parameters to a call
- *
- *    Note that both of these situations can only occur on
- *    architectures such as SPARC that use registers for parameter
- *    passing. Stack parameters must always be pushed so that the
- *    callee doesn't access the caller's non-parameter portion of
- *    stack.
- *
- * This used to be a virtual function, implemented differenty for
- * LibProcs and for UserProcs. But in fact, both need the exact same
- * treatment; the only difference is how the local member "parameters"
- * is set (from common.hs in the case of LibProc objects, or from analysis
- * in the case of UserProcs).
- */
 void Function::matchParams(std::list<SharedExp>& /*actuals*/, UserProc& /*caller*/)
 {
 	// TODO: not implemented, not used, but large amount of docs :)
 }
 
 
-/**
- * Get a list of types to cast a given list of actual parameters to
- */
 std::list<Type> *Function::getParamTypeList(const std::list<SharedExp>& /*actuals*/)
 {
 	// TODO: not implemented, not used
@@ -350,7 +237,7 @@ void UserProc::renameParam(const char *oldName, const char *newName)
 
 void UserProc::setParamType(const char *nam, SharedType ty)
 {
-	signature->setParamType(nam, ty);
+	m_signature->setParamType(nam, ty);
 }
 
 
@@ -360,35 +247,36 @@ void UserProc::setParamType(int idx, SharedType ty)
 
 	StatementList::iterator it;
 
-	for (it = parameters.begin(); n != idx && it != parameters.end(); it++, n++) { // find n-th parameter it
+    // find n-th parameter it
+	for (it = m_parameters.begin(); n != idx && it != m_parameters.end(); it++, n++) {
 	}
 
-	if (it != parameters.end()) {
+	if (it != m_parameters.end()) {
 		Assignment *a = (Assignment *)*it;
 		a->setType(ty);
 		// Sometimes the signature isn't up to date with the latest parameters
-		signature->setParamType(a->getLeft(), ty);
+		m_signature->setParamType(a->getLeft(), ty);
 	}
 }
 
 
 void UserProc::renameLocal(const char *oldName, const char *newName)
 {
-	SharedType     ty     = locals[oldName];
+	SharedType     ty     = m_locals[oldName];
 	SharedConstExp oldExp = expFromSymbol(oldName);
 
-	locals.erase(oldName);
+	m_locals.erase(oldName);
 	SharedExp oldLoc = getSymbolFor(oldExp, ty);
 	auto      newLoc = Location::local(newName, this);
 	mapSymbolToRepl(oldExp, oldLoc, newLoc);
-	locals[newName] = ty;
-	cfg->searchAndReplace(*oldLoc, newLoc);
+	m_locals[newName] = ty;
+	m_cfg->searchAndReplace(*oldLoc, newLoc);
 }
 
 
 bool UserProc::searchAll(const Exp& search, std::list<SharedExp>& result)
 {
-	return cfg->searchAll(search, result);
+	return m_cfg->searchAll(search, result);
 }
 
 
@@ -398,7 +286,7 @@ void Function::printCallGraphXML(QTextStream& os, int depth, bool /*recurse*/)
 		return;
 	}
 
-	Visited = true;
+	m_visited = true;
 
 	for (int i = 0; i < depth; i++) {
 		os << "      ";
@@ -414,8 +302,8 @@ void UserProc::printCallGraphXML(QTextStream& os, int depth, bool recurse)
 		return;
 	}
 
-	bool wasVisited = Visited;
-	Visited = true;
+	bool wasVisited = m_visited;
+	m_visited = true;
 	int i;
 
 	for (i = 0; i < depth; i++) {
@@ -425,7 +313,7 @@ void UserProc::printCallGraphXML(QTextStream& os, int depth, bool recurse)
 	os << "<proc name=\"" << getName() << "\">\n";
 
 	if (recurse) {
-		for (auto& elem : calleeList) {
+		for (auto& elem : m_calleeList) {
 			(elem)->printCallGraphXML(os, depth + 1, !wasVisited && !(elem)->isVisited());
 		}
 	}
@@ -455,15 +343,15 @@ void Function::printDetailsXML()
 	out << "<proc name=\"" << getName() << "\">\n";
 	unsigned i;
 
-	for (i = 0; i < signature->getNumParams(); i++) {
-		out << "   <param name=\"" << signature->getParamName(i) << "\" "
-			<< "exp=\"" << signature->getParamExp(i) << "\" "
-			<< "type=\"" << signature->getParamType(i)->getCtype() << "\"\n";
+	for (i = 0; i < m_signature->getNumParams(); i++) {
+		out << "   <param name=\"" << m_signature->getParamName(i) << "\" "
+			<< "exp=\"" << m_signature->getParamExp(i) << "\" "
+			<< "type=\"" << m_signature->getParamType(i)->getCtype() << "\"\n";
 	}
 
-	for (i = 0; i < signature->getNumReturns(); i++) {
-		out << "   <return exp=\"" << signature->getReturnExp(i) << "\" "
-			<< "type=\"" << signature->getReturnType(i)->getCtype() << "\"/>\n";
+	for (i = 0; i < m_signature->getNumReturns(); i++) {
+		out << "   <return exp=\"" << m_signature->getReturnExp(i) << "\" "
+			<< "type=\"" << m_signature->getReturnType(i)->getCtype() << "\"/>\n";
 	}
 
 	out << "</proc>\n";
@@ -472,34 +360,22 @@ void Function::printDetailsXML()
 
 void Function::removeFromParent()
 {
-	assert(Parent);
-	Parent->getFunctionList().remove(this);
-	Parent->setLocationMap(address, nullptr);
-}
-
-
-Function::Function()
-	: Visited(false)
-	, prog(nullptr)
-	, signature(nullptr)
-	, address(ADDRESS::g(0L))
-	, m_firstCaller(nullptr)
-	, m_firstCallerAddr(ADDRESS::g(0L))
-	, Parent(nullptr)
-{
+	assert(m_parent);
+	m_parent->getFunctionList().remove(this);
+	m_parent->setLocationMap(m_address, nullptr);
 }
 
 
 void Function::setParent(Module *c)
 {
-	if (c == Parent) {
+	if (c == m_parent) {
 		return;
 	}
 
 	removeFromParent();
-	Parent = c;
+	m_parent = c;
 	c->getFunctionList().push_back(this);
-	c->setLocationMap(address, this);
+	c->setLocationMap(m_address, this);
 }
 
 
@@ -586,7 +462,7 @@ void UserProc::printXML()
 
 	printDetailsXML();
 	printSSAXML();
-	prog->printCallGraphXML();
+	m_prog->printCallGraphXML();
 	printUseGraph();
 }
 
@@ -636,7 +512,7 @@ void UserProc::printUseGraph()
 Function *Function::getFirstCaller()
 {
 	if ((m_firstCaller == nullptr) && (m_firstCallerAddr != NO_ADDRESS)) {
-		m_firstCaller     = prog->findProc(m_firstCallerAddr);
+		m_firstCaller     = m_prog->findProc(m_firstCallerAddr);
 		m_firstCallerAddr = NO_ADDRESS;
 	}
 
@@ -648,17 +524,10 @@ Function *Function::getFirstCaller()
  * LibProc methods.
  *********************/
 
-/***************************************************************************/ /**
- *
- * \brief        Constructor with name, native address.
- * \param        mod - Module that contains this Function
- * \param        name - Name of procedure
- * \param        uNative - Native address of entry point of procedure
- ******************************************************************************/
 LibProc::LibProc(Module *mod, const QString& name, ADDRESS uNative)
 	: Function(uNative, nullptr, mod)
 {
-	signature = mod->getLibSignature(name);
+	m_signature = mod->getLibSignature(name);
 }
 
 
@@ -666,13 +535,13 @@ LibProc::LibProc(Module *mod, const QString& name, ADDRESS uNative)
 SharedExp LibProc::getProven(SharedExp left)
 {
 	// Just use the signature information (all we have, after all)
-	return signature->getProven(left);
+	return m_signature->getProven(left);
 }
 
 
 bool LibProc::isPreserved(SharedExp e)
 {
-	return signature->isPreserved(e);
+	return m_signature->isPreserved(e);
 }
 
 
@@ -680,41 +549,18 @@ bool LibProc::isPreserved(SharedExp e)
  * UserProc methods.
  *********************/
 
-UserProc::UserProc()
-	: Function()
-	, cfg(nullptr)
-	, status(PROC_UNDECODED)
-	,// decoded(false), analysed(false),
-	nextLocal(0)
-	, nextParam(0)
-	,                             // decompileSeen(false), decompiled(false), isRecursive(false)
-	cycleGrp(nullptr)
-	, theReturnStatement(nullptr)
-{
-	localTable.setProc(this);
-}
-
-
-/***************************************************************************/ /**
- *
- * \brief        Constructor with name, native address.
- * \param mod - Module that contains this Function
- * \param name - Name of procedure
- * \param uNative - Native address of entry point of procedure
- *
- ******************************************************************************/
 UserProc::UserProc(Module *mod, const QString& name, ADDRESS uNative)
 	: // Not quite ready for the below fix:
 	  // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
 	Function(uNative, new Signature(name), mod)
-	, cfg(new Cfg())
-	, status(PROC_UNDECODED)
-	, cycleGrp(nullptr)
+	, m_cfg(new Cfg())
+	, m_status(PROC_UNDECODED)
+	, m_cycleGroup(nullptr)
 	, theReturnStatement(nullptr)
 	, DFGcount(0)
 {
-	cfg->setProc(this); // Initialise cfg.myProc
-	localTable.setProc(this);
+	m_cfg->setProc(this); // Initialise cfg.myProc
+	m_localTable.setProc(this);
 }
 
 
@@ -724,16 +570,10 @@ UserProc::~UserProc()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Deletes the whole Cfg for this proc object. Also clears the
- * cfg pointer, to prevent strange errors after this is called
- *
- ******************************************************************************/
 void UserProc::deleteCFG()
 {
-	delete cfg;
-	cfg = nullptr;
+	delete m_cfg;
+	m_cfg = nullptr;
 }
 
 
@@ -746,17 +586,14 @@ public:
 	}
 };
 
-/**
- * Returns an abstract syntax tree for the procedure in the internal representation. This function actually
- * _calculates_ * this value and is expected to do so expensively.
- */
-SyntaxNode *UserProc::getAST()
+
+SyntaxNode *UserProc::getAST() const
 {
 	int             numBBs = 0;
 	BlockSyntaxNode *init  = new BlockSyntaxNode();
 	BB_IT           it;
 
-	for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+	for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
 		BlockSyntaxNode *b = new BlockSyntaxNode();
 		b->setBB(bb);
 		init->addStatement(b);
@@ -827,8 +664,7 @@ SyntaxNode *UserProc::getAST()
 }
 
 
-/// Print ast to a file
-void UserProc::printAST(SyntaxNode *a)
+void UserProc::printAST(SyntaxNode *a) const
 {
 	static int count = 1;
 	char       s[1024];
@@ -852,11 +688,6 @@ void UserProc::printAST(SyntaxNode *a)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Records that this procedure has been decoded.
- *
- ******************************************************************************/
 void UserProc::setDecoded()
 {
 	setStatus(PROC_DECODED);
@@ -864,79 +695,54 @@ void UserProc::setDecoded()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Removes the decoded bit and throws away all the current information
- * about this procedure.
- *
- ******************************************************************************/
 void UserProc::unDecode()
 {
-	cfg->clear();
+	m_cfg->clear();
 	setStatus(PROC_UNDECODED);
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Get the BB with the entry point address for this procedure
- * \note (not always the first BB)
- * \returns        Pointer to the entry point BB, or nullptr if not found
- *
- ******************************************************************************/
 BasicBlock *UserProc::getEntryBB()
 {
-	return cfg->getEntryBB();
+	return m_cfg->getEntryBB();
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Set the entry BB for this procedure (constructor has the entry address)
- *
- ******************************************************************************/
 void UserProc::setEntryBB()
 {
 	std::list<BasicBlock *>::iterator bbit;
-	BasicBlock *pBB = cfg->getFirstBB(bbit); // Get an iterator to the first BB
+	BasicBlock *pBB = m_cfg->getFirstBB(bbit); // Get an iterator to the first BB
 
 	// Usually, but not always, this will be the first BB, or at least in the first few
-	while (pBB && address != pBB->getLowAddr()) {
-		pBB = cfg->getNextBB(bbit);
+	while (pBB && m_address != pBB->getLowAddr()) {
+		pBB = m_cfg->getNextBB(bbit);
 	}
 
-	cfg->setEntryBB(pBB);
+	m_cfg->setEntryBB(pBB);
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Add this callee to the set of callees for this proc
- * \param  callee - A pointer to the Proc object for the callee
- *
- ******************************************************************************/
 void UserProc::addCallee(Function *callee)
 {
 	// is it already in? (this is much slower than using a set)
 	std::list<Function *>::iterator cc;
 
-	for (cc = calleeList.begin(); cc != calleeList.end(); cc++) {
+	for (cc = m_calleeList.begin(); cc != m_calleeList.end(); cc++) {
 		if (*cc == callee) {
 			return; // it's already in
 		}
 	}
 
-	calleeList.push_back(callee);
+	m_calleeList.push_back(callee);
 }
 
 
-/// code generation
 void UserProc::generateCode(HLLCode *hll)
 {
-	assert(cfg);
+	assert(m_cfg);
 	assert(getEntryBB());
 
-	cfg->structure();
+	m_cfg->structure();
 	removeUnusedLocals();
 
 	// Note: don't try to remove unused statements here; that requires the
@@ -949,13 +755,13 @@ void UserProc::generateCode(HLLCode *hll)
 	hll->AddProcStart(this);
 
 	// Local variables; print everything in the locals map
-	std::map<QString, SharedType>::iterator last = locals.end();
+	std::map<QString, SharedType>::iterator last = m_locals.end();
 
-	if (!locals.empty()) {
+	if (!m_locals.empty()) {
 		last--;
 	}
 
-	for (std::map<QString, SharedType>::iterator it = locals.begin(); it != locals.end(); it++) {
+	for (std::map<QString, SharedType>::iterator it = m_locals.begin(); it != m_locals.end(); it++) {
 		SharedType locType = it->second;
 
 		if ((locType == nullptr) || locType->isVoid()) {
@@ -968,10 +774,10 @@ void UserProc::generateCode(HLLCode *hll)
 	if (Boomerang::get()->noDecompile && (getName() == "main")) {
 		StatementList args, results;
 
-		if (prog->getFrontEndId() == PLAT_PENTIUM) {
+		if (m_prog->getFrontEndId() == PLAT_PENTIUM) {
 			hll->AddCallStatement(1, nullptr, "PENTIUMSETUP", args, &results);
 		}
-		else if (prog->getFrontEndId() == PLAT_SPARC) {
+		else if (m_prog->getFrontEndId() == PLAT_SPARC) {
 			hll->AddCallStatement(1, nullptr, "SPARCSETUP", args, &results);
 		}
 	}
@@ -982,14 +788,13 @@ void UserProc::generateCode(HLLCode *hll)
 	hll->AddProcEnd();
 
 	if (!Boomerang::get()->noRemoveLabels) {
-		cfg->removeUnneededLabels(hll);
+		m_cfg->removeUnneededLabels(hll);
 	}
 
 	setStatus(PROC_CODE_GENERATED);
 }
 
 
-/// print this proc, mainly for debugging
 void UserProc::print(QTextStream& out, bool html) const
 {
 	QString     tgt1;
@@ -1001,17 +806,17 @@ void UserProc::print(QTextStream& out, bool html) const
 
 	printParams(ost1, html);
 	dumpLocals(ost1, html);
-	procUseCollector.print(ost2);
-	cfg->print(ost3, html);
+	m_procUseCollector.print(ost2);
+	m_cfg->print(ost3, html);
 
-	signature->print(out, html);
+	m_signature->print(out, html);
 	out << "\n";
 
 	if (html) {
 		out << "<br>";
 	}
 
-	out << "in module " << Parent->getName() << "\n";
+	out << "in module " << m_parent->getName() << "\n";
 
 	if (html) {
 		out << "<br>";
@@ -1036,7 +841,7 @@ void UserProc::print(QTextStream& out, bool html) const
 
 void UserProc::setStatus(ProcStatus s)
 {
-	status = s;
+	m_status = s;
 	Boomerang::get()->alertProcStatusChange(this);
 }
 
@@ -1050,7 +855,7 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
 	out << "parameters: ";
 	bool first = true;
 
-	for (auto const& elem : parameters) {
+	for (auto const& elem : m_parameters) {
 		if (first) {
 			first = false;
 		}
@@ -1071,7 +876,7 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
 }
 
 
-char *UserProc::prints()
+char *UserProc::prints() const
 {
 	QString     tgt;
 	QTextStream ost(&tgt);
@@ -1083,7 +888,7 @@ char *UserProc::prints()
 }
 
 
-void UserProc::dump()
+void UserProc::dump() const
 {
 	QTextStream q_cerr(stderr);
 
@@ -1156,11 +961,6 @@ void UserProc::printDFG() const
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Initialise the statements, e.g. proc, bb pointers
- *
- ******************************************************************************/
 void UserProc::initStatements()
 {
 	BB_IT it;
@@ -1168,7 +968,7 @@ void UserProc::initStatements()
 	BasicBlock::rtlit       rit;
 	StatementList::iterator sit;
 
-	for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+	for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
 		for (Instruction *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
 			s->setProc(this);
 			s->setBB(bb);
@@ -1180,7 +980,7 @@ void UserProc::initStatements()
 				if (call->getDestProc() && call->getDestProc()->isNoReturn() && (bb->getNumOutEdges() == 1)) {
 					BasicBlock *out = bb->getOutEdge(0);
 
-					if ((out != cfg->getExitBB()) || (cfg->getExitBB()->getNumInEdges() != 1)) {
+					if ((out != m_cfg->getExitBB()) || (m_cfg->getExitBB()->getNumInEdges() != 1)) {
 						out->deleteInEdge(bb);
 						bb->clearOutEdges();
 					}
@@ -1198,25 +998,22 @@ void UserProc::numberStatements()
 	BasicBlock::rtlit       rit;
 	StatementList::iterator sit;
 
-	for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+	for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
 		for (Instruction *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
 			if (!s->isImplicit() &&      // Don't renumber implicits (remain number 0)
 				(s->getNumber() == 0)) { // Don't renumber existing (or waste numbers)
-				s->setNumber(++stmtNumber);
+				s->setNumber(++m_stmtNumber);
 			}
 		}
 	}
 }
 
 
-// get all statements
-// Get to a statement list, so they come out in a reasonable and consistent order
-/// get all the statements
 void UserProc::getStatements(StatementList& stmts) const
 {
 	BBC_IT it;
 
-	for (const BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+	for (const BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
 		bb->getStatements(stmts);
 	}
 
@@ -1228,18 +1025,10 @@ void UserProc::getStatements(StatementList& stmts) const
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Remove a statement
- *
- * Remove a statement. This is somewhat inefficient - we have to search the whole BB for the statement.
- * Should use iterators or other context to find out how to erase "in place" (without having to linearly search)
- *
- ******************************************************************************/
 void UserProc::removeStatement(Instruction *stmt)
 {
 	// remove anything proven about this statement
-	for (std::map<SharedExp, SharedExp, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); ) {
+	for (std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_provenTrue.begin(); it != m_provenTrue.end(); ) {
 		LocationSet refs;
 		it->second->addUsedLocs(refs);
 		it->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
@@ -1261,7 +1050,7 @@ void UserProc::removeStatement(Instruction *stmt)
 					<< " that uses statement being removed.\n";
 			}
 
-			provenTrue.erase(it++);
+			m_provenTrue.erase(it++);
 			// it = provenTrue.begin();
 			continue;
 		}
@@ -1291,7 +1080,7 @@ void UserProc::insertAssignAfter(Instruction *s, SharedExp left, SharedExp right
 
 	if (s == nullptr) {
 		// This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB
-		BasicBlock       *entryBB = cfg->getEntryBB();
+		BasicBlock       *entryBB = m_cfg->getEntryBB();
 		std::list<RTL *> *rtls    = entryBB->getRTLs();
 		assert(rtls->size()); // Entry BB should have at least 1 RTL
 		stmts = rtls->front();
@@ -1313,14 +1102,11 @@ void UserProc::insertAssignAfter(Instruction *s, SharedExp left, SharedExp right
 }
 
 
-/// Insert statement \a a after statement \a s.
-/// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
-/// So this is an inefficient linear search!
 void UserProc::insertStatementAfter(Instruction *s, Instruction *a)
 {
 	BB_IT bb;
 
-	for (bb = cfg->begin(); bb != cfg->end(); bb++) {
+	for (bb = m_cfg->begin(); bb != m_cfg->end(); bb++) {
 		std::list<RTL *> *rtls = (*bb)->getRTLs();
 
 		if (rtls == nullptr) {
@@ -1393,34 +1179,25 @@ void UserProc::insertStatementAfter(Instruction *s, Instruction *a)
  *      return child
  */
 
-/***************************************************************************/ /**
- *
- * \brief Begin the decompile process at this procedure
- * \param  path - is a list of pointers to procedures, representing the path from
- * the current entry point to the current procedure in the call graph. Pass an
- * empty set at the top level.
- * \param indent is the indentation level; pass 0 at the top level
- *
- ******************************************************************************/
 std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 {
 	Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
-	alignStream(LOG_STREAM(), ++indent) << (status >= PROC_VISITED ? "re" : "") << "considering "
+	alignStream(LOG_STREAM(), ++indent) << (m_status >= PROC_VISITED ? "re" : "") << "considering "
 										<< getName() << "\n";
 	LOG_VERBOSE(1) << "begin decompile(" << getName() << ")\n";
 
 	// Prevent infinite loops when there are cycles in the call graph (should never happen now)
-	if (status >= PROC_FINAL) {
+	if (m_status >= PROC_FINAL) {
 		LOG_STREAM() << "Error: " << getName() << " already has status PROC_FINAL\n";
 		return nullptr; // Already decompiled
 	}
 
-	if (status < PROC_DECODED) {
+	if (m_status < PROC_DECODED) {
 		// Can happen e.g. if a callee is visible only after analysing a switch statement
-		prog->reDecode(this); // Actually decoding for the first time, not REdecoding
+		m_prog->reDecode(this); // Actually decoding for the first time, not REdecoding
 	}
 
-	if (status < PROC_VISITED) {
+	if (m_status < PROC_VISITED) {
 		setStatus(PROC_VISITED); // We have at least visited this proc "on the way down"
 	}
 
@@ -1438,7 +1215,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 		BB_IT it;
 
 		// Look at each call, to do the DFS
-		for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+		for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
 			if (bb->getType() != BBTYPE::CALL) {
 				continue;
 			}
@@ -1457,14 +1234,14 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 				continue;
 			}
 
-			if (c->status == PROC_FINAL) {
+			if (c->m_status == PROC_FINAL) {
 				// Already decompiled, but the return statement still needs to be set for this call
 				call->setCalleeReturn(c->getTheReturnStatement());
 				continue;
 			}
 
 			// if c has already been visited but not done (apart from global analyses, i.e. we have a new cycle)
-			if ((c->status >= PROC_VISITED) && (c->status <= PROC_EARLYDONE)) {
+			if ((c->m_status >= PROC_VISITED) && (c->m_status <= PROC_EARLYDONE)) {
 				// if c is in path
 				ProcList::iterator pi;
 				bool               inPath = false;
@@ -1486,13 +1263,13 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 				}
 				else {
 					// This is new branch of an existing cycle
-					child = c->cycleGrp;
+					child = c->m_cycleGroup;
 					// Find first element f of path that is in c->cycleGrp
 					ProcList::iterator _pi;
 					Function           *f = nullptr;
 
 					for (_pi = path->begin(); _pi != path->end(); ++_pi) {
-						if (c->cycleGrp->find(*_pi) != c->cycleGrp->end()) {
+						if (c->m_cycleGroup->find(*_pi) != c->m_cycleGroup->end()) {
 							f = *_pi;
 							break;
 						}
@@ -1511,15 +1288,15 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 				ProcSet entries;
 
 				for (auto cc : *child) {
-					if (cc->cycleGrp) {
-						entries.insert(cc->cycleGrp->begin(), cc->cycleGrp->end());
+					if (cc->m_cycleGroup) {
+						entries.insert(cc->m_cycleGroup->begin(), cc->m_cycleGroup->end());
 					}
 				}
 
 				child->insert(entries.begin(), entries.end());
 
 				for (UserProc *proc : *child) {
-					proc->cycleGrp = child;
+					proc->m_cycleGroup = child;
 				}
 
 				setStatus(PROC_INCYCLE);
@@ -1568,7 +1345,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 		ProcList::iterator f;
 
 		for (f = path->begin(); f != path->end(); ++f) {
-			if (cycleGrp->find(*f) != cycleGrp->end()) {
+			if (m_cycleGroup->find(*f) != m_cycleGroup->end()) {
 				break;
 			}
 		}
@@ -1621,11 +1398,6 @@ void UserProc::debugPrintAll(const char *step_name)
 *                                            *
 *    *    *    *    *    *    *    *    *    *    *    */
 
-/***************************************************************************/ /**
- *
- * \brief Initialise decompile: sort CFG, number statements, dominator tree, etc.
- *
- ******************************************************************************/
 void UserProc::initialiseDecompile()
 {
 	Boomerang::get()->alertStartDecompile(this);
@@ -1637,7 +1409,7 @@ void UserProc::initialiseDecompile()
 	}
 
 	// Sort by address, so printouts make sense
-	cfg->sortByAddress();
+	m_cfg->sortByAddress();
 
 	// Initialise statements
 	initStatements();
@@ -1645,10 +1417,10 @@ void UserProc::initialiseDecompile()
 	debugPrintAll("before SSA ");
 
 	// Compute dominance frontier
-	df.dominators(cfg);
+	m_df.dominators(m_cfg);
 
 	// Number the statements
-	stmtNumber = 0;
+	m_stmtNumber = 0;
 	numberStatements();
 
 	printXML();
@@ -1664,15 +1436,9 @@ void UserProc::initialiseDecompile()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Early decompile: Place phi functions, number statements, first rename,
- * propagation: ready for preserveds.
- *
- ******************************************************************************/
 void UserProc::earlyDecompile()
 {
-	if (status >= PROC_EARLYDONE) {
+	if (m_status >= PROC_EARLYDONE) {
 		return;
 	}
 
@@ -1694,7 +1460,7 @@ void UserProc::earlyDecompile()
 	// equivalent to depth 0 in the old scheme
 	LOG_VERBOSE(1) << "placing phi functions 1st pass\n";
 	// Place the phi functions
-	df.placePhiFunctions(this);
+	m_df.placePhiFunctions(this);
 
 	LOG_VERBOSE(1) << "numbering phi statements 1st pass\n";
 	numberStatements(); // Number them
@@ -1713,13 +1479,6 @@ void UserProc::earlyDecompile()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Middle decompile: All the decompilation from preservation up to
- * but not including removing unused statements.
- * \returns the cycle set from the recursive call to decompile()
- *
- ******************************************************************************/
 std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 {
 	Boomerang::get()->alertDecompileDebugPoint(this, "before middle");
@@ -1731,7 +1490,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 	fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
 	bool convert;
 
-	if (status != PROC_INCYCLE) { // FIXME: need this test?
+	if (m_status != PROC_INCYCLE) { // FIXME: need this test?
 		propagateStatements(convert, 2);
 	}
 
@@ -1771,7 +1530,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 	// For now, we create the initial arguments here (relatively early), and live with the fact that some apparently
 	// distinct memof argument expressions (e.g. m[eax{30}] and m[esp{40}-4]) will turn out to be duplicates, and so
 	// the duplicates must be eliminated.
-	bool change = df.placePhiFunctions(this);
+	bool change = m_df.placePhiFunctions(this);
 
 	if (change) {
 		numberStatements(); // Number the new statements
@@ -1795,7 +1554,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 		}
 
 		// Rename variables
-		change = df.placePhiFunctions(this);
+		change = m_df.placePhiFunctions(this);
 
 		if (change) {
 			numberStatements();                   // Number the new statements
@@ -1835,7 +1594,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 					LOG << "### update returns loop iteration " << i << " ###\n";
 				}
 
-				if (status != PROC_INCYCLE) {
+				if (m_status != PROC_INCYCLE) {
 					doRenameBlockVars(pass, true);
 				}
 
@@ -1886,7 +1645,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 						<< " due to conversion of indirect to direct call(s)\n\n";
 				}
 
-				df.setRenameLocalsParams(false);
+				m_df.setRenameLocalsParams(false);
 				change |= doRenameBlockVars(0, true); // Initial dataflow level 0
 				LOG_SEPARATE(getName()) << "\nafter rename (2) of " << getName() << ":\n" << *this
 										<< "\ndone after rename (2) of " << getName() << ":\n\n";
@@ -1931,7 +1690,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 		LOG << "### allowing SSA renaming of all memof expressions ###\n";
 	}
 
-	df.setRenameLocalsParams(true);
+	m_df.setRenameLocalsParams(true);
 
 	// Now we need another pass to inert phis for the memofs, rename them and propagate them
 	++pass;
@@ -1940,7 +1699,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 		LOG << "setting phis, renaming block variables after memofs renamable pass " << pass << "\n";
 	}
 
-	change = df.placePhiFunctions(this);
+	change = m_df.placePhiFunctions(this);
 
 	if (change) {
 		numberStatements();         // Number the new statements
@@ -1968,7 +1727,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 	}
 
 	// Check for indirect jumps or calls not already removed by propagation of constants
-	if (cfg->decodeIndirectJmp(this)) {
+	if (m_cfg->decodeIndirectJmp(this)) {
 		// There was at least one indirect jump or call found and decoded. That means that most of what has been done
 		// to this function so far is invalid. So redo everything. Very expensive!!
 		// Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it
@@ -1982,9 +1741,9 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 		processDecodedICTs();
 		// Now, decode from scratch
 		theReturnStatement = nullptr;
-		cfg->clear();
-		prog->reDecode(this);
-		df.setRenameLocalsParams(false);                        // Start again with memofs
+		m_cfg->clear();
+		m_prog->reDecode(this);
+		m_df.setRenameLocalsParams(false);                        // Start again with memofs
 		setStatus(PROC_VISITED);                                // Back to only visited progress
 		path->erase(--path->end());                             // Remove self from path
 		--indent;                                               // Because this is not recursion
@@ -2024,7 +1783,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 *    R e m o v e   u n u s e d   s t a t e m e n t s    *
 *                                                    *
 *    *    *    *    *    *    *    *    *    *    *    *    *    */
-/// Remove unused statements.
+
 void UserProc::remUnusedStmtEtc()
 {
 	bool convert;
@@ -2046,10 +1805,10 @@ void UserProc::remUnusedStmtEtc()
 	// Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
 	// do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
 	// to printf/scanf), and removing unused statements is unsafe without full use information
-	if (status < PROC_FINAL) {
+	if (m_status < PROC_FINAL) {
 		typeAnalysis();
 		// Now that locals are identified, redo the dataflow
-		change = df.placePhiFunctions(this);
+		change = m_df.placePhiFunctions(this);
 
 		if (change) {
 			numberStatements();           // Number the new statements
@@ -2228,16 +1987,6 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
 }
 
 
-/// Analyse the whole group of procedures for conditional preserveds, and update till no change.
-/// Also finalise the whole group.
-
-/***************************************************************************/ /**
- *
- * \brief Middle decompile: All the decompilation from preservation up to
- * but not including removing unused statements.
- * Returns the cycle set from the recursive call to decompile()
- *
- ******************************************************************************/
 void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 {
 	/* Overall algorithm:
@@ -2258,7 +2007,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 		LOG << "\n\n# # # recursion group analysis for ";
 		ProcSet::iterator csi;
 
-		for (csi = cycleGrp->begin(); csi != cycleGrp->end(); ++csi) {
+		for (csi = m_cycleGroup->begin(); csi != m_cycleGroup->end(); ++csi) {
 			LOG << (*csi)->getName() << ", ";
 		}
 
@@ -2268,7 +2017,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 	// First, do the initial decompile, and call earlyDecompile
 	ProcSet::iterator curp;
 
-	for (curp = cycleGrp->begin(); curp != cycleGrp->end(); ++curp) {
+	for (curp = m_cycleGroup->begin(); curp != m_cycleGroup->end(); ++curp) {
 		(*curp)->setStatus(PROC_INCYCLE); // So the calls are treated as childless
 		Boomerang::get()->alertDecompiling(*curp);
 		(*curp)->initialiseDecompile();   // Sort the CFG, number statements, etc
@@ -2277,7 +2026,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 
 	// Now all the procs in the group should be ready for preservation analysis
 	// The standard preservation analysis should automatically perform conditional preservation
-	for (curp = cycleGrp->begin(); curp != cycleGrp->end(); ++curp) {
+	for (curp = m_cycleGroup->begin(); curp != m_cycleGroup->end(); ++curp) {
 		(*curp)->middleDecompile(path, indent);
 		(*curp)->setStatus(PROC_PRESERVEDS);
 	}
@@ -2286,8 +2035,8 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 	// Mark all the relevant calls as non childless (will harmlessly get done again later)
 	ProcSet::iterator it;
 
-	for (it = cycleGrp->begin(); it != cycleGrp->end(); it++) {
-		(*it)->markAsNonChildless(cycleGrp);
+	for (it = m_cycleGroup->begin(); it != m_cycleGroup->end(); it++) {
+		(*it)->markAsNonChildless(m_cycleGroup);
 	}
 
 	ProcSet::iterator p;
@@ -2295,7 +2044,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 	// statements.
 	bool convert;
 
-	for (p = cycleGrp->begin(); p != cycleGrp->end(); ++p) {
+	for (p = m_cycleGroup->begin(); p != m_cycleGroup->end(); ++p) {
 		// (*p)->initialParameters();                    // FIXME: I think this needs to be mapping locals and params now
 		(*p)->mapLocalsAndParams();
 		(*p)->updateArguments();
@@ -2304,7 +2053,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 
 	// while no change
 	for (int i = 0; i < 2; i++) {
-		for (p = cycleGrp->begin(); p != cycleGrp->end(); ++p) {
+		for (p = m_cycleGroup->begin(); p != m_cycleGroup->end(); ++p) {
 			(*p)->remUnusedStmtEtc(); // Also does final parameters and arguments at present
 		}
 	}
@@ -2314,11 +2063,6 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Update the defines and arguments in calls.
- *
- ******************************************************************************/
 void UserProc::updateCalls()
 {
 	if (VERBOSE) {
@@ -2331,11 +2075,6 @@ void UserProc::updateCalls()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Look for short circuit branching
- *
- ******************************************************************************/
 bool UserProc::branchAnalysis()
 {
 	Boomerang::get()->alertDecompileDebugPoint(this, "before branch analysis.");
@@ -2376,7 +2115,7 @@ bool UserProc::branchAnalysis()
 					fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
 					fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
 					assert(fallto->getBB()->getNumOutEdges() == 0);
-					cfg->removeBB(fallto->getBB());
+					m_cfg->removeBB(fallto->getBB());
 					removedBBs = true;
 				}
 
@@ -2395,7 +2134,7 @@ bool UserProc::branchAnalysis()
 					fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
 					fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
 					assert(fallto->getBB()->getNumOutEdges() == 0);
-					cfg->removeBB(fallto->getBB());
+					m_cfg->removeBB(fallto->getBB());
 					removedBBs = true;
 				}
 			}
@@ -2407,11 +2146,6 @@ bool UserProc::branchAnalysis()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Fix any ugly branch statements (from propagating too much)
- *
- ******************************************************************************/
 void UserProc::fixUglyBranches()
 {
 	if (VERBOSE) {
@@ -2458,34 +2192,23 @@ void UserProc::fixUglyBranches()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Rename block variables, with log if verbose.
- * \returns true if a change
- *
- ******************************************************************************/
 bool UserProc::doRenameBlockVars(int pass, bool clearStacks)
 {
 	LOG_VERBOSE(1) << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks
 				   << " ###\n";
-	bool b = df.renameBlockVars(this, 0, clearStacks);
+	bool b = m_df.renameBlockVars(this, 0, clearStacks);
 	LOG_VERBOSE(1) << "df.renameBlockVars return " << (b ? "true" : "false") << "\n";
 	return b;
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Preservations only for the stack pointer
- *
- ******************************************************************************/
 void UserProc::findSpPreservation()
 {
 	LOG_VERBOSE(1) << "finding stack pointer preservation for " << getName() << "\n";
 
 	bool stdsp = false; // FIXME: are these really used?
 	// Note: need this non-virtual version most of the time, since nothing proved yet
-	int sp = signature->getStackRegister(prog);
+	int sp = m_signature->getStackRegister(m_prog);
 
 	for (int n = 0; n < 2; n++) {
 		// may need to do multiple times due to dependencies FIXME: efficiency! Needed any more?
@@ -2507,18 +2230,13 @@ void UserProc::findSpPreservation()
 	if (DEBUG_PROOF) {
 		LOG << "proven for " << getName() << ":\n";
 
-		for (auto& elem : provenTrue) {
+		for (auto& elem : m_provenTrue) {
 			LOG << elem.first << " = " << elem.second << "\n";
 		}
 	}
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief  Was trimReturns()
- *
- ******************************************************************************/
 void UserProc::findPreserveds()
 {
 	std::set<SharedExp> removes;
@@ -2556,7 +2274,7 @@ void UserProc::findPreserveds()
 	if (DEBUG_PROOF) {
 		LOG << "### proven true for procedure " << getName() << ":\n";
 
-		for (auto& elem : provenTrue) {
+		for (auto& elem : m_provenTrue) {
 			LOG << elem.first << " = " << elem.second << "\n";
 		}
 
@@ -2566,7 +2284,7 @@ void UserProc::findPreserveds()
 	// Remove the preserved locations from the modifieds and the returns
 	std::map<SharedExp, SharedExp, lessExpStar>::iterator pp;
 
-	for (pp = provenTrue.begin(); pp != provenTrue.end(); ++pp) {
+	for (pp = m_provenTrue.begin(); pp != m_provenTrue.end(); ++pp) {
 		SharedExp lhs = pp->first;
 		SharedExp rhs = pp->second;
 
@@ -2588,7 +2306,7 @@ void UserProc::removeSpAssignsIfPossible()
 	// we can safely remove all assignments to sp, this will make the output
 	// more readable for human eyes.
 
-	auto sp(Location::regOf(signature->getStackRegister(prog)));
+	auto sp(Location::regOf(m_signature->getStackRegister(m_prog)));
 	bool foundone = false;
 
 	StatementList stmts;
@@ -2707,22 +2425,16 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
 }
 
 
-/*
- * Find the procs the calls point to.
- * To be called after decoding all procs.
- * was in: analyis.cpp
- */
-/// find the procs the calls point to
 void UserProc::assignProcsToCalls()
 {
 	std::list<BasicBlock *>::iterator it;
-	BasicBlock *pBB = cfg->getFirstBB(it);
+	BasicBlock *pBB = m_cfg->getFirstBB(it);
 
 	while (pBB) {
 		std::list<RTL *> *rtls = pBB->getRTLs();
 
 		if (rtls == nullptr) {
-			pBB = cfg->getNextBB(it);
+			pBB = m_cfg->getNextBB(it);
 			continue;
 		}
 
@@ -2734,7 +2446,7 @@ void UserProc::assignProcsToCalls()
 			CallStatement *call = (CallStatement *)(rtl)->back();
 
 			if ((call->getDestProc() == nullptr) && !call->isComputed()) {
-				Function *p = prog->findProc(call->getFixedDest());
+				Function *p = m_prog->findProc(call->getFixedDest());
 
 				if (p == nullptr) {
 					LOG_STREAM() << "Cannot find proc for dest " << call->getFixedDest() << " in call at "
@@ -2748,26 +2460,21 @@ void UserProc::assignProcsToCalls()
 			// call->setSigArguments();        // But BBs not set yet; will get done in initStatements()
 		}
 
-		pBB = cfg->getNextBB(it);
+		pBB = m_cfg->getNextBB(it);
 	}
 }
 
 
-/*
- * Perform final simplifications
- * was in: analyis.cpp
- */
-/// perform final simplifications
 void UserProc::finalSimplify()
 {
 	std::list<BasicBlock *>::iterator it;
-	BasicBlock *pBB = cfg->getFirstBB(it);
+	BasicBlock *pBB = m_cfg->getFirstBB(it);
 
 	while (pBB) {
 		std::list<RTL *> *pRtls = pBB->getRTLs();
 
 		if (pRtls == nullptr) {
-			pBB = cfg->getNextBB(it);
+			pBB = m_cfg->getNextBB(it);
 			continue;
 		}
 
@@ -2780,7 +2487,7 @@ void UserProc::finalSimplify()
 			}
 		}
 
-		pBB = cfg->getNextBB(it);
+		pBB = m_cfg->getNextBB(it);
 	}
 }
 
@@ -2790,24 +2497,21 @@ static SharedExp memOfWild = RefExp::get(Location::memOf(Terminal::get(opWild)),
 // r[WILD INT]{-}
 static SharedExp regOfWild = RefExp::get(Location::regOf(Terminal::get(opWildIntConst)), nullptr);
 
-// Search for expressions without explicit definitions (i.e. WILDCARD{0}), which represent parameters (use before
-// definition).
-// These are called final parameters, because they are determined from implicit references, not from the use collector
-// at the start of the proc, which include some caused by recursive calls
+
 #define DEBUG_PARAMS    1
 void UserProc::findFinalParameters()
 {
 	Boomerang::get()->alertDecompileDebugPoint(this, "before find final parameters.");
 
-	parameters.clear();
+	m_parameters.clear();
 
-	if (signature->isForced()) {
+	if (m_signature->isForced()) {
 		// Copy from signature
-		int               n = signature->getNumParams();
-		ImplicitConverter ic(cfg);
+		int               n = m_signature->getNumParams();
+		ImplicitConverter ic(m_cfg);
 
 		for (int i = 0; i < n; ++i) {
-			SharedExp             paramLoc = signature->getParamExp(i)->clone(); // E.g. m[r28 + 4]
+			SharedExp             paramLoc = m_signature->getParamExp(i)->clone(); // E.g. m[r28 + 4]
 			LocationSet           components;
 			LocationSet::iterator cc;
 			paramLoc->addUsedLocs(components);
@@ -2819,11 +2523,11 @@ void UserProc::findFinalParameters()
 				}
 			}
 
-			ImplicitAssign *ia = new ImplicitAssign(signature->getParamType(i), paramLoc);
-			parameters.append(ia);
-			QString   name       = signature->getParamName(i);
+			ImplicitAssign *ia = new ImplicitAssign(m_signature->getParamType(i), paramLoc);
+			m_parameters.append(ia);
+			QString   name       = m_signature->getParamName(i);
 			SharedExp param      = Location::param(name, this);
-			SharedExp reParamLoc = RefExp::get(paramLoc, cfg->findImplicitAssign(paramLoc));
+			SharedExp reParamLoc = RefExp::get(paramLoc, m_cfg->findImplicitAssign(paramLoc));
 			mapSymbolTo(reParamLoc, param); // Update name map
 		}
 
@@ -2835,7 +2539,7 @@ void UserProc::findFinalParameters()
 	}
 
 	//    int sp = signature->getStackRegister();
-	signature->setNumParams(0); // Clear any old ideas
+	m_signature->setNumParams(0); // Clear any old ideas
 	StatementList stmts;
 	getStatements(stmts);
 
@@ -2853,7 +2557,7 @@ void UserProc::findFinalParameters()
 
 		SharedExp e = ((ImplicitAssign *)s)->getLeft();
 
-		if (signature->findParam(e) == -1) {
+		if (m_signature->findParam(e) == -1) {
 			if (VERBOSE || DEBUG_PARAMS) {
 				LOG << "potential param " << e << "\n";
 			}
@@ -3055,8 +2759,6 @@ void UserProc::trimParameters(int depth)
 		}
 	}
 }
-
-
 #endif
 
 void UserProc::removeReturn(SharedExp e)
@@ -3069,12 +2771,12 @@ void UserProc::removeReturn(SharedExp e)
 
 void Function::removeParameter(SharedExp e)
 {
-	int n = signature->findParam(e);
+	int n = m_signature->findParam(e);
 
 	if (n != -1) {
-		signature->removeParameter(n);
+		m_signature->removeParameter(n);
 
-		for (auto const& elem : callerSet) {
+		for (auto const& elem : m_callerSet) {
 			if (DEBUG_UNUSED) {
 				LOG << "removing argument " << e << " in pos " << n << " from " << elem << "\n";
 			}
@@ -3087,17 +2789,16 @@ void Function::removeParameter(SharedExp e)
 
 void Function::removeReturn(SharedExp e)
 {
-	signature->removeReturn(e);
+	m_signature->removeReturn(e);
 }
 
 
-/// Add the parameter to the signature
 void UserProc::addParameter(SharedExp e, SharedType ty)
 {
 	// In case it's already an implicit argument:
 	removeParameter(e);
 
-	signature->addParameter(e, ty);
+	m_signature->addParameter(e, ty);
 }
 
 
@@ -3125,7 +2826,7 @@ void UserProc::processFloatConstants()
 				SharedExp memof = fsize->getSubExp3();
 				ADDRESS   u     = memof->access<Const, 1>()->getAddr();
 				bool      ok;
-				double    d = prog->getFloatConstant(u, ok);
+				double    d = m_prog->getFloatConstant(u, ok);
 
 				if (ok) {
 					LOG << "replacing " << memof << " with " << d << " in " << fsize << "\n";
@@ -3142,49 +2843,44 @@ void UserProc::processFloatConstants()
 void UserProc::addParameterSymbols()
 {
 	StatementList::iterator it;
-	ImplicitConverter       ic(cfg);
+	ImplicitConverter       ic(m_cfg);
 	int i = 0;
 
-	for (it = parameters.begin(); it != parameters.end(); ++it, ++i) {
+	for (it = m_parameters.begin(); it != m_parameters.end(); ++it, ++i) {
 		SharedExp lhs = ((Assignment *)*it)->getLeft();
 		lhs = lhs->expSubscriptAllNull();
 		lhs = lhs->accept(&ic);
-		SharedExp to = Location::param(signature->getParamName(i), this);
+		SharedExp to = Location::param(m_signature->getParamName(i), this);
 		mapSymbolTo(lhs, to);
 	}
 }
 
 
-// Return an expression that is equivilent to e in terms of symbols. Creates new symbols as needed.
-
-/**
- * Return an expression that is equivilent to e in terms of local variables.  Creates new locals as needed.
- */
 SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 {
 	SharedExp e = nullptr;
 
 	// check for references to the middle of a local
 	if (le->isMemOf() && (le->getSubExp1()->getOper() == opMinus) && le->getSubExp1()->getSubExp1()->isSubscript() &&
-		le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
+		le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(m_signature->getStackRegister()) &&
 		le->getSubExp1()->getSubExp2()->isIntConst()) {
-		for (auto& elem : symbolMap) {
+		for (auto& elem : m_symbolMap) {
 			if (!(elem).second->isLocal()) {
 				continue;
 			}
 
 			QString nam = (elem).second->access<Const, 1>()->getStr();
 
-			if (locals.find(nam) == locals.end()) {
+			if (m_locals.find(nam) == m_locals.end()) {
 				continue;
 			}
 
-			SharedType     lty = locals[nam];
+			SharedType     lty = m_locals[nam];
 			SharedConstExp loc = elem.first;
 
 			if (loc->isMemOf() && (loc->getSubExp1()->getOper() == opMinus) &&
 				loc->access<Exp, 1, 1>()->isSubscript() &&
-				loc->access<Exp, 1, 1, 1>()->isRegN(signature->getStackRegister()) &&
+				loc->access<Exp, 1, 1, 1>()->isRegN(m_signature->getStackRegister()) &&
 				loc->access<Exp, 1, 2>()->isIntConst()) {
 				int n = -loc->access<Const, 1, 2>()->getInt();
 				int m = -le->access<Const, 1, 2>()->getInt();
@@ -3198,7 +2894,7 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 		}
 	}
 
-	if (symbolMap.find(le) == symbolMap.end()) {
+	if (m_symbolMap.find(le) == m_symbolMap.end()) {
 		if (ty == nullptr) {
 			if (lastPass) {
 				ty = IntegerType::get(STD_SIZE);
@@ -3267,7 +2963,6 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 }
 
 
-// Not used with DFA Type Analysis; the equivalent thing happens in mapLocalsAndParams() now
 void UserProc::mapExpressionsToLocals(bool lastPass)
 {
 	static SharedExp sp_location = Location::regOf(0);
@@ -3289,7 +2984,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
 		LOG << "\n";
 	}
 
-	int sp = signature->getStackRegister(prog);
+	int sp = m_signature->getStackRegister(m_prog);
 
 	if (getProven(Location::regOf(sp)) == nullptr) {
 		if (VERBOSE) {
@@ -3311,7 +3006,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
 				SharedExp  e  = call->getArgumentExp(i);
 
 				// If a pointer type and e is of the form m[sp{0} - K]:
-				if (ty && ty->resolvesToPointer() && signature->isAddrOfStackLocal(prog, e)) {
+				if (ty && ty->resolvesToPointer() && m_signature->isAddrOfStackLocal(m_prog, e)) {
 					LOG << "argument " << e << " is an addr of stack local and the type resolves to a pointer\n";
 					auto       olde(e->clone());
 					SharedType pty = ty->as<PointerType>()->getPointsTo();
@@ -3419,16 +3114,16 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
 	Boomerang::get()->alertDecompileDebugPoint(this, "after processing array locals");
 
 	// Stack offsets for local variables could be negative (most machines), positive (PA/RISC), or both (SPARC)
-	if (signature->isLocalOffsetNegative()) {
+	if (m_signature->isLocalOffsetNegative()) {
 		searchRegularLocals(opMinus, lastPass, sp, stmts);
 	}
 
-	if (signature->isLocalOffsetPositive()) {
+	if (m_signature->isLocalOffsetPositive()) {
 		searchRegularLocals(opPlus, lastPass, sp, stmts);
 	}
 
 	// Ugh - m[sp] is a special case: neither positive or negative.  SPARC uses this to save %i0
-	if (signature->isLocalOffsetPositive() && signature->isLocalOffsetNegative()) {
+	if (m_signature->isLocalOffsetPositive() && m_signature->isLocalOffsetNegative()) {
 		searchRegularLocals(opWild, lastPass, sp, stmts);
 	}
 
@@ -3505,10 +3200,6 @@ bool UserProc::removeNullStatements()
 }
 
 
-// Propagate statements, but don't remove
-// Return true if change; set convert if an indirect call is converted to direct (else clear)
-/// Propagate statemtents; return true if change; set convert if an indirect call is converted to direct
-/// (else clear)
 bool UserProc::propagateStatements(bool& convert, int pass)
 {
 	LOG_VERBOSE(1) << "--- begin propagating statements pass " << pass << " ---\n";
@@ -3588,14 +3279,12 @@ Instruction *UserProc::getStmtAtLex(unsigned int begin, unsigned int end)
 }
 
 
-/// promote the signature if possible
 void UserProc::promoteSignature()
 {
-	signature = signature->promote(this);
+	m_signature = m_signature->promote(this);
 }
 
 
-/// Return a string for a new local suitable for \a e
 QString UserProc::newLocalName(const SharedExp& e)
 {
 	QString     tgt;
@@ -3610,20 +3299,16 @@ QString UserProc::newLocalName(const SharedExp& e)
 			ost.flush();
 			tgt.clear();
 			ost << regName << "_" << ++tag;
-		} while (locals.find(tgt) != locals.end());
+		} while (m_locals.find(tgt) != m_locals.end());
 
 		return tgt;
 	}
 
-	ost << "local" << nextLocal++;
+	ost << "local" << m_nextLocal++;
 	return tgt;
 }
 
 
-/**
- * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
- * If nam is non null, use that name
- */
 SharedExp UserProc::newLocal(SharedType ty, const SharedExp& e, char *nam /* = nullptr */)
 {
 	QString name;
@@ -3635,7 +3320,7 @@ SharedExp UserProc::newLocal(SharedType ty, const SharedExp& e, char *nam /* = n
 		name = nam; // Use provided name
 	}
 
-	locals[name] = ty;
+	m_locals[name] = ty;
 
 	if (ty == nullptr) {
 		LOG_STREAM() << "null type passed to newLocal\n";
@@ -3650,34 +3335,30 @@ SharedExp UserProc::newLocal(SharedType ty, const SharedExp& e, char *nam /* = n
 }
 
 
-/**
- * Add a new local supplying all needed information.
- */
 void UserProc::addLocal(SharedType ty, const QString& nam, SharedExp e)
 {
 	// symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
 	// assert(symbolMap.find(e) == symbolMap.end());
 	mapSymbolTo(e, Location::local(nam, this));
 	// assert(locals.find(nam) == locals.end());        // Could be r10{20} -> o2, r10{30}->o2 now
-	locals[nam] = ty;
+	m_locals[nam] = ty;
 }
 
 
-/// return a local's type
 SharedType UserProc::getLocalType(const QString& nam)
 {
-	if (locals.find(nam) == locals.end()) {
+	if (m_locals.find(nam) == m_locals.end()) {
 		return nullptr;
 	}
 
-	SharedType ty = locals[nam];
+	SharedType ty = m_locals[nam];
 	return ty;
 }
 
 
 void UserProc::setLocalType(const QString& nam, SharedType ty)
 {
-	locals[nam] = ty;
+	m_locals[nam] = ty;
 
 	LOG_VERBOSE(1) << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
 }
@@ -3685,9 +3366,9 @@ void UserProc::setLocalType(const QString& nam, SharedType ty)
 
 SharedType UserProc::getParamType(const QString& nam)
 {
-	for (unsigned int i = 0; i < signature->getNumParams(); i++) {
-		if (nam == signature->getParamName(i)) {
-			return signature->getParamType(i);
+	for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
+		if (nam == m_signature->getParamName(i)) {
+			return m_signature->getParamType(i);
 		}
 	}
 
@@ -3695,12 +3376,6 @@ SharedType UserProc::getParamType(const QString& nam)
 }
 
 
-// void UserProc::setExpSymbol(const char *nam, Exp *e, Type* ty) {
-//    TypedExp *te = new TypedExp(ty, Location::local(nam, this));
-//    mapSymbolTo(e, te);
-// }
-
-/// As above but with replacement
 void UserProc::mapSymbolToRepl(const SharedConstExp& from, SharedExp oldTo, SharedExp newTo)
 {
 	removeSymbolMapping(from, oldTo);
@@ -3710,9 +3385,9 @@ void UserProc::mapSymbolToRepl(const SharedConstExp& from, SharedExp oldTo, Shar
 
 void UserProc::mapSymbolTo(const SharedConstExp& from, SharedExp to)
 {
-	SymbolMap::iterator it = symbolMap.find(from);
+	SymbolMap::iterator it = m_symbolMap.find(from);
 
-	while (it != symbolMap.end() && *it->first == *from) {
+	while (it != m_symbolMap.end() && *it->first == *from) {
 		if (*it->second == *to) {
 			return; // Already in the multimap
 		}
@@ -3721,19 +3396,15 @@ void UserProc::mapSymbolTo(const SharedConstExp& from, SharedExp to)
 	}
 
 	std::pair<SharedConstExp, SharedExp> pr = { from, to };
-	symbolMap.insert(pr);
+	m_symbolMap.insert(pr);
 }
 
 
-// FIXME: is this the same as lookupSym() now?
-/// \brief Lookup the symbol map considering type
-/// Lookup the expression in the symbol map. Return nullptr or a C string with the symbol. Use the Type* ty to
-/// select from several names in the multimap; the name corresponding to the first compatible type is returned
 SharedExp UserProc::getSymbolFor(const SharedConstExp& from, SharedType ty)
 {
-	SymbolMap::iterator ff = symbolMap.find(from);
+	SymbolMap::iterator ff = m_symbolMap.find(from);
 
-	while (ff != symbolMap.end() && *ff->first == *from) {
+	while (ff != m_symbolMap.end() && *ff->first == *from) {
 		SharedExp currTo = ff->second;
 		assert(currTo->isLocal() || currTo->isParam());
 		QString    name   = std::static_pointer_cast<Const>(currTo->getSubExp1())->getStr();
@@ -3754,14 +3425,13 @@ SharedExp UserProc::getSymbolFor(const SharedConstExp& from, SharedType ty)
 }
 
 
-/// Remove this mapping
 void UserProc::removeSymbolMapping(const SharedConstExp& from, SharedExp to)
 {
-	SymbolMap::iterator it = symbolMap.find(from);
+	SymbolMap::iterator it = m_symbolMap.find(from);
 
-	while (it != symbolMap.end() && *it->first == *from) {
+	while (it != m_symbolMap.end() && *it->first == *from) {
 		if (*it->second == *to) {
-			symbolMap.erase(it);
+			m_symbolMap.erase(it);
 			return;
 		}
 
@@ -3770,11 +3440,9 @@ void UserProc::removeSymbolMapping(const SharedConstExp& from, SharedExp to)
 }
 
 
-/// return a symbol's exp (note: the original exp, like r24, not local1)
-/// \note linear search!!
 SharedConstExp UserProc::expFromSymbol(const QString& nam) const
 {
-	for (const std::pair<SharedConstExp, SharedExp>& it : symbolMap) {
+	for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
 		auto e = it.second;
 
 		if (e->isLocal() && (e->access<Const, 1>()->getStr() == nam)) {
@@ -3790,7 +3458,7 @@ QString UserProc::getLocalName(int n)
 {
 	int i = 0;
 
-	for (std::map<QString, SharedType>::iterator it = locals.begin(); it != locals.end(); it++, i++) {
+	for (std::map<QString, SharedType>::iterator it = m_locals.begin(); it != m_locals.end(); it++, i++) {
 		if (i == n) {
 			return it->first;
 		}
@@ -3800,12 +3468,11 @@ QString UserProc::getLocalName(int n)
 }
 
 
-/// As getLocalName, but look for expression \a e
 QString UserProc::getSymbolName(SharedExp e)
 {
-	SymbolMap::iterator it = symbolMap.find(e);
+	SymbolMap::iterator it = m_symbolMap.find(e);
 
-	if (it == symbolMap.end()) {
+	if (it == m_symbolMap.end()) {
 		return "";
 	}
 
@@ -3819,8 +3486,6 @@ QString UserProc::getSymbolName(SharedExp e)
 }
 
 
-// Count references to the things that are under SSA control. For each SSA subscripting, increment a counter for that
-// definition
 void UserProc::countRefs(RefCounter& refCounts)
 {
 	StatementList stmts;
@@ -3875,8 +3540,6 @@ void UserProc::countRefs(RefCounter& refCounts)
 }
 
 
-// Note: call the below after translating from SSA form
-// FIXME: this can be done before transforming out of SSA form now, surely...
 void UserProc::removeUnusedLocals()
 {
 	Boomerang::get()->alertDecompileDebugPoint(this, "before removing unused locals");
@@ -3936,7 +3599,7 @@ void UserProc::removeUnusedLocals()
 	std::map<QString, SharedType>::iterator it;
 	QSet<QString> removes;
 
-	for (it = locals.begin(); it != locals.end(); it++) {
+	for (it = m_locals.begin(); it != m_locals.end(); it++) {
 		const QString& name(it->first);
 
 		// LOG << "Considering local " << name << "\n";
@@ -3987,18 +3650,18 @@ void UserProc::removeUnusedLocals()
 
 	// Finally, remove them from locals, so they don't get declared
 	for (QString str : removes) {
-		locals.erase(str);
+		m_locals.erase(str);
 	}
 
 	// Also remove them from the symbols, since symbols are a superset of locals at present
-	for (SymbolMap::iterator sm = symbolMap.begin(); sm != symbolMap.end(); ) {
+	for (SymbolMap::iterator sm = m_symbolMap.begin(); sm != m_symbolMap.end(); ) {
 		SharedExp mapsTo = sm->second;
 
 		if (mapsTo->isLocal()) {
 			QString tmpName = mapsTo->access<Const, 1>()->getStr();
 
 			if (removes.find(tmpName) != removes.end()) {
-				symbolMap.erase(sm++);
+				m_symbolMap.erase(sm++);
 				continue;
 			}
 		}
@@ -4024,10 +3687,10 @@ void UserProc::fromSSAform()
 
 	Boomerang::get()->alertDecompileDebugPoint(this, "before transforming from SSA form");
 
-	if (cfg->getNumBBs() >= 100) { // Only for the larger procs
+	if (m_cfg->getNumBBs() >= 100) { // Only for the larger procs
 		// Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
 		// little procs that don't get messages. Also, looks better with progress dots
-		LOG_STREAM() << " transforming out of SSA form " << getName() << " with " << cfg->getNumBBs() << " BBs";
+		LOG_STREAM() << " transforming out of SSA form " << getName() << " with " << m_cfg->getNumBBs() << " BBs";
 	}
 
 	StatementList stmts;
@@ -4113,7 +3776,7 @@ void UserProc::fromSSAform()
 
 	assert(ig.allRefsHaveDefs());
 	// Find the interferences generated by more than one version of a variable being live at the same program point
-	cfg->findInterferences(ig);
+	m_cfg->findInterferences(ig);
 	assert(ig.allRefsHaveDefs());
 
 	// Find the set of locations that are "united" by phi-functions
@@ -4389,7 +4052,7 @@ void UserProc::fromSSAform()
 		}
 	}
 
-	if (cfg->getNumBBs() >= 100) { // Only for the larger procs
+	if (m_cfg->getNumBBs() >= 100) { // Only for the larger procs
 		LOG_STREAM() << "\n";
 	}
 
@@ -4402,7 +4065,7 @@ void UserProc::mapParameters()
 	// Replace the parameters with their mappings
 	StatementList::iterator pp;
 
-	for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
+	for (pp = m_parameters.begin(); pp != m_parameters.end(); ++pp) {
 		SharedExp lhs        = ((Assignment *)*pp)->getLeft();
 		QString   mappedName = lookupParam(lhs);
 
@@ -4430,10 +4093,10 @@ void UserProc::removeSubscriptsFromSymbols()
 	// However, do not remove subscripts from the outer level; they are still needed for comments in the output and also
 	// for when removing subscripts from parameters (still need the {0})
 	// Since this will potentially change the ordering of entries, need to copy the map
-	SymbolMap sm2 = symbolMap; // Object copy
+	SymbolMap sm2 = m_symbolMap; // Object copy
 
 	SymbolMap::iterator it;
-	symbolMap.clear();
+	m_symbolMap.clear();
 	ExpSsaXformer esx(this);
 
 	for (it = sm2.begin(); it != sm2.end(); ++it) {
@@ -4458,7 +4121,7 @@ void UserProc::removeSubscriptsFromParameters()
 	StatementList::iterator it;
 	ExpSsaXformer           esx(this);
 
-	for (it = parameters.begin(); it != parameters.end(); ++it) {
+	for (it = m_parameters.begin(); it != m_parameters.end(); ++it) {
 		SharedExp left = ((Assignment *)*it)->getLeft();
 		left = left->accept(&esx);
 		((Assignment *)*it)->setLeft(left);
@@ -4468,16 +4131,14 @@ void UserProc::removeSubscriptsFromParameters()
 
 static std::shared_ptr<Binary> allEqAll = Binary::get(opEquals, Terminal::get(opDefineAll), Terminal::get(opDefineAll));
 
-// this function was non-reentrant, but now reentrancy is frequently used
-/// prove any arbitary property of this procedure. If conditional is true, do not save the result, as it may
-/// be conditional on premises stored in other procedures
+
 bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* = false */)
 {
 	assert(query->isEquality());
 	SharedExp queryLeft  = query->getSubExp1();
 	SharedExp queryRight = query->getSubExp2();
 
-	if ((provenTrue.find(queryLeft) != provenTrue.end()) && (*provenTrue[queryLeft] == *queryRight)) {
+	if ((m_provenTrue.find(queryLeft) != m_provenTrue.end()) && (*m_provenTrue[queryLeft] == *queryRight)) {
 		if (DEBUG_PROOF) {
 			LOG << "found true in provenTrue cache " << query << " in " << getName() << "\n";
 		}
@@ -4526,7 +4187,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
 					LOG << "Using all=all for " << query->getSubExp1() << "\n" << "prove returns true\n";
 				}
 
-				provenTrue[origLeft->clone()] = right;
+				m_provenTrue[origLeft->clone()] = right;
 				return true;
 			}
 
@@ -4538,17 +4199,17 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
 		}
 	}
 
-	if (cycleGrp) { // If in involved in a recursion cycle
+	if (m_cycleGroup) { // If in involved in a recursion cycle
 		//    then save the original query as a premise for bypassing calls
-		recurPremises[origLeft->clone()] = origRight;
+		m_recurPremises[origLeft->clone()] = origRight;
 	}
 
 	std::set<PhiAssign *>            lastPhis;
 	std::map<PhiAssign *, SharedExp> cache;
 	bool result = prover(query, lastPhis, cache);
 
-	if (cycleGrp) {
-		recurPremises.erase(origLeft); // Remove the premise, regardless of result
+	if (m_cycleGroup) {
+		m_recurPremises.erase(origLeft); // Remove the premise, regardless of result
 	}
 
 	if (DEBUG_PROOF) {
@@ -4557,7 +4218,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
 
 	if (!conditional) {
 		if (result) {
-			provenTrue[origLeft] = origRight; // Save the now proven equation
+			m_provenTrue[origLeft] = origRight; // Save the now proven equation
 		}
 	}
 
@@ -4565,7 +4226,6 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
 }
 
 
-/// helper function, should be private
 bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map<PhiAssign *, SharedExp>& cache,
 					  PhiAssign *lastPhi /* = nullptr */)
 {
@@ -4632,8 +4292,8 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
 					UserProc *destProc = dynamic_cast<UserProc *>(call->getDestProc());
 					auto     base      = r->getSubExp1();
 
-					if (destProc && !destProc->isLib() && (destProc->cycleGrp != nullptr) &&
-						(destProc->cycleGrp->find(this) != destProc->cycleGrp->end())) {
+					if (destProc && !destProc->isLib() && (destProc->m_cycleGroup != nullptr) &&
+						(destProc->m_cycleGroup->find(this) != destProc->m_cycleGroup->end())) {
 						// The destination procedure may not have preservation proved as yet, because it is involved
 						// in our recursion group. Use the conditional preservation logic to determine whether query is
 						// true for this procedure
@@ -4874,13 +4534,12 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
 }
 
 
-// Get the set of locations defined by this proc. In other words, the define set, currently called returns
 void UserProc::getDefinitions(LocationSet& ls)
 {
-	int n = signature->getNumReturns();
+	int n = m_signature->getNumReturns();
 
 	for (int j = 0; j < n; j++) {
-		ls.insert(signature->getReturnExp(j));
+		ls.insert(m_signature->getReturnExp(j));
 	}
 }
 
@@ -4889,27 +4548,12 @@ void Function::addCallers(std::set<UserProc *>& callers)
 {
 	std::set<CallStatement *>::iterator it;
 
-	for (it = callerSet.begin(); it != callerSet.end(); it++) {
+	for (it = m_callerSet.begin(); it != m_callerSet.end(); it++) {
 		UserProc *callerProc = (*it)->getProc();
 		callers.insert(callerProc);
 	}
 }
 
-
-/**
- * Add to a set of callee Procs.
- */
-// void UserProc::addCallees(std::list<UserProc*>& callees) {
-//    // SLOW SLOW SLOW
-//    // this function is evil now... REALLY evil... hope it doesn't get called too often
-//    std::list<Proc*>::iterator it;
-//    for (it = calleeList.begin(); it != calleeList.end(); it++) {
-//        UserProc* callee = (UserProc*)(*it);
-//        if (callee->isLib())
-//            continue;
-//        addCallee(callee);
-//    }
-// }
 
 void UserProc::conTypeAnalysis()
 {
@@ -4921,11 +4565,11 @@ void UserProc::conTypeAnalysis()
 	LocationSet   cons;
 	StatementList stmts;
 	getStatements(stmts);
-	StatementList::iterator ss;
+
 	// For each statement this proc
 	int conscript = 0;
 
-	for (ss = stmts.begin(); ss != stmts.end(); ss++) {
+	for (auto ss = stmts.begin(); ss != stmts.end(); ss++) {
 		cons.clear();
 		// So we can co-erce constants:
 		conscript = (*ss)->setConscripts(conscript);
@@ -5034,7 +4678,7 @@ void UserProc::conTypeAnalysis()
 
 	// Clear the conscripts. These confuse the fromSSA logic, causing infinite
 	// loops
-	for (ss = stmts.begin(); ss != stmts.end(); ss++) {
+	for (auto ss = stmts.begin(); ss != stmts.end(); ss++) {
 		(*ss)->clearConscripts();
 	}
 }
@@ -5067,9 +4711,9 @@ unsigned fudge(StatementList::iterator x)
 SharedExp UserProc::getProven(SharedExp left)
 {
 	// Note: proven information is in the form r28 mapsto (r28 + 4)
-	std::map<SharedExp, SharedExp, lessExpStar>::iterator it = provenTrue.find(left);
+	std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_provenTrue.find(left);
 
-	if (it != provenTrue.end()) {
+	if (it != m_provenTrue.end()) {
 		return it->second;
 	}
 
@@ -5082,9 +4726,9 @@ SharedExp UserProc::getProven(SharedExp left)
 
 SharedExp UserProc::getPremised(SharedExp left)
 {
-	std::map<SharedExp, SharedExp, lessExpStar>::iterator it = recurPremises.find(left);
+	std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_recurPremises.find(left);
 
-	if (it != recurPremises.end()) {
+	if (it != m_recurPremises.end()) {
 		return it->second;
 	}
 
@@ -5092,14 +4736,13 @@ SharedExp UserProc::getPremised(SharedExp left)
 }
 
 
-/// Return whether e is preserved by this proc
 bool UserProc::isPreserved(SharedExp e)
 {
-	return provenTrue.find(e) != provenTrue.end() && *provenTrue[e] == *e;
+	return m_provenTrue.find(e) != m_provenTrue.end() && *m_provenTrue[e] == *e;
 }
 
 
-/// Cast the constant whose conscript is num to be type ty
+
 void UserProc::castConst(int num, SharedType ty)
 {
 	StatementList stmts;
@@ -5115,11 +4758,6 @@ void UserProc::castConst(int num, SharedType ty)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Trim parameters to procedure calls with ellipsis (...). Also add types for ellipsis parameters, if any
- * \returns true if any signature types so added.
- ******************************************************************************/
 bool UserProc::ellipsisProcessing()
 {
 	BB_IT it;
@@ -5128,7 +4766,7 @@ bool UserProc::ellipsisProcessing()
 	StatementList::reverse_iterator srit;
 	bool ch = false;
 
-	for (it = cfg->begin(); it != cfg->end(); ++it) {
+	for (it = m_cfg->begin(); it != m_cfg->end(); ++it) {
 		CallStatement *c = dynamic_cast<CallStatement *>((*it)->getLastStmt(rrit, srit));
 
 		// Note: we may have removed some statements, so there may no longer be a last statement!
@@ -5136,7 +4774,7 @@ bool UserProc::ellipsisProcessing()
 			continue;
 		}
 
-		ch |= c->ellipsisProcessing(prog);
+		ch |= c->ellipsisProcessing(m_prog);
 	}
 
 	if (ch) {
@@ -5147,31 +4785,21 @@ bool UserProc::ellipsisProcessing()
 }
 
 
-/***************************************************************************/ /**
- *
- * Before Type Analysis, refs like r28{0} have a nullptr Statement pointer. After this, they will point to an
- * implicit assignment for the location. Thus, during and after type analysis, you can find the type of any
- * location by following the reference to the definition
- * Note: you need something recursive to make sure that child subexpressions are processed before parents
- * Example: m[r28{0} - 12]{0} could end up adding an implicit assignment for r28{-} with a null reference, when other
- * pieces of code add r28{0}
- ******************************************************************************/
 void UserProc::addImplicitAssigns()
 {
 	Boomerang::get()->alertDecompileDebugPoint(this, "before adding implicit assigns");
 
 	StatementList stmts;
 	getStatements(stmts);
-	StatementList::iterator it;
-	ImplicitConverter       ic(cfg);
-	StmtImplicitConverter   sm(&ic, cfg);
+	ImplicitConverter       ic(m_cfg);
+	StmtImplicitConverter   sm(&ic, m_cfg);
 
-	for (it = stmts.begin(); it != stmts.end(); it++) {
+	for (auto it = stmts.begin(); it != stmts.end(); it++) {
 		(*it)->accept(&sm);
 	}
 
-	cfg->setImplicitsDone();
-	df.convertImplicits(cfg); // Some maps have m[...]{-} need to be m[...]{0} now
+	m_cfg->setImplicitsDone();
+	m_df.convertImplicits(m_cfg); // Some maps have m[...]{-} need to be m[...]{0} now
 	makeSymbolsImplicit();
 	// makeParamsImplicit();            // Not necessary yet, since registers are not yet mapped
 
@@ -5179,12 +4807,10 @@ void UserProc::addImplicitAssigns()
 }
 
 
-// e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
-/// Find the implicit definition for \a e and lookup a symbol
 QString UserProc::lookupParam(SharedExp e)
 {
 	// Originally e.g. m[esp+K]
-	Instruction *def = cfg->findTheImplicitAssign(e);
+	Instruction *def = m_cfg->findTheImplicitAssign(e);
 
 	if (def == nullptr) {
 		LOG << "ERROR: no implicit definition for parameter " << e << " !\n";
@@ -5197,7 +4823,6 @@ QString UserProc::lookupParam(SharedExp e)
 }
 
 
-/// Lookup a specific symbol for the given ref
 QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
 {
 	Instruction *def = r->getDef();
@@ -5213,7 +4838,6 @@ QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
 }
 
 
-/// Lookup a specific symbol if any, else the general one if any
 QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
 {
 	Instruction *def = r->getDef();
@@ -5244,9 +4868,9 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
 	}
 
 	SymbolMap::iterator it;
-	it = symbolMap.find(e);
+	it = m_symbolMap.find(e);
 
-	while (it != symbolMap.end() && *it->first == *e) {
+	while (it != m_symbolMap.end() && *it->first == *e) {
 		auto sym = it->second;
 		assert(sym->isLocal() || sym->isParam());
 		QString    name = sym->access<Const, 1>()->getStr();
@@ -5276,7 +4900,6 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
 }
 
 
-/// Print just the symbol map
 void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
 {
 	if (html) {
@@ -5285,7 +4908,7 @@ void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
 
 	out << "symbols:\n";
 
-	for (const std::pair<SharedConstExp, SharedExp>& it : symbolMap) {
+	for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
 		const SharedType ty = getTypeForLocation(it.second);
 		out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "nullptr") << "\n";
 
@@ -5310,7 +4933,7 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 
 	os << "locals:\n";
 
-	for (const std::pair<QString, SharedType>& local_entry : locals) {
+	for (const std::pair<QString, SharedType>& local_entry : m_locals) {
 		os << local_entry.second->getCtype() << " " << local_entry.first << " ";
 		SharedConstExp e = expFromSymbol(local_entry.first);
 
@@ -5331,12 +4954,9 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 }
 
 
-/// For debugging
-void UserProc::dumpSymbolMap()
+void UserProc::dumpSymbolMap() const
 {
-	SymbolMap::iterator it;
-
-	for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
+	for (auto it = m_symbolMap.begin(); it != m_symbolMap.end(); it++) {
 		SharedType ty = getTypeForLocation(it->second);
 		LOG_STREAM() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
 					 << "\n";
@@ -5344,12 +4964,9 @@ void UserProc::dumpSymbolMap()
 }
 
 
-/// For debugging
-void UserProc::dumpSymbolMapx()
+void UserProc::dumpSymbolMapx() const
 {
-	SymbolMap::iterator it;
-
-	for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
+	for (auto it = m_symbolMap.begin(); it != m_symbolMap.end(); it++) {
 		SharedType ty = getTypeForLocation(it->second);
 		LOG_STREAM() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
 					 << "\n";
@@ -5358,18 +4975,17 @@ void UserProc::dumpSymbolMapx()
 }
 
 
-/// For debugging
-void UserProc::testSymbolMap()
+void UserProc::testSymbolMap() const
 {
-	SymbolMap::iterator it1, it2;
+	SymbolMap::const_iterator it1, it2;
 	bool                OK = true;
-	it1 = symbolMap.begin();
+	it1 = m_symbolMap.begin();
 
-	if (it1 != symbolMap.end()) {
+	if (it1 != m_symbolMap.end()) {
 		it2 = it1;
 		++it2;
 
-		while (it2 != symbolMap.end()) {
+		while (it2 != m_symbolMap.end()) {
 			if (*it2->first < *it1->first) { // Compare keys
 				OK = false;
 				LOG_STREAM() << "*it2->first < *it1->first: " << it2->first << " < " << it1->first << "!\n";
@@ -5385,7 +5001,7 @@ void UserProc::testSymbolMap()
 }
 
 
-void UserProc::dumpLocals()
+void UserProc::dumpLocals() const
 {
 	QTextStream q_cerr(stderr);
 
@@ -5393,7 +5009,6 @@ void UserProc::dumpLocals()
 }
 
 
-/// Update the arguments in calls
 void UserProc::updateArguments()
 {
 	Boomerang::get()->alertDecompiling(this);
@@ -5402,7 +5017,7 @@ void UserProc::updateArguments()
 	BasicBlock::rtlrit              rrit;
 	StatementList::reverse_iterator srit;
 
-	for (BasicBlock *it : *cfg) {
+	for (BasicBlock *it : *m_cfg) {
 		CallStatement *c = dynamic_cast<CallStatement *>(it->getLastStmt(rrit, srit));
 
 		// Note: we may have removed some statements, so there may no longer be a last statement!
@@ -5420,7 +5035,6 @@ void UserProc::updateArguments()
 }
 
 
-/// Update the defines in calls
 void UserProc::updateCallDefines()
 {
 	if (VERBOSE) {
@@ -5443,13 +5057,6 @@ void UserProc::updateCallDefines()
 }
 
 
-/// Replace simple global constant references
-/// Statement level transform :
-/// PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
-/// ACTION:
-///     $tmp_addr = assgn.rhs.sub(1);
-///     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
-///     statement.rhs.replace_with(Const($tmp_val))
 void UserProc::replaceSimpleGlobalConstants()
 {
 	LOG_VERBOSE(1) << "### replace simple global constants for " << getName() << " ###\n";
@@ -5475,22 +5082,22 @@ void UserProc::replaceSimpleGlobalConstants()
 		ADDRESS addr = assgn->getRight()->access<Const, 1>()->getAddr();
 		LOG << "assgn " << assgn << "\n";
 
-		if (prog->isReadOnly(addr)) {
+		if (m_prog->isReadOnly(addr)) {
 			LOG << "is readonly\n";
 			int val;
 
 			switch (assgn->getType()->getSize())
 			{
 			case 8:
-				val = prog->readNative1(addr);
+				val = m_prog->readNative1(addr);
 				break;
 
 			case 16:
-				val = prog->readNative2(addr);
+				val = m_prog->readNative2(addr);
 				break;
 
 			case 32:
-				val = prog->readNative4(addr);
+				val = m_prog->readNative4(addr);
 				break;
 
 			default:
@@ -5562,14 +5169,6 @@ void UserProc::reverseStrengthReduction()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Insert into parameters list correctly sorted
- *
- * Update the parameters, in case the signature and hence ordering and filtering has changed, or the locations in the
- * collector have changed
- *
- ******************************************************************************/
 void UserProc::insertParameter(SharedExp e, SharedType ty)
 {
 	if (filterParams(e)) {
@@ -5585,40 +5184,32 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
 	StatementList::iterator nn;
 	bool inserted = false;
 
-	for (nn = parameters.begin(); nn != parameters.end(); ++nn) {
+	for (nn = m_parameters.begin(); nn != m_parameters.end(); ++nn) {
 		// If the new assignment is less than the current one ...
-		if (signature->argumentCompare(*as, *(Assignment *)*nn)) {
-			nn       = parameters.insert(nn, as); // ... then insert before this position
+		if (m_signature->argumentCompare(*as, *(Assignment *)*nn)) {
+			nn       = m_parameters.insert(nn, as); // ... then insert before this position
 			inserted = true;
 			break;
 		}
 	}
 
 	if (!inserted) {
-		parameters.insert(parameters.end(), as); // In case larger than all existing elements
+		m_parameters.insert(m_parameters.end(), as); // In case larger than all existing elements
 	}
 
 	// update the signature
-	signature->setNumParams(0);
+	m_signature->setNumParams(0);
 	int i = 1;
 
-	for (nn = parameters.begin(); nn != parameters.end(); ++nn, ++i) {
+	for (nn = m_parameters.begin(); nn != m_parameters.end(); ++nn, ++i) {
 		Assignment *a = (Assignment *)*nn;
 		char       tmp[20];
 		sprintf(tmp, "param%i", i);
-		signature->addParameter(a->getType(), tmp, a->getLeft());
+		m_signature->addParameter(a->getType(), tmp, a->getLeft());
 	}
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Decide whether to filter out \a e (return true) or keep it
- *
- * Filter out locations not possible as return locations. Return true to *remove* (filter *out*)
- *
- * \returns true if \a e  should be filtered out
- ******************************************************************************/
 bool UserProc::filterReturns(SharedExp e)
 {
 	if (isPreserved(e)) {
@@ -5660,18 +5251,6 @@ bool UserProc::filterReturns(SharedExp e)
 }
 
 
-//
-
-/***************************************************************************/ /**
- *
- * \brief Decide whether to filter out \a e (return true) or keep it
- *
- * Filter out locations not possible as parameters or arguments. Return true to remove
- *
- * \returns true if \a e  should be filtered out
- * \sa UserProc::filterReturns
- *
- ******************************************************************************/
 bool UserProc::filterParams(SharedExp e)
 {
 	switch (e->getOper())
@@ -5686,8 +5265,8 @@ bool UserProc::filterParams(SharedExp e)
 		{
 			int sp = 999;
 
-			if (signature) {
-				sp = signature->getStackRegister(prog);
+			if (m_signature) {
+				sp = m_signature->getStackRegister(m_prog);
 			}
 
 			int r = e->access<Const, 1>()->getInt();
@@ -5706,8 +5285,8 @@ bool UserProc::filterParams(SharedExp e)
 				auto reg = addr->getSubExp1();
 				int  sp  = 999;
 
-				if (signature) {
-					sp = signature->getStackRegister(prog);
+				if (m_signature) {
+					sp = m_signature->getStackRegister(m_prog);
 				}
 
 				if (reg->isRegN(sp)) {
@@ -5727,8 +5306,6 @@ bool UserProc::filterParams(SharedExp e)
 }
 
 
-/// Determine whether e is a local, either as a true opLocal (e.g. generated by fromSSA), or if it is in the
-/// symbol map and the name is in the locals map. If it is a local, return its name, else nullptr
 QString UserProc::findLocal(const SharedExp& e, SharedType ty)
 {
 	if (e->isLocal()) {
@@ -5743,7 +5320,7 @@ QString UserProc::findLocal(const SharedExp& e, SharedType ty)
 	}
 
 	// Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
-	if (locals.find(name) != locals.end()) {
+	if (m_locals.find(name) != m_locals.end()) {
 		return name;
 	}
 
@@ -5764,7 +5341,7 @@ QString UserProc::findLocalFromRef(const std::shared_ptr<RefExp>& r)
 	}
 
 	// Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
-	if (locals.find(name) != locals.end()) {
+	if (m_locals.find(name) != m_locals.end()) {
 		return name;
 	}
 
@@ -5774,9 +5351,9 @@ QString UserProc::findLocalFromRef(const std::shared_ptr<RefExp>& r)
 
 QString UserProc::findFirstSymbol(const SharedExp& e)
 {
-	SymbolMap::iterator ff = symbolMap.find(e);
+	SymbolMap::iterator ff = m_symbolMap.find(e);
 
-	if (ff == symbolMap.end()) {
+	if (ff == m_symbolMap.end()) {
 		return QString::null;
 	}
 
@@ -5785,7 +5362,6 @@ QString UserProc::findFirstSymbol(const SharedExp& e)
 
 
 // Algorithm:
-
 /* fixCallAndPhiRefs
  *      for each statement s in this proc
  *        if s is a phi statement ps
@@ -5813,12 +5389,6 @@ QString UserProc::findFirstSymbol(const SharedExp& e)
  *        do bypass and propagation for s
  */
 // Perform call and phi statement bypassing at depth d <- missing
-
-/***************************************************************************/ /**
- *
- * \brief  Perform call and phi statement bypassing at all depths
- *
- ******************************************************************************/
 void UserProc::fixCallAndPhiRefs()
 {
 	if (VERBOSE) {
@@ -5855,7 +5425,7 @@ void UserProc::fixCallAndPhiRefs()
 			if ((e->getOper() == opPlus) || (e->getOper() == opMinus)) {
 				if (e->getSubExp2()->isIntConst()) {
 					if (e->getSubExp1()->isSubscript() &&
-						e->getSubExp1()->getSubExp1()->isRegN(signature->getStackRegister()) &&
+						e->getSubExp1()->getSubExp1()->isRegN(m_signature->getStackRegister()) &&
 						(((e->access<RefExp, 1>())->getDef() == nullptr) ||
 						 (e->access<RefExp, 1>())->getDef()->isImplicit())) {
 						a->setRight(Unary::get(opAddrOf, Location::memOf(e->clone())));
@@ -6017,7 +5587,7 @@ void UserProc::fixCallAndPhiRefs()
 	}
 
 	// Also do xxx in m[xxx] in the use collector
-	for (const SharedExp& cc : procUseCollector) {
+	for (const SharedExp& cc : m_procUseCollector) {
 		if (!cc->isMemOf()) {
 			continue;
 		}
@@ -6039,20 +5609,12 @@ void UserProc::fixCallAndPhiRefs()
 }
 
 
-// Not sure that this is needed...
-
-/***************************************************************************/ /**
- *
- * \brief Mark calls involved in the recursion cycle as non childless
- * (each child has had middleDecompile called on it now).
- *
- ******************************************************************************/
 void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 {
 	BasicBlock::rtlrit              rrit;
 	StatementList::reverse_iterator srit;
 
-	for (BasicBlock *bb : *cfg) {
+	for (BasicBlock *bb : *m_cfg) {
 		CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
 		if (c && c->isChildless()) {
@@ -6067,12 +5629,11 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 }
 
 
-// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
 void UserProc::propagateToCollector()
 {
 	UseCollector::iterator it;
 
-	for (it = procUseCollector.begin(); it != procUseCollector.end(); ) {
+	for (it = m_procUseCollector.begin(); it != m_procUseCollector.end(); ) {
 		if (!(*it)->isMemOf()) {
 			++it;
 			continue;
@@ -6104,10 +5665,10 @@ void UserProc::propagateToCollector()
 			auto memOfRes = Location::memOf(res)->simplify();
 
 			// First check to see if memOfRes is already in the set
-			if (procUseCollector.exists(memOfRes)) {
+			if (m_procUseCollector.exists(memOfRes)) {
 				// Take care not to use an iterator to the newly erased element.
 				/* it = */
-				procUseCollector.remove(it++);            // Already exists; just remove the old one
+				m_procUseCollector.remove(it++);            // Already exists; just remove the old one
 				continue;
 			}
 			else {
@@ -6122,19 +5683,13 @@ void UserProc::propagateToCollector()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Get the initial parameters, based on this UserProc's use collector
- * Probably unused now
- *
- ******************************************************************************/
 void UserProc::initialParameters()
 {
 	LOG_VERBOSE(1) << "### initial parameters for " << getName() << "\n";
-	parameters.clear();
+	m_parameters.clear();
 
-	for (const SharedExp& v : procUseCollector) {
-		parameters.append(new ImplicitAssign(v->clone()));
+	for (const SharedExp& v : m_procUseCollector) {
+		m_parameters.append(new ImplicitAssign(v->clone()));
 	}
 
 	if (VERBOSE) {
@@ -6146,29 +5701,23 @@ void UserProc::initialParameters()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief The inductive preservation analysis.
- *
- ******************************************************************************/
 bool UserProc::inductivePreservation(UserProc * /*topOfCycle*/)
 {
-	// FIXME: This is not correct in general!! It should work OK for self recursion, but not for general mutual
-	// recursion. Not that hard, just not done yet.
+	// FIXME: This is not correct in general!! It should work OK for self recursion,
+    // but not for general mutual recursion. Not that hard, just not done yet.
 	return true;
 }
 
 
-/// True if e represents a stack local variable
-bool UserProc::isLocal(SharedExp e)
+bool UserProc::isLocal(SharedExp e) const
 {
 	if (!e->isMemOf()) {
 		return false; // Don't want say a register
 	}
 
-	SymbolMap::iterator ff = symbolMap.find(e);
+	SymbolMap::const_iterator ff = m_symbolMap.find(e);
 
-	if (ff == symbolMap.end()) {
+	if (ff == m_symbolMap.end()) {
 		return false;
 	}
 
@@ -6177,10 +5726,9 @@ bool UserProc::isLocal(SharedExp e)
 }
 
 
-/// True if e can be propagated
-bool UserProc::isPropagatable(const SharedExp& e)
+bool UserProc::isPropagatable(const SharedExp& e) const
 {
-	if (addressEscapedVars.exists(e)) {
+	if (m_addressEscapedVars.exists(e)) {
 		return false;
 	}
 
@@ -6188,19 +5736,16 @@ bool UserProc::isPropagatable(const SharedExp& e)
 }
 
 
-/// True if e represents a stack local or stack param
-bool UserProc::isLocalOrParam(const SharedExp& e)
+bool UserProc::isLocalOrParam(const SharedExp& e) const
 {
 	if (isLocal(e)) {
 		return true;
 	}
 
-	return parameters.existsOnLeft(e);
+	return m_parameters.existsOnLeft(e);
 }
 
 
-// Is this m[sp{-} +/- K]?
-/// True if e could represent a stack local or stack param
 bool UserProc::isLocalOrParamPattern(const SharedExp& e)
 {
 	if (!e->isMemOf()) {
@@ -6209,11 +5754,11 @@ bool UserProc::isLocalOrParamPattern(const SharedExp& e)
 
 	SharedExp addr = e->getSubExp1();
 
-	if (!signature->isPromoted()) {
+	if (!m_signature->isPromoted()) {
 		return false; // Prevent an assert failure if using -E
 	}
 
-	int               sp = signature->getStackRegister();
+	int               sp = m_signature->getStackRegister();
 	static const auto initSp(RefExp::get(Location::regOf(sp), nullptr)); // sp{-}
 
 	if (*addr == *initSp) {
@@ -6241,35 +5786,12 @@ bool UserProc::isLocalOrParamPattern(const SharedExp& e)
 }
 
 
-//
-//
-
-/***************************************************************************/ /**
- *
- * \brief Used for checking for unused parameters
- *
- * Remove the unused parameters. Check for uses for each parameter as param{0}.
- * Some parameters are apparently used when in fact they are only used as parameters to calls to procedures in the
- * recursion set. So don't count components of arguments of calls in the current recursion group that chain through to
- * ultimately use the argument as a parameter to the current procedure.
- * Some parameters are apparently used when in fact they are only used by phi statements which transmit a return from
- * a recursive call ultimately to the current procedure, to the exit of the current procedure, and the return exists
- * only because of a liveness created by a parameter to a recursive call. So when examining phi statements, check if
- * referenced from a return of the current procedure, and has an implicit operand, and all the others satisfy a call
- * to doesReturnChainToCall(param, this proc).
- * but not including removing unused statements.
- * \param param - Exp to check
- * \param p - our caller?
- * \param visited - a set of procs already visited, to prevent infinite recursion
- * \returns true/false :P
- *
- ******************************************************************************/
 bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited)
 {
 	BasicBlock::rtlrit              rrit;
 	StatementList::reverse_iterator srit;
 
-	for (BasicBlock *pb : *cfg) {
+	for (BasicBlock *pb : *m_cfg) {
 		CallStatement *c = (CallStatement *)pb->getLastStmt(rrit, srit);
 
 		if ((c == nullptr) || !c->isCall()) {
@@ -6409,11 +5931,6 @@ bool UserProc::isRetNonFakeUsed(CallStatement *c, SharedExp retLoc, UserProc *p,
 }
 
 
-// Check for a gainful use of bparam{0} in this proc. Return with true when the first such use is found.
-// Ignore uses in return statements of recursive functions, and phi statements that define them
-// Procs in visited are already visited
-///         Reurn true if location e is used gainfully in this procedure. visited is a set of UserProcs already
-///            visited.
 bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
 {
 	visited.insert(this); // Prevent infinite recursion
@@ -6462,11 +5979,11 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
 			}
 		}
 		else if (s->isReturn()) {
-			if (cycleGrp && cycleGrp->size()) { // If this function is involved in recursion
+			if (m_cycleGroup && m_cycleGroup->size()) { // If this function is involved in recursion
 				continue;                       //  then ignore this return statement
 			}
 		}
-		else if (s->isPhi() && (theReturnStatement != nullptr) && cycleGrp && cycleGrp->size()) {
+		else if (s->isPhi() && (theReturnStatement != nullptr) && m_cycleGroup && m_cycleGroup->size()) {
 			SharedExp                 phiLeft = ((PhiAssign *)s)->getLeft();
 			auto                      refPhi  = RefExp::get(phiLeft, s);
 			ReturnStatement::iterator rr;
@@ -6502,11 +6019,9 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
 }
 
 
-// See comments three procedures above
-/// Remove redundant parameters. Return true if remove any
 bool UserProc::removeRedundantParameters()
 {
-	if (signature->isForced()) {
+	if (m_signature->isForced()) {
 		// Assume that no extra parameters would have been inserted... not sure always valid
 		return false;
 	}
@@ -6523,13 +6038,13 @@ bool UserProc::removeRedundantParameters()
 	// Note: this would be far more efficient if we had def-use information
 	StatementList::iterator pp;
 
-	for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
+	for (pp = m_parameters.begin(); pp != m_parameters.end(); ++pp) {
 		SharedExp param = ((Assignment *)*pp)->getLeft();
 		bool      az;
 		SharedExp bparam = param->clone()->removeSubscripts(az); // FIXME: why does main have subscripts on parameters?
 		// Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found in uses
 		bparam = bparam->expSubscriptAllNull();                  // Now m[sp{-}+K]{-}
-		ImplicitConverter ic(cfg);
+		ImplicitConverter ic(m_cfg);
 		bparam = bparam->accept(&ic);                            // Now m[sp{0}+K]{0}
 		assert(bparam->isSubscript());
 		bparam = bparam->access<Exp, 1>();                       // now m[sp{0}+K] (bare parameter)
@@ -6548,18 +6063,18 @@ bool UserProc::removeRedundantParameters()
 			}
 
 			// Check if it is in the symbol map. If so, delete it; a local will be created later
-			SymbolMap::iterator ss = symbolMap.find(param);
+			SymbolMap::iterator ss = m_symbolMap.find(param);
 
-			if (ss != symbolMap.end()) {
-				symbolMap.erase(ss);           // Kill the symbol
+			if (ss != m_symbolMap.end()) {
+				m_symbolMap.erase(ss);           // Kill the symbol
 			}
 
-			signature->removeParameter(param); // Also remove from the signature
-			cfg->removeImplicitAssign(param);  // Remove the implicit assignment so it doesn't come back
+			m_signature->removeParameter(param); // Also remove from the signature
+			m_cfg->removeImplicitAssign(param);  // Remove the implicit assignment so it doesn't come back
 		}
 	}
 
-	parameters = newParameters;
+	m_parameters = newParameters;
 
 	if (DEBUG_UNUSED) {
 		LOG << "%%% end removing unused parameters for " << getName() << "\n";
@@ -6571,28 +6086,6 @@ bool UserProc::removeRedundantParameters()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Remove any returns that are not used by any callers
- *
- * Remove unused returns for this procedure, based on the equation:
- * returns = modifieds isect union(live at c) for all c calling this procedure.
- * The intersection operation will only remove locations. Removing returns can have three effects for each component
- * y used by that return (e.g. if return r24 := r25{10} + r26{20} is removed, statements 10 and 20 will be affected
- * and y will take the values r25{10} and r26{20}):
- * 1) a statement s defining a return becomes unused if the only use of its definition was y
- * 2) a call statement c defining y will no longer have y live if the return was the only use of y. This could cause a
- *    change to the returns of c's destination, so removeRedundantReturns has to be called for c's destination proc (if
- * it
- *    turns out to be the only definition, and that proc was not already scheduled for return removing).
- * 3) if y is a parameter (i.e. y is of the form loc{0}), then the signature of this procedure changes, and all callers
- *    have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
- *    arguments as is applied here to the removed returns.
- * The \a removeRetSet is the set of procedures to process with this logic; caller in Prog calls all elements in this
- * set (only add procs to this set, never remove)
- *
- * \returns true if any change
- ******************************************************************************/
 bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 {
 	Boomerang::get()->alertDecompiling(this);
@@ -6608,7 +6101,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 		LOG << "%%% removing unused returns for " << getName() << " %%%\n";
 	}
 
-	if (signature->isForced()) {
+	if (m_signature->isForced()) {
 		// Respect the forced signature, but use it to remove returns if necessary
 		bool removedRets = false;
 		ReturnStatement::iterator rr;
@@ -6619,8 +6112,8 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 			// For each location in the returns, check if in the signature
 			bool found = false;
 
-			for (unsigned int i = 0; i < signature->getNumReturns(); i++) {
-				if (*signature->getReturnExp(i) == *lhs) {
+			for (unsigned int i = 0; i < m_signature->getNumReturns(); i++) {
+				if (*m_signature->getReturnExp(i) == *lhs) {
 					found = true;
 					break;
 				}
@@ -6654,12 +6147,12 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 
 	if (getName() == "main") { // Probably not needed: main is forced so handled above
 		// Just insert one return for main. Note: at present, the first parameter is still the stack pointer
-		if (signature->getNumReturns() <= 1) {
+		if (m_signature->getNumReturns() <= 1) {
 			// handle the case of missing main() signature
 			LOG_STREAM(LL_Warn) << "main signature definition is missing assuming void main()";
 		}
 		else {
-			unionOfCallerLiveLocs.insert(signature->getReturnExp(1));
+			unionOfCallerLiveLocs.insert(m_signature->getReturnExp(1));
 		}
 	}
 	else {
@@ -6719,7 +6212,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 		// Update the statements that call us
 		std::set<CallStatement *>::iterator it;
 
-		for (it = callerSet.begin(); it != callerSet.end(); it++) {
+		for (it = m_callerSet.begin(); it != m_callerSet.end(); it++) {
 			(*it)->updateArguments();              // Update caller's arguments
 			updateSet.insert((*it)->getProc());    // Make sure we redo the dataflow
 			removeRetSet.insert((*it)->getProc()); // Also schedule caller proc for more analysis
@@ -6740,7 +6233,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 
 	if (theReturnStatement->getNumReturns() == 1) {
 		Assign *a = (Assign *)*theReturnStatement->getReturns().begin();
-		signature->setRetType(a->getType());
+		m_signature->setRetType(a->getType());
 	}
 
 	Boomerang::get()->alertDecompileDebugPoint(this, "after removing unused and redundant returns");
@@ -6748,21 +6241,6 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Update parameters and call livenesses to take into account the changes
- * causes by removing a return from this procedure, or a callee's parameter
- * (which affects this procedure's arguments, which are also uses).
- *
- * Need to save the old parameters and call livenesses, redo the dataflow and
- * removal of unused statements, recalculate the parameters and call livenesses,
- * and if either or both of these are changed, recurse to parents or those calls'
- * children respectively. (When call livenesses change like this, it means that
- * the recently removed return was the only use of that liveness, i.e. there was a
- * return chain.)
- * \sa removeRedundantReturns().
- *
- ******************************************************************************/
 void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 {
 	// We need to remember the parameters, and all the livenesses for all the calls, to see if these are changed
@@ -6773,13 +6251,13 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 	}
 
 	// Save the old parameters and call liveness
-	StatementList oldParameters(parameters);
+	StatementList oldParameters(m_parameters);
 	std::map<CallStatement *, UseCollector> callLiveness;
 	BasicBlock::rtlrit              rrit;
 	StatementList::reverse_iterator srit;
 	BB_IT it;
 
-	for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+	for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
 		CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
 		// Note: we may have removed some statements, so there may no longer be a last statement!
@@ -6808,7 +6286,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 	// findFinalParameters();
 	removeRedundantParameters();
 
-	if (parameters.size() != oldParameters.size()) {
+	if (m_parameters.size() != oldParameters.size()) {
 		if (DEBUG_UNUSED) {
 			LOG << "%%%  parameters changed for " << getName() << "\n";
 		}
@@ -6842,19 +6320,18 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 }
 
 
-/// Clear the useCollectors (in this Proc, and all calls).
 void UserProc::clearUses()
 {
 	if (VERBOSE) {
 		LOG << "### clearing usage for " << getName() << " ###\n";
 	}
 
-	procUseCollector.clear();
+	m_procUseCollector.clear();
 	BB_IT                           it;
 	BasicBlock::rtlrit              rrit;
 	StatementList::reverse_iterator srit;
 
-	for (it = cfg->begin(); it != cfg->end(); ++it) {
+	for (it = m_cfg->begin(); it != m_cfg->end(); ++it) {
 		CallStatement *c = (CallStatement *)(*it)->getLastStmt(rrit, srit);
 
 		// Note: we may have removed some statements, so there may no longer be a last statement!
@@ -6867,11 +6344,6 @@ void UserProc::clearUses()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Global type analysis (for this procedure).
- *
- ******************************************************************************/
 void UserProc::typeAnalysis()
 {
 	if (VERBOSE) {
@@ -6923,17 +6395,7 @@ void UserProc::typeAnalysis()
 
 RTL *globalRtl = nullptr;
 
-/***************************************************************************/ /**
- *
- * \brief Copy the decoded indirect control transfer instructions' RTLs to
- * the front end's map, and decode any new targets for this CFG
- *
- * Copy the RTLs for the already decoded Indirect Control Transfer instructions, and decode any new targets in this CFG
- * Note that we have to delay the new target decoding till now, because otherwise we will attempt to decode nested
- * switch statements without having any SSA renaming, propagation, etc
- *
- *
- ******************************************************************************/
+
 void UserProc::processDecodedICTs()
 {
 	BB_IT it;
@@ -6941,7 +6403,7 @@ void UserProc::processDecodedICTs()
 	BasicBlock::rtlrit              rrit;
 	StatementList::reverse_iterator srit;
 
-	for (BasicBlock *bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+	for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
 		Instruction *last = bb->getLastStmt(rrit, srit);
 
 		if (last == nullptr) {
@@ -6958,7 +6420,7 @@ void UserProc::processDecodedICTs()
 			LOG << "Saving high level switch statement " << rtl << "\n";
 		}
 
-		prog->addDecodedRtl(bb->getHiAddr(), rtl);
+		m_prog->addDecodedRtl(bb->getHiAddr(), rtl);
 		// Now decode those new targets, adding out edges as well
 		//        if (last->isCase())
 		//            bb->processSwitch(this);
@@ -6966,9 +6428,6 @@ void UserProc::processDecodedICTs()
 }
 
 
-// Find or insert a new implicit reference just before statement s, for address expression a with type t.
-// Meet types if necessary
-/// Find and if necessary insert an implicit reference before s whose address expression is a and type is t.
 void UserProc::setImplicitRef(Instruction *s, SharedExp a, SharedType ty)
 {
 	BasicBlock *bb = s->getBB(); // Get s' enclosing BB
@@ -7049,7 +6508,6 @@ void UserProc::setImplicitRef(Instruction *s, SharedExp a, SharedType ty)
 }
 
 
-/// eliminate duplicate arguments
 void UserProc::eliminateDuplicateArgs()
 {
 	if (VERBOSE) {
@@ -7060,7 +6518,7 @@ void UserProc::eliminateDuplicateArgs()
 	BasicBlock::rtlrit              rrit;
 	StatementList::reverse_iterator srit;
 
-	for (BasicBlock *bb : *cfg) {
+	for (BasicBlock *bb : *m_cfg) {
 		CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
 		// Note: we may have removed some statements, so there may no longer be a last statement!
@@ -7073,7 +6531,6 @@ void UserProc::eliminateDuplicateArgs()
 }
 
 
-/// Remove all liveness info in UseCollectors in calls
 void UserProc::removeCallLiveness()
 {
 	if (VERBOSE) {
@@ -7084,7 +6541,7 @@ void UserProc::removeCallLiveness()
 	BasicBlock::rtlrit              rrit;
 	StatementList::reverse_iterator srit;
 
-	for (it = cfg->begin(); it != cfg->end(); ++it) {
+	for (it = m_cfg->begin(); it != m_cfg->end(); ++it) {
 		CallStatement *c = dynamic_cast<CallStatement *>((*it)->getLastStmt(rrit, srit));
 
 		// Note: we may have removed some statements, so there may no longer be a last statement!
@@ -7138,17 +6595,15 @@ void dumpProcSet(ProcSet *pc)
 }
 
 
-/// Set an equation as proven. Useful for some sorts of testing
 void Function::setProvenTrue(SharedExp fact)
 {
 	assert(fact->isEquality());
 	SharedExp lhs = fact->getSubExp1();
 	SharedExp rhs = fact->getSubExp2();
-	provenTrue[lhs] = rhs;
+	m_provenTrue[lhs] = rhs;
 }
 
 
-/// Map expressions to locals and initial parameters
 void UserProc::mapLocalsAndParams()
 {
 	Boomerang::get()->alertDecompileDebugPoint(this, "before mapping locals from dfa type analysis");
@@ -7175,9 +6630,9 @@ void UserProc::mapLocalsAndParams()
 void UserProc::makeSymbolsImplicit()
 {
 	SymbolMap::iterator it;
-	SymbolMap           sm2 = symbolMap; // Copy the whole map; necessary because the keys (Exps) change
-	symbolMap.clear();
-	ImplicitConverter ic(cfg);
+	SymbolMap           sm2 = m_symbolMap; // Copy the whole map; necessary because the keys (Exps) change
+	m_symbolMap.clear();
+	ImplicitConverter ic(m_cfg);
 
 	for (it = sm2.begin(); it != sm2.end(); ++it) {
 		SharedExp impFrom = std::const_pointer_cast<Exp>(it->first)->accept(&ic);
@@ -7189,9 +6644,9 @@ void UserProc::makeSymbolsImplicit()
 void UserProc::makeParamsImplicit()
 {
 	StatementList::iterator it;
-	ImplicitConverter       ic(cfg);
+	ImplicitConverter       ic(m_cfg);
 
-	for (it = parameters.begin(); it != parameters.end(); ++it) {
+	for (it = m_parameters.begin(); it != m_parameters.end(); ++it) {
 		SharedExp lhs = ((Assignment *)*it)->getLeft();
 		lhs = lhs->accept(&ic);
 		((Assignment *)*it)->setLeft(lhs);
@@ -7204,7 +6659,7 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
 	LocationSet usedByDomPhi0;
 
 	std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
-	df.findLiveAtDomPhi(0, usedByDomPhi, usedByDomPhi0, defdByPhi);
+	m_df.findLiveAtDomPhi(0, usedByDomPhi, usedByDomPhi0, defdByPhi);
 	// Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
 	std::map<SharedExp, PhiAssign *, lessExpStar>::iterator it;
 
@@ -7228,12 +6683,11 @@ void UserProc::setDominanceNumbers()
 {
 	int currNum = 1;
 
-	df.setDominanceNums(0, currNum);
+	m_df.setDominanceNums(0, currNum);
 }
-
-
 #endif
-/// Find the locations united by Phi-functions
+
+
 void UserProc::findPhiUnites(ConnectionGraph& pu)
 {
 	StatementList stmts;
@@ -7258,8 +6712,6 @@ void UserProc::findPhiUnites(ConnectionGraph& pu)
 }
 
 
-// WARN: write tests for getRegName in all combinations of r[1] r[tmp+1] etc.
-/// Get a name like eax or o2 from r24 or r8
 QString UserProc::getRegName(SharedExp r)
 {
 	assert(r->isRegOf());
@@ -7267,7 +6719,7 @@ QString UserProc::getRegName(SharedExp r)
 	// assert(r->getSubExp1()->isConst());
 	if (r->getSubExp1()->isConst()) {
 		int            regNum = r->access<Const, 1>()->getInt();
-		const QString& regName(prog->getRegName(regNum));
+		const QString& regName(m_prog->getRegName(regNum));
 		assert(!regName.isEmpty());
 
 		if (regName[0] == '%') {
@@ -7291,14 +6743,13 @@ QString UserProc::getRegName(SharedExp r)
 }
 
 
-/// Find the type of the local or parameter \a e
 SharedType UserProc::getTypeForLocation(const SharedConstExp& e)
 {
 	QString name = e->access<Const, 1>()->getStr();
 
 	if (e->isLocal()) {
-		if (locals.find(name) != locals.end()) {
-			return locals[name];
+		if (m_locals.find(name) != m_locals.end()) {
+			return m_locals[name];
 		}
 	}
 
@@ -7333,20 +6784,6 @@ void UserProc::verifyPHIs()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Add a mapping for the destinations of phi functions that have one
- * argument that is a parameter
- *
- * The idea here is to give a name to those SSA variables that have one and only one parameter amongst the phi
- * arguments. For example, in test/source/param1, there is 18 *v* m[r28{-} + 8] := phi{- 7} with m[r28{-} + 8]{0}
- * mapped
- * to param1; insert a mapping for m[r28{-} + 8]{18} to param1. This will avoid a copy, and will use the name of the
- * parameter only when it is acually used as a parameter
- *
- * \returns the cycle set from the recursive call to decompile()
- *
- ******************************************************************************/
 void UserProc::nameParameterPhis()
 {
 	StatementList stmts;
@@ -7395,14 +6832,12 @@ void UserProc::nameParameterPhis()
 }
 
 
-/// True if a local exists with name \a name
-bool UserProc::existsLocal(const QString& name)
+bool UserProc::existsLocal(const QString& name) const
 {
-	return locals.find(name) != locals.end();
+	return m_locals.find(name) != m_locals.end();
 }
 
 
-/// Check if \a r is already mapped to a local, else add one
 void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
 {
 	if (!lookupSymFromRefAny(r).isNull()) {

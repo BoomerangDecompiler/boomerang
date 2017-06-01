@@ -33,7 +33,7 @@
 //    virtual ~NullLogger() {};
 // };
 #include "include/prog.h"
-#include "include/proc.h"
+#include "db/proc.h"
 
 #define HELLO_PENTIUM      baseDir.absoluteFilePath("tests/inputs/pentium/hello")
 #define GLOBAL1_PENTIUM    baseDir.absoluteFilePath("tests/inputs/pentium/global1")
