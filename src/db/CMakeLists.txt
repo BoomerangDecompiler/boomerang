@@ -3,7 +3,6 @@ include_directories(../c/) # used by prog.cpp
 set(INCLUDES
 	../include/hllcode.h
 	../include/memo.h
-	../include/proc.h
 	../include/rtl.h
 	../include/statement.h
 	../include/type.h
@@ -45,6 +44,7 @@ set(SRC
     exphelp.h
     insnameelem.cpp
     managed.cpp
+    proc.h
     proc.cpp
     prog.cpp
     module.h

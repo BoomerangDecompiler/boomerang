@@ -3,8 +3,8 @@ set(target_INCLUDE_DIR
 )
 
 include_directories(${target_INCLUDE_DIR}
-	${CMAKE_SOURCE_DIR}/frontend/sparc
-	${CMAKE_SOURCE_DIR}/frontend/pentium
+	${CMAKE_SOURCE_DIR}/src/frontend/sparc
+	${CMAKE_SOURCE_DIR}/src/frontend/pentium
 )
 
 include(BOOMERANG_Macros)

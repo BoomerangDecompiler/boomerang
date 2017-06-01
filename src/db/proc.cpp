@@ -6872,7 +6872,6 @@ void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
 	addLocal(ty, locName, base);
 }
 
-
 //    -    -    -    -    -    -    -    -    -
 
 Log& operator<<(Log& out, const UserProc& c)

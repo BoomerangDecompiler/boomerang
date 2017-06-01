@@ -11,7 +11,7 @@ include_directories(
 )
 
 link_directories(
-    "${CMAKE_CURRENT_BINARY_DIR}/src/loader" # for frontend loaders
+    "${CMAKE_CURRENT_BINARY_DIR}/loader" # for frontend loaders
 )
 
 #all submodules
