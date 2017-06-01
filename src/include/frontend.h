@@ -87,7 +87,6 @@ protected:
 	std::map<ADDRESS, RTL *> previouslyDecoded;
 
 public:
-
 	/*
 	 * Constructor. Takes some parameters to save passing these around a lot
 	 */
@@ -107,8 +106,8 @@ public:
 	int getRegSize(int idx);
 
 	// returns an enum identifer for this frontend's platform
-	virtual platform getFrontEndId() = 0;
-	bool isWin32(); // Is this a win32 frontend?
+	virtual Platform getFrontEndId() const = 0;
+	bool isWin32() const; // Is this a win32 frontend?
 	static bool noReturnCallDest(const QString& name);
 
 	QObject *getBinaryFile() { return pLoader; }

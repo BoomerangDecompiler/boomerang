@@ -19,7 +19,7 @@
 #include "include/rtl.h"
 #include "db/IBinaryImage.h"
 #include "include/decoder.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "db/exp.h"
 #include "db/proc.h"
 #include "boom_base/log.h"

@@ -29,7 +29,7 @@
 #include "include/rtl.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "sslparser.h"
 #include "boom_base/log.h"
 #include "include/util.h"

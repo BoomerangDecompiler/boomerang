@@ -39,7 +39,7 @@
 
 #include "global.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/decoder.h"
 #include "hppadecoder.h"
 #include "ss.h"

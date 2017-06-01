@@ -18,7 +18,7 @@
 
 #include <sstream>
 #include <map>
-#include "include/prog.h"
+#include "db/prog.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ProcTest);
 

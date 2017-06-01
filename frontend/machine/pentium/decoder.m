@@ -34,7 +34,7 @@
 #include "include/rtl.h"
 #include "include/decoder.h"
 #include "pentiumdecoder.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "db/exp.h"
 #include "db/proc.h"
 #include "boom_base/log.h"

@@ -14,7 +14,7 @@
 
 #include "FrontSparcTest.h"
 #include "FrontPentTest.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include <iostream>
 
 int main(int argc, char **argv)

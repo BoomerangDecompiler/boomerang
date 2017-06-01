@@ -2,7 +2,7 @@
 
 #include "boom_base/log.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 
 #include "include/signature.h"
 

@@ -3,7 +3,7 @@
 #include "boom_base/log.h"
 #include "db/IBinaryImage.h"
 #include "boom_base/log.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/frontend.h"
 #include "db/proc.h"
 #include "include/signature.h"
@@ -166,7 +166,7 @@ void Decompiler::load()
 
 	for (unsigned int i = 0; i < entrypoints.size(); i++) {
 		user_entrypoints.push_back(entrypoints[i]);
-		emit newEntrypoint(entrypoints[i], prog->symbolByAddress(entrypoints[i]));
+		emit newEntrypoint(entrypoints[i], prog->getSymbolByAddress(entrypoints[i]));
 	}
 
 	for (const IBinarySection *section : *Image) {

@@ -17,7 +17,7 @@
 #include "include/type.h"
 #include "include/signature.h"
 #include "db/exp.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "include/util.h"
@@ -34,7 +34,7 @@
 #include <sstream>
 extern char debug_buffer[]; // For prints()
 
-QString Signature::platformName(platform plat)
+QString Signature::platformName(Platform plat)
 {
 	switch (plat)
 	{
@@ -112,7 +112,7 @@ public:
 	virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
 
 	virtual bool isPromoted() override { return true; }
-	virtual platform getPlatform() override { return PLAT_PENTIUM; }
+	virtual Platform getPlatform() override { return PLAT_PENTIUM; }
 	virtual callconv getConvention() override { return CONV_PASCAL; }
 };  // class Win32Signature
 
@@ -129,7 +129,7 @@ public:
 
 	virtual std::shared_ptr<Signature> clone() override;
 
-	virtual platform getPlatform() override { return PLAT_PENTIUM; }
+	virtual Platform getPlatform() override { return PLAT_PENTIUM; }
 	virtual callconv getConvention() override { return CONV_THISCALL; }
 };  // Class Win32TcSignature
 
@@ -159,7 +159,7 @@ public:
 	virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
 
 	virtual bool isPromoted() override { return true; }
-	virtual platform getPlatform() override { return PLAT_PENTIUM; }
+	virtual Platform getPlatform() override { return PLAT_PENTIUM; }
 	virtual callconv getConvention() override { return CONV_C; }
 	virtual bool returnCompare(Assignment& a, Assignment& b) override;
 	virtual bool argumentCompare(Assignment& a, Assignment& b) override;
@@ -194,7 +194,7 @@ public:
 	virtual bool isAddrOfStackLocal(Prog *prog, const SharedExp& e) override;
 
 	virtual bool isPromoted() override { return true; }
-	virtual platform getPlatform() override { return PLAT_SPARC; }
+	virtual Platform getPlatform() override { return PLAT_SPARC; }
 	virtual callconv getConvention() override { return CONV_C; }
 	virtual bool returnCompare(Assignment& a, Assignment& b) override;
 	virtual bool argumentCompare(Assignment& a, Assignment& b) override;
@@ -231,7 +231,7 @@ public:
 
 	virtual bool isLocalOffsetPositive() override { return true; }
 	virtual bool isPromoted() override { return true; }
-	virtual platform getPlatform() override { return PLAT_PPC; }
+	virtual Platform getPlatform() override { return PLAT_PPC; }
 	virtual callconv getConvention() override { return CONV_C; }
 	std::shared_ptr<Signature> promote(UserProc * /*p*/) override
 	{
@@ -261,7 +261,7 @@ public:
 
 	virtual bool isLocalOffsetPositive() override { return true; }
 	virtual bool isPromoted() override { return true; }
-	virtual platform getPlatform() override { return PLAT_MIPS; }
+	virtual Platform getPlatform() override { return PLAT_MIPS; }
 	virtual callconv getConvention() override { return CONV_C; }
 };
 
@@ -288,7 +288,7 @@ public:
 
 	virtual bool isPromoted() override { return true; }
 	// virtual bool isLocalOffsetPositive() {return true;}
-	virtual platform getPlatform() override { return PLAT_ST20; }
+	virtual Platform getPlatform() override { return PLAT_ST20; }
 	virtual callconv getConvention() override { return CONV_C; }
 };
 } // namespace StdC
@@ -406,7 +406,7 @@ static SharedExp stackPlusFour       = Binary::get(opPlus, Location::regOf(28), 
 
 bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-	platform plat = p->getProg()->getFrontEndId();
+	Platform plat = p->getProg()->getFrontEndId();
 
 	if ((plat != PLAT_PENTIUM) || !p->getProg()->isWin32()) {
 		return false;
@@ -681,7 +681,7 @@ bool CallingConvention::StdC::PentiumSignature::operator==(Signature& other)
 // (or maybe sp=sp+4) for qualifying procs. Need work to get there
 bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-	platform plat = p->getProg()->getFrontEndId();
+	Platform plat = p->getProg()->getFrontEndId();
 
 	if (plat != PLAT_PENTIUM) {
 		return false;
@@ -1137,7 +1137,7 @@ SharedExp CallingConvention::StdC::ST20Signature::getProven(SharedExp left)
 
 bool CallingConvention::StdC::ST20Signature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-	platform plat = p->getProg()->getFrontEndId();
+	Platform plat = p->getProg()->getFrontEndId();
 
 	if (plat != PLAT_ST20) {
 		return false;
@@ -1238,7 +1238,7 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature& 
 		LOG << "consider promotion to stdc sparc signature for " << p->getName() << "\n";
 	}
 
-	platform plat = p->getProg()->getFrontEndId();
+	Platform plat = p->getProg()->getFrontEndId();
 
 	if (plat != PLAT_SPARC) {
 		return false;
@@ -1258,7 +1258,7 @@ bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature& /*
 		LOG << "consider promotion to stdc PPC signature for " << p->getName() << "\n";
 	}
 
-	platform plat = p->getProg()->getFrontEndId();
+	Platform plat = p->getProg()->getFrontEndId();
 
 	if (plat != PLAT_PPC) {
 		return false;
@@ -1309,7 +1309,7 @@ bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature& /
 		LOG << "consider promotion to stdc MIPS signature for " << p->getName() << "\n";
 	}
 
-	platform plat = p->getProg()->getFrontEndId();
+	Platform plat = p->getProg()->getFrontEndId();
 
 	if (plat != PLAT_MIPS) {
 		return false;
@@ -2024,7 +2024,7 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 }
 
 
-std::shared_ptr<Signature> Signature::instantiate(platform plat, callconv cc, const QString& nam)
+std::shared_ptr<Signature> Signature::instantiate(Platform plat, callconv cc, const QString& nam)
 {
 	switch (plat)
 	{

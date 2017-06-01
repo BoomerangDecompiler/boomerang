@@ -17,7 +17,7 @@
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "db/basicblock.h"
 #include "boom_base/log.h"
 #include "include/rtl.h" // For debugging code
@@ -2783,7 +2783,7 @@ bool CallStatement::convertToDirect()
 		if (sub->isIntConst()) {
 			// m[K]: convert it to a global right here
 			ADDRESS u = ADDRESS::g(sub->access<Const>()->getInt());
-			proc->getProg()->globalUsed(u);
+			proc->getProg()->markGlobalUsed(u);
 			QString nam = proc->getProg()->newGlobalName(u);
 			e     = Location::global(nam, proc);
 			pDest = RefExp::get(e, nullptr);
@@ -2987,7 +2987,7 @@ SharedExp processConstant(SharedExp e, SharedType t, Prog *prog, UserProc *proc,
 						}
 					}
 					else {
-						proc->getProg()->globalUsed(u);
+						proc->getProg()->markGlobalUsed(u);
 						QString nam = proc->getProg()->getGlobalName(u);
 
 						if (!nam.isEmpty()) {

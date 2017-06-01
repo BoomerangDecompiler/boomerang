@@ -21,7 +21,7 @@
 #include "include/rtl.h" // E.g. class ParamEntry in decideType()
 #include "db/proc.h"
 #include "include/signature.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 #include "include/util.h"
 #include "boom_base/log.h"

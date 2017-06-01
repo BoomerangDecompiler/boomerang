@@ -1,6 +1,6 @@
 #include "include/hllcode.h"
 
-#include "include/prog.h"
+#include "db/prog.h"
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/basicblock.h"

@@ -18,7 +18,7 @@
 #include "include/statement.h"
 #include "db/exp.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/hllcode.h"
 #include "chllcode.h"
 #include "include/signature.h"

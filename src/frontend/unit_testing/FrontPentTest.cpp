@@ -7,7 +7,7 @@
 
 #include "include/types.h"
 #include "include/rtl.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/frontend.h"
 #include "pentiumfrontend.h"
 #include "boom_base/BinaryFile.h"

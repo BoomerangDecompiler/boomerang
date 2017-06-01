@@ -19,7 +19,7 @@
 #include "boom_base/log.h"
 #include "include/signature.h"
 #include "db/exp.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/visitor.h"
 #include "boom_base/log.h"
 #include "db/proc.h"
@@ -148,7 +148,7 @@ void DFA_TypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
 		if (s->searchAndReplace(scaledArrayPat, arr)) {
 			if (s->isImplicit()) {
 				// Register an array of appropriate type
-				prog->globalUsed(K2, ArrayType::get(((ImplicitAssign *)s)->getType()));
+				prog->markGlobalUsed(K2, ArrayType::get(((ImplicitAssign *)s)->getType()));
 			}
 		}
 	}
@@ -189,7 +189,7 @@ void DFA_TypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
 		if (sub->isIntConst()) {
 			// We have a m[K] := -
 			ADDRESS K = sub->access<Const>()->getAddr();
-			prog->globalUsed(K, iType);
+			prog->markGlobalUsed(K, iType);
 		}
 	}
 	else if (lhs->isGlobal()) {
@@ -306,7 +306,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 				}
 				else if (baseType->resolvesToInteger() || baseType->resolvesToFloat() || baseType->resolvesToSize()) {
 					ADDRESS addr = ADDRESS::g(con->getInt()); // TODO: use getAddr
-					_prog->globalUsed(addr, baseType);
+					_prog->markGlobalUsed(addr, baseType);
 					QString gloName = _prog->getGlobalName(addr);
 
 					if (!gloName.isEmpty()) {
@@ -389,7 +389,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 
 						// Ensure that the global is declared
 						// Ugh... I think that arrays and pointers to arrays are muddled!
-						_prog->globalUsed(K, baseType);
+						_prog->markGlobalUsed(K, baseType);
 					}
 				}
 			}
@@ -406,7 +406,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 				// MVE: more work if double?
 			}
 			else { /* if (t->resolvesToArray()) */
-				_prog->globalUsed(ADDRESS::n(val), t);
+				_prog->markGlobalUsed(ADDRESS::n(val), t);
 			}
 		}
 

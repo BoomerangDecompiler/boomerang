@@ -25,7 +25,7 @@
 #include "include/rtl.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/decoder.h"
 #include "mipsdecoder.h"
 #include "boom_base/BinaryFile.h"

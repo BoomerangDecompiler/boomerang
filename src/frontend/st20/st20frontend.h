@@ -24,7 +24,7 @@ public:
 	 */
 	virtual ~ST20FrontEnd();
 
-	virtual platform getFrontEndId() { return PLAT_ST20; }
+	virtual Platform getFrontEndId() const { return PLAT_ST20; }
 
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
 

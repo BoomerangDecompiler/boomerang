@@ -115,7 +115,7 @@ public:
 	Signature(const QString& nam);
 	// Platform plat, calling convention cc (both enums)
 	// nam is name of the procedure (no longer stored in the Proc)
-	static std::shared_ptr<Signature> instantiate(platform plat, callconv cc, const QString& nam);
+	static std::shared_ptr<Signature> instantiate(Platform plat, callconv cc, const QString& nam);
 
 	virtual ~Signature();
 
@@ -249,10 +249,10 @@ public:
 	// bool        isFullSignature() {return bFullSig;}
 
 	// ascii versions of platform, calling convention name
-	static QString platformName(platform plat);
+	static QString platformName(Platform plat);
 	static QString conventionName(callconv cc);
 
-	virtual platform getPlatform() { return PLAT_GENERIC; }
+	virtual Platform getPlatform() { return PLAT_GENERIC; }
 	virtual callconv getConvention() { return CONV_NONE; }
 
 	// prefered format

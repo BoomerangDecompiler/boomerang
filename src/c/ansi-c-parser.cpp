@@ -270,7 +270,7 @@ int __alloca_free_ptr(char *ptr, char *ref) {
 #define __yy_bcopy(FROM, TO, COUNT) memcpy(TO, FROM, COUNT)
 #endif
 
-int AnsiCParser::yyparse(platform plat, callconv cc) {
+int AnsiCParser::yyparse(Platform plat, callconv cc) {
     int yystate;
     int yyn;
     short *yyssp;

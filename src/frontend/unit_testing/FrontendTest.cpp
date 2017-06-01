@@ -4,7 +4,7 @@
  *          tests the FrontEnd and related classes
  *============================================================================*/
 #include "FrontendTest.h"
-#include "include/prog.h"
+#include "db/prog.h"
 
 #define HELLO_SPARC      "tests/inputs/sparc/hello"
 #define HELLO_PENTIUM    "tests/inputs/pentium/hello"

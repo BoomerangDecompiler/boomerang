@@ -18,7 +18,7 @@
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/type.h"
 #include <sstream>
 #include <cstring>

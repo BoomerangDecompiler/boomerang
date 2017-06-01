@@ -14,7 +14,7 @@
 #include "boom_base/log.h" // For VERBOSE
 #include "db/proc.h"
 #include "include/signature.h"
-#include "include/prog.h"
+#include "db/prog.h"
 
 #include <QtCore/QDebug>
 #include <sstream>

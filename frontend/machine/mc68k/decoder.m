@@ -32,7 +32,7 @@
 
 #include "global.h"
 #include "include/decoder.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "ss.h"
 #include "include/rtl.h"
 #include "db/proc.h"

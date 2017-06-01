@@ -33,7 +33,7 @@
 #include "include/frontend.h"
 #include "boom_base/log.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/register.h"
 #include "include/rtl.h"
 #include "include/signature.h"
@@ -279,7 +279,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 		const IBinarySymbol *symb = SymbolTable->find(dest);
 
 		// Special check for calls to weird PLT entries which don't have symbols
-		if ((symb && symb->isImportedFunction()) && (Program->symbolByAddress(dest) == nullptr)) {
+		if ((symb && symb->isImportedFunction()) && (Program->getSymbolByAddress(dest) == nullptr)) {
 			// This is one of those. Flag this as an invalid instruction
 			inst.valid = false;
 		}
@@ -331,7 +331,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 
 			bool ret = true;
 			// Check for _exit; probably should check for other "never return" functions
-			QString name = Program->symbolByAddress(dest);
+			QString name = Program->getSymbolByAddress(dest);
 
 			if (name == "_exit") {
 				// Don't keep decoding after this call
@@ -1424,7 +1424,7 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrt
 		return false;
 	}
 
-	QString name = Program->symbolByAddress(dest);
+	QString name = Program->getSymbolByAddress(dest);
 
 	if (name.isEmpty()) {
 		LOG_STREAM() << "Error: Can't find symbol for PLT address " << dest << '\n';

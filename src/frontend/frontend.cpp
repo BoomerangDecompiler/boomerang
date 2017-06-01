@@ -31,7 +31,7 @@
 #include "ppc/ppcfrontend.h"
 #include "st20/st20frontend.h"
 #include "mips/mipsfrontend.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/signature.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
@@ -171,7 +171,7 @@ int FrontEnd::getRegSize(int idx)
 }
 
 
-bool FrontEnd::isWin32()
+bool FrontEnd::isWin32() const
 {
 	return ldrIface->getFormat() == LOADFMT_PE;
 }
@@ -375,7 +375,7 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 	}
 
 	static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
-	QString           name        = Program->symbolByAddress(a);
+	QString           name        = Program->getSymbolByAddress(a);
 
 	if (name == nullptr) {
 		name = mainName[0];
@@ -542,7 +542,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc)
 
 	AnsiCParser *p = new AnsiCParser(ifs, false);
 
-	platform plat = getFrontEndId();
+	Platform plat = getFrontEndId();
 	p->yyparse(plat, cc);
 
 	for (auto& elem : p->signatures) {
@@ -1093,7 +1093,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 
 							// Check if this is the _exit or exit function. May prevent us from attempting to decode
 							// invalid instructions, and getting invalid stack height errors
-							QString name = Program->symbolByAddress(uNewAddr);
+							QString name = Program->getSymbolByAddress(uNewAddr);
 
 							if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
 								ADDRESS a = call->getDest()->access<Const, 1>()->getAddr();

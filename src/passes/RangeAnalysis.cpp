@@ -9,7 +9,7 @@
 #include "db/basicblock.h"
 #include "include/rtl.h"
 #include "include/type.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/statement.h"
 #include "include/signature.h"
 #include "include/visitor.h"
@@ -289,7 +289,7 @@ struct RangeVisitor : public StmtVisitor
 				ADDRESS c = a_rhs->access<Const, 1>()->getAddr();
 
 				if (insn->getProc()->getProg()->isDynamicLinkedProcPointer(c)) {
-					const QString& nam(insn->getProc()->getProg()->GetDynamicProcName(c));
+					const QString& nam(insn->getProc()->getProg()->getDynamicProcName(c));
 
 					if (!nam.isEmpty()) {
 						a_rhs = Const::get(nam);

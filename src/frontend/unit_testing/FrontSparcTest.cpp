@@ -8,7 +8,7 @@
 
 #include "include/types.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "include/frontend.h"
 #include "sparcfrontend.h"
 #include "db/cfg.h"

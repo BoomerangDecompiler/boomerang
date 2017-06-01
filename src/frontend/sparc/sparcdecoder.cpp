@@ -26,7 +26,7 @@
 
 #include "include/decoder.h"
 #include "db/exp.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "db/proc.h"
 #include "include/rtl.h"
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()

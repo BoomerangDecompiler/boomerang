@@ -9,7 +9,7 @@
 #include "include/xmlprogparser.h"
 #include "include/type.h"
 #include "db/module.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "db/proc.h"
 #include "include/rtl.h"
 #include "include/statement.h"
@@ -368,7 +368,7 @@ void XMLProgParser::addToContext_prog(Context *c, int e)
 		break;
 
 	case e_global:
-		c->prog->globals.insert(ctx->global);
+		c->prog->m_globals.insert(ctx->global);
 		break;
 
 	default:
@@ -433,12 +433,12 @@ void XMLProgParser::start_global(const QXmlStreamAttributes& attr)
 	QStringRef name = attr.value(QLatin1Literal("name"));
 
 	if (!name.isEmpty()) {
-		ctx->global->nam = name.toString();
+		ctx->global->m_name = name.toString();
 	}
 	QStringRef uaddr = attr.value(QLatin1Literal("uaddr"));
 
 	if (!uaddr.isEmpty()) {
-		ctx->global->uaddr = ADDRESS::g(uaddr.toInt(nullptr, 16));
+		ctx->global->m_addr = ADDRESS::g(uaddr.toInt(nullptr, 16));
 	}
 }
 
@@ -451,7 +451,7 @@ void XMLProgParser::addToContext_global(Context *c, int e)
 	switch (e)
 	{
 	case e_type:
-		c->global->type = stack.front()->type;
+		c->global->m_type = stack.front()->type;
 		break;
 
 	default:
@@ -808,7 +808,7 @@ void XMLProgParser::start_signature(const QXmlStreamAttributes& attr)
 
 	// TODO: use platforms loaded from plugins
 	if (!plat.isEmpty() && !convention.isEmpty()) {
-		platform p;
+		Platform p;
 		callconv c;
 
 		if (plat == "pentium") {
@@ -2853,10 +2853,10 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Module *c)
 void XMLProgParser::persistToXML(QXmlStreamWriter& out, Global *g)
 {
 	out.writeStartElement("global");
-	out.writeAttribute("name", g->nam);
-	out.writeAttribute("uaddr", QString::number(g->uaddr.m_value, 16));
+	out.writeAttribute("name", g->m_name);
+	out.writeAttribute("uaddr", QString::number(g->m_addr.m_value, 16));
 	out.writeStartElement("type");
-	persistToXML(out, g->type);
+	persistToXML(out, g->m_type);
 	out.writeEndElement();
 	out.writeEndElement();
 }
@@ -2879,7 +2879,7 @@ void XMLProgParser::persistToXML(Prog *prog)
 	wrt.writeAttribute("iNumberedProc", QString::number(prog->m_iNumberedProc));
 	wrt.writeEndElement();
 
-	for (auto const& elem : prog->globals) {
+	for (auto const& elem : prog->m_globals) {
 		persistToXML(wrt, elem);
 	}
 	persistToXML(wrt, prog->m_rootCluster);

@@ -40,7 +40,7 @@ public:
 	MIPSFrontEnd(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
 	virtual ~MIPSFrontEnd();
 
-	virtual platform getFrontEndId() { return PLAT_MIPS; }
+	virtual Platform getFrontEndId() const { return PLAT_MIPS; }
 
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
 

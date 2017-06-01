@@ -24,7 +24,7 @@
 #include "ppcdecoder.h"
 
 #include "db/exp.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "db/proc.h"
 #include "include/decoder.h"
 #include "include/rtl.h"

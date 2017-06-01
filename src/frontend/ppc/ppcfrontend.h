@@ -24,7 +24,7 @@ public:
 	 */
 	virtual ~PPCFrontEnd();
 
-	virtual platform getFrontEndId() { return PLAT_PPC; }
+	virtual Platform getFrontEndId() const { return PLAT_PPC; }
 
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
 

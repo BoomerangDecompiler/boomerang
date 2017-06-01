@@ -18,7 +18,7 @@
 #include "include/signature.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "db/proc.h"
 
 #include <QTextStream>

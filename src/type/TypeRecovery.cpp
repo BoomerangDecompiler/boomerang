@@ -1,7 +1,7 @@
 #include "TypeRecovery.h"
 #include "boom_base/log.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "boom_base/log.h"
 
 void TypeRecoveryCommon::recoverProgramTypes(Prog *v)

@@ -27,7 +27,7 @@
 #include "db/basicblock.h"
 #include "include/rtl.h"
 #include "db/proc.h" // For Proc::setTailCaller()
-#include "include/prog.h" // For findProc()
+#include "db/prog.h" // For findProc()
 #include "include/util.h"
 #include "include/hllcode.h"
 #include "boom_base/log.h"

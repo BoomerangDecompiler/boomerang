@@ -3,7 +3,7 @@
 #include "include/types.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/prog.h"
+#include "db/prog.h"
 #include "boom_base/log.h"
 #include "analysis.h"
 

@@ -30,7 +30,7 @@
 #include "include/rtl.h"
 #include "db/cfg.h"
 #include "ss.h"
-#include "include/prog.h" // For findProc()
+#include "db/prog.h" // For findProc()
 #include "db/proc.h"
 #include "options.h"
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()

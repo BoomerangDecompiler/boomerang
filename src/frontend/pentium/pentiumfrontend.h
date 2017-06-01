@@ -20,7 +20,7 @@ public:
 
 	virtual ~PentiumFrontEnd();
 
-	virtual platform getFrontEndId() { return PLAT_PENTIUM; }
+	virtual Platform getFrontEndId() const { return PLAT_PENTIUM; }
 
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
 

@@ -29,7 +29,7 @@
 #include "db/exp.h"
 #include "db/proc.h"
 #include "include/signature.h"
-#include "include/prog.h"         // For findProc()
+#include "db/prog.h"         // For findProc()
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()
 #include "boom_base/log.h"
 #include "db/basicblock.h"
@@ -501,7 +501,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
 		return false;
 	}
 
-	QString name = Program->symbolByAddress(dest);
+	QString name = Program->getSymbolByAddress(dest);
 
 	if (name.isEmpty()) {
 		return false;
@@ -650,7 +650,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 				return cs->getFixedDest();
 			}
 
-			QString dest_sym = Program->symbolByAddress(dest);
+			QString dest_sym = Program->getSymbolByAddress(dest);
 
 			if (dest_sym == "__libc_start_main") {
 				// This is a gcc 3 pattern. The first parameter will be a pointer to main.

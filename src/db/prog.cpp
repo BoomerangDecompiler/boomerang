@@ -18,7 +18,7 @@
 /***************************************************************************/ /**
  * Dependencies.
  ******************************************************************************/
-#include "include/prog.h"
+#include "db/prog.h"
 
 #include "include/type.h"
 #include "db/module.h"
@@ -41,6 +41,7 @@
 #include "boom_base/log.h"
 #include "BinaryImage.h"
 #include "db/SymTab.h"
+#include "passes/RangeAnalysis.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>
@@ -48,6 +49,7 @@
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/QDir>
 #include <QtCore/QString>
+
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -56,6 +58,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+
 #ifdef _WIN32
 #undef NO_ADDRESS
 #include <windows.h>
@@ -74,33 +77,41 @@ namespace dbghelp
 
 #include <sys/types.h>
 
+
 Prog::Prog(const QString& name)
-	: pLoaderPlugin(nullptr)
-	, DefaultFrontend(nullptr)
+	: m_loaderPlugin(nullptr)
+	, m_defaultFrontend(nullptr)
 	, m_name(name)
 	, m_iNumberedProc(1)
 {
-	BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
+	m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
 	m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
 	m_path        = m_name;
-	Image         = Boomerang::get()->getImage();
+	m_image       = Boomerang::get()->getImage();
 }
 
 
-/// Create or retrieve existing module
-/// \param frontend for the module, if nullptr set it to program's default frontend.
-/// \param fact abstract factory object that creates Module instance
-/// \param name retrieve/create module with this name.
+Prog::~Prog()
+{
+	m_loaderPlugin->deleteLater();
+	delete m_defaultFrontend;
+
+	for (Module *m : m_moduleList) {
+		delete m;
+	}
+}
+
+
 Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, FrontEnd *frontend)
 {
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		if (m->getName() == name) {
 			return m;
 		}
 	}
 
-	Module *m = fact.create(name, this, frontend ? frontend : DefaultFrontend);
-	ModuleList.push_back(m);
+	Module *m = fact.create(name, this, frontend ? frontend : m_defaultFrontend);
+	m_moduleList.push_back(m);
 	connect(this, SIGNAL(rereadLibSignatures()), m, SLOT(onLibrarySignaturesChanged()));
 	return m;
 }
@@ -108,18 +119,18 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
 
 void Prog::setFrontEnd(FrontEnd *_pFE)
 {
-	pLoaderPlugin   = _pFE->getBinaryFile();
-	pLoaderIface    = qobject_cast<LoaderInterface *>(pLoaderPlugin);
-	DefaultFrontend = _pFE;
+	m_loaderPlugin   = _pFE->getBinaryFile();
+	m_loaderIface    = qobject_cast<LoaderInterface *>(m_loaderPlugin);
+	m_defaultFrontend = _pFE;
 
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		delete m;
 	}
 
-	ModuleList.clear();
+	m_moduleList.clear();
 	m_rootCluster = nullptr;
 
-	if (pLoaderIface && !m_name.isEmpty()) {
+	if (m_loaderIface && !m_name.isEmpty()) {
 		if (m_rootCluster) {
 			m_rootCluster->eraseFromParent();
 		}
@@ -129,18 +140,6 @@ void Prog::setFrontEnd(FrontEnd *_pFE)
 }
 
 
-Prog::~Prog()
-{
-	pLoaderPlugin->deleteLater();
-	delete DefaultFrontend;
-
-	for (Module *m : ModuleList) {
-		delete m;
-	}
-}
-
-
-/// Assign a name to this program
 void Prog::setName(const char *name)
 {
 	m_name = name;
@@ -148,18 +147,11 @@ void Prog::setName(const char *name)
 }
 
 
-QString Prog::getName()
-{
-	return m_name;
-}
-
-
-/// Well form all the procedures/cfgs in this program
-bool Prog::wellForm()
+bool Prog::wellForm() const
 {
 	bool wellformed = true;
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *func : *module) {
 			if (!func->isLib()) {
 				UserProc *u = (UserProc *)func;
@@ -172,11 +164,9 @@ bool Prog::wellForm()
 }
 
 
-// was in analysis.cpp
-/// last fixes after decoding everything
 void Prog::finishDecode()
 {
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *func : *module) {
 			if (func->isLib()) {
 				continue;
@@ -195,8 +185,7 @@ void Prog::finishDecode()
 }
 
 
-/// Generate dotty file
-void Prog::generateDotFile()
+void Prog::generateDotFile() const
 {
 	assert(!Boomerang::get()->dotFile.isEmpty());
 	QFile tgt(Boomerang::get()->dotFile);
@@ -208,7 +197,7 @@ void Prog::generateDotFile()
 	QTextStream of(&tgt);
 	of << "digraph Cfg {\n";
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *func : *module) {
 			if (func->isLib()) {
 				continue;
@@ -232,14 +221,14 @@ void Prog::generateDotFile()
 }
 
 
-void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, HLLCode *code)
+void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, HLLCode *code) const
 {
 	code->AddGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
 	code->AddGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
 	auto l = Terminal::get(opNil);
 
 	for (unsigned int i = 0; i < size; i++) {
-		int n = Image->readNative1(section_start + size - 1 - i);
+		int n = m_image->readNative1(section_start + size - 1 - i);
 
 		if (n < 0) {
 			n = 256 + n;
@@ -252,7 +241,7 @@ void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, 
 }
 
 
-void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/)
+void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) const
 {
 	// QString basedir = m_rootCluster->makeDirs();
 	QTextStream *os;
@@ -279,7 +268,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 				for (int j = 0; sections[j]; j++) {
 					QString str = ".";
 					str += sections[j];
-					IBinarySection *info = Image->getSectionInfoByName(str);
+					IBinarySection *info = m_image->getSectionInfoByName(str);
 
 					if (info) {
 						generateDataSectionCode(sections[j], info->sourceAddr(), info->size(), code);
@@ -295,10 +284,10 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 				global = true;
 			}
 
-			for (Global *elem : globals) {
+			for (Global *elem : m_globals) {
 				// Check for an initial value
-				auto e = elem->getInitialValue(this);
-				//                if (e) {
+				SharedExp e = elem->getInitialValue(this);
+				// if (e) {
 				code->AddGlobal(elem->getName(), elem->getType(), e);
 				global = true;
 			}
@@ -312,7 +301,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 	// First declare prototypes for all but the first proc
 	bool first = true, proto = false;
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *func : *module) {
 			if (func->isLib()) {
 				continue;
@@ -340,7 +329,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 		*os << "\n"; // Separate prototype(s) from first proc
 	}
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		if (!generate_all && (cluster != module)) {
 			continue;
 		}
@@ -372,18 +361,18 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 		}
 	}
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		module->closeStreams();
 	}
 }
 
 
-void Prog::generateRTL(Module *cluster, UserProc *proc)
+void Prog::generateRTL(Module *cluster, UserProc *proc) const
 {
 	bool generate_all   = cluster == nullptr;
 	bool all_procedures = proc == nullptr;
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		if (!generate_all && (module != cluster)) {
 			continue;
 		}
@@ -409,17 +398,17 @@ void Prog::generateRTL(Module *cluster, UserProc *proc)
 		}
 	}
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		module->closeStreams();
 	}
 }
 
 
-Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end)
+Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) const
 {
 	bool search_all = cluster == nullptr;
 
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		if (!search_all && (m != cluster)) {
 			continue;
 		}
@@ -447,16 +436,17 @@ Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned in
 }
 
 
-bool Prog::moduleUsed(Module *c)
+bool Prog::isModuleUsed(Module *c) const
 {
-	return !c->empty(); // TODO: maybe module can have no procedures and still be used ?
+    // TODO: maybe module can have no procedures and still be used ?
+	return !c->empty();
 }
 
 
 Module *Prog::getDefaultModule(const QString& name)
 {
 	QString             cfname;
-	const IBinarySymbol *bsym = BinarySymbols->find(name);
+	const IBinarySymbol *bsym = m_binarySymbols->find(name);
 
 	if (bsym) {
 		cfname = bsym->belongsToSourceFile();
@@ -479,11 +469,11 @@ Module *Prog::getDefaultModule(const QString& name)
 }
 
 
-void Prog::generateCode(QTextStream& os)
+void Prog::generateCode(QTextStream& os) const
 {
 	HLLCode *code = Boomerang::get()->getHLLCode();
 
-	for (Global *glob : globals) {
+	for (Global *glob : m_globals) {
 		// Check for an initial value
 		auto e = glob->getInitialValue(this);
 
@@ -495,7 +485,7 @@ void Prog::generateCode(QTextStream& os)
 	code->print(os);
 	delete code;
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *pProc : *module) {
 			if (pProc->isLib()) {
 				continue;
@@ -518,15 +508,15 @@ void Prog::generateCode(QTextStream& os)
 
 
 /// Print this program (primarily for debugging)
-void Prog::print(QTextStream& out)
+void Prog::print(QTextStream& out) const
 {
-	for (Module *module : ModuleList) {
-		for (Function *pProc : *module) {
-			if (pProc->isLib()) {
+	for (Module *module : m_moduleList) {
+		for (Function *proc : *module) {
+			if (proc->isLib()) {
 				continue;
 			}
 
-			UserProc *p = (UserProc *)pProc;
+			UserProc *p = (UserProc *)proc;
 
 			if (!p->isDecoded()) {
 				continue;
@@ -544,29 +534,18 @@ void Prog::clear()
 {
 	m_name = "";
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		delete module;
 	}
 
-	ModuleList.clear();
-	pLoaderPlugin->deleteLater();
-	pLoaderPlugin = nullptr;
-	delete DefaultFrontend;
-	DefaultFrontend = nullptr;
+	m_moduleList.clear();
+	m_loaderPlugin->deleteLater();
+	m_loaderPlugin = nullptr;
+	delete m_defaultFrontend;
+	m_defaultFrontend = nullptr;
 }
 
 
-/***************************************************************************/ /**
- *
- * \note     Formally Frontend::newProc
- * \brief    Call this function when a procedure is discovered (usually by
- *                  decoding a call instruction). That way, it is given a name
- *                  that can be displayed in the dot file, etc. If we assign it
- *                  a number now, then it will retain this number always
- * \param uAddr - Native address of the procedure entry point
- * \returns        Pointer to the Proc object, or 0 if this is a deleted (not to
- *                  be decoded) address
- ******************************************************************************/
 Function *Prog::setNewProc(ADDRESS uAddr)
 {
 	// this test fails when decoding sparc, why?  Please investigate - trent
@@ -583,7 +562,7 @@ Function *Prog::setNewProc(ADDRESS uAddr)
 		return pProc; // Yes, we are done
 	}
 
-	ADDRESS other = pLoaderIface->isJumpToAnotherAddr(uAddr);
+	ADDRESS other = m_loaderIface->isJumpToAnotherAddr(uAddr);
 
 	if (other != NO_ADDRESS) {
 		uAddr = other;
@@ -596,7 +575,7 @@ Function *Prog::setNewProc(ADDRESS uAddr)
 	}
 
 	QString             pName;
-	const IBinarySymbol *sym = BinarySymbols->find(uAddr);
+	const IBinarySymbol *sym = m_binarySymbols->find(uAddr);
 	bool                bLib = false;
 
 	if (sym) {
@@ -794,16 +773,9 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
 
 	return TRUE;
 }
-
-
 #endif
 
-/***************************************************************************/ /**
- *
- * \brief Removes the named Function
- * \param name - is the function's name
- * \note this does not destroy the removed function.
- ******************************************************************************/
+
 void Prog::removeProc(const QString& name)
 {
 	Function *f = findProc(name);
@@ -816,17 +788,12 @@ void Prog::removeProc(const QString& name)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Return the number of user (non deleted, non library) procedures
- * \returns  The number of procedures
- ******************************************************************************/
-int Prog::getNumProcs(bool user_only)
+int Prog::getNumProcs(bool user_only) const
 {
 	int n = 0;
 
 	if (user_only) {
-		for (Module *m : ModuleList) {
+		for (Module *m : m_moduleList) {
 			for (Function *pProc : *m) {
 				if (!pProc->isLib()) {
 					n++;
@@ -835,7 +802,7 @@ int Prog::getNumProcs(bool user_only)
 		}
 	}
 	else {
-		for (Module *m : ModuleList) {
+		for (Module *m : m_moduleList) {
 			n += m->size();
 		}
 	}
@@ -853,7 +820,7 @@ int Prog::getNumProcs(bool user_only)
  ******************************************************************************/
 Function *Prog::findProc(ADDRESS uAddr) const
 {
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		Function *r = m->getFunction(uAddr);
 
 		if (r != nullptr) {
@@ -873,7 +840,7 @@ Function *Prog::findProc(ADDRESS uAddr) const
  ******************************************************************************/
 Function *Prog::findProc(const QString& name) const
 {
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		Function *f = m->getFunction(name);
 
 		if (f) {
@@ -886,7 +853,7 @@ Function *Prog::findProc(const QString& name) const
 
 
 /// lookup a library procedure by name; create if does not exist
-LibProc *Prog::getLibraryProc(const QString& nam)
+LibProc *Prog::getLibraryProc(const QString& nam) const
 {
 	Function *p = findProc(nam);
 
@@ -899,66 +866,58 @@ LibProc *Prog::getLibraryProc(const QString& nam)
 
 
 /// Get the front end id used to make this prog
-platform Prog::getFrontEndId()
+Platform Prog::getFrontEndId() const
 {
-	return DefaultFrontend->getFrontEndId();
+	return m_defaultFrontend->getFrontEndId();
 }
 
 
-std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name)
+std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name) const
 {
-	return DefaultFrontend->getDefaultSignature(name);
+	return m_defaultFrontend->getDefaultSignature(name);
 }
 
 
 std::vector<SharedExp>& Prog::getDefaultParams()
 {
-	return DefaultFrontend->getDefaultParams();
+	return m_defaultFrontend->getDefaultParams();
 }
 
 
 std::vector<SharedExp>& Prog::getDefaultReturns()
 {
-	return DefaultFrontend->getDefaultReturns();
+	return m_defaultFrontend->getDefaultReturns();
 }
 
 
-/// Returns true if this is a win32 program
-bool Prog::isWin32()
+bool Prog::isWin32() const
 {
-	if (!DefaultFrontend) {
-		return false;
-	}
-
-	return DefaultFrontend->isWin32();
+    return m_defaultFrontend && m_defaultFrontend->isWin32();
 }
 
 
-/// Get a global variable if possible, looking up the loader's symbol table if necessary
-QString Prog::getGlobalName(ADDRESS uaddr)
+QString Prog::getGlobalName(ADDRESS uaddr) const
 {
 	// FIXME: inefficient
-	for (Global *glob : globals) {
-		if (glob->addressWithinGlobal(uaddr)) {
+	for (Global *glob : m_globals) {
+		if (glob->containsAddress(uaddr)) {
 			return glob->getName();
 		}
 	}
 
-	return symbolByAddress(uaddr);
+	return getSymbolByAddress(uaddr);
 }
 
 
-/// Dump the globals to stderr for debugging
-void Prog::dumpGlobals()
+void Prog::dumpGlobals() const
 {
-	for (Global *glob : globals) {
+	for (Global *glob : m_globals) {
 		LOG_STREAM() << glob->toString() << "\n";
 	}
 }
 
 
-/// Get a named global variable if possible, looking up the loader's symbol table if necessary
-ADDRESS Prog::getGlobalAddr(const QString& nam)
+ADDRESS Prog::getGlobalAddr(const QString& nam) const
 {
 	Global *glob = getGlobal(nam);
 
@@ -966,19 +925,19 @@ ADDRESS Prog::getGlobalAddr(const QString& nam)
 		return glob->getAddress();
 	}
 
-	auto symbol = BinarySymbols->find(nam);
+	auto symbol = m_binarySymbols->find(nam);
 	return symbol ? symbol->getLocation() : NO_ADDRESS;
 }
 
 
-Global *Prog::getGlobal(const QString& nam)
+Global *Prog::getGlobal(const QString& nam) const
 {
 	auto iter =
-		std::find_if(globals.begin(), globals.end(), [nam](Global *g) -> bool {
+		std::find_if(m_globals.begin(), m_globals.end(), [nam](Global *g) -> bool {
 		return g->getName() == nam;
 	});
 
-	if (iter == globals.end()) {
+	if (iter == m_globals.end()) {
 		return nullptr;
 	}
 
@@ -986,11 +945,10 @@ Global *Prog::getGlobal(const QString& nam)
 }
 
 
-/// Indicate that a given global has been seen used in the program.
-bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
+bool Prog::markGlobalUsed(ADDRESS uaddr, SharedType knownType)
 {
-	for (Global *glob : globals) {
-		if (glob->addressWithinGlobal(uaddr)) {
+	for (Global *glob : m_globals) {
+		if (glob->containsAddress(uaddr)) {
 			if (knownType) {
 				glob->meetType(knownType);
 			}
@@ -999,7 +957,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
 		}
 	}
 
-	if (Image->getSectionInfoByAddr(uaddr) == nullptr) {
+	if (m_image->getSectionInfoByAddr(uaddr) == nullptr) {
 		LOG_VERBOSE(1) << "refusing to create a global at address that is in no known section of the binary: " << uaddr
 					   << "\n";
 		return false;
@@ -1019,7 +977,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
 				baseSize = baseType->getBytes();
 			}
 
-			auto symbol = BinarySymbols->find(nam);
+			auto symbol = m_binarySymbols->find(nam);
 			int  sz     = symbol ? symbol->getSize() : 0;
 
 			if (sz && baseSize) {
@@ -1033,7 +991,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
 	}
 
 	Global *global = new Global(ty, uaddr, nam, this);
-	globals.insert(global);
+	m_globals.insert(global);
 
 	if (VERBOSE) {
 		LOG << "globalUsed: name " << nam << ", address " << uaddr;
@@ -1050,14 +1008,13 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
 }
 
 
-/// Make an array type for the global array at u. Mainly, set the length sensibly
 std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t)
 {
 	QString nam = newGlobalName(u);
 
-	assert(pLoaderIface);
+	assert(m_loaderIface);
 	// TODO: fix the case of missing symbol table interface
-	auto symbol = BinarySymbols->find(nam);
+	auto symbol = m_binarySymbols->find(nam);
 
 	if (!symbol || (symbol->getSize() == 0)) {
 		return ArrayType::get(t); // An "unbounded" array
@@ -1074,8 +1031,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t)
 }
 
 
-/// Guess a global's type based on its name and address
-SharedType Prog::guessGlobalType(const QString& nam, ADDRESS u)
+SharedType Prog::guessGlobalType(const QString& nam, ADDRESS u) const
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
 	HANDLE               hProcess = GetCurrentProcess();
@@ -1090,7 +1046,7 @@ SharedType Prog::guessGlobalType(const QString& nam, ADDRESS u)
 		return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
 	}
 #endif
-	auto symbol = BinarySymbols->find(nam);
+	auto symbol = m_binarySymbols->find(nam);
 	int  sz     = symbol ? symbol->getSize() : 0;
 
 	if (sz == 0) {
@@ -1122,7 +1078,6 @@ SharedType Prog::guessGlobalType(const QString& nam, ADDRESS u)
 }
 
 
-/// Make up a name for a new global at address \a uaddr (or return an existing name if address already used)
 QString Prog::newGlobalName(ADDRESS uaddr)
 {
 	QString nam = getGlobalName(uaddr);
@@ -1131,16 +1086,15 @@ QString Prog::newGlobalName(ADDRESS uaddr)
 		return nam;
 	}
 
-	nam = QString("global%1_%2").arg(globals.size()).arg(uaddr.m_value, 0, 16);
+	nam = QString("global%1_%2").arg(m_globals.size()).arg(uaddr.m_value, 0, 16);
 	LOG_VERBOSE(1) << "naming new global: " << nam << " at address " << uaddr << "\n";
 	return nam;
 }
 
 
-/// Get the type of a global variable
-SharedType Prog::getGlobalType(const QString& nam)
+SharedType Prog::getGlobalType(const QString& nam) const
 {
-	for (Global *gl : globals) {
+	for (Global *gl : m_globals) {
 		if (gl->getName() == nam) {
 			return gl->getType();
 		}
@@ -1150,11 +1104,10 @@ SharedType Prog::getGlobalType(const QString& nam)
 }
 
 
-/// Set the type of a global variable
 void Prog::setGlobalType(const QString& nam, SharedType ty)
 {
 	// FIXME: inefficient
-	for (Global *gl : globals) {
+	for (Global *gl : m_globals) {
 		if (gl->getName() != nam) {
 			continue;
 		}
@@ -1165,12 +1118,9 @@ void Prog::setGlobalType(const QString& nam, SharedType ty)
 }
 
 
-// get a string constant at a given address if appropriate
-// if knownString, it is already known to be a char*
-/// get a string constant at a give address if appropriate
-const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */)
+const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) const
 {
-	const IBinarySection *si = Image->getSectionInfoByAddr(uaddr);
+	const IBinarySection *si = m_image->getSectionInfoByAddr(uaddr);
 
 	// Too many compilers put constants, including string constants, into read/write sections
 	// if (si && si->bReadOnly)
@@ -1215,18 +1165,18 @@ const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false *
 }
 
 
-double Prog::getFloatConstant(ADDRESS uaddr, bool& ok, int bits)
+double Prog::getFloatConstant(ADDRESS uaddr, bool& ok, int bits) const
 {
 	ok = true;
-	const IBinarySection *si = Image->getSectionInfoByAddr(uaddr);
+	const IBinarySection *si = m_image->getSectionInfoByAddr(uaddr);
 
 	if (si && si->isReadOnly()) {
 		if (bits == 64) { // TODO: handle 80bit floats ?
-			return Image->readNativeFloat8(uaddr);
+			return m_image->readNativeFloat8(uaddr);
 		}
 		else {
 			assert(bits == 32);
-			return Image->readNativeFloat4(uaddr);
+			return m_image->readNativeFloat4(uaddr);
 		}
 	}
 
@@ -1235,66 +1185,59 @@ double Prog::getFloatConstant(ADDRESS uaddr, bool& ok, int bits)
 }
 
 
-QString Prog::symbolByAddress(ADDRESS dest)
+QString Prog::getSymbolByAddress(ADDRESS dest) const
 {
-	auto sym = BinarySymbols->find(dest);
+	auto sym = m_binarySymbols->find(dest);
 
 	return sym ? sym->getName() : "";
 }
 
 
-const IBinarySection *Prog::getSectionInfoByAddr(ADDRESS a)
+const IBinarySection *Prog::getSectionInfoByAddr(ADDRESS a) const
 {
-	return Image->getSectionInfoByAddr(a);
+	return m_image->getSectionInfoByAddr(a);
 }
 
 
-ADDRESS Prog::getLimitTextLow()
+ADDRESS Prog::getLimitTextLow() const
 {
 	return Boomerang::get()->getImage()->getLimitTextLow();
 }
 
 
-ADDRESS Prog::getLimitTextHigh()
+ADDRESS Prog::getLimitTextHigh() const
 {
 	return Boomerang::get()->getImage()->getLimitTextHigh();
 }
 
 
-bool Prog::isReadOnly(ADDRESS a)
+bool Prog::isReadOnly(ADDRESS a) const
 {
-	return Image->isReadOnly(a);
+	return m_image->isReadOnly(a);
 }
 
 
-int Prog::readNative1(ADDRESS a)
+int Prog::readNative1(ADDRESS a) const
 {
-	return Image->readNative1(a);
+	return m_image->readNative1(a);
 }
 
 
-int Prog::readNative2(ADDRESS a)
+int Prog::readNative2(ADDRESS a) const
 {
-	return Image->readNative2(a);
+	return m_image->readNative2(a);
 }
 
 
-int Prog::readNative4(ADDRESS a)
+int Prog::readNative4(ADDRESS a) const
 {
-	return Image->readNative4(a);
+	return m_image->readNative4(a);
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Return a pointer to the Proc object containing uAddr, or 0 if none
- * \note     Could return nullptr for a deleted Proc
- * \param uAddr - Native address to search for
- * \returns        Pointer to the Proc object, or 0 if none, or -1 if deleted
- ******************************************************************************/
 Function *Prog::findContainingProc(ADDRESS uAddr) const
 {
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *p : *module) {
 			if (p->getNativeAddress() == uAddr) {
 				return p;
@@ -1316,15 +1259,9 @@ Function *Prog::findContainingProc(ADDRESS uAddr) const
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Return true if this is a real procedure
- * \param addr   Native address of the procedure entry point
- * \returns        True if a real (non deleted) proc
- ******************************************************************************/
-bool Prog::isProcLabel(ADDRESS addr)
+bool Prog::isProcLabel(ADDRESS addr) const
 {
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		if (m->getFunction(addr)) {
 			return true;
 		}
@@ -1334,44 +1271,23 @@ bool Prog::isProcLabel(ADDRESS addr)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Get the name for the progam, without any path at the front
- * \returns A string with the name
- ******************************************************************************/
 QString Prog::getNameNoPath() const
 {
 	return QFileInfo(m_name).fileName();
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Get the name for the progam, without any path at the front, and no extension
- * \sa Prog::getNameNoPath
- * \returns A string with the name
- ******************************************************************************/
 QString Prog::getNameNoPathNoExt() const
 {
 	return QFileInfo(m_name).baseName();
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Lookup the given native address in the code section, returning a host pointer corresponding to the same
- *                 address
- * \param uAddr Native address of the candidate string or constant
- * \param last will be set to one past end of the code section (host)
- * \param delta will be set to the difference between the host and native addresses
- * \returns        Host pointer if in range; nullptr if not
- *                Also sets 2 reference parameters (see above)
- ******************************************************************************/
-const void *Prog::getCodeInfo(ADDRESS uAddr, const char *& last, int& delta)
+const void *Prog::getCodeInfo(ADDRESS uAddr, const char *& last, int& delta) const
 {
 	delta = 0;
 	last  = nullptr;
-	const IBinarySection *pSect = Image->getSectionInfoByAddr(uAddr);
+	const IBinarySection *pSect = m_image->getSectionInfoByAddr(uAddr);
 
 	if (!pSect) {
 		return nullptr;
@@ -1389,23 +1305,17 @@ const void *Prog::getCodeInfo(ADDRESS uAddr, const char *& last, int& delta)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Decode from entry point given as an agrument
- * \param a -  Native address of the entry point
- *
- ******************************************************************************/
 void Prog::decodeEntryPoint(ADDRESS a)
 {
 	Function *p = (UserProc *)findProc(a);
 
 	if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
-		if ((a < Image->getLimitTextLow()) || (a >= Image->getLimitTextHigh())) {
+		if ((a < m_image->getLimitTextLow()) || (a >= m_image->getLimitTextHigh())) {
 			LOG_STREAM(LL_Warn) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
 			return;
 		}
 
-		DefaultFrontend->decode(this, a);
+		m_defaultFrontend->decode(this, a);
 		finishDecode();
 	}
 
@@ -1416,39 +1326,33 @@ void Prog::decodeEntryPoint(ADDRESS a)
 	assert(p);
 
 	if (!p->isLib()) { // -sf procs marked as __nodecode are treated as library procs (?)
-		entryProcs.push_back((UserProc *)p);
+		m_entryProcs.push_back((UserProc *)p);
 	}
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Add entry point given as an agrument to the list of entryProcs
- * \param a -  Native address of the entry point
- *
- ******************************************************************************/
 void Prog::setEntryPoint(ADDRESS a)
 {
 	Function *p = (UserProc *)findProc(a);
 
 	if ((p != nullptr) && !p->isLib()) {
-		entryProcs.push_back((UserProc *)p);
+		m_entryProcs.push_back((UserProc *)p);
 	}
 }
 
 
-bool Prog::isDynamicLinkedProcPointer(ADDRESS dest)
+bool Prog::isDynamicLinkedProcPointer(ADDRESS dest) const
 {
-	auto sym = BinarySymbols->find(dest);
+	auto sym = m_binarySymbols->find(dest);
 
 	return sym && sym->isImportedFunction();
 }
 
 
-const QString& Prog::GetDynamicProcName(ADDRESS uNative)
+const QString& Prog::getDynamicProcName(ADDRESS uNative) const
 {
 	static QString dyn("dynamic");
-	auto           sym = BinarySymbols->find(uNative);
+	auto           sym = m_binarySymbols->find(uNative);
 
 	return sym ? sym->getName() : dyn;
 }
@@ -1456,7 +1360,7 @@ const QString& Prog::GetDynamicProcName(ADDRESS uNative)
 
 void Prog::decodeEverythingUndecoded()
 {
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *pp : *module) {
 			UserProc *up = (UserProc *)pp;
 
@@ -1468,7 +1372,7 @@ void Prog::decodeEverythingUndecoded()
 				continue;
 			}
 
-			DefaultFrontend->decode(this, pp->getNativeAddress());
+			m_defaultFrontend->decode(this, pp->getNativeAddress());
 		}
 	}
 
@@ -1476,17 +1380,16 @@ void Prog::decodeEverythingUndecoded()
 }
 
 
-/// Do the main non-global decompilation steps
 void Prog::decompile()
 {
 	Boomerang *boom = Boomerang::get();
 
-	assert(!ModuleList.empty());
+	assert(!m_moduleList.empty());
 	getNumProcs();
 	LOG_VERBOSE(1) << getNumProcs(false) << " procedures\n";
 
 	// Start decompiling each entry point
-	for (UserProc *up : entryProcs) {
+	for (UserProc *up : m_entryProcs) {
 		ProcList call_path;
 		LOG_VERBOSE(1) << "decompiling entry point " << up->getName() << "\n";
 		int indent = 0;
@@ -1501,7 +1404,7 @@ void Prog::decompile()
 		while (foundone) {
 			foundone = false;
 
-			for (Module *module : ModuleList) {
+			for (Module *module : m_moduleList) {
 				for (Function *pp : *module) {
 					if (pp->isLib()) {
 						continue;
@@ -1540,7 +1443,7 @@ void Prog::decompile()
 		}
 
 		// print XML after removing returns
-		for (Module *m :ModuleList) {
+		for (Module *m :m_moduleList) {
 			for (Function *pp : *m) {
 				if (pp->isLib()) {
 					continue;
@@ -1562,7 +1465,6 @@ void Prog::decompile()
 }
 
 
-/// As the name suggests, removes globals unused in the decompiled code.
 void Prog::removeUnusedGlobals()
 {
 	LOG_VERBOSE(1) << "removing unused globals\n";
@@ -1570,7 +1472,7 @@ void Prog::removeUnusedGlobals()
 	// seach for used globals
 	std::list<SharedExp> usedGlobals;
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *pp : *module) {
 			if (pp->isLib()) {
 				continue;
@@ -1601,14 +1503,14 @@ void Prog::removeUnusedGlobals()
 	// make a map to find a global by its name (could be a global var too)
 	QMap<QString, Global *> namedGlobals;
 
-	for (Global *g : globals) {
+	for (Global *g : m_globals) {
 		namedGlobals[g->getName()] = g;
 	}
 
 	// rebuild the globals vector
 	Global *usedGlobal;
 
-	globals.clear();
+	m_globals.clear();
 
 	for (const SharedExp& e : usedGlobals) {
 		if (DEBUG_UNUSED) {
@@ -1619,7 +1521,7 @@ void Prog::removeUnusedGlobals()
 		usedGlobal = namedGlobals[name];
 
 		if (usedGlobal) {
-			globals.insert(usedGlobal);
+			m_globals.insert(usedGlobal);
 		}
 		else {
 			LOG << "warning: an expression refers to a nonexistent global\n";
@@ -1628,22 +1530,6 @@ void Prog::removeUnusedGlobals()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Remove unused return locations
- *
- * This is the global removing of unused and redundant returns. The initial idea
- * is simple enough: remove some returns according to the formula:
- * returns(p) = modifieds(p) isect union(live at c) for all c calling p.
- * However, removing returns reduces the uses, leading to three effects:
- * 1) The statement that defines the return, if only used by that return, becomes unused
- * 2) if the return is implicitly defined, then the parameters may be reduced, which affects all callers
- * 3) if the return is defined at a call, the location may no longer be live at the call. If not, you need to check
- *    the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
- *    child.
- * \returns true if any change
- *
- ******************************************************************************/
 bool Prog::removeUnusedReturns()
 {
 	// For each UserProc. Each proc may process many others, so this may duplicate some work. Really need a worklist of
@@ -1653,7 +1539,7 @@ bool Prog::removeUnusedReturns()
 	std::set<UserProc *> removeRetSet;
 	bool                 change = false;
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *pp : *module) {
 			UserProc *proc = dynamic_cast<UserProc *>(pp);
 
@@ -1680,11 +1566,9 @@ bool Prog::removeUnusedReturns()
 }
 
 
-// Have to transform out of SSA form after the above final pass
-/// Convert from SSA form
 void Prog::fromSSAform()
 {
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *pp : *module) {
 			if (pp->isLib()) {
 				continue;
@@ -1709,7 +1593,6 @@ void Prog::fromSSAform()
 }
 
 
-/// Constraint based type analysis
 void Prog::conTypeAnalysis()
 {
 	if (VERBOSE || DEBUG_TA) {
@@ -1718,7 +1601,7 @@ void Prog::conTypeAnalysis()
 
 	// FIXME: This needs to be done bottom of the call-tree first, with repeat until no change for cycles
 	// in the call graph
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *pp : *module) {
 			UserProc *proc = (UserProc *)pp;
 
@@ -1742,7 +1625,7 @@ void Prog::globalTypeAnalysis()
 		LOG << "### start global data-flow-based type analysis ###\n";
 	}
 
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		for (Function *pp : *module) {
 			UserProc *proc = dynamic_cast<UserProc *>(pp);
 
@@ -1763,10 +1646,9 @@ void Prog::globalTypeAnalysis()
 }
 
 
-#include "passes/RangeAnalysis.h"
 void Prog::rangeAnalysis()
 {
-	for (Module *module : ModuleList) {
+	for (Module *module : m_moduleList) {
 		RangeAnalysis ra;
 
 		for (Function *pp : *module) {
@@ -1782,7 +1664,7 @@ void Prog::rangeAnalysis()
 }
 
 
-void Prog::printCallGraph()
+void Prog::printCallGraph() const
 {
 	QString   fname1 = Boomerang::get()->getOutputPath() + "callgraph.out";
 	QString   fname2 = Boomerang::get()->getOutputPath() + "callgraph.dot";
@@ -1801,7 +1683,7 @@ void Prog::printCallGraph()
 	std::map<Function *, Function *> parent;
 	std::list<Function *>            procList;
 	f2 << "digraph callgraph {\n";
-	std::copy(entryProcs.begin(), entryProcs.end(), std::back_inserter(procList));
+	std::copy(m_entryProcs.begin(), m_entryProcs.end(), std::back_inserter(procList));
 
 	spaces[procList.front()] = 0;
 
@@ -1889,7 +1771,7 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
 }
 
 
-void Prog::printSymbolsToFile()
+void Prog::printSymbolsToFile() const
 {
 	LOG_STREAM() << "entering Prog::printSymbolsToFile\n";
 	QString   fname = Boomerang::get()->getOutputPath() + "symbols.h";
@@ -1906,13 +1788,13 @@ void Prog::printSymbolsToFile()
 	f << "/* Functions: */\n";
 	std::set<Function *> seen;
 
-	for (UserProc *up : entryProcs) {
+	for (UserProc *up : m_entryProcs) {
 		printProcsRecursive(up, 0, f, seen);
 	}
 
 	f << "/* Leftovers: */\n";
 
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		for (Function *pp : *m) {
 			if (!pp->isLib() && (seen.find(pp) == seen.end())) {
 				printProcsRecursive(pp, 0, f, seen);
@@ -1926,13 +1808,13 @@ void Prog::printSymbolsToFile()
 }
 
 
-void Prog::printCallGraphXML()
+void Prog::printCallGraphXML() const
 {
 	if (!Boomerang::get()->dumpXML) {
 		return;
 	}
 
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		for (Function *it : *m) {
 			it->clearVisited();
 		}
@@ -1944,11 +1826,11 @@ void Prog::printCallGraphXML()
 	f << "<prog name=\"" << getName() << "\">\n";
 	f << "     <callgraph>\n";
 
-	for (UserProc *up : entryProcs) {
+	for (UserProc *up : m_entryProcs) {
 		up->printCallGraphXML(f, 2);
 	}
 
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		for (Function *pp : *m) {
 			if (!pp->isVisited() && !pp->isLib()) {
 				pp->printCallGraphXML(f, 2);
@@ -1963,9 +1845,9 @@ void Prog::printCallGraphXML()
 }
 
 
-Module *Prog::findModule(const QString& name)
+Module *Prog::findModule(const QString& name) const
 {
-	for (Module *m : ModuleList) {
+	for (Module *m : m_moduleList) {
 		if (m->getName() == name) {
 			return m;
 		}
@@ -1987,7 +1869,7 @@ void Prog::readSymbolFile(const QString& fname)
 	}
 
 	AnsiCParser *par = new AnsiCParser(ifs, false);
-	platform    plat = getFrontEndId();
+	Platform    plat = getFrontEndId();
 	callconv    cc   = CONV_C;
 
 	if (isWin32()) {
@@ -2001,7 +1883,7 @@ void Prog::readSymbolFile(const QString& fname)
 		if (sym->sig) {
 			QString name = sym->sig->getName();
 			tgt_mod = getDefaultModule(name);
-			auto bin_sym       = BinarySymbols->find(sym->addr);
+			auto bin_sym       = m_binarySymbols->find(sym->addr);
 			bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
 			                     // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
 			                     // to specifically specify that this function obeys library calling conventions
@@ -2026,12 +1908,12 @@ void Prog::readSymbolFile(const QString& fname)
 				ty = guessGlobalType(nam, sym->addr);
 			}
 
-			globals.insert(new Global(ty, sym->addr, nam, this));
+			m_globals.insert(new Global(ty, sym->addr, nam, this));
 		}
 	}
 
 	for (SymbolRef *ref : par->refs) {
-		DefaultFrontend->addRefHint(ref->addr, ref->nam);
+		m_defaultFrontend->addRefHint(ref->addr, ref->nam);
 	}
 
 	delete par;
@@ -2039,19 +1921,12 @@ void Prog::readSymbolFile(const QString& fname)
 }
 
 
-Global::~Global()
+SharedExp Global::getInitialValue(const Prog *prog) const
 {
-	// Do-nothing d'tor
-}
-
-
-/// Get the initial value as an expression (or nullptr if not initialised)
-SharedExp Global::getInitialValue(Prog *prog) const
-{
-	const IBinarySection *si = prog->getSectionInfoByAddr(uaddr);
+	const IBinarySection *si = prog->getSectionInfoByAddr(m_addr);
 
 	// TODO: see what happens when we skip Bss check here
-	if (si && si->isAddressBss(uaddr)) {
+	if (si && si->isAddressBss(m_addr)) {
 		// This global is in the BSS, so it can't be initialised
 		// NOTE: this is not actually correct. at least for typing, BSS data can have a type assigned
 		return nullptr;
@@ -2061,24 +1936,24 @@ SharedExp Global::getInitialValue(Prog *prog) const
 		return nullptr;
 	}
 
-	return prog->readNativeAs(uaddr, type);
+	return prog->readNativeAs(m_addr, m_type);
 }
 
 
 QString Global::toString() const
 {
-	auto    init = getInitialValue(Parent);
+	auto    init = getInitialValue(m_parent);
 	QString res  = QString("%1 %2 at %3 initial value %4")
-					  .arg(type->toString())
-					  .arg(nam)
-					  .arg(uaddr.toString())
+					  .arg(m_type->toString())
+					  .arg(m_name)
+					  .arg(m_addr.toString())
 					  .arg((init ? init->prints() : "<none>"));
 
 	return res;
 }
 
 
-SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type)
+SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type) const
 {
 	SharedExp            e   = nullptr;
 	const IBinarySection *si = getSectionInfoByAddr(uaddr);
@@ -2153,7 +2028,7 @@ SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type)
 		int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
 
 		if (!nam.isEmpty()) {
-			auto symbol = BinarySymbols->find(nam);
+			auto symbol = m_binarySymbols->find(nam);
 			nelems = symbol ? symbol->getSize() : 0;
 			assert(base_sz);
 			nelems /= base_sz;
@@ -2198,17 +2073,17 @@ SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type)
 		switch (size)
 		{
 		case 8:
-			return Const::get(Image->readNative1(uaddr));
+			return Const::get(m_image->readNative1(uaddr));
 
 		case 16:
 			// Note: must respect endianness
-			return Const::get(Image->readNative2(uaddr));
+			return Const::get(m_image->readNative2(uaddr));
 
 		case 32:
-			return Const::get(Image->readNative4(uaddr));
+			return Const::get(m_image->readNative4(uaddr));
 
 		case 64:
-			return Const::get(Image->readNative8(uaddr));
+			return Const::get(m_image->readNative8(uaddr));
 		}
 	}
 
@@ -2219,10 +2094,10 @@ SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type)
 	switch (type->as<FloatType>()->getSize())
 	{
 	case 32:
-		return Const::get(Image->readNativeFloat4(uaddr));
+		return Const::get(m_image->readNativeFloat4(uaddr));
 
 	case 64:
-		return Const::get(Image->readNativeFloat8(uaddr));
+		return Const::get(m_image->readNativeFloat8(uaddr));
 	}
 
 	return e;
@@ -2233,23 +2108,22 @@ void Global::meetType(SharedType ty)
 {
 	bool ch = false;
 
-	type = type->meetWith(ty, ch);
+	m_type = m_type->meetWith(ty, ch);
 }
 
 
-/// Re-decode this proc from scratch
 void Prog::reDecode(UserProc *proc)
 {
 	QTextStream os(stderr); // rtl output target
 
-	DefaultFrontend->processProc(proc->getNativeAddress(), proc, os);
+	m_defaultFrontend->processProc(proc->getNativeAddress(), proc, os);
 }
 
 
 void Prog::decodeFragment(UserProc *proc, ADDRESS a)
 {
-	if ((a >= Image->getLimitTextLow()) && (a < Image->getLimitTextHigh())) {
-		DefaultFrontend->decodeFragment(proc, a);
+	if ((a >= m_image->getLimitTextLow()) && (a < m_image->getLimitTextHigh())) {
+		m_defaultFrontend->decodeFragment(proc, a);
 	}
 	else {
 		LOG_STREAM() << "attempt to decode fragment outside text area, addr=" << a << "\n";
@@ -2261,23 +2135,11 @@ void Prog::decodeFragment(UserProc *proc, ADDRESS a)
 }
 
 
-//
-//
-
-/***************************************************************************/ /**
- *
- * \brief This does extra processing on a constant.
- *
- * The Exp* \a e is expected to be a Const, and the ADDRESS \a lc is the native
- * location from which the constant was read.
- *
- * \returns processed Exp
- ******************************************************************************/
 SharedExp Prog::addReloc(SharedExp e, ADDRESS lc)
 {
 	assert(e->isConst());
 
-	if (!pLoaderIface->isRelocationAt(lc)) {
+	if (!m_loaderIface->isRelocationAt(lc)) {
 		return e;
 	}
 
@@ -2286,14 +2148,14 @@ SharedExp Prog::addReloc(SharedExp e, ADDRESS lc)
 	// relocation for this lc then we should be able to replace the constant
 	// with a symbol.
 	ADDRESS             c_addr   = c->getAddr();
-	const IBinarySymbol *bin_sym = BinarySymbols->find(c_addr);
+	const IBinarySymbol *bin_sym = m_binarySymbols->find(c_addr);
 
 	if (bin_sym != nullptr) {
 		unsigned int sz = bin_sym->getSize(); // TODO: fix the case of missing symbol table interface
 
 		if (getGlobal(bin_sym->getName()) == nullptr) {
 			Global *global = new Global(SizeType::get(sz * 8), c_addr, bin_sym->getName(), this);
-			globals.insert(global);
+			m_globals.insert(global);
 		}
 
 		return Unary::get(opAddrOf, Location::global(bin_sym->getName(), nullptr));
@@ -2306,7 +2168,7 @@ SharedExp Prog::addReloc(SharedExp e, ADDRESS lc)
 		}
 		else {
 			// check for accesses into the middle of symbols
-			for (IBinarySymbol *it : *BinarySymbols) {
+			for (IBinarySymbol *it : *m_binarySymbols) {
 				unsigned int sz = it->getSize();
 
 				if ((it->getLocation() < c_addr) && ((it->getLocation() + sz) > c_addr)) {
@@ -2323,9 +2185,9 @@ SharedExp Prog::addReloc(SharedExp e, ADDRESS lc)
 }
 
 
-bool Prog::isStringConstant(ADDRESS a)
+bool Prog::isStringConstant(ADDRESS a) const
 {
-	const SectionInfo *si = static_cast<const SectionInfo *>(Image->getSectionInfoByAddr(a));
+	const SectionInfo *si = static_cast<const SectionInfo *>(m_image->getSectionInfoByAddr(a));
 
 	if (!si) {
 		return false;
@@ -2336,7 +2198,7 @@ bool Prog::isStringConstant(ADDRESS a)
 }
 
 
-bool Prog::isCFStringConstant(ADDRESS a)
+bool Prog::isCFStringConstant(ADDRESS a) const
 {
 	return isStringConstant(a);
 }

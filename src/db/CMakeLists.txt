@@ -8,7 +8,6 @@ set(INCLUDES
 	../include/type.h
 	../include/visitor.h
 	../include/operator.h
-	../include/prog.h
 	../include/sigenum.h
 	../include/TargetQueue.h
 	../include/types.h
@@ -46,6 +45,7 @@ set(SRC
     managed.cpp
     proc.h
     proc.cpp
+    prog.h
     prog.cpp
     module.h
     module.cpp
