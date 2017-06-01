@@ -557,18 +557,18 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		};
 		static char *MATCH_name_cond_96[] =
 		{
-			"st",  "sf",  "shi",  "sls",  "scc", "scs", "sne", "seq",
-			"svc", "svs", "spl",  "smi",  "sge", "slt", "sgt", "sle",
+			"st",  "sf",  "shi",  "sls",  "scc",  "scs", "sne", "seq",
+			"svc", "svs", "spl",  "smi",  "sge",  "slt", "sgt", "sle",
 		};
 		static char *MATCH_name_cond_97[] =
 		{
-			"dbt",  "dbf",  "dbhi",  "dbls",  "dbcc", "dbcs", "dbne", "dbeq",
-			"dbvc", "dbvs", "dbpl",  "dbmi",  "dbge", "dblt", "dbgt", "dble",
+			"dbt",  "dbf",  "dbhi",  "dbls",  "dbcc",  "dbcs", "dbne", "dbeq",
+			"dbvc", "dbvs", "dbpl",  "dbmi",  "dbge",  "dblt", "dbgt", "dble",
 		};
 		static char *MATCH_name_cond_98[] =
 		{
-			"st.ex",  "sf.ex",  "shi.ex",  "sls.ex",  "scc.ex", "scs.ex", "sne.ex", "seq.ex",
-			"svc.ex", "svs.ex", "spl.ex",  "smi.ex",  "sge.ex", "slt.ex", "sgt.ex", "sle.ex",
+			"st.ex",  "sf.ex",  "shi.ex",  "sls.ex",  "scc.ex",  "scs.ex", "sne.ex", "seq.ex",
+			"svc.ex", "svs.ex", "spl.ex",  "smi.ex",  "sge.ex",  "slt.ex", "sgt.ex", "sle.ex",
 		};
 		static char *MATCH_name_cond_99[] =
 		{
@@ -848,7 +848,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							assert(0);
 						} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */)
 						{
 						case 0:
@@ -1462,7 +1462,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							assert(0);
 						} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */)
 						{
 						case 0:
@@ -1766,7 +1766,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								     /* iReg at 16 */ < 8)) {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_a9; /*opt-block+*/
 								}
 
@@ -2064,7 +2064,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								assert(0);
 							} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 						}
-						else{
+						else {
 							switch ((MATCH_w_16_0 >> 9 & 0x7) /* reg1 at 0 */)
 							{
 							case 0:
@@ -2377,7 +2377,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									     /* iReg at 16 */ < 8)) {
 										goto MATCH_label_a1; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_a9; /*opt-block+*/
 									}
 
@@ -2691,12 +2691,12 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                                          /* iReg at 16 */ < 8))) {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_a9; /*opt-block+*/
 								}
 							} /*opt-block*/
 						}
-						else{
+						else {
 							goto MATCH_label_a1; /*opt-block+*/
 						}
 
@@ -2708,7 +2708,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							if ((MATCH_w_16_0 >> 8 & 0x1) /* sb at 0 */ == 1) {
 								goto MATCH_label_a11; /*opt-block+*/
 							}
-							else{
+							else {
 								switch ((MATCH_w_16_0 >> 9 & 0x7)
 								        /* reg1 at 0 */)
 								{
@@ -2820,7 +2820,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									     /* iReg at 16 */ < 8)) {
 										goto MATCH_label_a1; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_a9; /*opt-block+*/
 									}
 
@@ -2868,7 +2868,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								   *  -- reg1 at 0 --*/
 							}
 						}
-						else{
+						else {
 							goto MATCH_label_a1; /*opt-block+*/
 						}
 
@@ -3000,7 +3000,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								assert(0);
 							} /* (MATCH_w_16_0 >> 3 & 0x7) -- adrm at 0 --*/
 						}
-						else{
+						else {
 							switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 							{
 							case 0:
@@ -3145,7 +3145,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							} /* (MATCH_w_16_0 >> 6 & 0x7) -- MDadrm at 0 --*/
 						}
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 						{
 						case 0:
@@ -3290,7 +3290,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						} /* (MATCH_w_16_0 >> 6 & 0x7) -- MDadrm at 0 --*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 					{
 					case 0:
@@ -3545,7 +3545,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								assert(0);
 							} /* (MATCH_w_16_0 >> 3 & 0x7) -- adrm at 0 --*/
 						}
-						else{
+						else {
 							switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 							{
 							case 0:
@@ -3690,7 +3690,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							} /* (MATCH_w_16_0 >> 6 & 0x7) -- MDadrm at 0 --*/
 						}
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 						{
 						case 0:
@@ -3835,7 +3835,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						} /* (MATCH_w_16_0 >> 6 & 0x7) -- MDadrm at 0 --*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 					{
 					case 0:
@@ -4090,7 +4090,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								assert(0);
 							} /* (MATCH_w_16_0 >> 3 & 0x7) -- adrm at 0 --*/
 						}
-						else{
+						else {
 							switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 							{
 							case 0:
@@ -4235,7 +4235,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							} /* (MATCH_w_16_0 >> 6 & 0x7) -- MDadrm at 0 --*/
 						}
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 						{
 						case 0:
@@ -4380,7 +4380,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						} /* (MATCH_w_16_0 >> 6 & 0x7) -- MDadrm at 0 --*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 6 & 0x7) /* MDadrm at 0 */)
 					{
 					case 0:
@@ -4661,7 +4661,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							if ((0 <= (MATCH_w_16_0 & 0x7)) /* reg2 at 0 */ && ((MATCH_w_16_0 & 0x7) /* reg2 at 0 */ < 4)) {
 								goto MATCH_label_a43; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -4677,7 +4677,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						assert(0);
 					} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 6 & 0x3) /* sz at 0 */)
 					{
 					case 0:
@@ -4695,7 +4695,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                /* reg1 at 0 */];
 								goto MATCH_label_a20;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -4714,7 +4714,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                /* reg1 at 0 */];
 								goto MATCH_label_a21;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -4781,7 +4781,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									                                /* reg2 at 0 */];
 									goto MATCH_label_a23;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -4828,7 +4828,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									                                /* reg2 at 0 */];
 									goto MATCH_label_a23;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -4875,7 +4875,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									                                /* reg2 at 0 */];
 									goto MATCH_label_a23;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -4922,7 +4922,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									                                /* reg2 at 0 */];
 									goto MATCH_label_a23;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -5046,7 +5046,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									                                /* reg2 at 0 */];
 									goto MATCH_label_a23;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -5076,7 +5076,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								    /* adrb at 0 */ == 0) {
 									goto MATCH_label_a27; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -5149,7 +5149,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									    /* adrb at 0 */ == 0) {
 										goto MATCH_label_a27; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_a1; /*opt-block+*/
 									}
 
@@ -5526,7 +5526,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									                                /* reg2 at 0 */];
 									goto MATCH_label_a36;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -5675,7 +5675,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_w_16_16 = getWord(2 + MATCH_p);
 									goto MATCH_label_a39;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -5812,7 +5812,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_w_16_16 = getWord(2 + MATCH_p);
 									goto MATCH_label_a40;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -5961,7 +5961,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                /* reg2 at 0 */];
 								goto MATCH_label_a45;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -5971,7 +5971,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							assert(0);
 						} /* (MATCH_w_16_0 >> 3 & 0x7) -- adrm at 0 --*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 3 & 0x7) /* adrm at 0 */)
 						{
 						case 0:
@@ -6018,7 +6018,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                /* reg2 at 0 */];
 								goto MATCH_label_a45;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6080,7 +6080,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                /* reg2 at 0 */];
 								goto MATCH_label_a47;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6090,7 +6090,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							assert(0);
 						} /* (MATCH_w_16_0 >> 3 & 0x7) -- adrm at 0 --*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 3 & 0x7) /* adrm at 0 */)
 						{
 						case 0:
@@ -6137,7 +6137,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                /* reg2 at 0 */];
 								goto MATCH_label_a47;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6199,7 +6199,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                /* reg2 at 0 */];
 								goto MATCH_label_a49;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6209,7 +6209,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							assert(0);
 						} /* (MATCH_w_16_0 >> 3 & 0x7) -- adrm at 0 --*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 3 & 0x7) /* adrm at 0 */)
 						{
 						case 0:
@@ -6256,7 +6256,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                /* reg2 at 0 */];
 								goto MATCH_label_a49;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6305,7 +6305,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							assert(0);
 						} /* (MATCH_w_16_0 >> 3 & 0x7) -- adrm at 0 --*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_16_0 >> 3 & 0x7) /* adrm at 0 */)
 						{
 						case 0:
@@ -6403,7 +6403,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						RTs = instantiate(pc, "movel", DIS_I8, DIS_DN(32));
 					}
 				} /*opt-block*/ /*opt-block+*/
-				else{
+				else {
 					goto MATCH_label_a1; /*opt-block+*/
 				}
 
@@ -6468,7 +6468,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                 /* reg2 at 0 */];
 								goto MATCH_label_a62;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6525,7 +6525,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                 /* reg2 at 0 */];
 								goto MATCH_label_a64;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6582,7 +6582,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								                                 /* reg2 at 0 */];
 								goto MATCH_label_a66;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6687,7 +6687,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						assert(0);
 					} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 3 & 0x7) /* adrm at 0 */)
 					{
 					case 0:
@@ -6811,7 +6811,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								assert(0);
 							} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 						}
-						else{
+						else {
 							goto MATCH_label_a1; /*opt-block+*/
 						}
 
@@ -6882,7 +6882,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "submb.ex";
 								goto MATCH_label_a62;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -6947,7 +6947,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "submw.ex";
 								goto MATCH_label_a64;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -7012,7 +7012,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "subml.ex";
 								goto MATCH_label_a66;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -7119,7 +7119,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						assert(0);
 					} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 6 & 0x3) /* sz at 0 */)
 					{
 					case 0:
@@ -7550,7 +7550,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "eorb.ex";
 								goto MATCH_label_a82;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -7609,7 +7609,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "eorw.ex";
 								goto MATCH_label_a84;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -7668,7 +7668,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "eorl.ex";
 								goto MATCH_label_a86;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -7775,7 +7775,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						assert(0);
 					} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 6 & 0x3) /* sz at 0 */)
 					{
 					case 0:
@@ -8207,7 +8207,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "andmb.ex";
 								goto MATCH_label_a62;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -8290,7 +8290,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "andmw.ex";
 								goto MATCH_label_a64;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -8361,7 +8361,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "andml.ex";
 								goto MATCH_label_a66;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -8471,7 +8471,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						assert(0);
 					} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 3 & 0x7) /* adrm at 0 */)
 					{
 					case 0:
@@ -8595,7 +8595,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								assert(0);
 							} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 						}
-						else{
+						else {
 							goto MATCH_label_a1; /*opt-block+*/
 						}
 
@@ -8666,7 +8666,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "addmb.ex";
 								goto MATCH_label_a62;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -8731,7 +8731,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "addmw.ex";
 								goto MATCH_label_a64;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -8796,7 +8796,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 								MATCH_name = "addml.ex";
 								goto MATCH_label_a66;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
 
@@ -8909,7 +8909,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						assert(0);
 					} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 6 & 0x3) /* sz at 0 */)
 					{
 					case 0:
@@ -9542,7 +9542,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_name = "aslm.ex";
 									goto MATCH_label_a102;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -9600,7 +9600,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_name = "lslm.ex";
 									goto MATCH_label_a102;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -9658,7 +9658,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_name = "roxlm.ex";
 									goto MATCH_label_a102;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -9716,7 +9716,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_name = "rolm.ex";
 									goto MATCH_label_a102;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -9745,7 +9745,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						assert(0);
 					} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_16_0 >> 6 & 0x3) /* sz at 0 */)
 					{
 					case 0:
@@ -9978,7 +9978,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_name = "asrm.ex";
 									goto MATCH_label_a94;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -10036,7 +10036,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_name = "lsrm.ex";
 									goto MATCH_label_a94;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -10094,7 +10094,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_name = "roxrm.ex";
 									goto MATCH_label_a94;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 
@@ -10152,7 +10152,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 									MATCH_name = "rorm.ex";
 									goto MATCH_label_a94;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a1; /*opt-block+*/
 								}
 

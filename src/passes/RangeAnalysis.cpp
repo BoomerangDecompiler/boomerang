@@ -13,8 +13,8 @@
 #include "include/statement.h"
 #include "include/signature.h"
 #include "include/visitor.h"
-#include "include/exp.h"
-#include "include/exphelp.h"
+#include "db/exp.h"
+#include "db/exphelp.h"
 
 class Range : public Printable
 {
@@ -202,7 +202,7 @@ struct RangeVisitor : public StmtVisitor
 				if (notTaken) {
 					tgt->setBranchRange(self_branch, output);
 				}
-				else{
+				else {
 					tgt->setRanges(insn, output);
 				}
 
@@ -221,7 +221,7 @@ struct RangeVisitor : public StmtVisitor
 						execution_paths.push_back(insn->getBB()->getOutEdge(arc)->getFirstStmt());
 					}
 				}
-				else{
+				else {
 					execution_paths.push_back(insn->getNextStatementInBB());
 				}
 			}
@@ -235,7 +235,7 @@ struct RangeVisitor : public StmtVisitor
 						execution_paths.push_back(insn->getBB()->getOutEdge(0)->getFirstStmt());
 					}
 				}
-				else{
+				else {
 					execution_paths.push_back(insn->getNextStatementInBB());
 				}
 			}
@@ -510,7 +510,7 @@ struct RangeVisitor : public StmtVisitor
 						eq->getSubExp2()->isIntConst()) {
 						c = eq->access<Const, 2>()->getInt();
 					}
-					else{
+					else {
 						eq = nullptr;
 					}
 				}
@@ -598,11 +598,11 @@ struct RangeVisitor : public StmtVisitor
 							LOG_VERBOSE(1) << "ignoring ranges from call to proc with no ret node\n";
 						}
 					}
-					else{
+					else {
 						input.unionwith(tgt->getRanges(last));
 					}
 				}
-				else{
+				else {
 					input.unionwith(tgt->getRanges(last));
 				}
 			}
@@ -777,7 +777,7 @@ bool RangeAnalysis::runOnFunction(Function& F)
 			if (stmt->isJunction()) {
 				junctions.push_back(stmt);
 			}
-			else{
+			else {
 				stmt->accept(&rv);
 			}
 		}
@@ -957,7 +957,7 @@ QString Range::toString() const
 		if (lowerBound == MIN) {
 			os << "-inf";
 		}
-		else{
+		else {
 			os << lowerBound;
 		}
 
@@ -966,7 +966,7 @@ QString Range::toString() const
 		if (upperBound == MAX) {
 			os << "inf";
 		}
-		else{
+		else {
 			os << upperBound;
 		}
 

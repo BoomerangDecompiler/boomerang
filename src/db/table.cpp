@@ -15,7 +15,7 @@
  ******************************************************************************/
 
 #include "table.h"
-#include "include/exp.h"
+#include "db/exp.h"
 
 Table::Table(TABLE_TYPE t)
 	: TableType(t)
@@ -49,7 +49,7 @@ ExprTable::ExprTable(const std::deque<SharedExp>& exprs)
 }
 
 
-ExprTable::~ExprTable(void)
+ExprTable::~ExprTable()
 {
 //    std::deque<SharedExp>::iterator loc;
 //    for (loc = expressions.begin(); loc != expressions.end(); ++loc)

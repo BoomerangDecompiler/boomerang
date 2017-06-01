@@ -19,7 +19,7 @@
  *                ConnectionGraph
  *==============================================================================================*/
 
-#include "exphelp.h" // For lessExpStar
+#include "db/exphelp.h" // For lessExpStar
 
 #include <list>
 #include <set>
@@ -76,7 +76,7 @@ public:
 	Assign *lookupLoc(SharedExp loc);         ///< Search for loc on LHS, return ptr to Assign if found
 
 	bool operator<(const AssignSet& o) const; ///< Compare if less
-	
+
 	void print(QTextStream& os) const;        ///< Print to os
 	void printNums(QTextStream& os);          ///< Print statements as numbers
 	char *prints();                           ///< Print to string (for debug)
@@ -116,13 +116,13 @@ class StatementVec
 public:
 	typedef std::vector<Instruction *>::iterator           iterator;
 	typedef std::vector<Instruction *>::reverse_iterator   reverse_iterator;
-    
+
 	size_t size() const { return svec.size(); } ///< Number of elements
 	iterator begin() { return svec.begin(); }
 	iterator end() { return svec.end(); }
 	reverse_iterator rbegin() { return svec.rbegin(); }
 	reverse_iterator rend() { return svec.rend(); }
-	
+
 	// Get/put at position idx (0 based)
 	Instruction *operator[](size_t idx) { return svec[idx]; }
 	void putAt(int idx, Instruction *s);
@@ -158,43 +158,43 @@ class LocationSet
 public:
 	typedef std::set<SharedExp, lessExpStar>::iterator         iterator;
 	typedef std::set<SharedExp, lessExpStar>::const_iterator   const_iterator;
-    
+
 	LocationSet() {}                              ///< Default constructor
 	~LocationSet() {}                             ///< virtual destructor kills warning
 	LocationSet(const LocationSet& o);            ///< Copy constructor
-	
-    LocationSet& operator=(const LocationSet& o); ///< Assignment
-	
-    void makeUnion(LocationSet& other);           ///< Set union
+
+	LocationSet& operator=(const LocationSet& o); ///< Assignment
+
+	void makeUnion(LocationSet& other);           ///< Set union
 	void makeDiff(LocationSet& other);            ///< Set difference
 
 	void clear() { lset.clear(); }                ///< Clear the set
-	
+
 	iterator begin() { return lset.begin(); }
 	iterator end() { return lset.end(); }
 	const_iterator begin() const { return lset.begin(); }
 	const_iterator end() const { return lset.begin(); }
-	
+
 	void insert(SharedExp loc) { lset.insert(loc); }  ///< Insert the given location
 	void remove(SharedExp loc);                       ///< Remove the given location
 
-	void remove(iterator ll) { lset.erase(ll); }   ///< Remove location, given iterator
-	void removeIfDefines(InstructionSet& given);   ///< Remove locs defined in given
+	void remove(iterator ll) { lset.erase(ll); } ///< Remove location, given iterator
+	void removeIfDefines(InstructionSet& given); ///< Remove locs defined in given
 
-	size_t size() const { return lset.size(); }    ///< Number of elements
-	bool operator==(const LocationSet& o) const;   ///< Compare
-	void substitute(Assign& a);                    ///< Substitute the given assignment to all
-	void print(QTextStream& os) const; ///< Print to os
-	char *prints();                    ///< Print to string for debugging
+	size_t size() const { return lset.size(); }  ///< Number of elements
+	bool operator==(const LocationSet& o) const; ///< Compare
+	void substitute(Assign& a);                  ///< Substitute the given assignment to all
+	void print(QTextStream& os) const;           ///< Print to os
+	char *prints();                              ///< Print to string for debugging
 	void dump();
-	void diff(LocationSet *o);         ///< Diff 2 location sets to LOG_STREAM()
-	bool exists(SharedExp e);          ///< Return true if the location exists in the set
-	SharedExp findNS(SharedExp e);     ///< Find location e (no subscripts); nullptr if not found
-	bool existsImplicit(SharedExp e);  ///< Search for location e{-} or e{0} (e has no subscripts)
+	void diff(LocationSet *o);                   ///< Diff 2 location sets to LOG_STREAM()
+	bool exists(SharedExp e);                    ///< Return true if the location exists in the set
+	SharedExp findNS(SharedExp e);               ///< Find location e (no subscripts); nullptr if not found
+	bool existsImplicit(SharedExp e);            ///< Search for location e{-} or e{0} (e has no subscripts)
 
 	/// Return an iterator to the found item (or end() if not). Only really makes sense if e has a wildcard
 	iterator find(SharedExp e) const { return lset.find(e); }
-	
+
 	// Find a location with a different def, but same expression. For example, pass r28{10},
 	// return true if r28{20} in the set. If return true, dr points to the first different ref
 	bool findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr);
@@ -216,15 +216,15 @@ public:
 	typedef std::multimap<SharedExp, SharedExp, lessExpStar>::iterator         iterator;
 	typedef std::multimap<SharedExp, SharedExp, lessExpStar>::const_iterator   const_iterator;
 
-    ConnectionGraph() {}
+	ConnectionGraph() {}
 
 	void add(SharedExp a, SharedExp b); ///< Add pair with check for existing
 	void connect(SharedExp a, SharedExp b);
 
-	iterator       begin()       { return emap.begin(); }
-	iterator       end()         { return emap.end();   }
+	iterator begin()       { return emap.begin(); }
+	iterator end()         { return emap.end(); }
 	const_iterator begin() const { return emap.begin(); }
-	const_iterator end()   const { return emap.end();   }
+	const_iterator end()   const { return emap.end(); }
 
 	int count(SharedExp a) const;
 	bool isConnected(SharedExp a, const Exp& b) const;

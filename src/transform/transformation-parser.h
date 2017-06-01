@@ -28,11 +28,11 @@
 #define YY_TransformationParser_CONSTRUCTOR_CODE	   \
 	theScanner = new TransformationScanner(in, trace); \
 	if (trace) { yydebug = 1; }						   \
-	else{ yydebug = 0; }
+	else { yydebug = 0; }
 
 #include <list>
 #include <string>
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/type.h"
 #include "db/cfg.h"
 #include "include/proc.h"

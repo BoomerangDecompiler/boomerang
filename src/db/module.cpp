@@ -166,7 +166,7 @@ QString Module::makeDirs()
 	if (Upstream) {
 		path = Upstream->makeDirs();
 	}
-	else{
+	else {
 		path = Boomerang::get()->getOutputPath();
 	}
 
@@ -229,7 +229,7 @@ void Module::setLocationMap(ADDRESS loc, Function *fnc)
 		size_t count = LabelsToProcs.erase(loc);
 		assert(count == 1);
 	}
-	else{
+	else {
 		LabelsToProcs[loc] = fnc;
 	}
 }
@@ -258,7 +258,7 @@ Function *Module::getOrInsertFunction(const QString& name, ADDRESS uNative, bool
 	if (bLib) {
 		pProc = new LibProc(this, name, uNative);
 	}
-	else{
+	else {
 		pProc = new UserProc(this, name, uNative);
 	}
 

@@ -333,7 +333,7 @@ bool DOS4GWBinaryFile::loadFromMemory(QByteArray& data)
 		if (fixup.flags & 0x40) {
 			buf.read((char *)&object, 2);
 		}
-		else{
+		else {
 			buf.read((char *)&object, 1);
 		}
 
@@ -342,7 +342,7 @@ bool DOS4GWBinaryFile::loadFromMemory(QByteArray& data)
 		if (fixup.flags & 0x10) {
 			buf.read((char *)&trgoff, 4);
 		}
-		else{
+		else {
 			buf.read((char *)&trgoff, 2);
 		}
 

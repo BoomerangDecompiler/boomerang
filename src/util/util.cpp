@@ -60,7 +60,7 @@ QString escapeStr(const QString& inp)
 		if (replacements.contains(c)) {
 			res += replacements[c];
 		}
-		else{
+		else {
 			res += "\\" + QString::number(c, 16);
 		}
 	}

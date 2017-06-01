@@ -36,7 +36,7 @@
 #endif
 
 #include "include/decoder.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/prog.h"
 #include "include/proc.h"
 #include "sparcdecoder.h"

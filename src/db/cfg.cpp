@@ -22,7 +22,7 @@
 #include "include/types.h"
 #include "include/statement.h"
 #include "include/signature.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/register.h"
 #include "db/basicblock.h"
 #include "include/rtl.h"
@@ -43,7 +43,7 @@ void erase_lrtls(std::list<RTL *>& pLrtl, std::list<RTL *>::iterator begin, std:
 
 namespace
 {
-    static int progress = 0;
+static int progress = 0;
 }
 
 /**********************************
@@ -72,7 +72,7 @@ Cfg::~Cfg()
 
 void Cfg::setProc(UserProc *proc)
 {
-	   m_myProc = proc;
+	m_myProc = proc;
 }
 
 
@@ -84,31 +84,31 @@ void Cfg::clear()
 	//    delete *it;
 	m_listBB.clear();
 	m_mapBB.clear();
-	   m_implicitMap.clear();
-	   m_entryBB    = nullptr;
-	   m_exitBB     = nullptr;
-	   m_wellFormed = false;
-	   m_callSites.clear();
-	   m_lastLabel = 0;
+	m_implicitMap.clear();
+	m_entryBB    = nullptr;
+	m_exitBB     = nullptr;
+	m_wellFormed = false;
+	m_callSites.clear();
+	m_lastLabel = 0;
 }
 
 
 Cfg& Cfg::operator=(const Cfg& other)
 {
-	m_listBB   = other.m_listBB;
-	m_mapBB    = other.m_mapBB;
-	   m_wellFormed = other.m_wellFormed;
+	m_listBB     = other.m_listBB;
+	m_mapBB      = other.m_mapBB;
+	m_wellFormed = other.m_wellFormed;
 	return *this;
 }
 
 
 void Cfg::setEntryBB(BasicBlock *bb)
 {
-	   m_entryBB = bb;
+	m_entryBB = bb;
 
 	for (BasicBlock *it : m_listBB) {
 		if (it->getType() == BBTYPE::RET) {
-			         m_exitBB = it;
+			m_exitBB = it;
 			return;
 		}
 	}
@@ -119,7 +119,7 @@ void Cfg::setEntryBB(BasicBlock *bb)
 
 void Cfg::setExitBB(BasicBlock *bb)
 {
-	   m_exitBB = bb;
+	m_exitBB = bb;
 }
 
 
@@ -132,7 +132,7 @@ bool Cfg::checkEntryBB()
 	if (m_myProc) {
 		qWarning() << "No entry BB for " << m_myProc->getName();
 	}
-	else{
+	else {
 		qWarning() << "No entry BB for "
 				   << "unknown proc";
 	}
@@ -260,7 +260,6 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutE
 }
 
 
-
 BasicBlock *Cfg::newIncompleteBB(ADDRESS addr)
 {
 	// Create a new (basically empty) BB
@@ -284,7 +283,6 @@ void Cfg::addOutEdge(BasicBlock *pBB, BasicBlock *pDestBB, bool bSetLabel /* = f
 		setLabel(pDestBB); // Indicate "label required"
 	}
 }
-
 
 
 void Cfg::addOutEdge(BasicBlock *pBB, ADDRESS addr, bool bSetLabel /* = false */)
@@ -570,7 +568,7 @@ bool Cfg::wellFormCfg() const
 {
 	QTextStream q_cerr(stderr);
 
-	   m_wellFormed = true;
+	m_wellFormed = true;
 
 	for (const BasicBlock *elem : m_listBB) {
 		// it iterates through all BBs in the list
@@ -578,7 +576,7 @@ bool Cfg::wellFormCfg() const
 		const BasicBlock *current = elem;
 
 		if (current->m_incomplete) {
-			         m_wellFormed = false;
+			m_wellFormed = false;
 			MAPBB::const_iterator itm;
 
 			for (itm = m_mapBB.begin(); itm != m_mapBB.end(); itm++) {
@@ -606,7 +604,7 @@ bool Cfg::wellFormCfg() const
 
 					// Check that the out edge has been written (i.e. nonzero)
 					if (pBB == nullptr) {
-						                  m_wellFormed = false; // At least one problem
+						m_wellFormed = false;                   // At least one problem
 						ADDRESS addr = current->getLowAddr();
 						q_cerr << "WellFormCfg: BB with native address " << addr << " is missing outedge " << i << '\n';
 					}
@@ -617,7 +615,7 @@ bool Cfg::wellFormCfg() const
 						if (ii == pBB->m_inEdges.end()) {
 							q_cerr << "WellFormCfg: No in edge to BB at " << (elem)->getLowAddr()
 								   << " from successor BB at " << pBB->getLowAddr() << '\n';
-							                     m_wellFormed = false; // At least one problem
+							m_wellFormed = false;                      // At least one problem
 						}
 					}
 				}
@@ -633,7 +631,7 @@ bool Cfg::wellFormCfg() const
 				if (oo == elem_inedge->m_outEdges.end()) {
 					q_cerr << "WellFormCfg: No out edge to BB at " << elem->getLowAddr()
 						   << " from predecessor BB at " << elem_inedge->getLowAddr() << '\n';
-					               m_wellFormed = false; // At least one problem
+					m_wellFormed = false;                // At least one problem
 				}
 			}
 		}
@@ -997,7 +995,7 @@ int Cfg::pbbToIndex(const BasicBlock *pBB)
 
 void Cfg::addCall(CallStatement *call)
 {
-	   m_callSites.insert(call);
+	m_callSites.insert(call);
 }
 
 
@@ -1138,16 +1136,16 @@ void Cfg::setTimeStamps()
 
 	// set the parenthesis for the nodes as well as setting the post-order ordering between the nodes
 	int time = 1;
-	   m_ordering.clear();
-	   m_entryBB->setLoopStamps(time, m_ordering);
+	m_ordering.clear();
+	m_entryBB->setLoopStamps(time, m_ordering);
 
 	// set the reverse parenthesis for the nodes
 	time = 1;
-	   m_entryBB->setRevLoopStamps(time);
+	m_entryBB->setRevLoopStamps(time);
 
 	BasicBlock *retNode = findRetNode();
 	assert(retNode);
-	   m_revOrdering.clear();
+	m_revOrdering.clear();
 	retNode->setRevOrder(m_revOrdering);
 }
 
@@ -1176,7 +1174,7 @@ BasicBlock *Cfg::commonPDom(BasicBlock *curImmPDom, BasicBlock *succImmPDom)
 		if (curImmPDom->m_revOrd > succImmPDom->m_revOrd) {
 			succImmPDom = succImmPDom->m_immPDom;
 		}
-		else{
+		else {
 			curImmPDom = curImmPDom->m_immPDom;
 		}
 
@@ -1244,7 +1242,7 @@ void Cfg::findImmedPDom()
 					(succNode->m_immPDom->m_ord < curNode->m_immPDom->m_ord)) {
 					curNode->m_immPDom = commonPDom(succNode->m_immPDom, curNode->m_immPDom);
 				}
-				else{
+				else {
 					curNode->m_immPDom = commonPDom(curNode->m_immPDom, succNode);
 				}
 			}
@@ -1305,12 +1303,12 @@ void Cfg::determineLoopType(BasicBlock *header, bool *& loopNodes)
 			// retain the fact that this is also a conditional header
 			header->setStructType(LoopCond);
 		}
-		else{
+		else {
 			header->setLoopType(PreTested);
 		}
 	}
 	// both the header and latch node are one way nodes so this must be an endless loop
-	else{
+	else {
 		header->setLoopType(Endless);
 	}
 }
@@ -1327,7 +1325,7 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
 		if (loopNodes[header->getOutEdges()[0]->m_ord]) {
 			header->setLoopFollow(header->getOutEdges()[1]);
 		}
-		else{
+		else {
 			header->setLoopFollow(header->getOutEdges()[0]);
 		}
 	}
@@ -1336,7 +1334,7 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
 		if (latch->getOutEdges()[0] == header) {
 			header->setLoopFollow(latch->getOutEdges()[1]);
 		}
-		else{
+		else {
 			header->setLoopFollow(latch->getOutEdges()[0]);
 		}
 	}
@@ -1362,7 +1360,7 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
 					}
 					// otherwise there is a backward jump somewhere to a node earlier in this loop. We don't need to any
 					//  nodes below this one as they will all have a conditional within the loop.
-					else{
+					else {
 						break;
 					}
 				}
@@ -1374,7 +1372,7 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
 						if (!loopNodes[desc->getOutEdges()[1]->m_ord]) {
 							succ = desc->getOutEdges()[1];
 						}
-						else{
+						else {
 							succ = nullptr;
 						}
 					}
@@ -1415,7 +1413,7 @@ void Cfg::tagNodesInLoop(BasicBlock *header, bool *& loopNodes)
 			// update the membership map to reflect that this node is within the loop
 			loopNodes[i] = true;
 
-			         m_ordering[i]->setLoopHead(header);
+			m_ordering[i]->setLoopHead(header);
 		}
 	}
 }
@@ -1425,7 +1423,7 @@ void Cfg::structLoops()
 {
 	for (int i = m_ordering.size() - 1; i >= 0; i--) {
 		BasicBlock *curNode = m_ordering[i]; // the current node under investigation
-		BasicBlock *latch   = nullptr;     // the latching node of the loop
+		BasicBlock *latch   = nullptr;       // the latching node of the loop
 
 		// If the current node has at least one back edge into it, it is a loop header. If there are numerous back edges
 		// into the header, determine which one comes form the proper latching node.
@@ -1597,7 +1595,7 @@ void Cfg::structure()
 		checkConds();
 	}
 
-	   m_structured = true;
+	m_structured = true;
 }
 
 
@@ -1656,7 +1654,7 @@ void Cfg::generateDotFile(QTextStream& of)
 				of << "\" shape=diamond];\n";
 				continue;
 			}
-			else{
+			else {
 				of << "twoway";
 			}
 
@@ -1735,7 +1733,7 @@ void Cfg::generateDotFile(QTextStream& of)
 				if (j == 0) {
 					of << " [label=\"true\"]";
 				}
-				else{
+				else {
 					of << " [label=\"false\"]";
 				}
 			}
@@ -1822,7 +1820,7 @@ void Cfg::findInterferences(ConnectionGraph& cg)
 			if (last) {
 				LOG << last->getNumber();
 			}
-			else{
+			else {
 				LOG << "<none>";
 			}
 
@@ -2021,7 +2019,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
 		it  = m_listBB.erase(it);
 		pBB = nullptr;
 	}
-	else{
+	else {
 		it++;
 	}
 
@@ -2031,7 +2029,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
 	if (pBB) {
 		LOG_STREAM() << pBB->prints();
 	}
-	else{
+	else {
 		LOG_STREAM() << "<null>\n";
 	}
 
@@ -2075,11 +2073,11 @@ Instruction *Cfg::findImplicitAssign(SharedExp x)
 		// A use with no explicit definition. Create a new implicit assignment
 		x   = x->clone(); // In case the original gets changed
 		def = new ImplicitAssign(x);
-		      m_entryBB->prependStmt(def, m_myProc);
+		m_entryBB->prependStmt(def, m_myProc);
 		// Remember it for later so we don't insert more than one implicit assignment for any one location
 		// We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
 		// the definition as at all uses
-		      m_implicitMap[x] = def;
+		m_implicitMap[x] = def;
 	}
 	else {
 		// Use an existing implicit assignment
@@ -2112,7 +2110,7 @@ Instruction *Cfg::findImplicitParamAssign(Parameter *param)
 	// but the Parameter expresions are not subscripted, so, they are not found
 	// with a simple:
 	// auto it = implicitMap.find(n);
-	   ExpStatementMap::iterator it;
+	ExpStatementMap::iterator it;
 
 	// search the map by hand, and compare without subscripts.
 	for (it = m_implicitMap.begin(); it != m_implicitMap.end(); ++it) {
@@ -2140,6 +2138,6 @@ void Cfg::removeImplicitAssign(SharedExp x)
 
 	assert(it != m_implicitMap.end());
 	Instruction *ia = it->second;
-	   m_implicitMap.erase(it);       // Delete the mapping
-	   m_myProc->removeStatement(ia); // Remove the actual implicit assignment statement as well
+	m_implicitMap.erase(it);          // Delete the mapping
+	m_myProc->removeStatement(ia);    // Remove the actual implicit assignment statement as well
 }

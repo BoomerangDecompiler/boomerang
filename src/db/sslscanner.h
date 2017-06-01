@@ -319,14 +319,14 @@ private:    /* functions */
 	void yyunput(YY_SSLScanner_CHAR c, YY_SSLScanner_CHAR *buf_ptr);
 
 	/* use long instead of yy_state_type because it is undef */
-	long yy_get_previous_state_(void);
+	long yy_get_previous_state_();
 	long yy_try_NUL_trans_(long current_state_);
 
 protected:    /* non virtual */
 	YY_BUFFER_STATE YY_SSLScanner_CURRENT_BUFFER;
 	void YY_SSLScanner_RESTART(YY_SSLScanner_IFILE *input_file);
 	void YY_SSLScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer);
-	void YY_SSLScanner_LOAD_BUFFER_STATE(void);
+	void YY_SSLScanner_LOAD_BUFFER_STATE();
 	YY_BUFFER_STATE YY_SSLScanner_CREATE_BUFFER(YY_SSLScanner_IFILE *file, int size);
 	void YY_SSLScanner_DELETE_BUFFER(YY_BUFFER_STATE b);
 	void YY_SSLScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_SSLScanner_IFILE *file);

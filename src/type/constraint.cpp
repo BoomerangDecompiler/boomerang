@@ -14,7 +14,7 @@
 
 #include "constraint.h"
 #include "include/managed.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "include/proc.h"
@@ -32,7 +32,7 @@ void ConstraintMap::print(QTextStream& os)
 		if (first) {
 			first = false;
 		}
-		else{
+		else {
 			os << ", ";
 		}
 
@@ -154,11 +154,11 @@ void ConstraintMap::substitute(ConstraintMap& other)
 					// e.g. was <char*> = <alpha6> now <char*> = <char*>
 					cmap.erase(cc);
 				}
-				else{
+				else {
 					cmap[cc->first] = newVal;
 				}
 			}
-			else{
+			else {
 				// The existing value
 				newVal = cc->second;
 			}
@@ -210,7 +210,7 @@ void ConstraintMap::substAlpha()
 		if (t1->isPointerToAlpha()) {
 			alphaDefs.cmap[cc->first] = cc->second;
 		}
-		else{
+		else {
 			alphaDefs.cmap[cc->second] = cc->first;
 		}
 	}
@@ -289,7 +289,7 @@ void Constraints::substIntoEquates(ConstraintMap& in)
 							return;
 						}
 					}
-					else{
+					else {
 						extra[*ll] = val; // A new constant constraint
 					}
 				}
@@ -661,7 +661,7 @@ bool Constraints::unify(SharedExp x, SharedExp y, ConstraintMap& extra)
 			if (xtype->as<PointerType>()->pointsToAlpha()) {
 				extra.constrain(xPointsTo, yPointsTo);
 			}
-			else{
+			else {
 				extra.constrain(yPointsTo, xPointsTo);
 			}
 

@@ -1054,7 +1054,7 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
 		if (first) {
 			first = false;
 		}
-		else{
+		else {
 			out << ", ";
 		}
 
@@ -1134,7 +1134,7 @@ void UserProc::printDFG() const
 				if (r->getDef()) {
 					out << r->getDef()->getNumber();
 				}
-				else{
+				else {
 					out << "input";
 				}
 
@@ -1143,7 +1143,7 @@ void UserProc::printDFG() const
 				if (s->isReturn()) {
 					out << "output";
 				}
-				else{
+				else {
 					out << s->getNumber();
 				}
 
@@ -1595,7 +1595,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
 		path->remove(this);
 	}
-	else{
+	else {
 		LOG << "WARNING: UserProc::decompile: empty path when trying to remove last proc\n";
 	}
 
@@ -3203,7 +3203,7 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 			if (lastPass) {
 				ty = IntegerType::get(STD_SIZE);
 			}
-			else{
+			else {
 				ty = VoidType::get(); // HACK MVE
 			}
 		}
@@ -3445,7 +3445,7 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
 		// l = m[sp{0}]
 		l = Location::memOf(RefExp::get(Location::regOf(sp), nullptr));
 	}
-	else{
+	else {
 		// l = m[sp{0} +/- K]
 		l = Location::memOf(
 			Binary::get(minusOrPlus, RefExp::get(Location::regOf(sp), nullptr), Terminal::get(opWildIntConst)));
@@ -3631,7 +3631,7 @@ SharedExp UserProc::newLocal(SharedType ty, const SharedExp& e, char *nam /* = n
 	if (nam == nullptr) {
 		name = newLocalName(e);
 	}
-	else{
+	else {
 		name = nam; // Use provided name
 	}
 
@@ -4181,7 +4181,7 @@ void UserProc::fromSSAform()
 			{
 				rename = r2;
 			}
-			else{
+			else {
 				rename = r1;
 			}
 		}
@@ -4334,7 +4334,7 @@ void UserProc::fromSSAform()
 				// NOTE: Removing the phi here may cause other statments to be not used.
 				removeStatement(s);
 			}
-			else{
+			else {
 				// Need to replace the phi by an expression,
 				// e.g. local0 = phi(r24{3}, r24{5}) becomes
 				//        local0 = r24
@@ -4417,7 +4417,7 @@ void UserProc::mapParameters()
 
 			// Else leave them alone
 		}
-		else{
+		else {
 			((Assignment *)*pp)->setLeft(Location::param(mappedName, this));
 		}
 	}
@@ -4444,7 +4444,7 @@ void UserProc::removeSubscriptsFromSymbols()
 			SharedExp& sub = from->refSubExp1();
 			sub = sub->accept(&esx);
 		}
-		else{
+		else {
 			from = from->accept(&esx);
 		}
 
@@ -4783,7 +4783,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
 					if (ok) {
 						query = Terminal::get(opTrue);
 					}
-					else{
+					else {
 						query = Terminal::get(opFalse);
 					}
 
@@ -5318,7 +5318,7 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 		if (e) {
 			os << e << "\n";
 		}
-		else{
+		else {
 			os << "-\n";
 		}
 	}
@@ -6658,7 +6658,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 			// handle the case of missing main() signature
 			LOG_STREAM(LL_Warn) << "main signature definition is missing assuming void main()";
 		}
-		else{
+		else {
 			unionOfCallerLiveLocs.insert(signature->getReturnExp(1));
 		}
 	}

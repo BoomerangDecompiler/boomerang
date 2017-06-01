@@ -103,7 +103,7 @@ void *alloca ();
 
 #include <list>
 #include <string>
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/type.h"
 #include "db/cfg.h"
 #include "include/proc.h"

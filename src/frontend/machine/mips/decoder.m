@@ -23,7 +23,7 @@
 #include "include/signature.h"
 #endif
 
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/prog.h"
 #include "include/proc.h"
 #include "include/decoder.h"

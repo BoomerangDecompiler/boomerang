@@ -330,14 +330,14 @@ private:    /* functions */
 	void yyunput(YY_AnsiCScanner_CHAR c, YY_AnsiCScanner_CHAR *buf_ptr);
 
 	/* use long instead of yy_state_type because it is undef */
-	long yy_get_previous_state_(void);
+	long yy_get_previous_state_();
 	long yy_try_NUL_trans_(long current_state_);
 
 protected:    /* non virtual */
 	YY_BUFFER_STATE YY_AnsiCScanner_CURRENT_BUFFER;
 	void YY_AnsiCScanner_RESTART(YY_AnsiCScanner_IFILE *input_file);
 	void YY_AnsiCScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer);
-	void YY_AnsiCScanner_LOAD_BUFFER_STATE(void);
+	void YY_AnsiCScanner_LOAD_BUFFER_STATE();
 	YY_BUFFER_STATE YY_AnsiCScanner_CREATE_BUFFER(YY_AnsiCScanner_IFILE *file, int size);
 	void YY_AnsiCScanner_DELETE_BUFFER(YY_BUFFER_STATE b);
 	void YY_AnsiCScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_AnsiCScanner_IFILE *file);

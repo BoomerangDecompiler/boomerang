@@ -22,7 +22,7 @@
 #include "include/config.h"
 #include "include/types.h"
 #include "include/statement.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "db/cfg.h"
 #include "include/register.h"
 #include "include/rtl.h"
@@ -441,7 +441,7 @@ BasicBlock *BasicBlock::getOutEdge(size_t i)
 	if (i < m_outEdges.size()) {
 		return m_outEdges[i];
 	}
-	else{
+	else {
 		return nullptr;
 	}
 }
@@ -986,7 +986,7 @@ void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, BasicBlock *dest)
 		if (m_loopHead == dest) {
 			hll->AddContinue(indLevel);
 		}
-		else{
+		else {
 			hll->AddBreak(indLevel);
 		}
 	}
@@ -1076,7 +1076,7 @@ void BasicBlock::generateCode_Loop(HLLCode *hll, std::list<BasicBlock *>& gotoSe
 		if (m_loopHeaderType == Endless) {
 			hll->AddEndlessLoopHeader(indLevel);
 		}
-		else{
+		else {
 			hll->AddPosttestedLoopHeader(indLevel);
 		}
 
@@ -1129,7 +1129,7 @@ void BasicBlock::generateCode_Loop(HLLCode *hll, std::list<BasicBlock *>& gotoSe
 		if (m_loopFollow->m_traversed != DFS_CODEGEN) {
 			m_loopFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
 		}
-		else{
+		else {
 			emitGotoAndLabel(hll, indLevel, m_loopFollow);
 		}
 	}
@@ -1153,7 +1153,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 			emitGotoAndLabel(hll, indLevel, this);
 			return;
 		}
-		else{
+		else {
 			return;
 		}
 	}
@@ -1166,7 +1166,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 		// assert(sType == Loop && lType == PostTested && latchNode == this);
 		return;
 	}
-	else{
+	else {
 		m_traversed = DFS_CODEGEN;
 	}
 
@@ -1249,7 +1249,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 					if (m_conditionHeaderType == IfThen) {
 						tmpCondFollow = m_outEdges[BELSE];
 					}
-					else{
+					else {
 						tmpCondFollow = m_outEdges[BTHEN];
 					}
 
@@ -1289,7 +1289,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 				if (m_conditionHeaderType == IfThenElse) {
 					hll->AddIfElseCondHeader(indLevel, cond);
 				}
-				else{
+				else {
 					hll->AddIfCondHeader(indLevel, cond);
 				}
 			}
@@ -1303,7 +1303,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 				if ((succ->m_traversed == DFS_CODEGEN) || (m_loopHead && (succ == m_loopHead->m_loopFollow))) {
 					emitGotoAndLabel(hll, indLevel + 1, succ);
 				}
-				else{
+				else {
 					succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet, proc);
 				}
 
@@ -1319,7 +1319,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 					if (succ->m_traversed == DFS_CODEGEN) {
 						emitGotoAndLabel(hll, indLevel + 1, succ);
 					}
-					else{
+					else {
 						succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet, proc);
 					}
 
@@ -1343,7 +1343,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 						caseVal.setInt(((int *)psi->uTable.m_value)[i]); // Yes, use the table value itself
 					}
 					// Note that uTable has the address of an int array
-					else{
+					else {
 						caseVal.setInt((int)(psi->iLower + i));
 					}
 
@@ -1373,7 +1373,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 					assert(gotoTotal == 0);
 					followSet.resize(followSet.size() - 1);
 				}
-				else{ // remove all the nodes added to the goto set
+				else { // remove all the nodes added to the goto set
 					for (int i = 0; i < gotoTotal; i++) {
 						gotoSet.resize(gotoSet.size() - 1);
 					}
@@ -1388,7 +1388,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 				if (tmpCondFollow->m_traversed == DFS_CODEGEN) {
 					emitGotoAndLabel(hll, indLevel, tmpCondFollow);
 				}
-				else{
+				else {
 					tmpCondFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
 				}
 			}
@@ -1447,7 +1447,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std
 				if (other->m_traversed == DFS_CODEGEN) {
 					emitGotoAndLabel(hll, indLevel + 1, other);
 				}
-				else{
+				else {
 					other->generateCode(hll, indLevel + 1, latch, followSet, gotoSet, proc);
 				}
 
@@ -1695,7 +1695,7 @@ char *BasicBlock::getStmtNumber()
 	if (first) {
 		sprintf(ret, "%d", first->getNumber());
 	}
-	else{
+	else {
 		sprintf(ret, "bb%" PRIxPTR, ADDRESS::value_type(this));
 	}
 
@@ -2659,7 +2659,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 		else if (si->chForm == 'F') {
 			uSwitch = ADDRESS::g(((int *)si->uTable.m_value)[i]);
 		}
-		else{
+		else {
 			uSwitch = ADDRESS::g(prog->readNative4(si->uTable + i * 4));
 		}
 

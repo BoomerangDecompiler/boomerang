@@ -75,7 +75,7 @@ uint32_t execute(uint32_t pc);
  * Public single-step function. Executes the instruction at the current pc, and
  * updates the pc to point to the next instruction for execution.
  */
-void executeOneInstruction(void);
+void executeOneInstruction();
 
 /*
  * Callback hook for traps. cond is true if the trap should execute, and the

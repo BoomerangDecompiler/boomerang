@@ -7,7 +7,7 @@ int fib (int x)
     else return (x);
 }
 
-int main (void)
+int main ()
 {   int number, value;
 
     printf ("Input number: ");

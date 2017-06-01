@@ -170,7 +170,7 @@ bool c_c_n(ADDRESS hostpc)
 					if ((MATCH_w_32_0 >> 12 & 0x1) /* f_19 at 0 */ == 1) {
 						goto MATCH_label_e2; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_e1; /*opt-block+*/
 					}
 
@@ -226,7 +226,7 @@ bool c_c_n(ADDRESS hostpc)
 				if ((MATCH_w_32_0 >> 12 & 0x1) /* f_19 at 0 */ == 1) {
 					goto MATCH_label_e2; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_e1; /*opt-block+*/
 				}
 
@@ -241,7 +241,7 @@ bool c_c_n(ADDRESS hostpc)
 					 ((MATCH_w_32_0 >> 11 & 0x1) /* ext_20 at 0 */ < 2))) {
 					goto MATCH_label_e2; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_e1; /*opt-block+*/
 				}
 
@@ -253,7 +253,7 @@ bool c_c_n(ADDRESS hostpc)
 				if ((MATCH_w_32_0 >> 15 & 0x1) /* c1_16 at 0 */ == 1) {
 					goto MATCH_label_e2; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_e1; /*opt-block+*/
 				}
 
@@ -270,7 +270,7 @@ bool c_c_n(ADDRESS hostpc)
 						((MATCH_w_32_0 >> 10 & 0x1) /* se_21 at 0 */ == 1)) {
 						goto MATCH_label_e0; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_e2; /*opt-block+*/ /*opt-block+*/
 					}
 				}
@@ -278,7 +278,7 @@ bool c_c_n(ADDRESS hostpc)
 						 ((MATCH_w_32_0 >> 10 & 0x1) /* se_21 at 0 */ == 1)) {
 					goto MATCH_label_e0; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_e1; /*opt-block+*/ /*opt-block+*/
 				}
 
@@ -292,11 +292,11 @@ bool c_c_n(ADDRESS hostpc)
 						((MATCH_w_32_0 >> 13 & 0x7) /* c3_16 at 0 */ < 8)) {
 						goto MATCH_label_e0; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_e2; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_e1; /*opt-block+*/
 				}
 
@@ -308,11 +308,11 @@ bool c_c_n(ADDRESS hostpc)
 					if ((MATCH_w_32_0 >> 13 & 0x7) /* c3_16 at 0 */ == 1) {
 						goto MATCH_label_e2; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_e0; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_e1; /*opt-block+*/
 				}
 
@@ -362,8 +362,8 @@ SemStr *NJMCDecoder::c_c(ADDRESS hostpc, int& cond)
 {
 	static const char *c_c_names[] =
 	{
-		"c_c_no",  "c_c_eq",  "c_c_l",    "c_c_le",   "c_c_ul",   "c_c_ule",
-		"c_c_sv",  "c_c_od",  "c_c_yes",  "c_c_ne",   "c_c_ge",   "c_c_g",
+		"c_c_no",  "c_c_eq",  "c_c_l",    "c_c_le",    "c_c_ul",   "c_c_ule",
+		"c_c_sv",  "c_c_od",  "c_c_yes",  "c_c_ne",    "c_c_ge",   "c_c_g",
 		"c_c_uge", "c_c_ug",  "c_c_nsv",  "c_c_ev"
 	};
 	static const int cmpib_codes[] = { 4, 1, 2, 3, 12, 9, 10, 11 };
@@ -485,7 +485,7 @@ SemStr *NJMCDecoder::c_c(ADDRESS hostpc, int& cond)
 							cond = c3 + (c_c_n(cmplt) ? 0 : 8);
 						}
 					} /*opt-block*/ /*opt-block+*/
-					else{
+					else {
 						goto MATCH_label_d1; /*opt-block+*/
 					}
 
@@ -606,7 +606,7 @@ SemStr *NJMCDecoder::c_c(ADDRESS hostpc, int& cond)
 					((MATCH_w_32_0 >> 10 & 0x1) /* se_21 at 0 */ == 1)) {
 					goto MATCH_label_d0; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_d2; /*opt-block+*/
 				}
 
@@ -718,11 +718,11 @@ unsigned long c_wcr(ADDRESS hostpc, char **garble)
 						}
 					} /*opt-block*//*opt-block+*/ /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_c0; /*opt-block+*/
 				}
 			}
-			else{
+			else {
 				goto MATCH_label_c0; /*opt-block+*/
 			}
 		}
@@ -906,34 +906,34 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		char        *MATCH_name;
 		static char *MATCH_name_ext8_19_0[] =
 		{
-			"BREAK",   (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    "RFI",     (char *)0,     (char *)0,
-			(char *)0, (char *)0,   "RFI.r",     (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     "SSM",
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, "RSM",         (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   "MFIA",      (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      (char *)0,    (char *)0, (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,      "MTCTL",      "MTSM",    (char *)0,     (char *)0,
+			"BREAK",   (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      "RFI",        (char *)0,     (char *)0,
+			(char *)0, (char *)0,   "RFI.r",     (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     "SSM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    "RSM",         (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   "MFIA",        (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      (char *)0,      (char *)0,    (char *)0,     (char *)0,
+			(char *)0, (char *)0,   (char *)0,   (char *)0,     (char *)0,      "MTCTL",        "MTSM",       (char *)0,     (char *)0,
 			"MTSARCM",
 		};
 		static char *MATCH_name_ext5_11_1[] =
 		{
-			"SYNC",    (char *)0,    (char *)0,    (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0,    (char *)0,    (char *)0, "SYNCDMA",
+			"SYNC",    (char *)0,    (char *)0,    (char *)0,    (char *)0, (char *)0,
+			(char *)0, (char *)0,    (char *)0,    (char *)0,    "SYNCDMA",
 		};
 		static char *MATCH_name_ext_17_2[] =
 		{
@@ -946,9 +946,9 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		};
 		static char *MATCH_name_op_58[] =
 		{
-			(char *)0, (char *)0,   (char *)0,   (char *)0, (char *)0,     (char *)0,     (char *)0, (char *)0,  "LDIL",     (char *)0,
-			"ADDIL",   (char *)0,   (char *)0,   "LDO",     (char *)0,     (char *)0,     "LDB",     "LDH",      "LDW",      "LDWM",
-			(char *)0, (char *)0,   (char *)0,   (char *)0, "STB",         "STH",         "STW",     "STWM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,  "LDIL",     (char *)0,
+			"ADDIL",   (char *)0,   (char *)0,   "LDO",       (char *)0,     (char *)0,     "LDB",         "LDH",      "LDW",      "LDWM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   "STB",         "STH",         "STW",         "STWM",
 		};
 		static char *MATCH_name_sub_16_71[] =
 		{
@@ -1014,7 +1014,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 					((MATCH_w_32_0 >> 5 & 0xff) /* ext8_19 at 0 */ < 256)) {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 5 & 0xff) /* ext8_19 at 0 */)
 					{
 					case 0:
@@ -1148,7 +1148,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							                                  /* ext5_11 at 0 */];
 							goto MATCH_label_a1;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1571,7 +1571,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							goto MATCH_label_a3;
 						} /*opt-block*/ /*opt-block+*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */)
 						{
 						case 0:
@@ -1615,7 +1615,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						} /* (MATCH_w_32_0 >> 6 & 0xf) -- ext4_22 at 0 --*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */)
 					{
 					case 0:
@@ -1728,7 +1728,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						goto MATCH_label_a5;
 					} /*opt-block*/ /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
 
@@ -1786,7 +1786,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 						goto MATCH_label_a7;
 					} /*opt-block*/ /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
 
@@ -1841,7 +1841,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							}
 						}
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1968,7 +1968,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							}
 						}
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -2015,7 +2015,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							MATCH_name = "FADD.E";
 							goto MATCH_label_a12;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -2027,7 +2027,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							MATCH_name = "FSUB.E";
 							goto MATCH_label_a12;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -2076,7 +2076,7 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 							MATCH_name = "FDIV.E";
 							goto MATCH_label_a12;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 

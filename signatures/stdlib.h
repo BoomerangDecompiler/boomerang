@@ -11,9 +11,9 @@ typedef int main(int argc, char* argv[], char* envp[]);
 
 int stat(const char* filename, struct stat* st);
 
-void abort(void);
+void abort();
 
-typedef void atexitfunc(void);
+typedef void atexitfunc();
 int atexit(atexitfunc *function);
 int system (const char* command);
 

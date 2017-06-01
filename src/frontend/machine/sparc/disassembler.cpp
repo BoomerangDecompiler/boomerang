@@ -180,39 +180,39 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		char        *MATCH_name;
 		static char *MATCH_name_cond_1[] =
 		{
-			"BN", "BE",  "BLE",  "BL",    "BLEU",   "BCS",   "BNEG",  "BVS",
-			"BA", "BNE", "BG",   "BGE",   "BGU",    "BCC",   "BPOS",  "BVC",
+			"BN", "BE",  "BLE",  "BL",    "BLEU",    "BCS",    "BNEG",   "BVS",
+			"BA", "BNE", "BG",   "BGE",   "BGU",     "BCC",    "BPOS",   "BVC",
 		};
 		static char *MATCH_name_cond_2[] =
 		{
-			"BN,a", "BE,a",  "BLE,a",  "BL,a",    "BLEU,a",   "BCS,a",   "BNEG,a",  "BVS,a",
-			"BA,a", "BNE,a", "BG,a",   "BGE,a",   "BGU,a",    "BCC,a",   "BPOS,a",  "BVC,a",
+			"BN,a", "BE,a",  "BLE,a",  "BL,a",    "BLEU,a",    "BCS,a",    "BNEG,a",   "BVS,a",
+			"BA,a", "BNE,a", "BG,a",   "BGE,a",   "BGU,a",     "BCC,a",    "BPOS,a",   "BVC,a",
 		};
 		static char *MATCH_name_cond_3[] =
 		{
-			"FBN", "FBNE", "FBLG",  "FBUL",  "FBL",   "FBUG",   "FBG",     "FBU",
-			"FBA", "FBE",  "FBUE",  "FBGE",  "FBUGE", "FBLE",   "FBULE",   "FBO",
+			"FBN", "FBNE", "FBLG",  "FBUL",  "FBL",    "FBUG",   "FBG",     "FBU",
+			"FBA", "FBE",  "FBUE",  "FBGE",  "FBUGE",  "FBLE",   "FBULE",   "FBO",
 		};
 		static char *MATCH_name_cond_4[] =
 		{
-			"FBN,a", "FBNE,a", "FBLG,a",  "FBUL,a",  "FBL,a",   "FBUG,a",   "FBG,a",     "FBU,a",
-			"FBA,a", "FBE,a",  "FBUE,a",  "FBGE,a",  "FBUGE,a", "FBLE,a",   "FBULE,a",   "FBO,a",
+			"FBN,a", "FBNE,a", "FBLG,a",  "FBUL,a",  "FBL,a",    "FBUG,a",   "FBG,a",     "FBU,a",
+			"FBA,a", "FBE,a",  "FBUE,a",  "FBGE,a",  "FBUGE,a",  "FBLE,a",   "FBULE,a",   "FBO,a",
 		};
 		static char *MATCH_name_cond_5[] =
 		{
-			"CBN", "CB123", "CB12",   "CB13",   "CB1",   "CB23",   "CB2",     "CB3",
-			"CBA", "CB0",   "CB03",   "CB02",   "CB023", "CB01",   "CB013",   "CB012",
+			"CBN", "CB123", "CB12",   "CB13",   "CB1",     "CB23",   "CB2",     "CB3",
+			"CBA", "CB0",   "CB03",   "CB02",   "CB023",   "CB01",   "CB013",   "CB012",
 		};
 		static char *MATCH_name_cond_6[] =
 		{
-			"CBN,a", "CB123,a", "CB12,a",   "CB13,a",   "CB1,a",   "CB23,a",   "CB2,a",     "CB3,a",
-			"CBA,a", "CB0,a",   "CB03,a",   "CB02,a",   "CB023,a", "CB01,a",   "CB013,a",   "CB012,a",
+			"CBN,a", "CB123,a", "CB12,a",   "CB13,a",   "CB1,a",     "CB23,a",   "CB2,a",     "CB3,a",
+			"CBA,a", "CB0,a",   "CB03,a",   "CB02,a",   "CB023,a",   "CB01,a",   "CB013,a",   "CB012,a",
 		};
 		static char *MATCH_name_rs1_43[] =
 		{
-			"RDY",  "JMPL",  "JMPL",  "JMPL", "JMPL",    "JMPL",    "JMPL",    "JMPL", "JMPL", "JMPL", "JMPL",
-			"JMPL", "JMPL",  "JMPL",  "JMPL", (char *)0, "JMPL",    "JMPL",    "JMPL", "JMPL", "JMPL", "JMPL",
-			"JMPL", "JMPL",  "JMPL",  "JMPL", "JMPL",    "JMPL",    "JMPL",    "JMPL", "JMPL",
+			"RDY",  "JMPL",  "JMPL",  "JMPL",  "JMPL",    "JMPL",    "JMPL",    "JMPL",    "JMPL", "JMPL", "JMPL",
+			"JMPL", "JMPL",  "JMPL",  "JMPL",  (char *)0, "JMPL",    "JMPL",    "JMPL",    "JMPL", "JMPL", "JMPL",
+			"JMPL", "JMPL",  "JMPL",  "JMPL",  "JMPL",    "JMPL",    "JMPL",    "JMPL",    "JMPL",
 		};
 		static char *MATCH_name_op3_44[] =
 		{
@@ -224,30 +224,30 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_opf_49[] =
 		{
-			(char *)0, "FMOVs",     (char *)0,     (char *)0,     (char *)0,     "FNEGs",       (char *)0,     (char *)0,    (char *)0,
-			"FABSs",   (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     "FSQRTs",      (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   "FADDs",       "FADDd",       "FADDq",       (char *)0,     "FSUBs",       "FSUBd",      "FSUBq",
-			(char *)0, "FMULs",     "FMULd",       "FMULq",       (char *)0,     "FDIVs",       "FDIVd",       "FDIVq",      (char *)0,
-			"FCMPs",   "FCMPd",     "FCMPq",       (char *)0,     "FCMPEs",      "FCMPEd",      "FCMPEq",      (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,    (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,     (char *)0,     "FiTOs",      (char *)0,
-			"FdTOs",   "FqTOs",     "FiTOd",       "FsTOd",       (char *)0,     "FqTOd",       "FiTOq",       "FsTOq",      "FdTOq",
-			(char *)0, (char *)0,   "FsTOi",       "FdTOi",       "FqTOi",
+			(char *)0, "FMOVs",     (char *)0,     (char *)0,       (char *)0,       "FNEGs",         (char *)0,       (char *)0,      (char *)0,
+			"FABSs",   (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       "FSQRTs",        (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   "FADDs",       "FADDd",         "FADDq",         (char *)0,       "FSUBs",         "FSUBd",        "FSUBq",
+			(char *)0, "FMULs",     "FMULd",       "FMULq",         (char *)0,       "FDIVs",         "FDIVd",         "FDIVq",        (char *)0,
+			"FCMPs",   "FCMPd",     "FCMPq",       (char *)0,       "FCMPEs",        "FCMPEd",        "FCMPEq",        (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,       (char *)0,       (char *)0,       "FiTOs",        (char *)0,
+			"FdTOs",   "FqTOs",     "FiTOd",       "FsTOd",         (char *)0,       "FqTOd",         "FiTOq",         "FsTOq",        "FdTOq",
+			(char *)0, (char *)0,   "FsTOi",       "FdTOi",         "FqTOi",
 		};
 		static char *MATCH_name_i_50[] =
 		{
@@ -265,8 +265,8 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_cond_55[] =
 		{
-			"TN", "TE",  "TLE",  "TL",    "TLEU",   "TCS",   "TNEG",  "TVS",
-			"TA", "TNE", "TG",   "TGE",   "TGU",    "TCC",   "TPOS",  "TVC",
+			"TN", "TE",  "TLE",  "TL",    "TLEU",    "TCS",    "TNEG",   "TVS",
+			"TA", "TNE", "TG",   "TGE",   "TGU",     "TCC",    "TPOS",   "TVC",
 		};
 		static char *MATCH_name_i_61[] =
 		{
@@ -433,7 +433,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 
 						sprintf(str, "NOP");
 					} /*opt-block*/ /*opt-block+*/
-					else{
+					else {
 						goto MATCH_label_a3; /*opt-block+*/
 					}
 
@@ -721,7 +721,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							sprintf(str, "%s %s", name, DIS_RD);
 						}
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -847,7 +847,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						((MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ < 512)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */)
 						{
 						case 0:
@@ -1192,7 +1192,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						((MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */ < 512)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */)
 						{
 						case 84:
@@ -1637,7 +1637,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_73[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a9;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1649,7 +1649,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_74[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a9;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1661,7 +1661,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_75[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a9;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1673,7 +1673,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_76[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a9;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1685,7 +1685,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_77[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a10;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1697,7 +1697,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_78[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a10;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1709,7 +1709,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_79[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a10;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1721,7 +1721,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_80[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a10;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1733,7 +1733,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_81[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a9;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1745,7 +1745,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_82[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a9;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1757,7 +1757,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_83[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a9;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1769,7 +1769,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						MATCH_name = MATCH_name_i_84[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_a9;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 

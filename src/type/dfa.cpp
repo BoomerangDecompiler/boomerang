@@ -18,7 +18,7 @@
 #include "include/type.h"
 #include "boom_base/log.h"
 #include "include/signature.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/prog.h"
 #include "include/visitor.h"
 #include "boom_base/log.h"
@@ -88,7 +88,7 @@ void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
 				if (first) {
 					LOG << "       returns: ";
 				}
-				else{
+				else {
 					LOG << ", ";
 				}
 
@@ -334,7 +334,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 							if (ty && ty->resolvesToArray()) {
 								ne = Binary::get(opArrayIndex, g, Const::get(0));
 							}
-							else{
+							else {
 								ne = g;
 							}
 						}
@@ -1272,7 +1272,7 @@ void Assignment::dfaTypeAnalysis(bool& ch)
 		if (addrType->resolvesToPointer()) {
 			memofType = addrType->as<PointerType>()->getPointsTo();
 		}
-		else{
+		else {
 			memofType = VoidType::get();
 		}
 
@@ -1495,14 +1495,14 @@ SharedType deltaDifference(SharedType ta, SharedType tb)
 
 SharedType Binary::ascendType()
 {
-	if (op == opFlagCall) {
+	if (m_oper == opFlagCall) {
 		return VoidType::get();
 	}
 
 	SharedType ta = subExp1->ascendType();
 	SharedType tb = subExp2->ascendType();
 
-	switch (op)
+	switch (m_oper)
 	{
 	case opPlus:
 		return sigmaSum(ta, tb);
@@ -1551,19 +1551,19 @@ SharedType Binary::ascendType()
 // Constants and subscripted locations are at the leaves of the expression tree. Just return their stored types.
 SharedType RefExp::ascendType()
 {
-	if (def == nullptr) {
+	if (m_def == nullptr) {
 		LOG_STREAM() << "Warning! Null reference in " << this << "\n";
 		return VoidType::get();
 	}
 
-	return def->getTypeFor(subExp1);
+	return m_def->getTypeFor(subExp1);
 }
 
 
 SharedType Const::ascendType()
 {
-	if (type->resolvesToVoid()) {
-		switch (op)
+	if (m_type->resolvesToVoid()) {
+		switch (m_oper)
 		{
 		case opIntConst:
 			// could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
@@ -1578,19 +1578,19 @@ SharedType Const::ascendType()
 			break;
 
 		case opLongConst:
-			type = IntegerType::get(STD_SIZE * 2, 0);
+			m_type = IntegerType::get(STD_SIZE * 2, 0);
 			break;
 
 		case opFltConst:
-			type = FloatType::get(64);
+			m_type = FloatType::get(64);
 			break;
 
 		case opStrConst:
-			type = PointerType::get(CharType::get());
+			m_type = PointerType::get(CharType::get());
 			break;
 
 		case opFuncConst:
-			type = FuncType::get(); // More needed here?
+			m_type = FuncType::get();          // More needed here?
 			break;
 
 		default:
@@ -1598,14 +1598,14 @@ SharedType Const::ascendType()
 		}
 	}
 
-	return type;
+	return m_type;
 }
 
 
 // Can also find various terminals at the leaves of an expression tree
 SharedType Terminal::ascendType()
 {
-	switch (op)
+	switch (m_oper)
 	{
 	case opPC:
 		return IntegerType::get(STD_SIZE, -1);
@@ -1631,14 +1631,14 @@ SharedType Unary::ascendType()
 {
 	SharedType ta = subExp1->ascendType();
 
-	switch (op)
+	switch (m_oper)
 	{
 	case opMemOf:
 
 		if (ta->resolvesToPointer()) {
 			return ta->as<PointerType>()->getPointsTo();
 		}
-		else{
+		else {
 			return VoidType::get(); // NOT SURE! Really should be bottom
 		}
 
@@ -1659,7 +1659,7 @@ SharedType Unary::ascendType()
 
 SharedType Ternary::ascendType()
 {
-	switch (op)
+	switch (m_oper)
 	{
 	case opFsize:
 		return FloatType::get(subExp2->access<Const>()->getInt());
@@ -1668,7 +1668,7 @@ SharedType Ternary::ascendType()
 	case opSgnEx:
 		{
 			int toSize = subExp2->access<Const>()->getInt();
-			return Type::newIntegerLikeType(toSize, op == opZfill ? -1 : 1);
+			return Type::newIntegerLikeType(toSize, m_oper == opZfill ? -1 : 1);
 		}
 
 	default:
@@ -1694,7 +1694,7 @@ SharedType TypedExp::ascendType()
 
 void Binary::descendType(SharedType parentType, bool& ch, Instruction *s)
 {
-	if (op == opFlagCall) {
+	if (m_oper == opFlagCall) {
 		return;
 	}
 
@@ -1717,7 +1717,7 @@ void Binary::descendType(SharedType parentType, bool& ch, Instruction *s)
 	}
 #endif
 
-	switch (op)
+	switch (m_oper)
 	{
 	case opPlus:
 		ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
@@ -1768,7 +1768,7 @@ void Binary::descendType(SharedType parentType, bool& ch, Instruction *s)
 		{
 			int signedness;
 
-			switch (op)
+			switch (m_oper)
 			{
 			case opBitAnd:
 			case opBitOr:
@@ -1798,7 +1798,7 @@ void Binary::descendType(SharedType parentType, bool& ch, Instruction *s)
 			ta = ta->meetWith(IntegerType::get(parentSize, signedness), ch);
 			subExp1->descendType(ta, ch, s);
 
-			if ((op == opShiftL) || (op == opShiftR) || (op == opShiftRA)) {
+			if ((m_oper == opShiftL) || (m_oper == opShiftR) || (m_oper == opShiftRA)) {
 				// These operators are not symmetric; doesn't force a signedness on the second operand
 				// FIXME: should there be a gentle bias twowards unsigned? Generally, you can't shift by negative
 				// amounts.
@@ -1819,8 +1819,8 @@ void Binary::descendType(SharedType parentType, bool& ch, Instruction *s)
 
 void RefExp::descendType(SharedType parentType, bool& ch, Instruction *s)
 {
-	assert(def != nullptr);
-	SharedType newType = def->meetWithFor(parentType, subExp1, ch);
+	assert(m_def != nullptr);
+	SharedType newType = m_def->meetWithFor(parentType, subExp1, ch);
 	// In case subExp1 is a m[...]
 	subExp1->descendType(newType, ch, s);
 }
@@ -1830,21 +1830,21 @@ void Const::descendType(SharedType parentType, bool& ch, Instruction */*s*/)
 {
 	bool thisCh = false;
 
-	type = type->meetWith(parentType, thisCh);
-	ch  |= thisCh;
+	m_type = m_type->meetWith(parentType, thisCh);
+	ch    |= thisCh;
 
 	if (thisCh) {
 		// May need to change the representation
-		if (type->resolvesToFloat()) {
-			if (op == opIntConst) {
-				op   = opFltConst;
-				type = FloatType::get(64);
+		if (m_type->resolvesToFloat()) {
+			if (m_oper == opIntConst) {
+				m_oper = opFltConst;
+				m_type = FloatType::get(64);
 				float f = *(float *)&u.i;
 				u.d = (double)f;
 			}
-			else if (op == opLongConst) {
-				op   = opFltConst;
-				type = FloatType::get(64);
+			else if (m_oper == opLongConst) {
+				m_oper = opFltConst;
+				m_type = FloatType::get(64);
 				double d = *(double *)&u.ll;
 				u.d = d;
 			}
@@ -1896,7 +1896,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
 
 	std::vector<SharedExp> matches;
 
-	switch (op)
+	switch (m_oper)
 	{
 	case opMemOf:
 		{
@@ -1958,7 +1958,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
 
 				// FIXME: many other cases
 			}
-			else{
+			else {
 				subExp1->descendType(PointerType::get(parentType), ch, s);
 			}
 
@@ -1998,7 +1998,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
 
 void Ternary::descendType(SharedType /*parentType*/, bool& ch, Instruction *s)
 {
-	switch (op)
+	switch (m_oper)
 	{
 	case opFsize:
 		subExp3->descendType(FloatType::get(subExp1->access<Const>()->getInt()), ch, s);
@@ -2009,7 +2009,7 @@ void Ternary::descendType(SharedType /*parentType*/, bool& ch, Instruction *s)
 		{
 			int        fromSize = subExp1->access<Const>()->getInt();
 			SharedType fromType;
-			fromType = Type::newIntegerLikeType(fromSize, op == opZfill ? -1 : 1);
+			fromType = Type::newIntegerLikeType(fromSize, m_oper == opZfill ? -1 : 1);
 			subExp3->descendType(fromType, ch, s);
 			break;
 		}

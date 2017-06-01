@@ -8,7 +8,7 @@ void world() {
   printf("world!\n");
 }
 
-typedef void (*FPTR)(void);
+typedef void (*FPTR)();
 
 int main() {
     FPTR p;

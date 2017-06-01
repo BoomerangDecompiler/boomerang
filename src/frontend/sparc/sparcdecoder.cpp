@@ -25,7 +25,7 @@
 #include "sparcdecoder.h"
 
 #include "include/decoder.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/prog.h"
 #include "include/proc.h"
 #include "include/rtl.h"
@@ -102,7 +102,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 			else if (name[3] == 'E') { // FBLE
 				br->setCondType(BRANCH_JSLE, true);
 			}
-			else{ // FBL
+			else { // FBL
 				br->setCondType(BRANCH_JSL, true);
 			}
 
@@ -113,7 +113,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 			if (name[3] == 'E') { // FBGE
 				br->setCondType(BRANCH_JSGE, true);
 			}
-			else{ // FBG
+			else { // FBG
 				br->setCondType(BRANCH_JSG, true);
 			}
 
@@ -152,11 +152,11 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 			if (name[3] == 'U') {
 				br->setCondType(BRANCH_JULE); // BLEU
 			}
-			else{
+			else {
 				br->setCondType(BRANCH_JSLE); // BLE
 			}
 		}
-		else{
+		else {
 			br->setCondType(BRANCH_JSL); // BL
 		}
 
@@ -168,7 +168,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 		if (name[3] == 'G') {
 			br->setCondType(BRANCH_JMI); // BNEG
 		}
-		else{
+		else {
 			br->setCondType(BRANCH_JNE); // BNE
 		}
 
@@ -180,7 +180,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 		if (name[2] == 'C') {
 			br->setCondType(BRANCH_JUGE); // BCC
 		}
-		else{
+		else {
 			br->setCondType(BRANCH_JUL); // BCS
 		}
 
@@ -192,7 +192,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 		if (name[2] == 'C') {
 			LOG_STREAM(2) << "Decoded BVC instruction\n"; // BVC
 		}
-		else{
+		else {
 			LOG_STREAM(2) << "Decoded BVS instruction\n"; // BVS
 		}
 
@@ -207,7 +207,7 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 		else if (name[2] == 'U') {
 			br->setCondType(BRANCH_JUG); // BGU
 		}
-		else{
+		else {
 			br->setCondType(BRANCH_JSG); // BG
 		}
 
@@ -270,43 +270,43 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 		const char        *MATCH_name;
 		static const char *MATCH_name_cond_0[] =
 		{
-			"BPN",   "BPE",   "BPLE",   "BPL",    "BPLEU",   "BPCS",   "BPNEG",  "BPVS",
-			"BPA,a", "BPNE",  "BPG",    "BPGE",   "BPGU",    "BPCC",   "BPPOS",  "BPVC",
+			"BPN",   "BPE",   "BPLE",   "BPL",     "BPLEU",    "BPCS",    "BPNEG",   "BPVS",
+			"BPA,a", "BPNE",  "BPG",    "BPGE",    "BPGU",     "BPCC",    "BPPOS",   "BPVC",
 		};
 		static const char *MATCH_name_cond_1[] =
 		{
-			"BPN,a", "BPE,a",     "BPLE,a",     "BPL,a",    "BPLEU,a",   "BPCS,a",   "BPNEG,a",  "BPVS,a",
-			"BA",    "BPNE,a",    "BPG,a",      "BPGE,a",   "BPGU,a",    "BPCC,a",   "BPPOS,a",  "BPVC,a",
+			"BPN,a", "BPE,a",     "BPLE,a",     "BPL,a",       "BPLEU,a",    "BPCS,a",    "BPNEG,a",   "BPVS,a",
+			"BA",    "BPNE,a",    "BPG,a",      "BPGE,a",      "BPGU,a",     "BPCC,a",    "BPPOS,a",   "BPVC,a",
 		};
 		static const char *MATCH_name_cond_2[] =
 		{
-			"BN",   "BE",   "BLE",   "BL",    "BLEU",   "BCS",   "BNEG",  "BVS",
-			"BA,a", "BNE",  "BG",    "BGE",   "BGU",    "BCC",   "BPOS",  "BVC",
+			"BN",   "BE",   "BLE",   "BL",     "BLEU",    "BCS",    "BNEG",   "BVS",
+			"BA,a", "BNE",  "BG",    "BGE",    "BGU",     "BCC",    "BPOS",   "BVC",
 		};
 		static const char *MATCH_name_cond_3[] =
 		{
-			"BN,a", "BE,a",   "BLE,a",   "BL,a",    "BLEU,a",   "BCS,a",   "BNEG,a",  "BVS,a",
-			"FBA",  "BNE,a",  "BG,a",    "BGE,a",   "BGU,a",    "BCC,a",   "BPOS,a",  "BVC,a",
+			"BN,a", "BE,a",   "BLE,a",   "BL,a",     "BLEU,a",    "BCS,a",    "BNEG,a",   "BVS,a",
+			"FBA",  "BNE,a",  "BG,a",    "BGE,a",    "BGU,a",     "BCC,a",    "BPOS,a",   "BVC,a",
 		};
 		static const char *MATCH_name_cond_5[] =
 		{
-			"FBN",   "FBNE",   "FBLG",    "FBUL",  "FBL",   "FBUG",   "FBG",     "FBU",
-			"FBA,a", "FBE",    "FBUE",    "FBGE",  "FBUGE", "FBLE",   "FBULE",   "FBO",
+			"FBN",   "FBNE",   "FBLG",    "FBUL",    "FBL",    "FBUG",   "FBG",     "FBU",
+			"FBA,a", "FBE",    "FBUE",    "FBGE",    "FBUGE",  "FBLE",   "FBULE",   "FBO",
 		};
 		static const char *MATCH_name_cond_6[] =
 		{
-			"FBN,a", "FBNE,a",  "FBLG,a",   "FBUL,a",  "FBL,a",   "FBUG,a",   "FBG,a",     "FBU,a",
-			"CBA",   "FBE,a",   "FBUE,a",   "FBGE,a",  "FBUGE,a", "FBLE,a",   "FBULE,a",   "FBO,a",
+			"FBN,a", "FBNE,a",  "FBLG,a",   "FBUL,a",   "FBL,a",    "FBUG,a",   "FBG,a",     "FBU,a",
+			"CBA",   "FBE,a",   "FBUE,a",   "FBGE,a",   "FBUGE,a",  "FBLE,a",   "FBULE,a",   "FBO,a",
 		};
 		static const char *MATCH_name_cond_7[] =
 		{
-			"CBN",   "CB123",   "CB12",     "CB13",   "CB1",   "CB23",   "CB2",     "CB3",
-			"CBA,a", "CB0",     "CB03",     "CB02",   "CB023", "CB01",   "CB013",   "CB012",
+			"CBN",   "CB123",   "CB12",     "CB13",     "CB1",     "CB23",   "CB2",     "CB3",
+			"CBA,a", "CB0",     "CB03",     "CB02",     "CB023",   "CB01",   "CB013",   "CB012",
 		};
 		static const char *MATCH_name_cond_8[] =
 		{
-			"CBN,a", "CB123,a",  "CB12,a",    "CB13,a",   "CB1,a",   "CB23,a",   "CB2,a",     "CB3,a",
-			"TA",    "CB0,a",    "CB03,a",    "CB02,a",   "CB023,a", "CB01,a",   "CB013,a",   "CB012,a",
+			"CBN,a", "CB123,a",  "CB12,a",    "CB13,a",    "CB1,a",     "CB23,a",   "CB2,a",     "CB3,a",
+			"TA",    "CB0,a",    "CB03,a",    "CB02,a",    "CB023,a",   "CB01,a",   "CB013,a",   "CB012,a",
 		};
 		static const char *MATCH_name_op3_46[] =
 		{
@@ -321,47 +321,47 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 		};
 		static const char *MATCH_name_opf_51[] =
 		{
-			nullptr,  "FMOVs",   nullptr,   nullptr,  nullptr,  "FNEGs",
-			nullptr,  nullptr,   nullptr,   "FABSs",  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  "FSQRTs",
-			"FSQRTd", "FSQRTq",  nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  "FADDs",
-			"FADDd",  "FADDq",   nullptr,   "FSUBs",  "FSUBd",  "FSUBq",
-			nullptr,  "FMULs",   "FMULd",   "FMULq",  nullptr,  "FDIVs",
-			"FDIVd",  "FDIVq",   nullptr,   "FCMPs",  "FCMPd",  "FCMPq",
-			nullptr,  "FCMPEs",  "FCMPEd",  "FCMPEq", nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  nullptr,  nullptr,
-			nullptr,  nullptr,   nullptr,   nullptr,  "FiTOs",  nullptr,
-			"FdTOs",  "FqTOs",   "FiTOd",   "FsTOd",  nullptr,  "FqTOd",
-			"FiTOq",  "FsTOq",   "FdTOq",   nullptr,  nullptr,  "FsTOi",
+			nullptr,  "FMOVs",   nullptr,   nullptr,   nullptr,  "FNEGs",
+			nullptr,  nullptr,   nullptr,   "FABSs",   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  "FSQRTs",
+			"FSQRTd", "FSQRTq",  nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  "FADDs",
+			"FADDd",  "FADDq",   nullptr,   "FSUBs",   "FSUBd",  "FSUBq",
+			nullptr,  "FMULs",   "FMULd",   "FMULq",   nullptr,  "FDIVs",
+			"FDIVd",  "FDIVq",   nullptr,   "FCMPs",   "FCMPd",  "FCMPq",
+			nullptr,  "FCMPEs",  "FCMPEd",  "FCMPEq",  nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   nullptr,  nullptr,
+			nullptr,  nullptr,   nullptr,   nullptr,   "FiTOs",  nullptr,
+			"FdTOs",  "FqTOs",   "FiTOd",   "FsTOd",   nullptr,  "FqTOd",
+			"FiTOq",  "FsTOq",   "FdTOq",   nullptr,   nullptr,  "FsTOi",
 			"FdTOi",  "FqTOi",
 		};
 		static const char *MATCH_name_cond_53[] =
 		{
-			"TN",    "TE",    "TLE",    "TL",    "TLEU",   "TCS",   "TNEG",  "TVS",
-			nullptr, "TNE",   "TG",     "TGE",   "TGU",    "TCC",   "TPOS",  "TVC",
+			"TN",    "TE",    "TLE",    "TL",      "TLEU",    "TCS",    "TNEG",   "TVS",
+			nullptr, "TNE",   "TG",     "TGE",     "TGU",     "TCC",    "TPOS",   "TVC",
 		};
 		static const char *MATCH_name_i_66[] =
 		{
@@ -564,7 +564,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							stmts       = instantiate(pc, name);
 						}
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d4; /*opt-block+*/
 					}
 
@@ -835,7 +835,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							stmts = instantiate(pc, name, { DIS_RD });
 						}
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -953,7 +953,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						((MATCH_w_32_0 >> 5 & 0x1ff) > 211)) {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 5 & 0x1ff) /* opf at 0 */)
 						{
 						case 0:
@@ -1310,7 +1310,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						if ((matched_val < 81) || (matched_val >= 88)) {
 							goto MATCH_label_d3; /*opt-block+*/
 						}
-						else{
+						else {
 							switch (matched_val)
 							{
 							case 84:
@@ -1420,7 +1420,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 									DEBUG_STMTS(result);
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_d6; /*opt-block+*/
 								}
 
@@ -1446,7 +1446,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 									DEBUG_STMTS(result);
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_d6; /*opt-block+*/
 								}
 
@@ -1500,7 +1500,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 					else if ((MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */ == 15) {
 						goto MATCH_label_d7; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_d6; /*opt-block+*/ /*opt-block+*/
 					}
 
@@ -1658,7 +1658,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_66[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d11;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1668,7 +1668,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_67[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d11;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1678,7 +1678,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_68[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d11;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1688,7 +1688,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_69[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d11;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1698,7 +1698,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_70[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d12;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1708,7 +1708,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_71[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d12;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1718,7 +1718,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_72[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d12;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1728,7 +1728,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_73[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d12;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1738,7 +1738,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_74[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d11;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1748,7 +1748,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = MATCH_name_i_75[(MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */];
 						goto MATCH_label_d11;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1758,7 +1758,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = "LDSTUBA";
 						goto MATCH_label_d11;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 
@@ -1768,7 +1768,7 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						MATCH_name = "SWAPA";
 						goto MATCH_label_d11;
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_d3; /*opt-block+*/
 					}
 

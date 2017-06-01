@@ -17,7 +17,7 @@ int fib (int x)
     }
 }
 
-int main (void)
+int main ()
 {   int number, value;
 
     printf ("Input number: ");

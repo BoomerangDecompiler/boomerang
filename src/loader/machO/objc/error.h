@@ -130,7 +130,7 @@ volatile /* never returns */
  */
 typedef volatile void NXExceptionRaiser(int code, const void *data1, const void *data2);
 OBJC_EXPORT void NXSetExceptionRaiser(NXExceptionRaiser *proc);
-OBJC_EXPORT NXExceptionRaiser *NXGetExceptionRaiser(void);
+OBJC_EXPORT NXExceptionRaiser *NXGetExceptionRaiser();
 OBJC_EXPORT NXExceptionRaiser NXDefaultExceptionRaiser;
 
 /* The error buffer is used to allocate data which is passed up to other
@@ -138,6 +138,6 @@ OBJC_EXPORT NXExceptionRaiser NXDefaultExceptionRaiser;
    handler.  The Application Kit does this.
  */
 OBJC_EXPORT void NXAllocErrorData(int size, void **data);
-OBJC_EXPORT void NXResetErrorData(void);
+OBJC_EXPORT void NXResetErrorData();
 
 #endif /* _OBJC_ERROR_H_ */

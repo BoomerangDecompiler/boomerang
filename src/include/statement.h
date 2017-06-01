@@ -26,7 +26,7 @@
 #include "include/config.h"
 
 #include "memo.h"
-#include "exphelp.h" // For lessExpStar, lessAssignment etc
+#include "db/exphelp.h" // For lessExpStar, lessAssignment etc
 #include "include/types.h"
 #include "include/managed.h"
 #include "db/dataflow.h"  // For embedded objects DefCollector and UseCollector
@@ -189,7 +189,7 @@ public:
 		return Kind == STMT_ASSIGN || Kind == STMT_PHIASSIGN || Kind == STMT_IMPASSIGN || Kind == STMT_BOOLASSIGN;
 	}
 
-	bool isPhi() const { return Kind == STMT_PHIASSIGN; } ///< true    if this statement is a phi assignment
+	bool isPhi() const { return Kind == STMT_PHIASSIGN; }      ///< true    if this statement is a phi assignment
 	bool isImplicit() const { return Kind == STMT_IMPASSIGN; } ///< true if this statement is an implicit assignment
 	bool isFlagAssgn();                                   ///< true if this statment is a flags assignment
 

@@ -1,7 +1,6 @@
 include_directories(../c/) # used by prog.cpp
 
 set(INCLUDES
-	../include/exp.h
 	../include/hllcode.h
 	../include/memo.h
 	../include/proc.h
@@ -9,7 +8,6 @@ set(INCLUDES
 	../include/statement.h
 	../include/type.h
 	../include/visitor.h
-	../include/exphelp.h
 	../include/operator.h
 	../include/prog.h
 	../include/sigenum.h
@@ -43,7 +41,9 @@ set(SRC
     cfg.cpp
     dataflow.h
     dataflow.cpp
+    exp.h
     exp.cpp
+    exphelp.h
     insnameelem.cpp
     managed.cpp
     proc.cpp

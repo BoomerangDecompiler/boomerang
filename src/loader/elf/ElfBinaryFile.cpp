@@ -846,7 +846,7 @@ int ElfBinaryFile::elfRead4(const int *pi) const
 	if (m_elfEndianness) {
 		return (int)((elfRead2(p) << 16) + elfRead2(p + 1));
 	}
-	else{
+	else {
 		return (int)(elfRead2(p) + (elfRead2(p + 1) << 16));
 	}
 }

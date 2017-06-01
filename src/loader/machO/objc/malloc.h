@@ -52,7 +52,7 @@ typedef struct _malloc_zone_t
 
 /*********    Creation and destruction    ************/
 
-extern malloc_zone_t *malloc_default_zone(void);
+extern malloc_zone_t *malloc_default_zone();
 
 /* The initial zone */
 

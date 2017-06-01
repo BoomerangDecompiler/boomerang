@@ -175,7 +175,7 @@ ADDRESS Win32BinaryFile::getMainEntryPoint()
 			if (borlandState == 1) {
 				borlandState++;
 			}
-			else{
+			else {
 				borlandState = 0;
 			}
 
@@ -200,7 +200,7 @@ ADDRESS Win32BinaryFile::getMainEntryPoint()
 					}
 				}
 			}
-			else{
+			else {
 				borlandState = 0;
 			}
 
@@ -233,7 +233,7 @@ ADDRESS Win32BinaryFile::getMainEntryPoint()
 					return main;
 				}
 			}
-			else{
+			else {
 				borlandState = 0;
 			}
 
@@ -244,7 +244,7 @@ ADDRESS Win32BinaryFile::getMainEntryPoint()
 			if (borlandState == 2) {
 				borlandState = 3;
 			}
-			else{
+			else {
 				borlandState = 0;
 			}
 
@@ -255,7 +255,7 @@ ADDRESS Win32BinaryFile::getMainEntryPoint()
 			if (borlandState == 3) {
 				borlandState++;
 			}
-			else{
+			else {
 				borlandState = 0;
 			}
 
@@ -324,7 +324,7 @@ ADDRESS Win32BinaryFile::getMainEntryPoint()
 
 				return dest + LMMH(m_pPEHeader->Imagebase);
 			}
-			else{
+			else {
 				pushes = 0;                    // Assume pushes don't accumulate over calls
 			}
 		}
@@ -826,7 +826,7 @@ enum SymTagEnum
 
 char *basicTypes[] =
 {
-	"notype",        "void",        "char",        "WCHAR", "??", "??", "int", "unsigned int", "float", "bcd", "bool", "??", "??",
+	"notype",        "void",        "char",        "WCHAR",        "??", "??", "int", "unsigned int", "float", "bcd", "bool", "??", "??",
 	"long"
 	"unsigned long",
 };

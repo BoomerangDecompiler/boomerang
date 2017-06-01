@@ -8,7 +8,7 @@
  ******************************************************************************/
 #include "include/visitor.h"
 
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/statement.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h" // For VERBOSE
@@ -47,7 +47,7 @@ bool SetConscripts::visit(const std::shared_ptr<Const>& c)
 		if (bClear) {
 			c->setConscript(0);
 		}
-		else{
+		else {
 			c->setConscript(++curConscript);
 		}
 	}
@@ -386,7 +386,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Location>& e, bool& override)
 		memOnly  = wasMemOnly;
 		override = true; // Already looked inside child
 	}
-	else{
+	else {
 		override = false;
 	}
 
@@ -878,7 +878,7 @@ bool ConstFinder::visit(const std::shared_ptr<Location>& e, bool& override)
 	if (e->isMemOf()) {
 		override = false; // We DO want to see constants in memofs
 	}
-	else{
+	else {
 		override = true; // Don't consider register numbers, global names, etc
 	}
 
@@ -957,7 +957,7 @@ SharedExp Localiser::postVisit(const std::shared_ptr<Location>& e)
 		unchanged &= ~mask;
 		mod        = true;
 	}
-	else{
+	else {
 		ret = RefExp::get(ret, nullptr); // No definition reaches, so subscript with {-}
 	}
 
@@ -982,7 +982,7 @@ SharedExp Localiser::postVisit(const std::shared_ptr<Terminal>& e)
 		unchanged &= ~mask;
 		mod        = true;
 	}
-	else{
+	else {
 		ret = RefExp::get(ret, nullptr); // No definition reaches, so subscript with {-}
 	}
 
@@ -1371,7 +1371,7 @@ static SharedExp checkSignedness(SharedExp e, int reqSignedness)
 		if (!isInt) {
 			newtype = IntegerType::get(STD_SIZE, reqSignedness);
 		}
-		else{
+		else {
 			newtype = IntegerType::get(std::static_pointer_cast<IntegerType>(ty)->getSize(), reqSignedness); // Transfer size
 		}
 

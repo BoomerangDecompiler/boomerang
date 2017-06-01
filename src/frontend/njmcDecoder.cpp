@@ -16,7 +16,7 @@
 
 #include "njmcDecoder.h"
 #include "include/rtl.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/register.h"
 #include "db/cfg.h"
 #include "include/proc.h"
@@ -80,11 +80,11 @@ std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name,
 				if ((val > 100) || (val < -100)) {
 					q_cout << "0x" << QString::number(val, 16);
 				}
-				else{
+				else {
 					q_cout << val;
 				}
 			}
-			else{
+			else {
 				itd->print(q_cout);
 			}
 		}

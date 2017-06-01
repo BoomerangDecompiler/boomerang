@@ -56,7 +56,7 @@ bool InstructionPatterns::ADD$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -67,7 +67,7 @@ bool InstructionPatterns::ADD$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -128,7 +128,7 @@ bool InstructionPatterns::ADD$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -139,7 +139,7 @@ bool InstructionPatterns::ADD$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -198,7 +198,7 @@ bool InstructionPatterns::JMPL$dispA(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
 				if (!c_isVAR && ((int)_b != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _b;
 				}
 
@@ -206,7 +206,7 @@ bool InstructionPatterns::JMPL$dispA(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_s0; /*opt-block+*/
 			}
 		}
@@ -260,7 +260,7 @@ bool InstructionPatterns::JMPL$indirectA(ADDRESS& lc, int& a, bool a_isVAR, int&
 				if (!b_isVAR && ((int)_b != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _b;
 				}
 
@@ -268,7 +268,7 @@ bool InstructionPatterns::JMPL$indirectA(ADDRESS& lc, int& a, bool a_isVAR, int&
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_r0; /*opt-block+*/
 			}
 		}
@@ -319,7 +319,7 @@ bool InstructionPatterns::OR$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bo
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -330,7 +330,7 @@ bool InstructionPatterns::OR$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bo
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -338,7 +338,7 @@ bool InstructionPatterns::OR$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, bo
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_q0; /*opt-block+*/
 			}
 		}
@@ -389,7 +389,7 @@ bool InstructionPatterns::RESTORE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& 
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -400,7 +400,7 @@ bool InstructionPatterns::RESTORE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& 
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -408,7 +408,7 @@ bool InstructionPatterns::RESTORE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& 
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_p0; /*opt-block+*/
 			}
 		}
@@ -459,7 +459,7 @@ bool InstructionPatterns::RESTORE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& 
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -470,7 +470,7 @@ bool InstructionPatterns::RESTORE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& 
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -478,7 +478,7 @@ bool InstructionPatterns::RESTORE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& 
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_o0; /*opt-block+*/
 			}
 		}
@@ -529,7 +529,7 @@ bool InstructionPatterns::SAVE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -540,7 +540,7 @@ bool InstructionPatterns::SAVE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -548,7 +548,7 @@ bool InstructionPatterns::SAVE$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_n0; /*opt-block+*/
 			}
 		}
@@ -599,7 +599,7 @@ bool InstructionPatterns::SAVE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -610,7 +610,7 @@ bool InstructionPatterns::SAVE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -618,7 +618,7 @@ bool InstructionPatterns::SAVE$rmode(ADDRESS& lc, int& a, bool a_isVAR, int& b, 
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_m0; /*opt-block+*/
 			}
 		}
@@ -669,7 +669,7 @@ bool InstructionPatterns::SUB$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -680,7 +680,7 @@ bool InstructionPatterns::SUB$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -688,7 +688,7 @@ bool InstructionPatterns::SUB$imode(ADDRESS& lc, int& a, bool a_isVAR, int& b, b
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_l0; /*opt-block+*/
 			}
 		}
@@ -736,7 +736,7 @@ bool InstructionPatterns::UNIMP(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -744,7 +744,7 @@ bool InstructionPatterns::UNIMP(ADDRESS& lc, int& a, bool a_isVAR)
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_k0; /*opt-block+*/
 			}
 		}
@@ -792,7 +792,7 @@ bool InstructionPatterns::call__(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -839,14 +839,14 @@ bool InstructionPatterns::dispA(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool 
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
 				if (!b_isVAR && ((int)_b != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _b;
 				}
 
@@ -892,7 +892,7 @@ bool InstructionPatterns::imode(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -943,7 +943,7 @@ bool InstructionPatterns::indirectA(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -994,14 +994,14 @@ bool InstructionPatterns::mov_(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
 				if (!b_isVAR && ((int)_b != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _b;
 				}
 
@@ -1009,7 +1009,7 @@ bool InstructionPatterns::mov_(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_f0; /*opt-block+*/
 			}
 		}
@@ -1269,7 +1269,7 @@ bool InstructionPatterns::rmode(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -1310,14 +1310,14 @@ bool InstructionPatterns::sethi(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool 
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
 				if (!b_isVAR && ((int)_b != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _b;
 				}
 
@@ -1325,7 +1325,7 @@ bool InstructionPatterns::sethi(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool 
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_a0; /*opt-block+*/
 			}
 		}

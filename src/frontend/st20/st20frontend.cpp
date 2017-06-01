@@ -23,7 +23,7 @@
 
 #include "st20frontend.h"
 
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/register.h"
 #include "include/rtl.h"
 #include "db/cfg.h"

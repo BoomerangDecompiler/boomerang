@@ -340,7 +340,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc *pProc,
 						if (pBB == 0) {
 							sequentialDecode = false;
 						}
-						else{
+						else {
 							pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
 						}
 					}
@@ -401,7 +401,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc *pProc,
 								// This ends the function
 								sequentialDecode = false;
 							}
-							else{
+							else {
 								// Add the fall through edge if the block didn't
 								// already exist
 								if (pBB != nullptr) {

@@ -5,7 +5,7 @@
  ******************************************************************************/
 #include "RtlTest.h"
 #include "include/statement.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "frontend/sparc/sparcfrontend.h"

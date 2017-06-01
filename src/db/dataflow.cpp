@@ -16,7 +16,7 @@
 
 #include "db/cfg.h"
 #include "include/proc.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "boom_base/log.h"
 #include "include/statement.h"
 #include "include/visitor.h"
@@ -38,16 +38,16 @@ DataFlow::~DataFlow()
 void DataFlow::dfs(int p, size_t n)
 {
 	if (m_dfnum[n] == 0) {
-		      m_dfnum[n]  = N;
-		      m_vertex[N] = n;
-		      m_parent[n] = p;
+		m_dfnum[n]  = N;
+		m_vertex[N] = n;
+		m_parent[n] = p;
 		N++;
 		// For each successor w of n
 		BasicBlock *bb = m_BBs[n];
 		const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
 
 		for (BasicBlock *_bb : outEdges) {
-			         dfs(n, m_indices[_bb]);
+			dfs(n, m_indices[_bb]);
 		}
 	}
 }
@@ -58,23 +58,23 @@ void DataFlow::dominators(Cfg *cfg)
 	BasicBlock *r    = cfg->getEntryBB();
 	size_t     numBB = cfg->getNumBBs();
 
-	   m_BBs.resize(numBB, (BasicBlock *)-1);
-	N      = 0;
-	   m_BBs[0] = r;
-	   m_indices.clear(); // In case restart decompilation due to switch statements
-	   m_indices[r] = 0;
+	m_BBs.resize(numBB, (BasicBlock *)-1);
+	N        = 0;
+	m_BBs[0] = r;
+	m_indices.clear();    // In case restart decompilation due to switch statements
+	m_indices[r] = 0;
 	// Initialise to "none"
-	   m_dfnum.resize(numBB, 0);
-	   m_semi.resize(numBB, -1);
-	   m_ancestor.resize(numBB, -1);
-	   m_idom.resize(numBB, -1);
-	   m_samedom.resize(numBB, -1);
-	   m_vertex.resize(numBB, -1);
-	   m_parent.resize(numBB, -1);
-	   m_best.resize(numBB, -1);
-	   m_bucket.resize(numBB);
-	   m_DF.resize(numBB);
-    
+	m_dfnum.resize(numBB, 0);
+	m_semi.resize(numBB, -1);
+	m_ancestor.resize(numBB, -1);
+	m_idom.resize(numBB, -1);
+	m_samedom.resize(numBB, -1);
+	m_vertex.resize(numBB, -1);
+	m_parent.resize(numBB, -1);
+	m_best.resize(numBB, -1);
+	m_bucket.resize(numBB);
+	m_DF.resize(numBB);
+
 	// Set up the BBs and indices vectors. Do this here because sometimes a BB can be unreachable (so relying on
 	// in-edges doesn't work)
 	std::list<BasicBlock *>::iterator ii;
@@ -84,12 +84,12 @@ void DataFlow::dominators(Cfg *cfg)
 		BasicBlock *bb = *ii;
 
 		if (bb != r) { // Entry BB r already done
-			         m_indices[bb] = idx;
-			         m_BBs[idx++]  = bb;
+			m_indices[bb] = idx;
+			m_BBs[idx++]  = bb;
 		}
 	}
 
-	   dfs(-1, 0);
+	dfs(-1, 0);
 	assert((N - 1) >= 0);
 
 	for (int i = N - 1; i >= 1; i--) {
@@ -123,9 +123,9 @@ void DataFlow::dominators(Cfg *cfg)
 			}
 		}
 
-		      m_semi[n] = s;
+		m_semi[n] = s;
 		/* Calculation of n's dominator is deferred until the path from s to n has been linked into the forest */
-		      m_bucket[s].insert(n);
+		m_bucket[s].insert(n);
 		Link(p, n);
 		// for each v in bucket[p]
 		std::set<int>::iterator jj;
@@ -140,14 +140,14 @@ void DataFlow::dominators(Cfg *cfg)
 			int y = ancestorWithLowestSemi(v);
 
 			if (m_semi[y] == m_semi[v]) {
-				            m_idom[v] = p; // Success!
+				m_idom[v] = p;             // Success!
 			}
-			else{
-				            m_samedom[v] = y; // Defer
+			else {
+				m_samedom[v] = y;             // Defer
 			}
 		}
 
-		      m_bucket[p].clear();
+		m_bucket[p].clear();
 	}
 
 	for (int i = 1; i < N - 1; i++) {
@@ -156,7 +156,7 @@ void DataFlow::dominators(Cfg *cfg)
 		int n = m_vertex[i];
 
 		if (m_samedom[n] != -1) {
-			         m_idom[n] = m_idom[m_samedom[n]]; // Deferred success!
+			m_idom[n] = m_idom[m_samedom[n]];          // Deferred success!
 		}
 	}
 
@@ -170,10 +170,10 @@ int DataFlow::ancestorWithLowestSemi(int v)
 
 	if (m_ancestor[a] != -1) {
 		int b = ancestorWithLowestSemi(a);
-		      m_ancestor[v] = m_ancestor[a];
+		m_ancestor[v] = m_ancestor[a];
 
 		if (m_dfnum[m_semi[b]] < m_dfnum[m_semi[m_best[v]]]) {
-			         m_best[v] = b;
+			m_best[v] = b;
 		}
 	}
 
@@ -183,8 +183,8 @@ int DataFlow::ancestorWithLowestSemi(int v)
 
 void DataFlow::Link(int p, int n)
 {
-	   m_ancestor[n] = p;
-	   m_best[n]     = n;
+	m_ancestor[n] = p;
+	m_best[n]     = n;
 }
 
 
@@ -243,7 +243,7 @@ void DataFlow::computeDF(int n)
 		}
 	}
 
-	   m_DF[n] = S;
+	m_DF[n] = S;
 } // end computeDF
 
 
@@ -317,37 +317,37 @@ void DataFlow::dumpA_phi()
 bool DataFlow::placePhiFunctions(UserProc *proc)
 {
 	// First free some memory no longer needed
-	   m_dfnum.resize(0);
-	   m_semi.resize(0);
-	   m_ancestor.resize(0);
-	   m_samedom.resize(0);
-	   m_vertex.resize(0);
-	   m_parent.resize(0);
-	   m_best.resize(0);
-	   m_bucket.resize(0);
-	   m_defsites.clear(); // Clear defsites map,
-	   m_defallsites.clear();
+	m_dfnum.resize(0);
+	m_semi.resize(0);
+	m_ancestor.resize(0);
+	m_samedom.resize(0);
+	m_vertex.resize(0);
+	m_parent.resize(0);
+	m_best.resize(0);
+	m_bucket.resize(0);
+	m_defsites.clear();    // Clear defsites map,
+	m_defallsites.clear();
 
 	for (std::set<SharedExp, lessExpStar>& se : m_A_orig) {
 		for (auto iter = se.begin(), fin = se.end(); iter != fin; ) {
 			if (m_A_phi.find(*iter) == m_A_phi.end()) {
 				iter = se.erase(iter);
 			}
-			else{
+			else {
 				++iter;
 			}
 		}
 	}
 
-	   m_A_orig.clear();   // and A_orig,
-	   m_defStmts.clear(); // and the map from variable to defining Stmt
+	m_A_orig.clear();      // and A_orig,
+	m_defStmts.clear();    // and the map from variable to defining Stmt
 
 	bool change = false;
 
 	// Set the sizes of needed vectors
 	size_t numBB = m_indices.size();
 	assert(numBB == proc->getCFG()->getNumBBs());
-	   m_A_orig.resize(numBB);
+	m_A_orig.resize(numBB);
 
 	// We need to create A_orig[n] for all n, the array of sets of locations defined at BB n
 	// Recreate each call because propagation and other changes make old data invalid
@@ -361,13 +361,13 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 			s->getDefinitions(ls);
 
 			if (s->isCall() && ((CallStatement *)s)->isChildless()) { // If this is a childless call
-				            m_defallsites.insert(n);                                // then this block defines every variable
+				m_defallsites.insert(n);                              // then this block defines every variable
 			}
 
 			for (const SharedExp& exp : ls) {
 				if (canRename(exp, proc)) {
-					               m_A_orig[n].insert(exp->clone());
-					               m_defStmts[exp] = s;
+					m_A_orig[n].insert(exp->clone());
+					m_defStmts[exp] = s;
 				}
 			}
 		}
@@ -377,7 +377,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 	for (unsigned int n = 0; n < numBB; n++) {
 		// For each variable a in A_orig[n]
 		for (const SharedExp& a : m_A_orig[n]) {
-			         m_defsites[a].insert(n);
+			m_defsites[a].insert(n);
 		}
 	}
 
@@ -392,7 +392,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 		std::set<int>::iterator da;
 
 		for (da = m_defallsites.begin(); da != m_defallsites.end(); ++da) {
-			         m_defsites[a].insert(*da);
+			m_defsites[a].insert(*da);
 		}
 
 		// W <- defsites[a];
@@ -458,13 +458,13 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 
 		dataflow_progress = 0;
 	}
-	
+
 	bool changed = false;
 
 	// Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare
 	// failures in the Stacks, so it can't be correctly ordered and hence balanced etc, and will lead to segfaults)
 	if (clearStacks) {
-        m_Stacks.clear();
+		m_Stacks.clear();
 	}
 
 	// For each statement S in block n
@@ -549,7 +549,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 						proc->useBeforeDefine(x->clone());
 					}
 				}
-				else{
+				else {
 					def = m_Stacks[x].back();
 				}
 
@@ -579,7 +579,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 			if (S->isCall()) {
 				col = ((CallStatement *)S)->getDefCollector();
 			}
-			else{
+			else {
 				col = ((ReturnStatement *)S)->getCollector();
 			}
 
@@ -602,10 +602,10 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 				// modifications. This is necessary because we do several passes of this algorithm to sort out the
 				// memory expressions
 				if (m_Stacks.find(a) != m_Stacks.end()) { // expression exists, no need for clone ?
-					               m_Stacks[a].push_back(S);
+					m_Stacks[a].push_back(S);
 				}
-				else{
-					               m_Stacks[a->clone()].push_back(S);
+				else {
+					m_Stacks[a->clone()].push_back(S);
 				}
 
 				// Replace definition of 'a' with definition of a_i in S (we don't do this)
@@ -618,7 +618,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 
 				// Stacks already has a definition for a (as just the bare local)
 				if (suitable) {
-					               m_Stacks[a1->clone()].push_back(S);
+					m_Stacks[a1->clone()].push_back(S);
 				}
 			}
 		}
@@ -627,7 +627,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 		// But note that only 'everythings' at the current memory level are defined!
 		if (S->isCall() && ((CallStatement *)S)->isChildless() && !Boomerang::get()->assumeABI) {
 			// S is a childless call (and we're not assuming ABI compliance)
-			         m_Stacks[defineAll]; // Ensure that there is an entry for defineAll
+			m_Stacks[defineAll];          // Ensure that there is an entry for defineAll
 
 			for (auto& elem : m_Stacks) {
 				// if (dd->first->isMemDepth(memDepth))
@@ -793,7 +793,7 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<Instruction *>, les
 		insert(as);
 	}
 
-	   m_initialised = true;
+	m_initialised = true;
 }
 
 
@@ -821,7 +821,7 @@ void UseCollector::print(QTextStream& os, bool html) const
 		if (first) {
 			first = false;
 		}
-		else{
+		else {
 			os << ",  ";
 		}
 
@@ -910,22 +910,22 @@ void DefCollector::dump() const
 
 void UseCollector::makeCloneOf(UseCollector& other)
 {
-	   m_initialised = other.m_initialised;
-	   m_locs.clear();
+	m_initialised = other.m_initialised;
+	m_locs.clear();
 
 	for (auto const& elem : other) {
-		      m_locs.insert((elem)->clone());
+		m_locs.insert((elem)->clone());
 	}
 }
 
 
 void DefCollector::makeCloneOf(const DefCollector& other)
 {
-	   m_initialised = other.m_initialised;
-	   m_defs.clear();
+	m_initialised = other.m_initialised;
+	m_defs.clear();
 
 	for (auto const& elem : other) {
-		      m_defs.insert((Assign *)(elem)->clone());
+		m_defs.insert((Assign *)(elem)->clone());
 	}
 }
 
@@ -959,11 +959,11 @@ void UseCollector::fromSSAform(UserProc *proc, Instruction *def)
 	}
 
 	for (it = removes.begin(); it != removes.end(); ++it) {
-		      m_locs.remove(*it);
+		m_locs.remove(*it);
 	}
 
 	for (it = inserts.begin(); it != inserts.end(); ++it) {
-		      m_locs.insert(*it);
+		m_locs.insert(*it);
 	}
 }
 
@@ -998,7 +998,7 @@ void DefCollector::insert(Assign *a)
 		return;
 	}
 
-	   m_defs.insert(a);
+	m_defs.insert(a);
 }
 
 
@@ -1007,25 +1007,25 @@ void DataFlow::convertImplicits(Cfg *cfg)
 	// Convert statements in A_phi from m[...]{-} to m[...]{0}
 	std::map<SharedExp, std::set<int>, lessExpStar> A_phi_copy = m_A_phi; // Object copy
 	ImplicitConverter ic(cfg);
-	   m_A_phi.clear();
+	m_A_phi.clear();
 
 	for (std::pair<SharedExp, std::set<int> > it : A_phi_copy) {
 		SharedExp e = it.first->clone();
-		e        = e->accept(&ic);
-		      m_A_phi[e] = it.second; // Copy the set (doesn't have to be deep)
+		e          = e->accept(&ic);
+		m_A_phi[e] = it.second;       // Copy the set (doesn't have to be deep)
 	}
 
 	std::map<SharedExp, std::set<int>, lessExpStar> defsites_copy = m_defsites; // Object copy
-	   m_defsites.clear();
+	m_defsites.clear();
 
 	for (std::pair<SharedExp, std::set<int> > dd : defsites_copy) {
 		SharedExp e = dd.first->clone();
-		e           = e->accept(&ic);
-		      m_defsites[e] = dd.second; // Copy the set (doesn't have to be deep)
+		e             = e->accept(&ic);
+		m_defsites[e] = dd.second;       // Copy the set (doesn't have to be deep)
 	}
 
 	std::vector<std::set<SharedExp, lessExpStar> > A_orig_copy = m_A_orig;
-	   m_A_orig.clear();
+	m_A_orig.clear();
 
 	for (std::set<SharedExp, lessExpStar>& se : A_orig_copy) {
 		std::set<SharedExp, lessExpStar> se_new;
@@ -1036,7 +1036,7 @@ void DataFlow::convertImplicits(Cfg *cfg)
 			se_new.insert(e);
 		}
 
-		      m_A_orig.insert(m_A_orig.end(), se_new); // Copy the set (doesn't have to be a deep copy)
+		m_A_orig.insert(m_A_orig.end(), se_new);       // Copy the set (doesn't have to be a deep copy)
 	}
 }
 

@@ -14,7 +14,7 @@
  * \brief Interface for SSA based data flow analysis
  ******************************************************************************/
 
-#include "include/exphelp.h" // For lessExpStar, etc
+#include "db/exphelp.h"      // For lessExpStar, etc
 #include "include/managed.h" // For LocationSet
 
 #include <vector>
@@ -56,7 +56,7 @@ class DataFlow
 	std::vector<int> m_best;              ///< Improves ancestorWithLowestSemi
 	std::vector<std::set<int> > m_bucket; ///< Deferred calculation?
 	int N;                                ///< Current node number in algorithm
-	std::vector<std::set<int> > m_DF;       ///< The dominance frontiers
+	std::vector<std::set<int> > m_DF;     ///< The dominance frontiers
 
 	/*
 	 * Inserting phi-functions
@@ -89,15 +89,15 @@ public:
 		: renameLocalsAndParams(false) {}
 
 	~DataFlow();
-    
-    /// depth first search
+
+	/// depth first search
 	void dfs(int p, size_t n);
-    
-    /// Essentially Algorithm 19.9 of Appel's "modern compiler implementation in Java" 2nd ed 2002
+
+	/// Essentially Algorithm 19.9 of Appel's "modern compiler implementation in Java" 2nd ed 2002
 	void dominators(Cfg *cfg);
-    
-    /// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
-    /// (overall O(N log N))
+
+	/// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
+	/// (overall O(N log N))
 	int ancestorWithLowestSemi(int v);
 	void Link(int p, int n);
 	void computeDF(int n);
@@ -107,8 +107,8 @@ public:
 
 	// Rename variables in basicblock n. Return true if any change made
 	bool renameBlockVars(UserProc *proc, int n, bool clearStacks = false);
-    
-    /// Return true if n dominates w
+
+	/// Return true if n dominates w
 	bool doesDominate(int n, int w);
 
 	void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
@@ -117,24 +117,24 @@ public:
 	void convertImplicits(Cfg *cfg);
 
 	/**
-     * Find the locations used by a live, dominating phi-function. Also removes dead phi-funcion.
-     * 
-     * Helper function for UserProc::propagateStatements()
-     * Works on basic block n; call from UserProc with n=0 (entry BB)
-     * 
-     * If an SSA location is in usedByDomPhi it means it is used in a phi that dominates its assignment
-     * However, it could turn out that the phi is dead, in which case we don't want to keep the associated entries in
-     * usedByDomPhi. So we maintain the map defdByPhi which maps locations defined at a phi to the phi statements. Every
-     * time we see a use of a location in defdByPhi, we remove that map entry. At the end of the procedure we therefore have
-     * only dead phi statements in the map, so we can delete the associated entries in defdByPhi and also remove the dead
-     * phi statements.
-     * 
-     * We add to the set usedByDomPhi0 whenever we see a location referenced by a phi parameter. When we see a definition
-     * for such a location, we remove it from the usedByDomPhi0 set (to save memory) and add it to the usedByDomPhi set.
-     * For locations defined before they are used in a phi parameter, there will be no entry in usedByDomPhi, so we ignore
-     * it. Remember that each location is defined only once, so that's the time to decide if it is dominated by a phi use or
-     * not.
-     */
+	 * Find the locations used by a live, dominating phi-function. Also removes dead phi-funcion.
+	 *
+	 * Helper function for UserProc::propagateStatements()
+	 * Works on basic block n; call from UserProc with n=0 (entry BB)
+	 *
+	 * If an SSA location is in usedByDomPhi it means it is used in a phi that dominates its assignment
+	 * However, it could turn out that the phi is dead, in which case we don't want to keep the associated entries in
+	 * usedByDomPhi. So we maintain the map defdByPhi which maps locations defined at a phi to the phi statements. Every
+	 * time we see a use of a location in defdByPhi, we remove that map entry. At the end of the procedure we therefore have
+	 * only dead phi statements in the map, so we can delete the associated entries in defdByPhi and also remove the dead
+	 * phi statements.
+	 *
+	 * We add to the set usedByDomPhi0 whenever we see a location referenced by a phi parameter. When we see a definition
+	 * for such a location, we remove it from the usedByDomPhi0 set (to save memory) and add it to the usedByDomPhi set.
+	 * For locations defined before they are used in a phi parameter, there will be no entry in usedByDomPhi, so we ignore
+	 * it. Remember that each location is defined only once, so that's the time to decide if it is dominated by a phi use or
+	 * not.
+	 */
 	void findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
 						  std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
 	void setDominanceNums(int n, int& currNum); // Set the dominance statement number
@@ -153,8 +153,8 @@ public:
 	void dumpStacks();
 	void dumpDefsites();
 	void dumpA_orig();
-    
-    // For debugging
+
+	// For debugging
 	void dumpA_phi();
 };
 
@@ -180,10 +180,10 @@ class DefCollector
 public:
 	DefCollector()
 		: m_initialised(false) {}
-		
+
 	/**
-     * Clone the given Collector into this one
-     */
+	 * Clone the given Collector into this one
+	 */
 	void makeCloneOf(const DefCollector& other);
 
 	/*
@@ -196,22 +196,22 @@ public:
 	 */
 	void clear()
 	{
-        m_defs.clear();
-        m_initialised = false;
+		m_defs.clear();
+		m_initialised = false;
 	}
 
 	/*
 	 * Insert a new member (make sure none exists yet)
 	 */
 	void insert(Assign *a);
-    
-    
-    /// Print the collected locations to stream os
+
+
+	/// Print the collected locations to stream os
 	void print(QTextStream& os, bool html = false) const;
-    
-    /*
-     * Print to string (for debugging)
-     */
+
+	/*
+	 * Print to string (for debugging)
+	 */
 	char *prints() const;
 	void dump() const;
 	Assign *dumpAddrOfFourth();
@@ -235,7 +235,7 @@ public:
 
 	/**
 	 * Find the definition for a location.
-     * Find the definition for e that reaches this Collector. If none reaches here, return nullptr
+	 * Find the definition for e that reaches this Collector. If none reaches here, return nullptr
 	 */
 	SharedExp findDefFor(SharedExp e);
 
@@ -250,15 +250,15 @@ public:
  * UseCollector class. This class collects all uses (live variables)
  * that will be defined by the statement that contains this collector
  * (or the UserProc that contains it).
- * 
+ *
  * Typically the entries are not subscripted, like parameters or locations on the LHS of assignments
  */
 class UseCollector
 {
 	/// True if initialised. When not initialised, callees should not subscript parameters inserted into the
-    /// associated CallStatement
+	/// associated CallStatement
 	bool m_initialised;
-    
+
 	/// The set of locations. Use lessExpStar to compare properly
 	LocationSet m_locs;
 
@@ -279,33 +279,33 @@ public:
 	 */
 	void clear()
 	{
-        m_locs.clear();
-        m_initialised = false;
+		m_locs.clear();
+		m_initialised = false;
 	}
 
 	/// Insert a new member
 	void insert(SharedExp e) { m_locs.insert(e); }
-	
+
 	/*
-     * Print the collected locations to stream os
-     */
+	 * Print the collected locations to stream os
+	 */
 	void print(QTextStream& os, bool html = false) const;
-    
-    /// Print to string (for debugging)
+
+	/// Print to string (for debugging)
 	char *prints() const;
 	void dump() const;
 
 	/*
 	 * begin() and end() so we can iterate through the locations
 	 */
-	typedef LocationSet::iterator iterator;
-    typedef LocationSet::const_iterator const_iterator;
-    
+	typedef LocationSet::iterator         iterator;
+	typedef LocationSet::const_iterator   const_iterator;
+
 	iterator begin() { return m_locs.begin(); }
 	iterator end()   { return m_locs.end(); }
 	const_iterator begin() const { return m_locs.begin(); }
 	const_iterator end() const { return m_locs.end(); }
-	
+
 	bool exists(SharedExp e) { return m_locs.exists(e); } // True if e is in the collection
 	LocationSet& getLocSet() { return m_locs; }
 
@@ -313,16 +313,16 @@ public:
 	/// Add a new use from Statement u
 	void updateLocs(Instruction *u);
 
-    /// Remove the given location
+	/// Remove the given location
 	void remove(SharedExp loc)
-    {
-        m_locs.remove(loc);
-	}
-	
-	/// Remove the current location
-	void remove(iterator it)   
 	{
-        m_locs.remove(it);
+		m_locs.remove(loc);
+	}
+
+	/// Remove the current location
+	void remove(iterator it)
+	{
+		m_locs.remove(it);
 	}
 
 	/// Translate out of SSA form

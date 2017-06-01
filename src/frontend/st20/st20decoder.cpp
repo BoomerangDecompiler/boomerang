@@ -21,7 +21,7 @@
 #include "include/rtl.h"
 #include "include/decoder.h"
 #include "st20decoder.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/proc.h"
 #include "boom_base/log.h"
 #include "include/statement.h"
@@ -63,8 +63,8 @@ DecodeResult& ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 			const char        *MATCH_name;
 			static const char *MATCH_name_fc_0[] =
 			{
-				nullptr, "ldlp",    nullptr,    "ldnl",  "ldc",  "ldnlp",  nullptr,  "ldl",
-				"adc",   nullptr,   nullptr,    "ajw",   "eqc",  "stl",    "stnl",
+				nullptr, "ldlp",    nullptr,    "ldnl",    "ldc",   "ldnlp",  nullptr,   "ldl",
+				"adc",   nullptr,   nullptr,    "ajw",     "eqc",   "stl",    "stnl",
 			};
 			unsigned /* [0..255] */ MATCH_w_8_0;
 			{

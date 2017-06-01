@@ -276,7 +276,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 			if ((13 <= (MATCH_w_32_0 >> 26 & 0x3f)) /* op at 0 */ && ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */ < 64)) {
 				goto MATCH_label_a0; /*opt-block+*/
 			}
-			else{
+			else {
 				switch ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */)
 				{
 				case 0:
@@ -304,7 +304,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 									MATCH_name = "fstws";
 									goto MATCH_label_a2;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 								}
 							}
@@ -320,7 +320,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 								MATCH_name = "fldws";
 								goto MATCH_label_a1;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 							}
 						}
@@ -329,7 +329,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							goto MATCH_label_a1;
 						} /*opt-block*/
 					}
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -347,7 +347,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 									MATCH_name = "fstds";
 									goto MATCH_label_a2;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 								}
 							}
@@ -363,7 +363,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 								MATCH_name = "fldds";
 								goto MATCH_label_a1;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 							}
 						}
@@ -372,7 +372,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							goto MATCH_label_a1;
 						} /*opt-block*/
 					}
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 

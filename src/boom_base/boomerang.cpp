@@ -73,7 +73,7 @@ Log& Boomerang::if_verbose_log(int verbosity_level)
 	if ((verbosity_level == 1) && VERBOSE) {
 		return *m_logger;
 	}
-	else{
+	else {
 		return null_log;
 	}
 }
@@ -612,7 +612,7 @@ int Boomerang::processCommand(QStringList& args)
 			if (cluster->getUpstream()) {
 				out_stream << "\tparent = " << cluster->getUpstream()->getName() << "\n";
 			}
-			else{
+			else {
 				out_stream << "\troot cluster.\n";
 			}
 
@@ -893,7 +893,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 //        XMLProgParser *p = new XMLProgParser();
 //        prog = p->parse(fname);
 	}
-	else{
+	else {
 		prog = loadAndDecode(fname, pname);
 
 		if (prog == nullptr) {
@@ -1040,7 +1040,7 @@ void Boomerang::miniDebugger(UserProc *p, const char *description)
 					}
 				}
 			}
-			else{
+			else {
 				break;
 			}
 		}

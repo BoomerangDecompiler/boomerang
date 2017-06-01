@@ -9,10 +9,8 @@
  */
 
 /**
- * \file insnameelem.cpp
- *
- * an element of an instruction name - contains definition of class InsNameElem
- *
+ * \file insnameelem.cpp an element of an instruction name
+ * contains definition of class InsNameElem
  */
 
 /* Changelog:
@@ -29,72 +27,72 @@
 
 InsNameElem::InsNameElem(const QString& name)
 {
-	elemname = name;
-	value    = 0;
-	nextelem = nullptr;
+	m_elemName = name;
+	m_value    = 0;
+	m_nextElem = nullptr;
 }
 
 
-InsNameElem::~InsNameElem(void)
+InsNameElem::~InsNameElem()
 {
 	//      delete nextelem;
 }
 
 
-size_t InsNameElem::ntokens(void)
+size_t InsNameElem::getNumTokens() const
 {
 	return 1;
 }
 
 
-QString InsNameElem::getinstruction(void)
+QString InsNameElem::getInstruction() const
 {
-	return (nextelem != nullptr) ? (elemname + nextelem->getinstruction()) : elemname;
+	return (m_nextElem != nullptr) ? (m_elemName + m_nextElem->getInstruction()) : m_elemName;
 }
 
 
-QString InsNameElem::getinspattern(void)
+QString InsNameElem::getInsPattern() const
 {
-	return (nextelem != nullptr) ? (elemname + nextelem->getinspattern()) : elemname;
+	return (m_nextElem != nullptr) ? (m_elemName + m_nextElem->getInsPattern()) : m_elemName;
 }
 
 
-void InsNameElem::getrefmap(std::map<QString, InsNameElem *>& m)
+void InsNameElem::getRefMap(std::map<QString, InsNameElem *>& m)
 {
-	if (nextelem != nullptr) {
-		nextelem->getrefmap(m);
+	if (m_nextElem != nullptr) {
+		m_nextElem->getRefMap(m);
 	}
-	else{
+	else {
 		m.clear();
 	}
 }
 
 
-int InsNameElem::ninstructions(void)
+int InsNameElem::getNumInstructions() const
 {
-	return (nextelem != nullptr) ? (nextelem->ninstructions() * ntokens()) : ntokens();
+	return (m_nextElem != nullptr) ? (m_nextElem->getNumInstructions() * getNumTokens()) : getNumTokens();
 }
 
 
 void InsNameElem::append(std::shared_ptr<InsNameElem> next)
 {
-	if (nextelem == nullptr) {
-		nextelem = next;
+	if (m_nextElem == nullptr) {
+		m_nextElem = next;
 	}
-	else{
-		nextelem->append(next);
+	else {
+		m_nextElem->append(next);
 	}
 }
 
 
-bool InsNameElem::increment(void)
+bool InsNameElem::increment()
 {
-	if ((nextelem == nullptr) || nextelem->increment()) {
-		value++;
+	if ((m_nextElem == nullptr) || m_nextElem->increment()) {
+		m_value++;
 	}
 
-	if (value >= ntokens()) {
-		value = 0;
+	if (m_value >= getNumTokens()) {
+		m_value = 0;
 		return true;
 	}
 
@@ -102,19 +100,19 @@ bool InsNameElem::increment(void)
 }
 
 
-void InsNameElem::reset(void)
+void InsNameElem::reset()
 {
-	value = 0;
+	m_value = 0;
 
-	if (nextelem != nullptr) {
-		nextelem->reset();
+	if (m_nextElem != nullptr) {
+		m_nextElem->reset();
 	}
 }
 
 
-int InsNameElem::getvalue(void) const
+int InsNameElem::getValue(void) const
 {
-	return value;
+	return m_value;
 }
 
 
@@ -124,72 +122,72 @@ InsOptionElem::InsOptionElem(const QString& name)
 }
 
 
-size_t InsOptionElem::ntokens(void)
+size_t InsOptionElem::getNumTokens() const
 {
 	return 2;
 }
 
 
-QString InsOptionElem::getinstruction(void)
+QString InsOptionElem::getInstruction() const
 {
-	QString s = (nextelem != nullptr)
-				? ((getvalue() == 0) ? (elemname + nextelem->getinstruction()) : nextelem->getinstruction())
-				: ((getvalue() == 0) ? elemname : "");
+	QString s = (m_nextElem != nullptr)
+				? ((getValue() == 0) ? (m_elemName + m_nextElem->getInstruction()) : m_nextElem->getInstruction())
+				: ((getValue() == 0) ? m_elemName : "");
 
 	return s;
 }
 
 
-QString InsOptionElem::getinspattern(void)
+QString InsOptionElem::getInsPattern() const
 {
-	return (nextelem != nullptr) ? ('\'' + elemname + '\'' + nextelem->getinspattern()) : ('\'' + elemname + '\'');
+	return (m_nextElem != nullptr) ? ('\'' + m_elemName + '\'' + m_nextElem->getInsPattern()) : ('\'' + m_elemName + '\'');
 }
 
 
 InsListElem::InsListElem(const QString& name, const std::shared_ptr<Table>& t, const QString& idx)
 	: InsNameElem(name)
 {
-	indexname = idx;
-	thetable  = t;
+	m_indexName = idx;
+	m_theTable  = t;
 }
 
 
-size_t InsListElem::ntokens(void)
+size_t InsListElem::getNumTokens() const
 {
-	return thetable->Records.size();
+	return m_theTable->Records.size();
 }
 
 
-QString InsListElem::getinstruction(void)
+QString InsListElem::getInstruction() const
 {
-	return (nextelem != nullptr) ? (thetable->Records[getvalue()] + nextelem->getinstruction())
-		   : thetable->Records[getvalue()];
+	return (m_nextElem != nullptr) ? (m_theTable->Records[getValue()] + m_nextElem->getInstruction())
+		   : m_theTable->Records[getValue()];
 }
 
 
-QString InsListElem::getinspattern(void)
+QString InsListElem::getInsPattern() const
 {
-	return (nextelem != nullptr) ? (elemname + '[' + indexname + ']' + nextelem->getinspattern())
-		   : (elemname + '[' + indexname + ']');
+	return (m_nextElem != nullptr) ? (m_elemName + '[' + m_indexName + ']' + m_nextElem->getInsPattern())
+		   : (m_elemName + '[' + m_indexName + ']');
 }
 
 
-void InsListElem::getrefmap(std::map<QString, InsNameElem *>& m)
+void InsListElem::getRefMap(std::map<QString, InsNameElem *>& m)
 {
-	if (nextelem != nullptr) {
-		nextelem->getrefmap(m);
+	if (m_nextElem != nullptr) {
+		m_nextElem->getRefMap(m);
 	}
-	else{
+	else {
 		m.clear();
 	}
 
-	m[indexname] = this;
+	m[m_indexName] = this;
 	// of course, we're assuming that we've already checked (try in the parser)
 	// that indexname hasn't been used more than once on this line ..
 }
 
 
-QString InsListElem::getindex(void) const
+QString InsListElem::getIndex() const
 {
-	return indexname;
+	return m_indexName;
 }

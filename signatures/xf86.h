@@ -209,7 +209,7 @@ int xf86MatchDevice(const char *drivername, GDevPtr **driversectlist);
 
 typedef unsigned long memType;
 
-pciVideoPtr *xf86GetPciVideoInfo(void);
+pciVideoPtr *xf86GetPciVideoInfo();
 
 typedef unsigned int uint;
 
@@ -603,10 +603,10 @@ void xf86SetEntitySharable(int entityIndex);
 Bool xf86IsPrimInitDone(int entityIndex);
 void xf86SetPrimInitDone(int entityIndex);
 void xf86ClearPrimInitDone(int entityIndex);
-int xf86AllocateEntityPrivateIndex(void);
+int xf86AllocateEntityPrivateIndex();
 DevUnion *xf86GetEntityPrivate(int entityIndex, int privIndex);
 void xf86SetEntityInstanceForScreen(ScrnInfoPtr pScrn, int entityIndex, int instance);
-int xf86GetVerbosity(void);
+int xf86GetVerbosity();
 void xf86DrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format, ...);
 void xf86Msg(MessageType type, const char *format, ...);
 pointer XNFcalloc(unsigned int n);

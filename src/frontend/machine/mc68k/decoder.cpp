@@ -315,8 +315,8 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 			char        *MATCH_name;
 			static char *MATCH_name_cond_12[] =
 			{
-				"bra", (char *)0, "bhi",     "bls",     "bcc", "bcs", "bne", "beq",
-				"bvc", "bvs",     "bpl",     "bmi",     "bge", "blt", "bgt", "ble",
+				"bra", (char *)0, "bhi",     "bls",     "bcc",     "bcs", "bne", "beq",
+				"bvc", "bvs",     "bpl",     "bmi",     "bge",     "blt", "bgt", "ble",
 			};
 			unsigned /* [0..65535] */ MATCH_w_16_0;
 			{
@@ -347,7 +347,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 							if ((MATCH_w_16_0 >> 8 & 0x1) /* sb at 0 */ == 1) {
 								goto MATCH_label_de0; /*opt-block+*/
 							}
-							else{
+							else {
 								switch ((MATCH_w_16_0 >> 6 & 0x3) /* sz at 0 */)
 								{
 								case 0:
@@ -426,11 +426,11 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								} /* (MATCH_w_16_0 >> 6 & 0x3) -- sz at 0 --*/
 							}
 						}
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 					}
-					else{
+					else {
 						goto MATCH_label_de0; /*opt-block+*/
 					}
 
@@ -466,7 +466,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JSG)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -491,7 +491,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JULE)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -516,7 +516,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JUGE)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -541,7 +541,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JUL)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -566,7 +566,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JNE)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -607,7 +607,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								//    SETS(name, ss, HLJCOND_)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -632,7 +632,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JPOS)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -657,7 +657,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JMI)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -682,7 +682,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JSGE)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -707,7 +707,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JSL)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -732,7 +732,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								SETS(name, ss, HLJCOND_JSG)
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -759,7 +759,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 								// HACK: Still need to do .ex versions of set, jsr, jmp
 							}
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_de0; /*opt-block+*/
 						}
 
@@ -1444,7 +1444,7 @@ SemStr *NJMCDecoder::cEA(ADDRESS ea, ADDRESS pc, int size)
 
 				ret = pIndirect(reg2, size);
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				pIllegalMode(pc);
 			}
 
@@ -4945,7 +4945,7 @@ SemStr *NJMCDecoder::msEAXL(ADDRESS eaxl, int d32, DecodeResult& result, ADDRESS
 				}
 
 				/*opt-block+*/
-				else{
+				else {
 					goto MATCH_label_r0; /*opt-block+*/
 				}
 
@@ -4959,7 +4959,7 @@ SemStr *NJMCDecoder::msEAXL(ADDRESS eaxl, int d32, DecodeResult& result, ADDRESS
 				}
 
 				/*opt-block+*/
-				else{
+				else {
 					goto MATCH_label_r0; /*opt-block+*/
 				}
 
@@ -5048,11 +5048,11 @@ SemStr *NJMCDecoder::mdEAX(ADDRESS eax, ADDRESS x, DecodeResult& result, ADDRESS
 							assert(0);
 						} /* (MATCH_w_16_0 >> 9 & 0x7) -- reg1 at 0 --*/
 					}
-					else{
+					else {
 						goto MATCH_label_q0; /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_q0; /*opt-block+*/
 				}
 

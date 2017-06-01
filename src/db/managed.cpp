@@ -18,7 +18,7 @@
 #include "include/types.h"
 #include "include/managed.h"
 #include "include/statement.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "include/proc.h"
@@ -194,7 +194,7 @@ void InstructionSet::printNums(QTextStream& os)
 		if (*it) {
 			(*it)->printNum(os);
 		}
-		else{
+		else {
 			os << "-"; // Special case for nullptr definition
 		}
 
@@ -389,7 +389,7 @@ void AssignSet::printNums(QTextStream& os)
 		if (*it) {
 			(*it)->printNum(os);
 		}
-		else{
+		else {
 			os << "-"; // Special case for nullptr definition
 		}
 
@@ -599,7 +599,7 @@ SharedExp LocationSet::findNS(SharedExp e)
 	if ((*(*it)->getSubExp1() == *e)) {
 		return *it;
 	}
-	else{
+	else {
 		return nullptr;
 	}
 }
@@ -850,7 +850,7 @@ void StatementVec::printNums(QTextStream& os)
 		if (*it) {
 			(*it)->printNum(os);
 		}
-		else{
+		else {
 			os << "-"; // Special case for no definition
 		}
 

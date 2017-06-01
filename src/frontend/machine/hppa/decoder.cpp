@@ -151,7 +151,7 @@ bool is_null(ADDRESS hostPC)
 				}
 
 				/*opt-block+*/
-				else{
+				else {
 					// #line 73 "machine/hppa/decoder.m"
 
 					res = false;
@@ -666,7 +666,7 @@ DecodeResult& NJMCDecoder::decodeInstruction(ADDRESS pc, int delta, UserProc *pr
 					if ((MATCH_w_32_0 >> 13 & 0x1) /* d_18 at 0 */ == 1) {
 						goto MATCH_label_d0; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_d4; /*opt-block+*/
 					}
 
@@ -1090,7 +1090,7 @@ SemStr *NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 			if ((0 <= (MATCH_w_32_0 >> 26 & 0x3f)) /* op at 0 */ && ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */ < 48)) {
 				goto MATCH_label_c0; /*opt-block+*/
 			}
-			else{
+			else {
 				switch ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */)
 				{
 				case 50:
@@ -1129,7 +1129,7 @@ SemStr *NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 							result = instantiateNamedParam("bitpos_fix", dis_Num(p));
 						}
 					} /*opt-block*/ /*opt-block+*/
-					else{
+					else {
 						goto MATCH_label_c0; /*opt-block+*/
 					}
 
@@ -1239,11 +1239,11 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 							result = instantiateNamedParam("s_addr_r_im", dis_Num(i));
 						}
 					} /*opt-block*/ /*opt-block+*/
-					else{
+					else {
 						goto MATCH_label_b4; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */)
 					{
 					case 0:
@@ -1256,7 +1256,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 								result = instantiateNamedParam("x_addr_s_byte", dis_Reg(x));
 							}
 						} /*opt-block*/ /*opt-block+*/
-						else{
+						else {
 							goto MATCH_label_b1; /*opt-block+*/
 						}
 
@@ -1272,7 +1272,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 								result = instantiateNamedParam("x_addr_s_hwrd", dis_Reg(x));
 							}
 						} /*opt-block*/ /*opt-block+*/
-						else{
+						else {
 							goto MATCH_label_b1; /*opt-block+*/
 						}
 
@@ -1284,7 +1284,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 						if ((MATCH_w_32_0 >> 13 & 0x1) /* u_18 at 0 */ == 1) {
 							goto MATCH_label_b2; /*opt-block+*/
 						}
-						else{
+						else {
 							goto MATCH_label_b1; /*opt-block+*/
 						}
 
@@ -1298,7 +1298,7 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 						if ((MATCH_w_32_0 >> 13 & 0x1) /* u_18 at 0 */ == 1) {
 							goto MATCH_label_b3; /*opt-block+*/
 						}
-						else{
+						else {
 							goto MATCH_label_b1; /*opt-block+*/
 						}
 
@@ -1333,11 +1333,11 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 							  ((MATCH_w_32_0 >> 9 & 0x1) /* addr_22 at 0 */ < 2))) {
 						goto MATCH_label_b2; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_b1; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_b0; /*opt-block+*/
 				}
 
@@ -1354,11 +1354,11 @@ SemStr *NJMCDecoder::dis_xd(ADDRESS hostpc)
 							  ((MATCH_w_32_0 >> 9 & 0x1) /* addr_22 at 0 */ < 2))) {
 						goto MATCH_label_b3; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_b1; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_b0; /*opt-block+*/
 				}
 
@@ -1494,7 +1494,7 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 			if ((28 <= (MATCH_w_32_0 >> 26 & 0x3f)) /* op at 0 */ && ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */ < 64)) {
 				goto MATCH_label_a0; /*opt-block+*/
 			}
-			else{
+			else {
 				switch ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */)
 				{
 				case 0:
@@ -1529,7 +1529,7 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 								}
 
 								/*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_a5; /*opt-block+*/ /*opt-block+*/
 								}
 							}
@@ -1540,7 +1540,7 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 							}
 
 							/*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_a4; /*opt-block+*/ /*opt-block+*/
 							}
 						}
@@ -1552,14 +1552,14 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 							}
 
 							/*opt-block+*/
-							else{
+							else {
 								// #line 595 "machine/hppa/decoder.m"
 								result = instantiateNamedParam("c_y_addr_none");
 							}
 						}
 
 						/*opt-block+*/ /*opt-block+*/
-						else{
+						else {
 							goto MATCH_label_a3; /*opt-block+*/
 						}
 					}
@@ -1568,11 +1568,11 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 						if ((MATCH_w_32_0 >> 5 & 0x1) /* m_26 at 0 */ == 1) {
 							goto MATCH_label_a2; /*opt-block+*/
 						}
-						else{
+						else {
 							goto MATCH_label_a1; /*opt-block+*/ /*opt-block+*/
 						}
 					}
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -1589,11 +1589,11 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 									 ((MATCH_w_32_0 >> 9 & 0x1) /* addr_22 at 0 */ < 2))) {
 									goto MATCH_label_a5; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_a4; /*opt-block+*/ /*opt-block+*/
 								}
 							}
-							else{
+							else {
 								goto MATCH_label_a3; /*opt-block+*/
 							}
 						}
@@ -1602,11 +1602,11 @@ SemStr *NJMCDecoder::dis_c_addr(ADDRESS hostPC)
 								  ((MATCH_w_32_0 >> 9 & 0x1) /* addr_22 at 0 */ < 2))) {
 							goto MATCH_label_a2; /*opt-block+*/
 						}
-						else{
+						else {
 							goto MATCH_label_a1; /*opt-block+*/ /*opt-block+*/
 						}
 					}
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 

@@ -14,7 +14,7 @@
  ******************************************************************************/
 #include "include/statement.h"
 
-#include "include/exp.h"
+#include "db/exp.h"
 #include "db/cfg.h"
 #include "include/proc.h"
 #include "include/prog.h"
@@ -698,7 +698,7 @@ bool Instruction::isNullStatement()
 		// Must refer to self to be null
 		return this == right->access<RefExp>()->getDef();
 	}
-	else{
+	else {
 		// Null if left == right
 		return *((Assign *)this)->getLeft() == *right;
 	}
@@ -927,7 +927,7 @@ void GotoStatement::print(QTextStream& os, bool html) const
 	else if (pDest->getOper() != opIntConst) {
 		pDest->print(os);
 	}
-	else{
+	else {
 		os << "0x" << getFixedDest();
 	}
 
@@ -1534,7 +1534,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 			if (makeUns) {
 				op = opLessUns;
 			}
-			else{
+			else {
 				op = opLess;
 			}
 
@@ -1545,7 +1545,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 			if (makeUns) {
 				op = opLessEqUns;
 			}
-			else{
+			else {
 				op = opLessEq;
 			}
 
@@ -1556,7 +1556,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 			if (makeUns) {
 				op = opGtrEqUns;
 			}
-			else{
+			else {
 				op = opGtrEq;
 			}
 
@@ -1567,7 +1567,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 			if (makeUns) {
 				op = opGtrUns;
 			}
-			else{
+			else {
 				op = opGtr;
 			}
 
@@ -1868,7 +1868,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 						if (((condOp == opEquals) && (k == 0)) || ((condOp == opNotEqual) && (k == 1))) {
 							op = opGtrEq;
 						}
-						else{
+						else {
 							op = opLess;
 						}
 
@@ -1879,7 +1879,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 						if (((condOp == opEquals) && (k == 0)) || ((condOp == opNotEqual) && (k == 0x40))) {
 							op = opNotEqual;
 						}
-						else{
+						else {
 							op = opEquals;
 						}
 
@@ -1894,7 +1894,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 							if (condOp == opEquals) {
 								op = opGtr;
 							}
-							else{
+							else {
 								op = opLessEq;
 							}
 
@@ -1905,7 +1905,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 							if (condOp == opEquals) {
 								op = opLess;
 							}
-							else{
+							else {
 								op = opGtrEq;
 							}
 
@@ -1916,7 +1916,7 @@ bool condToRelational(SharedExp& pCond, BRANCH_TYPE jtCond)
 							if (condOp == opEquals) {
 								op = opEquals;
 							}
-							else{
+							else {
 								op = opNotEqual;
 							}
 
@@ -2067,13 +2067,13 @@ void CaseStatement::print(QTextStream& os, bool html) const
 		if (pDest == nullptr) {
 			os << "*no dest*";
 		}
-		else{
+		else {
 			os << pDest;
 		}
 
 		os << "]";
 	}
-	else{
+	else {
 		os << "SWITCH(" << pSwitchInfo->pSwitchVar << ")\n";
 	}
 
@@ -2449,7 +2449,7 @@ void CallStatement::print(QTextStream& os, bool html) const
 			if (first) {
 				first = false;
 			}
-			else{
+			else {
 				os << ", ";
 			}
 
@@ -2470,7 +2470,7 @@ void CallStatement::print(QTextStream& os, bool html) const
 		if (html) {
 			os << "&lt;all&gt; := ";
 		}
-		else{
+		else {
 			os << "<all> := ";
 		}
 	}
@@ -2487,7 +2487,7 @@ void CallStatement::print(QTextStream& os, bool html) const
 		if (pDest->isIntConst()) {
 			os << "0x" << QString::number(pDest->access<Const>()->getInt(), 16);
 		}
-		else{
+		else {
 			pDest->print(os, html);     // Could still be an expression
 		}
 	}
@@ -2497,7 +2497,7 @@ void CallStatement::print(QTextStream& os, bool html) const
 		if (html) {
 			os << "(&lt;all&gt;)";
 		}
-		else{
+		else {
 			os << "(<all>)";
 		}
 	}
@@ -2518,7 +2518,7 @@ void CallStatement::print(QTextStream& os, bool html) const
 	if (html) {
 		os << "<br>";
 	}
-	else{
+	else {
 		os << "\n              ";
 	}
 
@@ -2528,7 +2528,7 @@ void CallStatement::print(QTextStream& os, bool html) const
 	if (html) {
 		os << "<br>";
 	}
-	else{
+	else {
 		os << "\n              ";
 	}
 
@@ -2670,7 +2670,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 	if (p->isLib() && !p->getSignature()->getPreferedName().isEmpty()) {
 		hll->AddCallStatement(indLevel, p, p->getSignature()->getPreferedName(), arguments, results);
 	}
-	else{
+	else {
 		hll->AddCallStatement(indLevel, p, qPrintable(p->getName()), arguments, results);
 	}
 }
@@ -3021,7 +3021,7 @@ SharedExp processConstant(SharedExp e, SharedType t, Prog *prog, UserProc *proc,
 							(prog->findProc(sig->getName()) != nullptr)) {
 							sig->setName(p->getName());
 						}
-						else{
+						else {
 							p->setName(sig->getName());
 						}
 
@@ -3193,7 +3193,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 	else if (getNumArguments() && getArgumentExp(getNumArguments() - 1)->isStrConst()) {
 		format = getNumArguments() - 1;
 	}
-	else{
+	else {
 		return false;
 	}
 
@@ -3260,14 +3260,14 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 				return false;
 			}
 		}
-		else{
+		else {
 			return false;
 		}
 	}
 	else if (formatExp->isStrConst()) {
 		formatStr = formatExp->access<Const>()->getStr();
 	}
-	else{
+	else {
 		return false;
 	}
 
@@ -3825,7 +3825,7 @@ Instruction *BoolAssign::clone() const
 	if (pCond) {
 		ret->pCond = pCond->clone();
 	}
-	else{
+	else {
 		ret->pCond = nullptr;
 	}
 
@@ -4290,7 +4290,7 @@ void PhiAssign::printCompact(QTextStream& os, bool html) const
 					os << "</a>";
 				}
 			}
-			else{
+			else {
 				os << "-";
 			}
 
@@ -4310,14 +4310,14 @@ void PhiAssign::printCompact(QTextStream& os, bool html) const
 			if (e == nullptr) {
 				os << "nullptr{";
 			}
-			else{
+			else {
 				os << e << "{";
 			}
 
 			if (it->second.def()) {
 				os << it->second.def()->getNumber();
 			}
-			else{
+			else {
 				os << "-";
 			}
 
@@ -4351,7 +4351,7 @@ void Assignment::getDefinitions(LocationSet& defs)
 	if (lhs->getOper() == opAt) {     // foo@[m:n] really only defines foo
 		defs.insert(lhs->getSubExp1());
 	}
-	else{
+	else {
 		defs.insert(lhs);
 	}
 
@@ -4574,7 +4574,7 @@ void addPhiReferences(InstructionSet& stmts, Statement *def)
 			stmts.insert((*it).def);
 			addSimpleCopyReferences(stmts, (*it).def);
 		}
-		else{
+		else {
 			stmts.insert((*it).def);
 		}
 	}
@@ -4780,7 +4780,7 @@ void BranchStatement::genConstraints(LocationSet& cons)
 	if (bFloat) {
 		opsType = FloatType::get(0);
 	}
-	else{
+	else {
 		opsType = IntegerType::get(0);
 	}
 
@@ -4806,7 +4806,7 @@ void BranchStatement::genConstraints(LocationSet& cons)
 		opsType->setSize(a->access<Const, 1>()->getInt());
 		Ta = Unary::get(opTypeOf, a->getSubExp2());
 	}
-	else{
+	else {
 		Ta = Unary::get(opTypeOf, a);
 	}
 
@@ -4814,7 +4814,7 @@ void BranchStatement::genConstraints(LocationSet& cons)
 		opsType->setSize(b->access<Const, 1>()->getInt());
 		Tb = Unary::get(opTypeOf, b->getSubExp2());
 	}
-	else{
+	else {
 		Tb = Unary::get(opTypeOf, b);
 	}
 
@@ -5624,7 +5624,7 @@ void PhiAssign::simplify()
 				onlyOneNotThis = false;
 				break;
 			}
-			else{
+			else {
 				notthis = v.second.def();
 			}
 		}
@@ -5777,7 +5777,7 @@ void ReturnStatement::print(QTextStream& os, bool html) const
 	if (html) {
 		os << "</a><br>";
 	}
-	else{
+	else {
 		os << "\n              ";
 	}
 
@@ -5823,7 +5823,7 @@ void ReturnStatement::print(QTextStream& os, bool html) const
 	if (html) {
 		os << "<br>";
 	}
-	else{
+	else {
 		os << "\n              ";
 	}
 
@@ -6040,7 +6040,7 @@ void CallStatement::updateDefines()
 		// The signature knows how to order the returns
 		sig = procDest->getSignature();
 	}
-	else{
+	else {
 		// Else just use the enclosing proc's signature
 		sig = proc->getSignature();
 	}
@@ -6397,7 +6397,7 @@ void CallStatement::updateArguments()
 			if (proc->canRename(loc)) {
 				rhs = asp.localise(loc->clone());
 			}
-			else{
+			else {
 				rhs = loc->clone();
 			}
 

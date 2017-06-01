@@ -98,7 +98,7 @@ char *signedHex(int disp)
 	if (disp < 0) {
 		sprintf(shexBuffer, "-0x%x", -disp);
 	}
-	else{
+	else {
 		sprintf(shexBuffer, "0x%x", disp);
 	}
 
@@ -223,7 +223,7 @@ int dis_c_c_n(ADDRESS hostpc)
 					if ((MATCH_w_32_0 >> 12 & 0x1) /* f_19 at 0 */ == 1) {
 						goto MATCH_label_h2; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_h1; /*opt-block+*/
 					}
 
@@ -279,7 +279,7 @@ int dis_c_c_n(ADDRESS hostpc)
 				if ((MATCH_w_32_0 >> 12 & 0x1) /* f_19 at 0 */ == 1) {
 					goto MATCH_label_h2; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_h1; /*opt-block+*/
 				}
 
@@ -294,7 +294,7 @@ int dis_c_c_n(ADDRESS hostpc)
 					 ((MATCH_w_32_0 >> 11 & 0x1) /* ext_20 at 0 */ < 2))) {
 					goto MATCH_label_h2; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_h1; /*opt-block+*/
 				}
 
@@ -306,7 +306,7 @@ int dis_c_c_n(ADDRESS hostpc)
 				if ((MATCH_w_32_0 >> 15 & 0x1) /* c1_16 at 0 */ == 1) {
 					goto MATCH_label_h2; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_h1; /*opt-block+*/
 				}
 
@@ -323,7 +323,7 @@ int dis_c_c_n(ADDRESS hostpc)
 						((MATCH_w_32_0 >> 10 & 0x1) /* se_21 at 0 */ == 1)) {
 						goto MATCH_label_h0; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_h2; /*opt-block+*/ /*opt-block+*/
 					}
 				}
@@ -331,7 +331,7 @@ int dis_c_c_n(ADDRESS hostpc)
 						 ((MATCH_w_32_0 >> 10 & 0x1) /* se_21 at 0 */ == 1)) {
 					goto MATCH_label_h0; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_h1; /*opt-block+*/ /*opt-block+*/
 				}
 
@@ -345,11 +345,11 @@ int dis_c_c_n(ADDRESS hostpc)
 						((MATCH_w_32_0 >> 13 & 0x7) /* c3_16 at 0 */ < 8)) {
 						goto MATCH_label_h0; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_h2; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_h1; /*opt-block+*/
 				}
 
@@ -361,11 +361,11 @@ int dis_c_c_n(ADDRESS hostpc)
 					if ((MATCH_w_32_0 >> 13 & 0x7) /* c3_16 at 0 */ == 1) {
 						goto MATCH_label_h2; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_h0; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_h1; /*opt-block+*/
 				}
 
@@ -419,13 +419,13 @@ void NJMCDecoder::dis_c_c(ADDRESS hostpc)
 	 *                          ,",*TR",",*!=",",*>=",",*EV"}; */
 	static char *cmpsubw[] =
 	{
-		"",    ",=",    ",<",    ",<=",  ",<<",    ",<<=",   ",SV",    ",OD",
-		",TR", ",<>",   ",>=",   ",>",   ",>>=",   ",>>",    ",NSV",   ",EV"
+		"",    ",=",    ",<",    ",<=",    ",<<",    ",<<=",    ",SV",     ",OD",
+		",TR", ",<>",   ",>=",   ",>",     ",>>=",   ",>>",     ",NSV",    ",EV"
 	};
 	static char *cmpsubdw[] =
 	{
-		"",     ",*=",     ",*<",     ",*<=",  ",*<<",    ",*<<=",   ",*SV",    ",*OD",
-		",*TR", ",*<>",    ",*>=",    ",*>",   ",*>>=",   ",*>>",    ",*NSV",   ",*EV"
+		"",     ",*=",     ",*<",     ",*<=",     ",*<<",    ",*<<=",    ",*SV",     ",*OD",
+		",*TR", ",*<>",    ",*>=",    ",*>",      ",*>>=",   ",*>>",     ",*NSV",    ",*EV"
 	};
 	/*  static char *bitw[]  = {",<", ",>="};*/
 	/*  static char *bitdw[] = {",*<", ",*>="};*/
@@ -549,7 +549,7 @@ void NJMCDecoder::dis_c_c(ADDRESS hostpc)
 							CONS("c_arith_dw ")
 						}
 					} /*opt-block*/ /*opt-block+*/
-					else{
+					else {
 						goto MATCH_label_g1; /*opt-block+*/
 					}
 
@@ -677,7 +677,7 @@ void NJMCDecoder::dis_c_c(ADDRESS hostpc)
 					((MATCH_w_32_0 >> 10 & 0x1) /* se_21 at 0 */ == 1)) {
 					goto MATCH_label_g0; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_g2; /*opt-block+*/
 				}
 
@@ -824,11 +824,11 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 							CONS("s_addr_r_im ")
 						}
 					} /*opt-block*/ /*opt-block+*/
-					else{
+					else {
 						goto MATCH_label_f4; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */)
 					{
 					case 0:
@@ -845,7 +845,7 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 								CONS("x_addr_s_byte ")
 							}
 						} /*opt-block*/ /*opt-block+*/
-						else{
+						else {
 							goto MATCH_label_f1; /*opt-block+*/
 						}
 
@@ -865,7 +865,7 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 								CONS("x_addr_s_hwrd ")
 							}
 						} /*opt-block*/ /*opt-block+*/
-						else{
+						else {
 							goto MATCH_label_f1; /*opt-block+*/
 						}
 
@@ -877,7 +877,7 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 						if ((MATCH_w_32_0 >> 13 & 0x1) /* u_18 at 0 */ == 1) {
 							goto MATCH_label_f2; /*opt-block+*/
 						}
-						else{
+						else {
 							goto MATCH_label_f1; /*opt-block+*/
 						}
 
@@ -891,7 +891,7 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 						if ((MATCH_w_32_0 >> 13 & 0x1) /* u_18 at 0 */ == 1) {
 							goto MATCH_label_f3; /*opt-block+*/
 						}
-						else{
+						else {
 							goto MATCH_label_f1; /*opt-block+*/
 						}
 
@@ -926,11 +926,11 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 							  ((MATCH_w_32_0 >> 9 & 0x1) /* addr_22 at 0 */ < 2))) {
 						goto MATCH_label_f2; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_f1; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_f0; /*opt-block+*/
 				}
 
@@ -947,11 +947,11 @@ void NJMCDecoder::dis_c_xd(ADDRESS hostpc)
 							  ((MATCH_w_32_0 >> 9 & 0x1) /* addr_22 at 0 */ < 2))) {
 						goto MATCH_label_f3; /*opt-block+*/
 					}
-					else{
+					else {
 						goto MATCH_label_f1; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					goto MATCH_label_f0; /*opt-block+*/
 				}
 
@@ -1121,11 +1121,11 @@ void NJMCDecoder::dis_c_wcr(ADDRESS hostpc)
 						}
 					} /*opt-block*/ /*opt-block+*/ /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_e0; /*opt-block+*/
 				}
 			}
-			else{
+			else {
 				goto MATCH_label_e0; /*opt-block+*/
 			}
 		}
@@ -1288,7 +1288,7 @@ void NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 			if ((0 <= (MATCH_w_32_0 >> 26 & 0x3f)) /* op at 0 */ && ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */ < 48)) {
 				goto MATCH_label_c0; /*opt-block+*/
 			}
-			else{
+			else {
 				switch ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */)
 				{
 				case 50:
@@ -1330,7 +1330,7 @@ void NJMCDecoder::dis_c_bit(ADDRESS hostpc)
 							CONS("c_bitpos_w ")
 						}
 					} /*opt-block*/ /*opt-block+*/
-					else{
+					else {
 						goto MATCH_label_c0; /*opt-block+*/
 					}
 
@@ -1375,7 +1375,7 @@ void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 			if ((28 <= (MATCH_w_32_0 >> 26 & 0x3f)) /* op at 0 */ && ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */ < 64)) {
 				goto MATCH_label_b0; /*opt-block+*/
 			}
-			else{
+			else {
 				switch ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */)
 				{
 				case 0:
@@ -1414,7 +1414,7 @@ void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 								}
 
 								/*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_b5; /*opt-block+*/ /*opt-block+*/
 								}
 							}
@@ -1429,7 +1429,7 @@ void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 							}
 
 							/*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_b4; /*opt-block+*/ /*opt-block+*/
 							}
 						}
@@ -1454,7 +1454,7 @@ void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 						}
 
 						/*opt-block+*/ /*opt-block+*/
-						else{
+						else {
 							goto MATCH_label_b3; /*opt-block+*/
 						}
 					}
@@ -1463,11 +1463,11 @@ void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 						if ((MATCH_w_32_0 >> 5 & 0x1) /* m_26 at 0 */ == 1) {
 							goto MATCH_label_b2; /*opt-block+*/
 						}
-						else{
+						else {
 							goto MATCH_label_b1; /*opt-block+*/ /*opt-block+*/
 						}
 					}
-					else{
+					else {
 						goto MATCH_label_b0; /*opt-block+*/
 					}
 
@@ -1484,11 +1484,11 @@ void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 									 ((MATCH_w_32_0 >> 9 & 0x1) /* addr_22 at 0 */ < 2))) {
 									goto MATCH_label_b5; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_b4; /*opt-block+*/ /*opt-block+*/
 								}
 							}
-							else{
+							else {
 								goto MATCH_label_b3; /*opt-block+*/
 							}
 						}
@@ -1497,11 +1497,11 @@ void NJMCDecoder::dis_c_addr(ADDRESS hostpc)
 								  ((MATCH_w_32_0 >> 9 & 0x1) /* addr_22 at 0 */ < 2))) {
 							goto MATCH_label_b2; /*opt-block+*/
 						}
-						else{
+						else {
 							goto MATCH_label_b1; /*opt-block+*/ /*opt-block+*/
 						}
 					}
-					else{
+					else {
 						goto MATCH_label_b0; /*opt-block+*/
 					}
 
@@ -1658,7 +1658,7 @@ char *NJMCDecoder::dis_freg(int regNum)
 	if (regNum >= 32) {
 		sprintf(regbuf, "fr%dR", regNum - 32);
 	}
-	else{
+	else {
 		sprintf(regbuf, "fr%d", regNum);
 	}
 
@@ -1699,34 +1699,34 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		char        *MATCH_name;
 		static char *MATCH_name_ext8_19_0[] =
 		{
-			"BREAK",   (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, "MFSP",      (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     "RFI",      (char *)0,     (char *)0,
-			(char *)0, (char *)0,   "RFI.r",        (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     "SSM",
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  "RSM",         (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  "LDSID",       (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      "MFIA",         (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      (char *)0,      (char *)0,     (char *)0,  (char *)0,     (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,      "MTSP",         "MTCTL",       "MTSM",     (char *)0,     (char *)0,
+			"BREAK",   (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, "MFSP",      (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       "RFI",         (char *)0,      (char *)0,
+			(char *)0, (char *)0,   "RFI.r",        (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      "SSM",
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     "RSM",          (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     "LDSID",        (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      "MFIA",           (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,         (char *)0,       (char *)0,     (char *)0,      (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        "MTSP",            "MTCTL",         "MTSM",        (char *)0,      (char *)0,
 			"MTSARCM",
 		};
 		static char *MATCH_name_ext5_11_1[] =
 		{
-			"SYNC",    (char *)0,    (char *)0,    (char *)0, (char *)0, (char *)0,
-			(char *)0, (char *)0,    (char *)0,    (char *)0, "SYNCDMA",
+			"SYNC",    (char *)0,    (char *)0,    (char *)0,    (char *)0, (char *)0,
+			(char *)0, (char *)0,    (char *)0,    (char *)0,    "SYNCDMA",
 		};
 		static char *MATCH_name_ext_17_2[] =
 		{
@@ -1739,9 +1739,9 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_op_58[] =
 		{
-			(char *)0, (char *)0,   (char *)0,   (char *)0, (char *)0,     (char *)0,     (char *)0, (char *)0,  "LDIL",     (char *)0,
-			"ADDIL",   (char *)0,   (char *)0,   "LDO",     (char *)0,     (char *)0,     "LDB",     "LDH",      "LDW",      "LDWM",
-			(char *)0, (char *)0,   (char *)0,   (char *)0, "STB",         "STH",         "STW",     "STWM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,     (char *)0,     (char *)0,     (char *)0,  "LDIL",     (char *)0,
+			"ADDIL",   (char *)0,   (char *)0,   "LDO",       (char *)0,     (char *)0,     "LDB",         "LDH",      "LDW",      "LDWM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   "STB",         "STH",         "STW",         "STWM",
 		};
 		static char *MATCH_name_sub_16_71[] =
 		{
@@ -1803,7 +1803,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 					((MATCH_w_32_0 >> 5 & 0xff) /* ext8_19 at 0 */ < 256)) {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 5 & 0xff) /* ext8_19 at 0 */)
 					{
 					case 0:
@@ -2022,7 +2022,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							                                  /* ext5_11 at 0 */];
 							goto MATCH_label_a1;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -2544,7 +2544,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							goto MATCH_label_a3;
 						} /*opt-block*/ /*opt-block+*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */)
 						{
 						case 0:
@@ -2588,7 +2588,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						} /* (MATCH_w_32_0 >> 6 & 0xf) -- ext4_22 at 0 --*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 6 & 0xf) /* ext4_22 at 0 */)
 					{
 					case 0:
@@ -2704,7 +2704,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						goto MATCH_label_a5;
 					} /*opt-block*/ /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
 
@@ -2765,7 +2765,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 						goto MATCH_label_a7;
 					} /*opt-block*/ /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
 
@@ -2835,7 +2835,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							}
 						}
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -2973,7 +2973,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							}
 						}
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 
@@ -3020,7 +3020,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							MATCH_name = "FADD.E";
 							goto MATCH_label_a12;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -3032,7 +3032,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							MATCH_name = "FSUB.E";
 							goto MATCH_label_a12;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -3076,7 +3076,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 							MATCH_name = "FDIV.E";
 							goto MATCH_label_a12;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -3270,7 +3270,7 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 				if ((MATCH_w_32_0 >> 13 & 0x1) /* d_18 at 0 */ == 1) {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
-				else{
+				else {
 					goto MATCH_label_a18; /*opt-block+*/
 				}
 

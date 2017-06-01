@@ -24,7 +24,7 @@ int fib2 (int x)
 	else return (x);
 }
 
-int main (void)
+int main ()
 {	int number, value;
 
 	printf ("Input number: ");

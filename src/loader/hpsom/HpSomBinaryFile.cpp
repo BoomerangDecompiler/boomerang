@@ -86,7 +86,7 @@ bool isLDW(unsigned instr, int& offset, unsigned dest)
 				  ((instr & 0x3ffe) >> 1));
 		return true;
 	}
-	else{
+	else {
 		return false;
 	}
 }

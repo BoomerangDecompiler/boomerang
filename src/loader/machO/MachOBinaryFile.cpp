@@ -167,7 +167,7 @@ bool MachOBinaryFile::loadFromMemory(QByteArray& img)
 	if (BMMH(header->cputype) == 0x07) {
 		machine = MACHINE_PENTIUM;
 	}
-	else{
+	else {
 		machine = MACHINE_PPC;
 	}
 
@@ -516,7 +516,7 @@ int MachOBinaryFile::machORead2(short *ps) const
 	if (machine == MACHINE_PPC) {
 		n = (int)(p[1] + (p[0] << 8));
 	}
-	else{
+	else {
 		n = (int)(p[0] + (p[1] << 8));
 	}
 
@@ -534,7 +534,7 @@ int MachOBinaryFile::machORead4(int *pi) const
 	if (machine == MACHINE_PPC) {
 		n = (int)(n2 | (n1 << 16));
 	}
-	else{
+	else {
 		n = (int)(n1 | (n2 << 16));
 	}
 
@@ -551,7 +551,7 @@ int32_t MachOBinaryFile::BMMH(int32_t x)
 	if (swap_bytes) {
 		return _BMMH(x);
 	}
-	else{
+	else {
 		return x;
 	}
 }
@@ -562,7 +562,7 @@ uint32_t MachOBinaryFile::BMMH(uint32_t x)
 	if (swap_bytes) {
 		return _BMMH(x);
 	}
-	else{
+	else {
 		return x;
 	}
 }
@@ -573,7 +573,7 @@ unsigned short MachOBinaryFile::BMMHW(unsigned short x)
 	if (swap_bytes) {
 		return _BMMHW(x);
 	}
-	else{
+	else {
 		return x;
 	}
 }

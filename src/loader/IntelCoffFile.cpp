@@ -251,7 +251,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
 			//            snprintf(tmp_name, 8, "n%07lx", pSymbols[iSym].csym_offset);
 			name = pStrings + pSymbols[iSym].csym_offset;
 		}
-		else{
+		else {
 			memcpy(tmp_name, pSymbols[iSym].csym_name, 8);
 		}
 

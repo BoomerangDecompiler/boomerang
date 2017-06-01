@@ -751,7 +751,7 @@ bool case_SCD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress, DecodeResult& 
 		cfg->addOutEdge(pBB, address + 4);
 		address += 4; // Skip branch but not delay
 	}
-	else{             // There is interference, and we can't use the copy delay slot trick
+	else {            // There is interference, and we can't use the copy delay slot trick
 		// SCD, must copy delay instr to orphan
 		// Copy the delay instruction to the dest of the branch, as an orphan
 		// First add the branch.
@@ -850,7 +850,7 @@ bool case_SCDAN_NCT(ADDRESS& address, int delta, ADDRESS hiAddress, DecodeResult
 
 		handleBranch(uDest - 4, hiAddress, pBB, cfg, targets);
 	}
-	else{  // SCDAN; must move delay instr to orphan. Assume it's not a NOP
+	else { // SCDAN; must move delay instr to orphan. Assume it's not a NOP
 		   // (though if it is, no harm done)
 		   // Move the delay instruction to the dest of the branch, as an orphan
 		   // First add the branch.

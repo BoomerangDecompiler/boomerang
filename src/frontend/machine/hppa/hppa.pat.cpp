@@ -61,14 +61,14 @@ bool InstructionPatterns::BL$c_br_nnull(ADDRESS& lc, int& a, bool a_isVAR, int& 
 				if (!a_isVAR && ((int)_b != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _b;
 				}
 
 				if (!b_isVAR && ((int)_c != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _c;
 				}
 
@@ -137,14 +137,14 @@ bool InstructionPatterns::BL$c_br_null(ADDRESS& lc, int& a, bool a_isVAR, int& b
 				if (!a_isVAR && ((int)_b != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _b;
 				}
 
 				if (!b_isVAR && ((int)_c != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _c;
 				}
 
@@ -214,14 +214,14 @@ bool InstructionPatterns::BV$c_br_nnull(ADDRESS& lc, int& a, bool a_isVAR, int& 
 				if (!a_isVAR && ((int)_b != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _b;
 				}
 
 				if (!b_isVAR && ((int)_c != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _c;
 				}
 
@@ -291,14 +291,14 @@ bool InstructionPatterns::BV$c_br_null(ADDRESS& lc, int& a, bool a_isVAR, int& b
 				if (!a_isVAR && ((int)_b != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _b;
 				}
 
 				if (!b_isVAR && ((int)_c != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _c;
 				}
 
@@ -354,7 +354,7 @@ bool InstructionPatterns::FSTDS$s_addr_im_r$c_s_addr_ma(ADDRESS& lc, int& a, boo
 				 ((MATCH_w_32_0 >> 7 & 0x3) /* uid2_23 at 0 */ < 4))) {
 				goto MATCH_label_u0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_u1; /*opt-block+*/
 			}
 		}
@@ -390,7 +390,7 @@ MATCH_label_u1:
 			if (!a_isVAR && ((int)_b != a)) {
 				return false;
 			}
-			else{
+			else {
 				a = _b;
 			}
 
@@ -401,14 +401,14 @@ MATCH_label_u1:
 			if (!c_isVAR && ((int)_d != c)) {
 				return false;
 			}
-			else{
+			else {
 				c = _d;
 			}
 
 			if (!d_isVAR && ((int)_e != d)) {
 				return false;
 			}
-			else{
+			else {
 				d = _e;
 			}
 
@@ -452,21 +452,21 @@ bool InstructionPatterns::LDO(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b_
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
 				if (!b_isVAR && ((int)_b != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _b;
 				}
 
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
@@ -528,21 +528,21 @@ bool InstructionPatterns::LDW$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, b
 				if (!b_isVAR && ((int)_c != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _c;
 				}
 
 				if (!c_isVAR && ((int)_d != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _d;
 				}
 
 				if (!d_isVAR && ((int)_e != d)) {
 					return false;
 				}
-				else{
+				else {
 					d = _e;
 				}
 
@@ -604,21 +604,21 @@ bool InstructionPatterns::LDWM$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, 
 				if (!b_isVAR && ((int)_c != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _c;
 				}
 
 				if (!c_isVAR && ((int)_d != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _d;
 				}
 
 				if (!d_isVAR && ((int)_e != d)) {
 					return false;
 				}
-				else{
+				else {
 					d = _e;
 				}
 
@@ -670,7 +670,7 @@ bool InstructionPatterns::LDWS$s_addr_im_r$c_s_addr_mb(ADDRESS& lc, int& a, bool
 				((MATCH_w_32_0 >> 12 & 0x1) /* addr_19 at 0 */ == 0)) {
 				goto MATCH_label_q0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_q1; /*opt-block+*/
 			}
 		}
@@ -710,21 +710,21 @@ MATCH_label_q1:
 			if (!b_isVAR && ((int)_c != b)) {
 				return false;
 			}
-			else{
+			else {
 				b = _c;
 			}
 
 			if (!c_isVAR && ((int)_d != c)) {
 				return false;
 			}
-			else{
+			else {
 				c = _d;
 			}
 
 			if (!d_isVAR && ((int)_e != d)) {
 				return false;
 			}
-			else{
+			else {
 				d = _e;
 			}
 
@@ -768,7 +768,7 @@ bool InstructionPatterns::LDWS$s_addr_im_r$c_s_addr_notm(ADDRESS& lc, int& a, bo
 				((MATCH_w_32_0 >> 12 & 0x1) /* addr_19 at 0 */ == 0)) {
 				goto MATCH_label_p0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_p1; /*opt-block+*/
 			}
 		}
@@ -808,21 +808,21 @@ MATCH_label_p1:
 			if (!b_isVAR && ((int)_c != b)) {
 				return false;
 			}
-			else{
+			else {
 				b = _c;
 			}
 
 			if (!c_isVAR && ((int)_d != c)) {
 				return false;
 			}
-			else{
+			else {
 				c = _d;
 			}
 
 			if (!d_isVAR && ((int)_e != d)) {
 				return false;
 			}
-			else{
+			else {
 				d = _e;
 			}
 
@@ -880,21 +880,21 @@ bool InstructionPatterns::OR$c_arith_w$c_c_nonneg(ADDRESS& lc, int& a, bool a_is
 				if (!b_isVAR && ((int)_b != b)) {
 					return false;
 				}
-				else{
+				else {
 					b = _b;
 				}
 
 				if (!c_isVAR && ((int)_c != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _c;
 				}
 
 				if (!d_isVAR && ((int)_d != d)) {
 					return false;
 				}
-				else{
+				else {
 					d = _d;
 				}
 
@@ -956,7 +956,7 @@ bool InstructionPatterns::STW$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, b
 				if (!a_isVAR && ((int)_b != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _b;
 				}
 
@@ -967,14 +967,14 @@ bool InstructionPatterns::STW$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, b
 				if (!c_isVAR && ((int)_d != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _d;
 				}
 
 				if (!d_isVAR && ((int)_e != d)) {
 					return false;
 				}
-				else{
+				else {
 					d = _e;
 				}
 
@@ -1032,7 +1032,7 @@ bool InstructionPatterns::STWM$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, 
 				if (!a_isVAR && ((int)_b != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _b;
 				}
 
@@ -1043,14 +1043,14 @@ bool InstructionPatterns::STWM$l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, 
 				if (!c_isVAR && ((int)_d != c)) {
 					return false;
 				}
-				else{
+				else {
 					c = _d;
 				}
 
 				if (!d_isVAR && ((int)_e != d)) {
 					return false;
 				}
-				else{
+				else {
 					d = _e;
 				}
 
@@ -1119,7 +1119,7 @@ bool InstructionPatterns::c_arith_w$c_c_nonneg(ADDRESS& lc, int& a, bool a_isVAR
 				(40 <= (MATCH_w_32_0 >> 26 & 0x3f)) /* op at 0 */ && ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */ < 44)) {
 				goto MATCH_label_l1; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_l0; /*opt-block+*/
 			}
 		}
@@ -1145,7 +1145,7 @@ MATCH_label_l1:
 			if (!a_isVAR && ((int)_a != a)) {
 				return false;
 			}
-			else{
+			else {
 				a = _a;
 			}
 
@@ -1190,7 +1190,7 @@ bool InstructionPatterns::c_br_nnull(ADDRESS& lc)
 			}
 
 			/*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_k0; /*opt-block+*/
 			}
 		}
@@ -1238,7 +1238,7 @@ bool InstructionPatterns::c_br_null(ADDRESS& lc)
 			}
 
 			/*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_j0; /*opt-block+*/
 			}
 		}
@@ -1322,7 +1322,7 @@ bool InstructionPatterns::c_c_nonneg(ADDRESS& lc)
 				 ((MATCH_w_32_0 >> 10 & 0x1) /* se_21 at 0 */ < 2))) {
 				goto MATCH_label_i1; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_i0; /*opt-block+*/
 			}
 		}
@@ -1440,7 +1440,7 @@ bool InstructionPatterns::c_s_addr_ma(ADDRESS& lc)
 				((MATCH_w_32_0 >> 13 & 0x1) /* a_18 at 0 */ == 1)) {
 				goto MATCH_label_g0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_g1; /*opt-block+*/
 			}
 		}
@@ -1516,7 +1516,7 @@ bool InstructionPatterns::c_s_addr_mb(ADDRESS& lc)
 				 ((MATCH_w_32_0 >> 7 & 0x3) /* uid2_23 at 0 */ < 4))) {
 				goto MATCH_label_f0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_f1; /*opt-block+*/
 			}
 		}
@@ -1583,7 +1583,7 @@ bool InstructionPatterns::c_s_addr_notm(ADDRESS& lc)
 				((MATCH_w_32_0 >> 5 & 0x1) /* m_26 at 0 */ == 1)) {
 				goto MATCH_label_e0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_e1; /*opt-block+*/
 			}
 		}
@@ -1637,7 +1637,7 @@ bool InstructionPatterns::l_addr_16_old$c_l_addr_none(ADDRESS& lc, int& a, bool 
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -1691,7 +1691,7 @@ bool InstructionPatterns::s_addr_im_r$c_s_addr_ma(ADDRESS& lc, int& a, bool a_is
 				 ((MATCH_w_32_0 >> 7 & 0x3) /* uid2_23 at 0 */ < 4))) {
 				goto MATCH_label_c0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_c1; /*opt-block+*/
 			}
 		}
@@ -1717,7 +1717,7 @@ MATCH_label_c1:
 			if (!a_isVAR && ((int)_a != a)) {
 				return false;
 			}
-			else{
+			else {
 				a = _a;
 			}
 
@@ -1761,7 +1761,7 @@ bool InstructionPatterns::s_addr_im_r$c_s_addr_mb(ADDRESS& lc, int& a, bool a_is
 				 ((MATCH_w_32_0 >> 7 & 0x3) /* uid2_23 at 0 */ < 4))) {
 				goto MATCH_label_b0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_b1; /*opt-block+*/
 			}
 		}
@@ -1787,7 +1787,7 @@ MATCH_label_b1:
 			if (!a_isVAR && ((int)_a != a)) {
 				return false;
 			}
-			else{
+			else {
 				a = _a;
 			}
 
@@ -1831,7 +1831,7 @@ bool InstructionPatterns::s_addr_im_r$c_s_addr_notm(ADDRESS& lc, int& a, bool a_
 				 ((MATCH_w_32_0 >> 7 & 0x3) /* uid2_23 at 0 */ < 4))) {
 				goto MATCH_label_a0; /*opt-block+*/
 			}
-			else{
+			else {
 				goto MATCH_label_a1; /*opt-block+*/
 			}
 		}
@@ -1857,7 +1857,7 @@ MATCH_label_a1:
 			if (!a_isVAR && ((int)_a != a)) {
 				return false;
 			}
-			else{
+			else {
 				a = _a;
 			}
 

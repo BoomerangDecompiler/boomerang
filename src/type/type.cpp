@@ -17,7 +17,7 @@
 
 #include "include/types.h"
 #include "include/util.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "db/cfg.h"
 #include "include/proc.h"
 #include "include/signature.h"
@@ -106,7 +106,7 @@ void PointerType::setPointsTo(SharedType p)
 			LOG << "Warning: attempted to create pointer to self: " << ADDRESS::host_ptr(this) << "\n";
 		}
 	}
-	else{
+	else {
 		points_to = p;
 	}
 }
@@ -1120,7 +1120,7 @@ QString FuncType::getCtype(bool final) const
 	if (signature->getNumReturns() == 0) {
 		s += "void";
 	}
-	else{
+	else {
 		s += signature->getReturnType(0)->getCtype(final);
 	}
 
@@ -1151,7 +1151,7 @@ void FuncType::getReturnAndParam(QString& ret, QString& param)
 	if (signature->getNumReturns() == 0) {
 		ret = "void";
 	}
-	else{
+	else {
 		ret = signature->getReturnType(0)->getCtype();
 	}
 
@@ -1236,7 +1236,7 @@ QString IntegerType::getCtype(bool final) const
 			if (final) {
 				return "unsigned int";
 			}
-			else{
+			else {
 				return "?unsigned int";
 			}
 		}
@@ -1279,7 +1279,7 @@ QString PointerType::getCtype(bool final) const
 	if (points_to->isPointer()) {
 		s += "*";
 	}
-	else{
+	else {
 		s += " *";
 	}
 
@@ -1958,7 +1958,7 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size)
 		// overflow
 		end = 0xFFFFFFFF; // Overflow
 	}
-	else{
+	else {
 		end = it->first + it->second.size;
 	}
 
@@ -2015,7 +2015,7 @@ void DataIntervalMap::addItem(ADDRESS addr, QString name, SharedType ty, bool fo
 		else if (endOfCurrent == endOfNew) {
 			checkMatching(pdie, addr, name, ty, forced); // Size match; check that new type matches old
 		}
-		else{
+		else {
 			enterComponent(pdie, addr, name, ty, forced);
 		}
 	}
@@ -2046,7 +2046,7 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
 			memberType = memberType->meetWith(ty, ch);
 			pdie->second.type->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
 		}
-		else{
+		else {
 			LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype()
 				<< " is not compatible with existing structure member type "
 				<< memberType->getCtype() << "\n";
@@ -2060,13 +2060,13 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
 			memberType = memberType->meetWith(ty, ch);
 			pdie->second.type->as<ArrayType>()->setBaseType(memberType);
 		}
-		else{
+		else {
 			LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype()
 				<< " is not compatible with existing array member type "
 				<< memberType->getCtype() << "\n";
 		}
 	}
-	else{
+	else {
 		LOG << "TYPE ERROR: Existing type at address " << pdie->first << " is not structure or array type\n";
 	}
 }
@@ -2150,7 +2150,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString& name, Share
 			if (ty->resolvesToCompound()) {
 				elemTy = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
 			}
-			else{
+			else {
 				elemTy = ty->as<ArrayType>()->getBaseType();
 			}
 

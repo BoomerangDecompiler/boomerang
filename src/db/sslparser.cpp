@@ -69,7 +69,7 @@ void *alloca();
 #include "insnameelem.h"
 #include "include/util.h" // E.g. str()
 #include "include/statement.h"
-#include "include/exp.h"
+#include "db/exp.h"
 
 #include "sslscanner.h"
 #include "include/operator.h"
@@ -1085,7 +1085,7 @@ SSLParser::
         break;
     }
     case 62: {
-        yyvsp[0].insel->getrefmap(indexrefmap);
+        yyvsp[0].insel->getRefMap(indexrefmap);
         //       $3            $4
         ;
         break;
@@ -1390,12 +1390,12 @@ SSLParser::
             yyerror(qPrintable(QString("table  %1  is not an expression table but appears to be used as one.\n").
                                arg(yyvsp[-2].str)));
         } else if (((ExprTable *)TableDict[yyvsp[-2].str].get())->expressions.size() <
-                   indexrefmap[yyvsp[-1].str]->ntokens()) {
+                   indexrefmap[yyvsp[-1].str]->getNumTokens()) {
             yyerror(qPrintable(QString("table %1  (%2) is too small to use %3 (%4) as an index.\n").
                                arg(yyvsp[-2].str).
                     arg(((ExprTable *)TableDict[yyvsp[-2].str].get())->expressions.size()).
                     arg(yyvsp[-1].str).
-                    arg(indexrefmap[yyvsp[-1].str]->ntokens())
+                    arg(indexrefmap[yyvsp[-1].str]->getNumTokens())
                     ));
         }
         // $1 is a map from string to Table*; $2 is a map from string to InsNameElem*
@@ -1497,7 +1497,7 @@ SSLParser::
         } else if (TableDict[yyvsp[-3].str]->getType() != OPTABLE) {
             yyerror(qPrintable(QString("table %1 is not an operator table but appears to be used as one.\n")
                                .arg(yyvsp[-3].str)));
-        } else if (TableDict[yyvsp[-3].str]->Records.size() < indexrefmap[yyvsp[-2].str]->ntokens()) {
+        } else if (TableDict[yyvsp[-3].str]->Records.size() < indexrefmap[yyvsp[-2].str]->getNumTokens()) {
             yyerror(qPrintable(QString("table %1 is too small to use with %2 as an index.\n")
                                .arg(yyvsp[-2].str)));
         }

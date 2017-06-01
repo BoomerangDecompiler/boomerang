@@ -16,7 +16,7 @@
 
 #include "include/type.h"
 #include "include/signature.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/prog.h"
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
@@ -363,7 +363,7 @@ std::shared_ptr<Signature> CallingConvention::Win32Signature::clone()
 	if (preferedReturn) {
 		n->preferedReturn = preferedReturn->clone();
 	}
-	else{
+	else {
 		n->preferedReturn = nullptr;
 	}
 
@@ -386,7 +386,7 @@ std::shared_ptr<Signature> CallingConvention::Win32TcSignature::clone()
 	if (preferedReturn) {
 		n->preferedReturn = preferedReturn->clone();
 	}
-	else{
+	else {
 		n->preferedReturn = nullptr;
 	}
 
@@ -451,7 +451,7 @@ void CallingConvention::Win32Signature::addReturn(SharedType type, SharedExp e)
 		if (type->isFloat()) {
 			e = Location::regOf(32);
 		}
-		else{
+		else {
 			e = Location::regOf(24);
 		}
 	}
@@ -599,7 +599,7 @@ void CallingConvention::Win32Signature::setLibraryDefines(StatementList *defs)
 			Location *r32 = Location::regOf(32); // Top of FP stack
 			r32->setType(ty);
 		}
-		else{
+		else {
 			r24->setType(ty);                                    // All others return in r24 (check!)
 		}
 #endif
@@ -661,7 +661,7 @@ std::shared_ptr<Signature> CallingConvention::StdC::PentiumSignature::clone()
 	if (preferedReturn) {
 		n->preferedReturn = preferedReturn->clone();
 	}
-	else{
+	else {
 		n->preferedReturn = nullptr;
 	}
 
@@ -746,7 +746,7 @@ void CallingConvention::StdC::PentiumSignature::addReturn(SharedType type, Share
 		if (type->isFloat()) {
 			e = Location::regOf(32);
 		}
-		else{
+		else {
 			e = Location::regOf(24);
 		}
 	}
@@ -858,7 +858,7 @@ void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList 
 			Location *r32 = Location::regOf(32); // Top of FP stack
 			r32->setType(ty);
 		}
-		else{
+		else {
 			r24->setType(ty);                                    // All others return in r24 (check!)
 		}
 #endif
@@ -901,7 +901,7 @@ std::shared_ptr<Signature> CallingConvention::StdC::PPCSignature::clone()
 	if (preferedReturn) {
 		n->preferedReturn = preferedReturn->clone();
 	}
-	else{
+	else {
 		n->preferedReturn = nullptr;
 	}
 
@@ -924,7 +924,7 @@ SharedExp CallingConvention::StdC::PPCSignature::getArgumentExp(int n)
 		// m[%r1+12], etc.
 		e = Location::memOf(Binary::get(opPlus, Location::regOf(1), Const::get(8 + (n - 8) * 4)));
 	}
-	else{
+	else {
 		e = Location::regOf(3 + n);
 	}
 
@@ -1193,7 +1193,7 @@ std::shared_ptr<Signature> CallingConvention::StdC::SparcSignature::clone()
 	if (preferedReturn) {
 		n->preferedReturn = preferedReturn->clone();
 	}
-	else{
+	else {
 		n->preferedReturn = nullptr;
 	}
 
@@ -1217,7 +1217,7 @@ std::shared_ptr<Signature> CallingConvention::StdC::SparcLibSignature::clone()
 	if (preferedReturn) {
 		n->preferedReturn = preferedReturn->clone();
 	}
-	else{
+	else {
 		n->preferedReturn = nullptr;
 	}
 
@@ -1293,7 +1293,7 @@ std::shared_ptr<Signature> CallingConvention::StdC::MIPSSignature::clone()
 	if (preferedReturn) {
 		n->preferedReturn = preferedReturn->clone();
 	}
-	else{
+	else {
 		n->preferedReturn = nullptr;
 	}
 
@@ -1336,7 +1336,7 @@ void CallingConvention::StdC::MIPSSignature::addReturn(SharedType type, SharedEx
 		else if (type->isFloat()) {
 			e = Location::regOf(32); // register $f0
 		}
-		else{
+		else {
 			e = Location::regOf(2); // register $2
 		}
 	}
@@ -1362,7 +1362,7 @@ SharedExp CallingConvention::StdC::MIPSSignature::getArgumentExp(int n)
 										Location::regOf(29), // %o6 == %sp
 										Const::get(4 * 4 + (n - 4) * 4)));
 	}
-	else{
+	else {
 		e = Location::regOf((int)(8 + n));
 	}
 
@@ -1459,7 +1459,7 @@ SharedExp CallingConvention::StdC::SparcSignature::getArgumentExp(int n)
 										Location::regOf(14), // %o6 == %sp
 										Const::get(92 + (n - 6) * 4)));
 	}
-	else{
+	else {
 		e = Location::regOf(8 + n);
 	}
 
@@ -1721,14 +1721,14 @@ void Signature::addParameter(SharedType type, const QString& nam /*= nullptr*/, 
 		if (type == nullptr) {
 			LOG_STREAM() << "<notype> ";
 		}
-		else{
+		else {
 			LOG_STREAM() << type->getCtype() << " ";
 		}
 
 		if (nam.isNull()) {
 			LOG_STREAM() << "<noname>";
 		}
-		else{
+		else {
 			LOG_STREAM() << nam;
 		}
 
@@ -1778,7 +1778,7 @@ void Signature::addParameter(std::shared_ptr<Parameter> param)
 	if ((ty == nullptr) || (e == nullptr) || nam.isNull()) {
 		addParameter(ty, nam, e, param->getBoundMax());
 	}
-	else{
+	else {
 		params.push_back(param);
 	}
 }
@@ -2037,7 +2037,7 @@ std::shared_ptr<Signature> Signature::instantiate(platform plat, callconv cc, co
 		else if (cc == CONV_THISCALL) {
 			return std::make_shared<CallingConvention::Win32TcSignature>(nam);
 		}
-		else{
+		else {
 			return std::make_shared<CallingConvention::StdC::PentiumSignature>(nam);
 		}
 
@@ -2112,7 +2112,7 @@ void Signature::print(QTextStream& out, bool /*html*/) const
 
 		out << "} ";
 	}
-	else{
+	else {
 		out << "void ";
 	}
 

@@ -41,7 +41,7 @@ bool InstructionPatterns::Aline(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -120,7 +120,7 @@ bool InstructionPatterns::addaw_d16(ADDRESS& lc, int& a, bool a_isVAR)
 					if (!a_isVAR && ((int)_a != a)) {
 						return false;
 					}
-					else{
+					else {
 						a = _a;
 					}
 
@@ -199,7 +199,7 @@ bool InstructionPatterns::addil$daIndirect(ADDRESS& lc, int& a, bool a_isVAR, in
 					if (!a_isVAR && ((int)_a != a)) {
 						return false;
 					}
-					else{
+					else {
 						a = _a;
 					}
 
@@ -257,7 +257,7 @@ bool InstructionPatterns::bsr(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -265,7 +265,7 @@ bool InstructionPatterns::bsr(ADDRESS& lc, int& a, bool a_isVAR)
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_o0; /*opt-block+*/
 			}
 		}
@@ -341,7 +341,7 @@ bool InstructionPatterns::call_(ADDRESS& lc, int& a, bool a_isVAR)
 					if (!a_isVAR && ((int)_a != a)) {
 						return false;
 					}
-					else{
+					else {
 						a = _a;
 					}
 
@@ -392,7 +392,7 @@ bool InstructionPatterns::daIndirect(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -438,7 +438,7 @@ bool InstructionPatterns::daPostInc(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -484,7 +484,7 @@ bool InstructionPatterns::daPreDec(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -558,7 +558,7 @@ bool InstructionPatterns::leaSpSp(ADDRESS& lc, int& a, bool a_isVAR)
 					if (!a_isVAR && ((int)_a != a)) {
 						return false;
 					}
-					else{
+					else {
 						a = _a;
 					}
 
@@ -632,14 +632,14 @@ bool InstructionPatterns::link(ADDRESS& lc, int& a, bool a_isVAR, int& b, bool b
 					if (!a_isVAR && ((int)_a != a)) {
 						return false;
 					}
-					else{
+					else {
 						a = _a;
 					}
 
 					if (!b_isVAR && ((int)_b != b)) {
 						return false;
 					}
-					else{
+					else {
 						b = _b;
 					}
 
@@ -718,7 +718,7 @@ bool InstructionPatterns::movemrl$daPostInc(ADDRESS& lc, int& a, bool a_isVAR, i
 					if (!b_isVAR && ((int)_b != b)) {
 						return false;
 					}
-					else{
+					else {
 						b = _b;
 					}
 
@@ -778,7 +778,7 @@ bool InstructionPatterns::moverml$daPreDec(ADDRESS& lc, int& a, bool a_isVAR, in
 					if (!a_isVAR && ((int)_a != a)) {
 						return false;
 					}
-					else{
+					else {
 						a = _a;
 					}
 
@@ -791,7 +791,7 @@ bool InstructionPatterns::moverml$daPreDec(ADDRESS& lc, int& a, bool a_isVAR, in
 					return true;
 				}
 			} /*opt-block*/
-			else{
+			else {
 				goto MATCH_label_g0; /*opt-block+*/
 			}
 		}
@@ -866,7 +866,7 @@ bool InstructionPatterns::peaPcDisp(ADDRESS& lc, int& a, bool a_isVAR)
 					if (!a_isVAR && ((int)_a != a)) {
 						return false;
 					}
-					else{
+					else {
 						a = _a;
 					}
 
@@ -921,7 +921,7 @@ bool InstructionPatterns::popreg(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -929,7 +929,7 @@ bool InstructionPatterns::popreg(ADDRESS& lc, int& a, bool a_isVAR)
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_e0; /*opt-block+*/
 			}
 		}
@@ -978,7 +978,7 @@ bool InstructionPatterns::pushreg(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -986,7 +986,7 @@ bool InstructionPatterns::pushreg(ADDRESS& lc, int& a, bool a_isVAR)
 
 				return true;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_d0; /*opt-block+*/
 			}
 		}
@@ -1118,7 +1118,7 @@ bool InstructionPatterns::trap(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 
@@ -1187,7 +1187,7 @@ bool InstructionPatterns::unlk(ADDRESS& lc, int& a, bool a_isVAR)
 				if (!a_isVAR && ((int)_a != a)) {
 					return false;
 				}
-				else{
+				else {
 					a = _a;
 				}
 

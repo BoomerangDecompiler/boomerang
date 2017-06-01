@@ -22,11 +22,11 @@ typedef struct {
   char __unused[20];
 } utmp;
 
-utmp *getutent(void);
+utmp *getutent();
 utmp *getutid(const utmp *id);
 utmp *getutline(const utmp *line);
 utmp *pututline(const utmp *utmp);
-void setutent(void);
-void endutent(void);
+void setutent();
+void endutent();
 int utmpname(const char *file);
 

@@ -34,7 +34,7 @@
  * use public functions of the target classes.
  */
 
-#include "include/exp.h" // Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
+#include "db/exp.h" // Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
 // ExpModifier::preVisit()
 
 class Instruction;

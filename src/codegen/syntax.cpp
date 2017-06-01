@@ -1,7 +1,7 @@
 #include "include/hllcode.h"
 
 #include "include/prog.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "db/cfg.h"
 #include "db/basicblock.h"
 #include "include/statement.h"
@@ -195,7 +195,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 
 		os << " " << pbb->getLowAddr();
 	}
-	else{
+	else {
 		os << "block";
 	}
 
@@ -487,7 +487,7 @@ SyntaxNode *BlockSyntaxNode::clone()
 	if (pbb) {
 		b->pbb = pbb;
 	}
-	else{
+	else {
 		for (auto& elem : statements) {
 			b->addStatement(elem->clone());
 		}
@@ -512,7 +512,7 @@ SyntaxNode *BlockSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 			if (elem->getCorrespond() == from) {
 				n = to;
 			}
-			else{
+			else {
 				n = elem->replace(from, to);
 			}
 
@@ -589,7 +589,7 @@ SyntaxNode *IfThenSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 		assert(to);
 		pThen = to;
 	}
-	else{
+	else {
 		pThen = pThen->replace(from, to);
 	}
 
@@ -701,7 +701,7 @@ SyntaxNode *IfThenElseSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 		assert(to);
 		pThen = to;
 	}
-	else{
+	else {
 		pThen = pThen->replace(from, to);
 	}
 
@@ -709,7 +709,7 @@ SyntaxNode *IfThenElseSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 		assert(to);
 		pElse = to;
 	}
-	else{
+	else {
 		pElse = pElse->replace(from, to);
 	}
 
@@ -815,7 +815,7 @@ SyntaxNode *PretestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 		assert(to);
 		pBody = to;
 	}
-	else{
+	else {
 		pBody = pBody->replace(from, to);
 	}
 
@@ -915,7 +915,7 @@ SyntaxNode *PostTestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 		assert(to);
 		pBody = to;
 	}
-	else{
+	else {
 		pBody = pBody->replace(from, to);
 	}
 
@@ -1013,7 +1013,7 @@ SyntaxNode *InfiniteLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 		assert(to);
 		pBody = to;
 	}
-	else{
+	else {
 		pBody = pBody->replace(from, to);
 	}
 

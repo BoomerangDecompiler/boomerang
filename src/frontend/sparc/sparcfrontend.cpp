@@ -29,7 +29,7 @@
 #include "db/IBinarySymbols.h"
 #include "db/cfg.h"
 #include "include/decoder.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/frontend.h"
 #include "boom_base/log.h"
 #include "include/proc.h"
@@ -135,7 +135,7 @@ BasicBlock *SparcFrontEnd::optimise_CallReturn(CallStatement *call, RTL *rtl, RT
 		BasicBlock *returnBB = createReturnBlock(pProc, rtls, new RTL(rtl->getAddress() + 1, ls));
 		return returnBB;
 	}
-	else{
+	else {
 		// May want to put code here that checks whether or not the delay instruction redefines %o7
 		return nullptr;
 	}
@@ -165,7 +165,7 @@ void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock *& 
 		tq.visit(cfg, dest, newBB);
 		cfg->addOutEdge(newBB, dest, true);
 	}
-	else{
+	else {
 		LOG_STREAM() << "Error: branch to " << dest << " goes beyond section.\n";
 	}
 }
@@ -632,7 +632,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddres
 		cfg->addOutEdge(pBB, address + 4);
 		address += 4; // Skip branch but not delay
 	}
-	else{             // The CCs are affected, and we can't use the copy delay slot trick
+	else {            // The CCs are affected, and we can't use the copy delay slot trick
 		// SCD, must copy delay instr to orphan
 		// Copy the delay instruction to the dest of the branch, as an orphan. First add the branch.
 		BB_rtls->push_back(inst.rtl);
@@ -871,7 +871,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 				inst.valid = true;
 				inst.type  = DD; // E.g. decode the delay slot instruction
 			}
-			else{
+			else {
 				inst = decodeInstruction(uAddr);
 			}
 

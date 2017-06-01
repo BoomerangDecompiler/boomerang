@@ -127,7 +127,7 @@ OBJC_EXPORT int objc_getClassList(Class *buffer, int bufferLen);
 
 #define OBSOLETE_OBJC_GETCLASSES    1
 #if OBSOLETE_OBJC_GETCLASSES
-OBJC_EXPORT void *objc_getClasses(void);
+OBJC_EXPORT void *objc_getClasses();
 
 #endif
 

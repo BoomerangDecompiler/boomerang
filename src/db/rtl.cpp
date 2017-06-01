@@ -18,12 +18,12 @@
 
 #include "include/rtl.h"
 
-#include "boom_base/log.h"                  // for LOG_VERBOSE
-#include "include/exp.h"                    // for Const, Exp, DEBUG_BUFSIZE
-#include "boom_base/log.h"                  // for Log
-#include "include/operator.h"               // for OPER::opIntConst
-#include "include/statement.h"              // for Instruction, etc
-#include "include/types.h"                  // for ADDRESS
+#include "boom_base/log.h"             // for LOG_VERBOSE
+#include "db/exp.h"                    // for Const, Exp, DEBUG_BUFSIZE
+#include "boom_base/log.h"             // for Log
+#include "include/operator.h"          // for OPER::opIntConst
+#include "include/statement.h"         // for Instruction, etc
+#include "include/types.h"             // for ADDRESS
 
 #include <QString>
 #include <QTextStream>
@@ -203,7 +203,7 @@ void RTL::print(QTextStream& os /*= cout*/, bool html /*=false*/) const
 			if (bFirst) {
 				os << " ";
 			}
-			else{
+			else {
 				os << qSetFieldWidth(9) << " " << qSetFieldWidth(0);
 			}
 		}

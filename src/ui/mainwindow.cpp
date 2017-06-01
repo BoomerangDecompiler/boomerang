@@ -709,7 +709,7 @@ void MainWindow::showRTLEditor(const QString& name)
 		n = new RTLEditor(decompilerThread->getDecompiler(), name);
 		ui->tabWidget->addTab(n, name);
 	}
-	else{
+	else {
 		n->updateContents();
 	}
 
@@ -861,7 +861,7 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
 			return;
 		}
 	}
-	else{
+	else {
 		name = ui->libProcs->item(row, 0)->text();
 	}
 

@@ -20,7 +20,7 @@
 #include "db/IBinaryImage.h"
 #include "include/decoder.h"
 #include "include/prog.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/proc.h"
 #include "boom_base/log.h"
 #include "include/statement.h"
@@ -198,7 +198,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c788; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c787; /*opt-block+*/
 								}
 
@@ -227,7 +227,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1543 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ORmrb", { DIS_EADDR8, DIS_R8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c787; /*opt-block+*/
 							}
 
@@ -242,7 +242,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c788; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c789; /*opt-block+*/
 							}
 
@@ -287,7 +287,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c792; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c791; /*opt-block+*/
 								}
 
@@ -316,7 +316,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1513 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ORmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c791; /*opt-block+*/
 							}
 
@@ -331,7 +331,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c792; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c793; /*opt-block+*/
 							}
 
@@ -376,7 +376,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c796; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c795; /*opt-block+*/
 								}
 
@@ -405,7 +405,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1471 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ORrmb", { DIS_R8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c795; /*opt-block+*/
 							}
 
@@ -420,7 +420,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c796; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c797; /*opt-block+*/
 							}
 
@@ -465,7 +465,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c800; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c799; /*opt-block+*/
 								}
 
@@ -494,7 +494,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1441 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ORrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c799; /*opt-block+*/
 							}
 
@@ -509,7 +509,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c800; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c801; /*opt-block+*/
 							}
 
@@ -604,7 +604,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c804; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c803; /*opt-block+*/
 												}
 
@@ -635,7 +635,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 429 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SLDT", { DIS_EADDR32 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c803; /*opt-block+*/
 											}
 
@@ -652,7 +652,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c804; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c805; /*opt-block+*/
 											}
 
@@ -704,7 +704,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c807; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c806; /*opt-block+*/
 												}
 
@@ -735,7 +735,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 405 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "STR", { DIS_MEM });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c806; /*opt-block+*/
 											}
 
@@ -752,7 +752,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c807; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c808; /*opt-block+*/
 											}
 
@@ -805,7 +805,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c811; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c810; /*opt-block+*/
 												}
 
@@ -836,7 +836,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 1040 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "LTR", { DIS_EADDR32 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c810; /*opt-block+*/
 											}
 
@@ -853,7 +853,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c811; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c812; /*opt-block+*/
 											}
 
@@ -900,7 +900,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c815; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c814; /*opt-block+*/
 												}
 
@@ -931,7 +931,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 375 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "VERR", { DIS_EADDR32 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c814; /*opt-block+*/
 											}
 
@@ -948,7 +948,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c815; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c816; /*opt-block+*/
 											}
 
@@ -995,7 +995,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c819; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c818; /*opt-block+*/
 												}
 
@@ -1026,7 +1026,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 372 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "VERW", { DIS_EADDR32 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c818; /*opt-block+*/
 											}
 
@@ -1043,7 +1043,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c819; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c820; /*opt-block+*/
 											}
 
@@ -1118,7 +1118,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c822; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c821; /*opt-block+*/
 												}
 
@@ -1150,7 +1150,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												stmts = instantiate(pc, "SGDT", { DIS_MEM });
 												// Sets are now in the high level instructions
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c821; /*opt-block+*/
 											}
 
@@ -1167,7 +1167,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c822; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c823; /*opt-block+*/
 											}
 
@@ -1219,7 +1219,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c825; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c824; /*opt-block+*/
 												}
 
@@ -1250,7 +1250,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 456 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SIDT", { DIS_MEM });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c824; /*opt-block+*/
 											}
 
@@ -1267,7 +1267,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c825; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c826; /*opt-block+*/
 											}
 
@@ -1321,7 +1321,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c829; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c828; /*opt-block+*/
 												}
 
@@ -1352,7 +1352,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 426 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SMSW", { DIS_EADDR32 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c828; /*opt-block+*/
 											}
 
@@ -1369,7 +1369,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c829; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c830; /*opt-block+*/
 											}
 
@@ -1421,7 +1421,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c832; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c831; /*opt-block+*/
 												}
 
@@ -1452,7 +1452,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 1095 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "INVLPG", { DIS_MEM });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c831; /*opt-block+*/
 											}
 
@@ -1469,7 +1469,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c832; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c833; /*opt-block+*/
 											}
 
@@ -1531,7 +1531,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c836; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c835; /*opt-block+*/
 											}
 
@@ -1564,7 +1564,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1082 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "LAR.od", { DIS_REG32, DIS_EADDR32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c835; /*opt-block+*/
 										}
 
@@ -1581,7 +1581,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c836; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c837; /*opt-block+*/
 										}
 
@@ -1636,7 +1636,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c840; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c839; /*opt-block+*/
 											}
 
@@ -1669,7 +1669,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1046 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "LSLod", { DIS_REG32, DIS_EADDR32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c839; /*opt-block+*/
 										}
 
@@ -1686,7 +1686,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c840; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c841; /*opt-block+*/
 										}
 
@@ -1718,7 +1718,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1259 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "CLTS");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -1754,7 +1754,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 363 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "WRMSR");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -1777,7 +1777,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 596 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RDMSR");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -1878,7 +1878,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									assert(0);
 								} /* (MATCH_w_8_8 & 0x7) -- col at 8 --*/
 							}
-							else{
+							else {
 								switch ((MATCH_w_8_8 & 0x7) /* col at 8 */)
 								{
 								case 0:
@@ -2643,7 +2643,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									assert(0);
 								} /* (MATCH_w_8_8 & 0x7) -- col at 8 --*/
 							}
-							else{
+							else {
 								switch ((MATCH_w_8_8 & 0x7) /* col at 8 */)
 								{
 								case 0:
@@ -3404,7 +3404,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c896; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c895; /*opt-block+*/
 											}
 
@@ -3437,7 +3437,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1316 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "BTSod", { DIS_EADDR32, DIS_REG32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c895; /*opt-block+*/
 										}
 
@@ -3454,7 +3454,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c896; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c897; /*opt-block+*/
 										}
 
@@ -3500,7 +3500,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c892; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c891; /*opt-block+*/
 											}
 
@@ -3533,7 +3533,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1352 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "BTod", { DIS_EADDR32, DIS_REG32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c891; /*opt-block+*/
 										}
 
@@ -3550,7 +3550,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c892; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c893; /*opt-block+*/
 										}
 
@@ -3826,7 +3826,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c912; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c911; /*opt-block+*/
 											}
 
@@ -3859,7 +3859,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 438 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "SHRD.CLod", { DIS_EADDR32, DIS_REG32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c911; /*opt-block+*/
 										}
 
@@ -3876,7 +3876,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c912; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c913; /*opt-block+*/
 										}
 
@@ -3922,7 +3922,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c908; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c907; /*opt-block+*/
 											}
 
@@ -3955,7 +3955,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 432 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "SHLD.CLod", { DIS_EADDR32, DIS_REG32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c907; /*opt-block+*/
 										}
 
@@ -3972,7 +3972,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c908; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c909; /*opt-block+*/
 										}
 
@@ -4028,7 +4028,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c916; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c915; /*opt-block+*/
 											}
 
@@ -4061,7 +4061,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1166 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "IMULrmod", { DIS_REG32, DIS_EADDR32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c915; /*opt-block+*/
 										}
 
@@ -4078,7 +4078,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c916; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c917; /*opt-block+*/
 										}
 
@@ -4093,7 +4093,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									} /* (MATCH_w_8_16 >> 6 & 0x3)
 									   * -- mod at 16 --*/
 								}     /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -4594,7 +4594,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c965; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c964; /*opt-block+*/
 											}
 
@@ -4627,7 +4627,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1340 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "BTCod", { DIS_EADDR32, DIS_REG32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c964; /*opt-block+*/
 										}
 
@@ -4644,7 +4644,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c965; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c966; /*opt-block+*/
 										}
 
@@ -4692,7 +4692,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c969; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c968; /*opt-block+*/
 											}
 
@@ -4728,7 +4728,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													int((nextPC - hostPC).m_value));
 											return result;
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c968; /*opt-block+*/
 										}
 
@@ -4745,7 +4745,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c969; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c970; /*opt-block+*/
 										}
 
@@ -4793,7 +4793,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c973; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c972; /*opt-block+*/
 											}
 
@@ -4830,7 +4830,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													int((nextPC - hostPC).m_value));
 											return result;
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c972; /*opt-block+*/
 										}
 
@@ -4847,7 +4847,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c973; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c974; /*opt-block+*/
 										}
 
@@ -4895,7 +4895,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c977; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c976; /*opt-block+*/
 											}
 
@@ -4928,7 +4928,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 949 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "MOVSX.Gv.Ebod", { DIS_R32, DIS_EADDR8 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c976; /*opt-block+*/
 										}
 
@@ -4945,7 +4945,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c977; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c978; /*opt-block+*/
 										}
 
@@ -4993,7 +4993,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c981; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c980; /*opt-block+*/
 											}
 
@@ -5026,7 +5026,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 946 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "MOVSX.Gv.Ew", { DIS_R32, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c980; /*opt-block+*/
 										}
 
@@ -5043,7 +5043,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c981; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c982; /*opt-block+*/
 										}
 
@@ -5064,7 +5064,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									assert(0);
 								} /* (MATCH_w_8_8 & 0x7) -- col at 8 --*/
 							}
-							else{
+							else {
 								switch ((MATCH_w_8_8 & 0x7) /* col at 8 */)
 								{
 								case 0:
@@ -5098,7 +5098,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c920; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c919; /*opt-block+*/
 											}
 
@@ -5131,7 +5131,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1244 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "CMPXCHG.Eb.Gb", { DIS_EADDR8, DIS_REG8 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c919; /*opt-block+*/
 										}
 
@@ -5148,7 +5148,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c920; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c921; /*opt-block+*/
 										}
 
@@ -5196,7 +5196,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c924; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c923; /*opt-block+*/
 											}
 
@@ -5229,7 +5229,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1238 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "CMPXCHG.Ev.Gvod", { DIS_EADDR32, DIS_REG32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c923; /*opt-block+*/
 										}
 
@@ -5246,7 +5246,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c924; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c925; /*opt-block+*/
 										}
 
@@ -5301,7 +5301,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c927; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c926; /*opt-block+*/
 											}
 
@@ -5334,7 +5334,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1043 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "LSS", { DIS_REG32, DIS_MEM });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c926; /*opt-block+*/
 										}
 
@@ -5351,7 +5351,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c927; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c928; /*opt-block+*/
 										}
 
@@ -5399,7 +5399,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c931; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c930; /*opt-block+*/
 											}
 
@@ -5432,7 +5432,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1328 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "BTRod", { DIS_EADDR32, DIS_REG32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c930; /*opt-block+*/
 										}
 
@@ -5449,7 +5449,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c931; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c932; /*opt-block+*/
 										}
 
@@ -5504,7 +5504,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c934; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c933; /*opt-block+*/
 											}
 
@@ -5537,7 +5537,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1064 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "LFS", { DIS_REG32, DIS_MEM });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c933; /*opt-block+*/
 										}
 
@@ -5554,7 +5554,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c934; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c935; /*opt-block+*/
 										}
 
@@ -5609,7 +5609,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c937; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c936; /*opt-block+*/
 											}
 
@@ -5642,7 +5642,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1061 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "LGS", { DIS_REG32, DIS_MEM });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c936; /*opt-block+*/
 										}
 
@@ -5659,7 +5659,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c937; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c938; /*opt-block+*/
 										}
 
@@ -5707,7 +5707,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c941; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c940; /*opt-block+*/
 											}
 
@@ -5740,7 +5740,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 940 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "MOVZX.Gv.Ebod", { DIS_R32, DIS_EADDR8 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c940; /*opt-block+*/
 										}
 
@@ -5757,7 +5757,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c941; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c942; /*opt-block+*/
 										}
 
@@ -5805,7 +5805,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c945; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c944; /*opt-block+*/
 											}
 
@@ -5838,7 +5838,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 937 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "MOVZX.Gv.Ew", { DIS_R32, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c944; /*opt-block+*/
 										}
 
@@ -5855,7 +5855,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c945; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c946; /*opt-block+*/
 										}
 
@@ -5887,7 +5887,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1358 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "BSWAP", { DIS_R32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								switch ((MATCH_w_8_8 & 0x7) /* col at 8 */)
 								{
 								case 0:
@@ -5921,7 +5921,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c985; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c984; /*opt-block+*/
 											}
 
@@ -5954,7 +5954,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 360 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "XADD.Eb.Gb", { DIS_EADDR8, DIS_REG8 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c984; /*opt-block+*/
 										}
 
@@ -5971,7 +5971,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c985; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c986; /*opt-block+*/
 										}
 
@@ -6019,7 +6019,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c989; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c988; /*opt-block+*/
 											}
 
@@ -6052,7 +6052,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 354 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "XADD.Ev.Gvod", { DIS_EADDR32, DIS_REG32 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c988; /*opt-block+*/
 										}
 
@@ -6069,7 +6069,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c989; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c990; /*opt-block+*/
 										}
 
@@ -6132,7 +6132,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c992; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c991; /*opt-block+*/
 												}
 
@@ -6163,7 +6163,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 1235 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "CMPXCHG8B", { DIS_MEM });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c991; /*opt-block+*/
 											}
 
@@ -6180,7 +6180,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c992; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c993; /*opt-block+*/
 											}
 
@@ -6195,7 +6195,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										} /* (MATCH_w_8_16 >> 6 & 0x3)
 										   * -- mod at 16 --*/
 									}
-									else{
+									else {
 										goto MATCH_label_c64; /*opt-block+*/
 									}
 
@@ -6253,7 +6253,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c996; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c995; /*opt-block+*/
 								}
 
@@ -6282,7 +6282,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1537 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "SBBmrb", { DIS_EADDR8, DIS_R8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c995; /*opt-block+*/
 							}
 
@@ -6297,7 +6297,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c996; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c997; /*opt-block+*/
 							}
 
@@ -6342,7 +6342,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1000; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c999; /*opt-block+*/
 								}
 
@@ -6371,7 +6371,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1501 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "SBBmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c999; /*opt-block+*/
 							}
 
@@ -6386,7 +6386,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1000; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1001; /*opt-block+*/
 							}
 
@@ -6431,7 +6431,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1004; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1003; /*opt-block+*/
 								}
 
@@ -6460,7 +6460,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1465 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "SBBrmb", { DIS_R8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1003; /*opt-block+*/
 							}
 
@@ -6475,7 +6475,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1004; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1005; /*opt-block+*/
 							}
 
@@ -6520,7 +6520,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1008; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1007; /*opt-block+*/
 								}
 
@@ -6549,7 +6549,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1429 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "SBBrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1007; /*opt-block+*/
 							}
 
@@ -6564,7 +6564,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1008; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1009; /*opt-block+*/
 							}
 
@@ -6651,7 +6651,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1012; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1011; /*opt-block+*/
 								}
 
@@ -6680,7 +6680,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1531 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "SUBmrb", { DIS_EADDR8, DIS_R8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1011; /*opt-block+*/
 							}
 
@@ -6695,7 +6695,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1012; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1013; /*opt-block+*/
 							}
 
@@ -6740,7 +6740,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1016; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1015; /*opt-block+*/
 								}
 
@@ -6769,7 +6769,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1489 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "SUBmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1015; /*opt-block+*/
 							}
 
@@ -6784,7 +6784,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1016; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1017; /*opt-block+*/
 							}
 
@@ -6829,7 +6829,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1020; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1019; /*opt-block+*/
 								}
 
@@ -6858,7 +6858,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1459 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "SUBrmb", { DIS_R8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1019; /*opt-block+*/
 							}
 
@@ -6873,7 +6873,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1020; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1021; /*opt-block+*/
 							}
 
@@ -6918,7 +6918,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1024; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1023; /*opt-block+*/
 								}
 
@@ -6947,7 +6947,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1417 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "SUBrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1023; /*opt-block+*/
 							}
 
@@ -6962,7 +6962,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1024; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1025; /*opt-block+*/
 							}
 
@@ -7050,7 +7050,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1028; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1027; /*opt-block+*/
 								}
 
@@ -7079,7 +7079,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1525 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "CMPmrb", { DIS_EADDR8, DIS_R8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1027; /*opt-block+*/
 							}
 
@@ -7094,7 +7094,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1028; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1029; /*opt-block+*/
 							}
 
@@ -7139,7 +7139,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1032; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1031; /*opt-block+*/
 								}
 
@@ -7168,7 +7168,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1477 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "CMPmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1031; /*opt-block+*/
 							}
 
@@ -7183,7 +7183,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1032; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1033; /*opt-block+*/
 							}
 
@@ -7228,7 +7228,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1036; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1035; /*opt-block+*/
 								}
 
@@ -7257,7 +7257,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1453 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "CMPrmb", { DIS_R8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1035; /*opt-block+*/
 							}
 
@@ -7272,7 +7272,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1036; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1037; /*opt-block+*/
 							}
 
@@ -7317,7 +7317,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1040; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1039; /*opt-block+*/
 								}
 
@@ -7346,7 +7346,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1405 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "CMPrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1039; /*opt-block+*/
 							}
 
@@ -7361,7 +7361,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1040; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1041; /*opt-block+*/
 							}
 
@@ -7794,7 +7794,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1052; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1051; /*opt-block+*/
 								}
 
@@ -7823,7 +7823,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1037 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "MOVmrb", { DIS_EADDR8, DIS_REG8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1051; /*opt-block+*/
 							}
 
@@ -7838,7 +7838,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1052; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1053; /*opt-block+*/
 							}
 
@@ -7883,7 +7883,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1056; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1055; /*opt-block+*/
 								}
 
@@ -7912,7 +7912,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1031 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "MOVmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1055; /*opt-block+*/
 							}
 
@@ -7927,7 +7927,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1056; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1057; /*opt-block+*/
 							}
 
@@ -7972,7 +7972,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1060; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1059; /*opt-block+*/
 								}
 
@@ -8001,7 +8001,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1028 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "MOVrmb", { DIS_REG8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1059; /*opt-block+*/
 							}
 
@@ -8016,7 +8016,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1060; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1061; /*opt-block+*/
 							}
 
@@ -8061,7 +8061,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1064; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1063; /*opt-block+*/
 								}
 
@@ -8090,7 +8090,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1022 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "MOVrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1063; /*opt-block+*/
 							}
 
@@ -8105,7 +8105,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1064; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1065; /*opt-block+*/
 							}
 
@@ -8162,7 +8162,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c1067; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1066; /*opt-block+*/
 								}
 
@@ -8191,7 +8191,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1073 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "LEA.od", { DIS_REG32, DIS_MEM });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1066; /*opt-block+*/
 							}
 
@@ -8206,7 +8206,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c1067; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c1068; /*opt-block+*/
 							}
 
@@ -8252,7 +8252,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1071; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1070; /*opt-block+*/
 									}
 
@@ -8280,7 +8280,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 877 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "POP.Evod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1070; /*opt-block+*/
 								}
 
@@ -8295,7 +8295,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 									goto MATCH_label_c1071; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1072; /*opt-block+*/
 								}
 
@@ -8309,7 +8309,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								assert(0);
 							} /* (MATCH_w_8_8 >> 6 & 0x3) -- mod at 8 --*/
 						}
-						else{
+						else {
 							goto MATCH_label_c64; /*opt-block+*/
 						}
 
@@ -8586,7 +8586,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1074; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1073; /*opt-block+*/
 									}
 
@@ -8614,7 +8614,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1760 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FADD.R32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1073; /*opt-block+*/
 								}
 
@@ -8629,7 +8629,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1074; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1075; /*opt-block+*/
 								}
 
@@ -8683,7 +8683,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1077; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1076; /*opt-block+*/
 									}
 
@@ -8711,7 +8711,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1954 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FMUL.R32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1076; /*opt-block+*/
 								}
 
@@ -8726,7 +8726,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1077; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1078; /*opt-block+*/
 								}
 
@@ -8780,7 +8780,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1080; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1079; /*opt-block+*/
 									}
 
@@ -8808,7 +8808,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1793 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FCOM.R32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1079; /*opt-block+*/
 								}
 
@@ -8823,7 +8823,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1080; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1081; /*opt-block+*/
 								}
 
@@ -8877,7 +8877,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1083; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1082; /*opt-block+*/
 									}
 
@@ -8905,7 +8905,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1805 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FCOMP.R32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1082; /*opt-block+*/
 								}
 
@@ -8920,7 +8920,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1083; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1084; /*opt-block+*/
 								}
 
@@ -8974,7 +8974,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1086; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1085; /*opt-block+*/
 									}
 
@@ -9002,7 +9002,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2044 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSUB.R32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1085; /*opt-block+*/
 								}
 
@@ -9017,7 +9017,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1086; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1087; /*opt-block+*/
 								}
 
@@ -9071,7 +9071,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1089; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1088; /*opt-block+*/
 									}
 
@@ -9099,7 +9099,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2065 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSUBR.R32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1088; /*opt-block+*/
 								}
 
@@ -9114,7 +9114,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1089; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1090; /*opt-block+*/
 								}
 
@@ -9168,7 +9168,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1092; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1091; /*opt-block+*/
 									}
 
@@ -9196,7 +9196,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1838 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FDIV.R32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1091; /*opt-block+*/
 								}
 
@@ -9211,7 +9211,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1092; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1093; /*opt-block+*/
 								}
 
@@ -9265,7 +9265,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1095; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1094; /*opt-block+*/
 									}
 
@@ -9293,7 +9293,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1859 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FDIVR.R32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1094; /*opt-block+*/
 								}
 
@@ -9308,7 +9308,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1095; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1096; /*opt-block+*/
 								}
 
@@ -9373,7 +9373,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1098; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1097; /*opt-block+*/
 									}
 
@@ -9401,7 +9401,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1910 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FLD.lsR32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1097; /*opt-block+*/
 								}
 
@@ -9416,7 +9416,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1098; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1099; /*opt-block+*/
 								}
 
@@ -9445,7 +9445,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 2107 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "FXCH", { DIS_IDX });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -9484,7 +9484,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1101; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1100; /*opt-block+*/
 									}
 
@@ -9512,7 +9512,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2011 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FST.lsR32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1100; /*opt-block+*/
 								}
 
@@ -9527,7 +9527,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1101; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1102; /*opt-block+*/
 								}
 
@@ -9540,7 +9540,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1975 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FNOP");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -9585,7 +9585,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1104; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1103; /*opt-block+*/
 									}
 
@@ -9613,7 +9613,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2017 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSTP.lsR32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1103; /*opt-block+*/
 								}
 
@@ -9628,7 +9628,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1104; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1105; /*opt-block+*/
 								}
 
@@ -9677,7 +9677,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1107; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1106; /*opt-block+*/
 									}
 
@@ -9705,7 +9705,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1951 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FLDENV", { DIS_MEM });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1106; /*opt-block+*/
 								}
 
@@ -9720,7 +9720,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1107; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1108; /*opt-block+*/
 								}
 
@@ -9806,7 +9806,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1110; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1109; /*opt-block+*/
 									}
 
@@ -9834,7 +9834,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1948 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FLDCW", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1109; /*opt-block+*/
 								}
 
@@ -9849,7 +9849,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1110; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1111; /*opt-block+*/
 								}
 
@@ -9950,7 +9950,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1113; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1112; /*opt-block+*/
 									}
 
@@ -9978,7 +9978,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2035 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSTENV", { DIS_MEM });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1112; /*opt-block+*/
 								}
 
@@ -9993,7 +9993,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1113; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1114; /*opt-block+*/
 								}
 
@@ -10094,7 +10094,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1116; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1115; /*opt-block+*/
 									}
 
@@ -10122,7 +10122,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2032 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSTCW", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1115; /*opt-block+*/
 								}
 
@@ -10137,7 +10137,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1116; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1117; /*opt-block+*/
 								}
 
@@ -10251,7 +10251,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1119; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1118; /*opt-block+*/
 									}
 
@@ -10279,7 +10279,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1775 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIADD.I32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1118; /*opt-block+*/
 								}
 
@@ -10294,7 +10294,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1119; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1120; /*opt-block+*/
 								}
 
@@ -10343,7 +10343,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1122; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1121; /*opt-block+*/
 									}
 
@@ -10371,7 +10371,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1969 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIMUL.I32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1121; /*opt-block+*/
 								}
 
@@ -10386,7 +10386,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1122; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1123; /*opt-block+*/
 								}
 
@@ -10435,7 +10435,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1125; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1124; /*opt-block+*/
 									}
 
@@ -10463,7 +10463,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1799 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FICOM.I32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1124; /*opt-block+*/
 								}
 
@@ -10478,7 +10478,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1125; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1126; /*opt-block+*/
 								}
 
@@ -10527,7 +10527,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1128; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1127; /*opt-block+*/
 									}
 
@@ -10555,7 +10555,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1817 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FICOMP.I32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1127; /*opt-block+*/
 								}
 
@@ -10570,7 +10570,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1128; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1129; /*opt-block+*/
 								}
 
@@ -10619,7 +10619,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1131; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1130; /*opt-block+*/
 									}
 
@@ -10647,7 +10647,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2056 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FISUB.I32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1130; /*opt-block+*/
 								}
 
@@ -10662,7 +10662,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1131; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1132; /*opt-block+*/
 								}
 
@@ -10711,7 +10711,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1134; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1133; /*opt-block+*/
 									}
 
@@ -10739,7 +10739,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2077 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FISUBR.I32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1133; /*opt-block+*/
 								}
 
@@ -10754,7 +10754,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1134; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1135; /*opt-block+*/
 								}
 
@@ -10767,7 +10767,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2095 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FUCOMPP");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -10812,7 +10812,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1137; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1136; /*opt-block+*/
 									}
 
@@ -10840,7 +10840,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1853 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIDIV.I32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1136; /*opt-block+*/
 								}
 
@@ -10855,7 +10855,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1137; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1138; /*opt-block+*/
 								}
 
@@ -10904,7 +10904,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1140; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1139; /*opt-block+*/
 									}
 
@@ -10932,7 +10932,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1871 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIDIVR.I32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1139; /*opt-block+*/
 								}
 
@@ -10947,7 +10947,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1140; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1141; /*opt-block+*/
 								}
 
@@ -11007,7 +11007,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1143; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1142; /*opt-block+*/
 									}
 
@@ -11035,7 +11035,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1886 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FILD.lsI32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1142; /*opt-block+*/
 								}
 
@@ -11050,7 +11050,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1143; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1144; /*opt-block+*/
 								}
 
@@ -11103,7 +11103,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1146; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1145; /*opt-block+*/
 									}
 
@@ -11131,7 +11131,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1898 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIST.lsI32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1145; /*opt-block+*/
 								}
 
@@ -11146,7 +11146,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1146; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1147; /*opt-block+*/
 								}
 
@@ -11195,7 +11195,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1149; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1148; /*opt-block+*/
 									}
 
@@ -11223,7 +11223,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1904 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FISTP.lsI32", { DIS_MEM32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1148; /*opt-block+*/
 								}
 
@@ -11238,7 +11238,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1149; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1150; /*opt-block+*/
 								}
 
@@ -11275,7 +11275,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1790 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FNCLEX");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -11289,7 +11289,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1892 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FINIT");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -11340,7 +11340,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1152; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1151; /*opt-block+*/
 									}
 
@@ -11374,7 +11374,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									 # around here that gives us the SSL a value of i that is one more than in
 									 # the instruction */
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1151; /*opt-block+*/
 								}
 
@@ -11389,7 +11389,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1152; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1153; /*opt-block+*/
 								}
 
@@ -11424,7 +11424,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									stmts = instantiate(pc, name, { DIS_IDX });
 								}
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -11463,7 +11463,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1155; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1154; /*opt-block+*/
 									}
 
@@ -11491,7 +11491,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2023 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSTP80", { DIS_MEM80 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1154; /*opt-block+*/
 								}
 
@@ -11506,7 +11506,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1155; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1156; /*opt-block+*/
 								}
 
@@ -11566,7 +11566,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1158; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1157; /*opt-block+*/
 									}
 
@@ -11594,7 +11594,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1763 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FADD.R64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1157; /*opt-block+*/
 								}
 
@@ -11609,7 +11609,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1158; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1159; /*opt-block+*/
 								}
 
@@ -11663,7 +11663,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1161; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1160; /*opt-block+*/
 									}
 
@@ -11691,7 +11691,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1957 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FMUL.R64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1160; /*opt-block+*/
 								}
 
@@ -11706,7 +11706,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1161; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1162; /*opt-block+*/
 								}
 
@@ -11760,7 +11760,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1164; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1163; /*opt-block+*/
 									}
 
@@ -11788,7 +11788,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1796 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FCOM.R64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1163; /*opt-block+*/
 								}
 
@@ -11803,7 +11803,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1164; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1165; /*opt-block+*/
 								}
 
@@ -11852,7 +11852,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1167; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1166; /*opt-block+*/
 									}
 
@@ -11880,7 +11880,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1808 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FCOMP.R64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1166; /*opt-block+*/
 								}
 
@@ -11895,7 +11895,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1167; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1168; /*opt-block+*/
 								}
 
@@ -11944,7 +11944,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1170; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1169; /*opt-block+*/
 									}
 
@@ -11972,7 +11972,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2047 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSUB.R64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1169; /*opt-block+*/
 								}
 
@@ -11987,7 +11987,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1170; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1171; /*opt-block+*/
 								}
 
@@ -12041,7 +12041,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1173; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1172; /*opt-block+*/
 									}
 
@@ -12069,7 +12069,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2068 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSUBR.R64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1172; /*opt-block+*/
 								}
 
@@ -12084,7 +12084,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1173; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1174; /*opt-block+*/
 								}
 
@@ -12138,7 +12138,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1176; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1175; /*opt-block+*/
 									}
 
@@ -12166,7 +12166,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1841 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FDIV.R64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1175; /*opt-block+*/
 								}
 
@@ -12181,7 +12181,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1176; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1177; /*opt-block+*/
 								}
 
@@ -12235,7 +12235,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1179; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1178; /*opt-block+*/
 									}
 
@@ -12263,7 +12263,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1862 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FDIVR.R64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1178; /*opt-block+*/
 								}
 
@@ -12278,7 +12278,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1179; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1180; /*opt-block+*/
 								}
 
@@ -12343,7 +12343,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1182; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1181; /*opt-block+*/
 									}
 
@@ -12371,7 +12371,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1913 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FLD.lsR64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1181; /*opt-block+*/
 								}
 
@@ -12386,7 +12386,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1182; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1183; /*opt-block+*/
 								}
 
@@ -12444,7 +12444,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1185; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1184; /*opt-block+*/
 									}
 
@@ -12472,7 +12472,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2014 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FST.lsR64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1184; /*opt-block+*/
 								}
 
@@ -12487,7 +12487,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1185; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1186; /*opt-block+*/
 								}
 
@@ -12541,7 +12541,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1188; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1187; /*opt-block+*/
 									}
 
@@ -12569,7 +12569,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2020 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSTP.lsR64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1187; /*opt-block+*/
 								}
 
@@ -12584,7 +12584,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1188; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1189; /*opt-block+*/
 								}
 
@@ -12638,7 +12638,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1191; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1190; /*opt-block+*/
 									}
 
@@ -12666,7 +12666,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1993 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FRSTOR", { DIS_MEM });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1190; /*opt-block+*/
 								}
 
@@ -12681,7 +12681,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1191; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1192; /*opt-block+*/
 								}
 
@@ -12710,7 +12710,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 2092 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "FUCOMP", { DIS_IDX });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -12749,7 +12749,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1194; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1193; /*opt-block+*/
 									}
 
@@ -12777,7 +12777,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1996 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FNSAVE", { DIS_MEM });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1193; /*opt-block+*/
 								}
 
@@ -12792,7 +12792,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1194; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1195; /*opt-block+*/
 								}
 
@@ -12841,7 +12841,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1197; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1196; /*opt-block+*/
 									}
 
@@ -12869,7 +12869,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2038 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSTSW", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1196; /*opt-block+*/
 								}
 
@@ -12884,7 +12884,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1197; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1198; /*opt-block+*/
 								}
 
@@ -12944,7 +12944,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1200; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1199; /*opt-block+*/
 									}
 
@@ -12972,7 +12972,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1778 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIADD.I16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1199; /*opt-block+*/
 								}
 
@@ -12987,7 +12987,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1200; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1201; /*opt-block+*/
 								}
 
@@ -13041,7 +13041,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1203; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1202; /*opt-block+*/
 									}
 
@@ -13069,7 +13069,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1972 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIMUL.I16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1202; /*opt-block+*/
 								}
 
@@ -13084,7 +13084,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1203; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1204; /*opt-block+*/
 								}
 
@@ -13138,7 +13138,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1206; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1205; /*opt-block+*/
 									}
 
@@ -13166,7 +13166,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1802 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FICOM.I16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1205; /*opt-block+*/
 								}
 
@@ -13181,7 +13181,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1206; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1207; /*opt-block+*/
 								}
 
@@ -13230,7 +13230,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1209; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1208; /*opt-block+*/
 									}
 
@@ -13258,7 +13258,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1820 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FICOMP.I16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1208; /*opt-block+*/
 								}
 
@@ -13273,7 +13273,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1209; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1210; /*opt-block+*/
 								}
 
@@ -13286,7 +13286,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1823 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FCOMPP");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -13331,7 +13331,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1212; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1211; /*opt-block+*/
 									}
 
@@ -13359,7 +13359,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2059 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FISUB.I16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1211; /*opt-block+*/
 								}
 
@@ -13374,7 +13374,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1212; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1213; /*opt-block+*/
 								}
 
@@ -13428,7 +13428,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1215; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1214; /*opt-block+*/
 									}
 
@@ -13456,7 +13456,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2080 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FISUBR.I16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1214; /*opt-block+*/
 								}
 
@@ -13471,7 +13471,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1215; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1216; /*opt-block+*/
 								}
 
@@ -13525,7 +13525,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1218; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1217; /*opt-block+*/
 									}
 
@@ -13553,7 +13553,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1856 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIDIV.I16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1217; /*opt-block+*/
 								}
 
@@ -13568,7 +13568,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1218; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1219; /*opt-block+*/
 								}
 
@@ -13622,7 +13622,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1221; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1220; /*opt-block+*/
 									}
 
@@ -13650,7 +13650,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1874 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIDIVR.I16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1220; /*opt-block+*/
 								}
 
@@ -13665,7 +13665,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1221; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1222; /*opt-block+*/
 								}
 
@@ -13730,7 +13730,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1224; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1223; /*opt-block+*/
 									}
 
@@ -13758,7 +13758,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1883 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FILD.lsI16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1223; /*opt-block+*/
 								}
 
@@ -13773,7 +13773,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1224; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1225; /*opt-block+*/
 								}
 
@@ -13826,7 +13826,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1227; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1226; /*opt-block+*/
 									}
 
@@ -13854,7 +13854,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1895 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FIST.lsI16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1226; /*opt-block+*/
 								}
 
@@ -13869,7 +13869,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1227; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1228; /*opt-block+*/
 								}
 
@@ -13918,7 +13918,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1230; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1229; /*opt-block+*/
 									}
 
@@ -13946,7 +13946,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1901 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FISTP.lsI16", { DIS_MEM16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1229; /*opt-block+*/
 								}
 
@@ -13961,7 +13961,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1230; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1231; /*opt-block+*/
 								}
 
@@ -14010,7 +14010,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1233; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1232; /*opt-block+*/
 									}
 
@@ -14038,7 +14038,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1781 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FBLD", { DIS_MEM80 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1232; /*opt-block+*/
 								}
 
@@ -14053,7 +14053,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1233; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1234; /*opt-block+*/
 								}
 
@@ -14066,7 +14066,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 2041 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FSTSW.AX");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -14111,7 +14111,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1236; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1235; /*opt-block+*/
 									}
 
@@ -14139,7 +14139,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1889 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FILD.lsI64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1235; /*opt-block+*/
 								}
 
@@ -14154,7 +14154,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1236; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1237; /*opt-block+*/
 								}
 
@@ -14210,7 +14210,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1239; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1238; /*opt-block+*/
 									}
 
@@ -14238,7 +14238,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1784 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FBSTP", { DIS_MEM80 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1238; /*opt-block+*/
 								}
 
@@ -14253,7 +14253,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1239; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1240; /*opt-block+*/
 								}
 
@@ -14309,7 +14309,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1242; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1241; /*opt-block+*/
 									}
 
@@ -14337,7 +14337,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1907 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "FISTP64", { DIS_MEM64 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1241; /*opt-block+*/
 								}
 
@@ -14352,7 +14352,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1242; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1243; /*opt-block+*/
 								}
 
@@ -14537,7 +14537,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1246; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1245; /*opt-block+*/
 									}
 
@@ -14577,7 +14577,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									//      | IN.AL.Ib(i8) =>
 									//          stmts = instantiate(pc,  "IN.AL.Ib", DIS_I8);
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1245; /*opt-block+*/
 								}
 
@@ -14592,7 +14592,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1246; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1247; /*opt-block+*/
 								}
 
@@ -14636,7 +14636,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1250; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1249; /*opt-block+*/
 									}
 
@@ -14664,7 +14664,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1217 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "DEC.Eb", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1249; /*opt-block+*/
 								}
 
@@ -14679,7 +14679,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1250; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1251; /*opt-block+*/
 								}
 
@@ -14743,7 +14743,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1254; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1253; /*opt-block+*/
 									}
 
@@ -14771,7 +14771,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1127 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "INC.Evod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1253; /*opt-block+*/
 								}
 
@@ -14786,7 +14786,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1254; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1255; /*opt-block+*/
 								}
 
@@ -14830,7 +14830,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1258; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1257; /*opt-block+*/
 									}
 
@@ -14858,7 +14858,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1211 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "DEC.Evod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1257; /*opt-block+*/
 								}
 
@@ -14873,7 +14873,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1258; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1259; /*opt-block+*/
 								}
 
@@ -14917,7 +14917,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1262; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1261; /*opt-block+*/
 									}
 
@@ -14959,7 +14959,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// Only one instruction, so size of result is size of this decode
 									// result.numBytes = nextPC - hostPC;
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1261; /*opt-block+*/
 								}
 
@@ -14974,7 +14974,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1262; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1263; /*opt-block+*/
 								}
 
@@ -15024,7 +15024,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1266; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1265; /*opt-block+*/
 									}
 
@@ -15068,7 +15068,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									 * Unconditional branches
 									 */
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1265; /*opt-block+*/
 								}
 
@@ -15083,7 +15083,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1266; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1267; /*opt-block+*/
 								}
 
@@ -15127,7 +15127,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c1270; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c1269; /*opt-block+*/
 									}
 
@@ -15155,7 +15155,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 838 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "PUSH.Evod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c1269; /*opt-block+*/
 								}
 
@@ -15170,7 +15170,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c1270; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1271; /*opt-block+*/
 								}
 
@@ -15202,7 +15202,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 					assert(0);
 				} /* (MATCH_w_8_0 >> 4 & 0xf) -- row at 0 --*/
 			}
-			else{
+			else {
 				switch ((MATCH_w_8_0 >> 4 & 0xf) /* row at 0 */)
 				{
 				case 0:
@@ -15238,7 +15238,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c2; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c1; /*opt-block+*/
 								}
 
@@ -15267,7 +15267,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1546 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ADDmrb", { DIS_EADDR8, DIS_R8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c1; /*opt-block+*/
 							}
 
@@ -15282,7 +15282,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c2; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c3; /*opt-block+*/
 							}
 
@@ -15327,7 +15327,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c6; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c5; /*opt-block+*/
 								}
 
@@ -15356,7 +15356,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1519 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ADDmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c5; /*opt-block+*/
 							}
 
@@ -15371,7 +15371,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c6; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c7; /*opt-block+*/
 							}
 
@@ -15416,7 +15416,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c10; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c9; /*opt-block+*/
 								}
 
@@ -15445,7 +15445,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1474 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ADDrmb", { DIS_R8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c9; /*opt-block+*/
 							}
 
@@ -15460,7 +15460,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c10; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c11; /*opt-block+*/
 							}
 
@@ -15505,7 +15505,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c14; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c13; /*opt-block+*/
 								}
 
@@ -15534,7 +15534,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1447 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ADDrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c13; /*opt-block+*/
 							}
 
@@ -15549,7 +15549,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c14; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c15; /*opt-block+*/
 							}
 
@@ -15636,7 +15636,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c18; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c17; /*opt-block+*/
 								}
 
@@ -15665,7 +15665,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1540 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ADCmrb", { DIS_EADDR8, DIS_R8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c17; /*opt-block+*/
 							}
 
@@ -15680,7 +15680,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c18; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c19; /*opt-block+*/
 							}
 
@@ -15725,7 +15725,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c22; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c21; /*opt-block+*/
 								}
 
@@ -15754,7 +15754,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1507 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ADCmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c21; /*opt-block+*/
 							}
 
@@ -15769,7 +15769,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c22; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c23; /*opt-block+*/
 							}
 
@@ -15814,7 +15814,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c26; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c25; /*opt-block+*/
 								}
 
@@ -15843,7 +15843,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1468 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ADCrmb", { DIS_R8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c25; /*opt-block+*/
 							}
 
@@ -15858,7 +15858,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c26; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c27; /*opt-block+*/
 							}
 
@@ -15903,7 +15903,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c30; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c29; /*opt-block+*/
 								}
 
@@ -15932,7 +15932,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1435 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ADCrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c29; /*opt-block+*/
 							}
 
@@ -15947,7 +15947,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c30; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c31; /*opt-block+*/
 							}
 
@@ -16034,7 +16034,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c34; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c33; /*opt-block+*/
 								}
 
@@ -16063,7 +16063,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1534 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ANDmrb", { DIS_EADDR8, DIS_R8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c33; /*opt-block+*/
 							}
 
@@ -16078,7 +16078,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c34; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c35; /*opt-block+*/
 							}
 
@@ -16123,7 +16123,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c38; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c37; /*opt-block+*/
 								}
 
@@ -16152,7 +16152,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1495 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ANDmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c37; /*opt-block+*/
 							}
 
@@ -16167,7 +16167,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c38; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c39; /*opt-block+*/
 							}
 
@@ -16212,7 +16212,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c42; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c41; /*opt-block+*/
 								}
 
@@ -16241,7 +16241,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1462 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ANDrmb", { DIS_R8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c41; /*opt-block+*/
 							}
 
@@ -16256,7 +16256,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c42; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c43; /*opt-block+*/
 							}
 
@@ -16301,7 +16301,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c46; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c45; /*opt-block+*/
 								}
 
@@ -16330,7 +16330,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1423 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "ANDrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c45; /*opt-block+*/
 							}
 
@@ -16345,7 +16345,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c46; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c47; /*opt-block+*/
 							}
 
@@ -16433,7 +16433,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c50; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c49; /*opt-block+*/
 								}
 
@@ -16462,7 +16462,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1528 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "XORmrb", { DIS_EADDR8, DIS_R8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c49; /*opt-block+*/
 							}
 
@@ -16477,7 +16477,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c50; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c51; /*opt-block+*/
 							}
 
@@ -16522,7 +16522,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c54; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c53; /*opt-block+*/
 								}
 
@@ -16551,7 +16551,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1483 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "XORmrod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c53; /*opt-block+*/
 							}
 
@@ -16566,7 +16566,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c54; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c55; /*opt-block+*/
 							}
 
@@ -16611,7 +16611,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c58; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c57; /*opt-block+*/
 								}
 
@@ -16640,7 +16640,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1456 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "XORrmb", { DIS_R8, DIS_EADDR8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c57; /*opt-block+*/
 							}
 
@@ -16655,7 +16655,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c58; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c59; /*opt-block+*/
 							}
 
@@ -16700,7 +16700,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c62; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c61; /*opt-block+*/
 								}
 
@@ -16729,7 +16729,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1411 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "XORrmod", { DIS_REG32, DIS_EADDR32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c61; /*opt-block+*/
 							}
 
@@ -16744,7 +16744,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c62; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c63; /*opt-block+*/
 							}
 
@@ -16891,7 +16891,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c71; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c70; /*opt-block+*/
 											}
 
@@ -16924,7 +16924,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1516 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "ORmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c70; /*opt-block+*/
 										}
 
@@ -16941,7 +16941,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c71; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c72; /*opt-block+*/
 										}
 
@@ -16987,7 +16987,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c67; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c66; /*opt-block+*/
 											}
 
@@ -17020,7 +17020,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1522 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "ADDmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c66; /*opt-block+*/
 										}
 
@@ -17037,7 +17037,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c67; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c68; /*opt-block+*/
 										}
 
@@ -17089,7 +17089,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c79; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c78; /*opt-block+*/
 											}
 
@@ -17122,7 +17122,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1444 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "ORrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c78; /*opt-block+*/
 										}
 
@@ -17139,7 +17139,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c79; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c80; /*opt-block+*/
 										}
 
@@ -17185,7 +17185,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c75; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c74; /*opt-block+*/
 											}
 
@@ -17218,7 +17218,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1450 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "ADDrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c74; /*opt-block+*/
 										}
 
@@ -17235,7 +17235,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c75; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c76; /*opt-block+*/
 										}
 
@@ -17337,7 +17337,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c83; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c82; /*opt-block+*/
 														}
 
@@ -17370,7 +17370,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 1085 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "LAR.ow", { DIS_REG16, DIS_EADDR16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c82; /*opt-block+*/
 													}
 
@@ -17387,7 +17387,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c83; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c84; /*opt-block+*/
 													}
 
@@ -17442,7 +17442,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c87; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c86; /*opt-block+*/
 														}
 
@@ -17475,7 +17475,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 1049 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "LSLow", { DIS_REG16, DIS_EADDR16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c86; /*opt-block+*/
 													}
 
@@ -17492,7 +17492,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c87; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c88; /*opt-block+*/
 													}
 
@@ -17631,7 +17631,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											} /* (MATCH_w_8_16 & 0x7)
 											   * -- col at 16 --*/
 										}
-										else{
+										else {
 											switch ((MATCH_w_8_16 & 0x7)
 											        /* col at 16 */)
 											{
@@ -17781,7 +17781,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c95; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c94; /*opt-block+*/
 														}
 
@@ -17814,7 +17814,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 1319 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "BTSow", { DIS_EADDR16, DIS_REG16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c94; /*opt-block+*/
 													}
 
@@ -17831,7 +17831,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c95; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c96; /*opt-block+*/
 													}
 
@@ -17877,7 +17877,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c91; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c90; /*opt-block+*/
 														}
 
@@ -17910,7 +17910,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 1355 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "BTow", { DIS_EADDR16, DIS_REG16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c90; /*opt-block+*/
 													}
 
@@ -17927,7 +17927,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c91; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c92; /*opt-block+*/
 													}
 
@@ -18203,7 +18203,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c111; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c110; /*opt-block+*/
 														}
 
@@ -18236,7 +18236,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 441 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "SHRD.CLow", { DIS_EADDR16, DIS_REG16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c110; /*opt-block+*/
 													}
 
@@ -18253,7 +18253,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c111; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c112; /*opt-block+*/
 													}
 
@@ -18299,7 +18299,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c107; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c106; /*opt-block+*/
 														}
 
@@ -18332,7 +18332,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 435 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "SHLD.CLow", { DIS_EADDR16, DIS_REG16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c106; /*opt-block+*/
 													}
 
@@ -18349,7 +18349,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c107; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c108; /*opt-block+*/
 													}
 
@@ -18401,7 +18401,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c115; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c114; /*opt-block+*/
 														}
 
@@ -18434,7 +18434,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 1169 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "IMULrmow", { DIS_REG16, DIS_EADDR16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c114; /*opt-block+*/
 													}
 
@@ -18451,7 +18451,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c115; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c116; /*opt-block+*/
 													}
 
@@ -18466,7 +18466,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												} /* (MATCH_w_8_24 >> 6 & 0x3)
 												   * -- mod at 24 --*/
 											}     /*opt-block*/
-											else{
+											else {
 												goto MATCH_label_c64; /*opt-block+*/
 											}
 
@@ -18526,7 +18526,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c119; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c118; /*opt-block+*/
 														}
 
@@ -18560,7 +18560,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														stmts =
 															instantiate(pc, "CMPXCHG.Ev.Gvow", { DIS_EADDR16, DIS_REG16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c118; /*opt-block+*/
 													}
 
@@ -18577,7 +18577,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c119; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c120; /*opt-block+*/
 													}
 
@@ -19048,7 +19048,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												} /* (MATCH_w_8_24 >> 3 & 0x7)
 												   * -- reg_opcode at 24 --*/
 											}     /*opt-block*/
-											else{
+											else {
 												goto MATCH_label_c64; /*opt-block+*/
 											}
 
@@ -19088,7 +19088,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c143; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c142; /*opt-block+*/
 														}
 
@@ -19121,7 +19121,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 1343 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "BTCow", { DIS_EADDR16, DIS_REG16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c142; /*opt-block+*/
 													}
 
@@ -19138,7 +19138,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c143; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c144; /*opt-block+*/
 													}
 
@@ -19184,7 +19184,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c139; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c138; /*opt-block+*/
 														}
 
@@ -19217,7 +19217,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 1331 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "BTRow", { DIS_EADDR16, DIS_REG16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c138; /*opt-block+*/
 													}
 
@@ -19234,7 +19234,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c139; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c140; /*opt-block+*/
 													}
 
@@ -19286,7 +19286,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c147; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c146; /*opt-block+*/
 														}
 
@@ -19340,7 +19340,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														//      | AAA() =>
 														//          stmts = instantiate(pc,  "AAA");
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c146; /*opt-block+*/
 													}
 
@@ -19357,7 +19357,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c147; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c148; /*opt-block+*/
 													}
 
@@ -19372,7 +19372,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												} /* (MATCH_w_8_24 >> 6 & 0x3)
 												   * -- mod at 24 --*/
 											}     /*opt-block*/
-											else{
+											else {
 												goto MATCH_label_c64; /*opt-block+*/
 											}
 
@@ -19412,7 +19412,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c151; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c150; /*opt-block+*/
 														}
 
@@ -19447,7 +19447,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 																int((nextPC - hostPC).m_value));
 														return result;
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c150; /*opt-block+*/
 													}
 
@@ -19464,7 +19464,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c151; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c152; /*opt-block+*/
 													}
 
@@ -19479,7 +19479,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												} /* (MATCH_w_8_24 >> 6 & 0x3)
 												   * -- mod at 24 --*/
 											}     /*opt-block*/
-											else{
+											else {
 												goto MATCH_label_c64; /*opt-block+*/
 											}
 
@@ -19519,7 +19519,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c159; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c158; /*opt-block+*/
 														}
 
@@ -19552,7 +19552,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 952 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "MOVZX.Gv.Ebow", { DIS_R16, DIS_EADDR8 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c158; /*opt-block+*/
 													}
 
@@ -19569,7 +19569,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c159; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c160; /*opt-block+*/
 													}
 
@@ -19615,7 +19615,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c155; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c154; /*opt-block+*/
 														}
 
@@ -19648,7 +19648,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 943 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "MOVZX.Gv.Ebow", { DIS_R16, DIS_EADDR8 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c154; /*opt-block+*/
 													}
 
@@ -19665,7 +19665,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c155; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c156; /*opt-block+*/
 													}
 
@@ -19729,7 +19729,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														      /* index at 32 */ < 8))) {
 															goto MATCH_label_c163; /*opt-block+*/
 														}
-														else{
+														else {
 															goto MATCH_label_c162; /*opt-block+*/
 														}
 
@@ -19762,7 +19762,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 														// #line 357 "frontend/machine/pentium/decoder.m"
 														stmts = instantiate(pc, "XADD.Ev.Gvow", { DIS_EADDR16, DIS_REG16 });
 													} /*opt-block*/ /*opt-block+*/
-													else{
+													else {
 														goto MATCH_label_c162; /*opt-block+*/
 													}
 
@@ -19779,7 +19779,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 													      /* index at 32 */ < 8))) {
 														goto MATCH_label_c163; /*opt-block+*/
 													}
-													else{
+													else {
 														goto MATCH_label_c164; /*opt-block+*/
 													}
 
@@ -19795,7 +19795,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												   * -- mod at 24 --*/
 											}     /*opt-block*/
 										}
-										else{
+										else {
 											goto MATCH_label_c64; /*opt-block+*/
 										}
 
@@ -19806,7 +19806,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									} /* (MATCH_w_8_16 >> 4 & 0xf)
 									   * -- row at 16 --*/
 								}     /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -19864,7 +19864,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c171; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c170; /*opt-block+*/
 											}
 
@@ -19897,7 +19897,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1504 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "SBBmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c170; /*opt-block+*/
 										}
 
@@ -19914,7 +19914,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c171; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c172; /*opt-block+*/
 										}
 
@@ -19960,7 +19960,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c167; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c166; /*opt-block+*/
 											}
 
@@ -19993,7 +19993,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1510 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "ADCmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c166; /*opt-block+*/
 										}
 
@@ -20010,7 +20010,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c167; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c168; /*opt-block+*/
 										}
 
@@ -20062,7 +20062,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c179; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c178; /*opt-block+*/
 											}
 
@@ -20095,7 +20095,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1432 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "SBBrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c178; /*opt-block+*/
 										}
 
@@ -20112,7 +20112,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c179; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c180; /*opt-block+*/
 										}
 
@@ -20158,7 +20158,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c175; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c174; /*opt-block+*/
 											}
 
@@ -20191,7 +20191,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1438 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "ADCrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c174; /*opt-block+*/
 										}
 
@@ -20208,7 +20208,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c175; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c176; /*opt-block+*/
 										}
 
@@ -20302,7 +20302,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c187; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c186; /*opt-block+*/
 											}
 
@@ -20335,7 +20335,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1492 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "SUBmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c186; /*opt-block+*/
 										}
 
@@ -20352,7 +20352,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c187; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c188; /*opt-block+*/
 										}
 
@@ -20398,7 +20398,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c183; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c182; /*opt-block+*/
 											}
 
@@ -20431,7 +20431,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1498 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "ANDmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c182; /*opt-block+*/
 										}
 
@@ -20448,7 +20448,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c183; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c184; /*opt-block+*/
 										}
 
@@ -20500,7 +20500,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c195; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c194; /*opt-block+*/
 											}
 
@@ -20533,7 +20533,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1420 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "SUBrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c194; /*opt-block+*/
 										}
 
@@ -20550,7 +20550,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c195; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c196; /*opt-block+*/
 										}
 
@@ -20596,7 +20596,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c191; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c190; /*opt-block+*/
 											}
 
@@ -20629,7 +20629,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1426 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "ANDrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c190; /*opt-block+*/
 										}
 
@@ -20646,7 +20646,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c191; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c192; /*opt-block+*/
 										}
 
@@ -20740,7 +20740,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c203; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c202; /*opt-block+*/
 											}
 
@@ -20773,7 +20773,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1480 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "CMPmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c202; /*opt-block+*/
 										}
 
@@ -20790,7 +20790,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c203; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c204; /*opt-block+*/
 										}
 
@@ -20836,7 +20836,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c199; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c198; /*opt-block+*/
 											}
 
@@ -20869,7 +20869,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1486 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "XORmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c198; /*opt-block+*/
 										}
 
@@ -20886,7 +20886,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c199; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c200; /*opt-block+*/
 										}
 
@@ -20938,7 +20938,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c211; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c210; /*opt-block+*/
 											}
 
@@ -20971,7 +20971,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1408 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "CMPrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c210; /*opt-block+*/
 										}
 
@@ -20988,7 +20988,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c211; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c212; /*opt-block+*/
 										}
 
@@ -21034,7 +21034,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c207; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c206; /*opt-block+*/
 											}
 
@@ -21067,7 +21067,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1414 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "XORrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c206; /*opt-block+*/
 										}
 
@@ -21084,7 +21084,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c207; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c208; /*opt-block+*/
 										}
 
@@ -21423,7 +21423,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									assert(0);
 								} /* (MATCH_w_8_8 & 0x7) -- col at 8 --*/
 							}
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -21478,7 +21478,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c255; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c254; /*opt-block+*/
 											}
 
@@ -21511,7 +21511,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1034 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "MOVmrow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c254; /*opt-block+*/
 										}
 
@@ -21528,7 +21528,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c255; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c256; /*opt-block+*/
 										}
 
@@ -22455,7 +22455,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c291; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c290; /*opt-block+*/
 											}
 
@@ -22488,7 +22488,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1025 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "MOVrmow", { DIS_REG16, DIS_EADDR16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c290; /*opt-block+*/
 										}
 
@@ -22505,7 +22505,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c291; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c292; /*opt-block+*/
 										}
 
@@ -23431,7 +23431,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c298; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c297; /*opt-block+*/
 											}
 
@@ -23464,7 +23464,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 1076 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "LEA.ow", { DIS_REG16, DIS_MEM });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c297; /*opt-block+*/
 										}
 
@@ -23481,7 +23481,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c298; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c299; /*opt-block+*/
 										}
 
@@ -23527,7 +23527,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c295; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c294; /*opt-block+*/
 											}
 
@@ -23560,7 +23560,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 381 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "TEST.Ev.Gvow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c294; /*opt-block+*/
 										}
 
@@ -23577,7 +23577,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c295; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c296; /*opt-block+*/
 										}
 
@@ -23631,7 +23631,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c306; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c305; /*opt-block+*/
 												}
 
@@ -23680,7 +23680,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												//      | OUT.Ib.AL(i8) =>
 												//          stmts = instantiate(pc,  "OUT.Ib.AL", DIS_I8);
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c305; /*opt-block+*/
 											}
 
@@ -23697,7 +23697,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c306; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c307; /*opt-block+*/
 											}
 
@@ -23712,7 +23712,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										} /* (MATCH_w_8_16 >> 6 & 0x3)
 										   * -- mod at 16 --*/
 									}
-									else{
+									else {
 										goto MATCH_label_c64; /*opt-block+*/
 									}
 								}                             /*opt-block*/
@@ -23747,7 +23747,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c302; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c301; /*opt-block+*/
 											}
 
@@ -23780,7 +23780,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											// #line 321 "frontend/machine/pentium/decoder.m"
 											stmts = instantiate(pc, "XCHG.Ev.Gvow", { DIS_EADDR16, DIS_REG16 });
 										} /*opt-block*/ /*opt-block+*/
-										else{
+										else {
 											goto MATCH_label_c301; /*opt-block+*/
 										}
 
@@ -23797,7 +23797,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										      /* index at 24 */ < 8))) {
 											goto MATCH_label_c302; /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c303; /*opt-block+*/
 										}
 
@@ -23968,7 +23968,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									stmts = instantiate(pc, "MOViw", { DIS_R16, DIS_I16 }); // Check!
 								}
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -24875,7 +24875,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										} /* (MATCH_w_8_16 >> 6 & 0x3)
 										   * -- mod at 16 --*/
 									}
-									else{
+									else {
 										goto MATCH_label_c64; /*opt-block+*/
 									}
 								}                             /*opt-block*/
@@ -24943,7 +24943,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c342; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c341; /*opt-block+*/
 												}
 
@@ -24974,7 +24974,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 743 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "ROLB.Ev.1ow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c341; /*opt-block+*/
 											}
 
@@ -24991,7 +24991,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c342; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c343; /*opt-block+*/
 											}
 
@@ -25038,7 +25038,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c346; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c345; /*opt-block+*/
 												}
 
@@ -25069,7 +25069,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 731 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "ORB.Ev.1owR", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c345; /*opt-block+*/
 											}
 
@@ -25086,7 +25086,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c346; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c347; /*opt-block+*/
 											}
 
@@ -25133,7 +25133,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c350; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c349; /*opt-block+*/
 												}
 
@@ -25164,7 +25164,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 719 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "RCLB.Ev.1ow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c349; /*opt-block+*/
 											}
 
@@ -25181,7 +25181,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c350; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c351; /*opt-block+*/
 											}
 
@@ -25228,7 +25228,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c354; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c353; /*opt-block+*/
 												}
 
@@ -25259,7 +25259,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 707 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "RCRB.Ev.1ow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c353; /*opt-block+*/
 											}
 
@@ -25276,7 +25276,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c354; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c355; /*opt-block+*/
 											}
 
@@ -25323,7 +25323,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c358; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c357; /*opt-block+*/
 												}
 
@@ -25354,7 +25354,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 695 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SHLSALB.Ev.1ow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c357; /*opt-block+*/
 											}
 
@@ -25371,7 +25371,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c358; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c359; /*opt-block+*/
 											}
 
@@ -25418,7 +25418,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c362; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c361; /*opt-block+*/
 												}
 
@@ -25449,7 +25449,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 683 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SHRB.Ev.1ow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c361; /*opt-block+*/
 											}
 
@@ -25465,7 +25465,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c362; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c363; /*opt-block+*/
 											}
 
@@ -25516,7 +25516,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c366; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c365; /*opt-block+*/
 												}
 
@@ -25547,7 +25547,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 671 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SARB.Ev.1ow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c365; /*opt-block+*/
 											}
 
@@ -25564,7 +25564,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c366; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c367; /*opt-block+*/
 											}
 
@@ -25631,7 +25631,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c370; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c369; /*opt-block+*/
 												}
 
@@ -25662,7 +25662,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 737 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "ROLB.Ev.CLow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c369; /*opt-block+*/
 											}
 
@@ -25679,7 +25679,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c370; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c371; /*opt-block+*/
 											}
 
@@ -25726,7 +25726,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c374; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c373; /*opt-block+*/
 												}
 
@@ -25757,7 +25757,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 725 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "RORB.Ev.CLow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c373; /*opt-block+*/
 											}
 
@@ -25774,7 +25774,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c374; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c375; /*opt-block+*/
 											}
 
@@ -25821,7 +25821,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c378; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c377; /*opt-block+*/
 												}
 
@@ -25852,7 +25852,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 713 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "RCLB.Ev.CLow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c377; /*opt-block+*/
 											}
 
@@ -25869,7 +25869,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c378; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c379; /*opt-block+*/
 											}
 
@@ -25916,7 +25916,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c382; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c381; /*opt-block+*/
 												}
 
@@ -25947,7 +25947,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 701 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "RCRB.Ev.CLow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c381; /*opt-block+*/
 											}
 
@@ -25964,7 +25964,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c382; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c383; /*opt-block+*/
 											}
 
@@ -26011,7 +26011,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c386; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c385; /*opt-block+*/
 												}
 
@@ -26042,7 +26042,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 689 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SHLSALB.Ev.CLow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c385; /*opt-block+*/
 											}
 
@@ -26059,7 +26059,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c386; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c387; /*opt-block+*/
 											}
 
@@ -26106,7 +26106,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c390; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c389; /*opt-block+*/
 												}
 
@@ -26137,7 +26137,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 677 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SHRB.Ev.CLow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c389; /*opt-block+*/
 											}
 
@@ -26154,7 +26154,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c390; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c391; /*opt-block+*/
 											}
 
@@ -26205,7 +26205,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c394; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c393; /*opt-block+*/
 												}
 
@@ -26236,7 +26236,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 665 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "SARB.Ev.CLow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c393; /*opt-block+*/
 											}
 
@@ -26253,7 +26253,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c394; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c395; /*opt-block+*/
 											}
 
@@ -26299,7 +26299,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									unconditionalJump(name, 3, relocd, delta, pc, stmts, result);
 								}
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -26345,7 +26345,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c426; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c425; /*opt-block+*/
 												}
 
@@ -26376,7 +26376,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 1130 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "INC.Evow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c425; /*opt-block+*/
 											}
 
@@ -26393,7 +26393,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c426; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c427; /*opt-block+*/
 											}
 
@@ -26440,7 +26440,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c430; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c429; /*opt-block+*/
 												}
 
@@ -26471,7 +26471,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 1214 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "DEC.Evow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c429; /*opt-block+*/
 											}
 
@@ -26488,7 +26488,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c430; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c431; /*opt-block+*/
 											}
 
@@ -26543,7 +26543,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c434; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c433; /*opt-block+*/
 												}
 
@@ -26582,7 +26582,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												//      | POPAow() =>
 												//          stmts = instantiate(pc,  "POPAow");
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c433; /*opt-block+*/
 											}
 
@@ -26599,7 +26599,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c434; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c435; /*opt-block+*/
 											}
 
@@ -26769,7 +26769,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c402; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c401; /*opt-block+*/
 												}
 
@@ -26800,7 +26800,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 913 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "NOTow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c401; /*opt-block+*/
 											}
 
@@ -26817,7 +26817,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c402; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c403; /*opt-block+*/
 											}
 
@@ -26864,7 +26864,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c406; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c405; /*opt-block+*/
 												}
 
@@ -26895,7 +26895,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 922 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "NEGow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c405; /*opt-block+*/
 											}
 
@@ -26912,7 +26912,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c406; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c407; /*opt-block+*/
 											}
 
@@ -26959,7 +26959,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c410; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c409; /*opt-block+*/
 												}
 
@@ -26990,7 +26990,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 931 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "MUL.AXow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c409; /*opt-block+*/
 											}
 
@@ -27007,7 +27007,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c410; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c411; /*opt-block+*/
 											}
 
@@ -27054,7 +27054,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c414; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c413; /*opt-block+*/
 												}
 
@@ -27085,7 +27085,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 1175 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "IMULow", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c413; /*opt-block+*/
 											}
 
@@ -27102,7 +27102,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c414; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c415; /*opt-block+*/
 											}
 
@@ -27149,7 +27149,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c418; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c417; /*opt-block+*/
 												}
 
@@ -27180,7 +27180,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 1199 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "DIVAX", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c417; /*opt-block+*/
 											}
 
@@ -27197,7 +27197,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c418; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c419; /*opt-block+*/
 											}
 
@@ -27244,7 +27244,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												      /* index at 24 */ < 8))) {
 													goto MATCH_label_c422; /*opt-block+*/
 												}
-												else{
+												else {
 													goto MATCH_label_c421; /*opt-block+*/
 												}
 
@@ -27275,7 +27275,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												// #line 1184 "frontend/machine/pentium/decoder.m"
 												stmts = instantiate(pc, "IDIVAX", { DIS_EADDR16 });
 											} /*opt-block*/ /*opt-block+*/
-											else{
+											else {
 												goto MATCH_label_c421; /*opt-block+*/
 											}
 
@@ -27292,7 +27292,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 											      /* index at 24 */ < 8))) {
 												goto MATCH_label_c422; /*opt-block+*/
 											}
-											else{
+											else {
 												goto MATCH_label_c423; /*opt-block+*/
 											}
 
@@ -27315,7 +27315,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									   * -- reg_opcode at 16 --*/
 								}     /*opt-block*/
 							}
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -29878,7 +29878,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c534; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c533; /*opt-block+*/
 								}
 
@@ -29907,7 +29907,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 384 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "TEST.Eb.Gb", { DIS_EADDR8, DIS_REG8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c533; /*opt-block+*/
 							}
 
@@ -29922,7 +29922,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c534; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c535; /*opt-block+*/
 							}
 
@@ -29967,7 +29967,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c538; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c537; /*opt-block+*/
 								}
 
@@ -29996,7 +29996,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 378 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "TEST.Ev.Gvod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c537; /*opt-block+*/
 							}
 
@@ -30011,7 +30011,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c538; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c539; /*opt-block+*/
 							}
 
@@ -30056,7 +30056,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c542; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c541; /*opt-block+*/
 								}
 
@@ -30085,7 +30085,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 324 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "XCHG.Eb.Gb", { DIS_EADDR8, DIS_REG8 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c541; /*opt-block+*/
 							}
 
@@ -30100,7 +30100,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c542; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c543; /*opt-block+*/
 							}
 
@@ -30145,7 +30145,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c546; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c545; /*opt-block+*/
 								}
 
@@ -30174,7 +30174,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 318 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "XCHG.Ev.Gvod", { DIS_EADDR32, DIS_REG32 });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c545; /*opt-block+*/
 							}
 
@@ -30189,7 +30189,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c546; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c547; /*opt-block+*/
 							}
 
@@ -31809,7 +31809,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c605; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c604; /*opt-block+*/
 								}
 
@@ -31838,7 +31838,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1067 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "LES", { DIS_REG32, DIS_MEM });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c604; /*opt-block+*/
 							}
 
@@ -31853,7 +31853,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c605; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c606; /*opt-block+*/
 							}
 
@@ -31905,7 +31905,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								      /* index at 16 */ < 8))) {
 									goto MATCH_label_c608; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c607; /*opt-block+*/
 								}
 
@@ -31934,7 +31934,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 1079 "frontend/machine/pentium/decoder.m"
 								stmts = instantiate(pc, "LDS", { DIS_REG32, DIS_MEM });
 							} /*opt-block*/ /*opt-block+*/
-							else{
+							else {
 								goto MATCH_label_c607; /*opt-block+*/
 							}
 
@@ -31949,7 +31949,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								 ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
 								goto MATCH_label_c608; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_c609; /*opt-block+*/
 							}
 
@@ -32064,7 +32064,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								assert(0);
 							} /* (MATCH_w_8_8 >> 6 & 0x3) -- mod at 8 --*/
 						}
-						else{
+						else {
 							goto MATCH_label_c64; /*opt-block+*/
 						}
 
@@ -32169,7 +32169,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								assert(0);
 							} /* (MATCH_w_8_8 >> 6 & 0x3) -- mod at 8 --*/
 						}
-						else{
+						else {
 							goto MATCH_label_c64; /*opt-block+*/
 						}
 
@@ -32218,7 +32218,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c620; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c619; /*opt-block+*/
 									}
 
@@ -32256,7 +32256,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									//      | PUSHAow() =>
 									//          stmts = instantiate(pc,  "PUSHAow");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c619; /*opt-block+*/
 								}
 
@@ -32271,7 +32271,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c620; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c621; /*opt-block+*/
 								}
 
@@ -32315,7 +32315,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c624; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c623; /*opt-block+*/
 									}
 
@@ -32343,7 +32343,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 779 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RORB.Eb.1", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c623; /*opt-block+*/
 								}
 
@@ -32358,7 +32358,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c624; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c625; /*opt-block+*/
 								}
 
@@ -32402,7 +32402,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c628; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c627; /*opt-block+*/
 									}
 
@@ -32430,7 +32430,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 773 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RCLB.Eb.1", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c627; /*opt-block+*/
 								}
 
@@ -32445,7 +32445,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c628; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c629; /*opt-block+*/
 								}
 
@@ -32489,7 +32489,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c632; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c631; /*opt-block+*/
 									}
 
@@ -32517,7 +32517,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 767 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RCRB.Eb.1", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c631; /*opt-block+*/
 								}
 
@@ -32532,7 +32532,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c632; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c633; /*opt-block+*/
 								}
 
@@ -32576,7 +32576,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c636; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c635; /*opt-block+*/
 									}
 
@@ -32604,7 +32604,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 761 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SHLSALB.Eb.1", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c635; /*opt-block+*/
 								}
 
@@ -32619,7 +32619,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c636; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c637; /*opt-block+*/
 								}
 
@@ -32663,7 +32663,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c640; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c639; /*opt-block+*/
 									}
 
@@ -32691,7 +32691,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 755 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SHRB.Eb.1", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c639; /*opt-block+*/
 								}
 
@@ -32706,7 +32706,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c640; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c641; /*opt-block+*/
 								}
 
@@ -32754,7 +32754,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c644; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c643; /*opt-block+*/
 									}
 
@@ -32782,7 +32782,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 749 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SARB.Eb.1", { DIS_EADDR16 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c643; /*opt-block+*/
 								}
 
@@ -32797,7 +32797,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c644; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c645; /*opt-block+*/
 								}
 
@@ -32852,7 +32852,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c648; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c647; /*opt-block+*/
 									}
 
@@ -32880,7 +32880,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 740 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "ROLB.Ev.1od", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c647; /*opt-block+*/
 								}
 
@@ -32895,7 +32895,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c648; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c649; /*opt-block+*/
 								}
 
@@ -32939,7 +32939,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c652; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c651; /*opt-block+*/
 									}
 
@@ -32967,7 +32967,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 728 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RORB.Ev.1od", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c651; /*opt-block+*/
 								}
 
@@ -32982,7 +32982,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c652; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c653; /*opt-block+*/
 								}
 
@@ -33026,7 +33026,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c656; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c655; /*opt-block+*/
 									}
 
@@ -33054,7 +33054,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 716 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RCLB.Ev.1od", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c655; /*opt-block+*/
 								}
 
@@ -33069,7 +33069,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c656; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c657; /*opt-block+*/
 								}
 
@@ -33113,7 +33113,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c660; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c659; /*opt-block+*/
 									}
 
@@ -33141,7 +33141,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 704 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RCRB.Ev.1od", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c659; /*opt-block+*/
 								}
 
@@ -33156,7 +33156,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c660; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c661; /*opt-block+*/
 								}
 
@@ -33200,7 +33200,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c664; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c663; /*opt-block+*/
 									}
 
@@ -33228,7 +33228,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 692 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SHLSALB.Ev.1od", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c663; /*opt-block+*/
 								}
 
@@ -33243,7 +33243,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c664; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c665; /*opt-block+*/
 								}
 
@@ -33287,7 +33287,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c668; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c667; /*opt-block+*/
 									}
 
@@ -33315,7 +33315,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 680 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SHRB.Ev.1od", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c667; /*opt-block+*/
 								}
 
@@ -33330,7 +33330,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c668; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c669; /*opt-block+*/
 								}
 
@@ -33378,7 +33378,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c672; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c671; /*opt-block+*/
 									}
 
@@ -33406,7 +33406,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 668 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SARB.Ev.1od", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c671; /*opt-block+*/
 								}
 
@@ -33421,7 +33421,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c672; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c673; /*opt-block+*/
 								}
 
@@ -33476,7 +33476,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c676; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c675; /*opt-block+*/
 									}
 
@@ -33504,7 +33504,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 782 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "ROLB.Eb.CL", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c675; /*opt-block+*/
 								}
 
@@ -33519,7 +33519,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c676; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c677; /*opt-block+*/
 								}
 
@@ -33563,7 +33563,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c680; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c679; /*opt-block+*/
 									}
 
@@ -33591,7 +33591,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 776 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RORB.Eb.CL", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c679; /*opt-block+*/
 								}
 
@@ -33606,7 +33606,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c680; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c681; /*opt-block+*/
 								}
 
@@ -33650,7 +33650,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c684; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c683; /*opt-block+*/
 									}
 
@@ -33678,7 +33678,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 770 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RCLB.Eb.CL", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c683; /*opt-block+*/
 								}
 
@@ -33693,7 +33693,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c684; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c685; /*opt-block+*/
 								}
 
@@ -33737,7 +33737,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c688; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c687; /*opt-block+*/
 									}
 
@@ -33765,7 +33765,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 764 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RCRB.Eb.CL", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c687; /*opt-block+*/
 								}
 
@@ -33780,7 +33780,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c688; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c689; /*opt-block+*/
 								}
 
@@ -33824,7 +33824,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c692; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c691; /*opt-block+*/
 									}
 
@@ -33852,7 +33852,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 758 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SHLSALB.Eb.CL", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c691; /*opt-block+*/
 								}
 
@@ -33867,7 +33867,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c692; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c693; /*opt-block+*/
 								}
 
@@ -33911,7 +33911,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c696; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c695; /*opt-block+*/
 									}
 
@@ -33939,7 +33939,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 752 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SHRB.Eb.CL", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c695; /*opt-block+*/
 								}
 
@@ -33954,7 +33954,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c696; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c697; /*opt-block+*/
 								}
 
@@ -34002,7 +34002,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c700; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c699; /*opt-block+*/
 									}
 
@@ -34030,7 +34030,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 746 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SARB.Eb.CL", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c699; /*opt-block+*/
 								}
 
@@ -34045,7 +34045,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c700; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c701; /*opt-block+*/
 								}
 
@@ -34100,7 +34100,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c704; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c703; /*opt-block+*/
 									}
 
@@ -34128,7 +34128,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 734 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "ROLB.Ev.CLod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c703; /*opt-block+*/
 								}
 
@@ -34143,7 +34143,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c704; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c705; /*opt-block+*/
 								}
 
@@ -34187,7 +34187,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c708; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c707; /*opt-block+*/
 									}
 
@@ -34215,7 +34215,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 722 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RORB.Ev.CLod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c707; /*opt-block+*/
 								}
 
@@ -34230,7 +34230,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c708; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c709; /*opt-block+*/
 								}
 
@@ -34274,7 +34274,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c712; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c711; /*opt-block+*/
 									}
 
@@ -34302,7 +34302,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 710 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RCLB.Ev.CLod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c711; /*opt-block+*/
 								}
 
@@ -34317,7 +34317,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c712; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c713; /*opt-block+*/
 								}
 
@@ -34361,7 +34361,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c716; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c715; /*opt-block+*/
 									}
 
@@ -34389,7 +34389,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 698 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "RCRB.Ev.CLod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c715; /*opt-block+*/
 								}
 
@@ -34404,7 +34404,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c716; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c717; /*opt-block+*/
 								}
 
@@ -34448,7 +34448,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c720; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c719; /*opt-block+*/
 									}
 
@@ -34476,7 +34476,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 686 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SHLSALB.Ev.CLod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c719; /*opt-block+*/
 								}
 
@@ -34491,7 +34491,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c720; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c721; /*opt-block+*/
 								}
 
@@ -34535,7 +34535,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c724; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c723; /*opt-block+*/
 									}
 
@@ -34563,7 +34563,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 674 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SHRB.Ev.CLod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c723; /*opt-block+*/
 								}
 
@@ -34578,7 +34578,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c724; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c725; /*opt-block+*/
 								}
 
@@ -34626,7 +34626,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c728; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c727; /*opt-block+*/
 									}
 
@@ -34654,7 +34654,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 662 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "SARB.Ev.CLod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c727; /*opt-block+*/
 								}
 
@@ -34669,7 +34669,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c728; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c729; /*opt-block+*/
 								}
 
@@ -34823,7 +34823,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												stmts = instantiate(pc, name);
 											}
 										} /*opt-block*/
-										else{
+										else {
 											goto MATCH_label_c64; /*opt-block+*/
 										}
 
@@ -34855,7 +34855,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												}
 											} /*opt-block*/ /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c64; /*opt-block+*/
 										}
 
@@ -34887,7 +34887,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												}
 											} /*opt-block*/ /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c64; /*opt-block+*/
 										}
 
@@ -34898,7 +34898,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									} /* (MATCH_w_8_16 & 0x7) -- col at 16 --*/
 								}     /*opt-block*/
 							}
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -34926,7 +34926,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										stmts = instantiate(pc, name);
 									}
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -34945,7 +34945,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										stmts = instantiate(pc, name);
 									}
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -35123,7 +35123,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												stmts = instantiate(pc, name);
 											}
 										} /*opt-block*/
-										else{
+										else {
 											goto MATCH_label_c64; /*opt-block+*/
 										}
 
@@ -35154,7 +35154,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												}
 											} /*opt-block*/ /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c64; /*opt-block+*/
 										}
 
@@ -35185,7 +35185,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 												}
 											} /*opt-block*/ /*opt-block+*/
 										}
-										else{
+										else {
 											goto MATCH_label_c64; /*opt-block+*/
 										}
 
@@ -35196,7 +35196,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									} /* (MATCH_w_8_16 & 0x7) -- col at 16 --*/
 								}     /*opt-block*/
 							}
-							else{
+							else {
 								goto MATCH_label_c64; /*opt-block+*/
 							}
 
@@ -35224,7 +35224,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										stmts = instantiate(pc, name);
 									}
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -35242,7 +35242,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										stmts = instantiate(pc, name);
 									}
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_c64; /*opt-block+*/
 								}
 
@@ -35502,7 +35502,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c736; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c735; /*opt-block+*/
 									}
 
@@ -35530,7 +35530,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 916 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "NOTb", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c735; /*opt-block+*/
 								}
 
@@ -35545,7 +35545,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c736; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c737; /*opt-block+*/
 								}
 
@@ -35589,7 +35589,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c740; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c739; /*opt-block+*/
 									}
 
@@ -35617,7 +35617,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 925 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "NEGb", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c739; /*opt-block+*/
 								}
 
@@ -35632,7 +35632,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c740; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c741; /*opt-block+*/
 								}
 
@@ -35676,7 +35676,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c744; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c743; /*opt-block+*/
 									}
 
@@ -35704,7 +35704,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 934 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "MUL.AL", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c743; /*opt-block+*/
 								}
 
@@ -35719,7 +35719,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c744; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c745; /*opt-block+*/
 								}
 
@@ -35763,7 +35763,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c748; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c747; /*opt-block+*/
 									}
 
@@ -35791,7 +35791,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1178 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "IMULb", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c747; /*opt-block+*/
 								}
 
@@ -35806,7 +35806,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c748; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c749; /*opt-block+*/
 								}
 
@@ -35850,7 +35850,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c752; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c751; /*opt-block+*/
 									}
 
@@ -35878,7 +35878,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1202 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "DIVAL", { DIS_EADDR8 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c751; /*opt-block+*/
 								}
 
@@ -35893,7 +35893,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c752; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c753; /*opt-block+*/
 								}
 
@@ -35937,7 +35937,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c756; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c755; /*opt-block+*/
 									}
 
@@ -35967,7 +35967,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									                                                 //    | HLT() =>
 									//        stmts = instantiate(pc,     "HLT");
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c755; /*opt-block+*/
 								}
 
@@ -35982,7 +35982,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c756; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c757; /*opt-block+*/
 								}
 
@@ -36133,7 +36133,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c764; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c763; /*opt-block+*/
 									}
 
@@ -36159,7 +36159,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 910 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "NOTod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c763; /*opt-block+*/
 								}
 
@@ -36174,7 +36174,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c764; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c765; /*opt-block+*/
 								}
 
@@ -36216,7 +36216,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c768; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c767; /*opt-block+*/
 									}
 
@@ -36242,7 +36242,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 919 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "NEGod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c767; /*opt-block+*/
 								}
 
@@ -36257,7 +36257,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c768; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c769; /*opt-block+*/
 								}
 
@@ -36299,7 +36299,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c772; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c771; /*opt-block+*/
 									}
 
@@ -36325,7 +36325,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 928 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "MUL.AXod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c771; /*opt-block+*/
 								}
 
@@ -36340,7 +36340,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c772; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c773; /*opt-block+*/
 								}
 
@@ -36382,7 +36382,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c776; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c775; /*opt-block+*/
 									}
 
@@ -36408,7 +36408,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1172 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "IMULod", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c775; /*opt-block+*/
 								}
 
@@ -36423,7 +36423,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c776; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c777; /*opt-block+*/
 								}
 
@@ -36464,7 +36464,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c780; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c779; /*opt-block+*/
 									}
 
@@ -36490,7 +36490,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1196 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "DIVeAX", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c779; /*opt-block+*/
 								}
 
@@ -36505,7 +36505,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c780; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c781; /*opt-block+*/
 								}
 
@@ -36545,7 +36545,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									      /* index at 16 */ < 8))) {
 										goto MATCH_label_c784; /*opt-block+*/
 									}
-									else{
+									else {
 										goto MATCH_label_c783; /*opt-block+*/
 									}
 
@@ -36570,7 +36570,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									// #line 1181 "frontend/machine/pentium/decoder.m"
 									stmts = instantiate(pc, "IDIVeAX", { DIS_EADDR32 });
 								} /*opt-block*/ /*opt-block+*/
-								else{
+								else {
 									goto MATCH_label_c783; /*opt-block+*/
 								}
 
@@ -36585,7 +36585,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								                                                   /* index at 16 */ < 8))) {
 									goto MATCH_label_c784; /*opt-block+*/
 								}
-								else{
+								else {
 									goto MATCH_label_c785; /*opt-block+*/
 								}
 
@@ -49674,7 +49674,7 @@ SharedExp PentiumDecoder::dis_Eaddr(ADDRESS pc, int size)
 
 				return e;
 			} /*opt-block*/ /*opt-block+*/
-			else{
+			else {
 				goto MATCH_label_a0; /*opt-block+*/
 			}
 		}

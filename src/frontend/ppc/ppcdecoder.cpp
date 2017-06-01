@@ -23,7 +23,7 @@
 
 #include "ppcdecoder.h"
 
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/prog.h"
 #include "include/proc.h"
 #include "include/decoder.h"
@@ -111,15 +111,15 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 		const char        *MATCH_name;
 		static const char *MATCH_name_OPCD_0[] =
 		{
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,   nullptr,
-			nullptr, "mulli",  "subfic",  nullptr,    nullptr,   nullptr,
-			"addic", "addicq", "addi",    "addis",    nullptr,   nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,   nullptr,
-			"ori",   "oris",   "xori",    "xoris",    "andiq",   "andisq",
-			nullptr, nullptr,  "lwz",     "lwzu",     "lbz",     "lbzu",
-			"stw",   "stwu",   "stb",     "stbu",     "lhz",     "lhzu",
-			"lha",   "lhau",   "sth",     "sthu",     "lmw",     "stmw",
-			"lfs",   "lfsu",   "lfd",     "lfdu",     "stfs",    "stfsu",
+			nullptr, nullptr,  nullptr,   nullptr,    nullptr,    nullptr,
+			nullptr, "mulli",  "subfic",  nullptr,    nullptr,    nullptr,
+			"addic", "addicq", "addi",    "addis",    nullptr,    nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,    nullptr,    nullptr,
+			"ori",   "oris",   "xori",    "xoris",    "andiq",    "andisq",
+			nullptr, nullptr,  "lwz",     "lwzu",     "lbz",      "lbzu",
+			"stw",   "stwu",   "stb",     "stbu",     "lhz",      "lhzu",
+			"lha",   "lhau",   "sth",     "sthu",     "lmw",      "stmw",
+			"lfs",   "lfsu",   "lfd",     "lfdu",     "stfs",     "stfsu",
 			"stfd",  "stfdu",
 		};
 		static const char *MATCH_name_BO4_3[] =
@@ -172,400 +172,400 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 		};
 		static const char *MATCH_name_Xo1_26[] =
 		{
-			"fcmpu",  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			"frsp",   nullptr,     "fctiw",      "fctiwz",   nullptr,      nullptr,
-			nullptr,  nullptr,     "lwarx",      "ldx",      nullptr,      "lwzx",
-			"slw",    nullptr,     "cntlzw",     "sld",      "and",        nullptr,
-			nullptr,  nullptr,     "fcmpo",      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    "fneg",       nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "ldux",
-			nullptr,  "lwzux",     nullptr,      nullptr,    "cntlzd",     nullptr,
-			"andc",   nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			"fmr",    nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			"ldarx",  nullptr,     nullptr,      "lbzx",     nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "lbzux",
-			nullptr,  nullptr,     nullptr,      nullptr,    "nor",        nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    "fnabs",      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "stdx",
-			"stwcxq", "stwx",      nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  "stdux",     nullptr,      "stwux",    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    "stdcxq",     "stbx",
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  "stbux",     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			"fabs",   nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      "lhzx",     nullptr,      nullptr,
-			nullptr,  nullptr,     "eqv",        nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    "eciwx",      "lhzux",
-			nullptr,  nullptr,     nullptr,      nullptr,    "xor",        nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      "mfspr",    nullptr,      "lwax",
-			nullptr,  "lhax",      nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  "lwaux",     nullptr,      "lhaux",    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "sthx",
-			nullptr,  nullptr,     nullptr,      nullptr,    "orc",        nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			"ecowx",  "sthux",     nullptr,      nullptr,    nullptr,      nullptr,
-			"or",     nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "mtspr",
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     "nand",       nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "lswx",
-			"lwbrx",  "lfsx",      "srw",        nullptr,    nullptr,      "srd",
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      "lfsux",    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "lfdx",
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  "lfdux",     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  "stswx",     "stwbrx",     "stfsx",    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "stfsux",
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  "stfdx",     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      "stfdux",   nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    "lhbrx",      nullptr,
-			"sraw",   nullptr,     "srad",       nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    "fctid",      "fctidz",
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     "srawi",      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			"fcfid",  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			"sthbrx", nullptr,     nullptr,      nullptr,    "extsh",      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			"extsb",  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      nullptr,
-			nullptr,  nullptr,     nullptr,      nullptr,    nullptr,      "stfiwx",
+			"fcmpu",  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			"frsp",   nullptr,     "fctiw",      "fctiwz",       nullptr,      nullptr,
+			nullptr,  nullptr,     "lwarx",      "ldx",          nullptr,      "lwzx",
+			"slw",    nullptr,     "cntlzw",     "sld",          "and",        nullptr,
+			nullptr,  nullptr,     "fcmpo",      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        "fneg",       nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "ldux",
+			nullptr,  "lwzux",     nullptr,      nullptr,        "cntlzd",     nullptr,
+			"andc",   nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			"fmr",    nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			"ldarx",  nullptr,     nullptr,      "lbzx",         nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "lbzux",
+			nullptr,  nullptr,     nullptr,      nullptr,        "nor",        nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        "fnabs",      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "stdx",
+			"stwcxq", "stwx",      nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  "stdux",     nullptr,      "stwux",        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        "stdcxq",     "stbx",
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  "stbux",     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			"fabs",   nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      "lhzx",         nullptr,      nullptr,
+			nullptr,  nullptr,     "eqv",        nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        "eciwx",      "lhzux",
+			nullptr,  nullptr,     nullptr,      nullptr,        "xor",        nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      "mfspr",        nullptr,      "lwax",
+			nullptr,  "lhax",      nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  "lwaux",     nullptr,      "lhaux",        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "sthx",
+			nullptr,  nullptr,     nullptr,      nullptr,        "orc",        nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			"ecowx",  "sthux",     nullptr,      nullptr,        nullptr,      nullptr,
+			"or",     nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "mtspr",
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     "nand",       nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "lswx",
+			"lwbrx",  "lfsx",      "srw",        nullptr,        nullptr,      "srd",
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      "lfsux",        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "lfdx",
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  "lfdux",     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  "stswx",     "stwbrx",     "stfsx",        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "stfsux",
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  "stfdx",     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      "stfdux",       nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        "lhbrx",      nullptr,
+			"sraw",   nullptr,     "srad",       nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        "fctid",      "fctidz",
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     "srawi",      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			"fcfid",  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			"sthbrx", nullptr,     nullptr,      nullptr,        "extsh",      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			"extsb",  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      nullptr,
+			nullptr,  nullptr,     nullptr,      nullptr,        nullptr,      "stfiwx",
 			nullptr,  nullptr,     "extsw",
 		};
 		static const char *MATCH_name_Xo9_29[] =
 		{
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  "subfc",   nullptr,    "addc",      nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    "subf",      nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  "neg",     nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    "subfe",     nullptr,
-			"adde",  nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  "subfze",  nullptr,    "addze",     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    "subfme",    "mulld",
-			"addme", "mullw",  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  "add",     nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, "divdu",  nullptr,   "divwu",    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   nullptr,    nullptr,     nullptr,
-			nullptr, nullptr,  nullptr,   "divd",     nullptr,     "divw",
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  "subfc",   nullptr,     "addc",      nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     "subf",      nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  "neg",     nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     "subfe",     nullptr,
+			"adde",  nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  "subfze",  nullptr,     "addze",     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     "subfme",    "mulld",
+			"addme", "mullw",  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  "add",     nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, "divdu",  nullptr,   "divwu",     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   nullptr,     nullptr,     nullptr,
+			nullptr, nullptr,  nullptr,   "divd",      nullptr,     "divw",
 		};
 		static const char *MATCH_name_Xo1_30[] =
 		{
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			"frspq",  nullptr,    "fctiwq",    "fctiwzq", nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			"slwq",   nullptr,    nullptr,     "sldq",    "andq",     nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   "fnegq",    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			"andcq",  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			"fmrq",   nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   "norq",     nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   "fnabsq",   nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			"fabsq",  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    "eqvq",      nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   "xorq",     nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   "orcq",     nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			"orq",    nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    "nandq",     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    "srwq",      nullptr,   nullptr,    "srdq",
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			"srawq",  nullptr,    "sradq",     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   "fctidq",   "fctidzq",
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    "srawiq",    nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
-			nullptr,  nullptr,    nullptr,     nullptr,   nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			"frspq",  nullptr,    "fctiwq",    "fctiwzq",    nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			"slwq",   nullptr,    nullptr,     "sldq",       "andq",     nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      "fnegq",    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			"andcq",  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			"fmrq",   nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      "norq",     nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      "fnabsq",   nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			"fabsq",  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    "eqvq",      nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      "xorq",     nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      "orcq",     nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			"orq",    nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    "nandq",     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    "srwq",      nullptr,      nullptr,    "srdq",
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			"srawq",  nullptr,    "sradq",     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      "fctidq",   "fctidzq",
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    "srawiq",    nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
+			nullptr,  nullptr,    nullptr,     nullptr,      nullptr,    nullptr,
 			"fcfidq",
 		};
 		static const char *MATCH_name_Rc_36[] =
@@ -582,9 +582,9 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 		};
 		static const char *MATCH_name_Xo5_40[] =
 		{
-			nullptr, nullptr,  nullptr,  nullptr, nullptr, nullptr,
-			nullptr, nullptr,  nullptr,  nullptr, nullptr, nullptr,
-			nullptr, nullptr,  nullptr,  nullptr, nullptr, nullptr,
+			nullptr, nullptr,  nullptr,  nullptr,  nullptr, nullptr,
+			nullptr, nullptr,  nullptr,  nullptr,  nullptr, nullptr,
+			nullptr, nullptr,  nullptr,  nullptr,  nullptr, nullptr,
 			"fdiv",  nullptr,  "fsub",   "fadd",
 		};
 		unsigned MATCH_w_32_0;
@@ -635,7 +635,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 						stmts = instantiate(pc, name, { DIS_RD, DIS_RAZ, DIS_SIMM });
 					}
-					else{
+					else {
 						stmts = instantiate(pc, name, { DIS_RD, DIS_RA, DIS_SIMM });
 					}
 				}
@@ -661,7 +661,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						Q_UNUSED(l);
 					}
 				} /*opt-block*/
-				else{
+				else {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
 
@@ -686,7 +686,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						Q_UNUSED(l);
 					}
 				} /*opt-block*/
-				else{
+				else {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
 
@@ -745,11 +745,11 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							Q_UNUSED(BIcr);
 						}
 					} /*opt-block*/
-					else{
+					else {
 						goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 16 & 0x3))
 					{
 					case 0:
@@ -774,7 +774,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							if ((MATCH_w_32_0 >> 21 & 0x1f) == 20) {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -840,7 +840,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							if ((MATCH_w_32_0 >> 21 & 0x1f) == 20) {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -910,7 +910,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							if ((MATCH_w_32_0 >> 21 & 0x1f) == 20) {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -981,7 +981,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							if ((MATCH_w_32_0 >> 21 & 0x1f) == 20) {
 								goto MATCH_label_a1; /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -1101,7 +1101,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 					IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 529U, 1024U)) {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 					{
 					case 0:
@@ -1294,7 +1294,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "ballr";
 										goto MATCH_label_a2;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -1361,7 +1361,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "ballr";
 										goto MATCH_label_a2;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -1428,7 +1428,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "ballr";
 										goto MATCH_label_a2;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -1495,7 +1495,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "ballr";
 										goto MATCH_label_a2;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -1543,7 +1543,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								assert(0);
 							} /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/
 						}
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1555,7 +1555,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = MATCH_name_LK_8[(MATCH_w_32_0 & 0x1)];
 							goto MATCH_label_a3;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1567,7 +1567,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = MATCH_name_LK_14[(MATCH_w_32_0 & 0x1)];
 							goto MATCH_label_a3;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1579,7 +1579,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = "crxor";
 							goto MATCH_label_a3;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1591,7 +1591,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = "crnand";
 							goto MATCH_label_a3;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1603,7 +1603,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = "crand";
 							goto MATCH_label_a3;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1615,7 +1615,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = "creqv";
 							goto MATCH_label_a3;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1627,7 +1627,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = "crorc";
 							goto MATCH_label_a3;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1639,7 +1639,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = "cror";
 							goto MATCH_label_a3;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1680,11 +1680,11 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									}
 								} /*opt-block*/ /*opt-block+*/
 							}
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 						}
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 
@@ -1743,7 +1743,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 						{
 						case 0:
@@ -2041,7 +2041,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "cntlzwq";
 								goto MATCH_label_a9;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -2053,7 +2053,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "cntlzdq";
 								goto MATCH_label_a9;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -2088,7 +2088,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "extshq";
 								goto MATCH_label_a9;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -2100,7 +2100,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "extsbq";
 								goto MATCH_label_a9;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -2112,7 +2112,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "extswq";
 								goto MATCH_label_a9;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -2130,7 +2130,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
-						else{
+						else {
 							switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 							{
 							case 0:
@@ -2139,7 +2139,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "cmp";
 									goto MATCH_label_a5;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -2927,7 +2927,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "mfcr";
 									goto MATCH_label_a6;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -2991,7 +2991,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "cmpl";
 									goto MATCH_label_a5;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -3003,7 +3003,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "mfmsr";
 									goto MATCH_label_a6;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -3076,7 +3076,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 987U, 1024U)) {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
-						else{
+						else {
 							switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 							{
 							case 0:
@@ -3085,7 +3085,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "cmp";
 									goto MATCH_label_a5;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -3873,7 +3873,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "mfcr";
 									goto MATCH_label_a6;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -3937,7 +3937,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "cmpl";
 									goto MATCH_label_a5;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -3949,7 +3949,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "mfmsr";
 									goto MATCH_label_a6;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -4014,7 +4014,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							} /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
 						}
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 1 & 0x1ff))
 						{
 						case 0:
@@ -4204,7 +4204,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
-							else{
+							else {
 								switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 								{
 								case 0:
@@ -4213,7 +4213,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "cmp";
 										goto MATCH_label_a5;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -5001,7 +5001,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "mfcr";
 										goto MATCH_label_a6;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -5065,7 +5065,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "cmpl";
 										goto MATCH_label_a5;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -5077,7 +5077,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "mfmsr";
 										goto MATCH_label_a6;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -5192,7 +5192,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 						{
 						case 0:
@@ -5201,7 +5201,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "cmp";
 								goto MATCH_label_a5;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -5971,7 +5971,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "cmpl";
 								goto MATCH_label_a5;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -6045,7 +6045,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 						{
 						case 0:
@@ -6054,7 +6054,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "cmp";
 								goto MATCH_label_a5;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -6824,7 +6824,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "cmpl";
 								goto MATCH_label_a5;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -6889,7 +6889,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						} /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
 					}
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 1 & 0x1ff))
 					{
 					case 0:
@@ -7020,7 +7020,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
-						else{
+						else {
 							switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 							{
 							case 0:
@@ -7029,7 +7029,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "cmp";
 									goto MATCH_label_a5;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -7799,7 +7799,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "cmpl";
 									goto MATCH_label_a5;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -7914,7 +7914,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 						stmts = instantiate(pc, name, { DIS_RD, DIS_DISP, DIS_RD_NUM });
 					}
-					else{
+					else {
 						stmts = instantiate(pc, name, { DIS_RD, DIS_DISP, DIS_NZRA });
 					}
 
@@ -7961,7 +7961,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 						stmts = instantiate(pc, name, { DIS_RS, DIS_DISP, DIS_RS_NUM });
 					}
-					else{
+					else {
 						stmts = instantiate(pc, name, { DIS_RS, DIS_DISP, DIS_NZRA });
 					}
 				}
@@ -8134,7 +8134,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "fdivq";
 									goto MATCH_label_a17;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -8146,7 +8146,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "fsubq";
 									goto MATCH_label_a17;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -8158,7 +8158,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "faddq";
 									goto MATCH_label_a17;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -8168,7 +8168,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								assert(0);
 							} /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
 						}
-						else{
+						else {
 							switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 							{
 							case 0:
@@ -8310,7 +8310,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "fdivq";
 										goto MATCH_label_a17;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -8322,7 +8322,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "fsubq";
 										goto MATCH_label_a17;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -8334,7 +8334,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = "faddq";
 										goto MATCH_label_a17;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/
 									}
 
@@ -8366,7 +8366,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							} /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
 						}
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 1 & 0x1f))
 						{
 						case 0:
@@ -8407,7 +8407,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "fdivq";
 								goto MATCH_label_a17;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -8419,7 +8419,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "fsubq";
 								goto MATCH_label_a17;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -8431,7 +8431,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "faddq";
 								goto MATCH_label_a17;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -8487,7 +8487,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "fdiv";
 								goto MATCH_label_a17;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -8499,7 +8499,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "fsub";
 								goto MATCH_label_a17;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -8511,7 +8511,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = "fadd";
 								goto MATCH_label_a17;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -8521,7 +8521,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							assert(0);
 						} /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 						{
 						case 0:
@@ -8533,7 +8533,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 										goto MATCH_label_a17;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 									}
 								}
@@ -8543,7 +8543,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 										goto MATCH_label_a17;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 									}
 								}
@@ -8700,7 +8700,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "fdiv";
 									goto MATCH_label_a17;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -8712,7 +8712,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "fsub";
 									goto MATCH_label_a17;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -8724,7 +8724,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									MATCH_name = "fadd";
 									goto MATCH_label_a17;
 								} /*opt-block*/
-								else{
+								else {
 									goto MATCH_label_a0; /*opt-block+*/
 								}
 
@@ -8756,7 +8756,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 										goto MATCH_label_a17;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 									}
 								}
@@ -8766,7 +8766,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 										goto MATCH_label_a17;
 									} /*opt-block*/
-									else{
+									else {
 										goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 									}
 								}
@@ -8797,7 +8797,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 							goto MATCH_label_a17;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 						}
 					}
@@ -8806,7 +8806,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 							goto MATCH_label_a17;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 						}
 					}
@@ -8815,11 +8815,11 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 							goto MATCH_label_a17;
 						} /*opt-block*/
-						else{
+						else {
 							goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 						}
 					}
-					else{
+					else {
 						switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 						{
 						case 0:
@@ -8865,7 +8865,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 								goto MATCH_label_a17;
 							} /*opt-block*/
-							else{
+							else {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 
@@ -8879,7 +8879,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 				else if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 33U, 1024U)) {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
-				else{
+				else {
 					switch ((MATCH_w_32_0 >> 1 & 0x3ff))
 					{
 					case 0:

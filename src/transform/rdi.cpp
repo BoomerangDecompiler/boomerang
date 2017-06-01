@@ -12,7 +12,7 @@
 #include "include/types.h"
 #include "include/statement.h"
 #include "db/cfg.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/register.h"
 #include "include/rtl.h"
 #include "include/proc.h"

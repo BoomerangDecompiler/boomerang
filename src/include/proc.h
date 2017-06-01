@@ -17,11 +17,11 @@
  *                procedure such as parameters and locals.
  ******************************************************************************/
 
-#include "include/exp.h" // For lessExpStar
+#include "db/exp.h" // For lessExpStar
 #include "db/cfg.h" // For cfg->simplify()
 
 #include "memo.h"
-#include "db/dataflow.h"  // For class UseCollector
+#include "db/dataflow.h"       // For class UseCollector
 #include "include/statement.h" // For embedded ReturnStatement pointer, etc
 
 #include <list>

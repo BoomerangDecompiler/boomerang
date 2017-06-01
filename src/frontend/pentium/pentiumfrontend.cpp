@@ -26,7 +26,7 @@
 #include "include/register.h"
 #include "include/type.h"
 #include "db/cfg.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/proc.h"
 #include "include/signature.h"
 #include "include/prog.h"         // For findProc()
@@ -666,7 +666,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 				return ADDRESS::g(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
 			}
 		}
-		else{
+		else {
 			conseq = 0; // Must be consequitive
 		}
 
@@ -677,7 +677,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 			// info
 			addr = gs->getFixedDest();
 		}
-		else{
+		else {
 			addr += inst.numBytes;
 		}
 	} while (--instCount);
@@ -711,7 +711,7 @@ void toBranches(ADDRESS a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb,
 	if (s1->isAssign()) {
 		br1->setCondExpr(((Assign *)s1)->getRight());
 	}
-	else{
+	else {
 		br1->setCondExpr(nullptr);
 	}
 
@@ -721,7 +721,7 @@ void toBranches(ADDRESS a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb,
 	if (s6->isAssign()) {
 		br2->setCondExpr(((Assign *)s6)->getRight());
 	}
-	else{
+	else {
 		br2->setCondExpr(nullptr);
 	}
 
@@ -774,7 +774,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
 							// near the end of the list
 							break;
 						}
-						else{
+						else {
 							LOG << "Unhandled machine feature " << str << "\n";
 						}
 					}
@@ -1176,7 +1176,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 
 			a = Program->getGlobalAddr(name);
 		}
-		else{
+		else {
 			continue;
 		}
 

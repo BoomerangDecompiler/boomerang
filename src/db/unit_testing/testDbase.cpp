@@ -15,7 +15,7 @@
 #include "cppunit/TextTestResult.h"
 #include "cppunit/TestSuite.h"
 
-#include "include/exp.h"
+#include "db/exp.h"
 
 #include "ExpTest.h"
 #include "ProgTest.h"

@@ -30,7 +30,7 @@ void RTLEditor::mouseMoveEvent(QMouseEvent *event)
 	if (!_name.isEmpty()) {
 		QApplication::setOverrideCursor(Qt::PointingHandCursor);
 	}
-	else{
+	else {
 		QApplication::restoreOverrideCursor();
 	}
 }

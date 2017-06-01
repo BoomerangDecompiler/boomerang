@@ -25,7 +25,7 @@
 #include "include/types.h"
 #include "include/statement.h"
 #include "include/hllcode.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "db/cfg.h"
 #include "include/proc.h"
 #include "include/util.h" // For lockFileWrite etc
@@ -284,7 +284,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 					if (info) {
 						generateDataSectionCode(sections[j], info->sourceAddr(), info->size(), code);
 					}
-					else{
+					else {
 						generateDataSectionCode(sections[j], NO_ADDRESS, 0, code);
 					}
 				}
@@ -1028,7 +1028,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
 			}
 		}
 	}
-	else{
+	else {
 		ty = guessGlobalType(nam, uaddr);
 	}
 
@@ -1041,7 +1041,7 @@ bool Prog::globalUsed(ADDRESS uaddr, SharedType knownType)
 		if (knownType) {
 			LOG << ", known type " << ty->getCtype() << "\n";
 		}
-		else{
+		else {
 			LOG << ", guessed type " << ty->getCtype() << "\n";
 		}
 	}
@@ -2191,7 +2191,7 @@ SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type)
 		if (type->resolvesToInteger()) {
 			size = type->as<IntegerType>()->getSize();
 		}
-		else{
+		else {
 			size = type->as<SizeType>()->getSize();
 		}
 

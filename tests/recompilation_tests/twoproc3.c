@@ -17,7 +17,7 @@ typedef struct {
 } pciVideoRec;
 typedef pciVideoRec *pciVideoPtr;
 
-pciVideoPtr *xf86GetPciVideoInfo(void);
+pciVideoPtr *xf86GetPciVideoInfo();
 
 int getDevice(pciVideoPtr p) {
 	return p->device;

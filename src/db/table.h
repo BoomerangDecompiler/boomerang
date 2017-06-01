@@ -54,6 +54,6 @@ class ExprTable : public Table
 {
 public:
 	ExprTable(const std::deque<SharedExp>& exprs);
-	~ExprTable(void);
+	~ExprTable();
 	std::deque<SharedExp> expressions;
 };

@@ -16,7 +16,7 @@
 #include "include/msvc_fixes.h"
 #include "db/cfg.h"
 #include "include/statement.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "include/proc.h"
 #include "include/prog.h"
 #include "include/hllcode.h"
@@ -186,7 +186,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 					if ((-2048 < K) && (K < 2048)) {
 						str << K; // Just a plain vanilla int
 					}
-					else{
+					else {
 						str << "0x" << QString::number(uint32_t(K), 16); // 0x2000 style
 					}
 				}
@@ -201,7 +201,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 		if (((long long)c.getLong() < -1000LL) || ((long long)c.getLong() > 1000LL)) {
 			str << "0x" << QString::number(c.getLong(), 16) << "LL";
 		}
-		else{
+		else {
 			str << c.getLong() << "LL";
 		}
 
@@ -377,7 +377,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 			if (negated.size() < vanilla.size()) {
 				str << negated;
 			}
-			else{
+			else {
 				str << vanilla;
 			}
 		}
@@ -502,7 +502,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 				if (n[0] == '%') {
 					str << n + 1;
 				}
-				else{
+				else {
 					str << n;
 				}
 			}
@@ -543,7 +543,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 				if (float_bits == 32) {
 					str << "FLOAT_MEMOF(";
 				}
-				else{
+				else {
 					str << "DOUBLE_MEMOF(";
 				}
 
@@ -572,7 +572,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 				str << ")";
 			}
 		}
-		else{
+		else {
 			appendExp(str, *t.getSubExp3(), curPrec);
 		}
 
@@ -844,7 +844,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 				if (sz == 8) {
 					str << "char";
 				}
-				else{
+				else {
 					str << "short";
 				}
 
@@ -909,11 +909,11 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 							if (tt->as<FloatType>()->getSize() == 32) {
 								str << "FLOAT_MEMOF";
 							}
-							else{
+							else {
 								str << "DOUBLE_MEMOF";
 							}
 						}
-						else{
+						else {
 							str << "MEMOF";
 						}
 					}
@@ -1026,7 +1026,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 			if (s[0] == '%') {   // e.g. %Y
 				str << s.mid(1); // Just use Y
 			}
-			else{
+			else {
 				str << s;
 			}
 
@@ -1145,11 +1145,11 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 				// a pointer to an array is automatically dereferenced in C
 				appendExp(str, *b.getSubExp1()->getSubExp1(), PREC_PRIM);
 			}
-			else{
+			else {
 				appendExp(str, *b.getSubExp1(), PREC_PRIM);
 			}
 		}
-		else{
+		else {
 			appendExp(str, *b.getSubExp1(), PREC_PRIM);
 		}
 
@@ -1611,7 +1611,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 			if (asgnType->as<FloatType>()->getSize() == 32) {
 				s << "FLOAT_";
 			}
-			else{
+			else {
 				s << "DOUBLE_";
 			}
 		}
@@ -1619,7 +1619,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 			if (rhs->access<Const, 2>()->getInt() == 32) {
 				s << "FLOAT_";
 			}
-			else{
+			else {
 				s << "DOUBLE_";
 			}
 		}
@@ -1667,7 +1667,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 		appendLine(tgt);
 		return;
 	}
-	else{
+	else {
 		appendExp(s, *lhs, PREC_ASSIGN); // Ordinary LHS
 	}
 
@@ -1731,7 +1731,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString& nam
 		if (first) {
 			first = false;
 		}
-		else{
+		else {
 			s << ", ";
 		}
 
@@ -1778,7 +1778,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString& nam
 			if (first) {
 				first = false;
 			}
-			else{
+			else {
 				s << ", ";
 			}
 
@@ -1865,7 +1865,7 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList *rets)
 			if (first) {
 				first = false;
 			}
-			else{
+			else {
 				s << ", ";
 			}
 
@@ -1973,7 +1973,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open)
 		if (first) {
 			first = false;
 		}
-		else{
+		else {
 			s << ", ";
 		}
 
@@ -2017,7 +2017,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open)
 	if (open) {
 		s << " {";
 	}
-	else{
+	else {
 		s << ";\n";
 	}
 
@@ -2061,7 +2061,7 @@ void CHLLCode::AddLocal(const QString& name, SharedType type, bool last)
 			e->print(s);
 		}
 	}
-	else{
+	else {
 		s << ";";
 	}
 

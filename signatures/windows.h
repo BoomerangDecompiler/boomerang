@@ -66,8 +66,8 @@ LPSTR CharNextA(
 LPWSTR CharNextW(       
     LPCWSTR lpsz
 );
-LPSTR GetCommandLineA(void);
-LPWSTR GetCommandLineW(void);
+LPSTR GetCommandLineA();
+LPWSTR GetCommandLineW();
 
 typedef struct {
     UINT cbSize;
@@ -731,7 +731,7 @@ LPVOID VirtualAlloc(
 
 BOOL FlushFileBuffers(HANDLE hFile);
 
-DWORD GetLastError(void);
+DWORD GetLastError();
 
 DWORD
 SetFilePointer(
@@ -905,7 +905,7 @@ int GetLongQueue(int a, int b);
 int OpenLPR(int a, int b);
 
 LPVOID TlsGetValue(DWORD dwTlsIndex);
-DWORD TlsAlloc(void);
+DWORD TlsAlloc();
 
 BOOL TlsSetValue(DWORD dwTlsIndex, LPVOID lpTlsValue);
 

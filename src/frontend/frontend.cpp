@@ -18,7 +18,7 @@
 #include "include/frontend.h"
 
 #include "include/types.h"
-#include "include/exp.h"
+#include "db/exp.h"
 #include "db/cfg.h"
 #include "include/proc.h"
 #include "include/register.h"
@@ -937,7 +937,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 										targetQueue.visit(pCfg, destAddr, pBB);
 										pCfg->addOutEdge(pBB, destAddr, true);
 									}
-									else{
+									else {
 										break;
 									}
 								}
@@ -1048,7 +1048,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 							if (pBB == nullptr) {
 								sequentialDecode = false;
 							}
-							else{
+							else {
 								pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
 							}
 
@@ -1318,7 +1318,7 @@ BasicBlock *FrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rt
 			assert(!pRtl->empty());
 			pRtl->pop_back();
 		}
-		else{
+		else {
 			pRtl->clear();
 		}
 

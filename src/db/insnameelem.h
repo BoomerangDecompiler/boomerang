@@ -1,5 +1,4 @@
 #pragma once
-
 /*
  * Copyright (C) 2001, The University of Queensland
  *
@@ -15,49 +14,54 @@
 #include <map>
 #include <memory>
 
+/// An element of an instruction name
 class InsNameElem
 {
 public:
 	InsNameElem(const QString& name);
-	virtual ~InsNameElem(void);
-	virtual size_t ntokens(void);
-	virtual QString getinstruction(void);
-	virtual QString getinspattern(void);
-	virtual void getrefmap(std::map<QString, InsNameElem *>& m);
+	virtual ~InsNameElem();
+    
+	virtual size_t getNumTokens() const;
+	virtual QString getInstruction() const;
+	virtual QString getInsPattern() const;
+	virtual void getRefMap(std::map<QString, InsNameElem *>& m);
 
-	int ninstructions(void);
+	int getNumInstructions() const;
 	void append(std::shared_ptr<InsNameElem> next);
-	bool increment(void);
-	void reset(void);
-	int getvalue(void) const;
+	bool increment();
+	void reset();
+	int getValue() const;
 
 protected:
-	std::shared_ptr<InsNameElem> nextelem;
-	QString elemname;
-	size_t value;
+	std::shared_ptr<InsNameElem> m_nextElem;
+	QString m_elemName;
+	size_t m_value;
 };
+
 
 class InsOptionElem : public InsNameElem
 {
 public:
 	InsOptionElem(const QString& name);
-	virtual size_t ntokens(void) override;
-	virtual QString getinstruction(void) override;
-	virtual QString getinspattern(void) override;
+	virtual size_t  getNumTokens()   const override;
+	virtual QString getInstruction() const override;
+	virtual QString getInsPattern()  const override;
 };
+
 
 class InsListElem : public InsNameElem
 {
 public:
 	InsListElem(const QString& name, const std::shared_ptr<Table>& t, const QString& idx);
-	virtual size_t ntokens(void) override;
-	virtual QString getinstruction(void) override;
-	virtual QString getinspattern(void) override;
-	virtual void getrefmap(std::map<QString, InsNameElem *>& m) override;
+    
+	virtual size_t  getNumTokens()   const override;
+	virtual QString getInstruction() const override;
+	virtual QString getInsPattern()  const override;
+	virtual void getRefMap(std::map<QString, InsNameElem *>& m) override;
 
-	QString getindex(void) const;
+	QString getIndex() const;
 
 protected:
-	QString indexname;
-	std::shared_ptr<Table> thetable;
+	QString m_indexName;
+	std::shared_ptr<Table> m_theTable;
 };

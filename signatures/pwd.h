@@ -12,12 +12,12 @@ typedef struct {
         int     pw_fields; 
 } passwd;
 
-passwd *getpwent(void);
+passwd *getpwent();
 int getpwent_r(passwd *pwd, char *buffer, size_t sz @max(buffer), passwd **result);
 passwd *getpwnam(const char *login);
 int getpwnam_r(const char *name, passwd *pwd, char *buffer, size_t sz @max(buffer), passwd **result);
 passwd *getpwuid(uid_t uid);
 int getpwuid_r(uid_t uid, passwd *pwd, char *buffer, size_t sz @max(buffer), passwd **result);
 int setpassent(int stayopen);
-void setpwent(void);
-void endpwent(void);
+void setpwent();
+void endpwent();

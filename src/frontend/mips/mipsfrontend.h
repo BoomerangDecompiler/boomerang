@@ -25,7 +25,7 @@
 
 #include <set>
 #include "include/decoder.h"
-#include "include/exp.h"      // Ugh... just for enum OPER
+#include "db/exp.h"           // Ugh... just for enum OPER
 #include "include/frontend.h" // In case included bare, e.g. ProcTest.cpp
 
 class FrontEnd;

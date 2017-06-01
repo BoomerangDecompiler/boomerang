@@ -36,7 +36,7 @@ int Read4(const int *pi, bool bigEndian)
 	if (bigEndian) {
 		return (int)((Read2(p, bigEndian) << 16) + Read2(p + 1, bigEndian));
 	}
-	else{
+	else {
 		return (int)(Read2(p, bigEndian) + (Read2(p + 1, bigEndian) << 16));
 	}
 }

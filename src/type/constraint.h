@@ -14,7 +14,7 @@
  ******************************************************************************/
 
 #include "include/statement.h"
-#include "include/exphelp.h"
+#include "db/exphelp.h"
 
 #include <sstream>
 

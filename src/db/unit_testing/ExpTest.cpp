@@ -797,7 +797,7 @@ void ExpTest::testLess()
 	if (opAFP < opAGP) {
 		CPPUNIT_ASSERT(afp < agp);
 	}
-	else{
+	else {
 		CPPUNIT_ASSERT(agp < afp);
 	}
 
