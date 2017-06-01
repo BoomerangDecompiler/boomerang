@@ -109,6 +109,7 @@ if (GIT_FOUND)
 endif (GIT_FOUND)
 
 
+add_subdirectory(docs)
 add_subdirectory(src)
 
 if (BUILD_TESTING)
