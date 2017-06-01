@@ -21,7 +21,7 @@
 #include "include/prog.h"
 
 #include "include/type.h"
-#include "include/module.h"
+#include "db/module.h"
 #include "include/types.h"
 #include "include/statement.h"
 #include "include/hllcode.h"

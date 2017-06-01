@@ -1,4 +1,5 @@
 #pragma once
+
 /*
  * Copyright (C) 2001, The University of Queensland
  *
@@ -20,7 +21,7 @@ class InsNameElem
 public:
 	InsNameElem(const QString& name);
 	virtual ~InsNameElem();
-    
+
 	virtual size_t getNumTokens() const;
 	virtual QString getInstruction() const;
 	virtual QString getInsPattern() const;
@@ -43,7 +44,7 @@ class InsOptionElem : public InsNameElem
 {
 public:
 	InsOptionElem(const QString& name);
-	virtual size_t  getNumTokens()   const override;
+	virtual size_t getNumTokens()   const override;
 	virtual QString getInstruction() const override;
 	virtual QString getInsPattern()  const override;
 };
@@ -53,8 +54,8 @@ class InsListElem : public InsNameElem
 {
 public:
 	InsListElem(const QString& name, const std::shared_ptr<Table>& t, const QString& idx);
-    
-	virtual size_t  getNumTokens()   const override;
+
+	virtual size_t getNumTokens()   const override;
 	virtual QString getInstruction() const override;
 	virtual QString getInsPattern()  const override;
 	virtual void getRefMap(std::map<QString, InsNameElem *>& m) override;

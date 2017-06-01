@@ -60,7 +60,7 @@
 
 #include "include/types.h"
 #include "include/type.h"
-#include "include/module.h"
+#include "db/module.h"
 #include "include/statement.h"
 #include "include/register.h"
 #include "include/rtl.h"

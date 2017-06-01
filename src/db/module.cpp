@@ -1,4 +1,4 @@
-#include "include/module.h"
+#include "db/module.h"
 
 #include "boom_base/log.h"
 #include "include/proc.h"
@@ -33,11 +33,12 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 
 #endif
 
+
 void Module::onLibrarySignaturesChanged()
 {
-	CurrentFrontend->readLibraryCatalog();
+	m_currentFrontend->readLibraryCatalog();
 
-	for (Function *pProc : FunctionList) {
+	for (Function *pProc : m_functionList) {
 		if (pProc->isLib()) {
 			pProc->setSignature(getLibSignature(pProc->getName()));
 
@@ -53,22 +54,22 @@ void Module::onLibrarySignaturesChanged()
 
 Module::Module()
 {
-	strm.setDevice(&out);
+	m_strm.setDevice(&m_out);
 }
 
 
 Module::Module(const QString& _name, Prog *_parent, FrontEnd *fe)
-	: CurrentFrontend(fe)
-	, Name(_name)
-	, Parent(_parent)
+	: m_currentFrontend(fe)
+	, m_name(_name)
+	, m_parent(_parent)
 {
-	strm.setDevice(&out);
+	m_strm.setDevice(&m_out);
 }
 
 
 Module::~Module()
 {
-	for (Function *proc : FunctionList) {
+	for (Function *proc : m_functionList) {
 		delete proc;
 	}
 }
@@ -76,63 +77,63 @@ Module::~Module()
 
 size_t Module::getNumChildren()
 {
-	return Children.size();
+	return m_children.size();
 }
 
 
 Module *Module::getChild(size_t n)
 {
-	return Children[n];
+	return m_children[n];
 }
 
 
 void Module::addChild(Module *n)
 {
-	if (n->Upstream) {
-		n->Upstream->removeChild(n);
+	if (n->m_upstream) {
+		n->m_upstream->removeChild(n);
 	}
 
-	Children.push_back(n);
-	n->Upstream = this;
+	m_children.push_back(n);
+	n->m_upstream = this;
 }
 
 
 void Module::removeChild(Module *n)
 {
-	auto it = Children.begin();
+	auto it = m_children.begin();
 
-	for ( ; it != Children.end(); it++) {
+	for ( ; it != m_children.end(); it++) {
 		if (*it == n) {
 			break;
 		}
 	}
 
-	assert(it != Children.end());
-	Children.erase(it);
+	assert(it != m_children.end());
+	m_children.erase(it);
 }
 
 
-Module *Module::getUpstream()
+Module *Module::getUpstream() const
 {
-	return Upstream;
+	return m_upstream;
 }
 
 
-bool Module::hasChildren()
+bool Module::hasChildren() const
 {
-	return Children.size() > 0;
+	return !m_children.empty();
 }
 
 
 void Module::openStream(const char *ext)
 {
-	if (out.isOpen()) {
+	if (m_out.isOpen()) {
 		return;
 	}
 
-	out.setFileName(getOutPath(ext));
-	out.open(QFile::WriteOnly | QFile::Text);
-	stream_ext = ext;
+	m_out.setFileName(getOutPath(ext));
+	m_out.open(QFile::WriteOnly | QFile::Text);
+	m_stream_ext = ext;
 }
 
 
@@ -140,7 +141,7 @@ void Module::openStreams(const char *ext)
 {
 	openStream(ext);
 
-	for (Module *child : Children) {
+	for (Module *child : m_children) {
 		child->openStreams(ext);
 	}
 }
@@ -148,12 +149,12 @@ void Module::openStreams(const char *ext)
 
 void Module::closeStreams()
 {
-	if (out.isOpen()) {
-		strm.flush();
-		out.close();
+	if (m_out.isOpen()) {
+		m_strm.flush();
+		m_out.close();
 	}
 
-	for (Module *child : Children) {
+	for (Module *child : m_children) {
 		child->closeStreams();
 	}
 }
@@ -163,8 +164,8 @@ QString Module::makeDirs()
 {
 	QString path;
 
-	if (Upstream) {
-		path = Upstream->makeDirs();
+	if (m_upstream) {
+		path = m_upstream->makeDirs();
 	}
 	else {
 		path = Boomerang::get()->getOutputPath();
@@ -172,9 +173,9 @@ QString Module::makeDirs()
 
 	QDir dr(path);
 
-	if ((getNumChildren() > 0) || (Upstream == nullptr)) {
-		dr.mkpath(Name);
-		dr.cd(Name);
+	if ((getNumChildren() > 0) || (m_upstream == nullptr)) {
+		dr.mkpath(m_name);
+		dr.cd(m_name);
 	}
 
 	return dr.absolutePath();
@@ -186,17 +187,17 @@ QString Module::getOutPath(const char *ext)
 	QString basedir = makeDirs();
 	QDir    dr(basedir);
 
-	return dr.absoluteFilePath(Name + "." + ext);
+	return dr.absoluteFilePath(m_name + "." + ext);
 }
 
 
 Module *Module::find(const QString& nam)
 {
-	if (Name == nam) {
+	if (m_name == nam) {
 		return this;
 	}
 
-	for (Module *child : Children) {
+	for (Module *child : m_children) {
 		Module *c = child->find(nam);
 
 		if (c) {
@@ -208,49 +209,35 @@ Module *Module::find(const QString& nam)
 }
 
 
-/**
- * Prints a tree graph.
- */
-void Module::printTree(QTextStream& ostr)
+void Module::printTree(QTextStream& ostr) const
 {
-	ostr << "\t\t" << Name << "\n";
+	ostr << "\t\t" << m_name << "\n";
 
-	for (Module *elem : Children) {
+	for (Module *elem : m_children) {
 		elem->printTree(ostr);
 	}
 }
 
 
-/// Record the \a fnc location in the ADDRESS->Function map
-/// If \a fnc is nullptr - remove given function from the map.
 void Module::setLocationMap(ADDRESS loc, Function *fnc)
 {
 	if (fnc == nullptr) {
-		size_t count = LabelsToProcs.erase(loc);
+		size_t count = m_labelsToProcs.erase(loc);
 		assert(count == 1);
 	}
 	else {
-		LabelsToProcs[loc] = fnc;
+		m_labelsToProcs[loc] = fnc;
 	}
 }
 
 
 void Module::eraseFromParent()
 {
-	Parent->getModuleList().remove(this);
+	m_parent->getModuleList().remove(this);
 	delete this;
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Creates a new Function object, adds it to the list of procs in this Module, and adds the address to
- * the list
- * \param name - Name for the proc
- * \param uNative - Native address of the entry point of the proc
- * \param bLib - If true, this will be a libProc; else a UserProc
- * \returns        A pointer to the new Function object
- ******************************************************************************/
 Function *Module::getOrInsertFunction(const QString& name, ADDRESS uNative, bool bLib)
 {
 	Function *pProc;
@@ -263,11 +250,11 @@ Function *Module::getOrInsertFunction(const QString& name, ADDRESS uNative, bool
 	}
 
 	if (NO_ADDRESS != uNative) {
-		assert(LabelsToProcs.find(uNative) == LabelsToProcs.end());
-		LabelsToProcs[uNative] = pProc;
+		assert(m_labelsToProcs.find(uNative) == m_labelsToProcs.end());
+		m_labelsToProcs[uNative] = pProc;
 	}
 
-	FunctionList.push_back(pProc); // Append this to list of procs
+	m_functionList.push_back(pProc); // Append this to list of procs
 	// alert the watchers of a new proc
 	emit newFunction(pProc);
 	Boomerang::get()->alertNew(pProc);
@@ -325,9 +312,9 @@ Function *Module::getOrInsertFunction(const QString& name, ADDRESS uNative, bool
 }
 
 
-Function *Module::getFunction(const QString& name)
+Function *Module::getFunction(const QString& name) const
 {
-	for (Function *f : FunctionList) {
+	for (Function *f : m_functionList) {
 		if (f->getName() == name) {
 			return f;
 		}
@@ -337,11 +324,11 @@ Function *Module::getFunction(const QString& name)
 }
 
 
-Function *Module::getFunction(ADDRESS loc)
+Function *Module::getFunction(ADDRESS loc) const
 {
-	auto iter = LabelsToProcs.find(loc);
+	auto iter = m_labelsToProcs.find(loc);
 
-	if (iter == LabelsToProcs.end()) {
+	if (iter == m_labelsToProcs.end()) {
 		return nullptr;
 	}
 
@@ -349,8 +336,7 @@ Function *Module::getFunction(ADDRESS loc)
 }
 
 
-/// Get a library signature for a given name (used when creating a new library proc).
 std::shared_ptr<Signature> Module::getLibSignature(const QString& name)
 {
-	return CurrentFrontend->getLibSignature(name);
+	return m_currentFrontend->getLibSignature(name);
 }

@@ -14,7 +14,6 @@ set(INCLUDES
 	../include/TargetQueue.h
 	../include/types.h
 	../include/xmlprogparser.h
-	../include/module.h
 	../include/decoder.h
 	../include/frontend.h
 	../include/managed.h
@@ -48,6 +47,7 @@ set(SRC
     managed.cpp
     proc.cpp
     prog.cpp
+    module.h
     module.cpp
     project.cpp
     register.cpp

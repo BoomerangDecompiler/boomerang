@@ -8,7 +8,7 @@
  ******************************************************************************/
 #include "include/xmlprogparser.h"
 #include "include/type.h"
-#include "include/module.h"
+#include "db/module.h"
 #include "include/prog.h"
 #include "include/proc.h"
 #include "include/rtl.h"
@@ -2804,7 +2804,7 @@ void XMLProgParser::parseChildren(Module *c)
 {
 	QString path = c->makeDirs();
 
-	for (auto& elem : c->Children) {
+	for (auto& elem : c->m_children) {
 		QString d = path + "/" + elem->getName() + ".xml";
 		parseFile(d);
 		parseChildren(elem);
@@ -2832,7 +2832,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Module *c)
 {
 	out.writeStartElement("module");
 	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).m_value));
-	out.writeAttribute("name", c->Name);
+	out.writeAttribute("name", c->m_name);
 
 	for (auto p : *c) {
 		QXmlStreamWriter wrt(c->getStream().device());
@@ -2843,7 +2843,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Module *c)
 		wrt.writeEndElement();
 	}
 
-	for (auto& elem : c->Children) {
+	for (auto& elem : c->m_children) {
 		persistToXML(out, elem);
 	}
 	out.writeEndElement();

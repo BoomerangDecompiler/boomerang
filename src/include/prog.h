@@ -20,7 +20,7 @@
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "include/type.h"
-#include "include/module.h"
+#include "db/module.h"
 #include "include/util.h"
 
 // TODO: refactor Prog Global handling into separate class
@@ -36,6 +36,7 @@ class XMLProgParser;
 struct BinarySymbol;
 
 class HLLCode;
+
 
 class Global : public Printable
 {

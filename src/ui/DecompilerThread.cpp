@@ -7,7 +7,7 @@
 #include "include/frontend.h"
 #include "include/proc.h"
 #include "include/signature.h"
-#include "include/module.h"
+#include "db/module.h"
 
 #include <QtWidgets>
 #include <QtCore>

@@ -669,7 +669,9 @@ private:
 
 		/// Don't store string: function could be renamed
 		Function *pp;      ///< Pointer to function
-	} u;
+	}
+
+	u;
 
 	QString m_string;
 	int m_conscript;   ///< like a subscript for constants
