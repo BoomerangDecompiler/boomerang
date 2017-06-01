@@ -53,7 +53,7 @@ else ()
 	
 	# Enable additional warnings for GCC6+
 	if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-		set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_PTIONS} \
+		set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
 			-Wnull-dereference -Wduplicated-cond")
 			#-Walloc-zero -Walloca -Wduplicated-branches 
 	endif ()
