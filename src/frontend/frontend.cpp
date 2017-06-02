@@ -21,7 +21,7 @@
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/register.h"
+#include "db/register.h"
 #include "include/rtl.h"
 #include "boom_base/BinaryFile.h"
 #include "include/decoder.h"

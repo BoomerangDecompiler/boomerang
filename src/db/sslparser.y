@@ -343,20 +343,20 @@ a_reglist:
                                 // Now for detailed Reg information
                                 if (Dict.DetRegMap.find($6) != Dict.DetRegMap.end())
                                         yyerror("Index used for more than one register\n");
-                                Dict.DetRegMap[$6].s_name($1);
-                                Dict.DetRegMap[$6].s_size($3);
-                                Dict.DetRegMap[$6].s_address(NULL);
+                                Dict.DetRegMap[$6].setName($1);
+                                Dict.DetRegMap[$6].setSize($3);
+                                Dict.DetRegMap[$6]setAddress(NULL);
                                 // check range is legitimate for size. 8,10
                                 if ((Dict.RegMap.find($8) == Dict.RegMap.end()) || (Dict.RegMap.find($10) == Dict.RegMap.end()))
                                         yyerror("Undefined range\n");
                                 else {
-                                        int bitsize = Dict.DetRegMap[Dict.RegMap[$10]].g_size();
+                                        int bitsize = Dict.DetRegMap[Dict.RegMap[$10]].getSize();
                                         for (int i = Dict.RegMap[$8]; i != Dict.RegMap[$10]; i++) {
                                                 if (Dict.DetRegMap.find(i) == Dict.DetRegMap.end()) {
                                                         yyerror("Not all registers in range defined\n");
                                                         break;
                                                 }
-                                                bitsize += Dict.DetRegMap[i].g_size();
+                                                bitsize += Dict.DetRegMap[i].getSize();
                                                 if (bitsize > $3) {
                                                         yyerror("Range exceeds size of register\n");
                                                         break;
@@ -366,9 +366,9 @@ a_reglist:
                                         yyerror("Register size is exceeds registers in range\n");
                                         // copy information
                                 }
-                                Dict.DetRegMap[$6].s_mappedIndex(Dict.RegMap[$8]);
-                                Dict.DetRegMap[$6].s_mappedOffset(0);
-                                Dict.DetRegMap[$6].s_float(bFloat);
+                                Dict.DetRegMap[$6].setMappedIndex(Dict.RegMap[$8]);
+                                Dict.DetRegMap[$6].setMappedOffset(0);
+                                Dict.DetRegMap[$6].setFloat(bFloat);
                         }
                 |	REG_ID '[' NUM ']' INDEX NUM SHARES REG_ID AT '[' NUM TO NUM ']' {
                                 if (Dict.RegMap.find($1) != Dict.RegMap.end())
@@ -377,20 +377,20 @@ a_reglist:
                                 // Now for detailed Reg information
                                 if (Dict.DetRegMap.find($6) != Dict.DetRegMap.end())
                                         yyerror("Index used for more than one register\n");
-                                Dict.DetRegMap[$6].s_name($1);
-                                Dict.DetRegMap[$6].s_size($3);
-                                Dict.DetRegMap[$6].s_address(NULL);
+                                Dict.DetRegMap[$6].setName($1);
+                                Dict.DetRegMap[$6].setSize($3);
+                                Dict.DetRegMap[$6]setAddress(NULL);
                                 // Do checks
                                 if ($3 != ($13 - $11) + 1)
                                         yyerror("Size does not equal range\n");
                                         if (Dict.RegMap.find($8) != Dict.RegMap.end()) {
-                                                if ($13 >= Dict.DetRegMap[Dict.RegMap[$8]].g_size())
+                                                if ($13 >= Dict.DetRegMap[Dict.RegMap[$8]].getSize())
                                                         yyerror("Range extends over target register\n");
                                         } else
                                                 yyerror("Shared index not yet defined\n");
-                                Dict.DetRegMap[$6].s_mappedIndex(Dict.RegMap[$8]);
-                                Dict.DetRegMap[$6].s_mappedOffset($11);
-                                Dict.DetRegMap[$6].s_float(bFloat);
+                                Dict.DetRegMap[$6].setMappedIndex(Dict.RegMap[$8]);
+                                Dict.DetRegMap[$6].setMappedOffset($11);
+                                Dict.DetRegMap[$6].setFloat(bFloat);
                         }
                 |	'[' reg_table ']' '[' NUM ']' INDEX NUM TO NUM {
                                 if ((int)$2->size() != ($10 - $8 + 1)) {

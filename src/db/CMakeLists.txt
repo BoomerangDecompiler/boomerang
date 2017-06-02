@@ -16,7 +16,6 @@ set(INCLUDES
 	../include/frontend.h
 	../include/managed.h
 	../include/osfcn.h
-	../include/register.h
 	../include/signature.h
 	../include/transformer.h
 	../include/util.h
@@ -50,6 +49,7 @@ set(SRC
     project.h
     project.cpp
     IProject.h
+    register.h
     register.cpp
     rtl.cpp
     signature.cpp

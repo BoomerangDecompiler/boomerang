@@ -17,7 +17,7 @@
 #include "njmcDecoder.h"
 #include "include/rtl.h"
 #include "db/exp.h"
-#include "include/register.h"
+#include "db/register.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"
@@ -288,7 +288,7 @@ int NJMCDecoder::getRegSize(int idx) const
 		return 32;
 	}
 
-	return iter->second.g_size();
+	return iter->second.getSize();
 }
 
 

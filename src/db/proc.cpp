@@ -28,7 +28,7 @@
 #include "include/type.h"
 #include "db/module.h"
 #include "include/statement.h"
-#include "include/register.h"
+#include "db/register.h"
 #include "include/rtl.h"
 #include "db/prog.h"
 #include "include/hllcode.h"

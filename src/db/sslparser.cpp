@@ -807,21 +807,21 @@ SSLParser::
         // Now for detailed Reg information
         if (Dict.DetRegMap.find(yyvsp[-4].num) != Dict.DetRegMap.end())
             yyerror("Index used for more than one register\n");
-        Dict.DetRegMap[yyvsp[-4].num].s_name(yyvsp[-9].str);
-        Dict.DetRegMap[yyvsp[-4].num].s_size(yyvsp[-7].num);
-        Dict.DetRegMap[yyvsp[-4].num].s_address(nullptr);
+        Dict.DetRegMap[yyvsp[-4].num].setName(yyvsp[-9].str);
+        Dict.DetRegMap[yyvsp[-4].num].setSize(yyvsp[-7].num);
+        Dict.DetRegMap[yyvsp[-4].num].setAddress(nullptr);
         // check range is legitimate for size. 8,10
         if ((Dict.RegMap.find(yyvsp[-2].str) == Dict.RegMap.end()) ||
             (Dict.RegMap.find(yyvsp[0].str) == Dict.RegMap.end()))
             yyerror("Undefined range\n");
         else {
-            int bitsize = Dict.DetRegMap[Dict.RegMap[yyvsp[0].str]].g_size();
+            int bitsize = Dict.DetRegMap[Dict.RegMap[yyvsp[0].str]].getSize();
             for (int i = Dict.RegMap[yyvsp[-2].str]; i != Dict.RegMap[yyvsp[0].str]; i++) {
                 if (Dict.DetRegMap.find(i) == Dict.DetRegMap.end()) {
                     yyerror("Not all registers in range defined\n");
                     break;
                 }
-                bitsize += Dict.DetRegMap[i].g_size();
+                bitsize += Dict.DetRegMap[i].getSize();
                 if (bitsize > yyvsp[-7].num) {
                     yyerror("Range exceeds size of register\n");
                     break;
@@ -831,9 +831,9 @@ SSLParser::
                 yyerror("Register size is exceeds registers in range\n");
             // copy information
         }
-        Dict.DetRegMap[yyvsp[-4].num].s_mappedIndex(Dict.RegMap[yyvsp[-2].str]);
-        Dict.DetRegMap[yyvsp[-4].num].s_mappedOffset(0);
-        Dict.DetRegMap[yyvsp[-4].num].s_float(bFloat);
+        Dict.DetRegMap[yyvsp[-4].num].setMappedIndex(Dict.RegMap[yyvsp[-2].str]);
+        Dict.DetRegMap[yyvsp[-4].num].setMappedOffset(0);
+        Dict.DetRegMap[yyvsp[-4].num].setFloat(bFloat);
         ;
         break;
     }
@@ -844,20 +844,20 @@ SSLParser::
         // Now for detailed Reg information
         if (Dict.DetRegMap.find(yyvsp[-8].num) != Dict.DetRegMap.end())
             yyerror("Index used for more than one register\n");
-        Dict.DetRegMap[yyvsp[-8].num].s_name(yyvsp[-13].str);
-        Dict.DetRegMap[yyvsp[-8].num].s_size(yyvsp[-11].num);
-        Dict.DetRegMap[yyvsp[-8].num].s_address(nullptr);
+        Dict.DetRegMap[yyvsp[-8].num].setName(yyvsp[-13].str);
+        Dict.DetRegMap[yyvsp[-8].num].setSize(yyvsp[-11].num);
+        Dict.DetRegMap[yyvsp[-8].num].setAddress(nullptr);
         // Do checks
         if (yyvsp[-11].num != (yyvsp[-1].num - yyvsp[-3].num) + 1)
             yyerror("Size does not equal range\n");
         if (Dict.RegMap.find(yyvsp[-6].str) != Dict.RegMap.end()) {
-            if (yyvsp[-1].num >= Dict.DetRegMap[Dict.RegMap[yyvsp[-6].str]].g_size())
+            if (yyvsp[-1].num >= Dict.DetRegMap[Dict.RegMap[yyvsp[-6].str]].getSize())
                 yyerror("Range extends over target register\n");
         } else
             yyerror("Shared index not yet defined\n");
-        Dict.DetRegMap[yyvsp[-8].num].s_mappedIndex(Dict.RegMap[yyvsp[-6].str]);
-        Dict.DetRegMap[yyvsp[-8].num].s_mappedOffset(yyvsp[-3].num);
-        Dict.DetRegMap[yyvsp[-8].num].s_float(bFloat);
+        Dict.DetRegMap[yyvsp[-8].num].setMappedIndex(Dict.RegMap[yyvsp[-6].str]);
+        Dict.DetRegMap[yyvsp[-8].num].setMappedOffset(yyvsp[-3].num);
+        Dict.DetRegMap[yyvsp[-8].num].setFloat(bFloat);
         ;
         break;
     }

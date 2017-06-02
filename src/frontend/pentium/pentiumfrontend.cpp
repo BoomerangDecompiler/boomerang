@@ -23,7 +23,7 @@
 #include "include/rtl.h"
 #include "include/decoder.h" // prototype for decodeInstruction()
 #include "pentiumdecoder.h"
-#include "include/register.h"
+#include "db/register.h"
 #include "include/type.h"
 #include "db/cfg.h"
 #include "db/exp.h"

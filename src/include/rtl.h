@@ -22,17 +22,17 @@
 
 #pragma once
 
-#include "include/register.h"           // for Register
-#include "include/type.h"               // for Type
-#include "include/types.h"              // for ADDRESS
+#include "db/register.h"           // for Register
+#include "include/type.h"          // for Type
+#include "include/types.h"         // for ADDRESS
 
-#include <functional>                   // for less
-#include <list>                         // for list
-#include <map>                          // for map
-#include <set>                          // for set
-#include <string>                       // for string
-#include <utility>                      // for pair
-#include <vector>                       // for vector
+#include <functional>              // for less
+#include <list>                    // for list
+#include <map>                     // for map
+#include <set>                     // for set
+#include <string>                  // for string
+#include <utility>                 // for pair
+#include <vector>                  // for vector
 #include <QMap>
 #include <memory>
 

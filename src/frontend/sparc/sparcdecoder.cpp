@@ -270,43 +270,43 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 		const char        *MATCH_name;
 		static const char *MATCH_name_cond_0[] =
 		{
-			"BPN",   "BPE",   "BPLE",   "BPL",     "BPLEU",     "BPCS",      "BPNEG",     "BPVS",
-			"BPA,a", "BPNE",  "BPG",    "BPGE",    "BPGU",      "BPCC",      "BPPOS",     "BPVC",
+			"BPN",   "BPE",   "BPLE",   "BPL",     "BPLEU",     "BPCS",      "BPNEG",      "BPVS",
+			"BPA,a", "BPNE",  "BPG",    "BPGE",    "BPGU",      "BPCC",      "BPPOS",      "BPVC",
 		};
 		static const char *MATCH_name_cond_1[] =
 		{
-			"BPN,a", "BPE,a",     "BPLE,a",     "BPL,a",       "BPLEU,a",       "BPCS,a",        "BPNEG,a",     "BPVS,a",
-			"BA",    "BPNE,a",    "BPG,a",      "BPGE,a",      "BPGU,a",        "BPCC,a",        "BPPOS,a",     "BPVC,a",
+			"BPN,a", "BPE,a",     "BPLE,a",     "BPL,a",       "BPLEU,a",       "BPCS,a",        "BPNEG,a",        "BPVS,a",
+			"BA",    "BPNE,a",    "BPG,a",      "BPGE,a",      "BPGU,a",        "BPCC,a",        "BPPOS,a",        "BPVC,a",
 		};
 		static const char *MATCH_name_cond_2[] =
 		{
-			"BN",   "BE",   "BLE",   "BL",     "BLEU",     "BCS",      "BNEG",     "BVS",
-			"BA,a", "BNE",  "BG",    "BGE",    "BGU",      "BCC",      "BPOS",     "BVC",
+			"BN",   "BE",   "BLE",   "BL",     "BLEU",     "BCS",      "BNEG",      "BVS",
+			"BA,a", "BNE",  "BG",    "BGE",    "BGU",      "BCC",      "BPOS",      "BVC",
 		};
 		static const char *MATCH_name_cond_3[] =
 		{
-			"BN,a", "BE,a",   "BLE,a",   "BL,a",     "BLEU,a",     "BCS,a",      "BNEG,a",     "BVS,a",
-			"FBA",  "BNE,a",  "BG,a",    "BGE,a",    "BGU,a",      "BCC,a",      "BPOS,a",     "BVC,a",
+			"BN,a", "BE,a",   "BLE,a",   "BL,a",     "BLEU,a",     "BCS,a",      "BNEG,a",      "BVS,a",
+			"FBA",  "BNE,a",  "BG,a",    "BGE,a",    "BGU,a",      "BCC,a",      "BPOS,a",      "BVC,a",
 		};
 		static const char *MATCH_name_cond_5[] =
 		{
-			"FBN",   "FBNE",   "FBLG",    "FBUL",    "FBL",      "FBUG",      "FBG",      "FBU",
-			"FBA,a", "FBE",    "FBUE",    "FBGE",    "FBUGE",    "FBLE",      "FBULE",    "FBO",
+			"FBN",   "FBNE",   "FBLG",    "FBUL",    "FBL",      "FBUG",      "FBG",        "FBU",
+			"FBA,a", "FBE",    "FBUE",    "FBGE",    "FBUGE",    "FBLE",      "FBULE",      "FBO",
 		};
 		static const char *MATCH_name_cond_6[] =
 		{
-			"FBN,a", "FBNE,a",  "FBLG,a",   "FBUL,a",   "FBL,a",     "FBUG,a",     "FBG,a",      "FBU,a",
-			"CBA",   "FBE,a",   "FBUE,a",   "FBGE,a",   "FBUGE,a",   "FBLE,a",     "FBULE,a",    "FBO,a",
+			"FBN,a", "FBNE,a",  "FBLG,a",   "FBUL,a",   "FBL,a",     "FBUG,a",     "FBG,a",       "FBU,a",
+			"CBA",   "FBE,a",   "FBUE,a",   "FBGE,a",   "FBUGE,a",   "FBLE,a",     "FBULE,a",     "FBO,a",
 		};
 		static const char *MATCH_name_cond_7[] =
 		{
-			"CBN",   "CB123",   "CB12",     "CB13",     "CB1",       "CB23",       "CB2",       "CB3",
-			"CBA,a", "CB0",     "CB03",     "CB02",     "CB023",     "CB01",       "CB013",     "CB012",
+			"CBN",   "CB123",   "CB12",     "CB13",     "CB1",       "CB23",       "CB2",         "CB3",
+			"CBA,a", "CB0",     "CB03",     "CB02",     "CB023",     "CB01",       "CB013",       "CB012",
 		};
 		static const char *MATCH_name_cond_8[] =
 		{
-			"CBN,a", "CB123,a",  "CB12,a",    "CB13,a",    "CB1,a",      "CB23,a",      "CB2,a",       "CB3,a",
-			"TA",    "CB0,a",    "CB03,a",    "CB02,a",    "CB023,a",    "CB01,a",      "CB013,a",     "CB012,a",
+			"CBN,a", "CB123,a",  "CB12,a",    "CB13,a",    "CB1,a",      "CB23,a",      "CB2,a",        "CB3,a",
+			"TA",    "CB0,a",    "CB03,a",    "CB02,a",    "CB023,a",    "CB01,a",      "CB013,a",      "CB012,a",
 		};
 		static const char *MATCH_name_op3_46[] =
 		{
@@ -360,8 +360,8 @@ DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 		};
 		static const char *MATCH_name_cond_53[] =
 		{
-			"TN",    "TE",    "TLE",    "TL",      "TLEU",      "TCS",       "TNEG",     "TVS",
-			nullptr, "TNE",   "TG",     "TGE",     "TGU",       "TCC",       "TPOS",     "TVC",
+			"TN",    "TE",    "TLE",    "TL",      "TLEU",      "TCS",       "TNEG",       "TVS",
+			nullptr, "TNE",   "TG",     "TGE",     "TGU",       "TCC",       "TPOS",       "TVC",
 		};
 		static const char *MATCH_name_i_66[] =
 		{

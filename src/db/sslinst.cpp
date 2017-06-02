@@ -24,7 +24,7 @@
 #include "include/types.h"
 #include "include/statement.h"
 #include "db/exp.h"
-#include "include/register.h"
+#include "db/register.h"
 #include "include/type.h"
 #include "include/rtl.h"
 #include "db/cfg.h"
@@ -217,20 +217,20 @@ void RTLInstDict::addRegister(const QString& name, int id, int size, bool flt)
 	RegMap[name] = id;
 
 	if (id == -1) {
-		SpecialRegMap[name].s_name(name);
-		SpecialRegMap[name].s_size(size);
-		SpecialRegMap[name].s_float(flt);
-		SpecialRegMap[name].s_address(nullptr);
-		SpecialRegMap[name].s_mappedIndex(-1);
-		SpecialRegMap[name].s_mappedOffset(-1);
+		SpecialRegMap[name].setName(name);
+		SpecialRegMap[name].setSize(size);
+		SpecialRegMap[name].setFloat(flt);
+		SpecialRegMap[name].setAddress(nullptr);
+		SpecialRegMap[name].setMappedIndex(-1);
+		SpecialRegMap[name].setMappedOffset(-1);
 	}
 	else {
-		DetRegMap[id].s_name(name);
-		DetRegMap[id].s_size(size);
-		DetRegMap[id].s_float(flt);
-		DetRegMap[id].s_address(nullptr);
-		DetRegMap[id].s_mappedIndex(-1);
-		DetRegMap[id].s_mappedOffset(-1);
+		DetRegMap[id].setName(name);
+		DetRegMap[id].setSize(size);
+		DetRegMap[id].setFloat(flt);
+		DetRegMap[id].setAddress(nullptr);
+		DetRegMap[id].setMappedIndex(-1);
+		DetRegMap[id].setMappedOffset(-1);
 	}
 }
 

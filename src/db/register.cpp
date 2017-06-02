@@ -15,7 +15,7 @@
  *
  * Holds detailed information about a single register.
  ******************************************************************************/
-#include "include/register.h"
+#include "db/register.h"
 
 #include "include/type.h"
 
@@ -25,36 +25,27 @@
 
 
 Register::Register()
-	: address(nullptr)
-	, mappedIndex(-1)
-	, mappedOffset(-1)
-	, flt(false)
+	: m_address(nullptr)
+	, m_mappedIndex(-1)
+	, m_mappedOffset(-1)
+	, m_fltRegister(false)
 {
 }
 
 
-/***************************************************************************/ /**
- * \brief      Copy constructor.
- * \param      r - Reference to another Register object to construct from
- ******************************************************************************/
 Register::Register(const Register& r)
-	: size(r.size)
-	, address(r.address)
-	, mappedIndex(r.mappedIndex)
-	, mappedOffset(r.mappedOffset)
-	, flt(r.flt)
+	: m_size(r.m_size)
+	, m_address(r.m_address)
+	, m_mappedIndex(r.m_mappedIndex)
+	, m_mappedOffset(r.m_mappedOffset)
+	, m_fltRegister(r.m_fltRegister)
 {
-	if (!r.name.isEmpty()) {
-		name = r.name;
+	if (!r.m_name.isEmpty()) {
+		m_name = r.m_name;
 	}
 }
 
 
-/***************************************************************************/ /**
- * \brief      Copy operator
- * \param      r2 - Reference to another Register object (to be copied)
- * \returns    This object
- ******************************************************************************/
 Register& Register::operator=(const Register& r2)
 {
 	// copy operator
@@ -62,75 +53,52 @@ Register& Register::operator=(const Register& r2)
 		return *this;
 	}
 
-	name    = r2.name;
-	size    = r2.size;
-	flt     = r2.flt;
-	address = r2.address;
+	m_name        = r2.m_name;
+	m_size        = r2.m_size;
+	m_fltRegister = r2.m_fltRegister;
+	m_address     = r2.m_address;
 
-	mappedIndex  = r2.mappedIndex;
-	mappedOffset = r2.mappedOffset;
+	m_mappedIndex  = r2.m_mappedIndex;
+	m_mappedOffset = r2.m_mappedOffset;
 
 	return(*this);
 }
 
 
-/***************************************************************************/ /**
- * \brief   Equality operator
- * \param   r2 - Reference to another Register object
- * \returns True if the same
- ******************************************************************************/
 bool Register::operator==(const Register& r2) const
 {
 	// compare on name
-	assert(!name.isEmpty() && !r2.name.isEmpty());
-	return name == r2.name;
+	assert(!m_name.isEmpty() && !r2.m_name.isEmpty());
+	return m_name == r2.m_name;
 }
 
 
-/***************************************************************************/ /**
- * \brief   Comparison operator (to establish an ordering)
- * \param   r2 - Reference to another Register object
- * \returns true if this name is less than the given Register's name
- ******************************************************************************/
 bool Register::operator<(const Register& r2) const
 {
-	assert(!name.isEmpty() && !r2.name.isEmpty());
+	assert(!m_name.isEmpty() && !r2.m_name.isEmpty());
 	// compare on name
-	return(name < r2.name);
+	return(m_name < r2.m_name);
 }
 
 
-/***************************************************************************/ /**
- * \brief      Set the name for this register
- * \param      s - name to set it to
- *
- ******************************************************************************/
-void Register::s_name(const QString& s)
+void Register::setName(const QString& s)
 {
 	assert(!s.isEmpty());
-	name = s;
+	m_name = s;
 }
 
 
-/***************************************************************************/ /**
- * \brief    Get the name for this register
- * \returns  The name as a character string
- ******************************************************************************/
-const QString& Register::g_name() const
+const QString& Register::getName() const
 {
-	return name;
+	return m_name;
 }
 
 
-/***************************************************************************/ /**
- * \brief   Get the type for this register
- * \returns The type as a pointer to a Type object
- ******************************************************************************/
-SharedType Register::g_type() const
+SharedType Register::getType() const
 {
-	if (flt) {
-		return FloatType::get(size);
+	if (m_fltRegister) {
+		return FloatType::get(m_size);
 	}
 
-	return IntegerType::get(size);
+	return IntegerType::get(m_size);
 }

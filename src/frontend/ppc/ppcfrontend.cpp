@@ -24,7 +24,7 @@
 #include "ppcfrontend.h"
 
 #include "db/exp.h"
-#include "include/register.h"
+#include "db/register.h"
 #include "include/rtl.h"
 #include "db/cfg.h"
 #include "db/proc.h"

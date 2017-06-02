@@ -29,7 +29,7 @@
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "include/util.h" // For lockFileWrite etc
-#include "include/register.h"
+#include "db/register.h"
 #include "include/rtl.h"
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"

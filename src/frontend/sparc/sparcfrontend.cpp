@@ -34,7 +34,7 @@
 #include "boom_base/log.h"
 #include "db/proc.h"
 #include "db/prog.h"
-#include "include/register.h"
+#include "db/register.h"
 #include "include/rtl.h"
 #include "include/signature.h"
 #include "sparcdecoder.h"
