@@ -38,18 +38,18 @@ public:
 		m_hasDefinedValue.clear();
 	}
 
-	void addDefinedArea(ADDRESS from, ADDRESS to)
+	void                                             addDefinedArea(ADDRESS from, ADDRESS to)
 	{
 		m_hasDefinedValue.insert(boost::icl::interval<ADDRESS>::right_open(from, to));
 	}
 
-	bool isAddressBss(ADDRESS a) const
+	bool                                             isAddressBss(ADDRESS a) const
 	{
 		assert(!m_hasDefinedValue.empty());
 		return m_hasDefinedValue.find(a) == m_hasDefinedValue.end();
 	}
 
-	void setAttributeForRange(const QString& name, const QVariant& val, ADDRESS from, ADDRESS to)
+	void                                             setAttributeForRange(const QString& name, const QVariant& val, ADDRESS from, ADDRESS to)
 	{
 		QVariantMap vmap;
 
@@ -58,7 +58,7 @@ public:
 		m_attributeMap.add(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), map));
 	}
 
-	QVariant attributeInRange(const QString& attrib, ADDRESS from, ADDRESS to) const
+	QVariant                                         attributeInRange(const QString& attrib, ADDRESS from, ADDRESS to) const
 	{
 		auto v = m_attributeMap.equal_range(boost::icl::interval<ADDRESS>::right_open(from, to));
 
@@ -81,7 +81,7 @@ public:
 		return QVariant(vals);
 	}
 
-	QVariantMap getAttributesForRange(ADDRESS from, ADDRESS to)
+	QVariantMap                                      getAttributesForRange(ADDRESS from, ADDRESS to)
 	{
 		QVariantMap res;
 		auto        v = m_attributeMap.equal_range(boost::icl::interval<ADDRESS>::right_open(from, to));
@@ -123,8 +123,8 @@ SectionInfo::SectionInfo(const SectionInfo& other)
 	m_sectionEntrySize = other.m_sectionEntrySize;
 	m_code             = other.m_code;
 	m_data             = other.m_data;
-	m_bss              = other.m_bss;
-	m_readOnly         = other.m_readOnly;
+	m_bss      = other.m_bss;
+	m_readOnly = other.m_readOnly;
 }
 
 

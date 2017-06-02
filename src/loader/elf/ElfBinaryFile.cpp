@@ -331,7 +331,7 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	IBinarySection *pRel = Image->getSectionInfoByName(".rela.text");
 
 	if (pRel) {
-		m_bAddend = true;                                  // Remember its a relA table
+		m_bAddend = true;                                     // Remember its a relA table
 		m_pReloc  = (Elf32_Rel *)pRel->getHostAddr().m_value; // Save pointer to reloc table
 		// SetRelocInfo(pRel);
 	}

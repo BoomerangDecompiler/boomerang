@@ -22,7 +22,7 @@
 #include "boom_base/log.h"
 #include "db/rtl.h" // For debugging code
 #include "include/util.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "include/visitor.h"
 #include "db/dataflow.h"
 #include "boom_base/log.h"
@@ -2667,8 +2667,8 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 		}
 	}
 
-	if (p->isLib() && !p->getSignature()->getPreferedName().isEmpty()) {
-		hll->AddCallStatement(indLevel, p, p->getSignature()->getPreferedName(), arguments, results);
+	if (p->isLib() && !p->getSignature()->getPreferredName().isEmpty()) {
+		hll->AddCallStatement(indLevel, p, p->getSignature()->getPreferredName(), arguments, results);
 	}
 	else {
 		hll->AddCallStatement(indLevel, p, qPrintable(p->getName()), arguments, results);
@@ -3128,7 +3128,7 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
 			}
 
 			setNumArguments(format + n);
-			signature->killEllipsis();     // So we don't do this again
+			signature->setHasEllipsis(false); // So we don't do this again
 			return true;
 		}
 		else {
@@ -3390,7 +3390,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 	}
 
 	setNumArguments(format + n);
-	signature->killEllipsis();     // So we don't do this again
+	signature->setHasEllipsis(false);     // So we don't do this again
 	return true;
 }
 

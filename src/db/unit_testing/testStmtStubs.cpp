@@ -5,7 +5,7 @@
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "boom_base/log.h"
 #include "pentiumfrontend.h"
 

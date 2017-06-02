@@ -107,7 +107,7 @@ void *alloca ();
 #include "include/type.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "include/transformer.h"
 #include "generic.h"
 

@@ -35,7 +35,7 @@
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "include/util.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "boom_base/log.h"
 #include "type/constraint.h"
 #include "include/visitor.h"

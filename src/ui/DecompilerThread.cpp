@@ -6,7 +6,7 @@
 #include "db/prog.h"
 #include "include/frontend.h"
 #include "db/proc.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "db/module.h"
 
 #include <QtWidgets>
@@ -171,7 +171,7 @@ void Decompiler::load()
 
 	for (const IBinarySection *section : *Image) {
 		emit newSection(section->getName(), section->getSourceAddr(),
-                        section->getSourceAddr() + section->getSize());
+						section->getSourceAddr() + section->getSize());
 	}
 
 	emit loadCompleted();

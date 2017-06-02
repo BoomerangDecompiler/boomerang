@@ -49,7 +49,7 @@
 #include "include/type.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/signature.h"
+#include "db/signature.h"
 
 class AnsiCScanner;
 class SymbolMods;
@@ -270,7 +270,7 @@ int __alloca_free_ptr(char *ptr, char *ref) {
 #define __yy_bcopy(FROM, TO, COUNT) memcpy(TO, FROM, COUNT)
 #endif
 
-int AnsiCParser::yyparse(Platform plat, callconv cc) {
+int AnsiCParser::yyparse(Platform plat, CallConv cc) {
     int yystate;
     int yyn;
     short *yyssp;
@@ -615,10 +615,10 @@ int AnsiCParser::yyparse(Platform plat, callconv cc) {
         std::shared_ptr<Signature> sig = Signature::instantiate(plat, cc, nullptr);
         sig->addReturn(yyvsp[-7].type);
         for (auto &elem : *yyvsp[-1].param_list)
-            if (elem->name() != "...")
+            if (elem->getName() != "...")
                 sig->addParameter(elem);
             else {
-                sig->addEllipsis();
+                sig->setHasEllipsis(true);
                 elem = nullptr;
             }
         delete yyvsp[-1].param_list;
@@ -638,10 +638,10 @@ int AnsiCParser::yyparse(Platform plat, callconv cc) {
         auto sig = Signature::instantiate(plat, cc, nullptr);
         sig->addReturn(yyvsp[-8].type);
         for (auto &elem : *yyvsp[-2].param_list)
-            if (elem->name() != "...")
+            if (elem->getName() != "...")
                 sig->addParameter(elem);
             else {
-                sig->addEllipsis();
+                sig->setHasEllipsis(true);
                 elem = nullptr;
             }
         delete yyvsp[-2].param_list;
@@ -653,10 +653,10 @@ int AnsiCParser::yyparse(Platform plat, callconv cc) {
         auto sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam);
         sig->addReturn(yyvsp[-4].type_ident->ty);
         for (auto &elem : *yyvsp[-2].param_list)
-            if (elem->name() != "...")
+            if (elem->getName() != "...")
                 sig->addParameter(elem);
             else {
-                sig->addEllipsis();
+                sig->setHasEllipsis(true);
                 elem = nullptr;
             }
         delete yyvsp[-2].param_list;
@@ -678,10 +678,10 @@ int AnsiCParser::yyparse(Platform plat, callconv cc) {
         break;
     }
     case 35: {
-        yyvsp[-6].sig->setPreferedReturn(yyvsp[-4].type_ident->ty);
-        yyvsp[-6].sig->setPreferedName(yyvsp[-4].type_ident->nam);
+        yyvsp[-6].sig->setPreferredReturn(yyvsp[-4].type_ident->ty);
+        yyvsp[-6].sig->setPreferredName(yyvsp[-4].type_ident->nam);
         for (std::list<int>::iterator it = yyvsp[-2].num_list->begin(); it != yyvsp[-2].num_list->end(); it++)
-            yyvsp[-6].sig->addPreferedParameter(*it - 1);
+            yyvsp[-6].sig->addPreferredParameter(*it - 1);
         delete yyvsp[-2].num_list;
         signatures.push_back(yyvsp[-6].sig);
 
@@ -692,10 +692,10 @@ int AnsiCParser::yyparse(Platform plat, callconv cc) {
         auto sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam);
         sig->addReturn(yyvsp[-3].type_ident->ty);
         for (auto &elem : *yyvsp[-1].param_list)
-            if (elem->name() != "...")
+            if (elem->getName() != "...")
                 sig->addParameter(elem);
             else {
-                sig->addEllipsis();
+                sig->setHasEllipsis(true);
                 elem = nullptr;
             }
         delete yyvsp[-1].param_list;
@@ -707,10 +707,10 @@ int AnsiCParser::yyparse(Platform plat, callconv cc) {
         auto sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->nam);
         sig->addReturn(yyvsp[-3].type_ident->ty);
         for (auto &elem : *yyvsp[-1].param_list)
-            if (elem->name() != "...")
+            if (elem->getName() != "...")
                 sig->addParameter(elem);
             else {
-                sig->addEllipsis();
+                sig->setHasEllipsis(true);
                 elem = nullptr;
             }
         delete yyvsp[-1].param_list;
@@ -725,10 +725,10 @@ int AnsiCParser::yyparse(Platform plat, callconv cc) {
         if (yyvsp[-4].custom_options->sp)
             sig->setSP(yyvsp[-4].custom_options->sp);
         for (std::shared_ptr<Parameter> &it : *yyvsp[-1].param_list)
-            if (it->name() != "...") {
+            if (it->getName() != "...") {
                 sig->addParameter(it);
             } else {
-                sig->addEllipsis();
+                sig->setHasEllipsis(true);
                 it = nullptr;
             }
         delete yyvsp[-1].param_list;

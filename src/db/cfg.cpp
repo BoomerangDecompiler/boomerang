@@ -21,7 +21,7 @@
 
 #include "include/types.h"
 #include "include/statement.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "db/exp.h"
 #include "db/register.h"
 #include "db/basicblock.h"
@@ -2120,7 +2120,7 @@ Instruction *Cfg::findImplicitParamAssign(Parameter *param)
 	}
 
 	if (it == m_implicitMap.end()) {
-		SharedExp eParam = Location::param(param->name());
+		SharedExp eParam = Location::param(param->getName());
 		it = m_implicitMap.find(eParam);
 	}
 

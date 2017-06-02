@@ -17,7 +17,7 @@
 
 #include "include/type.h"
 #include "boom_base/log.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "db/exp.h"
 #include "db/prog.h"
 #include "include/visitor.h"
@@ -2037,7 +2037,7 @@ bool Signature::dfaTypeAnalysis(Cfg *cfg)
 {
 	bool ch = false;
 
-	for (std::shared_ptr<Parameter>& it : params) {
+	for (std::shared_ptr<Parameter>& it : m_params) {
 		// Parameters should be defined in an implicit assignment
 		Instruction *def = cfg->findImplicitParamAssign(it.get());
 
@@ -2049,7 +2049,7 @@ bool Signature::dfaTypeAnalysis(Cfg *cfg)
 				ch = true;
 
 				if (DEBUG_TA) {
-					LOG << "  sig caused change: " << it->getType()->getCtype() << " " << it->name() << "\n";
+					LOG << "  sig caused change: " << it->getType()->getCtype() << " " << it->getName() << "\n";
 				}
 			}
 		}

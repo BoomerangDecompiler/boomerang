@@ -388,7 +388,7 @@ bool HpSomBinaryFile::loadFromMemory(QByteArray& imgdata)
 	// The "end of data" where r27 points is not necessarily the same as
 	// the end of the $DATA$ space. So we have to call getSubSpaceInfo
 	std::pair<ADDRESS, int> pr = getSubspaceInfo("$GLOBAL$");
-    
+
 	//  ADDRESS endData = pr.first + pr.second;
 	pr = getSubspaceInfo("$PLT$");
 	//  int minPLT = pr.first - endData;

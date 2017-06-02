@@ -14,7 +14,7 @@
 #include "db/rtl.h"
 #include "include/statement.h"
 #include "sigenum.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "db/basicblock.h"
@@ -848,20 +848,20 @@ void XMLProgParser::start_signature(const QXmlStreamAttributes& attr)
 	else{
 		sig = new Signature(qPrintable(name.toString()));
 	}
-	sig->params.clear();
+	sig->m_params.clear();
 	// sig->implicitParams.clear();
-	sig->returns.clear();
+	sig->m_returns.clear();
 	stack.front()->signature = sig;
 	addId(attr, sig);
 	QStringRef n = attr.value(QLatin1Literal("ellipsis"));
 
 	if (!n.isEmpty()) {
-		sig->ellipsis = n.toInt() > 0;
+		sig->m_ellipsis = n.toInt() > 0;
 	}
 	n = attr.value(QLatin1Literal("preferedName"));
 
 	if (!n.isEmpty()) {
-		sig->preferedName = n.toString();
+		sig->m_preferredName = n.toString();
 	}
 }
 
@@ -886,11 +886,11 @@ void XMLProgParser::addToContext_signature(Context *c, int e)
 		break;
 
 	case e_prefparam:
-		c->signature->preferedParams.push_back(stack.front()->n);
+		c->signature->m_preferredParams.push_back(stack.front()->n);
 		break;
 
 	case e_prefreturn:
-		c->signature->preferedReturn = stack.front()->type;
+		c->signature->m_preferredReturn = stack.front()->type;
 		break;
 
 	default:
@@ -919,7 +919,7 @@ void XMLProgParser::start_param(const QXmlStreamAttributes& attr)
 	QStringRef n = attr.value(QLatin1Literal("name"));
 
 	if (!n.isEmpty()) {
-		ctx->param->name(n.toString());
+		ctx->param->setName(n.toString());
 	}
 }
 
@@ -1018,11 +1018,11 @@ void XMLProgParser::addToContext_return(Context *c, int e)
 	switch (e)
 	{
 	case e_type:
-		c->ret->type = stack.front()->type;
+		c->ret->m_type = stack.front()->type;
 		break;
 
 	case e_exp:
-		c->ret->exp = stack.front()->exp;
+		c->ret->m_exp = stack.front()->exp;
 		break;
 
 	default:
@@ -3007,9 +3007,9 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Signature *sig)
 {
 	out.writeStartElement("signature");
 	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(sig).m_value));
-	out.writeAttribute("name", sig->name);
-	out.writeAttribute("ellipsis", QString::number((int)sig->ellipsis));
-	out.writeAttribute("preferedName", sig->preferedName);
+	out.writeAttribute("name", sig->m_name);
+	out.writeAttribute("ellipsis", QString::number((int)sig->m_ellipsis));
+	out.writeAttribute("preferedName", sig->m_preferredName);
 
 	if (sig->getPlatform() != PLAT_GENERIC) {
 		out.writeAttribute("platform", sig->platformName(sig->getPlatform()));
@@ -3019,7 +3019,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Signature *sig)
 		out.writeAttribute("convention", sig->conventionName(sig->getConvention()));
 	}
 
-	for (auto& elem : sig->params) {
+	for (auto& elem : sig->m_params) {
 		out.writeStartElement("param");
 		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(elem).m_value));
 		out.writeAttribute("name", elem->name());
@@ -3032,10 +3032,10 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Signature *sig)
 		out.writeEndElement();
 	}
 
-	for (auto& elem : sig->returns) {
+	for (auto& elem : sig->m_returns) {
 		out.writeStartElement("return");
 		out.writeStartElement("type");
-		persistToXML(out, (elem)->type);
+		persistToXML(out, (elem)->m_type);
 		out.writeEndElement();
 		out.writeStartElement("exp");
 		persistToXML(out, (elem)->exp);
@@ -3043,19 +3043,19 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Signature *sig)
 		out.writeEndElement();
 	}
 
-	if (sig->rettype) {
+	if (sig->m_rettype) {
 		out.writeStartElement("rettype");
-		persistToXML(out, sig->rettype);
+		persistToXML(out, sig->m_rettype);
 		out.writeEndElement();
 	}
 
-	if (sig->preferedReturn) {
+	if (sig->m_preferredReturn) {
 		out.writeStartElement("prefreturn");
-		persistToXML(out, sig->preferedReturn);
+		persistToXML(out, sig->m_preferredReturn);
 		out.writeEndElement();
 	}
 
-	for (auto& elem : sig->preferedParams) {
+	for (auto& elem : sig->m_preferredParams) {
 		out.writeStartElement("prefparam");
 		out.writeAttribute("index", QString::number(elem));
 		out.writeEndElement();

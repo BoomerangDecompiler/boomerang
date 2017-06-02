@@ -15,7 +15,7 @@
 #include "TypeTest.h"
 #include "boom_base/BinaryFile.h" // Ugh - needed before frontend.h
 #include "frontend/pentium/pentiumfrontend.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "db/prog.h"

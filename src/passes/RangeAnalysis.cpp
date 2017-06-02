@@ -11,7 +11,7 @@
 #include "include/type.h"
 #include "db/prog.h"
 #include "include/statement.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "include/visitor.h"
 #include "db/exp.h"
 #include "db/exphelp.h"

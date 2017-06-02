@@ -13,7 +13,7 @@
 #include "boom_base/log.h"
 #include "boom_base/log.h" // For VERBOSE
 #include "db/proc.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "db/prog.h"
 
 #include <QtCore/QDebug>

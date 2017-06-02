@@ -35,7 +35,7 @@
 #include "include/frontend.h"
 #include "boom_base/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
 #include "boom_base/log.h"
-#include "include/signature.h"
+#include "db/signature.h"
 
 #include <cassert>
 #include <iomanip> // For setfill etc

@@ -12,7 +12,7 @@
 #include "include/type.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "include/util.h"
 
 class AnsiCScanner;
@@ -101,7 +101,7 @@ typedef struct
 	std::list<TypeIdent *>                 *type_ident_list = nullptr;
 	SymbolMods                             *mods            = nullptr;
 	CustomOptions                          *custom_options  = nullptr;
-	callconv                               cc = CONV_C;
+	CallConv                               cc = CONV_C;
 } yy_AnsiCParser_stype;
 
 /* prefix */
@@ -197,7 +197,7 @@ public:
 	}; /* end of enum declaration */
 
 public:
-	int yyparse(Platform plat, callconv cc);
+	int yyparse(Platform plat, CallConv cc);
 	virtual void yyerror(const char *msg);
 	virtual int yylex();
 

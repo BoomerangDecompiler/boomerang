@@ -20,7 +20,7 @@
 #include "db/register.h"
 #include "db/rtl.h" // E.g. class ParamEntry in decideType()
 #include "db/proc.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "db/prog.h"
 #include "operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 #include "include/util.h"

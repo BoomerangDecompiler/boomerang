@@ -1,7 +1,7 @@
 #pragma once
 
 #include "include/types.h"
-#include "include/IBinarySection.h"
+#include "db/IBinarySection.h"
 
 #include <QString>
 
@@ -32,15 +32,15 @@ public:
 	SectionInfo(ADDRESS sourceAddr, uint32_t size, const QString& name = ""); // Constructor
 	SectionInfo(const SectionInfo& other);
 	virtual ~SectionInfo();
-    
-	ADDRESS  getHostAddr()   const override { return m_hostAddr; }
-	ADDRESS  getSourceAddr() const override { return m_nativeAddr; }
-	uint8_t  getEndian()     const override { return m_endianness; }
-	bool     isReadOnly()    const override { return m_readOnly; }
-	bool     isCode()        const override { return m_code; }
-	bool     isData()        const override { return m_data; }
+
+	ADDRESS getHostAddr()   const override { return m_hostAddr; }
+	ADDRESS getSourceAddr() const override { return m_nativeAddr; }
+	uint8_t getEndian()     const override { return m_endianness; }
+	bool isReadOnly()    const override { return m_readOnly; }
+	bool isCode()        const override { return m_code; }
+	bool isData()        const override { return m_data; }
 	uint32_t getSize()       const override { return m_sectionSize; }
-	QString  getName()       const override { return m_sectionName; }
+	QString getName()       const override { return m_sectionName; }
 	uint32_t getEntrySize()  const override { return m_sectionEntrySize; }
 
 	IBinarySection& setBss(bool v) override { m_bss = v; return *this; }
@@ -53,12 +53,12 @@ public:
 	IBinarySection& setEndian(uint8_t v) override { m_endianness = v; return *this; }
 
 	/// Windows's PE file sections can contain any combination of code, data and bss.
-    /// As such, it can't be correctly described by SectionInfo, why we need to override
-    /// the behaviour of (at least) the question "Is this address in BSS".
+	/// As such, it can't be correctly described by SectionInfo, why we need to override
+	/// the behaviour of (at least) the question "Is this address in BSS".
 	bool isAddressBss(ADDRESS a) const override;
 	bool anyDefinedValues() const override;
 
-	void resize(uint32_t) override;
+	void            resize(uint32_t) override;
 
 	void clearDefinedArea();
 	void addDefinedArea(ADDRESS from, ADDRESS to) override;

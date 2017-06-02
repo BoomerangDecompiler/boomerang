@@ -47,7 +47,7 @@ struct ADDRESS                 /* pointer. size depends on platform */
 		return z;
 	}
 
-	bool isZero() const { return m_value == 0; }
+	bool           isZero() const { return m_value == 0; }
 	bool operator==(const ADDRESS& other) const { return m_value == other.m_value; }
 	bool operator!=(const ADDRESS& other) const { return m_value != other.m_value; }
 	bool operator<(const ADDRESS& other) const { return m_value < other.m_value; }

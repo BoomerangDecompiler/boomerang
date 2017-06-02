@@ -15,7 +15,6 @@ set(INCLUDES
 	../include/frontend.h
 	../include/managed.h
 	../include/osfcn.h
-	../include/signature.h
 	../include/transformer.h
 	../include/util.h
 	../include/IBoomerang.h
@@ -53,6 +52,7 @@ set(SRC
     register.cpp
     rtl.h
     rtl.cpp
+    signature.h
     signature.cpp
     
     #ssl handling

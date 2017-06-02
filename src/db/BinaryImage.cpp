@@ -208,14 +208,14 @@ void BinaryImage::writeNative4(ADDRESS nat, uint32_t n)
 	if (si->getEndian() == 1) {
 		host_ptr[0] = (n >> 24) & 0xff;
 		host_ptr[1] = (n >> 16) & 0xff;
-		host_ptr[2] = (n >>  8) & 0xff;
-		host_ptr[3] =  n        & 0xff;
+		host_ptr[2] = (n >> 8) & 0xff;
+		host_ptr[3] = n & 0xff;
 	}
 	else {
 		host_ptr[3] = (n >> 24) & 0xff;
 		host_ptr[2] = (n >> 16) & 0xff;
-		host_ptr[1] = (n >>  8) & 0xff;
-		host_ptr[0] =  n        & 0xff;
+		host_ptr[1] = (n >> 8) & 0xff;
+		host_ptr[0] = n & 0xff;
 	}
 }
 
@@ -350,7 +350,7 @@ SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRE
 		return nullptr;
 	}
 
-	SectionInfo *sect = new SectionInfo(from, (to-from).m_value, name);
+	SectionInfo *sect = new SectionInfo(from, (to - from).m_value, name);
 	m_sections.push_back(sect);
 
 	m_sectionMap.add(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), sect));

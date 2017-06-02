@@ -33,7 +33,7 @@
 #include "db/rtl.h"
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "boom_base/log.h"
 #include "ansi-c-parser.h"
 #include "include/config.h"
@@ -1872,7 +1872,7 @@ void Prog::readSymbolFile(const QString& fname)
 
 	AnsiCParser *par = new AnsiCParser(ifs, false);
 	Platform    plat = getFrontEndId();
-	callconv    cc   = CONV_C;
+	CallConv    cc   = CONV_C;
 
 	if (isWin32()) {
 		cc = CONV_PASCAL;

@@ -32,7 +32,7 @@
 #include <cassert>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "include/signature.h"
+#include "db/signature.h"
 #endif
 
 #include "include/decoder.h"

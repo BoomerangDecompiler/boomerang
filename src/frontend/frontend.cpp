@@ -32,7 +32,7 @@
 #include "st20/st20frontend.h"
 #include "mips/mipsfrontend.h"
 #include "db/prog.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "ansi-c-parser.h"
@@ -211,7 +211,7 @@ void FrontEnd::readLibraryCatalog(const QString& sPath)
 		}
 
 		sig_path = Boomerang::get()->getProgPath() + "signatures/" + sFile;
-		callconv cc = CONV_C; // Most APIs are C calling convention
+		CallConv cc = CONV_C; // Most APIs are C calling convention
 
 		if (sFile == "windows.h") {
 			cc = CONV_PASCAL; // One exception
@@ -240,7 +240,7 @@ void FrontEnd::readLibraryCatalog()
 	QString sList = sig_dir.absoluteFilePath("common.hs");
 
 	readLibraryCatalog(sList);
-	sList = sig_dir.absoluteFilePath(Signature::platformName(getFrontEndId()) + ".hs");
+	sList = sig_dir.absoluteFilePath(Signature::getPlatformName(getFrontEndId()) + ".hs");
 	readLibraryCatalog(sList);
 
 	if (isWin32()) {
@@ -529,7 +529,7 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc)
  * \param       sPath The file to read from
  * \param       cc the calling convention assumed
  */
-void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc)
+void FrontEnd::readLibrarySignatures(const char *sPath, CallConv cc)
 {
 	std::ifstream ifs;
 

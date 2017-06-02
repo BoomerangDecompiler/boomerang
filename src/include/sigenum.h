@@ -13,7 +13,7 @@ enum Platform
 	PLAT_GENERIC
 };
 
-enum callconv
+enum CallConv
 {
 	CONV_C,        // Standard C, no callee pop
 	CONV_PASCAL,   // callee pop

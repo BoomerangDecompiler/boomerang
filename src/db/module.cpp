@@ -4,7 +4,7 @@
 #include "db/proc.h"
 #include "db/prog.h"
 
-#include "include/signature.h"
+#include "db/signature.h"
 
 #include <QDir>
 #include <QString>

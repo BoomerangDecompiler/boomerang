@@ -16,7 +16,7 @@
 #include "db/proc.h"
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "boom_base/log.h"
 #include "include/xmlprogparser.h"
 #include "codegen/chllcode.h"

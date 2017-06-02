@@ -21,7 +21,7 @@
 #include "db/prog.h"
 #include "include/hllcode.h"
 #include "chllcode.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "boom_base/log.h"
 #include "include/type.h"
 #include "include/util.h"

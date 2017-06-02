@@ -36,7 +36,7 @@
 #include "db/prog.h"
 #include "db/register.h"
 #include "db/rtl.h"
-#include "include/signature.h"
+#include "db/signature.h"
 #include "sparcdecoder.h"
 
 #include <cassert>

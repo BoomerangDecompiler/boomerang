@@ -124,7 +124,7 @@ public:
 	// Accessor function to get the decoder.
 	IInstructionTranslator *getDecoder() { return decoder; }
 
-	void readLibrarySignatures(const char *sPath, callconv cc); ///< Read library signatures from a file.
+	void readLibrarySignatures(const char *sPath, CallConv cc); ///< Read library signatures from a file.
 	void readLibraryCatalog(const QString& sPath);              ///< read from a catalog
 	void readLibraryCatalog();                                  ///< read from default catalog
 
