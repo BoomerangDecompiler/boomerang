@@ -53,10 +53,15 @@ set(SRC
     register.cpp
     rtl.cpp
     signature.cpp
-    sslinst.cpp
-    sslparser.cpp
-    sslparser_support.cpp
-    sslscanner.cpp
+    
+    #ssl handling
+    ssl/sslinst.cpp
+    ssl/sslparser.cpp
+    ssl/sslparser.h
+    ssl/sslparser_support.cpp
+    ssl/sslscanner.cpp
+    ssl/sslscanner.h
+    
     statement.cpp
     table.cpp
     visitor.cpp

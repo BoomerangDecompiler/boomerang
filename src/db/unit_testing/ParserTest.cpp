@@ -4,7 +4,7 @@
  *                tests the sslparser.y etc
  ******************************************************************************/
 #include "ParserTest.h"
-#include "sslparser.h"
+#include "db/ssl/sslparser.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 
