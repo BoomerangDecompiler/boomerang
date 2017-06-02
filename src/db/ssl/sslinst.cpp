@@ -26,7 +26,7 @@
 #include "db/exp.h"
 #include "db/register.h"
 #include "include/type.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"
@@ -45,7 +45,7 @@
  ******************************************************************************/
 TableEntry::TableEntry()
 {
-	flags = 0;
+	m_flags = 0;
 }
 
 
@@ -56,10 +56,10 @@ TableEntry::TableEntry()
  *
  ******************************************************************************/
 TableEntry::TableEntry(std::list<QString>& p, RTL& r)
-	: rtl(r)
+	: m_rtl(r)
 {
-	std::copy(p.begin(), p.end(), std::back_inserter(params));
-	flags = 0;
+	std::copy(p.begin(), p.end(), std::back_inserter(m_params));
+	m_flags = 0;
 }
 
 
@@ -69,7 +69,7 @@ TableEntry::TableEntry(std::list<QString>& p, RTL& r)
  ******************************************************************************/
 void TableEntry::setParam(std::list<QString>& p)
 {
-	params = p;
+	m_params = p;
 }
 
 
@@ -80,7 +80,7 @@ void TableEntry::setParam(std::list<QString>& p)
  ******************************************************************************/
 void TableEntry::setRTL(RTL& r)
 {
-	rtl = r;
+	m_rtl = r;
 }
 
 
@@ -92,8 +92,8 @@ void TableEntry::setRTL(RTL& r)
  ******************************************************************************/
 TableEntry& TableEntry::operator=(const TableEntry& other)
 {
-	params = other.params;
-	rtl    = other.rtl;
+	m_params = other.m_params;
+	m_rtl    = other.m_rtl;
 	return *this;
 }
 
@@ -106,16 +106,16 @@ TableEntry& TableEntry::operator=(const TableEntry& other)
  ******************************************************************************/
 int TableEntry::appendRTL(std::list<QString>& p, RTL& r)
 {
-	bool match = (p.size() == params.size());
+	bool match = (p.size() == m_params.size());
 
 	std::list<QString>::iterator a, b;
 
-	for (a = params.begin(), b = p.begin(); match && (a != params.end()) && (b != p.end());
+	for (a = m_params.begin(), b = p.begin(); match && (a != m_params.end()) && (b != p.end());
 		 match = (*a == *b), a++, b++) {
 	}
 
 	if (match) {
-		rtl.appendListStmt(r);
+		m_rtl.appendListStmt(r);
 		return 0;
 	}
 
@@ -247,7 +247,7 @@ void RTLInstDict::print(QTextStream& os /*= std::cout*/)
 		os << (elem).first << "  ";
 
 		// print the parameters
-		const std::list<QString>& params((elem).second.params);
+		const std::list<QString>& params((elem).second.m_params);
 		int i = params.size();
 
 		for (auto s = params.begin(); s != params.end(); s++, i--) {
@@ -257,7 +257,7 @@ void RTLInstDict::print(QTextStream& os /*= std::cout*/)
 		os << "\n";
 
 		// print the RTL
-		RTL& rtlist = (elem).second.rtl;
+		RTL& rtlist = (elem).second.m_rtl;
 		rtlist.print(os);
 		os << "\n";
 	}
@@ -290,7 +290,7 @@ void RTLInstDict::print(QTextStream& os /*= std::cout*/)
 void RTLInstDict::fixupParams()
 {
 	for (ParamEntry& param : DetParamMap) {
-		param.mark = 0;
+		param.m_mark = 0;
 	}
 
 	int mark = 1;
@@ -299,7 +299,7 @@ void RTLInstDict::fixupParams()
 		std::list<QString> funcParams;
 		bool               haveCount = false;
 
-		if (iter.value().kind == PARAM_VARIANT) {
+		if (iter.value().m_kind == PARAM_VARIANT) {
 			fixupParamsSub(iter.key(), funcParams, haveCount, mark++);
 		}
 	}
@@ -310,21 +310,21 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
 {
 	ParamEntry& param = DetParamMap[s];
 
-	if (param.params.size() == 0) {
+	if (param.m_params.size() == 0) {
 		LOG_STREAM() << "Error in SSL File: Variant operand " << s << " has no branches. Well that's really useful...\n";
 		return;
 	}
 
-	if (param.mark == mark) {
+	if (param.m_mark == mark) {
 		return; /* Already seen this round. May indicate a cycle, but may not */
 	}
 
-	param.mark = mark;
+	param.m_mark = mark;
 
-	for (const QString& name : param.params) {
+	for (const QString& name : param.m_params) {
 		ParamEntry& sub = DetParamMap[name];
 
-		if (sub.kind == PARAM_VARIANT) {
+		if (sub.m_kind == PARAM_VARIANT) {
 			fixupParamsSub(name, funcParams, haveCount, mark);
 
 			if (!haveCount) { /* Empty branch? */
@@ -335,34 +335,34 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
 			haveCount = true;
 			char buf[10];
 
-			for (unsigned int i = 1; i <= sub.funcParams.size(); i++) {
+			for (unsigned int i = 1; i <= sub.m_funcParams.size(); i++) {
 				sprintf(buf, "__lp%u", i);
 				funcParams.push_back(buf);
 			}
 		}
 
-		if (funcParams.size() != sub.funcParams.size()) {
+		if (funcParams.size() != sub.m_funcParams.size()) {
 			LOG_STREAM() << "Error in SSL File: Variant operand " << s
 						 << " does not have a fixed number of functional parameters:\n"
 						 << "Expected " << funcParams.size() << ", but branch " << name
-						 << " has " << sub.funcParams.size() << ".\n";
+						 << " has " << sub.m_funcParams.size() << ".\n";
 		}
-		else if ((funcParams != sub.funcParams) && (sub.asgn != nullptr)) {
+		else if ((funcParams != sub.m_funcParams) && (sub.m_asgn != nullptr)) {
 			/* Rename so all the parameter names match */
-			for (auto i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++) {
+			for (auto i = funcParams.begin(), j = sub.m_funcParams.begin(); i != funcParams.end(); i++, j++) {
 				Location  paramLoc(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
 				SharedExp replace = Location::param(*i);
-				sub.asgn->searchAndReplace(paramLoc, replace);
+				sub.m_asgn->searchAndReplace(paramLoc, replace);
 			}
 
-			sub.funcParams = funcParams;
+			sub.m_funcParams = funcParams;
 		}
 	}
 
 	//      if( param.funcParams.size() != funcParams.size() )
 	//          theSemTable.setItem( n, cFUNCTION, 0, 0, funcParams.size(),
 	//                               theSemTable[n].sName.c_str() );
-	param.funcParams = funcParams;
+	param.m_funcParams = funcParams;
 }
 
 
@@ -386,7 +386,7 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
 	}
 
 	return {
-			   hlpr, (it->second).params.size()
+			   hlpr, (it->second).m_params.size()
 	};
 }
 
@@ -450,7 +450,7 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, ADDRE
 
 	TableEntry& entry(dict_entry->second);
 
-	return instantiateRTL(entry.rtl, natPC, entry.params, actuals);
+	return instantiateRTL(entry.m_rtl, natPC, entry.m_params, actuals);
 }
 
 

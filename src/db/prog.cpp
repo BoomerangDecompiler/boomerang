@@ -30,7 +30,7 @@
 #include "db/proc.h"
 #include "include/util.h" // For lockFileWrite etc
 #include "db/register.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
 #include "include/signature.h"

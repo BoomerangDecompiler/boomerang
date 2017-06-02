@@ -32,7 +32,7 @@
 #include "include/decoder.h"
 #include "db/prog.h"
 #include "ss.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/proc.h"
 #include "csr.h"
 #include "mc68k.pat.h"

@@ -25,7 +25,7 @@
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/register.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "include/hllcode.h"
 #include "db/proc.h"
 #include "db/prog.h"

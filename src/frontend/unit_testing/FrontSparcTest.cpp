@@ -12,7 +12,7 @@
 #include "include/frontend.h"
 #include "sparcfrontend.h"
 #include "db/cfg.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "boom_base/BinaryFile.h"
 #include "boom_base/BinaryFileStub.h"
 #include "boom_base/log.h"

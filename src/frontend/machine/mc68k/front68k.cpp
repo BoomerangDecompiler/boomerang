@@ -27,7 +27,7 @@
 #include "global.h"
 #include "include/frontend.h"
 #include "include/decoder.h" // prototype for decodeInstruction()
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/cfg.h"
 #include "ss.h"
 #include "db/prog.h" // For findProc()

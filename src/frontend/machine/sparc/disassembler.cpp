@@ -210,9 +210,9 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_rs1_43[] =
 		{
-			"RDY",  "JMPL",  "JMPL",  "JMPL",  "JMPL",     "JMPL",     "JMPL",     "JMPL",    "JMPL",    "JMPL",    "JMPL",
-			"JMPL", "JMPL",  "JMPL",  "JMPL",  (char *)0,  "JMPL",     "JMPL",     "JMPL",    "JMPL",    "JMPL",    "JMPL",
-			"JMPL", "JMPL",  "JMPL",  "JMPL",  "JMPL",     "JMPL",     "JMPL",     "JMPL",    "JMPL",
+			"RDY",  "JMPL",  "JMPL",  "JMPL",  "JMPL",     "JMPL",     "JMPL",     "JMPL",     "JMPL",    "JMPL",    "JMPL",
+			"JMPL", "JMPL",  "JMPL",  "JMPL",  (char *)0,  "JMPL",     "JMPL",     "JMPL",     "JMPL",    "JMPL",    "JMPL",
+			"JMPL", "JMPL",  "JMPL",  "JMPL",  "JMPL",     "JMPL",     "JMPL",     "JMPL",     "JMPL",
 		};
 		static char *MATCH_name_op3_44[] =
 		{
@@ -224,29 +224,29 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_opf_49[] =
 		{
-			(char *)0, "FMOVs",     (char *)0,     (char *)0,       (char *)0,         "FNEGs",             (char *)0,             (char *)0,            (char *)0,
-			"FABSs",   (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         "FSQRTs",            (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   "FADDs",       "FADDd",         "FADDq",           (char *)0,           "FSUBs",               "FSUBd",              "FSUBq",
-			(char *)0, "FMULs",     "FMULd",       "FMULq",         (char *)0,         "FDIVs",             "FDIVd",               "FDIVq",              (char *)0,
-			"FCMPs",   "FCMPd",     "FCMPq",       (char *)0,       "FCMPEs",          "FCMPEd",            "FCMPEq",              (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,            (char *)0,
-			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             "FiTOs",              (char *)0,
-			"FdTOs",   "FqTOs",     "FiTOd",       "FsTOd",         (char *)0,         "FqTOd",             "FiTOq",               "FsTOq",              "FdTOq",
+			(char *)0, "FMOVs",     (char *)0,     (char *)0,       (char *)0,         "FNEGs",             (char *)0,             (char *)0,              (char *)0,
+			"FABSs",   (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         "FSQRTs",            (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   "FADDs",       "FADDd",         "FADDq",           (char *)0,           "FSUBs",               "FSUBd",                "FSUBq",
+			(char *)0, "FMULs",     "FMULd",       "FMULq",         (char *)0,         "FDIVs",             "FDIVd",               "FDIVq",                (char *)0,
+			"FCMPs",   "FCMPd",     "FCMPq",       (char *)0,       "FCMPEs",          "FCMPEd",            "FCMPEq",              (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             (char *)0,              (char *)0,
+			(char *)0, (char *)0,   (char *)0,     (char *)0,       (char *)0,         (char *)0,           (char *)0,             "FiTOs",                (char *)0,
+			"FdTOs",   "FqTOs",     "FiTOd",       "FsTOd",         (char *)0,         "FqTOd",             "FiTOq",               "FsTOq",                "FdTOq",
 			(char *)0, (char *)0,   "FsTOi",       "FdTOi",         "FqTOi",
 		};
 		static char *MATCH_name_i_50[] =

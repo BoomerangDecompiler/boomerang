@@ -16,7 +16,7 @@
 #include <map>
 #include "StatementTest.h"
 #include "db/cfg.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "pentiumfrontend.h"
 #include "boom_base/log.h"
 #include "db/exp.h"

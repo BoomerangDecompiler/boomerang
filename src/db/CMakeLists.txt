@@ -3,7 +3,6 @@ include_directories(../c/) # used by prog.cpp
 set(INCLUDES
 	../include/hllcode.h
 	../include/memo.h
-	../include/rtl.h
 	../include/statement.h
 	../include/type.h
 	../include/visitor.h
@@ -51,6 +50,7 @@ set(SRC
     IProject.h
     register.h
     register.cpp
+    rtl.h
     rtl.cpp
     signature.cpp
     

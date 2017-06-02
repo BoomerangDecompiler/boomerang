@@ -31,7 +31,7 @@
 #include "include/signature.h"
 #endif
 
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "include/decoder.h"
 #include "pentiumdecoder.h"
 #include "db/prog.h"

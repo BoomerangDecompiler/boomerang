@@ -35,7 +35,7 @@
 
 #include "global.h"
 #include "ss.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"

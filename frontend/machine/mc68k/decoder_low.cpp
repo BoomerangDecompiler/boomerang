@@ -49,7 +49,7 @@
 #include "global.h"
 #include "include/decoder.h"
 #include "ss.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 
 // File scope globals
 static bool IsTrap = false;

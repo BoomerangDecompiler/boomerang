@@ -16,7 +16,7 @@
  *                etc. Ordinary instructions are processed in decoder_low.m
  ******************************************************************************/
 #include "pentiumdecoder.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/IBinaryImage.h"
 #include "include/decoder.h"
 #include "db/prog.h"

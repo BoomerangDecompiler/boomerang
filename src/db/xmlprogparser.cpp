@@ -11,7 +11,7 @@
 #include "db/module.h"
 #include "db/prog.h"
 #include "db/proc.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "include/statement.h"
 #include "sigenum.h"
 #include "include/signature.h"
@@ -1478,7 +1478,7 @@ void XMLProgParser::start_rtl(const QXmlStreamAttributes& attr)
 	QStringRef a = attr.value(QLatin1Literal("addr"));
 
 	if (!a.isEmpty()) {
-		stack.front()->rtl->nativeAddr = ADDRESS::g(a.toInt());
+		stack.front()->rtl->m_nativeAddr = ADDRESS::g(a.toInt());
 	}
 }
 
@@ -3473,7 +3473,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const RTL *rtl)
 {
 	out.writeStartElement("rtl");
 	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(rtl).m_value));
-	out.writeAttribute("addr", QString::number(rtl->nativeAddr.m_value));
+	out.writeAttribute("addr", QString::number(rtl->m_nativeAddr.m_value));
 
 	for (auto const& elem : *rtl) {
 		out.writeStartElement("stmt");

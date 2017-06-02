@@ -15,7 +15,7 @@
  ******************************************************************************/
 
 #include "njmcDecoder.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/exp.h"
 #include "db/register.h"
 #include "db/cfg.h"
@@ -116,17 +116,17 @@ SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_
 	assert(RTLDict.DetParamMap.find(name) != RTLDict.DetParamMap.end());
 	ParamEntry& ent = RTLDict.DetParamMap[name];
 
-	if ((ent.kind != PARAM_ASGN) && (ent.kind != PARAM_LAMBDA)) {
+	if ((ent.m_kind != PARAM_ASGN) && (ent.m_kind != PARAM_LAMBDA)) {
 		LOG_STREAM() << "Attempt to instantiate expressionless parameter '" << name << "'\n";
 		return nullptr;
 	}
 
 	// Start with the RHS
-	assert(ent.asgn->getKind() == STMT_ASSIGN);
-	SharedExp result   = ((Assign *)ent.asgn)->getRight()->clone();
+	assert(ent.m_asgn->getKind() == STMT_ASSIGN);
+	SharedExp result   = ((Assign *)ent.m_asgn)->getRight()->clone();
 	auto      arg_iter = args.begin();
 
-	for (auto& elem : ent.params) {
+	for (auto& elem : ent.m_params) {
 		Location  formal(opParam, Const::get(elem), nullptr);
 		SharedExp actual = *arg_iter++;
 		bool      change;
@@ -163,7 +163,7 @@ void NJMCDecoder::substituteCallArgs(char *name, SharedExp *exp, const std::init
 	 *  }*/
 	auto arg_iter = args.begin();
 
-	for (auto& elem : ent.funcParams) {
+	for (auto& elem : ent.m_funcParams) {
 		Location  formal(opParam, Const::get(elem), nullptr);
 		SharedExp actual = *arg_iter++;
 		bool      change;

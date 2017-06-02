@@ -18,7 +18,7 @@
 
 #include <cassert>
 
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "include/decoder.h"
 #include "st20decoder.h"
 #include "db/exp.h"

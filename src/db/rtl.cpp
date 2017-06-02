@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 
-#include "include/rtl.h"
+#include "db/rtl.h"
 
 #include "boom_base/log.h"             // for LOG_VERBOSE
 #include "db/exp.h"                    // for Const, Exp, DEBUG_BUFSIZE
@@ -37,7 +37,7 @@
  *****************************************************************************/
 
 RTL::RTL()
-	: nativeAddr(ADDRESS::g(0L))
+	: m_nativeAddr(ADDRESS::g(0L))
 {
 }
 
@@ -49,7 +49,7 @@ RTL::RTL()
  *
  ******************************************************************************/
 RTL::RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt /*= nullptr*/)
-	: nativeAddr(instNativeAddr)
+	: m_nativeAddr(instNativeAddr)
 {
 	if (listStmt) {
 		*(std::list<Instruction *> *) this = *listStmt;
@@ -57,14 +57,9 @@ RTL::RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt /*= nu
 }
 
 
-/***************************************************************************/ /**
- * \brief        Copy constructor. A deep clone is made of the given object
- *                    so that the lists of Exps do not share memory.
- * \param        other RTL to copy from
- ******************************************************************************/
 RTL::RTL(const RTL& other)
 	: std::list<Instruction *>()
-	, nativeAddr(other.nativeAddr)
+	, m_nativeAddr(other.m_nativeAddr)
 {
 	for (auto const& elem : other) {
 		push_back(elem->clone());
@@ -78,11 +73,6 @@ RTL::~RTL()
 }
 
 
-/***************************************************************************/ /**
- * \brief        Assignment copy (deep).
- * \param        other - RTL to copy
- * \returns             a reference to this object
- ******************************************************************************/
 RTL& RTL::operator=(const RTL& other)
 {
 	if (this != &other) {
@@ -95,7 +85,7 @@ RTL& RTL::operator=(const RTL& other)
 			push_back((*it)->clone());
 		}
 
-		nativeAddr = other.nativeAddr;
+		m_nativeAddr = other.m_nativeAddr;
 	}
 
 	return *this;
@@ -104,11 +94,6 @@ RTL& RTL::operator=(const RTL& other)
 
 // Return a deep copy, including a deep copy of the list of Statements
 
-/***************************************************************************/ /**
- * \brief        Deep copy clone; deleting the clone will not affect this
- *                     RTL object
- * \returns             Pointer to a new RTL that is a clone of this one
- ******************************************************************************/
 RTL *RTL::clone() const
 {
 	std::list<Instruction *> le;
@@ -117,14 +102,10 @@ RTL *RTL::clone() const
 		le.push_back((elem)->clone());
 	}
 
-	return new RTL(nativeAddr, &le);
+	return new RTL(m_nativeAddr, &le);
 }
 
 
-/***************************************************************************/ /**
- * \brief        Make a copy of this RTLs list of Exp* to the given list
- * \param        dest Ref to empty list to copy to
- ******************************************************************************/
 void RTL::deepCopyList(std::list<Instruction *>& dest) const
 {
 	for (Instruction *it : *this) {
@@ -133,13 +114,6 @@ void RTL::deepCopyList(std::list<Instruction *>& dest) const
 }
 
 
-/***************************************************************************/ /**
- * \brief        Append the given Statement at the end of this RTL
- * \note            Exception: Leaves any flag call at the end (so may push exp
- *                     to second last position, instead of last)
- * \note            stmt is NOT copied. This is different to how UQBT was!
- * \param        s pointer to Statement to append
- ******************************************************************************/
 void RTL::appendStmt(Instruction *s)
 {
 	assert(s != nullptr);
@@ -156,11 +130,6 @@ void RTL::appendStmt(Instruction *s)
 }
 
 
-/***************************************************************************/ /**
- * \brief  Append a given list of Statements to this RTL
- * \note   A copy of the Statements in le are appended
- * \param  le - list of Statements to insert
- ******************************************************************************/
 void RTL::appendListStmt(std::list<Instruction *>& le)
 {
 	for (Instruction *it : le) {
@@ -169,11 +138,6 @@ void RTL::appendListStmt(std::list<Instruction *>& le)
 }
 
 
-/***************************************************************************/ /**
- * \brief   Prints this object to a stream in text form.
- * \param   os - stream to output to (often cout or cerr)
- * \param   html - if true output is in html
- ******************************************************************************/
 void RTL::print(QTextStream& os /*= cout*/, bool html /*=false*/) const
 {
 	if (html) {
@@ -181,7 +145,7 @@ void RTL::print(QTextStream& os /*= cout*/, bool html /*=false*/) const
 	}
 
 	// print out the instruction address of this RTL
-	os << QString("%1").arg(nativeAddr.m_value, 8, 16, QChar('0'));
+	os << QString("%1").arg(m_nativeAddr.m_value, 8, 16, QChar('0'));
 
 	if (html) {
 		os << "</td>";
@@ -228,7 +192,7 @@ void RTL::print(QTextStream& os /*= cout*/, bool html /*=false*/) const
 }
 
 
-void RTL::dump()
+void RTL::dump() const
 {
 	QTextStream q_cerr(stderr);
 
@@ -306,9 +270,7 @@ void RTL::simplify()
 }
 
 
-// Is this RTL a compare instruction? If so, the passed register and compared value (a semantic string) are set.
-
-bool RTL::isCall()
+bool RTL::isCall() const
 {
 	if (empty()) {
 		return false;
@@ -319,13 +281,9 @@ bool RTL::isCall()
 }
 
 
-// Use this slow function when you can't be sure that the HL Statement is last
-// Get the "special" (High Level) Statement this RTL (else nullptr)
-Instruction *RTL::getHlStmt()
+Instruction *RTL::getHlStmt() const
 {
-	reverse_iterator rit;
-
-	for (rit = this->rbegin(); rit != this->rend(); rit++) {
+	for (auto rit = this->rbegin(); rit != this->rend(); rit++) {
 		if ((*rit)->getKind() != STMT_ASSIGN) {
 			return *rit;
 		}

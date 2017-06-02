@@ -13,7 +13,7 @@
 
 #include "include/decoder.h"
 #include "include/types.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 
 /***************************************************************************/ /**
  * The NJMCDecoder class is a class that contains NJMC generated decoding methods.

@@ -6,7 +6,7 @@
 #include "FrontPentTest.h"
 
 #include "include/types.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/prog.h"
 #include "include/frontend.h"
 #include "pentiumfrontend.h"

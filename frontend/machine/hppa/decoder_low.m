@@ -35,7 +35,7 @@
 #include "global.h"
 #include "include/decoder.h"
 #include "hppa-names.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 
 void c_null(ADDRESS hostpc, char **garble);
 unsigned long c_wcr(ADDRESS hostpc, char **garble);

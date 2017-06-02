@@ -29,7 +29,7 @@
 #include "db/module.h"
 #include "include/statement.h"
 #include "db/register.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/prog.h"
 #include "include/hllcode.h"
 #include "boom_base/BinaryFile.h"

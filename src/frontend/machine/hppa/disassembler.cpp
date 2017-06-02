@@ -1699,28 +1699,28 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		char        *MATCH_name;
 		static char *MATCH_name_ext8_19_0[] =
 		{
-			"BREAK",   (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, "MFSP",      (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            "RFI",                (char *)0,              (char *)0,
-			(char *)0, (char *)0,   "RFI.r",        (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              "SSM",
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            "RSM",                  (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            "LDSID",                (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      "MFIA",           (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,              (char *)0,
-			(char *)0, (char *)0,   (char *)0,      (char *)0,        "MTSP",              "MTCTL",              "MTSM",               (char *)0,              (char *)0,
+			"BREAK",   (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, "MFSP",      (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            "RFI",                (char *)0,                (char *)0,
+			(char *)0, (char *)0,   "RFI.r",        (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                "SSM",
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            "RSM",                    (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            "LDSID",                  (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      "MFIA",           (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        (char *)0,           (char *)0,            (char *)0,            (char *)0,                (char *)0,
+			(char *)0, (char *)0,   (char *)0,      (char *)0,        "MTSP",              "MTCTL",              "MTSM",               (char *)0,                (char *)0,
 			"MTSARCM",
 		};
 		static char *MATCH_name_ext5_11_1[] =
@@ -1739,8 +1739,8 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_op_58[] =
 		{
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,       (char *)0,       (char *)0,       (char *)0,      "LDIL",         (char *)0,
-			"ADDIL",   (char *)0,   (char *)0,   "LDO",       (char *)0,       (char *)0,       "LDB",           "LDH",          "LDW",          "LDWM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,       (char *)0,       (char *)0,       (char *)0,        "LDIL",         (char *)0,
+			"ADDIL",   (char *)0,   (char *)0,   "LDO",       (char *)0,       (char *)0,       "LDB",           "LDH",            "LDW",          "LDWM",
 			(char *)0, (char *)0,   (char *)0,   (char *)0,   "STB",           "STH",           "STW",           "STWM",
 		};
 		static char *MATCH_name_sub_16_71[] =

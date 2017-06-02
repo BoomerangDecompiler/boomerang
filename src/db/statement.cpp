@@ -20,7 +20,7 @@
 #include "db/prog.h"
 #include "db/basicblock.h"
 #include "boom_base/log.h"
-#include "include/rtl.h" // For debugging code
+#include "db/rtl.h" // For debugging code
 #include "include/util.h"
 #include "include/signature.h"
 #include "include/visitor.h"

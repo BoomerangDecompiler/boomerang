@@ -64,7 +64,7 @@ void *alloca();
 #include <cstring>
 #include <cstdlib>
 #include "include/types.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "table.h"
 #include "insnameelem.h"
 #include "include/util.h" // E.g. str()
@@ -742,8 +742,8 @@ SSLParser::
     }
     case 17: {
         // Note: the below copies the list of strings!
-        Dict.DetParamMap[yyvsp[-4].str].params = *yyvsp[-1].parmlist;
-        Dict.DetParamMap[yyvsp[-4].str].kind = PARAM_VARIANT;
+        Dict.DetParamMap[yyvsp[-4].str].m_params = *yyvsp[-1].parmlist;
+        Dict.DetParamMap[yyvsp[-4].str].m_kind = PARAM_VARIANT;
         delete yyvsp[-1].parmlist;
         // delete $4;
         ;
@@ -754,13 +754,13 @@ SSLParser::
         ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
         Instruction *asgn = new Assign(yyvsp[-1].typ, Terminal::get(opNil), yyvsp[0].exp);
         // Note: The below 2 copy lists of strings (to be deleted below!)
-        param.params = *yyvsp[-3].parmlist;
-        param.funcParams = *yyvsp[-2].parmlist;
-        param.asgn = asgn;
-        param.kind = PARAM_ASGN;
+        param.m_params = *yyvsp[-3].parmlist;
+        param.m_funcParams = *yyvsp[-2].parmlist;
+        param.m_asgn = asgn;
+        param.m_kind = PARAM_ASGN;
 
-        if (param.funcParams.size() != 0)
-            param.kind = PARAM_LAMBDA;
+        if (param.m_funcParams.size() != 0)
+            param.m_kind = PARAM_LAMBDA;
         delete yyvsp[-2].parmlist;
         delete yyvsp[-3].parmlist;
         ;
@@ -1408,10 +1408,10 @@ SSLParser::
         if (Dict.ParamSet.find(yyvsp[-2].str) != Dict.ParamSet.end()) {
             if (Dict.DetParamMap.find(yyvsp[-2].str) != Dict.DetParamMap.end()) {
                 ParamEntry &param = Dict.DetParamMap[yyvsp[-2].str];
-                if (yyvsp[-1].explist->size() != param.funcParams.size()) {
+                if (yyvsp[-1].explist->size() != param.m_funcParams.size()) {
                     yyerror(qPrintable(QString("%1 requires %2  parameters, but received %3\n")
                                        .arg(yyvsp[-2].str)
-                                    .arg(param.funcParams.size())
+                                    .arg(param.m_funcParams.size())
                             .arg(yyvsp[-1].explist->size())
                             ));
                 } else {
@@ -1596,7 +1596,7 @@ SSLParser::
         break;
     }
     case 133: {
-        Dict.bigEndian = yyvsp[0].str=="BIG";
+        Dict.m_bigEndian = yyvsp[0].str=="BIG";
         ;
         break;
     }

@@ -20,7 +20,7 @@
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
 #include "include/frontend.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "include/decoder.h" // prototype for decodeInstruction()
 #include "pentiumdecoder.h"
 #include "db/register.h"

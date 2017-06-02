@@ -15,7 +15,7 @@
  ******************************************************************************/
 
 #include "njmcDecoder.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 
 #include <cstddef>
 #include <list>

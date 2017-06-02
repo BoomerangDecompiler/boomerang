@@ -18,7 +18,7 @@
 #include "db/cfg.h"
 #include "db/exp.h"
 #include "db/register.h"
-#include "include/rtl.h" // E.g. class ParamEntry in decideType()
+#include "db/rtl.h" // E.g. class ParamEntry in decideType()
 #include "db/proc.h"
 #include "include/signature.h"
 #include "db/prog.h"

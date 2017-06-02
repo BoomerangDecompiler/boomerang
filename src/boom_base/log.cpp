@@ -1,6 +1,6 @@
 #include "boom_base/log.h"
 #include "include/statement.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "db/exp.h"
 #include "include/managed.h"
 #include "boom_base/boomerang.h"

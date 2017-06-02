@@ -2,7 +2,7 @@
 #include "sslscanner.h"
 #include "include/config.h"
 #include "include/types.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "table.h"
 #include "insnameelem.h"
 #include "include/util.h" // E.g. str()

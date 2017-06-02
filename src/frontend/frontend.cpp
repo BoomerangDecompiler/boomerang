@@ -22,7 +22,7 @@
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/register.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "boom_base/BinaryFile.h"
 #include "include/decoder.h"
 #include "db/basicblock.h"

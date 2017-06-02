@@ -41,7 +41,7 @@ public: \
   #include "include/signature.h"
   // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
   #if defined(_MSC_VER) && _MSC_VER <= 1100
-  #include "include/rtl.h"
+  #include "db/rtl.h"
   #endif
   #include "include/transformer.h"
   #include "generic.h"

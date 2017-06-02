@@ -35,7 +35,7 @@
 #include "db/proc.h"
 #include "db/prog.h"
 #include "db/register.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "include/signature.h"
 #include "sparcdecoder.h"
 

@@ -7,7 +7,7 @@
 #include "include/util.h"
 #include "db/cfg.h"
 #include "db/basicblock.h"
-#include "include/rtl.h"
+#include "db/rtl.h"
 #include "include/type.h"
 #include "db/prog.h"
 #include "include/statement.h"
