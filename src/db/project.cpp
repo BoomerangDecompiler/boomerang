@@ -1,9 +1,12 @@
-#include "include/project.h"
+#include "db/project.h"
 #include "BinaryImage.h"
+
 #include <cassert>
+
+
 Project::~Project()
 {
-	delete Image;
+	delete m_image;
 }
 
 
@@ -20,11 +23,11 @@ bool Project::serializeFrom(QIODevice& /*dev*/)
 }
 
 
-IBinaryImage *Project::image()
+IBinaryImage *Project::getOrCreateImage()
 {
-	if (!Image) {
-		Image = new BinaryImage;
+	if (!m_image) {
+		m_image = new BinaryImage;
 	}
 
-	return Image;
+	return m_image;
 }

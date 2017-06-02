@@ -87,6 +87,7 @@ protected:
 	std::map<ADDRESS, RTL *> previouslyDecoded;
 
 public:
+
 	/*
 	 * Constructor. Takes some parameters to save passing these around a lot
 	 */

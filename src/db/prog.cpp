@@ -85,9 +85,9 @@ Prog::Prog(const QString& name)
 	, m_iNumberedProc(1)
 {
 	m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
-	m_rootCluster = getOrInsertModule(getNameNoPathNoExt());
-	m_path        = m_name;
-	m_image       = Boomerang::get()->getImage();
+	m_rootCluster   = getOrInsertModule(getNameNoPathNoExt());
+	m_path          = m_name;
+	m_image         = Boomerang::get()->getImage();
 }
 
 
@@ -119,8 +119,8 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
 
 void Prog::setFrontEnd(FrontEnd *_pFE)
 {
-	m_loaderPlugin   = _pFE->getBinaryFile();
-	m_loaderIface    = qobject_cast<LoaderInterface *>(m_loaderPlugin);
+	m_loaderPlugin    = _pFE->getBinaryFile();
+	m_loaderIface     = qobject_cast<LoaderInterface *>(m_loaderPlugin);
 	m_defaultFrontend = _pFE;
 
 	for (Module *m : m_moduleList) {
@@ -438,7 +438,7 @@ Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned in
 
 bool Prog::isModuleUsed(Module *c) const
 {
-    // TODO: maybe module can have no procedures and still be used ?
+	// TODO: maybe module can have no procedures and still be used ?
 	return !c->empty();
 }
 
@@ -773,6 +773,8 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
 
 	return TRUE;
 }
+
+
 #endif
 
 
@@ -892,7 +894,7 @@ std::vector<SharedExp>& Prog::getDefaultReturns()
 
 bool Prog::isWin32() const
 {
-    return m_defaultFrontend && m_defaultFrontend->isWin32();
+	return m_defaultFrontend && m_defaultFrontend->isWin32();
 }
 
 

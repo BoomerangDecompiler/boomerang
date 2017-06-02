@@ -105,11 +105,11 @@ public:
 	char *prints();                         ///< Print to string (for debugging)
 	void dump();                            ///< Print to standard error for debugging
 	void makeCloneOf(StatementList& o);     ///< Make this a clone of o
-    
-    /// Return true if loc appears on the left of any statements in this list
-    /// Note: statements in this list are assumed to be assignments
+
+	/// Return true if loc appears on the left of any statements in this list
+	/// Note: statements in this list are assumed to be assignments
 	bool existsOnLeft(const SharedExp& loc) const; ///< True if loc exists on the LHS of any Assignment in this list
-	Assignment *findOnLeft(SharedExp loc);  ///< Return the first stmt with loc on the LHS
+	Assignment *findOnLeft(SharedExp loc);         ///< Return the first stmt with loc on the LHS
 };
 
 class StatementVec
@@ -190,14 +190,14 @@ public:
 	void print(QTextStream& os) const;           ///< Print to os
 	char *prints() const;                        ///< Print to string for debugging
 	void dump() const;
-	void printDiff(LocationSet *o) const;             ///< Diff 2 location sets to LOG_STREAM()
+	void printDiff(LocationSet *o) const;        ///< Diff 2 location sets to LOG_STREAM()
 	bool exists(SharedExp e) const;              ///< Return true if the location exists in the set
 	SharedExp findNS(SharedExp e);               ///< Find location e (no subscripts); nullptr if not found
 	bool existsImplicit(SharedExp e) const;      ///< Search for location e{-} or e{0} (e has no subscripts)
 
 	/// Return an iterator to the found item (or end() if not). Only really makes sense if e has a wildcard
-	iterator       find(SharedExp e)       { return lset.find(e); }
-    const_iterator find(SharedExp e) const { return lset.find(e); }
+	iterator find(SharedExp e)       { return lset.find(e); }
+	const_iterator find(SharedExp e) const { return lset.find(e); }
 
 	// Find a location with a different def, but same expression. For example, pass r28{10},
 	// return true if r28{20} in the set. If return true, dr points to the first different ref

@@ -10,7 +10,7 @@
 #include "log.h"
 #include "boomerang.h"
 
-#include "include/project.h"
+#include "db/project.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
 
@@ -60,10 +60,10 @@ QObject *BinaryFileFactory::load(const QString& sName)
 		return nullptr;
 	}
 
-	boom->project()->filedata().clear();
-	boom->project()->filedata() = srcFile.readAll();
+	boom->project()->getFiledata().clear();
+	boom->project()->getFiledata() = srcFile.readAll();
 
-	if (ldr_iface->loadFromMemory(boom->project()->filedata()) == 0) {
+	if (ldr_iface->loadFromMemory(boom->project()->getFiledata()) == 0) {
 		qWarning() << "Loading '" << sName << "' failed";
 		delete pBF;
 		return nullptr;

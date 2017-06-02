@@ -15,7 +15,7 @@
  * \brief    This file contains the definition for the Project class
  ******************************************************************************/
 
-#include "IProject.h"
+#include "db/IProject.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QIODevice>
@@ -26,19 +26,23 @@ class IBinaryImage;
 class Project : public QObject, public IProject
 {
 	Q_OBJECT
-	QByteArray file_bytes;
-	IBinaryImage *Image = nullptr; // raw memory interface
-	Prog *Program;                 // program interface
-	ITypeRecovery *type_recovery_engine;
+
+private:
+	QByteArray m_fileBytes;
+	IBinaryImage *m_image = nullptr; ///< raw memory interface
+	Prog *m_program;                 ///< program interface
+	ITypeRecovery *m_typeRecoveryEngine;
 
 public:
 	virtual ~Project();
+
 	bool serializeTo(QIODevice& dev);
 	bool serializeFrom(QIODevice& dev);
 
-	QByteArray& filedata() override { return file_bytes; }
-	IBinaryImage *image() override;
+	QByteArray& getFiledata()       override { return m_fileBytes; }
+	const QByteArray& getFiledata() const override { return m_fileBytes; }
 
-	ITypeRecovery *typeEngine() override { return type_recovery_engine; }
-	void typeEngine(ITypeRecovery *e) override { type_recovery_engine = e; }
+	IBinaryImage *getOrCreateImage() override;
+
+	const ITypeRecovery *getTypeEngine() const override { return m_typeRecoveryEngine; }
 };

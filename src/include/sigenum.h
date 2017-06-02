@@ -4,13 +4,13 @@
 enum Platform
 {
 	PLAT_PENTIUM,
-    PLAT_SPARC, 
-    PLAT_M68K, 
-    PLAT_PARISC,
-    PLAT_PPC,
-    PLAT_MIPS,
-    PLAT_ST20,
-    PLAT_GENERIC
+	PLAT_SPARC,
+	PLAT_M68K,
+	PLAT_PARISC,
+	PLAT_PPC,
+	PLAT_MIPS,
+	PLAT_ST20,
+	PLAT_GENERIC
 };
 
 enum callconv

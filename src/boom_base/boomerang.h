@@ -32,7 +32,7 @@
 #include "include/config.h"
 #include "include/types.h"
 #include "include/IBoomerang.h"
-#include "include/IProject.h"
+#include "db/IProject.h"
 
 #include <QObject>
 #include <QDir>

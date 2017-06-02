@@ -247,7 +247,7 @@ void UserProc::setParamType(int idx, SharedType ty)
 
 	StatementList::iterator it;
 
-    // find n-th parameter it
+	// find n-th parameter it
 	for (it = m_parameters.begin(); n != idx && it != m_parameters.end(); it++, n++) {
 	}
 
@@ -1397,7 +1397,6 @@ void UserProc::debugPrintAll(const char *step_name)
 *            ( i n i t i a l )                *
 *                                            *
 *    *    *    *    *    *    *    *    *    *    *    */
-
 void UserProc::initialiseDecompile()
 {
 	Boomerang::get()->alertStartDecompile(this);
@@ -1743,7 +1742,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 		theReturnStatement = nullptr;
 		m_cfg->clear();
 		m_prog->reDecode(this);
-		m_df.setRenameLocalsParams(false);                        // Start again with memofs
+		m_df.setRenameLocalsParams(false);                      // Start again with memofs
 		setStatus(PROC_VISITED);                                // Back to only visited progress
 		path->erase(--path->end());                             // Remove self from path
 		--indent;                                               // Because this is not recursion
@@ -1783,7 +1782,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 *    R e m o v e   u n u s e d   s t a t e m e n t s    *
 *                                                    *
 *    *    *    *    *    *    *    *    *    *    *    *    *    */
-
 void UserProc::remUnusedStmtEtc()
 {
 	bool convert;
@@ -2759,6 +2757,8 @@ void UserProc::trimParameters(int depth)
 		}
 	}
 }
+
+
 #endif
 
 void UserProc::removeReturn(SharedExp e)
@@ -4742,7 +4742,6 @@ bool UserProc::isPreserved(SharedExp e)
 }
 
 
-
 void UserProc::castConst(int num, SharedType ty)
 {
 	StatementList stmts;
@@ -4791,8 +4790,8 @@ void UserProc::addImplicitAssigns()
 
 	StatementList stmts;
 	getStatements(stmts);
-	ImplicitConverter       ic(m_cfg);
-	StmtImplicitConverter   sm(&ic, m_cfg);
+	ImplicitConverter     ic(m_cfg);
+	StmtImplicitConverter sm(&ic, m_cfg);
 
 	for (auto it = stmts.begin(); it != stmts.end(); it++) {
 		(*it)->accept(&sm);
@@ -4978,7 +4977,7 @@ void UserProc::dumpSymbolMapx() const
 void UserProc::testSymbolMap() const
 {
 	SymbolMap::const_iterator it1, it2;
-	bool                OK = true;
+	bool OK = true;
 	it1 = m_symbolMap.begin();
 
 	if (it1 != m_symbolMap.end()) {
@@ -5362,6 +5361,7 @@ QString UserProc::findFirstSymbol(const SharedExp& e)
 
 
 // Algorithm:
+
 /* fixCallAndPhiRefs
  *      for each statement s in this proc
  *        if s is a phi statement ps
@@ -5704,7 +5704,7 @@ void UserProc::initialParameters()
 bool UserProc::inductivePreservation(UserProc * /*topOfCycle*/)
 {
 	// FIXME: This is not correct in general!! It should work OK for self recursion,
-    // but not for general mutual recursion. Not that hard, just not done yet.
+	// but not for general mutual recursion. Not that hard, just not done yet.
 	return true;
 }
 
@@ -5980,7 +5980,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
 		}
 		else if (s->isReturn()) {
 			if (m_cycleGroup && m_cycleGroup->size()) { // If this function is involved in recursion
-				continue;                       //  then ignore this return statement
+				continue;                               //  then ignore this return statement
 			}
 		}
 		else if (s->isPhi() && (theReturnStatement != nullptr) && m_cycleGroup && m_cycleGroup->size()) {
@@ -6685,6 +6685,8 @@ void UserProc::setDominanceNumbers()
 
 	m_df.setDominanceNums(0, currNum);
 }
+
+
 #endif
 
 
@@ -6871,6 +6873,7 @@ void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
 
 	addLocal(ty, locName, base);
 }
+
 
 //    -    -    -    -    -    -    -    -    -
 
