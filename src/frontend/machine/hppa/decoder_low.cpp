@@ -946,8 +946,8 @@ list<RT *> *NJMCDecoder::decodeLowLevelInstruction(ADDRESS hostPC, ADDRESS pc, D
 		};
 		static char *MATCH_name_op_58[] =
 		{
-			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,       (char *)0,       (char *)0,       (char *)0,        "LDIL",         (char *)0,
-			"ADDIL",   (char *)0,   (char *)0,   "LDO",       (char *)0,       (char *)0,       "LDB",           "LDH",            "LDW",          "LDWM",
+			(char *)0, (char *)0,   (char *)0,   (char *)0,   (char *)0,       (char *)0,       (char *)0,       (char *)0,        "LDIL",           (char *)0,
+			"ADDIL",   (char *)0,   (char *)0,   "LDO",       (char *)0,       (char *)0,       "LDB",           "LDH",            "LDW",            "LDWM",
 			(char *)0, (char *)0,   (char *)0,   (char *)0,   "STB",           "STH",           "STW",           "STWM",
 		};
 		static char *MATCH_name_sub_16_71[] =

@@ -383,11 +383,12 @@ bool HpSomBinaryFile::loadFromMemory(QByteArray& imgdata)
 
 	// Work through the imports, and find those for which there are stubs using that import entry.
 	// Add the addresses of any such stubs.
-	ptrdiff_t deltaText = (text->hostAddr() - text->sourceAddr()).m_value;
-	ptrdiff_t deltaData = (data->hostAddr() - data->sourceAddr()).m_value;
+	ptrdiff_t deltaText = (text->getHostAddr() - text->getSourceAddr()).m_value;
+	ptrdiff_t deltaData = (data->getHostAddr() - data->getSourceAddr()).m_value;
 	// The "end of data" where r27 points is not necessarily the same as
 	// the end of the $DATA$ space. So we have to call getSubSpaceInfo
 	std::pair<ADDRESS, int> pr = getSubspaceInfo("$GLOBAL$");
+    
 	//  ADDRESS endData = pr.first + pr.second;
 	pr = getSubspaceInfo("$PLT$");
 	//  int minPLT = pr.first - endData;
@@ -621,7 +622,7 @@ std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap()
 
 	unsigned numDLT = UINT4(DLTable + 0x40);
 	// Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-	unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + Image->getSectionInfo(1)->hostAddr().m_value);
+	unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + Image->getSectionInfo(1)->getHostAddr().m_value);
 
 	// The DLT is paralelled by the first <numDLT> entries in the import table;
 	// the import table has the symbolic names

@@ -25,6 +25,7 @@ set(INCLUDES
 set(SRC
 	SymTab
 	SectionInfo
+	IBinarySection.h
 	IBinaryImage.h
 	BinaryImage
 	IBinarySymbols.h

@@ -271,7 +271,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 					IBinarySection *info = m_image->getSectionInfoByName(str);
 
 					if (info) {
-						generateDataSectionCode(sections[j], info->sourceAddr(), info->size(), code);
+						generateDataSectionCode(sections[j], info->getSourceAddr(), info->getSize(), code);
 					}
 					else {
 						generateDataSectionCode(sections[j], NO_ADDRESS, 0, code);
@@ -1129,7 +1129,7 @@ const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false *
 	if (si && !si->isAddressBss(uaddr)) {
 		// At this stage, only support ascii, null terminated, non unicode strings.
 		// At least 4 of the first 6 chars should be printable ascii
-		char *p = (char *)(uaddr + si->hostAddr() - si->sourceAddr()).m_value;
+		char *p = (char *)(uaddr + si->getHostAddr() - si->getSourceAddr()).m_value;
 
 		if (knownString) {
 			// No need to guess... this is hopefully a known string
@@ -1300,8 +1300,8 @@ const void *Prog::getCodeInfo(ADDRESS uAddr, const char *& last, int& delta) con
 	}
 
 	// Search all code and read-only sections
-	delta = (pSect->hostAddr() - pSect->sourceAddr()).m_value;
-	last  = (const char *)(pSect->hostAddr() + pSect->size()).m_value;
+	delta = (pSect->getHostAddr() - pSect->getSourceAddr()).m_value;
+	last  = (const char *)(pSect->getHostAddr() + pSect->getSize()).m_value;
 	const char *p = (const char *)(uAddr + delta).m_value;
 	return p;
 }

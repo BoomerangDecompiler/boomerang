@@ -155,11 +155,11 @@ bool IntelCoffFile::RealLoad(const char *sName)
 
 		if (-1 == sidx) {
 			SectionInfo si;
-			si.bCode        = 0 != (psh[iSection].sch_flags & 0x20);
-			si.bData        = 0 != (psh[iSection].sch_flags & 0x40);
-			si.bBss         = 0 != (psh[iSection].sch_flags & 0x80);
-			si.bReadOnly    = 0 != (psh[iSection].sch_flags & 0x1000);
-			si.pSectionName = strdup(sectname);
+			si.m_code        = 0 != (psh[iSection].sch_flags & 0x20);
+			si.m_data        = 0 != (psh[iSection].sch_flags & 0x40);
+			si.m_bss         = 0 != (psh[iSection].sch_flags & 0x80);
+			si.m_readOnly    = 0 != (psh[iSection].sch_flags & 0x1000);
+			si.m_sectionName = strdup(sectname);
 
 			sidx = m_iNumSections;
 			psi  = AddSection(&si);
@@ -264,7 +264,7 @@ bool IntelCoffFile::RealLoad(const char *sName)
 					m_Symbols.Add(pSymbols[iSym].csym_value, name);
 				}
 
-				if (pSymbols[iSym].csym_type & 0x20 && psi->bCode) {
+				if (pSymbols[iSym].csym_type & 0x20 && psi->m_code) {
 					PSectionInfo si = new SectionInfo();
 					*si             = *psi;
 					si->uNativeAddr = pSymbols[iSym].csym_value;
@@ -462,8 +462,8 @@ ADDRESS IntelCoffFile::GetEntryPoint()
 		return NO_ADDRESS;
 	}
 
-	printf("IntelCoffFile::GetEntryPoint returning %08x\n", (*it)->uNativeAddr);
-	return (*it)->uNativeAddr;
+	printf("IntelCoffFile::GetEntryPoint returning %08x\n", (*it)->m_nativeAddr);
+	return (*it)->m_nativeAddr;
 }
 
 

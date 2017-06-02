@@ -182,9 +182,9 @@ bool PalmBinaryFile::loadFromMemory(QByteArray& img)
 	// When the info is all boiled down, the two things we need from the
 	// code 0 section are at offset 0, the size of data above a5, and at
 	// offset 4, the size below. Save the size below as a member variable
-	m_SizeBelowA5 = UINT4ADDR(pCode0->hostAddr() + 4);
+	m_SizeBelowA5 = UINT4ADDR(pCode0->getHostAddr() + 4);
 	// Total size is this plus the amount above (>=) a5
-	unsigned sizeData = m_SizeBelowA5 + UINT4ADDR(pCode0->hostAddr());
+	unsigned sizeData = m_SizeBelowA5 + UINT4ADDR(pCode0->getHostAddr());
 
 	// Allocate a new data section
 	m_pData = new unsigned char[sizeData];
@@ -194,13 +194,13 @@ bool PalmBinaryFile::loadFromMemory(QByteArray& img)
 	}
 
 	// Uncompress the data. Skip first long (offset of CODE1 "xrefs")
-	p = (unsigned char *)(pData->hostAddr() + 4).m_value;
+	p = (unsigned char *)(pData->getHostAddr() + 4).m_value;
 	int start = (int)UINT4(p);
 	p += 4;
 	unsigned char *q   = (m_pData + m_SizeBelowA5 + start);
 	bool          done = false;
 
-	while (!done && (p < (unsigned char *)(pData->hostAddr() + pData->size()).m_value)) {
+	while (!done && (p < (unsigned char *)(pData->getHostAddr() + pData->getSize()).m_value)) {
 		unsigned char rle = *p++;
 
 		if (rle == 0) {
@@ -292,7 +292,7 @@ bool PalmBinaryFile::loadFromMemory(QByteArray& img)
 	}
 
 	// printf("Used %u bytes of %u in decompressing data section\n",
-	// p-(unsigned char*)pData->hostAddr(), pData->size());
+	// p-(unsigned char*)pData->getHostAddr(), pData->size());
 
 	// Replace the data pointer and size with the uncompressed versions
 
@@ -300,7 +300,7 @@ bool PalmBinaryFile::loadFromMemory(QByteArray& img)
 	pData->resize(sizeData);
 	// May as well make the native address zero; certainly the offset in the
 	// file is no longer appropriate (and is confusing)
-	// pData->sourceAddr() = 0;
+	// pData->getSourceAddr() = 0;
 	Symbols->create(getMainEntryPoint(), "PilotMain").setAttr("EntryPoint", true);
 	return true;
 }
@@ -401,7 +401,7 @@ std::pair<ADDRESS, unsigned> PalmBinaryFile::GetGlobalPointerInfo()
 	const IBinarySection *ps = Image->getSectionInfoByName("data0");
 
 	if (ps) {
-		agp = ps->sourceAddr();
+		agp = ps->getSourceAddr();
 	}
 
 	std::pair<ADDRESS, unsigned> ret(agp, m_SizeBelowA5);
@@ -501,11 +501,11 @@ ADDRESS PalmBinaryFile::getMainEntryPoint()
 	}
 
 	// Return the start of the code1 section
-	ADDRESS   ha(psect->hostAddr());
+	ADDRESS   ha(psect->getHostAddr());
 	uintptr_t gb(ha.m_value);
-	uint16_t  *startCode = (uint16_t *)psect->hostAddr().m_value;
+	uint16_t  *startCode = (uint16_t *)psect->getHostAddr().m_value;
 	startCode = (uint16_t *)gb;
-	int delta = (psect->hostAddr() - psect->sourceAddr()).m_value;
+	int delta = (psect->getHostAddr() - psect->getSourceAddr()).m_value;
 
 	// First try the CW first jump pattern
 	SWord *res = findPattern(startCode, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord), 1);
@@ -567,7 +567,7 @@ void PalmBinaryFile::GenerateBinFiles(const QString& path) const
 			return;
 		}
 
-		fwrite((void *)psect.hostAddr().m_value, psect.size(), 1, f);
+		fwrite((void *)psect.getHostAddr().m_value, psect.getSize(), 1, f);
 		fclose(f);
 	}
 }

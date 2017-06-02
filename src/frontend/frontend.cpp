@@ -518,7 +518,7 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc)
 	}
 
 	const IBinarySection *pSect           = Image->getSectionInfoByAddr(pc);
-	ptrdiff_t            host_native_diff = (pSect->hostAddr() - pSect->sourceAddr()).m_value;
+	ptrdiff_t            host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).m_value;
 	return decoder->decodeInstruction(pc, host_native_diff);
 }
 

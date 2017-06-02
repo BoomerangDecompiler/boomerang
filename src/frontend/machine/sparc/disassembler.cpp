@@ -210,8 +210,8 @@ int NJMCDecoder::decodeAssemblyInstruction(ADDRESS pc, int delta)
 		};
 		static char *MATCH_name_rs1_43[] =
 		{
-			"RDY",  "JMPL",  "JMPL",  "JMPL",  "JMPL",     "JMPL",     "JMPL",     "JMPL",     "JMPL",    "JMPL",    "JMPL",
-			"JMPL", "JMPL",  "JMPL",  "JMPL",  (char *)0,  "JMPL",     "JMPL",     "JMPL",     "JMPL",    "JMPL",    "JMPL",
+			"RDY",  "JMPL",  "JMPL",  "JMPL",  "JMPL",     "JMPL",     "JMPL",     "JMPL",     "JMPL",     "JMPL",    "JMPL",
+			"JMPL", "JMPL",  "JMPL",  "JMPL",  (char *)0,  "JMPL",     "JMPL",     "JMPL",     "JMPL",     "JMPL",    "JMPL",
 			"JMPL", "JMPL",  "JMPL",  "JMPL",  "JMPL",     "JMPL",     "JMPL",     "JMPL",     "JMPL",
 		};
 		static char *MATCH_name_op3_44[] =

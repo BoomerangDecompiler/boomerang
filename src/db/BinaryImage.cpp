@@ -93,7 +93,7 @@ char BinaryImage::readNative1(ADDRESS nat)
 		return -1;
 	}
 
-	ADDRESS host = si->hostAddr() - si->sourceAddr() + nat;
+	ADDRESS host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return *(char *)host.m_value;
 }
 
@@ -106,7 +106,7 @@ int BinaryImage::readNative2(ADDRESS nat)
 		return 0;
 	}
 
-	ADDRESS host = si->hostAddr() - si->sourceAddr() + nat;
+	ADDRESS host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return Read2((short *)host.m_value, si->getEndian());
 }
 
@@ -119,7 +119,7 @@ int BinaryImage::readNative4(ADDRESS nat)
 		return 0;
 	}
 
-	ADDRESS host = si->hostAddr() - si->sourceAddr() + nat;
+	ADDRESS host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return Read4((int *)host.m_value, si->getEndian());
 }
 
@@ -202,20 +202,20 @@ void BinaryImage::writeNative4(ADDRESS nat, uint32_t n)
 		return;
 	}
 
-	ADDRESS host      = si->hostAddr() - si->sourceAddr() + nat;
+	ADDRESS host      = si->getHostAddr() - si->getSourceAddr() + nat;
 	uint8_t *host_ptr = (unsigned char *)host.m_value;
 
 	if (si->getEndian() == 1) {
 		host_ptr[0] = (n >> 24) & 0xff;
 		host_ptr[1] = (n >> 16) & 0xff;
-		host_ptr[2] = (n >> 8) & 0xff;
-		host_ptr[3] = n & 0xff;
+		host_ptr[2] = (n >>  8) & 0xff;
+		host_ptr[3] =  n        & 0xff;
 	}
 	else {
 		host_ptr[3] = (n >> 24) & 0xff;
 		host_ptr[2] = (n >> 16) & 0xff;
-		host_ptr[1] = (n >> 8) & 0xff;
-		host_ptr[0] = n & 0xff;
+		host_ptr[1] = (n >>  8) & 0xff;
+		host_ptr[0] =  n        & 0xff;
 	}
 }
 
@@ -239,17 +239,17 @@ void BinaryImage::calculateTextLimits()
 			continue;
 		}
 
-		if (pSect->sourceAddr() < m_limitTextLow) {
-			m_limitTextLow = pSect->sourceAddr();
+		if (pSect->getSourceAddr() < m_limitTextLow) {
+			m_limitTextLow = pSect->getSourceAddr();
 		}
 
-		ADDRESS hiAddress = pSect->sourceAddr() + pSect->size();
+		ADDRESS hiAddress = pSect->getSourceAddr() + pSect->getSize();
 
 		if (hiAddress > m_limitTextHigh) {
 			m_limitTextHigh = hiAddress;
 		}
 
-		ptrdiff_t host_native_diff = (pSect->hostAddr() - pSect->sourceAddr()).m_value;
+		ptrdiff_t host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).m_value;
 
 		if (m_textDelta == 0) {
 			m_textDelta = host_native_diff;
@@ -309,7 +309,7 @@ bool BinaryImage::isReadOnly(ADDRESS uEntry)
 		return false;
 	}
 
-	if (p->bReadOnly) {
+	if (p->isReadOnly()) {
 		return true;
 	}
 
@@ -350,9 +350,7 @@ SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRE
 		return nullptr;
 	}
 
-	SectionInfo *sect = new SectionInfo(name);
-	sect->uNativeAddr  = from;
-	sect->uSectionSize = (to - from).m_value;
+	SectionInfo *sect = new SectionInfo(from, (to-from).m_value, name);
 	m_sections.push_back(sect);
 
 	m_sectionMap.add(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), sect));

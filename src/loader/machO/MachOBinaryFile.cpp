@@ -329,7 +329,7 @@ bool MachOBinaryFile::loadFromMemory(QByteArray& img)
 													ADDRESS::n(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
 		assert(sect);
 		sect->setHostAddr(ADDRESS::g(ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value));
-		assert((sect->hostAddr() + sect->size()) <= ADDRESS::host_ptr(base + loaded_size));
+		assert((sect->getHostAddr() + sect->getSize()) <= ADDRESS::host_ptr(base + loaded_size));
 
 		unsigned long l = BMMH(segments[i].initprot);
 		sect->setBss(false) // TODO

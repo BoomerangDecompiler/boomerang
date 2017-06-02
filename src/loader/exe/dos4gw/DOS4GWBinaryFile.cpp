@@ -112,8 +112,8 @@ ADDRESS DOS4GWBinaryFile::getMainEntryPoint()
 	}
 
 	assert(si);
-	ADDRESS  nativeOrigin = si->sourceAddr();
-	unsigned textSize     = si->size();
+	ADDRESS  nativeOrigin = si->getSourceAddr();
+	unsigned textSize     = si->getSize();
 
 	if (textSize < 0x300) {
 		lim = p + textSize;

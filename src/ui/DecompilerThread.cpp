@@ -170,7 +170,8 @@ void Decompiler::load()
 	}
 
 	for (const IBinarySection *section : *Image) {
-		emit newSection(section->getName(), section->sourceAddr(), section->sourceAddr() + section->size());
+		emit newSection(section->getName(), section->getSourceAddr(),
+                        section->getSourceAddr() + section->getSize());
 	}
 
 	emit loadCompleted();
