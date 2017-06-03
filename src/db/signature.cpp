@@ -96,7 +96,7 @@ QString Signature::getConventionName(CallConv cc)
 
 namespace CallingConvention
 {
-// Win32Signature is for non-thiscall signatures: all parameters pushed
+/// Win32Signature is for non-thiscall signatures: all parameters pushed
 class Win32Signature : public Signature
 {
 public:
@@ -155,6 +155,9 @@ public:
 	virtual ~PentiumSignature() {}
 	virtual std::shared_ptr<Signature> clone() const override;
 	virtual bool operator==(const Signature& other) const override;
+
+	/// FIXME: This needs changing. Would like to check that pc=pc and sp=sp
+	/// (or maybe sp=sp+4) for qualifying procs. Need work to get there
 	static bool qualified(UserProc *p, Signature&);
 
 	virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
@@ -168,7 +171,9 @@ public:
 	virtual int getStackRegister() const noexcept(false) override { return 28; }
 	virtual SharedExp getProven(SharedExp left) const override;
 	virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
-	virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
+
+	/// Return a list of locations defined by library calls
+	virtual void setLibraryDefines(StatementList *defs) override;
 
 	virtual bool isPromoted() const override { return true; }
 	virtual Platform getPlatform() const override { return PLAT_PENTIUM; }
@@ -200,11 +205,15 @@ public:
 	virtual int getStackRegister() const noexcept(false) override { return 14; }
 	virtual SharedExp getProven(SharedExp left) const override;
 	virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
-	virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
 
-	// Stack offsets can be negative (inherited) or positive:
+	/// Return a list of locations defined by library calls
+	virtual void setLibraryDefines(StatementList *defs) override;
+
+	/// Stack offsets can be negative (inherited) or positive:
 	virtual bool isLocalOffsetPositive() const override { return true; }
-	// An override for testing locals
+
+	/// An override for testing locals
+	/// An override for the SPARC: [sp+0] .. [sp+88] are local variables (effectively), but [sp + >=92] are memory parameters
 	virtual bool isAddrOfStackLocal(Prog *prog, const SharedExp& e) const override;
 
 	virtual bool isPromoted() const override { return true; }
@@ -277,14 +286,19 @@ public:
 
 	virtual int getStackRegister() const noexcept(false) override { return 29; }
 	virtual SharedExp getProven(SharedExp left) const override;
-	virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
-	virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
+
+	// Return whether e is preserved by this proc
+	virtual bool isPreserved(SharedExp e) const override;
+
+	/// Return a list of locations defined by library calls
+	virtual void setLibraryDefines(StatementList *defs) override;
 
 	virtual bool isLocalOffsetPositive() const override { return true; }
 	virtual bool isPromoted() const override { return true; }
 	virtual Platform getPlatform() const override { return PLAT_MIPS; }
 	virtual CallConv getConvention() const override { return CONV_C; }
 };
+
 
 class ST20Signature : public Signature
 {
@@ -316,6 +330,7 @@ public:
 };
 } // namespace StdC
 } // namespace CallingConvention
+
 
 CallingConvention::Win32Signature::Win32Signature(const QString& nam)
 	: Signature(nam)
@@ -605,7 +620,6 @@ bool CallingConvention::Win32Signature::isPreserved(SharedExp e) const
 }
 
 
-// Return a list of locations defined by library calls
 void CallingConvention::Win32Signature::setLibraryDefines(StatementList *defs)
 {
 	if (defs->size()) {
@@ -700,8 +714,6 @@ bool CallingConvention::StdC::PentiumSignature::operator==(const Signature& othe
 }
 
 
-// FIXME: This needs changing. Would like to check that pc=pc and sp=sp
-// (or maybe sp=sp+4) for qualifying procs. Need work to get there
 bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
 	Platform plat = p->getProg()->getFrontEndId();
@@ -864,7 +876,6 @@ bool CallingConvention::StdC::PentiumSignature::isPreserved(SharedExp e) const
 }
 
 
-// Return a list of locations defined by library calls
 void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList *defs)
 {
 	if (defs->size()) {
@@ -1052,6 +1063,7 @@ std::shared_ptr<Signature> CallingConvention::StdC::ST20Signature::clone() const
 	n->m_preferredReturn = m_preferredReturn;
 	n->m_preferredParams = m_preferredParams;
 	n->m_unknown         = m_unknown;
+
 	return std::shared_ptr<Signature>(n);
 }
 
@@ -1173,19 +1185,6 @@ bool CallingConvention::StdC::ST20Signature::qualified(UserProc *p, Signature& /
 	return true;
 }
 
-
-/*
- * bool CallingConvention::StdC::PPCSignature::isAddrOfStackLocal(Prog* prog, Exp* e) {
- *  LOG << "doing PPC specific check on " << e << "\n";
- *  // special case for m[r1{-} + 4] which is used to store the return address in non-leaf procs.
- *  if (e->getOper() == opPlus && e->getSubExp1()->isSubscript() &&
- *      ((RefExp*)(e->getSubExp1()))->isImplicitDef() && e->getSubExp1()->getSubExp1()->isRegOfK() &&
- *      ((Const*)e->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 1 && e->getSubExp2()->isIntConst() &&
- *      ((Const*)e->getSubExp2())->getInt() == 4)
- *      return true;
- *  return Signature::isAddrOfStackLocal(prog, e);
- * }
- */
 
 CallingConvention::StdC::SparcSignature::SparcSignature(const QString& nam)
 	: Signature(nam)
@@ -1431,7 +1430,6 @@ bool CallingConvention::StdC::MIPSSignature::isPreserved(SharedExp e) const
 }
 
 
-// Return a list of locations defined by library calls
 void CallingConvention::StdC::MIPSSignature::setLibraryDefines(StatementList *defs)
 {
 	if (defs->size()) {
@@ -1558,7 +1556,6 @@ bool CallingConvention::StdC::SparcSignature::isPreserved(SharedExp e) const
 }
 
 
-// Return a list of locations defined by library calls
 void CallingConvention::StdC::SparcSignature::setLibraryDefines(StatementList *defs)
 {
 	if (defs->size()) {
@@ -1925,7 +1922,6 @@ void Signature::setParamExp(int n, SharedExp e)
 }
 
 
-// Return the index for the given expression, or -1 if not found
 int Signature::findParam(const SharedExp& e) const
 {
 	for (unsigned i = 0; i < getNumParams(); i++) {
@@ -1981,7 +1977,6 @@ void Signature::addReturn(SharedType type, SharedExp exp)
 }
 
 
-// Deprecated. Use the above version.
 void Signature::addReturn(SharedExp exp)
 {
 	// addReturn(exp->getType() ? exp->getType() : new IntegerType(), exp);
@@ -2017,7 +2012,6 @@ SharedExp Signature::getArgumentExp(int n) const
 }
 
 
-/// any signature can be promoted to a higher level signature, if available
 std::shared_ptr<Signature> Signature::promote(UserProc *p)
 {
 	// FIXME: the whole promotion idea needs a redesign...
@@ -2258,9 +2252,6 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 }
 
 
-// A bit of a cludge. Problem is that we can't call the polymorphic getReturnExp() until signature promotion has
-// happened. For the switch logic, that happens way too late. So for now, we have this cludge.
-// This is very very hacky! (trent)
 /*static*/ SharedExp Signature::getReturnExp2(LoaderInterface *pBF)
 {
 	switch (pBF->getMachine())
@@ -2282,9 +2273,6 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 }
 
 
-// Not very satisfying to do things this way. Problem is that the polymorphic CallingConvention objects are set up
-// very late in the decompilation. Get the set of registers that are not saved in library functions (or any
-// procedures that follow the calling convention)
 void Signature::setABIdefines(Prog *prog, StatementList *defs)
 {
 	if (defs->size()) {
@@ -2330,7 +2318,6 @@ void Signature::setABIdefines(Prog *prog, StatementList *defs)
 }
 
 
-// Get the expected argument location, based solely on the machine of the input program
 SharedExp Signature::getEarlyParamExp(int n, Prog *prog) const
 {
 	MACHINE mach = prog->getMachine();
@@ -2413,7 +2400,7 @@ int Signature::getStackRegister() const noexcept(false)
 	throw StackRegisterNotDefinedException();
 }
 
-// Needed before the signature is promoted
+
 int Signature::getStackRegister(Prog *prog) noexcept(false)
 {
 	MACHINE mach = prog->getMachine();
@@ -2437,12 +2424,7 @@ int Signature::getStackRegister(Prog *prog) noexcept(false)
 	}
 }
 
-/**
- * Does expression e represent a local stack-based variable?
- * Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, at POSITIVE offsets from the
- * stack pointer register
- * Also, I believe that the PA/RISC stack grows away from 0
- */
+
 bool Signature::isStackLocal(Prog *prog, SharedExp e) const
 {
 	// e must be m[...]
@@ -2505,7 +2487,6 @@ bool Signature::isAddrOfStackLocal(Prog *prog, const SharedExp& e) const
 }
 
 
-// An override for the SPARC: [sp+0] .. [sp+88] are local variables (effectively), but [sp + >=92] are memory parameters
 bool CallingConvention::StdC::SparcSignature::isAddrOfStackLocal(Prog *prog, const SharedExp& e) const
 {
 	OPER op = e->getOper();
@@ -2568,10 +2549,6 @@ bool Parameter::operator==(Parameter& other) const
 	return true;
 }
 
-
-// bool CallingConvention::StdC::HppaSignature::isLocalOffsetPositive() {
-//      return true;
-// }
 
 bool Signature::isOpCompatStackLocal(OPER op) const
 {
@@ -2788,7 +2765,6 @@ bool CallingConvention::StdC::SparcSignature::argumentCompare(Assignment& a, Ass
 }
 
 
-// Class Return methods
 std::shared_ptr<Return> Return::clone() const
 {
 	return std::make_shared<Return>(m_type->clone(), SharedExp(m_exp->clone()));

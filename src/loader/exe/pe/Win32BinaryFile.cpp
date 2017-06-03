@@ -826,7 +826,7 @@ enum SymTagEnum
 
 char *basicTypes[] =
 {
-	"notype",        "void",        "char",        "WCHAR",        "??",        "??",        "int",        "unsigned int",        "float",        "bcd",        "bool",        "??", "??",
+	"notype",        "void",        "char",        "WCHAR",        "??",        "??",        "int",        "unsigned int",        "float",        "bcd",        "bool",        "??",        "??",
 	"long"
 	"unsigned long",
 };

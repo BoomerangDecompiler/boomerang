@@ -142,6 +142,8 @@ public:
 
 	// get the return location
 	virtual void addReturn(SharedType type, SharedExp e = nullptr);
+
+	/// \deprecated Deprecated. Use the above version.
 	virtual void addReturn(SharedExp e);
 
 	virtual void addReturn(std::shared_ptr<Return> ret) { m_returns.emplace_back(ret); }
@@ -196,6 +198,7 @@ public:
 	virtual void setParamName(int n, const char *nam);
 	virtual void setParamExp(int n, SharedExp e);
 
+	// Return the index for the given expression, or -1 if not found
 	virtual int findParam(const SharedExp& e) const;
 	virtual int findParam(const QString& nam) const;
 
@@ -209,6 +212,7 @@ public:
 
 	bool dfaTypeAnalysis(Cfg *cfg);
 
+	/// any signature can be promoted to a higher level signature, if available
 	virtual std::shared_ptr<Signature> promote(UserProc *p);
 
 	void print(QTextStream& out, bool = false) const;
@@ -220,8 +224,10 @@ public:
 	// Special for Mike: find the location where the first outgoing (actual) parameter is conventionally held
 	SharedExp getFirstArgLoc(Prog *prog) const;
 
-	// This is like getParamLoc, except that it works before Signature::analyse is called.  It is used only to order
-	// parameters correctly, for the common case where the proc will end up using a standard calling convention
+	/// Get the expected argument location, based solely on the machine of the input program
+	///
+	/// This is like getParamLoc, except that it works before Signature::analyse is called.  It is used only to order
+	/// parameters correctly, for the common case where the proc will end up using a standard calling convention
 	SharedExp getEarlyParamExp(int n, Prog *prog) const;
 
 	// Get a wildcard to find stack locations
@@ -232,8 +238,16 @@ public:
 		StackRegisterNotDefinedException() {}
 	};
 
+	/// Needed before the signature is promoted
 	virtual int getStackRegister() const noexcept(false);
 	static int getStackRegister(Prog *prog) noexcept(false);
+
+	/**
+	 * Does expression e represent a local stack-based variable?
+	 * Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, at POSITIVE offsets from the
+	 * stack pointer register
+	 * Also, I believe that the PA/RISC stack grows away from 0
+	 */
 	bool isStackLocal(Prog *prog, SharedExp e) const;
 
 	// Similar to the above, but checks for address of a local (i.e. sp{0} -/+ K)
@@ -249,6 +263,9 @@ public:
 	bool isOpCompatStackLocal(OPER op) const;
 
 	/// \todo remove quick and dirty hack
+	/// A bit of a cludge. Problem is that we can't call the polymorphic getReturnExp() until signature promotion has
+	/// happened. For the switch logic, that happens way too late. So for now, we have this cludge.
+	/// This is very very hacky! (trent)
 	static SharedExp getReturnExp2(LoaderInterface *pBF);
 	static StatementList& getStdRetStmt(Prog *prog);
 
@@ -257,6 +274,10 @@ public:
 	virtual bool isPreserved(SharedExp /*e*/) const { return false; }     // Return whether e is preserved by this proc
 
 	virtual void setLibraryDefines(StatementList * /*defs*/) {} // Set the locations defined by library calls
+
+	/// Not very satisfying to do things this way. Problem is that the polymorphic CallingConvention objects are set up
+	/// very late in the decompilation. Get the set of registers that are not saved in library functions (or any
+	/// procedures that follow the calling convention)
 	static void setABIdefines(Prog *prog, StatementList *defs);
 
 	// Return true if this is a known machine (e.g. SparcSignature as opposed to Signature)
