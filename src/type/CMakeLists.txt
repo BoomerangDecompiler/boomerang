@@ -11,7 +11,3 @@ SET(SRC
 add_library(type STATIC ${SRC})
 qt5_use_modules(type Core)
 
-if (BUILD_TESTING)
-	add_subdirectory(unit_testing)
-endif ()
-

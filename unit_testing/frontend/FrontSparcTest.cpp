@@ -10,7 +10,7 @@
 #include "db/proc.h"
 #include "db/prog.h"
 #include "include/frontend.h"
-#include "sparcfrontend.h"
+#include "frontend/sparc/sparcfrontend.h"
 #include "db/cfg.h"
 #include "db/rtl.h"
 #include "boom_base/BinaryFile.h"

@@ -55,6 +55,11 @@ set(SRC
     signature.h
     signature.cpp
     
+    statement.cpp
+    table.cpp
+    visitor.cpp
+#	xmlprogparser.cpp
+
     #ssl handling
     ssl/sslinst.cpp
     ssl/sslparser.cpp
@@ -62,16 +67,7 @@ set(SRC
     ssl/sslparser_support.cpp
     ssl/sslscanner.cpp
     ssl/sslscanner.h
-    
-    statement.cpp
-    table.cpp
-    visitor.cpp
-#	xmlprogparser.cpp
 )
-
-if (BUILD_TESTING)
-	add_subdirectory(unit_testing)
-endif ()
 
 add_library(db STATIC ${SRC} ${INCLUDES})
 

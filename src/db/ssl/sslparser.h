@@ -8,8 +8,8 @@
 #include "include/config.h"
 #include "include/types.h"
 #include "db/rtl.h"
-#include "table.h"
-#include "insnameelem.h"
+#include "db/table.h"
+#include "db/insnameelem.h"
 #include "include/util.h" // E.g. str()
 #include "include/statement.h"
 

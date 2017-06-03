@@ -1,4 +1,5 @@
 #include <QtTest/QTest>
+
 class CTest : public QObject
 {
 	Q_OBJECT

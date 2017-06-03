@@ -22,7 +22,3 @@ BOOMERANG_ADD_LOADER(HpSom    hpsom/HpSomBinaryFile.cpp hpsom/HpSomBinaryFile.h)
 BOOMERANG_ADD_LOADER(Palm     palm/PalmBinaryFile.cpp palm/PalmBinaryFile.h palm/palmsystraps.h)
 BOOMERANG_ADD_LOADER(MachO    machO/MachOBinaryFile.cpp machO/MachOBinaryFile.h machO/MachOBinaryFile.cpp machO/macho-apple.h)
 
-if (BUILD_TESTING)
-	add_subdirectory(unit_testing)
-endif ()
-

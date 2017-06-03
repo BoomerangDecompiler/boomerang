@@ -9,7 +9,7 @@
 #include "db/rtl.h"
 #include "db/prog.h"
 #include "include/frontend.h"
-#include "pentiumfrontend.h"
+#include "frontend/pentium/pentiumfrontend.h"
 #include "boom_base/BinaryFile.h"
 #include "boom_base/BinaryFileStub.h"
 #include "include/decoder.h"

@@ -1,8 +1,5 @@
-set(target_INCLUDE_DIR
-    ..
-)
 
-include_directories(${target_INCLUDE_DIR}
+include_directories(
     ${CMAKE_SOURCE_DIR}/src/frontend/sparc
     ${CMAKE_SOURCE_DIR}/src/frontend/pentium
 )

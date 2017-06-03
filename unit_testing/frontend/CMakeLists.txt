@@ -1,9 +1,4 @@
 
-include_directories(
-	..
-	../../frontend/sparc
-	../../frontend/pentium
-)
 
 set(test_LIBRARIES
 	${PROTOBUF_LIBRARIES}

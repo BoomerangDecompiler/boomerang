@@ -33,7 +33,7 @@
 #define ELFBINFILE        baseDir.absoluteFilePath("out/lib/ElfBinaryFile.so")
 #endif
 
-#include "../microX86dis.c"
+#include "loader/microX86dis.c"
 #include "LoaderTest.h"
 #include "boom_base/log.h"
 #include "db/IBinaryImage.h"

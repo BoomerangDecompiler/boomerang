@@ -51,7 +51,3 @@ add_library(frontend STATIC ${SRC})
 add_dependencies(frontend CopySSLs)
 qt5_use_modules(frontend Core)
 
-if (BUILD_TESTING)
-	add_subdirectory(unit_testing)
-endif ()
-
