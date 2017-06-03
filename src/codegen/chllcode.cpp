@@ -15,7 +15,7 @@
 
 #include "include/msvc_fixes.h"
 #include "db/cfg.h"
-#include "include/statement.h"
+#include "db/statement.h"
 #include "db/exp.h"
 #include "db/proc.h"
 #include "db/prog.h"
@@ -30,6 +30,7 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
+
 #include <cassert>
 #include <sstream>
 #include <cstring>

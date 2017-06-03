@@ -17,7 +17,7 @@
 
 #include "include/types.h"
 #include "include/managed.h"
-#include "include/statement.h"
+#include "db/statement.h"
 #include "db/exp.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
@@ -912,7 +912,7 @@ void StatementList::removeDefOf(SharedExp loc)
 
 
 // Find the first Assignment with loc on the LHS
-Assignment *StatementList::findOnLeft(SharedExp loc)
+Assignment *StatementList::findOnLeft(SharedExp loc) const
 {
 	if (empty()) {
 		return nullptr;

@@ -68,7 +68,7 @@ void *alloca();
 #include "table.h"
 #include "insnameelem.h"
 #include "include/util.h" // E.g. str()
-#include "include/statement.h"
+#include "db/statement.h"
 #include "db/exp.h"
 
 #include "sslscanner.h"

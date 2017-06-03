@@ -20,7 +20,7 @@
 #include "db/cfg.h"
 
 #include "include/types.h"
-#include "include/statement.h"
+#include "db/statement.h"
 #include "db/signature.h"
 #include "db/exp.h"
 #include "db/register.h"

@@ -21,7 +21,7 @@
 
 #include <vector>
 #include <cassert>
-#include "include/statement.h" // For CallStatement::RetLocs
+#include "db/statement.h" // For CallStatement::RetLocs
 #include <memory>
 
 class BasicBlock;

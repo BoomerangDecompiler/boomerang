@@ -21,7 +21,7 @@
 
 #include "include/config.h"
 #include "include/types.h"
-#include "include/statement.h"
+#include "db/statement.h"
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/register.h"

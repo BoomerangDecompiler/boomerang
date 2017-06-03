@@ -1232,14 +1232,14 @@ void PhiAssign::dfaTypeAnalysis(bool& ch)
 		meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
 	}
 
-	type = type->meetWith(meetOfArgs, ch);
+	m_type = m_type->meetWith(meetOfArgs, ch);
 
 	for (it = DefVec.begin(); it != DefVec.end(); ++it) {
 		if (it->second.e == nullptr) {
 			continue;
 		}
 
-		it->second.def()->meetWithFor(type, it->second.e, ch);
+		it->second.def()->meetWithFor(m_type, it->second.e, ch);
 	}
 
 	Assignment::dfaTypeAnalysis(ch); // Handle the LHS
@@ -1250,20 +1250,20 @@ void Assign::dfaTypeAnalysis(bool& ch)
 {
 	SharedType tr = rhs->ascendType();
 
-	type = type->meetWith(tr, ch, true); // Note: bHighestPtr is set true, since the lhs could have a greater type
+	m_type = m_type->meetWith(tr, ch, true); // Note: bHighestPtr is set true, since the lhs could have a greater type
 	// (more possibilities) than the rhs. Example: pEmployee = pManager.
-	rhs->descendType(type, ch, this);    // This will effect rhs = rhs MEET lhs
+	rhs->descendType(m_type, ch, this);    // This will effect rhs = rhs MEET lhs
 	Assignment::dfaTypeAnalysis(ch);     // Handle the LHS wrt m[] operands
 }
 
 
 void Assignment::dfaTypeAnalysis(bool& ch)
 {
-	auto sig = proc->getSignature();
+	auto sig = m_proc->getSignature();
 
 	// Don't do this for the common case of an ordinary local, since it generates hundreds of implicit references,
 	// without any new type information
-	if (lhs->isMemOf() && !sig->isStackLocal(proc->getProg(), lhs)) {
+	if (lhs->isMemOf() && !sig->isStackLocal(m_proc->getProg(), lhs)) {
 		SharedExp addr = lhs->getSubExp1();
 		// Meet the assignment type with *(type of the address)
 		SharedType addrType = addr->ascendType();
@@ -1276,9 +1276,9 @@ void Assignment::dfaTypeAnalysis(bool& ch)
 			memofType = VoidType::get();
 		}
 
-		type = type->meetWith(memofType, ch);
+		m_type = m_type->meetWith(memofType, ch);
 		// Push down the fact that the memof operand is a pointer to the assignment type
-		addrType = PointerType::get(type);
+		addrType = PointerType::get(m_type);
 		addr->descendType(addrType, ch, this);
 	}
 }

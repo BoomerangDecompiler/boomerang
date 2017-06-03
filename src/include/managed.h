@@ -109,7 +109,7 @@ public:
 	/// Return true if loc appears on the left of any statements in this list
 	/// Note: statements in this list are assumed to be assignments
 	bool existsOnLeft(const SharedExp& loc) const; ///< True if loc exists on the LHS of any Assignment in this list
-	Assignment *findOnLeft(SharedExp loc);         ///< Return the first stmt with loc on the LHS
+	Assignment *findOnLeft(SharedExp loc) const;         ///< Return the first stmt with loc on the LHS
 };
 
 class StatementVec

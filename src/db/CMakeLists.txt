@@ -3,7 +3,6 @@ include_directories(../c/) # used by prog.cpp
 set(INCLUDES
 	../include/hllcode.h
 	../include/memo.h
-	../include/statement.h
 	../include/type.h
 	../include/visitor.h
 	../include/operator.h
@@ -55,6 +54,7 @@ set(SRC
     signature.h
     signature.cpp
     
+    statement.h
     statement.cpp
     table.cpp
     visitor.cpp

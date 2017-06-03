@@ -10,7 +10,7 @@
 #include "db/rtl.h"
 #include "include/type.h"
 #include "db/prog.h"
-#include "include/statement.h"
+#include "db/statement.h"
 #include "db/signature.h"
 #include "include/visitor.h"
 #include "db/exp.h"

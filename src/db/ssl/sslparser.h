@@ -11,7 +11,7 @@
 #include "db/table.h"
 #include "db/insnameelem.h"
 #include "include/util.h" // E.g. str()
-#include "include/statement.h"
+#include "db/statement.h"
 
 #include <cassert>
 #include <sstream>

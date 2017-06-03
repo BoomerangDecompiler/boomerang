@@ -22,7 +22,7 @@
 #include "include/type.h"
 #include "include/sigenum.h"   // For enums platform and cc
 #include "include/memo.h"
-#include "include/statement.h" // For class Return
+#include "db/statement.h" // For class Return
 #include <string>
 #include <vector>
 #include <QString>

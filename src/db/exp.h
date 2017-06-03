@@ -1191,7 +1191,7 @@ public:
 
 	SharedExp genConstraints(SharedExp restrictTo) override;
 
-	bool references(Instruction *s) const { return m_def == s; }
+	bool references(const Instruction *s) const { return m_def == s; }
 	virtual SharedExp polySimplify(bool& bMod) override;
 	virtual SharedExp match(const SharedConstExp& pattern) override;
 	virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;

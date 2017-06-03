@@ -9,7 +9,7 @@
 #include "include/visitor.h"
 
 #include "db/exp.h"
-#include "include/statement.h"
+#include "db/statement.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h" // For VERBOSE
 #include "db/proc.h"

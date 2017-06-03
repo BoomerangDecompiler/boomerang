@@ -13,7 +13,7 @@
  * OVERVIEW:   Definition of objects related to type constraints
  ******************************************************************************/
 
-#include "include/statement.h"
+#include "db/statement.h"
 #include "db/exphelp.h"
 
 #include <sstream>
