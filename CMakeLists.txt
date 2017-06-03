@@ -58,7 +58,7 @@ else ()
 			#-Walloc-zero -Walloca -Wduplicated-branches 
 	endif ()
 	
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS} -std=c++11")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS} -std=c++11 -Wsuggest-override")
     set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${COMMON_COMPILE_OPTIONS}")
     
     add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG

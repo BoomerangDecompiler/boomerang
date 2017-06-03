@@ -9,9 +9,9 @@ class MachineSemanticsSSLBased : public MachineSemantics
 	// MachineSemantics interface
 
 public:
-	Exp *convertOperand(MachineOperand *Operand);
+	Exp *convertOperand(MachineOperand *Operand) override;
 
-	std::list<Instruction *> *convertInstruction(MachineInstruction *Insn);
+	std::list<Instruction *> *convertInstruction(MachineInstruction *Insn) override;
 };
 
 Exp *MachineSemanticsSSLBased::convertOperand(MachineOperand *Operand)

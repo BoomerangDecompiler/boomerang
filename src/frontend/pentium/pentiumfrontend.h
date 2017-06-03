@@ -20,15 +20,15 @@ public:
 
 	virtual ~PentiumFrontEnd();
 
-	virtual Platform getFrontEndId() const { return PLAT_PENTIUM; }
+	virtual Platform getFrontEndId() const override { return PLAT_PENTIUM; }
 
-	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
+	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
-	virtual std::vector<SharedExp>& getDefaultParams();
+	virtual std::vector<SharedExp>& getDefaultParams() override;
 
-	virtual std::vector<SharedExp>& getDefaultReturns();
+	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
-	virtual ADDRESS getMainEntryPoint(bool& gotMain);
+	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
 
 private:
 
@@ -59,7 +59,7 @@ private:
 	 * Check a HLCall for a helper function, and replace with appropriate
 	 *    semantics if possible
 	 */
-	bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl);
+	bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) override;
 
 	bool isStoreFsw(Instruction *s);
 	bool isDecAh(RTL *r);
@@ -72,6 +72,6 @@ private:
 	bool decodeSpecial_invalid(ADDRESS pc, DecodeResult& r);
 
 protected:
-	virtual DecodeResult& decodeInstruction(ADDRESS pc);
-	virtual void extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls);
+	virtual DecodeResult& decodeInstruction(ADDRESS pc) override;
+	virtual void extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls) override;
 };

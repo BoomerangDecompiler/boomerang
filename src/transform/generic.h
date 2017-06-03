@@ -24,5 +24,5 @@ public:
 		: match(_match)
 		, where(_where)
 		, become(_become) {}
-	virtual SharedExp applyTo(SharedExp e, bool& bMod);
+	virtual SharedExp applyTo(SharedExp e, bool& bMod) override;
 };

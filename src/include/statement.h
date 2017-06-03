@@ -351,7 +351,7 @@ public:
 	const SharedType& getType() const { return type; }
 	void setType(SharedType ty) { type = ty; }
 
-	virtual bool isTyping() { return true; }
+	virtual bool isTyping() override { return true; }
 };
 
 /***************************************************************************/ /**
@@ -371,7 +371,7 @@ public:
 	virtual ~Assignment();
 
 	// Clone
-	virtual Instruction *clone() const = 0;
+	virtual Instruction *clone() const override = 0;
 
 	// We also want operator< for assignments. For example, we want ReturnStatement to contain a set of (pointers
 	// to) Assignments, so we can automatically make sure that existing assignments are not duplicated
@@ -379,22 +379,22 @@ public:
 	bool operator<(const Assignment& o) { return lhs < o.lhs; }
 
 	// Accept a visitor to this Statement
-	virtual bool accept(StmtVisitor *visitor)      = 0;
-	virtual bool accept(StmtExpVisitor *visitor)   = 0;
-	virtual bool accept(StmtModifier *visitor)     = 0;
-	virtual bool accept(StmtPartModifier *visitor) = 0;
+	virtual bool accept(StmtVisitor *visitor)      override = 0;
+	virtual bool accept(StmtExpVisitor *visitor)   override = 0;
+	virtual bool accept(StmtModifier *visitor)     override = 0;
+	virtual bool accept(StmtPartModifier *visitor) override = 0;
 
-	virtual void print(QTextStream& os, bool html = false) const;
+	virtual void print(QTextStream& os, bool html = false) const override;
 	virtual void printCompact(QTextStream& os, bool html = false) const = 0; // Without statement number
 
-	virtual SharedType getTypeFor(SharedExp e);                              // Get the type for this assignment. It should define e
-	virtual void setTypeFor(SharedExp e, SharedType ty);                     // Set the type for this assignment. It should define e
+	virtual SharedType getTypeFor(SharedExp e) override;                              // Get the type for this assignment. It should define e
+	virtual void setTypeFor(SharedExp e, SharedType ty) override;                     // Set the type for this assignment. It should define e
 
-	virtual bool usesExp(const Exp& e);                                      // PhiAssign and ImplicitAssign don't override
+	virtual bool usesExp(const Exp& e) override;                                      // PhiAssign and ImplicitAssign don't override
 
-	virtual bool isDefinition() { return true; }
-	virtual void getDefinitions(LocationSet& defs);
-	virtual bool definesLoc(SharedExp loc); // True if this Statement defines loc
+	virtual bool isDefinition() override { return true; }
+	virtual void getDefinitions(LocationSet& defs) override;
+	virtual bool definesLoc(SharedExp loc) override; // True if this Statement defines loc
 
 	// get how to access this lvalue
 	virtual SharedExp getLeft() { return lhs; } // Note: now only defined for Assignments, not all Statements
@@ -409,25 +409,25 @@ public:
 	int getMemDepth();
 
 	// general search
-	virtual bool search(const Exp& search, SharedExp& result) = 0;
-	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) = 0;
+	virtual bool search(const Exp& search, SharedExp& result) override = 0;
+	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) override = 0;
 
 	// general search and replace
-	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) = 0;
+	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override = 0;
 
-	void generateCode(HLLCode *, BasicBlock *, int /*indLevel*/) {}
+	void generateCode(HLLCode *, BasicBlock *, int /*indLevel*/) override {}
 
 	// simpify internal expressions
-	virtual void simplify() = 0;
+	virtual void simplify() override = 0;
 
 	// simplify address expressions
-	virtual void simplifyAddr();
+	virtual void simplifyAddr() override;
 
 	// generate Constraints
-	virtual void genConstraints(LocationSet& cons);
+	virtual void genConstraints(LocationSet& cons) override;
 
 	// Data flow based type analysis
-	void dfaTypeAnalysis(bool& ch);
+	void dfaTypeAnalysis(bool& ch) override;
 
 	friend class XMLProgParser;
 }; // class Assignment
@@ -563,34 +563,34 @@ public:
 	virtual ~PhiAssign() {}
 
 	// Clone
-	virtual Instruction *clone() const;
+	virtual Instruction *clone() const override;
 
 	// get how to replace this statement in a use
-	virtual SharedExp getRight() { return nullptr; }
+	virtual SharedExp getRight()  override{ return nullptr; }
 
 	// Accept a visitor to this Statement
-	virtual bool accept(StmtVisitor *visitor);
-	virtual bool accept(StmtExpVisitor *visitor);
-	virtual bool accept(StmtModifier *visitor);
-	virtual bool accept(StmtPartModifier *visitor);
+	virtual bool accept(StmtVisitor *visitor) override;
+	virtual bool accept(StmtExpVisitor *visitor) override;
+	virtual bool accept(StmtModifier *visitor) override;
+	virtual bool accept(StmtPartModifier *visitor) override;
 
-	virtual void printCompact(QTextStream& os, bool html = false) const;
+	virtual void printCompact(QTextStream& os, bool html = false) const override;
 
 	// general search
-	virtual bool search(const Exp& search, SharedExp& result);
-	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result);
+	virtual bool search(const Exp& search, SharedExp& result) override;
+	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) override;
 
 	// general search and replace
-	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false);
+	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
 	// simplify all the uses/defs in this Statement
-	virtual void simplify();
+	virtual void simplify() override;
 
 	// Generate constraints
-	virtual void genConstraints(LocationSet& cons);
+	virtual void genConstraints(LocationSet& cons) override;
 
 	// Data flow based type analysis
-	void dfaTypeAnalysis(bool& ch);
+	void dfaTypeAnalysis(bool& ch) override;
 
 	//
 	//    Phi specific functions
@@ -643,27 +643,27 @@ public:
 	ImplicitAssign(ImplicitAssign& o);
 	virtual ~ImplicitAssign();
 
-	virtual Instruction *clone() const;
-	void dfaTypeAnalysis(bool& ch);
+	virtual Instruction *clone() const override;
+	void dfaTypeAnalysis(bool& ch) override;
 
 	// general search
-	virtual bool search(const Exp& search, SharedExp& result);
-	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result);
+	virtual bool search(const Exp& search, SharedExp& result) override;
+	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) override;
 
 	// general search and replace
-	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false);
+	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
-	virtual void printCompact(QTextStream& os, bool html = false) const;
+	virtual void printCompact(QTextStream& os, bool html = false) const override;
 
 	// Statement and Assignment functions
-	virtual SharedExp getRight() { return nullptr; }
-	virtual void simplify() {}
+	virtual SharedExp getRight() override { return nullptr; }
+	virtual void simplify() override {}
 
 	// Visitation
-	virtual bool accept(StmtVisitor *visitor);
-	virtual bool accept(StmtExpVisitor *visitor);
-	virtual bool accept(StmtModifier *visitor);
-	virtual bool accept(StmtPartModifier *visitor);
+	virtual bool accept(StmtVisitor *visitor) override;
+	virtual bool accept(StmtExpVisitor *visitor) override;
+	virtual bool accept(StmtModifier *visitor) override;
+	virtual bool accept(StmtPartModifier *visitor) override;
 }; // class ImplicitAssign
 
 /***************************************************************************/ /**
@@ -683,13 +683,13 @@ public:
 	virtual ~BoolAssign();
 
 	// Make a deep copy, and make the copy a derived object if needed.
-	virtual Instruction *clone() const;
+	virtual Instruction *clone() const override;
 
 	// Accept a visitor to this Statement
-	virtual bool accept(StmtVisitor *visitor);
-	virtual bool accept(StmtExpVisitor *visitor);
-	virtual bool accept(StmtModifier *visitor);
-	virtual bool accept(StmtPartModifier *visitor);
+	virtual bool accept(StmtVisitor *visitor) override;
+	virtual bool accept(StmtExpVisitor *visitor) override;
+	virtual bool accept(StmtModifier *visitor) override;
+	virtual bool accept(StmtPartModifier *visitor) override;
 
 	// Set and return the BRANCH_TYPE of this scond as well as whether the
 	// floating point condition codes are used.
@@ -708,24 +708,24 @@ public:
 	int getSize() { return Size; } // Return the size of the assignment
 	void makeSigned();
 
-	virtual void printCompact(QTextStream& os, bool html = false) const;
-	virtual void generateCode(HLLCode *hll, BasicBlock *, int indLevel);
-	virtual void simplify();
+	virtual void printCompact(QTextStream& os, bool html = false) const override;
+	virtual void generateCode(HLLCode *hll, BasicBlock *, int indLevel) override;
+	virtual void simplify() override;
 
 	// Statement functions
-	virtual bool isDefinition() { return true; }
-	virtual void getDefinitions(LocationSet& def);
+	virtual bool isDefinition() override { return true; }
+	virtual void getDefinitions(LocationSet& def) override;
 
-	virtual SharedExp getRight() { return getCondExpr(); }
-	virtual bool usesExp(const Exp& e);
-	virtual bool search(const Exp& search, SharedExp& result);
-	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result);
-	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false);
+	virtual SharedExp getRight() override { return getCondExpr(); }
+	virtual bool usesExp(const Exp& e) override;
+	virtual bool search(const Exp& search, SharedExp& result) override;
+	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) override;
+	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
 	// a hack for the SETS macro
 	void setLeftFromList(std::list<Instruction *> *stmts);
 
-	virtual void dfaTypeAnalysis(bool& ch);
+	virtual void dfaTypeAnalysis(bool& ch) override;
 
 	friend class XMLProgParser;
 }; // class BoolAssign
@@ -973,36 +973,36 @@ public:
 	virtual ~CaseStatement();
 
 	// Make a deep copy, and make the copy a derived object if needed.
-	virtual Instruction *clone() const;
+	virtual Instruction *clone() const override;
 
 	// Accept a visitor to this Statememt
-	virtual bool accept(StmtVisitor *visitor);
-	virtual bool accept(StmtExpVisitor *visitor);
-	virtual bool accept(StmtModifier *visitor);
-	virtual bool accept(StmtPartModifier *visitor);
+	virtual bool accept(StmtVisitor *visitor) override;
+	virtual bool accept(StmtExpVisitor *visitor) override;
+	virtual bool accept(StmtModifier *visitor) override;
+	virtual bool accept(StmtPartModifier *visitor) override;
 
 	// Set and return the Exp representing the switch variable
 	SWITCH_INFO *getSwitchInfo();
 	void setSwitchInfo(SWITCH_INFO *psi);
 
-	virtual void print(QTextStream& os, bool html = false) const;
+	virtual void print(QTextStream& os, bool html = false) const override;
 
 	// Replace all instances of "search" with "replace".
-	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false);
+	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
 	// Searches for all instances of a given subexpression within this
 	// expression and adds them to a given list in reverse nesting order.
-	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result);
+	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) override;
 
 	// code generation
-	virtual void generateCode(HLLCode *, BasicBlock *, int);
+	virtual void generateCode(HLLCode *, BasicBlock *, int) override;
 
 	// dataflow analysis
-	virtual bool usesExp(const Exp& e);
+	virtual bool usesExp(const Exp& e) override;
 
 public:
 	// simplify all the uses/defs in this Statement
-	virtual void simplify();
+	virtual void simplify() override;
 
 	friend class XMLProgParser;
 }; // class CaseStatement

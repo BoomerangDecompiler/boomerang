@@ -127,7 +127,7 @@ class FixProcVisitor : public ExpVisitor
 
 public:
 	void setProc(UserProc *p) { proc = p; }
-	virtual bool visit(const std::shared_ptr<Location>& e, bool& override);
+	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 
 	// All other virtual functions inherit from ExpVisitor, i.e. they just visit their children recursively
 };
@@ -140,7 +140,7 @@ class GetProcVisitor : public ExpVisitor
 public:
 	GetProcVisitor() { proc = nullptr; } // Constructor
 	UserProc *getProc() { return proc; }
-	virtual bool visit(const std::shared_ptr<Location>& e, bool& override);
+	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 
 	// All others inherit and visit their children
 };
@@ -157,9 +157,9 @@ public:
 		: bInLocalGlobal(false)
 		, bClear(_bClear) { curConscript = n; }
 	int getLast() { return curConscript; }
-	virtual bool visit(const std::shared_ptr<Const>& e);
-	virtual bool visit(const std::shared_ptr<Location>& e, bool& override);
-	virtual bool visit(const std::shared_ptr<Binary>& b, bool& override);
+	virtual bool visit(const std::shared_ptr<Const>& e) override;
+	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
+	virtual bool visit(const std::shared_ptr<Binary>& b, bool& override) override;
 
 	// All other virtual functions inherit from ExpVisitor: return true
 };
@@ -281,15 +281,15 @@ public:
 		, bClear(_bClear) {}
 	int getLast() { return curConscript; }
 
-	virtual bool visit(Assign *stmt);
-	virtual bool visit(PhiAssign *stmt);
-	virtual bool visit(ImplicitAssign *stmt);
-	virtual bool visit(BoolAssign *stmt);
-	virtual bool visit(CaseStatement *stmt);
-	virtual bool visit(CallStatement *stmt);
-	virtual bool visit(ReturnStatement *stmt);
-	virtual bool visit(BranchStatement *stmt);
-	virtual bool visit(ImpRefStatement *stmt);
+	virtual bool visit(Assign *stmt) override;
+	virtual bool visit(PhiAssign *stmt) override;
+	virtual bool visit(ImplicitAssign *stmt) override;
+	virtual bool visit(BoolAssign *stmt) override;
+	virtual bool visit(CaseStatement *stmt) override;
+	virtual bool visit(CallStatement *stmt) override;
+	virtual bool visit(ReturnStatement *stmt) override;
+	virtual bool visit(BranchStatement *stmt) override;
+	virtual bool visit(ImpRefStatement *stmt) override;
 };
 
 // StmtExpVisitor is a visitor of statements, and of expressions within those expressions. The visiting of expressions
@@ -433,7 +433,7 @@ class PhiStripper : public StmtModifier
 public:
 	PhiStripper(ExpModifier *em)
 		: StmtModifier(em) { del = false; }
-	virtual void visit(PhiAssign *, bool& recur);
+	virtual void visit(PhiAssign *, bool& recur) override;
 
 	bool getDelete() { return del; }
 };
@@ -549,8 +549,8 @@ class CallBypasser : public SimpExpModifier
 public:
 	CallBypasser(Instruction *enclosing)
 		: enclosingStmt(enclosing) {}
-	virtual SharedExp postVisit(const std::shared_ptr<RefExp>& e);
-	virtual SharedExp postVisit(const std::shared_ptr<Location>& e);
+	virtual SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
+	virtual SharedExp postVisit(const std::shared_ptr<Location>& e) override;
 };
 
 class UsedLocsFinder : public ExpVisitor
@@ -593,9 +593,9 @@ public:
 	LocationSet *getLocSet() { return used; }
 	bool wasAllFound() { return all; }
 
-	virtual bool visit(const std::shared_ptr<Location>& e, bool& override);
-	virtual bool visit(const std::shared_ptr<TypedExp>& e, bool& override);
-	virtual bool visit(const std::shared_ptr<Terminal>& e);
+	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
+	virtual bool visit(const std::shared_ptr<TypedExp>& e, bool& override) override;
+	virtual bool visit(const std::shared_ptr<Terminal>& e) override;
 };
 
 class UsedLocsVisitor : public StmtExpVisitor
@@ -609,20 +609,20 @@ public:
 	virtual ~UsedLocsVisitor() {}
 	// Needs special attention because the lhs of an assignment isn't used (except where it's m[blah], when blah is
 	// used)
-	virtual bool visit(Assign *stmt, bool& override);
-	virtual bool visit(PhiAssign *stmt, bool& override);
-	virtual bool visit(ImplicitAssign *stmt, bool& override);
+	virtual bool visit(Assign *stmt, bool& override) override;
+	virtual bool visit(PhiAssign *stmt, bool& override) override;
+	virtual bool visit(ImplicitAssign *stmt, bool& override) override;
 
 	// A BoolAssign uses its condition expression, but not its destination (unless it's an m[x], in which case x is
 	// used and not m[x])
-	virtual bool visit(BoolAssign *stmt, bool& override);
+	virtual bool visit(BoolAssign *stmt, bool& override) override;
 
 	// Returns aren't used (again, except where m[blah] where blah is used), and there is special logic for when the
 	// pass is final
-	virtual bool visit(CallStatement *stmt, bool& override);
+	virtual bool visit(CallStatement *stmt, bool& override) override;
 
 	// Only consider the first return when final
-	virtual bool visit(ReturnStatement *stmt, bool& override);
+	virtual bool visit(ReturnStatement *stmt, bool& override) override;
 };
 
 class ExpSubscripter : public ExpModifier
@@ -647,11 +647,11 @@ public:
 		: StmtModifier(es) {}
 	virtual ~StmtSubscripter() {}
 
-	virtual void visit(Assign *s, bool& recur);
-	virtual void visit(PhiAssign *s, bool& recur);
-	virtual void visit(ImplicitAssign *s, bool& recur);
-	virtual void visit(BoolAssign *s, bool& recur);
-	virtual void visit(CallStatement *s, bool& recur);
+	virtual void visit(Assign *s, bool& recur) override;
+	virtual void visit(PhiAssign *s, bool& recur) override;
+	virtual void visit(ImplicitAssign *s, bool& recur) override;
+	virtual void visit(BoolAssign *s, bool& recur) override;
+	virtual void visit(CallStatement *s, bool& recur) override;
 };
 
 class SizeStripper : public ExpModifier
@@ -689,8 +689,8 @@ public:
 		: lc(_lc) {}
 	virtual ~ConstFinder() {}
 
-	virtual bool visit(const std::shared_ptr<Const>& e);
-	virtual bool visit(const std::shared_ptr<Location>& e, bool& override);
+	virtual bool visit(const std::shared_ptr<Const>& e) override;
+	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 };
 
 class StmtConstFinder : public StmtExpVisitor
@@ -752,7 +752,7 @@ class ImplicitConverter : public ExpModifier
 public:
 	ImplicitConverter(Cfg *cfg)
 		: m_cfg(cfg) {}
-	SharedExp postVisit(const std::shared_ptr<RefExp>& e);
+	SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
 };
 
 class StmtImplicitConverter : public StmtModifier
@@ -764,7 +764,7 @@ public:
 		: StmtModifier(ic, false)
 		,                          // False to not ignore collectors (want to make sure that
 		m_cfg(cfg) {}              //  collectors have valid expressions so you can ascendType)
-	virtual void visit(PhiAssign *s, bool& recur);
+	virtual void visit(PhiAssign *s, bool& recur) override;
 };
 
 class Localiser : public SimpExpModifier
@@ -774,10 +774,10 @@ class Localiser : public SimpExpModifier
 public:
 	Localiser(CallStatement *c)
 		: call(c) {}
-	SharedExp preVisit(const std::shared_ptr<RefExp>& e, bool& recur);
-	SharedExp preVisit(const std::shared_ptr<Location>& e, bool& recur);
-	SharedExp postVisit(const std::shared_ptr<Location>& e);
-	SharedExp postVisit(const std::shared_ptr<Terminal>& e);
+	SharedExp preVisit(const std::shared_ptr<RefExp>& e, bool& recur) override;
+	SharedExp preVisit(const std::shared_ptr<Location>& e, bool& recur) override;
+	SharedExp postVisit(const std::shared_ptr<Location>& e) override;
+	SharedExp postVisit(const std::shared_ptr<Terminal>& e) override;
 };
 
 class ComplexityFinder : public ExpVisitor
@@ -791,10 +791,10 @@ public:
 		, proc(p) {}
 	int getDepth() { return count; }
 
-	virtual bool visit(const std::shared_ptr<Unary>&, bool& override);
-	virtual bool visit(const std::shared_ptr<Binary>&, bool& override);
-	virtual bool visit(const std::shared_ptr<Ternary>&, bool& override);
-	virtual bool visit(const std::shared_ptr<Location>& e, bool& override);
+	virtual bool visit(const std::shared_ptr<Unary>&, bool& override) override;
+	virtual bool visit(const std::shared_ptr<Binary>&, bool& override) override;
+	virtual bool visit(const std::shared_ptr<Ternary>&, bool& override) override;
+	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 };
 
 // Used by range analysis
@@ -805,7 +805,7 @@ class MemDepthFinder : public ExpVisitor
 public:
 	MemDepthFinder()
 		: depth(0) {}
-	virtual bool visit(const std::shared_ptr<Location>& e, bool& override);
+	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 
 	int getDepth() { return depth; }
 };
@@ -834,8 +834,8 @@ public:
 	PrimitiveTester()
 		: result(true) {}               // Initialise result true: need AND of all components
 	bool getResult() { return result; }
-	bool visit(const std::shared_ptr<Location>& e, bool& override);
-	bool visit(const std::shared_ptr<RefExp>& e, bool& override);
+	bool visit(const std::shared_ptr<Location>& e, bool& override) override;
+	bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
 };
 
 // Test if an expression (usually the RHS on an assignment) contains memory expressions. If so, it may not be safe to
@@ -850,7 +850,7 @@ public:
 		: result(false)
 		, proc(p) {}
 	bool getResult() { return result; }
-	bool visit(const std::shared_ptr<Location>& e, bool& override);
+	bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 };
 
 class TempToLocalMapper : public ExpVisitor
@@ -860,7 +860,7 @@ class TempToLocalMapper : public ExpVisitor
 public:
 	TempToLocalMapper(UserProc *p)
 		: proc(p) {}
-	bool visit(const std::shared_ptr<Location>& e, bool& override);
+	bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 };
 
 // Name registers and temporaries
@@ -880,10 +880,10 @@ public:
 	StmtRegMapper(ExpRegMapper *erm)
 		: StmtExpVisitor(erm) {}
 	virtual bool common(Assignment *stmt, bool& override);
-	virtual bool visit(Assign *stmt, bool& override);
-	virtual bool visit(PhiAssign *stmt, bool& override);
-	virtual bool visit(ImplicitAssign *stmt, bool& override);
-	virtual bool visit(BoolAssign *stmt, bool& override);
+	virtual bool visit(Assign *stmt, bool& override) override;
+	virtual bool visit(PhiAssign *stmt, bool& override) override;
+	virtual bool visit(ImplicitAssign *stmt, bool& override) override;
+	virtual bool visit(BoolAssign *stmt, bool& override) override;
 };
 
 class ConstGlobalConverter : public ExpModifier
@@ -915,7 +915,7 @@ class StmtDestCounter : public StmtExpVisitor
 public:
 	StmtDestCounter(ExpDestCounter *edc)
 		: StmtExpVisitor(edc) {}
-	bool visit(PhiAssign *stmt, bool& override);
+	bool visit(PhiAssign *stmt, bool& override) override;
 };
 
 // Search an expression for flags calls, e.g. SETFFLAGS(...) & 0x45
@@ -929,7 +929,7 @@ public:
 	bool isFound() { return found; }
 
 private:
-	virtual bool visit(const std::shared_ptr<Binary>& e, bool& override);
+	virtual bool visit(const std::shared_ptr<Binary>& e, bool& override) override;
 };
 
 // Search an expression for a bad memof (non subscripted or not linked with a symbol, i.e. local or parameter)
@@ -945,8 +945,8 @@ public:
 	bool isFound() { return found; }
 
 private:
-	virtual bool visit(const std::shared_ptr<Location>& e, bool& override);
-	virtual bool visit(const std::shared_ptr<RefExp>& e, bool& override);
+	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
+	virtual bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
 };
 
 class ExpCastInserter : public ExpModifier
@@ -975,10 +975,10 @@ class StmtCastInserter : public StmtVisitor
 public:
 	StmtCastInserter() {}
 	bool common(Assignment *s);
-	virtual bool visit(Assign *s);
-	virtual bool visit(PhiAssign *s);
-	virtual bool visit(ImplicitAssign *s);
-	virtual bool visit(BoolAssign *s);
+	virtual bool visit(Assign *s) override;
+	virtual bool visit(PhiAssign *s) override;
+	virtual bool visit(ImplicitAssign *s) override;
+	virtual bool visit(BoolAssign *s) override;
 };
 
 // Transform an exp by applying mappings to the subscripts. This used to be done by many Exp::fromSSAform() functions.
@@ -993,7 +993,7 @@ public:
 		: proc(p) {}
 	UserProc *getProc() { return proc; }
 
-	virtual SharedExp postVisit(const std::shared_ptr<RefExp>& e);
+	virtual SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
 };
 
 class StmtSsaXformer : public StmtModifier
@@ -1008,9 +1008,9 @@ public:
 	void commonLhs(Assignment *s);
 
 	// TODO: find out if recur should, or should not be set ?
-	virtual void visit(Assign *s, bool& recur);
-	virtual void visit(PhiAssign *s, bool& recur);
-	virtual void visit(ImplicitAssign *s, bool& recur);
-	virtual void visit(BoolAssign *s, bool& recur);
-	virtual void visit(CallStatement *s, bool& recur);
+	virtual void visit(Assign *s, bool& recur) override;
+	virtual void visit(PhiAssign *s, bool& recur) override;
+	virtual void visit(ImplicitAssign *s, bool& recur) override;
+	virtual void visit(BoolAssign *s, bool& recur) override;
+	virtual void visit(CallStatement *s, bool& recur) override;
 };

@@ -28,7 +28,7 @@ public:
 	 */
 	virtual ~SparcFrontEnd();
 
-	virtual Platform getFrontEndId() const { return PLAT_SPARC; }
+	virtual Platform getFrontEndId() const override { return PLAT_SPARC; }
 
 	/*
 	 * processProc. This is the main function for decoding a procedure.
@@ -40,13 +40,13 @@ public:
 	 * instruction)
 	 * Returns true on a good decode
 	 */
-	virtual bool processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false);
+	virtual bool processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
 
-	virtual std::vector<SharedExp>& getDefaultParams();
+	virtual std::vector<SharedExp>& getDefaultParams() override;
 
-	virtual std::vector<SharedExp>& getDefaultReturns();
+	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
-	virtual ADDRESS getMainEntryPoint(bool& gotMain);
+	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
 
 private:
 	void warnDCTcouple(ADDRESS uAt, ADDRESS uDest);
@@ -79,7 +79,7 @@ private:
 	void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl);
 	void quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op);
 
-	bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl);
+	bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) override;
 	void gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS addr);
 	bool helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, QString& name);
 

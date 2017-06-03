@@ -16,7 +16,7 @@ public:
 	~LoggingSettingsDlg();
 
 protected:
-	void changeEvent(QEvent *e);
+	void changeEvent(QEvent *e) override;
 
 private slots:
 	void on_btnApply_clicked();

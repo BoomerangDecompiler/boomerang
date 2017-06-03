@@ -79,7 +79,7 @@ public:
 
 	/// Get the initial value as an expression (or nullptr if not initialised)
 	SharedExp getInitialValue(const Prog *prog) const;
-	QString toString() const;
+	QString toString() const override;
 
 protected:
 	Global()

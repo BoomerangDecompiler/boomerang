@@ -166,7 +166,7 @@ struct ModuleFactory
 
 struct DefaultModFactory : public ModuleFactory
 {
-	Module *create(const QString& name, Prog *parent, FrontEnd *fe) const
+	Module *create(const QString& name, Prog *parent, FrontEnd *fe) const override
 	{
 		return new Module(name, parent, fe);
 	}
@@ -175,7 +175,7 @@ struct DefaultModFactory : public ModuleFactory
 
 struct ClassModFactory : public ModuleFactory
 {
-	Module *create(const QString& name, Prog *parent, FrontEnd *fe) const
+	Module *create(const QString& name, Prog *parent, FrontEnd *fe) const override
 	{
 		return new Class(name, parent, fe);
 	}

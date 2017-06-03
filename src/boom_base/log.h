@@ -64,7 +64,7 @@ public:
 class NullLogger : public Log
 {
 public:
-	virtual Log& operator<<(const QString& /*str*/)
+	virtual Log& operator<<(const QString& /*str*/) override
 	{
 		return *this;
 	}

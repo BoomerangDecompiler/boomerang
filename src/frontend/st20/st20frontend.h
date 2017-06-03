@@ -24,13 +24,13 @@ public:
 	 */
 	virtual ~ST20FrontEnd();
 
-	virtual Platform getFrontEndId() const { return PLAT_ST20; }
+	virtual Platform getFrontEndId() const override { return PLAT_ST20; }
 
-	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
+	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
-	virtual std::vector<SharedExp>& getDefaultParams();
+	virtual std::vector<SharedExp>& getDefaultParams() override;
 
-	virtual std::vector<SharedExp>& getDefaultReturns();
+	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
-	virtual ADDRESS getMainEntryPoint(bool& gotMain);
+	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
 };

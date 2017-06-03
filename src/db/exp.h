@@ -699,7 +699,7 @@ public:
 	virtual ~Const() {}
 
 	// Clone
-	virtual SharedExp clone() const;
+	virtual SharedExp clone() const override;
 
 	// Compare
 
@@ -709,7 +709,7 @@ public:
 	 * \param  o     Ref to other Exp
 	 * \returns      True if equal
 	 ******************************************************************************/
-	virtual bool operator==(const Exp& o) const;
+	virtual bool operator==(const Exp& o) const override;
 
 	/***************************************************************************/ /**
 	 * \brief      Virtual function to compare myself with another Exp
@@ -718,14 +718,14 @@ public:
 	 * \param      o - Ref to other Exp
 	 * \returns    true if equal
 	 ******************************************************************************/
-	virtual bool operator<(const Exp& o) const;
+	virtual bool operator<(const Exp& o) const override;
 
 	/***************************************************************************/ /**
 	 * \brief        Virtual function to compare myself for equality with another Exp, *ignoring subscripts*
 	 * \param        o - Ref to other Exp
 	 * \returns      True if equal
 	 ******************************************************************************/
-	virtual bool operator*=(const Exp& o) const;
+	virtual bool operator*=(const Exp& o) const override;
 
 	// Get the constant
 	int getInt() const { return u.i; }
@@ -752,31 +752,31 @@ public:
 	 *              Mainly for debugging, or maybe some low level windows
 	 * \param       os  - Ref to an output stream
 	 ******************************************************************************/
-	virtual void print(QTextStream& os, bool = false) const;
+	virtual void print(QTextStream& os, bool = false) const override;
 
 	/// Print "recursive" (extra parens not wanted at outer levels)
 	void printNoQuotes(QTextStream& os) const;
-	virtual void printx(int ind) const;
+	virtual void printx(int ind) const override;
 
-	virtual void appendDotFile(QTextStream& of);
-	virtual SharedExp genConstraints(SharedExp restrictTo);
+	virtual void appendDotFile(QTextStream& of) override;
+	virtual SharedExp genConstraints(SharedExp restrictTo) override;
 
 	// Visitation
-	virtual bool accept(ExpVisitor *v);
-	virtual SharedExp accept(ExpModifier *v);
+	virtual bool accept(ExpVisitor *v) override;
+	virtual SharedExp accept(ExpModifier *v) override;
 
 	/***************************************************************************/ /**
 	 * \brief        Matches this expression to the given patten
 	 * \param        pattern to match
 	 * \returns            list of variable bindings, or nullptr if matching fails
 	 ******************************************************************************/
-	virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings);
+	virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
 	int getConscript() const { return m_conscript; }
 	void setConscript(int cs) { m_conscript = cs; }
 
-	virtual SharedType ascendType();
-	virtual void descendType(SharedType parentType, bool& ch, Instruction *s);
+	virtual SharedType ascendType() override;
+	virtual void descendType(SharedType parentType, bool& ch, Instruction *s) override;
 };
 
 /***************************************************************************/ /**
@@ -1138,11 +1138,11 @@ public:
 	FlagDef(SharedExp params, SharedRTL rtl);
 	virtual ~FlagDef();
 
-	virtual void appendDotFile(QTextStream& of);
+	virtual void appendDotFile(QTextStream& of) override;
 
 	// Visitation
-	virtual bool accept(ExpVisitor *v);
-	virtual SharedExp accept(ExpModifier *v);
+	virtual bool accept(ExpVisitor *v) override;
+	virtual SharedExp accept(ExpModifier *v) override;
 };
 
 

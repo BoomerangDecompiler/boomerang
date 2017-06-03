@@ -120,73 +120,73 @@ public:
 	virtual ~CHLLCode();
 
 	// clear this class, calls the base
-	virtual void reset();
+	virtual void reset() override;
 
 	/*
 	 * Functions to add new code
 	 */
 
 	// pretested loops (cond is optional because it is in the bb [somewhere])
-	virtual void AddPretestedLoopHeader(int indLevel, const SharedExp& cond);
-	virtual void AddPretestedLoopEnd(int indLevel);
+	virtual void AddPretestedLoopHeader(int indLevel, const SharedExp& cond) override;
+	virtual void AddPretestedLoopEnd(int indLevel) override;
 
 	// endless loops
-	virtual void AddEndlessLoopHeader(int indLevel);
-	virtual void AddEndlessLoopEnd(int indLevel);
+	virtual void AddEndlessLoopHeader(int indLevel) override;
+	virtual void AddEndlessLoopEnd(int indLevel) override;
 
 	// posttested loops
-	virtual void AddPosttestedLoopHeader(int indLevel);
-	virtual void AddPosttestedLoopEnd(int indLevel, const SharedExp& cond);
+	virtual void AddPosttestedLoopHeader(int indLevel) override;
+	virtual void AddPosttestedLoopEnd(int indLevel, const SharedExp& cond) override;
 
 	// case conditionals "nways"
-	virtual void AddCaseCondHeader(int indLevel, const SharedExp& cond);
-	virtual void AddCaseCondOption(int indLevel, Exp& opt);
-	virtual void AddCaseCondOptionEnd(int indLevel);
-	virtual void AddCaseCondElse(int indLevel);
-	virtual void AddCaseCondEnd(int indLevel);
+	virtual void AddCaseCondHeader(int indLevel, const SharedExp& cond) override;
+	virtual void AddCaseCondOption(int indLevel, Exp& opt) override;
+	virtual void AddCaseCondOptionEnd(int indLevel) override;
+	virtual void AddCaseCondElse(int indLevel) override;
+	virtual void AddCaseCondEnd(int indLevel) override;
 
 	// if conditions
-	virtual void AddIfCondHeader(int indLevel, const SharedExp& cond);
-	virtual void AddIfCondEnd(int indLevel);
+	virtual void AddIfCondHeader(int indLevel, const SharedExp& cond) override;
+	virtual void AddIfCondEnd(int indLevel) override;
 
 	// if else conditions
-	virtual void AddIfElseCondHeader(int indLevel, const SharedExp& cond);
-	virtual void AddIfElseCondOption(int indLevel);
-	virtual void AddIfElseCondEnd(int indLevel);
+	virtual void AddIfElseCondHeader(int indLevel, const SharedExp& cond) override;
+	virtual void AddIfElseCondOption(int indLevel) override;
+	virtual void AddIfElseCondEnd(int indLevel) override;
 
 	// goto, break, continue, etc
-	virtual void AddGoto(int indLevel, int ord);
-	virtual void AddContinue(int indLevel);
-	virtual void AddBreak(int indLevel);
+	virtual void AddGoto(int indLevel, int ord) override;
+	virtual void AddContinue(int indLevel) override;
+	virtual void AddBreak(int indLevel) override;
 
 	// labels
-	virtual void AddLabel(int indLevel, int ord);
-	virtual void RemoveLabel(int ord);
-	virtual void RemoveUnusedLabels(int maxOrd);
+	virtual void AddLabel(int indLevel, int ord) override;
+	virtual void RemoveLabel(int ord) override;
+	virtual void RemoveUnusedLabels(int maxOrd) override;
 
 	// sequential statements
-	virtual void AddAssignmentStatement(int indLevel, Assign *asgn);
+	virtual void AddAssignmentStatement(int indLevel, Assign *asgn) override;
 	virtual void AddCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
-								  StatementList *results);
-	virtual void AddIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results);
-	virtual void AddReturnStatement(int indLevel, StatementList *rets);
+								  StatementList *results) override;
+	virtual void AddIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results) override;
+	virtual void AddReturnStatement(int indLevel, StatementList *rets) override;
 
 	// proc related
-	virtual void AddProcStart(UserProc *proc);
-	virtual void AddProcEnd();
-	virtual void AddLocal(const QString& name, SharedType type, bool last = false);
-	virtual void AddGlobal(const QString& name, SharedType type, const SharedExp& init = nullptr);
-	virtual void AddPrototype(UserProc *proc);
+	virtual void AddProcStart(UserProc *proc) override;
+	virtual void AddProcEnd() override;
+	virtual void AddLocal(const QString& name, SharedType type, bool last = false) override;
+	virtual void AddGlobal(const QString& name, SharedType type, const SharedExp& init = nullptr) override;
+	virtual void AddPrototype(UserProc *proc) override;
 
 private:
 	void AddProcDec(UserProc *proc, bool open); // Implement AddProcStart and AddPrototype
 
 public:
 	// comments
-	virtual void AddLineComment(const QString& cmt);
+	virtual void AddLineComment(const QString& cmt) override;
 
 	/*
 	 * output functions
 	 */
-	virtual void print(QTextStream& os);
+	virtual void print(QTextStream& os) override;
 };

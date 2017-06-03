@@ -32,7 +32,7 @@ public:
 	int getUpperBound() const { return upperBound; }
 	void unionWith(Range& r);
 	void widenWith(Range& r);
-	QString toString() const;
+	QString toString() const override;
 	bool operator==(Range& other);
 
 	static const int MAX = 2147483647;
@@ -51,7 +51,7 @@ public:
 	Range& getRange(const SharedExp& loc);
 	void unionwith(RangeMap& other);
 	void widenwith(RangeMap& other);
-	QString toString() const;
+	QString toString() const override;
 	void print() const;
 	SharedExp substInto(SharedExp e, std::set<SharedExp, lessExpStar> *only = nullptr) const;
 	void killAllMemOfs();
@@ -242,7 +242,7 @@ struct RangeVisitor : public StmtVisitor
 		}
 	}
 
-	bool visit(Assign *insn)
+	bool visit(Assign *insn) override
 	{
 		static Unary search_term(opTemp, Terminal::get(opWild));
 		static Unary search_regof(opRegOf, Terminal::get(opWild));
@@ -378,11 +378,11 @@ struct RangeVisitor : public StmtVisitor
 		return true;
 	}
 
-	bool visit(PhiAssign *stmt) { processRange(stmt); return true; }
-	bool visit(ImplicitAssign *stmt) { processRange(stmt); return true; }
-	bool visit(BoolAssign *stmt) { processRange(stmt); return true; }
-	bool visit(GotoStatement *stmt) { processRange(stmt);  return true; }
-	bool visit(BranchStatement *stmt)
+	bool visit(PhiAssign *stmt) override { processRange(stmt); return true; }
+	bool visit(ImplicitAssign *stmt) override { processRange(stmt); return true; }
+	bool visit(BoolAssign *stmt) override { processRange(stmt); return true; }
+	bool visit(GotoStatement *stmt) override { processRange(stmt);  return true; }
+	bool visit(BranchStatement *stmt) override
 	{
 		RangeMap output = getInputRanges(stmt);
 
@@ -427,8 +427,8 @@ struct RangeVisitor : public StmtVisitor
 		return true;
 	}
 
-	bool visit(CaseStatement *stmt) { processRange(stmt); return true; }
-	bool visit(CallStatement *stmt)
+	bool visit(CaseStatement *stmt) override { processRange(stmt); return true; }
+	bool visit(CallStatement *stmt) override
 	{
 		RangeMap output = getInputRanges(stmt);
 
@@ -569,9 +569,9 @@ struct RangeVisitor : public StmtVisitor
 		return true;
 	}
 
-	bool visit(ReturnStatement *stmt) { processRange(stmt); return true; }
-	bool visit(ImpRefStatement *stmt) { processRange(stmt); return true; }
-	bool visit(JunctionStatement *stmt)
+	bool visit(ReturnStatement *stmt) override { processRange(stmt); return true; }
+	bool visit(ImpRefStatement *stmt) override { processRange(stmt); return true; }
+	bool visit(JunctionStatement *stmt) override
 	{
 		RangeMap input;
 

@@ -12,7 +12,7 @@ class RangeAnalysis : public FunctionPass
 {
 public:
 	RangeAnalysis();
-	bool runOnFunction(Function& F);
+	bool runOnFunction(Function& F) override;
 
 private:
 	friend class rangeVisitor;

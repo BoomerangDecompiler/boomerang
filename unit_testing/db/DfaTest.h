@@ -5,7 +5,7 @@
 class ErrLogger : public Log
 {
 public:
-	virtual Log& operator<<(const QString& s)
+	virtual Log& operator<<(const QString& s) override
 	{
 		std::cerr << s.toStdString();
 		return *this;

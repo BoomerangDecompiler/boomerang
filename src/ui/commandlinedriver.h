@@ -9,7 +9,7 @@ class DecompilationThread : public QThread
 	int Result = 0;
 
 public:
-	void run();
+	void run() override;
 
 	void setDecompiled(const QString value) { m_decompiled = value; }
 	int resCode() { return Result; }

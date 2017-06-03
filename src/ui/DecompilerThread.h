@@ -107,7 +107,7 @@ public:
 	Decompiler *getDecompiler();
 
 protected:
-	void run();
+	void run() override;
 
 	Decompiler *Parent;
 };

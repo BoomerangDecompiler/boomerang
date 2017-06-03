@@ -251,24 +251,24 @@ class VoidType : public Type
 public:
 	VoidType();
 	virtual ~VoidType();
-	virtual bool isVoid() const { return true; }
+	virtual bool isVoid() const override { return true; }
 
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
 	static std::shared_ptr<VoidType> get() { return std::make_shared<VoidType>(); }
 
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool          operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 protected:
 	friend class XMLProgParser;
@@ -283,27 +283,27 @@ public:
 	static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature>& sig = nullptr) { return std::make_shared<FuncType>(sig); }
 	FuncType(const std::shared_ptr<Signature>& sig = nullptr);
 	virtual ~FuncType();
-	virtual bool isFunc() const { return true; }
+	virtual bool isFunc() const override { return true; }
 
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
 	Signature *getSignature() { return signature.get(); }
 	void setSignature(std::shared_ptr<Signature>& sig) { signature = sig; }
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool          operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
 	// Split the C type into return and parameter parts
 	void getReturnAndParam(QString& ret, QString& param);
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 protected:
 	friend class XMLProgParser;
@@ -403,22 +403,22 @@ class BooleanType : public Type
 public:
 	BooleanType();
 	virtual ~BooleanType();
-	virtual bool isBoolean() const { return true; }
+	virtual bool isBoolean() const override { return true; }
 	static std::shared_ptr<BooleanType> get() { return std::make_shared<BooleanType>(); }
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool        operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 protected:
 	friend class XMLProgParser;
@@ -429,23 +429,23 @@ class CharType : public Type
 public:
 	CharType();
 	virtual ~CharType();
-	virtual bool isChar() const { return true; }
+	virtual bool isChar() const override { return true; }
 
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
 	static std::shared_ptr<CharType> get() { return std::make_shared<CharType>(); }
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool        operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 protected:
 	friend class XMLProgParser;
@@ -459,7 +459,7 @@ private:
 public:
 	PointerType(SharedType p);
 	virtual ~PointerType();
-	virtual bool isPointer() const { return true; }
+	virtual bool isPointer() const  override{ return true; }
 	void setPointsTo(SharedType p);
 
 	SharedType getPointsTo() { return points_to; }
@@ -470,22 +470,22 @@ public:
 	int pointerDepth() const;            // Return 2 for **x
 	SharedType getFinalPointsTo() const; // Return x for **x
 
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool        operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual void setSize(size_t sz) { assert(sz == STD_SIZE); }
+	virtual void setSize(size_t sz)  override { assert(sz == STD_SIZE); }
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 protected:
 	friend class XMLProgParser;
@@ -506,7 +506,7 @@ public:
 	ArrayType(SharedType p, unsigned _length);
 	ArrayType(SharedType p);
 	virtual ~ArrayType();
-	virtual bool isArray() const { return true; }
+	virtual bool isArray() const  override{ return true; }
 	SharedType getBaseType() { return BaseType; }
 	const SharedType getBaseType() const { return BaseType; }
 	void setBaseType(SharedType b);
@@ -516,24 +516,24 @@ public:
 	void setLength(unsigned n) { Length = n; }
 	bool isUnbounded() const;
 
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
 	static std::shared_ptr<ArrayType> get(SharedType p, unsigned _length) { return std::make_shared<ArrayType>(p, _length); }
 	static std::shared_ptr<ArrayType> get(SharedType p) { return std::make_shared<ArrayType>(p); }
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool        operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 
-	virtual bool isCompatibleWith(const Type& other, bool all = false) const { return isCompatible(other, all); }
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 	size_t convertLength(SharedType b) const;
 
@@ -554,7 +554,7 @@ private:
 public:
 	NamedType(const QString& _name);
 	virtual ~NamedType();
-	virtual bool isNamed() const { return true; }
+	virtual bool isNamed() const override { return true; }
 	QString getName() const { return name; }
 	SharedType resolvesTo() const;
 
@@ -562,20 +562,20 @@ public:
 	static std::shared_ptr<NamedType> get(const QString& _name) { return std::make_shared<NamedType>(_name); }
 	static std::shared_ptr<NamedType> getAlpha();
 
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool        operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 protected:
 	friend class XMLProgParser;
@@ -593,7 +593,7 @@ private:
 public:
 	CompoundType(bool generic = false);
 	virtual ~CompoundType();
-	virtual bool isCompound() const { return true; }
+	virtual bool isCompound() const override { return true; }
 
 	void addType(SharedType n, const QString& str)
 	{
@@ -634,26 +634,26 @@ public:
 	unsigned getOffsetTo(const QString& member);
 	unsigned getOffsetRemainder(unsigned n);
 
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
 	static std::shared_ptr<CompoundType> get(bool generic = false) { return std::make_shared<CompoundType>(generic); }
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool        operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
 	bool isSuperStructOf(const SharedType& other); // True if this is is a superstructure of other
 	bool isSubStructOf(SharedType other) const;    // True if this is is a substructure of other
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 
-	virtual bool isCompatibleWith(const Type& other, bool all = false) const { return isCompatible(other, all); }
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual bool isCompatibleWith(const Type& other, bool all = false) const  override { return isCompatible(other, all); }
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 protected:
 	friend class XMLProgParser;
@@ -690,7 +690,7 @@ public:
 	typedef UnionEntrySet::iterator ilUnionElement;
 	UnionType();
 	virtual ~UnionType();
-	virtual bool isUnion() const { return true; }
+	virtual bool isUnion() const  override { return true; }
 	static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
 	void addType(SharedType n, const QString& str);
 
@@ -702,22 +702,22 @@ public:
 	// Type        *getType(const char *nam);
 	// const        char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
 
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
-	virtual bool operator==(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool        operator-=(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
-	virtual SharedExp match(SharedType pattern);
+	virtual bool operator<(const Type& other) const override;
+	virtual SharedExp match(SharedType pattern) override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual QString getCtype(bool final = false) const;
+	virtual QString getCtype(bool final = false) const override;
 
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 
-	virtual bool isCompatibleWith(const Type& other, bool all) const { return isCompatible(other, all); }
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual bool isCompatibleWith(const Type& other, bool all) const  override { return isCompatible(other, all); }
+	virtual bool isCompatible(const Type& other, bool all) const override;
 
 	// if this is a union of pointer types, get the union of things they point to. In dfa.cpp
 	SharedType dereferenceUnion();
@@ -740,24 +740,24 @@ public:
 		: Type(eSize)
 		, size(sz) {}
 	virtual ~SizeType() {}
-	virtual SharedType clone() const;
+	virtual SharedType clone() const override;
 
 	static std::shared_ptr<SizeType> get(unsigned sz) { return std::make_shared<SizeType>(sz); }
 	static std::shared_ptr<SizeType> get() { return std::make_shared<SizeType>(); }
-	virtual bool operator==(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
+	virtual bool operator==(const Type& other) const override;
+	virtual bool operator<(const Type& other) const override;
 
 	// virtual Exp          *match(SharedType pattern);
-	virtual SharedType mergeWith(SharedType other) const;
+	virtual SharedType mergeWith(SharedType other) const override;
 
-	virtual size_t getSize() const;
+	virtual size_t getSize() const override;
 
-	virtual void setSize(size_t sz) { size = sz; }
-	virtual bool isSize() const { return true; }
-	virtual bool isComplete() { return false; } // Basic type is unknown
-	virtual QString getCtype(bool final = false) const;
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool) const;
+	virtual void setSize(size_t sz) override { size = sz; }
+	virtual bool isSize() const  override{ return true; }
+	virtual bool isComplete() override { return false; } // Basic type is unknown
+	virtual QString getCtype(bool final = false) const override;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool) const override;
 
 	friend class XMLProgParser;
 }; // class SizeType
@@ -773,25 +773,25 @@ public:
 		: Type(eUpper)
 		, base_type(base) {}
 	virtual ~UpperType() {}
-	virtual SharedType clone() const;
-	virtual bool operator==(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
+	virtual SharedType clone() const override;
+	virtual bool operator==(const Type& other) const override;
+	virtual bool operator<(const Type& other) const override;
 
 	// virtual Exp         *match(SharedType pattern);
-	virtual SharedType mergeWith(SharedType other) const;
+	virtual SharedType mergeWith(SharedType other) const override;
 
 	SharedType getBaseType() { return base_type; }
 	const SharedType getBaseType() const { return base_type; }
 	void setBaseType(SharedType b) { base_type = b; }
 
-	virtual size_t getSize() const { return base_type->getSize() / 2; }
-	virtual void setSize(size_t sz); // Does this make sense?
+	virtual size_t getSize() const override { return base_type->getSize() / 2; }
+	virtual void setSize(size_t sz) override; // Does this make sense?
 
-	virtual bool isUpper() const { return true; }
-	virtual bool isComplete() { return base_type->isComplete(); }
-	virtual QString getCtype(bool final = false) const;
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual bool isUpper() const override { return true; }
+	virtual bool isComplete() override { return base_type->isComplete(); }
+	virtual QString getCtype(bool final = false) const override;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool all) const override;
 }; // class UpperType
 
 // As above, but stores the lower half
@@ -804,25 +804,25 @@ public:
 		: Type(eUpper)
 		, base_type(base) {}
 	virtual ~LowerType() {}
-	virtual SharedType clone() const;
-	virtual bool operator==(const Type& other) const;
-	virtual bool operator<(const Type& other) const;
+	virtual SharedType clone() const override;
+	virtual bool operator==(const Type& other) const override;
+	virtual bool operator<(const Type& other) const override;
 
 	// virtual Exp         *match(SharedType pattern);
-	virtual SharedType mergeWith(SharedType other) const;
+	virtual SharedType mergeWith(SharedType other) const override;
 
 	SharedType getBaseType() { return base_type; }
 	const SharedType getBaseType() const { return base_type; }
 	void setBaseType(SharedType b) { base_type = b; }
 
-	virtual size_t getSize() const { return base_type->getSize() / 2; }
-	virtual void setSize(size_t sz); // Does this make sense?
+	virtual size_t getSize() const  override{ return base_type->getSize() / 2; }
+	virtual void setSize(size_t sz) override; // Does this make sense?
 
-	virtual bool isLower() const { return true; }
-	virtual bool isComplete() { return base_type->isComplete(); }
-	virtual QString getCtype(bool final = false) const;
-	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const;
-	virtual bool isCompatible(const Type& other, bool all) const;
+	virtual bool isLower() const override { return true; }
+	virtual bool isComplete() override { return base_type->isComplete(); }
+	virtual QString getCtype(bool final = false) const override;
+	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+	virtual bool isCompatible(const Type& other, bool all) const override;
 }; // class LowerType
 
 /**
