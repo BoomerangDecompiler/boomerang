@@ -1,10 +1,11 @@
-#include "db/module.h"
+#include "module.h"
 
 #include "boom_base/log.h"
+
 #include "db/proc.h"
 #include "db/prog.h"
-
 #include "db/signature.h"
+#include "db/statements/callstatement.h"
 
 #include <QDir>
 #include <QString>

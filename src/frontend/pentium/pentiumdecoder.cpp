@@ -23,7 +23,9 @@
 #include "db/exp.h"
 #include "db/proc.h"
 #include "boom_base/log.h"
-#include "db/statement.h"
+#include "db/statements/assign.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/casestatement.h"
 
 #include <cassert>
 #include <cstring>
@@ -1830,7 +1832,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										ADDRESS relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
 										nextPC = MATCH_p + 6;
 										// #line 240 "frontend/machine/pentium/decoder.m"
-										COND_JUMP("Jv.NPod", 6, relocd, (BRANCH_TYPE)0)
+										COND_JUMP("Jv.NPod", 6, relocd, (BranchType)0)
 									}
 									break;
 
@@ -1887,7 +1889,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										ADDRESS relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
 										nextPC = MATCH_p + 6;
 										// #line 263 "frontend/machine/pentium/decoder.m"
-										COND_JUMP("Jv.Ood", 6, relocd, (BRANCH_TYPE)0)
+										COND_JUMP("Jv.Ood", 6, relocd, (BranchType)0)
 									}
 									break;
 
@@ -1897,7 +1899,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 										ADDRESS relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
 										nextPC = MATCH_p + 6;
 										// #line 260 "frontend/machine/pentium/decoder.m"
-										COND_JUMP("Jv.NOod", 6, relocd, (BRANCH_TYPE)0)
+										COND_JUMP("Jv.NOod", 6, relocd, (BranchType)0)
 									}
 									break;
 
@@ -7711,7 +7713,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							ADDRESS relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
 							nextPC = MATCH_p + 2;
 							// #line 168 "frontend/machine/pentium/decoder.m"
-							COND_JUMP("Jb.NP", 2, relocd, (BRANCH_TYPE)0)
+							COND_JUMP("Jb.NP", 2, relocd, (BranchType)0)
 						}
 						break;
 
@@ -17578,7 +17580,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 																	 sign_extend((MATCH_w_16_24 & 0xffff), 16);
 													nextPC = MATCH_p + 5;
 													// #line 204 "frontend/machine/pentium/decoder.m"
-													COND_JUMP("Jv.NPow", 4, relocd, (BRANCH_TYPE)0)
+													COND_JUMP("Jv.NPow", 4, relocd, (BranchType)0)
 												}
 												break;
 
@@ -17642,7 +17644,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 																	 sign_extend((MATCH_w_16_24 & 0xffff), 16);
 													nextPC = MATCH_p + 5;
 													// #line 227 "frontend/machine/pentium/decoder.m"
-													COND_JUMP("Jv.Oow", 4, relocd, (BRANCH_TYPE)0)
+													COND_JUMP("Jv.Oow", 4, relocd, (BranchType)0)
 
 													/*
 													 * Conditional branches, 32 bit offset: 0F 8X XX XX XX XX
@@ -17657,7 +17659,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 																	 sign_extend((MATCH_w_16_24 & 0xffff), 16);
 													nextPC = MATCH_p + 5;
 													// #line 224 "frontend/machine/pentium/decoder.m"
-													COND_JUMP("Jv.NOow", 4, relocd, (BRANCH_TYPE)0)
+													COND_JUMP("Jv.NOow", 4, relocd, (BranchType)0)
 												}
 												break;
 
@@ -27343,7 +27345,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							ADDRESS relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
 							nextPC = MATCH_p + 2;
 							// #line 191 "frontend/machine/pentium/decoder.m"
-							COND_JUMP("Jb.O", 2, relocd, (BRANCH_TYPE)0)
+							COND_JUMP("Jb.O", 2, relocd, (BranchType)0)
 
 							/*
 							 * Conditional branches, 16 bit offset: 66 0F 8X XX XX
@@ -27357,7 +27359,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							ADDRESS relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
 							nextPC = MATCH_p + 2;
 							// #line 188 "frontend/machine/pentium/decoder.m"
-							COND_JUMP("Jb.NO", 2, relocd, (BRANCH_TYPE)0)
+							COND_JUMP("Jb.NO", 2, relocd, (BranchType)0)
 						}
 						break;
 

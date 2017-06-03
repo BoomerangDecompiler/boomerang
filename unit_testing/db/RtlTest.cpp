@@ -4,7 +4,7 @@
  *                tests the RTL and derived classes
  ******************************************************************************/
 #include "RtlTest.h"
-#include "db/statement.h"
+
 #include "db/exp.h"
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
@@ -14,6 +14,15 @@
 #include "db/rtl.h"
 #include "db/proc.h"
 #include "db/prog.h"
+
+#include "db/statements/boolassign.h"
+#include "db/statements/gotostatement.h"
+#include "db/statements/branchstatement.h"
+#include "db/statements/assign.h"
+#include "db/statements/casestatement.h"
+#include "db/statements/callstatement.h"
+
+
 #include "include/visitor.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"

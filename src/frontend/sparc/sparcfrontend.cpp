@@ -22,22 +22,25 @@
 
 #include "sparcfrontend.h"
 
-#include "db/basicblock.h"
 #include "boom_base/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
 #include "boom_base/log.h"
-#include "db/IBinaryImage.h"
-#include "db/IBinarySymbols.h"
+#include "db/basicblock.h"
 #include "db/cfg.h"
-#include "include/decoder.h"
 #include "db/exp.h"
-#include "include/frontend.h"
-#include "boom_base/log.h"
 #include "db/proc.h"
 #include "db/prog.h"
 #include "db/register.h"
 #include "db/rtl.h"
 #include "db/signature.h"
+#include "db/IBinaryImage.h"
+#include "db/IBinarySymbols.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/casestatement.h"
+
+#include "include/decoder.h"
+#include "include/frontend.h"
 #include "sparcdecoder.h"
+
 
 #include <cassert>
 #include <cstring>

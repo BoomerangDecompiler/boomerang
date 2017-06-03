@@ -21,19 +21,26 @@
 
 #include "include/config.h"
 #include "include/types.h"
-#include "db/statement.h"
+
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/register.h"
 #include "db/rtl.h"
-#include "include/hllcode.h"
 #include "db/proc.h"
 #include "db/prog.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/branchstatement.h"
+#include "db/statements/casestatement.h"
+#include "db/statements/phiassign.h"
+#include "db/statements/assign.h"
+
+#include "include/hllcode.h"
 #include "include/util.h"
-#include "boom_base/log.h"
 #include "include/type.h"
-#include "boom_base/log.h"
 #include "include/visitor.h"
+
+#include "boom_base/log.h"
+#include "boom_base/log.h"
 
 #include <QtCore/QDebug>
 #include <cassert>
@@ -823,7 +830,7 @@ bool BasicBlock::isJmpZ(BasicBlock *dest)
 
 	for (auto it = last->rbegin(); it != last->rend(); it++) {
 		if ((*it)->getKind() == STMT_BRANCH) {
-			BRANCH_TYPE jt = ((BranchStatement *)(*it))->getCond();
+			BranchType jt = ((BranchStatement *)(*it))->getCond();
 
 			if ((jt != BRANCH_JE) && (jt != BRANCH_JNE)) {
 				return false;

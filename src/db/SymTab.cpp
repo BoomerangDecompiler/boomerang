@@ -51,6 +51,7 @@ IBinarySymbol& SymTab::create(ADDRESS a, const QString& s, bool local)
 {
 	assert(amap.find(a) == amap.end());
 	assert(smap.find(s) == smap.end());
+	
 	BinarySymbol *sym = new BinarySymbol;
 	sym->Location = a;
 	sym->Name     = s;

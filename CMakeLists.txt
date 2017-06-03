@@ -43,8 +43,9 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
 	#add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
 else ()
-	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic -Wfatal-errors \
-		-Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs -Wstrict-overflow=2")
+	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic \
+		-Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs \
+		-Wstrict-overflow=2")
 		
 	# other warnings:
 	#-fstrict-aliasing  # This will not work with *reinterpret-cast<float*>(&int)

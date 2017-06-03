@@ -18,26 +18,33 @@
 #include "include/frontend.h"
 
 #include "include/types.h"
+#include "include/decoder.h"
+
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/register.h"
 #include "db/rtl.h"
-#include "boom_base/BinaryFile.h"
-#include "include/decoder.h"
 #include "db/basicblock.h"
-#include "sparc/sparcfrontend.h"
-#include "pentium/pentiumfrontend.h"
-#include "ppc/ppcfrontend.h"
-#include "st20/st20frontend.h"
-#include "mips/mipsfrontend.h"
 #include "db/prog.h"
 #include "db/signature.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
-#include "ansi-c-parser.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/casestatement.h"
+
 #include "db/IBinaryImage.h"
 #include "db/SymTab.h"
+
+#include "boom_base/BinaryFile.h"
+
+#include "frontend/sparc/sparcfrontend.h"
+#include "frontend/pentium/pentiumfrontend.h"
+#include "frontend/ppc/ppcfrontend.h"
+#include "frontend/st20/st20frontend.h"
+#include "frontend/mips/mipsfrontend.h"
+
+#include "boom_base/log.h"
+#include "boom_base/log.h"
+#include "c/ansi-c-parser.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QDebug>

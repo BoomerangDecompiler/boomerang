@@ -59,21 +59,25 @@ void *alloca();
 #define YYBISON 1
 
 #include "include/config.h"
+#include "include/types.h"
+#include "include/util.h" // E.g. str()
+#include "include/operator.h"
+
+#include "db/rtl.h"
+#include "db/exp.h"
+#include "db/statements/assign.h"
+
+#include "boom_base/log.h"
+
+#include "sslscanner.h"
+#include "table.h"
+#include "insnameelem.h"
+
 #include <cassert>
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
-#include "include/types.h"
-#include "db/rtl.h"
-#include "table.h"
-#include "insnameelem.h"
-#include "include/util.h" // E.g. str()
-#include "db/statement.h"
-#include "db/exp.h"
 
-#include "sslscanner.h"
-#include "include/operator.h"
-#include "boom_base/log.h"
 
 OPER strToTerm(const QString &s);                       // Convert string to a Terminal (if possible)
 SharedExp listExpToExp(std::list<SharedExp> *le);       // Convert a STL list of Exp* to opList

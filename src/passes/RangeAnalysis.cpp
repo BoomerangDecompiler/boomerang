@@ -1,20 +1,31 @@
 #include "RangeAnalysis.h"
 
-#include "db/proc.h"
 #include "boom_base/log.h"
-#include "db/IBinaryImage.h"
 #include "boom_base/log.h"
+
+#include "include/visitor.h"
 #include "include/util.h"
+#include "include/type.h"
+
+#include "db/proc.h"
+#include "db/IBinaryImage.h"
 #include "db/cfg.h"
 #include "db/basicblock.h"
 #include "db/rtl.h"
-#include "include/type.h"
 #include "db/prog.h"
-#include "db/statement.h"
 #include "db/signature.h"
-#include "include/visitor.h"
 #include "db/exp.h"
 #include "db/exphelp.h"
+
+#include "db/statements/junctionstatement.h"
+#include "db/statements/branchstatement.h"
+#include "db/statements/phiassign.h"
+#include "db/statements/implicitassign.h"
+#include "db/statements/boolassign.h"
+#include "db/statements/casestatement.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/imprefstatement.h"
+
 
 class Range : public Printable
 {
@@ -35,8 +46,8 @@ public:
 	QString toString() const override;
 	bool operator==(Range& other);
 
-	static const int MAX = 2147483647;
-	static const int MIN = -2147483647;
+	static const int MAX = INT32_MAX;
+	static const int MIN = INT32_MIN;
 };
 
 class RangeMap : public Printable

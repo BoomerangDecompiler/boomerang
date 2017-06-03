@@ -17,11 +17,13 @@
 
 #include "include/types.h"
 #include "include/managed.h"
-#include "db/statement.h"
+
 #include "db/exp.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 #include "db/proc.h"
+#include "db/statements/assign.h"
+
 
 extern char debug_buffer[]; // For prints functions
 
@@ -313,12 +315,10 @@ bool AssignSet::exists(Assign *a)
 
 
 // Find a definition for loc in this Assign set. Return true if found
-bool AssignSet::definesLoc(SharedExp loc)
+bool AssignSet::definesLoc(SharedExp loc) const
 {
 	Assign   as(loc, Terminal::get(opWild));
-	iterator ff = find(&as);
-
-	return ff != end();
+	return find(&as) != end();
 }
 
 

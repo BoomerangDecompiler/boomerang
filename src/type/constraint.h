@@ -13,13 +13,16 @@
  * OVERVIEW:   Definition of objects related to type constraints
  ******************************************************************************/
 
-#include "db/statement.h"
+
 #include "db/exphelp.h"
+#include "include/type.h"
+#include "include/managed.h"
 
 #include <sstream>
 
 class Exp;
 class Instruction;
+
 // This class represents fixed constraints (e.g. Ta = <int>, Tb = <alpha2*>),
 // but also "tentative" constraints resulting from disjunctions of constraints
 class ConstraintMap

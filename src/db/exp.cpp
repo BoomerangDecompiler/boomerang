@@ -14,7 +14,7 @@
 #include <sstream>   // Need gcc 3.0 or better
 #include <cstring>
 #include "include/types.h"
-#include "db/statement.h"
+
 #include "db/cfg.h"
 #include "db/exp.h"
 #include "db/register.h"

@@ -21,8 +21,12 @@
 
 #include <vector>
 #include <cassert>
-#include "db/statement.h" // For CallStatement::RetLocs
 #include <memory>
+
+#include "include/types.h"
+#include "include/type.h"
+#include "managed.h"
+
 
 class BasicBlock;
 class Exp;
@@ -35,7 +39,7 @@ class Assign;
 class LocationSet;
 class CallStatement;
 class QTextStream;
-// class CallStatement::RetLocs;
+class QString;
 class ReturnStatement;
 
 class HLLCode

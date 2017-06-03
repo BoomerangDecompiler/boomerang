@@ -26,25 +26,33 @@
 
 #include "include/types.h"
 #include "include/type.h"
+#include "include/hllcode.h"
+#include "include/frontend.h"
+#include "include/util.h"
+#include "include/visitor.h"
+
 #include "db/module.h"
-#include "db/statement.h"
 #include "db/register.h"
 #include "db/rtl.h"
 #include "db/prog.h"
-#include "include/hllcode.h"
-#include "boom_base/BinaryFile.h"
-#include "include/frontend.h"
-#include "include/util.h"
 #include "db/signature.h"
-#include "boom_base/log.h"
-#include "type/constraint.h"
-#include "include/visitor.h"
-#include "boom_base/log.h"
 #include "db/basicblock.h"
+#include "db/statements/phiassign.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/branchstatement.h"
+#include "db/statements/implicitassign.h"
+#include "db/statements/imprefstatement.h"
+
+#include "type/constraint.h"
+
+#include "boom_base/log.h"
+#include "boom_base/BinaryFile.h"
+#include "boom_base/log.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
+
 #include <sstream>
 #include <algorithm> // For find()
 #include <cstring>

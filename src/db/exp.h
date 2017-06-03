@@ -1196,8 +1196,8 @@ public:
 	virtual SharedExp match(const SharedConstExp& pattern) override;
 	virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
-	// Before type analysis, implicit definitions are nullptr.  During and after TA, they point to an implicit
-	// assignment statement.  Don't implement here, since it would require #including of statement.h
+	// Before type analysis, implicit definitions are nullptr.
+	// During and after TA, they point to an implicit assignment statement.
 	bool isImplicitDef() const;
 
 	// Visitation

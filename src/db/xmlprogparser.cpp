@@ -12,7 +12,7 @@
 #include "db/prog.h"
 #include "db/proc.h"
 #include "db/rtl.h"
-#include "db/statement.h"
+
 #include "sigenum.h"
 #include "db/signature.h"
 #include "boom_base/log.h"
@@ -1857,7 +1857,7 @@ void XMLProgParser::start_branchstmt(const QXmlStreamAttributes& attr)
 	n = attr.value(QLatin1Literal("jtcond"));
 
 	if (!n.isEmpty()) {
-		branch->jtCond = (BRANCH_TYPE)n.toInt();
+		branch->jtCond = (BranchType)n.toInt();
 	}
 	n = attr.value(QLatin1Literal("float"));
 
@@ -1978,7 +1978,7 @@ void XMLProgParser::start_boolasgn(const QXmlStreamAttributes& attr)
 	n = attr.value(QLatin1Literal("jtcond"));
 
 	if (!n.isEmpty()) {
-		boo->jtCond = (BRANCH_TYPE)n.toInt();
+		boo->jtCond = (BranchType)n.toInt();
 	}
 	n = attr.value(QLatin1Literal("float"));
 

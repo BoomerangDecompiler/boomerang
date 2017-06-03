@@ -72,7 +72,7 @@ public:
 	bool removeIfDefines(SharedExp given);    ///< Remove if given exp is defined
 	bool removeIfDefines(AssignSet& given);   ///< Remove if any given is def'd
 	bool exists(Assign *s);                   ///< Search; returns false if !found
-	bool definesLoc(SharedExp loc);           ///< Search; returns true if any assignment defines loc
+	bool definesLoc(SharedExp loc) const;     ///< Search; returns true if any assignment defines loc
 	Assign *lookupLoc(SharedExp loc);         ///< Search for loc on LHS, return ptr to Assign if found
 
 	bool operator<(const AssignSet& o) const; ///< Compare if less

@@ -29,6 +29,9 @@
 #include "db/prog.h"
 #include "db/proc.h"
 #include "db/rtl.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/casestatement.h"
+
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()
 #include "boom_base/log.h"
 

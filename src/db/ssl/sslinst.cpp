@@ -22,7 +22,7 @@
  ******************************************************************************/
 
 #include "include/types.h"
-#include "db/statement.h"
+
 #include "db/exp.h"
 #include "db/register.h"
 #include "include/type.h"
@@ -30,6 +30,8 @@
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"
+#include "db/statements/assign.h"
+
 #include "sslparser.h"
 #include "boom_base/log.h"
 #include "include/util.h"

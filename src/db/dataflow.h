@@ -189,7 +189,7 @@ public:
 	/*
 	 * Return true if initialised
 	 */
-	bool isInitialised() { return m_initialised; }
+	bool isInitialised() const { return m_initialised; }
 
 	/*
 	 * Clear the location set
@@ -221,11 +221,14 @@ public:
 	 */
 	typedef AssignSet::const_iterator   const_iterator;
 	typedef AssignSet::iterator         iterator;
+	
 	iterator begin() { return m_defs.begin(); }
 	iterator end() { return m_defs.end(); }
+	
 	const_iterator begin() const { return m_defs.begin(); }
 	const_iterator end() const { return m_defs.end(); }
-	bool existsOnLeft(SharedExp e) { return m_defs.definesLoc(e); }
+	
+	bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
 
 	/*
 	 * Update the definitions with the current set of reaching definitions
@@ -235,9 +238,10 @@ public:
 
 	/**
 	 * Find the definition for a location.
-	 * Find the definition for e that reaches this Collector. If none reaches here, return nullptr
+	 * Find the definition for e that reaches this Collector.
+	 * If none reaches here, return nullptr
 	 */
-	SharedExp findDefFor(SharedExp e);
+	SharedExp findDefFor(SharedExp e) const;
 
 	/**
 	 * Search and replace all occurrences

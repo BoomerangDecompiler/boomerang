@@ -14,20 +14,28 @@
 #include "dfa.h"
 
 #include "include/config.h"
+#include "boom_base/log.h"
+
 
 #include "include/type.h"
-#include "boom_base/log.h"
+#include "include/visitor.h"
+#include "include/util.h"
+
 #include "db/signature.h"
 #include "db/exp.h"
 #include "db/prog.h"
-#include "include/visitor.h"
-#include "boom_base/log.h"
 #include "db/proc.h"
-#include "include/util.h"
+#include "db/statements/gotostatement.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/implicitassign.h"
+#include "db/statements/imprefstatement.h"
+#include "db/statements/branchstatement.h"
+#include "db/statements/boolassign.h"
 
 #include <sstream>
 #include <cstring>
 #include <utility>
+
 #include <QDebug>
 
 static int nextUnionNumber = 0;
@@ -1134,179 +1142,6 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
 #endif
 	return u;
 }
-
-
-void CallStatement::dfaTypeAnalysis(bool& ch)
-{
-	// Iterate through the arguments
-	int n = 0;
-
-	for (Instruction *aa : arguments) {
-		Assign *param = dynamic_cast<Assign *>(aa);
-		assert(param);
-
-		if (procDest && !procDest->getSignature()->getParamBoundMax(n).isNull() && param->getRight()->isIntConst()) {
-			QString boundmax = procDest->getSignature()->getParamBoundMax(n);
-			assert(param->getType()->resolvesToInteger());
-			StatementList::iterator aat;
-			int nt = 0;
-
-			for (aat = arguments.begin(); aat != arguments.end(); ++aat, ++nt) {
-				if (boundmax == procDest->getSignature()->getParamName(nt)) {
-					SharedType tyt = ((Assign *)*aat)->getType();
-
-					if (tyt->resolvesToPointer() && tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
-						tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded()) {
-						tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->setLength(
-							param->getRight()->access<Const>()->getInt());
-					}
-
-					break;
-				}
-			}
-		}
-
-		// The below will ascend type, meet type with that of arg, and descend type. Note that the type of the assign
-		// will already be that of the signature, if this is a library call, from updateArguments()
-		param->dfaTypeAnalysis(ch);
-		++n;
-	}
-
-	// The destination is a pointer to a function with this function's signature (if any)
-	if (pDest) {
-		if (signature) {
-			pDest->descendType(FuncType::get(signature), ch, this);
-		}
-		else if (procDest) {
-			pDest->descendType(FuncType::get(procDest->getSignature()), ch, this);
-		}
-	}
-}
-
-
-void ReturnStatement::dfaTypeAnalysis(bool& ch)
-{
-	for (Instruction *mm : modifieds) {
-		if (not mm->isAssignment()) {
-			qDebug() << "non assignment in modifieds of ReturnStatement";
-		}
-
-		mm->dfaTypeAnalysis(ch);
-	}
-
-	for (Instruction *rr : returns) {
-		if (not rr->isAssignment()) {
-			qDebug() << "non assignment in returns of ReturnStatement";
-		}
-
-		rr->dfaTypeAnalysis(ch);
-	}
-}
-
-
-// For x0 := phi(x1, x2, ...) want
-// Tx0 := Tx0 meet (Tx1 meet Tx2 meet ...)
-// Tx1 := Tx1 meet Tx0
-// Tx2 := Tx2 meet Tx0
-// ...
-void PhiAssign::dfaTypeAnalysis(bool& ch)
-{
-	iterator it = DefVec.begin();
-
-	while (it->second.e == nullptr && it != DefVec.end()) {
-		++it;
-	}
-
-	assert(it != DefVec.end());
-	SharedType meetOfArgs = it->second.def()->getTypeFor(lhs);
-
-	for (++it; it != DefVec.end(); ++it) {
-		PhiInfo& phinf(it->second);
-
-		if (phinf.e == nullptr) {
-			continue;
-		}
-
-		assert(phinf.def());
-		SharedType typeOfDef = phinf.def()->getTypeFor(phinf.e);
-		meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
-	}
-
-	m_type = m_type->meetWith(meetOfArgs, ch);
-
-	for (it = DefVec.begin(); it != DefVec.end(); ++it) {
-		if (it->second.e == nullptr) {
-			continue;
-		}
-
-		it->second.def()->meetWithFor(m_type, it->second.e, ch);
-	}
-
-	Assignment::dfaTypeAnalysis(ch); // Handle the LHS
-}
-
-
-void Assign::dfaTypeAnalysis(bool& ch)
-{
-	SharedType tr = rhs->ascendType();
-
-	m_type = m_type->meetWith(tr, ch, true); // Note: bHighestPtr is set true, since the lhs could have a greater type
-	// (more possibilities) than the rhs. Example: pEmployee = pManager.
-	rhs->descendType(m_type, ch, this);    // This will effect rhs = rhs MEET lhs
-	Assignment::dfaTypeAnalysis(ch);     // Handle the LHS wrt m[] operands
-}
-
-
-void Assignment::dfaTypeAnalysis(bool& ch)
-{
-	auto sig = m_proc->getSignature();
-
-	// Don't do this for the common case of an ordinary local, since it generates hundreds of implicit references,
-	// without any new type information
-	if (lhs->isMemOf() && !sig->isStackLocal(m_proc->getProg(), lhs)) {
-		SharedExp addr = lhs->getSubExp1();
-		// Meet the assignment type with *(type of the address)
-		SharedType addrType = addr->ascendType();
-		SharedType memofType;
-
-		if (addrType->resolvesToPointer()) {
-			memofType = addrType->as<PointerType>()->getPointsTo();
-		}
-		else {
-			memofType = VoidType::get();
-		}
-
-		m_type = m_type->meetWith(memofType, ch);
-		// Push down the fact that the memof operand is a pointer to the assignment type
-		addrType = PointerType::get(m_type);
-		addr->descendType(addrType, ch, this);
-	}
-}
-
-
-void BranchStatement::dfaTypeAnalysis(bool& ch)
-{
-	if (pCond) {
-		pCond->descendType(BooleanType::get(), ch, this);
-	}
-
-	// Not fully implemented yet?
-}
-
-
-/// Data flow based type analysis
-void ImplicitAssign::dfaTypeAnalysis(bool& ch)
-{
-	Assignment::dfaTypeAnalysis(ch);
-}
-
-
-void BoolAssign::dfaTypeAnalysis(bool& ch)
-{
-	// Not properly implemented yet
-	Assignment::dfaTypeAnalysis(ch);
-}
-
 
 // Special operators for handling addition and subtraction in a data flow based type analysis
 //                    ta=

@@ -13,16 +13,17 @@
  ******************************************************************************/
 
 #include "db/dataflow.h"
-
+#include "db/basicblock.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/exp.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/phiassign.h"
+#include "db/statements/assign.h"
 #include "boom_base/log.h"
-#include "db/statement.h"
-#include "include/visitor.h"
-#include "boom_base/log.h"
-#include "db/basicblock.h"
+
 #include "include/frontend.h"
+#include "include/visitor.h"
 
 #include <QtCore/QDebug>
 #include <sstream>
@@ -797,11 +798,9 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<Instruction *>, les
 }
 
 
-SharedExp DefCollector::findDefFor(SharedExp e)
+SharedExp DefCollector::findDefFor(SharedExp e) const
 {
-	iterator it;
-
-	for (it = m_defs.begin(); it != m_defs.end(); ++it) {
+	for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
 		SharedExp lhs = (*it)->getLeft();
 
 		if (*lhs == *e) {

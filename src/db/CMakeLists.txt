@@ -54,8 +54,38 @@ set(SRC
     signature.h
     signature.cpp
     
-    statement.h
-    statement.cpp
+    # statement handling
+    statements/statement.h
+    statements/statement.cpp
+	statements/assign.h
+	statements/assign.cpp
+	statements/assignment.h
+	statements/assignment.cpp
+	statements/boolassign.h
+	statements/boolassign.cpp
+	statements/branchstatement.h
+	statements/branchstatement.cpp
+	statements/callstatement.h
+	statements/callstatement.cpp
+	statements/casestatement.h
+	statements/casestatement.cpp
+	statements/gotostatement.h
+	statements/gotostatement.cpp
+	statements/implicitassign.h
+	statements/implicitassign.cpp
+	statements/imprefstatement.h
+	statements/imprefstatement.cpp
+	statements/junctionstatement.h
+	statements/junctionstatement.cpp
+	statements/phiassign.h
+	statements/phiassign.cpp
+	statements/returnstatement.h
+	statements/returnstatement.cpp
+	statements/typingstatement.h
+	statements/typingstatement.cpp
+	statements/statementhelper.h
+	statements/statementhelper.cpp
+	
     table.cpp
     visitor.cpp
 #	xmlprogparser.cpp
