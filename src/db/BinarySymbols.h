@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO this is unused and has a name clash with struct BinarySymbol in SymTab.h
+#if 0
 #include "db/IBinarySymbols.h"
 #include <QMap>
 #include <QVariantMap>
@@ -51,4 +53,4 @@ private:
 	QMap<ADDRESS, BinarySymbol *> m_addressToSymbolMap;
 };
 
-#endif // BINARYSYMBOLS_H
+#endif
