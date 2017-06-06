@@ -35,12 +35,13 @@ Boomerang *Boomerang::boomerang = nullptr;
 
 
 Boomerang::Boomerang()
-	: m_progPath("./")
+	: m_symbols(new SymTab)
+	, m_progPath("./")
 	, m_outputPath("./output/")
 	, LogStream(stdout)
 	, ErrStream(stderr)
+	, m_currentProject(new Project)
 {
-	m_currentProject = new Project;
 }
 
 
@@ -1067,10 +1068,6 @@ IBinaryImage *Boomerang::getImage()
 
 IBinarySymbolTable *Boomerang::getSymbols()
 {
-	if (!m_symbols) {
-		m_symbols = new SymTab;
-	}
-
 	return m_symbols;
 }
 
