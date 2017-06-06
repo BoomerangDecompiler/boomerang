@@ -41,7 +41,7 @@ class Instruction; // lines 47-47
 class QTextStream;
 class QString;
 
-enum STMT_KIND : uint8_t;
+enum StmtType : uint8_t;
 using SharedRTL = std::shared_ptr<class RTL>;
 using SharedExp = std::shared_ptr<Exp>;
 

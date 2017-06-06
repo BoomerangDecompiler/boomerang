@@ -14,7 +14,7 @@
 #include <sstream>   // Need gcc 3.0 or better
 #include <cstring>
 #include "include/types.h"
-#include "include/statement.h"
+
 #include "db/cfg.h"
 #include "db/exp.h"
 #include "db/register.h"
@@ -3874,7 +3874,7 @@ SharedExp Binary::polySimplify(bool& bMod)
 	SharedType ty = nullptr; // Type of subExp1
 
 	if (subExp1->isSubscript()) {
-		Instruction *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();
+		const Instruction *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();
 
 		if (def) {
 			ty = def->getTypeFor(subExp1->getSubExp1());
@@ -4454,7 +4454,7 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 	for (xx = locs.begin(); xx != locs.end(); xx++) {
 		if ((*xx)->getOper() == opSubscript) {
 			auto        r1   = std::static_pointer_cast<RefExp>(*xx);
-			Instruction *def = r1->getDef();
+			const Instruction *def = r1->getDef();
 
 			if (!((def == nullptr) || (def->getNumber() == 0))) {
 				allZero = false;

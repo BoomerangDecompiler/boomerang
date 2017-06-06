@@ -9,12 +9,20 @@
 #include "include/visitor.h"
 
 #include "db/exp.h"
-#include "include/statement.h"
+
 #include "boom_base/log.h"
 #include "boom_base/log.h" // For VERBOSE
+
 #include "db/proc.h"
 #include "db/signature.h"
 #include "db/prog.h"
+#include "db/statements/phiassign.h"
+#include "db/statements/implicitassign.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/casestatement.h"
+#include "db/statements/boolassign.h"
+#include "db/statements/branchstatement.h"
+#include "db/statements/imprefstatement.h"
 
 #include <QtCore/QDebug>
 #include <sstream>

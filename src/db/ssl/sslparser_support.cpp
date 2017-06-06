@@ -1,13 +1,18 @@
 #include "sslparser.h"
-#include "sslscanner.h"
+
 #include "include/config.h"
 #include "include/types.h"
-#include "db/rtl.h"
+#include "include/util.h" // E.g. str()
+
+#include "sslscanner.h"
 #include "table.h"
 #include "insnameelem.h"
-#include "include/util.h" // E.g. str()
-#include "include/statement.h"
+
+#include "db/rtl.h"
 #include "db/exp.h"
+#include "db/statements/statement.h"
+#include "db/statements/assign.h"
+
 #include "boom_base/log.h"
 
 #include <cassert>

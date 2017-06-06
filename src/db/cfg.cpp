@@ -20,7 +20,7 @@
 #include "db/cfg.h"
 
 #include "include/types.h"
-#include "include/statement.h"
+
 #include "db/signature.h"
 #include "db/exp.h"
 #include "db/register.h"
@@ -28,6 +28,9 @@
 #include "db/rtl.h"
 #include "db/proc.h" // For Proc::setTailCaller()
 #include "db/prog.h" // For findProc()
+#include "db/statements/branchstatement.h"
+#include "db/statements/implicitassign.h"
+
 #include "include/util.h"
 #include "include/hllcode.h"
 #include "boom_base/log.h"

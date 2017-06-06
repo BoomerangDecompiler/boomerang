@@ -26,8 +26,12 @@
 #include "db/exp.h"
 #include "db/prog.h"
 #include "db/proc.h"
-#include "include/decoder.h"
 #include "db/rtl.h"
+#include "db/statements/assign.h"
+#include "db/statements/callstatement.h"
+
+#include "include/decoder.h"
+
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()
 #include "boom_base/log.h"
 
@@ -999,7 +1003,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 								// #line 288 "frontend/machine/ppc/decoder.m"
 
-								PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
+								PPC_COND_JUMP(name, 4, reladdr, (BranchType)0, BIcr);
 
 								//    | bun(BIcr, reladdr) [name] =>
 
@@ -1023,7 +1027,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// #line 285 "frontend/machine/ppc/decoder.m"
 								// Branch on summary overflow
 
-								PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0,
+								PPC_COND_JUMP(name, 4, reladdr, (BranchType)0,
 											  BIcr); // MVE: Don't know these last 4 yet
 							}
 
@@ -1510,7 +1514,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 										// #line 337 "frontend/machine/ppc/decoder.m"
 
-										PPC_COND_JUMP(name, 4, hostPC + 4, (BRANCH_TYPE)0, BIcr);
+										PPC_COND_JUMP(name, 4, hostPC + 4, (BranchType)0, BIcr);
 
 										result.rtl->appendStmt(new ReturnStatement);
 									}
@@ -1526,7 +1530,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 										// #line 333 "frontend/machine/ppc/decoder.m"
 
-										PPC_COND_JUMP(name, 4, hostPC + 4, (BRANCH_TYPE)0, BIcr);
+										PPC_COND_JUMP(name, 4, hostPC + 4, (BranchType)0, BIcr);
 
 										result.rtl->appendStmt(new ReturnStatement);
 									}

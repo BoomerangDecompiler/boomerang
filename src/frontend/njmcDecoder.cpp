@@ -15,15 +15,20 @@
  ******************************************************************************/
 
 #include "njmcDecoder.h"
+
+#include "boom_base/BinaryFile.h"
+#include "boom_base/log.h"
+#include "include/util.h"
+
 #include "db/rtl.h"
 #include "db/exp.h"
 #include "db/register.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"
-#include "boom_base/BinaryFile.h"
-#include "boom_base/log.h"
-#include "include/util.h"
+#include "db/statements/assignment.h"
+#include "db/statements/assign.h"
+#include "db/statements/callstatement.h"
 
 #include <cassert>
 #include <cstdarg> // For varargs

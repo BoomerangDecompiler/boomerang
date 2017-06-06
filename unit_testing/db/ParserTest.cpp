@@ -5,6 +5,8 @@
  ******************************************************************************/
 #include "ParserTest.h"
 #include "db/ssl/sslparser.h"
+#include "db/statements/statement.h"
+
 #include "boom_base/log.h"
 #include "boom_base/log.h"
 

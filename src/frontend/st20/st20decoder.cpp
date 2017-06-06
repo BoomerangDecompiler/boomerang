@@ -18,13 +18,14 @@
 
 #include <cassert>
 
-#include "db/rtl.h"
-#include "include/decoder.h"
 #include "st20decoder.h"
+#include "include/decoder.h"
+#include "db/rtl.h"
 #include "db/exp.h"
 #include "db/proc.h"
+#include "db/statements/callstatement.h"
+
 #include "boom_base/log.h"
-#include "include/statement.h"
 
 /**********************************
 * ST20Decoder methods.

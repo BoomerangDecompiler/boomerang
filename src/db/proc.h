@@ -22,7 +22,7 @@
 
 #include "include/memo.h"
 #include "db/dataflow.h"       // For class UseCollector
-#include "include/statement.h" // For embedded ReturnStatement pointer, etc
+#include "db/statements/returnstatement.h"
 
 #include <list>
 #include <vector>

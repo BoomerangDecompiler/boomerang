@@ -22,7 +22,9 @@
 // Kinds of SSL specification tables
 enum TABLE_TYPE
 {
-	NAMETABLE, OPTABLE, EXPRTABLE
+	NAMETABLE,
+	OPTABLE,
+	EXPRTABLE
 };
 
 class Table

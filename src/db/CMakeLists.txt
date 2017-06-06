@@ -3,7 +3,6 @@ include_directories(../c/) # used by prog.cpp
 set(INCLUDES
 	../include/hllcode.h
 	../include/memo.h
-	../include/statement.h
 	../include/type.h
 	../include/visitor.h
 	../include/operator.h
@@ -55,7 +54,38 @@ set(SRC
     signature.h
     signature.cpp
     
-    statement.cpp
+    # statement handling
+    statements/statement.h
+    statements/statement.cpp
+	statements/assign.h
+	statements/assign.cpp
+	statements/assignment.h
+	statements/assignment.cpp
+	statements/boolassign.h
+	statements/boolassign.cpp
+	statements/branchstatement.h
+	statements/branchstatement.cpp
+	statements/callstatement.h
+	statements/callstatement.cpp
+	statements/casestatement.h
+	statements/casestatement.cpp
+	statements/gotostatement.h
+	statements/gotostatement.cpp
+	statements/implicitassign.h
+	statements/implicitassign.cpp
+	statements/imprefstatement.h
+	statements/imprefstatement.cpp
+	statements/junctionstatement.h
+	statements/junctionstatement.cpp
+	statements/phiassign.h
+	statements/phiassign.cpp
+	statements/returnstatement.h
+	statements/returnstatement.cpp
+	statements/typingstatement.h
+	statements/typingstatement.cpp
+	statements/statementhelper.h
+	statements/statementhelper.cpp
+	
     table.cpp
     visitor.cpp
 #	xmlprogparser.cpp
