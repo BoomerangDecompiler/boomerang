@@ -20,16 +20,16 @@ endif ()
 ###############################################################################
 # Options section
 ###############################################################################
-option(BUILD_TESTING "Build the testing tree." ON)
+option(BOOM_BUILD_TESTS "Build the testing tree." ON)
 
 # help the cmake find 3rd_party compiled/installed packages
 set(CMAKE_PREFIX_PATH  "${CMAKE_PREFIX_PATH};${PROJECT_SOURCE_DIR}/3rd_party")
 
-IF (BUILD_TESTING)
+IF (BOOM_BUILD_TESTS)
     enable_testing()
     find_package(Qt5Test)
     #find_package(Protobuf REQUIRED)
-ENDIF (BUILD_TESTING)
+ENDIF (BOOM_BUILD_TESTS)
 
 ###############################################################################
 # Compiler specific flags section
@@ -86,13 +86,12 @@ set(CMAKE_AUTOMOC ON)
 ###############################################################################
 # Defines section
 ###############################################################################
-set(VERSION "alpha 0.3.99 xx/xxx/2016")
-set(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
-set(PACKAGE_BUGREPORT "http://github.com/nemerle/boomerang")
+set(VERSION "0.4.0-alpha")
+set(PACKAGE_BUGREPORT "http://github.com/ceeac/boomerang")
 set(PACKAGE_NAME      "boomerang")
 set(PACKAGE_STRING    "boomerang")
 set(PACKAGE_TARNAME   "boomerang")
-set(PACKAGE_VERSION   "0.3.99")
+set(PACKAGE_VERSION   "0.4.0-alpha")
 
 #if git is installed (likely), pull version string from git
 find_package(Git)
@@ -113,9 +112,9 @@ endif (GIT_FOUND)
 add_subdirectory(docs)
 add_subdirectory(src)
 
-if (BUILD_TESTING)
+if (BOOM_BUILD_TESTS)
 	add_subdirectory(unit_testing)
-endif (BUILD_TESTING)
+endif (BOOM_BUILD_TESTS)
 
 
 # run regression suite by 'run check'
