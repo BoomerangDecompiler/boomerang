@@ -3,7 +3,7 @@
 #include "db/exp.h"
 #include "boom_base/log.h"
 #include "include/type.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 
 ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)
@@ -71,13 +71,13 @@ bool ImpRefStatement::accept(StmtModifier *v)
 	bool recur;
 
 	v->visit(this, recur);
-	v->mod->clearMod();
+	v->m_mod->clearMod();
 
 	if (recur) {
-		m_addressExp = m_addressExp->accept(v->mod);
+		m_addressExp = m_addressExp->accept(v->m_mod);
 	}
 
-	if (VERBOSE && v->mod->isMod()) {
+	if (VERBOSE && v->m_mod->isMod()) {
 		LOG << "ImplicitRef changed: now " << this << "\n";
 	}
 

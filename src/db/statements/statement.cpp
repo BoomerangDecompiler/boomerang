@@ -32,7 +32,7 @@
 
 #include "include/hllcode.h"
 #include "include/util.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 #include "boom_base/log.h"
 #include "boom_base/log.h"

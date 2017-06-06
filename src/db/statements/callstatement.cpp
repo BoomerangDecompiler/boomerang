@@ -11,7 +11,7 @@
 #include "db/statements/phiassign.h"
 #include "db/statements/implicitassign.h"
 
-#include "include/visitor.h"
+#include "db/visitor.h"
 #include "include/hllcode.h"
 
 
@@ -1911,7 +1911,7 @@ bool CallStatement::accept(StmtModifier *v)
 	}
 
 	if (m_dest) {
-		m_dest = m_dest->accept(v->mod);
+		m_dest = m_dest->accept(v->m_mod);
 	}
 
 	StatementList::iterator it;

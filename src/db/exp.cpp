@@ -25,7 +25,7 @@
 #include "operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 #include "include/util.h"
 #include "boom_base/log.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 #include "boom_base/log.h"
 #include <QRegularExpression>
 #include <iomanip>          // For std::setw etc

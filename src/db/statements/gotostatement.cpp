@@ -5,7 +5,7 @@
 
 #include "db/exp.h"
 
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 
 GotoStatement::GotoStatement()
@@ -221,7 +221,7 @@ bool GotoStatement::accept(StmtModifier *v)
 	v->visit(this, recur);
 
 	if (m_dest && recur) {
-		m_dest = m_dest->accept(v->mod);
+		m_dest = m_dest->accept(v->m_mod);
 	}
 
 	return true;

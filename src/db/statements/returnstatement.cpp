@@ -2,7 +2,7 @@
 
 #include "db/statements/implicitassign.h"
 #include "db/statements/assign.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 #include "include/hllcode.h"
 #include "db/proc.h"
 #include "db/signature.h"

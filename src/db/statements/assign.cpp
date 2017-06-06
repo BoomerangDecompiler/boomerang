@@ -6,7 +6,7 @@
 #include "db/exp.h"
 
 #include "include/hllcode.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 
 Assign::Assign(SharedExp _lhs, SharedExp r, SharedExp _guard)
@@ -336,17 +336,17 @@ bool Assign::accept(StmtModifier *v)
 	bool recur;
 
 	v->visit(this, recur);
-	v->mod->clearMod();
+	v->m_mod->clearMod();
 
 	if (recur) {
-		m_lhs = m_lhs->accept(v->mod);
+		m_lhs = m_lhs->accept(v->m_mod);
 	}
 
 	if (recur) {
-		m_rhs = m_rhs->accept(v->mod);
+		m_rhs = m_rhs->accept(v->m_mod);
 	}
 
-	if (VERBOSE && v->mod->isMod()) {
+	if (VERBOSE && v->m_mod->isMod()) {
 		LOG << "Assignment changed: now " << this << "\n";
 	}
 

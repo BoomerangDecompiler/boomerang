@@ -23,7 +23,7 @@
 #include "boom_base/log.h"
 
 #include "include/frontend.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 #include <QtCore/QDebug>
 #include <sstream>

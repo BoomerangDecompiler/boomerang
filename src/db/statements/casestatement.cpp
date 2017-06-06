@@ -2,7 +2,7 @@
 
 #include "db/exp.h"
 
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 
 CaseStatement::CaseStatement()
@@ -171,11 +171,11 @@ bool CaseStatement::accept(StmtModifier *v)
 	v->visit(this, recur);
 
 	if (m_dest && recur) {
-		m_dest = m_dest->accept(v->mod);
+		m_dest = m_dest->accept(v->m_mod);
 	}
 
 	if (pSwitchInfo && pSwitchInfo->pSwitchVar && recur) {
-		pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->accept(v->mod);
+		pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->accept(v->m_mod);
 	}
 
 	return true;

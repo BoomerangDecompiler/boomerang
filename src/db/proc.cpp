@@ -29,7 +29,7 @@
 #include "include/hllcode.h"
 #include "include/frontend.h"
 #include "include/util.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 #include "db/module.h"
 #include "db/register.h"

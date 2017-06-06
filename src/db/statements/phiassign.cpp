@@ -4,7 +4,7 @@
 #include "db/exp.h"
 #include "db/statements/assign.h"
 
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 Instruction *PhiAssign::clone() const
 {
@@ -254,13 +254,13 @@ bool PhiAssign::accept(StmtModifier *v)
 	bool recur;
 
 	v->visit(this, recur);
-	v->mod->clearMod();
+	v->m_mod->clearMod();
 
 	if (recur) {
-		m_lhs = m_lhs->accept(v->mod);
+		m_lhs = m_lhs->accept(v->m_mod);
 	}
 
-	if (VERBOSE && v->mod->isMod()) {
+	if (VERBOSE && v->m_mod->isMod()) {
 		LOG << "PhiAssign changed: now " << this << "\n";
 	}
 

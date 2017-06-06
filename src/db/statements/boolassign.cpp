@@ -2,7 +2,7 @@
 
 #include "db/exp.h"
 #include "db/statements/assign.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 #include "include/hllcode.h"
 #include "db/statements/statementhelper.h"
 
@@ -296,11 +296,11 @@ bool BoolAssign::accept(StmtModifier *v)
 	v->visit(this, recur);
 
 	if (m_cond && recur) {
-		m_cond = m_cond->accept(v->mod);
+		m_cond = m_cond->accept(v->m_mod);
 	}
 
 	if (recur && m_lhs->isMemOf()) {
-		m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
+		m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->m_mod));
 	}
 
 	return true;

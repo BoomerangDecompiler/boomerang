@@ -2,7 +2,7 @@
 
 #include "db/basicblock.h"
 
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 
 JunctionStatement::JunctionStatement()

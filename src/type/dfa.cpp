@@ -18,7 +18,7 @@
 
 
 #include "include/type.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 #include "include/util.h"
 
 #include "db/signature.h"

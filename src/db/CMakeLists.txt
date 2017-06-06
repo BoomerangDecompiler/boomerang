@@ -4,7 +4,6 @@ set(INCLUDES
 	../include/hllcode.h
 	../include/memo.h
 	../include/type.h
-	../include/visitor.h
 	../include/operator.h
 	../include/sigenum.h
 	../include/TargetQueue.h
@@ -87,6 +86,7 @@ set(SRC
 	statements/statementhelper.cpp
 	
     table.cpp
+    visitor.h
     visitor.cpp
 #	xmlprogparser.cpp
 

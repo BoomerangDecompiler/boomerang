@@ -6,7 +6,7 @@
 #include "db/basicblock.h"
 #include "db/statements/statementhelper.h"
 
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 
 BranchStatement::BranchStatement()
@@ -528,11 +528,11 @@ bool BranchStatement::accept(StmtModifier *v)
 	v->visit(this, recur);
 
 	if (m_dest && recur) {
-		m_dest = m_dest->accept(v->mod);
+		m_dest = m_dest->accept(v->m_mod);
 	}
 
 	if (m_cond && recur) {
-		m_cond = m_cond->accept(v->mod);
+		m_cond = m_cond->accept(v->m_mod);
 	}
 
 	return true;

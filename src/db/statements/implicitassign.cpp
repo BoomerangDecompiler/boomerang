@@ -3,7 +3,7 @@
 #include "db/exp.h"
 
 #include "include/type.h"
-#include "include/visitor.h"
+#include "db/visitor.h"
 
 #include "boom_base/log.h"
 
@@ -102,13 +102,13 @@ bool ImplicitAssign::accept(StmtModifier *v)
 	bool recur;
 
 	v->visit(this, recur);
-	v->mod->clearMod();
+	v->m_mod->clearMod();
 
 	if (recur) {
-		m_lhs = m_lhs->accept(v->mod);
+		m_lhs = m_lhs->accept(v->m_mod);
 	}
 
-	if (VERBOSE && v->mod->isMod()) {
+	if (VERBOSE && v->m_mod->isMod()) {
 		LOG << "ImplicitAssign changed: now " << this << "\n";
 	}
 

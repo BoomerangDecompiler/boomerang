@@ -17,7 +17,7 @@
 
 #include "ExpTest.h"
 
-#include "include/visitor.h"
+#include "db/visitor.h"
 #include <map>
 #include <sstream> // Gcc >= 3.0 needed
 
