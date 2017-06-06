@@ -18,7 +18,7 @@
 #include "include/frontend.h"
 #include "db/signature.h"
 #include "boom_base/log.h"
-#include "include/xmlprogparser.h"
+#include "db/xmlprogparser.h"
 #include "codegen/chllcode.h"
 #include "db/project.h"
 

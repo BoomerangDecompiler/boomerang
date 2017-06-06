@@ -6,19 +6,24 @@
  * \file    xmlprogparser.cpp
  * \brief   Implementation of the XMLProgParser and related classes.
  ******************************************************************************/
-#include "include/xmlprogparser.h"
+#include "xmlprogparser.h"
+
 #include "include/type.h"
+#include "include/sigenum.h"
+#include "include/frontend.h"
+
 #include "db/module.h"
 #include "db/prog.h"
 #include "db/proc.h"
 #include "db/rtl.h"
-
-#include "sigenum.h"
 #include "db/signature.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
 #include "db/basicblock.h"
-#include "include/frontend.h"
+#include "db/statements/callstatement.h"
+#include "db/statements/phiassign.h"
+#include "db/statements/boolassign.h"
+
+#include "boom_base/log.h"
+#include "boom_base/log.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
@@ -101,7 +106,7 @@ enum xmlElement
 
 #define TAG(x)    & XMLProgParser::start_ ## x, &XMLProgParser::addToContext_ ## x
 
-_tag XMLProgParser::tags[] = { { "prog",        TAG(prog)        },
+XMLTag XMLProgParser::tags[] = { { "prog",        TAG(prog)        },
 							   { "procs",       TAG(procs)       },
 							   { "global",      TAG(global)      },
 							   { "cluster",     TAG(cluster)     },
@@ -193,9 +198,19 @@ public:
 	SharedExp exp, symbol;
 	std::list<Function *> procs;
 
-	Context(int tag)
-		: tag(tag), prog(nullptr), proc(nullptr), signature(nullptr), cfg(nullptr), bb(nullptr), rtl(nullptr),
-		stmt(nullptr), param(nullptr), /*implicitParam(nullptr),*/ ret(nullptr), exp(nullptr) {}
+	Context(int _tag)
+		: tag(_tag)
+		, prog(nullptr)
+		, proc(nullptr)
+		, signature(nullptr)
+		, cfg(nullptr)
+		, bb(nullptr)
+		, rtl(nullptr)
+		, stmt(nullptr)
+		, param(nullptr) 
+		, ret(nullptr)
+		, exp(nullptr)
+	{}
 };
 
 void XMLProgParser::handleElementStart(QXmlStreamReader& strm)
@@ -519,7 +534,6 @@ void XMLProgParser::start_libproc(const QXmlStreamAttributes& attr)
 			stack.front()->proc->m_firstCaller = p;
 		}
 		Module *c = (Module *)findId(attr.value(QLatin1Literal("cluster")));
-
 		if (c) {
 			stack.front()->proc->m_parent = c;
 		}
@@ -556,7 +570,7 @@ void XMLProgParser::addToContext_libproc(Context *c, int e)
 	switch (e)
 	{
 	case e_signature:
-		c->proc->setSignature(stack.front()->signature);
+		c->proc->setSignature(stack.front()->m_signature);
 		break;
 
 	case e_proven_true:
@@ -3177,9 +3191,9 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 }
 
 
-void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Exp *e)
+void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 {
-	const TypeVal *t       = dynamic_cast<const TypeVal *>(e);
+	const TypeVal *t       = std::dynamic_pointer_cast<TypeVal>(e);
 	const char    *op_name = e->getOperName();
 
 	if (t) {
@@ -3696,10 +3710,10 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 		}
 
 		out.writeStartElement("lhs");
-		persistToXML(out, a->lhs);
+		persistToXML(out, a->m_lhs);
 		out.writeEndElement();
 		out.writeStartElement("rhs");
-		persistToXML(out, a->rhs);
+		persistToXML(out, a->m_rhs);
 		out.writeEndElement();
 
 		if (a->m_type) {
@@ -3708,9 +3722,9 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 			out.writeEndElement();
 		}
 
-		if (a->guard) {
+		if (a->m_guard) {
 			out.writeStartElement("guard");
-			persistToXML(out, a->guard);
+			persistToXML(out, a->m_guard);
 			out.writeEndElement();
 		}
 		out.writeEndElement();

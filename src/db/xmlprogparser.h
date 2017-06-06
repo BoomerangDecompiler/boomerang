@@ -50,7 +50,7 @@ typedef struct
 	const char *tag;
 	void (XMLProgParser::*start_proc)(const QXmlStreamAttributes&);
 	void (XMLProgParser::*end_proc)(Context *c, int e);
-} _tag;
+} XMLTag;
 
 class XMLProgParser
 {
@@ -145,13 +145,13 @@ protected:
 	void persistToXML(QXmlStreamWriter& out, UserProc *proc);
 	void persistToXML(QXmlStreamWriter& out, Signature *sig);
 	void persistToXML(QXmlStreamWriter& out, const SharedType& ty);
-	void persistToXML(QXmlStreamWriter& out, const Exp *e);
+	void persistToXML(QXmlStreamWriter& out, const SharedExp& e);
 	void persistToXML(QXmlStreamWriter& out, Cfg *cfg);
 	void persistToXML(QXmlStreamWriter& out, const BasicBlock *bb);
 	void persistToXML(QXmlStreamWriter& out, const RTL *rtl);
 	void persistToXML(QXmlStreamWriter& out, const Instruction *stmt);
 
-	static _tag tags[];
+	static XMLTag tags[];
 
 	int operFromString(const QStringRef& s);
 	const char *getAttr(const QXmlStreamAttributes& attr, const char *name);

@@ -252,7 +252,6 @@ protected:
 	friend class XMLProgParser;
 
 public:
-
 	/***************************************************************************/ /**
 	 * \brief        Constructor with name, native address.
 	 * \param        mod - Module that contains this Function

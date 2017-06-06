@@ -8,7 +8,6 @@ set(INCLUDES
 	../include/sigenum.h
 	../include/TargetQueue.h
 	../include/types.h
-	../include/xmlprogparser.h
 	../include/decoder.h
 	../include/frontend.h
 	../include/managed.h
@@ -88,8 +87,9 @@ set(SRC
     table.cpp
     visitor.h
     visitor.cpp
-#	xmlprogparser.cpp
-
+	#xmlprogparser.cpp
+	#xmlprogparser.h
+	
     #ssl handling
     ssl/sslinst.cpp
     ssl/sslparser.cpp

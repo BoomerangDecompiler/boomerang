@@ -91,6 +91,10 @@ protected:
 class Prog : public QObject
 {
 	Q_OBJECT
+	
+	friend class XMLProgParser;
+	
+private:
 	class IBinaryImage *m_image;
 	SymTab *m_binarySymbols;
 
