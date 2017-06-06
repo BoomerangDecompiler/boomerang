@@ -16,7 +16,7 @@
  *                recording high level types
  ******************************************************************************/
 
-#include "memo.h"
+#include "include/memo.h"
 #include "include/types.h" // For STD_SIZE
 
 #include <string>
@@ -112,7 +112,7 @@ public:
 	static SharedType getTempType(const QString& name);
 	static SharedType parseType(const char *str); // parse a C type
 
-	bool isCString();
+	bool isCString() const;
 
 	// runtime type information. Deprecated for most situations; use resolvesToTYPE()
 	virtual bool isVoid() const { return false; }

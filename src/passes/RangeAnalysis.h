@@ -8,14 +8,24 @@ class Instruction;
 struct RangePrivateData;
 
 class UserProc;
+
+/***************************************************************************/ /**
+ * \brief Detect and log possible buffer overflows
+ ******************************************************************************/
 class RangeAnalysis : public FunctionPass
 {
 public:
 	RangeAnalysis();
+	
+	/// \brief Range analysis (for procedure).
 	bool runOnFunction(Function& F) override;
 
 private:
-	friend class rangeVisitor;
+	friend class RangeVisitor;
+	
+	/***************************************************************************/ /**
+	* \brief Add Junction statements
+	*******************************************************************************/
 	void addJunctionStatements(Cfg& cfg);
 	void clearRanges();
 

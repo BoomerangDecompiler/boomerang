@@ -33,7 +33,7 @@
 #include <list>
 #include <string>
 #include "db/exp.h"
-#include "include/type.h"
+#include "type/type.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/signature.h"

@@ -4,6 +4,7 @@
 #include "db/prog.h"
 #include "boom_base/log.h"
 
+
 void TypeRecoveryCommon::recoverProgramTypes(Prog *v)
 {
 	if (VERBOSE || DEBUG_TA) {

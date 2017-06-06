@@ -36,7 +36,7 @@
 
 #include "include/hllcode.h"
 #include "include/util.h"
-#include "include/type.h"
+#include "type/type.h"
 #include "db/visitor.h"
 
 #include "boom_base/log.h"

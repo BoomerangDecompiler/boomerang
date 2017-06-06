@@ -5,7 +5,7 @@
 
 #include "db/visitor.h"
 #include "include/util.h"
-#include "include/type.h"
+#include "type/type.h"
 
 #include "db/proc.h"
 #include "db/IBinaryImage.h"
@@ -30,17 +30,17 @@
 class Range : public Printable
 {
 protected:
-	int stride, lowerBound, upperBound;
-	SharedExp base;
+	int m_stride, m_lowerBound, m_upperBound;
+	SharedExp m_base;
 
 public:
 	Range();
 	Range(int stride, int lowerBound, int upperBound, SharedExp base);
 
-	SharedExp getBase() const { return base; }
-	int getStride() const { return stride; }
-	int getLowerBound() const { return lowerBound; }
-	int getUpperBound() const { return upperBound; }
+	SharedExp getBase() const { return m_base; }
+	int getStride() const { return m_stride; }
+	int getLowerBound() const { return m_lowerBound; }
+	int getUpperBound() const { return m_upperBound; }
 	void unionWith(Range& r);
 	void widenWith(Range& r);
 	QString toString() const override;
@@ -49,6 +49,7 @@ public:
 	static const int MAX = INT32_MAX;
 	static const int MIN = INT32_MIN;
 };
+
 
 class RangeMap : public Printable
 {
@@ -68,45 +69,51 @@ public:
 	void killAllMemOfs();
 
 	void clear() { ranges.clear(); }
-	bool isSubset(RangeMap& other);
+	
+	/// return true if this range map is a subset of the other range map
+	bool isSubset(RangeMap& other) const;
 
 	bool empty() const { return ranges.empty(); }
 };
+
 
 struct RangePrivateData
 {
 	std::map<Instruction *, RangeMap>     SavedInputRanges; ///< overestimation of ranges of locations
 	std::map<Instruction *, RangeMap>     Ranges;           ///< saved overestimation of ranges of locations
 	std::map<BranchStatement *, RangeMap> BranchRanges;
-	RangeMap&                             getRanges(Instruction *insn)
+	
+	
+	RangeMap& getRanges(Instruction *insn)
 	{
 		return Ranges[insn];
 	}
 
-	void                                  setRanges(Instruction *insn, RangeMap r)
+	void setRanges(Instruction *insn, RangeMap r)
 	{
 		Ranges[insn] = r;
 	}
 
-	void                                  clearRanges()
+	void clearRanges()
 	{
 		SavedInputRanges.clear();
 	}
 
-	RangeMap&                             getBranchRange(BranchStatement *s)
+	RangeMap& getBranchRange(BranchStatement *s)
 	{
 		return BranchRanges[s];
 	}
 
-	void                                  setBranchRange(BranchStatement *s, RangeMap& rm)
+	void setBranchRange(BranchStatement *s, RangeMap& rm)
 	{
 		BranchRanges[s] = rm;
 	}
 
 public:
 	void setSavedRanges(Instruction *insn, RangeMap map);
-	RangeMap                              getSavedRanges(Instruction *insn);
+	RangeMap getSavedRanges(Instruction *insn);
 };
+
 
 RangeAnalysis::RangeAnalysis()
 	: RangeData(new RangePrivateData)
@@ -114,9 +121,6 @@ RangeAnalysis::RangeAnalysis()
 }
 
 
-/***************************************************************************/ /**
- * \brief Add Junction statements
- *******************************************************************************/
 void RangeAnalysis::addJunctionStatements(Cfg& cfg)
 {
 	for (BasicBlock *pbb : cfg) {
@@ -742,11 +746,7 @@ private:
 	}
 };
 
-/**
- *
- * \brief Range analysis (for procedure).
- *
- */
+
 bool RangeAnalysis::runOnFunction(Function& F)
 {
 	if (F.isLib()) {
@@ -848,11 +848,6 @@ void RangePrivateData::setSavedRanges(Instruction *insn, RangeMap map)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Detect and log possible buffer overflows
- *
- ******************************************************************************/
 void RangeAnalysis::logSuspectMemoryDefs(UserProc& UF)
 {
 	StatementList stmts;
@@ -890,43 +885,43 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc& UF)
 
 
 Range::Range()
-	: stride(1)
-	, lowerBound(MIN)
-	, upperBound(MAX)
+	: m_stride(1)
+	, m_lowerBound(MIN)
+	, m_upperBound(MAX)
 {
-	base = Const::get(0);
+	   m_base = Const::get(0);
 }
 
 
 Range::Range(int _stride, int _lowerBound, int _upperBound, SharedExp _base)
-	: stride(_stride)
-	, lowerBound(_lowerBound)
-	, upperBound(_upperBound)
-	, base(_base)
+	: m_stride(_stride)
+	, m_lowerBound(_lowerBound)
+	, m_upperBound(_upperBound)
+	, m_base(_base)
 {
-	if ((lowerBound == upperBound) && (lowerBound == 0) && ((base->getOper() == opMinus) || (base->getOper() == opPlus)) &&
-		base->getSubExp2()->isIntConst()) {
-		this->lowerBound = base->access<Const, 2>()->getInt();
+	if ((m_lowerBound == m_upperBound) && (m_lowerBound == 0) && ((m_base->getOper() == opMinus) || (m_base->getOper() == opPlus)) &&
+		          m_base->getSubExp2()->isIntConst()) {
+		this->m_lowerBound = m_base->access<Const, 2>()->getInt();
 
-		if (base->getOper() == opMinus) {
-			this->lowerBound = -this->lowerBound;
+		if (m_base->getOper() == opMinus) {
+			this->m_lowerBound = -this->m_lowerBound;
 		}
 
-		this->upperBound = this->lowerBound;
-		this->base       = base->getSubExp1();
+		this->m_upperBound = this->m_lowerBound;
+		this->m_base       = m_base->getSubExp1();
 	}
 	else {
-		if (base == nullptr) {
+		if (m_base == nullptr) {
 			// NOTE: was "base = Const::get(0);"
-			this->base = Const::get(0);
+			this->m_base = Const::get(0);
 		}
 
-		if (lowerBound > upperBound) {
-			this->upperBound = lowerBound;
+		if (m_lowerBound > m_upperBound) {
+			this->m_upperBound = m_lowerBound;
 		}
 
-		if (upperBound < lowerBound) {
-			this->lowerBound = upperBound;
+		if (m_upperBound < m_lowerBound) {
+			this->m_lowerBound = m_upperBound;
 		}
 	}
 }
@@ -937,60 +932,60 @@ QString Range::toString() const
 	QString     res;
 	QTextStream os(&res);
 
-	assert(lowerBound <= upperBound);
+	assert(m_lowerBound <= m_upperBound);
 
-	if (base->isIntConst() && (base->access<Const>()->getInt() == 0) && (lowerBound == MIN) && (upperBound == MAX)) {
+	if (m_base->isIntConst() && (m_base->access<Const>()->getInt() == 0) && (m_lowerBound == MIN) && (m_upperBound == MAX)) {
 		os << "T";
 		return res;
 	}
 
 	bool needPlus = false;
 
-	if (lowerBound == upperBound) {
-		if (!base->isIntConst() || (base->access<Const>()->getInt() != 0)) {
-			if (lowerBound != 0) {
-				os << lowerBound;
+	if (m_lowerBound == m_upperBound) {
+		if (!m_base->isIntConst() || (m_base->access<Const>()->getInt() != 0)) {
+			if (m_lowerBound != 0) {
+				os << m_lowerBound;
 				needPlus = true;
 			}
 		}
 		else {
 			needPlus = true;
-			os << lowerBound;
+			os << m_lowerBound;
 		}
 	}
 	else {
-		if (stride != 1) {
-			os << stride;
+		if (m_stride != 1) {
+			os << m_stride;
 		}
 
 		os << "[";
 
-		if (lowerBound == MIN) {
+		if (m_lowerBound == MIN) {
 			os << "-inf";
 		}
 		else {
-			os << lowerBound;
+			os << m_lowerBound;
 		}
 
 		os << ", ";
 
-		if (upperBound == MAX) {
+		if (m_upperBound == MAX) {
 			os << "inf";
 		}
 		else {
-			os << upperBound;
+			os << m_upperBound;
 		}
 
 		os << "]";
 		needPlus = true;
 	}
 
-	if (!base->isIntConst() || (base->access<Const>()->getInt() != 0)) {
+	if (!m_base->isIntConst() || (m_base->access<Const>()->getInt() != 0)) {
 		if (needPlus) {
 			os << " + ";
 		}
 
-		base->print(os);
+		      m_base->print(os);
 	}
 
 	return res;
@@ -1003,18 +998,18 @@ void Range::unionWith(Range& r)
 		LOG << "unioning " << toString() << " with " << r << " got ";
 	}
 
-	assert(base && r.base);
+	assert(m_base && r.m_base);
 
-	if ((base->getOper() == opMinus) && (r.base->getOper() == opMinus) && (*base->getSubExp1() == *r.base->getSubExp1()) &&
-		base->getSubExp2()->isIntConst() && r.base->getSubExp2()->isIntConst()) {
-		int c1 = base->access<Const, 2>()->getInt();
-		int c2 = r.base->access<Const, 2>()->getInt();
+	if ((m_base->getOper() == opMinus) && (r.m_base->getOper() == opMinus) && (*m_base->getSubExp1() == *r.m_base->getSubExp1()) &&
+		          m_base->getSubExp2()->isIntConst() && r.m_base->getSubExp2()->isIntConst()) {
+		int c1 = m_base->access<Const, 2>()->getInt();
+		int c2 = r.m_base->access<Const, 2>()->getInt();
 
 		if (c1 != c2) {
-			if ((lowerBound == r.lowerBound) && (upperBound == r.upperBound) && (lowerBound == 0)) {
-				lowerBound = std::min(-c1, -c2);
-				upperBound = std::max(-c1, -c2);
-				base       = base->getSubExp1();
+			if ((m_lowerBound == r.m_lowerBound) && (m_upperBound == r.m_upperBound) && (m_lowerBound == 0)) {
+				            m_lowerBound = std::min(-c1, -c2);
+				            m_upperBound = std::max(-c1, -c2);
+				            m_base       = m_base->getSubExp1();
 
 				if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
 					LOG << toString() << "\n";
@@ -1025,11 +1020,11 @@ void Range::unionWith(Range& r)
 		}
 	}
 
-	if (!(*base == *r.base)) {
-		stride     = 1;
-		lowerBound = MIN;
-		upperBound = MAX;
-		base       = Const::get(0);
+	if (!(*m_base == *r.m_base)) {
+		      m_stride     = 1;
+		      m_lowerBound = MIN;
+		      m_upperBound = MAX;
+		      m_base       = Const::get(0);
 
 		if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
 			LOG_STREAM(LL_Default) << toString();
@@ -1038,16 +1033,16 @@ void Range::unionWith(Range& r)
 		return;
 	}
 
-	if (stride != r.stride) {
-		stride = std::min(stride, r.stride);
+	if (m_stride != r.m_stride) {
+		      m_stride = std::min(m_stride, r.m_stride);
 	}
 
-	if (lowerBound != r.lowerBound) {
-		lowerBound = std::min(lowerBound, r.lowerBound);
+	if (m_lowerBound != r.m_lowerBound) {
+		      m_lowerBound = std::min(m_lowerBound, r.m_lowerBound);
 	}
 
-	if (upperBound != r.upperBound) {
-		upperBound = std::max(upperBound, r.upperBound);
+	if (m_upperBound != r.m_upperBound) {
+		      m_upperBound = std::max(m_upperBound, r.m_upperBound);
 	}
 
 	if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
@@ -1062,11 +1057,11 @@ void Range::widenWith(Range& r)
 		LOG << "widening " << toString() << " with " << r << " got ";
 	}
 
-	if (!(*base == *r.base)) {
-		stride     = 1;
-		lowerBound = MIN;
-		upperBound = MAX;
-		base       = Const::get(0);
+	if (!(*m_base == *r.m_base)) {
+		      m_stride     = 1;
+		      m_lowerBound = MIN;
+		      m_upperBound = MAX;
+		      m_base       = Const::get(0);
 
 		if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
 			LOG_STREAM(LL_Default) << toString();
@@ -1076,12 +1071,12 @@ void Range::widenWith(Range& r)
 	}
 
 	// ignore stride for now
-	if (r.getLowerBound() < lowerBound) {
-		lowerBound = MIN;
+	if (r.getLowerBound() < m_lowerBound) {
+		      m_lowerBound = MIN;
 	}
 
-	if (r.getUpperBound() > upperBound) {
-		upperBound = MAX;
+	if (r.getUpperBound() > m_upperBound) {
+		      m_upperBound = MAX;
 	}
 
 	if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
@@ -1199,13 +1194,12 @@ void RangeMap::killAllMemOfs()
 
 bool Range::operator==(Range& other)
 {
-	return stride == other.stride && lowerBound == other.lowerBound && upperBound == other.upperBound &&
-		   *base == *other.base;
+	return m_stride == other.m_stride && m_lowerBound == other.m_lowerBound && m_upperBound == other.m_upperBound &&
+		   *m_base == *other.m_base;
 }
 
 
-// return true if this range map is a subset of the other range map
-bool RangeMap::isSubset(RangeMap& other)
+bool RangeMap::isSubset(RangeMap& other) const
 {
 	for (std::pair<SharedExp, Range> it : ranges) {
 		if (other.ranges.find(it.first) == other.ranges.end()) {
@@ -1230,28 +1224,3 @@ bool RangeMap::isSubset(RangeMap& other)
 
 	return true;
 }
-
-
-// Log &Log::operator<<(const Range *r) {
-//    QString tgt;
-//    QTextStream st(&tgt);
-//    r->print(st);
-//    *this << tgt;
-//    return *this;
-// }
-
-// Log &Log::operator<<(const Range &r) {
-//    QString tgt;
-//    QTextStream st(&tgt);
-//    r.print(st);
-//    *this << tgt;
-//    return *this;
-// }
-
-// Log &Log::operator<<(const RangeMap &r) {
-//    QString tgt;
-//    QTextStream st(&tgt);
-//    r.print(st);
-//    *this << tgt;
-//    return *this;
-// }

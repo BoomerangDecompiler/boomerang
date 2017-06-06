@@ -19,7 +19,7 @@
 #include "chllcode.h"
 
 #include "include/msvc_fixes.h"
-#include "include/type.h"
+#include "type/type.h"
 #include "include/util.h"
 
 #include "db/cfg.h"

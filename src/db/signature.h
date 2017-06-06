@@ -19,7 +19,7 @@
  */
 
 #include "include/operator.h"
-#include "include/type.h"
+#include "type/type.h"
 #include "include/sigenum.h"   // For enums platform and cc
 #include "include/memo.h"
 

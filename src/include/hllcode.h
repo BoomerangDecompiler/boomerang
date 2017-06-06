@@ -24,7 +24,7 @@
 #include <memory>
 
 #include "include/types.h"
-#include "include/type.h"
+#include "type/type.h"
 #include "managed.h"
 
 

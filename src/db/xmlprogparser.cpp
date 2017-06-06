@@ -8,7 +8,7 @@
  ******************************************************************************/
 #include "xmlprogparser.h"
 
-#include "include/type.h"
+#include "type/type.h"
 #include "include/sigenum.h"
 #include "include/frontend.h"
 

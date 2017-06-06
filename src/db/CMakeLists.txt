@@ -3,7 +3,6 @@ include_directories(../c/) # used by prog.cpp
 set(INCLUDES
 	../include/hllcode.h
 	../include/memo.h
-	../include/type.h
 	../include/operator.h
 	../include/sigenum.h
 	../include/TargetQueue.h
@@ -100,6 +99,8 @@ set(SRC
 )
 
 add_library(db STATIC ${SRC} ${INCLUDES})
+
+target_link_libraries(db type)
 
 qt5_use_modules(db Core Xml)
 

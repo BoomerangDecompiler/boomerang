@@ -14,7 +14,7 @@
 
 #include "db/signature.h"
 
-#include "include/type.h"
+#include "type/type.h"
 #include "include/frontend.h"
 #include "include/util.h"
 #include "include/managed.h"

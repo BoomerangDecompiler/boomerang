@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include "include/memo.h"
-#include "include/type.h"
+#include "type/type.h"
 
 #include <list>
 #include <vector>

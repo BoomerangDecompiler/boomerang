@@ -1,6 +1,6 @@
 #include "assignment.h"
 
-#include "include/type.h"
+#include "type/type.h"
 #include "db/exp.h"
 #include "boom_base/log.h"
 #include "db/proc.h"

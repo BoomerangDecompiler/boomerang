@@ -1,4 +1,4 @@
-#include "include/type.h"
+#include "type/type.h"
 
 VoidType::VoidType()
 {

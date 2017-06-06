@@ -17,7 +17,7 @@
  ******************************************************************************/
 #include "db/register.h"
 
-#include "include/type.h"
+#include "type/type.h"
 
 #include <cassert>
 #include <cstring>

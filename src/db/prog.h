@@ -20,7 +20,7 @@
 
 #include "boom_base/BinaryFile.h"
 #include "include/frontend.h"
-#include "include/type.h"
+#include "type/type.h"
 #include "db/module.h"
 #include "include/util.h"
 

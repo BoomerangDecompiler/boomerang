@@ -21,7 +21,7 @@
 #include "include/types.h"
 #include "include/frontend.h"
 #include "include/decoder.h" // prototype for decodeInstruction()
-#include "include/type.h"
+#include "type/type.h"
 
 #include "boom_base/BinaryFile.h"
 #include "boom_base/BinaryFile.h" // For SymbolByAddress()

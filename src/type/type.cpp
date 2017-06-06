@@ -13,7 +13,7 @@
  * \file       type.cpp
  * \brief   Implementation of the Type class: low level type information
  ******************************************************************************/
-#include "include/type.h"
+#include "type/type.h"
 
 #include "include/types.h"
 #include "include/util.h"
@@ -30,9 +30,8 @@
 
 extern char               debug_buffer[]; // For prints functions
 QMap<QString, SharedType> Type::namedTypes;
-// QMap<QString, SharedType > Type::namedTypes;
 
-bool Type::isCString()
+bool Type::isCString() const
 {
 	if (!resolvesToPointer()) {
 		return false;

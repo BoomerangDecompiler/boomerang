@@ -3,6 +3,7 @@ SET(SRC
     constraint.h
     dfa.cpp
     dfa.h
+    type.h
     type.cpp
     TypeRecovery.cpp
     TypeRecovery.h

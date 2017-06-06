@@ -25,7 +25,7 @@
 #include "db/proc.h"
 
 #include "include/types.h"
-#include "include/type.h"
+#include "type/type.h"
 #include "include/hllcode.h"
 #include "include/frontend.h"
 #include "include/util.h"

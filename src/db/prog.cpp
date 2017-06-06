@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "db/prog.h"
 
-#include "include/type.h"
+#include "type/type.h"
 #include "db/module.h"
 #include "include/types.h"
 

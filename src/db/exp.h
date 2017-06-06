@@ -20,7 +20,7 @@
  */
 #include "include/operator.h" // Declares the OPER enum
 #include "include/types.h"    // For ADDRESS, etc
-#include "include/type.h"     // The Type class for typed expressions
+#include "type/type.h"     // The Type class for typed expressions
 #include "include/util.h"
 #include "exphelp.h"
 

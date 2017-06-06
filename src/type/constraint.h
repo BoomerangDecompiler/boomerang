@@ -15,7 +15,7 @@
 
 
 #include "db/exphelp.h"
-#include "include/type.h"
+#include "type/type.h"
 #include "include/managed.h"
 
 #include <sstream>

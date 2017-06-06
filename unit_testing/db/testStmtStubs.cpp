@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "include/type.h"
+#include "type/type.h"
 #include "include/types.h"
 #include "db/cfg.h"
 #include "db/proc.h"

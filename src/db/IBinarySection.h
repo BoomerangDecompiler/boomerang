@@ -4,7 +4,7 @@
  * \file       IBinarySection.h
  *   Interface definition for Sections
  ******************************************************************************/
-#include "include/type.h"
+#include "type/type.h"
 
 #include <stdint.h>
 

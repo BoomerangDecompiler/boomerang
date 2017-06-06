@@ -23,7 +23,7 @@
 #pragma once
 
 #include "db/register.h"           // for Register
-#include "include/type.h"          // for Type
+#include "type/type.h"          // for Type
 #include "include/types.h"         // for ADDRESS
 
 #include <functional>              // for less
