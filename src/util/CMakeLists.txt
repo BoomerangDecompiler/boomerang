@@ -1,5 +1,6 @@
 
 SET(SRC
+	util.h
 	util.cpp
 )
 

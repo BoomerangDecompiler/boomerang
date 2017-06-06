@@ -20,7 +20,7 @@
 
 #include "include/msvc_fixes.h"
 #include "type/type.h"
-#include "include/util.h"
+#include "util/util.h"
 
 #include "db/cfg.h"
 #include "db/exp.h"

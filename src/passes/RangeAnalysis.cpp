@@ -4,7 +4,7 @@
 #include "boom_base/log.h"
 
 #include "db/visitor.h"
-#include "include/util.h"
+#include "util/util.h"
 #include "type/type.h"
 
 #include "db/proc.h"

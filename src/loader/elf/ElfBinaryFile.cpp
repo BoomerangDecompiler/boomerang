@@ -20,7 +20,7 @@
 
 #include "ElfTypes.h"
 #include "include/config.h"
-#include "include/util.h"
+#include "util/util.h"
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"

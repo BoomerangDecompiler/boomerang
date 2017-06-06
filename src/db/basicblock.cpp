@@ -35,7 +35,7 @@
 #include "db/statements/assign.h"
 
 #include "include/hllcode.h"
-#include "include/util.h"
+#include "util/util.h"
 #include "type/type.h"
 #include "db/visitor.h"
 

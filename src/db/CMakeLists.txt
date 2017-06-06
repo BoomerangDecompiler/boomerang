@@ -12,7 +12,6 @@ set(INCLUDES
 	../include/managed.h
 	../include/osfcn.h
 	../include/transformer.h
-	../include/util.h
 	../include/IBoomerang.h
 )
 

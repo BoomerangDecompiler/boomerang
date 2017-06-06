@@ -16,7 +16,7 @@
 
 #include "type/type.h"
 #include "include/frontend.h"
-#include "include/util.h"
+#include "util/util.h"
 #include "include/managed.h"
 
 #include "db/signature.h"

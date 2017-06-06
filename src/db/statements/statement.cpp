@@ -31,7 +31,7 @@
 #include "db/statements/boolassign.h"
 
 #include "include/hllcode.h"
-#include "include/util.h"
+#include "util/util.h"
 #include "db/visitor.h"
 
 #include "boom_base/log.h"

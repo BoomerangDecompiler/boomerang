@@ -60,7 +60,7 @@ void *alloca();
 
 #include "include/config.h"
 #include "include/types.h"
-#include "include/util.h" // E.g. str()
+#include "util/util.h" // E.g. str()
 #include "include/operator.h"
 
 #include "db/rtl.h"

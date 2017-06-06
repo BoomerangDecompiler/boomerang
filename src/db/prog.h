@@ -22,7 +22,7 @@
 #include "include/frontend.h"
 #include "type/type.h"
 #include "db/module.h"
-#include "include/util.h"
+#include "util/util.h"
 
 // TODO: refactor Prog Global handling into separate class
 class RTLInstDict;

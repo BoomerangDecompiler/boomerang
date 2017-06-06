@@ -16,7 +16,7 @@
 #include "type/type.h"
 
 #include "include/types.h"
-#include "include/util.h"
+#include "util/util.h"
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/proc.h"

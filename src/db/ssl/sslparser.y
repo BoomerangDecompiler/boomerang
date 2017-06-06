@@ -55,7 +55,7 @@
 #include "db/rtl.h"
 #include "table.h"
 #include "insnameelem.h"
-#include "include/util.h"			// E.g. str()
+#include "util/util.h"			// E.g. str()
 
 
 #ifdef _WIN32

@@ -2,7 +2,7 @@
 
 #include "include/config.h"
 #include "include/types.h"
-#include "include/util.h" // E.g. str()
+#include "util/util.h" // E.g. str()
 
 #include "sslscanner.h"
 #include "table.h"

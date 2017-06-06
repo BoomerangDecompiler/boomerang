@@ -18,7 +18,7 @@
 
 #include "boom_base/BinaryFile.h"
 #include "boom_base/log.h"
-#include "include/util.h"
+#include "util/util.h"
 
 #include "db/rtl.h"
 #include "db/exp.h"

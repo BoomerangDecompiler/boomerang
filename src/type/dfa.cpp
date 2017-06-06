@@ -19,7 +19,7 @@
 
 #include "type/type.h"
 #include "db/visitor.h"
-#include "include/util.h"
+#include "util/util.h"
 
 #include "db/signature.h"
 #include "db/exp.h"

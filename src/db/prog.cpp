@@ -28,7 +28,7 @@
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/proc.h"
-#include "include/util.h" // For lockFileWrite etc
+#include "util/util.h" // For lockFileWrite etc
 #include "db/register.h"
 #include "db/rtl.h"
 #include "boom_base/BinaryFile.h"

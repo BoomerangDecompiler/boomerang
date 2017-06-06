@@ -31,7 +31,7 @@
 #include "db/statements/branchstatement.h"
 #include "db/statements/implicitassign.h"
 
-#include "include/util.h"
+#include "util/util.h"
 #include "include/hllcode.h"
 #include "boom_base/log.h"
 #include "boom_base/log.h"

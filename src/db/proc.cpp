@@ -28,7 +28,7 @@
 #include "type/type.h"
 #include "include/hllcode.h"
 #include "include/frontend.h"
-#include "include/util.h"
+#include "util/util.h"
 #include "db/visitor.h"
 
 #include "db/module.h"
