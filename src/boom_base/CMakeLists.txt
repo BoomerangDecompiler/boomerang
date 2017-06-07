@@ -7,9 +7,11 @@ set(boom_base_SRC
 	BinaryFile.h
 	BinaryFileFactory.cpp
 	BinaryFileStub.h
+	Plugin.h
 )
 
 add_library(boom_base ${boom_base_SRC})
+target_link_libraries(boom_base ${CMAKE_DL_LIBS})
 
 qt5_use_modules(boom_base Core Xml)
 set_target_properties(boom_base PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)

@@ -193,7 +193,7 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	}
 
 	off = 1;     // counter - # sects. Start @ 1, total Image->GetNumSections()
-	char *pName; // Section's name
+	const char *pName; // Section's name
 
 	// Number of sections
 	uint32_t numSections = elfRead2(&pHeader->e_shnum);
@@ -406,7 +406,10 @@ ADDRESS ElfBinaryFile::findRelPltOffset(int i)
 		addrRelPlt = siRelPlt->getHostAddr();
 		numRelPlt  = sizeRelPlt ? siRelPlt->getSize() / sizeRelPlt : 0;
 	}
-
+	else {
+		return NO_ADDRESS; // neither .rel.plt nor .rela.plt are available
+	}
+	
 	int first = i;
 
 	if (first >= numRelPlt) {
@@ -1143,3 +1146,6 @@ int ElfBinaryFile::canLoad(QIODevice& fl) const
 
 	return 0;
 }
+
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, ElfBinaryFile,
+			  "ELF32 loader plugin", "0.4.0", "Boomerang developers")

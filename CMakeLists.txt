@@ -45,7 +45,7 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
 else ()
 	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic \
 		-Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs \
-		-Wstrict-overflow=2")
+		-Wstrict-overflow=2 -rdynamic")
 		
 	# other warnings:
 	#-fstrict-aliasing  # This will not work with *reinterpret-cast<float*>(&int)
@@ -61,9 +61,8 @@ else ()
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS} -std=c++11 -Wsuggest-override")
     set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${COMMON_COMPILE_OPTIONS}")
-    
-    add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG
-    #add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
+    SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
+    add_definitions(-D__STDC_FORMAT_MACROS)
 endif ()
 
 if (MSVC)

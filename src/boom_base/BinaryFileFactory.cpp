@@ -14,6 +14,8 @@
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
 
+#include "loader/IFileLoader.h"
+
 #include <QDir>
 #include <QPluginLoader>
 #include <QCoreApplication>
@@ -21,6 +23,7 @@
 #include <QDebug>
 #include <cstdio>
 
+#include <dlfcn.h> // for dlopen
 
 #define LMMH(x)																								  \
 	((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
@@ -35,15 +38,14 @@ BinaryFileFactory::BinaryFileFactory()
 }
 
 
-QObject *BinaryFileFactory::load(const QString& sName)
+IFileLoader* BinaryFileFactory::load(const QString& sName)
 {
 	Boomerang    *boom  = Boomerang::get();
 	IBinaryImage *image = boom->getImage();
 
 	image->reset();
 	boom->getSymbols()->clear();
-	QObject         *pBF       = getInstanceFor(sName);
-	LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
+	IFileLoader *ldr_iface = getInstanceFor(sName);
 
 	if (ldr_iface == nullptr) {
 		qWarning() << "unrecognised binary file format.";
@@ -56,7 +58,6 @@ QObject *BinaryFileFactory::load(const QString& sName)
 
 	if (false == srcFile.open(QFile::ReadOnly)) {
 		qWarning() << "Opening '" << sName << "' failed";
-		delete pBF;
 		return nullptr;
 	}
 
@@ -65,16 +66,15 @@ QObject *BinaryFileFactory::load(const QString& sName)
 
 	if (ldr_iface->loadFromMemory(boom->project()->getFiledata()) == 0) {
 		qWarning() << "Loading '" << sName << "' failed";
-		delete pBF;
 		return nullptr;
 	}
 
 	image->calculateTextLimits();
-	return pBF;
+	return ldr_iface;
 }
 
 
-QObject *BinaryFileFactory::getInstanceFor(const QString& sName)
+IFileLoader* BinaryFileFactory::getInstanceFor(const QString& sName)
 {
 	QFile f(sName);
 
@@ -83,29 +83,16 @@ QObject *BinaryFileFactory::getInstanceFor(const QString& sName)
 		return nullptr;
 	}
 
-	std::vector<std::pair<QObject *, int> > scores;
-
-	for (QObject *plug : m_loaderPlugins) {
-		LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(plug);
+	// get the first plugin which is able to load the file
+	for (std::shared_ptr<LoaderPlugin>& p : m_loaderPlugins) {
 		f.seek(0); // reset the file offset for the next plugin
-		int score = ldr_iface->canLoad(f);
-
-		if (score) {
-			scores.emplace_back(plug, score);
+		IFileLoader* loader = p->get();
+		if (loader->canLoad(f)) {
+			return loader;
 		}
 	}
-
-	int     best_score = 0;
-	QObject *result    = nullptr;
-
-	for (auto& pr : scores) {
-		if (pr.second > best_score) {
-			result     = pr.first;
-			best_score = pr.second;
-		}
-	}
-
-	return result;
+	
+	return nullptr;
 }
 
 
@@ -120,14 +107,14 @@ void BinaryFileFactory::populatePlugins()
 	}
 
 	for (QString fileName : pluginsDir.entryList(QDir::Files)) {
-		QPluginLoader loader(pluginsDir.absoluteFilePath(fileName));
-		QObject       *plugin = loader.instance();
-
-		if (plugin) {
-			m_loaderPlugins.push_back(plugin);
+		std::string sofilename = pluginsDir.absoluteFilePath(fileName).toUtf8().constData();
+		
+		try {
+			std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
+			m_loaderPlugins.push_back(loaderPlugin);
 		}
-		else {
-			qCritical() << loader.errorString();
+		catch (const char* errmsg) {
+			qCritical() << "Unable to load plugin: " << errmsg;
 		}
 	}
 

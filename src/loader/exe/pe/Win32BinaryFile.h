@@ -153,12 +153,8 @@ typedef struct
 } PEExportDtor;
 #pragma pack(pop)
 
-class Win32BinaryFile : public QObject, public LoaderInterface
+class Win32BinaryFile : public IFileLoader
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-	Q_INTERFACES(LoaderInterface)
-
 public:
 	Win32BinaryFile();
 	virtual ~Win32BinaryFile();

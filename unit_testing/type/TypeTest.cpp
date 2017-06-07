@@ -91,7 +91,7 @@ void TypeTest::testNotEqual()
 void TypeTest::testCompound()
 {
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_WINDOWS);
+	IFileLoader *pBF = bff.load(HELLO_WINDOWS);
 	FrontEnd          *pFE = new PentiumFrontEnd(pBF, new Prog(HELLO_WINDOWS), &bff);
 
 	pFE->readLibraryCatalog(); // Read definitions

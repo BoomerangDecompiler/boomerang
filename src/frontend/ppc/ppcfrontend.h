@@ -17,7 +17,7 @@ class CallStatement;
 class PPCFrontEnd : public FrontEnd
 {
 public:
-	PPCFrontEnd(QObject *pLoader, Prog *Program, BinaryFileFactory *pbff);
+	PPCFrontEnd(IFileLoader *pLoader, Prog *Program, BinaryFileFactory *pbff);
 
 	/**
 	 * Virtual destructor.

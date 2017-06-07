@@ -129,12 +129,8 @@ typedef struct
 
 #pragma pack(pop)
 
-class DOS4GWBinaryFile : public QObject, public LoaderInterface
+class DOS4GWBinaryFile : public IFileLoader
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-	Q_INTERFACES(LoaderInterface)
-
 public:
 	DOS4GWBinaryFile();
 	~DOS4GWBinaryFile();                 // Destructor

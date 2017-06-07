@@ -1183,3 +1183,6 @@ DWord Win32BinaryFile::getDelta()
 	//    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
 	return DWord(intptr_t(base)) - (DWord)m_pPEHeader->Imagebase;
 }
+
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Win32BinaryFile,
+			  "Win32 binary file loader plugin", "0.4.0", "Boomerang developers")

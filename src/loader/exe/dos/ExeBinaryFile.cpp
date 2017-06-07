@@ -21,10 +21,12 @@
 
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
+#include "loader/IFileLoader.h"
 
 #include <QBuffer>
 #include <QFile>
 #include <cassert>
+
 
 ExeBinaryFile::ExeBinaryFile()
 {
@@ -263,3 +265,7 @@ int ExeBinaryFile::canLoad(QIODevice& fl) const
 
 	return 0;
 }
+
+
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, ExeBinaryFile,
+			  "DOS Exe loader plugin", "0.4.0", "Boomerang developers")

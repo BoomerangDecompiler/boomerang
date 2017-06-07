@@ -20,12 +20,8 @@
 #include "boom_base/BinaryFile.h"
 #include <QtCore/QObject>
 
-class PalmBinaryFile : public QObject, public LoaderInterface
+class PalmBinaryFile : public IFileLoader
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-	Q_INTERFACES(LoaderInterface)
-
 public:
 	PalmBinaryFile(); // Constructor
 	virtual ~PalmBinaryFile();

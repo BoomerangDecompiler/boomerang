@@ -39,12 +39,8 @@ typedef struct
 	int     iSymSize; // Size associated with symbol
 } SymValue;
 
-class ElfBinaryFile : public QObject, public LoaderInterface
+class ElfBinaryFile : public IFileLoader
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-	Q_INTERFACES(LoaderInterface)
-
 public:
 	ElfBinaryFile(); // Constructor
 	void unload() override;
@@ -125,3 +121,9 @@ private:
 	void markImports();
 	void processSymbol(Translated_ElfSym& sym, int e_type, int i);
 };
+
+/// Initialize the file loader
+extern "C"
+{
+	IFileLoader* initPlugin();
+}

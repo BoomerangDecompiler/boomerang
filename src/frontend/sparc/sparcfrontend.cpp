@@ -1625,7 +1625,7 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> 
  * \brief  SparcFrontEnd constructor
  * \copydoc FrontEnd::FrontEnd(QObject *,Prog *,BinaryFileFactory *)
  ******************************************************************************/
-SparcFrontEnd::SparcFrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff)
+SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
 	: FrontEnd(p_BF, prog, bff)
 {
 	decoder           = new SparcDecoder(prog);

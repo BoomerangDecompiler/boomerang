@@ -37,7 +37,9 @@
 #include <cassert>
 #include <iomanip> // For setfill etc
 #include <sstream>
-MIPSFrontEnd::MIPSFrontEnd(QObject *pBF, Prog *prog, BinaryFileFactory *_pbff)
+
+
+MIPSFrontEnd::MIPSFrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
 	: FrontEnd(pBF, prog, _pbff)
 {
 	decoder = new MIPSDecoder(prog);

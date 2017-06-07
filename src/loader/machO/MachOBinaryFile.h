@@ -39,15 +39,8 @@
 
 struct mach_header;
 
-class MachOBinaryFile : public QObject,
-						public LoaderInterface,
-						public ObjcAccessInterface
+class MachOBinaryFile :	public IFileLoader, public ObjcAccessInterface
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-	Q_INTERFACES(LoaderInterface)
-	Q_INTERFACES(ObjcAccessInterface)
-
 public:
 	MachOBinaryFile();                   // Default constructor
 	virtual ~MachOBinaryFile();          // Destructor

@@ -78,12 +78,8 @@ struct symElem
 	ADDRESS    value;
 };
 
-class HpSomBinaryFile : public QObject, public LoaderInterface
+class HpSomBinaryFile : public IFileLoader
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-	Q_INTERFACES(LoaderInterface)
-
 public:
 	HpSomBinaryFile(); // Constructor
 	virtual ~HpSomBinaryFile();
@@ -135,7 +131,6 @@ private:
 	IBinarySymbolTable *Symbols; // Symbol table object
 	std::set<ADDRESS> imports;   // Set of imported proc addr's
 	class IBinaryImage *Image;
-	// LoaderInterface interface
 
 public:
 	void processSymbols();

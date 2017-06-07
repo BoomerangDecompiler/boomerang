@@ -652,3 +652,6 @@ ADDRESS HpSomBinaryFile::getMainEntryPoint()
 
 	return sym ? sym->getLocation() : NO_ADDRESS;
 }
+
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, HpSomBinaryFile,
+			  "HpSom binary file loader", "0.4.0", "Boomerang developers")

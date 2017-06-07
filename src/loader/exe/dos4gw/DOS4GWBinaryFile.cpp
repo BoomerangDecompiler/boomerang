@@ -459,3 +459,6 @@ DWord DOS4GWBinaryFile::getDelta()
 	//    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
 	return intptr_t(base) - m_pLXObjects[0].RelocBaseAddr;
 }
+
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, DOS4GWBinaryFile,
+			  "DOS4GW loader plugin", "0.4.0", "Boomerang developers")

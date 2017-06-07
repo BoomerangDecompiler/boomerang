@@ -62,15 +62,14 @@
  * \param prog program being decoded
  * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
-FrontEnd::FrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff)
-	: pLoader(p_BF)
+FrontEnd::FrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
+	: ldrIface(p_BF)
 	, pbff(bff)
 	, Program(prog)
 {
 	Image = Boomerang::get()->getImage();
 	assert(Image);
 	BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
-	ldrIface      = qobject_cast<LoaderInterface *>(pLoader);
 }
 
 
@@ -82,11 +81,9 @@ FrontEnd::FrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff)
  * \param prog program being decoded
  * \param pbff pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
-FrontEnd *FrontEnd::instantiate(QObject *pBF, Prog *prog, BinaryFileFactory *pbff)
+FrontEnd *FrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactory *pbff)
 {
-	LoaderInterface *ldr = qobject_cast<LoaderInterface *>(pBF);
-
-	switch (ldr->getMachine())
+	switch (pBF->getMachine())
 	{
 	case MACHINE_PENTIUM:
 		return new PentiumFrontEnd(pBF, prog, pbff);
@@ -138,13 +135,13 @@ FrontEnd *FrontEnd::Load(const QString& fname, Prog *prog)
 		return nullptr;
 	}
 
-	QObject *pBF = pbff->load(fname);
+	IFileLoader *loader = pbff->load(fname);
 
-	if (pBF == nullptr) {
+	if (!loader) {
 		return nullptr;
 	}
 
-	FrontEnd *fe = instantiate(pBF, prog, pbff);
+	FrontEnd *fe = instantiate(loader, prog, pbff);
 	return fe;
 }
 

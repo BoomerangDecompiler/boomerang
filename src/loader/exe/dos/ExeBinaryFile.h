@@ -22,7 +22,9 @@
  */
 
 #include "boom_base/BinaryFile.h"
+
 class QFile;
+
 #pragma pack(push,1)
 typedef struct           /*        PSP structure                 */
 {
@@ -64,12 +66,8 @@ typedef struct            /*      EXE file header          */
 } exeHeader;
 #pragma pack(pop)
 
-class ExeBinaryFile : public QObject, public LoaderInterface
+class ExeBinaryFile : public IFileLoader
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-	Q_INTERFACES(LoaderInterface)
-
 public:
 	ExeBinaryFile();                       // Default constructor
 	void unload() override;                // Unload the image

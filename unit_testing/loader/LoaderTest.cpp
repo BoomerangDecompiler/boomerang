@@ -80,7 +80,7 @@ void LoaderTest::testSparcLoad()
 
 	// Load SPARC hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_SPARC);
+	IFileLoader *pBF = bff.load(HELLO_SPARC);
 
 	QVERIFY(pBF != nullptr);
 	int n;
@@ -115,7 +115,7 @@ void LoaderTest::testPentiumLoad()
 
 	// Load Pentium hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_PENTIUM);
+	IFileLoader *pBF = bff.load(HELLO_PENTIUM);
 
 	QVERIFY(pBF != nullptr);
 	IBinaryImage *sect_iface = Boomerang::get()->getImage();
@@ -150,7 +150,7 @@ void LoaderTest::testHppaLoad()
 
 	// Load HPPA hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_HPPA);
+	IFileLoader *pBF = bff.load(HELLO_HPPA);
 
 	QVERIFY(pBF != nullptr);
 	IBinaryImage *sect_iface = Boomerang::get()->getImage();
@@ -185,7 +185,7 @@ void LoaderTest::testPalmLoad()
 
 	// Load Palm Starter.prc
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(STARTER_PALM);
+	IFileLoader *pBF = bff.load(STARTER_PALM);
 
 	QVERIFY(pBF != nullptr);
 	IBinaryImage *sect_iface = Boomerang::get()->getImage();
@@ -298,11 +298,10 @@ void LoaderTest::testWinLoad()
 
 	// Borland
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(SWITCH_BORLAND);
+	IFileLoader *pBF = bff.load(SWITCH_BORLAND);
 	QVERIFY(pBF != nullptr);
-	LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
-	QVERIFY(ldr_iface != nullptr);
-	ADDRESS     addr = ldr_iface->getMainEntryPoint();
+	QVERIFY(pBF != nullptr);
+	ADDRESS     addr = pBF->getMainEntryPoint();
 	QString     actual;
 	QTextStream ost4(&actual);
 	ost4 << addr;

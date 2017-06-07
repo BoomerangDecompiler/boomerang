@@ -71,8 +71,7 @@ protected:
 	/***************************************/
 	// Loader interfaces
 	/***************************************/
-	LoaderInterface *ldrIface;
-	QObject *pLoader; // The binary file
+	IFileLoader *ldrIface;
 	/***************************************/
 
 	BinaryFileFactory *pbff; // The binary file factory (for closing properly)
@@ -91,8 +90,8 @@ public:
 	/*
 	 * Constructor. Takes some parameters to save passing these around a lot
 	 */
-	FrontEnd(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
-	static FrontEnd *instantiate(QObject *pLoader, Prog *prog, BinaryFileFactory *pbff);
+	FrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
+	static FrontEnd *instantiate(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
 	static FrontEnd *Load(const QString& fname, Prog *prog); ///< Load a binary
 
 	/// Add a symbol to the loader
@@ -111,8 +110,7 @@ public:
 	bool isWin32() const; // Is this a win32 frontend?
 	static bool noReturnCallDest(const QString& name);
 
-	QObject *getBinaryFile() { return pLoader; }
-	LoaderInterface *getLoaderIface() { return ldrIface; }
+	IFileLoader *getLoaderIface() { return ldrIface; }
 
 	// Function to fetch the smallest machine instruction
 	// virtual    int            getInst(int addr);
