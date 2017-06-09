@@ -9,9 +9,9 @@
 class ReturnStatement : public Instruction
 {
 public:
-	typedef StatementList::iterator iterator;
-	typedef StatementList::const_iterator const_iterator;
-	
+	typedef StatementList::iterator         iterator;
+	typedef StatementList::const_iterator   const_iterator;
+
 protected:
 	/// Native address of the (only) return instruction.
 	/// Needed for branching to this only return statement
@@ -46,24 +46,24 @@ protected:
 public:
 	ReturnStatement();
 	virtual ~ReturnStatement();
-	
+
 	iterator begin() { return returns.begin(); }
 	iterator end()   { return returns.end(); }
-	
+
 	const_iterator begin() const { return returns.begin(); }
 	const_iterator end()   const { return returns.end(); }
-	
+
 	iterator erase(iterator it) { return returns.erase(it); }
-	
+
 	StatementList& getModifieds() { return modifieds; }
 	StatementList& getReturns() { return returns; }
-	
+
 	size_t getNumReturns() const { return returns.size(); }
-	
+
 	// Update the modifieds, in case the signature and hence ordering and filtering has changed, or the locations in the
 	// collector have changed. Does NOT remove preserveds (deferred until updating returns).
 	void updateModifieds(); // Update modifieds from the collector
-	
+
 	// Update the returns, in case the signature and hence ordering
 	// and filtering has changed, or the locations in the modifieds list
 	void updateReturns();   // Update returns from the modifieds
@@ -85,7 +85,7 @@ public:
 	virtual void getDefinitions(LocationSet& defs) const override;
 
 	void removeModified(SharedExp loc); // Remove from modifieds AND from returns
-	
+
 	// Remove the return (if any) related to loc. Loc may or may not be subscripted
 	void removeReturn(SharedExp loc);   // Remove from returns only
 	void addReturn(Assignment *a);
@@ -103,10 +103,11 @@ public:
 	SharedExp subscriptWithDef(SharedExp e);
 
 	// Make a deep copy, and make the copy a derived object if needed.
+
 	/***************************************************************************/ /**
-	* \brief        Deep copy clone
-	* \returns             Pointer to a new Statement, a clone of this ReturnStatement
-	******************************************************************************/
+	 * \brief        Deep copy clone
+	 * \returns             Pointer to a new Statement, a clone of this ReturnStatement
+	 ******************************************************************************/
 	virtual Instruction *clone() const override;
 
 	// Accept a visitor to this Statement

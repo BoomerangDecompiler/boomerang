@@ -126,12 +126,12 @@ class Instruction
 	typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
 	friend class XMLProgParser;
-	
+
 protected:
 	BasicBlock *m_parent; // contains a pointer to the enclosing BB
 	UserProc *m_proc;     // procedure containing this statement
 	int m_number;         // Statement number for printing
-	
+
 #if USE_DOMINANCE_NUMS
 	int m_dominanceNum;   // Like a statement number, but has dominance properties
 
@@ -141,7 +141,7 @@ public:
 
 protected:
 #endif
-	
+
 	StmtType m_kind; // Statement kind (e.g. STMT_BRANCH)
 	unsigned int m_lexBegin, m_lexEnd;
 
@@ -150,7 +150,7 @@ public:
 		: m_parent(nullptr)
 		, m_proc(nullptr)
 		, m_number(0) {}
-		
+
 	virtual ~Instruction() {}
 
 	/// get/set the enclosing BB, etc
@@ -188,7 +188,7 @@ public:
 	bool isNullStatement() const; ///< true if is a null statement
 
 	virtual bool isTyping() const { return false; } // Return true if a TypingStatement
-	
+
 	/// true if this statement is a standard assign
 	bool isAssign() const { return m_kind == STMT_ASSIGN; }
 	/// true if this statement is a any kind of assignment
@@ -243,12 +243,12 @@ public:
 	virtual void print(QTextStream& os, bool html = false) const = 0;
 
 	// print functions
-	
+
 	void printAsUse(QTextStream& os) const { os << m_number; }
 	void printAsUseBy(QTextStream& os) const { os << m_number; }
 	void printNum(QTextStream& os) const { os << m_number; }
 	char *prints() const; // For logging, was also for debugging
-	
+
 	// This version prints much better in gdb
 	void dump() const;    // For debugging
 
@@ -265,18 +265,18 @@ public:
 	// definition can be propagated TO this stmt
 	// Note: static member function
 	static bool canPropagateToExp(Exp& e);
-	
+
 	/***************************************************************************/ /**
-	* \brief Propagate to this statement
-	* \param destCounts is a map that indicates how may times a statement's definition is used
-	* \param convert set true if an indirect call is changed to direct (otherwise, no change)
-	* \param force set to true to propagate even memofs (for switch analysis)
-	* \param usedByDomPhi is a set of subscripted locations used in phi statements
-	* \returns true if a change
-	******************************************************************************/
+	 * \brief Propagate to this statement
+	 * \param destCounts is a map that indicates how may times a statement's definition is used
+	 * \param convert set true if an indirect call is changed to direct (otherwise, no change)
+	 * \param force set to true to propagate even memofs (for switch analysis)
+	 * \param usedByDomPhi is a set of subscripted locations used in phi statements
+	 * \returns true if a change
+	 ******************************************************************************/
 	bool propagateTo(bool& convert, ExpIntMap *destCounts = nullptr, LocationSet *usedByDomPhi = nullptr,
 					 bool force = false);
-	
+
 	/// Experimental: may want to propagate flags first,
 	/// without tests about complexity or the propagation limiting heuristic
 	bool propagateFlagsTo();
@@ -330,31 +330,31 @@ public:
 	/// \param cc count collectors
 	/// \param memOnly - only add memory references.
 	void addUsedLocs(LocationSet& used, bool cc = false, bool memOnly = false);
-	
+
 	/// Special version of Statement::addUsedLocs for finding used locations.
 	/// \return true if defineAll was found
 	bool addUsedLocals(LocationSet& used);
-	
+
 	/// Fix references to the returns of call statements
 	/// Bypass calls for references in this statement
 	void bypass();
-	
+
 	/// replace a use of def->getLeft() by def->getRight() in this statement
 	/// replaces a use in this statement with an expression from an ordinary assignment
 	/// \returns true if change
 	/// \note Internal use only
 	bool replaceRef(SharedExp e, Assignment *def, bool& convert);
-	
+
 	/// Find all constants in this statement
 	void findConstants(std::list<std::shared_ptr<Const> >& lc);
-	
+
 	/// Set or clear the constant subscripts (using a visitor)
 	int setConscripts(int n);
 	void clearConscripts();
-	
+
 	/// Strip all size casts
 	void stripSizes();
-	
+
 	/// For all expressions in this Statement, replace any e with e{def}
 	void subscriptVar(SharedExp e, Instruction *def /*, Cfg* cfg */);
 
@@ -393,7 +393,6 @@ QTextStream& operator<<(QTextStream& os, const LocationSet *p);
 
 
 
-
 /***************************************************************************/ /**
  * CaseStatement is derived from GotoStatement. In addition to the destination
  * of the jump, it has a switch variable Exp.
@@ -409,4 +408,3 @@ struct SWITCH_INFO
 	int       iOffset = 0; // Distance from jump to table (form R only)
 	// int        delta;            // Host address - Native address
 };
-

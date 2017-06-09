@@ -25,7 +25,7 @@
 
 #include "db/statements/assign.h"
 
- // For class Return
+// For class Return
 #include <string>
 #include <vector>
 #include <QString>

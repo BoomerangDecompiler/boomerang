@@ -12,7 +12,7 @@ class ImplicitAssign;
 class CallStatement : public GotoStatement
 {
 	friend class XMLProgParser;
-	
+
 private:
 	bool m_returnAfterCall; // True if call is effectively followed by a return.
 
@@ -49,26 +49,28 @@ private:
 	ReturnStatement *m_calleeReturn;
 
 public:
+
 	/***************************************************************************/ /**
-	* \fn         CallStatement::CallStatement
-	* \brief      Constructor for a call
-	******************************************************************************/
+	 * \fn         CallStatement::CallStatement
+	 * \brief      Constructor for a call
+	 ******************************************************************************/
 	CallStatement();
-	
+
 	/***************************************************************************/ /**
-	* \fn      CallStatement::~CallStatement
-	* \brief   Destructor
-	******************************************************************************/
+	 * \fn      CallStatement::~CallStatement
+	 * \brief   Destructor
+	 ******************************************************************************/
 	virtual ~CallStatement();
 
 	virtual void setNumber(int num) override;
 
 	// Make a deep copy, and make the copy a derived object if needed.
+
 	/***************************************************************************/ /**
-	* \fn        CallStatement::clone
-	* \brief     Deep copy clone
-	* \returns   Pointer to a new Statement, a clone of this CallStatement
-	******************************************************************************/
+	 * \fn        CallStatement::clone
+	 * \brief     Deep copy clone
+	 * \returns   Pointer to a new Statement, a clone of this CallStatement
+	 ******************************************************************************/
 	virtual Instruction *clone() const override;
 
 	// Accept a visitor to this stmt
@@ -79,21 +81,21 @@ public:
 	virtual bool accept(StmtPartModifier *visitor) override;
 
 	/***************************************************************************/ /**
-	* \fn      CallStatement::setArguments
-	* \brief      Set the arguments of this call.
-	* \param      args - the list of locations to set the arguments to (for testing)
-	******************************************************************************/
+	 * \fn      CallStatement::setArguments
+	 * \brief      Set the arguments of this call.
+	 * \param      args - the list of locations to set the arguments to (for testing)
+	 ******************************************************************************/
 	void setArguments(StatementList& args);
 
 	// Set implicit arguments: so far, for testing only:
 	// void setImpArguments(std::vector<Exp*>& arguments);
 	// void setReturns(std::vector<Exp*>& returns);// Set call's return locs
-	
+
 	/***************************************************************************/ /**
-	* \fn      CallStatement::setSigArguments
-	* \brief   Set the arguments of this call based on signature info
-	* \note    Should only be called for calls to library functions
-	******************************************************************************/
+	 * \fn      CallStatement::setSigArguments
+	 * \brief   Set the arguments of this call based on signature info
+	 * \note    Should only be called for calls to library functions
+	 ******************************************************************************/
 	void setSigArguments();                             // Set arguments based on signature
 
 	StatementList& getArguments() { return m_arguments; } // Return call's arguments
@@ -108,11 +110,11 @@ public:
 	// void        ignoreReturn(SharedExp e);
 	// void        ignoreReturn(int n);
 	// void        addReturn(SharedExp e, Type* ty = nullptr);
-	
+
 	/// Set the defines to the set of locations modified by the callee,
 	/// or if no callee, to all variables live at this call
 	void updateDefines();         // Update the defines based on a callee change
-	
+
 	// Calculate results(this) = defines(this) intersect live(this)
 	// Note: could use a LocationList for this, but then there is nowhere to store the types (for DFA based TA)
 	// So the RHS is just ignored
@@ -125,7 +127,7 @@ public:
 
 	std::shared_ptr<Signature> getSignature() { return m_signature; }
 	void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; } ///< Only used by range analysis
-	
+
 	/// Localise the various components of expression e with reaching definitions to this call
 	/// Note: can change e so usually need to clone the argument
 	/// Was called substituteParams
@@ -134,7 +136,7 @@ public:
 	/// Used in e.g. fixCallBypass (via the CallBypasser). Locations defined in this call are replaced with their proven
 	/// values, which are in terms of the initial values at the start of the call (reaching definitions at the call)
 	SharedExp localiseExp(SharedExp e);
-	
+
 	/// Localise only components of e, i.e. xxx if e is m[xxx]
 	void localiseComp(SharedExp e); // Localise only xxx of m[xxx]
 
@@ -144,7 +146,7 @@ public:
 
 	void clearUseCollector() { m_useCol.clear(); }
 	void addArgument(SharedExp e, UserProc *proc);
-	
+
 	/// Find the reaching definition for expression e.
 	/// Find the definition for the given expression, using the embedded Collector object
 	/// Was called findArgument(), and used implicit arguments and signature parameters
@@ -167,44 +169,46 @@ public:
 	virtual bool search(const Exp& search, SharedExp& result) const override;
 
 	// Replace all instances of "search" with "replace".
+
 	/***************************************************************************/ /**
-	* \fn              CallStatement::searchAndReplace
-	* \brief           Replace all instances of search with replace.
-	* \param search  - a location to search for
-	* \param replace - the expression with which to replace it
-	* \param cc -      true to replace in collectors
-	* \returns         True if any change
-	******************************************************************************/
+	 * \fn              CallStatement::searchAndReplace
+	 * \brief           Replace all instances of search with replace.
+	 * \param search  - a location to search for
+	 * \param replace - the expression with which to replace it
+	 * \param cc -      true to replace in collectors
+	 * \returns         True if any change
+	 ******************************************************************************/
 	virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
 	// Searches for all instances of a given subexpression within this
 	// expression and adds them to a given list in reverse nesting order.
-	
+
 	/***************************************************************************/ /**
-	* \fn    CallStatement::searchAll
-	* \brief Find all instances of the search expression
-	* \param search - a location to search for
-	* \param result - a list which will have any matching exprs appended to it
-	* \returns true if there were any matches
-	******************************************************************************/
+	 * \fn    CallStatement::searchAll
+	 * \brief Find all instances of the search expression
+	 * \param search - a location to search for
+	 * \param result - a list which will have any matching exprs appended to it
+	 * \returns true if there were any matches
+	 ******************************************************************************/
 	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
 	// Set and return whether the call is effectively followed by a return.
 	// E.g. on Sparc, whether there is a restore in the delay slot.
+
 	/***************************************************************************/ /**
-	* \fn    CallStatement::setReturnAfterCall
-	* \brief Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
-	*        Sparc when there is a restore in the delay slot of the call
-	* \param b: true if this is to be set; false to clear the bit
-	******************************************************************************/
+	 * \fn    CallStatement::setReturnAfterCall
+	 * \brief Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
+	 *        Sparc when there is a restore in the delay slot of the call
+	 * \param b: true if this is to be set; false to clear the bit
+	 ******************************************************************************/
 	void setReturnAfterCall(bool b);
-	
+
 	/***************************************************************************/ /**
-	* \fn    CallStatement::isReturnAfterCall
-	* \brief Tests a bit that says that this call is effectively followed by a return. This happens e.g. on
-	*        Sparc when there is a restore in the delay slot of the call
-	* \returns True if this call is effectively followed by a return
-	******************************************************************************/
+	 * \fn    CallStatement::isReturnAfterCall
+	 * \brief Tests a bit that says that this call is effectively followed by a return. This happens e.g. on
+	 *        Sparc when there is a restore in the delay slot of the call
+	 * \returns True if this call is effectively followed by a return
+	 ******************************************************************************/
 	bool isReturnAfterCall() const;
 
 	// Set and return the list of Exps that occur *after* the call (the
@@ -214,10 +218,11 @@ public:
 	std::list<SharedExp> *getPostCallExpList();
 
 	// Set and return the destination proc.
+
 	/***************************************************************************/ /**
-	* \brief        Set the destination of this jump to be a given expression.
-	* \param        pd - the new target
-	******************************************************************************/
+	 * \brief        Set the destination of this jump to be a given expression.
+	 * \param        pd - the new target
+	 ******************************************************************************/
 	void setDestProc(Function *dest);
 	Function *getDestProc();
 
@@ -266,14 +271,14 @@ public:
 	void removeAllLive() { m_useCol.clear(); }               // Remove all livenesses
 	//        Exp*        fromCalleeContext(Exp* e);            // Convert e from callee to caller (this) context
 	StatementList& getDefines() { return m_defines; } // Get list of locations defined by this call
-	
+
 	/// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
 	/// parameters if needed, and return true if any signature parameters added
 	/// This function has two jobs. One is to truncate the list of arguments based on the format string.
 	/// The second is to add parameter types to the signature.
 	/// If -Td is used, type analysis will be rerun with these changes.
 	bool ellipsisProcessing(Prog *prog);
-	
+
 	/// Attempt to convert this call, if indirect, to a direct call.
 	/// NOTE: at present, we igore the possibility that some other statement
 	/// will modify the global. This is a serious limitation!!
@@ -288,7 +293,7 @@ private:
 	// Private helper functions for the above
 	// Helper function for makeArgAssign(?)
 	void addSigParam(SharedType ty, bool isScanf);
-	
+
 	/// Make an assign suitable for use as an argument from a callee context expression
 	Assign *makeArgAssign(SharedType ty, SharedExp e);
 	bool objcSpecificProcessing(const QString& formatStr);

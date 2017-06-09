@@ -81,23 +81,23 @@ ElfBinaryFile::~ElfBinaryFile()
 
 void ElfBinaryFile::initialize(IBoomerang *sys)
 {
-	   m_binaryImage   = sys->getImage();
-	   m_symbols = sys->getSymbols();
+	m_binaryImage = sys->getImage();
+	m_symbols     = sys->getSymbols();
 }
 
 
 void ElfBinaryFile::Init()
 {
-	   m_loadedImage       = nullptr;
-	   m_programHdrs       = nullptr; // No program headers
-	   m_sectionhdrs       = nullptr; // No section headers
-	   m_strings     = nullptr; // No strings
-	   m_relocSection       = nullptr;
-	   m_symbolSection         = nullptr;
-	   m_pltMin      = 0; // No PLT limits
-	   m_pltMax      = 0;
-	   m_lastSize    = 0;
-	   m_importStubs = nullptr;
+	m_loadedImage   = nullptr;
+	m_programHdrs   = nullptr;  // No program headers
+	m_sectionhdrs   = nullptr;  // No section headers
+	m_strings       = nullptr;  // No strings
+	m_relocSection  = nullptr;
+	m_symbolSection = nullptr;
+	m_pltMin        = 0;  // No PLT limits
+	m_pltMax        = 0;
+	m_lastSize      = 0;
+	m_importStubs   = nullptr;
 	m_elfSections.clear();
 }
 
@@ -136,27 +136,30 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	m_loadedImageSize = img.size();
 
 	// Allocate memory to hold the file
-	m_loadedImage = (Byte*)img.data();
-	
+	m_loadedImage = (Byte *)img.data();
+
 	Elf32_Ehdr *pHeader = (Elf32_Ehdr *)img.data(); // Save a lot of casts
 
 	// Basic checks
-	if (m_loadedImage[0] != 0x7F || m_loadedImage[1] != 'E' || m_loadedImage[2] != 'L' || m_loadedImage[3] != 'F') {
+	if ((m_loadedImage[0] != 0x7F) || (m_loadedImage[1] != 'E') || (m_loadedImage[2] != 'L') || (m_loadedImage[3] != 'F')) {
 		fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n",
-			(unsigned int)pHeader->e_ident[0],
-			(unsigned int)pHeader->e_ident[1],
-			(unsigned int)pHeader->e_ident[2],
-			(unsigned int)pHeader->e_ident[3]);
+				(unsigned int)pHeader->e_ident[0],
+				(unsigned int)pHeader->e_ident[1],
+				(unsigned int)pHeader->e_ident[2],
+				(unsigned int)pHeader->e_ident[3]);
 		return 0;
 	}
-	
-	switch(pHeader->endianness) {
+
+	switch (pHeader->endianness)
+	{
 	case 1: // little endian
 		m_bigEndian = false;
 		break;
+
 	case 2: // big endian
 		m_bigEndian = true;
 		break;
+
 	default:
 		qWarning() << QString("Unknown endianness ").arg(pHeader->endianness, 2, 16, QChar('0'));
 		return 0;
@@ -166,13 +169,14 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	DWord phOffset = elfRead4(&pHeader->e_phoff);
 
 	if (phOffset > 0) {
-		      m_programHdrs = (Elf32_Phdr *)(m_loadedImage + phOffset);
+		m_programHdrs = (Elf32_Phdr *)(m_loadedImage + phOffset);
 	}
 
 	// Set up section header pointer
 	DWord shOffset = elfRead4(&pHeader->e_shoff);
+
 	if (shOffset > 0) {
-		      m_sectionhdrs = (Elf32_Shdr *)(m_loadedImage + shOffset);
+		m_sectionhdrs = (Elf32_Shdr *)(m_loadedImage + shOffset);
 	}
 
 	// Set up section header string table pointer
@@ -181,18 +185,18 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	DWord sectionIndex = elfRead2(&pHeader->e_shstrndx); // pHeader->e_shstrndx;
 
 	if (sectionIndex > 0) {
-		m_strings = (char*)m_loadedImage + elfRead4(&m_sectionhdrs[sectionIndex].sh_offset);
+		m_strings = (char *)m_loadedImage + elfRead4(&m_sectionhdrs[sectionIndex].sh_offset);
 	}
 
-	sectionIndex = 1;  ///< counter - # sects. Start @ 1, total Image->GetNumSections()
+	sectionIndex = 1;                  ///< counter - # sects. Start @ 1, total Image->GetNumSections()
 	const char *sectionName = nullptr; ///< Section's name
 
 	// Number of sections
 	SWord numSections = elfRead2(&pHeader->e_shnum);
 	// Set up the m_sh_link and m_sh_info arrays
-	   m_shLink = new int[numSections];
-	   m_shInfo = new int[numSections];
-	
+	m_shLink = new int[numSections];
+	m_shInfo = new int[numSections];
+
 	// Number of elf sections
 	bool    bGotCode         = false; // True when have seen a code sect
 	ADDRESS arbitaryLoadAddr = ADDRESS::g(0x08000000);
@@ -245,12 +249,12 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 		}
 
 		sect.uType      = elfRead4(&pShdr->sh_type);
-		      m_shLink[i]    = elfRead4(&pShdr->sh_link);
-		      m_shInfo[i]    = elfRead4(&pShdr->sh_info);
+		m_shLink[i]     = elfRead4(&pShdr->sh_link);
+		m_shInfo[i]     = elfRead4(&pShdr->sh_info);
 		sect.entry_size = elfRead4(&pShdr->sh_entsize);
 
 		if (sect.SourceAddr + sect.Size > m_nextExtern) {
-			         m_firstExtern = m_nextExtern = sect.SourceAddr + sect.Size;
+			m_firstExtern = m_nextExtern = sect.SourceAddr + sect.Size;
 		}
 
 		if ((elfRead4(&pShdr->sh_flags) & SHF_WRITE) == 0) {
@@ -275,8 +279,8 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 		// NOTE: this ASSUMES that sections appear in a sensible order in the input binary file:
 		// junk, code, rodata, data, bss
 		if (bGotCode &&
-			(elfRead4(&pShdr->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC)) == SHF_ALLOC &&
-			elfRead4(&pShdr->sh_type) != SHT_NOBITS) {
+			((elfRead4(&pShdr->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC)) == SHF_ALLOC) &&
+			(elfRead4(&pShdr->sh_type) != SHT_NOBITS)) {
 			sect.Data = true;
 		}
 
@@ -321,7 +325,7 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 		unsigned uType = m_elfSections[i].uType;
 
 		if ((uType == SHT_SYMTAB) || (uType == SHT_DYNSYM)) {
-			         addSyms(i);
+			addSyms(i);
 		}
 	}
 
@@ -330,16 +334,16 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 
 	if (pRel) {
 		m_relocHasAddend = true;                                     // Remember its a relA table
-		m_relocSection  = (Elf32_Rel *)pRel->getHostAddr().m_value; // Save pointer to reloc table
+		m_relocSection   = (Elf32_Rel *)pRel->getHostAddr().m_value; // Save pointer to reloc table
 		// SetRelocInfo(pRel);
 	}
 	else {
 		m_relocHasAddend = false;
-		pRel      = m_binaryImage->getSectionInfoByName(".rel.text");
+		pRel             = m_binaryImage->getSectionInfoByName(".rel.text");
 
 		if (pRel) {
 			// SetRelocInfo(pRel);
-			         m_relocSection = (Elf32_Rel *)pRel->getHostAddr().m_value; // Save pointer to reloc table
+			m_relocSection = (Elf32_Rel *)pRel->getHostAddr().m_value;          // Save pointer to reloc table
 		}
 	}
 
@@ -347,8 +351,8 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 	IBinarySection *pPlt = m_binaryImage->getSectionInfoByName(".plt");
 
 	if (pPlt) {
-		      m_pltMin = pPlt->getSourceAddr();
-		      m_pltMax = pPlt->getSourceAddr() + pPlt->getSize();
+		m_pltMin = pPlt->getSourceAddr();
+		m_pltMax = pPlt->getSourceAddr() + pPlt->getSize();
 	}
 
 	// Apply relocations; important when the input program is not compiled with -fPIC
@@ -401,7 +405,7 @@ ADDRESS ElfBinaryFile::findRelPltOffset(int i)
 	else {
 		return NO_ADDRESS; // neither .rel.plt nor .rela.plt are available
 	}
-	
+
 	int first = i;
 
 	if (first >= numRelPlt) {
@@ -414,9 +418,9 @@ ADDRESS ElfBinaryFile::findRelPltOffset(int i)
 	do {
 		// Each entry is sizeRelPlt bytes, and will contain the offset, then the info (addend optionally follows)
 		DWord *pEntry    = (DWord *)(addrRelPlt + (curr * sizeRelPlt)).m_value;
-		int entry      = elfRead4(pEntry + 1);
-		int sym        = entry >> 8;           // The symbol index is in the top 24 bits (Elf32 only)
-		int entry_type = entry & 0xFF;
+		int   entry      = elfRead4(pEntry + 1);
+		int   sym        = entry >> 8;         // The symbol index is in the top 24 bits (Elf32 only)
+		int   entry_type = entry & 0xFF;
 
 		if (sym == i) {
 			const IBinarySection *targetSect = m_binaryImage->getSectionInfoByAddr(ADDRESS::n(elfRead4(pEntry)));
@@ -531,8 +535,8 @@ void ElfBinaryFile::addSyms(int secIndex)
 	// Calc number of symbols
 	int nSyms = pSect.Size / pSect.entry_size;
 
-	   m_symbolSection = (const Elf32_Sym *)pSect.image_ptr.m_value; // Pointer to symbols
-	int strIdx = m_shLink[secIndex];                    // sh_link points to the string table
+	m_symbolSection = (const Elf32_Sym *)pSect.image_ptr.m_value; // Pointer to symbols
+	int strIdx = m_shLink[secIndex];                              // sh_link points to the string table
 
 	// Index 0 is a dummy entry
 	for (int i = 1; i < nSyms; i++) {
@@ -560,7 +564,7 @@ void ElfBinaryFile::addSyms(int secIndex)
 
 	if ((uMain != NO_ADDRESS) && (nullptr == m_symbols->find(uMain))) {
 		// Ugh - main mustn't have the STT_FUNC attribute. Add it
-		      m_symbols->create(uMain, "main");
+		m_symbols->create(uMain, "main");
 	}
 }
 
@@ -574,7 +578,7 @@ void ElfBinaryFile::addRelocsAsSyms(uint32_t relSecIdx)
 	const SectionParam& pSect(m_elfSections[relSecIdx]);
 	// Calc number of relocations
 	int nRelocs = pSect.Size / pSect.entry_size;
-	   m_relocSection = (const Elf32_Rel *)pSect.image_ptr.m_value; // Pointer to symbols
+	m_relocSection = (const Elf32_Rel *)pSect.image_ptr.m_value;    // Pointer to symbols
 	int symSecIdx = m_shLink[relSecIdx];
 	int strSecIdx = m_shLink[symSecIdx];
 
@@ -593,7 +597,7 @@ void ElfBinaryFile::addRelocsAsSyms(uint32_t relSecIdx)
 			}
 
 			// Overwrite the relocation value... ?
-			         m_binaryImage->writeNative4(val, a.m_value);
+			m_binaryImage->writeNative4(val, a.m_value);
 			continue;
 		}
 
@@ -615,11 +619,11 @@ void ElfBinaryFile::addRelocsAsSyms(uint32_t relSecIdx)
 		ADDRESS location = symbol ? symbol->getLocation() : m_nextExtern;
 
 		if (nullptr == symbol) {
-			         m_symbols->create(m_nextExtern, str);
-			         m_nextExtern += 4;
+			m_symbols->create(m_nextExtern, str);
+			m_nextExtern += 4;
 		}
 
-		      m_binaryImage->writeNative4(val, (location - val - 4).m_value);
+		m_binaryImage->writeNative4(val, (location - val - 4).m_value);
 	}
 }
 
@@ -796,27 +800,29 @@ void ElfBinaryFile::markImports()
 }
 
 
-SWord ElfBinaryFile::elfRead2(const SWord* ps) const
+SWord ElfBinaryFile::elfRead2(const SWord *ps) const
 {
 	assert(ps);
 	SWord r = *ps;
-	
+
 	if (m_bigEndian) {
 		r = (r >> 8 & 0x00FF) | (r << 8 & 0xFF00);
 	}
+
 	return r;
 }
 
 
-DWord ElfBinaryFile::elfRead4(const DWord* pi) const
+DWord ElfBinaryFile::elfRead4(const DWord *pi) const
 {
 	assert(pi);
 	DWord r = *pi;
-	
+
 	if (m_bigEndian) {
 		r = (r >> 16 & 0x0000FFFF) | (r << 16 & 0xFFFF0000);
-		r = (r >> 8  & 0x00FF00FF) | (r << 8  & 0xFF00FF00);
+		r = (r >> 8 & 0x00FF00FF) | (r << 8 & 0xFF00FF00);
 	}
+
 	return r;
 }
 
@@ -825,13 +831,12 @@ void ElfBinaryFile::elfWrite4(DWord *pi, DWord val)
 {
 	// swap endian
 	val = elfRead4(&val);
-	
+
 	Byte *p = (Byte *)pi;
 	*p++ = (char)val;
 	*p++ = (char)(val >> 8);
 	*p++ = (char)(val >> 16);
 	*p   = (char)(val >> 24);
-
 }
 
 
@@ -856,8 +861,8 @@ void ElfBinaryFile::applyRelocations()
 			if (ps.uType == SHT_REL) {
 			}
 			else if (ps.uType == SHT_RELA) {
-				DWord *pReloc = (DWord*)ps.image_ptr.m_value;
-				DWord  size   = ps.Size;
+				DWord *pReloc = (DWord *)ps.image_ptr.m_value;
+				DWord size    = ps.Size;
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
@@ -904,7 +909,7 @@ void ElfBinaryFile::applyRelocations()
 				// the section header's sh_link field.
 				DWord *pReloc = (DWord *)ps.image_ptr.m_value;
 				DWord size    = ps.Size;
-				
+
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
 				ADDRESS destNatOrigin = ADDRESS::g(0L), destHostOrigin = ADDRESS::g(0L);
@@ -923,7 +928,7 @@ void ElfBinaryFile::applyRelocations()
 				for (unsigned u = 0; u < size; u += 2 * sizeof(unsigned)) {
 					DWord r_offset    = elfRead4(pReloc++);
 					DWord info        = elfRead4(pReloc++);
-					Byte relType     = (unsigned char)info;
+					Byte  relType     = (unsigned char)info;
 					DWord symTabIndex = info >> 8;
 					DWord *pRelWord; // Pointer to the word to be relocated
 
@@ -979,13 +984,13 @@ void ElfBinaryFile::applyRelocations()
 								// So we use some very improbable addresses (e.g. -1, -2, etc) and give them entries
 								// in the symbol table
 								DWord nameOffset = elfRead4((DWord *)&symOrigin[symTabIndex].st_name);
-								char *pName     = pStrSection + nameOffset;
-								
+								char  *pName     = pStrSection + nameOffset;
+
 								// this is too slow, I'm just going to assume it is 0
 								// S = GetAddressByName(pName);
 								// if (S == (e_type == E_REL ? 0x8000000 : 0)) {
 								S = nextFakeLibAddr--; // Allocate a new fake address
-								                        m_symbols->create(S, pName);
+								m_symbols->create(S, pName);
 								// }
 							}
 							else if (e_type == E_REL) {
@@ -1050,7 +1055,7 @@ bool ElfBinaryFile::isRelocationAt(ADDRESS uNative)
 				// the section header's sh_link field.
 				DWord *pReloc = (DWord *)ps.image_ptr.m_value;
 				DWord size    = ps.Size;
-				
+
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
 				ADDRESS destNatOrigin = ADDRESS::g(0L), destHostOrigin;
@@ -1067,9 +1072,9 @@ bool ElfBinaryFile::isRelocationAt(ADDRESS uNative)
 				// Elf32_Sym* symOrigin = (Elf32_Sym*) m_pSections[symSection].uHostAddr;
 				for (unsigned u = 0; u < size; u += 2 * sizeof(unsigned)) {
 					DWord r_offset = elfRead4(pReloc++);
-					//DWord info     = elfRead4(pReloc);
+					// DWord info     = elfRead4(pReloc);
 					pReloc++;
-					
+
 					// unsigned char relType = (unsigned char) info;
 					// unsigned symTabIndex = info >> 8;
 					ADDRESS pRelWord; // Pointer to the word to be relocated
@@ -1106,6 +1111,7 @@ bool ElfBinaryFile::canLoad(QIODevice& fl) const
 
 	return TESTMAGIC4(contents.data(), 0, '\177', 'E', 'L', 'F');
 }
+
 
 DEFINE_PLUGIN(PluginType::Loader, IFileLoader, ElfBinaryFile,
 			  "ELF32 loader plugin", "0.4.0", "Boomerang developers")

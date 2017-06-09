@@ -178,9 +178,9 @@ Instruction *BoolAssign::clone() const
 	ret->m_isFloat  = m_isFloat;
 	ret->m_size     = m_size;
 	// Statement members
-	ret->m_parent   = m_parent;
-	ret->m_proc     = m_proc;
-	ret->m_number   = m_number;
+	ret->m_parent = m_parent;
+	ret->m_proc   = m_proc;
+	ret->m_number = m_number;
 	return ret;
 }
 
@@ -258,7 +258,7 @@ bool BoolAssign::searchAndReplace(const Exp& search, SharedExp replace, bool cc)
 	assert(m_cond);
 	assert(m_lhs);
 	m_cond = m_cond->searchReplaceAll(search, replace, chl);
-	m_lhs   = m_lhs->searchReplaceAll(search, replace, chr);
+	m_lhs  = m_lhs->searchReplaceAll(search, replace, chr);
 	return chl | chr;
 }
 

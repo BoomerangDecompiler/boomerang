@@ -87,7 +87,7 @@ Instruction *CaseStatement::clone() const
 {
 	CaseStatement *ret = new CaseStatement();
 
-	ret->m_dest        = m_dest ? m_dest->clone() : nullptr;
+	ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
 	ret->m_isComputed = m_isComputed;
 
 	if (pSwitchInfo) {

@@ -459,7 +459,7 @@ private:
 public:
 	PointerType(SharedType p);
 	virtual ~PointerType();
-	virtual bool isPointer() const  override{ return true; }
+	virtual bool isPointer() const override { return true; }
 	void setPointsTo(SharedType p);
 
 	SharedType getPointsTo() { return points_to; }
@@ -506,7 +506,7 @@ public:
 	ArrayType(SharedType p, unsigned _length);
 	ArrayType(SharedType p);
 	virtual ~ArrayType();
-	virtual bool isArray() const  override{ return true; }
+	virtual bool isArray() const override { return true; }
 	SharedType getBaseType() { return BaseType; }
 	const SharedType getBaseType() const { return BaseType; }
 	void setBaseType(SharedType b);
@@ -652,7 +652,7 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 
-	virtual bool isCompatibleWith(const Type& other, bool all = false) const  override { return isCompatible(other, all); }
+	virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
 	virtual bool isCompatible(const Type& other, bool all) const override;
 
 protected:
@@ -690,7 +690,7 @@ public:
 	typedef UnionEntrySet::iterator ilUnionElement;
 	UnionType();
 	virtual ~UnionType();
-	virtual bool isUnion() const  override { return true; }
+	virtual bool isUnion() const override { return true; }
 	static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
 	void addType(SharedType n, const QString& str);
 
@@ -716,7 +716,7 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 
-	virtual bool isCompatibleWith(const Type& other, bool all) const  override { return isCompatible(other, all); }
+	virtual bool isCompatibleWith(const Type& other, bool all) const override { return isCompatible(other, all); }
 	virtual bool isCompatible(const Type& other, bool all) const override;
 
 	// if this is a union of pointer types, get the union of things they point to. In dfa.cpp
@@ -753,7 +753,7 @@ public:
 	virtual size_t getSize() const override;
 
 	virtual void setSize(size_t sz) override { size = sz; }
-	virtual bool isSize() const  override{ return true; }
+	virtual bool isSize() const override { return true; }
 	virtual bool isComplete() override { return false; } // Basic type is unknown
 	virtual QString getCtype(bool final = false) const override;
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
@@ -815,7 +815,7 @@ public:
 	const SharedType getBaseType() const { return base_type; }
 	void setBaseType(SharedType b) { base_type = b; }
 
-	virtual size_t getSize() const  override{ return base_type->getSize() / 2; }
+	virtual size_t getSize() const override { return base_type->getSize() / 2; }
 	virtual void setSize(size_t sz) override; // Does this make sense?
 
 	virtual bool isLower() const override { return true; }

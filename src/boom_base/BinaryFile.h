@@ -78,7 +78,7 @@ class BinaryFileFactory
 {
 private:
 	static QString m_basePath; ///< path from which the executable is being ran, used to find lib/ directory
-	std::vector<std::shared_ptr<LoaderPlugin>> m_loaderPlugins;
+	std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins;
 
 	/**
 	 * Test all plugins against the file, select the one with the best match, and then return an
@@ -93,7 +93,7 @@ public:
 	BinaryFileFactory();
 
 	static void setBasePath(const QString& path) { m_basePath = path; } ///< sets the base directory for plugin search
-	IFileLoader* load(const QString& sName);
+	IFileLoader *load(const QString& sName);
 	void unload();
 };
 

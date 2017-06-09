@@ -23,7 +23,8 @@
 ///   or the defCollector in the call
 class ArgSourceProvider
 {
-	enum Src {
+	enum Src
+	{
 		SRC_LIB,
 		SRC_CALLEE,
 		SRC_COL
@@ -566,7 +567,7 @@ Instruction *CallStatement::clone() const
 {
 	CallStatement *ret = new CallStatement();
 
-	ret->m_dest        = m_dest->clone();
+	ret->m_dest       = m_dest->clone();
 	ret->m_isComputed = m_isComputed;
 	StatementList::const_iterator ss;
 
@@ -759,7 +760,7 @@ bool CallStatement::convertToDirect()
 			ADDRESS u = ADDRESS::g(sub->access<Const>()->getInt());
 			m_proc->getProg()->markGlobalUsed(u);
 			QString nam = m_proc->getProg()->newGlobalName(u);
-			e     = Location::global(nam, m_proc);
+			e      = Location::global(nam, m_proc);
 			m_dest = RefExp::get(e, nullptr);
 		}
 	}
@@ -913,7 +914,6 @@ void CallStatement::removeArgument(int i)
 	std::advance(aa, i);
 	m_arguments.erase(aa);
 }
-
 
 
 SharedType CallStatement::getTypeFor(SharedExp e) const
@@ -1404,7 +1404,7 @@ void CallStatement::updateDefines()
 
 		for (nn = m_defines.begin(); nn != m_defines.end(); ++nn) {
 			if (sig->returnCompare(*as, *(Assignment *)*nn)) {     // If the new assignment is less than the current one
-				nn       = m_defines.insert(nn, as);                 // then insert before this position
+				nn       = m_defines.insert(nn, as);               // then insert before this position
 				inserted = true;
 				break;
 			}
@@ -1517,7 +1517,7 @@ void CallStatement::updateArguments()
 
 		for (nn = m_arguments.begin(); nn != m_arguments.end(); ++nn) {
 			if (sig->argumentCompare(*as, *(Assign *)*nn)) {     // If the new assignment is less than the current one
-				nn       = m_arguments.insert(nn, as);             // then insert before this position
+				nn       = m_arguments.insert(nn, as);           // then insert before this position
 				inserted = true;
 				break;
 			}

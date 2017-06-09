@@ -38,10 +38,10 @@ public:
 	virtual void print(QTextStream& os, bool html = false) const override;
 	virtual void printCompact(QTextStream& os, bool html = false) const = 0; // Without statement number
 
-	virtual SharedType getTypeFor(SharedExp e) const override;    ///< Get the type for this assignment. It should define e
-	virtual void setTypeFor(SharedExp e, SharedType ty) override; ///< Set the type for this assignment. It should define e
+	virtual SharedType getTypeFor(SharedExp e) const override;               ///< Get the type for this assignment. It should define e
+	virtual void setTypeFor(SharedExp e, SharedType ty) override;            ///< Set the type for this assignment. It should define e
 
-	virtual bool usesExp(const Exp& e) const override;            ///< PhiAssign and ImplicitAssign don't override
+	virtual bool usesExp(const Exp& e) const override;                       ///< PhiAssign and ImplicitAssign don't override
 
 	virtual bool isDefinition() const override { return true; }
 	virtual void getDefinitions(LocationSet& defs) const override;
@@ -81,4 +81,3 @@ public:
 	/// Data flow based type analysis
 	void dfaTypeAnalysis(bool& ch) override;
 };
-

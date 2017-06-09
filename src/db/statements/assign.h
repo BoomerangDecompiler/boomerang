@@ -8,7 +8,7 @@
 class Assign : public Assignment
 {
 	friend class XMLProgParser;
-	
+
 private:
 	SharedExp m_rhs;
 	SharedExp m_guard;
@@ -16,16 +16,16 @@ private:
 public:
 	/// Constructor, subexpressions
 	Assign(SharedExp lhs, SharedExp r, SharedExp guard = nullptr);
-	
+
 	/// Constructor, type and subexpressions
 	Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard = nullptr);
-	
+
 	/// Default constructor, for XML parser
 	Assign();
-		
+
 	/// Copy constructor
 	Assign(Assign& o);
-	
+
 	/// Destructor
 	~Assign() {}
 
@@ -36,7 +36,7 @@ public:
 	virtual SharedExp getRight() const override { return m_rhs; }
 	SharedExp& getRightRef() { return m_rhs; }
 	const SharedExp& getRightRef() const { return m_rhs; }
-	
+
 	/// set the rhs to something new
 	void setRight(SharedExp e) { m_rhs = e; }
 
@@ -45,7 +45,7 @@ public:
 	/// Visit all the various expressions in a statement
 	virtual bool accept(StmtVisitor *visitor) override;
 	virtual bool accept(StmtExpVisitor *visitor) override;
-	
+
 	/// Visiting from class StmtModifier
 	/// Modify all the various expressions in a statement
 	virtual bool accept(StmtModifier *visitor) override;

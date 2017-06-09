@@ -4453,7 +4453,7 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 
 	for (xx = locs.begin(); xx != locs.end(); xx++) {
 		if ((*xx)->getOper() == opSubscript) {
-			auto        r1   = std::static_pointer_cast<RefExp>(*xx);
+			auto              r1   = std::static_pointer_cast<RefExp>(*xx);
 			const Instruction *def = r1->getDef();
 
 			if (!((def == nullptr) || (def->getNumber() == 0))) {

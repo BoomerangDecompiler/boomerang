@@ -221,13 +221,13 @@ public:
 	 */
 	typedef AssignSet::const_iterator   const_iterator;
 	typedef AssignSet::iterator         iterator;
-	
+
 	iterator begin() { return m_defs.begin(); }
 	iterator end() { return m_defs.end(); }
-	
+
 	const_iterator begin() const { return m_defs.begin(); }
 	const_iterator end() const { return m_defs.end(); }
-	
+
 	bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
 
 	/*

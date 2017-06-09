@@ -176,7 +176,7 @@ struct objc_method_list
 
 /* Protocol support */
 
-//@class Protocol;
+// @class Protocol;
 struct Protocol;
 
 struct objc_protocol_list

@@ -153,7 +153,7 @@
 
 @interface Object (DynamicLoading)
 
-//+ finishLoading:(headerType *)header;
+// + finishLoading:(headerType *)header;
 + finishLoading:(struct mach_header *)header;
 + startUnloading;
 

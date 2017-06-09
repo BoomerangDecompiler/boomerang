@@ -39,7 +39,7 @@
 
 struct mach_header;
 
-class MachOBinaryFile :	public IFileLoader, public ObjcAccessInterface
+class MachOBinaryFile : public IFileLoader, public ObjcAccessInterface
 {
 public:
 	MachOBinaryFile();                   // Default constructor

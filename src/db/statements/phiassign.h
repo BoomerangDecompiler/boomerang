@@ -9,7 +9,7 @@ struct PhiInfo
 	// A default constructor is required because CFG changes (?) can cause access to elements of the vector that
 	// are beyond the current end, creating gaps which have to be initialised to zeroes so that they can be skipped
 	PhiInfo() {} // : def(0), e(0) not initializing to help valgrind find locations of unset vals
-	
+
 	SharedExp         e; // The expression for the thing being defined (never subscripted)
 	void              def(Instruction *def) { m_def = def; /*assert(def);*/ }
 	Instruction       *def() { return m_def; }
@@ -34,11 +34,11 @@ protected:
 class PhiAssign : public Assignment
 {
 	friend class XMLProgParser;
-	
+
 public:
-	typedef std::map<BasicBlock *, PhiInfo> Definitions;
-	typedef Definitions::iterator           iterator;
-	typedef Definitions::const_iterator     const_iterator;
+	typedef std::map<BasicBlock *, PhiInfo>   Definitions;
+	typedef Definitions::iterator             iterator;
+	typedef Definitions::const_iterator       const_iterator;
 
 private:
 	Definitions DefVec; // A vector of information about definitions
@@ -61,7 +61,7 @@ public:
 	// Accept a visitor to this Statement
 	virtual bool accept(StmtVisitor *visitor) override;
 	virtual bool accept(StmtExpVisitor *visitor) override;
-	
+
 	// Visiting from class StmtPartModifier
 	// Modify all the various expressions in a statement, except for the top level of the LHS of assignments
 	virtual bool accept(StmtModifier *visitor) override;
@@ -71,7 +71,7 @@ public:
 
 	// general search
 	virtual bool search(const Exp& search, SharedExp& result) const override;
-	
+
 	/// FIXME: is this the right semantics for searching a phi statement, disregarding the RHS?
 	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
@@ -112,7 +112,7 @@ public:
 
 	virtual size_t getNumDefs() const { return DefVec.size(); }
 	Definitions& getDefs() { return DefVec; }
-	
+
 	// A hack. Check MVE
 	bool hasGlobalFuncParam();
 
@@ -125,8 +125,8 @@ public:
 	iterator erase(iterator it) { return DefVec.erase(it); }
 
 	// Convert this phi assignment to an ordinary assignment
-	
-	/// Convert this PhiAssignment to an ordinary Assignment. 
+
+	/// Convert this PhiAssignment to an ordinary Assignment.
 	/// Hopefully, this is the only place that Statements change from
 	/// one class to another.  All throughout the code, we assume that the addresses of Statement objects do not change,
 	/// so we need this slight hack to overwrite one object with another

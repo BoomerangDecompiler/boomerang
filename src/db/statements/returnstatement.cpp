@@ -96,6 +96,7 @@ void ReturnStatement::addReturn(Assignment *a)
 bool ReturnStatement::search(const Exp& search, SharedExp& result) const
 {
 	result = nullptr;
+
 	for (auto rr = begin(); rr != end(); ++rr) {
 		if ((*rr)->search(search, result)) {
 			return true;
@@ -258,7 +259,6 @@ bool ReturnStatement::accept(StmtPartModifier *v)
 
 	return true;
 }
-
 
 
 bool ReturnStatement::definesLoc(SharedExp loc) const

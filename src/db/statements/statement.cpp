@@ -642,7 +642,6 @@ bool Instruction::isFpop() const
 }
 
 
-
 int Instruction::setConscripts(int n)
 {
 	StmtConscriptSetter scs(n, false);

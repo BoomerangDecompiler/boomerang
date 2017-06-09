@@ -617,5 +617,6 @@ DWord MachOBinaryFile::getDelta()
 	return (ADDRESS::host_ptr(base) - loaded_addr).m_value;
 }
 
+
 DEFINE_PLUGIN(PluginType::Loader, IFileLoader, MachOBinaryFile,
 			  "DOS4GW loader plugin", "0.4.0", "Boomerang developers")

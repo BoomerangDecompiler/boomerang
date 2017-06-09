@@ -27,7 +27,7 @@ BranchStatement::~BranchStatement()
 void BranchStatement::setCondType(BranchType cond, bool usesFloat /*= false*/)
 {
 	m_jumpType = cond;
-	m_isFloat = usesFloat;
+	m_isFloat  = usesFloat;
 
 	// set pCond to a high level representation of this type
 	SharedExp p = nullptr;
@@ -377,11 +377,11 @@ Instruction *BranchStatement::clone() const
 {
 	BranchStatement *ret = new BranchStatement();
 
-	ret->m_dest        = m_dest->clone();
+	ret->m_dest       = m_dest->clone();
 	ret->m_isComputed = m_isComputed;
-	ret->m_jumpType       = m_jumpType;
-	ret->m_cond        = m_cond ? m_cond->clone() : nullptr;
-	ret->m_isFloat       = m_isFloat;
+	ret->m_jumpType   = m_jumpType;
+	ret->m_cond       = m_cond ? m_cond->clone() : nullptr;
+	ret->m_isFloat    = m_isFloat;
 	// Statement members
 	ret->m_parent = m_parent;
 	ret->m_proc   = m_proc;

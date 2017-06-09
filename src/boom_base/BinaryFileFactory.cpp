@@ -38,7 +38,7 @@ BinaryFileFactory::BinaryFileFactory()
 }
 
 
-IFileLoader* BinaryFileFactory::load(const QString& sName)
+IFileLoader *BinaryFileFactory::load(const QString& sName)
 {
 	Boomerang    *boom  = Boomerang::get();
 	IBinaryImage *image = boom->getImage();
@@ -74,7 +74,7 @@ IFileLoader* BinaryFileFactory::load(const QString& sName)
 }
 
 
-IFileLoader* BinaryFileFactory::getInstanceFor(const QString& sName)
+IFileLoader *BinaryFileFactory::getInstanceFor(const QString& sName)
 {
 	QFile f(sName);
 
@@ -86,12 +86,13 @@ IFileLoader* BinaryFileFactory::getInstanceFor(const QString& sName)
 	// get the first plugin which is able to load the file
 	for (std::shared_ptr<LoaderPlugin>& p : m_loaderPlugins) {
 		f.seek(0); // reset the file offset for the next plugin
-		IFileLoader* loader = p->get();
+		IFileLoader *loader = p->get();
+
 		if (loader->canLoad(f)) {
 			return loader;
 		}
 	}
-	
+
 	return nullptr;
 }
 
@@ -108,12 +109,12 @@ void BinaryFileFactory::populatePlugins()
 
 	for (QString fileName : pluginsDir.entryList(QDir::Files)) {
 		std::string sofilename = pluginsDir.absoluteFilePath(fileName).toUtf8().constData();
-		
+
 		try {
 			std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
 			m_loaderPlugins.push_back(loaderPlugin);
 		}
-		catch (const char* errmsg) {
+		catch (const char *errmsg) {
 			qCritical() << "Unable to load plugin: " << errmsg;
 		}
 	}

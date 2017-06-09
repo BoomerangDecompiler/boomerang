@@ -30,7 +30,7 @@
 #ifndef _OBJC_RUNTIME_H_
 #define _OBJC_RUNTIME_H_
 
-//#import <stdarg.h>
+// #import <stdarg.h>
 #include "objc.h"
 #include "objc-class.h"
 

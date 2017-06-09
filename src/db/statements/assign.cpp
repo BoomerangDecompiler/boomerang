@@ -293,6 +293,8 @@ bool Assign::match(const QString& pattern, std::map<QString, Exp *>& bindings)
 
 	return lhs->match(left, bindings) && rhs->match(right, bindings);
 }
+
+
 #endif
 
 
@@ -384,11 +386,13 @@ void Assign::dfaTypeAnalysis(bool& ch)
 	m_type = m_type->meetWith(tr, ch, true); // Note: bHighestPtr is set true, since the lhs could have a greater type
 	// (more possibilities) than the rhs. Example: pEmployee = pManager.
 	m_rhs->descendType(m_type, ch, this);    // This will effect rhs = rhs MEET lhs
-	Assignment::dfaTypeAnalysis(ch);     // Handle the LHS wrt m[] operands
+	Assignment::dfaTypeAnalysis(ch);         // Handle the LHS wrt m[] operands
 }
+
 
 Assign::Assign()
 	: Assignment(nullptr)
 	, m_rhs(nullptr)
 	, m_guard(nullptr)
-{}
+{
+}

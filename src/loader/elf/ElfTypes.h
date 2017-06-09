@@ -7,26 +7,26 @@
 /// Internal elf info
 struct Elf32_Ehdr
 {
-	Byte  e_ident[4]; ///< Magic number. Should be 0x7F 'E' 'L' 'F'
-	Byte  e_class;    ///< Bit format. Must be 1. (32 bit)
-	Byte  endianness; ///< 1 = little endian, 2 = big endian;
-	Byte  version;    ///< ELF version. 1 = original version
-	Byte  osAbi;      ///< OS ABI. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
-	Byte  abiVersion; ///< OS ABI version. May be unused.
-	Byte  pad[7];     ///< Currently unused.
-	SWord e_type;     ///< 1 = relocatable, 2 = executable, 3 = shared, 4 = core
-	SWord e_machine;  ///< Instruction set architecture. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
-	Byte  e_version;  ///< See above.
-	DWord e_entry;    ///< Address of the entry point.
-	DWord e_phoff;    ///< Offset of the Program Header table.
-	DWord e_shoff;    ///< Offset of the Section Header table.
-	DWord e_flags;    ///< architecture specific flags.
-	SWord e_ehsize;   ///< Size of this header. Normally 64 bytes.
-	SWord e_phentsize;///< Size of an entry in the Program Header table.
-	SWord e_phnum;    ///< Number of entries in the Program Header table.
-	SWord e_shentsize;///< Size of an entry in the Section Header table.
-	SWord e_shnum;    ///< Number of entries in the Section Header table.
-	SWord e_shstrndx; ///< The index of the entry in the Section Header Table containing the section names. 
+	Byte  e_ident[4];  ///< Magic number. Should be 0x7F 'E' 'L' 'F'
+	Byte  e_class;     ///< Bit format. Must be 1. (32 bit)
+	Byte  endianness;  ///< 1 = little endian, 2 = big endian;
+	Byte  version;     ///< ELF version. 1 = original version
+	Byte  osAbi;       ///< OS ABI. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+	Byte  abiVersion;  ///< OS ABI version. May be unused.
+	Byte  pad[7];      ///< Currently unused.
+	SWord e_type;      ///< 1 = relocatable, 2 = executable, 3 = shared, 4 = core
+	SWord e_machine;   ///< Instruction set architecture. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+	Byte  e_version;   ///< See above.
+	DWord e_entry;     ///< Address of the entry point.
+	DWord e_phoff;     ///< Offset of the Program Header table.
+	DWord e_shoff;     ///< Offset of the Section Header table.
+	DWord e_flags;     ///< architecture specific flags.
+	SWord e_ehsize;    ///< Size of this header. Normally 64 bytes.
+	SWord e_phentsize; ///< Size of an entry in the Program Header table.
+	SWord e_phnum;     ///< Number of entries in the Program Header table.
+	SWord e_shentsize; ///< Size of an entry in the Section Header table.
+	SWord e_shnum;     ///< Number of entries in the Section Header table.
+	SWord e_shstrndx;  ///< The index of the entry in the Section Header Table containing the section names.
 };
 
 #define EM_SPARC          2    // Sun SPARC
@@ -170,6 +170,7 @@ struct Elf32_Sym
 	Byte  st_other;
 	SWord st_shndx;
 };
+
 #pragma pack(pop)
 
 struct Elf32_Rel

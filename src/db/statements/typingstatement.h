@@ -21,4 +21,3 @@ public:
 
 	virtual bool isTyping() const override { return true; }
 };
-

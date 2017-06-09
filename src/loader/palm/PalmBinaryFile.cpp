@@ -572,5 +572,6 @@ void PalmBinaryFile::GenerateBinFiles(const QString& path) const
 	}
 }
 
+
 DEFINE_PLUGIN(PluginType::Loader, IFileLoader, PalmBinaryFile,
 			  "Palm OS binary file", "0.4.0", "Boomerang developers")

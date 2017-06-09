@@ -17,20 +17,20 @@ public:
 	// General loader functions
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual void initialize(IBoomerang *sys) = 0;
-	
+
 	/// Unload the file.
 	/// Cleans up and unloads the binary image.
-	virtual void unload()               = 0;                         
-	virtual void close()                = 0; ///< Close file opened with Open()
-	virtual LOAD_FMT getFormat() const  = 0; ///< Get the format (e.g. LOADFMT_ELF)
-	virtual MACHINE getMachine() const  = 0; ///< Get the expected machine (e.g. MACHINE_PENTIUM)
-	
+	virtual void unload() = 0;
+	virtual void close()  = 0;               ///< Close file opened with Open()
+	virtual LOAD_FMT getFormat() const = 0;  ///< Get the format (e.g. LOADFMT_ELF)
+	virtual MACHINE getMachine() const = 0;  ///< Get the expected machine (e.g. MACHINE_PENTIUM)
+
 	/// Checks if the file can be loaded by this loader.
-	virtual bool canLoad(QIODevice& data) const   = 0;
+	virtual bool canLoad(QIODevice& data) const = 0;
 
 	/// @returns true for a good load
 	virtual bool loadFromMemory(QByteArray& data) = 0;
-	
+
 	/// @returns the address of main()/WinMain() etc.
 	virtual ADDRESS getMainEntryPoint() = 0;
 
@@ -73,13 +73,13 @@ class IFileLoader : public LoaderInterface
 public:
 //	IFileLoader();
 //	virtual ~IFileLoader() = default;
-	
+
 public:
 	/// Test if this file can be loaded by this loader.
 	/// This method does not necessarily need to read the whole file,
 	/// only the part needed to understand the file format
 //	virtual bool canLoadFile(const std::string& path) const = 0;
-	
+
 	/// Load the file with path @p path into memory.
 //	virtual IBinaryFile* loadFile(const std::string& path) = 0;
 };
