@@ -20,12 +20,10 @@
 
 #include "boom_base/BinaryFile.h"
 
+struct Elf32_Ehdr;
 struct Elf32_Phdr;
-
 struct Elf32_Shdr;
-
 struct Elf32_Rel;
-
 struct Elf32_Sym;
 
 struct Translated_ElfSym;
@@ -97,23 +95,20 @@ private:
 	/// Return a list of library names which the binary file depends on
 	QStringList getDependencyList();
 
-	// Write an ELF object file for a given procedure
-	void writeObjectFile(QString& path, const char *name, void *ptxt, int txtsz, RelocMap& reloc);
-
 	// Apply relocations; important when compiled without -fPIC
 	void applyRelocations();
 
 	/// Not meant to be used externally, but sometimes you just have to have it.
 	/// Like a replacement for elf_strptr()
-	const char *GetStrPtr(int idx, int offset); // Calc string pointer
+	const char *getStrPtr(int idx, int offset); // Calc string pointer
 
 	/// Reset internal state, except for those that keep track of which member
 	/// we're up to
-	void Init();                                // Initialise most member variables
-	int ProcessElfFile();                       // Does most of the work
+	void init();                                // Initialise most member variables
+	int processElfFile();                       // Does most of the work
 
 	/// FIXME: the below assumes a fixed delta
-	ADDRESS NativeToHostAddress(ADDRESS uNative);
+	ADDRESS nativeToHostAddress(ADDRESS uNative);
 
 	/// Add appropriate symbols to the symbol table.
 	/// @p secIndex is the section index of the symbol table.
@@ -155,10 +150,12 @@ private:
 private:
 	size_t m_loadedImageSize;            ///< Size of image in bytes
 	Byte *m_loadedImage       = nullptr; ///< Pointer to the loaded image
+	
+	Elf32_Ehdr* m_elfHeader   = nullptr; ///< ELF header
 	Elf32_Phdr *m_programHdrs = nullptr; ///< Pointer to program headers
 	Elf32_Shdr *m_sectionhdrs = nullptr; ///< Array of section header structs
 
-	char *m_strings = nullptr;           ///< Pointer to the string section
+	const char *m_strings = nullptr;     ///< Pointer to the string section
 	bool m_bigEndian;                    ///< 1 = Big Endian
 
 	// SymTab      m_Reloc;                 ///< Object to store the reloc syms

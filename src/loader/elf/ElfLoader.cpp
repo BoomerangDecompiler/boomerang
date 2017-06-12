@@ -66,7 +66,7 @@ typedef std::map<QString, int, std::less<QString> > StrIntMap;
 ElfLoader::ElfLoader()
 	: m_nextExtern(ADDRESS::g(0L))
 {
-	Init(); // Initialise all the common stuff
+	init(); // Initialise all the common stuff
 }
 
 
@@ -86,7 +86,7 @@ void ElfLoader::initialize(IBoomerang *sys)
 }
 
 
-void ElfLoader::Init()
+void ElfLoader::init()
 {
 	m_loadedImage   = nullptr;
 	m_programHdrs   = nullptr;  // No program headers
@@ -138,19 +138,22 @@ bool ElfLoader::loadFromMemory(QByteArray& img)
 	// Allocate memory to hold the file
 	m_loadedImage = (Byte *)img.data();
 
-	Elf32_Ehdr *pHeader = (Elf32_Ehdr *)img.data(); // Save a lot of casts
+	m_elfHeader = (Elf32_Ehdr *)img.data(); // Save a lot of casts
 
 	// Basic checks
-	if ((m_loadedImage[0] != 0x7F) || (m_loadedImage[1] != 'E') || (m_loadedImage[2] != 'L') || (m_loadedImage[3] != 'F')) {
+	if ((m_elfHeader->e_ident[0] != 0x7F) ||
+		(m_elfHeader->e_ident[1] != 'E') ||
+		(m_elfHeader->e_ident[2] != 'L') ||
+		(m_elfHeader->e_ident[3] != 'F')) {
 		fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n",
-				(unsigned int)pHeader->e_ident[0],
-				(unsigned int)pHeader->e_ident[1],
-				(unsigned int)pHeader->e_ident[2],
-				(unsigned int)pHeader->e_ident[3]);
+			m_elfHeader->e_ident[0],
+			m_elfHeader->e_ident[1],
+			m_elfHeader->e_ident[2],
+			m_elfHeader->e_ident[3]);
 		return 0;
 	}
 
-	switch (pHeader->endianness)
+	switch (m_elfHeader->endianness)
 	{
 	case 1: // little endian
 		m_bigEndian = false;
@@ -161,19 +164,19 @@ bool ElfLoader::loadFromMemory(QByteArray& img)
 		break;
 
 	default:
-		qWarning() << QString("Unknown endianness ").arg(pHeader->endianness, 2, 16, QChar('0'));
+		qWarning() << QString("Unknown endianness ").arg(m_elfHeader->endianness, 2, 16, QChar('0'));
 		return 0;
 	}
 
 	// Set up program header pointer (in case needed)
-	DWord phOffset = elfRead4(&pHeader->e_phoff);
+	DWord phOffset = elfRead4(&m_elfHeader->e_phoff);
 
 	if (phOffset > 0) {
 		m_programHdrs = (Elf32_Phdr *)(m_loadedImage + phOffset);
 	}
 
 	// Set up section header pointer
-	DWord shOffset = elfRead4(&pHeader->e_shoff);
+	DWord shOffset = elfRead4(&m_elfHeader->e_shoff);
 
 	if (shOffset > 0) {
 		m_sectionhdrs = (Elf32_Shdr *)(m_loadedImage + shOffset);
@@ -182,17 +185,13 @@ bool ElfLoader::loadFromMemory(QByteArray& img)
 	// Set up section header string table pointer
 	// NOTE: it does not appear that endianness affects shorts.. they are always in little endian format
 	// Gerard: I disagree. I need the elfRead on linux/i386
-	DWord sectionIndex = elfRead2(&pHeader->e_shstrndx); // pHeader->e_shstrndx;
-
-	if (sectionIndex > 0) {
-		m_strings = (char *)m_loadedImage + elfRead4(&m_sectionhdrs[sectionIndex].sh_offset);
+	const DWord stringSectionIndex = elfRead2(&m_elfHeader->e_shstrndx); // pHeader->e_shstrndx;
+	if (stringSectionIndex > 0) {
+		m_strings = (const char *)(m_loadedImage + elfRead4(&m_sectionhdrs[stringSectionIndex].sh_offset));
 	}
 
-	sectionIndex = 1;                  ///< counter - # sects. Start @ 1, total Image->GetNumSections()
-	const char *sectionName = nullptr; ///< Section's name
-
 	// Number of sections
-	SWord numSections = elfRead2(&pHeader->e_shnum);
+	SWord numSections = elfRead2(&m_elfHeader->e_shnum);
 	// Set up the m_sh_link and m_sh_info arrays
 	m_shLink = new int[numSections];
 	m_shInfo = new int[numSections];
@@ -210,7 +209,7 @@ bool ElfLoader::loadFromMemory(QByteArray& img)
 			return false;
 		}
 
-		sectionName = m_strings + elfRead4(&pShdr->sh_name);
+		const char* sectionName = m_strings + elfRead4(&pShdr->sh_name);
 
 		if ((Byte *)sectionName > m_loadedImage + m_loadedImageSize) {
 			fprintf(stderr, "name for section %u is outside the image size\n", i);
@@ -236,10 +235,9 @@ bool ElfLoader::loadFromMemory(QByteArray& img)
 		sect.Size       = elfRead4(&pShdr->sh_size);
 
 		if (sect.SourceAddr.isZero() && strncmp(sectionName, ".rel", 4)) {
-			int align = elfRead4(&pShdr->sh_addralign);
-
+			const DWord align = elfRead4(&pShdr->sh_addralign);
 			if (align > 1) {
-				if (arbitaryLoadAddr.m_value % align) {
+				if (arbitaryLoadAddr.m_value % align != 0) {
 					arbitaryLoadAddr += align - (arbitaryLoadAddr.m_value % align);
 				}
 			}
@@ -364,11 +362,11 @@ bool ElfLoader::loadFromMemory(QByteArray& img)
 
 void ElfLoader::unload()
 {
-	Init(); // Set all internal state to 0
+	init(); // Set all internal state to 0
 }
 
 
-const char *ElfLoader::GetStrPtr(int idx, int offset)
+const char *ElfLoader::getStrPtr(int idx, int offset)
 {
 	if (idx < 0) {
 		// Most commonly, this will be an index of -1, because a call to GetSectionIndexByName() failed
@@ -530,8 +528,8 @@ void ElfLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 
 void ElfLoader::addSyms(int secIndex)
 {
-	int                 e_type = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_type);
-	const SectionParam& pSect(m_elfSections[secIndex]);
+	SWord              e_type = elfRead2(&m_elfHeader->e_type);
+	const SectionParam& pSect = m_elfSections[secIndex];
 	// Calc number of symbols
 	int nSyms = pSect.Size / pSect.entry_size;
 
@@ -548,7 +546,7 @@ void ElfLoader::addSyms(int secIndex)
 			continue;
 		}
 
-		QString str(GetStrPtr(strIdx, name));
+		QString str(getStrPtr(strIdx, name));
 		// Hack off the "@@GLIBC_2.0" of Linux, if present
 		trans.Name       = str.left(str.indexOf("@@"));
 		trans.Type       = ELF32_ST_TYPE(m_symbolSection[i].st_info);
@@ -609,7 +607,7 @@ void ElfLoader::addRelocsAsSyms(uint32_t relSecIdx)
 			continue;
 		}
 
-		QString str(GetStrPtr(strSecIdx, elfRead4(&m_symbolSection[symIndex].st_name)));
+		QString str(getStrPtr(strSecIdx, elfRead4(&m_symbolSection[symIndex].st_name)));
 
 		str = str.left(str.indexOf("@@")); // Hack off the "@@GLIBC_2.0" of Linux, if present
 
@@ -642,11 +640,11 @@ ADDRESS ElfLoader::getMainEntryPoint()
 
 ADDRESS ElfLoader::getEntryPoint()
 {
-	return ADDRESS::g(elfRead4(&((Elf32_Ehdr *)m_loadedImage)->e_entry));
+	return ADDRESS::g(elfRead4(&m_elfHeader->e_entry));
 }
 
 
-ADDRESS ElfLoader::NativeToHostAddress(ADDRESS uNative)
+ADDRESS ElfLoader::nativeToHostAddress(ADDRESS uNative)
 {
 	if (m_binaryImage->getNumSections() == 0) {
 		return ADDRESS::g(0L);
@@ -683,7 +681,7 @@ LOAD_FMT ElfLoader::getFormat() const
 
 MACHINE ElfLoader::getMachine() const
 {
-	int machine = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_machine);
+	SWord machine = elfRead2(&m_elfHeader->e_machine);
 
 	if ((machine == EM_SPARC) || (machine == EM_SPARC32PLUS)) {
 		return MACHINE_SPARC;
@@ -749,7 +747,7 @@ QStringList ElfLoader::getDependencyList()
 		return result;
 	}
 
-	stringtab = NativeToHostAddress(stringtab);
+	stringtab = nativeToHostAddress(stringtab);
 
 	for (dyn = (Elf32_Dyn *)dynsect->getHostAddr().m_value; dyn->d_tag != DT_NULL; dyn++) {
 		if (dyn->d_tag == DT_NEEDED) {
@@ -848,19 +846,17 @@ void ElfLoader::applyRelocations()
 		return; // No file loaded
 	}
 
-	int machine = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_machine);
-	int e_type  = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_type);
+	const SWord machine = elfRead2(&m_elfHeader->e_machine);
+	const SWord e_type  = elfRead2(&m_elfHeader->e_type);
 
 	switch (machine)
 	{
 	case EM_SPARC:
 
-		for (unsigned i = 1; i < m_elfSections.size(); ++i) {
+		for (size_t i = 1; i < m_elfSections.size(); ++i) {
 			const SectionParam& ps(m_elfSections[i]);
 
-			if (ps.uType == SHT_REL) {
-			}
-			else if (ps.uType == SHT_RELA) {
+			if ((ps.uType != SHT_REL) && (ps.uType == SHT_RELA)) {
 				DWord *pReloc = (DWord *)ps.image_ptr.m_value;
 				DWord size    = ps.Size;
 
@@ -872,9 +868,10 @@ void ElfLoader::applyRelocations()
 					r.r_offset = elfRead4(pReloc++);
 					r.r_info   = elfRead4(pReloc++);
 					r.r_addend = elfRead4(pReloc++);
-					unsigned char relType = (unsigned char)r.r_info;
 
-					// unsigned symTabIndex = r.r_info >> 8;
+					unsigned char relType = r.r_info & 0xFF;
+					// DWord symTabIndex     = r.r_info >> 8;
+
 					switch (relType)
 					{
 					case 0: // R_386_NONE: just ignore (common)
@@ -886,18 +883,17 @@ void ElfLoader::applyRelocations()
 					case R_SPARC_GLOB_DAT:
 						qWarning() << "Unhandled sparc relocation";
 						break;
-						break;
 					}
 				}
 			}
 		}
 
-		qDebug() << "Unhandled relocation !";
+		qDebug() << "Unhandled relocation!";
 		break; // Not implemented yet
 
 	case EM_386:
 
-		for (unsigned i = 1; i < m_elfSections.size(); ++i) {
+		for (size_t i = 1; i < m_elfSections.size(); ++i) {
 			const SectionParam& ps(m_elfSections[i]);
 
 			if (ps.uType == SHT_REL) {
@@ -1032,18 +1028,14 @@ bool ElfLoader::isRelocationAt(ADDRESS uNative)
 		return false; // No file loaded
 	}
 
-	SWord machine = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_machine);
-	SWord e_type  = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_type);
+	const SWord machine = elfRead2(&m_elfHeader->e_machine);
+	const SWord e_type  = elfRead2(&m_elfHeader->e_type);
 
 	switch (machine)
 	{
-	case EM_SPARC:
-		qDebug() << "Unhandled relocation !";
-		break; // Not implemented yet
-
 	case EM_386:
 
-		for (unsigned i = 1; i < m_elfSections.size(); ++i) {
+		for (size_t i = 1; i < m_elfSections.size(); ++i) {
 			const SectionParam& ps(m_elfSections[i]);
 
 			if (ps.uType == SHT_REL) {
@@ -1070,7 +1062,7 @@ bool ElfLoader::isRelocationAt(ADDRESS uNative)
 				// int strSection = m_sh_link[symSection];    // Section index for the string section assoc with this
 				// char* pStrSection = (char*)m_pSections[strSection].uHostAddr;
 				// Elf32_Sym* symOrigin = (Elf32_Sym*) m_pSections[symSection].uHostAddr;
-				for (unsigned u = 0; u < size; u += 2 * sizeof(unsigned)) {
+				for (DWord u = 0; u < size; u += 2 * sizeof(DWord)) {
 					DWord r_offset = elfRead4(pReloc++);
 					// DWord info     = elfRead4(pReloc);
 					pReloc++;
@@ -1095,8 +1087,12 @@ bool ElfLoader::isRelocationAt(ADDRESS uNative)
 			}
 		}
 
+		break;
+
+	case EM_SPARC:
 	default:
-		break; // Not implemented
+		qDebug() << "Unhandled relocation !";
+		break; // Not implemented yet
 	}
 
 	return false;

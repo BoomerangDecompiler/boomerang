@@ -1051,7 +1051,7 @@ Boomerang *Boomerang::get()
 
 IBinaryImage *Boomerang::getImage()
 {
-	assert(nullptr != m_currentProject);
+	assert(m_currentProject != nullptr);
 	return m_currentProject->getOrCreateImage();
 }
 
