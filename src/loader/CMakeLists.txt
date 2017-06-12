@@ -15,7 +15,7 @@ macro(BOOMERANG_ADD_LOADER name)
 endmacro()
 
 
-BOOMERANG_ADD_LOADER(Elf      elf/ElfBinaryFile.cpp elf/ElfBinaryFile.h)
+BOOMERANG_ADD_LOADER(Elf      elf/ElfLoader.cpp elf/ElfLoader.h elf/ElfTypes.h)
 BOOMERANG_ADD_LOADER(Win32    exe/pe/Win32BinaryFile.cpp exe/pe/Win32BinaryFile.h microX86dis.c)
 if (MSVC AND BOOM_BUILD_LOADER_Win32)
     target_link_libraries(Win32BinaryFile Dbghelp.lib)

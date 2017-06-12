@@ -45,13 +45,13 @@ typedef struct
 /**
  * File loader for loading 32 bit binary ELF files.
  */
-class ElfBinaryFile : public IFileLoader
+class ElfLoader : public IFileLoader
 {
 	typedef std::map<ADDRESS, QString, std::less<ADDRESS> > RelocMap;
 
 public:
-	ElfBinaryFile();
-	virtual ~ElfBinaryFile() override;
+	ElfLoader();
+	virtual ~ElfLoader() override;
 
 	/// @copydoc IFileLoader::getFormat
 	LOAD_FMT getFormat() const override;

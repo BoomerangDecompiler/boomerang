@@ -8,11 +8,11 @@
  */
 
 /***************************************************************************/ /**
- * \file ElfBinaryFile.cpp
+ * \file ElfLoader.cpp
  * Desc: This file contains the implementation of the class ElfBinaryFile.
  ******************************************************************************/
 
-#include "ElfBinaryFile.h"
+#include "ElfLoader.h"
 
 #include "ElfTypes.h"
 #include "include/config.h"
@@ -63,14 +63,14 @@ struct Translated_ElfSym
 typedef std::map<QString, int, std::less<QString> > StrIntMap;
 
 
-ElfBinaryFile::ElfBinaryFile()
+ElfLoader::ElfLoader()
 	: m_nextExtern(ADDRESS::g(0L))
 {
 	Init(); // Initialise all the common stuff
 }
 
 
-ElfBinaryFile::~ElfBinaryFile()
+ElfLoader::~ElfLoader()
 {
 	// Delete the array of import stubs
 	delete  []m_importStubs;
@@ -79,14 +79,14 @@ ElfBinaryFile::~ElfBinaryFile()
 }
 
 
-void ElfBinaryFile::initialize(IBoomerang *sys)
+void ElfLoader::initialize(IBoomerang *sys)
 {
 	m_binaryImage = sys->getImage();
 	m_symbols     = sys->getSymbols();
 }
 
 
-void ElfBinaryFile::Init()
+void ElfLoader::Init()
 {
 	m_loadedImage   = nullptr;
 	m_programHdrs   = nullptr;  // No program headers
@@ -131,7 +131,7 @@ unsigned elf_hash(const char *o0)
 } // extern "C"
 
 
-bool ElfBinaryFile::loadFromMemory(QByteArray& img)
+bool ElfLoader::loadFromMemory(QByteArray& img)
 {
 	m_loadedImageSize = img.size();
 
@@ -362,13 +362,13 @@ bool ElfBinaryFile::loadFromMemory(QByteArray& img)
 }
 
 
-void ElfBinaryFile::unload()
+void ElfLoader::unload()
 {
 	Init(); // Set all internal state to 0
 }
 
 
-const char *ElfBinaryFile::GetStrPtr(int idx, int offset)
+const char *ElfLoader::GetStrPtr(int idx, int offset)
 {
 	if (idx < 0) {
 		// Most commonly, this will be an index of -1, because a call to GetSectionIndexByName() failed
@@ -383,7 +383,7 @@ const char *ElfBinaryFile::GetStrPtr(int idx, int offset)
 }
 
 
-ADDRESS ElfBinaryFile::findRelPltOffset(int i)
+ADDRESS ElfLoader::findRelPltOffset(int i)
 {
 	const IBinarySection *siPlt    = m_binaryImage->getSectionInfoByName(".plt");
 	ADDRESS              addrPlt   = siPlt ? siPlt->getSourceAddr() : ADDRESS::g(0L);
@@ -459,7 +459,7 @@ ADDRESS ElfBinaryFile::findRelPltOffset(int i)
 }
 
 
-void ElfBinaryFile::processSymbol(Translated_ElfSym& sym, int e_type, int i)
+void ElfLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 {
 	static QString       current_file;
 	bool                 imported = sym.SectionIdx == SHT_NULL;
@@ -528,7 +528,7 @@ void ElfBinaryFile::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 }
 
 
-void ElfBinaryFile::addSyms(int secIndex)
+void ElfLoader::addSyms(int secIndex)
 {
 	int                 e_type = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_type);
 	const SectionParam& pSect(m_elfSections[secIndex]);
@@ -569,7 +569,7 @@ void ElfBinaryFile::addSyms(int secIndex)
 }
 
 
-void ElfBinaryFile::addRelocsAsSyms(uint32_t relSecIdx)
+void ElfLoader::addRelocsAsSyms(uint32_t relSecIdx)
 {
 	if (relSecIdx >= m_elfSections.size()) {
 		return;
@@ -628,7 +628,7 @@ void ElfBinaryFile::addRelocsAsSyms(uint32_t relSecIdx)
 }
 
 
-ADDRESS ElfBinaryFile::getMainEntryPoint()
+ADDRESS ElfLoader::getMainEntryPoint()
 {
 	auto sym = m_symbols->find("main");
 
@@ -640,13 +640,13 @@ ADDRESS ElfBinaryFile::getMainEntryPoint()
 }
 
 
-ADDRESS ElfBinaryFile::getEntryPoint()
+ADDRESS ElfLoader::getEntryPoint()
 {
 	return ADDRESS::g(elfRead4(&((Elf32_Ehdr *)m_loadedImage)->e_entry));
 }
 
 
-ADDRESS ElfBinaryFile::NativeToHostAddress(ADDRESS uNative)
+ADDRESS ElfLoader::NativeToHostAddress(ADDRESS uNative)
 {
 	if (m_binaryImage->getNumSections() == 0) {
 		return ADDRESS::g(0L);
@@ -656,7 +656,7 @@ ADDRESS ElfBinaryFile::NativeToHostAddress(ADDRESS uNative)
 }
 
 
-bool ElfBinaryFile::postLoad(void *handle)
+bool ElfLoader::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	// This function is called after an archive member has been loaded by ElfArchiveFile
@@ -669,19 +669,19 @@ bool ElfBinaryFile::postLoad(void *handle)
 }
 
 
-void ElfBinaryFile::close()
+void ElfLoader::close()
 {
 	unload();
 }
 
 
-LOAD_FMT ElfBinaryFile::getFormat() const
+LOAD_FMT ElfLoader::getFormat() const
 {
 	return LOADFMT_ELF;
 }
 
 
-MACHINE ElfBinaryFile::getMachine() const
+MACHINE ElfLoader::getMachine() const
 {
 	int machine = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_machine);
 
@@ -718,7 +718,7 @@ MACHINE ElfBinaryFile::getMachine() const
 }
 
 
-bool ElfBinaryFile::isLibrary() const
+bool ElfLoader::isLibrary() const
 {
 	int type = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_type);
 
@@ -726,7 +726,7 @@ bool ElfBinaryFile::isLibrary() const
 }
 
 
-QStringList ElfBinaryFile::getDependencyList()
+QStringList ElfLoader::getDependencyList()
 {
 	QStringList    result;
 	ADDRESS        stringtab = NO_ADDRESS;
@@ -765,19 +765,19 @@ QStringList ElfBinaryFile::getDependencyList()
 }
 
 
-ADDRESS ElfBinaryFile::getImageBase()
+ADDRESS ElfLoader::getImageBase()
 {
 	return m_baseAddr;
 }
 
 
-size_t ElfBinaryFile::getImageSize()
+size_t ElfLoader::getImageSize()
 {
 	return m_imageSize;
 }
 
 
-void ElfBinaryFile::markImports()
+void ElfLoader::markImports()
 {
 	IBinarySymbolTable::const_iterator first = m_symbols->begin();
 	IBinarySymbolTable::const_iterator last  = m_symbols->begin();
@@ -800,7 +800,7 @@ void ElfBinaryFile::markImports()
 }
 
 
-SWord ElfBinaryFile::elfRead2(const SWord *ps) const
+SWord ElfLoader::elfRead2(const SWord *ps) const
 {
 	assert(ps);
 	SWord r = *ps;
@@ -813,7 +813,7 @@ SWord ElfBinaryFile::elfRead2(const SWord *ps) const
 }
 
 
-DWord ElfBinaryFile::elfRead4(const DWord *pi) const
+DWord ElfLoader::elfRead4(const DWord *pi) const
 {
 	assert(pi);
 	DWord r = *pi;
@@ -827,7 +827,7 @@ DWord ElfBinaryFile::elfRead4(const DWord *pi) const
 }
 
 
-void ElfBinaryFile::elfWrite4(DWord *pi, DWord val)
+void ElfLoader::elfWrite4(DWord *pi, DWord val)
 {
 	// swap endian
 	val = elfRead4(&val);
@@ -840,7 +840,7 @@ void ElfBinaryFile::elfWrite4(DWord *pi, DWord val)
 }
 
 
-void ElfBinaryFile::applyRelocations()
+void ElfLoader::applyRelocations()
 {
 	int nextFakeLibAddr = -2; // See R_386_PC32 below; -1 sometimes used for main
 
@@ -1025,7 +1025,7 @@ void ElfBinaryFile::applyRelocations()
 }
 
 
-bool ElfBinaryFile::isRelocationAt(ADDRESS uNative)
+bool ElfLoader::isRelocationAt(ADDRESS uNative)
 {
 	// int nextFakeLibAddr = -2;            // See R_386_PC32 below; -1 sometimes used for main
 	if (m_loadedImage == nullptr) {
@@ -1105,7 +1105,7 @@ bool ElfBinaryFile::isRelocationAt(ADDRESS uNative)
 
 #define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
-int ElfBinaryFile::canLoad(QIODevice& fl) const
+int ElfLoader::canLoad(QIODevice& fl) const
 {
 	QByteArray contents = fl.read(4);
 
@@ -1113,5 +1113,5 @@ int ElfBinaryFile::canLoad(QIODevice& fl) const
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, ElfBinaryFile,
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, ElfLoader,
 			  "ELF32 loader plugin", "0.4.0", "Boomerang developers")
