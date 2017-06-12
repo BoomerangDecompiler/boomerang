@@ -3,7 +3,7 @@
 #include "boom_base/BinaryFile.h"
 
 
-class BinaryFileStub : public LoaderInterface
+class BinaryFileStub : public IFileLoader
 {
 public:
 	BinaryFileStub();

@@ -8,10 +8,12 @@ class IBinaryFile;
 #include "loader/IBinaryFile.h"
 #include "boom_base/Plugin.h"
 
-class LoaderInterface
+
+class IFileLoader
 {
 public:
-	virtual ~LoaderInterface() {}
+	IFileLoader() = default;
+	virtual ~IFileLoader() {}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// General loader functions
@@ -64,17 +66,7 @@ public:
 
 protected:
 	virtual bool postLoad(void *handle) = 0; ///< Called after loading archive member
-};
-
-
-/// Class for loading a binary file or an assembly listing from a file.
-class IFileLoader : public LoaderInterface
-{
-public:
-//	IFileLoader();
-//	virtual ~IFileLoader() = default;
-
-public:
+	
 	/// Test if this file can be loaded by this loader.
 	/// This method does not necessarily need to read the whole file,
 	/// only the part needed to understand the file format
