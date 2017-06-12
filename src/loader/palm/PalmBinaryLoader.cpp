@@ -8,11 +8,12 @@
  *
  */
 
-/** \file PalmBinaryFile.cpp
- * This class loads a Palm Pilot .prc file. Derived from class BinaryFile
+/** \file PalmBinaryLoader.cpp
+ * This class loads a Palm Pilot .prc file.
+ * Derived from class IFileLoader.
  */
 
-#include "PalmBinaryFile.h"
+#include "PalmBinaryLoader.h"
 
 #include "palmsystraps.h"
 #include "include/IBoomerang.h"
@@ -29,21 +30,22 @@
 #define UINT4ADDR(p) \
 	((UC((p).m_value)[0] << 24) + (UC((p).m_value)[1] << 16) + (UC((p).m_value)[2] << 8) + UC((p).m_value)[3])
 
-PalmBinaryFile::PalmBinaryFile()
+	
+PalmBinaryLoader::PalmBinaryLoader()
 	: m_pImage(nullptr)
 	, m_pData(nullptr)
 {
 }
 
 
-PalmBinaryFile::~PalmBinaryFile()
+PalmBinaryLoader::~PalmBinaryLoader()
 {
 	m_pImage = nullptr;
 	delete[] m_pData;
 }
 
 
-void PalmBinaryFile::initialize(IBoomerang *sys)
+void PalmBinaryLoader::initialize(IBoomerang *sys)
 {
 	Image   = sys->getImage();
 	Symbols = sys->getSymbols();
@@ -102,7 +104,7 @@ struct SectionParams
 };
 }
 
-bool PalmBinaryFile::loadFromMemory(QByteArray& img)
+bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 {
 	long size = img.size();
 
@@ -307,7 +309,7 @@ bool PalmBinaryFile::loadFromMemory(QByteArray& img)
 
 
 #define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
-int PalmBinaryFile::canLoad(QIODevice& dev) const
+int PalmBinaryLoader::canLoad(QIODevice& dev) const
 {
 	unsigned char buf[64];
 
@@ -322,62 +324,62 @@ int PalmBinaryFile::canLoad(QIODevice& dev) const
 }
 
 
-void PalmBinaryFile::unload()
+void PalmBinaryLoader::unload()
 {
 }
 
 
-ADDRESS PalmBinaryFile::getEntryPoint()
+ADDRESS PalmBinaryLoader::getEntryPoint()
 {
 	assert(0); /* FIXME: Need to be implemented */
 	return ADDRESS::g(0L);
 }
 
 
-void PalmBinaryFile::close()
+void PalmBinaryLoader::close()
 {
 	// Not implemented yet
 }
 
 
-bool PalmBinaryFile::postLoad(void */*handle*/)
+bool PalmBinaryLoader::postLoad(void */*handle*/)
 {
 	// Not needed: for archives only
 	return false;
 }
 
 
-LOAD_FMT PalmBinaryFile::getFormat() const
+LOAD_FMT PalmBinaryLoader::getFormat() const
 {
 	return LOADFMT_PALM;
 }
 
 
-MACHINE PalmBinaryFile::getMachine() const
+MACHINE PalmBinaryLoader::getMachine() const
 {
 	return MACHINE_PALM;
 }
 
 
-bool PalmBinaryFile::isLibrary() const
+bool PalmBinaryLoader::isLibrary() const
 {
 	return(strncmp((char *)(m_pImage + 0x3C), "libr", 4) == 0);
 }
 
 
-ADDRESS PalmBinaryFile::getImageBase()
+ADDRESS PalmBinaryLoader::getImageBase()
 {
 	return ADDRESS::g(0L);                                      /* FIXME */
 }
 
 
-size_t PalmBinaryFile::getImageSize()
+size_t PalmBinaryLoader::getImageSize()
 {
 	return 0;                                     /* FIXME */
 }
 
 
-void PalmBinaryFile::addTrapSymbols()
+void PalmBinaryLoader::addTrapSymbols()
 {
 	for (uint32_t loc = 0xAAAAA000; loc <= 0xAAAAAFFF; ++loc) {
 		// This is the convention used to indicate an A-line system call
@@ -395,7 +397,7 @@ void PalmBinaryFile::addTrapSymbols()
 // and the value for GLOBALOFFSET. For Palm, the latter is the amount of
 // space allocated below %a5, i.e. the difference between %a5 and %agp
 // (%agp points to the bottom of the global data area).
-std::pair<ADDRESS, unsigned> PalmBinaryFile::GetGlobalPointerInfo()
+std::pair<ADDRESS, unsigned> PalmBinaryLoader::GetGlobalPointerInfo()
 {
 	ADDRESS              agp = ADDRESS::g(0L);
 	const IBinarySection *ps = Image->getSectionInfoByName("data0");
@@ -413,7 +415,7 @@ std::pair<ADDRESS, unsigned> PalmBinaryFile::GetGlobalPointerInfo()
 //  Specific for Palm   //
 //  //  //  //  //  //  //
 
-int PalmBinaryFile::GetAppID() const
+int PalmBinaryLoader::GetAppID() const
 {
 	// The answer is in the header. Return 0 if file not loaded
 	if (m_pImage == nullptr) {
@@ -492,7 +494,7 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
 
 // Find the native address for the start of the main entry function.
 // For Palm binaries, this is PilotMain.
-ADDRESS PalmBinaryFile::getMainEntryPoint()
+ADDRESS PalmBinaryLoader::getMainEntryPoint()
 {
 	IBinarySection *psect = Image->getSectionInfoByName("code1");
 
@@ -544,7 +546,7 @@ ADDRESS PalmBinaryFile::getMainEntryPoint()
 }
 
 
-void PalmBinaryFile::GenerateBinFiles(const QString& path) const
+void PalmBinaryLoader::GenerateBinFiles(const QString& path) const
 {
 	for (const IBinarySection *si : *Image) {
 		const IBinarySection& psect(*si);
@@ -573,5 +575,5 @@ void PalmBinaryFile::GenerateBinFiles(const QString& path) const
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, PalmBinaryFile,
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, PalmBinaryLoader,
 			  "Palm OS binary file", "0.4.0", "Boomerang developers")

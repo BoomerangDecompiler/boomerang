@@ -8,13 +8,13 @@
  */
 
 /***************************************************************************/ /**
- * \file        HpSomBinaryFile.cpp
- * \brief    This file contains the implementation of the class
- *              HpSomBinaryFile, for decoding PA/RISC SOM executable files.
- *              Derived from class BinaryFile
+ * \file    HpSomBinaryLoader.cpp
+ * \brief   This file contains the implementation of the class
+ *          HpSomBinaryLoader, for decoding PA/RISC SOM executable files.
+ *          Derived from class IFileLoader.
  ******************************************************************************/
 
-#include "HpSomBinaryFile.h"
+#include "HpSomBinaryLoader.h"
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
@@ -31,19 +31,20 @@
 #define UINT4(p)        ((UC(p)[0] << 24) | (UC(p)[1] << 16) | (UC(p)[2] << 8) | UC(p)[3])
 #define UINT4ADDR(p)    (ADDRESS::n((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
 
-HpSomBinaryFile::HpSomBinaryFile()
+
+HpSomBinaryLoader::HpSomBinaryLoader()
 	: m_pImage(0)
 {
 }
 
 
-HpSomBinaryFile::~HpSomBinaryFile()
+HpSomBinaryLoader::~HpSomBinaryLoader()
 {
 	delete [] m_pImage;
 }
 
 
-void HpSomBinaryFile::initialize(IBoomerang *sys)
+void HpSomBinaryLoader::initialize(IBoomerang *sys)
 {
 	Image   = sys->getImage();
 	Symbols = sys->getSymbols();
@@ -187,7 +188,7 @@ bool isStub(ADDRESS hostAddr, int& offset)
 #endif
 
 // Read the main symbol table, if any
-void HpSomBinaryFile::processSymbols()
+void HpSomBinaryLoader::processSymbols()
 {
 	// Find the main symbol table, if it exists
 
@@ -253,7 +254,7 @@ void HpSomBinaryFile::processSymbols()
 }
 
 
-bool HpSomBinaryFile::loadFromMemory(QByteArray& imgdata)
+bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 {
 	QBuffer fp(&imgdata);
 
@@ -479,7 +480,7 @@ bool HpSomBinaryFile::loadFromMemory(QByteArray& imgdata)
 }
 
 
-int HpSomBinaryFile::canLoad(QIODevice& dev) const
+int HpSomBinaryLoader::canLoad(QIODevice& dev) const
 {
 	unsigned char buf[64];
 
@@ -495,7 +496,7 @@ int HpSomBinaryFile::canLoad(QIODevice& dev) const
 }
 
 
-void HpSomBinaryFile::unload()
+void HpSomBinaryLoader::unload()
 {
 	if (m_pImage) {
 		delete[] m_pImage;
@@ -504,20 +505,20 @@ void HpSomBinaryFile::unload()
 }
 
 
-ADDRESS HpSomBinaryFile::getEntryPoint()
+ADDRESS HpSomBinaryLoader::getEntryPoint()
 {
 	assert(0); /* FIXME: Someone who understands this file please implement */
 	return ADDRESS::g(0L);
 }
 
 
-void HpSomBinaryFile::close()
+void HpSomBinaryLoader::close()
 {
 	// Not implemented yet
 }
 
 
-bool HpSomBinaryFile::postLoad(void *handle)
+bool HpSomBinaryLoader::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	// Not needed: for archives only
@@ -525,19 +526,19 @@ bool HpSomBinaryFile::postLoad(void *handle)
 }
 
 
-LOAD_FMT HpSomBinaryFile::getFormat() const
+LOAD_FMT HpSomBinaryLoader::getFormat() const
 {
 	return LOADFMT_PAR;
 }
 
 
-MACHINE HpSomBinaryFile::getMachine() const
+MACHINE HpSomBinaryLoader::getMachine() const
 {
 	return MACHINE_HPRISC;
 }
 
 
-bool HpSomBinaryFile::isLibrary() const
+bool HpSomBinaryLoader::isLibrary() const
 {
 	int type = UINT4(m_pImage) & 0xFFFF;
 
@@ -545,19 +546,19 @@ bool HpSomBinaryFile::isLibrary() const
 }
 
 
-ADDRESS HpSomBinaryFile::getImageBase()
+ADDRESS HpSomBinaryLoader::getImageBase()
 {
 	return ADDRESS::g(0L);                                       /* FIXME */
 }
 
 
-size_t HpSomBinaryFile::getImageSize()
+size_t HpSomBinaryLoader::getImageSize()
 {
 	return UINT4(m_pImage + 0x24);
 }
 
 
-std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char *ssname)
+std::pair<ADDRESS, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 {
 	std::pair<ADDRESS, int> ret(ADDRESS::g(0L), 0);
 	// Get the start and length of the subspace with the given name
@@ -588,7 +589,7 @@ std::pair<ADDRESS, int> HpSomBinaryFile::getSubspaceInfo(const char *ssname)
 // (first) and the value for GLOBALOFFSET (unused for ra-risc)
 // The understanding at present is that the global data pointer (%r27 for
 // pa-risc) points just past the end of the $GLOBAL$ subspace.
-std::pair<ADDRESS, unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
+std::pair<ADDRESS, unsigned> HpSomBinaryLoader::GetGlobalPointerInfo()
 {
 	std::pair<ADDRESS, unsigned> ret(ADDRESS::g(0L), 0);
 	// Search the subspace names for "$GLOBAL$
@@ -610,7 +611,7 @@ std::pair<ADDRESS, unsigned> HpSomBinaryFile::GetGlobalPointerInfo()
  * \note        The caller should delete the returned map.
  * \returns     Pointer to a new map with the info
  ******************************************************************************/
-std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap()
+std::map<ADDRESS, const char *> *HpSomBinaryLoader::GetDynamicGlobalMap()
 {
 	// Find the DL Table, if it exists
 	// The DL table (Dynamic Link info) is supposed to be at the start of
@@ -646,7 +647,7 @@ std::map<ADDRESS, const char *> *HpSomBinaryFile::GetDynamicGlobalMap()
 }
 
 
-ADDRESS HpSomBinaryFile::getMainEntryPoint()
+ADDRESS HpSomBinaryLoader::getMainEntryPoint()
 {
 	auto sym = Symbols->find("main");
 
@@ -654,5 +655,5 @@ ADDRESS HpSomBinaryFile::getMainEntryPoint()
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, HpSomBinaryFile,
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, HpSomBinaryLoader,
 			  "HpSom binary file loader", "0.4.0", "Boomerang developers")

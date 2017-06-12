@@ -10,13 +10,14 @@
  */
 
 /***************************************************************************/ /**
- * \file Win32BinaryFile.cpp
- * This file contains the implementation of the class Win32BinaryFile.
+ * \file Win32BinaryLoader.cpp
+ * This file contains the implementation of the class Win32BinaryLoader.
  */
 
 /* Win32 binary file format.
- *    This file implements the class Win32BinaryFile, derived from class
- *    BinaryFile. See Win32BinaryFile.h and BinaryFile.h for details.
+ *    This file implements the class Win32BinaryLoader, derived from class
+ *    IFileLoader. See Win32BinaryLoader.h and IFileLoader.h for details.
+ * 
  * 25 Jun 02 - Mike: Added code to find WinMain by finding a call within 5
  *                instructions of a call to GetModuleHandleA
  * 07 Jul 02 - Mike: Added a LMMH() so code works on big-endian host
@@ -34,7 +35,7 @@ namespace dbghelp
 }
 #endif
 #endif
-#include "Win32BinaryFile.h"
+#include "Win32BinaryLoader.h"
 
 #include "boom_base/BinaryFile.h"
 #include "db/IBinaryImage.h"
@@ -71,14 +72,14 @@ struct SectionParam
 #define IMAGE_SCN_MEM_WRITE                 0x80000000
 #endif
 
-Win32BinaryFile::Win32BinaryFile()
+Win32BinaryLoader::Win32BinaryLoader()
 	: base(nullptr)
 	, mingw_main(false)
 {
 }
 
 
-Win32BinaryFile::~Win32BinaryFile()
+Win32BinaryLoader::~Win32BinaryLoader()
 {
 	if (base) {
 		free(base);
@@ -88,7 +89,7 @@ Win32BinaryFile::~Win32BinaryFile()
 }
 
 
-void Win32BinaryFile::initialize(IBoomerang *sys)
+void Win32BinaryLoader::initialize(IBoomerang *sys)
 {
 	unload();
 	Image   = sys->getImage();
@@ -96,13 +97,13 @@ void Win32BinaryFile::initialize(IBoomerang *sys)
 }
 
 
-void Win32BinaryFile::close()
+void Win32BinaryLoader::close()
 {
 	unload();
 }
 
 
-ADDRESS Win32BinaryFile::getEntryPoint()
+ADDRESS Win32BinaryLoader::getEntryPoint()
 {
 	return ADDRESS::g(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
 }
@@ -111,7 +112,7 @@ ADDRESS Win32BinaryFile::getEntryPoint()
 // This is a bit of a hack, but no more than the rest of Windows :-O  The pattern is to look for an indirect call (FF 15
 // opcode) to exit; within 10 instructions before that should be the call to WinMain (with no other calls inbetween).
 // This pattern should work for "old style" and "new style" PE executables, as well as console mode PE files.
-ADDRESS Win32BinaryFile::getMainEntryPoint()
+ADDRESS Win32BinaryLoader::getMainEntryPoint()
 {
 	auto aMain = Symbols->find("main");
 
@@ -470,7 +471,7 @@ BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE pSourceFile, PVOID UserContext)
 
 #endif
 
-void Win32BinaryFile::processIAT()
+void Win32BinaryLoader::processIAT()
 {
 	PEImportDtor *id = (PEImportDtor *)(LMMH(m_pPEHeader->ImportTableRVA) + base);
 
@@ -511,7 +512,7 @@ void Win32BinaryFile::processIAT()
 }
 
 
-void Win32BinaryFile::readDebugData(QString exename)
+void Win32BinaryLoader::readDebugData(QString exename)
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
 	// attempt to load symbols for the exe or dll
@@ -554,7 +555,7 @@ void Win32BinaryFile::readDebugData(QString exename)
 }
 
 
-bool Win32BinaryFile::loadFromMemory(QByteArray& arr)
+bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
 {
 	const char *data     = arr.constData();
 	const char *data_end = arr.constData() + arr.size();
@@ -679,7 +680,7 @@ bool Win32BinaryFile::loadFromMemory(QByteArray& arr)
 #define TESTMAGIC2(buf, off, a, b)          (buf[off] == a && buf[off + 1] == b)
 #define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
-int Win32BinaryFile::canLoad(QIODevice& fl) const
+int Win32BinaryLoader::canLoad(QIODevice& fl) const
 {
 	unsigned char buf[64];
 
@@ -709,7 +710,7 @@ int Win32BinaryFile::canLoad(QIODevice& fl) const
 // 0x30 bytes of statically linked library code (e.g. _atexit, __onexit) with sometimes two static libs in a row.
 // So keep going until there is about 0x60 bytes with no match.
 // Note: slight chance of coming across a misaligned match; probability is about 1/65536 times dozens in 2^32 ~= 10^-13
-void Win32BinaryFile::findJumps(ADDRESS curr)
+void Win32BinaryLoader::findJumps(ADDRESS curr)
 {
 	int            cnt  = 0; // Count of bytes with no match
 	IBinarySection *sec = Image->getSectionInfoByName(".text");
@@ -755,7 +756,7 @@ void Win32BinaryFile::findJumps(ADDRESS curr)
 
 
 // Clean up and unload the binary image
-void Win32BinaryFile::unload()
+void Win32BinaryLoader::unload()
 {
 	m_cbImage = 0;
 	m_cReloc  = 0;
@@ -768,7 +769,7 @@ void Win32BinaryFile::unload()
 }
 
 
-bool Win32BinaryFile::postLoad(void *handle)
+bool Win32BinaryLoader::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	return false;
@@ -941,7 +942,7 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID Us
 #endif
 
 
-bool Win32BinaryFile::displayDetails(const char *fileName, FILE *f /* = stdout */)
+bool Win32BinaryLoader::displayDetails(const char *fileName, FILE *f /* = stdout */)
 {
 	Q_UNUSED(fileName);
 	Q_UNUSED(f);
@@ -949,7 +950,7 @@ bool Win32BinaryFile::displayDetails(const char *fileName, FILE *f /* = stdout *
 }
 
 
-int Win32BinaryFile::win32Read2(short *ps) const
+int Win32BinaryLoader::win32Read2(short *ps) const
 {
 	unsigned char *p = (unsigned char *)ps;
 	// Little endian
@@ -959,7 +960,7 @@ int Win32BinaryFile::win32Read2(short *ps) const
 }
 
 
-int Win32BinaryFile::win32Read4(int *pi) const
+int Win32BinaryLoader::win32Read4(int *pi) const
 {
 	short *p = (short *)pi;
 	int   n1 = win32Read2(p);
@@ -970,7 +971,7 @@ int Win32BinaryFile::win32Read4(int *pi) const
 }
 
 
-bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative)
+bool Win32BinaryLoader::IsStaticLinkedLibProc(ADDRESS uNative)
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
 	HANDLE hProcess = GetCurrentProcess();
@@ -993,7 +994,7 @@ bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative)
 }
 
 
-bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative)
+bool Win32BinaryLoader::IsMinGWsAllocStack(ADDRESS uNative)
 {
 	if (mingw_main) {
 		const IBinarySection *si = Image->getSectionInfoByAddr(uNative);
@@ -1018,7 +1019,7 @@ bool Win32BinaryFile::IsMinGWsAllocStack(ADDRESS uNative)
 }
 
 
-bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative)
+bool Win32BinaryLoader::IsMinGWsFrameInit(ADDRESS uNative)
 {
 	if (mingw_main) {
 		const IBinarySection *si = Image->getSectionInfoByAddr(uNative);
@@ -1050,7 +1051,7 @@ bool Win32BinaryFile::IsMinGWsFrameInit(ADDRESS uNative)
 }
 
 
-bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative)
+bool Win32BinaryLoader::IsMinGWsFrameEnd(ADDRESS uNative)
 {
 	if (mingw_main) {
 		const IBinarySection *si = Image->getSectionInfoByAddr(uNative);
@@ -1077,7 +1078,7 @@ bool Win32BinaryFile::IsMinGWsFrameEnd(ADDRESS uNative)
 }
 
 
-bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative)
+bool Win32BinaryLoader::IsMinGWsCleanupSetup(ADDRESS uNative)
 {
 	if (mingw_main) {
 		const IBinarySection *si = Image->getSectionInfoByAddr(uNative);
@@ -1109,7 +1110,7 @@ bool Win32BinaryFile::IsMinGWsCleanupSetup(ADDRESS uNative)
 }
 
 
-bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative)
+bool Win32BinaryLoader::IsMinGWsMalloc(ADDRESS uNative)
 {
 	if (mingw_main) {
 		const IBinarySection *si = Image->getSectionInfoByAddr(uNative);
@@ -1136,7 +1137,7 @@ bool Win32BinaryFile::IsMinGWsMalloc(ADDRESS uNative)
 }
 
 
-ADDRESS Win32BinaryFile::isJumpToAnotherAddr(ADDRESS uNative)
+ADDRESS Win32BinaryLoader::isJumpToAnotherAddr(ADDRESS uNative)
 {
 	if ((Image->readNative1(uNative) & 0xff) != 0xe9) {
 		return NO_ADDRESS;
@@ -1146,37 +1147,37 @@ ADDRESS Win32BinaryFile::isJumpToAnotherAddr(ADDRESS uNative)
 }
 
 
-LOAD_FMT Win32BinaryFile::getFormat() const
+LOAD_FMT Win32BinaryLoader::getFormat() const
 {
 	return LOADFMT_PE;
 }
 
 
-MACHINE Win32BinaryFile::getMachine() const
+MACHINE Win32BinaryLoader::getMachine() const
 {
 	return MACHINE_PENTIUM;
 }
 
 
-bool Win32BinaryFile::isLibrary() const
+bool Win32BinaryLoader::isLibrary() const
 {
 	return((m_pPEHeader->Flags & 0x2000) != 0);
 }
 
 
-ADDRESS Win32BinaryFile::getImageBase()
+ADDRESS Win32BinaryLoader::getImageBase()
 {
 	return ADDRESS::g(m_pPEHeader->Imagebase);
 }
 
 
-size_t Win32BinaryFile::getImageSize()
+size_t Win32BinaryLoader::getImageSize()
 {
 	return m_pPEHeader->ImageSize;
 }
 
 
-DWord Win32BinaryFile::getDelta()
+DWord Win32BinaryLoader::getDelta()
 {
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
@@ -1185,5 +1186,5 @@ DWord Win32BinaryFile::getDelta()
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Win32BinaryFile,
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Win32BinaryLoader,
 			  "Win32 binary file loader plugin", "0.4.0", "Boomerang developers")

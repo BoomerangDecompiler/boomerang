@@ -10,17 +10,13 @@
  */
 
 /**
- * \file DOS4GWBinaryFile.cpp
- * Desc: This file contains the implementation of the class DOS4GWBinaryFile.
- */
-
-/* DOS4GW binary file format.
- *    This file implements the class DOS4GWBinaryFile, derived from class
- *    BinaryFile. See DOS4GWBinaryFile.h and BinaryFile.h for details.
+ * \file DOS4GWBinaryLoader.cpp
+ * Desc: This file contains the implementation of the class DOS4GWBinaryLoader.
+ * See DOS4GWBinaryLoader.h and BinaryFile.h for details.
  * 24 Jan 05 - Trent: created.
  */
 
-#include "DOS4GWBinaryFile.h"
+#include "DOS4GWBinaryLoader.h"
 #include "boom_base/BinaryFile.h"
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
@@ -33,6 +29,8 @@
 #include <cstdlib>
 #include <QBuffer>
 #include <QFile>
+
+
 namespace
 {
 struct SectionParam
@@ -48,36 +46,36 @@ extern "C" {
 int microX86Dis(void *p); // From microX86dis.c
 }
 
-DOS4GWBinaryFile::DOS4GWBinaryFile()
+DOS4GWBinaryLoader::DOS4GWBinaryLoader()
 {
 }
 
 
-DOS4GWBinaryFile::~DOS4GWBinaryFile()
+DOS4GWBinaryLoader::~DOS4GWBinaryLoader()
 {
 }
 
 
-void DOS4GWBinaryFile::initialize(IBoomerang *sys)
+void DOS4GWBinaryLoader::initialize(IBoomerang *sys)
 {
 	Image   = sys->getImage();
 	Symbols = sys->getSymbols();
 }
 
 
-void DOS4GWBinaryFile::close()
+void DOS4GWBinaryLoader::close()
 {
 	unload();
 }
 
 
-ADDRESS DOS4GWBinaryFile::getEntryPoint()
+ADDRESS DOS4GWBinaryLoader::getEntryPoint()
 {
 	return ADDRESS::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
 }
 
 
-ADDRESS DOS4GWBinaryFile::getMainEntryPoint()
+ADDRESS DOS4GWBinaryLoader::getMainEntryPoint()
 {
 	const IBinarySymbol *sym = Symbols->find("main");
 
@@ -180,7 +178,7 @@ ADDRESS DOS4GWBinaryFile::getMainEntryPoint()
 }
 
 
-bool DOS4GWBinaryFile::loadFromMemory(QByteArray& data)
+bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 {
 	QBuffer buf(&data);
 
@@ -362,7 +360,7 @@ bool DOS4GWBinaryFile::loadFromMemory(QByteArray& data)
 #define TESTMAGIC2(buf, off, a, b)          (buf[off] == a && buf[off + 1] == b)
 #define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
-int DOS4GWBinaryFile::canLoad(QIODevice& fl) const
+int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
 {
 	unsigned char buf[64];
 
@@ -386,20 +384,20 @@ int DOS4GWBinaryFile::canLoad(QIODevice& fl) const
 
 
 // Clean up and unload the binary image
-void DOS4GWBinaryFile::unload()
+void DOS4GWBinaryLoader::unload()
 {
 }
 
 
-bool DOS4GWBinaryFile::postLoad(void *handle)
+bool DOS4GWBinaryLoader::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	return false;
 }
 
 
-bool DOS4GWBinaryFile::displayDetails(const char *fileName, FILE *f
-                                      /* = stdout */)
+bool DOS4GWBinaryLoader::displayDetails(const char *fileName, FILE *f
+                                        /* = stdout */)
 {
 	Q_UNUSED(fileName);
 	Q_UNUSED(f);
@@ -407,7 +405,7 @@ bool DOS4GWBinaryFile::displayDetails(const char *fileName, FILE *f
 }
 
 
-int DOS4GWBinaryFile::dos4gwRead2(short *ps) const
+int DOS4GWBinaryLoader::dos4gwRead2(short *ps) const
 {
 	unsigned char *p = (unsigned char *)ps;
 	// Little endian
@@ -417,7 +415,7 @@ int DOS4GWBinaryFile::dos4gwRead2(short *ps) const
 }
 
 
-int DOS4GWBinaryFile::dos4gwRead4(int *pi) const
+int DOS4GWBinaryLoader::dos4gwRead4(int *pi) const
 {
 	short *p = (short *)pi;
 	int   n1 = dos4gwRead2(p);
@@ -428,31 +426,31 @@ int DOS4GWBinaryFile::dos4gwRead4(int *pi) const
 }
 
 
-LOAD_FMT DOS4GWBinaryFile::getFormat() const
+LOAD_FMT DOS4GWBinaryLoader::getFormat() const
 {
 	return LOADFMT_LX;
 }
 
 
-MACHINE DOS4GWBinaryFile::getMachine() const
+MACHINE DOS4GWBinaryLoader::getMachine() const
 {
 	return MACHINE_PENTIUM;
 }
 
 
-ADDRESS DOS4GWBinaryFile::getImageBase()
+ADDRESS DOS4GWBinaryLoader::getImageBase()
 {
 	return ADDRESS::g(m_pLXObjects[0].RelocBaseAddr);
 }
 
 
-size_t DOS4GWBinaryFile::getImageSize()
+size_t DOS4GWBinaryLoader::getImageSize()
 {
 	return 0; // TODO
 }
 
 
-DWord DOS4GWBinaryFile::getDelta()
+DWord DOS4GWBinaryLoader::getDelta()
 {
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
@@ -461,5 +459,5 @@ DWord DOS4GWBinaryFile::getDelta()
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, DOS4GWBinaryFile,
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, DOS4GWBinaryLoader,
 			  "DOS4GW loader plugin", "0.4.0", "Boomerang developers")

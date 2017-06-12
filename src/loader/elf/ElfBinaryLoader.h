@@ -9,8 +9,8 @@
  *
  */
 
-/** \file ElfBinaryFile.h
- * \brief This file contains the definition of the class ElfBinaryFile.
+/** \file ElfBinaryLoader.h
+ * \brief This file contains the definition of the class ElfBinaryLoader.
  */
 
 
@@ -21,9 +21,13 @@
 #include "boom_base/BinaryFile.h"
 
 struct Elf32_Ehdr;
+
 struct Elf32_Phdr;
+
 struct Elf32_Shdr;
+
 struct Elf32_Rel;
+
 struct Elf32_Sym;
 
 struct Translated_ElfSym;
@@ -43,13 +47,13 @@ typedef struct
 /**
  * File loader for loading 32 bit binary ELF files.
  */
-class ElfLoader : public IFileLoader
+class ElfBinaryLoader : public IFileLoader
 {
 	typedef std::map<ADDRESS, QString, std::less<ADDRESS> > RelocMap;
 
 public:
-	ElfLoader();
-	virtual ~ElfLoader() override;
+	ElfBinaryLoader();
+	virtual ~ElfBinaryLoader() override;
 
 	/// @copydoc IFileLoader::getFormat
 	LOAD_FMT getFormat() const override;
@@ -149,9 +153,9 @@ private:
 
 private:
 	size_t m_loadedImageSize;            ///< Size of image in bytes
-	Byte *m_loadedImage       = nullptr; ///< Pointer to the loaded image
-	
-	Elf32_Ehdr* m_elfHeader   = nullptr; ///< ELF header
+	Byte *m_loadedImage = nullptr;       ///< Pointer to the loaded image
+
+	Elf32_Ehdr *m_elfHeader   = nullptr; ///< ELF header
 	Elf32_Phdr *m_programHdrs = nullptr; ///< Pointer to program headers
 	Elf32_Shdr *m_sectionhdrs = nullptr; ///< Array of section header structs
 

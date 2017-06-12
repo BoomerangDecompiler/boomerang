@@ -8,19 +8,20 @@
  *
  */
 
-/** \file DOS4GWBinaryFile.h
- * \brief This file contains the definition of the class DOS4GWBinaryFile.
+/** \file DOS4GWBinaryLoader.h
+ * \brief This file contains the definition of the class DOS4GWBinaryLoader.
  */
 
 #pragma once
 
 #include "boom_base/BinaryFile.h"
+
 #include <string>
+
 class QFile;
 
 /**
- * This file contains the definition of the DOS4GWBinaryFile class, and some
- * other definitions specific to the exe version of the BinaryFile object
+ * This file contains the definition of the DOS4GWBinaryLoader class.
  * At present, this loader supports the OS2 file format (also known as
  * the Linear eXecutable format) as much as I've found necessary to
  * inspect old DOS4GW apps.  This loader could also be used for decompiling
@@ -129,11 +130,11 @@ typedef struct
 
 #pragma pack(pop)
 
-class DOS4GWBinaryFile : public IFileLoader
+class DOS4GWBinaryLoader : public IFileLoader
 {
 public:
-	DOS4GWBinaryFile();
-	~DOS4GWBinaryFile();                 // Destructor
+	DOS4GWBinaryLoader();
+	~DOS4GWBinaryLoader();               // Destructor
 	void close() override;               // Close file opened with Open()
 	void unload() override;              // Unload the image
 	LOAD_FMT getFormat() const override; // Get format (i.e.

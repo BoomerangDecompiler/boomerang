@@ -92,7 +92,7 @@ set(PACKAGE_STRING    "boomerang")
 set(PACKAGE_TARNAME   "boomerang")
 set(PACKAGE_VERSION   "0.4.0-alpha")
 
-#if git is installed (likely), pull version string from git
+# if git is installed (likely), pull version string from git tags
 find_package(Git)
 if (GIT_FOUND)
 	execute_process(
@@ -126,4 +126,9 @@ add_custom_target(check "./full_regression.sh"
 add_custom_target(COPY_FILES ALL)
 add_custom_command(TARGET COPY_FILES POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/signatures ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/signatures)
+
+# delete all files in the 'out/' directory on make clean
+set(EXTRA_CLEAN_FILES "${CMAKE_SOURCE_DIR}/out/")
+
+SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${EXTRA_CLEAN_FILES}")
 

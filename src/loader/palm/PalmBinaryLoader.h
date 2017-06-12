@@ -9,8 +9,8 @@
  *
  */
 
-/** \file PalmBinaryFile.h
- * \brief This file contains the definition of the class PalmBinaryFile.
+/** \file PalmBinaryLoader.h
+ * \brief This file contains the definition of the class PalmBinaryLoader.
  */
 
 /***************************************************************************/ /**
@@ -20,11 +20,15 @@
 #include "boom_base/BinaryFile.h"
 #include <QtCore/QObject>
 
-class PalmBinaryFile : public IFileLoader
+/**
+ * This class loads a Palm Pilot .prc file.
+ */
+class PalmBinaryLoader : public IFileLoader
 {
 public:
-	PalmBinaryFile(); // Constructor
-	virtual ~PalmBinaryFile();
+	PalmBinaryLoader(); // Constructor
+	virtual ~PalmBinaryLoader();
+
 	void initialize(IBoomerang *sys) override;
 	void unload() override;                // Unload the image
 	void close() override;                 // Close file opened with Open()

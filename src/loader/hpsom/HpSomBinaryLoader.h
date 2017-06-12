@@ -8,8 +8,8 @@
  *
  */
 
-/** \file HpSomBinaryFile.h
- * \brief This file contains the definition of the class HpSomBinaryFile.
+/** \file HpSomBinaryLoader.h
+ * \brief This file contains the definition of the class HpSomBinaryLoader.
  */
 
 /***************************************************************************/ /**
@@ -78,11 +78,11 @@ struct symElem
 	ADDRESS    value;
 };
 
-class HpSomBinaryFile : public IFileLoader
+class HpSomBinaryLoader : public IFileLoader
 {
 public:
-	HpSomBinaryFile(); // Constructor
-	virtual ~HpSomBinaryFile();
+	HpSomBinaryLoader();    // Constructor
+	virtual ~HpSomBinaryLoader();
 	void initialize(IBoomerang *sys) override;
 
 	void unload() override;                // Unload the image

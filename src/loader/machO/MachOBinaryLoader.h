@@ -10,8 +10,8 @@
  *
  */
 
-/** \file MachOBinaryFile.h
- * \brief This file contains the definition of the class MachOBinaryFile.
+/** \file MachOBinaryLoader.h
+ * \brief This file contains the definition of the class MachOBinaryLoader.
  */
 
 #include "boom_base/BinaryFile.h"
@@ -19,8 +19,7 @@
 #include <vector>
 
 /**
- * This file contains the definition of the MachOBinaryFile class, and some
- * other definitions specific to the Mac OS-X version of the BinaryFile object
+ * This file contains the definition of the MachOBinaryLoader class,
  * This is my bare bones implementation of a Mac OS-X binary loader.
  */
 
@@ -39,11 +38,11 @@
 
 struct mach_header;
 
-class MachOBinaryFile : public IFileLoader, public ObjcAccessInterface
+class MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
 {
 public:
-	MachOBinaryFile();                   // Default constructor
-	virtual ~MachOBinaryFile();          // Destructor
+	MachOBinaryLoader();                 // Default constructor
+	virtual ~MachOBinaryLoader();        // Destructor
 	void initialize(IBoomerang *sys) override;
 	bool Open(const char *sName);        // Open the file for r/w; ???
 	void close() override;               // Close file opened with Open()

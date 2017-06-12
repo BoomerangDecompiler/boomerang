@@ -7,17 +7,15 @@
  *
  */
 
-/* File: ExeBinaryFile.cc
- * Desc: This file contains the implementation of the class ExeBinaryFile.
- */
-
-/* EXE binary file format.
- *      This file implements the class ExeBinaryFile, derived from class BinaryFile.
- *      See ExeBinaryFile.h and BinaryFile.h for details
+/**
+ * \file ExeBinaryLoader.cpp
+ * Desc: This file contains the implementation of the class ExeBinaryLoader.
+ *      See ExeBinaryLoader.h and BinaryLoader.h for details
  *      MVE 08/10/97
  * 21 May 02 - Mike: Slight mod for gcc 3.1
  */
-#include "ExeBinaryFile.h"
+
+#include "ExeBinaryLoader.h"
 
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
@@ -28,19 +26,19 @@
 #include <cassert>
 
 
-ExeBinaryFile::ExeBinaryFile()
+ExeBinaryLoader::ExeBinaryLoader()
 {
 }
 
 
-void ExeBinaryFile::initialize(IBoomerang *sys)
+void ExeBinaryLoader::initialize(IBoomerang *sys)
 {
 	Image   = sys->getImage();
 	Symbols = sys->getSymbols();
 }
 
 
-bool ExeBinaryFile::loadFromMemory(QByteArray& data)
+bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 {
 	QBuffer fp(&data);
 	int     i, cb;
@@ -171,7 +169,7 @@ bool ExeBinaryFile::loadFromMemory(QByteArray& data)
 
 
 // Clean up and unload the binary image
-void ExeBinaryFile::unload()
+void ExeBinaryLoader::unload()
 {
 	delete m_pHeader;
 	delete[] m_pImage;
@@ -186,8 +184,8 @@ void ExeBinaryFile::unload()
 //    // No symbol table handled at present
 //    return nullptr;
 // }
-bool ExeBinaryFile::displayDetails(const char *fileName, FILE *f
-                                   /* = stdout */)
+bool ExeBinaryLoader::displayDetails(const char *fileName, FILE *f
+                                     /* = stdout */)
 {
 	Q_UNUSED(fileName);
 	Q_UNUSED(f);
@@ -196,25 +194,25 @@ bool ExeBinaryFile::displayDetails(const char *fileName, FILE *f
 }
 
 
-LOAD_FMT ExeBinaryFile::getFormat() const
+LOAD_FMT ExeBinaryLoader::getFormat() const
 {
 	return LOADFMT_EXE;
 }
 
 
-MACHINE ExeBinaryFile::getMachine() const
+MACHINE ExeBinaryLoader::getMachine() const
 {
 	return MACHINE_PENTIUM;
 }
 
 
-void ExeBinaryFile::close()
+void ExeBinaryLoader::close()
 {
 	// Not implemented yet
 }
 
 
-bool ExeBinaryFile::postLoad(void *handle)
+bool ExeBinaryLoader::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	// Not needed: for archives only
@@ -222,26 +220,26 @@ bool ExeBinaryFile::postLoad(void *handle)
 }
 
 
-ADDRESS ExeBinaryFile::getImageBase()
+ADDRESS ExeBinaryLoader::getImageBase()
 {
 	return ADDRESS::g(0L);                                     /* FIXME */
 }
 
 
-size_t ExeBinaryFile::getImageSize()
+size_t ExeBinaryLoader::getImageSize()
 {
 	return 0;                                    /* FIXME */
 }
 
 
 // Should be doing a search for this
-ADDRESS ExeBinaryFile::getMainEntryPoint()
+ADDRESS ExeBinaryLoader::getMainEntryPoint()
 {
 	return NO_ADDRESS;
 }
 
 
-ADDRESS ExeBinaryFile::getEntryPoint()
+ADDRESS ExeBinaryLoader::getEntryPoint()
 {
 	// Check this...
 	return ADDRESS::g((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
@@ -253,7 +251,7 @@ ADDRESS ExeBinaryFile::getEntryPoint()
 	((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
 	 ((unsigned)((Byte *)(&x))[3] << 24))
 
-int ExeBinaryFile::canLoad(QIODevice& fl) const
+int ExeBinaryLoader::canLoad(QIODevice& fl) const
 {
 	unsigned char buf[4];
 
@@ -267,5 +265,5 @@ int ExeBinaryFile::canLoad(QIODevice& fl) const
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, ExeBinaryFile,
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, ExeBinaryLoader,
 			  "DOS Exe loader plugin", "0.4.0", "Boomerang developers")

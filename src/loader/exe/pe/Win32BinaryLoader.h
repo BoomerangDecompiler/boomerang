@@ -18,8 +18,8 @@
 #include <string>
 
 /**
- * This file contains the definition of the Win32BinaryFile class, and some
- * other definitions specific to the exe version of the BinaryFile object
+ * This file contains the definition of the Win32BinaryLoader class.
+ * 
  * At present, there is no support for a symbol table. Win32 files do
  * not use dynamic linking, but it is possible that some files may
  * have debug symbols (in Microsoft Codeview or Borland formats),
@@ -153,11 +153,11 @@ typedef struct
 } PEExportDtor;
 #pragma pack(pop)
 
-class Win32BinaryFile : public IFileLoader
+class Win32BinaryLoader : public IFileLoader
 {
 public:
-	Win32BinaryFile();
-	virtual ~Win32BinaryFile();
+	Win32BinaryLoader();
+	virtual ~Win32BinaryLoader();
 	void close() override;                 ///< Close file opened with Open()
 	void unload() override;                ///< Unload the image
 	LOAD_FMT getFormat() const override;   ///< Get format (i.e.LOADFMT_Win32)

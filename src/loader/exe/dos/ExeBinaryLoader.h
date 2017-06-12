@@ -10,15 +10,15 @@
  *
  */
 
-/** \file ExeBinaryFile.h
- * \brief This file contains the definition of the class ExeBinaryFile.
- * This file contains the definition of the ExeBinaryFile class, and some other
- * definitions specific to the exe version of the BinaryFile object/
+/** \file ExeBinaryLoader.h
+ * \brief This file contains the definition of the class ExeBinaryLoader.
+ * This file contains the definition of the ExeBinaryLoader class, and some other
+ * definitions specific to the exe version of the IFileLoader object/
  *   At present, there is no support for a symbol table. Exe files do
  * not use dynamic linking, but it is possible that some files may
  * have debug symbols (in Microsoft Codeview or Borland formats),
  * and these may be implemented in the future. The debug info may
- * even be exposed as another pseudo section
+ * even be exposed as another pseudo section.
  */
 
 #include "boom_base/BinaryFile.h"
@@ -66,10 +66,11 @@ typedef struct            /*      EXE file header          */
 } exeHeader;
 #pragma pack(pop)
 
-class ExeBinaryFile : public IFileLoader
+
+class ExeBinaryLoader : public IFileLoader
 {
 public:
-	ExeBinaryFile();                       // Default constructor
+	ExeBinaryLoader();                     // Default constructor
 	void unload() override;                // Unload the image
 	void close() override;                 // Close file opened with Open()
 	bool postLoad(void *handle) override;  // For archive files only
