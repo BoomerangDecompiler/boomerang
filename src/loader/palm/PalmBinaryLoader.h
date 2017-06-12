@@ -29,54 +29,70 @@ public:
 	PalmBinaryLoader(); // Constructor
 	virtual ~PalmBinaryLoader();
 
-	void initialize(IBoomerang *sys) override;
-	void unload() override;                // Unload the image
-	void close() override;                 // Close file opened with Open()
-	bool postLoad(void *handle) override;  // For archive files only
-	LOAD_FMT getFormat() const override;   // Get format i.e. LOADFMT_PALM
-	MACHINE getMachine() const override;   // Get machine i.e. MACHINE_PALM
+	/// @copydoc IFileLoader::initialize
+	void initialize(IBinaryImage *image, IBinarySymbolTable *table) override;
 
-	bool isLibrary() const;
+	/// @copydoc IFileLoader::canLoad
+	int canLoad(QIODevice& dev) const override;
+
+	/// @copydoc IFileLoader::loadFromMemory
+	bool loadFromMemory(QByteArray& data) override;
+
+	/// @copydoc IFileLoader::unload
+	void unload() override;
+
+	/// @copydoc IFileLoader::close
+	void close() override;
+
+	/// @copydoc IFileLoader::getFormat
+	LOAD_FMT getFormat() const override;
+
+	/// @copydoc IFileLoader::getMachine
+	MACHINE getMachine() const override;
+
+	/// @copydoc IFileLoader::getMainEntryPoint
+	virtual ADDRESS getMainEntryPoint() override;
+
+	/// @copydoc IFileLoader::getEntryPoint
+	virtual ADDRESS getEntryPoint() override;
+
+	/// @copydoc IFileLoader::getImageBase
 	ADDRESS getImageBase() override;
+
+	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
 
+	// Analysis functions
+	//    bool        IsDynamicLinkedProc(ADDRESS wNative);
+	//    ADDRESS     NativeToHostAddress(ADDRESS uNative);
+	bool isLibrary() const;
+
+	/// @copydoc IFileLoader::postLoad
+	bool postLoad(void *handle) override;  // For archive files only
+
+private:
 	// Specific to BinaryFile objects that implement a "global pointer"
 	// Gets a pair of unsigned integers representing the address of %agp (first) and the value for GLOBALOFFSET (second)
-	Q_INVOKABLE std::pair<ADDRESS, unsigned> GetGlobalPointerInfo();
+	std::pair<ADDRESS, unsigned> getGlobalPointerInfo();
 
 	// Palm specific calls
 
 	// Get the ID number for this application. It's possible that the app uses
 	// this number internally, so this needs to be used in the final make
-	int GetAppID() const;
+	int getAppID() const;
 
 	// Generate binary files for non code and data sections
-	void GenerateBinFiles(const QString& path) const;
+	void generateBinFiles(const QString& path) const;
 
-	//
-	//  --  --  --  --  --  --  --  --  --  --  --
-	//
-	// Internal information
-	// Dump headers, etc
-	// virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
-	// Analysis functions
-	virtual ADDRESS getMainEntryPoint() override;
-	virtual ADDRESS getEntryPoint() override;
-
-	//    bool        IsDynamicLinkedProc(ADDRESS wNative);
-	//    ADDRESS     NativeToHostAddress(ADDRESS uNative);
-
-	bool loadFromMemory(QByteArray& data) override;
-	int canLoad(QIODevice& dev) const override;
-
-private:
 	void addTrapSymbols();
 
 	unsigned char *m_pImage; ///< Points to loaded image
 	unsigned char *m_pData;  ///< Points to data
-	// Offset from start of data to where register a5 should be initialised to
-	unsigned int m_SizeBelowA5;
-	class IBinaryImage *Image;
-	class IBinarySymbolTable *Symbols;
+
+	/// Offset from start of data to where register a5 should be initialised to
+	unsigned int m_sizeBelowA5;
+
+	IBinaryImage *m_image;
+	IBinarySymbolTable *m_symbols;
 };

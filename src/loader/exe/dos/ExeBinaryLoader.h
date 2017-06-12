@@ -12,9 +12,9 @@
 
 /** \file ExeBinaryLoader.h
  * \brief This file contains the definition of the class ExeBinaryLoader.
- * This file contains the definition of the ExeBinaryLoader class, and some other
- * definitions specific to the exe version of the IFileLoader object/
- *   At present, there is no support for a symbol table. Exe files do
+ * This file contains the definition of the ExeBinaryLoader class.
+ *
+ * At present, there is no support for a symbol table. Exe files do
  * not use dynamic linking, but it is possible that some files may
  * have debug symbols (in Microsoft Codeview or Borland formats),
  * and these may be implemented in the future. The debug info may
@@ -26,7 +26,7 @@
 class QFile;
 
 #pragma pack(push,1)
-typedef struct           /*        PSP structure                 */
+struct PSP               /*        PSP structure                 */
 {
 	SWord int20h;        /* interrupt 20h                        */
 	SWord eof;           /* segment, end of allocation block     */
@@ -44,9 +44,9 @@ typedef struct           /*        PSP structure                 */
 	Byte  fcb2[16];      /* default file control block 2         */
 	Byte  res5[4];       /* reserved                             */
 	Byte  cmdTail[0x80]; /* command tail and disk transfer area  */
-} PSP;
+};
 
-typedef struct            /*      EXE file header          */
+struct ExeHeader          /*      EXE file header          */
 {
 	Byte  sigLo;          /* .EXE signature: 0x4D 0x5A     */
 	Byte  sigHi;
@@ -63,46 +63,64 @@ typedef struct            /*      EXE file header          */
 	SWord initCS;         /* Segment displacement of code  */
 	SWord relocTabOffset; /* Relocation table offset       */
 	SWord overlayNum;     /* Overlay number                */
-} exeHeader;
+};
+
 #pragma pack(pop)
 
 
 class ExeBinaryLoader : public IFileLoader
 {
 public:
-	ExeBinaryLoader();                     // Default constructor
-	void unload() override;                // Unload the image
-	void close() override;                 // Close file opened with Open()
-	bool postLoad(void *handle) override;  // For archive files only
-	LOAD_FMT getFormat() const override;   // Get format (i.e. LOADFMT_EXE)
-	MACHINE getMachine() const override;   // Get machine (i.e. MACHINE_PENTIUM)
+	ExeBinaryLoader();
 
-	ADDRESS getImageBase() override;
-	size_t getImageSize() override;
+	/// @copydoc IFileLoader::initialize
+	void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 
-	// Analysis functions
-	ADDRESS getMainEntryPoint() override;
-	ADDRESS getEntryPoint() override;
-
-	//
-	//  --  --  --  --  --  --  --  --  --  --  --
-	//
-	// Internal information
-	// Dump headers, etc
-	bool displayDetails(const char *fileName, FILE *f = stdout) override;
-
-	void initialize(IBoomerang *sys) override;
-	bool loadFromMemory(QByteArray& data) override;
+	/// @copydoc IFileLoader::canLoad
 	int canLoad(QIODevice& fl) const override;
 
+	/// @copydoc IFileLoader::loadFromMemory
+	bool loadFromMemory(QByteArray& data) override;
+
+	/// @copydoc IFileLoader::unload
+	void unload() override;
+
+	/// @copydoc IFileLoader::close
+	void close() override;
+
+	/// @copydoc IFileLoader::getFormat
+	LOAD_FMT getFormat() const override;
+
+	/// @copydoc IFileLoader::getMachine
+	MACHINE getMachine() const override;
+
+	/// @copydoc IFileLoader::getMainEntryPoint
+	ADDRESS getMainEntryPoint() override;
+
+	/// @copydoc IFileLoader::getEntryPoint
+	ADDRESS getEntryPoint() override;
+
+	/// @copydoc IFileLoader::getImageBase
+	ADDRESS getImageBase() override;
+
+	/// @copydoc IFileLoader::getImageSize
+	size_t getImageSize() override;
+
+public:
+	/// @copydoc IFileLoader::displayDetails
+	bool displayDetails(const char *fileName, FILE *f = stdout) override;
+
+	/// @copydoc IFileLoader::postLoad
+	bool postLoad(void *handle) override;  // For archive files only
+
 private:
-	exeHeader *m_pHeader; // Pointer to header
-	Byte *m_pImage;       // Pointer to image
-	int m_cbImage;        // Size of image
-	int m_cReloc;         // Number of relocation entries
-	DWord *m_pRelocTable; // The relocation table
+	ExeHeader *m_header;  ///< Pointer to header
+	Byte *m_loadedImage;  ///< Pointer to image buffer
+	int m_imageSize;      ///< Size of image
+	int m_numReloc;       ///< Number of relocation entries
+	DWord *m_relocTable;  ///< The relocation table
 	ADDRESS m_uInitPC;    ///< Initial program counter
 	ADDRESS m_uInitSP;    ///< Initial stack pointer
-	class IBinaryImage *Image;
-	class IBinarySymbolTable *Symbols;
+	IBinaryImage *m_image;
+	IBinarySymbolTable *m_symbols;
 };

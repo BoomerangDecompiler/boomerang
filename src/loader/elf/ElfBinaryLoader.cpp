@@ -79,10 +79,10 @@ ElfBinaryLoader::~ElfBinaryLoader()
 }
 
 
-void ElfBinaryLoader::initialize(IBoomerang *sys)
+void ElfBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
 {
-	m_binaryImage = sys->getImage();
-	m_symbols     = sys->getSymbols();
+	m_binaryImage = image;
+	m_symbols     = symbols;
 }
 
 

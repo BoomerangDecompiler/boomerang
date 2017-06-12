@@ -33,21 +33,21 @@
 
 
 HpSomBinaryLoader::HpSomBinaryLoader()
-	: m_pImage(0)
+	: m_loadedImage(0)
 {
 }
 
 
 HpSomBinaryLoader::~HpSomBinaryLoader()
 {
-	delete [] m_pImage;
+	delete [] m_loadedImage;
 }
 
 
-void HpSomBinaryLoader::initialize(IBoomerang *sys)
+void HpSomBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
 {
-	Image   = sys->getImage();
-	Symbols = sys->getSymbols();
+	m_image   = image;
+	m_symbols = symbols;
 }
 
 
@@ -192,10 +192,10 @@ void HpSomBinaryLoader::processSymbols()
 {
 	// Find the main symbol table, if it exists
 
-	unsigned numSym = UINT4(m_pImage + 0x60);
+	unsigned numSym = UINT4(m_loadedImage + 0x60);
 
-	ADDRESS symPtr  = ADDRESS::host_ptr(m_pImage) + UINT4(m_pImage + 0x5C);
-	char    *pNames = (char *)(m_pImage + (int)UINT4(m_pImage + 0x6C));
+	ADDRESS symPtr  = ADDRESS::host_ptr(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
+	char    *pNames = (char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
 
 #define SYMSIZE    20 // 5 4-byte words per symbol entry
 #define SYMBOLNM(idx)     (UINT4((symPtr + idx * SYMSIZE + 4).m_value))
@@ -218,12 +218,12 @@ void HpSomBinaryLoader::processSymbols()
 			// 6- any antry code
 			// 7 - uninitialized data blocks
 			// 9 - MODULE name of source module
-			if (Symbols->find(value)) {
+			if (m_symbols->find(value)) {
 				continue;
 			}
 
-			if (!Symbols->find(pSymName)) {
-				Symbols->create(value, pSymName);
+			if (!m_symbols->find(pSymName)) {
+				m_symbols->create(value, pSymName);
 			}
 
 			continue;
@@ -244,8 +244,8 @@ void HpSomBinaryLoader::processSymbols()
 
 		// HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
 		// value. So we have to check whether the symbol has already been entered (assume first one is correct).
-		if ((Symbols->find(value) == nullptr) && (Symbols->find(pSymName) == nullptr)) {
-			Symbols->create(value, pSymName);
+		if ((m_symbols->find(value) == nullptr) && (m_symbols->find(pSymName) == nullptr)) {
+			m_symbols->create(value, pSymName);
 		}
 
 		// cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << value << ",
@@ -268,24 +268,24 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	long size = fp.size();
 
 	// Allocate a buffer for the image
-	m_pImage = new unsigned char[size];
+	m_loadedImage = new unsigned char[size];
 
-	if (m_pImage == 0) {
+	if (m_loadedImage == 0) {
 		fprintf(stderr, "Could not allocate %ld bytes for image\n", size);
 		return false;
 	}
 
-	memset(m_pImage, 0, size);
+	memset(m_loadedImage, 0, size);
 
 
-	if (fp.read((char *)m_pImage, size) != (unsigned)size) {
+	if (fp.read((char *)m_loadedImage, size) != (unsigned)size) {
 		fprintf(stderr, "Error reading binary file\n");
 		return false;
 	}
 
 	// Check type at offset 0x0; should be 0x0210 or 0x20B then
 	// 0107, 0108, or 010B
-	unsigned magic     = UINT4(m_pImage);
+	unsigned magic     = UINT4(m_loadedImage);
 	unsigned system_id = magic >> 16;
 	unsigned a_magic   = magic & 0xFFFF;
 
@@ -297,7 +297,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	}
 
 	// Find the array of aux headers
-	unsigned *auxHeaders = (unsigned *)intptr_t(UINT4(m_pImage + 0x1c));
+	unsigned *auxHeaders = (unsigned *)intptr_t(UINT4(m_loadedImage + 0x1c));
 
 	if (auxHeaders == 0) {
 		fprintf(stderr, "Error: auxilliary header array is not present\n");
@@ -305,14 +305,14 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	}
 
 	// Get the size of the aux headers
-	unsigned sizeAux = UINT4(m_pImage + 0x20);
+	unsigned sizeAux = UINT4(m_loadedImage + 0x20);
 	// Search through the auxillary headers. There should be one of type 4
 	// ("Exec Auxilliary Header")
 	bool     found   = false;
 	unsigned *maxAux = auxHeaders + sizeAux;
 
 	while (auxHeaders < maxAux) {
-		if ((UINT4(m_pImage + ADDRESS::value_type(auxHeaders)) & 0xFFFF) == 0x0004) {
+		if ((UINT4(m_loadedImage + ADDRESS::value_type(auxHeaders)) & 0xFFFF) == 0x0004) {
 			found = true;
 			break;
 		}
@@ -334,9 +334,9 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	// The DL table (Dynamic Link info?) is supposed to be at the start of
 	// the $TEXT$ space, but the only way I can presently find that is to
 	// assume that the first subspace entry points to it
-	char         *subspace_location     = (char *)m_pImage + UINT4(m_pImage + 0x34);
+	char         *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
 	ADDRESS      first_subspace_fileloc = ADDRESS::g(UINT4(subspace_location + 8));
-	char         *DLTable     = (char *)m_pImage + first_subspace_fileloc.m_value;
+	char         *DLTable     = (char *)m_loadedImage + first_subspace_fileloc.m_value;
 	char         *pDlStrings  = DLTable + UINT4(DLTable + 0x28);
 	unsigned     numImports   = UINT4(DLTable + 0x14); // Number of import strings
 	import_entry *import_list = (import_entry *)(DLTable + UINT4(DLTable + 0x10));
@@ -345,11 +345,12 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 
 	// A convenient macro for accessing the fields (0-11) of the auxilliary header
 	// Fields 0, 1 are the header (flags, aux header type, and size)
-#define AUXHDR(idx)    (UINT4(m_pImage + ADDRESS::value_type(auxHeaders + idx)))
+#define AUXHDR(idx)    (UINT4(m_image + ADDRESS::value_type(auxHeaders + idx)))
+
 	// Section 0: text (code)
-	IBinarySection *text = Image->createSection("$TEXT$", ADDRESS::n(AUXHDR(3)), ADDRESS::n(AUXHDR(3) + AUXHDR(2)));
+	IBinarySection *text = m_image->createSection("$TEXT$", ADDRESS::n(AUXHDR(3)), ADDRESS::n(AUXHDR(3) + AUXHDR(2)));
 	assert(text);
-	text->setHostAddr(ADDRESS::host_ptr(m_pImage) + AUXHDR(4))
+	text->setHostAddr(ADDRESS::host_ptr(m_loadedImage) + AUXHDR(4))
 	   .setEntrySize(1)
 	   .setCode(true)
 	   .setData(false)
@@ -359,9 +360,9 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	   .addDefinedArea(ADDRESS::n(AUXHDR(3)), ADDRESS::n(AUXHDR(3) + AUXHDR(2)));
 
 	// Section 1: initialised data
-	IBinarySection *data = Image->createSection("$DATA$", ADDRESS::n(AUXHDR(6)), ADDRESS::n(AUXHDR(6) + AUXHDR(5)));
+	IBinarySection *data = m_image->createSection("$DATA$", ADDRESS::n(AUXHDR(6)), ADDRESS::n(AUXHDR(6) + AUXHDR(5)));
 	assert(data);
-	data->setHostAddr(ADDRESS::host_ptr(m_pImage) + AUXHDR(7))
+	data->setHostAddr(ADDRESS::host_ptr(m_loadedImage) + AUXHDR(7))
 	   .setEntrySize(1)
 	   .setCode(false)
 	   .setData(true)
@@ -371,8 +372,8 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	   .addDefinedArea(ADDRESS::n(AUXHDR(6)), ADDRESS::n(AUXHDR(6) + AUXHDR(5)));
 	// Section 2: BSS
 	// For now, assume that BSS starts at the end of the initialised data
-	IBinarySection *bss = Image->createSection("$BSS$", ADDRESS::n(AUXHDR(6) + AUXHDR(5)),
-											   ADDRESS::n(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
+	IBinarySection *bss = m_image->createSection("$BSS$", ADDRESS::n(AUXHDR(6) + AUXHDR(5)),
+												 ADDRESS::n(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
 	assert(bss);
 	bss->setHostAddr(ADDRESS::n(0))
 	   .setEntrySize(1)
@@ -439,7 +440,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 		continue;
 		// TODO: add some type info to the imported symbols
 		// Add it to the set of imports; needed by IsDynamicLinkedProc()
-		Symbols->create(ADDRESS::n(UINT4(&PLTs[v].value)), pDlStrings + UINT4(&import_list[u].name))
+		m_symbols->create(ADDRESS::n(UINT4(&PLTs[v].value)), pDlStrings + UINT4(&import_list[u].name))
 		   .setAttr("Imported", true).setAttr("Function", true);
 	}
 
@@ -450,7 +451,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 		// UINT4(&export_list[u].value) << endl;
 		if (strncmp(pDlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
 			// Enter the symbol "_callmain" for this address
-			Symbols->create(UINT4ADDR(&export_list[u].value), "_callmain");
+			m_symbols->create(UINT4ADDR(&export_list[u].value), "_callmain");
 			// Found call to main. Extract the offset. See assemble_17
 			// in pa-risc 1.1 manual page 5-9
 			// +--------+--------+--------+----+------------+-+-+
@@ -468,14 +469,14 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 								((bincall & 4) << 8) |          // w2@10
 								((bincall & 0x1ff8) >> 3));     // w2@0..9
 			// Address of main is st + 8 + offset << 2
-			Symbols->create(UINT4ADDR(&export_list[u].value) + 8 + (offset << 2), "main")
+			m_symbols->create(UINT4ADDR(&export_list[u].value) + 8 + (offset << 2), "main")
 			   .setAttr("Export", true);
 			break;
 		}
 	}
 
 	processSymbols();
-	Symbols->find("main")->setAttr("EntryPoint", true);
+	m_symbols->find("main")->setAttr("EntryPoint", true);
 	return true;
 }
 
@@ -498,9 +499,9 @@ int HpSomBinaryLoader::canLoad(QIODevice& dev) const
 
 void HpSomBinaryLoader::unload()
 {
-	if (m_pImage) {
-		delete[] m_pImage;
-		m_pImage = 0;
+	if (m_loadedImage) {
+		delete[] m_loadedImage;
+		m_loadedImage = 0;
 	}
 }
 
@@ -540,7 +541,7 @@ MACHINE HpSomBinaryLoader::getMachine() const
 
 bool HpSomBinaryLoader::isLibrary() const
 {
-	int type = UINT4(m_pImage) & 0xFFFF;
+	int type = UINT4(m_loadedImage) & 0xFFFF;
 
 	return(type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
 }
@@ -554,7 +555,7 @@ ADDRESS HpSomBinaryLoader::getImageBase()
 
 size_t HpSomBinaryLoader::getImageSize()
 {
-	return UINT4(m_pImage + 0x24);
+	return UINT4(m_loadedImage + 0x24);
 }
 
 
@@ -562,9 +563,9 @@ std::pair<ADDRESS, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 {
 	std::pair<ADDRESS, int> ret(ADDRESS::g(0L), 0);
 	// Get the start and length of the subspace with the given name
-	subspace_dictionary_record *subSpaces = (subspace_dictionary_record *)(m_pImage + UINT4(m_pImage + 0x34));
-	unsigned   numSubSpaces  = UINT4(m_pImage + 0x38);
-	const char *spaceStrings = (const char *)(m_pImage + UINT4(m_pImage + 0x44));
+	subspace_dictionary_record *subSpaces = (subspace_dictionary_record *)(m_loadedImage + UINT4(m_loadedImage + 0x34));
+	unsigned   numSubSpaces  = UINT4(m_loadedImage + 0x38);
+	const char *spaceStrings = (const char *)(m_loadedImage + UINT4(m_loadedImage + 0x44));
 
 	for (unsigned u = 0; u < numSubSpaces; u++) {
 		const char *thisName    = (const char *)(spaceStrings + UINT4(&subSpaces[u].name));
@@ -589,7 +590,7 @@ std::pair<ADDRESS, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 // (first) and the value for GLOBALOFFSET (unused for ra-risc)
 // The understanding at present is that the global data pointer (%r27 for
 // pa-risc) points just past the end of the $GLOBAL$ subspace.
-std::pair<ADDRESS, unsigned> HpSomBinaryLoader::GetGlobalPointerInfo()
+std::pair<ADDRESS, unsigned> HpSomBinaryLoader::getGlobalPointerInfo()
 {
 	std::pair<ADDRESS, unsigned> ret(ADDRESS::g(0L), 0);
 	// Search the subspace names for "$GLOBAL$
@@ -611,19 +612,19 @@ std::pair<ADDRESS, unsigned> HpSomBinaryLoader::GetGlobalPointerInfo()
  * \note        The caller should delete the returned map.
  * \returns     Pointer to a new map with the info
  ******************************************************************************/
-std::map<ADDRESS, const char *> *HpSomBinaryLoader::GetDynamicGlobalMap()
+std::map<ADDRESS, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 {
 	// Find the DL Table, if it exists
 	// The DL table (Dynamic Link info) is supposed to be at the start of
 	// the $TEXT$ space, but the only way I can presently find that is to
 	// assume that the first subspace entry points to it
-	const char *subspace_location     = (char *)m_pImage + UINT4(m_pImage + 0x34);
+	const char *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
 	ADDRESS    first_subspace_fileloc = ADDRESS::g(UINT4(subspace_location + 8));
-	const char *DLTable = (char *)m_pImage + first_subspace_fileloc.m_value;
+	const char *DLTable = (char *)m_loadedImage + first_subspace_fileloc.m_value;
 
 	unsigned numDLT = UINT4(DLTable + 0x40);
 	// Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-	unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + Image->getSectionInfo(1)->getHostAddr().m_value);
+	unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + m_image->getSectionInfo(1)->getHostAddr().m_value);
 
 	// The DLT is paralelled by the first <numDLT> entries in the import table;
 	// the import table has the symbolic names
@@ -649,7 +650,7 @@ std::map<ADDRESS, const char *> *HpSomBinaryLoader::GetDynamicGlobalMap()
 
 ADDRESS HpSomBinaryLoader::getMainEntryPoint()
 {
-	auto sym = Symbols->find("main");
+	auto sym = m_symbols->find("main");
 
 	return sym ? sym->getLocation() : NO_ADDRESS;
 }

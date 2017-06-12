@@ -56,10 +56,10 @@ DOS4GWBinaryLoader::~DOS4GWBinaryLoader()
 }
 
 
-void DOS4GWBinaryLoader::initialize(IBoomerang *sys)
+void DOS4GWBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
 {
-	Image   = sys->getImage();
-	Symbols = sys->getSymbols();
+	m_image   = image;
+	m_symbols = symbols;
 }
 
 
@@ -77,13 +77,13 @@ ADDRESS DOS4GWBinaryLoader::getEntryPoint()
 
 ADDRESS DOS4GWBinaryLoader::getMainEntryPoint()
 {
-	const IBinarySymbol *sym = Symbols->find("main");
+	const IBinarySymbol *sym = m_symbols->find("main");
 
 	if (sym) {
 		return sym->getLocation();
 	}
 
-	sym = Symbols->find("__CMain");
+	sym = m_symbols->find("__CMain");
 
 	if (sym) {
 		return sym->getLocation();
@@ -96,17 +96,17 @@ ADDRESS DOS4GWBinaryLoader::getMainEntryPoint()
 	unsigned char op1, op2;
 	ADDRESS       addr;
 	// unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
-	bool gotSubEbp   = false;                                 // True if see sub ebp, ebp
-	bool lastWasCall = false;                                 // True if the last instruction was a call
+	bool gotSubEbp   = false;                                   // True if see sub ebp, ebp
+	bool lastWasCall = false;                                   // True if the last instruction was a call
 
-	IBinarySection *si = Image->getSectionInfoByName("seg0"); // Assume the first section is text
+	IBinarySection *si = m_image->getSectionInfoByName("seg0"); // Assume the first section is text
 
 	if (si == nullptr) {
-		si = Image->getSectionInfoByName(".text");
+		si = m_image->getSectionInfoByName(".text");
 	}
 
 	if (si == nullptr) {
-		si = Image->getSectionInfoByName("CODE");
+		si = m_image->getSectionInfoByName("CODE");
 	}
 
 	assert(si);
@@ -285,7 +285,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 	}
 
 	for (SectionParam par : params) {
-		IBinarySection *sect = Image->createSection(par.Name, par.from, par.from + par.Size);
+		IBinarySection *sect = m_image->createSection(par.Name, par.from, par.from + par.Size);
 
 		if (sect) {
 			sect->setBss(par.Bss)

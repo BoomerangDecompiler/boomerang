@@ -72,18 +72,10 @@ MachOBinaryLoader::~MachOBinaryLoader()
 }
 
 
-void MachOBinaryLoader::initialize(IBoomerang *sys)
+void MachOBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
 {
-	Image   = sys->getImage();
-	Symbols = sys->getSymbols();
-}
-
-
-bool MachOBinaryLoader::Open(const char *sName)
-{
-	Q_UNUSED(sName);
-	// return Load(sName) != 0;
-	return false;
+	Image   = image;
+	Symbols = symbols;
 }
 
 

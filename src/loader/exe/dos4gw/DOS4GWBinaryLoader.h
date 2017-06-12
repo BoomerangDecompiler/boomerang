@@ -130,36 +130,52 @@ typedef struct
 
 #pragma pack(pop)
 
+
 class DOS4GWBinaryLoader : public IFileLoader
 {
 public:
 	DOS4GWBinaryLoader();
-	~DOS4GWBinaryLoader();               // Destructor
-	void close() override;               // Close file opened with Open()
-	void unload() override;              // Unload the image
-	LOAD_FMT getFormat() const override; // Get format (i.e.
+	virtual ~DOS4GWBinaryLoader();
 
-	// LOADFMT_DOS4GW)
-	MACHINE getMachine() const override; // Get machine (i.e.
+	/// @copydoc IFileLoader::initialize
+	void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 
-	// MACHINE_Pentium)
-	ADDRESS getImageBase() override;
-	size_t getImageSize() override;
-
-	ADDRESS getMainEntryPoint() override;
-	ADDRESS getEntryPoint() override;
-	DWord getDelta();
-	bool loadFromMemory(QByteArray& data) override;
+	/// @copydoc IFileLoader::canLoad
 	int canLoad(QIODevice& fl) const override;
 
-	//
-	//        --        --        --        --        --        --        --        --        --
-	//
+	/// @copydoc IFileLoader::loadFromMemory
+	bool loadFromMemory(QByteArray& data) override;
+
+	/// @copydoc IFileLoader::unload
+	void unload() override;
+
+	/// @copydoc IFileLoader::close
+	void close() override;
+
+	/// @copydoc IFileLoader::getFormat
+	LOAD_FMT getFormat() const override;
+
+	/// @copydoc IFileLoader::getMachine
+	MACHINE getMachine() const override;
+
+	/// @copydoc IFileLoader::getMainEntryPoint
+	ADDRESS getMainEntryPoint() override;
+
+	/// @copydoc IFileLoader::getEntryPoint
+	ADDRESS getEntryPoint() override;
+
+	/// @copydoc IFileLoader::getImageBase
+	ADDRESS getImageBase() override;
+
+	/// @copydoc IFileLoader::getImageSize
+	size_t getImageSize() override;
+
 	// Internal information
 	// Dump headers, etc
 	virtual bool displayDetails(const char *fileName, FILE *f = stdout) override;
 
-	void initialize(IBoomerang *sys) override;
+
+	DWord getDelta();
 
 protected:
 	int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
@@ -168,15 +184,14 @@ protected:
 private:
 	bool postLoad(void *handle) override; ///< Called after archive member loaded
 
-	Header *m_pHeader;                    // Pointer to header
-	LXHeader *m_pLXHeader  = nullptr;     // Pointer to lx header
-	LXObject *m_pLXObjects = nullptr;     // Pointer to lx objects
-	LXPage *m_pLXPages     = nullptr;     // Pointer to lx pages
-	int m_cbImage;                        // Size of image
-	// int        m_cReloc;                // Number of relocation entries
-	// DWord*    m_pRelocTable;            // The relocation table
-	char *base; // Beginning of the loaded image
-	// Map from address of dynamic pointers to library procedure names:
-	class IBinarySymbolTable *Symbols;
-	class IBinaryImage *Image;
+	Header *m_pHeader;                    ///< Pointer to header
+	LXHeader *m_pLXHeader  = nullptr;     ///< Pointer to lx header
+	LXObject *m_pLXObjects = nullptr;     ///< Pointer to lx objects
+	LXPage *m_pLXPages     = nullptr;     ///< Pointer to lx pages
+	int m_cbImage;                        ///< Size of image
+	char *base;                           ///< Beginning of the loaded image
+
+	/// Map from address of dynamic pointers to library procedure names:
+	IBinarySymbolTable *m_symbols;
+	IBinaryImage *m_image;
 };

@@ -43,25 +43,46 @@ class MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
 public:
 	MachOBinaryLoader();                 // Default constructor
 	virtual ~MachOBinaryLoader();        // Destructor
-	void initialize(IBoomerang *sys) override;
-	bool Open(const char *sName);        // Open the file for r/w; ???
-	void close() override;               // Close file opened with Open()
-	void unload() override;              // Unload the image
-	LOAD_FMT getFormat() const override; // Get format (i.e. LOADFMT_MACHO)
-	MACHINE getMachine() const override; // Get machine (i.e. MACHINE_PPC)
-	bool isLibrary() const;
+
+	/// @copydoc IFileLoader::initialize
+	void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
+
+	/// @copydoc IFileLoader::loadFromMemory
+	bool loadFromMemory(QByteArray& data) override;
+
+	/// @copydoc IFileLoader::canLoad
+	int canLoad(QIODevice& dev) const override;
+
+	/// @copydoc IFileLoader::unload
+	void unload() override;
+
+	/// @copydoc IFileLoader::close
+	void close() override;
+
+	/// @copydoc IFileLoader::getFormat
+	LOAD_FMT getFormat() const override;
+
+	/// @copydoc IFileLoader::getMachine
+	MACHINE getMachine() const override;
+
+	/// @copydoc IFileLoader::getMainEntryPoint
+	ADDRESS getMainEntryPoint() override;
+
+	/// @copydoc IFileLoader::getEntryPoint
+	ADDRESS getEntryPoint() override;
+
+	/// @copydoc IFileLoader::getImageBase
 	ADDRESS getImageBase() override;
+
+	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
 
-	ADDRESS getMainEntryPoint() override;
-	ADDRESS getEntryPoint() override;
+
 	DWord getDelta();
 
-	//
-	//        --        --        --        --        --        --        --        --        --
-	//
-	// Internal information
-	// Dump headers, etc
+	bool isLibrary() const;
+
+	/// @copydoc IFileLoader::displayDetails
 	bool displayDetails(const char *fileName, FILE *f = stdout) override;
 
 protected:
@@ -69,7 +90,7 @@ protected:
 	int machORead4(int *pi) const;   // Read 4 bytes from native addr
 
 	// void *            BMMH(void *x);
-	//    char *              BMMH(char *x);
+	// char *            BMMH(char *x);
 	//    const char *        BMMH(const char *x);
 	// unsigned int        BMMH(long int & x);
 	int32_t BMMH(int32_t x);
@@ -79,20 +100,23 @@ protected:
 public:
 	std::map<QString, ObjcModule>& getObjcModules() override  { return modules; }
 
-	bool loadFromMemory(QByteArray& data) override;
-	int canLoad(QIODevice& dev) const override;
+private:
+	/// @copydoc IFileLoader::postLoad
+	bool postLoad(void *handle) override;
+
+	/// Find names for jumps to IATs
+	void findJumps(ADDRESS curr);
 
 private:
-	bool postLoad(void *handle) override; // Called after archive member loaded
-	void findJumps(ADDRESS curr);         // Find names for jumps to IATs
-
-	char *base;                           // Beginning of the loaded image
-	ADDRESS entrypoint, loaded_addr;
+	char *base;           ///< Beginning of the loaded image
+	ADDRESS entrypoint;
+	ADDRESS loaded_addr;
 	unsigned loaded_size;
 	MACHINE machine;
 	bool swap_bytes;
+
 	std::map<QString, ObjcModule> modules;
 	std::vector<struct section> sections;
-	class IBinaryImage *Image;
-	class IBinarySymbolTable *Symbols;
+	IBinaryImage *Image;
+	IBinarySymbolTable *Symbols;
 };

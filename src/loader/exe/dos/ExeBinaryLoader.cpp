@@ -10,8 +10,8 @@
 /**
  * \file ExeBinaryLoader.cpp
  * Desc: This file contains the implementation of the class ExeBinaryLoader.
- *      See ExeBinaryLoader.h and BinaryLoader.h for details
- *      MVE 08/10/97
+ *       See ExeBinaryLoader.h and BinaryLoader.h for details
+ *       MVE 08/10/97
  * 21 May 02 - Mike: Slight mod for gcc 3.1
  */
 
@@ -31,44 +31,45 @@ ExeBinaryLoader::ExeBinaryLoader()
 }
 
 
-void ExeBinaryLoader::initialize(IBoomerang *sys)
+void ExeBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
 {
-	Image   = sys->getImage();
-	Symbols = sys->getSymbols();
+	m_image   = image;
+	m_symbols = symbols;
 }
 
 
 bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 {
-	QBuffer fp(&data);
+	//
+	QBuffer fp(const_cast<QByteArray *>(&data));
 	int     i, cb;
 	Byte    buf[4];
 	int     fCOM;
 
 
 	// Always just 3 sections
-	m_pHeader = new exeHeader;
+	m_header = new ExeHeader;
 
 	fp.open(QBuffer::ReadOnly);
 
 	/* Read in first 2 bytes to check EXE signature */
-	if (fp.read((char *)m_pHeader, 2) != 2) {
+	if (fp.read((char *)m_header, 2) != 2) {
 		qWarning() << "Cannot read file ";
 		return false;
 	}
 
 	// Check for the "MZ" exe header
-	if (!(fCOM = ((m_pHeader->sigLo != 0x4D) || (m_pHeader->sigHi != 0x5A)))) {
+	if (!(fCOM = ((m_header->sigLo != 0x4D) || (m_header->sigHi != 0x5A)))) {
 		/* Read rest of m_pHeader */
 		fp.seek(0);
 
-		if (fp.read((char *)m_pHeader, sizeof(exeHeader)) != sizeof(exeHeader)) {
+		if (fp.read((char *)m_header, sizeof(ExeHeader)) != sizeof(ExeHeader)) {
 			qWarning() << "Cannot read file ";
 			return false;
 		}
 
 		/* This is a typical DOS kludge! */
-		if (LH(&m_pHeader->relocTabOffset) == 0x40) {
+		if (LH(&m_header->relocTabOffset) == 0x40) {
 			qWarning() << "Error - NE format executable";
 			return false;
 		}
@@ -78,10 +79,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 		 * less the length of the m_pHeader and reloc table
 		 * less the number of bytes unused on last page
 		 */
-		cb = (DWord)LH(&m_pHeader->numPages) * 512 - (DWord)LH(&m_pHeader->numParaHeader) * 16;
+		cb = (DWord)LH(&m_header->numPages) * 512 - (DWord)LH(&m_header->numParaHeader) * 16;
 
-		if (m_pHeader->lastPageSize) {
-			cb -= 512 - LH(&m_pHeader->lastPageSize);
+		if (m_header->lastPageSize) {
+			cb -= 512 - LH(&m_header->lastPageSize);
 		}
 
 		/* We quietly ignore minAlloc and maxAlloc since for our
@@ -92,27 +93,27 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 		 * to have to load DS from a constant so it'll be pretty
 		 * obvious.
 		 */
-		m_cReloc = (SWord)LH(&m_pHeader->numReloc);
+		m_numReloc = (SWord)LH(&m_header->numReloc);
 
 		/* Allocate the relocation table */
-		if (m_cReloc) {
-			m_pRelocTable = new DWord[m_cReloc];
-			fp.seek(LH(&m_pHeader->relocTabOffset));
+		if (m_numReloc) {
+			m_relocTable = new DWord[m_numReloc];
+			fp.seek(LH(&m_header->relocTabOffset));
 
 			/* Read in seg:offset pairs and convert to Image ptrs */
-			for (i = 0; i < m_cReloc; i++) {
+			for (i = 0; i < m_numReloc; i++) {
 				fp.read((char *)buf, 4);
-				m_pRelocTable[i] = LH(buf) + (((int)LH(buf + 2)) << 4);
+				m_relocTable[i] = LH(buf) + (((int)LH(buf + 2)) << 4);
 			}
 		}
 
 		/* Seek to start of image */
-		fp.seek((int)LH(&m_pHeader->numParaHeader) * 16);
+		fp.seek((int)LH(&m_header->numParaHeader) * 16);
 
 		// Initial PC and SP. Note that we fake the seg:offset by putting
 		// the segment in the top half, and offset int he bottom
-		m_uInitPC = ((LH(&m_pHeader->initCS)) << 16) + LH(&m_pHeader->initIP);
-		m_uInitSP = ((LH(&m_pHeader->initSS)) << 16) + LH(&m_pHeader->initSP);
+		m_uInitPC = ((LH(&m_header->initCS)) << 16) + LH(&m_header->initIP);
+		m_uInitSP = ((LH(&m_header->initSS)) << 16) + LH(&m_header->initSP);
 	}
 	else {
 		/* COM file
@@ -124,26 +125,26 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 		 * This is also the implied start address so if we load the image
 		 * at offset 100H addresses should all line up properly again.
 		 */
-		m_uInitPC = 0x100;
-		m_uInitSP = 0xFFFE;
-		m_cReloc  = 0;
+		m_uInitPC  = 0x100;
+		m_uInitSP  = 0xFFFE;
+		m_numReloc = 0;
 
 		fp.seek(0);
 	}
 
 	/* Allocate a block of memory for the image. */
-	m_cbImage = cb;
-	m_pImage  = new uint8_t[m_cbImage];
+	m_imageSize   = cb;
+	m_loadedImage = new uint8_t[m_imageSize];
 
-	if (cb != fp.read((char *)m_pImage, (size_t)cb)) {
+	if (cb != fp.read((char *)m_loadedImage, (size_t)cb)) {
 		qWarning() << "Cannot read file ";
 		return false;
 	}
 
 	/* Relocate segment constants */
-	if (m_cReloc) {
-		for (i = 0; i < m_cReloc; i++) {
-			Byte  *p = &m_pImage[m_pRelocTable[i]];
+	if (m_numReloc) {
+		for (i = 0; i < m_numReloc; i++) {
+			Byte  *p = &m_loadedImage[m_relocTable[i]];
 			SWord w  = (SWord)LH(p);
 			*p++ = (Byte)(w & 0x00FF);
 			*p   = (Byte)((w & 0xFF00) >> 8);
@@ -151,18 +152,19 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 	}
 
 	fp.close();
+
 	// TODO: prevent overlapping of those 3 sections
-	IBinarySection *header = Image->createSection("$HEADER", ADDRESS::n(0x4000), ADDRESS::n(0x4000) + sizeof(exeHeader));
-	header->setHostAddr(ADDRESS::host_ptr(m_pHeader))
+	IBinarySection *header = m_image->createSection("$HEADER", ADDRESS::n(0x4000), ADDRESS::n(0x4000) + sizeof(ExeHeader));
+	header->setHostAddr(ADDRESS::host_ptr(m_header))
 	   .setEntrySize(1);
 	// The text and data section
-	IBinarySection *text = Image->createSection(".text", ADDRESS::n(0x10000), ADDRESS::n(0x10000) + sizeof(m_cbImage));
+	IBinarySection *text = m_image->createSection(".text", ADDRESS::n(0x10000), ADDRESS::n(0x10000) + sizeof(m_imageSize));
 	text->setCode(true)
 	   .setData(true)
-	   .setHostAddr(ADDRESS::host_ptr(m_pImage))
+	   .setHostAddr(ADDRESS::host_ptr(m_loadedImage))
 	   .setEntrySize(1);
-	IBinarySection *reloc = Image->createSection("$RELOC", ADDRESS::n(0x4000) + sizeof(exeHeader), ADDRESS::n(0x4000) + sizeof(exeHeader) + sizeof(DWord) * m_cReloc);
-	reloc->setHostAddr(ADDRESS::host_ptr(m_pRelocTable))
+	IBinarySection *reloc = m_image->createSection("$RELOC", ADDRESS::n(0x4000) + sizeof(ExeHeader), ADDRESS::n(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
+	reloc->setHostAddr(ADDRESS::host_ptr(m_relocTable))
 	   .setEntrySize(sizeof(DWord));
 	return true;
 }
@@ -171,9 +173,9 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 // Clean up and unload the binary image
 void ExeBinaryLoader::unload()
 {
-	delete m_pHeader;
-	delete[] m_pImage;
-	delete[] m_pRelocTable;
+	delete m_header;
+	delete[] m_loadedImage;
+	delete[] m_relocTable;
 }
 
 
@@ -242,7 +244,7 @@ ADDRESS ExeBinaryLoader::getMainEntryPoint()
 ADDRESS ExeBinaryLoader::getEntryPoint()
 {
 	// Check this...
-	return ADDRESS::g((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
+	return ADDRESS::g((LH(&m_header->initCS) << 4) + LH(&m_header->initIP));
 }
 
 

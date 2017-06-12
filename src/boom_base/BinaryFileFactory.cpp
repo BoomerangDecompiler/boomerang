@@ -40,11 +40,13 @@ BinaryFileFactory::BinaryFileFactory()
 
 IFileLoader *BinaryFileFactory::load(const QString& sName)
 {
-	Boomerang    *boom  = Boomerang::get();
-	IBinaryImage *image = boom->getImage();
+	IBinaryImage       *image   = Boomerang::get()->getImage();
+	IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
 
 	image->reset();
-	boom->getSymbols()->clear();
+	symbols->clear();
+
+	// Find loader plugin to load file
 	IFileLoader *ldr_iface = getInstanceFor(sName);
 
 	if (ldr_iface == nullptr) {
@@ -52,8 +54,8 @@ IFileLoader *BinaryFileFactory::load(const QString& sName)
 		return nullptr;
 	}
 
-	ldr_iface->initialize(boom);
-	ldr_iface->close();
+	ldr_iface->initialize(image, symbols);
+
 	QFile srcFile(sName);
 
 	if (false == srcFile.open(QFile::ReadOnly)) {
@@ -61,10 +63,10 @@ IFileLoader *BinaryFileFactory::load(const QString& sName)
 		return nullptr;
 	}
 
-	boom->project()->getFiledata().clear();
-	boom->project()->getFiledata() = srcFile.readAll();
+	Boomerang::get()->project()->getFiledata().clear();
+	Boomerang::get()->project()->getFiledata() = srcFile.readAll();
 
-	if (ldr_iface->loadFromMemory(boom->project()->getFiledata()) == 0) {
+	if (ldr_iface->loadFromMemory(Boomerang::get()->project()->getFiledata()) == 0) {
 		qWarning() << "Loading '" << sName << "' failed";
 		return nullptr;
 	}

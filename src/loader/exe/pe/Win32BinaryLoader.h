@@ -19,7 +19,7 @@
 
 /**
  * This file contains the definition of the Win32BinaryLoader class.
- * 
+ *
  * At present, there is no support for a symbol table. Win32 files do
  * not use dynamic linking, but it is possible that some files may
  * have debug symbols (in Microsoft Codeview or Borland formats),
@@ -140,53 +140,81 @@ typedef struct
 	DWord stamp;         // Time/date stamp export data was created
 	SWord verMajor;      // Version number can be ...
 	SWord verMinor;      //     ... set by user
-	DWord name;          // RVA of the ascii string containing the name of
-	//     the DLL
-	DWord base;          // Starting ordinal number for exports in this
-	//    image. Usually set to 1.
+	DWord name;          // RVA of the ascii string containing the name of the DLL
+	DWord base;          // Starting ordinal number for exports in this image. Usually set to 1.
 	DWord numEatEntries; // Number of entries in EAT (Export ADdress Table)
-	DWord numNptEntries; // Number of entries in NPT (Name Pointer Table)
-	//    (also #entries in the Ordinal Table)
+	DWord numNptEntries; // Number of entries in NPT (Name Pointer Table) (also #entries in the Ordinal Table)
 	DWord eatRVA;        // RVA of the EAT
 	DWord nptRVA;        // RVA of the NPT
 	DWord otRVA;         // RVA of the OT
 } PEExportDtor;
 #pragma pack(pop)
 
+/**
+ * Class for loading Win32 binary ".exe" files
+ */
 class Win32BinaryLoader : public IFileLoader
 {
 public:
 	Win32BinaryLoader();
 	virtual ~Win32BinaryLoader();
-	void close() override;                 ///< Close file opened with Open()
-	void unload() override;                ///< Unload the image
-	LOAD_FMT getFormat() const override;   ///< Get format (i.e.LOADFMT_Win32)
-	MACHINE getMachine() const override;   ///< Get machine (i.e. MACHINE_Pentium)
-	ADDRESS getImageBase() override;
-	size_t getImageSize() override;
-	bool isLibrary() const;
 
-	ADDRESS getMainEntryPoint() override;
-	ADDRESS getEntryPoint() override;
-	DWord getDelta();
+	/// @copydoc IFileLoader::initialize
+	void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 
-	//
-	//        --        --        --        --        --        --        --        --        --
-	//
-	// Internal information
-	// Dump headers, etc
-	bool displayDetails(const char *fileName, FILE *f = stdout) override;
-	bool loadFromMemory(QByteArray& arr) override;
+	/// @copydoc IFileLoader::canLoad
 	int canLoad(QIODevice& fl) const override;
 
+	/// @copydoc IFileLoader::loadFromMemory
+	bool loadFromMemory(QByteArray& arr) override;
+
+	/// @copydoc IFileLoader::unload
+	void unload() override;
+
+	/// @copydoc IFileLoader::close
+	void close() override;
+
+	/// @copydoc IFileLoader::getFormat
+	LOAD_FMT getFormat() const override;
+
+	/// @copydoc IFileLoader::getMachine
+	MACHINE getMachine() const override;
+
+	/// @copydoc IFileLoader::getMainEntryPoint
+	ADDRESS getMainEntryPoint() override;
+
+	/// @copydoc IFileLoader::getEntryPoint
+	ADDRESS getEntryPoint() override;
+
+	/// @copydoc IFileLoader::getImageBase
+	ADDRESS getImageBase() override;
+
+	/// @copydoc IFileLoader::getImageSize
+	size_t getImageSize() override;
+
+public:
+	/// @copydoc IFileLoader::isJumpToAnotherAddr
+	ADDRESS isJumpToAnotherAddr(ADDRESS uNative) override;
+
+	/// @copydoc IFileLoader::displayDetails
+	bool displayDetails(const char *fileName, FILE *f = stdout) override;
+
+	/// @copydoc IFileLoader::hasDebugInfo
+	bool hasDebugInfo() override { return m_hasDebugInfo; }
+
+	bool isLibrary() const;
+
+	DWord getDelta();
+
 protected:
+	/// @copydoc IFileLoader::postLoad
+	bool postLoad(void *handle) override;
+
 	int win32Read2(short *ps) const; // Read 2 bytes from native addr
 	int win32Read4(int *pi) const;   // Read 4 bytes from native addr
 
 public:
-
 	bool IsStaticLinkedLibProc(ADDRESS uNative);
-	ADDRESS isJumpToAnotherAddr(ADDRESS uNative) override;
 
 	bool IsMinGWsAllocStack(ADDRESS uNative);
 	bool IsMinGWsFrameInit(ADDRESS uNative);
@@ -194,27 +222,22 @@ public:
 	bool IsMinGWsCleanupSetup(ADDRESS uNative);
 	bool IsMinGWsMalloc(ADDRESS uNative);
 
-
-	bool hasDebugInfo()  override { return haveDebugInfo; }
-	void initialize(IBoomerang *sys) override;
-
 protected:
 	void processIAT();
 	void readDebugData(QString exename);
 
 private:
-	bool postLoad(void *handle) override; // Called after archive member loaded
-	void findJumps(ADDRESS curr);         // Find names for jumps to IATs
+	/// Find names for jumps to IATs
+	void findJumps(ADDRESS curr);
 
-	Header *m_pHeader;                    // Pointer to header
-	PEHeader *m_pPEHeader;                // Pointer to pe header
-	int m_cbImage;                        // Size of image
-	int m_cReloc;                         // Number of relocation entries
-	DWord *m_pRelocTable;                 // The relocation table
-	char *base;                           // Beginning of the loaded image
-	// Map from address of dynamic pointers to library procedure names:
-	bool haveDebugInfo;
-	bool mingw_main;
-	class IBinaryImage *Image;
-	class IBinarySymbolTable *Symbols;
+	Header *m_pHeader;                    ///< Pointer to header
+	PEHeader *m_pPEHeader;                ///< Pointer to pe header
+	int m_cbImage;                        ///< Size of image
+	int m_cReloc;                         ///< Number of relocation entries
+	DWord *m_relocTable;                  ///< The relocation table
+	char *m_base;                         ///< Beginning of the loaded image
+	bool m_hasDebugInfo;
+	bool m_mingw_main;
+	IBinaryImage *m_image;
+	IBinarySymbolTable *m_symbols;
 };

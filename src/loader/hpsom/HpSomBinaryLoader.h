@@ -78,59 +78,74 @@ struct symElem
 	ADDRESS    value;
 };
 
+
 class HpSomBinaryLoader : public IFileLoader
 {
 public:
 	HpSomBinaryLoader();    // Constructor
 	virtual ~HpSomBinaryLoader();
-	void initialize(IBoomerang *sys) override;
 
-	void unload() override;                // Unload the image
-	void close() override;                 // Close file opened with Open()
-	bool postLoad(void *handle) override;  // For archive files only
-	LOAD_FMT getFormat() const override;   // Get format i.e. LOADFMT_PALM
-	MACHINE getMachine() const override;   // Get format i.e. MACHINE_HPRISC
+	/// @copydoc IFileLoader::initialize
+	void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 
-	bool isLibrary() const;
+	/// @copydoc IFileLoader::canLoad
+	int canLoad(QIODevice& dev) const override;
+
+	/// @copydoc IFileLoader::loadFromMemory
+	bool loadFromMemory(QByteArray& data) override;
+
+	/// @copydoc IFileLoader::unload
+	void unload() override;
+
+	/// @copydoc IFileLoader::close
+	void close() override;
+
+	/// @copydoc IFileLoader::getMainEntryPoint
+	ADDRESS getMainEntryPoint() override;
+
+	/// @copydoc IFileLoader::getEntryPoint
+	ADDRESS getEntryPoint() override;
+
+
+	/// @copydoc IFileLoader::getFormat
+	LOAD_FMT getFormat() const override;
+
+	/// @copydoc IFileLoader::getMachine
+	MACHINE getMachine() const override;
+
+	/// @copydoc IFileLoader::getImageBase
 	ADDRESS getImageBase() override;
+
+	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
 
-	// Specific to BinaryFile objects that implement a "global pointer"
-	// Gets a pair of unsigned integers representing the address of %agp (first)
-	// and the value for GLOBALOFFSET (unused for pa-risc)
-	std::pair<ADDRESS, unsigned> GetGlobalPointerInfo();
+	bool isLibrary() const;
+
+protected:
+	// Analysis functions
+	//        bool        IsDynamicLinkedProc(ADDRESS wNative);
+	//        ADDRESS     NativeToHostAddress(ADDRESS uNative);
+	bool postLoad(void *handle) override;  // For archive files only
+
+private:
+	/// Specific to BinaryFile objects that implement a "global pointer"
+	/// Gets a pair of unsigned integers representing the address of %agp (first)
+	/// and the value for GLOBALOFFSET (unused for pa-risc)
+	std::pair<ADDRESS, unsigned> getGlobalPointerInfo();
 
 	// Get a map from ADDRESS to const char*. This map contains the native
 	// addresses and symbolic names of global data items (if any) which are
 	// shared with dynamically linked libraries. Example: __iob (basis for
 	// stdout).The ADDRESS is the native address of a pointer to the real dynamic data object.
-	std::map<ADDRESS, const char *> *GetDynamicGlobalMap();
+	std::map<ADDRESS, const char *> *getDynamicGlobalMap();
 
-	//
-	//  --  --  --  --  --  --  --  --  --  --  --
-	//
-	// Internal information
-	// Dump headers, etc
-	// virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
-
-	// Analysis functions
-	ADDRESS getMainEntryPoint() override;
-	ADDRESS getEntryPoint() override;
-
-	//        bool        IsDynamicLinkedProc(ADDRESS wNative);
-	//        ADDRESS     NativeToHostAddress(ADDRESS uNative);
-
-	bool loadFromMemory(QByteArray& data) override;
-	int canLoad(QIODevice& dev) const override;
-
-private:
 	// Private method to get the start and length of a given subspace
 	std::pair<ADDRESS, int> getSubspaceInfo(const char *ssname);
 
-	unsigned char *m_pImage;     // Points to loaded image
-	IBinarySymbolTable *Symbols; // Symbol table object
-	std::set<ADDRESS> imports;   // Set of imported proc addr's
-	class IBinaryImage *Image;
+	Byte *m_loadedImage;            ///< Points to loaded image
+	IBinarySymbolTable *m_symbols;  ///< Symbol table object
+	std::set<ADDRESS> m_imports;    ///< Set of imported proc addr's
+	IBinaryImage *m_image;
 
 public:
 	void processSymbols();
