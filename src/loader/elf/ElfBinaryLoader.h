@@ -61,7 +61,6 @@ public:
 	/// @copydoc IFileLoader::canLoad
 	int canLoad(QIODevice& fl) const override;
 
-
 	/// @copydoc IFileLoader::loadFromMemory
 	bool loadFromMemory(QByteArray& img) override;
 

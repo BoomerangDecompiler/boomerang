@@ -89,6 +89,7 @@ void ElfBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbol
 void ElfBinaryLoader::init()
 {
 	m_loadedImage   = nullptr;
+	m_elfHeader     = nullptr;  // No ELF header
 	m_programHdrs   = nullptr;  // No program headers
 	m_sectionhdrs   = nullptr;  // No section headers
 	m_strings       = nullptr;  // No strings

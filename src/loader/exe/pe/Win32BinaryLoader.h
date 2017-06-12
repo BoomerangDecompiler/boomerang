@@ -214,13 +214,13 @@ protected:
 	int win32Read4(int *pi) const;   // Read 4 bytes from native addr
 
 public:
-	bool IsStaticLinkedLibProc(ADDRESS uNative);
+	bool isStaticLinkedLibProc(ADDRESS uNative);
 
-	bool IsMinGWsAllocStack(ADDRESS uNative);
-	bool IsMinGWsFrameInit(ADDRESS uNative);
-	bool IsMinGWsFrameEnd(ADDRESS uNative);
-	bool IsMinGWsCleanupSetup(ADDRESS uNative);
-	bool IsMinGWsMalloc(ADDRESS uNative);
+	bool isMinGWsAllocStack(ADDRESS uNative);
+	bool isMinGWsFrameInit(ADDRESS uNative);
+	bool isMinGWsFrameEnd(ADDRESS uNative);
+	bool isMinGWsCleanupSetup(ADDRESS uNative);
+	bool isMinGWsMalloc(ADDRESS uNative);
 
 protected:
 	void processIAT();

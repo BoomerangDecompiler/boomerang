@@ -525,19 +525,15 @@ void Win32BinaryLoader::readDebugData(QString exename)
 
 	dbghelp::SymSetOptions(SYMOPT_LOAD_LINES);
 
-	if (dbghelp::SymInitialize(hProcess, nullptr, FALSE)) {
-		// SymInitialize returned success
-	}
-	else {
-		// SymInitialize failed
+	if (!dbghelp::SymInitialize(hProcess, nullptr, FALSE)) {
 		error = GetLastError();
 		printf("SymInitialize returned error : %d\n", error);
 		return;
 	}
 
-	DWORD64 dwBaseAddr = 0;
+	DWORD64 dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0)
 
-	if (dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0)) {
+	if (dwBaseAddr != 0) {
 		assert(dwBaseAddr == m_pPEHeader->Imagebase);
 		bool found = false;
 		dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr, 0, lookforsource, &found);
@@ -971,7 +967,7 @@ int Win32BinaryLoader::win32Read4(int *pi) const
 }
 
 
-bool Win32BinaryLoader::IsStaticLinkedLibProc(ADDRESS uNative)
+bool Win32BinaryLoader::isStaticLinkedLibProc(ADDRESS uNative)
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
 	HANDLE hProcess = GetCurrentProcess();
@@ -985,8 +981,8 @@ bool Win32BinaryLoader::IsStaticLinkedLibProc(ADDRESS uNative)
 	}
 #endif
 
-	if (IsMinGWsAllocStack(uNative) || IsMinGWsFrameInit(uNative) || IsMinGWsFrameEnd(uNative) ||
-		IsMinGWsCleanupSetup(uNative) || IsMinGWsMalloc(uNative)) {
+	if (isMinGWsAllocStack(uNative) || isMinGWsFrameInit(uNative) || isMinGWsFrameEnd(uNative) ||
+		          isMinGWsCleanupSetup(uNative) || isMinGWsMalloc(uNative)) {
 		return true;
 	}
 
@@ -994,7 +990,7 @@ bool Win32BinaryLoader::IsStaticLinkedLibProc(ADDRESS uNative)
 }
 
 
-bool Win32BinaryLoader::IsMinGWsAllocStack(ADDRESS uNative)
+bool Win32BinaryLoader::isMinGWsAllocStack(ADDRESS uNative)
 {
 	if (m_mingw_main) {
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
@@ -1019,7 +1015,7 @@ bool Win32BinaryLoader::IsMinGWsAllocStack(ADDRESS uNative)
 }
 
 
-bool Win32BinaryLoader::IsMinGWsFrameInit(ADDRESS uNative)
+bool Win32BinaryLoader::isMinGWsFrameInit(ADDRESS uNative)
 {
 	if (m_mingw_main) {
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
@@ -1051,7 +1047,7 @@ bool Win32BinaryLoader::IsMinGWsFrameInit(ADDRESS uNative)
 }
 
 
-bool Win32BinaryLoader::IsMinGWsFrameEnd(ADDRESS uNative)
+bool Win32BinaryLoader::isMinGWsFrameEnd(ADDRESS uNative)
 {
 	if (m_mingw_main) {
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
@@ -1078,7 +1074,7 @@ bool Win32BinaryLoader::IsMinGWsFrameEnd(ADDRESS uNative)
 }
 
 
-bool Win32BinaryLoader::IsMinGWsCleanupSetup(ADDRESS uNative)
+bool Win32BinaryLoader::isMinGWsCleanupSetup(ADDRESS uNative)
 {
 	if (m_mingw_main) {
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
@@ -1110,7 +1106,7 @@ bool Win32BinaryLoader::IsMinGWsCleanupSetup(ADDRESS uNative)
 }
 
 
-bool Win32BinaryLoader::IsMinGWsMalloc(ADDRESS uNative)
+bool Win32BinaryLoader::isMinGWsMalloc(ADDRESS uNative)
 {
 	if (m_mingw_main) {
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
