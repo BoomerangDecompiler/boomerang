@@ -26,7 +26,7 @@ public:
 	virtual MACHINE getMachine() const = 0;  ///< Get the expected machine (e.g. MACHINE_PENTIUM)
 
 	/// Checks if the file can be loaded by this loader.
-	virtual bool canLoad(QIODevice& data) const = 0;
+	virtual int canLoad(QIODevice& data) const = 0;
 
 	/// @returns true for a good load
 	virtual bool loadFromMemory(QByteArray& data) = 0;

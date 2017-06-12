@@ -85,7 +85,7 @@ public:
 	virtual ADDRESS getEntryPoint() override;
 
 	/// @copydoc IFileLoader::canLoad
-	bool canLoad(QIODevice& fl) const override;
+	int canLoad(QIODevice& fl) const override;
 
 	/// @copydoc IFileLoader::loadFromMemory
 	bool loadFromMemory(QByteArray& img) override;

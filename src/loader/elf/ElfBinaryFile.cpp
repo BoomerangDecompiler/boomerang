@@ -1105,11 +1105,11 @@ bool ElfBinaryFile::isRelocationAt(ADDRESS uNative)
 
 #define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
-bool ElfBinaryFile::canLoad(QIODevice& fl) const
+int ElfBinaryFile::canLoad(QIODevice& fl) const
 {
 	QByteArray contents = fl.read(4);
 
-	return TESTMAGIC4(contents.data(), 0, '\177', 'E', 'L', 'F');
+	return TESTMAGIC4(contents.data(), 0, '\177', 'E', 'L', 'F') ? 4 : 0;
 }
 
 
