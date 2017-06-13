@@ -145,7 +145,7 @@ public:
 	IBinaryImage *getImage() override;
 	IBinarySymbolTable *getSymbols() override;
 
-	IProject *project()  override { return m_currentProject; }
+	IProject *getProject()  override { return m_currentProject; }
 
 	/**
 	 * Parse and execute a command supplied in interactive mode.

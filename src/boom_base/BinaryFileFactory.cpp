@@ -38,7 +38,7 @@ BinaryFileFactory::BinaryFileFactory()
 }
 
 
-IFileLoader *BinaryFileFactory::load(const QString& sName)
+IFileLoader *BinaryFileFactory::load(const QString& filePath)
 {
 	IBinaryImage       *image   = Boomerang::get()->getImage();
 	IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
@@ -47,32 +47,32 @@ IFileLoader *BinaryFileFactory::load(const QString& sName)
 	symbols->clear();
 
 	// Find loader plugin to load file
-	IFileLoader *ldr_iface = getInstanceFor(sName);
+	IFileLoader *loader = getInstanceFor(filePath);
 
-	if (ldr_iface == nullptr) {
+	if (loader == nullptr) {
 		qWarning() << "unrecognised binary file format.";
 		return nullptr;
 	}
 
-	ldr_iface->initialize(image, symbols);
+	loader->initialize(image, symbols);
 
-	QFile srcFile(sName);
+	QFile srcFile(filePath);
 
 	if (false == srcFile.open(QFile::ReadOnly)) {
-		qWarning() << "Opening '" << sName << "' failed";
+		qWarning() << "Opening '" << filePath << "' failed";
 		return nullptr;
 	}
 
-	Boomerang::get()->project()->getFiledata().clear();
-	Boomerang::get()->project()->getFiledata() = srcFile.readAll();
+	Boomerang::get()->getProject()->getFiledata().clear();
+	Boomerang::get()->getProject()->getFiledata() = srcFile.readAll();
 
-	if (ldr_iface->loadFromMemory(Boomerang::get()->project()->getFiledata()) == 0) {
-		qWarning() << "Loading '" << sName << "' failed";
+	if (loader->loadFromMemory(Boomerang::get()->getProject()->getFiledata()) == 0) {
+		qWarning() << "Loading '" << filePath << "' failed";
 		return nullptr;
 	}
 
 	image->calculateTextLimits();
-	return ldr_iface;
+	return loader;
 }
 
 
