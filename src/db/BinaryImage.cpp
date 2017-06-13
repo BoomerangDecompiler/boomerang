@@ -340,19 +340,24 @@ SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRE
 		to += 1; // open interval, so -> [from,to+1) is right
 	}
 
-//    for(auto iter = SectionMap.begin(),e=SectionMap.end(); iter!=e; ++iter) {
-//        qDebug() << iter->first.lower().toString() << " - "<< iter->first.upper().toString();
-//    }
-	auto clash_with = m_sectionMap.find(boost::icl::interval<ADDRESS>::right_open(from, to));
+#ifdef DEBUG
+	// see https://stackoverflow.com/questions/25501044/gcc-ld-overlapping-sections-tbss-init-array-in-statically-linked-elf-bin
+	// Basically, the .tbss section is of type SHT_NOBITS, so there is no data associated to the section.
+	// It can therefore overlap other sections containing data.
+	// This is a quirk of ELF programs linked statically with glibc
+	if (name != ".tbss") {
+		auto clash_with = m_sectionMap.find(boost::icl::interval<ADDRESS>::right_open(from, to));
 
-	if (clash_with != m_sectionMap.end()) {
-		qDebug() << "Segment" << name << "would intersect existing one" << (*clash_with->second).getName();
-		return nullptr;
+		if ((clash_with != m_sectionMap.end()) && ((*clash_with->second).getName() != ".tbss")) {
+			qDebug() << "Segment" << name << "would intersect existing one" << (*clash_with->second).getName();
+			return nullptr;
+		}
 	}
+#endif
 
 	SectionInfo *sect = new SectionInfo(from, (to - from).m_value, name);
 	m_sections.push_back(sect);
 
-	m_sectionMap.add(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), sect));
+	m_sectionMap.insert(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), sect));
 	return sect;
 }

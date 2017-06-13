@@ -41,7 +41,7 @@ void ExeBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbol
 bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 {
 	//
-	QBuffer fp(const_cast<QByteArray *>(&data));
+	QBuffer fp(&data);
 	int     i, cb;
 	Byte    buf[4];
 	int     fCOM;

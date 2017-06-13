@@ -62,6 +62,7 @@ public:
 	int canLoad(QIODevice& fl) const override;
 
 	/// @copydoc IFileLoader::loadFromMemory
+	/// Note that empty sections will not be added to the image.
 	bool loadFromMemory(QByteArray& img) override;
 
 	/// @copydoc IFileLoader::unload
