@@ -3,6 +3,7 @@
  * Provides the implementation for the FrontendTest class, which
  *          tests the FrontEnd and related classes
  *============================================================================*/
+
 #include "FrontendTest.h"
 #include "db/prog.h"
 
@@ -11,9 +12,7 @@
 #define HELLO_HPPA       "tests/inputs/hppa/hello"
 #define STARTER_PALM     "tests/inputs/mc68328/Starter.prc"
 
-/***************************************************************************/ /**
- * \brief Test loading the sparc hello world program
- *============================================================================*/
+
 void FrontendTest::test1()
 {
 }

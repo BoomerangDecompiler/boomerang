@@ -49,22 +49,19 @@ void FrontPentTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        FrontPentTest::test1
- * OVERVIEW:        Test decoding some pentium instructions
- *============================================================================*/
 void FrontPentTest::test1()
 {
 	QString           expected;
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.load(HELLO_PENT);
+
 	QVERIFY(pBF != 0);
-	
-	Prog            *prog  = new Prog(HELLO_PENT);
+
+	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
-	
+
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
@@ -108,12 +105,12 @@ void FrontPentTest::test2()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.load(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(HELLO_PENT);
+	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
-	
+
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
@@ -149,10 +146,10 @@ void FrontPentTest::test3()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.load(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(HELLO_PENT);
+	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -188,11 +185,11 @@ void FrontPentTest::testBranch()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(BRANCH_PENT);
+	IFileLoader       *pBF = bff.load(BRANCH_PENT);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(BRANCH_PENT);
-	
+	Prog *prog = new Prog(BRANCH_PENT);
+
 	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -232,10 +229,11 @@ void FrontPentTest::testFindMain()
 	// Test the algorithm for finding main, when there is a call to __libc_start_main
 	// Also tests the loader hack
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(FEDORA2_TRUE);
+	IFileLoader       *pBF = bff.load(FEDORA2_TRUE);
+
 	QVERIFY(pBF != 0);
-	
-	Prog            *prog  = new Prog(FEDORA2_TRUE);
+
+	Prog *prog = new Prog(FEDORA2_TRUE);
 	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);

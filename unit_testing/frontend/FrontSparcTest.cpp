@@ -25,9 +25,11 @@
 
 #define HELLO_SPARC     baseDir.absoluteFilePath("tests/inputs/sparc/hello")
 #define BRANCH_SPARC    baseDir.absoluteFilePath("tests/inputs/sparc/branch")
+
 static bool    logset = false;
 static QString TEST_BASE;
 static QDir    baseDir;
+
 void FrontSparcTest::initTestCase()
 {
 	if (!logset) {
@@ -48,20 +50,16 @@ void FrontSparcTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        FrontSparcTest::test1
- * OVERVIEW:        Test decoding some sparc instructions
- *============================================================================*/
 void FrontSparcTest::test1()
 {
 	QString           expected;
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(HELLO_SPARC);
+	IFileLoader       *pBF = bff.load(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(HELLO_SPARC);
+	Prog *prog = new Prog(HELLO_SPARC);
 	QVERIFY(pBF->getMachine() == MACHINE_SPARC);
 	FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -130,10 +128,10 @@ void FrontSparcTest::test2()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(HELLO_SPARC);
+	IFileLoader       *pBF = bff.load(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(HELLO_SPARC);
+	Prog *prog = new Prog(HELLO_SPARC);
 	QVERIFY(pBF->getMachine() == MACHINE_SPARC);
 	FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -178,10 +176,10 @@ void FrontSparcTest::test3()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(HELLO_SPARC);
+	IFileLoader       *pBF = bff.load(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(HELLO_SPARC);
+	Prog *prog = new Prog(HELLO_SPARC);
 	QVERIFY(pBF->getMachine() == MACHINE_SPARC);
 	FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -242,10 +240,10 @@ void FrontSparcTest::testBranch()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(BRANCH_SPARC);
+	IFileLoader       *pBF = bff.load(BRANCH_SPARC);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(BRANCH_SPARC);
+	Prog *prog = new Prog(BRANCH_SPARC);
 	QVERIFY(pBF->getMachine() == MACHINE_SPARC);
 	FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -283,10 +281,10 @@ void FrontSparcTest::testBranch()
 void FrontSparcTest::testDelaySlot()
 {
 	BinaryFileFactory bff;
-	IFileLoader *pBF = bff.load(BRANCH_SPARC);
+	IFileLoader       *pBF = bff.load(BRANCH_SPARC);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(BRANCH_SPARC);
+	Prog *prog = new Prog(BRANCH_SPARC);
 	QVERIFY(pBF->getMachine() == MACHINE_SPARC);
 	FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
