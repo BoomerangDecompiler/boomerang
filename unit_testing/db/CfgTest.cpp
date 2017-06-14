@@ -23,9 +23,11 @@
 #define FRONTIER_PENTIUM    baseDir.absoluteFilePath("tests/inputs/pentium/frontier")
 #define SEMI_PENTIUM        baseDir.absoluteFilePath("tests/inputs/pentium/semi")
 #define IFTHEN_PENTIUM      baseDir.absoluteFilePath("tests/inputs/pentium/ifthen")
+
 static bool    logset = false;
 static QString TEST_BASE;
 static QDir    baseDir;
+
 void CfgTest::initTestCase()
 {
 	if (!logset) {
@@ -58,9 +60,10 @@ void CfgTest::initTestCase()
 void CfgTest::testDominators()
 {
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(FRONTIER_PENTIUM);
+	IFileLoader       *pBF = bff.load(FRONTIER_PENTIUM);
 
-	QVERIFY(pBF != 0);
+	QVERIFY(pBF != nullptr);
+
 	Prog     prog(FRONTIER_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
@@ -103,8 +106,6 @@ void CfgTest::testDominators()
 	}
 
 	QCOMPARE(actual_st, expect_st);
-
-	pBF->deleteLater();
 }
 
 
@@ -121,7 +122,7 @@ void CfgTest::testDominators()
 void CfgTest::testSemiDominators()
 {
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(SEMI_PENTIUM);
+	IFileLoader       *pBF = bff.load(SEMI_PENTIUM);
 
 	QVERIFY(pBF != 0);
 	Prog     prog(SEMI_PENTIUM);
@@ -184,7 +185,7 @@ void CfgTest::testSemiDominators()
 void CfgTest::testPlacePhi()
 {
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(FRONTIER_PENTIUM);
+	IFileLoader       *pBF = bff.load(FRONTIER_PENTIUM);
 
 	QVERIFY(pBF != 0);
 	Prog     prog(FRONTIER_PENTIUM);
@@ -231,7 +232,7 @@ void CfgTest::testPlacePhi()
 void CfgTest::testPlacePhi2()
 {
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(IFTHEN_PENTIUM);
+	IFileLoader       *pBF = bff.load(IFTHEN_PENTIUM);
 
 	QVERIFY(pBF != 0);
 	Prog     prog(IFTHEN_PENTIUM);
@@ -321,7 +322,7 @@ void CfgTest::testPlacePhi2()
 void CfgTest::testRenameVars()
 {
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(FRONTIER_PENTIUM);
+	IFileLoader       *pBF = bff.load(FRONTIER_PENTIUM);
 
 	QVERIFY(pBF != 0);
 	Prog     *prog = new Prog(FRONTIER_PENTIUM);

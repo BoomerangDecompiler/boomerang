@@ -10,9 +10,11 @@ JunctionStatement::JunctionStatement()
 	m_kind = STMT_JUNCTION;
 }
 
+
 JunctionStatement::~JunctionStatement()
 {
 }
+
 
 bool JunctionStatement::accept(StmtVisitor *visitor)
 {

@@ -19,7 +19,7 @@ GotoStatement::GotoStatement()
 GotoStatement::GotoStatement(ADDRESS uDest)
 	: m_isComputed(false)
 {
-	m_kind  = STMT_GOTO;
+	m_kind = STMT_GOTO;
 	m_dest = Const::get(uDest);
 }
 
@@ -158,7 +158,7 @@ Instruction *GotoStatement::clone() const
 {
 	GotoStatement *ret = new GotoStatement();
 
-	ret->m_dest        = m_dest->clone();
+	ret->m_dest       = m_dest->clone();
 	ret->m_isComputed = m_isComputed;
 	// Statement members
 	ret->m_parent = m_parent;

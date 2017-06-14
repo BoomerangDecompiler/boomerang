@@ -317,7 +317,8 @@ bool AssignSet::exists(Assign *a)
 // Find a definition for loc in this Assign set. Return true if found
 bool AssignSet::definesLoc(SharedExp loc) const
 {
-	Assign   as(loc, Terminal::get(opWild));
+	Assign as(loc, Terminal::get(opWild));
+
 	return find(&as) != end();
 }
 

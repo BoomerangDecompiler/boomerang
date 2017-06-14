@@ -8,19 +8,20 @@
  *
  */
 
-/** \file DOS4GWBinaryFile.h
- * \brief This file contains the definition of the class DOS4GWBinaryFile.
+/** \file DOS4GWBinaryLoader.h
+ * \brief This file contains the definition of the class DOS4GWBinaryLoader.
  */
 
 #pragma once
 
 #include "boom_base/BinaryFile.h"
+
 #include <string>
+
 class QFile;
 
 /**
- * This file contains the definition of the DOS4GWBinaryFile class, and some
- * other definitions specific to the exe version of the BinaryFile object
+ * This file contains the definition of the DOS4GWBinaryLoader class.
  * At present, this loader supports the OS2 file format (also known as
  * the Linear eXecutable format) as much as I've found necessary to
  * inspect old DOS4GW apps.  This loader could also be used for decompiling
@@ -129,40 +130,52 @@ typedef struct
 
 #pragma pack(pop)
 
-class DOS4GWBinaryFile : public QObject, public LoaderInterface
+
+class DOS4GWBinaryLoader : public IFileLoader
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID LoaderInterface_iid)
-	Q_INTERFACES(LoaderInterface)
-
 public:
-	DOS4GWBinaryFile();
-	~DOS4GWBinaryFile();                 // Destructor
-	void close() override;               // Close file opened with Open()
-	void unload() override;              // Unload the image
-	LOAD_FMT getFormat() const override; // Get format (i.e.
+	DOS4GWBinaryLoader();
+	virtual ~DOS4GWBinaryLoader();
 
-	// LOADFMT_DOS4GW)
-	MACHINE getMachine() const override; // Get machine (i.e.
+	/// @copydoc IFileLoader::initialize
+	void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 
-	// MACHINE_Pentium)
-	ADDRESS getImageBase() override;
-	size_t getImageSize() override;
-
-	ADDRESS getMainEntryPoint() override;
-	ADDRESS getEntryPoint() override;
-	DWord getDelta();
-	bool loadFromMemory(QByteArray& data) override;
+	/// @copydoc IFileLoader::canLoad
 	int canLoad(QIODevice& fl) const override;
 
-	//
-	//        --        --        --        --        --        --        --        --        --
-	//
+	/// @copydoc IFileLoader::loadFromMemory
+	bool loadFromMemory(QByteArray& data) override;
+
+	/// @copydoc IFileLoader::unload
+	void unload() override;
+
+	/// @copydoc IFileLoader::close
+	void close() override;
+
+	/// @copydoc IFileLoader::getFormat
+	LOAD_FMT getFormat() const override;
+
+	/// @copydoc IFileLoader::getMachine
+	MACHINE getMachine() const override;
+
+	/// @copydoc IFileLoader::getMainEntryPoint
+	ADDRESS getMainEntryPoint() override;
+
+	/// @copydoc IFileLoader::getEntryPoint
+	ADDRESS getEntryPoint() override;
+
+	/// @copydoc IFileLoader::getImageBase
+	ADDRESS getImageBase() override;
+
+	/// @copydoc IFileLoader::getImageSize
+	size_t getImageSize() override;
+
 	// Internal information
 	// Dump headers, etc
 	virtual bool displayDetails(const char *fileName, FILE *f = stdout) override;
 
-	void initialize(IBoomerang *sys) override;
+
+	DWord getDelta();
 
 protected:
 	int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
@@ -171,15 +184,14 @@ protected:
 private:
 	bool postLoad(void *handle) override; ///< Called after archive member loaded
 
-	Header *m_pHeader;                    // Pointer to header
-	LXHeader *m_pLXHeader  = nullptr;     // Pointer to lx header
-	LXObject *m_pLXObjects = nullptr;     // Pointer to lx objects
-	LXPage *m_pLXPages     = nullptr;     // Pointer to lx pages
-	int m_cbImage;                        // Size of image
-	// int        m_cReloc;                // Number of relocation entries
-	// DWord*    m_pRelocTable;            // The relocation table
-	char *base; // Beginning of the loaded image
-	// Map from address of dynamic pointers to library procedure names:
-	class IBinarySymbolTable *Symbols;
-	class IBinaryImage *Image;
+	Header *m_pHeader;                    ///< Pointer to header
+	LXHeader *m_pLXHeader  = nullptr;     ///< Pointer to lx header
+	LXObject *m_pLXObjects = nullptr;     ///< Pointer to lx objects
+	LXPage *m_pLXPages     = nullptr;     ///< Pointer to lx pages
+	int m_cbImage;                        ///< Size of image
+	char *base;                           ///< Beginning of the loaded image
+
+	/// Map from address of dynamic pointers to library procedure names:
+	IBinarySymbolTable *m_symbols;
+	IBinaryImage *m_image;
 };

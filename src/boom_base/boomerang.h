@@ -108,7 +108,6 @@ class Boomerang : public QObject, public IBoomerang
 private:
 	static Boomerang *boomerang; ///< the instance
 
-	IBinaryImage *m_image         = nullptr;
 	IBinarySymbolTable *m_symbols = nullptr;
 	QString m_progPath;               ///< String with the path to the boomerang executable.
 	QString m_outputPath;             ///< The path where all output files are created.
@@ -146,7 +145,7 @@ public:
 	IBinaryImage *getImage() override;
 	IBinarySymbolTable *getSymbols() override;
 
-	IProject *project()  override { return m_currentProject; }
+	IProject *getProject()  override { return m_currentProject; }
 
 	/**
 	 * Parse and execute a command supplied in interactive mode.
@@ -193,10 +192,10 @@ public:
 	void setProgPath(const QString& p);
 
 	/// Get the path to the %Boomerang executable.
-	const QString& getProgPath() { return m_progPath; }
+	const QString& getProgPath() const { return m_progPath; }
 
 	/// Get the path to the %Boomerang executable.
-	QDir getProgDir() { return QDir(m_progPath); }
+	QDir getProgDir() const { return QDir(m_progPath); }
 
 	/// Set the path where the output files are saved.
 	void setOutputPath(const QString& p) { m_outputPath = p; }

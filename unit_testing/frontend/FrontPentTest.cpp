@@ -49,22 +49,19 @@ void FrontPentTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        FrontPentTest::test1
- * OVERVIEW:        Test decoding some pentium instructions
- *============================================================================*/
 void FrontPentTest::test1()
 {
 	QString           expected;
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.load(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(HELLO_PENT);
-	LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-	QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
+
+	Prog *prog = new Prog(HELLO_PENT);
+	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
+
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
@@ -108,12 +105,12 @@ void FrontPentTest::test2()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.load(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(HELLO_PENT);
-	LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-	QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
+	Prog *prog = new Prog(HELLO_PENT);
+	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
+
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
@@ -149,12 +146,11 @@ void FrontPentTest::test3()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.load(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(HELLO_PENT);
-	LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-	QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
+	Prog *prog = new Prog(HELLO_PENT);
+	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
@@ -189,12 +185,12 @@ void FrontPentTest::testBranch()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(BRANCH_PENT);
+	IFileLoader       *pBF = bff.load(BRANCH_PENT);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(BRANCH_PENT);
-	LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-	QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
+	Prog *prog = new Prog(BRANCH_PENT);
+
+	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
@@ -233,12 +229,12 @@ void FrontPentTest::testFindMain()
 	// Test the algorithm for finding main, when there is a call to __libc_start_main
 	// Also tests the loader hack
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(FEDORA2_TRUE);
+	IFileLoader       *pBF = bff.load(FEDORA2_TRUE);
 
 	QVERIFY(pBF != 0);
-	Prog            *prog  = new Prog(FEDORA2_TRUE);
-	LoaderInterface *iface = qobject_cast<LoaderInterface *>(pBF);
-	QVERIFY(iface->getMachine() == MACHINE_PENTIUM);
+
+	Prog *prog = new Prog(FEDORA2_TRUE);
+	QVERIFY(pBF->getMachine() == MACHINE_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
@@ -246,7 +242,7 @@ void FrontPentTest::testFindMain()
 	ADDRESS addr     = pFE->getMainEntryPoint(found);
 	ADDRESS expected = ADDRESS::n(0x8048b10);
 	QCOMPARE(addr, expected);
-	iface->close();
+	pBF->close();
 	bff.unload();
 	delete pFE;
 
@@ -258,7 +254,7 @@ void FrontPentTest::testFindMain()
 	addr     = pFE->getMainEntryPoint(found);
 	expected = ADDRESS::n(0x8048c4a);
 	QCOMPARE(addr, expected);
-	iface->close();
+	pBF->close();
 	bff.unload();
 	delete pFE;
 
@@ -270,7 +266,7 @@ void FrontPentTest::testFindMain()
 	addr     = pFE->getMainEntryPoint(found);
 	expected = ADDRESS::n(0x8048b60);
 	QCOMPARE(addr, expected);
-	iface->close();
+	pBF->close();
 
 	bff.unload();
 	delete pFE;

@@ -3,11 +3,11 @@
 #include "boom_base/BinaryFile.h"
 
 
-class BinaryFileStub : public LoaderInterface
+class FileLoaderStub : public IFileLoader
 {
 public:
-	BinaryFileStub();
-	virtual ~BinaryFileStub() {}
+	FileLoaderStub();
+	virtual ~FileLoaderStub() {}
 
 	void unload() override {}              ///< Unload the image
 	bool getNextMember() { return false; } ///< Load next member of archive

@@ -23,6 +23,7 @@
 #include "type/type.h"
 #include "db/module.h"
 #include "util/util.h"
+#include "loader/IBinaryFile.h"
 
 // TODO: refactor Prog Global handling into separate class
 class RTLInstDict;
@@ -91,9 +92,9 @@ protected:
 class Prog : public QObject
 {
 	Q_OBJECT
-	
+
 	friend class XMLProgParser;
-	
+
 private:
 	class IBinaryImage *m_image;
 	SymTab *m_binarySymbols;
@@ -310,7 +311,7 @@ public:
 
 	// Hacks for Mike
 	/// Get a code for the machine e.g. MACHINE_SPARC
-	MACHINE getMachine() const { return m_loaderIface->getMachine(); }
+	MACHINE getMachine() const;
 
 	/// Get a symbol from an address
 	QString getSymbolByAddress(ADDRESS dest) const;
@@ -396,8 +397,7 @@ protected:
 	// list of UserProcs for entry point(s)
 	std::list<UserProc *> m_entryProcs;
 
-	QObject *m_loaderPlugin;     ///< Pointer to the instance returned by loader plugin
-	LoaderInterface *m_loaderIface = nullptr;
+	IFileLoader *m_loaderIface = nullptr;
 	FrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
 
 	/* Persistent state */

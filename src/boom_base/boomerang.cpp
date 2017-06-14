@@ -817,16 +817,6 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 		prog->readSymbolFile(elem);
 	}
 
-	ObjcAccessInterface *objc = qobject_cast<ObjcAccessInterface *>(fe->getBinaryFile());
-
-	if (objc) {
-		std::map<QString, ObjcModule>& objcmodules(objc->getObjcModules());
-
-		if (objcmodules.size()) {
-			objcDecode(objcmodules, prog);
-		}
-	}
-
 	// Entry points from -e (and -E) switch(es)
 	for (auto& elem : m_entryPoints) {
 		q_cout << "decoding specified entrypoint " << elem << "\n";
@@ -1061,7 +1051,7 @@ Boomerang *Boomerang::get()
 
 IBinaryImage *Boomerang::getImage()
 {
-	assert(nullptr != m_currentProject);
+	assert(m_currentProject != nullptr);
 	return m_currentProject->getOrCreateImage();
 }
 

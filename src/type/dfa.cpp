@@ -1143,6 +1143,7 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
 	return u;
 }
 
+
 // Special operators for handling addition and subtraction in a data flow based type analysis
 //                    ta=
 //  tb=       alpha*     int      pi

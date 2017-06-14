@@ -16,16 +16,16 @@ class RangeAnalysis : public FunctionPass
 {
 public:
 	RangeAnalysis();
-	
+
 	/// \brief Range analysis (for procedure).
 	bool runOnFunction(Function& F) override;
 
 private:
 	friend class RangeVisitor;
-	
+
 	/***************************************************************************/ /**
-	* \brief Add Junction statements
-	*******************************************************************************/
+	 * \brief Add Junction statements
+	 *******************************************************************************/
 	void addJunctionStatements(Cfg& cfg);
 	void clearRanges();
 

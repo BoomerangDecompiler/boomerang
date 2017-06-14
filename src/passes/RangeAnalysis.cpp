@@ -69,7 +69,7 @@ public:
 	void killAllMemOfs();
 
 	void clear() { ranges.clear(); }
-	
+
 	/// return true if this range map is a subset of the other range map
 	bool isSubset(RangeMap& other) const;
 
@@ -82,36 +82,36 @@ struct RangePrivateData
 	std::map<Instruction *, RangeMap>     SavedInputRanges; ///< overestimation of ranges of locations
 	std::map<Instruction *, RangeMap>     Ranges;           ///< saved overestimation of ranges of locations
 	std::map<BranchStatement *, RangeMap> BranchRanges;
-	
-	
-	RangeMap& getRanges(Instruction *insn)
+
+
+	RangeMap&                             getRanges(Instruction *insn)
 	{
 		return Ranges[insn];
 	}
 
-	void setRanges(Instruction *insn, RangeMap r)
+	void                                  setRanges(Instruction *insn, RangeMap r)
 	{
 		Ranges[insn] = r;
 	}
 
-	void clearRanges()
+	void                                  clearRanges()
 	{
 		SavedInputRanges.clear();
 	}
 
-	RangeMap& getBranchRange(BranchStatement *s)
+	RangeMap&                             getBranchRange(BranchStatement *s)
 	{
 		return BranchRanges[s];
 	}
 
-	void setBranchRange(BranchStatement *s, RangeMap& rm)
+	void                                  setBranchRange(BranchStatement *s, RangeMap& rm)
 	{
 		BranchRanges[s] = rm;
 	}
 
 public:
 	void setSavedRanges(Instruction *insn, RangeMap map);
-	RangeMap getSavedRanges(Instruction *insn);
+	RangeMap                              getSavedRanges(Instruction *insn);
 };
 
 
@@ -889,7 +889,7 @@ Range::Range()
 	, m_lowerBound(MIN)
 	, m_upperBound(MAX)
 {
-	   m_base = Const::get(0);
+	m_base = Const::get(0);
 }
 
 
@@ -900,7 +900,7 @@ Range::Range(int _stride, int _lowerBound, int _upperBound, SharedExp _base)
 	, m_base(_base)
 {
 	if ((m_lowerBound == m_upperBound) && (m_lowerBound == 0) && ((m_base->getOper() == opMinus) || (m_base->getOper() == opPlus)) &&
-		          m_base->getSubExp2()->isIntConst()) {
+		m_base->getSubExp2()->isIntConst()) {
 		this->m_lowerBound = m_base->access<Const, 2>()->getInt();
 
 		if (m_base->getOper() == opMinus) {
@@ -985,7 +985,7 @@ QString Range::toString() const
 			os << " + ";
 		}
 
-		      m_base->print(os);
+		m_base->print(os);
 	}
 
 	return res;
@@ -1001,15 +1001,15 @@ void Range::unionWith(Range& r)
 	assert(m_base && r.m_base);
 
 	if ((m_base->getOper() == opMinus) && (r.m_base->getOper() == opMinus) && (*m_base->getSubExp1() == *r.m_base->getSubExp1()) &&
-		          m_base->getSubExp2()->isIntConst() && r.m_base->getSubExp2()->isIntConst()) {
+		m_base->getSubExp2()->isIntConst() && r.m_base->getSubExp2()->isIntConst()) {
 		int c1 = m_base->access<Const, 2>()->getInt();
 		int c2 = r.m_base->access<Const, 2>()->getInt();
 
 		if (c1 != c2) {
 			if ((m_lowerBound == r.m_lowerBound) && (m_upperBound == r.m_upperBound) && (m_lowerBound == 0)) {
-				            m_lowerBound = std::min(-c1, -c2);
-				            m_upperBound = std::max(-c1, -c2);
-				            m_base       = m_base->getSubExp1();
+				m_lowerBound = std::min(-c1, -c2);
+				m_upperBound = std::max(-c1, -c2);
+				m_base       = m_base->getSubExp1();
 
 				if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
 					LOG << toString() << "\n";
@@ -1021,10 +1021,10 @@ void Range::unionWith(Range& r)
 	}
 
 	if (!(*m_base == *r.m_base)) {
-		      m_stride     = 1;
-		      m_lowerBound = MIN;
-		      m_upperBound = MAX;
-		      m_base       = Const::get(0);
+		m_stride     = 1;
+		m_lowerBound = MIN;
+		m_upperBound = MAX;
+		m_base       = Const::get(0);
 
 		if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
 			LOG_STREAM(LL_Default) << toString();
@@ -1034,15 +1034,15 @@ void Range::unionWith(Range& r)
 	}
 
 	if (m_stride != r.m_stride) {
-		      m_stride = std::min(m_stride, r.m_stride);
+		m_stride = std::min(m_stride, r.m_stride);
 	}
 
 	if (m_lowerBound != r.m_lowerBound) {
-		      m_lowerBound = std::min(m_lowerBound, r.m_lowerBound);
+		m_lowerBound = std::min(m_lowerBound, r.m_lowerBound);
 	}
 
 	if (m_upperBound != r.m_upperBound) {
-		      m_upperBound = std::max(m_upperBound, r.m_upperBound);
+		m_upperBound = std::max(m_upperBound, r.m_upperBound);
 	}
 
 	if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
@@ -1058,10 +1058,10 @@ void Range::widenWith(Range& r)
 	}
 
 	if (!(*m_base == *r.m_base)) {
-		      m_stride     = 1;
-		      m_lowerBound = MIN;
-		      m_upperBound = MAX;
-		      m_base       = Const::get(0);
+		m_stride     = 1;
+		m_lowerBound = MIN;
+		m_upperBound = MAX;
+		m_base       = Const::get(0);
 
 		if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
 			LOG_STREAM(LL_Default) << toString();
@@ -1072,11 +1072,11 @@ void Range::widenWith(Range& r)
 
 	// ignore stride for now
 	if (r.getLowerBound() < m_lowerBound) {
-		      m_lowerBound = MIN;
+		m_lowerBound = MIN;
 	}
 
 	if (r.getUpperBound() > m_upperBound) {
-		      m_upperBound = MAX;
+		m_upperBound = MAX;
 	}
 
 	if (VERBOSE && DEBUG_RANGE_ANALYSIS) {

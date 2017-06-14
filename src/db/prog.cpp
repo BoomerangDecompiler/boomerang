@@ -43,6 +43,8 @@
 #include "db/SymTab.h"
 #include "passes/RangeAnalysis.h"
 
+#include "loader/IBinaryFile.h"
+
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>
 #include <QtCore/QDebug>
@@ -79,8 +81,7 @@ namespace dbghelp
 
 
 Prog::Prog(const QString& name)
-	: m_loaderPlugin(nullptr)
-	, m_defaultFrontend(nullptr)
+	: m_defaultFrontend(nullptr)
 	, m_name(name)
 	, m_iNumberedProc(1)
 {
@@ -93,7 +94,6 @@ Prog::Prog(const QString& name)
 
 Prog::~Prog()
 {
-	m_loaderPlugin->deleteLater();
 	delete m_defaultFrontend;
 
 	for (Module *m : m_moduleList) {
@@ -119,8 +119,7 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
 
 void Prog::setFrontEnd(FrontEnd *_pFE)
 {
-	m_loaderPlugin    = _pFE->getBinaryFile();
-	m_loaderIface     = qobject_cast<LoaderInterface *>(m_loaderPlugin);
+	m_loaderIface     = _pFE->getLoaderIface();
 	m_defaultFrontend = _pFE;
 
 	for (Module *m : m_moduleList) {
@@ -539,8 +538,6 @@ void Prog::clear()
 	}
 
 	m_moduleList.clear();
-	m_loaderPlugin->deleteLater();
-	m_loaderPlugin = nullptr;
 	delete m_defaultFrontend;
 	m_defaultFrontend = nullptr;
 }
@@ -1770,6 +1767,12 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
 	else {
 		f << "// " << proc->getName() << "();\n";
 	}
+}
+
+
+MACHINE Prog::getMachine() const
+{
+	return m_loaderIface->getMachine();
 }
 
 

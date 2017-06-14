@@ -13,7 +13,7 @@ public:
 	/// Constructor, type, and subexpression
 	ImplicitAssign(SharedType ty, SharedExp lhs);
 	ImplicitAssign(ImplicitAssign& o);
-	
+
 	// The first virtual function (here the destructor) can't be in statement.h file for gcc
 	virtual ~ImplicitAssign();
 

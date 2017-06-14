@@ -34,7 +34,7 @@
  * use public functions of the target classes.
  */
 
-#include "db/exp.h" //< Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
+#include "db/exp.h" // < Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
 
 class Instruction;
 class Assignment;
@@ -158,12 +158,12 @@ public:
 	SetConscripts(int n, bool clear)
 		: m_bInLocalGlobal(false)
 		, m_bClear(clear)
-	{ 
-        m_curConscript = n;
+	{
+		m_curConscript = n;
 	}
-		
+
 	int getLast() const { return m_curConscript; }
-	
+
 	virtual bool visit(const std::shared_ptr<Const>& e) override;
 	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 	virtual bool visit(const std::shared_ptr<Binary>& b, bool& override) override;
@@ -183,7 +183,7 @@ protected:
 public:
 	ExpModifier()          = default;
 	virtual ~ExpModifier() = default;
-	
+
 	bool isMod() const { return m_mod; }
 	void clearMod() { m_mod = false; }
 
@@ -312,9 +312,9 @@ public:
 	StmtExpVisitor(ExpVisitor *v, bool _ignoreCol = true)
 		: m_ignoreCol(_ignoreCol)
 		, ev(v) {}
-		
+
 	virtual ~StmtExpVisitor() {}
-	
+
 	virtual bool visit(Assign * /*stmt*/, bool& override)
 	{
 		override = false;
@@ -390,17 +390,17 @@ class StmtModifier
 {
 protected:
 	bool m_ignoreCol;
-	
+
 public:
 	ExpModifier *m_mod;  ///< The expression modifier object
-	
+
 	StmtModifier(ExpModifier *em, bool ic = false)
 		: m_ignoreCol(ic)
-		, m_mod(em) {} 
-		
+		, m_mod(em) {}
+
 	virtual ~StmtModifier() {}
 	bool ignoreCollector() const { return m_ignoreCol; }
-	
+
 	// This class' visitor functions don't return anything. Maybe we'll need return values at a later stage.
 	virtual void visit(Assign * /*s*/, bool& recur) { recur = true; }
 	virtual void visit(PhiAssign * /*s*/, bool& recur) { recur = true; }
@@ -427,10 +427,10 @@ public:
 	StmtPartModifier(ExpModifier *em, bool ignoreCol = false)
 		: m_ignoreCol(ignoreCol)
 		, mod(em) {}
-		
+
 	virtual ~StmtPartModifier() {}
 	bool ignoreCollector() const { return m_ignoreCol; }
-	
+
 	// This class' visitor functions don't return anything. Maybe we'll need return values at a later stage.
 	virtual void visit(Assign * /*s*/, bool& recur) { recur = true; }
 	virtual void visit(PhiAssign * /*s*/, bool& recur) { recur = true; }
@@ -452,10 +452,10 @@ class PhiStripper : public StmtModifier
 public:
 	PhiStripper(ExpModifier *em)
 		: StmtModifier(em)
-	{ 
-        m_del = false;
+	{
+		m_del = false;
 	}
-	
+
 	virtual void visit(PhiAssign *, bool& recur) override;
 
 	bool getDelete() const { return m_del; }
@@ -483,68 +483,68 @@ public:
 	bool isTopChanged() { return !(m_unchanged & m_mask); }
 	SharedExp preVisit(const std::shared_ptr<Unary>& e, bool& recur) override
 	{
-		recur  = true;
-		      m_mask <<= 1;
+		recur    = true;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<Binary>& e, bool& recur) override
 	{
-		recur  = true;
-		      m_mask <<= 1;
+		recur    = true;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<Ternary>& e, bool& recur) override
 	{
-		recur  = true;
-		      m_mask <<= 1;
+		recur    = true;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<TypedExp>& e, bool& recur) override
 	{
-		recur  = true;
-		      m_mask <<= 1;
+		recur    = true;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<FlagDef>& e, bool& recur) override
 	{
-		recur  = true;
-		      m_mask <<= 1;
+		recur    = true;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<RefExp>& e, bool& recur) override
 	{
-		recur  = true;
-		      m_mask <<= 1;
+		recur    = true;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<Location>& e, bool& recur) override
 	{
-		recur  = true;
-		      m_mask <<= 1;
+		recur    = true;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<Const>& e)  override
 	{
-		      m_mask <<= 1;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<Terminal>& e) override
 	{
-		      m_mask <<= 1;
+		m_mask <<= 1;
 		return e;
 	}
 
 	SharedExp preVisit(const std::shared_ptr<TypeVal>& e)  override
 	{
-		      m_mask <<= 1;
+		m_mask <<= 1;
 		return e;
 	}
 
@@ -589,8 +589,11 @@ public:
 	~UsedLocsFinder() {}
 
 	LocationSet *getLocSet() { return m_used; }
-	void setMemOnly(bool b) { 
-        m_memOnly = b; }
+	void setMemOnly(bool b)
+	{
+		m_memOnly = b;
+	}
+
 	bool isMemOnly() { return m_memOnly; }
 
 	bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
@@ -707,7 +710,7 @@ public:
 		: m_num(_num)
 		, m_ty(_ty)
 		, m_changed(false) {}
-		
+
 	virtual ~ExpConstCaster() {}
 
 	bool isChanged() const { return m_changed; }

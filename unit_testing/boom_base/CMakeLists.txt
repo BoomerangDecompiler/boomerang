@@ -19,11 +19,12 @@ SET(target_INCLUDE_DIR
 )
 
 include_directories(${target_INCLUDE_DIR})
+add_executable(g_tests ${target_SOURCES})
 
-#PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS codeblock.proto)
-
-add_executable(g_tests ${target_SOURCES}) # ${PROTO_SRCS} ${PROTO_HDRS})
-target_link_libraries(g_tests ${GTest_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}) # ${PROTOBUF_LIBRARIES}
+target_link_libraries(g_tests
+	${GTest_LIBRARIES}
+	${CMAKE_DL_LIBS}
+	${CMAKE_THREAD_LIBS_INIT})
 
 qt5_use_modules(g_tests Core Test)
 

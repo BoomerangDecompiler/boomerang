@@ -2258,7 +2258,7 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 }
 
 
-/*static*/ SharedExp Signature::getReturnExp2(LoaderInterface *pBF)
+/*static*/ SharedExp Signature::getReturnExp2(IFileLoader *pBF)
 {
 	switch (pBF->getMachine())
 	{

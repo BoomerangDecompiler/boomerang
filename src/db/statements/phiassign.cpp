@@ -121,7 +121,7 @@ bool PhiAssign::search(const Exp& search, SharedExp& result) const
 	for (auto& v : DefVec) {
 		assert(v.second.e != nullptr);
 		// Note: can't match foo{-} because of this
-		RefExp re(v.second.e, const_cast<Instruction*>(v.second.def())); ///< \todo remove const_cast
+		RefExp re(v.second.e, const_cast<Instruction *>(v.second.def())); ///< \todo remove const_cast
 
 		if (re.search(search, result)) {
 			return true;
@@ -199,6 +199,8 @@ void addPhiReferences(InstructionSet& stmts, Statement *def)
 		}
 	}
 }
+
+
 #endif
 
 

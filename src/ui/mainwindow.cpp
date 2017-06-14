@@ -1128,7 +1128,7 @@ void MainWindow::on_cmb_typeRecoveryEngine_currentIndexChanged(int index)
 	ITypeRecovery *ptr     = (ITypeRecovery *)sel_data.value<void *>();
 	Boomerang     *boom    = Boomerang::get();
 
-	if (!boom->project()) {
+	if (!boom->getProject()) {
 		QMessageBox::warning(this, "Error", "Cannot set type recovery without active project");
 		return;
 	}

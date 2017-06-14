@@ -12,6 +12,7 @@ set(test_LIBRARIES
 	${DEBUG_LIB}
 	boomerang_DSLs
 	type db codegen boomerang_passes type util boom_base frontend db codegen
+	${CMAKE_DL_LIBS}
 	${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -22,6 +23,4 @@ set(TESTS
 foreach(t ${TESTS})
 	ADD_QTEST(${t})
 endforeach()
-
-#PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS codeblock.proto)
 

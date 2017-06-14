@@ -4,29 +4,30 @@
  * \brief This file contains the elf format support structures
  */
 
-// Internal elf info
-typedef struct
+/// Internal elf info
+struct Elf32_Ehdr
 {
-	char  e_ident[4];
-	char  e_class;
-	char  endianness;
-	char  version;
-	char  osAbi;
-	char  pad[8];
-	short e_type;
-	short e_machine;
-	int   e_version;
-	int   e_entry;
-	int   e_phoff;
-	int   e_shoff;
-	int   e_flags;
-	short e_ehsize;
-	short e_phentsize;
-	short e_phnum;
-	short e_shentsize;
-	short e_shnum;
-	short e_shstrndx;
-} Elf32_Ehdr;
+	Byte  e_ident[4];  ///< Magic number. Should be 0x7F 'E' 'L' 'F'
+	Byte  e_class;     ///< Bit format. Must be 1. (32 bit)
+	Byte  endianness;  ///< 1 = little endian, 2 = big endian;
+	Byte  version;     ///< ELF version. 1 = original version
+	Byte  osAbi;       ///< OS ABI. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+	Byte  abiVersion;  ///< OS ABI version. May be unused.
+	Byte  pad[7];      ///< Currently unused.
+	SWord e_type;      ///< 1 = relocatable, 2 = executable, 3 = shared, 4 = core
+	SWord e_machine;   ///< Instruction set architecture. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+	Byte  e_version;   ///< See above.
+	DWord e_entry;     ///< Address of the entry point.
+	DWord e_phoff;     ///< Offset of the Program Header table.
+	DWord e_shoff;     ///< Offset of the Section Header table.
+	DWord e_flags;     ///< architecture specific flags.
+	SWord e_ehsize;    ///< Size of this header. Normally 64 bytes.
+	SWord e_phentsize; ///< Size of an entry in the Program Header table.
+	SWord e_phnum;     ///< Number of entries in the Program Header table.
+	SWord e_shentsize; ///< Size of an entry in the Section Header table.
+	SWord e_shnum;     ///< Number of entries in the Section Header table.
+	SWord e_shstrndx;  ///< The index of the entry in the Section Header Table containing the section names.
+};
 
 #define EM_SPARC          2    // Sun SPARC
 #define EM_386            3    // Intel 80386 or higher
@@ -53,6 +54,7 @@ enum ElfRelocKind
 	R_386_GOTOFF    = 9,
 	R_386_GOTPC     = 10
 };
+
 
 #define R_SPARC_NONE        0
 #define R_SPARC_8           1
@@ -111,37 +113,41 @@ enum ElfRelocKind
 #define R_SPARC_UA64        54
 #define R_SPARC_UA16        55
 
-// Program header
+
+/// Program header
 struct Elf32_Phdr
 {
-	int p_type;   /* entry type */
-	int p_offset; /* file offset */
-	int p_vaddr;  /* virtual address */
-	int p_paddr;  /* physical address */
-	int p_filesz; /* file size */
-	int p_memsz;  /* memory size */
-	int p_flags;  /* entry flags */
-	int p_align;  /* memory/file alignment */
+	DWord p_type;   /* entry type */
+	DWord p_offset; /* file offset */
+	DWord p_vaddr;  /* virtual address */
+	DWord p_paddr;  /* physical address */
+	DWord p_filesz; /* file size */
+	DWord p_memsz;  /* memory size */
+	DWord p_flags;  /* entry flags */
+	DWord p_align;  /* memory/file alignment */
 };
 
-// Section header
+/// Section header
 struct Elf32_Shdr
 {
-	int sh_name;
-	int sh_type;
-	int sh_flags;
-	int sh_addr;
-	int sh_offset;
-	int sh_size;
-	int sh_link;
-	int sh_info;
-	int sh_addralign;
-	int sh_entsize;
+	DWord sh_name;
+	DWord sh_type;
+	DWord sh_flags;
+	DWord sh_addr;
+	DWord sh_offset;
+	DWord sh_size;
+	DWord sh_link;
+	DWord sh_info;
+	DWord sh_addralign;
+	DWord sh_entsize;
 };
 
-#define SHF_WRITE        1 // Writeable
-#define SHF_ALLOC        2 // Consumes memory in exe
-#define SHF_EXECINSTR    4 // Executable
+#define SHF_WRITE        0x01 // Writeable
+#define SHF_ALLOC        0x02 // Consumes memory in exe
+#define SHF_EXECINSTR    0x04 // Executable
+#define SHF_MERGE        0x10
+
+
 enum ElfSectionTypes
 {
 	SHT_NULL     = 0,
@@ -157,34 +163,37 @@ enum ElfSectionTypes
 #pragma pack(push,1)
 struct Elf32_Sym
 {
-	int           st_name;
-	unsigned      st_value;
-	int           st_size;
-	unsigned char st_info;
-	unsigned char st_other;
-	short         st_shndx;
+	DWord st_name;
+	DWord st_value;
+	DWord st_size;
+	Byte  st_info;
+	Byte  st_other;
+	SWord st_shndx;
 };
 
 #pragma pack(pop)
 
 struct Elf32_Rel
 {
-	unsigned r_offset;
-	int      r_info;
+	DWord r_offset;
+	DWord r_info;
 };
 
 struct Elf32_Rela
 {
-	unsigned r_offset;
-	int      r_info;
-	int      r_addend;
+	DWord r_offset;
+	DWord r_info;
+	DWord r_addend;
 };
+
 
 #define ELF32_R_SYM(info)         ((info) >> 8)
 #define ELF32_ST_BIND(i)          ((ElfSymBinding)((i) >> 4))
 #define ELF32_ST_TYPE(i)          ((ElfSymType)((i) & 0xf))
 #define ELF32_ST_INFO(b, t)       (((b) << 4) + ((t) & 0xf))
 #define ELF32_ST_VISIBILITY(o)    ((ElfSymVisibility)((o) & 0x3))
+
+
 enum ElfSymType
 {
 	STT_NOTYPE  = 0, // Symbol table type: none
@@ -209,6 +218,7 @@ enum ElfSymVisibility
 	STV_HIDDEN    = 2,
 	STV_PROTECTED = 3
 };
+
 
 typedef struct
 {

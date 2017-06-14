@@ -12,7 +12,7 @@ class ImpRefStatement : public TypingStatement
 public:
 	// Constructor, subexpression
 	ImpRefStatement(SharedType ty, SharedExp a);
-		
+
 	SharedExp getAddressExp() const { return m_addressExp; }
 	SharedType getType() const { return m_type; }
 	void meetWith(SharedType ty, bool& ch); // Meet the internal type with ty. Set ch if a change
@@ -32,7 +32,7 @@ public:
 	virtual bool searchAndReplace(const Exp&, SharedExp, bool cc = false) override;
 	virtual void generateCode(HLLCode *, BasicBlock *, int)  override {}
 	virtual void simplify() override;
-	
+
 	// NOTE: ImpRefStatement not yet used
 	virtual void print(QTextStream& os, bool html = false) const override;
 };

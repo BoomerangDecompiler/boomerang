@@ -130,4 +130,3 @@ void ImpRefStatement::simplify()
 {
 	m_addressExp = m_addressExp->simplify();
 }
-

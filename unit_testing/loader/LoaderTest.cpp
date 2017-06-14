@@ -16,23 +16,6 @@
  * 05 Aug 05 - Mike: added borland test; check address of main (not just != NO_ADDRESS)
  */
 
-#define HELLO_SPARC       baseDir.absoluteFilePath("tests/inputs/sparc/hello")
-#define HELLO_PENTIUM     baseDir.absoluteFilePath("tests/inputs/pentium/hello")
-#define HELLO_HPPA        baseDir.absoluteFilePath("tests/inputs/hppa/hello")
-#define STARTER_PALM      baseDir.absoluteFilePath("tests/inputs/mc68328/Starter.prc")
-#if 0 /* FIXME: these programs are proprietary */
-#define CALC_WINDOWS      "tests/inputs/windows/calc.exe"
-#define CALC_WINXP        "tests/inputs/windows/calcXP.exe"
-#define CALC_WIN2000      "tests/inputs/windows/calc2000.exe"
-#define LPQ_WINDOWS       "tests/inputs/windows/lpq.exe"
-#endif
-#define SWITCH_BORLAND    baseDir.absoluteFilePath("tests/inputs/windows/switch_borland.exe")
-#ifdef _WIN32
-#define ELFBINFILE        baseDir.absoluteFilePath("out/lib/ElfBinaryFile.dll")
-#else
-#define ELFBINFILE        baseDir.absoluteFilePath("out/lib/ElfBinaryFile.so")
-#endif
-
 #include "loader/microX86dis.c"
 #include "LoaderTest.h"
 #include "boom_base/log.h"
@@ -49,6 +32,31 @@
 static bool    logset = false;
 static QString TEST_BASE;
 static QDir    baseDir;
+
+//
+#define HELLO_CLANG4           baseDir.absoluteFilePath("tests/inputs/elf/hello-clang4-dynamic")
+#define HELLO_CLANG4_STATIC    baseDir.absoluteFilePath("tests/inputs/elf/hello-clang4-static")
+#define HELLO_SPARC            baseDir.absoluteFilePath("tests/inputs/sparc/hello")
+#define HELLO_PENTIUM          baseDir.absoluteFilePath("tests/inputs/pentium/hello")
+#define HELLO_HPPA             baseDir.absoluteFilePath("tests/inputs/hppa/hello")
+#define STARTER_PALM           baseDir.absoluteFilePath("tests/inputs/mc68328/Starter.prc")
+#define SWITCH_BORLAND         baseDir.absoluteFilePath("tests/inputs/windows/switch_borland.exe")
+
+/// path to the ELF loader plugin
+#ifdef _WIN32
+#  define ELF_LOADER    baseDir.absoluteFilePath("out/lib/libboomerang_ElfLoader.dll")
+#else
+#  define ELF_LOADER    baseDir.absoluteFilePath("out/lib/libboomerang_ElfLoader.so")
+#endif
+
+#if 1 // FIXME: These programs are proprietary, but they are not used.
+#define CALC_WINDOWS    baseDir.absoluteFilePath("tests/inputs/windows/calc.exe")
+#define CALC_WINXP      baseDir.absoluteFilePath("tests/inputs/windows/calcXP.exe")
+#define CALC_WIN2000    baseDir.absoluteFilePath("tests/inputs/windows/calc2000.exe")
+#define LPQ_WINDOWS     baseDir.absoluteFilePath("tests/inputs/windows/lpq.exe")
+#endif
+
+
 void LoaderTest::initTestCase()
 {
 	if (!logset) {
@@ -69,253 +77,190 @@ void LoaderTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * \fn        LoaderTest::testSparcLoad
- * OVERVIEW:        Test loading the sparc hello world program
- ******************************************************************************/
+void LoaderTest::testElfLoadClang()
+{
+	BinaryFileFactory bff;
+	IFileLoader       *loader = bff.load(HELLO_CLANG4);
+
+	// test the loader
+	QVERIFY(loader != nullptr);
+	QCOMPARE(loader->getFormat(), LOADFMT_ELF);
+	QCOMPARE(loader->getMachine(), MACHINE_PENTIUM);
+	QCOMPARE(loader->hasDebugInfo(), false);
+	QCOMPARE(loader->getEntryPoint(),     ADDRESS::n(0x080482F0));
+	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x080483F0));
+
+	// test the loaded image
+	IBinaryImage *image = Boomerang::get()->getImage();
+	QVERIFY(image != nullptr);
+
+	QCOMPARE(image->getNumSections(), (size_t)29);
+	QCOMPARE(image->getSectionInfo(0)->getName(),  QString(".interp"));
+	QCOMPARE(image->getSectionInfo(10)->getName(), QString(".plt"));
+	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
+	QCOMPARE(image->getLimitTextLow(),  ADDRESS::n(0x08000001));
+	QCOMPARE(image->getLimitTextHigh(), ADDRESS::n(0x0804A020));
+
+	bff.unload();
+}
+
+
+void LoaderTest::testElfLoadClangStatic()
+{
+	BinaryFileFactory bff;
+	IFileLoader       *loader = bff.load(HELLO_CLANG4_STATIC);
+
+	// test the loader
+	QVERIFY(loader != nullptr);
+	QCOMPARE(loader->getFormat(), LOADFMT_ELF);
+	QCOMPARE(loader->getMachine(), MACHINE_PENTIUM);
+	QCOMPARE(loader->hasDebugInfo(), false);
+	QCOMPARE(loader->getEntryPoint(),     ADDRESS::n(0x0804884F));
+	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x080489A0));
+
+	// test the loaded image
+	IBinaryImage *image = Boomerang::get()->getImage();
+	QVERIFY(image != nullptr);
+
+	QCOMPARE(image->getNumSections(), (size_t)29);
+	QCOMPARE(image->getSectionInfo(0)->getName(), QString(".note.ABI-tag"));
+	QCOMPARE(image->getSectionInfo(13)->getName(), QString(".eh_frame"));
+	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
+	QCOMPARE(image->getLimitTextLow(),  ADDRESS::n(0x08000001));
+	QCOMPARE(image->getLimitTextHigh(), ADDRESS::n(0x080ECDA4));
+
+	bff.unload();
+}
+
+
 void LoaderTest::testSparcLoad()
 {
-	QString     actual;
-	QTextStream ost(&actual);
-
 	// Load SPARC hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_SPARC);
+	IFileLoader       *loader = bff.load(HELLO_SPARC);
 
-	QVERIFY(pBF != nullptr);
-	int n;
-	const IBinarySection *si;
-	IBinaryImage         *sect_iface = Boomerang::get()->getImage();
-	QVERIFY(sect_iface != nullptr);
+	QVERIFY(loader != nullptr);
 
-	n = sect_iface->getNumSections();
-	ost << "Number of sections = " << n << "\r\n\t";
-	// Just use the first (real one) and last sections
-	si = sect_iface->getSectionInfo(1);
-	ost << si->getName() << "\t";
-	si = sect_iface->getSectionInfo(n - 1);
-	ost << si->getName();
-	// Note: the string below needs to have embedded tabs. Edit with caution!
-	QString expected("Number of sections = 28\r\n\t"
-					 ".hash\t.stab.indexstr");
-	QCOMPARE(actual, expected);
+	IBinaryImage *image = Boomerang::get()->getImage();
+	QVERIFY(image != nullptr);
+
+	QCOMPARE(image->getNumSections(), (size_t)28);
+	QCOMPARE(image->getSectionInfo(1)->getName(), QString(".hash"));
+	QCOMPARE(image->getSectionInfo(27)->getName(), QString(".stab.indexstr"));
+
 	bff.unload();
-	delete pBF;
 }
 
 
-/***************************************************************************/ /**
- * \fn        LoaderTest::testPentiumLoad
- * OVERVIEW:        Test loading the pentium (Solaris) hello world program
- ******************************************************************************/
 void LoaderTest::testPentiumLoad()
 {
-	QString     actual;
-	QTextStream ost(&actual);
-
 	// Load Pentium hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_PENTIUM);
+	IFileLoader       *loader = bff.load(HELLO_PENTIUM);
 
-	QVERIFY(pBF != nullptr);
-	IBinaryImage *sect_iface = Boomerang::get()->getImage();
-	QVERIFY(sect_iface != nullptr);
-	int n;
-	const IBinarySection *si;
-	n = sect_iface->getNumSections();
-	ost << "Number of sections = " << n << "\r\n\t";
-	si = sect_iface->getSectionInfo(1);
-	ost << si->getName() << "\t";
-	si = sect_iface->getSectionInfo(n - 1);
-	ost << si->getName();
-	// Note: the string below needs to have embedded tabs. Edit with caution!
-	// (And slightly different string to the sparc test, e.g. rel vs rela)
-	QString expected("Number of sections = 33\r\n\t"
-					 ".note.ABI-tag\t.strtab");
+	QVERIFY(loader != nullptr);
 
-	QCOMPARE(actual, expected);
+	IBinaryImage *image = Boomerang::get()->getImage();
+	QVERIFY(image != nullptr);
+
+	QCOMPARE(image->getNumSections(), (size_t)33);
+	QCOMPARE(image->getSectionInfo(1)->getName(), QString(".note.ABI-tag"));
+	QCOMPARE(image->getSectionInfo(32)->getName(), QString(".strtab"));
+
 	bff.unload();
-	delete pBF;
 }
 
 
-/***************************************************************************/ /**
- * \fn        LoaderTest::testHppaLoad
- * OVERVIEW:        Test loading the sparc hello world program
- ******************************************************************************/
 void LoaderTest::testHppaLoad()
 {
-	QString     actual;
-	QTextStream ost(&actual);
+	QSKIP("Disabled.");
 
 	// Load HPPA hello world
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(HELLO_HPPA);
+	IFileLoader       *loader = bff.load(HELLO_HPPA);
+	QVERIFY(loader != nullptr);
+	IBinaryImage *image = Boomerang::get()->getImage();
 
-	QVERIFY(pBF != nullptr);
-	IBinaryImage *sect_iface = Boomerang::get()->getImage();
-	QVERIFY(sect_iface != nullptr);
-	int n;
-	const IBinarySection *si;
-	n = sect_iface->getNumSections();
-	ost << "Number of sections = " << n << "\r\n";
+	QCOMPARE(image->getNumSections(), (size_t)3);
+	QCOMPARE(image->getSectionInfo(0)->getName(), QString("$TEXT$"));
+	QCOMPARE(image->getSectionInfo(1)->getName(), QString("$DATA$"));
+	QCOMPARE(image->getSectionInfo(2)->getName(), QString("$BSS$"));
 
-	for (int i = 0; i < n; i++) {
-		si = sect_iface->getSectionInfo(i);
-		ost << si->getName() << "\t";
-	}
-
-	// Note: the string below needs to have embedded tabs. Edit with caution!
-	QString expected("Number of sections = 3\r\n"
-					 "$TEXT$\t$DATA$\t$BSS$\t");
-	QCOMPARE(actual, expected);
 	bff.unload();
-	delete pBF;
 }
 
 
-/***************************************************************************/ /**
- * \fn        LoaderTest::testPalmLoad
- * OVERVIEW:        Test loading the Palm 68328 Starter.prc program
- ******************************************************************************/
 void LoaderTest::testPalmLoad()
 {
-	QString     actual;
-	QTextStream ost(&actual);
-
-	// Load Palm Starter.prc
 	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(STARTER_PALM);
+	IFileLoader       *loader = bff.load(STARTER_PALM);
 
-	QVERIFY(pBF != nullptr);
-	IBinaryImage *sect_iface = Boomerang::get()->getImage();
-	QVERIFY(sect_iface != nullptr);
-	int n;
-	const IBinarySection *si;
-	n = sect_iface->getNumSections();
-	ost << "Number of sections = " << n << "\r\n";
+	QVERIFY(loader != nullptr);
+	IBinaryImage *image = Boomerang::get()->getImage();
 
-	for (int i = 0; i < n; i++) {
-		si = sect_iface->getSectionInfo(i);
-		ost << si->getName() << "\t";
-	}
+	QCOMPARE(image->getNumSections(), (size_t)8);
+	QCOMPARE(image->getSectionInfo(0)->getName(), QString("code1"));
+	QCOMPARE(image->getSectionInfo(1)->getName(), QString("MBAR1000"));
+	QCOMPARE(image->getSectionInfo(2)->getName(), QString("tFRM1000"));
+	QCOMPARE(image->getSectionInfo(3)->getName(), QString("Talt1001"));
+	QCOMPARE(image->getSectionInfo(4)->getName(), QString("data0"));
+	QCOMPARE(image->getSectionInfo(5)->getName(), QString("code0"));
+	QCOMPARE(image->getSectionInfo(6)->getName(), QString("tAIN1000"));
+	QCOMPARE(image->getSectionInfo(7)->getName(), QString("tver1000"));
 
-	// Note: the string below needs to have embedded tabs. Edit with caution!
-	QString expected("Number of sections = 8\r\n"
-					 "code1\tMBAR1000\ttFRM1000\tTalt1001\t"
-					 "data0\tcode0\ttAIN1000\ttver1000\t");
-	QCOMPARE(actual, expected);
 	bff.unload();
-	delete pBF;
 }
 
 
-/***************************************************************************/ /**
- * \fn        LoaderTest::testWinLoad
- * OVERVIEW:        Test loading Windows programs
- ******************************************************************************/
 void LoaderTest::testWinLoad()
 {
-#if 0 /* FIXME: these tests should use non-proprietary programs */
-	// Load Windows program calc.exe
+	QSKIP("Disabled.");
+
 	BinaryFileFactory bff;
-	BinaryFile        *pBF = bff.Load(CALC_WINDOWS);
-	QVERIFY(pBF != nullptr);
-	int            n;
-	IBinarySection *si;
-	n = pBF->GetNumSections();
-	ost << "Number of sections = " << std::dec << n << "\r\n";
+	IFileLoader       *loader = nullptr;
 
-	for (int i = 0; i < n; i++) {
-		si = pBF->GetSectionInfo(i);
-		ost << si->getName() << "\t";
-	}
+#if 1 // FIXME: these tests should use non-proprietary programs
+	// Load Windows program calc.exe
 
-	// Note: the string below needs to have embedded tabs. Edit with caution!
-	QString expected("Number of sections = 5\r\n"
-					 ".text    .rdata    .data    .rsrc    .reloc    ");
-	QString actual(ost.str());
-	QCOMPARE(actual, expected);
+	loader = bff.load(CALC_WINDOWS);
+	QVERIFY(loader != nullptr);
+	QVERIFY(loader->getMainEntryPoint() != NO_ADDRESS);
 
-	ADDRESS addr = pBF->GetMainEntryPoint();
-	QVERIFY(addr != NO_ADDRESS);
+	IBinaryImage *image = Boomerang::get()->getImage();
+	QCOMPARE(image->getNumSections(), (size_t)5);
+	QCOMPARE(image->getSectionInfo(0), QString(".text"));
+	QCOMPARE(image->getSectionInfo(1), QString(".rdata"));
+	QCOMPARE(image->getSectionInfo(2), QString(".data"));
+	QCOMPARE(image->getSectionInfo(3), QString(".rsrc"));
+	QCOMPARE(image->getSectionInfo(4), QString(".reloc"));
+	bff.unload();
 
-	// Test symbol table (imports)
-	const char *s = pBF->SymbolByAddress(0x1292060U);
-
-	if (s == 0) {
-		actual = "<not found>";
-	}
-	else {
-		actual = s;
-	}
-
-	expected = "SetEvent";
-	QCOMPARE(actual, expected);
-
-	ADDRESS a            = pBF->GetAddressByName("SetEvent");
-	ADDRESS expectedAddr = 0x1292060;
-	QCOMPARE(a, expectedAddr);
-	pBF->UnLoad();
-	bff.UnLoad();
-
-	// Test loading the "new style" exes, as found in winXP etc
-	pBF = bff.Load(CALC_WINXP);
-	QVERIFY(pBF != nullptr);
-	addr = pBF->GetMainEntryPoint();
-	std::ostringstream ost1;
-	ost1 << std::hex << addr;
-	actual   = ost1.str();
-	expected = "1001f51";
-	QCOMPARE(actual, expected);
-	pBF->UnLoad();
-	bff.UnLoad();
+	// Test loading the "new style" exes, as found in WinXP etc
+	loader = bff.load(CALC_WINXP);
+	QVERIFY(loader != nullptr);
+	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x01001F51));
+	bff.unload();
 
 	// Test loading the calc.exe found in Windows 2000 (more NT based)
-	pBF = bff.Load(CALC_WIN2000);
-	QVERIFY(pBF != nullptr);
-	expected = "1001680";
-	addr     = pBF->GetMainEntryPoint();
-	std::ostringstream ost2;
-	ost2 << std::hex << addr;
-	actual = ost2.str();
-	QCOMPARE(actual, expected);
-	pBF->UnLoad();
-	bff.UnLoad();
+	loader = bff.load(CALC_WIN2000);
+	QVERIFY(loader != nullptr);
+	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x01001680));
+	bff.unload();
 
 	// Test loading the lpq.exe program - console mode PE file
-	pBF = bff.Load(LPQ_WINDOWS);
-	QVERIFY(pBF != nullptr);
-	addr = pBF->GetMainEntryPoint();
-	std::ostringstream ost3;
-	ost3 << std::hex << addr;
-	actual   = ost3.str();
-	expected = "18c1000";
-	QCOMPARE(actual, expected);
-	pBF->UnLoad();
-	bff.UnLoad();
+	loader = bff.load(LPQ_WINDOWS);
+	QVERIFY(loader != nullptr);
+	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x018C1000));
+	bff.unload();
 #endif
 
 	// Borland
-	BinaryFileFactory bff;
-	QObject           *pBF = bff.load(SWITCH_BORLAND);
-	QVERIFY(pBF != nullptr);
-	LoaderInterface *ldr_iface = qobject_cast<LoaderInterface *>(pBF);
-	QVERIFY(ldr_iface != nullptr);
-	ADDRESS     addr = ldr_iface->getMainEntryPoint();
-	QString     actual;
-	QTextStream ost4(&actual);
-	ost4 << addr;
-	QString expected("401150");
-	QCOMPARE(actual, expected);
+	loader = bff.load(SWITCH_BORLAND);
+	QVERIFY(loader != nullptr);
+	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(401150));
+
 	bff.unload();
 }
-
-
-/***************************************************************************/ /**
- * \fn        LoaderTest::testMicroDis
- * OVERVIEW:        Test the micro disassembler
- ******************************************************************************/
 
 
 // The below lengths were derived from a quick and dirty program (called
@@ -324,48 +269,48 @@ void LoaderTest::testWinLoad()
 // exact booked in test program
 static char lengths[] =
 {
-	2, 2, 2, 1, 5, 2, 2, 5, 5, 3, 5, 2,                                                                                                                                                           2,                                                                                                                                                                      5,                            5,                5,                3,                4,                6,                1,                3, 1, 1, 5, 5, 5, 3,
-	1, 5, 2, 5, 7, 1, 1, 1, 2, 1, 5, 1,                                                                                                                                                           6,                                                                                                                                                                      2,                            1,                1,                3,                6,                2,                2,                6, 3, 2, 6, 1, 5, 3,
-	1, 1, 1, 1, 1, 1, 2, 1, 5, 1, 6, 3,                                                                                                                                                           1,                                                                                                                                                                      1,                            1,                1,                1,                1,                2,                1,                5, 1, 6, 6, 1, 6, 1,
-	5, 3, 1, 1, 1, 2, 1, 5, 1, 6, 3, 1,                                                                                                                                                           1, /* main */ 2,                                                                                                                                                                                      3,                1,                5,                5,                3,                2,                2, 1, /* label */ 1,2, 1, 2, 1,
-	1, 2, 2, 1, 1, 1, 3, 3, 1, 3, 2, 5,                                                                                                                                                           2,                                                                                                                                                                      2,                            2,                2,                2,                3,                2,                3,                2, 3, 3, 1, 1, 1, 1,
-	1, 1, 2, 3, 1, 1, 3, 7, 3, 1, 1, 1,                                                                                                                                                           3,                                                                                                                                                                      1,                            2,                5,                2,                3,                3,                2,                2, 2, 3, 2, 6, 2, 5,
-	2, 3, 3, 3, 2, 2, 3, 1, 1, 1, 1, 1,                                                                                                                                                           1,                                                                                                                                                                      1,                            1,                2,                3,                1,                1,                3,                3, 3, 3, 2, 2, 3, 1,
-	2, 3, 3, 4, 3, 3, 3, 2, 2, 2, 2, 3,                                                                                                                                                           2,                                                                                                                                                                      3,                            3,                4,                3,                1,                2,                3,                1, 1, 1, 1, 1, 1, 1,
-	1, 2, 3, 2, 3, 2, 1, 1, 1, 4, 2, 4,                                                                                                                                                           2,                                                                                                                                                                      1,                            2,                2,                3,                4,                2,                2,                1, 1, 1, 1, 1, 2, 3,
-	1, 1, 1, 5, 1, 6, 3, 3, 2, 3, 2, 3,                                                                                                                                                           3,                                                                                                                                                                      2,                            3,                3,                2,                1,                1,                4,                2, 4, 2, 1, 1, 1, 3,
-	5, 3, 3, 3, 2, 3, 3, 3, 2, 3, 2, 2,                                                                                                                                                           3,                                                                                                                                                                      4,                            2,                3,                2,                3,                3,                2,                3, 3, 2, 3, 1, 1, 1,
-	1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 5, 1,                                                                                                                                                           6,                                                                                                                                                                      3,                            3,                2,                2,                2,                7,                3,                2, 1, 1, 1, 2, 5, 3,
-	3, 3, 3, 2, 2, 1, 3, 3, 5, 3, 3, 3,                                                                                                                                                           3,                                                                                                                                                                      3,                            3,                1,                5,                2,                7,                2,                3, 3, 3, 3, 3, 2, 2,
-	2, 3, 2, 3, 3, 1, 1, 3, 3, 1, 3, 1,                                                                                                                                                           1,                                                                                                                                                                      2,                            5,                3,                3,                3,                2,                2,                3, 1, 3, 1, 3, 1, 1,
-	3, 3, 5, 3, 3, 3, 2, 3, 3, 3, 1, 1,                                                                                                                                                           1,                                                                                                                                                                      1,                            1,                1,                1,                1,                1,                2,                3, 1, 1, 1, 5, 1, 6,
-	6, 2, 2, 1, 3, 2, 1, 5, 3, 3, 2, 2,                                                                                                                                                           3,                                                                                                                                                                      2,                            3,                2,                2,                2,                2,                2,                1, 3, 2, 1, 1, 1, 2,
-	3, 3, 2, 2, 3, 1, 3, 3, 2, 2, 3, 3,                                                                                                                                                           3,                                                                                                                                                                      3,                            2,                3,                2,                1,                1,                1,                3, 3, 3, 2, 3, 3, 2,
-	2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2,                                                                                                                                                           3,                                                                                                                                                                      1,                            1,                1,                5,                1,                6,                3,                3, 5, 2, 3, 3, 3, 2,
-	3, 6, 3, 5, 2, 1, 2, 2, 2, 3, 6, 5,                                                                                                                                                           1,                                                                                                                                                                      2,                            2,                2,                4,                2,                2,                5,                1, 1, 1, 3, 2, 3, 2,
-	2, 2, 1, 5, 2, 2, 3, 4, 3, 2, 1, 3,                                                                                                                                                           3,                                                                                                                                                                      6,                            3,                5,                1,                2,                2,                2,                3, 3, 3, 3, 3, 2, 1,
-	1, 1, 3, 7, 3, 5, 1, 1, 5, 2, 3, 3,                                                                                                                                                           1,                                                                                                                                                                      1,                            5,                2,                3,                3,                3,                1,                2, 3, 3, 2, 3, 1, 1,
-	5, 2, 3, 2, 3, 1, 1, 1, 1, 1, 1, 1,                                                                                                                                                           2,                                                                                                                                                                      3,                            1,                1,                1,                5,                1,                6,                3, 3, 3, 3, 1, 3, 2,
-	6, 3, 2, 5, 4, 2, 5, 1, 1, 2, 2, 5,                                                                                                                                                           3,                                                                                                                                                                      3,                            1,                3,                5,                3,                3,                4,                3, 3, 3, 5, 3, 7, 3,
-	4, 5, 1, 1, 2, 2, 5, 3, 3, 3, 4, 5,                                                                                                                                                           1,                                                                                                                                                                      5,                            6,                2,                7,                2,                1,                1,                2, 2, 2, 2, 6, 2, 3,
-	2, 2, 4, 3, 2, 2, 2, 1, 2, 6, 2, 3,                                                                                                                                                           2,                                                                                                                                                                      2,                            2,                3,                3,                2,                2,                2,                2, 2, 2, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,                                                                                                                                                           2,                                                                                                                                                                      2,                            2,                2,                2,                2,                2,                2,                2, 2, 2, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,                                                                                                                                                           2,                                                                                                                                                                      2,                            2,                2,                2,                2,                2,                2,                2, 2, 3, 2, 2, 6, 2,
-	3, 3, 5, 1, 1, 3, 3, 2, 1, 3, 5, 1,                                                                                                                                                           1,                                                                                                                                                                      1,                            3,                3,                2,                3,                3,                5,                1, 2, 3, 2, 2, 3, 3,
-	5, 1, 1, 1, 1, 3, 1, 3, 5, 3, 3, 1,                                                                                                                                                           3,                                                                                                                                                                      5,                            3,                3,                4,                3,                3,                3,                5, 3, 7, 3, 4, 5, 1,
-	1, 1, 3, 1, 3, 5, 3, 3, 3, 5, 5, 1,                                                                                                                                                           3,                                                                                                                                                                      1,                            3,                5,                3,                3,                1,                3,                5, 3, 3, 3, 5, 3, 7,
-	3, 4, 5, 1, 3, 1, 3, 5, 3, 3, 1, 3,                                                                                                                                                           5,                                                                                                                                                                      3,                            3,                3,                4,                3,                3,                5,                1, 3, 1, 3, 5, 3, 3,
-	3, 4, 5, 1, 1, 3, 1, 3, 5, 3, 3, 3,                                                                                                                                                           3,                                                                                                                                                                      5,                            1,                1,                1,                2,                5,                2,                2, 3, 2, 1, 5, 2, 3,
-	3, 2, 3, 3, 2, 2, 2, 1, 5, 2, 1, 5,                                                                                                                                                           2,                                                                                                                                                                      7,                            1,                3,                3,                5,                3,                7,                4, 3, 3, 2, 5, 2, 2,
-	1, 1, 3, 1, 3, 5, 3, 3, 3, 3, 2, 1,                                                                                                                                                           1,                                                                                                                                                                      5,                            1,                1,                1,                3,                3,                1,                1, 1, 1, 1, 1, 1, 2,
-	1, 5, 1, 6, 3, 3, 3, 7, 6, 7, 7, 6,                                                                                                                                                           3,                                                                                                                                                                      6,                            3,                1,                1,                1,                2,                1,                5, 1, 6, 3, 3, 3, 3,
-	7, 6, 7, 6, 3, 6, 3, 1, 1, 1, 2, 1,                                                                                                                                                           5,                                                                                                                                                                      1,                            6,                3,                6,                7,                2,                1,                1, 2, 3, 2, 3, 2, 3,
-	2, 3, 5, 2, 1, 3, 4, 2, 5, 1, 1, 3,                                                                                                                                                           1,                                                                                                                                                                      1,                            1,                1,                1,                1,                2,                6,                1, 1, 1, 5, 1, 6, 3,
-	5, 6, 3, 2, 6, 3, 6, 1, 6, 5, 2, 3,                                                                                                                                                           2,                                                                                                                                                                      6,                            2,                2,                6,                6,                1,                5,                3, 4, 3, 6, 3, 6, 3,
-	5, 2, 2, 2, 3, 2, 2, 6, 6, 6, 6, 1,                                                                                                                                                           2,                                                                                                                                                                      6,                            6,                1,                5,                2,                3,                2,                2, 6, 3, 3, 3, 2, 6,
-	1, 1, 5, 2, 6, 3, 6, 2, 3, 6, 3, 6,                                                                                                                                                           2,                                                                                                                                                                      2,                            6,                6,                3,                6,                2,                6,                3, 1, 6, 1, 1, 5, 2,
-	3, 2, 2, 3, 6, 1, 5, 2, 3, 6, 1, 1,                                                                                                                                                           1,                                                                                                                                                                      1, /* label */ 1,                               2,                1,                2,                1,                1,                5, 1, 6, 6, 3, 4, 2,
-	2, 2, 3, 3, 2, 3, 1, 1, 1, 1, 1, 1,                                                                                                                                                           2,                                                                                                                                                                      1,                            5,                1,                6,                3,                1, 1
+	2, 2, 2, 1, 5, 2, 2, 5, 5, 3, 5, 2,                                                                                                                                                           2,                                                                                                                                                                      5,                                                                                                                                                                                      5,                               5,                3,                4,                6,                1,                3, 1, 1, 5, 5, 5, 3,
+	1, 5, 2, 5, 7, 1, 1, 1, 2, 1, 5, 1,                                                                                                                                                           6,                                                                                                                                                                      2,                                                                                                                                                                                      1,                               1,                3,                6,                2,                2,                6, 3, 2, 6, 1, 5, 3,
+	1, 1, 1, 1, 1, 1, 2, 1, 5, 1, 6, 3,                                                                                                                                                           1,                                                                                                                                                                      1,                                                                                                                                                                                      1,                               1,                1,                1,                2,                1,                5, 1, 6, 6, 1, 6, 1,
+	5, 3, 1, 1, 1, 2, 1, 5, 1, 6, 3, 1,                                                                                                                                                           1,                                                                                                                                                                      2,                                                                                                                                                                                      3,                               1,                5,                5,                3,                2,                2, 1, 1, 2, 1, 2, 1,
+	1, 2, 2, 1, 1, 1, 3, 3, 1, 3, 2, 5,                                                                                                                                                           2,                                                                                                                                                                      2,                                                                                                                                                                                      2,                               2,                2,                3,                2,                3,                2, 3, 3, 1, 1, 1, 1,
+	1, 1, 2, 3, 1, 1, 3, 7, 3, 1, 1, 1,                                                                                                                                                           3,                                                                                                                                                                      1,                                                                                                                                                                                      2,                               5,                2,                3,                3,                2,                2, 2, 3, 2, 6, 2, 5,
+	2, 3, 3, 3, 2, 2, 3, 1, 1, 1, 1, 1,                                                                                                                                                           1,                                                                                                                                                                      1,                                                                                                                                                                                      1,                               2,                3,                1,                1,                3,                3, 3, 3, 2, 2, 3, 1,
+	2, 3, 3, 4, 3, 3, 3, 2, 2, 2, 2, 3,                                                                                                                                                           2,                                                                                                                                                                      3,                                                                                                                                                                                      3,                               4,                3,                1,                2,                3,                1, 1, 1, 1, 1, 1, 1,
+	1, 2, 3, 2, 3, 2, 1, 1, 1, 4, 2, 4,                                                                                                                                                           2,                                                                                                                                                                      1,                                                                                                                                                                                      2,                               2,                3,                4,                2,                2,                1, 1, 1, 1, 1, 2, 3,
+	1, 1, 1, 5, 1, 6, 3, 3, 2, 3, 2, 3,                                                                                                                                                           3,                                                                                                                                                                      2,                                                                                                                                                                                      3,                               3,                2,                1,                1,                4,                2, 4, 2, 1, 1, 1, 3,
+	5, 3, 3, 3, 2, 3, 3, 3, 2, 3, 2, 2,                                                                                                                                                           3,                                                                                                                                                                      4,                                                                                                                                                                                      2,                               3,                2,                3,                3,                2,                3, 3, 2, 3, 1, 1, 1,
+	1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 5, 1,                                                                                                                                                           6,                                                                                                                                                                      3,                                                                                                                                                                                      3,                               2,                2,                2,                7,                3,                2, 1, 1, 1, 2, 5, 3,
+	3, 3, 3, 2, 2, 1, 3, 3, 5, 3, 3, 3,                                                                                                                                                           3,                                                                                                                                                                      3,                                                                                                                                                                                      3,                               1,                5,                2,                7,                2,                3, 3, 3, 3, 3, 2, 2,
+	2, 3, 2, 3, 3, 1, 1, 3, 3, 1, 3, 1,                                                                                                                                                           1,                                                                                                                                                                      2,                                                                                                                                                                                      5,                               3,                3,                3,                2,                2,                3, 1, 3, 1, 3, 1, 1,
+	3, 3, 5, 3, 3, 3, 2, 3, 3, 3, 1, 1,                                                                                                                                                           1,                                                                                                                                                                      1,                                                                                                                                                                                      1,                               1,                1,                1,                1,                2,                3, 1, 1, 1, 5, 1, 6,
+	6, 2, 2, 1, 3, 2, 1, 5, 3, 3, 2, 2,                                                                                                                                                           3,                                                                                                                                                                      2,                                                                                                                                                                                      3,                               2,                2,                2,                2,                2,                1, 3, 2, 1, 1, 1, 2,
+	3, 3, 2, 2, 3, 1, 3, 3, 2, 2, 3, 3,                                                                                                                                                           3,                                                                                                                                                                      3,                                                                                                                                                                                      2,                               3,                2,                1,                1,                1,                3, 3, 3, 2, 3, 3, 2,
+	2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2,                                                                                                                                                           3,                                                                                                                                                                      1,                                                                                                                                                                                      1,                               1,                5,                1,                6,                3,                3, 5, 2, 3, 3, 3, 2,
+	3, 6, 3, 5, 2, 1, 2, 2, 2, 3, 6, 5,                                                                                                                                                           1,                                                                                                                                                                      2,                                                                                                                                                                                      2,                               2,                4,                2,                2,                5,                1, 1, 1, 3, 2, 3, 2,
+	2, 2, 1, 5, 2, 2, 3, 4, 3, 2, 1, 3,                                                                                                                                                           3,                                                                                                                                                                      6,                                                                                                                                                                                      3,                               5,                1,                2,                2,                2,                3, 3, 3, 3, 3, 2, 1,
+	1, 1, 3, 7, 3, 5, 1, 1, 5, 2, 3, 3,                                                                                                                                                           1,                                                                                                                                                                      1,                                                                                                                                                                                      5,                               2,                3,                3,                3,                1,                2, 3, 3, 2, 3, 1, 1,
+	5, 2, 3, 2, 3, 1, 1, 1, 1, 1, 1, 1,                                                                                                                                                           2,                                                                                                                                                                      3,                                                                                                                                                                                      1,                               1,                1,                5,                1,                6,                3, 3, 3, 3, 1, 3, 2,
+	6, 3, 2, 5, 4, 2, 5, 1, 1, 2, 2, 5,                                                                                                                                                           3,                                                                                                                                                                      3,                                                                                                                                                                                      1,                               3,                5,                3,                3,                4,                3, 3, 3, 5, 3, 7, 3,
+	4, 5, 1, 1, 2, 2, 5, 3, 3, 3, 4, 5,                                                                                                                                                           1,                                                                                                                                                                      5,                                                                                                                                                                                      6,                               2,                7,                2,                1,                1,                2, 2, 2, 2, 6, 2, 3,
+	2, 2, 4, 3, 2, 2, 2, 1, 2, 6, 2, 3,                                                                                                                                                           2,                                                                                                                                                                      2,                                                                                                                                                                                      2,                               3,                3,                2,                2,                2,                2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,                                                                                                                                                           2,                                                                                                                                                                      2,                                                                                                                                                                                      2,                               2,                2,                2,                2,                2,                2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,                                                                                                                                                           2,                                                                                                                                                                      2,                                                                                                                                                                                      2,                               2,                2,                2,                2,                2,                2, 2, 3, 2, 2, 6, 2,
+	3, 3, 5, 1, 1, 3, 3, 2, 1, 3, 5, 1,                                                                                                                                                           1,                                                                                                                                                                      1,                                                                                                                                                                                      3,                               3,                2,                3,                3,                5,                1, 2, 3, 2, 2, 3, 3,
+	5, 1, 1, 1, 1, 3, 1, 3, 5, 3, 3, 1,                                                                                                                                                           3,                                                                                                                                                                      5,                                                                                                                                                                                      3,                               3,                4,                3,                3,                3,                5, 3, 7, 3, 4, 5, 1,
+	1, 1, 3, 1, 3, 5, 3, 3, 3, 5, 5, 1,                                                                                                                                                           3,                                                                                                                                                                      1,                                                                                                                                                                                      3,                               5,                3,                3,                1,                3,                5, 3, 3, 3, 5, 3, 7,
+	3, 4, 5, 1, 3, 1, 3, 5, 3, 3, 1, 3,                                                                                                                                                           5,                                                                                                                                                                      3,                                                                                                                                                                                      3,                               3,                4,                3,                3,                5,                1, 3, 1, 3, 5, 3, 3,
+	3, 4, 5, 1, 1, 3, 1, 3, 5, 3, 3, 3,                                                                                                                                                           3,                                                                                                                                                                      5,                                                                                                                                                                                      1,                               1,                1,                2,                5,                2,                2, 3, 2, 1, 5, 2, 3,
+	3, 2, 3, 3, 2, 2, 2, 1, 5, 2, 1, 5,                                                                                                                                                           2,                                                                                                                                                                      7,                                                                                                                                                                                      1,                               3,                3,                5,                3,                7,                4, 3, 3, 2, 5, 2, 2,
+	1, 1, 3, 1, 3, 5, 3, 3, 3, 3, 2, 1,                                                                                                                                                           1,                                                                                                                                                                      5,                                                                                                                                                                                      1,                               1,                1,                3,                3,                1,                1, 1, 1, 1, 1, 1, 2,
+	1, 5, 1, 6, 3, 3, 3, 7, 6, 7, 7, 6,                                                                                                                                                           3,                                                                                                                                                                      6,                                                                                                                                                                                      3,                               1,                1,                1,                2,                1,                5, 1, 6, 3, 3, 3, 3,
+	7, 6, 7, 6, 3, 6, 3, 1, 1, 1, 2, 1,                                                                                                                                                           5,                                                                                                                                                                      1,                                                                                                                                                                                      6,                               3,                6,                7,                2,                1,                1, 2, 3, 2, 3, 2, 3,
+	2, 3, 5, 2, 1, 3, 4, 2, 5, 1, 1, 3,                                                                                                                                                           1,                                                                                                                                                                      1,                                                                                                                                                                                      1,                               1,                1,                1,                2,                6,                1, 1, 1, 5, 1, 6, 3,
+	5, 6, 3, 2, 6, 3, 6, 1, 6, 5, 2, 3,                                                                                                                                                           2,                                                                                                                                                                      6,                                                                                                                                                                                      2,                               2,                6,                6,                1,                5,                3, 4, 3, 6, 3, 6, 3,
+	5, 2, 2, 2, 3, 2, 2, 6, 6, 6, 6, 1,                                                                                                                                                           2,                                                                                                                                                                      6,                                                                                                                                                                                      6,                               1,                5,                2,                3,                2,                2, 6, 3, 3, 3, 2, 6,
+	1, 1, 5, 2, 6, 3, 6, 2, 3, 6, 3, 6,                                                                                                                                                           2,                                                                                                                                                                      2,                                                                                                                                                                                      6,                               6,                3,                6,                2,                6,                3, 1, 6, 1, 1, 5, 2,
+	3, 2, 2, 3, 6, 1, 5, 2, 3, 6, 1, 1,                                                                                                                                                           1,                                                                                                                                                                      1,                                                                                                                                                                                      1,                               2,                1,                2,                1,                1,                5, 1, 6, 6, 3, 4, 2,
+	2, 2, 3, 3, 2, 3, 1, 1, 1, 1, 1, 1,                                                                                                                                                           2,                                                                                                                                                                      1,                                                                                                                                                                                      5,                               1,                6,                3,                1, 1
 };
 
 // text segment of hello pentium
@@ -586,29 +531,31 @@ void LoaderTest::testMicroDis2()
 
 	unsigned char movsbl[3] = { 0x0f, 0xbe, 0x00 };
 	unsigned char movswl[3] = { 0x0f, 0xbf, 0x00 };
-	int           size      = microX86Dis(movsbl);
+	int           size;
 
+	size = microX86Dis(movsbl);
 	QCOMPARE(size, 3);
 	size = microX86Dis(movswl);
 	QCOMPARE(size, 3);
 }
 
 
-typedef unsigned (*elfHashFcn)(const char *);
+typedef unsigned (*ElfHashFcn)(const char *);
 void LoaderTest::testElfHash()
 {
 	QLibrary z;
 
-	z.setFileName(ELFBINFILE);
+	z.setFileName(ELF_LOADER);
 	bool opened = z.load();
 	QVERIFY(opened);
+
 	// Use the handle to find the "elf_hash" function
-	elfHashFcn pFcn = (elfHashFcn)z.resolve("elf_hash");
-	QVERIFY(pFcn);
+	ElfHashFcn hashFcn = (ElfHashFcn)z.resolve("elf_hash");
+	QVERIFY(hashFcn);
+
 	// Call the function with the string "main
-	unsigned act = (*pFcn)("main");
-	unsigned exp = 0x737fe;
-	QCOMPARE(act, exp);
+	unsigned int hashValue = hashFcn("main");
+	QCOMPARE(hashValue, 0x737FEU);
 }
 
 

@@ -45,7 +45,7 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
 else ()
 	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic \
 		-Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs \
-		-Wstrict-overflow=2")
+		-Wstrict-overflow=2 -rdynamic")
 		
 	# other warnings:
 	#-fstrict-aliasing  # This will not work with *reinterpret-cast<float*>(&int)
@@ -61,9 +61,8 @@ else ()
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS} -std=c++11 -Wsuggest-override")
     set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${COMMON_COMPILE_OPTIONS}")
-    
-    add_definitions(-D__STDC_FORMAT_MACROS) #-D_GLIBCXX_DEBUG
-    #add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
+    SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
+    add_definitions(-D__STDC_FORMAT_MACROS)
 endif ()
 
 if (MSVC)
@@ -93,7 +92,7 @@ set(PACKAGE_STRING    "boomerang")
 set(PACKAGE_TARNAME   "boomerang")
 set(PACKAGE_VERSION   "0.4.0-alpha")
 
-#if git is installed (likely), pull version string from git
+# if git is installed (likely), pull version string from git tags
 find_package(Git)
 if (GIT_FOUND)
 	execute_process(
@@ -127,4 +126,9 @@ add_custom_target(check "./full_regression.sh"
 add_custom_target(COPY_FILES ALL)
 add_custom_command(TARGET COPY_FILES POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/signatures ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/signatures)
+
+# delete all files in the 'out/' directory on make clean
+set(EXTRA_CLEAN_FILES "${CMAKE_SOURCE_DIR}/out/")
+
+SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${EXTRA_CLEAN_FILES}")
 

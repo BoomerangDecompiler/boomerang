@@ -9,14 +9,14 @@
  *
  */
 
-/** \file MachOBinaryFile.cpp
+/** \file MachOBinaryLoader.cpp
  * \brief This file contains the implementation of the class MachOBinaryFile.
  *
  *    This file implements the class MachOBinaryFile, derived from class
  *    BinaryFile. See MachOBinaryFile.h and BinaryFile.h for details.
  */
 
-#include "MachOBinaryFile.h"
+#include "MachOBinaryLoader.h"
 
 #include "boom_base/BinaryFile.h"
 #include "include/IBoomerang.h"
@@ -60,46 +60,38 @@ struct SectionParam
 // #define DEBUG_MACHO_LOADER
 // #define DEBUG_MACHO_LOADER_OBJC
 
-MachOBinaryFile::MachOBinaryFile()
+MachOBinaryLoader::MachOBinaryLoader()
 {
 	machine    = MACHINE_PPC;
 	swap_bytes = false;
 }
 
 
-MachOBinaryFile::~MachOBinaryFile()
+MachOBinaryLoader::~MachOBinaryLoader()
 {
 }
 
 
-void MachOBinaryFile::initialize(IBoomerang *sys)
+void MachOBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
 {
-	Image   = sys->getImage();
-	Symbols = sys->getSymbols();
+	Image   = image;
+	Symbols = symbols;
 }
 
 
-bool MachOBinaryFile::Open(const char *sName)
-{
-	Q_UNUSED(sName);
-	// return Load(sName) != 0;
-	return false;
-}
-
-
-void MachOBinaryFile::close()
+void MachOBinaryLoader::close()
 {
 	unload();
 }
 
 
-ADDRESS MachOBinaryFile::getEntryPoint()
+ADDRESS MachOBinaryLoader::getEntryPoint()
 {
 	return entrypoint;
 }
 
 
-ADDRESS MachOBinaryFile::getMainEntryPoint()
+ADDRESS MachOBinaryLoader::getMainEntryPoint()
 {
 	auto symbol = Symbols->find("main");
 
@@ -119,7 +111,7 @@ ADDRESS MachOBinaryFile::getMainEntryPoint()
 
 #define BE4(x)    ((magic[(x)] << 24) | (magic[(x) + 1] << 16) | (magic[(x) + 2] << 8) | (magic[(x) + 3]))
 
-bool MachOBinaryFile::loadFromMemory(QByteArray& img)
+bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 {
 	QBuffer fp(&img);
 
@@ -469,7 +461,7 @@ bool MachOBinaryFile::loadFromMemory(QByteArray& img)
 }
 
 
-int MachOBinaryFile::canLoad(QIODevice& dev) const
+int MachOBinaryLoader::canLoad(QIODevice& dev) const
 {
 	unsigned char buf[8];
 
@@ -487,20 +479,20 @@ int MachOBinaryFile::canLoad(QIODevice& dev) const
 
 
 // Clean up and unload the binary image
-void MachOBinaryFile::unload()
+void MachOBinaryLoader::unload()
 {
 }
 
 
-bool MachOBinaryFile::postLoad(void *handle)
+bool MachOBinaryLoader::postLoad(void *handle)
 {
 	Q_UNUSED(handle);
 	return false;
 }
 
 
-bool MachOBinaryFile::displayDetails(const char *fileName, FILE *f
-                                     /* = stdout */)
+bool MachOBinaryLoader::displayDetails(const char *fileName, FILE *f
+                                       /* = stdout */)
 {
 	Q_UNUSED(fileName);
 	Q_UNUSED(f);
@@ -508,7 +500,7 @@ bool MachOBinaryFile::displayDetails(const char *fileName, FILE *f
 }
 
 
-int MachOBinaryFile::machORead2(short *ps) const
+int MachOBinaryLoader::machORead2(short *ps) const
 {
 	unsigned char *p = (unsigned char *)ps;
 	int           n;
@@ -524,7 +516,7 @@ int MachOBinaryFile::machORead2(short *ps) const
 }
 
 
-int MachOBinaryFile::machORead4(int *pi) const
+int MachOBinaryLoader::machORead4(int *pi) const
 {
 	short *p = (short *)pi;
 	int   n1 = machORead2(p);
@@ -546,7 +538,7 @@ int MachOBinaryFile::machORead4(int *pi) const
 //    if (swap_bytes) return _BMMH(x); else return x;
 // }
 
-int32_t MachOBinaryFile::BMMH(int32_t x)
+int32_t MachOBinaryLoader::BMMH(int32_t x)
 {
 	if (swap_bytes) {
 		return _BMMH(x);
@@ -557,7 +549,7 @@ int32_t MachOBinaryFile::BMMH(int32_t x)
 }
 
 
-uint32_t MachOBinaryFile::BMMH(uint32_t x)
+uint32_t MachOBinaryLoader::BMMH(uint32_t x)
 {
 	if (swap_bytes) {
 		return _BMMH(x);
@@ -568,7 +560,7 @@ uint32_t MachOBinaryFile::BMMH(uint32_t x)
 }
 
 
-unsigned short MachOBinaryFile::BMMHW(unsigned short x)
+unsigned short MachOBinaryLoader::BMMHW(unsigned short x)
 {
 	if (swap_bytes) {
 		return _BMMHW(x);
@@ -579,40 +571,44 @@ unsigned short MachOBinaryFile::BMMHW(unsigned short x)
 }
 
 
-LOAD_FMT MachOBinaryFile::getFormat() const
+LOAD_FMT MachOBinaryLoader::getFormat() const
 {
 	return LOADFMT_MACHO;
 }
 
 
-MACHINE MachOBinaryFile::getMachine() const
+MACHINE MachOBinaryLoader::getMachine() const
 {
 	return machine;
 }
 
 
-bool MachOBinaryFile::isLibrary() const
+bool MachOBinaryLoader::isLibrary() const
 {
 	return false;
 }
 
 
-ADDRESS MachOBinaryFile::getImageBase()
+ADDRESS MachOBinaryLoader::getImageBase()
 {
 	return loaded_addr;
 }
 
 
-size_t MachOBinaryFile::getImageSize()
+size_t MachOBinaryLoader::getImageSize()
 {
 	return loaded_size;
 }
 
 
-DWord MachOBinaryFile::getDelta()
+DWord MachOBinaryLoader::getDelta()
 {
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
 	//    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
 	return (ADDRESS::host_ptr(base) - loaded_addr).m_value;
 }
+
+
+DEFINE_PLUGIN(PluginType::Loader, IFileLoader, MachOBinaryLoader,
+			  "DOS4GW loader plugin", "0.4.0", "Boomerang developers")

@@ -563,7 +563,7 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
  * \copydetails FrontEnd::FrontEnd
  * \returns           <N/A>
  ******************************************************************************/
-PentiumFrontEnd::PentiumFrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff)
+PentiumFrontEnd::PentiumFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
 	: FrontEnd(p_BF, prog, bff)
 	, idPF(-1)
 {

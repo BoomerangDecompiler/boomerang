@@ -21,7 +21,7 @@ public:
 	/*
 	 * Constructor. Takes some parameters to save passing these around a lot
 	 */
-	SparcFrontEnd(QObject *p_BF, Prog *prog, BinaryFileFactory *bff);
+	SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff);
 
 	/**
 	 * Virtual destructor.

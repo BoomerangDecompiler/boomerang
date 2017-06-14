@@ -134,6 +134,7 @@ bool ImplicitAssign::accept(StmtPartModifier *v)
 	return true;
 }
 
+
 /// Data flow based type analysis
 void ImplicitAssign::dfaTypeAnalysis(bool& ch)
 {
