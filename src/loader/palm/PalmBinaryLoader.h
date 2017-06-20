@@ -45,10 +45,10 @@ public:
 	void close() override;
 
 	/// @copydoc IFileLoader::getFormat
-	LOAD_FMT getFormat() const override;
+	LoadFmt getFormat() const override;
 
 	/// @copydoc IFileLoader::getMachine
-	MACHINE getMachine() const override;
+	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
 	virtual ADDRESS getMainEntryPoint() override;

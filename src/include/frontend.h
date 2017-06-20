@@ -71,7 +71,7 @@ protected:
 	/***************************************/
 	// Loader interfaces
 	/***************************************/
-	IFileLoader *ldrIface;
+	IFileLoader *m_fileLoader;
 	/***************************************/
 
 	BinaryFileFactory *pbff; // The binary file factory (for closing properly)
@@ -110,7 +110,7 @@ public:
 	bool isWin32() const; // Is this a win32 frontend?
 	static bool noReturnCallDest(const QString& name);
 
-	IFileLoader *getLoaderIface() { return ldrIface; }
+	IFileLoader *getLoaderIface() { return m_fileLoader; }
 
 	// Function to fetch the smallest machine instruction
 	// virtual    int            getInst(int addr);

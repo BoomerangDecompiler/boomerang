@@ -677,46 +677,46 @@ void ElfBinaryLoader::close()
 }
 
 
-LOAD_FMT ElfBinaryLoader::getFormat() const
+LoadFmt ElfBinaryLoader::getFormat() const
 {
-	return LOADFMT_ELF;
+	return LoadFmt::ELF;
 }
 
 
-MACHINE ElfBinaryLoader::getMachine() const
+Machine ElfBinaryLoader::getMachine() const
 {
-	SWord machine = elfRead2(&m_elfHeader->e_machine);
+	SWord elfMachine = elfRead2(&m_elfHeader->e_machine);
 
-	if ((machine == EM_SPARC) || (machine == EM_SPARC32PLUS)) {
-		return MACHINE_SPARC;
+	if ((elfMachine == EM_SPARC) || (elfMachine == EM_SPARC32PLUS)) {
+		return Machine::SPARC;
 	}
-	else if (machine == EM_386) {
-		return MACHINE_PENTIUM;
+	else if (elfMachine == EM_386) {
+		return Machine::PENTIUM;
 	}
-	else if (machine == EM_PA_RISC) {
-		return MACHINE_HPRISC;
+	else if (elfMachine == EM_PA_RISC) {
+		return Machine::HPRISC;
 	}
-	else if (machine == EM_68K) {
-		return MACHINE_PALM; // Unlikely
+	else if (elfMachine == EM_68K) {
+		return Machine::PALM; // Unlikely
 	}
-	else if (machine == EM_PPC) {
-		return MACHINE_PPC;
+	else if (elfMachine == EM_PPC) {
+		return Machine::PPC;
 	}
-	else if (machine == EM_ST20) {
-		return MACHINE_ST20;
+	else if (elfMachine == EM_ST20) {
+		return Machine::ST20;
 	}
-	else if (machine == EM_MIPS) {
-		return MACHINE_MIPS;
+	else if (elfMachine == EM_MIPS) {
+		return Machine::MIPS;
 	}
-	else if (machine == EM_X86_64) {
+	else if (elfMachine == EM_X86_64) {
 		fprintf(stderr, "Error: ElfBinaryFile::GetMachine: The AMD x86-64 architecture is not supported yet\n");
-		return (MACHINE)-1;
+		return (Machine)-1;
 	}
 
 	// An unknown machine type
-	fprintf(stderr, "Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n", machine, (unsigned int)machine);
+	fprintf(stderr, "Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n", elfMachine, (unsigned int)elfMachine);
 	fprintf(stderr, "(Please add a description for this type, thanks!)\n");
-	return (MACHINE)-1;
+	return (Machine)-1;
 }
 
 

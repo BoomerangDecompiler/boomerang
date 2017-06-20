@@ -62,7 +62,7 @@ struct SectionParam
 
 MachOBinaryLoader::MachOBinaryLoader()
 {
-	machine    = MACHINE_PPC;
+	machine    = Machine::PPC;
 	swap_bytes = false;
 }
 
@@ -157,10 +157,10 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 	// Determine CPU type
 	if (BMMH(header->cputype) == 0x07) {
-		machine = MACHINE_PENTIUM;
+		machine = Machine::PENTIUM;
 	}
 	else {
-		machine = MACHINE_PPC;
+		machine = Machine::PPC;
 	}
 
 	sections.clear();
@@ -169,6 +169,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 	// uint32_t startundef, nundef;
 	// uint32_t  startlocal, nlocal,ndef, startdef;
 	std::vector<section> stubs_sects;
+	
 	char                 *strtbl = nullptr;
 	unsigned             *indirectsymtbl = nullptr;
 	ADDRESS              objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
@@ -325,7 +326,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 		unsigned long l = BMMH(segments[i].initprot);
 		sect->setBss(false) // TODO
-		   .setEndian((machine == MACHINE_PPC) ? 1 : 0)
+		   .setEndian((machine == Machine::PPC) ? 1 : 0)
 		   .setCode(l & VM_PROT_EXECUTE ? 1 : 0)
 		   .setData(l & VM_PROT_READ ? 1 : 0)
 		   .setReadOnly(~(l & VM_PROT_WRITE) ? 0 : 1);
@@ -505,7 +506,7 @@ int MachOBinaryLoader::machORead2(short *ps) const
 	unsigned char *p = (unsigned char *)ps;
 	int           n;
 
-	if (machine == MACHINE_PPC) {
+	if (machine == Machine::PPC) {
 		n = (int)(p[1] + (p[0] << 8));
 	}
 	else {
@@ -523,7 +524,7 @@ int MachOBinaryLoader::machORead4(int *pi) const
 	int   n2 = machORead2(p + 1);
 	int   n;
 
-	if (machine == MACHINE_PPC) {
+	if (machine == Machine::PPC) {
 		n = (int)(n2 | (n1 << 16));
 	}
 	else {
@@ -571,13 +572,13 @@ unsigned short MachOBinaryLoader::BMMHW(unsigned short x)
 }
 
 
-LOAD_FMT MachOBinaryLoader::getFormat() const
+LoadFmt MachOBinaryLoader::getFormat() const
 {
-	return LOADFMT_MACHO;
+	return LoadFmt::MACHO;
 }
 
 
-MACHINE MachOBinaryLoader::getMachine() const
+Machine MachOBinaryLoader::getMachine() const
 {
 	return machine;
 }

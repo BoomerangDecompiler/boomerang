@@ -35,9 +35,10 @@ enum class Machine : uint8_t
 	PALM,
 	PPC,
 	ST20,
-	MIPS/*,
-	     * 68K*/
+	MIPS,
+	M68K
 };
+
 
 /// This class represents the structured data in a binary file.
 class IBinaryFile
@@ -74,30 +75,3 @@ public:
 	virtual bool isBigEndian() const   = 0;
 };
 
-
-/// This enum allows a sort of run time type identification, without using
-/// compiler specific features
-enum LOAD_FMT
-{
-	LOADFMT_ELF,
-	LOADFMT_PE,
-	LOADFMT_PALM,
-	LOADFMT_PAR,
-	LOADFMT_EXE,
-	LOADFMT_MACHO,
-	LOADFMT_LX,
-	LOADFMT_COFF
-};
-
-enum MACHINE
-{
-	MACHINE_UNKNOWN = 0,
-	MACHINE_PENTIUM,
-	MACHINE_SPARC,
-	MACHINE_HPRISC,
-	MACHINE_PALM,
-	MACHINE_PPC,
-	MACHINE_ST20,
-	MACHINE_MIPS,
-	MACHINE_68K
-};

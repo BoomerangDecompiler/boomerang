@@ -527,15 +527,15 @@ bool HpSomBinaryLoader::postLoad(void *handle)
 }
 
 
-LOAD_FMT HpSomBinaryLoader::getFormat() const
+LoadFmt HpSomBinaryLoader::getFormat() const
 {
-	return LOADFMT_PAR;
+	return LoadFmt::PAR;
 }
 
 
-MACHINE HpSomBinaryLoader::getMachine() const
+Machine HpSomBinaryLoader::getMachine() const
 {
-	return MACHINE_HPRISC;
+	return Machine::HPRISC;
 }
 
 
@@ -543,7 +543,7 @@ bool HpSomBinaryLoader::isLibrary() const
 {
 	int type = UINT4(m_loadedImage) & 0xFFFF;
 
-	return(type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
+	return (type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
 }
 
 

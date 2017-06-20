@@ -63,7 +63,7 @@
  * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
  ******************************************************************************/
 FrontEnd::FrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
-	: ldrIface(p_BF)
+	: m_fileLoader(p_BF)
 	, pbff(bff)
 	, Program(prog)
 {
@@ -85,30 +85,30 @@ FrontEnd *FrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactory 
 {
 	switch (pBF->getMachine())
 	{
-	case MACHINE_PENTIUM:
+	case Machine::PENTIUM:
 		return new PentiumFrontEnd(pBF, prog, pbff);
 
-	case MACHINE_SPARC:
+	case Machine::SPARC:
 		return new SparcFrontEnd(pBF, prog, pbff);
 
-	case MACHINE_PPC:
+	case Machine::PPC:
 		return new PPCFrontEnd(pBF, prog, pbff);
 
-	case MACHINE_MIPS:
+	case Machine::MIPS:
 		return new MIPSFrontEnd(pBF, prog, pbff);
 
-	case MACHINE_ST20:
+	case Machine::ST20:
 		return new ST20FrontEnd(pBF, prog, pbff);
 
-	case MACHINE_HPRISC:
+	case Machine::HPRISC:
 		LOG_STREAM() << "No frontend for Hp Risc\n";
 		break;
 
-	case MACHINE_PALM:
+	case Machine::PALM:
 		LOG_STREAM() << "No frontend for PALM\n";
 		break;
 
-	case MACHINE_68K:
+	case Machine::M68K:
 		LOG_STREAM() << "No frontend for M68K\n";
 		break;
 
@@ -159,7 +159,7 @@ FrontEnd::~FrontEnd()
 		pbff->unload(); // Unload the BinaryFile library with dlclose() or FreeLibrary()
 	}
 
-	ldrIface = nullptr;
+	m_fileLoader = nullptr;
 }
 
 
@@ -177,7 +177,7 @@ int FrontEnd::getRegSize(int idx)
 
 bool FrontEnd::isWin32() const
 {
-	return ldrIface->getFormat() == LOADFMT_PE;
+	return m_fileLoader->getFormat() == LoadFmt::PE;
 }
 
 
@@ -253,7 +253,7 @@ void FrontEnd::readLibraryCatalog()
 	}
 
 	// TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
-	if (ldrIface->getFormat() == LOADFMT_MACHO) {
+	if (m_fileLoader->getFormat() == LoadFmt::MACHO) {
 		sList = sig_dir.absoluteFilePath("objc.hs");
 		readLibraryCatalog(sList);
 	}

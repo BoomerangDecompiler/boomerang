@@ -349,15 +349,15 @@ bool PalmBinaryLoader::postLoad(void */*handle*/)
 }
 
 
-LOAD_FMT PalmBinaryLoader::getFormat() const
+LoadFmt PalmBinaryLoader::getFormat() const
 {
-	return LOADFMT_PALM;
+	return LoadFmt::PALM;
 }
 
 
-MACHINE PalmBinaryLoader::getMachine() const
+Machine PalmBinaryLoader::getMachine() const
 {
-	return MACHINE_PALM;
+	return Machine::PALM;
 }
 
 

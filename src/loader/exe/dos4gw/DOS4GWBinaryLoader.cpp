@@ -426,15 +426,15 @@ int DOS4GWBinaryLoader::dos4gwRead4(int *pi) const
 }
 
 
-LOAD_FMT DOS4GWBinaryLoader::getFormat() const
+LoadFmt DOS4GWBinaryLoader::getFormat() const
 {
-	return LOADFMT_LX;
+	return LoadFmt::LX;
 }
 
 
-MACHINE DOS4GWBinaryLoader::getMachine() const
+Machine DOS4GWBinaryLoader::getMachine() const
 {
-	return MACHINE_PENTIUM;
+	return Machine::PENTIUM;
 }
 
 

@@ -55,10 +55,10 @@ public:
 	virtual void close() = 0;
 
 	/// Get the format (e.g. LOADFMT_ELF)
-	virtual LOAD_FMT getFormat() const = 0;
+	virtual LoadFmt getFormat() const = 0;
 
 	/// Get the expected machine (e.g. MACHINE_PENTIUM)
-	virtual MACHINE getMachine() const = 0;
+	virtual Machine getMachine() const = 0;
 
 	/// @returns the address of main()/WinMain() etc.
 	virtual ADDRESS getMainEntryPoint() = 0;

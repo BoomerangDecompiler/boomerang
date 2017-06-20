@@ -196,15 +196,15 @@ bool ExeBinaryLoader::displayDetails(const char *fileName, FILE *f
 }
 
 
-LOAD_FMT ExeBinaryLoader::getFormat() const
+LoadFmt ExeBinaryLoader::getFormat() const
 {
-	return LOADFMT_EXE;
+	return LoadFmt::EXE;
 }
 
 
-MACHINE ExeBinaryLoader::getMachine() const
+Machine ExeBinaryLoader::getMachine() const
 {
-	return MACHINE_PENTIUM;
+	return Machine::PENTIUM;
 }
 
 

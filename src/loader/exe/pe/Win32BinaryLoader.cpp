@@ -1143,15 +1143,15 @@ ADDRESS Win32BinaryLoader::isJumpToAnotherAddr(ADDRESS uNative)
 }
 
 
-LOAD_FMT Win32BinaryLoader::getFormat() const
+LoadFmt Win32BinaryLoader::getFormat() const
 {
-	return LOADFMT_PE;
+	return LoadFmt::PE;
 }
 
 
-MACHINE Win32BinaryLoader::getMachine() const
+Machine Win32BinaryLoader::getMachine() const
 {
-	return MACHINE_PENTIUM;
+	return Machine::PENTIUM;
 }
 
 

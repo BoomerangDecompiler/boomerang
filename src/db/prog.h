@@ -311,7 +311,7 @@ public:
 
 	// Hacks for Mike
 	/// Get a code for the machine e.g. MACHINE_SPARC
-	MACHINE getMachine() const;
+	Machine getMachine() const;
 
 	/// Get a symbol from an address
 	QString getSymbolByAddress(ADDRESS dest) const;

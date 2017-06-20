@@ -115,7 +115,7 @@ void Decompiler::load()
 	fe    = FrontEnd::Load(filename, prog);
 
 	if (fe == NULL) {
-		emit machineType(QString("unavailable: Load Failed!"));
+		emit machineType(QString("Unavailable: Load Failed!"));
 		return;
 	}
 
@@ -124,39 +124,39 @@ void Decompiler::load()
 
 	switch (prog->getMachine())
 	{
-	case MACHINE_PENTIUM:
+	case Machine::PENTIUM:
 		emit machineType(QString("pentium"));
 		break;
 
-	case MACHINE_SPARC:
+	case Machine::SPARC:
 		emit machineType(QString("sparc"));
 		break;
 
-	case MACHINE_HPRISC:
+	case Machine::HPRISC:
 		emit machineType(QString("hprisc"));
 		break;
 
-	case MACHINE_PALM:
+	case Machine::PALM:
 		emit machineType(QString("palm"));
 		break;
 
-	case MACHINE_PPC:
+	case Machine::PPC:
 		emit machineType(QString("ppc"));
 		break;
 
-	case MACHINE_ST20:
+	case Machine::ST20:
 		emit machineType(QString("st20"));
 		break;
 
-	case MACHINE_MIPS:
+	case Machine::MIPS:
 		emit machineType(QString("mips"));
 		break;
 
-	case MACHINE_68K:
+	case Machine::M68K:
 		emit machineType(QString("m68k"));
 		break;
 
-	case MACHINE_UNKNOWN:
+	case Machine::UNKNOWN:
 		emit machineType(QString("UNKNOWN"));
 		break;
 	}
@@ -164,7 +164,7 @@ void Decompiler::load()
 	QStringList          entrypointStrings;
 	std::vector<ADDRESS> entrypoints = fe->getEntryPoints();
 
-	for (unsigned int i = 0; i < entrypoints.size(); i++) {
+	for (size_t i = 0; i < entrypoints.size(); i++) {
 		user_entrypoints.push_back(entrypoints[i]);
 		emit newEntrypoint(entrypoints[i], prog->getSymbolByAddress(entrypoints[i]));
 	}

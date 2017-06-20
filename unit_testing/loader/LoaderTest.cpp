@@ -84,8 +84,8 @@ void LoaderTest::testElfLoadClang()
 
 	// test the loader
 	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getFormat(), LOADFMT_ELF);
-	QCOMPARE(loader->getMachine(), MACHINE_PENTIUM);
+	QCOMPARE(loader->getFormat(), LoadFmt::ELF);
+	QCOMPARE(loader->getMachine(), Machine::PENTIUM);
 	QCOMPARE(loader->hasDebugInfo(), false);
 	QCOMPARE(loader->getEntryPoint(),     ADDRESS::n(0x080482F0));
 	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x080483F0));
@@ -112,8 +112,8 @@ void LoaderTest::testElfLoadClangStatic()
 
 	// test the loader
 	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getFormat(), LOADFMT_ELF);
-	QCOMPARE(loader->getMachine(), MACHINE_PENTIUM);
+	QCOMPARE(loader->getFormat(), LoadFmt::ELF);
+	QCOMPARE(loader->getMachine(), Machine::PENTIUM);
 	QCOMPARE(loader->hasDebugInfo(), false);
 	QCOMPARE(loader->getEntryPoint(),     ADDRESS::n(0x0804884F));
 	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x080489A0));

@@ -585,7 +585,7 @@ PentiumFrontEnd::~PentiumFrontEnd()
  ******************************************************************************/
 ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 {
-	ADDRESS start = ldrIface->getMainEntryPoint();
+	ADDRESS start = m_fileLoader->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		gotMain = true;
@@ -593,7 +593,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 	}
 
 	gotMain = false;
-	start   = ldrIface->getEntryPoint();
+	start   = m_fileLoader->getEntryPoint();
 
 	if (start.isZero() || (start == NO_ADDRESS)) {
 		return NO_ADDRESS;

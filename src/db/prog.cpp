@@ -1770,7 +1770,7 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
 }
 
 
-MACHINE Prog::getMachine() const
+Machine Prog::getMachine() const
 {
 	return m_loaderIface->getMachine();
 }

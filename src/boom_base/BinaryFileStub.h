@@ -13,8 +13,8 @@ public:
 	bool getNextMember() { return false; } ///< Load next member of archive
 	bool open(const char */*sName*/) { return false; } ///< Open for r/w; pv
 	void close() override {}               ///< Close file opened with Open()
-	LOAD_FMT getFormat() const override;   ///< Get format (e.g. LOADFMT_ELF)
-	MACHINE getMachine() const override;   ///< Get machine (e.g. MACHINE_SPARC)
+	LoadFmt getFormat() const override;   ///< Get format (e.g. LOADFMT_ELF)
+	Machine getMachine() const override;   ///< Get machine (e.g. MACHINE_SPARC)
 
 	QString getFilename() const { return m_fileName; }
 	bool isLibrary() const;

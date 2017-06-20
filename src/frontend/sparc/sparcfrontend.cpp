@@ -1652,13 +1652,13 @@ SparcFrontEnd::~SparcFrontEnd()
 ADDRESS SparcFrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	gotMain = true;
-	ADDRESS start = ldrIface->getMainEntryPoint();
+	ADDRESS start = m_fileLoader->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		return start;
 	}
 
-	start   = ldrIface->getEntryPoint();
+	start   = m_fileLoader->getEntryPoint();
 	gotMain = false;
 
 	if (start == NO_ADDRESS) {

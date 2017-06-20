@@ -2223,17 +2223,17 @@ bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreac
 
 SharedExp Signature::getFirstArgLoc(Prog *prog) const
 {
-	MACHINE mach = prog->getMachine();
+	Machine mach = prog->getMachine();
 
 	switch (mach)
 	{
-	case MACHINE_SPARC:
+	case Machine::SPARC:
 		{
 			CallingConvention::StdC::SparcSignature sig("");
 			return sig.getArgumentExp(0);
 		}
 
-	case MACHINE_PENTIUM:
+	case Machine::PENTIUM:
 		{
 			// CallingConvention::StdC::PentiumSignature sig("");
 			// Exp* e = sig.getArgumentExp(0);
@@ -2242,7 +2242,7 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 			return e;
 		}
 
-	case MACHINE_ST20:
+	case Machine::ST20:
 		{
 			CallingConvention::StdC::ST20Signature sig("");
 			return sig.getArgumentExp(0);
@@ -2262,13 +2262,13 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 {
 	switch (pBF->getMachine())
 	{
-	case MACHINE_SPARC:
+	case Machine::SPARC:
 		return Location::regOf(8);
 
-	case MACHINE_PENTIUM:
+	case Machine::PENTIUM:
 		return Location::regOf(24);
 
-	case MACHINE_ST20:
+	case Machine::ST20:
 		return Location::regOf(0);
 
 	default:
@@ -2285,18 +2285,15 @@ void Signature::setABIdefines(Prog *prog, StatementList *defs)
 		return; // Do only once
 	}
 
-	MACHINE mach = prog->getMachine();
-
-	switch (mach)
+	switch (prog->getMachine())
 	{
-	case MACHINE_PENTIUM:
+	case Machine::PENTIUM:
 		defs->append(new ImplicitAssign(Location::regOf(24))); // eax
 		defs->append(new ImplicitAssign(Location::regOf(25))); // ecx
 		defs->append(new ImplicitAssign(Location::regOf(26))); // edx
 		break;
 
-	case MACHINE_SPARC:
-
+	case Machine::SPARC:
 		for (int r = 8; r <= 13; ++r) {
 			defs->append(new ImplicitAssign(Location::regOf(r))); // %o0-o5
 		}
@@ -2304,15 +2301,14 @@ void Signature::setABIdefines(Prog *prog, StatementList *defs)
 		defs->append(new ImplicitAssign(Location::regOf(1)));     // %g1
 		break;
 
-	case MACHINE_PPC:
-
+	case Machine::PPC:
 		for (int r = 3; r <= 12; ++r) {
 			defs->append(new ImplicitAssign(Location::regOf(r))); // r3-r12
 		}
 
 		break;
 
-	case MACHINE_ST20:
+	case Machine::ST20:
 		defs->append(new ImplicitAssign(Location::regOf(0))); // A
 		defs->append(new ImplicitAssign(Location::regOf(1))); // B
 		defs->append(new ImplicitAssign(Location::regOf(2))); // C
@@ -2326,24 +2322,22 @@ void Signature::setABIdefines(Prog *prog, StatementList *defs)
 
 SharedExp Signature::getEarlyParamExp(int n, Prog *prog) const
 {
-	MACHINE mach = prog->getMachine();
-
-	switch (mach)
+	switch (prog->getMachine())
 	{
-	case MACHINE_SPARC:
+	case Machine::SPARC:
 		{
 			CallingConvention::StdC::SparcSignature temp("");
 			return temp.getParamExp(n);
 		}
 
-	case MACHINE_PENTIUM:
+	case Machine::PENTIUM:
 		{
 			// Would we ever need Win32?
 			CallingConvention::StdC::PentiumSignature temp("");
 			return temp.getParamExp(n);
 		}
 
-	case MACHINE_ST20:
+	case Machine::ST20:
 		{
 			CallingConvention::StdC::ST20Signature temp("");
 			return temp.getParamExp(n);
@@ -2353,7 +2347,7 @@ SharedExp Signature::getEarlyParamExp(int n, Prog *prog) const
 		break;
 	}
 
-	assert(0); // Machine not handled
+	assert(false); // Machine not handled
 	return nullptr;
 }
 
@@ -2366,14 +2360,13 @@ StatementList& Signature::getStdRetStmt(Prog *prog)
 	static Assign pent2ret(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(4)));
 	static Assign st20_1ret(Terminal::get(opPC), Location::memOf(Location::regOf(3)));
 	static Assign st20_2ret(Location::regOf(3), Binary::get(opPlus, Location::regOf(3), Const::get(16)));
-	MACHINE       mach = prog->getMachine();
-
-	switch (mach)
+	
+	switch (prog->getMachine())
 	{
-	case MACHINE_SPARC:
+	case Machine::SPARC:
 		break; // No adjustment to stack pointer required
 
-	case MACHINE_PENTIUM:
+	case Machine::PENTIUM:
 		{
 			StatementList *sl = new StatementList;
 			sl->append((Instruction *)&pent1ret);
@@ -2381,7 +2374,7 @@ StatementList& Signature::getStdRetStmt(Prog *prog)
 			return *sl;
 		}
 
-	case MACHINE_ST20:
+	case Machine::ST20:
 		{
 			StatementList *sl = new StatementList;
 			sl->append((Instruction *)&st20_1ret);
@@ -2409,20 +2402,18 @@ int Signature::getStackRegister() const noexcept(false)
 
 int Signature::getStackRegister(Prog *prog) noexcept(false)
 {
-	MACHINE mach = prog->getMachine();
-
-	switch (mach)
+	switch (prog->getMachine())
 	{
-	case MACHINE_SPARC:
+	case Machine::SPARC:
 		return 14;
 
-	case MACHINE_PENTIUM:
+	case Machine::PENTIUM:
 		return 28;
 
-	case MACHINE_PPC:
+	case Machine::PPC:
 		return 1;
 
-	case MACHINE_ST20:
+	case Machine::ST20:
 		return 3;
 
 	default:

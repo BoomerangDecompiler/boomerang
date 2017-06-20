@@ -60,10 +60,10 @@ public:
 	void close() override;
 
 	/// @copydoc IFileLoader::getFormat
-	LOAD_FMT getFormat() const override;
+	LoadFmt getFormat() const override;
 
 	/// @copydoc IFileLoader::getMachine
-	MACHINE getMachine() const override;
+	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
 	ADDRESS getMainEntryPoint() override;
@@ -112,7 +112,7 @@ private:
 	ADDRESS entrypoint;
 	ADDRESS loaded_addr;
 	unsigned loaded_size;
-	MACHINE machine;
+	Machine machine;
 	bool swap_bytes;
 
 	std::map<QString, ObjcModule> modules;
