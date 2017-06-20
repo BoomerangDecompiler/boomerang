@@ -31,6 +31,12 @@
 
 extern char debug_buffer[]; // For prints functions
 
+DataFlow::DataFlow()
+	: renameLocalsAndParams(false)
+{
+}
+
+
 DataFlow::~DataFlow()
 {
 }
@@ -42,7 +48,9 @@ void DataFlow::dfs(int p, size_t n)
 		m_dfnum[n]  = N;
 		m_vertex[N] = n;
 		m_parent[n] = p;
+
 		N++;
+
 		// For each successor w of n
 		BasicBlock *bb = m_BBs[n];
 		const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
@@ -56,14 +64,15 @@ void DataFlow::dfs(int p, size_t n)
 
 void DataFlow::dominators(Cfg *cfg)
 {
-	BasicBlock *r    = cfg->getEntryBB();
-	size_t     numBB = cfg->getNumBBs();
+	BasicBlock *entryBB = cfg->getEntryBB();
+	size_t     numBB    = cfg->getNumBBs();
 
 	m_BBs.resize(numBB, (BasicBlock *)-1);
 	N        = 0;
-	m_BBs[0] = r;
+	m_BBs[0] = entryBB;
 	m_indices.clear();    // In case restart decompilation due to switch statements
-	m_indices[r] = 0;
+	m_indices[entryBB] = 0;
+
 	// Initialise to "none"
 	m_dfnum.resize(numBB, 0);
 	m_semi.resize(numBB, -1);
@@ -76,15 +85,14 @@ void DataFlow::dominators(Cfg *cfg)
 	m_bucket.resize(numBB);
 	m_DF.resize(numBB);
 
-	// Set up the BBs and indices vectors. Do this here because sometimes a BB can be unreachable (so relying on
-	// in-edges doesn't work)
-	std::list<BasicBlock *>::iterator ii;
+	// Set up the BBs and indices vectors. Do this here
+	// because sometimes a BB can be unreachable
+	// (so relying on in-edges doesn't work)
+
 	size_t idx = 1;
 
-	for (ii = cfg->begin(); ii != cfg->end(); ii++) {
-		BasicBlock *bb = *ii;
-
-		if (bb != r) { // Entry BB r already done
+	for (BasicBlock *bb : *cfg) {
+		if (bb != entryBB) { // Entry BB r already done
 			m_indices[bb] = idx;
 			m_BBs[idx++]  = bb;
 		}
@@ -97,6 +105,7 @@ void DataFlow::dominators(Cfg *cfg)
 		int n = m_vertex[i];
 		int p = m_parent[n];
 		int s = p;
+
 		/* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
 		// for each predecessor v of n
 		BasicBlock                          *bb     = m_BBs[n];
@@ -116,7 +125,7 @@ void DataFlow::dominators(Cfg *cfg)
 			int sdash = v;
 
 			if (m_dfnum[v] > m_dfnum[n]) {
-				sdash = m_semi[ancestorWithLowestSemi(v)];
+				sdash = m_semi[getAncestorWithLowestSemi(v)];
 			}
 
 			if (m_dfnum[sdash] < m_dfnum[s]) {
@@ -127,18 +136,16 @@ void DataFlow::dominators(Cfg *cfg)
 		m_semi[n] = s;
 		/* Calculation of n's dominator is deferred until the path from s to n has been linked into the forest */
 		m_bucket[s].insert(n);
-		Link(p, n);
-		// for each v in bucket[p]
-		std::set<int>::iterator jj;
+		link(p, n);
 
-		for (jj = m_bucket[p].begin(); jj != m_bucket[p].end(); jj++) {
+		// for each v in bucket[p]
+		for (std::set<int>::iterator jj = m_bucket[p].begin(); jj != m_bucket[p].end(); jj++) {
 			int v = *jj;
 
-			/* Now that the path from p to v has been linked into the spanning forest, these lines calculate the
-			 *                  dominator of v, based on the first clause of the Dominator Theorem, or else defer the
-			 * calculation until
-			 *                  y's dominator is known. */
-			int y = ancestorWithLowestSemi(v);
+			/* Now that the path from p to v has been linked into the spanning forest,
+			 * these lines calculate the dominator of v, based on the first clause of the Dominator Theorem,#
+			 * or else defer the calculation until y's dominator is known. */
+			int y = getAncestorWithLowestSemi(v);
 
 			if (m_semi[y] == m_semi[v]) {
 				m_idom[v] = p;             // Success!
@@ -165,12 +172,12 @@ void DataFlow::dominators(Cfg *cfg)
 }
 
 
-int DataFlow::ancestorWithLowestSemi(int v)
+int DataFlow::getAncestorWithLowestSemi(int v)
 {
 	int a = m_ancestor[v];
 
 	if (m_ancestor[a] != -1) {
-		int b = ancestorWithLowestSemi(a);
+		int b = getAncestorWithLowestSemi(a);
 		m_ancestor[v] = m_ancestor[a];
 
 		if (m_dfnum[m_semi[b]] < m_dfnum[m_semi[m_best[v]]]) {
@@ -182,7 +189,7 @@ int DataFlow::ancestorWithLowestSemi(int v)
 }
 
 
-void DataFlow::Link(int p, int n)
+void DataFlow::link(int p, int n)
 {
 	m_ancestor[n] = p;
 	m_best[n]     = n;
@@ -326,7 +333,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 	m_parent.resize(0);
 	m_best.resize(0);
 	m_bucket.resize(0);
-	m_defsites.clear();    // Clear defsites map,
+	m_defsites.clear();
 	m_defallsites.clear();
 
 	for (std::set<SharedExp, lessExpStar>& se : m_A_orig) {
@@ -346,13 +353,14 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 	bool change = false;
 
 	// Set the sizes of needed vectors
-	size_t numBB = m_indices.size();
+	const size_t numBB = m_indices.size();
 	assert(numBB == proc->getCFG()->getNumBBs());
+
 	m_A_orig.resize(numBB);
 
 	// We need to create A_orig[n] for all n, the array of sets of locations defined at BB n
 	// Recreate each call because propagation and other changes make old data invalid
-	for (unsigned int n = 0; n < numBB; n++) {
+	for (size_t n = 0; n < numBB; n++) {
 		BasicBlock::rtlit       rit;
 		StatementList::iterator sit;
 		BasicBlock              *bb = m_BBs[n];
@@ -375,7 +383,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 	}
 
 	// For each node n
-	for (unsigned int n = 0; n < numBB; n++) {
+	for (size_t n = 0; n < numBB; n++) {
 		// For each variable a in A_orig[n]
 		for (const SharedExp& a : m_A_orig[n]) {
 			m_defsites[a].insert(n);
@@ -383,9 +391,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 	}
 
 	// For each variable a (in defsites, i.e. defined anywhere)
-	std::map<SharedExp, std::set<int>, lessExpStar>::iterator mm;
-
-	for (mm = m_defsites.begin(); mm != m_defsites.end(); mm++) {
+	for (auto mm = m_defsites.begin(); mm != m_defsites.end(); mm++) {
 		SharedExp a = (*mm).first; // *mm is pair<Exp*, set<int>>
 
 		// Special processing for define-alls
@@ -400,16 +406,18 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 		std::set<int> W = m_defsites[a]; // set copy
 
 		// While W not empty
-		while (W.size()) {
-			// Remove some node n from W
-			int n = *W.begin(); // Copy first element
-			W.erase(W.begin()); // Remove first element
-			// for each y in DF[n]
-			std::set<int>::iterator yy;
-			std::set<int>&          DFn = m_DF[n];
+		while (W.size() > 0) {
+			// Pop first node from W
+			int n = *W.begin();
+			W.erase(W.begin());
 
-			for (yy = DFn.begin(); yy != DFn.end(); yy++) {
+
+			std::set<int>& DFn = m_DF[n];
+
+			// for each y in DF[n]
+			for (std::set<int>::iterator yy = DFn.begin(); yy != DFn.end(); yy++) {
 				int y = *yy;
+
 				// if y not element of A_phi[a]
 				std::set<int>& s = m_A_phi[a];
 
@@ -421,6 +429,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 				change = true;
 				Instruction *as  = new PhiAssign(SharedExp(a->clone()));
 				BasicBlock  *Ybb = m_BBs[y];
+
 				Ybb->prependStmt(as, proc);
 				// A_phi[a] <- A_phi[a] U {y}
 				s.insert(y);
@@ -435,7 +444,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 	}
 
 	return change;
-} // end placePhiFunctions
+}
 
 
 static SharedExp defineAll = Terminal::get(opDefineAll); // An expression representing <all>

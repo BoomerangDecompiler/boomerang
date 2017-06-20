@@ -184,10 +184,12 @@ void CfgTest::testSemiDominators()
  ******************************************************************************/
 void CfgTest::testPlacePhi()
 {
+	QSKIP("Disabled.");
+
 	BinaryFileFactory bff;
 	IFileLoader       *pBF = bff.load(FRONTIER_PENTIUM);
-
 	QVERIFY(pBF != 0);
+
 	Prog     prog(FRONTIER_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
@@ -212,12 +214,12 @@ void CfgTest::testPlacePhi()
 	SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(4)));
 
 	// A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
-	QString                 actual_st;
-	QTextStream             actual(&actual_st);
-	std::set<int>::iterator ii;
-	std::set<int>&          A_phi = df->getA_phi(e);
+	QString     actual_st;
+	QTextStream actual(&actual_st);
 
-	for (ii = A_phi.begin(); ii != A_phi.end(); ++ii) {
+	std::set<int>& A_phi = df->getA_phi(e);
+
+	for (std::set<int>::iterator ii = A_phi.begin(); ii != A_phi.end(); ++ii) {
 		actual << *ii << " ";
 	}
 
@@ -231,6 +233,8 @@ void CfgTest::testPlacePhi()
  ******************************************************************************/
 void CfgTest::testPlacePhi2()
 {
+	QSKIP("Disabled.");
+
 	BinaryFileFactory bff;
 	IFileLoader       *pBF = bff.load(IFTHEN_PENTIUM);
 
@@ -278,7 +282,6 @@ void CfgTest::testPlacePhi2()
 	 |-F-> Call (4) ----> Ret (5)
 	 */
 
-	QString     expected = "4 ";
 	QString     actual_st;
 	QTextStream actual(&actual_st);
 	// m[r29 - 8]
@@ -290,7 +293,7 @@ void CfgTest::testPlacePhi2()
 		actual << *pp << " ";
 	}
 
-	QCOMPARE(actual_st, expected);
+	QCOMPARE(actual_st, QString("4 "));
 
 	if (s.size() > 0) {
 		BBTYPE actualType   = df->nodeToBB(*s.begin())->getType();
@@ -298,7 +301,7 @@ void CfgTest::testPlacePhi2()
 		QCOMPARE(actualType, expectedType);
 	}
 
-	expected = "";
+	QString     expected = "";
 	QString     actual_st2;
 	QTextStream actual2(&actual_st2);
 	// m[r29 - 12]

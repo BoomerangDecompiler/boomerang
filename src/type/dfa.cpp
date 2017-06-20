@@ -1014,7 +1014,7 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
 
 	ch = true;
 
-	if (other->resolvesToInteger() || other->resolvesToFloat() || other->resolvesToPointer()) {
+	if (other->resolvesToInteger()) {
 		if (other->getSize() == 0) {
 			other->setSize(size);
 			return other->clone();

@@ -63,12 +63,16 @@ class DataFlow
 	 */
 	/// Array of sets of locations defined in BB n
 	std::vector<std::set<SharedExp, lessExpStar> > m_A_orig;
-	/// Map from expression to set of block numbers
-	std::map<SharedExp, std::set<int>, lessExpStar> m_defsites;
-	/// Set of block numbers defining all variables
-	std::set<int> m_defallsites;
+
 	/// Array of sets of BBs needing phis
 	std::map<SharedExp, std::set<int>, lessExpStar> m_A_phi;
+
+	/// Map from expression to set of block numbers
+	std::map<SharedExp, std::set<int>, lessExpStar> m_defsites;
+
+	/// Set of block numbers defining all variables
+	std::set<int> m_defallsites;
+
 	/// A Boomerang requirement: Statements defining particular subscripted locations
 	std::map<SharedExp, Instruction *, lessExpStar> m_defStmts;
 
@@ -85,8 +89,7 @@ class DataFlow
 	bool renameLocalsAndParams;
 
 public:
-	DataFlow()
-		: renameLocalsAndParams(false) {}
+	DataFlow();
 
 	~DataFlow();
 
@@ -98,8 +101,8 @@ public:
 
 	/// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
 	/// (overall O(N log N))
-	int ancestorWithLowestSemi(int v);
-	void Link(int p, int n);
+	int getAncestorWithLowestSemi(int v);
+	void link(int p, int n);
 	void computeDF(int n);
 
 	// Place phi functions. Return true if any change
@@ -112,7 +115,7 @@ public:
 	bool doesDominate(int n, int w);
 
 	void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
-	bool canRenameLocalsParams() { return renameLocalsAndParams; }
+	bool canRenameLocalsParams() const { return renameLocalsAndParams; }
 	bool canRename(SharedExp e, UserProc *proc);
 	void convertImplicits(Cfg *cfg);
 
@@ -137,6 +140,7 @@ public:
 	 */
 	void findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
 						  std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
+
 	void setDominanceNums(int n, int& currNum); // Set the dominance statement number
 
 	void clearA_phi() { m_A_phi.clear(); }
