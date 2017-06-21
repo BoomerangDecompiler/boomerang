@@ -8,6 +8,7 @@ include_directories(
 
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${CMAKE_CURRENT_BINARY_DIR}" # for generated files like config.h
+	"${CMAKE_CURRENT_SOURCE_DIR}/libboomerang"
 )
 
 link_directories(
@@ -15,7 +16,7 @@ link_directories(
 )
 
 #all submodules
-add_subdirectory(boom_base)
+add_subdirectory(libboomerang/core)
 add_subdirectory(util)
 add_subdirectory(c)
 add_subdirectory(codegen)

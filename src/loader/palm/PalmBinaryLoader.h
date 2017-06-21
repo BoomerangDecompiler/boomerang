@@ -17,7 +17,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 #include <QtCore/QObject>
 
 /**

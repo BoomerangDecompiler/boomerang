@@ -43,37 +43,9 @@
 
 class IBoomerang;
 
-// Objective-C stuff
-class ObjcIvar
-{
-public:
-	QString name, type;
-	unsigned offset;
-};
-
-class ObjcMethod
-{
-public:
-	QString name, types;
-	ADDRESS addr;
-};
-
-class ObjcClass
-{
-public:
-	QString name;
-	std::map<QString, ObjcIvar> ivars;
-	std::map<QString, ObjcMethod> methods;
-};
-
-class ObjcModule
-{
-public:
-	QString name;
-	std::map<QString, ObjcClass> classes;
-};
-
-
+/**
+ * 
+ */
 class BinaryFileFactory
 {
 private:
@@ -95,6 +67,40 @@ public:
 	static void setBasePath(const QString& path) { m_basePath = path; } ///< sets the base directory for plugin search
 	IFileLoader *load(const QString& sName);
 	void unload();
+};
+
+
+// Objective-C stuff
+class ObjcIvar
+{
+public:
+	QString name, type;
+	unsigned offset;
+};
+
+
+class ObjcMethod
+{
+public:
+	QString name, types;
+	ADDRESS addr;
+};
+
+
+class ObjcClass
+{
+public:
+	QString name;
+	std::map<QString, ObjcIvar> ivars;
+	std::map<QString, ObjcMethod> methods;
+};
+
+
+class ObjcModule
+{
+public:
+	QString name;
+	std::map<QString, ObjcClass> classes;
 };
 
 

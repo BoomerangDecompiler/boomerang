@@ -32,8 +32,8 @@
 #include "db/statements/callstatement.h"
 #include "db/statements/casestatement.h"
 
-#include "boom_base/BinaryFile.h" // For SymbolByAddress()
-#include "boom_base/log.h"
+#include "core/BinaryFile.h" // For SymbolByAddress()
+#include "core/log.h"
 
 #include <cassert>
 #include <cstring>

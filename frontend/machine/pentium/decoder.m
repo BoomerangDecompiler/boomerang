@@ -37,7 +37,7 @@
 #include "db/prog.h"
 #include "db/exp.h"
 #include "db/proc.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 
 
 #define DIS_R8	  (dis_Reg(r8+8))

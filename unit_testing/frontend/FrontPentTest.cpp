@@ -10,11 +10,11 @@
 #include "db/prog.h"
 #include "include/frontend.h"
 #include "frontend/pentium/pentiumfrontend.h"
-#include "boom_base/BinaryFile.h"
-#include "boom_base/BinaryFileStub.h"
+#include "core/BinaryFile.h"
+#include "core/BinaryFileStub.h"
 #include "include/decoder.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/log.h"
+#include "core/log.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

@@ -13,11 +13,11 @@
 #include "frontend/sparc/sparcfrontend.h"
 #include "db/cfg.h"
 #include "db/rtl.h"
-#include "boom_base/BinaryFile.h"
-#include "boom_base/BinaryFileStub.h"
-#include "boom_base/log.h"
+#include "core/BinaryFile.h"
+#include "core/BinaryFileStub.h"
+#include "core/log.h"
 #include "db/basicblock.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

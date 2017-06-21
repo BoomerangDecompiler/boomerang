@@ -16,9 +16,9 @@
 #include "db/register.h"
 #include "db/rtl.h"
 #include "db/proc.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "rdi.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "transformation-parser.h"
 
 #include <QtCore/QFile>

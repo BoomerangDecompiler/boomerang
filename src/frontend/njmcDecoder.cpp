@@ -16,8 +16,8 @@
 
 #include "njmcDecoder.h"
 
-#include "boom_base/BinaryFile.h"
-#include "boom_base/log.h"
+#include "core/BinaryFile.h"
+#include "core/log.h"
 #include "util/util.h"
 
 #include "db/rtl.h"

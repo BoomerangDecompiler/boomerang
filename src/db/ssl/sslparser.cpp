@@ -67,7 +67,7 @@ void *alloca();
 #include "db/exp.h"
 #include "db/statements/assign.h"
 
-#include "boom_base/log.h"
+#include "core/log.h"
 
 #include "sslscanner.h"
 #include "table.h"

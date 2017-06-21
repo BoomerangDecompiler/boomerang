@@ -31,10 +31,10 @@
 #include "db/prog.h"
 #include "include/decoder.h"
 #include "ppcdecoder.h"
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 #include "include/frontend.h"
-#include "boom_base/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
-#include "boom_base/log.h"
+#include "core/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
+#include "core/log.h"
 #include "db/signature.h"
 
 #include <cassert>

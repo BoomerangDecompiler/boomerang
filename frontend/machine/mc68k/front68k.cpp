@@ -33,7 +33,7 @@
 #include "db/prog.h" // For findProc()
 #include "db/proc.h"
 #include "options.h"
-#include "boom_base/BinaryFile.h" // For SymbolByAddress()
+#include "core/BinaryFile.h" // For SymbolByAddress()
 #include "csr.h"        // For class CalleeEpilogue
 
 /***************************************************************************/ /**

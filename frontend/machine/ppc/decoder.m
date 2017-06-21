@@ -33,8 +33,8 @@
 #include "include/decoder.h"
 #include "ppcdecoder.h"
 #include "db/rtl.h"
-#include "boom_base/BinaryFile.h"		// For SymbolByAddress()
-#include "boom_base/log.h"
+#include "core/BinaryFile.h"		// For SymbolByAddress()
+#include "core/log.h"
 #include <iostream>
 
 Exp*	crBit(int bitNum);	// Get an expression for a CR bit access

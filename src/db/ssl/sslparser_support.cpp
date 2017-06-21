@@ -13,7 +13,7 @@
 #include "db/statements/statement.h"
 #include "db/statements/assign.h"
 
-#include "boom_base/log.h"
+#include "core/log.h"
 
 #include <cassert>
 #include <sstream>

@@ -33,8 +33,8 @@
 
 #include "util/util.h"
 #include "include/hllcode.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/log.h"
+#include "core/log.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

@@ -34,7 +34,7 @@
 #include "db/IBinaryImage.h"
 #include "db/SymTab.h"
 
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 
 #include "frontend/sparc/sparcfrontend.h"
 #include "frontend/pentium/pentiumfrontend.h"
@@ -42,8 +42,8 @@
 #include "frontend/st20/st20frontend.h"
 #include "frontend/mips/mipsfrontend.h"
 
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/log.h"
+#include "core/log.h"
 #include "c/ansi-c-parser.h"
 
 #include <QtCore/QDir>

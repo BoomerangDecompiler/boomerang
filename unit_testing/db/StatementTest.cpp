@@ -18,10 +18,10 @@
 #include "db/cfg.h"
 #include "db/rtl.h"
 #include "pentiumfrontend.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "db/exp.h"
 #include "include/managed.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "db/signature.h"
 
 // class NullLogger : public Log {

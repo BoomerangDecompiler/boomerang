@@ -1,7 +1,8 @@
-#include "boom_base/log.h"
+#include "core/log.h"
 
 #include <QtTest/QTest>
 #include <iostream>
+
 class ErrLogger : public Log
 {
 public:

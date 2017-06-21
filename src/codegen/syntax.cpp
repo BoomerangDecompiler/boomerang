@@ -5,8 +5,8 @@
 #include "db/cfg.h"
 #include "db/basicblock.h"
 
-#include "boom_base/log.h"
-#include "boom_base/boomerang.h"
+#include "core/log.h"
+#include "core/boomerang.h"
 
 #include <iomanip> // For setfill etc
 #include <cstring>

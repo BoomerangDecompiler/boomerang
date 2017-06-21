@@ -2,7 +2,7 @@
 
 #include "type/type.h"
 #include "db/exp.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "db/proc.h"
 #include "db/prog.h"
 #include "db/signature.h"

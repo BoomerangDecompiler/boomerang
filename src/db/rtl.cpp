@@ -18,7 +18,7 @@
 
 #include "db/rtl.h"
 
-#include "boom_base/log.h"             // for LOG_VERBOSE
+#include "core/log.h"             // for LOG_VERBOSE
 #include "include/operator.h"          // for OPER::opIntConst
 #include "include/types.h"             // for ADDRESS
 #include "db/exp.h"                    // for Const, Exp, DEBUG_BUFSIZE

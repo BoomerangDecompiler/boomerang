@@ -4,7 +4,7 @@
 #include <dlfcn.h>
 
 #include "loader/IBinaryFile.h"
-#include "boom_base/Plugin.h"
+#include "core/Plugin.h"
 
 class IBinaryImage;
 class IBinarySymbolTable;

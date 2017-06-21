@@ -18,7 +18,7 @@
 
 #include <map>
 
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 #include "include/frontend.h"
 #include "type/type.h"
 #include "db/module.h"

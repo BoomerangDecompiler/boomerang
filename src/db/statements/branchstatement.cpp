@@ -1,7 +1,7 @@
 #include "branchstatement.h"
 
-#include "boom_base/boomerang.h"
-#include "boom_base/log.h"
+#include "core/boomerang.h"
+#include "core/log.h"
 
 #include "db/basicblock.h"
 #include "db/statements/statementhelper.h"

@@ -34,8 +34,8 @@
 #include "util/util.h"
 #include "db/visitor.h"
 
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/log.h"
+#include "core/log.h"
 
 #include <cassert>
 #include <cstring>

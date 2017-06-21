@@ -25,7 +25,7 @@
 #include "db/proc.h"
 #include "db/statements/callstatement.h"
 
-#include "boom_base/log.h"
+#include "core/log.h"
 
 /**********************************
 * ST20Decoder methods.

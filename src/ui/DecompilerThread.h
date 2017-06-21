@@ -4,7 +4,7 @@
 #include <QTableWidget>
 
 #undef NO_ADDRESS
-#include "boom_base/boomerang.h"
+#include "core/boomerang.h"
 
 class MainWindow;
 class FrontEnd;

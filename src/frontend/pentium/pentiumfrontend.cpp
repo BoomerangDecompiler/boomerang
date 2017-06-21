@@ -23,10 +23,10 @@
 #include "include/decoder.h" // prototype for decodeInstruction()
 #include "type/type.h"
 
-#include "boom_base/BinaryFile.h"
-#include "boom_base/BinaryFile.h" // For SymbolByAddress()
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/BinaryFile.h"
+#include "core/BinaryFile.h" // For SymbolByAddress()
+#include "core/log.h"
+#include "core/log.h"
 
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"

@@ -33,7 +33,7 @@
 #include "db/statements/assign.h"
 
 #include "sslparser.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "util/util.h"
 
 #include <cassert>

@@ -45,9 +45,9 @@
 
 #include "type/constraint.h"
 
-#include "boom_base/log.h"
-#include "boom_base/BinaryFile.h"
-#include "boom_base/log.h"
+#include "core/log.h"
+#include "core/BinaryFile.h"
+#include "core/log.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>

@@ -21,7 +21,7 @@
  * even be exposed as another pseudo section.
  */
 
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 
 class QFile;
 

@@ -22,8 +22,8 @@
 
 #include "sparcfrontend.h"
 
-#include "boom_base/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
-#include "boom_base/log.h"
+#include "core/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
+#include "core/log.h"
 #include "db/basicblock.h"
 #include "db/cfg.h"
 #include "db/exp.h"

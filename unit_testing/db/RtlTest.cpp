@@ -6,7 +6,7 @@
 #include "RtlTest.h"
 
 #include "db/exp.h"
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 #include "include/frontend.h"
 #include "frontend/sparc/sparcfrontend.h"
 #include "frontend/pentium/pentiumfrontend.h"
@@ -24,8 +24,8 @@
 
 
 #include "db/visitor.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/log.h"
+#include "core/log.h"
 
 #include <sstream>
 

@@ -5,7 +5,7 @@
  */
 #include "DfaTest.h"
 
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "type/type.h"
 
 #include <QtCore/QDir>

@@ -14,7 +14,7 @@
 #include "dfa.h"
 
 #include "include/config.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 
 
 #include "type/type.h"

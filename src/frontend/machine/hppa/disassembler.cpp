@@ -34,7 +34,7 @@
 
 #include "global.h"
 #include "include/decoder.h"
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 
 #include "hppa-names.h"
 

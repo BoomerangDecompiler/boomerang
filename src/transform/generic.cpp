@@ -16,9 +16,9 @@
 #include "db/register.h"
 #include "db/rtl.h"
 #include "db/proc.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "include/transformer.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 
 #include <cassert>
 #include <numeric>   // For accumulate

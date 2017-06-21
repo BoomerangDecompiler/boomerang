@@ -68,7 +68,7 @@ int read();
 #endif
 #include <cstdio>
 #include "include/operator.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */

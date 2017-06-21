@@ -26,9 +26,9 @@
 #include "db/proc.h"
 #include "db/statements/implicitassign.h"
 
-#include "boom_base/BinaryFile.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/BinaryFile.h"
+#include "core/log.h"
+#include "core/log.h"
 
 
 #include <QtCore/QDebug>

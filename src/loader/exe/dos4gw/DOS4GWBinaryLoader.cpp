@@ -17,7 +17,7 @@
  */
 
 #include "DOS4GWBinaryLoader.h"
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"

@@ -1,7 +1,7 @@
 #include "callstatement.h"
 
-#include "boom_base/boomerang.h"
-#include "boom_base/log.h"
+#include "core/boomerang.h"
+#include "core/log.h"
 
 #include "db/exp.h"
 #include "db/proc.h"

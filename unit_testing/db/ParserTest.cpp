@@ -7,8 +7,8 @@
 #include "db/ssl/sslparser.h"
 #include "db/statements/statement.h"
 
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/log.h"
+#include "core/log.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QProcessEnvironment>

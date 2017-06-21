@@ -2,7 +2,7 @@
 #include <cstdio>
 
 #include "include/config.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "commandlinedriver.h"
 
 CommandlineDriver::CommandlineDriver(QObject *parent)

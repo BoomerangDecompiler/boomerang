@@ -20,7 +20,7 @@
 #include "db/statements/callstatement.h"
 #include "db/statements/phiassign.h"
 #include "db/statements/assign.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 
 #include "include/frontend.h"
 #include "db/visitor.h"

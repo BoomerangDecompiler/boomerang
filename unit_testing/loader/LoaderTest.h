@@ -1,4 +1,4 @@
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 
 #include <QtTest/QTest>
 

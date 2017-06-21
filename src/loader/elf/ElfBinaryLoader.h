@@ -18,7 +18,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 
 struct Elf32_Ehdr;
 

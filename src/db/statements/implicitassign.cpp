@@ -5,7 +5,7 @@
 #include "type/type.h"
 #include "db/visitor.h"
 
-#include "boom_base/log.h"
+#include "core/log.h"
 
 ImplicitAssign::ImplicitAssign(SharedExp _lhs)
 	: Assignment(_lhs)

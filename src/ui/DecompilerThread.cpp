@@ -1,8 +1,8 @@
 #include "DecompilerThread.h"
 
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "db/IBinaryImage.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "db/prog.h"
 #include "include/frontend.h"
 #include "db/proc.h"

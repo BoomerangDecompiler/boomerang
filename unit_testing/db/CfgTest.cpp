@@ -6,14 +6,14 @@
 
 #include "CfgTest.h"
 
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 #include "include/frontend.h"
 #include "db/proc.h"
 #include "db/prog.h"
 #include "db/dataflow.h"
 #include "frontend/pentium/pentiumfrontend.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "core/log.h"
+#include "core/log.h"
 #include "db/basicblock.h"
 
 #include <QDir>

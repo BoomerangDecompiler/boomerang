@@ -1,7 +1,7 @@
 #include "imprefstatement.h"
 
 #include "db/exp.h"
-#include "boom_base/log.h"
+#include "core/log.h"
 #include "type/type.h"
 #include "db/visitor.h"
 

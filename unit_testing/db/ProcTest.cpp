@@ -12,7 +12,7 @@
  */
 
 #include "ProcTest.h"
-#include "boom_base/BinaryFile.h"
+#include "core/BinaryFile.h"
 #include "BinaryFileStub.h"
 #include "pentiumfrontend.h"
 
