@@ -14,12 +14,12 @@
 #include "dfa.h"
 
 #include "include/config.h"
-#include "core/Log.h"
+#include "util/Log.h"
 
 
 #include "type/type.h"
 #include "db/visitor.h"
-#include "util/util.h"
+#include "util/Util.h"
 
 #include "db/signature.h"
 #include "db/exp.h"

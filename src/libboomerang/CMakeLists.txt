@@ -2,11 +2,11 @@
 set(libboomerang_SRC
 	core/Boomerang.h
 	core/Boomerang.cpp
-	core/Log.h
-	core/Log.cpp
 	core/BinaryFileFactory.cpp
 	core/Plugin.h
 	
+	util/Log.h
+	util/Log.cpp
 	util/Util.h
 	util/Util.cpp
 )

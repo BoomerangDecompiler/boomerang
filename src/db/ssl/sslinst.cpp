@@ -23,7 +23,7 @@
 
 #include "include/types.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/exp.h"
 #include "db/register.h"
@@ -34,7 +34,7 @@
 #include "db/statements/assign.h"
 
 #include "sslparser.h"
-#include "util/util.h"
+#include "util/Util.h"
 
 #include "type/type.h"
 

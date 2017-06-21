@@ -8,7 +8,7 @@
  ******************************************************************************/
 #include "include/types.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/cfg.h"
 #include "db/exp.h"
@@ -20,7 +20,7 @@
 #include "db/visitor.h"
 #include "db/operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 
-#include "util/util.h"
+#include "util/Util.h"
 
 #include <QRegularExpression>
 

@@ -24,8 +24,8 @@
 
 
 #include "db/visitor.h"
-#include "core/Log.h"
-#include "core/Log.h"
+#include "util/Log.h"
+#include "util/Log.h"
 
 #include <sstream>
 

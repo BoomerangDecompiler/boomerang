@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "prog.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 #include "core/BinaryFileFactory.h"
 
 #include "c/ansi-c-parser.h"
@@ -47,7 +47,7 @@
 
 #include "type/type.h"
 
-#include "util/util.h" // For lockFileWrite etc
+#include "util/Util.h" // For lockFileWrite etc
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>

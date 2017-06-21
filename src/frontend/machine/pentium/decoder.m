@@ -37,7 +37,7 @@
 #include "db/prog.h"
 #include "db/exp.h"
 #include "db/proc.h"
-#include "core/Log.h"
+#include "util/Log.h"
 
 
 #define DIS_R8	  (dis_Reg(r8+8))

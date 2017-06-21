@@ -15,7 +15,7 @@
 #include <sstream>
 #include <cstring>
 
-#include "core/Log.h"
+#include "util/Log.h"
 #include "include/types.h"
 #include "include/managed.h"
 

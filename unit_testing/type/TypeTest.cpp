@@ -16,8 +16,8 @@
 #include "core/BinaryFileFactory.h" // Ugh - needed before frontend.h
 #include "frontend/pentium/pentiumfrontend.h"
 #include "db/signature.h"
-#include "core/Log.h"
-#include "core/Log.h"
+#include "util/Log.h"
+#include "util/Log.h"
 #include "db/prog.h"
 #include "db/proc.h"
 

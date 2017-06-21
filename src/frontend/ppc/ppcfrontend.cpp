@@ -34,7 +34,7 @@
 #include "core/BinaryFileFactory.h"
 #include "include/frontend.h"
 #include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
-#include "core/Log.h"
+#include "util/Log.h"
 #include "db/signature.h"
 
 #include <cassert>

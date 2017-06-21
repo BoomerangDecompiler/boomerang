@@ -42,7 +42,7 @@
 #include "sparcdecoder.h"
 #include "db/rtl.h"
 #include "core/BinaryFileFactory.h"		// For SymbolByAddress()
-#include "core/Log.h"
+#include "util/Log.h"
 
 #define DIS_ROI		(dis_RegImm(roi))
 #define DIS_ADDR	(dis_Eaddr(addr))

@@ -1,10 +1,10 @@
 #include "RangeAnalysis.h"
 
-#include "core/Log.h"
-#include "core/Log.h"
+#include "util/Log.h"
+#include "util/Log.h"
 
 #include "db/visitor.h"
-#include "util/util.h"
+#include "util/Util.h"
 #include "type/type.h"
 
 #include "db/proc.h"

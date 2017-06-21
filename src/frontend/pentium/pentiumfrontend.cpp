@@ -19,7 +19,7 @@
 #include "pentiumdecoder.h"
 
 #include "core/BinaryFileFactory.h" // For SymbolByAddress()
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "include/types.h"
 #include "include/frontend.h"

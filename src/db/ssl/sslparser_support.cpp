@@ -1,6 +1,6 @@
 #include "sslparser.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "include/config.h"
 #include "include/types.h"
@@ -14,7 +14,7 @@
 #include "db/statements/statement.h"
 #include "db/statements/assign.h"
 
-#include "util/util.h" // E.g. str()
+#include "util/Util.h" // E.g. str()
 
 #include <cassert>
 #include <sstream>

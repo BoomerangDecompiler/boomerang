@@ -14,7 +14,7 @@
  ******************************************************************************/
 #include "SymTab.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 #include "core/Boomerang.h"
 
 #include <QDebug>

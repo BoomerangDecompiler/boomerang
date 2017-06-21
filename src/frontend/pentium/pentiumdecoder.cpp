@@ -17,7 +17,7 @@
  ******************************************************************************/
 #include "pentiumdecoder.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/rtl.h"
 #include "db/IBinaryImage.h"

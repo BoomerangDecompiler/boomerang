@@ -21,7 +21,7 @@
 #include "include/operator.h" // Declares the OPER enum
 #include "include/types.h"    // For ADDRESS, etc
 #include "type/type.h"        // The Type class for typed expressions
-#include "util/util.h"
+#include "util/Util.h"
 #include "exphelp.h"
 
 #include <QtCore/QString>

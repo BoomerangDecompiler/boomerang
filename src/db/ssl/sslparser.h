@@ -10,7 +10,7 @@
 #include "db/rtl.h"
 #include "db/table.h"
 #include "db/insnameelem.h"
-#include "util/util.h" // E.g. str()
+#include "util/Util.h" // E.g. str()
 
 
 #include <cassert>

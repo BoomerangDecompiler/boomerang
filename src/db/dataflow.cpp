@@ -12,7 +12,7 @@
  * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/dataflow.h"
 #include "db/basicblock.h"

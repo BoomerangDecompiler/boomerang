@@ -22,7 +22,7 @@
 #include "include/frontend.h"
 #include "type/type.h"
 #include "db/module.h"
-#include "util/util.h"
+#include "util/Util.h"
 #include "loader/IBinaryFile.h"
 
 // TODO: refactor Prog Global handling into separate class

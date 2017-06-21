@@ -1,6 +1,6 @@
 #include "assignment.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/exp.h"
 #include "db/proc.h"

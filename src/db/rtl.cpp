@@ -18,7 +18,7 @@
 
 #include "db/rtl.h"
 
-#include "core/Log.h"                  // for LOG_VERBOSE
+#include "util/Log.h"                  // for LOG_VERBOSE
 
 #include "include/operator.h"          // for OPER::opIntConst
 #include "include/types.h"             // for ADDRESS

@@ -21,7 +21,7 @@
 #include "mipsfrontend.h"
 
 #include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/exp.h"
 #include "db/register.h"

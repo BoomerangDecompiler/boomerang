@@ -1,7 +1,7 @@
 #include "LoggingSettingsDlg.h"
 #include "ui_LoggingSettingsDlg.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 LoggingSettingsDlg::LoggingSettingsDlg(QWidget *parent)
 	: QDialog(parent)

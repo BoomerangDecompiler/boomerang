@@ -25,7 +25,7 @@
 #include "sparcdecoder.h"
 
 #include "core/BinaryFileFactory.h" // For SymbolByAddress()
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/exp.h"
 #include "db/prog.h"

@@ -1,6 +1,6 @@
 #include "TypeRecovery.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/proc.h"
 #include "db/prog.h"

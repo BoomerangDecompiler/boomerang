@@ -16,7 +16,7 @@
 
 #include "ElfTypes.h"
 #include "include/config.h"
-#include "util/util.h"
+#include "util/Util.h"
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"

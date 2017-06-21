@@ -10,7 +10,7 @@
 #include "Boomerang.h"
 
 #include "core/BinaryFileFactory.h"
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "codegen/chllcode.h"
 

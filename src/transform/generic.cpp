@@ -9,7 +9,7 @@
 
 #include "generic.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/cfg.h"
 #include "db/exp.h"

@@ -60,14 +60,14 @@ void *alloca();
 
 #include "include/config.h"
 #include "include/types.h"
-#include "util/util.h" // E.g. str()
+#include "util/Util.h" // E.g. str()
 #include "include/operator.h"
 
 #include "db/rtl.h"
 #include "db/exp.h"
 #include "db/statements/assign.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "sslscanner.h"
 #include "table.h"

@@ -15,7 +15,7 @@
 #include "signature.h"
 
 #include "core/BinaryFileFactory.h"
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/signature.h"
 #include "db/exp.h"
@@ -29,7 +29,7 @@
 
 #include "type/type.h"
 
-#include "util/util.h"
+#include "util/Util.h"
 
 
 #include <QtCore/QDebug>

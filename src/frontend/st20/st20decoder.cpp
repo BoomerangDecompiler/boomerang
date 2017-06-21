@@ -18,7 +18,7 @@
 
 #include "st20decoder.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/rtl.h"
 #include "db/exp.h"

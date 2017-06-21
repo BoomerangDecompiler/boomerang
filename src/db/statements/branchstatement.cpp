@@ -1,7 +1,7 @@
 #include "branchstatement.h"
 
 #include "core/Boomerang.h"
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/basicblock.h"
 #include "db/statements/statementhelper.h"

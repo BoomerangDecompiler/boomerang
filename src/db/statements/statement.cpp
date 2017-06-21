@@ -12,7 +12,7 @@
  * \brief   Implementation of the Statement and related classes.
  ******************************************************************************/
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/exp.h"
 #include "db/cfg.h"
@@ -32,7 +32,7 @@
 #include "db/statements/boolassign.h"
 
 #include "include/hllcode.h"
-#include "util/util.h"
+#include "util/Util.h"
 #include "db/visitor.h"
 
 

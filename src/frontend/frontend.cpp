@@ -17,7 +17,7 @@
  ******************************************************************************/
 #include "include/frontend.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 #include "core/BinaryFileFactory.h"
 
 #include "c/ansi-c-parser.h"

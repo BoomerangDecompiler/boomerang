@@ -18,9 +18,9 @@
 
 #include "loader/microX86dis.c"
 #include "LoaderTest.h"
-#include "core/Log.h"
+#include "util/Log.h"
 #include "db/IBinaryImage.h"
-#include "core/Log.h"
+#include "util/Log.h"
 #include "db/IBinarySection.h"
 
 #include <QLibrary>

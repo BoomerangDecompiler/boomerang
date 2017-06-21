@@ -14,13 +14,13 @@
  ******************************************************************************/
 
 #include "core/Boomerang.h"
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "chllcode.h"
 
 #include "include/msvc_fixes.h"
 #include "type/type.h"
-#include "util/util.h"
+#include "util/Util.h"
 
 #include "db/cfg.h"
 #include "db/exp.h"

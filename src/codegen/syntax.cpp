@@ -1,6 +1,6 @@
 #include "include/hllcode.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 #include "core/Boomerang.h"
 
 #include "db/prog.h"

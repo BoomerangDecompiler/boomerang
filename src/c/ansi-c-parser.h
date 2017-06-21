@@ -13,7 +13,7 @@
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/signature.h"
-#include "util/util.h"
+#include "util/Util.h"
 
 class AnsiCScanner;
 

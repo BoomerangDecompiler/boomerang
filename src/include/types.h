@@ -8,7 +8,7 @@
 #include <iosfwd>
 #include <cstdint>
 
-#include "util/util.h"
+#include "util/Util.h"
 
 class QTextStream;
 

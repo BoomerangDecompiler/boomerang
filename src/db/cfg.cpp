@@ -19,7 +19,7 @@
  ******************************************************************************/
 #include "db/cfg.h"
 
-#include "core/Log.h"
+#include "util/Log.h"
 
 #include "db/signature.h"
 #include "db/exp.h"
@@ -34,7 +34,7 @@
 #include "include/types.h"
 #include "include/hllcode.h"
 
-#include "util/util.h"
+#include "util/Util.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

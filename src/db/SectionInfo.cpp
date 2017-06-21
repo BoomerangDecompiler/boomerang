@@ -1,5 +1,5 @@
 #include "SectionInfo.h"
-#include "core/Log.h"
+#include "util/Log.h"
 #include "db/IBinaryImage.h"
 
 #include <QVariantMap>
