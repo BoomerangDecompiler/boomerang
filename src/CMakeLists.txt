@@ -17,7 +17,6 @@ link_directories(
 
 #all submodules
 add_subdirectory(libboomerang)
-add_subdirectory(util)
 add_subdirectory(c)
 add_subdirectory(codegen)
 add_subdirectory(type)

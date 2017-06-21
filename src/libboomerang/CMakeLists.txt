@@ -6,6 +6,9 @@ set(libboomerang_SRC
 	core/Log.cpp
 	core/BinaryFileFactory.cpp
 	core/Plugin.h
+	
+	util/Util.h
+	util/Util.cpp
 )
 
 add_library(libboomerang ${libboomerang_SRC})
