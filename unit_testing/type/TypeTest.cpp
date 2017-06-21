@@ -13,7 +13,7 @@
  */
 
 #include "TypeTest.h"
-#include "core/BinaryFile.h" // Ugh - needed before frontend.h
+#include "core/BinaryFileFactory.h" // Ugh - needed before frontend.h
 #include "frontend/pentium/pentiumfrontend.h"
 #include "db/signature.h"
 #include "core/log.h"

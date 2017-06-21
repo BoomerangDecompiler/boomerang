@@ -1,4 +1,4 @@
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 
 #include <QtTest/QTest>
 

@@ -6,7 +6,7 @@
 #include "RtlTest.h"
 
 #include "db/exp.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "include/frontend.h"
 #include "frontend/sparc/sparcfrontend.h"
 #include "frontend/pentium/pentiumfrontend.h"

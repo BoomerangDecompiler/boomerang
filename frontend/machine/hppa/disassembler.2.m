@@ -33,7 +33,7 @@
 
 #include "global.h"
 #include "include/decoder.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 
 #include "hppa-names.h"
 

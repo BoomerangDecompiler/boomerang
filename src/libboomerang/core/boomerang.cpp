@@ -14,7 +14,7 @@
 #include "include/config.h"
 #include "db/prog.h"
 #include "db/proc.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "include/frontend.h"
 #include "db/signature.h"
 #include "core/log.h"

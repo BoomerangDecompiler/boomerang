@@ -13,7 +13,7 @@
 #include "frontend/sparc/sparcfrontend.h"
 #include "db/cfg.h"
 #include "db/rtl.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "core/BinaryFileStub.h"
 #include "core/log.h"
 #include "db/basicblock.h"

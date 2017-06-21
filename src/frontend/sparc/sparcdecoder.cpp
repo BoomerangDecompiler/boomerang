@@ -32,7 +32,7 @@
 #include "db/statements/callstatement.h"
 #include "db/statements/casestatement.h"
 
-#include "core/BinaryFile.h" // For SymbolByAddress()
+#include "core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "core/log.h"
 
 #include <cassert>

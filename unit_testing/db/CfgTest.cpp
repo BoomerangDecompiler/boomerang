@@ -6,7 +6,7 @@
 
 #include "CfgTest.h"
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "include/frontend.h"
 #include "db/proc.h"
 #include "db/prog.h"

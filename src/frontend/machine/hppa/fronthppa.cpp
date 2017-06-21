@@ -43,7 +43,7 @@
 #include "csr.h"
 #include "include/frontend.h"
 #include "include/decoder.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 
 /***************************************************************************/ /**
  * Globals and enumerated types used for decoding.

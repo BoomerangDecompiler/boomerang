@@ -29,7 +29,7 @@
 #include "include/decoder.h"
 #include "mipsdecoder.h"
 #include "db/rtl.h"
-#include "core/BinaryFile.h"		// For SymbolByAddress()
+#include "core/BinaryFileFactory.h"		// For SymbolByAddress()
 #include "core/log.h"
 
 #include <iostream>

@@ -23,8 +23,8 @@
 #include "include/decoder.h" // prototype for decodeInstruction()
 #include "type/type.h"
 
-#include "core/BinaryFile.h"
-#include "core/BinaryFile.h" // For SymbolByAddress()
+#include "core/BinaryFileFactory.h"
+#include "core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "core/log.h"
 #include "core/log.h"
 

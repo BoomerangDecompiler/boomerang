@@ -17,7 +17,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include <QtCore/QObject>
 
 /**

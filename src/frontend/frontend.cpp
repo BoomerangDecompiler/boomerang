@@ -34,7 +34,7 @@
 #include "db/IBinaryImage.h"
 #include "db/SymTab.h"
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 
 #include "frontend/sparc/sparcfrontend.h"
 #include "frontend/pentium/pentiumfrontend.h"

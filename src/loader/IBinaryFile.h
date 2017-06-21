@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include "include/types.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 
 // class IFileData;
 typedef QByteArray IFileData;

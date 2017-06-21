@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 
 #include <string>
 

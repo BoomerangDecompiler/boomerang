@@ -31,9 +31,9 @@
 #include "db/prog.h"
 #include "include/decoder.h"
 #include "ppcdecoder.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "include/frontend.h"
-#include "core/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
+#include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "core/log.h"
 #include "db/signature.h"
 

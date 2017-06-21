@@ -32,7 +32,7 @@
 
 #include "include/decoder.h"
 
-#include "core/BinaryFile.h" // For SymbolByAddress()
+#include "core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "core/log.h"
 
 #include <cassert>

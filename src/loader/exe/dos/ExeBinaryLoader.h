@@ -21,7 +21,7 @@
  * even be exposed as another pseudo section.
  */
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 
 class QFile;
 

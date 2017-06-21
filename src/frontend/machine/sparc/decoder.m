@@ -41,7 +41,7 @@
 #include "db/proc.h"
 #include "sparcdecoder.h"
 #include "db/rtl.h"
-#include "core/BinaryFile.h"		// For SymbolByAddress()
+#include "core/BinaryFileFactory.h"		// For SymbolByAddress()
 #include "core/log.h"
 
 #define DIS_ROI		(dis_RegImm(roi))

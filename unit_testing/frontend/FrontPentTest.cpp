@@ -10,7 +10,7 @@
 #include "db/prog.h"
 #include "include/frontend.h"
 #include "frontend/pentium/pentiumfrontend.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "core/BinaryFileStub.h"
 #include "include/decoder.h"
 #include "core/log.h"

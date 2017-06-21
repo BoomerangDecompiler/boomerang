@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 
 
 class FileLoaderStub : public IFileLoader

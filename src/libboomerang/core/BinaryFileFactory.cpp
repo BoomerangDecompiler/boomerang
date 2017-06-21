@@ -6,7 +6,7 @@
  * loader class dynamically.
  */
 
-#include "BinaryFile.h"
+#include "BinaryFileFactory.h"
 #include "log.h"
 #include "boomerang.h"
 

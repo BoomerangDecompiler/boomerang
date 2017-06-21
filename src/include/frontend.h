@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "include/types.h"
 #include "sigenum.h" // For enums platform and cc
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "TargetQueue.h"
 
 #include <list>

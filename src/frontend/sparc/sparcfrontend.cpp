@@ -22,7 +22,7 @@
 
 #include "sparcfrontend.h"
 
-#include "core/BinaryFile.h" // E.g. IsDynamicallyLinkedProc
+#include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "core/log.h"
 #include "db/basicblock.h"
 #include "db/cfg.h"

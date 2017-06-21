@@ -18,7 +18,7 @@
 
 #include "MachOBinaryLoader.h"
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"

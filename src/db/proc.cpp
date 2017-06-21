@@ -46,7 +46,7 @@
 #include "type/constraint.h"
 
 #include "core/log.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "core/log.h"
 
 #include <QtCore/QDebug>

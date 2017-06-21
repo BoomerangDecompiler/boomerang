@@ -16,7 +16,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "db/IBinarySymbols.h"
 #include <set>
 

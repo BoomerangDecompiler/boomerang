@@ -18,7 +18,7 @@
 
 #include <map>
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "include/frontend.h"
 #include "type/type.h"
 #include "db/module.h"

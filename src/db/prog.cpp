@@ -31,7 +31,7 @@
 #include "util/util.h" // For lockFileWrite etc
 #include "db/register.h"
 #include "db/rtl.h"
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "include/frontend.h"
 #include "db/signature.h"
 #include "core/log.h"

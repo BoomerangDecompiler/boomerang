@@ -26,7 +26,7 @@
 #include "db/proc.h"
 #include "db/statements/implicitassign.h"
 
-#include "core/BinaryFile.h"
+#include "core/BinaryFileFactory.h"
 #include "core/log.h"
 #include "core/log.h"
 
