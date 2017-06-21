@@ -9,22 +9,24 @@
 
 #include "generic.h"
 
-#include "include/types.h"
+#include "core/Log.h"
 
 #include "db/cfg.h"
 #include "db/exp.h"
 #include "db/register.h"
 #include "db/rtl.h"
 #include "db/proc.h"
-#include "core/log.h"
+
+#include "include/types.h"
 #include "include/transformer.h"
-#include "core/log.h"
 
 #include <cassert>
 #include <numeric>   // For accumulate
 #include <algorithm> // For std::max()
 #include <map>       // In decideType()
 #include <sstream>   // Need gcc 3.0 or better
+
+
 extern const char *operStrings[];
 
 SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs)

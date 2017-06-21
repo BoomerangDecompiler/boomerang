@@ -1,10 +1,11 @@
 #include "phiassign.h"
 
-#include "core/log.h"
+#include "core/Log.h"
+
 #include "db/exp.h"
 #include "db/statements/assign.h"
-
 #include "db/visitor.h"
+
 
 Instruction *PhiAssign::clone() const
 {

@@ -68,7 +68,7 @@ int read();
 #endif
 #include <cstdio>
 #include "include/operator.h"
-#include "core/log.h"
+#include "core/Log.h"
 
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */

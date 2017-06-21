@@ -23,6 +23,9 @@
 
 #include "ppcdecoder.h"
 
+#include "core/BinaryFileFactory.h" // For SymbolByAddress()
+#include "core/Log.h"
+
 #include "db/exp.h"
 #include "db/prog.h"
 #include "db/proc.h"
@@ -31,9 +34,6 @@
 #include "db/statements/callstatement.h"
 
 #include "include/decoder.h"
-
-#include "core/BinaryFileFactory.h" // For SymbolByAddress()
-#include "core/log.h"
 
 #include <cassert>
 #include <cstring>

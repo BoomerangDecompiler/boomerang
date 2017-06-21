@@ -4,7 +4,7 @@
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"
-#include "core/log.h"
+#include "core/Log.h"
 #include "analysis.h"
 
 #include "typeStubs.cpp"

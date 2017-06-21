@@ -14,9 +14,9 @@
 #include "db/cfg.h"
 #include "db/rtl.h"
 #include "core/BinaryFileFactory.h"
-#include "core/log.h"
+#include "core/Log.h"
 #include "db/basicblock.h"
-#include "core/log.h"
+#include "core/Log.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

@@ -1,12 +1,12 @@
 #include "assign.h"
 
-#include "core/boomerang.h"
-#include "core/log.h"
+#include "core/Boomerang.h"
+#include "core/Log.h"
 
 #include "db/exp.h"
+#include "db/visitor.h"
 
 #include "include/hllcode.h"
-#include "db/visitor.h"
 
 
 Assign::Assign(SharedExp _lhs, SharedExp r, SharedExp _guard)

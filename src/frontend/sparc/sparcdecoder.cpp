@@ -24,7 +24,9 @@
 
 #include "sparcdecoder.h"
 
-#include "include/decoder.h"
+#include "core/BinaryFileFactory.h" // For SymbolByAddress()
+#include "core/Log.h"
+
 #include "db/exp.h"
 #include "db/prog.h"
 #include "db/proc.h"
@@ -32,8 +34,7 @@
 #include "db/statements/callstatement.h"
 #include "db/statements/casestatement.h"
 
-#include "core/BinaryFileFactory.h" // For SymbolByAddress()
-#include "core/log.h"
+#include "include/decoder.h"
 
 #include <cassert>
 #include <cstring>

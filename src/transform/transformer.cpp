@@ -9,26 +9,29 @@
 
 #include "include/transformer.h"
 
-#include "include/types.h"
+#include "core/Log.h"
 
 #include "db/cfg.h"
 #include "db/exp.h"
 #include "db/register.h"
 #include "db/rtl.h"
 #include "db/proc.h"
-#include "core/log.h"
-#include "rdi.h"
-#include "core/log.h"
-#include "transformation-parser.h"
+
+#include "include/types.h"
+
+#include "transform/rdi.h"
+#include "transform/transformation-parser.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 #include <QtCore/QDebug>
+
 #include <cassert>
 #include <numeric>   // For accumulate
 #include <algorithm> // For std::max()
 #include <map>       // In decideType()
 #include <sstream>   // Need gcc 3.0 or better
+
 
 std::list<ExpTransformer *> ExpTransformer::transformers;
 

@@ -1,8 +1,9 @@
 #include "TypeRecovery.h"
-#include "core/log.h"
+
+#include "core/Log.h"
+
 #include "db/proc.h"
 #include "db/prog.h"
-#include "core/log.h"
 
 
 void TypeRecoveryCommon::recoverProgramTypes(Prog *v)

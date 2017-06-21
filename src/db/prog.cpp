@@ -18,32 +18,36 @@
 /***************************************************************************/ /**
  * Dependencies.
  ******************************************************************************/
-#include "db/prog.h"
+#include "prog.h"
 
-#include "type/type.h"
+#include "core/Log.h"
+#include "core/BinaryFileFactory.h"
+
+#include "c/ansi-c-parser.h"
+
 #include "db/module.h"
-#include "include/types.h"
-
-#include "include/hllcode.h"
-#include "db/exp.h"
 #include "db/cfg.h"
+#include "db/exp.h"
 #include "db/proc.h"
-#include "util/util.h" // For lockFileWrite etc
 #include "db/register.h"
 #include "db/rtl.h"
-#include "core/BinaryFileFactory.h"
-#include "include/frontend.h"
+#include "db/SymTab.h"
+#include "db/BinaryImage.h"
 #include "db/signature.h"
-#include "core/log.h"
-#include "ansi-c-parser.h"
+
+#include "include/types.h"
+#include "include/hllcode.h"
+#include "include/frontend.h"
 #include "include/config.h"
 #include "include/managed.h"
-#include "core/log.h"
-#include "BinaryImage.h"
-#include "db/SymTab.h"
-#include "passes/RangeAnalysis.h"
 
 #include "loader/IBinaryFile.h"
+
+#include "passes/RangeAnalysis.h"
+
+#include "type/type.h"
+
+#include "util/util.h" // For lockFileWrite etc
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>

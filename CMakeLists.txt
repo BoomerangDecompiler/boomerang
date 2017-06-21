@@ -45,7 +45,7 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
 else ()
 	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic \
 		-Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs \
-		-Wstrict-overflow=2 -rdynamic")
+		-Wstrict-overflow=2 -rdynamic -fPIC")
 		
 	# other warnings:
 	#-fstrict-aliasing  # This will not work with *reinterpret-cast<float*>(&int)

@@ -1,7 +1,7 @@
 #include "include/TargetQueue.h"
 
-#include "core/log.h"
-#include "core/log.h"
+#include "core/Log.h"
+
 #include "db/cfg.h"
 
 /***************************************************************************/ /**

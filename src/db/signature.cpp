@@ -12,12 +12,10 @@
  * \brief   Implementation of the classes that describe a procedure signature
  ******************************************************************************/
 
-#include "db/signature.h"
+#include "signature.h"
 
-#include "type/type.h"
-#include "include/frontend.h"
-#include "util/util.h"
-#include "include/managed.h"
+#include "core/BinaryFileFactory.h"
+#include "core/Log.h"
 
 #include "db/signature.h"
 #include "db/exp.h"
@@ -26,9 +24,12 @@
 #include "db/proc.h"
 #include "db/statements/implicitassign.h"
 
-#include "core/BinaryFileFactory.h"
-#include "core/log.h"
-#include "core/log.h"
+#include "include/frontend.h"
+#include "include/managed.h"
+
+#include "type/type.h"
+
+#include "util/util.h"
 
 
 #include <QtCore/QDebug>

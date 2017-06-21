@@ -1,4 +1,4 @@
-#include "core/log.h"
+#include "core/Log.h"
 
 #include <QtTest/QTest>
 #include <iostream>

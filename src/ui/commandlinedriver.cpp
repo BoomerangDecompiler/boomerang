@@ -2,7 +2,7 @@
 #include <cstdio>
 
 #include "include/config.h"
-#include "core/log.h"
+#include "core/Log.h"
 #include "commandlinedriver.h"
 
 CommandlineDriver::CommandlineDriver(QObject *parent)

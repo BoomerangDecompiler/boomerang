@@ -12,6 +12,8 @@
  * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
+#include "core/Log.h"
+
 #include "db/dataflow.h"
 #include "db/basicblock.h"
 #include "db/cfg.h"
@@ -20,10 +22,9 @@
 #include "db/statements/callstatement.h"
 #include "db/statements/phiassign.h"
 #include "db/statements/assign.h"
-#include "core/log.h"
+#include "db/visitor.h"
 
 #include "include/frontend.h"
-#include "db/visitor.h"
 
 #include <QtCore/QDebug>
 #include <sstream>

@@ -16,16 +16,19 @@
  * \brief   This file contains the high level decoding functionality, for matching ST-20 instructions.
  ******************************************************************************/
 
-#include <cassert>
-
 #include "st20decoder.h"
-#include "include/decoder.h"
+
+#include "core/Log.h"
+
 #include "db/rtl.h"
 #include "db/exp.h"
 #include "db/proc.h"
 #include "db/statements/callstatement.h"
 
-#include "core/log.h"
+#include "include/decoder.h"
+
+#include <cassert>
+
 
 /**********************************
 * ST20Decoder methods.

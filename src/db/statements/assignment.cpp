@@ -1,11 +1,13 @@
 #include "assignment.h"
 
-#include "type/type.h"
+#include "core/Log.h"
+
 #include "db/exp.h"
-#include "core/log.h"
 #include "db/proc.h"
 #include "db/prog.h"
 #include "db/signature.h"
+
+#include "type/type.h"
 
 
 Assignment::Assignment(SharedExp lhs)

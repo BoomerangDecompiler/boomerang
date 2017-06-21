@@ -12,6 +12,7 @@
  * \brief   Implementation of the Statement and related classes.
  ******************************************************************************/
 
+#include "core/Log.h"
 
 #include "db/exp.h"
 #include "db/cfg.h"
@@ -34,8 +35,6 @@
 #include "util/util.h"
 #include "db/visitor.h"
 
-#include "core/log.h"
-#include "core/log.h"
 
 #include <cassert>
 #include <cstring>

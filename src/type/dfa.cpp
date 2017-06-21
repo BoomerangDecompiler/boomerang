@@ -14,7 +14,7 @@
 #include "dfa.h"
 
 #include "include/config.h"
-#include "core/log.h"
+#include "core/Log.h"
 
 
 #include "type/type.h"

@@ -22,8 +22,8 @@
 #include "db/statements/phiassign.h"
 #include "db/statements/boolassign.h"
 
-#include "core/log.h"
-#include "core/log.h"
+#include "core/Log.h"
+#include "core/Log.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QDebug>

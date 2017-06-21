@@ -8,11 +8,13 @@
 
 #include "BinaryFileFactory.h"
 
-#include "core/log.h"
-#include "core/boomerang.h"
+#include "core/Log.h"
+#include "core/Boomerang.h"
+
 #include "db/project.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
+
 #include "loader/IFileLoader.h"
 
 #include <cstdio>
@@ -25,8 +27,6 @@
 #include <QString>
 #include <QDebug>
 
-
-#include <dlfcn.h> // for dlopen
 
 #define LMMH(x)																								  \
 	((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \

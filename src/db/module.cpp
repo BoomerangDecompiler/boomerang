@@ -1,6 +1,6 @@
 #include "module.h"
 
-#include "core/log.h"
+#include "core/Log.h"
 
 #include "db/proc.h"
 #include "db/prog.h"
@@ -24,7 +24,7 @@ namespace dbghelp
 #undef NO_ADDRESS
 #define NO_ADDRESS    ADDRESS::g(-1)
 #include <iostream>
-#include "core/log.h"
+#include "core/Log.h"
 #endif
 
 #if defined(_WIN32) && !defined(__MINGW32__)

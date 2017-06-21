@@ -12,8 +12,8 @@
 #include "db/prog.h"
 #include "db/dataflow.h"
 #include "frontend/pentium/pentiumfrontend.h"
-#include "core/log.h"
-#include "core/log.h"
+#include "core/Log.h"
+#include "core/Log.h"
 #include "db/basicblock.h"
 
 #include <QDir>

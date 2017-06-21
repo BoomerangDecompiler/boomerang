@@ -15,12 +15,11 @@
 #include <sstream>
 #include <cstring>
 
+#include "core/Log.h"
 #include "include/types.h"
 #include "include/managed.h"
 
 #include "db/exp.h"
-#include "core/log.h"
-#include "core/log.h"
 #include "db/proc.h"
 #include "db/statements/assign.h"
 

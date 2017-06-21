@@ -16,16 +16,19 @@
  *                etc. Ordinary instructions are processed in decoder_low.m
  ******************************************************************************/
 #include "pentiumdecoder.h"
+
+#include "core/Log.h"
+
 #include "db/rtl.h"
 #include "db/IBinaryImage.h"
-#include "include/decoder.h"
 #include "db/prog.h"
 #include "db/exp.h"
 #include "db/proc.h"
-#include "core/log.h"
 #include "db/statements/assign.h"
 #include "db/statements/callstatement.h"
 #include "db/statements/casestatement.h"
+
+#include "include/decoder.h"
 
 #include <cassert>
 #include <cstring>

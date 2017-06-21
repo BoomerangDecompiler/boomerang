@@ -23,7 +23,8 @@
 #include "sparcfrontend.h"
 
 #include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
-#include "core/log.h"
+#include "core/Log.h"
+
 #include "db/basicblock.h"
 #include "db/cfg.h"
 #include "db/exp.h"
@@ -46,6 +47,7 @@
 #include <cstring>
 #include <iomanip> // For setfill etc
 #include <sstream>
+
 
 /***************************************************************************/ /**
  * \fn    SparcFrontEnd::warnDCTcouple

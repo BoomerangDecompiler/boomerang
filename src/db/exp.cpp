@@ -6,14 +6,9 @@
  * \file       exp.cpp
  * \brief   Implementation of the Exp and related classes.
  ******************************************************************************/
-
-#include <cassert>
-#include <numeric>   // For accumulate
-#include <algorithm> // For std::max()
-#include <map>       // In decideType()
-#include <sstream>   // Need gcc 3.0 or better
-#include <cstring>
 #include "include/types.h"
+
+#include "core/Log.h"
 
 #include "db/cfg.h"
 #include "db/exp.h"
@@ -22,13 +17,21 @@
 #include "db/proc.h"
 #include "db/signature.h"
 #include "db/prog.h"
-#include "operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
-#include "util/util.h"
-#include "core/log.h"
 #include "db/visitor.h"
-#include "core/log.h"
+#include "db/operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
+
+#include "util/util.h"
+
 #include <QRegularExpression>
-#include <iomanip>          // For std::setw etc
+
+#include <cassert>
+#include <numeric>   // For accumulate
+#include <algorithm> // For std::max()
+#include <map>       // In decideType()
+#include <sstream>   // Need gcc 3.0 or better
+#include <cstring>
+#include <iomanip>   // For std::setw etc
+
 
 extern char debug_buffer[]; ///< For prints functions
 static int tlstrchr(const QString& str, char ch);

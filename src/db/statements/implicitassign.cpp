@@ -1,11 +1,12 @@
 #include "implicitassign.h"
 
-#include "db/exp.h"
+#include "core/Log.h"
 
-#include "type/type.h"
+#include "db/exp.h"
 #include "db/visitor.h"
 
-#include "core/log.h"
+#include "type/type.h"
+
 
 ImplicitAssign::ImplicitAssign(SharedExp _lhs)
 	: Assignment(_lhs)

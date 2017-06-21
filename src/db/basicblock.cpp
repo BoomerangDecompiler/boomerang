@@ -17,10 +17,9 @@
 /***************************************************************************/ /**
  * Dependencies.
  ******************************************************************************/
-#include "db/basicblock.h"
+#include "basicblock.h"
 
-#include "include/config.h"
-#include "include/types.h"
+#include "core/Log.h"
 
 #include "db/exp.h"
 #include "db/cfg.h"
@@ -33,20 +32,22 @@
 #include "db/statements/casestatement.h"
 #include "db/statements/phiassign.h"
 #include "db/statements/assign.h"
-
-#include "include/hllcode.h"
-#include "util/util.h"
-#include "type/type.h"
 #include "db/visitor.h"
 
-#include "core/log.h"
-#include "core/log.h"
+#include "include/config.h"
+#include "include/types.h"
+#include "include/hllcode.h"
+
+#include "type/type.h"
+
+#include "util/util.h"
 
 #include <QtCore/QDebug>
 #include <cassert>
 #include <algorithm>
 #include <cstring>
 #include <inttypes.h>
+
 
 /**********************************
 * BasicBlock methods

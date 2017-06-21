@@ -30,7 +30,7 @@
 #include "mipsdecoder.h"
 #include "db/rtl.h"
 #include "core/BinaryFileFactory.h"		// For SymbolByAddress()
-#include "core/log.h"
+#include "core/Log.h"
 
 #include <iostream>
 

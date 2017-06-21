@@ -13,8 +13,8 @@
  *               I guess this will be the most popular output language unless we do C++.
  ******************************************************************************/
 
-#include "core/log.h"
-#include "core/boomerang.h"
+#include "core/Boomerang.h"
+#include "core/Log.h"
 
 #include "chllcode.h"
 

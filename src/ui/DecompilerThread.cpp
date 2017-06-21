@@ -1,8 +1,8 @@
 #include "DecompilerThread.h"
 
-#include "core/log.h"
+#include "core/Log.h"
 #include "db/IBinaryImage.h"
-#include "core/log.h"
+#include "core/Log.h"
 #include "db/prog.h"
 #include "include/frontend.h"
 #include "db/proc.h"

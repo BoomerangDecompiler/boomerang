@@ -6,7 +6,7 @@
 #include "db/proc.h"
 #include "db/prog.h"
 #include "db/signature.h"
-#include "core/log.h"
+#include "core/Log.h"
 #include "pentiumfrontend.h"
 
 class Prog;

@@ -19,7 +19,7 @@
  ******************************************************************************/
 #include "db/cfg.h"
 
-#include "include/types.h"
+#include "core/Log.h"
 
 #include "db/signature.h"
 #include "db/exp.h"
@@ -31,10 +31,10 @@
 #include "db/statements/branchstatement.h"
 #include "db/statements/implicitassign.h"
 
-#include "util/util.h"
+#include "include/types.h"
 #include "include/hllcode.h"
-#include "core/log.h"
-#include "core/log.h"
+
+#include "util/util.h"
 
 #include <QtCore/QDebug>
 #include <cassert>

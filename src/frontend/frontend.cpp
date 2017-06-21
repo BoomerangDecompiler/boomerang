@@ -17,8 +17,10 @@
  ******************************************************************************/
 #include "include/frontend.h"
 
-#include "include/types.h"
-#include "include/decoder.h"
+#include "core/Log.h"
+#include "core/BinaryFileFactory.h"
+
+#include "c/ansi-c-parser.h"
 
 #include "db/exp.h"
 #include "db/cfg.h"
@@ -32,21 +34,17 @@
 #include "db/statements/casestatement.h"
 #include "db/IBinarySection.h"
 #include "db/IBinarySection.h"
-
 #include "db/IBinaryImage.h"
 #include "db/SymTab.h"
 
-#include "core/BinaryFileFactory.h"
+#include "include/types.h"
+#include "include/decoder.h"
 
 #include "frontend/sparc/sparcfrontend.h"
 #include "frontend/pentium/pentiumfrontend.h"
 #include "frontend/ppc/ppcfrontend.h"
 #include "frontend/st20/st20frontend.h"
 #include "frontend/mips/mipsfrontend.h"
-
-#include "core/log.h"
-#include "core/log.h"
-#include "c/ansi-c-parser.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QDebug>

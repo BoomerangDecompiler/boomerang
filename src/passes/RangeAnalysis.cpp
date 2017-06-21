@@ -1,7 +1,7 @@
 #include "RangeAnalysis.h"
 
-#include "core/log.h"
-#include "core/log.h"
+#include "core/Log.h"
+#include "core/Log.h"
 
 #include "db/visitor.h"
 #include "util/util.h"

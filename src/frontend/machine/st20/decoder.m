@@ -24,7 +24,7 @@
 #include "st20decoder.h"
 #include "db/exp.h"
 #include "db/proc.h"
-#include "core/log.h"
+#include "core/Log.h"
 
 
 /**********************************

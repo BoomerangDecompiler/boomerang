@@ -23,23 +23,26 @@
 
 #include "st20frontend.h"
 
+#include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
+#include "core/Log.h"
+
 #include "db/exp.h"
 #include "db/register.h"
 #include "db/rtl.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"
-#include "include/decoder.h"
-#include "st20decoder.h"
-#include "core/BinaryFileFactory.h"
-#include "include/frontend.h"
-#include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
-#include "core/log.h"
 #include "db/signature.h"
+
+#include "frontend/st20/st20decoder.h"
+
+#include "include/decoder.h"
+#include "include/frontend.h"
 
 #include <cassert>
 #include <iomanip> // For setfill etc
 #include <sstream>
+
 
 ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
 	: FrontEnd(pBF, prog, _pbff)

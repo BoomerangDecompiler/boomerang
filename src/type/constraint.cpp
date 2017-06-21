@@ -8,20 +8,25 @@
  */
 
 /***************************************************************************/ /**
- * \file       constraint.cpp
- * \brief   Implementation of objects related to type constraints
+ * \file   constraint.cpp
+ * \brief  Implementation of objects related to type constraints
  ******************************************************************************/
 
-#include "constraint.h"
-#include "include/managed.h"
+ #include "constraint.h"
+
+#include "core/Log.h"
+
 #include "db/exp.h"
-#include "core/log.h"
-#include "core/log.h"
 #include "db/proc.h"
 #include "db/prog.h"
+
+#include "include/managed.h"
+
 #include "type/type.h"
+
 #include <sstream>
 #include <cstring>
+
 
 void ConstraintMap::print(QTextStream& os)
 {

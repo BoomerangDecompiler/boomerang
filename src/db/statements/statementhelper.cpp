@@ -1,6 +1,6 @@
 #include "statementhelper.h"
 
-#include "core/log.h"
+#include "core/Log.h"
 
 // Common to BranchStatement and BoolAssign
 // Return true if this is now a floating point Branch

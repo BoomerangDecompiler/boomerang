@@ -1,11 +1,10 @@
 #include "branchstatement.h"
 
-#include "core/boomerang.h"
-#include "core/log.h"
+#include "core/Boomerang.h"
+#include "core/Log.h"
 
 #include "db/basicblock.h"
 #include "db/statements/statementhelper.h"
-
 #include "db/visitor.h"
 
 

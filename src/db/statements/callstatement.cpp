@@ -1,7 +1,7 @@
 #include "callstatement.h"
 
-#include "core/boomerang.h"
-#include "core/log.h"
+#include "core/Boomerang.h"
+#include "core/Log.h"
 
 #include "db/exp.h"
 #include "db/proc.h"
@@ -10,8 +10,8 @@
 #include "db/statements/assign.h"
 #include "db/statements/phiassign.h"
 #include "db/statements/implicitassign.h"
-
 #include "db/visitor.h"
+
 #include "include/hllcode.h"
 
 

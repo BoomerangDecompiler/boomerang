@@ -1,9 +1,11 @@
 #include "imprefstatement.h"
 
+#include "core/Log.h"
+
 #include "db/exp.h"
-#include "core/log.h"
-#include "type/type.h"
 #include "db/visitor.h"
+
+#include "type/type.h"
 
 
 ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)

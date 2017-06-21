@@ -18,15 +18,14 @@
 
 #include "pentiumdecoder.h"
 
+#include "core/BinaryFileFactory.h" // For SymbolByAddress()
+#include "core/Log.h"
+
 #include "include/types.h"
 #include "include/frontend.h"
 #include "include/decoder.h" // prototype for decodeInstruction()
 #include "type/type.h"
 
-#include "core/BinaryFileFactory.h"
-#include "core/BinaryFileFactory.h" // For SymbolByAddress()
-#include "core/log.h"
-#include "core/log.h"
 
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"

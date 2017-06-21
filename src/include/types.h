@@ -6,20 +6,26 @@
 
 #include <QObject>
 #include <iosfwd>
-#include <stdint.h>
+#include <cstdint>
+
 #include "util/util.h"
+
 class QTextStream;
+
 // Machine types
 typedef uint8_t         Byte;  /*  8 bits */
 typedef uint16_t        SWord; /* 16 bits */
 typedef uint32_t        DWord; /* 32 bits */
 typedef uint64_t        QWord; /* 64 bits */
 
-struct ADDRESS                 /* pointer. size depends on platform */
-{                              //    ADDRESS() {}
-	//    ADDRESS(uint32_t v) : m_value(v) {}
-	typedef uintptr_t   value_type;
-	value_type     m_value;
+/* pointer. size depends on platform */
+struct ADDRESS                 
+{
+	typedef uintptr_t value_type;
+	
+public:
+	value_type m_value;
+
 	static ADDRESS g(value_type x)   // construct host/native oblivious address
 	{
 		ADDRESS z;

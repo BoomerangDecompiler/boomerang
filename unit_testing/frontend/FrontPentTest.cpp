@@ -12,8 +12,8 @@
 #include "frontend/pentium/pentiumfrontend.h"
 #include "core/BinaryFileFactory.h"
 #include "include/decoder.h"
-#include "core/log.h"
-#include "core/log.h"
+#include "core/Log.h"
+#include "core/Log.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

@@ -4,7 +4,7 @@
 #include <memory>
 #include <fstream>
 
-#include "core/boomerang.h"
+#include "core/Boomerang.h"
 
 class Instruction;
 class Exp;

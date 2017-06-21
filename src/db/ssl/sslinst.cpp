@@ -23,9 +23,10 @@
 
 #include "include/types.h"
 
+#include "core/Log.h"
+
 #include "db/exp.h"
 #include "db/register.h"
-#include "type/type.h"
 #include "db/rtl.h"
 #include "db/cfg.h"
 #include "db/proc.h"
@@ -33,8 +34,9 @@
 #include "db/statements/assign.h"
 
 #include "sslparser.h"
-#include "core/log.h"
 #include "util/util.h"
+
+#include "type/type.h"
 
 #include <cassert>
 #include <cstring>

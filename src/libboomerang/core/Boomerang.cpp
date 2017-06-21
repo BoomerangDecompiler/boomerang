@@ -3,26 +3,30 @@
  */
 
 /***************************************************************************/ /**
- * \file       boomerang.cpp
+ * \file    Boomerang.cpp
  * \brief   Command line processing for the Boomerang decompiler
  ******************************************************************************/
 
-#include "boomerang.h"
+#include "Boomerang.h"
+
+#include "core/BinaryFileFactory.h"
+#include "core/Log.h"
+
+#include "codegen/chllcode.h"
 
 #include "db/BinaryImage.h"
 #include "db/SymTab.h"
-#include "include/config.h"
 #include "db/prog.h"
 #include "db/proc.h"
-#include "core/BinaryFileFactory.h"
-#include "include/frontend.h"
-#include "db/signature.h"
-#include "core/log.h"
-#include "db/xmlprogparser.h"
-#include "codegen/chllcode.h"
 #include "db/project.h"
+#include "db/signature.h"
+#include "db/xmlprogparser.h"
+
+#include "include/frontend.h"
+#include "include/config.h"
 
 #include "loader/machO/MachOBinaryLoader.h" // For Objective-C stuff
+
 
 // For the -nG switch to disable the garbage collector
 #ifdef HAVE_LIBGC

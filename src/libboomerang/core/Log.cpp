@@ -1,11 +1,12 @@
-#include "core/log.h"
+#include "Log.h"
+
+#include "core/Boomerang.h"
 
 #include "db/rtl.h"
 #include "db/exp.h"
 #include "db/statements/statement.h"
 
 #include "include/managed.h"
-#include "core/boomerang.h"
 
 #include <QTextStream>
 #include <sstream>

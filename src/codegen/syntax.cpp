@@ -1,12 +1,13 @@
 #include "include/hllcode.h"
 
+#include "core/Log.h"
+#include "core/Boomerang.h"
+
 #include "db/prog.h"
 #include "db/exp.h"
 #include "db/cfg.h"
 #include "db/basicblock.h"
 
-#include "core/log.h"
-#include "core/boomerang.h"
 
 #include <iomanip> // For setfill etc
 #include <cstring>

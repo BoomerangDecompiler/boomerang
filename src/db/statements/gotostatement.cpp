@@ -1,10 +1,9 @@
 #include "gotostatement.h"
 
-#include "core/log.h"
-#include "core/boomerang.h"
+#include "core/Log.h"
+#include "core/Boomerang.h"
 
 #include "db/exp.h"
-
 #include "db/visitor.h"
 
 

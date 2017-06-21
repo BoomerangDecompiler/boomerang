@@ -20,19 +20,22 @@
 
 #include "mipsfrontend.h"
 
+#include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
+#include "core/Log.h"
+
 #include "db/exp.h"
 #include "db/register.h"
 #include "db/rtl.h"
 #include "db/cfg.h"
 #include "db/proc.h"
 #include "db/prog.h"
-#include "include/decoder.h"
-#include "mipsdecoder.h"
-#include "core/BinaryFileFactory.h"
-#include "include/frontend.h"
-#include "core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
-#include "core/log.h"
 #include "db/signature.h"
+
+#include "frontend/mips/mipsdecoder.h"
+
+#include "include/frontend.h"
+#include "include/decoder.h"
+
 
 #include <cassert>
 #include <iomanip> // For setfill etc

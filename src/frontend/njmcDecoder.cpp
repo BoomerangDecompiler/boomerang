@@ -17,7 +17,7 @@
 #include "njmcDecoder.h"
 
 #include "core/BinaryFileFactory.h"
-#include "core/log.h"
+#include "core/Log.h"
 #include "util/util.h"
 
 #include "db/rtl.h"

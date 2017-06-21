@@ -18,17 +18,15 @@
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
  ******************************************************************************/
 
-/******************************************************************************
-* Dependencies.
-******************************************************************************/
-
 #include "db/proc.h"
 
-#include "include/types.h"
+#include "core/Log.h"
+#include "core/BinaryFileFactory.h"
+
 #include "type/type.h"
+#include "include/types.h"
 #include "include/hllcode.h"
 #include "include/frontend.h"
-#include "util/util.h"
 #include "db/visitor.h"
 
 #include "db/module.h"
@@ -45,9 +43,7 @@
 
 #include "type/constraint.h"
 
-#include "core/log.h"
-#include "core/BinaryFileFactory.h"
-#include "core/log.h"
+#include "util/util.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>

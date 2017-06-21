@@ -10,8 +10,8 @@
 
 #include "db/exp.h"
 
-#include "core/log.h"
-#include "core/log.h" // For VERBOSE
+#include "core/Log.h"
+#include "core/Log.h" // For VERBOSE
 
 #include "db/proc.h"
 #include "db/signature.h"

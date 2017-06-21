@@ -13,8 +13,9 @@
  *                so that symbols can be accessed by symbol or by name
  ******************************************************************************/
 #include "SymTab.h"
-#include "core/log.h"
-#include "core/boomerang.h"
+
+#include "core/Log.h"
+#include "core/Boomerang.h"
 
 #include <QDebug>
 #include <cassert>

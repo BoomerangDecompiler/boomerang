@@ -13,8 +13,8 @@ set(test_LIBRARIES
 	${PROTOBUF_LIBRARIES}
 	${GC_LIBS}
 	${DEBUG_LIB}
-	boom_base frontend db type boomerang_DSLs codegen util
-	boom_base frontend db codegen
+	libboomerang
+	frontend db type boomerang_DSLs codegen util
 	${CMAKE_DL_LIBS}
 	${CMAKE_THREAD_LIBS_INIT} boomerang_passes
 )
