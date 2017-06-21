@@ -38,6 +38,51 @@
 
 struct mach_header;
 
+
+
+// Objective-C stuff
+class ObjcIvar
+{
+public:
+	QString name, type;
+	unsigned offset;
+};
+
+
+class ObjcMethod
+{
+public:
+	QString name, types;
+	ADDRESS addr;
+};
+
+
+class ObjcClass
+{
+public:
+	QString name;
+	std::map<QString, ObjcIvar> ivars;
+	std::map<QString, ObjcMethod> methods;
+};
+
+
+class ObjcModule
+{
+public:
+	QString name;
+	std::map<QString, ObjcClass> classes;
+};
+
+
+class ObjcAccessInterface
+{
+public:
+	virtual ~ObjcAccessInterface() {}
+
+	virtual std::map<QString, ObjcModule>& getObjcModules() = 0;
+};
+
+
 class MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
 {
 public:

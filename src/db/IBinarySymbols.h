@@ -5,6 +5,9 @@
 #include <memory>
 #include <vector>
 
+#include <QString>
+#include <QDebug>
+
 class IBinarySymbol
 {
 public:

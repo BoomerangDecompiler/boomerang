@@ -26,7 +26,7 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_WINDOWS    baseDir.absoluteFilePath("tests/inputs/windows/hello.exe")
+#define HELLO_WINDOWS    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/hello.exe"))
 
 static bool    logset = false;
 static QString TEST_BASE;
@@ -76,7 +76,7 @@ void TypeTest::testCompound()
 	QSKIP("Disabled");
 
 	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.load(HELLO_WINDOWS);
+	IFileLoader       *loader = bff.loadFile(HELLO_WINDOWS);
 	FrontEnd          *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS), &bff);
 
 	pFE->readLibraryCatalog(); // Read definitions

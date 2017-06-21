@@ -18,6 +18,7 @@
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
+#include "db/IBinarySection.h"
 
 #include <QString>
 #include <cstddef>

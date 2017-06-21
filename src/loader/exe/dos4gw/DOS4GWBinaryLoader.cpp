@@ -21,6 +21,7 @@
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
+#include "db/IBinarySection.h"
 
 #include "include/config.h"
 
@@ -29,7 +30,7 @@
 #include <cstdlib>
 #include <QBuffer>
 #include <QFile>
-
+#include <QDebug>
 
 namespace
 {

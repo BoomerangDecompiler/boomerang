@@ -35,7 +35,7 @@ struct Translated_ElfSym;
 class IBinaryImage;
 class IBinarySymbolTable;
 class QFile;
-
+class SectionInfo;
 
 typedef struct
 {

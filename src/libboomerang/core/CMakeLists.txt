@@ -4,9 +4,7 @@ set(boom_base_SRC
 	boomerang.cpp
 	log.h
 	log.cpp
-	BinaryFile.h
 	BinaryFileFactory.cpp
-	BinaryFileStub.h
 	Plugin.h
 )
 

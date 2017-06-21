@@ -42,6 +42,7 @@ namespace dbghelp
 #include "db/IBinarySymbols.h"
 #include "include/IBoomerang.h"
 #include "include/config.h"
+#include "db/IBinarySection.h"
 
 #include <cstring>
 #include <cstdlib>

@@ -35,6 +35,8 @@ class Instruction;
 class InstructionSet;
 class Module;
 class XMLProgParser;
+class IBinarySection;
+
 struct BinarySymbol;
 
 class HLLCode;

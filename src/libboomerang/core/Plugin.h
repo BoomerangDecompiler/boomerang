@@ -2,6 +2,7 @@
 
 #include <string>
 #include <dlfcn.h>
+#include <cassert>
 
 
 enum class PluginType
@@ -13,23 +14,21 @@ enum class PluginType
 
 struct PluginInfo
 {
+	PluginType  type;    ///< type of plugin (loader, etc)
 	std::string name;    ///< Name of this plugin
 	std::string version; ///< Plugin version
-	std::string author;  ///< Plugin creator
-	PluginType  type;    ///< type of plugin (loader, etc)
+	std::string author;  ///< Plugin creator (copyright information)
 };
 
 
 /**
  * Class for managing an interface plugin.
  * Interface plugins are defined by the interface @p IFC
- * Only loader plugins are currently supported.
- * (see loader/IFileLoader.h)
  *
  * General notes on creating plugins:
  *  - The main plugin class must derive from the interface class IFC.
  *    Currently supported interfaces are:
- *    - IFileLoader (loader pluins)
+ *    - @ref IFileLoader (loader pluins)
  *
  * - The plugin must define the following functions (with extern "C" linkage):
  *   - IFC* initPlugin(): to initialize the plugin class and allocate resources etc.
@@ -41,9 +40,9 @@ struct PluginInfo
 template<typename IFC, PluginType ty = PluginType::Invalid>
 class Plugin
 {
-	using InitFunc   = IFC * (*)();
-	using DeinitFunc = void (*)();
-	using InfoFunc   = const PluginInfo (*)();
+	using PluginInitFunction   = IFC * (*)();
+	using PluginDeinitFunction = void (*)();
+	using PluginInfoFunction   = const PluginInfo (*)();
 
 public:
 	/// Create a plugin from a dynamic library file.
@@ -68,12 +67,14 @@ public:
 	/// Get information about the plugin.
 	PluginInfo getInfo() const
 	{
-		return getFunc<InfoFunc>("getInfo")();
+		return getFunc<PluginInfoFunction>("getInfo")();
 	}
 
 	/// Get the interface pointer for this plugin.
 	inline const IFC *get() const { return m_ifc; }
 	inline IFC *get() { return m_ifc; }
+	
+	inline const IFC *operator->() const { return this->get(); }
 	inline IFC *operator->() { return this->get(); }
 
 private:
@@ -92,14 +93,14 @@ private:
 	void init()
 	{
 		assert(m_ifc == nullptr);
-		m_ifc = getFunc<InitFunc>("initPlugin")();
+		m_ifc = getFunc<PluginInitFunction>("initPlugin")();
 	}
 
 	/// De-initialize the plugin.
 	void deinit()
 	{
 		assert(m_ifc != nullptr);
-		getFunc<DeinitFunc>("deinitPlugin")();
+		getFunc<PluginDeinitFunction>("deinitPlugin")();
 		m_ifc = nullptr;
 	}
 
@@ -131,11 +132,7 @@ private:
 };
 
 
-///
-/// Define a plugin.
-/// Usage:
-///   DEFINE_PLUGIN(IFileLoader, TestLoader, "TestLoader Plugin", "3.1.4", "test");
-///
+/// Do not use this macro directly. Use the DEFINE_*_PLUGIN macros below instead.
 #define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor)	\
 	static Classname * g_pluginInstance = nullptr;							\
 	extern "C" {															\
@@ -161,3 +158,12 @@ private:
 		return info;														\
 	}																		\
 	}
+
+
+/**
+ * Define a plugin. 
+ * Usage:
+ *   DEFINE_LOADER_PLUGIN(TestLoader, "TestLoader Plugin", "3.1.4", "test");
+ */
+#define DEFINE_LOADER_PLUGIN(Classname, PluginName, PluginVersion, PluginAuthor) \
+	DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Classname, PluginName, PluginVersion, PluginAuthor)

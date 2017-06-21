@@ -30,6 +30,8 @@
 #include "db/signature.h"
 #include "db/statements/callstatement.h"
 #include "db/statements/casestatement.h"
+#include "db/IBinarySection.h"
+#include "db/IBinarySection.h"
 
 #include "db/IBinaryImage.h"
 #include "db/SymTab.h"
@@ -129,13 +131,13 @@ FrontEnd *FrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactory 
  ******************************************************************************/
 FrontEnd *FrontEnd::Load(const QString& fname, Prog *prog)
 {
-	BinaryFileFactory *pbff = new BinaryFileFactory;
+	BinaryFileFactory *pbff = new BinaryFileFactory();
 
 	if (pbff == nullptr) {
 		return nullptr;
 	}
 
-	IFileLoader *loader = pbff->load(fname);
+	IFileLoader *loader = pbff->loadFile(qPrintable(fname));
 
 	if (!loader) {
 		return nullptr;
@@ -155,10 +157,6 @@ void FrontEnd::AddSymbol(ADDRESS addr, const QString& nam)
 // destructor
 FrontEnd::~FrontEnd()
 {
-	if (pbff) {
-		pbff->unload(); // Unload the BinaryFile library with dlclose() or FreeLibrary()
-	}
-
 	m_fileLoader = nullptr;
 }
 

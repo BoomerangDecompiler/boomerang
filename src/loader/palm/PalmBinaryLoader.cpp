@@ -19,10 +19,13 @@
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
+#include "db/IBinarySection.h"
 
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+#include <QDebug>
+
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(ad)      ((unsigned char *)ad)

@@ -22,6 +22,8 @@
 #include "codegen/chllcode.h"
 #include "db/project.h"
 
+#include "loader/machO/MachOBinaryLoader.h" // For Objective-C stuff
+
 // For the -nG switch to disable the garbage collector
 #ifdef HAVE_LIBGC
 #include "gc.h"
@@ -723,7 +725,7 @@ void Boomerang::setProgPath(const QString& p)
 
 void Boomerang::setPluginPath(const QString& p)
 {
-	BinaryFileFactory::setBasePath(p);
+	BinaryFileFactory::setPluginsPath(qPrintable(p));
 }
 
 

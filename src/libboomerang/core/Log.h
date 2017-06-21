@@ -18,6 +18,7 @@ struct Printable;
 using SharedType     = std::shared_ptr<Type>;
 using SharedConstExp = std::shared_ptr<const Exp>;
 
+
 class Log
 {
 public:

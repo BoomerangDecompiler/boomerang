@@ -20,10 +20,12 @@
 #include "include/IBoomerang.h"
 #include "db/IBinaryImage.h"
 #include "loader/IFileLoader.h"
+#include "db/IBinarySection.h"
 
 #include <QBuffer>
 #include <QFile>
 #include <cassert>
+#include <QDebug>
 
 
 ExeBinaryLoader::ExeBinaryLoader()

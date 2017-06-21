@@ -11,103 +11,49 @@
  *
  */
 
-/**
- * @file: BinaryFile.h
- * @brief: This file contains the definition of the abstract class BinaryFile
- */
-
-
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
-
-#include "include/types.h"
-#include "db/SectionInfo.h"
+#include <string>
+#include <memory>
+#include <vector>
 
 #include "loader/IFileLoader.h"
-
-#include <QStringList>
-#include <QDebug>
-#include <QString>
-#include <cassert>
-#include <list>
-#include <cstddef>
-#include <map>
-#include <string>
-#include <vector>
-#include <cstdio> // For FILE
+#include "include/types.h"
+#include "core/Plugin.h"
 
 /// Given a pointer p, returns the 16 bits (halfword) in the two bytes
 /// starting at p.
 #define LH(p)    ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
 
-class IBoomerang;
 
 /**
- * 
+ * This class deals with loading and determining the type of binary input files.
+ * Input files can ve either executables or dynamic libraries.
  */
 class BinaryFileFactory
 {
-private:
-	static QString m_basePath; ///< path from which the executable is being ran, used to find lib/ directory
-	std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins;
+public:
 
+	BinaryFileFactory();
+
+	/// @param pluginsPath Path of the directory where the loader plugins are located.
+	static void setPluginsPath(const std::string& pluginsPath);
+	
+	/// Load the binary file located at @p filePath.
+	/// Automatically returns the appropriate loader for the binary file.
+	IFileLoader *loadFile(const std::string& filePath);
+	
+private:
 	/**
 	 * Test all plugins against the file, select the one with the best match, and then return an
 	 * instance of the appropriate subclass.
-	 * @param sName - name of the file to load
-	 * @return Instance of the plugin that can load the file with given @p sName
+	 * @param filePath - name of the file to load
+	 * @return Instance of the plugin that can load the file with given @p filePath
 	 */
-	IFileLoader *getInstanceFor(const QString& sName);
+	IFileLoader *getInstanceFor(const std::string& filePath);
+	
+	/// load all suitable plugins from the plugin directory.
 	void populatePlugins();
-
-public:
-	BinaryFileFactory();
-
-	static void setBasePath(const QString& path) { m_basePath = path; } ///< sets the base directory for plugin search
-	IFileLoader *load(const QString& sName);
-	void unload();
-};
-
-
-// Objective-C stuff
-class ObjcIvar
-{
-public:
-	QString name, type;
-	unsigned offset;
-};
-
-
-class ObjcMethod
-{
-public:
-	QString name, types;
-	ADDRESS addr;
-};
-
-
-class ObjcClass
-{
-public:
-	QString name;
-	std::map<QString, ObjcIvar> ivars;
-	std::map<QString, ObjcMethod> methods;
-};
-
-
-class ObjcModule
-{
-public:
-	QString name;
-	std::map<QString, ObjcClass> classes;
-};
-
-
-class ObjcAccessInterface
-{
-public:
-	virtual ~ObjcAccessInterface() {}
-
-	virtual std::map<QString, ObjcModule>& getObjcModules() = 0;
+	
+private:
+	std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins; /// all loaded loader plugins.
+	static std::string m_pluginsPath; ///< Path to the direcory containing the loader plugins.
 };

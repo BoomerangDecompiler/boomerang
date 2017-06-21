@@ -8,6 +8,7 @@
 #include "db/proc.h"
 #include "db/signature.h"
 #include "db/module.h"
+#include "db/IBinarySection.h"
 
 #include <QtWidgets>
 #include <QtCore>

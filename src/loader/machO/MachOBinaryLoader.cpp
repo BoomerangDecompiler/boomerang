@@ -26,6 +26,8 @@
 #include "nlist.h"
 #include "macho-apple.h"
 
+#include "db/IBinarySection.h"
+
 #include "objc/objc-class.h"
 #include "objc/objc-runtime.h"
 
@@ -35,6 +37,8 @@
 #include <cstdlib>
 #include <QFile>
 #include <QBuffer>
+#include <QDebug>
+
 #define DEBUG_MACHO_LOADER    0
 
 #if DEBUG_MACHO_LOADER

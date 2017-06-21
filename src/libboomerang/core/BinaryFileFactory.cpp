@@ -7,21 +7,24 @@
  */
 
 #include "BinaryFileFactory.h"
-#include "log.h"
-#include "boomerang.h"
 
+#include "core/log.h"
+#include "core/boomerang.h"
 #include "db/project.h"
 #include "db/IBinaryImage.h"
 #include "db/IBinarySymbols.h"
-
 #include "loader/IFileLoader.h"
 
+#include <cstdio>
+
 #include <QDir>
+#include <QFile>
+
 #include <QPluginLoader>
 #include <QCoreApplication>
 #include <QString>
 #include <QDebug>
-#include <cstdio>
+
 
 #include <dlfcn.h> // for dlopen
 
@@ -29,7 +32,7 @@
 	((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
 	 ((unsigned)((Byte *)(&x))[3] << 24))
 
-QString BinaryFileFactory::m_basePath = "";
+std::string BinaryFileFactory::m_pluginsPath = "";
 
 
 BinaryFileFactory::BinaryFileFactory()
@@ -38,7 +41,13 @@ BinaryFileFactory::BinaryFileFactory()
 }
 
 
-IFileLoader *BinaryFileFactory::load(const QString& filePath)
+void BinaryFileFactory::setPluginsPath(const std::string& pluginsPath)
+{
+	BinaryFileFactory::m_pluginsPath = pluginsPath;
+}
+
+
+IFileLoader *BinaryFileFactory::loadFile(const std::string& filePath)
 {
 	IBinaryImage       *image   = Boomerang::get()->getImage();
 	IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
@@ -50,16 +59,16 @@ IFileLoader *BinaryFileFactory::load(const QString& filePath)
 	IFileLoader *loader = getInstanceFor(filePath);
 
 	if (loader == nullptr) {
-		qWarning() << "unrecognised binary file format.";
+		qWarning() << "Unrecognised binary file format.";
 		return nullptr;
 	}
 
 	loader->initialize(image, symbols);
 
-	QFile srcFile(filePath);
+	QFile srcFile(QString(filePath.c_str()));
 
 	if (false == srcFile.open(QFile::ReadOnly)) {
-		qWarning() << "Opening '" << filePath << "' failed";
+		qWarning() << "Opening '" << filePath.c_str() << "' failed";
 		return nullptr;
 	}
 
@@ -67,7 +76,7 @@ IFileLoader *BinaryFileFactory::load(const QString& filePath)
 	Boomerang::get()->getProject()->getFiledata() = srcFile.readAll();
 
 	if (loader->loadFromMemory(Boomerang::get()->getProject()->getFiledata()) == 0) {
-		qWarning() << "Loading '" << filePath << "' failed";
+		qWarning() << "Loading '" << filePath.c_str() << "' failed";
 		return nullptr;
 	}
 
@@ -76,26 +85,31 @@ IFileLoader *BinaryFileFactory::load(const QString& filePath)
 }
 
 
-IFileLoader *BinaryFileFactory::getInstanceFor(const QString& sName)
+IFileLoader *BinaryFileFactory::getInstanceFor(const std::string& filePath)
 {
-	QFile f(sName);
+	QFile f(filePath.c_str());
 
 	if (!f.open(QFile::ReadOnly)) {
-		qWarning() << "Unable to open binary file: " << sName;
+		qWarning() << "Unable to open binary file: " << filePath.c_str();
 		return nullptr;
 	}
 
-	// get the first plugin which is able to load the file
+	IFileLoader* bestLoader = nullptr;
+	int bestScore = 0;
+	
+	// get the best plugin for loading this file
 	for (std::shared_ptr<LoaderPlugin>& p : m_loaderPlugins) {
 		f.seek(0); // reset the file offset for the next plugin
 		IFileLoader *loader = p->get();
 
-		if (loader->canLoad(f)) {
-			return loader;
+		int score = loader->canLoad(f);
+		if (score > bestScore) {
+			bestScore = score;
+			bestLoader = loader;
 		}
 	}
-
-	return nullptr;
+	
+	return bestLoader;
 }
 
 
@@ -126,7 +140,3 @@ void BinaryFileFactory::populatePlugins()
 	}
 }
 
-
-void BinaryFileFactory::unload()
-{
-}

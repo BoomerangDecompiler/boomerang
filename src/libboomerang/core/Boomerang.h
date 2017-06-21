@@ -24,7 +24,6 @@
  *
  * More information on the %Boomerang decompiler can be found at
  * http://boomerang.sourceforge.net.
- *
  */
 
 #include "include/msvc_fixes.h"
@@ -62,10 +61,10 @@ enum LogLevel
 	LL_Error   = 3,
 };
 
-#define LOG           Boomerang::get()->log()
+#define LOG                Boomerang::get()->log()
 #define LOG_SEPARATE(x)    Boomerang::get()->separate_log(x)
 #define LOG_VERBOSE(x)     Boomerang::get()->if_verbose_log(x)
-#define LOG_STREAM    Boomerang::get()->getLogStream
+#define LOG_STREAM         Boomerang::get()->getLogStream
 
 /// Virtual class to monitor the decompilation.
 class Watcher
@@ -114,9 +113,7 @@ private:
 	Log *m_logger = nullptr;          ///< Takes care of the log messages.
 	std::set<Watcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 
-	/**
-	 * Prints help for the interactive mode.
-	 */
+	/// Prints help for the interactive mode.
 	void helpcmd() const;
 
 	/**
@@ -137,15 +134,13 @@ private:
 
 public:
 
-	/**
-	 * \return The global boomerang object. It will be created if it didn't already exist.
-	 */
+	/// @returns The global boomerang object. It will be created if it does not already exist.
 	static Boomerang *get();
 
 	IBinaryImage *getImage() override;
 	IBinarySymbolTable *getSymbols() override;
 
-	IProject *getProject()  override { return m_currentProject; }
+	IProject *getProject() override { return m_currentProject; }
 
 	/**
 	 * Parse and execute a command supplied in interactive mode.
@@ -464,11 +459,12 @@ public:
 #define DEBUG_PROOF             (Boomerang::get()->debugProof)
 #define DEBUG_UNUSED            (Boomerang::get()->debugUnused)
 #define DEBUG_LIVENESS          (Boomerang::get()->debugLiveness)
-#define DEBUG_RANGE_ANALYSIS    Boomerang::get()->debugRangeAnalysis
+#define DEBUG_RANGE_ANALYSIS    (Boomerang::get()->debugRangeAnalysis)
+#define DEBUG_SWITCH            (Boomerang::get()->debugSwitch)
+#define DEBUG_GEN               (Boomerang::get()->debugGen)
+
 #define DFA_TYPE_ANALYSIS       (Boomerang::get()->dfaTypeAnalysis)
 #define CON_TYPE_ANALYSIS       (Boomerang::get()->conTypeAnalysis)
 #define ADHOC_TYPE_ANALYSIS     (!Boomerang::get()->dfaTypeAnalysis && !Boomerang::get()->conTypeAnalysis)
-#define DEBUG_GEN               (Boomerang::get()->debugGen)
 #define DUMP_XML                (Boomerang::get()->dumpXML)
-#define DEBUG_SWITCH            (Boomerang::get()->debugSwitch)
 #define EXPERIMENTAL            (Boomerang::get()->experimental)

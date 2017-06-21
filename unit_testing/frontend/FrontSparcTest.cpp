@@ -14,7 +14,6 @@
 #include "db/cfg.h"
 #include "db/rtl.h"
 #include "core/BinaryFileFactory.h"
-#include "core/BinaryFileStub.h"
 #include "core/log.h"
 #include "db/basicblock.h"
 #include "core/log.h"
@@ -23,8 +22,8 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_SPARC     baseDir.absoluteFilePath("tests/inputs/sparc/hello")
-#define BRANCH_SPARC    baseDir.absoluteFilePath("tests/inputs/sparc/branch")
+#define HELLO_SPARC     qPrintable(baseDir.absoluteFilePath("tests/inputs/sparc/hello"))
+#define BRANCH_SPARC    qPrintable(baseDir.absoluteFilePath("tests/inputs/sparc/branch"))
 
 static bool    logset = false;
 static QString TEST_BASE;
@@ -56,7 +55,7 @@ void FrontSparcTest::test1()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(HELLO_SPARC);
+	IFileLoader       *pBF = bff.loadFile(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(HELLO_SPARC);
@@ -128,7 +127,7 @@ void FrontSparcTest::test2()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(HELLO_SPARC);
+	IFileLoader       *pBF = bff.loadFile(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(HELLO_SPARC);
@@ -176,7 +175,7 @@ void FrontSparcTest::test3()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(HELLO_SPARC);
+	IFileLoader       *pBF = bff.loadFile(HELLO_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(HELLO_SPARC);
@@ -240,7 +239,7 @@ void FrontSparcTest::testBranch()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(BRANCH_SPARC);
+	IFileLoader       *pBF = bff.loadFile(BRANCH_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(BRANCH_SPARC);
@@ -281,7 +280,7 @@ void FrontSparcTest::testBranch()
 void FrontSparcTest::testDelaySlot()
 {
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(BRANCH_SPARC);
+	IFileLoader       *pBF = bff.loadFile(BRANCH_SPARC);
 
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(BRANCH_SPARC);

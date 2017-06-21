@@ -10,6 +10,7 @@
 #include "db/basicblock.h"
 #include "db/statements/callstatement.h"
 
+#include <QDebug>
 
 ReturnStatement::ReturnStatement()
 	: retAddr(NO_ADDRESS)
