@@ -12,7 +12,7 @@
 #include "db/statements/implicitassign.h"
 #include "db/visitor.h"
 
-#include "include/hllcode.h"
+#include "codegen/ICodeGenerator.h"
 
 
 
@@ -607,12 +607,12 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
+void CallStatement::generateCode(ICodeGenerator *hll, BasicBlock *pbb, int indLevel)
 {
 	Function *p = getDestProc();
 
 	if ((p == nullptr) && isComputed()) {
-		hll->AddIndCallStatement(indLevel, m_dest, m_arguments, calcResults());
+		hll->addIndCallStatement(indLevel, m_dest, m_arguments, calcResults());
 		return;
 	}
 
@@ -658,10 +658,10 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 	}
 
 	if (p->isLib() && !p->getSignature()->getPreferredName().isEmpty()) {
-		hll->AddCallStatement(indLevel, p, p->getSignature()->getPreferredName(), m_arguments, results);
+		hll->addCallStatement(indLevel, p, p->getSignature()->getPreferredName(), m_arguments, results);
 	}
 	else {
-		hll->AddCallStatement(indLevel, p, qPrintable(p->getName()), m_arguments, results);
+		hll->addCallStatement(indLevel, p, qPrintable(p->getName()), m_arguments, results);
 	}
 }
 

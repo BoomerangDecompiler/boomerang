@@ -35,7 +35,7 @@ class UseSet;
 class LocationSet;
 class SSACounts;
 class BasicBlock;
-class HLLCode;
+class ICodeGenerator;
 class CallStatement;
 class BranchStatement;
 class RTL;
@@ -584,7 +584,7 @@ public:
 	/// \post the nodes within the loop have been tagged
 	void tagNodesInLoop(BasicBlock *header, bool *& loopNodes);
 
-	void removeUnneededLabels(HLLCode *hll);
+	void removeUnneededLabels(ICodeGenerator *hll);
 	void generateDotFile(QTextStream& of);
 
 	/////////////////////////////////////////////////////////////////////////

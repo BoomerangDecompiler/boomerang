@@ -25,7 +25,7 @@ add_executable(boomerang ${boomerang_SRC} ${gui_UI_H} ${resources_SRC})
 target_link_libraries(boomerang
 	${GC_LIBS}
 	${DEBUG_LIB}
-	libboomerang frontend type db boomerang_DSLs codegen util
+	frontend type db libboomerang boomerang_DSLs util
 	${CMAKE_THREAD_LIBS_INIT} boomerang_passes
 )
 

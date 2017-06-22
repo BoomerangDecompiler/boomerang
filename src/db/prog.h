@@ -39,7 +39,7 @@ class IBinarySection;
 
 struct BinarySymbol;
 
-class HLLCode;
+class ICodeGenerator;
 
 
 class Global : public Printable
@@ -384,7 +384,7 @@ public:
 	size_t size()  const { return m_moduleList.size(); }
 	bool empty() const { return m_moduleList.empty(); }
 
-	void generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, HLLCode *code) const;
+	void generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, ICodeGenerator *code) const;
 
 signals:
 	void rereadLibSignatures();

@@ -36,7 +36,7 @@
 #include "db/signature.h"
 
 #include "include/types.h"
-#include "include/hllcode.h"
+#include "codegen/ICodeGenerator.h"
 #include "include/frontend.h"
 #include "include/config.h"
 #include "include/managed.h"
@@ -224,10 +224,10 @@ void Prog::generateDotFile() const
 }
 
 
-void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, HLLCode *code) const
+void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, ICodeGenerator *code) const
 {
-	code->AddGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
-	code->AddGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
+	code->addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
+	code->addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
 	auto l = Terminal::get(opNil);
 
 	for (unsigned int i = 0; i < size; i++) {
@@ -240,7 +240,7 @@ void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, 
 		l = Binary::get(opList, Const::get(n), l);
 	}
 
-	code->AddGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
+	code->addGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
 }
 
 
@@ -262,7 +262,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 		os = &m_rootCluster->getStream();
 
 		if (proc == nullptr) {
-			HLLCode *code  = Boomerang::get()->getHLLCode();
+			ICodeGenerator *code  = Boomerang::get()->getHLLCode();
 			bool    global = false;
 
 			if (Boomerang::get()->noDecompile) {
@@ -281,7 +281,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 					}
 				}
 
-				code->AddGlobal("source_endianness", IntegerType::get(STD_SIZE),
+				code->addGlobal("source_endianness", IntegerType::get(STD_SIZE),
 								Const::get(getFrontEndId() != PLAT_PENTIUM));
 				(*os) << "#include \"boomerang.h\"\n\n";
 				global = true;
@@ -291,7 +291,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 				// Check for an initial value
 				SharedExp e = elem->getInitialValue(this);
 				// if (e) {
-				code->AddGlobal(elem->getName(), elem->getType(), e);
+				code->addGlobal(elem->getName(), elem->getType(), e);
 				global = true;
 			}
 
@@ -317,8 +317,8 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 
 			proto = true;
 			UserProc *up   = (UserProc *)func;
-			HLLCode  *code = Boomerang::get()->getHLLCode(up);
-			code->AddPrototype(up); // May be the wrong signature if up has ellipsis
+			ICodeGenerator  *code = Boomerang::get()->getHLLCode(up);
+			code->addPrototype(up); // May be the wrong signature if up has ellipsis
 
 			if (generate_all) {
 				code->print(*os);
@@ -357,7 +357,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 			up->getCFG()->compressCfg();
 			up->getCFG()->removeOrphanBBs();
 
-			HLLCode *code = Boomerang::get()->getHLLCode(up);
+			ICodeGenerator *code = Boomerang::get()->getHLLCode(up);
 			up->generateCode(code);
 			code->print(module->getStream());
 			delete code;
@@ -474,14 +474,14 @@ Module *Prog::getDefaultModule(const QString& name)
 
 void Prog::generateCode(QTextStream& os) const
 {
-	HLLCode *code = Boomerang::get()->getHLLCode();
+	ICodeGenerator *code = Boomerang::get()->getHLLCode();
 
 	for (Global *glob : m_globals) {
 		// Check for an initial value
 		auto e = glob->getInitialValue(this);
 
 		if (e) {
-			code->AddGlobal(glob->getName(), glob->getType(), e);
+			code->addGlobal(glob->getName(), glob->getType(), e);
 		}
 	}
 

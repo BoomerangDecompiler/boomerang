@@ -18,7 +18,6 @@ link_directories(
 #all submodules
 add_subdirectory(libboomerang)
 add_subdirectory(c)
-add_subdirectory(codegen)
 add_subdirectory(type)
 add_subdirectory(db)
 add_subdirectory(frontend)

@@ -3,7 +3,7 @@
 #include "db/statements/implicitassign.h"
 #include "db/statements/assign.h"
 #include "db/visitor.h"
-#include "include/hllcode.h"
+#include "codegen/ICodeGenerator.h"
 #include "db/proc.h"
 #include "db/signature.h"
 #include "include/frontend.h"
@@ -52,10 +52,10 @@ bool ReturnStatement::accept(StmtVisitor *visitor)
 }
 
 
-void ReturnStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
+void ReturnStatement::generateCode(ICodeGenerator *hll, BasicBlock *pbb, int indLevel)
 {
 	Q_UNUSED(pbb);
-	hll->AddReturnStatement(indLevel, &getReturns());
+	hll->addReturnStatement(indLevel, &getReturns());
 }
 
 

@@ -18,16 +18,15 @@
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
  ******************************************************************************/
 
-#include "db/proc.h"
+#include "proc.h"
 
-#include "util/Log.h"
 #include "core/BinaryFileFactory.h"
 
-#include "type/type.h"
+#include "codegen/ICodeGenerator.h"
+#include "codegen/SyntaxNode.h"
+
 #include "include/types.h"
-#include "include/hllcode.h"
 #include "include/frontend.h"
-#include "db/visitor.h"
 
 #include "db/module.h"
 #include "db/register.h"
@@ -40,9 +39,12 @@
 #include "db/statements/branchstatement.h"
 #include "db/statements/implicitassign.h"
 #include "db/statements/imprefstatement.h"
+#include "db/visitor.h"
 
 #include "type/constraint.h"
+#include "type/type.h"
 
+#include "util/Log.h"
 #include "util/Util.h"
 
 #include <QtCore/QDebug>
@@ -52,6 +54,7 @@
 #include <sstream>
 #include <algorithm> // For find()
 #include <cstring>
+
 
 #ifdef _WIN32
 #undef NO_ADDRESS
@@ -741,7 +744,7 @@ void UserProc::addCallee(Function *callee)
 }
 
 
-void UserProc::generateCode(HLLCode *hll)
+void UserProc::generateCode(ICodeGenerator *hll)
 {
 	assert(m_cfg);
 	assert(getEntryBB());
@@ -756,7 +759,7 @@ void UserProc::generateCode(HLLCode *hll)
 		LOG << *this;
 	}
 
-	hll->AddProcStart(this);
+	hll->addProcStart(this);
 
 	// Local variables; print everything in the locals map
 	std::map<QString, SharedType>::iterator last = m_locals.end();
@@ -772,24 +775,24 @@ void UserProc::generateCode(HLLCode *hll)
 			locType = IntegerType::get(STD_SIZE);
 		}
 
-		hll->AddLocal(it->first, locType, it == last);
+		hll->addLocal(it->first, locType, it == last);
 	}
 
 	if (Boomerang::get()->noDecompile && (getName() == "main")) {
 		StatementList args, results;
 
 		if (m_prog->getFrontEndId() == PLAT_PENTIUM) {
-			hll->AddCallStatement(1, nullptr, "PENTIUMSETUP", args, &results);
+			hll->addCallStatement(1, nullptr, "PENTIUMSETUP", args, &results);
 		}
 		else if (m_prog->getFrontEndId() == PLAT_SPARC) {
-			hll->AddCallStatement(1, nullptr, "SPARCSETUP", args, &results);
+			hll->addCallStatement(1, nullptr, "SPARCSETUP", args, &results);
 		}
 	}
 
 	std::list<BasicBlock *> followSet, gotoSet;
 	getEntryBB()->generateCode(hll, 1, nullptr, followSet, gotoSet, this);
 
-	hll->AddProcEnd();
+	hll->addProcEnd();
 
 	if (!Boomerang::get()->noRemoveLabels) {
 		m_cfg->removeUnneededLabels(hll);

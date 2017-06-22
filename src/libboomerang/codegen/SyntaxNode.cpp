@@ -1,4 +1,4 @@
-#include "include/hllcode.h"
+#include "SyntaxNode.h"
 
 #include "util/Log.h"
 #include "core/Boomerang.h"
@@ -42,12 +42,12 @@ void PRINT_BEFORE_AFTER(SyntaxNode *root, SyntaxNode *n)
 
 
 SyntaxNode::SyntaxNode()
-	: pbb(nullptr)
-	, score(-1)
-	, correspond(nullptr)
-	, notGoto(false)
+	: m_pbb(nullptr)
+	, m_score(-1)
+	, m_correspond(nullptr)
+	, m_notGoto(false)
 {
-	nodenum = nodecount++;
+	   m_nodenum = nodecount++;
 }
 
 
@@ -58,23 +58,23 @@ SyntaxNode::~SyntaxNode()
 
 int SyntaxNode::getScore()
 {
-	if (score == -1) {
-		score = evaluate(this);
+	if (m_score == -1) {
+		m_score = evaluate(this);
 	}
 
-	return score;
+	return m_score;
 }
 
 
-bool SyntaxNode::isGoto()
+bool SyntaxNode::isGoto() const
 {
-	return pbb && pbb->getType() == BBTYPE::ONEWAY && !notGoto;
+	return m_pbb && m_pbb->getType() == BBTYPE::ONEWAY && !m_notGoto;
 }
 
 
-bool SyntaxNode::isBranch()
+bool SyntaxNode::isBranch() const
 {
-	return pbb && pbb->getType() == BBTYPE::TWOWAY;
+	return m_pbb && m_pbb->getType() == BBTYPE::TWOWAY;
 }
 
 
@@ -91,10 +91,10 @@ BlockSyntaxNode::~BlockSyntaxNode()
 }
 
 
-size_t BlockSyntaxNode::getNumOutEdges()
+size_t BlockSyntaxNode::getNumOutEdges() const
 {
-	if (pbb) {
-		return pbb->getNumOutEdges();
+	if (m_pbb) {
+		return m_pbb->getNumOutEdges();
 	}
 
 	if (statements.size() == 0) {
@@ -107,8 +107,8 @@ size_t BlockSyntaxNode::getNumOutEdges()
 
 SyntaxNode *BlockSyntaxNode::getOutEdge(SyntaxNode *root, size_t n)
 {
-	if (pbb) {
-		return root->findNodeFor(pbb->getOutEdge(n));
+	if (m_pbb) {
+		return root->findNodeFor(m_pbb->getOutEdge(n));
 	}
 
 	if (statements.size() == 0) {
@@ -121,7 +121,7 @@ SyntaxNode *BlockSyntaxNode::getOutEdge(SyntaxNode *root, size_t n)
 
 SyntaxNode *BlockSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-	if (pbb == bb) {
+	if (m_pbb == bb) {
 		return this;
 	}
 
@@ -145,17 +145,17 @@ SyntaxNode *BlockSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 
 	os << "[label=\"";
 
-	if (pbb) {
-		switch (pbb->getType())
+	if (m_pbb) {
+		switch (m_pbb->getType())
 		{
 		case BBTYPE::ONEWAY:
 			os << "Oneway";
 
-			if (notGoto) {
+			if (m_notGoto) {
 				os << " (ignored)";
 			}
 
@@ -194,7 +194,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 			break;
 		}
 
-		os << " " << pbb->getLowAddr();
+		os << " " << m_pbb->getLowAddr();
 	}
 	else {
 		os << "block";
@@ -202,16 +202,16 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 
 	os << "\"];" << '\n';
 
-	if (pbb) {
-		for (size_t i = 0; i < pbb->getNumOutEdges(); i++) {
-			BasicBlock *out = pbb->getOutEdge(i);
-			os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	if (m_pbb) {
+		for (size_t i = 0; i < m_pbb->getNumOutEdges(); i++) {
+			BasicBlock *out = m_pbb->getOutEdge(i);
+			os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 
 			SyntaxNode *to = root->findNodeFor(out);
 			assert(to);
 			os << " -> " << to->getNumber() << " [style=dotted";
 
-			if (pbb->getNumOutEdges() > 1) {
+			if (m_pbb->getNumOutEdges() > 1) {
 				os << ",label=" << i;
 			}
 
@@ -224,7 +224,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 		}
 
 		for (unsigned i = 0; i < statements.size(); i++) {
-			os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+			os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 			os << " -> " << statements[i]->getNumber() << " [label=\"" << i << "\"];" << '\n';
 		}
 	}
@@ -241,7 +241,7 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
 	}
 #endif
 
-	if (pbb) {
+	if (m_pbb) {
 		return 1;
 	}
 
@@ -483,10 +483,10 @@ SyntaxNode *BlockSyntaxNode::clone()
 {
 	BlockSyntaxNode *b = new BlockSyntaxNode();
 
-	b->correspond = this;
+	b->m_correspond = this;
 
-	if (pbb) {
-		b->pbb = pbb;
+	if (m_pbb) {
+		b->m_pbb = m_pbb;
 	}
 	else {
 		for (auto& elem : statements) {
@@ -500,11 +500,11 @@ SyntaxNode *BlockSyntaxNode::clone()
 
 SyntaxNode *BlockSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
-	if (correspond == from) {
+	if (m_correspond == from) {
 		return to;
 	}
 
-	if (pbb == nullptr) {
+	if (m_pbb == nullptr) {
 		std::vector<SyntaxNode *> news;
 
 		for (auto& elem : statements) {
@@ -548,7 +548,7 @@ IfThenSyntaxNode::~IfThenSyntaxNode()
 
 SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/)
 {
-	SyntaxNode *n1 = root->findNodeFor(pbb->getOutEdge(0));
+	SyntaxNode *n1 = root->findNodeFor(m_pbb->getOutEdge(0));
 
 	assert(n1 != pThen);
 	return n1;
@@ -574,8 +574,8 @@ SyntaxNode *IfThenSyntaxNode::clone()
 {
 	IfThenSyntaxNode *b = new IfThenSyntaxNode();
 
-	b->correspond = this;
-	b->pbb        = pbb;
+	b->m_correspond = this;
+	b->m_pbb        = m_pbb;
 	b->cond       = cond->clone();
 	b->pThen      = pThen->clone();
 	return b;
@@ -584,7 +584,7 @@ SyntaxNode *IfThenSyntaxNode::clone()
 
 SyntaxNode *IfThenSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
-	assert(correspond != from);
+	assert(m_correspond != from);
 
 	if (pThen->getCorrespond() == from) {
 		assert(to);
@@ -600,7 +600,7 @@ SyntaxNode *IfThenSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *IfThenSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-	if (pbb == bb) {
+	if (m_pbb == bb) {
 		return this;
 	}
 
@@ -610,13 +610,13 @@ SyntaxNode *IfThenSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void IfThenSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << "[label=\"if " << cond << " \"];" << '\n';
 	pThen->printAST(root, os);
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << " -> " << pThen->getNumber() << " [label=then];" << '\n';
-	SyntaxNode *follows = root->findNodeFor(pbb->getOutEdge(0));
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	SyntaxNode *follows = root->findNodeFor(m_pbb->getOutEdge(0));
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << " -> " << follows->getNumber() << " [style=dotted];" << '\n';
 }
 
@@ -685,8 +685,8 @@ SyntaxNode *IfThenElseSyntaxNode::clone()
 {
 	IfThenElseSyntaxNode *b = new IfThenElseSyntaxNode();
 
-	b->correspond = this;
-	b->pbb        = pbb;
+	b->m_correspond = this;
+	b->m_pbb        = m_pbb;
 	b->cond       = cond->clone();
 	b->pThen      = pThen->clone();
 	b->pElse      = pElse->clone();
@@ -696,7 +696,7 @@ SyntaxNode *IfThenElseSyntaxNode::clone()
 
 SyntaxNode *IfThenElseSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
-	assert(correspond != from);
+	assert(m_correspond != from);
 
 	if (pThen->getCorrespond() == from) {
 		assert(to);
@@ -720,7 +720,7 @@ SyntaxNode *IfThenElseSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *IfThenElseSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-	if (pbb == bb) {
+	if (m_pbb == bb) {
 		return this;
 	}
 
@@ -736,13 +736,13 @@ SyntaxNode *IfThenElseSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void IfThenElseSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << "[label=\"if " << cond << " \"];" << '\n';
 	pThen->printAST(root, os);
 	pElse->printAST(root, os);
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << " -> " << pThen->getNumber() << " [label=then];" << '\n';
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << " -> " << pElse->getNumber() << " [label=else];" << '\n';
 }
 
@@ -764,7 +764,7 @@ PretestedLoopSyntaxNode::~PretestedLoopSyntaxNode()
 
 SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/)
 {
-	return root->findNodeFor(pbb->getOutEdge(1));
+	return root->findNodeFor(m_pbb->getOutEdge(1));
 }
 
 
@@ -800,8 +800,8 @@ SyntaxNode *PretestedLoopSyntaxNode::clone()
 {
 	PretestedLoopSyntaxNode *b = new PretestedLoopSyntaxNode();
 
-	b->correspond = this;
-	b->pbb        = pbb;
+	b->m_correspond = this;
+	b->m_pbb        = m_pbb;
 	b->cond       = cond->clone();
 	b->pBody      = pBody->clone();
 	return b;
@@ -810,7 +810,7 @@ SyntaxNode *PretestedLoopSyntaxNode::clone()
 
 SyntaxNode *PretestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
-	assert(correspond != from);
+	assert(m_correspond != from);
 
 	if (pBody->getCorrespond() == from) {
 		assert(to);
@@ -826,7 +826,7 @@ SyntaxNode *PretestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *PretestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-	if (pbb == bb) {
+	if (m_pbb == bb) {
 		return this;
 	}
 
@@ -836,13 +836,13 @@ SyntaxNode *PretestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void PretestedLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << "[label=\"loop pretested ";
 	os << cond << " \"];" << '\n';
 	pBody->printAST(root, os);
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << " -> " << pBody->getNumber() << ";" << '\n';
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << " -> " << getOutEdge(root, 0)->getNumber() << " [style=dotted];" << '\n';
 }
 
@@ -864,7 +864,7 @@ PostTestedLoopSyntaxNode::~PostTestedLoopSyntaxNode()
 
 SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/)
 {
-	return root->findNodeFor(pbb->getOutEdge(1));
+	return root->findNodeFor(m_pbb->getOutEdge(1));
 }
 
 
@@ -900,8 +900,8 @@ SyntaxNode *PostTestedLoopSyntaxNode::clone()
 {
 	PostTestedLoopSyntaxNode *b = new PostTestedLoopSyntaxNode();
 
-	b->correspond = this;
-	b->pbb        = pbb;
+	b->m_correspond = this;
+	b->m_pbb        = m_pbb;
 	b->cond       = cond->clone();
 	b->pBody      = pBody->clone();
 	return b;
@@ -910,7 +910,7 @@ SyntaxNode *PostTestedLoopSyntaxNode::clone()
 
 SyntaxNode *PostTestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
-	assert(correspond != from);
+	assert(m_correspond != from);
 
 	if (pBody->getCorrespond() == from) {
 		assert(to);
@@ -926,7 +926,7 @@ SyntaxNode *PostTestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *PostTestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-	if (pbb == bb) {
+	if (m_pbb == bb) {
 		return this;
 	}
 
@@ -942,13 +942,13 @@ SyntaxNode *PostTestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void PostTestedLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << "[label=\"loop posttested ";
 	os << cond << " \"];" << '\n';
 	pBody->printAST(root, os);
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << " -> " << pBody->getNumber() << ";" << '\n';
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << " -> " << getOutEdge(root, 0)->getNumber() << " [style=dotted];" << '\n';
 }
 
@@ -999,8 +999,8 @@ SyntaxNode *InfiniteLoopSyntaxNode::clone()
 {
 	InfiniteLoopSyntaxNode *b = new InfiniteLoopSyntaxNode();
 
-	b->correspond = this;
-	b->pbb        = pbb;
+	b->m_correspond = this;
+	b->m_pbb        = m_pbb;
 	b->pBody      = pBody->clone();
 	return b;
 }
@@ -1008,7 +1008,7 @@ SyntaxNode *InfiniteLoopSyntaxNode::clone()
 
 SyntaxNode *InfiniteLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
-	assert(correspond != from);
+	assert(m_correspond != from);
 
 	if (pBody->getCorrespond() == from) {
 		assert(to);
@@ -1024,7 +1024,7 @@ SyntaxNode *InfiniteLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *InfiniteLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-	if (pbb == bb) {
+	if (m_pbb == bb) {
 		return this;
 	}
 
@@ -1040,7 +1040,7 @@ SyntaxNode *InfiniteLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void InfiniteLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-	os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+	os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 	os << "[label=\"loop infinite\"];" << '\n';
 
 	if (pBody) {
@@ -1048,7 +1048,7 @@ void InfiniteLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 	}
 
 	if (pBody) {
-		os << qSetFieldWidth(4) << nodenum << qSetFieldWidth(0) << " ";
+		os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
 		os << " -> " << pBody->getNumber() << ";" << '\n';
 	}
 }

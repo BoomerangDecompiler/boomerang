@@ -13,7 +13,6 @@ set(test_LIBRARIES
 	boomerang_DSLs
 	type db boomerang_passes util frontend
 	libboomerang
-	codegen
 	${CMAKE_DL_LIBS}
 	${CMAKE_THREAD_LIBS_INIT}
 )

@@ -1,7 +1,6 @@
 include_directories(../c/) # used by prog.cpp
 
 set(INCLUDES
-	../include/hllcode.h
 	../include/memo.h
 	../include/operator.h
 	../include/sigenum.h

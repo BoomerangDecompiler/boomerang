@@ -233,7 +233,7 @@ public:
 	void dfaTypeAnalysis(bool& ch) override;
 
 	// code generation
-	virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) override;
+	virtual void generateCode(ICodeGenerator *hll, BasicBlock *Parent, int indLevel) override;
 
 	// dataflow analysis
 	virtual bool usesExp(const Exp& e) const override;

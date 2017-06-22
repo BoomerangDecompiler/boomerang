@@ -32,7 +32,7 @@
 #include "db/statements/implicitassign.h"
 
 #include "include/types.h"
-#include "include/hllcode.h"
+#include "codegen/ICodeGenerator.h"
 
 #include "util/Util.h"
 
@@ -1613,9 +1613,9 @@ void Cfg::removeJunctionStatements()
 }
 
 
-void Cfg::removeUnneededLabels(HLLCode *hll)
+void Cfg::removeUnneededLabels(ICodeGenerator *hll)
 {
-	hll->RemoveUnusedLabels(m_ordering.size());
+	hll->removeUnusedLabels(m_ordering.size());
 }
 
 

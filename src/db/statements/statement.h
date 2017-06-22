@@ -56,7 +56,7 @@ class StmtVisitor;
 class StmtExpVisitor;
 class StmtModifier;
 class StmtPartModifier;
-class HLLCode;
+class ICodeGenerator;
 class Assign;
 class RTL;
 class InstructionSet;
@@ -282,7 +282,7 @@ public:
 	bool propagateFlagsTo();
 
 	// code generation
-	virtual void generateCode(HLLCode *hll, BasicBlock *Parent, int indLevel) = 0;
+	virtual void generateCode(ICodeGenerator *hll, BasicBlock *Parent, int indLevel) = 0;
 	virtual void simplify() = 0; ///< simpify internal expressions
 
 	/// simplify internal address expressions (a[m[x]] -> x) etc

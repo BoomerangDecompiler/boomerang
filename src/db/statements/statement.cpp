@@ -31,7 +31,7 @@
 #include "db/statements/casestatement.h"
 #include "db/statements/boolassign.h"
 
-#include "include/hllcode.h"
+#include "codegen/ICodeGenerator.h"
 #include "util/Util.h"
 #include "db/visitor.h"
 

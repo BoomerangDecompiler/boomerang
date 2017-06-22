@@ -6,7 +6,7 @@
 #include "db/exp.h"
 #include "db/visitor.h"
 
-#include "include/hllcode.h"
+#include "codegen/ICodeGenerator.h"
 
 
 Assign::Assign(SharedExp _lhs, SharedExp r, SharedExp _guard)
@@ -246,10 +246,10 @@ bool Assign::searchAndReplace(const Exp& search, SharedExp replace, bool /*cc*/)
 }
 
 
-void Assign::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
+void Assign::generateCode(ICodeGenerator *hll, BasicBlock *pbb, int indLevel)
 {
 	Q_UNUSED(pbb);
-	hll->AddAssignmentStatement(indLevel, this);
+	hll->addAssignmentStatement(indLevel, this);
 }
 
 

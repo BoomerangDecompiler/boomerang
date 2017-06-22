@@ -30,7 +30,7 @@ public:
 	virtual bool searchAll(const Exp&, std::list<SharedExp, std::allocator<SharedExp> >&) const override;
 
 	virtual bool searchAndReplace(const Exp&, SharedExp, bool cc = false) override;
-	virtual void generateCode(HLLCode *, BasicBlock *, int)  override {}
+	virtual void generateCode(ICodeGenerator *, BasicBlock *, int)  override {}
 	virtual void simplify() override;
 
 	// NOTE: ImpRefStatement not yet used

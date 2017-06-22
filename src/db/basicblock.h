@@ -21,7 +21,7 @@
 #include <QtCore/QString>
 
 class Location;
-class HLLCode;
+class ICodeGenerator;
 class BasicBlock;
 class RTL;
 class Function;
@@ -504,7 +504,7 @@ public:
 public:
 	bool isBackEdge(size_t inEdge) const;
 
-	void generateCode(HLLCode *hll, int indLevel, BasicBlock *latch, std::list<BasicBlock *>& followSet,
+	void generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *latch, std::list<BasicBlock *>& followSet,
 					  std::list<BasicBlock *>& gotoSet, UserProc *proc);
 
 
@@ -569,7 +569,7 @@ public:
 	 ******************************************************************************/
 	bool searchAndReplace(const Exp& search, SharedExp replace);
 
-	void generateCode_Loop(HLLCode *hll, std::list<BasicBlock *>& gotoSet, int indLevel, UserProc *proc,
+	void generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>& gotoSet, int indLevel, UserProc *proc,
 						   BasicBlock *latch, std::list<BasicBlock *>& followSet);
 
 protected:
@@ -643,10 +643,10 @@ protected:
 	/// emit a 'return' instead (but would have to duplicate the other code in that return BB).    Also, 'continue' and
 	/// 'break'
 	/// statements are used instead if possible
-	void emitGotoAndLabel(HLLCode *hll, int indLevel, BasicBlock *dest);
+	void emitGotoAndLabel(ICodeGenerator *hll, int indLevel, BasicBlock *dest);
 
 	/// Generates code for each non CTI (except procedure calls) statement within the block.
-	void WriteBB(HLLCode *hll, int indLevel);
+	void WriteBB(ICodeGenerator *hll, int indLevel);
 
 	void addOutEdge(BasicBlock *bb) { m_outEdges.push_back(bb); }
 

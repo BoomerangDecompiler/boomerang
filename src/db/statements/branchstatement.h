@@ -122,7 +122,7 @@ public:
 	bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
 	/// code generation
-	void generateCode(HLLCode *, BasicBlock *, int) override;
+	void generateCode(ICodeGenerator *, BasicBlock *, int) override;
 
 	/// dataflow analysis
 	bool usesExp(const Exp& e) const override;

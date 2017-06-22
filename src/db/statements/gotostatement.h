@@ -148,7 +148,7 @@ public:
 	virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
 	// code generation
-	virtual void generateCode(HLLCode *, BasicBlock *, int) override;
+	virtual void generateCode(ICodeGenerator *, BasicBlock *, int) override;
 
 	// simplify all the uses/defs in this Statement
 	virtual void simplify() override;

@@ -173,7 +173,7 @@ bool GotoStatement::accept(StmtVisitor *visitor)
 }
 
 
-void GotoStatement::generateCode(HLLCode * /*hll*/, BasicBlock * /*pbb*/, int /*indLevel*/)
+void GotoStatement::generateCode(ICodeGenerator * /*hll*/, BasicBlock * /*pbb*/, int /*indLevel*/)
 {
 	// don't generate any code for jumps, they will be handled by the BB
 }

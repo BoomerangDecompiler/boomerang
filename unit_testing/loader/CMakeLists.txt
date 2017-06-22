@@ -14,7 +14,7 @@ set(test_LIBRARIES
 	${GC_LIBS}
 	${DEBUG_LIB}
 	libboomerang
-	frontend db type boomerang_DSLs codegen util
+	frontend db type boomerang_DSLs util
 	${CMAKE_DL_LIBS}
 	${CMAKE_THREAD_LIBS_INIT} boomerang_passes
 )

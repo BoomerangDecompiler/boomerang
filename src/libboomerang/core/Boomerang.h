@@ -47,7 +47,7 @@ class Log;
 class Prog;
 class Function;
 class UserProc;
-class HLLCode;
+class ICodeGenerator;
 class ObjcModule;
 class IBinaryImage;
 class IBinarySymbolTable;
@@ -175,10 +175,10 @@ public:
 	bool setOutputDirectory(const QString& path);
 
 	/**
-	 * Returns the HLLCode for the given proc.
-	 * \return The HLLCode for the specified UserProc.
+	 * Returns the ICodeGenerator for the given proc.
+	 * \return The ICodeGenerator for the specified UserProc.
 	 */
-	HLLCode *getHLLCode(UserProc *p = nullptr);
+	   ICodeGenerator *getHLLCode(UserProc *p = nullptr);
 
 	/// Set the path where the %Boomerang executable will search for plugins.
 	void setPluginPath(const QString& p);

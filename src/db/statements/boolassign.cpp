@@ -3,7 +3,7 @@
 #include "db/exp.h"
 #include "db/statements/assign.h"
 #include "db/visitor.h"
-#include "include/hllcode.h"
+#include "codegen/ICodeGenerator.h"
 #include "db/statements/statementhelper.h"
 
 
@@ -191,13 +191,13 @@ bool BoolAssign::accept(StmtVisitor *visitor)
 }
 
 
-void BoolAssign::generateCode(HLLCode *hll, BasicBlock * /*pbb*/, int indLevel)
+void BoolAssign::generateCode(ICodeGenerator *hll, BasicBlock * /*pbb*/, int indLevel)
 {
 	assert(m_lhs);
 	assert(m_cond);
 	// lhs := (pCond) ? 1 : 0
 	Assign as(m_lhs->clone(), std::make_shared<Ternary>(opTern, m_cond->clone(), Const::get(1), Const::get(0)));
-	hll->AddAssignmentStatement(indLevel, &as);
+	hll->addAssignmentStatement(indLevel, &as);
 }
 
 

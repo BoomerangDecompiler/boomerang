@@ -7,16 +7,16 @@
  */
 
 /***************************************************************************/ /**
- * \file       chllcode.cpp
+ * \file       CCodeGenerator.cpp
  * \brief   Concrete backend class for the "C" high level language
- *               This class is provides methods which are specific for the C language binding.
- *               I guess this will be the most popular output language unless we do C++.
+ *          This class is provides methods which are specific for the C language binding.
+ *          I guess this will be the most popular output language unless we do C++.
  ******************************************************************************/
+
+#include "CCodeGenerator.h"
 
 #include "core/Boomerang.h"
 #include "util/Log.h"
-
-#include "chllcode.h"
 
 #include "include/msvc_fixes.h"
 #include "type/type.h"
@@ -43,28 +43,21 @@ static bool isBareMemof(const Exp& e, UserProc *proc);
 
 // extern char *operStrings[];
 
-/// Empty constructor, calls HLLCode()
-CHLLCode::CHLLCode()
-	: HLLCode()
-{
-}
-
-
-/// Empty constructor, calls HLLCode(p)
-CHLLCode::CHLLCode(UserProc *p)
-	: HLLCode(p)
+/// Empty constructor, calls ICodeGenerator(p)
+CCodeGenerator::CCodeGenerator(UserProc *p)
+	: ICodeGenerator(p)
 {
 }
 
 
 /// Empty destructor
-CHLLCode::~CHLLCode()
+CCodeGenerator::~CCodeGenerator()
 {
 }
 
 
 /// Output 4 * \a indLevel spaces to \a str
-void CHLLCode::indent(QTextStream& str, int indLevel)
+void CCodeGenerator::indent(QTextStream& str, int indLevel)
 {
 	// Can probably do more efficiently
 	for (int i = 0; i < indLevel; i++) {
@@ -83,7 +76,7 @@ void CHLLCode::indent(QTextStream& str, int indLevel)
  *
  * \todo This function is 800+ lines, and should possibly be split up.
  */
-void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool uns /* = false */)
+void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool uns /* = false */)
 {
 	if (++codegen_progress > 500) {
 		LOG_STREAM() << 'g';
@@ -489,7 +482,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 	case opRegOf:
 		{
 			// MVE: this can likely go
-			LOG_VERBOSE(1) << "WARNING: CHLLCode::appendExp: case opRegOf is deprecated\n";
+			LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opRegOf is deprecated\n";
 
 			if (u.getSubExp1()->getOper() == opTemp) {
 				// The great debate: r[tmpb] vs tmpb
@@ -519,7 +512,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 
 	case opTemp:
 		// Should never see this; temps should be mapped to locals now so that they get declared
-		LOG_VERBOSE(1) << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
+		LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opTemp is deprecated\n";
 		// Emit the temp name, e.g. "tmp1"
 		str << u.access<Const, 1>()->getStr();
 		break;
@@ -756,7 +749,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 	case opAFP:
 	case opAGP:
 		// not implemented
-		LOG << "WARNING: CHLLCode::appendExp: case " << exp.getOperName() << " not implemented\n";
+		LOG << "WARNING: CCodeGenerator::appendExp: case " << exp.getOperName() << " not implemented\n";
 		// assert(false);
 		break;
 
@@ -866,7 +859,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 			}
 		}
 
-		LOG_VERBOSE(1) << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
+		LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opZfill is deprecated\n";
 		str << "(";
 		appendExp(str, *t.getSubExp3(), PREC_NONE);
 		str << ")";
@@ -1093,7 +1086,7 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 		appendExp(str, *u.getSubExp1(), curPrec);
 
 		if (VERBOSE) {
-			LOG << "ERROR: CHLLCode::appendExp: subscript in code generation of proc " << m_proc->getName()
+			LOG << "ERROR: CCodeGenerator::appendExp: subscript in code generation of proc " << m_proc->getName()
 				<< " exp (without subscript): " << str.readAll() << "\n";
 		}
 
@@ -1181,14 +1174,14 @@ void CHLLCode::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool un
 			break;
 		}
 
-		LOG << "ERROR: CHLLCode::appendExp: case " << exp.getOperName() << " not implemented\n";
+		LOG << "ERROR: CCodeGenerator::appendExp: case " << exp.getOperName() << " not implemented\n";
 		// assert(false);
 	}
 }
 
 
 /// Print the type represented by \a typ to \a str.
-void CHLLCode::appendType(QTextStream& str, SharedType typ)
+void CCodeGenerator::appendType(QTextStream& str, SharedType typ)
 {
 	if (!typ) {
 		str << "int"; // Default type for C
@@ -1209,7 +1202,7 @@ void CHLLCode::appendType(QTextStream& str, SharedType typ)
 /**
  * Print the indented type to \a str.
  */
-void CHLLCode::appendTypeIdent(QTextStream& str, SharedType typ, QString ident)
+void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString ident)
 {
 	if (typ == nullptr) {
 		return;
@@ -1241,7 +1234,7 @@ void CHLLCode::appendTypeIdent(QTextStream& str, SharedType typ, QString ident)
 			ident = "unknownVoidType";
 		}
 #endif
-		LOG << "WARNING: CHLLCode::appendTypeIdent: declaring type void as int for " << ident << "\n";
+		LOG << "WARNING: CCodeGenerator::appendTypeIdent: declaring type void as int for " << ident << "\n";
 		str << "int " << ident;
 	}
 	else {
@@ -1252,14 +1245,14 @@ void CHLLCode::appendTypeIdent(QTextStream& str, SharedType typ, QString ident)
 
 
 /// Remove all generated code.
-void CHLLCode::reset()
+void CCodeGenerator::reset()
 {
-	lines.clear();
+	   m_lines.clear();
 }
 
 
 /// Adds: while( \a cond) {
-void CHLLCode::AddPretestedLoopHeader(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addPretestedLoopHeader(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1273,7 +1266,7 @@ void CHLLCode::AddPretestedLoopHeader(int indLevel, const SharedExp& cond)
 
 
 /// Adds: }
-void CHLLCode::AddPretestedLoopEnd(int indLevel)
+void CCodeGenerator::addPretestedLoopEnd(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1285,7 +1278,7 @@ void CHLLCode::AddPretestedLoopEnd(int indLevel)
 
 
 /// Adds: for(;;) {
-void CHLLCode::AddEndlessLoopHeader(int indLevel)
+void CCodeGenerator::addEndlessLoopHeader(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1297,7 +1290,7 @@ void CHLLCode::AddEndlessLoopHeader(int indLevel)
 
 
 /// Adds: }
-void CHLLCode::AddEndlessLoopEnd(int indLevel)
+void CCodeGenerator::addEndlessLoopEnd(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1309,7 +1302,7 @@ void CHLLCode::AddEndlessLoopEnd(int indLevel)
 
 
 /// Adds: do {
-void CHLLCode::AddPosttestedLoopHeader(int indLevel)
+void CCodeGenerator::addPostTestedLoopHeader(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1321,7 +1314,7 @@ void CHLLCode::AddPosttestedLoopHeader(int indLevel)
 
 
 /// Adds: } while (\a cond);
-void CHLLCode::AddPosttestedLoopEnd(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addPostTestedLoopEnd(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1335,7 +1328,7 @@ void CHLLCode::AddPosttestedLoopEnd(int indLevel, const SharedExp& cond)
 
 
 /// Adds: switch(\a cond) {
-void CHLLCode::AddCaseCondHeader(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addCaseCondHeader(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1349,7 +1342,7 @@ void CHLLCode::AddCaseCondHeader(int indLevel, const SharedExp& cond)
 
 
 /// Adds: case \a opt :
-void CHLLCode::AddCaseCondOption(int indLevel, Exp& opt)
+void CCodeGenerator::addCaseCondOption(int indLevel, Exp& opt)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1363,7 +1356,7 @@ void CHLLCode::AddCaseCondOption(int indLevel, Exp& opt)
 
 
 /// Adds: break;
-void CHLLCode::AddCaseCondOptionEnd(int indLevel)
+void CCodeGenerator::addCaseCondOptionEnd(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1375,7 +1368,7 @@ void CHLLCode::AddCaseCondOptionEnd(int indLevel)
 
 
 /// Adds: default:
-void CHLLCode::AddCaseCondElse(int indLevel)
+void CCodeGenerator::addCaseCondElse(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1387,7 +1380,7 @@ void CHLLCode::AddCaseCondElse(int indLevel)
 
 
 /// Adds: }
-void CHLLCode::AddCaseCondEnd(int indLevel)
+void CCodeGenerator::addCaseCondEnd(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1399,7 +1392,7 @@ void CHLLCode::AddCaseCondEnd(int indLevel)
 
 
 /// Adds: if(\a cond) {
-void CHLLCode::AddIfCondHeader(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addIfCondHeader(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1413,7 +1406,7 @@ void CHLLCode::AddIfCondHeader(int indLevel, const SharedExp& cond)
 
 
 /// Adds: }
-void CHLLCode::AddIfCondEnd(int indLevel)
+void CCodeGenerator::addIfCondEnd(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1425,7 +1418,7 @@ void CHLLCode::AddIfCondEnd(int indLevel)
 
 
 /// Adds: if(\a cond) {
-void CHLLCode::AddIfElseCondHeader(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addIfElseCondHeader(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1439,7 +1432,7 @@ void CHLLCode::AddIfElseCondHeader(int indLevel, const SharedExp& cond)
 
 
 /// Adds: } else {
-void CHLLCode::AddIfElseCondOption(int indLevel)
+void CCodeGenerator::addIfElseCondOption(int indLevel)
 {
 	QString tgt;
 
@@ -1452,7 +1445,7 @@ void CHLLCode::AddIfElseCondOption(int indLevel)
 
 
 /// Adds: }
-void CHLLCode::AddIfElseCondEnd(int indLevel)
+void CCodeGenerator::addIfElseCondEnd(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1464,7 +1457,7 @@ void CHLLCode::AddIfElseCondEnd(int indLevel)
 
 
 /// Adds: goto L \em ord
-void CHLLCode::AddGoto(int indLevel, int ord)
+void CCodeGenerator::addGoto(int indLevel, int ord)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1480,15 +1473,15 @@ void CHLLCode::AddGoto(int indLevel, int ord)
  * Removes labels from the code which are not in usedLabels.
  * maxOrd UNUSED
  */
-void CHLLCode::RemoveUnusedLabels(int /*maxOrd*/)
+void CCodeGenerator::removeUnusedLabels(int /*maxOrd*/)
 {
-	for (QStringList::iterator it = lines.begin(); it != lines.end(); ) {
+	for (QStringList::iterator it = m_lines.begin(); it != m_lines.end(); ) {
 		if (it->startsWith('L') && it->contains(':')) {
 			QStringRef sxr = it->midRef(1, it->indexOf(':') - 1);
 			int n          = sxr.toInt();
 
 			if (usedLabels.find(n) == usedLabels.end()) {
-				it = lines.erase(it);
+				it = m_lines.erase(it);
 				continue;
 			}
 		}
@@ -1499,7 +1492,7 @@ void CHLLCode::RemoveUnusedLabels(int /*maxOrd*/)
 
 
 /// Adds: continue;
-void CHLLCode::AddContinue(int indLevel)
+void CCodeGenerator::addContinue(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1511,7 +1504,7 @@ void CHLLCode::AddContinue(int indLevel)
 
 
 /// Adds: break;
-void CHLLCode::AddBreak(int indLevel)
+void CCodeGenerator::addBreak(int indLevel)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1523,7 +1516,7 @@ void CHLLCode::AddBreak(int indLevel)
 
 
 /// Adds: L \a ord :
-void CHLLCode::AddLabel(int /*indLevel*/, int ord)
+void CCodeGenerator::addLabel(int /*indLevel*/, int ord)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1534,13 +1527,13 @@ void CHLLCode::AddLabel(int /*indLevel*/, int ord)
 
 
 /// Search for the label L \a ord and remove it from the generated code.
-void CHLLCode::RemoveLabel(int ord)
+void CCodeGenerator::removeLabel(int ord)
 {
 	QString tgt;
 	QTextStream s(&tgt);
 
 	s << "L" << ord << ":";
-	lines.removeAll(tgt);
+	   m_lines.removeAll(tgt);
 }
 
 
@@ -1566,7 +1559,7 @@ bool isBareMemof(const Exp& e, UserProc * /*proc*/)
 
 
 /// Prints an assignment expression.
-void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
+void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
 {
 	// Gerard: shouldn't these  3 types of statements be removed earlier?
 	if (asgn->getLeft()->getOper() == opPC) {
@@ -1709,7 +1702,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
  * \todo                Remove the \a name parameter and use Proc::getName()
  * \todo                Add assingment for when the function returns a struct.
  */
-void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
+void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
 								StatementList *results)
 {
 	QString tgt;
@@ -1804,7 +1797,7 @@ void CHLLCode::AddCallStatement(int indLevel, Function *proc, const QString& nam
  * \todo Add the use of \a results like AddCallStatement.
  */
 // Ugh - almost the same as the above, but it needs to take an expression, // not a Proc*
-void CHLLCode::AddIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results)
+void CCodeGenerator::addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results)
 {
 	Q_UNUSED(results);
 	//    FIXME: Need to use 'results', since we can infer some defines...
@@ -1834,7 +1827,7 @@ void CHLLCode::AddIndCallStatement(int indLevel, const SharedExp& exp, Statement
  * Adds a return statement and returns the first expression in \a rets.
  * \todo This should be returning a struct if more than one real return value.
  */
-void CHLLCode::AddReturnStatement(int indLevel, StatementList *rets)
+void CCodeGenerator::addReturnStatement(int indLevel, StatementList *rets)
 {
 	// FIXME: should be returning a struct of more than one real return */
 	// The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
@@ -1888,21 +1881,21 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList *rets)
 /**
  * Print the start of a function, and also as a comment its address.
  */
-void CHLLCode::AddProcStart(UserProc *proc)
+void CCodeGenerator::addProcStart(UserProc *proc)
 {
 	QString tgt;
 	QTextStream s(&tgt);
 
 	s << "// address: 0x" << proc->getNativeAddress();
 	appendLine(tgt);
-	AddProcDec(proc, true);
+	addProcDec(proc, true);
 }
 
 
 /// Add a prototype (for forward declaration)
-void CHLLCode::AddPrototype(UserProc *proc)
+void CCodeGenerator::addPrototype(UserProc *proc)
 {
-	AddProcDec(proc, false);
+	addProcDec(proc, false);
 }
 
 
@@ -1911,7 +1904,7 @@ void CHLLCode::AddPrototype(UserProc *proc)
  * \param proc to print
  * \param open False if this is just a prototype and ";" should be printed instead of "{"
  */
-void CHLLCode::AddProcDec(UserProc *proc, bool open)
+void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1965,7 +1958,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open)
 	StatementList::iterator pp;
 
 	if ((parameters.size() > 10) && open) {
-		LOG << "Warning: CHLLCode::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size()
+		LOG << "Warning: CCodeGenerator::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size()
 			<< " parameters\n";
 	}
 
@@ -1985,7 +1978,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open)
 
 		if (ty == nullptr) {
 			if (VERBOSE) {
-				LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
+				LOG << "ERROR in CCodeGenerator::AddProcDec: no type for parameter " << left << "!\n";
 			}
 
 			ty = IntegerType::get(STD_SIZE, 0);
@@ -2028,7 +2021,7 @@ void CHLLCode::AddProcDec(UserProc *proc, bool open)
 
 
 /// Adds: }
-void CHLLCode::AddProcEnd()
+void CCodeGenerator::addProcEnd()
 {
 	appendLine("}");
 	appendLine("");
@@ -2041,7 +2034,7 @@ void CHLLCode::AddProcEnd()
  * \param type of this local variable
  * \param last true if an empty line should be added.
  */
-void CHLLCode::AddLocal(const QString& name, SharedType type, bool last)
+void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -2082,7 +2075,7 @@ void CHLLCode::AddLocal(const QString& name, SharedType type, bool last)
  * \param type The type of the global
  * \param init The initial value of the global.
  */
-void CHLLCode::AddGlobal(const QString& name, SharedType type, const SharedExp& init)
+void CCodeGenerator::addGlobal(const QString& name, SharedType type, const SharedExp& init)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -2127,9 +2120,9 @@ void CHLLCode::AddGlobal(const QString& name, SharedType type, const SharedExp& 
 
 
 /// Dump all generated code to \a os.
-void CHLLCode::print(QTextStream& os)
+void CCodeGenerator::print(QTextStream& os)
 {
-	os << lines.join('\n');
+	os << m_lines.join('\n');
 
 	if (m_proc == nullptr) {
 		os << '\n';
@@ -2138,7 +2131,7 @@ void CHLLCode::print(QTextStream& os)
 
 
 /// Adds one line of comment to the code.
-void CHLLCode::AddLineComment(const QString& cmt)
+void CCodeGenerator::addLineComment(const QString& cmt)
 {
 	appendLine(QString("/* %1*/").arg(cmt));
 }
@@ -2146,7 +2139,22 @@ void CHLLCode::AddLineComment(const QString& cmt)
 
 // Private helper functions, to reduce redundant code, and
 // have a single place to put a breakpoint on.
-void CHLLCode::appendLine(const QString& s)
+void CCodeGenerator::appendLine(const QString& s)
 {
-	lines.push_back(s);
+	   m_lines.push_back(s);
+}
+
+
+void CCodeGenerator::openParen(QTextStream& str, PREC outer, PREC inner)
+{
+	if (inner < outer) {
+		str << "(";
+	}
+}
+
+void CCodeGenerator::closeParen(QTextStream& str, PREC outer, PREC inner)
+{
+	if (inner < outer) {
+		str << ")";
+	}
 }

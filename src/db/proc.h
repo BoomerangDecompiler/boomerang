@@ -41,7 +41,7 @@ struct lessTI;
 
 class Type;
 class RTL;
-class HLLCode;
+class ICodeGenerator;
 class SyntaxNode;
 class Parameter;
 class Argument;
@@ -428,7 +428,7 @@ public:
 	void setStatus(ProcStatus s);
 
 	/// code generation
-	void generateCode(HLLCode *hll);
+	void generateCode(ICodeGenerator *hll);
 
 	/// print this proc, mainly for debugging
 	void print(QTextStream& out, bool html = false) const;

@@ -12,7 +12,7 @@
 #include "core/BinaryFileFactory.h"
 #include "util/Log.h"
 
-#include "codegen/chllcode.h"
+#include "codegen/CCodeGenerator.h"
 
 #include "db/BinaryImage.h"
 #include "db/SymTab.h"
@@ -93,9 +93,9 @@ void Boomerang::setLogger(Log *l)
 }
 
 
-HLLCode *Boomerang::getHLLCode(UserProc *p)
+ICodeGenerator *Boomerang::getHLLCode(UserProc *p)
 {
-	return new CHLLCode(p);
+	return new CCodeGenerator(p);
 }
 
 
