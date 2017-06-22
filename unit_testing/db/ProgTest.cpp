@@ -13,9 +13,9 @@
 
 #include <map>
 #include <sstream>
-#include "ProgTest.h"
-#include "pentiumfrontend.h"
-#include "core/BinaryFileFactory.h"
+#include "boomerang/ProgTest.h"
+#include "boomerang/pentiumfrontend.h"
+#include "boomerang/core/BinaryFileFactory.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ProgTest);
 

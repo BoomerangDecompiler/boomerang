@@ -1,8 +1,8 @@
 // hello.cpp : Defines the entry point for the application.
 //
 
-#include "stdafx.h"
-#include "resource.h"
+#include "boomerang/stdafx.h"
+#include "boomerang/resource.h"
 
 #define MAX_LOADSTRING 100
 

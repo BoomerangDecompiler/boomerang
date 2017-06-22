@@ -5,7 +5,8 @@
  *============================================================================*/
 
 #include "FrontendTest.h"
-#include "db/prog.h"
+
+#include "boomerang/db/prog.h"
 
 #define HELLO_SPARC      "tests/inputs/sparc/hello"
 #define HELLO_PENTIUM    "tests/inputs/pentium/hello"

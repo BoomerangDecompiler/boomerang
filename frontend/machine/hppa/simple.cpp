@@ -2,8 +2,8 @@
 #include <assert.h>
 
 //#line 2 "machine/hppa/simple.m"
-#include "global.h"
-#include "include/decoder.h"
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
 
 extern char _assembly[];
 char *astr;

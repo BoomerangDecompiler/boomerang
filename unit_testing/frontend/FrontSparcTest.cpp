@@ -6,21 +6,26 @@
 
 #include "FrontSparcTest.h"
 
-#include "include/types.h"
-#include "db/proc.h"
-#include "db/prog.h"
-#include "include/frontend.h"
-#include "frontend/sparc/sparcfrontend.h"
-#include "db/cfg.h"
-#include "db/rtl.h"
-#include "core/BinaryFileFactory.h"
-#include "util/Log.h"
-#include "db/basicblock.h"
-#include "util/Log.h"
+#include "boomerang/core/BinaryFileFactory.h"
+
+#include "boomerang/db/basicblock.h"
+#include "boomerang/db/cfg.h"
+#include "boomerang/db/proc.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/db/rtl.h"
+
+#include "boomerang/include/types.h"
+#include "boomerang/include/frontend.h"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Log.h"
+
+#include "boomerang-frontend/sparc/sparcfrontend.h"
 
 #include <QDir>
 #include <QProcessEnvironment>
 #include <QDebug>
+
 
 #define HELLO_SPARC     qPrintable(baseDir.absoluteFilePath("tests/inputs/sparc/hello"))
 #define BRANCH_SPARC    qPrintable(baseDir.absoluteFilePath("tests/inputs/sparc/branch"))

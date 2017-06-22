@@ -4,11 +4,12 @@
  *                tests the sslparser.y etc
  ******************************************************************************/
 #include "ParserTest.h"
-#include "db/ssl/sslparser.h"
-#include "db/statements/statement.h"
 
-#include "util/Log.h"
-#include "util/Log.h"
+#include "boomerang/db/ssl/sslparser.h"
+#include "boomerang/db/statements/statement.h"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Log.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QProcessEnvironment>

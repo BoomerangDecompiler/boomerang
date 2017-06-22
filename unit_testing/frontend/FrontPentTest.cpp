@@ -5,15 +5,16 @@
  *============================================================================*/
 #include "FrontPentTest.h"
 
-#include "include/types.h"
-#include "db/rtl.h"
-#include "db/prog.h"
-#include "include/frontend.h"
-#include "frontend/pentium/pentiumfrontend.h"
-#include "core/BinaryFileFactory.h"
-#include "include/decoder.h"
-#include "util/Log.h"
-#include "util/Log.h"
+#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/db/rtl.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/include/types.h"
+#include "boomerang/include/frontend.h"
+#include "boomerang/include/decoder.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Log.h"
+
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

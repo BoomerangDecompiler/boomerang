@@ -28,14 +28,14 @@
  *              [numBytes] has changed.  Assignment of (nextPC - hostPC).
 */
 
-#include "global.h"
-#include "include/decoder.h"
-#include "db/prog.h"
-#include "ss.h"
-#include "db/rtl.h"
-#include "db/proc.h"
-#include "csr.h"
-#include "mc68k.pat.h"
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangdb/prog.h"
+#include "boomerangss.h"
+#include "boomerangdb/rtl.h"
+#include "boomerangdb/proc.h"
+#include "boomerangcsr.h"
+#include "boomerangmc68k.pat.h"
 
 /**********************************
  * NJMCDecoder methods.

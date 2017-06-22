@@ -19,12 +19,12 @@
 
 #include <assert.h>
 
-#include "db/rtl.h"
-#include "include/decoder.h"
-#include "st20decoder.h"
-#include "db/exp.h"
-#include "db/proc.h"
-#include "util/Log.h"
+#include "boomerangdb/rtl.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangst20decoder.h"
+#include "boomerangdb/exp.h"
+#include "boomerangdb/proc.h"
+#include "boomerangutil/Log.h"
 
 
 /**********************************

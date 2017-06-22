@@ -12,17 +12,17 @@
  * 04 Jul 02 - Mike: Move UtilTest here as TypeTest
  */
 
-#include "cppunit/TextTestResult.h"
-#include "cppunit/TestSuite.h"
+#include "boomerang/cppunit/TextTestResult.h"
+#include "boomerang/cppunit/TestSuite.h"
 
-#include "db/exp.h"
+#include "boomerang/db/exp.h"
 
-#include "ExpTest.h"
-#include "ProgTest.h"
-#include "ProcTest.h"
-#include "RtlTest.h"
-#include "ParserTest.h"
-#include "TypeTest.h"
+#include "boomerang/ExpTest.h"
+#include "boomerang/ProgTest.h"
+#include "boomerang/ProcTest.h"
+#include "boomerang/RtlTest.h"
+#include "boomerang/ParserTest.h"
+#include "boomerang/TypeTest.h"
 
 #include <sstream>
 #include <iostream>

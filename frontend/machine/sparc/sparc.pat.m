@@ -5,11 +5,11 @@
  * (C) 1998-2000 The University of Queensland, BT group
  *==============================================*/
 
-#include "global.h"
-#include "include/decoder.h"
-#include "sparc.pat.h"
-#include "ss.h"
-#include "csr.h"
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangsparc.pat.h"
+#include "boomerangss.h"
+#include "boomerangcsr.h"
 
 #define VAR true
 #define VAL false

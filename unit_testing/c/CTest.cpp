@@ -6,7 +6,7 @@
 
 #include "CTest.h"
 
-#include "c/ansi-c-parser.h"
+#include "boomerang/c/ansi-c-parser.h"
 
 #include <sstream>
 

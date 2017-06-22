@@ -13,13 +13,14 @@
  */
 
 #include "TypeTest.h"
-#include "core/BinaryFileFactory.h" // Ugh - needed before frontend.h
-#include "frontend/pentium/pentiumfrontend.h"
-#include "db/signature.h"
-#include "util/Log.h"
-#include "util/Log.h"
-#include "db/prog.h"
-#include "db/proc.h"
+#include "boomerang/core/BinaryFileFactory.h" // Ugh - needed before frontend.h
+#include "boomerang/db/signature.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/db/proc.h"
+
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QTextStream>
 #include <QDir>

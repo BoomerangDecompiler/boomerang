@@ -9,10 +9,10 @@
  * 29 Jul 03 - Mike: Created from testAll
  */
 
-#include "cppunit/TextTestResult.h"
-#include "cppunit/TestSuite.h"
+#include "boomerang/cppunit/TextTestResult.h"
+#include "boomerang/cppunit/TestSuite.h"
 
-#include "RtlTest.h"
+#include "boomerang/RtlTest.h"
 
 #include <sstream>
 #include <iostream>

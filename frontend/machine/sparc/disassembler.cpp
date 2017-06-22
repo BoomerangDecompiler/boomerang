@@ -15,10 +15,10 @@
  *              default NJMCDecoder constructor to disasm.cc
  */
 
-#include "global.h"
-#include "include/decoder.h"
-#include "sparc-names.h"
-#include "core/BinaryFileFactory.h" // For SymbolByAddress()
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangsparc-names.h"
+#include "boomerangcore/BinaryFileFactory.h" // For SymbolByAddress()
 
 // Globals in driver disasm.cc file
 extern char _assembly[81];

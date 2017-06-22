@@ -1,24 +1,13 @@
 include(BOOMERANG_Macros)
 
-set(target_INCLUDE_DIR
-    ..
-)
-
-include_directories(${target_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/frontend/sparc
-    ${CMAKE_SOURCE_DIR}/src/frontend/pentium
-)
-
 set(test_LIBRARIES
 	${PROTOBUF_LIBRARIES}
 	${GC_LIBS}
 	${DEBUG_LIB}
-	libboomerang
-	frontend db type boomerang_DSLs util
-	${CMAKE_DL_LIBS}
-	${CMAKE_THREAD_LIBS_INIT} boomerang_passes
+	boomerang
+	boomerang-frontend
+	${CMAKE_THREAD_LIBS_INIT}
 )
-
 
 set(TESTS
     LoaderTest

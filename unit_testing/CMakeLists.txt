@@ -2,7 +2,6 @@
 include_directories(
 	"${CMAKE_SOURCE_DIR}/src/"
 	"${CMAKE_BINARY_DIR}/src/"
-	"${CMAKE_SOURCE_DIR}/src/libboomerang/"
 )
 
 #add submodlules for testing

@@ -107,6 +107,9 @@ if (GIT_FOUND)
 	endif (NOT DESCRIBE_FAILED)
 endif (GIT_FOUND)
 
+add_definitions(-DBOOMERANG_VERSION="${VERSION}")
+
+
 
 add_subdirectory(docs)
 add_subdirectory(src)

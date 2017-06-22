@@ -30,11 +30,11 @@
  * 20 Aug 01 - Mike: Fixed the CONS() for floating point loads and stores
  */
 
-#include "global.h"
-#include "include/decoder.h"
-#include "core/BinaryFileFactory.h"
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangcore/BinaryFileFactory.h"
 
-#include "hppa-names.h"
+#include "boomeranghppa-names.h"
 
 // globals
 extern char _assembly[];

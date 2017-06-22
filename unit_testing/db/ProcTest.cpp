@@ -11,14 +11,14 @@
  * 10 Mar 03 - Mike: Mods to not use Prog::pBF (no longer public)
  */
 
-#include "ProcTest.h"
-#include "core/BinaryFileFactory.h"
-#include "BinaryFileStub.h"
-#include "pentiumfrontend.h"
+#include "boomerang/ProcTest.h"
+#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/BinaryFileStub.h"
+#include "boomerang/pentiumfrontend.h"
 
 #include <sstream>
 #include <map>
-#include "db/prog.h"
+#include "boomerang/db/prog.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ProcTest);
 

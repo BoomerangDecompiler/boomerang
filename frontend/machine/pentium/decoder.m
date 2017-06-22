@@ -28,16 +28,16 @@
 #include <assert.h>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "db/signature.h"
+#include "boomerangdb/signature.h"
 #endif
 
-#include "db/rtl.h"
-#include "include/decoder.h"
-#include "pentiumdecoder.h"
-#include "db/prog.h"
-#include "db/exp.h"
-#include "db/proc.h"
-#include "util/Log.h"
+#include "boomerangdb/rtl.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangpentiumdecoder.h"
+#include "boomerangdb/prog.h"
+#include "boomerangdb/exp.h"
+#include "boomerangdb/proc.h"
+#include "boomerangutil/Log.h"
 
 
 #define DIS_R8	  (dis_Reg(r8+8))

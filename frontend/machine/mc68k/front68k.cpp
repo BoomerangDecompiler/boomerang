@@ -24,17 +24,17 @@
  * 31 Jul 01 - Brian: New class HRTL replaces RTlist. Renamed LRTL to HRTLList.
 */
 
-#include "global.h"
-#include "include/frontend.h"
-#include "include/decoder.h" // prototype for decodeInstruction()
-#include "db/rtl.h"
-#include "db/cfg.h"
-#include "ss.h"
-#include "db/prog.h" // For findProc()
-#include "db/proc.h"
-#include "options.h"
-#include "core/BinaryFileFactory.h" // For SymbolByAddress()
-#include "csr.h"        // For class CalleeEpilogue
+#include "boomerangglobal.h"
+#include "boomeranginclude/frontend.h"
+#include "boomeranginclude/decoder.h" // prototype for decodeInstruction()
+#include "boomerangdb/rtl.h"
+#include "boomerangdb/cfg.h"
+#include "boomerangss.h"
+#include "boomerangdb/prog.h" // For findProc()
+#include "boomerangdb/proc.h"
+#include "boomerangoptions.h"
+#include "boomerangcore/BinaryFileFactory.h" // For SymbolByAddress()
+#include "boomerangcsr.h"        // For class CalleeEpilogue
 
 /***************************************************************************/ /**
   * Forward declarations.

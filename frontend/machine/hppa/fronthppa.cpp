@@ -33,17 +33,17 @@
   * Dependencies.
   *============================================================================*/
 
-#include "global.h"
-#include "ss.h"
-#include "db/rtl.h"
-#include "db/cfg.h"
-#include "db/proc.h"
-#include "db/prog.h"
-#include "options.h"
-#include "csr.h"
-#include "include/frontend.h"
-#include "include/decoder.h"
-#include "core/BinaryFileFactory.h"
+#include "boomerangglobal.h"
+#include "boomerangss.h"
+#include "boomerangdb/rtl.h"
+#include "boomerangdb/cfg.h"
+#include "boomerangdb/proc.h"
+#include "boomerangdb/prog.h"
+#include "boomerangoptions.h"
+#include "boomerangcsr.h"
+#include "boomeranginclude/frontend.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangcore/BinaryFileFactory.h"
 
 /***************************************************************************/ /**
   * Globals and enumerated types used for decoding.

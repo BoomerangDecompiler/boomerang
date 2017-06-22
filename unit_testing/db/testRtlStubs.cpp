@@ -1,14 +1,14 @@
 #include <iostream>
 #include <string>
-#include "include/types.h"
-#include "db/cfg.h"
-#include "db/proc.h"
-#include "db/prog.h"
-#include "util/Log.h"
-#include "analysis.h"
+#include "boomerang/include/types.h"
+#include "boomerang/db/cfg.h"
+#include "boomerang/db/proc.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/analysis.h"
 
-#include "typeStubs.cpp"
-#include "signatureStubs.cpp"
+#include "boomerang/typeStubs.cpp"
+#include "boomerang/signatureStubs.cpp"
 
 // Cfg
 void Cfg::dominators(DOM *d)

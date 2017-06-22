@@ -16,12 +16,14 @@
  * 05 Aug 05 - Mike: added borland test; check address of main (not just != NO_ADDRESS)
  */
 
-#include "loader/microX86dis.c"
 #include "LoaderTest.h"
-#include "util/Log.h"
-#include "db/IBinaryImage.h"
-#include "util/Log.h"
-#include "db/IBinarySection.h"
+
+#include "boomerang-loaders/microX86dis.c"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/db/IBinarySection.h"
 
 #include <QLibrary>
 #include <QTextStream>

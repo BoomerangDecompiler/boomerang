@@ -32,17 +32,17 @@
 #include <cassert>
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "db/signature.h"
+#include "boomerangdb/signature.h"
 #endif
 
-#include "include/decoder.h"
-#include "db/exp.h"
-#include "db/prog.h"
-#include "db/proc.h"
-#include "sparcdecoder.h"
-#include "db/rtl.h"
-#include "core/BinaryFileFactory.h"		// For SymbolByAddress()
-#include "util/Log.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangdb/exp.h"
+#include "boomerangdb/prog.h"
+#include "boomerangdb/proc.h"
+#include "boomerangsparcdecoder.h"
+#include "boomerangdb/rtl.h"
+#include "boomerangcore/BinaryFileFactory.h"		// For SymbolByAddress()
+#include "boomerangutil/Log.h"
 
 #define DIS_ROI		(dis_RegImm(roi))
 #define DIS_ADDR	(dis_Eaddr(addr))

@@ -6,15 +6,16 @@
 
 #include "CfgTest.h"
 
-#include "core/BinaryFileFactory.h"
-#include "include/frontend.h"
-#include "db/proc.h"
-#include "db/prog.h"
-#include "db/dataflow.h"
-#include "frontend/pentium/pentiumfrontend.h"
-#include "util/Log.h"
-#include "util/Log.h"
-#include "db/basicblock.h"
+#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/include/frontend.h"
+#include "boomerang/db/proc.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/db/dataflow.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/db/basicblock.h"
+
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QDir>
 #include <QProcessEnvironment>

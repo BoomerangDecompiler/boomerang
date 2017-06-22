@@ -1,4 +1,6 @@
-#include "util/Log.h"
+#pragma once
+
+#include "boomerang/util/Log.h"
 
 #include <QtTest/QTest>
 #include <iostream>

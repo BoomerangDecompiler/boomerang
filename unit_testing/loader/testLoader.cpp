@@ -10,11 +10,11 @@
  */
 
 #include <string>
-#include "cppunit/TextTestResult.h"
-#include "cppunit/TestSuite.h"
+#include "boomerang/cppunit/TextTestResult.h"
+#include "boomerang/cppunit/TestSuite.h"
 
 #include <iostream>
-#include "LoaderTest.h"
+#include "boomerang/LoaderTest.h"
 
 int main(int argc, char **argv)
 {

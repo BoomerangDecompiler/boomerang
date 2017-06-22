@@ -3,11 +3,11 @@
  * OVERVIEW:  Generated file; do not edit
  *==============================================*/
 
-#include "global.h"
-#include "include/decoder.h"
-#include "hppa.pat.h"
-#include "ss.h"
-#include "csr.h"
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
+#include "boomeranghppa.pat.h"
+#include "boomerangss.h"
+#include "boomerangcsr.h"
 
 #define VAR true
 #define VAL false

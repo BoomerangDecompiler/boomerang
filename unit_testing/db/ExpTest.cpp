@@ -15,9 +15,9 @@
  * 13 Dec 02 - Mike: Added test for killFill()
  */
 
-#include "ExpTest.h"
+#include "boomerang/ExpTest.h"
 
-#include "db/visitor.h"
+#include "boomerang/db/visitor.h"
 #include <map>
 #include <sstream> // Gcc >= 3.0 needed
 

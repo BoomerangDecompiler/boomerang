@@ -1,4 +1,4 @@
-#include "sparc-names.h"
+#include "boomerangsparc-names.h"
  char *a_names[] = { "", ",a", };
  char *cd_names[] = { 
   "%c0", 
