@@ -293,8 +293,8 @@ public:
 	static QString getPlatformName(Platform plat);
 	static QString getConventionName(CallConv cc);
 
-	virtual Platform getPlatform()   const { return PLAT_GENERIC; }
-	virtual CallConv getConvention() const { return CONV_NONE; }
+	virtual Platform getPlatform()   const { return Platform::GENERIC; }
+	virtual CallConv getConvention() const { return CallConv::INVALID; }
 
 	// prefered format
 	void setPreferredReturn(SharedType ty) { m_preferredReturn = ty; }

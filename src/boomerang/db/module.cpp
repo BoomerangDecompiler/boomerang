@@ -286,7 +286,7 @@ Function *Module::getOrInsertFunction(const QString& name, ADDRESS uNative, bool
 			}
 			else {
 				// assume we're stdc calling convention, remove r28, r24 returns
-				pProc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name));
+				pProc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name));
 			}
 
 			// get a return type

@@ -502,7 +502,7 @@ struct RangeVisitor : public StmtVisitor
 					prev = prev->getPreviousStatementInBB();
 				}
 			}
-			else if (stmt->getDestProc()->getSignature()->getConvention() == CONV_PASCAL) {
+			else if (stmt->getDestProc()->getSignature()->getConvention() == CallConv::PASCAL) {
 				c += stmt->getDestProc()->getSignature()->getNumParams() * 4;
 			}
 			else if (!strncmp(qPrintable(stmt->getDestProc()->getName()), "__imp_", 6)) {
@@ -510,7 +510,7 @@ struct RangeVisitor : public StmtVisitor
 				assert(first && first->isCall());
 				Function *d = ((CallStatement *)first)->getDestProc();
 
-				if (d->getSignature()->getConvention() == CONV_PASCAL) {
+				if (d->getSignature()->getConvention() == CallConv::PASCAL) {
 					c += d->getSignature()->getNumParams() * 4;
 				}
 			}
@@ -555,7 +555,7 @@ struct RangeVisitor : public StmtVisitor
 						if (last->isCall()) {
 							Function *d = ((CallStatement *)last)->getDestProc();
 
-							if (d && (d->getSignature()->getConvention() == CONV_PASCAL)) {
+							if (d && (d->getSignature()->getConvention() == CallConv::PASCAL)) {
 								c += d->getSignature()->getNumParams() * 4;
 							}
 						}

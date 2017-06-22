@@ -1589,7 +1589,7 @@ void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
 	}
 
 	if (Boomerang::get()->noDecompile && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
-		(m_proc->getProg()->getFrontEndId() == PLAT_SPARC)) {
+		(m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
 		int wdth = lhs->access<Const, 1>()->getInt();
 
 		// add some fsize hints to rhs
@@ -1618,7 +1618,7 @@ void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
 				s << "DOUBLE_";
 			}
 		}
-		else if ((rhs->getOper() == opRegOf) && (m_proc->getProg()->getFrontEndId() == PLAT_SPARC)) {
+		else if ((rhs->getOper() == opRegOf) && (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
 			// yes, this is a hack
 			int wdth = rhs->access<Const, 2>()->getInt();
 

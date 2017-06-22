@@ -282,7 +282,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 				}
 
 				code->addGlobal("source_endianness", IntegerType::get(STD_SIZE),
-								Const::get(getFrontEndId() != PLAT_PENTIUM));
+								Const::get(getFrontEndId() != Platform::PENTIUM));
 				(*os) << "#include \"boomerang.h\"\n\n";
 				global = true;
 			}
@@ -1879,10 +1879,10 @@ void Prog::readSymbolFile(const QString& fname)
 
 	AnsiCParser *par = new AnsiCParser(ifs, false);
 	Platform    plat = getFrontEndId();
-	CallConv    cc   = CONV_C;
+	CallConv    cc   = CallConv::C;
 
 	if (isWin32()) {
-		cc = CONV_PASCAL;
+		cc = CallConv::PASCAL;
 	}
 
 	par->yyparse(plat, cc);

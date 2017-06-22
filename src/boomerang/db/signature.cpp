@@ -55,25 +55,25 @@ QString Signature::getPlatformName(Platform plat)
 {
 	switch (plat)
 	{
-	case PLAT_PENTIUM:
+	case Platform::PENTIUM:
 		return "pentium";
 
-	case PLAT_SPARC:
+	case Platform::SPARC:
 		return "sparc";
 
-	case PLAT_M68K:
+	case Platform::M68K:
 		return "m68k";
 
-	case PLAT_PARISC:
+	case Platform::PARISC:
 		return "parisc";
 
-	case PLAT_PPC:
+	case Platform::PPC:
 		return "ppc";
 
-	case PLAT_MIPS:
+	case Platform::MIPS:
 		return "mips";
 
-	case PLAT_ST20:
+	case Platform::ST20:
 		return "st20";
 
 	default:
@@ -86,13 +86,13 @@ QString Signature::getConventionName(CallConv cc)
 {
 	switch (cc)
 	{
-	case CONV_C:
+	case CallConv::C:
 		return "stdc";
 
-	case CONV_PASCAL:
+	case CallConv::PASCAL:
 		return "pascal";
 
-	case CONV_THISCALL:
+	case CallConv::THISCALL:
 		return "thiscall";
 
 	default:
@@ -130,8 +130,8 @@ public:
 	virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
 
 	virtual bool isPromoted()        const override { return true; }
-	virtual Platform getPlatform()   const override { return PLAT_PENTIUM; }
-	virtual CallConv getConvention() const override { return CONV_PASCAL; }
+	virtual Platform getPlatform()   const override { return Platform::PENTIUM; }
+	virtual CallConv getConvention() const override { return CallConv::PASCAL; }
 };
 
 
@@ -148,8 +148,8 @@ public:
 
 	virtual std::shared_ptr<Signature> clone() const override;
 
-	virtual Platform getPlatform() const override { return PLAT_PENTIUM; }
-	virtual CallConv getConvention() const override { return CONV_THISCALL; }
+	virtual Platform getPlatform() const override { return Platform::PENTIUM; }
+	virtual CallConv getConvention() const override { return CallConv::THISCALL; }
 };
 
 namespace StdC
@@ -183,8 +183,8 @@ public:
 	virtual void setLibraryDefines(StatementList *defs) override;
 
 	virtual bool isPromoted() const override { return true; }
-	virtual Platform getPlatform() const override { return PLAT_PENTIUM; }
-	virtual CallConv getConvention() const override { return CONV_C; }
+	virtual Platform getPlatform() const override { return Platform::PENTIUM; }
+	virtual CallConv getConvention() const override { return CallConv::C; }
 	virtual bool returnCompare(Assignment& a, Assignment& b) const override;
 	virtual bool argumentCompare(Assignment& a, Assignment& b) const override;
 };
@@ -224,8 +224,8 @@ public:
 	virtual bool isAddrOfStackLocal(Prog *prog, const SharedExp& e) const override;
 
 	virtual bool isPromoted() const override { return true; }
-	virtual Platform getPlatform() const override { return PLAT_SPARC; }
-	virtual CallConv getConvention() const override { return CONV_C; }
+	virtual Platform getPlatform() const override { return Platform::SPARC; }
+	virtual CallConv getConvention() const override { return CallConv::C; }
 	virtual bool returnCompare(Assignment& a, Assignment& b) const override;
 	virtual bool argumentCompare(Assignment& a, Assignment& b) const override;
 };
@@ -265,8 +265,8 @@ public:
 
 	virtual bool isLocalOffsetPositive() const override { return true; }
 	virtual bool isPromoted() const override { return true; }
-	virtual Platform getPlatform() const override { return PLAT_PPC; }
-	virtual CallConv getConvention() const override { return CONV_C; }
+	virtual Platform getPlatform() const override { return Platform::PPC; }
+	virtual CallConv getConvention() const override { return CallConv::C; }
 
 	std::shared_ptr<Signature> promote(UserProc * /*p*/) override
 	{
@@ -302,8 +302,8 @@ public:
 
 	virtual bool isLocalOffsetPositive() const override { return true; }
 	virtual bool isPromoted() const override { return true; }
-	virtual Platform getPlatform() const override { return PLAT_MIPS; }
-	virtual CallConv getConvention() const override { return CONV_C; }
+	virtual Platform getPlatform() const override { return Platform::MIPS; }
+	virtual CallConv getConvention() const override { return CallConv::C; }
 };
 
 
@@ -332,8 +332,8 @@ public:
 
 	// virtual bool isLocalOffsetPositive() {return true;}
 
-	virtual Platform getPlatform() const override { return PLAT_ST20; }
-	virtual CallConv getConvention() const override { return CONV_C; }
+	virtual Platform getPlatform() const override { return Platform::ST20; }
+	virtual CallConv getConvention() const override { return CallConv::C; }
 };
 } // namespace StdC
 } // namespace CallingConvention
@@ -453,7 +453,7 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature& /*cand
 {
 	Platform plat = p->getProg()->getFrontEndId();
 
-	if ((plat != PLAT_PENTIUM) || !p->getProg()->isWin32()) {
+	if ((plat != Platform::PENTIUM) || !p->getProg()->isWin32()) {
 		return false;
 	}
 
@@ -725,7 +725,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
 {
 	Platform plat = p->getProg()->getFrontEndId();
 
-	if (plat != PLAT_PENTIUM) {
+	if (plat != Platform::PENTIUM) {
 		return false;
 	}
 
@@ -1181,7 +1181,7 @@ bool CallingConvention::StdC::ST20Signature::qualified(UserProc *p, Signature& /
 {
 	Platform plat = p->getProg()->getFrontEndId();
 
-	if (plat != PLAT_ST20) {
+	if (plat != Platform::ST20) {
 		return false;
 	}
 
@@ -1269,7 +1269,7 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature& 
 
 	Platform plat = p->getProg()->getFrontEndId();
 
-	if (plat != PLAT_SPARC) {
+	if (plat != Platform::SPARC) {
 		return false;
 	}
 
@@ -1289,7 +1289,7 @@ bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature& /*
 
 	Platform plat = p->getProg()->getFrontEndId();
 
-	if (plat != PLAT_PPC) {
+	if (plat != Platform::PPC) {
 		return false;
 	}
 
@@ -1340,7 +1340,7 @@ bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature& /
 
 	Platform plat = p->getProg()->getFrontEndId();
 
-	if (plat != PLAT_MIPS) {
+	if (plat != Platform::MIPS) {
 		return false;
 	}
 
@@ -2050,48 +2050,48 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 {
 	switch (plat)
 	{
-	case PLAT_PENTIUM:
+	case Platform::PENTIUM:
 
-		if (cc == CONV_PASCAL) {
+		if (cc == CallConv::PASCAL) {
 			// For now, assume the only pascal calling convention pentium signatures will be Windows
 			return std::make_shared<CallingConvention::Win32Signature>(nam);
 		}
-		else if (cc == CONV_THISCALL) {
+		else if (cc == CallConv::THISCALL) {
 			return std::make_shared<CallingConvention::Win32TcSignature>(nam);
 		}
 		else {
 			return std::make_shared<CallingConvention::StdC::PentiumSignature>(nam);
 		}
 
-	case PLAT_SPARC:
+	case Platform::SPARC:
 
-		if (cc == CONV_PASCAL) {
-			cc = CONV_C;
+		if (cc == CallConv::PASCAL) {
+			cc = CallConv::C;
 		}
 
-		assert(cc == CONV_C);
+		assert(cc == CallConv::C);
 		return std::make_shared<CallingConvention::StdC::SparcSignature>(nam);
 
-	case PLAT_PPC:
+	case Platform::PPC:
 
-		if (cc == CONV_PASCAL) {
-			cc = CONV_C;
+		if (cc == CallConv::PASCAL) {
+			cc = CallConv::C;
 		}
 
 		return std::make_shared<CallingConvention::StdC::PPCSignature>(nam);
 
-	case PLAT_ST20:
+	case Platform::ST20:
 
-		if (cc == CONV_PASCAL) {
-			cc = CONV_C;
+		if (cc == CallConv::PASCAL) {
+			cc = CallConv::C;
 		}
 
 		return std::make_shared<CallingConvention::StdC::ST20Signature>(nam);
 
-	case PLAT_MIPS:
+	case Platform::MIPS:
 
-		if (cc == CONV_PASCAL) {
-			cc = CONV_C;
+		if (cc == CallConv::PASCAL) {
+			cc = CallConv::C;
 		}
 
 		return std::make_shared<CallingConvention::StdC::MIPSSignature>(nam);

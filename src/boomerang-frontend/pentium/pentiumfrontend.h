@@ -1,26 +1,22 @@
 #pragma once
 
-#include "boomerang/include/frontend.h" // In case included bare, e.g. ProcTest.cpp
+#include "boomerang/include/frontend.h"
 
 class Instruction;
+class PentiumDecoder;
 
 // Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
 // behaviour
-
-class PentiumDecoder;
-
 class PentiumFrontEnd : public FrontEnd
 {
 public:
 
-	/*
-	 * Constructor. Takes some parameters to save passing these around a lot
-	 */
+	/// Constructor. Takes some parameters to save passing these around a lot
 	PentiumFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
 
 	virtual ~PentiumFrontEnd();
 
-	virtual Platform getFrontEndId() const override { return PLAT_PENTIUM; }
+	virtual Platform getFrontEndId() const override { return Platform::PENTIUM; }
 
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 

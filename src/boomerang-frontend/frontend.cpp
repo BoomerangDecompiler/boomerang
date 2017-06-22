@@ -127,7 +127,7 @@ FrontEnd *FrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactory 
  * \param prog program being decoded
  * \returns Binary-specific frontend.
  ******************************************************************************/
-FrontEnd *FrontEnd::Load(const QString& fname, Prog *prog)
+FrontEnd *FrontEnd::create(const QString& fname, Prog *prog)
 {
 	BinaryFileFactory *pbff = new BinaryFileFactory();
 
@@ -146,7 +146,7 @@ FrontEnd *FrontEnd::Load(const QString& fname, Prog *prog)
 }
 
 
-void FrontEnd::AddSymbol(ADDRESS addr, const QString& nam)
+void FrontEnd::addSymbol(ADDRESS addr, const QString& nam)
 {
 	BinarySymbols->create(addr, nam);
 }
@@ -211,14 +211,14 @@ void FrontEnd::readLibraryCatalog(const QString& sPath)
 		}
 
 		sig_path = Boomerang::get()->getProgPath() + "signatures/" + sFile;
-		CallConv cc = CONV_C; // Most APIs are C calling convention
+		CallConv cc = CallConv::C; // Most APIs are C calling convention
 
 		if (sFile == "windows.h") {
-			cc = CONV_PASCAL; // One exception
+			cc = CallConv::PASCAL; // One exception
 		}
 
 		if (sFile == "mfc.h") {
-			cc = CONV_THISCALL; // Another exception
+			cc = CallConv::THISCALL; // Another exception
 		}
 
 		readLibrarySignatures(qPrintable(sig_path), cc);
@@ -562,10 +562,10 @@ std::shared_ptr<Signature> FrontEnd::getDefaultSignature(const QString& name)
 {
 	// Get a default library signature
 	if (isWin32()) {
-		return Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name);
+		return Signature::instantiate(Platform::PENTIUM, CallConv::PASCAL, name);
 	}
 
-	return Signature::instantiate(getFrontEndId(), CONV_C, name);
+	return Signature::instantiate(getFrontEndId(), CallConv::C, name);
 }
 
 

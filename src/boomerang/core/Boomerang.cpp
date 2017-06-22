@@ -786,7 +786,7 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *p
 				}
 
 				Function *p = cl->getOrInsertFunction(method_name, m.addr);
-				p->setSignature(Signature::instantiate(prog->getFrontEndId(), CONV_C, method_name));
+				p->setSignature(Signature::instantiate(prog->getFrontEndId(), CallConv::C, method_name));
 				// TODO: decode types in m.types
 				LOG_VERBOSE(1) << "\t\t\tMethod: " << m.name << "\n";
 			}
@@ -803,7 +803,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 
 	q_cout << "loading...\n";
 	Prog     *prog = new Prog(fname);
-	FrontEnd *fe   = FrontEnd::Load(fname, prog);
+	FrontEnd *fe   = FrontEnd::create(fname, prog);
 
 	if (fe == nullptr) {
 		LOG_STREAM(LL_Default) << "failed.\n";
@@ -814,7 +814,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 
 	// Add symbols from -s switch(es)
 	for (const std::pair<ADDRESS, QString>& elem : symbols) {
-		fe->AddSymbol(elem.first, elem.second);
+		fe->addSymbol(elem.first, elem.second);
 	}
 
 	fe->readLibraryCatalog(); // Needed before readSymbolFile()

@@ -46,61 +46,40 @@ class Signature;
 class Instruction;
 class CallStatement;
 class SymTab;
+class IBinaryImage;
+
 using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
 
 // Control flow types
 enum INSTTYPE
 {
-	I_UNCOND,   // unconditional branch
-	I_COND,     // conditional branch
-	I_N_COND,   // case branch
-	I_CALL,     // procedure call
-	I_RET,      // return
-	I_COMPJUMP, // computed jump
-	I_COMPCALL  // computed call
+	I_UNCOND,   ///< unconditional branch
+	I_COND,     ///< conditional branch
+	I_N_COND,   ///< case branch
+	I_CALL,     ///< procedure call
+	I_RET,      ///< return
+	I_COMPJUMP, ///< computed jump
+	I_COMPCALL  ///< computed call
 };
 
-class IBinaryImage;
+
 class FrontEnd
 {
-protected:
-	IBinaryImage *Image;
-	//      const int NOP_SIZE;            // Size of a no-op instruction (in bytes)
-	//      const int NOP_INST;            // No-op pattern
-	IInstructionTranslator *decoder; // The decoder
-	/***************************************/
-	// Loader interfaces
-	/***************************************/
-	IFileLoader *m_fileLoader;
-	/***************************************/
-
-	BinaryFileFactory *pbff; // The binary file factory (for closing properly)
-	Prog *Program;           // The Prog object
-	// The queue of addresses still to be processed
-	TargetQueue targetQueue;
-	// Public map from function name (string) to signature.
-	QMap<QString, std::shared_ptr<Signature> > LibrarySignatures;
-	// Map from address to meaningful name
-	std::map<ADDRESS, QString> refHints;
-	// Map from address to previously decoded RTLs for decoded indirect control transfer instructions
-	std::map<ADDRESS, RTL *> previouslyDecoded;
-
 public:
-
-	/*
-	 * Constructor. Takes some parameters to save passing these around a lot
-	 */
+	/// Constructor. Takes some parameters to save passing these around a lot
 	FrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
+	virtual ~FrontEnd();
+
+	
 	static FrontEnd *instantiate(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
-	static FrontEnd *Load(const QString& fname, Prog *prog); ///< Load a binary
+	static FrontEnd *create(const QString& fname, Prog *prog); ///< Load a binary
 
 	/// Add a symbol to the loader
-	void AddSymbol(ADDRESS addr, const QString& nam);
+	void addSymbol(ADDRESS addr, const QString& nam);
 
-	// Add a "hint" that an instruction at the given address references a named global
+	/// Add a "hint" that an instruction at the given address references a named global
 	void addRefHint(ADDRESS addr, const QString& nam) { refHints[addr] = nam; }
-	virtual ~FrontEnd(); ///< Destructor. Virtual to mute a warning
 
 	// returns a symbolic name for a register index
 	QString getRegName(int idx) const;
@@ -142,13 +121,13 @@ public:
 	 */
 	void decode(Prog *Program, bool decodeMain = true, const char *pname = nullptr);
 
-	// Decode all procs starting at a given address in a given program.
+	/// Decode all procs starting at a given address in a given program.
 	void decode(Prog *Program, ADDRESS a);
 
-	// Decode one proc starting at a given address in a given program.
+	/// Decode one proc starting at a given address in a given program.
 	void decodeOnly(Prog *Program, ADDRESS a);
 
-	// Decode a fragment of a procedure, e.g. for each destination of a switch statement
+	/// Decode a fragment of a procedure, e.g. for each destination of a switch statement
 	void decodeFragment(UserProc *proc, ADDRESS a);
 
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false);
@@ -177,7 +156,7 @@ public:
 //     */
 //    static FrontEnd *getInstanceFor(const char *sName, void *&dlHandle, QObject *pLoader, IInstructionTranslator *&decoder);
 	static void closeInstance(void *dlHandle); ///< Close the library opened by getInstanceFor
-	Prog *getProg();                           /// Get a Prog object (for testing and not decoding)
+	Prog *getProg();                           ///< Get a Prog object (for testing and not decoding)
 
 	/**
 	 * Create a Return or a Oneway BB if a return statement already exists
@@ -206,11 +185,33 @@ public:
 							RTL *pRtl);
 	void checkEntryPoint(std::vector<ADDRESS>& entrypoints, ADDRESS addr, const char *type);
 
+protected:
+	IBinaryImage *Image;
+	//      const int NOP_SIZE;            // Size of a no-op instruction (in bytes)
+	//      const int NOP_INST;            // No-op pattern
+	IInstructionTranslator *decoder; // The decoder
+	/***************************************/
+	// Loader interfaces
+	/***************************************/
+	IFileLoader *m_fileLoader;
+	/***************************************/
+
+	BinaryFileFactory *pbff; // The binary file factory (for closing properly)
+	Prog *Program;           // The Prog object
+	// The queue of addresses still to be processed
+	TargetQueue targetQueue;
+	// Public map from function name (string) to signature.
+	QMap<QString, std::shared_ptr<Signature> > LibrarySignatures;
+	// Map from address to meaningful name
+	std::map<ADDRESS, QString> refHints;
+	// Map from address to previously decoded RTLs for decoded indirect control transfer instructions
+	std::map<ADDRESS, RTL *> previouslyDecoded;
+
 private:
 	bool refersToImportedFunction(const SharedExp& pDest);
 
 	SymTab *BinarySymbols;
-}; // class FrontEnd
+};
 
 /***************************************************************************/ /**
  * These functions are the machine specific parts of the front end. They consist

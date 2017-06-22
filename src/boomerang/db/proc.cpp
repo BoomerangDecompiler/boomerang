@@ -781,10 +781,10 @@ void UserProc::generateCode(ICodeGenerator *hll)
 	if (Boomerang::get()->noDecompile && (getName() == "main")) {
 		StatementList args, results;
 
-		if (m_prog->getFrontEndId() == PLAT_PENTIUM) {
+		if (m_prog->getFrontEndId() == Platform::PENTIUM) {
 			hll->addCallStatement(1, nullptr, "PENTIUMSETUP", args, &results);
 		}
-		else if (m_prog->getFrontEndId() == PLAT_SPARC) {
+		else if (m_prog->getFrontEndId() == Platform::SPARC) {
 			hll->addCallStatement(1, nullptr, "SPARCSETUP", args, &results);
 		}
 	}

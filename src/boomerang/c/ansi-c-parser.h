@@ -101,7 +101,7 @@ typedef struct
 	std::list<TypeIdent *>                 *type_ident_list = nullptr;
 	SymbolMods                             *mods            = nullptr;
 	CustomOptions                          *custom_options  = nullptr;
-	CallConv                               cc = CONV_C;
+	CallConv                               cc = CallConv::C;
 } yy_AnsiCParser_stype;
 
 /* prefix */

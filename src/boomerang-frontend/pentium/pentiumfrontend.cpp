@@ -698,7 +698,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 	LOG_STREAM(2) << "main function not found\n";
 
 	if (symbols->find(start) == nullptr) {
-		this->AddSymbol(start, "_start");
+		this->addSymbol(start, "_start");
 	}
 
 	return start;

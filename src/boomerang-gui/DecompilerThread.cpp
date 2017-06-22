@@ -81,7 +81,7 @@ void Decompiler::setNoDecodeChildren(bool d)
 void Decompiler::addEntryPoint(ADDRESS a, const char *nam)
 {
 	user_entrypoints.push_back(a);
-	fe->AddSymbol(a, nam);
+	fe->addSymbol(a, nam);
 }
 
 
@@ -114,7 +114,7 @@ void Decompiler::load()
 
 	Image = Boomerang::get()->getImage();
 	prog  = new Prog(filename);
-	fe    = FrontEnd::Load(filename, prog);
+	fe    = FrontEnd::create(filename, prog);
 
 	if (fe == NULL) {
 		emit machineType(QString("Unavailable: Load Failed!"));

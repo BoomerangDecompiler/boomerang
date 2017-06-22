@@ -873,21 +873,21 @@ void XMLProgParser::start_signature(const QXmlStreamAttributes& attr)
 		callconv c;
 
 		if (plat == "pentium") {
-			p = PLAT_PENTIUM;
+			p = Platform::PENTIUM;
 		}
 		else if (plat == "sparc") {
-			p = PLAT_SPARC;
+			p = Platform::SPARC;
 		}
 		else if (plat == "ppc") {
-			p = PLAT_PPC;
+			p = Platform::PPC;
 		}
 		else if (plat == "st20") {
-			p = PLAT_ST20;
+			p = Platform::ST20;
 		}
 		else {
 			qCritical() << "unknown platform: " << plat << "\n";
 			assert(false);
-			p = PLAT_PENTIUM;
+			p = Platform::PENTIUM;
 		}
 
 		if (convention == "stdc") {
@@ -3229,7 +3229,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Signature *sig)
 	out.writeAttribute("ellipsis", QString::number((int)sig->m_ellipsis));
 	out.writeAttribute("preferedName", sig->m_preferredName);
 
-	if (sig->getPlatform() != PLAT_GENERIC) {
+	if (sig->getPlatform() != Platform::GENERIC) {
 		out.writeAttribute("platform", sig->platformName(sig->getPlatform()));
 	}
 

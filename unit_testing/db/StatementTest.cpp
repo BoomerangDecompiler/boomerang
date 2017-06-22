@@ -139,7 +139,7 @@ void StatementTest::testFlow()
 	// create UserProc
 	std::string name  = "test";
 	UserProc    *proc = (UserProc *)prog->newProc("test", 0x123);
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -209,7 +209,7 @@ void StatementTest::testKill()
 	// create UserProc
 	std::string name  = "test";
 	UserProc    *proc = (UserProc *)prog->newProc("test", 0x123);
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -281,7 +281,7 @@ void StatementTest::testUse()
 	// create UserProc
 	std::string name  = "test";
 	UserProc    *proc = (UserProc *)prog->newProc("test", 0x123);
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -353,7 +353,7 @@ void StatementTest::testUseOverKill()
 	// create UserProc
 	std::string name  = "test";
 	UserProc    *proc = (UserProc *)prog->newProc("test", 0x123);
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();

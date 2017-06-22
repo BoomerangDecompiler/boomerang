@@ -29,10 +29,10 @@ public:
 	 */
 	virtual ~SparcFrontEnd();
 
-	virtual Platform getFrontEndId() const override { return PLAT_SPARC; }
+	virtual Platform getFrontEndId() const override { return Platform::SPARC; }
 
-	/*
-	 * processProc. This is the main function for decoding a procedure.
+	/**
+	 * This is the main function for decoding a procedure.
 	 * This overrides the base class processProc to do source machine
 	 * specific things (but often calls the base class to do most of the
 	 * work. Sparc is an exception)
