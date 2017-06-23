@@ -9,7 +9,7 @@
 
 #include "rdi.h"
 
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/exp.h"

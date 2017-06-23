@@ -25,8 +25,6 @@
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/codegen/SyntaxNode.h"
 
-#include "boomerang/include/types.h"
-
 #include "boomerang/db/module.h"
 #include "boomerang/db/register.h"
 #include "boomerang/db/rtl.h"
@@ -44,6 +42,7 @@
 #include "boomerang/type/type.h"
 
 #include "boomerang/util/Log.h"
+#include "boomerang/util/types.h"
 #include "boomerang/util/Util.h"
 
 #include <QtCore/QDebug>

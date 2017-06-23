@@ -31,7 +31,7 @@
 #include "boomerang/db/statements/branchstatement.h"
 #include "boomerang/db/statements/implicitassign.h"
 
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 
 #include "boomerang/util/Util.h"

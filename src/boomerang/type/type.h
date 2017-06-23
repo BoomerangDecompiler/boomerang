@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "boomerang/include/memo.h"
-#include "boomerang/include/types.h" // For STD_SIZE
+#include "boomerang/util/types.h" // For STD_SIZE
 
 #include <string>
 #include <map>

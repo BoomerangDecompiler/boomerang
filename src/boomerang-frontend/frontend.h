@@ -19,7 +19,7 @@
  *           RTLs.
  ******************************************************************************/
 
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 #include "boomerang/include/sigenum.h" // For enums platform and cc
 #include "boomerang/core/BinaryFileFactory.h"
 

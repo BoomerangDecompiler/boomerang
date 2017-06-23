@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 #include "boomerang/core/Plugin.h"
 
 /// Given a pointer p, returns the 16 bits (halfword) in the two bytes

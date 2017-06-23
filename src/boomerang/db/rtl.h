@@ -24,7 +24,7 @@
 
 #include "boomerang/db/register.h"   // for Register
 #include "boomerang/type/type.h"     // for Type
-#include "boomerang/include/types.h" // for ADDRESS
+#include "boomerang/util/types.h" // for ADDRESS
 
 #include <functional>                // for less
 #include <list>                      // for list

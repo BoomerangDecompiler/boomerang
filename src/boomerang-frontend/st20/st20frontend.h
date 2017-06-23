@@ -5,7 +5,7 @@
 
 #include <set>
 
-#include "db/exp.h"           // Ugh... just for enum OPER
+#include "boomerang/db/exp.h"           // Ugh... just for enum OPER
 
 #include "boomerang-frontend/frontend.h"
 

@@ -6,10 +6,12 @@
 #define YY_USE_CLASS
 #include <cstdio>
 
-#include "boomerang/include/types.h"
+
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/table.h"
 #include "boomerang/db/insnameelem.h"
+
+#include "boomerang/util/types.h"
 #include "boomerang/util/Util.h" // E.g. str()
 
 

@@ -3,7 +3,6 @@
 #include "boomerang/util/Log.h"
 
 #include "boomerang/include/config.h"
-#include "boomerang/include/types.h"
 
 #include "boomerang/db/ssl/sslscanner.h"
 #include "boomerang/db/table.h"
@@ -14,6 +13,7 @@
 #include "boomerang/db/statements/statement.h"
 #include "boomerang/db/statements/assign.h"
 
+#include "boomerang/util/types.h"
 #include "boomerang/util/Util.h" // E.g. str()
 
 #include <cassert>

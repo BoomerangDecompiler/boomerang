@@ -15,14 +15,14 @@
 #include <sstream>
 #include <cstring>
 
-#include "boomerang/util/Log.h"
-#include "boomerang/include/types.h"
 #include "boomerang/include/managed.h"
 
 #include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/statements/assign.h"
 
+#include "boomerang/util/Log.h"
+#include "boomerang/util/types.h"
 
 extern char debug_buffer[]; // For prints functions
 

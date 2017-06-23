@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "boomerang/include/operator.h" // Declares the OPER enum
-#include "boomerang/include/types.h"    // For ADDRESS, etc
+#include "boomerang/util/types.h"    // For ADDRESS, etc
 #include "boomerang/type/type.h"        // The Type class for typed expressions
 #include "boomerang/util/Util.h"
 #include "boomerang/db/exphelp.h"

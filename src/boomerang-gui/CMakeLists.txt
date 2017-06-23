@@ -10,10 +10,6 @@ set(gui_UI_FILES
 
 QT5_WRAP_UI(gui_UI_H ${gui_UI_FILES})
 
-include_directories(
-	${CMAKE_SOURCE_DIR}/src/boomerang
-)
-
 SET(boomerang_SRC
     main.cpp
     mainwindow
@@ -27,6 +23,7 @@ qt5_add_resources(resources_SRC boomerang.qrc)
 add_executable(boomerang-gui ${boomerang_SRC} ${gui_UI_H} ${resources_SRC})
 
 target_link_libraries(boomerang-gui
+	boomerang
 	boomerang-frontend
 	${GC_LIBS}
 	${DEBUG_LIB}

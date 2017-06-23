@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 // class IFileData;

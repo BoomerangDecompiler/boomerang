@@ -17,11 +17,6 @@
 #include "pentiumfrontend.h"
 
 #include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
-#include "boomerang/util/Log.h"
-
-#include "boomerang/include/types.h"
-#include "boomerang/type/type.h"
-
 
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
@@ -35,7 +30,12 @@
 #include "boomerang/db/prog.h"              // For findProc()
 #include "boomerang/db/statements/callstatement.h"
 
+#include "boomerang/util/Log.h"
+#include "boomerang/util/types.h"
+#include "boomerang/type/type.h"
+
 #include "boomerang-frontend/pentium/pentiumdecoder.h"
+
 
 #include <cassert>
 #include <cstring>

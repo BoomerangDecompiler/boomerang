@@ -4,9 +4,9 @@
 #include <cassert>
 #include <memory>
 
-#include "include/types.h"
-#include "type/type.h"
-#include "include/managed.h"
+#include "boomerang/util/types.h"
+#include "boomerang/type/type.h"
+#include "boomerang/include/managed.h"
 
 class BasicBlock;
 

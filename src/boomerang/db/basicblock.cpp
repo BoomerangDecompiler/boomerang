@@ -35,11 +35,11 @@
 #include "boomerang/db/visitor.h"
 
 #include "boomerang/include/config.h"
-#include "boomerang/include/types.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 
 #include "boomerang/type/type.h"
 
+#include "boomerang/util/types.h"
 #include "boomerang/util/Util.h"
 
 #include <QtCore/QDebug>

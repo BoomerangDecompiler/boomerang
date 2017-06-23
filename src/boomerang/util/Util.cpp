@@ -16,7 +16,7 @@
  ******************************************************************************/
 
 #include "boomerang/util/Util.h"
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 
 #include <QString>
 #include <QMap>

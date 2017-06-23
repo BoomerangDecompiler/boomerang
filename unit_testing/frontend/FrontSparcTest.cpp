@@ -14,9 +14,7 @@
 #include "boomerang/db/prog.h"
 #include "boomerang/db/rtl.h"
 
-#include "boomerang/include/types.h"
-
-#include "boomerang/util/Log.h"
+#include "boomerang/util/types.h"
 #include "boomerang/util/Log.h"
 
 #include "boomerang-frontend/sparc/sparcfrontend.h"

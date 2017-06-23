@@ -37,7 +37,7 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/SymTab.h"
 
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 
 #include "boomerang-frontend/sparc/sparcfrontend.h"
 #include "boomerang-frontend/pentium/pentiumfrontend.h"

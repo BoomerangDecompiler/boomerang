@@ -21,9 +21,6 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "boomerang/include/types.h"
-
-#include "boomerang/util/Log.h"
 
 #include "boomerang/db/exp.h"
 #include "boomerang/db/register.h"
@@ -32,8 +29,10 @@
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/statements/assign.h"
-
 #include "boomerang/db/ssl/sslparser.h"
+
+#include "boomerang/util/types.h"
+#include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
 #include "boomerang/type/type.h"

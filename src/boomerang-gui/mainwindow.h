@@ -1,10 +1,12 @@
 #pragma once
 
+#include "boomerang/util/types.h"
+
 #include <QMainWindow>
-#include "include/types.h"
 #include <vector>
 #include <map>
 #include <set>
+
 
 class DecompilerThread;
 class QToolButton;

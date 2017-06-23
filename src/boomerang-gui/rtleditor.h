@@ -3,7 +3,8 @@
 #include <QtCore/QString>
 #include <QtWidgets/QTextEdit>
 
-#include "include/types.h"
+#include "boomerang/util/types.h"
+
 #include <vector>
 #include <map>
 #include <set>

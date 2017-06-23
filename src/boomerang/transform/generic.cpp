@@ -9,7 +9,7 @@
 
 #include "generic.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/include/transformer.h"
 
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/exp.h"
@@ -17,8 +17,8 @@
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/proc.h"
 
-#include "boomerang/include/types.h"
-#include "boomerang/include/transformer.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/types.h"
 
 #include <cassert>
 #include <numeric>   // For accumulate

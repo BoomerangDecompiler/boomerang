@@ -29,7 +29,7 @@
 #include "boomerang/db/dataflow.h" // For embedded objects DefCollector and UseCollector#
 
 #include "boomerang/include/memo.h"
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 #include "boomerang/include/managed.h"
 
 #include <QtCore/QTextStream>

@@ -13,10 +13,9 @@
 #include <cassert>
 #include <memory>
 
-#include "include/types.h"
-#include "type/type.h"
-#include "include/managed.h"
-
+#include "boomerang/include/managed.h"
+#include "boomerang/type/type.h"
+#include "boomerang/util/types.h"
 
 class BasicBlock;
 class Exp;

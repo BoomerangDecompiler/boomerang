@@ -6,8 +6,7 @@
  * \file       exp.cpp
  * \brief   Implementation of the Exp and related classes.
  ******************************************************************************/
-#include "boomerang/include/types.h"
-
+#include "boomerang/util/types.h"
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/cfg.h"

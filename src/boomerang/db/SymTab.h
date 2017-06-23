@@ -21,7 +21,7 @@
  ******************************************************************************/
 
 #include "boomerang/db/IBinarySymbols.h"
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 
 #include <QVariantMap>
 #include <memory>

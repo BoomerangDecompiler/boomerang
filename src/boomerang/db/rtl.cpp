@@ -18,13 +18,14 @@
 
 #include "boomerang/db/rtl.h"
 
-#include "boomerang/util/Log.h"                  // for LOG_VERBOSE
-
 #include "boomerang/include/operator.h"          // for OPER::opIntConst
-#include "boomerang/include/types.h"             // for ADDRESS
+
 #include "boomerang/db/exp.h"                    // for Const, Exp, DEBUG_BUFSIZE
 #include "boomerang/db/statements/branchstatement.h"
 #include "boomerang/db/statements/assign.h"
+
+#include "boomerang/util/Log.h"                  // for LOG_VERBOSE
+#include "boomerang/util/types.h"             // for ADDRESS
 
 #include <QString>
 #include <QTextStream>

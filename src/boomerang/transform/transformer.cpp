@@ -17,7 +17,7 @@
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/proc.h"
 
-#include "boomerang/include/types.h"
+#include "boomerang/util/types.h"
 
 #include "boomerang/transform/rdi.h"
 #include "boomerang/transform/transformation-parser.h"
