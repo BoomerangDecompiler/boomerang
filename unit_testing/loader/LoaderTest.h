@@ -1,4 +1,4 @@
-#include "boom_base/BinaryFile.h"
+#include "boomerang/core/BinaryFileFactory.h"
 
 #include <QtTest/QTest>
 

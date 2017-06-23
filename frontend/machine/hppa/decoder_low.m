@@ -32,10 +32,10 @@
  */
 
 
-#include "global.h"
-#include "include/decoder.h"
-#include "hppa-names.h"
-#include "db/rtl.h"
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
+#include "boomeranghppa-names.h"
+#include "boomerangdb/rtl.h"
 
 void c_null(ADDRESS hostpc, char **garble);
 unsigned long c_wcr(ADDRESS hostpc, char **garble);

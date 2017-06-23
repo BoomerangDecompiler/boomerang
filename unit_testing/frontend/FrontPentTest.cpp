@@ -5,30 +5,32 @@
  *============================================================================*/
 #include "FrontPentTest.h"
 
-#include "include/types.h"
-#include "db/rtl.h"
-#include "db/prog.h"
-#include "include/frontend.h"
-#include "frontend/pentium/pentiumfrontend.h"
-#include "boom_base/BinaryFile.h"
-#include "boom_base/BinaryFileStub.h"
-#include "include/decoder.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/db/rtl.h"
+#include "boomerang/db/prog.h"
+
+#include "boomerang/util/types.h"
+#include "boomerang/util/Log.h"
+
+#include "boomerang/frontend/decoder.h"
+
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QDir>
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_PENT      baseDir.absoluteFilePath("tests/inputs/pentium/hello")
-#define BRANCH_PENT     baseDir.absoluteFilePath("tests/inputs/pentium/branch")
-#define FEDORA2_TRUE    baseDir.absoluteFilePath("tests/inputs/pentium/fedora2_true")
-#define FEDORA3_TRUE    baseDir.absoluteFilePath("tests/inputs/pentium/fedora3_true")
-#define SUSE_TRUE       baseDir.absoluteFilePath("tests/inputs/pentium/suse_true")
+#define HELLO_PENT      qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/hello"))
+#define BRANCH_PENT     qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/branch"))
+#define FEDORA2_TRUE    qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/fedora2_true"))
+#define FEDORA3_TRUE    qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/fedora3_true"))
+#define SUSE_TRUE       qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/suse_true"))
 
 static bool    logset = false;
 static QString TEST_BASE;
 static QDir    baseDir;
+
+
 void FrontPentTest::initTestCase()
 {
 	if (!logset) {
@@ -55,14 +57,14 @@ void FrontPentTest::test1()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.loadFile(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
 
 	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
 
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	bool    gotMain;
@@ -105,13 +107,13 @@ void FrontPentTest::test2()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.loadFile(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
 
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	inst = pFE->decodeInstruction(ADDRESS::g(0x8048345));
@@ -146,12 +148,12 @@ void FrontPentTest::test3()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(HELLO_PENT);
+	IFileLoader       *pBF = bff.loadFile(HELLO_PENT);
 
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	inst = pFE->decodeInstruction(ADDRESS::n(0x804834d));
@@ -185,13 +187,13 @@ void FrontPentTest::testBranch()
 	QString           actual;
 	QTextStream       strm(&actual);
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(BRANCH_PENT);
+	IFileLoader       *pBF = bff.loadFile(BRANCH_PENT);
 
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(BRANCH_PENT);
 
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	// jne
@@ -229,14 +231,14 @@ void FrontPentTest::testFindMain()
 	// Test the algorithm for finding main, when there is a call to __libc_start_main
 	// Also tests the loader hack
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(FEDORA2_TRUE);
+	IFileLoader       *pBF = bff.loadFile(FEDORA2_TRUE);
 
 	QVERIFY(pBF != 0);
 
 	Prog *prog = new Prog(FEDORA2_TRUE);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
-	
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	bool    found;
@@ -244,10 +246,9 @@ void FrontPentTest::testFindMain()
 	ADDRESS expected = ADDRESS::n(0x8048b10);
 	QCOMPARE(addr, expected);
 	pBF->close();
-	bff.unload();
 	delete pFE;
 
-	pBF = bff.load(FEDORA3_TRUE);
+	pBF = bff.loadFile(FEDORA3_TRUE);
 	QVERIFY(pBF != nullptr);
 	pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -255,12 +256,11 @@ void FrontPentTest::testFindMain()
 	addr     = pFE->getMainEntryPoint(found);
 	expected = ADDRESS::n(0x8048c4a);
 	QCOMPARE(addr, expected);
-	
+
 	pBF->close();
-	bff.unload();
 	delete pFE;
 
-	pBF = bff.load(SUSE_TRUE);
+	pBF = bff.loadFile(SUSE_TRUE);
 	QVERIFY(pBF != nullptr);
 	pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
@@ -270,7 +270,6 @@ void FrontPentTest::testFindMain()
 	QCOMPARE(addr, expected);
 	pBF->close();
 
-	bff.unload();
 	delete pFE;
 }
 

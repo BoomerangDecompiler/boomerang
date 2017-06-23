@@ -20,17 +20,17 @@
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "db/signature.h"
+#include "boomerangdb/signature.h"
 #endif
 
-#include "db/exp.h"
-#include "db/prog.h"
-#include "db/proc.h"
-#include "include/decoder.h"
-#include "mipsdecoder.h"
-#include "db/rtl.h"
-#include "boom_base/BinaryFile.h"		// For SymbolByAddress()
-#include "boom_base/log.h"
+#include "boomerangdb/exp.h"
+#include "boomerangdb/prog.h"
+#include "boomerangdb/proc.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangmipsdecoder.h"
+#include "boomerangdb/rtl.h"
+#include "boomerangcore/BinaryFileFactory.h"		// For SymbolByAddress()
+#include "boomerangutil/Log.h"
 
 #include <iostream>
 

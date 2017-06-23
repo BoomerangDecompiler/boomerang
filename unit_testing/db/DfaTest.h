@@ -1,7 +1,10 @@
-#include "boom_base/log.h"
+#pragma once
+
+#include "boomerang/util/Log.h"
 
 #include <QtTest/QTest>
 #include <iostream>
+
 class ErrLogger : public Log
 {
 public:

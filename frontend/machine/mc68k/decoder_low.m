@@ -53,10 +53,10 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include "global.h" 
-#include "include/decoder.h"
-#include "ss.h"
-#include "db/rtl.h"
+#include "boomerangglobal.h" 
+#include "boomeranginclude/decoder.h"
+#include "boomerangss.h"
+#include "boomerangdb/rtl.h"
 
 // File scope globals
 static bool IsTrap = false;

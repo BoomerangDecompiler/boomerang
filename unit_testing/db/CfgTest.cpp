@@ -6,23 +6,23 @@
 
 #include "CfgTest.h"
 
-#include "boom_base/BinaryFile.h"
-#include "include/frontend.h"
-#include "db/proc.h"
-#include "db/prog.h"
-#include "db/dataflow.h"
-#include "frontend/pentium/pentiumfrontend.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
-#include "db/basicblock.h"
+#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/db/proc.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/db/dataflow.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/db/basicblock.h"
+
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QDir>
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define FRONTIER_PENTIUM    baseDir.absoluteFilePath("tests/inputs/pentium/frontier")
-#define SEMI_PENTIUM        baseDir.absoluteFilePath("tests/inputs/pentium/semi")
-#define IFTHEN_PENTIUM      baseDir.absoluteFilePath("tests/inputs/pentium/ifthen")
+#define FRONTIER_PENTIUM    qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/frontier"))
+#define SEMI_PENTIUM        qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/semi"))
+#define IFTHEN_PENTIUM      qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/ifthen"))
 
 static bool    logset = false;
 static QString TEST_BASE;
@@ -60,12 +60,12 @@ void CfgTest::initTestCase()
 void CfgTest::testDominators()
 {
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(FRONTIER_PENTIUM);
+	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
 
 	QVERIFY(pBF != nullptr);
 
-	Prog     prog(FRONTIER_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	Prog      prog(FRONTIER_PENTIUM);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -122,11 +122,11 @@ void CfgTest::testDominators()
 void CfgTest::testSemiDominators()
 {
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(SEMI_PENTIUM);
+	IFileLoader       *pBF = bff.loadFile(SEMI_PENTIUM);
 
 	QVERIFY(pBF != 0);
-	Prog     prog(SEMI_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	Prog      prog(SEMI_PENTIUM);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -187,11 +187,11 @@ void CfgTest::testPlacePhi()
 	QSKIP("Disabled.");
 
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(FRONTIER_PENTIUM);
+	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
 	QVERIFY(pBF != 0);
 
-	Prog     prog(FRONTIER_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	Prog      prog(FRONTIER_PENTIUM);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -236,11 +236,11 @@ void CfgTest::testPlacePhi2()
 	QSKIP("Disabled.");
 
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(IFTHEN_PENTIUM);
+	IFileLoader       *pBF = bff.loadFile(IFTHEN_PENTIUM);
 
 	QVERIFY(pBF != 0);
-	Prog     prog(IFTHEN_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	Prog      prog(IFTHEN_PENTIUM);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -325,11 +325,11 @@ void CfgTest::testPlacePhi2()
 void CfgTest::testRenameVars()
 {
 	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.load(FRONTIER_PENTIUM);
+	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
 
 	QVERIFY(pBF != 0);
-	Prog     *prog = new Prog(FRONTIER_PENTIUM);
-	FrontEnd *pFE  = new PentiumFrontEnd(pBF, prog, &bff);
+	Prog      *prog = new Prog(FRONTIER_PENTIUM);
+	IFrontEnd *pFE  = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);

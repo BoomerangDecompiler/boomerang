@@ -1,0 +1,194 @@
+/*
+ * Copyright (C) 2001, The University of Queensland
+ * Copyright (C) 2002, Trent Waddington
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ *
+ */
+
+/**
+ * \file insnameelem.cpp an element of an instruction name
+ * contains definition of class InsNameElem
+ */
+
+/* Changelog:
+ * 19 Feb 01 - Simon: created
+ * 01 May 02 - Mike: Mods for boomerang
+ */
+
+#include "insnameelem.h"
+
+#include "boomerang/util/types.h"
+
+#include <cassert>
+#include <string>
+#include <map>
+
+InsNameElem::InsNameElem(const QString& name)
+{
+	m_elemName = name;
+	m_value    = 0;
+	m_nextElem = nullptr;
+}
+
+
+InsNameElem::~InsNameElem()
+{
+	//      delete nextelem;
+}
+
+
+size_t InsNameElem::getNumTokens() const
+{
+	return 1;
+}
+
+
+QString InsNameElem::getInstruction() const
+{
+	return (m_nextElem != nullptr) ? (m_elemName + m_nextElem->getInstruction()) : m_elemName;
+}
+
+
+QString InsNameElem::getInsPattern() const
+{
+	return (m_nextElem != nullptr) ? (m_elemName + m_nextElem->getInsPattern()) : m_elemName;
+}
+
+
+void InsNameElem::getRefMap(std::map<QString, InsNameElem *>& m)
+{
+	if (m_nextElem != nullptr) {
+		m_nextElem->getRefMap(m);
+	}
+	else {
+		m.clear();
+	}
+}
+
+
+int InsNameElem::getNumInstructions() const
+{
+	return (m_nextElem != nullptr) ? (m_nextElem->getNumInstructions() * getNumTokens()) : getNumTokens();
+}
+
+
+void InsNameElem::append(std::shared_ptr<InsNameElem> next)
+{
+	if (m_nextElem == nullptr) {
+		m_nextElem = next;
+	}
+	else {
+		m_nextElem->append(next);
+	}
+}
+
+
+bool InsNameElem::increment()
+{
+	if ((m_nextElem == nullptr) || m_nextElem->increment()) {
+		m_value++;
+	}
+
+	if (m_value >= getNumTokens()) {
+		m_value = 0;
+		return true;
+	}
+
+	return false;
+}
+
+
+void InsNameElem::reset()
+{
+	m_value = 0;
+
+	if (m_nextElem != nullptr) {
+		m_nextElem->reset();
+	}
+}
+
+
+int InsNameElem::getValue(void) const
+{
+	return m_value;
+}
+
+
+InsOptionElem::InsOptionElem(const QString& name)
+	: InsNameElem(name)
+{
+}
+
+
+size_t InsOptionElem::getNumTokens() const
+{
+	return 2;
+}
+
+
+QString InsOptionElem::getInstruction() const
+{
+	QString s = (m_nextElem != nullptr)
+				? ((getValue() == 0) ? (m_elemName + m_nextElem->getInstruction()) : m_nextElem->getInstruction())
+				: ((getValue() == 0) ? m_elemName : "");
+
+	return s;
+}
+
+
+QString InsOptionElem::getInsPattern() const
+{
+	return (m_nextElem != nullptr) ? ('\'' + m_elemName + '\'' + m_nextElem->getInsPattern()) : ('\'' + m_elemName + '\'');
+}
+
+
+InsListElem::InsListElem(const QString& name, const std::shared_ptr<Table>& t, const QString& idx)
+	: InsNameElem(name)
+{
+	m_indexName = idx;
+	m_theTable  = t;
+}
+
+
+size_t InsListElem::getNumTokens() const
+{
+	return m_theTable->Records.size();
+}
+
+
+QString InsListElem::getInstruction() const
+{
+	return (m_nextElem != nullptr) ? (m_theTable->Records[getValue()] + m_nextElem->getInstruction())
+		   : m_theTable->Records[getValue()];
+}
+
+
+QString InsListElem::getInsPattern() const
+{
+	return (m_nextElem != nullptr) ? (m_elemName + '[' + m_indexName + ']' + m_nextElem->getInsPattern())
+		   : (m_elemName + '[' + m_indexName + ']');
+}
+
+
+void InsListElem::getRefMap(std::map<QString, InsNameElem *>& m)
+{
+	if (m_nextElem != nullptr) {
+		m_nextElem->getRefMap(m);
+	}
+	else {
+		m.clear();
+	}
+
+	m[m_indexName] = this;
+	// of course, we're assuming that we've already checked (try in the parser)
+	// that indexname hasn't been used more than once on this line ..
+}
+
+
+QString InsListElem::getIndex() const
+{
+	return m_indexName;
+}

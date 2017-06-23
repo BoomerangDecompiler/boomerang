@@ -1,18 +1,18 @@
 #include <iostream>
 #include <string>
-#include "type/type.h"
-#include "include/types.h"
-#include "db/cfg.h"
-#include "db/proc.h"
-#include "db/prog.h"
-#include "db/signature.h"
-#include "boom_base/log.h"
-#include "pentiumfrontend.h"
+#include "boomerang/type/type.h"
+#include "boomerang/include/types.h"
+#include "boomerang/db/cfg.h"
+#include "boomerang/db/proc.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/db/signature.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/pentiumfrontend.h"
 
 class Prog;
 
 // util
-#include "utilStubs.cpp"
+#include "boomerang/utilStubs.cpp"
 
 // basicblock
 void BasicBlock::setOutEdge(int i, PBB pNewOutEdge)
@@ -26,7 +26,7 @@ void BasicBlock::addInEdge(PBB pNewInEdge)
 
 
 // type
-#include "typeStubs.cpp"
+#include "boomerang/typeStubs.cpp"
 
 // Prog
 Prog::Prog()

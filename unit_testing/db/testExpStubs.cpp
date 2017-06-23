@@ -1,17 +1,17 @@
 #include <iostream>
 #include <string>
-#include "type/type.h"
-#include "include/types.h"
-#include "db/cfg.h"
-#include "db/proc.h"
-#include "db/prog.h"
-#include "db/signature.h"
-#include "boom_base/log.h"
+#include "boomerang/type/type.h"
+#include "boomerang/include/types.h"
+#include "boomerang/db/cfg.h"
+#include "boomerang/db/proc.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/db/signature.h"
+#include "boomerang/util/Log.h"
 
 class Prog;
 
 // util
-#include "utilStubs.cpp"
+#include "boomerang/utilStubs.cpp"
 
 // basicblock
 void BasicBlock::getReachInAt(Statement *stmt, StatementSet& reachin, int phase)
@@ -25,7 +25,7 @@ void BasicBlock::getAvailInAt(Statement *stmt, StatementSet& reachin, int phase)
 
 
 // type
-#include "typeStubs.cpp"
+#include "boomerang/typeStubs.cpp"
 
 // Proc
 Signature *Proc::getSignature()

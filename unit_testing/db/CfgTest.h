@@ -1,5 +1,9 @@
-#include "db/cfg.h"
+#pragma once
+
+#include "boomerang/db/cfg.h"
+
 #include <QtTest/QTest>
+
 class CfgTest : public QObject
 {
 	Q_OBJECT

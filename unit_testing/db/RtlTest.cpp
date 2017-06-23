@@ -5,27 +5,25 @@
  ******************************************************************************/
 #include "RtlTest.h"
 
-#include "db/exp.h"
-#include "boom_base/BinaryFile.h"
-#include "include/frontend.h"
-#include "frontend/sparc/sparcfrontend.h"
-#include "frontend/pentium/pentiumfrontend.h"
-#include "include/decoder.h"
-#include "db/rtl.h"
-#include "db/proc.h"
-#include "db/prog.h"
+#include "boomerang/db/exp.h"
+#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/db/rtl.h"
+#include "boomerang/db/proc.h"
+#include "boomerang/db/prog.h"
 
-#include "db/statements/boolassign.h"
-#include "db/statements/gotostatement.h"
-#include "db/statements/branchstatement.h"
-#include "db/statements/assign.h"
-#include "db/statements/casestatement.h"
-#include "db/statements/callstatement.h"
+#include "boomerang/db/statements/boolassign.h"
+#include "boomerang/db/statements/gotostatement.h"
+#include "boomerang/db/statements/branchstatement.h"
+#include "boomerang/db/statements/assign.h"
+#include "boomerang/db/statements/casestatement.h"
+#include "boomerang/db/statements/callstatement.h"
 
+#include "boomerang/db/visitor.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Log.h"
 
-#include "db/visitor.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
+#include "boomerang-frontend/sparc/sparcfrontend.h"
 
 #include <sstream>
 
@@ -34,6 +32,7 @@
 static bool logset = false;
 QString     TEST_BASE;
 QDir        baseDir;
+
 void RtlTest::initTestCase()
 {
 	if (!logset) {

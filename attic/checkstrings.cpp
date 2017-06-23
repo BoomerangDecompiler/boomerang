@@ -4,8 +4,9 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "operstrings.h"
-#include "../include/operator.h"
+
+#include "boomerang/attic/operstrings.h"
+#include "boomerang/include/operator.h"
 
 int main() {
     if (sizeof(operStrings) / sizeof(char *) == opNumOf) {

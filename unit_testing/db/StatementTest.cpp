@@ -14,15 +14,15 @@
 
 #include <sstream>
 #include <map>
-#include "StatementTest.h"
-#include "db/cfg.h"
-#include "db/rtl.h"
-#include "pentiumfrontend.h"
-#include "boom_base/log.h"
-#include "db/exp.h"
-#include "include/managed.h"
-#include "boom_base/log.h"
-#include "db/signature.h"
+#include "boomerang/StatementTest.h"
+#include "boomerang/db/cfg.h"
+#include "boomerang/db/rtl.h"
+#include "boomerang/pentiumfrontend.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/db/exp.h"
+#include "boomerang/include/managed.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/db/signature.h"
 
 // class NullLogger : public Log {
 // public:
@@ -32,8 +32,8 @@
 //    }
 //    virtual ~NullLogger() {};
 // };
-#include "db/prog.h"
-#include "db/proc.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/db/proc.h"
 
 #define HELLO_PENTIUM      baseDir.absoluteFilePath("tests/inputs/pentium/hello")
 #define GLOBAL1_PENTIUM    baseDir.absoluteFilePath("tests/inputs/pentium/global1")
@@ -139,7 +139,7 @@ void StatementTest::testFlow()
 	// create UserProc
 	std::string name  = "test";
 	UserProc    *proc = (UserProc *)prog->newProc("test", 0x123);
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -209,7 +209,7 @@ void StatementTest::testKill()
 	// create UserProc
 	std::string name  = "test";
 	UserProc    *proc = (UserProc *)prog->newProc("test", 0x123);
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -281,7 +281,7 @@ void StatementTest::testUse()
 	// create UserProc
 	std::string name  = "test";
 	UserProc    *proc = (UserProc *)prog->newProc("test", 0x123);
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -353,7 +353,7 @@ void StatementTest::testUseOverKill()
 	// create UserProc
 	std::string name  = "test";
 	UserProc    *proc = (UserProc *)prog->newProc("test", 0x123);
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name.c_str()));
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();

@@ -16,11 +16,14 @@
  * 05 Aug 05 - Mike: added borland test; check address of main (not just != NO_ADDRESS)
  */
 
-#include "loader/microX86dis.c"
 #include "LoaderTest.h"
-#include "boom_base/log.h"
-#include "db/IBinaryImage.h"
-#include "boom_base/log.h"
+
+#include "boomerang-loaders/microX86dis.c"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/db/IBinarySection.h"
 
 #include <QLibrary>
 #include <QTextStream>
@@ -34,13 +37,13 @@ static QString TEST_BASE;
 static QDir    baseDir;
 
 //
-#define HELLO_CLANG4           baseDir.absoluteFilePath("tests/inputs/elf/hello-clang4-dynamic")
-#define HELLO_CLANG4_STATIC    baseDir.absoluteFilePath("tests/inputs/elf/hello-clang4-static")
-#define HELLO_SPARC            baseDir.absoluteFilePath("tests/inputs/sparc/hello")
-#define HELLO_PENTIUM          baseDir.absoluteFilePath("tests/inputs/pentium/hello")
-#define HELLO_HPPA             baseDir.absoluteFilePath("tests/inputs/hppa/hello")
-#define STARTER_PALM           baseDir.absoluteFilePath("tests/inputs/mc68328/Starter.prc")
-#define SWITCH_BORLAND         baseDir.absoluteFilePath("tests/inputs/windows/switch_borland.exe")
+#define HELLO_CLANG4           qPrintable(baseDir.absoluteFilePath("tests/inputs/elf/hello-clang4-dynamic"))
+#define HELLO_CLANG4_STATIC    qPrintable(baseDir.absoluteFilePath("tests/inputs/elf/hello-clang4-static"))
+#define HELLO_SPARC            qPrintable(baseDir.absoluteFilePath("tests/inputs/sparc/hello"))
+#define HELLO_PENTIUM          qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/hello"))
+#define HELLO_HPPA             qPrintable(baseDir.absoluteFilePath("tests/inputs/hppa/hello"))
+#define STARTER_PALM           qPrintable(baseDir.absoluteFilePath("tests/inputs/mc68328/Starter.prc"))
+#define SWITCH_BORLAND         qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/switch_borland.exe"))
 
 /// path to the ELF loader plugin
 #ifdef _WIN32
@@ -50,10 +53,10 @@ static QDir    baseDir;
 #endif
 
 #if 1 // FIXME: These programs are proprietary, but they are not used.
-#define CALC_WINDOWS    baseDir.absoluteFilePath("tests/inputs/windows/calc.exe")
-#define CALC_WINXP      baseDir.absoluteFilePath("tests/inputs/windows/calcXP.exe")
-#define CALC_WIN2000    baseDir.absoluteFilePath("tests/inputs/windows/calc2000.exe")
-#define LPQ_WINDOWS     baseDir.absoluteFilePath("tests/inputs/windows/lpq.exe")
+#define CALC_WINDOWS    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calc.exe"))
+#define CALC_WINXP      qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calcXP.exe"))
+#define CALC_WIN2000    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calc2000.exe"))
+#define LPQ_WINDOWS     qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/lpq.exe"))
 #endif
 
 
@@ -80,7 +83,7 @@ void LoaderTest::initTestCase()
 void LoaderTest::testElfLoadClang()
 {
 	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.load(HELLO_CLANG4);
+	IFileLoader       *loader = bff.loadFile(HELLO_CLANG4);
 
 	// test the loader
 	QVERIFY(loader != nullptr);
@@ -100,15 +103,13 @@ void LoaderTest::testElfLoadClang()
 	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
 	QCOMPARE(image->getLimitTextLow(),  ADDRESS::n(0x08000001));
 	QCOMPARE(image->getLimitTextHigh(), ADDRESS::n(0x0804A020));
-
-	bff.unload();
 }
 
 
 void LoaderTest::testElfLoadClangStatic()
 {
 	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.load(HELLO_CLANG4_STATIC);
+	IFileLoader       *loader = bff.loadFile(HELLO_CLANG4_STATIC);
 
 	// test the loader
 	QVERIFY(loader != nullptr);
@@ -128,8 +129,6 @@ void LoaderTest::testElfLoadClangStatic()
 	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
 	QCOMPARE(image->getLimitTextLow(),  ADDRESS::n(0x08000001));
 	QCOMPARE(image->getLimitTextHigh(), ADDRESS::n(0x080ECDA4));
-
-	bff.unload();
 }
 
 
@@ -137,7 +136,7 @@ void LoaderTest::testSparcLoad()
 {
 	// Load SPARC hello world
 	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.load(HELLO_SPARC);
+	IFileLoader       *loader = bff.loadFile(HELLO_SPARC);
 
 	QVERIFY(loader != nullptr);
 
@@ -147,8 +146,6 @@ void LoaderTest::testSparcLoad()
 	QCOMPARE(image->getNumSections(), (size_t)28);
 	QCOMPARE(image->getSectionInfo(1)->getName(), QString(".hash"));
 	QCOMPARE(image->getSectionInfo(27)->getName(), QString(".stab.indexstr"));
-
-	bff.unload();
 }
 
 
@@ -156,7 +153,7 @@ void LoaderTest::testPentiumLoad()
 {
 	// Load Pentium hello world
 	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.load(HELLO_PENTIUM);
+	IFileLoader       *loader = bff.loadFile(HELLO_PENTIUM);
 
 	QVERIFY(loader != nullptr);
 
@@ -166,8 +163,6 @@ void LoaderTest::testPentiumLoad()
 	QCOMPARE(image->getNumSections(), (size_t)33);
 	QCOMPARE(image->getSectionInfo(1)->getName(), QString(".note.ABI-tag"));
 	QCOMPARE(image->getSectionInfo(32)->getName(), QString(".strtab"));
-
-	bff.unload();
 }
 
 
@@ -177,7 +172,7 @@ void LoaderTest::testHppaLoad()
 
 	// Load HPPA hello world
 	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.load(HELLO_HPPA);
+	IFileLoader       *loader = bff.loadFile(HELLO_HPPA);
 	QVERIFY(loader != nullptr);
 	IBinaryImage *image = Boomerang::get()->getImage();
 
@@ -185,15 +180,13 @@ void LoaderTest::testHppaLoad()
 	QCOMPARE(image->getSectionInfo(0)->getName(), QString("$TEXT$"));
 	QCOMPARE(image->getSectionInfo(1)->getName(), QString("$DATA$"));
 	QCOMPARE(image->getSectionInfo(2)->getName(), QString("$BSS$"));
-
-	bff.unload();
 }
 
 
 void LoaderTest::testPalmLoad()
 {
 	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.load(STARTER_PALM);
+	IFileLoader       *loader = bff.loadFile(STARTER_PALM);
 
 	QVERIFY(loader != nullptr);
 	IBinaryImage *image = Boomerang::get()->getImage();
@@ -207,8 +200,6 @@ void LoaderTest::testPalmLoad()
 	QCOMPARE(image->getSectionInfo(5)->getName(), QString("code0"));
 	QCOMPARE(image->getSectionInfo(6)->getName(), QString("tAIN1000"));
 	QCOMPARE(image->getSectionInfo(7)->getName(), QString("tver1000"));
-
-	bff.unload();
 }
 
 
@@ -222,7 +213,7 @@ void LoaderTest::testWinLoad()
 #if 1 // FIXME: these tests should use non-proprietary programs
 	// Load Windows program calc.exe
 
-	loader = bff.load(CALC_WINDOWS);
+	loader = bff.loadFile(CALC_WINDOWS);
 	QVERIFY(loader != nullptr);
 	QVERIFY(loader->getMainEntryPoint() != NO_ADDRESS);
 
@@ -233,33 +224,27 @@ void LoaderTest::testWinLoad()
 	QCOMPARE(image->getSectionInfo(2), QString(".data"));
 	QCOMPARE(image->getSectionInfo(3), QString(".rsrc"));
 	QCOMPARE(image->getSectionInfo(4), QString(".reloc"));
-	bff.unload();
 
 	// Test loading the "new style" exes, as found in WinXP etc
-	loader = bff.load(CALC_WINXP);
+	loader = bff.loadFile(CALC_WINXP);
 	QVERIFY(loader != nullptr);
 	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x01001F51));
-	bff.unload();
-
+	
 	// Test loading the calc.exe found in Windows 2000 (more NT based)
-	loader = bff.load(CALC_WIN2000);
+	loader = bff.loadFile(CALC_WIN2000);
 	QVERIFY(loader != nullptr);
 	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x01001680));
-	bff.unload();
 
 	// Test loading the lpq.exe program - console mode PE file
-	loader = bff.load(LPQ_WINDOWS);
+	loader = bff.loadFile(LPQ_WINDOWS);
 	QVERIFY(loader != nullptr);
 	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x018C1000));
-	bff.unload();
 #endif
 
 	// Borland
-	loader = bff.load(SWITCH_BORLAND);
+	loader = bff.loadFile(SWITCH_BORLAND);
 	QVERIFY(loader != nullptr);
 	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(401150));
-
-	bff.unload();
 }
 
 

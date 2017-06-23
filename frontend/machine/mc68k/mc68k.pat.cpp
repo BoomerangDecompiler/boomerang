@@ -7,11 +7,11 @@
  * OVERVIEW:  Generated file; do not edit
  *==============================================*/
 
-#include "global.h"
-#include "include/decoder.h"
-#include "mc68k.pat.h"
-#include "ss.h"
-#include "csr.h"
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangmc68k.pat.h"
+#include "boomerangss.h"
+#include "boomerangcsr.h"
 
 #define VAR true
 #define VAL false

@@ -14,11 +14,6 @@ SET(target_SOURCES
     ${target_INCLUDE}
 )
 
-SET(target_INCLUDE_DIR
-    ../..
-)
-
-include_directories(${target_INCLUDE_DIR})
 add_executable(g_tests ${target_SOURCES})
 
 target_link_libraries(g_tests

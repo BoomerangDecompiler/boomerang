@@ -13,20 +13,21 @@
  */
 
 #include "TypeTest.h"
-#include "boom_base/BinaryFile.h" // Ugh - needed before frontend.h
-#include "frontend/pentium/pentiumfrontend.h"
-#include "db/signature.h"
-#include "boom_base/log.h"
-#include "boom_base/log.h"
-#include "db/prog.h"
-#include "db/proc.h"
+#include "boomerang/core/BinaryFileFactory.h" // Ugh - needed before frontend.h
+#include "boomerang/db/signature.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/db/prog.h"
+#include "boomerang/db/proc.h"
+
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QTextStream>
 #include <QDir>
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_WINDOWS    baseDir.absoluteFilePath("tests/inputs/windows/hello.exe")
+#define HELLO_WINDOWS    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/hello.exe"))
 
 static bool    logset = false;
 static QString TEST_BASE;
@@ -76,8 +77,8 @@ void TypeTest::testCompound()
 	QSKIP("Disabled");
 
 	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.load(HELLO_WINDOWS);
-	FrontEnd          *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS), &bff);
+	IFileLoader       *loader = bff.loadFile(HELLO_WINDOWS);
+	IFrontEnd          *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS), &bff);
 
 	pFE->readLibraryCatalog(); // Read definitions
 
@@ -125,7 +126,7 @@ void TypeTest::testDataInterval()
 	Module   *m    = prog->getOrInsertModule("test");
 	UserProc *proc = (UserProc *)m->getOrInsertFunction("test", ADDRESS::g(0x123));
 
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, "test"));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 	dim.setProc(proc);
 
 	dim.addItem(ADDRESS::g(0x1000), "first", IntegerType::get(32, 1));
@@ -201,7 +202,7 @@ void TypeTest::testDataIntervalOverlaps()
 	Module   *m    = prog->getOrInsertModule("test");
 	UserProc *proc = (UserProc *)m->getOrInsertFunction("test", ADDRESS::g(0x123));
 
-	proc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, "test"));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 	dim.setProc(proc);
 
 	dim.addItem(ADDRESS::g(0x1000), "firstInt", IntegerType::get(32, 1));

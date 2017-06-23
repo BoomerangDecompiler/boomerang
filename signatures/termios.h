@@ -1,16 +1,16 @@
-
 typedef unsigned int    tcflag_t;
 typedef unsigned char   cc_t;
-typedef unsigned int speed_t;
+typedef unsigned int    speed_t;
 
-typedef struct {
-        tcflag_t        c_iflag;
-        tcflag_t        c_oflag;
-        tcflag_t        c_cflag;
-        tcflag_t        c_lflag;
-        cc_t            c_cc[20];
-        speed_t         c_ispeed;
-        speed_t         c_ospeed;
+typedef struct
+{
+	tcflag_t c_iflag;
+	tcflag_t c_oflag;
+	tcflag_t c_cflag;
+	tcflag_t c_lflag;
+	cc_t     c_cc[20];
+	speed_t  c_ispeed;
+	speed_t  c_ospeed;
 } termios;
 
 speed_t cfgetispeed(const termios *t);

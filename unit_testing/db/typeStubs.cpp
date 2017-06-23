@@ -1,4 +1,4 @@
-#include "type/type.h"
+#include "boomerang/type/type.h"
 
 VoidType::VoidType()
 {

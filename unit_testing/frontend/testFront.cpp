@@ -9,12 +9,12 @@
  * 23 May 02 - Mike: Added pentium tests
  */
 
-#include "cppunit/TextTestResult.h"
-#include "cppunit/TestSuite.h"
+#include "boomerangcppunit/TextTestResult.h"
+#include "boomerangcppunit/TestSuite.h"
 
-#include "FrontSparcTest.h"
-#include "FrontPentTest.h"
-#include "db/prog.h"
+#include "boomerangFrontSparcTest.h"
+#include "boomerangFrontPentTest.h"
+#include "boomerangdb/prog.h"
 #include <iostream>
 
 int main(int argc, char **argv)

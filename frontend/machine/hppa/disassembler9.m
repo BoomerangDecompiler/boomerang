@@ -14,11 +14,11 @@
  */
 
 
-#include "global.h"
-#include "include/decoder.h"
-#include "boom_base/BinaryFile.h"
+#include "boomerangglobal.h"
+#include "boomeranginclude/decoder.h"
+#include "boomerangcore/BinaryFileFactory.h"
 
-#include "hppa-names.h"
+#include "boomeranghppa-names.h"
 
 // globals
 extern char _assembly[];

@@ -1,4 +1,4 @@
-#include "stdio.h"
+#include "boomerang/stdio.h"
 
 int test(int a, int b, int c)
 {
