@@ -22,7 +22,7 @@ class IBinaryImage;
 /***************************************************************************/ /**
  * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
  ******************************************************************************/
-class NJMCDecoder : public IInstructionTranslator
+class NJMCDecoder : public IDecoder
 {
 public:
 

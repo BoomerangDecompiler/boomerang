@@ -99,12 +99,12 @@ public:
 
 
 /**
- * @brief The IInstructionTranslator class - responsible for translating raw bytes to Instruction lists
+ * @brief The IDecoder class - responsible for translating raw bytes to Instruction lists
  */
-class IInstructionTranslator
+class IDecoder
 {
 public:
-	virtual ~IInstructionTranslator() = default;
+	virtual ~IDecoder() = default;
 
 	/// Decodes the machine instruction at pc and returns an RTL instance for the instruction.
 	virtual DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) = 0;

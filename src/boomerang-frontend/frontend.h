@@ -34,7 +34,7 @@
 class UserProc;
 class Function;
 class RTL;
-class IInstructionTranslator;
+class IDecoder;
 class BasicBlock;
 class Exp;
 class TypedExp;
@@ -115,7 +115,7 @@ public:
 	IFileLoader *getLoader() const { return m_fileLoader; }
 
 	/// Accessor function to get the decoder.
-	IInstructionTranslator *getDecoder() { return m_decoder; }
+	IDecoder *getDecoder() { return m_decoder; }
 
 	/// returns a symbolic name for a register index
 	QString getRegName(int idx) const;
@@ -261,7 +261,7 @@ protected:
 //	const int NOP_SIZE;            ///< Size of a no-op instruction (in bytes)
 //	const int NOP_INST;            ///< No-op pattern
 	
-	IInstructionTranslator *m_decoder; ///< The decoder
+	IDecoder *m_decoder; ///< The decoder
 	
 	IFileLoader *m_fileLoader;
 	
@@ -283,11 +283,3 @@ protected:
 private:
 	SymTab *m_binarySymbols;
 };
-
-/***************************************************************************/ /**
- * These functions are the machine specific parts of the front end. They consist
- * of those that actually drive the decoding and analysis of the procedures of
- * the program being translated.
- * These functions are implemented in the files front<XXX> where XXX is a
- * platform name such as sparc or pentium.
- ******************************************************************************/
