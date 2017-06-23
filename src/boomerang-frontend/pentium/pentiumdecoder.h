@@ -17,7 +17,8 @@
 
 #include <cstddef>
 
-#include "njmcDecoder.h"
+#include "boomerang/frontend/njmcDecoder.h"
+
 class Prog;
 struct DecodeResult;
 

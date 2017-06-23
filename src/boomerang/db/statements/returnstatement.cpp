@@ -9,7 +9,7 @@
 #include "boomerang/db/basicblock.h"
 #include "boomerang/db/statements/callstatement.h"
 
-#include "boomerang-frontend/frontend.h"
+#include "boomerang/frontend/frontend.h"
 
 #include <QDebug>
 

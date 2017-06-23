@@ -5,8 +5,8 @@
 
 #include <set>
 
-#include "boomerang-frontend/frontend.h"
-#include "boomerang-frontend/decoder.h"
+#include "boomerang/frontend/frontend.h"
+#include "boomerang/frontend/decoder.h"
 
 #include "boomerang/db/exp.h"           // Ugh... just for enum OPER
 

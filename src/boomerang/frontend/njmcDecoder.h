@@ -16,7 +16,7 @@
 #include "boomerang/db/statements/branchstatement.h"
 #include "boomerang/db/statements/boolassign.h"
 
-#include "boomerang-frontend/decoder.h"
+#include "boomerang/frontend/decoder.h"
 
 
 class IBinaryImage;

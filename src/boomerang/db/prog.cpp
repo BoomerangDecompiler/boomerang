@@ -48,7 +48,7 @@
 #include "boomerang/util/types.h"
 #include "boomerang/util/Util.h" // For lockFileWrite etc
 
-#include "boomerang-frontend/frontend.h"
+#include "boomerang/frontend/frontend.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>

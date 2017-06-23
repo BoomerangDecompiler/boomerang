@@ -97,6 +97,16 @@ set(boomerang_SRC
     db/visitor.h
     db/visitor.cpp
 
+    frontend/decoder.h
+    frontend/frontend.h
+    frontend/frontend.cpp
+    frontend/MachineInstruction.cpp
+    frontend/MachineInstruction.h
+    frontend/njmcDecoder.cpp
+    frontend/njmcDecoder.h
+    frontend/TargetQueue.cpp
+    frontend/TargetQueue.h
+    
     passes/Pass
 	passes/RangeAnalysis
     

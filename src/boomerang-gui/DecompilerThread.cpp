@@ -9,7 +9,7 @@
 #include "boomerang/db/module.h"
 #include "boomerang/db/IBinarySection.h"
 
-#include "boomerang-frontend/frontend.h"
+#include "boomerang/frontend/frontend.h"
 
 #include <QtWidgets>
 #include <QtCore>

@@ -25,7 +25,7 @@
 #include "boomerang/util/Util.h"
 #include "boomerang/loader/IBinaryFile.h"
 
-#include "boomerang-frontend/frontend.h"
+#include "boomerang/frontend/frontend.h"
 
 // TODO: refactor Prog Global handling into separate class
 class RTLInstDict;

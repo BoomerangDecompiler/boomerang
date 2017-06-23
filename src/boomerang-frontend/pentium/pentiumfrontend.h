@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boomerang-frontend/frontend.h"
+#include "boomerang/frontend/frontend.h"
 
 class Instruction;
 class PentiumDecoder;

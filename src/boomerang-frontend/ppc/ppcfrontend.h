@@ -7,7 +7,7 @@
 
 #include "boomerang/db/exp.h"           // Ugh... just for enum OPER
 
-#include "boomerang-frontend/frontend.h"
+#include "boomerang/frontend/frontend.h"
 
 class IFrontEnd;
 class PPCDecoder;

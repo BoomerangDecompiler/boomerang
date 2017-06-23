@@ -15,7 +15,7 @@
  * \brief   The implementation of the instruction decoder for PPC.
  ******************************************************************************/
 
-#include "njmcDecoder.h"
+#include "boomerang/frontend/njmcDecoder.h"
 
 #include <cstdlib>
 

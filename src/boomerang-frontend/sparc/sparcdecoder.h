@@ -15,7 +15,7 @@
  * \brief   The implementation of the instruction decoder for Sparc.
  ******************************************************************************/
 
-#include "njmcDecoder.h"
+#include "boomerang/frontend/njmcDecoder.h"
 
 #include <cstddef>
 

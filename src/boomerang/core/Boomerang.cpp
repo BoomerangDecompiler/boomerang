@@ -22,8 +22,7 @@
 #include "boomerang/db/signature.h"
 #include "boomerang/db/xmlprogparser.h"
 
-#include "boomerang-frontend/frontend.h"
-#include "boomerang/include/config.h"
+#include "boomerang/frontend/frontend.h"
 
 // TODO: Move the Objective-C loader code to a more suitable place
 #include "../../boomerang-loaders/machO/MachOBinaryLoader.h" // For Objective-C stuff
@@ -1099,5 +1098,5 @@ QString Boomerang::filename() const
 
 const char *Boomerang::getVersionStr()
 {
-	return VERSION;
+	return BOOMERANG_VERSION;
 }

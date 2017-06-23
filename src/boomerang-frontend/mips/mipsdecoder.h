@@ -20,7 +20,8 @@
  *
  *****************************************************************/
 
-#include "njmcDecoder.h"
+#include "boomerang/frontend/njmcDecoder.h"
+
 #include <cstddef>
 
 class Prog;

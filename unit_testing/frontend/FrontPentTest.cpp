@@ -12,7 +12,8 @@
 #include "boomerang/util/types.h"
 #include "boomerang/util/Log.h"
 
-#include "boomerang-frontend/decoder.h"
+#include "boomerang/frontend/decoder.h"
+
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QDir>
