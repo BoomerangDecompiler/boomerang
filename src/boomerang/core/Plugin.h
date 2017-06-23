@@ -73,7 +73,7 @@ public:
 	/// Get the interface pointer for this plugin.
 	inline const IFC *get() const { return m_ifc; }
 	inline IFC *get() { return m_ifc; }
-	
+
 	inline const IFC *operator->() const { return this->get(); }
 	inline IFC *operator->() { return this->get(); }
 
@@ -161,7 +161,7 @@ private:
 
 
 /**
- * Define a plugin. 
+ * Define a plugin.
  * Usage:
  *   DEFINE_LOADER_PLUGIN(TestLoader, "TestLoader Plugin", "3.1.4", "test");
  */

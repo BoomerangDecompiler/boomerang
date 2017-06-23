@@ -6,8 +6,6 @@ class MachineSemanticsSSLBased : public MachineSemantics
 {
 	RTLInstDict RTLDict;
 
-	// MachineSemantics interface
-
 public:
 	Exp *convertOperand(MachineOperand *Operand) override;
 

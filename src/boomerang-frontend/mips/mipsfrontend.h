@@ -26,27 +26,36 @@
 #include <set>
 #include "include/decoder.h"
 #include "db/exp.h"           // Ugh... just for enum OPER
-#include "include/frontend.h" // In case included bare, e.g. ProcTest.cpp
 
-class FrontEnd;
+#include "boomerang-frontend/frontend.h"
+
+class IFrontEnd;
 class MIPSDecoder;
+class CallStatement;
 struct DecodeResult;
 
-class CallStatement;
 
-class MIPSFrontEnd : public FrontEnd
+class MIPSFrontEnd : public IFrontEnd
 {
 public:
+	/// @copydoc IFrontEnd::IFrontEnd
 	MIPSFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
+	
+	/// @copydoc IFrontEnd::~IFrontEnd
 	virtual ~MIPSFrontEnd();
 
-	virtual Platform getFrontEndId() const override { return Platform::MIPS; }
+	/// @copydoc IFrontEnd::getFrontEndId
+	virtual Platform getType() const override { return Platform::MIPS; }
 
+	/// @copydoc IFrontEnd::processProc
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
+	/// @copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
 
+	/// @copydoc IFrontEnd::getDefaultReturns
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
+	/// @copydoc IFrontEnd::getMainEntryPoint
 	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
 };

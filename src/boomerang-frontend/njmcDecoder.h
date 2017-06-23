@@ -17,42 +17,127 @@
 #include "db/statements/branchstatement.h"
 #include "db/statements/boolassign.h"
 
+class IBinaryImage;
+
 /***************************************************************************/ /**
  * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
  ******************************************************************************/
 class NJMCDecoder : public IInstructionTranslator
 {
-protected:
-	Prog *prog;
-	class IBinaryImage *Image;
-
 public:
+	/***************************************************************************/ /**
+	* \param       prog Pointer to the Prog object
+	******************************************************************************/
 	NJMCDecoder(Prog *prog);
+	
 	virtual ~NJMCDecoder() = default;
 
-	RTLInstDict& getRTLDict() { return RTLDict; }
-	void computedJump(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
-					  DecodeResult& result);
-	void computedCall(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
-					  DecodeResult& result);
+	RTLInstDict& getRTLDict() { return m_rtlDict; }
+	
+	/***************************************************************************/ /**
+	* \brief   Process an indirect jump instruction
+	* \param   name name of instruction (for debugging)
+	* \param   size size of instruction in bytes
+	* \param   dest destination Exp*
+	* \param   pc native pc
+	* \param   stmts list of statements (?)
+	* \param   result ref to decoder result object
+	******************************************************************************/
+	void processComputedJump(const char *name, int size, SharedExp dest, ADDRESS pc,
+							 std::list<Instruction *> *stmts, DecodeResult& result);
+	
+	/***************************************************************************/ /**
+	* \brief   Process an indirect call instruction
+	* \param   name name of instruction (for debugging)
+	* \param   size size of instruction in bytes
+	* \param   dest destination Exp*
+	* \param   pc native pc
+	* \param   stmts list of statements (?)
+	* \param   result ref to decoder result object
+	******************************************************************************/
+	void processComputedCall(const char *name, int size, SharedExp dest, ADDRESS pc,
+							 std::list<Instruction *> *stmts, DecodeResult& result);
+	
 	QString getRegName(int idx) const override;
 	int getRegSize(int idx) const override;
 	int getRegIdx(const QString& name) const override;
 
 protected:
+	/***************************************************************************/ /**
+	* \brief   Given an instruction name and a variable list of expressions representing the actual operands of
+	*              the instruction, use the RTL template dictionary to return the instantiated RTL representing the
+	*              semantics of the instruction. This method also displays a disassembly of the instruction if the
+	*              relevant compilation flag has been set.
+	* 
+	* \param   pc  native PC
+	* \param   name - instruction name
+	* \param   ... - Semantic String ptrs representing actual operands
+	* \returns an instantiated list of Exps
+	******************************************************************************/
 	std::list<Instruction *> *instantiate(ADDRESS pc, const char *name, const std::initializer_list<SharedExp>& args = {});
 
+	/***************************************************************************/ /**
+	* \brief   Similarly to NJMCDecoder::instantiate, given a parameter name and a list of Exp*'s representing
+	* sub-parameters, return a fully substituted Exp for the whole expression
+	* \note    Caller must delete result
+	* \param   name - parameter name
+	*          ... - Exp* representing actual operands
+	* \returns an instantiated list of Exps
+	******************************************************************************/
 	SharedExp instantiateNamedParam(char *name, const std::initializer_list<SharedExp>& args);
+	
+	/***************************************************************************/ /**
+	* \brief   In the event that it's necessary to synthesize the call of a named parameter generated with
+	*          instantiateNamedParam(), this substituteCallArgs() will substitute the arguments that follow into
+	*          the expression.
+	* 
+	* \note    Should only be used after instantiateNamedParam(name, ..);
+	* \note    exp (the pointer) could be changed
+	* 
+	* \param   name - parameter name
+	* \param   exp - expression to instantiate into
+	* \param   ... - Exp* representing actual operands
+	* 
+	* \returns an instantiated list of Exps
+	******************************************************************************/
 	void substituteCallArgs(char *name, SharedExp *exp, const std::initializer_list<SharedExp>& args);
-	void unconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
+	
+	/***************************************************************************/ /**
+	* \brief   Process an unconditional jump instruction
+	*              Also check if the destination is a label (MVE: is this done?)
+	* \param   name name of instruction (for debugging)
+	* \param   size size of instruction in bytes
+	* \param   relocd
+	* \param   delta
+	* \param   pc native pc
+	* \param   stmts list of statements (?)
+	* \param   result ref to decoder result object
+	******************************************************************************/
+	void processUnconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
 						   std::list<Instruction *> *stmts, DecodeResult& result);
 
-	SharedExp dis_Num(unsigned num);
+	
+	/***************************************************************************/ /**
+	* \brief   Converts a numbered register to a suitable expression.
+	* \param   regNum - the register number, e.g. 0 for eax
+	* \returns the Exp* for the register NUMBER (e.g. "int 36" for %f4)
+	******************************************************************************/
 	SharedExp dis_Reg(int regNum);
+	
+	/***************************************************************************/ /**
+	* \brief        Converts a number to a Exp* expression.
+	* \param        num - a number
+	* \returns      the Exp* representation of the given number
+	******************************************************************************/
+	SharedExp dis_Num(unsigned num);
 
+	
+protected:
 	// Dictionary of instruction patterns, and other information summarised from the SSL file
 	// (e.g. source machine's endianness)
-	RTLInstDict RTLDict;
+	RTLInstDict m_rtlDict;
+	Prog *m_prog;
+	IBinaryImage *m_image;
 };
 
 // Function used to guess whether a given pc-relative address is the start of a function

@@ -19,11 +19,13 @@
 #include <map>
 
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/include/frontend.h"
 #include "boomerang/type/type.h"
+#include "boomerang/db/SymTab.h"
 #include "boomerang/db/module.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/loader/IBinaryFile.h"
+
+#include "boomerang-frontend/frontend.h"
 
 // TODO: refactor Prog Global handling into separate class
 class RTLInstDict;
@@ -36,10 +38,9 @@ class InstructionSet;
 class Module;
 class XMLProgParser;
 class IBinarySection;
+class ICodeGenerator;
 
 struct BinarySymbol;
-
-class ICodeGenerator;
 
 
 class Global : public Printable
@@ -116,9 +117,9 @@ public:
 	Prog(const QString& name);
 	virtual ~Prog();
 
-	void setFrontEnd(FrontEnd *_pFE);
+	void setFrontEnd(IFrontEnd *fe);
 
-	FrontEnd *getFrontEnd() const { return m_defaultFrontend; }
+	IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }
 
 	/// Assign a name to this program
 	void setName(const char *name);
@@ -371,7 +372,7 @@ public:
 	/// \param frontend for the module, if nullptr set it to program's default frontend.
 	/// \param fact abstract factory object that creates Module instance
 	/// \param name retrieve/create module with this name.
-	Module *getOrInsertModule(const QString& name, const ModuleFactory& fact = DefaultModFactory(), FrontEnd *frontend = nullptr);
+	Module *getOrInsertModule(const QString& name, const ModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
 
 	const ModuleList& getModuleList() const { return m_moduleList; }
 	ModuleList& getModuleList()       { return m_moduleList; }
@@ -400,7 +401,7 @@ protected:
 	std::list<UserProc *> m_entryProcs;
 
 	IFileLoader *m_loaderIface = nullptr;
-	FrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
+	IFrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
 
 	/* Persistent state */
 	QString m_name;               // name of the program

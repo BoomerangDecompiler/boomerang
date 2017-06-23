@@ -55,7 +55,7 @@ struct DecodeResult
 {
 public:
 	/// Resets all the fields to their default values.
-	void    reset()
+	void reset()
 	{
 		numBytes     = 0;
 		type         = NCT;
@@ -104,7 +104,7 @@ class IInstructionTranslator
 {
 public:
 	virtual ~IInstructionTranslator() = default;
-	
+
 	/// Decodes the machine instruction at pc and returns an RTL instance for the instruction.
 	virtual DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) = 0;
 

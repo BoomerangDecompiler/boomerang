@@ -43,13 +43,12 @@
 
 
 MIPSFrontEnd::MIPSFrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
-	: FrontEnd(pBF, prog, _pbff)
+	: IFrontEnd(pBF, prog, _pbff)
 {
-	decoder = new MIPSDecoder(prog);
+	m_decoder = new MIPSDecoder(prog);
 }
 
 
-// destructor
 MIPSFrontEnd::~MIPSFrontEnd()
 {
 }
@@ -108,7 +107,7 @@ bool MIPSFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, 
 							   bool spec /* = false */)
 {
 	// Call the base class to do most of the work
-	if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+	if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
 		return false;
 	}
 

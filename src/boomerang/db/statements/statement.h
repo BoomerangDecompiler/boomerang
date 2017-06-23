@@ -25,8 +25,8 @@
  *       PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
  */
 
-#include "boomerang/db/exphelp.h" // For lessExpStar, lessAssignment etc
-#include "boomerang/db/dataflow.h"  // For embedded objects DefCollector and UseCollector#
+#include "boomerang/db/exphelp.h"  // For lessExpStar, lessAssignment etc
+#include "boomerang/db/dataflow.h" // For embedded objects DefCollector and UseCollector#
 
 #include "boomerang/include/memo.h"
 #include "boomerang/include/types.h"

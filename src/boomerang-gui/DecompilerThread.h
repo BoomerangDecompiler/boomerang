@@ -7,7 +7,7 @@
 #include "core/Boomerang.h"
 
 class MainWindow;
-class FrontEnd;
+class IFrontEnd;
 class Function;
 class UserProc;
 class Prog;
@@ -83,7 +83,7 @@ signals:
 protected:
 	bool Debugging, Waiting;
 
-	FrontEnd *fe;
+	   IFrontEnd *fe;
 	Prog *prog;
 	IBinaryImage *Image;
 	QString filename;

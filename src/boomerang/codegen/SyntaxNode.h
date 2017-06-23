@@ -85,7 +85,7 @@ public:
 	}
 
 	size_t getNumStatements() const { return m_pbb ? 0 : statements.size(); }
-	
+
 	SyntaxNode *getStatement(size_t n)
 	{
 		assert(m_pbb == nullptr);
@@ -216,12 +216,12 @@ protected:
 public:
 	IfThenElseSyntaxNode();
 	virtual ~IfThenElseSyntaxNode();
-	
+
 	virtual bool isGoto() const override { return false; }
 	virtual bool isBranch() const override { return false; }
 
 	virtual size_t getNumOutEdges() const override { return 1; }
-	
+
 	virtual SyntaxNode *getOutEdge(SyntaxNode *root, size_t /*n*/)  override
 	{
 		SyntaxNode *o = pThen->getOutEdge(root, 0);

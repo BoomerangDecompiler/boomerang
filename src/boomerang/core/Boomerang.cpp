@@ -803,7 +803,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 
 	q_cout << "loading...\n";
 	Prog     *prog = new Prog(fname);
-	FrontEnd *fe   = FrontEnd::create(fname, prog);
+	IFrontEnd *fe   = IFrontEnd::create(fname, prog);
 
 	if (fe == nullptr) {
 		LOG_STREAM(LL_Default) << "failed.\n";

@@ -545,7 +545,7 @@ bool HpSomBinaryLoader::isLibrary() const
 {
 	int type = UINT4(m_loadedImage) & 0xFFFF;
 
-	return (type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
+	return(type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
 }
 
 

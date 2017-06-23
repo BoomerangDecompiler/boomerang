@@ -44,14 +44,13 @@
 #include <sstream>
 
 
-ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
-	: FrontEnd(pBF, prog, _pbff)
+ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *bff)
+	: IFrontEnd(pBF, prog, bff)
 {
-	decoder = new ST20Decoder(prog);
+	m_decoder = new ST20Decoder(prog);
 }
 
 
-// destructor
 ST20FrontEnd::~ST20FrontEnd()
 {
 }
@@ -113,7 +112,7 @@ bool ST20FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, 
 							   bool spec /* = false */)
 {
 	// Call the base class to do most of the work
-	if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+	if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
 		return false;
 	}
 

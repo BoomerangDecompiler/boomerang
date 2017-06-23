@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (C) 2004, Trent Waddington
  */
@@ -7,11 +9,12 @@
  * \brief   Provides the definition for the tranformer and related classes.
  ******************************************************************************/
 
-#pragma once
 #include <list>
 #include <memory>
+
 class Exp;
 using SharedExp = std::shared_ptr<Exp>;
+
 class ExpTransformer
 {
 protected:

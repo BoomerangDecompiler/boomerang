@@ -62,7 +62,7 @@ void FrontPentTest::test1()
 	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
 
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	bool    gotMain;
@@ -111,7 +111,7 @@ void FrontPentTest::test2()
 	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
 
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	inst = pFE->decodeInstruction(ADDRESS::g(0x8048345));
@@ -151,7 +151,7 @@ void FrontPentTest::test3()
 	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(HELLO_PENT);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	inst = pFE->decodeInstruction(ADDRESS::n(0x804834d));
@@ -191,7 +191,7 @@ void FrontPentTest::testBranch()
 	Prog *prog = new Prog(BRANCH_PENT);
 
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	// jne
@@ -236,7 +236,7 @@ void FrontPentTest::testFindMain()
 	Prog *prog = new Prog(FEDORA2_TRUE);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
 	
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	bool    found;

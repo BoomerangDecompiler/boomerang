@@ -6,15 +6,16 @@
 #include <set>
 #include "include/decoder.h"
 #include "db/exp.h"           // Ugh... just for enum OPER
-#include "include/frontend.h" // In case included bare, e.g. ProcTest.cpp
 
-class FrontEnd;
+#include "boomerang-frontend/frontend.h"
+
+class IFrontEnd;
 class ST20Decoder;
-struct DecodeResult;
-
 class CallStatement;
 
-class ST20FrontEnd : public FrontEnd
+struct DecodeResult;
+
+class ST20FrontEnd : public IFrontEnd
 {
 public:
 	ST20FrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
@@ -24,7 +25,7 @@ public:
 	 */
 	virtual ~ST20FrontEnd();
 
-	virtual Platform getFrontEndId() const override { return Platform::ST20; }
+	virtual Platform getType() const override { return Platform::ST20; }
 
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 

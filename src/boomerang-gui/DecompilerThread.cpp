@@ -1,4 +1,3 @@
-
 #include "DecompilerThread.h"
 
 #include "boomerang/util/Log.h"
@@ -114,7 +113,7 @@ void Decompiler::load()
 
 	Image = Boomerang::get()->getImage();
 	prog  = new Prog(filename);
-	fe    = FrontEnd::create(filename, prog);
+	fe    = IFrontEnd::create(filename, prog);
 
 	if (fe == NULL) {
 		emit machineType(QString("Unavailable: Load Failed!"));

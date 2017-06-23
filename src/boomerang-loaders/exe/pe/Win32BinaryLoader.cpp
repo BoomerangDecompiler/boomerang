@@ -533,7 +533,7 @@ void Win32BinaryLoader::readDebugData(QString exename)
 
 	DWORD64 dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0)
 
-	if (dwBaseAddr != 0) {
+						 if (dwBaseAddr != 0) {
 		assert(dwBaseAddr == m_pPEHeader->Imagebase);
 		bool found = false;
 		dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr, 0, lookforsource, &found);
@@ -982,7 +982,7 @@ bool Win32BinaryLoader::isStaticLinkedLibProc(ADDRESS uNative)
 #endif
 
 	if (isMinGWsAllocStack(uNative) || isMinGWsFrameInit(uNative) || isMinGWsFrameEnd(uNative) ||
-		          isMinGWsCleanupSetup(uNative) || isMinGWsMalloc(uNative)) {
+		isMinGWsCleanupSetup(uNative) || isMinGWsMalloc(uNative)) {
 		return true;
 	}
 

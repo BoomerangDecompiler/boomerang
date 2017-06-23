@@ -284,12 +284,12 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 		const IBinarySymbol *symb = SymbolTable->find(dest);
 
 		// Special check for calls to weird PLT entries which don't have symbols
-		if ((symb && symb->isImportedFunction()) && (Program->getSymbolByAddress(dest) == nullptr)) {
+		if ((symb && symb->isImportedFunction()) && (m_program->getSymbolByAddress(dest) == nullptr)) {
 			// This is one of those. Flag this as an invalid instruction
 			inst.valid = false;
 		}
 
-		if (helperFunc(dest, address, BB_rtls)) {
+		if (isHelperFunc(dest, address, BB_rtls)) {
 			address += 8; // Skip call, delay slot
 			return true;
 		}
@@ -336,7 +336,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 
 			bool ret = true;
 			// Check for _exit; probably should check for other "never return" functions
-			QString name = Program->getSymbolByAddress(dest);
+			QString name = m_program->getSymbolByAddress(dest);
 
 			if (name == "_exit") {
 				// Don't keep decoding after this call
@@ -869,9 +869,9 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 
 			// Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
 			// If so, we don't need to decode this instruction
-			std::map<ADDRESS, RTL *>::iterator ff = previouslyDecoded.find(uAddr);
+			std::map<ADDRESS, RTL *>::iterator ff = m_previouslyDecoded.find(uAddr);
 
-			if (ff != previouslyDecoded.end()) {
+			if (ff != m_previouslyDecoded.end()) {
 				inst.rtl   = ff->second;
 				inst.valid = true;
 				inst.type  = DD; // E.g. decode the delay slot instruction
@@ -888,7 +888,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 			// Check for invalid instructions
 			if (!inst.valid) {
 				LOG_STREAM() << "Invalid instruction at " << uAddr << ": ";
-				ptrdiff_t delta = Image->getTextDelta();
+				ptrdiff_t delta = m_image->getTextDelta();
 
 				for (int j = 0; j < inst.numBytes; j++) {
 					LOG_STREAM() << QString("%1").arg((unsigned)*(unsigned char *)(uAddr + delta + j).m_value, 2, 16, QChar('0')) << " ";
@@ -981,7 +981,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 					// Construct the new basic block and save its destination
 					// address if it hasn't been visited already
 					BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-					handleBranch(uAddr + 8, Image->getLimitTextHigh(), pBB, cfg, _targetQueue);
+					handleBranch(uAddr + 8, m_image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 
 					// There is no fall through branch.
 					sequentialDecode = false;
@@ -995,7 +995,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 					BB_rtls->push_back(inst.rtl);
 
 					BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-					handleBranch(stmt_jump->getFixedDest(), Image->getLimitTextHigh(), pBB, cfg, _targetQueue);
+					handleBranch(stmt_jump->getFixedDest(), m_image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 
 					// There is no fall through branch.
 					sequentialDecode = false;
@@ -1017,7 +1017,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 						// e.g.
 						// 142c8:  40 00 5b 91          call           exit
 						// 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
-						if (((SparcDecoder *)decoder)->isRestore(uAddr + 4 + Image->getTextDelta())) {
+						if (((SparcDecoder *)m_decoder)->isRestore(uAddr + 4 + m_image->getTextDelta())) {
 							// Give the address of the call; I think that this is actually important, if faintly annoying
 							delay_inst.rtl->setAddress(uAddr);
 							BB_rtls->push_back(delay_inst.rtl);
@@ -1088,7 +1088,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 						}
 						else {
 							// This is a non-call followed by an NCT/NOP
-							case_SD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(), inst, delay_inst,
+							case_SD(uAddr, m_image->getTextDelta(), m_image->getLimitTextHigh(), inst, delay_inst,
 									BB_rtls, cfg, _targetQueue, os);
 
 							// There is no fall through branch.
@@ -1138,7 +1138,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 							}
 							else {
 								BasicBlock *pBB = cfg->newBB(BB_rtls, BBTYPE::ONEWAY, 1);
-								handleBranch(dest, Image->getLimitTextHigh(), pBB, cfg, _targetQueue);
+								handleBranch(dest, m_image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 
 								// There is no fall through branch.
 								sequentialDecode = false;
@@ -1181,7 +1181,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 					{
 					case NOP:
 					case NCT:
-						sequentialDecode = case_DD(uAddr, Image->getTextDelta(), inst, delay_inst, BB_rtls,
+						sequentialDecode = case_DD(uAddr, m_image->getTextDelta(), inst, delay_inst, BB_rtls,
 												   _targetQueue, proc, callList);
 						break;
 
@@ -1215,7 +1215,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 					{
 					case NOP:
 					case NCT:
-						sequentialDecode = case_SCD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(), inst,
+						sequentialDecode = case_SCD(uAddr, m_image->getTextDelta(), m_image->getLimitTextHigh(), inst,
 													delay_inst, BB_rtls, cfg, _targetQueue);
 						break;
 
@@ -1223,7 +1223,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 
 						if (delay_inst.rtl->back()->getKind() == STMT_CALL) {
 							// Assume it's the move/call/move pattern
-							sequentialDecode = case_SCD(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(),
+							sequentialDecode = case_SCD(uAddr, m_image->getTextDelta(), m_image->getLimitTextHigh(),
 														inst, delay_inst, BB_rtls, cfg, _targetQueue);
 							break;
 						}
@@ -1263,7 +1263,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 
 							// Visit the destination of the branch; add "true" leg
 							ADDRESS uDest = stmt_jump->getFixedDest();
-							handleBranch(uDest, Image->getLimitTextHigh(), pBB, cfg, _targetQueue);
+							handleBranch(uDest, m_image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 							// Add the "false" leg: point past the delay inst
 							cfg->addOutEdge(pBB, uAddr + 8);
 							uAddr  += 8;       // Skip branch and delay
@@ -1272,7 +1272,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 						}
 
 					case NCT:
-						sequentialDecode = case_SCDAN(uAddr, Image->getTextDelta(), Image->getLimitTextHigh(),
+						sequentialDecode = case_SCDAN(uAddr, m_image->getTextDelta(), m_image->getLimitTextHigh(),
 													  inst, delay_inst, BB_rtls, cfg, _targetQueue);
 						break;
 
@@ -1327,7 +1327,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 
 		// Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
 		// ones (in the .plt)
-		if ((symb && symb->isImportedFunction()) || !spec || (dest < Image->getLimitTextHigh())) {
+		if ((symb && symb->isImportedFunction()) || !spec || (dest < m_image->getLimitTextHigh())) {
 			cfg->addCall(*it);
 
 			// Don't visit the destination of a register call
@@ -1421,7 +1421,7 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op)
  * \param  lrtl: list of RTL* for current BB
  * \returns True if a helper function was found and handled; false otherwise
  ******************************************************************************/
-bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl)
+bool SparcFrontEnd::isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl)
 {
 	const IBinarySymbol *sym = SymbolTable->find(dest);
 
@@ -1429,7 +1429,7 @@ bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrt
 		return false;
 	}
 
-	QString name = Program->getSymbolByAddress(dest);
+	QString name = m_program->getSymbolByAddress(dest);
 
 	if (name.isEmpty()) {
 		LOG_STREAM() << "Error: Can't find symbol for PLT address " << dest << '\n';
@@ -1628,9 +1628,9 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> 
  * \copydoc FrontEnd::FrontEnd(QObject *,Prog *,BinaryFileFactory *)
  ******************************************************************************/
 SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
-	: FrontEnd(p_BF, prog, bff)
+	: IFrontEnd(p_BF, prog, bff)
 {
-	decoder           = new SparcDecoder(prog);
+	m_decoder         = new SparcDecoder(prog);
 	SymbolTable       = Boomerang::get()->getSymbols();
 	nop_inst.numBytes = 0; // So won't disturb coverage
 	nop_inst.type     = NOP;
@@ -1639,7 +1639,6 @@ SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *b
 }
 
 
-// destructor
 SparcFrontEnd::~SparcFrontEnd()
 {
 }

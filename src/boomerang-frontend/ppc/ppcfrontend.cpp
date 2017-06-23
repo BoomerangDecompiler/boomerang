@@ -44,9 +44,9 @@
 
 
 PPCFrontEnd::PPCFrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
-	: FrontEnd(pBF, prog, _pbff)
+	: IFrontEnd(pBF, prog, _pbff)
 {
-	decoder = new PPCDecoder(prog);
+	m_decoder = new PPCDecoder(prog);
 }
 
 
@@ -109,7 +109,7 @@ bool PPCFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, b
 							  bool spec /* = false */)
 {
 	// Call the base class to do most of the work
-	if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+	if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
 		return false;
 	}
 

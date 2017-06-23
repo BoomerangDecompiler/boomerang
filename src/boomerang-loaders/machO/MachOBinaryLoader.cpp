@@ -173,11 +173,11 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 	// uint32_t startundef, nundef;
 	// uint32_t  startlocal, nlocal,ndef, startdef;
 	std::vector<section> stubs_sects;
-	
-	char                 *strtbl = nullptr;
-	unsigned             *indirectsymtbl = nullptr;
-	ADDRESS              objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
-	unsigned             objc_modules_size = 0;
+
+	char     *strtbl = nullptr;
+	unsigned *indirectsymtbl = nullptr;
+	ADDRESS  objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
+	unsigned objc_modules_size = 0;
 
 	fp.seek(imgoffs + sizeof(*header));
 

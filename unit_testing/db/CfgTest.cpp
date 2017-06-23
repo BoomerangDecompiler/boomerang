@@ -66,7 +66,7 @@ void CfgTest::testDominators()
 	QVERIFY(pBF != nullptr);
 
 	Prog     prog(FRONTIER_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -127,7 +127,7 @@ void CfgTest::testSemiDominators()
 
 	QVERIFY(pBF != 0);
 	Prog     prog(SEMI_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -192,7 +192,7 @@ void CfgTest::testPlacePhi()
 	QVERIFY(pBF != 0);
 
 	Prog     prog(FRONTIER_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -241,7 +241,7 @@ void CfgTest::testPlacePhi2()
 
 	QVERIFY(pBF != 0);
 	Prog     prog(IFTHEN_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -330,7 +330,7 @@ void CfgTest::testRenameVars()
 
 	QVERIFY(pBF != 0);
 	Prog     *prog = new Prog(FRONTIER_PENTIUM);
-	FrontEnd *pFE  = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE  = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);

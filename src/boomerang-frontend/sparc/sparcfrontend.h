@@ -4,49 +4,45 @@
 // behaviour
 
 #include <set>
+
+#include "boomerang-frontend/frontend.h"
+
 #include "boomerang/include/decoder.h"
 #include "boomerang/db/exp.h"           // Ugh... just for enum OPER
-#include "boomerang/include/frontend.h" // In case included bare, e.g. ProcTest.cpp
 
 
-class FrontEnd;
+class IFrontEnd;
 class SparcDecoder;
 struct DecodeResult;
 
 class CallStatement;
 
-class SparcFrontEnd : public FrontEnd
+class SparcFrontEnd : public IFrontEnd
 {
 public:
-
-	/*
-	 * Constructor. Takes some parameters to save passing these around a lot
-	 */
+	/// @copydoc IFrontEnd::IFrontEnd
 	SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff);
-
-	/**
-	 * Virtual destructor.
-	 */
 	virtual ~SparcFrontEnd();
 
-	virtual Platform getFrontEndId() const override { return Platform::SPARC; }
+	/// @copydoc IFrontEnd::getFrontEndId
+	virtual Platform getType() const override { return Platform::SPARC; }
 
 	/**
-	 * This is the main function for decoding a procedure.
+	 * @copydoc IFrontEnd::processProc
+	 * 
 	 * This overrides the base class processProc to do source machine
 	 * specific things (but often calls the base class to do most of the
 	 * work. Sparc is an exception)
-	 * If frag is true, we are decoding only a fragment of the proc
-	 * If spec is true, this is a speculative decode (so give up on any invalid
-	 * instruction)
-	 * Returns true on a good decode
 	 */
 	virtual bool processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
 
+	/// @copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
 
+	/// @copydoc IFrontEnd::getDefaultReturns
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
+	/// @copydoc IFrontEnd::getMainEntryPoint
 	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
 
 private:
@@ -80,7 +76,7 @@ private:
 	void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl);
 	void quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op);
 
-	bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) override;
+	bool isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) override;
 	void gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS addr);
 	bool helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, QString& name);
 

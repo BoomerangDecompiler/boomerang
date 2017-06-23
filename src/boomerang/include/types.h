@@ -19,12 +19,12 @@ typedef uint32_t        DWord; /* 32 bits */
 typedef uint64_t        QWord; /* 64 bits */
 
 /* pointer. size depends on platform */
-struct ADDRESS                 
+struct ADDRESS
 {
-	typedef uintptr_t value_type;
-	
+	typedef uintptr_t   value_type;
+
 public:
-	value_type m_value;
+	value_type     m_value;
 
 	static ADDRESS g(value_type x)   // construct host/native oblivious address
 	{

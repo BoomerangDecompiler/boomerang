@@ -1,5 +1,3 @@
-
-
 #include "SyntaxNode.h"
 
 #include "boomerang/util/Log.h"
@@ -49,7 +47,7 @@ SyntaxNode::SyntaxNode()
 	, m_correspond(nullptr)
 	, m_notGoto(false)
 {
-	   m_nodenum = nodecount++;
+	m_nodenum = nodecount++;
 }
 
 
@@ -578,8 +576,8 @@ SyntaxNode *IfThenSyntaxNode::clone()
 
 	b->m_correspond = this;
 	b->m_pbb        = m_pbb;
-	b->cond       = cond->clone();
-	b->pThen      = pThen->clone();
+	b->cond         = cond->clone();
+	b->pThen        = pThen->clone();
 	return b;
 }
 
@@ -689,9 +687,9 @@ SyntaxNode *IfThenElseSyntaxNode::clone()
 
 	b->m_correspond = this;
 	b->m_pbb        = m_pbb;
-	b->cond       = cond->clone();
-	b->pThen      = pThen->clone();
-	b->pElse      = pElse->clone();
+	b->cond         = cond->clone();
+	b->pThen        = pThen->clone();
+	b->pElse        = pElse->clone();
 	return b;
 }
 
@@ -804,8 +802,8 @@ SyntaxNode *PretestedLoopSyntaxNode::clone()
 
 	b->m_correspond = this;
 	b->m_pbb        = m_pbb;
-	b->cond       = cond->clone();
-	b->pBody      = pBody->clone();
+	b->cond         = cond->clone();
+	b->pBody        = pBody->clone();
 	return b;
 }
 
@@ -904,8 +902,8 @@ SyntaxNode *PostTestedLoopSyntaxNode::clone()
 
 	b->m_correspond = this;
 	b->m_pbb        = m_pbb;
-	b->cond       = cond->clone();
-	b->pBody      = pBody->clone();
+	b->cond         = cond->clone();
+	b->pBody        = pBody->clone();
 	return b;
 }
 
@@ -1003,7 +1001,7 @@ SyntaxNode *InfiniteLoopSyntaxNode::clone()
 
 	b->m_correspond = this;
 	b->m_pbb        = m_pbb;
-	b->pBody      = pBody->clone();
+	b->pBody        = pBody->clone();
 	return b;
 }
 

@@ -21,27 +21,15 @@
 #include "core/BinaryFileFactory.h"
 
 struct Elf32_Ehdr;
-
 struct Elf32_Phdr;
-
 struct Elf32_Shdr;
-
 struct Elf32_Rel;
-
 struct Elf32_Sym;
-
 struct Translated_ElfSym;
-
 class IBinaryImage;
 class IBinarySymbolTable;
 class QFile;
 class SectionInfo;
-
-typedef struct
-{
-	ADDRESS uSymAddr; ///< Symbol native address
-	DWord   iSymSize; ///< Size associated with symbol
-} SymValue;
 
 
 /**

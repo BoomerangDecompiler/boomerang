@@ -167,7 +167,7 @@ void Function::setNativeAddress(ADDRESS a)
 
 bool LibProc::isNoReturn() const
 {
-	return FrontEnd::noReturnCallDest(getName()) || m_signature->isNoReturn();
+	return IFrontEnd::isNoReturnCallDest(getName()) || m_signature->isNoReturn();
 }
 
 

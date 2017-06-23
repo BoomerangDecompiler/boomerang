@@ -2295,6 +2295,7 @@ void Signature::setABIdefines(Prog *prog, StatementList *defs)
 		break;
 
 	case Machine::SPARC:
+
 		for (int r = 8; r <= 13; ++r) {
 			defs->append(new ImplicitAssign(Location::regOf(r))); // %o0-o5
 		}
@@ -2303,6 +2304,7 @@ void Signature::setABIdefines(Prog *prog, StatementList *defs)
 		break;
 
 	case Machine::PPC:
+
 		for (int r = 3; r <= 12; ++r) {
 			defs->append(new ImplicitAssign(Location::regOf(r))); // r3-r12
 		}
@@ -2361,7 +2363,7 @@ StatementList& Signature::getStdRetStmt(Prog *prog)
 	static Assign pent2ret(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(4)));
 	static Assign st20_1ret(Terminal::get(opPC), Location::memOf(Location::regOf(3)));
 	static Assign st20_2ret(Location::regOf(3), Binary::get(opPlus, Location::regOf(3), Const::get(16)));
-	
+
 	switch (prog->getMachine())
 	{
 	case Machine::SPARC:

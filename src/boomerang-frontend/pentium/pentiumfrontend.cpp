@@ -207,7 +207,7 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& o
 								  bool spec /* = false */)
 {
 	// Call the base class to do most of the work
-	if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+	if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
 		return false;
 	}
 
@@ -492,21 +492,13 @@ void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::itera
 }
 
 
-/***************************************************************************/ /**
- * \brief Checks for pentium specific helper functions like __xtol which have specific sematics.
- * \note This needs to be handled in a resourcable way.
- * \param dest - the native destination of this call
- * \param addr - the native address of this call instruction
- * \param lrtl - pointer to a list of RTL pointers for this BB
- * \returns true if a helper function is converted; false otherwise
- ******************************************************************************/
-bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl)
+bool PentiumFrontEnd::isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl)
 {
 	if (dest == NO_ADDRESS) {
 		return false;
 	}
 
-	QString name = Program->getSymbolByAddress(dest);
+	QString name = m_program->getSymbolByAddress(dest);
 
 	if (name.isEmpty()) {
 		return false;
@@ -539,12 +531,12 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
 		Instruction *a    = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
 		pRtl->appendStmt(a);
 		lrtl->push_back(pRtl);
-		Program->removeProc(name);
+		m_program->removeProc(name);
 		return true;
 	}
 	else if ((name == "__mingw_frame_init") || (name == "__mingw_cleanup_setup") || (name == "__mingw_frame_end")) {
 		LOG << "found removable call to static lib proc " << name << " at " << addr << "\n";
-		Program->removeProc(name);
+		m_program->removeProc(name);
 		return true;
 	}
 	else {
@@ -555,26 +547,18 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
 }
 
 
-/***************************************************************************/ /**
- * \brief      PentiumFrontEnd constructor
- * \note          Seems to be necessary to put this here; forces the vtable
- *                    entries to point to this dynamic linked library
- * \copydetails FrontEnd::FrontEnd
- * \returns           <N/A>
- ******************************************************************************/
 PentiumFrontEnd::PentiumFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
-	: FrontEnd(p_BF, prog, bff)
+	: IFrontEnd(p_BF, prog, bff)
 	, idPF(-1)
 {
-	decoder = new PentiumDecoder(prog);
+	m_decoder = new PentiumDecoder(prog);
 }
 
 
-// destructor
 PentiumFrontEnd::~PentiumFrontEnd()
 {
-	delete decoder;
-	decoder = nullptr;
+	delete m_decoder;
+	m_decoder = nullptr;
 }
 
 
@@ -655,7 +639,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 				return cs->getFixedDest();
 			}
 
-			QString dest_sym = Program->getSymbolByAddress(dest);
+			QString dest_sym = m_program->getSymbolByAddress(dest);
 
 			if (dest_sym == "__libc_start_main") {
 				// This is a gcc 3 pattern. The first parameter will be a pointer to main.
@@ -1035,10 +1019,10 @@ bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult& r)
 	r.type     = NCT;
 	r.reDecode = false;
 	r.rtl      = new RTL(pc);
-	SharedExp     dx    = Location::regOf(decoder->getRegIdx("%dx"));
-	SharedExp     al    = Location::regOf(decoder->getRegIdx("%al"));
+	SharedExp     dx    = Location::regOf(m_decoder->getRegIdx("%dx"));
+	SharedExp     al    = Location::regOf(m_decoder->getRegIdx("%al"));
 	CallStatement *call = new CallStatement();
-	call->setDestProc(Program->getLibraryProc("outp"));
+	call->setDestProc(m_program->getLibraryProc("outp"));
 	call->setArgumentExp(0, dx);
 	call->setArgumentExp(1, al);
 	r.rtl->appendStmt(call);
@@ -1048,7 +1032,7 @@ bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult& r)
 
 bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult& r)
 {
-	int n = Image->readNative1(pc + 1);
+	int n = m_image->readNative1(pc + 1);
 
 	if (n != (int)(char)0x0b) {
 		return false;
@@ -1060,8 +1044,9 @@ bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult& r)
 	r.type     = NCT;
 	r.reDecode = false;
 	r.rtl      = new RTL(pc);
+	
 	CallStatement *call = new CallStatement();
-	call->setDestProc(Program->getLibraryProc("invalid_opcode"));
+	call->setDestProc(m_program->getLibraryProc("invalid_opcode"));
 	r.rtl->appendStmt(call);
 	return true;
 }
@@ -1069,7 +1054,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult& r)
 
 bool PentiumFrontEnd::decodeSpecial(ADDRESS pc, DecodeResult& r)
 {
-	int n = Image->readNative1(pc);
+	int n = m_image->readNative1(pc);
 
 	switch ((int)(char)n)
 	{
@@ -1092,7 +1077,7 @@ DecodeResult& PentiumFrontEnd::decodeInstruction(ADDRESS pc)
 		return r;
 	}
 
-	return FrontEnd::decodeInstruction(pc);
+	return IFrontEnd::decodeInstruction(pc);
 }
 
 
@@ -1175,11 +1160,11 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 		else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
 			QString name = found->access<Const, 1, 1>()->getStr();
 
-			if (Program->getGlobal(name) == nullptr) {
+			if (m_program->getGlobal(name) == nullptr) {
 				continue;
 			}
 
-			a = Program->getGlobalAddr(name);
+			a = m_program->getGlobalAddr(name);
 		}
 		else {
 			continue;
@@ -1189,7 +1174,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 		if (paramIsFuncPointer) {
 			LOG_VERBOSE(1) << "found a new procedure at address " << a << " from inspecting parameters of call to "
 						   << call->getDestProc()->getName() << ".\n";
-			Function *proc = Program->setNewProc(a);
+			Function *proc = m_program->setNewProc(a);
 			auto     sig   = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
 			sig->setName(proc->getName());
 			sig->setForced(true);
@@ -1205,14 +1190,14 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 		for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
 			if (compound->getType(n)->resolvesToPointer() &&
 				compound->getType(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
-				ADDRESS d = ADDRESS::g(Image->readNative4(a));
+				ADDRESS d = ADDRESS::g(m_image->readNative4(a));
 
 				if (VERBOSE) {
 					LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "
 						<< call->getDestProc()->getName() << ".\n";
 				}
 
-				Function *proc = Program->setNewProc(d);
+				Function *proc = m_program->setNewProc(d);
 				auto     sig   = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
 				sig->setName(proc->getName());
 				sig->setForced(true);

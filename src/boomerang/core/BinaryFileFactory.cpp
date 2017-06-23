@@ -94,21 +94,22 @@ IFileLoader *BinaryFileFactory::getInstanceFor(const std::string& filePath)
 		return nullptr;
 	}
 
-	IFileLoader* bestLoader = nullptr;
-	int bestScore = 0;
-	
+	IFileLoader *bestLoader = nullptr;
+	int         bestScore   = 0;
+
 	// get the best plugin for loading this file
 	for (std::shared_ptr<LoaderPlugin>& p : m_loaderPlugins) {
 		f.seek(0); // reset the file offset for the next plugin
 		IFileLoader *loader = p->get();
 
 		int score = loader->canLoad(f);
+
 		if (score > bestScore) {
-			bestScore = score;
+			bestScore  = score;
 			bestLoader = loader;
 		}
 	}
-	
+
 	return bestLoader;
 }
 
@@ -139,4 +140,3 @@ void BinaryFileFactory::populatePlugins()
 		qCritical() << "No loader plugins found !";
 	}
 }
-

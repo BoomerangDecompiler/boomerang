@@ -1,4 +1,3 @@
-
 typedef unsigned int size_t;
 
 int printf(char *fmt, ...);
@@ -16,10 +15,11 @@ int fread(char *ptr, int size, int nitems, FILE *stream);
 int fwrite(char *ptr, int size, int nitems, FILE *stream);
 int fclose(FILE *stream);
 int puts(char *s);
+
 char *fgets(char[] *s, int size @max(s), FILE *stream);
 void perror(const char *s);
 int fprintf(FILE *stream, const char *format, ...);
-int vfprintf ( FILE * stream, const char * format, va_list arg );
+int vfprintf(FILE *stream, const char *format, va_list arg);
 int sscanf(const char *str, const char *format, ...);
 
 int atoi(const char *nptr);
@@ -53,4 +53,3 @@ int remove(const char *pathname);
 // on windows
 
 int _write(int fd, char buf[], int size);
-

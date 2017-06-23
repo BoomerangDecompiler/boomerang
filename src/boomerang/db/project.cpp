@@ -1,4 +1,3 @@
-
 #include "project.h"
 
 #include "boomerang/db/BinaryImage.h"

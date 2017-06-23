@@ -1,33 +1,37 @@
 #pragma once
 
-#include "boomerang/include/frontend.h"
+#include "boomerang-frontend/frontend.h"
 
 class Instruction;
 class PentiumDecoder;
 
 // Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
 // behaviour
-class PentiumFrontEnd : public FrontEnd
+class PentiumFrontEnd : public IFrontEnd
 {
 public:
-
-	/// Constructor. Takes some parameters to save passing these around a lot
+	/// @copydoc IFrontEnd::IFrontEnd
 	PentiumFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
 
+	/// @copydoc IFrontEnd::~IFrontEnd
 	virtual ~PentiumFrontEnd();
 
-	virtual Platform getFrontEndId() const override { return Platform::PENTIUM; }
+	/// @copydoc IFrontEnd::getFrontEndId
+	virtual Platform getType() const override { return Platform::PENTIUM; }
 
+	/// @copydoc IFrontEnd::processProc
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
+	/// @copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
 
+	/// @copydoc IFrontEnd::getDefaultReturns
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
+	/// @copydoc IFrontEnd::getMainEntryPoint
 	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
-
+	
 private:
-
 	/*
 	 * Process an F(n)STSW instruction.
 	 */
@@ -51,11 +55,18 @@ private:
 	void processStringInst(UserProc *proc);
 	void processOverlapped(UserProc *proc);
 
-	/*
-	 * Check a HLCall for a helper function, and replace with appropriate
-	 *    semantics if possible
-	 */
-	bool helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) override;
+	/***************************************************************************/ /**
+	* \brief Checks for pentium specific helper functions like __xtol which have specific sematics.
+	* 
+	* \note This needs to be handled in a resourcable way.
+	* 
+	* \param dest - the native destination of this call
+	* \param addr - the native address of this call instruction
+	* \param lrtl - pointer to a list of RTL pointers for this BB
+	* 
+	* \returns true if a helper function is converted; false otherwise
+	******************************************************************************/
+	bool isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) override;
 
 	bool isStoreFsw(Instruction *s);
 	bool isDecAh(RTL *r);

@@ -82,7 +82,7 @@ DecodeResult& ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 						// #line 74 "frontend/machine/st20/decoder.m"
 
-						unconditionalJump("j", result.numBytes, hostPC + result.numBytes + total + oper, delta, pc, stmts,
+						processUnconditionalJump("j", result.numBytes, hostPC + result.numBytes + total + oper, delta, pc, stmts,
 										  result);
 					}
 					break;
@@ -945,7 +945,7 @@ ST20Decoder::ST20Decoder(Prog *prog_)
 {
 	QDir base_dir = Boomerang::get()->getProgDir();
 
-	RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/st20/st20.ssl"));
+	   m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/st20/st20.ssl"));
 }
 
 

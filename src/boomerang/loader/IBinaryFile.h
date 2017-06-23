@@ -74,4 +74,3 @@ public:
 	virtual bool isLibraryFile() const = 0;
 	virtual bool isBigEndian() const   = 0;
 };
-

@@ -710,13 +710,13 @@ Machine ElfBinaryLoader::getMachine() const
 	}
 	else if (elfMachine == EM_X86_64) {
 		fprintf(stderr, "Error: ElfBinaryFile::GetMachine: The AMD x86-64 architecture is not supported yet\n");
-		return (Machine)-1;
+		return (Machine) - 1;
 	}
 
 	// An unknown machine type
 	fprintf(stderr, "Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n", elfMachine, (unsigned int)elfMachine);
 	fprintf(stderr, "(Please add a description for this type, thanks!)\n");
-	return (Machine)-1;
+	return (Machine) - 1;
 }
 
 

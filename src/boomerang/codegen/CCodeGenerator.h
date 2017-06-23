@@ -148,7 +148,7 @@ public:
 	 * output functions
 	 */
 	virtual void print(QTextStream& os) override;
-	
+
 private:
 	void addProcDec(UserProc *proc, bool open); // Implement AddProcStart and AddPrototype
 

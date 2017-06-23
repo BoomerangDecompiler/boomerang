@@ -1078,7 +1078,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 						result.rtl->appendStmt(newCall);
 
-						Function *destProc = prog->setNewProc(reladdr - delta);
+						Function *destProc = m_prog->setNewProc(reladdr - delta);
 
 						if (destProc == (Function *)-1) {
 							destProc = nullptr;
@@ -1091,7 +1091,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 					ADDRESS reladdr = addressToPC(MATCH_p) + 4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
 					nextPC = MATCH_p + 4;
 					// #line 207 "frontend/machine/ppc/decoder.m"
-					unconditionalJump("b", 4, reladdr, delta, pc, stmts, result);
+					processUnconditionalJump("b", 4, reladdr, delta, pc, stmts, result);
 				} /*opt-block*/ /*opt-block+*/ /*opt-block+*/
 
 				break;
@@ -1662,7 +1662,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 										// #line 299 "frontend/machine/ppc/decoder.m"
 
-										computedCall(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, stmts,
+										processComputedCall(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, stmts,
 													 result);
 
 										Q_UNUSED(BIcr);
@@ -1677,7 +1677,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 
 										// #line 295 "frontend/machine/ppc/decoder.m"
 
-										computedJump(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, stmts,
+										                              processComputedJump(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, stmts,
 													 result);
 
 										Q_UNUSED(BIcr);
@@ -8983,7 +8983,7 @@ MATCH_label_a1:
 
 			// #line 303 "frontend/machine/ppc/decoder.m"
 
-			unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
+			processUnconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
 
 			Q_UNUSED(BIcr);
 
@@ -9398,7 +9398,7 @@ PPCDecoder::PPCDecoder(Prog *_prog)
 {
 	QDir base_dir = Boomerang::get()->getProgDir();
 
-	RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/ppc/ppc.ssl"));
+	   m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/ppc/ppc.ssl"));
 }
 
 

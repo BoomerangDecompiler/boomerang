@@ -19,7 +19,7 @@
 #include "boomerang/include/types.h"
 #include "boomerang/db/exphelp.h" // For lessExpStar
 
-#include <cstdio>       // For FILE
+#include <cstdio>                 // For FILE
 #include <list>
 #include <vector>
 #include <set>

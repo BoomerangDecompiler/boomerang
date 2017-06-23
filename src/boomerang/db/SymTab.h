@@ -20,8 +20,8 @@
  * if the strings are ever changed, then the map's internal rb-tree becomes invalid.
  ******************************************************************************/
 
-#include "db/IBinarySymbols.h"
-#include "include/types.h"
+#include "boomerang/db/IBinarySymbols.h"
+#include "boomerang/include/types.h"
 
 #include <QVariantMap>
 #include <memory>
@@ -29,6 +29,7 @@
 #include <string>
 
 typedef std::shared_ptr<class Type> SharedType;
+
 struct BinarySymbol : public IBinarySymbol
 {
 	QString              Name;

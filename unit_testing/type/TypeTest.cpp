@@ -78,7 +78,7 @@ void TypeTest::testCompound()
 
 	BinaryFileFactory bff;
 	IFileLoader       *loader = bff.loadFile(HELLO_WINDOWS);
-	FrontEnd          *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS), &bff);
+	IFrontEnd          *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS), &bff);
 
 	pFE->readLibraryCatalog(); // Read definitions
 

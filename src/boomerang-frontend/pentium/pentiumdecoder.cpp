@@ -14416,7 +14416,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								// Set the destination
 								call->setDest(nativeDest);
 								stmts->push_back(call);
-								Function *destProc = prog->setNewProc(nativeDest);
+								Function *destProc = m_prog->setNewProc(nativeDest);
 
 								if (destProc == (Function *)-1) {
 									destProc = nullptr; // In case a deleted Proc
@@ -14436,7 +14436,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							const char *name  = MATCH_name;
 							ADDRESS    relocd = addressToPC(MATCH_p) + 5 + MATCH_w_32_8;
 							nextPC = MATCH_p + 5;
-							unconditionalJump(name, 5, relocd, delta, pc, stmts, result);
+							                     processUnconditionalJump(name, 5, relocd, delta, pc, stmts, result);
 						}
 						break;
 
@@ -14455,7 +14455,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							const char *name  = MATCH_name;
 							ADDRESS    relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
 							nextPC = MATCH_p + 2;
-							unconditionalJump(name, 2, relocd, delta, pc, stmts, result);
+							                     processUnconditionalJump(name, 2, relocd, delta, pc, stmts, result);
 
 							/*
 							 * Conditional branches, 8 bit offset: 7X XX
@@ -26301,7 +26301,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 									ADDRESS    relocd =
 										addressToPC(MATCH_p) + 4 + sign_extend((MATCH_w_16_16 & 0xffff), 16);
 									nextPC = MATCH_p + 4;
-									unconditionalJump(name, 3, relocd, delta, pc, stmts, result);
+									                           processUnconditionalJump(name, 3, relocd, delta, pc, stmts, result);
 								}
 							} /*opt-block*/
 							else {
@@ -49769,8 +49769,8 @@ SWord PentiumDecoder::getWord(intptr_t lc)
 DWord PentiumDecoder::getDword(intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
-	lastDwordLc = lc - Image->getTextDelta();
-	return Image->readNative4(lastDwordLc);
+	lastDwordLc = lc - m_image->getTextDelta();
+	return m_image->readNative4(lastDwordLc);
 	//    assert(lc<prog->getLimitTextHigh().m_value);
 	//    return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
 }
@@ -49785,7 +49785,7 @@ PentiumDecoder::PentiumDecoder(Prog *_prog)
 {
 	QDir base_dir = Boomerang::get()->getProgDir();
 
-	RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/pentium/pentium.ssl"));
+	   m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/pentium/pentium.ssl"));
 }
 
 
@@ -49898,7 +49898,7 @@ void genBSFR(ADDRESS pc, SharedExp dest, SharedExp modrm, int init, int size, OP
 SharedExp PentiumDecoder::addReloc(const SharedExp& e)
 {
 	if (lastDwordLc != NO_ADDRESS) {
-		return prog->addReloc(e, lastDwordLc);
+		return m_prog->addReloc(e, lastDwordLc);
 	}
 
 	return e;

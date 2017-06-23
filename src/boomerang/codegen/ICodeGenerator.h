@@ -35,7 +35,7 @@ class ReturnStatement;
 
 /**
  * Base class for generating high-level code from statements.
- * 
+ *
  * This class is provides methods which are generic of procedural
  * languages like C, Pascal, Fortran, etc. Included in the base class
  * is the follow and goto sets which are used during code generation.
@@ -120,7 +120,7 @@ public:
 	 * output functions, pure virtual.
 	 */
 	virtual void print(QTextStream& os) = 0;
-	
+
 protected:
 	UserProc *m_proc; ///< Pointer to the enclosing UserProc
 };

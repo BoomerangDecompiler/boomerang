@@ -1,4 +1,3 @@
-
 #include "RangeAnalysis.h"
 
 #include "boomerang/util/Log.h"

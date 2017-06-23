@@ -61,10 +61,10 @@ enum LogLevel
 	LL_Error   = 3,
 };
 
-#define LOG                Boomerang::get()->log()
+#define LOG           Boomerang::get()->log()
 #define LOG_SEPARATE(x)    Boomerang::get()->separate_log(x)
 #define LOG_VERBOSE(x)     Boomerang::get()->if_verbose_log(x)
-#define LOG_STREAM         Boomerang::get()->getLogStream
+#define LOG_STREAM    Boomerang::get()->getLogStream
 
 /// Virtual class to monitor the decompilation.
 class Watcher
@@ -178,7 +178,7 @@ public:
 	 * Returns the ICodeGenerator for the given proc.
 	 * \return The ICodeGenerator for the specified UserProc.
 	 */
-	   ICodeGenerator *getHLLCode(UserProc *p = nullptr);
+	ICodeGenerator *getHLLCode(UserProc *p = nullptr);
 
 	/// Set the path where the %Boomerang executable will search for plugins.
 	void setPluginPath(const QString& p);

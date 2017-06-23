@@ -106,7 +106,7 @@ Prog::~Prog()
 }
 
 
-Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, FrontEnd *frontend)
+Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, IFrontEnd *frontEnd)
 {
 	for (Module *m : m_moduleList) {
 		if (m->getName() == name) {
@@ -114,17 +114,17 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
 		}
 	}
 
-	Module *m = fact.create(name, this, frontend ? frontend : m_defaultFrontend);
+	Module *m = fact.create(name, this, frontEnd ? frontEnd : m_defaultFrontend);
 	m_moduleList.push_back(m);
 	connect(this, SIGNAL(rereadLibSignatures()), m, SLOT(onLibrarySignaturesChanged()));
 	return m;
 }
 
 
-void Prog::setFrontEnd(FrontEnd *_pFE)
+void Prog::setFrontEnd(IFrontEnd *frontEnd)
 {
-	m_loaderIface     = _pFE->getLoaderIface();
-	m_defaultFrontend = _pFE;
+	m_loaderIface     = frontEnd->getLoader();
+	m_defaultFrontend = frontEnd;
 
 	for (Module *m : m_moduleList) {
 		delete m;
@@ -263,7 +263,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 
 		if (proc == nullptr) {
 			ICodeGenerator *code  = Boomerang::get()->getHLLCode();
-			bool    global = false;
+			bool           global = false;
 
 			if (Boomerang::get()->noDecompile) {
 				const char *sections[] = { "rodata", "data", "data1", nullptr };
@@ -316,8 +316,8 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 			}
 
 			proto = true;
-			UserProc *up   = (UserProc *)func;
-			ICodeGenerator  *code = Boomerang::get()->getHLLCode(up);
+			UserProc       *up   = (UserProc *)func;
+			ICodeGenerator *code = Boomerang::get()->getHLLCode(up);
 			code->addPrototype(up); // May be the wrong signature if up has ellipsis
 
 			if (generate_all) {
@@ -871,7 +871,7 @@ LibProc *Prog::getLibraryProc(const QString& nam) const
 /// Get the front end id used to make this prog
 Platform Prog::getFrontEndId() const
 {
-	return m_defaultFrontend->getFrontEndId();
+	return m_defaultFrontend->getType();
 }
 
 

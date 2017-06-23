@@ -59,10 +59,10 @@ Module::Module()
 }
 
 
-Module::Module(const QString& _name, Prog *_parent, FrontEnd *fe)
+Module::Module(const QString& name, Prog *parent, IFrontEnd *fe)
 	: m_currentFrontend(fe)
-	, m_name(_name)
-	, m_parent(_parent)
+	, m_name(name)
+	, m_parent(parent)
 {
 	m_strm.setDevice(&m_out);
 }

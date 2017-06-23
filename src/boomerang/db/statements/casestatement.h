@@ -11,6 +11,7 @@ private:
 	SWITCH_INFO *pSwitchInfo; // Ptr to struct with info about the switch
 
 public:
+
 	/***************************************************************************/ /**
 	 * \fn        CaseStatement::CaseStatement
 	 * \brief        Constructor.

@@ -1247,7 +1247,7 @@ void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString i
 /// Remove all generated code.
 void CCodeGenerator::reset()
 {
-	   m_lines.clear();
+	m_lines.clear();
 }
 
 
@@ -1533,7 +1533,7 @@ void CCodeGenerator::removeLabel(int ord)
 	QTextStream s(&tgt);
 
 	s << "L" << ord << ":";
-	   m_lines.removeAll(tgt);
+	m_lines.removeAll(tgt);
 }
 
 
@@ -1703,7 +1703,7 @@ void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
  * \todo                Add assingment for when the function returns a struct.
  */
 void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
-								StatementList *results)
+									  StatementList *results)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -2141,7 +2141,7 @@ void CCodeGenerator::addLineComment(const QString& cmt)
 // have a single place to put a breakpoint on.
 void CCodeGenerator::appendLine(const QString& s)
 {
-	   m_lines.push_back(s);
+	m_lines.push_back(s);
 }
 
 
@@ -2151,6 +2151,7 @@ void CCodeGenerator::openParen(QTextStream& str, PREC outer, PREC inner)
 		str << "(";
 	}
 }
+
 
 void CCodeGenerator::closeParen(QTextStream& str, PREC outer, PREC inner)
 {

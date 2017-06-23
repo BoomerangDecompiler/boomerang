@@ -6,9 +6,10 @@
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/signature.h"
-#include "boomerang/include/frontend.h"
 #include "boomerang/db/basicblock.h"
 #include "boomerang/db/statements/callstatement.h"
+
+#include "boomerang-frontend/frontend.h"
 
 #include <QDebug>
 
@@ -422,7 +423,7 @@ void ReturnStatement::updateModifieds()
 	if ((m_parent->getNumInEdges() == 1) && m_parent->getInEdges()[0]->getLastStmt()->isCall()) {
 		CallStatement *call = (CallStatement *)m_parent->getInEdges()[0]->getLastStmt();
 
-		if (call->getDestProc() && FrontEnd::noReturnCallDest(call->getDestProc()->getName())) {
+		if (call->getDestProc() && IFrontEnd::isNoReturnCallDest(call->getDestProc()->getName())) {
 			return;
 		}
 	}
@@ -430,10 +431,10 @@ void ReturnStatement::updateModifieds()
 	// For each location in the collector, make sure that there is an assignment in the old modifieds, which will
 	// be filtered and sorted to become the new modifieds
 	// Ick... O(N*M) (N existing modifeds, M collected locations)
-	
+
 	StatementList::iterator it;
 
-	for (DefCollector::iterator  ll = col.begin(); ll != col.end(); ++ll) {
+	for (DefCollector::iterator ll = col.begin(); ll != col.end(); ++ll) {
 		bool      found  = false;
 		Assign    *as    = (Assign *)*ll;
 		SharedExp colLhs = as->getLeft();

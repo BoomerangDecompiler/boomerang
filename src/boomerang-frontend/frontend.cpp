@@ -15,7 +15,7 @@
  *                of frontend logic remains in the source dependent files such as
  *                frontsparc.cpp
  ******************************************************************************/
-#include "boomerang/include/frontend.h"
+#include "frontend.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/core/BinaryFileFactory.h"
@@ -55,33 +55,24 @@
 #include <cstdarg> // For varargs
 #include <sstream>
 
-/***************************************************************************/ /**
- *
- * \brief      Construct the FrontEnd object
- * \param p_BF pointer to the BinaryFile object (loader)
- * \param prog program being decoded
- * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
- ******************************************************************************/
-FrontEnd::FrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
+
+IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
 	: m_fileLoader(p_BF)
-	, pbff(bff)
-	, Program(prog)
+	, m_bff(bff)
+	, m_program(prog)
 {
-	Image = Boomerang::get()->getImage();
-	assert(Image);
-	BinarySymbols = (SymTab *)Boomerang::get()->getSymbols();
+	   m_image = Boomerang::get()->getImage();
+	assert(m_image);
+	   m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
+}
+
+IFrontEnd::~IFrontEnd()
+{
+	m_fileLoader = nullptr;
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Create from a binary file
- * Static function to instantiate an appropriate concrete front end
- * \param pBF pointer to the BinaryFile object (loader)
- * \param prog program being decoded
- * \param pbff pointer to a BinaryFileFactory object (so the library can be unloaded)
- ******************************************************************************/
-FrontEnd *FrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactory *pbff)
+IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactory *pbff)
 {
 	switch (pBF->getMachine())
 	{
@@ -120,14 +111,7 @@ FrontEnd *FrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactory 
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Create FrontEnd instance given \a fname and \a prog
- * \param fname string with full path to decoded file
- * \param prog program being decoded
- * \returns Binary-specific frontend.
- ******************************************************************************/
-FrontEnd *FrontEnd::create(const QString& fname, Prog *prog)
+IFrontEnd *IFrontEnd::create(const QString& fname, Prog *prog)
 {
 	BinaryFileFactory *pbff = new BinaryFileFactory();
 
@@ -141,50 +125,43 @@ FrontEnd *FrontEnd::create(const QString& fname, Prog *prog)
 		return nullptr;
 	}
 
-	FrontEnd *fe = instantiate(loader, prog, pbff);
+	   IFrontEnd *fe = instantiate(loader, prog, pbff);
 	return fe;
 }
 
 
-void FrontEnd::addSymbol(ADDRESS addr, const QString& nam)
+void IFrontEnd::addSymbol(ADDRESS addr, const QString& nam)
 {
-	BinarySymbols->create(addr, nam);
+	   m_binarySymbols->create(addr, nam);
 }
 
 
-// destructor
-FrontEnd::~FrontEnd()
+QString IFrontEnd::getRegName(int idx) const
 {
-	m_fileLoader = nullptr;
+	return m_decoder->getRegName(idx);
 }
 
 
-QString FrontEnd::getRegName(int idx) const
+int IFrontEnd::getRegSize(int idx)
 {
-	return decoder->getRegName(idx);
+	return m_decoder->getRegSize(idx);
 }
 
 
-int FrontEnd::getRegSize(int idx)
-{
-	return decoder->getRegSize(idx);
-}
-
-
-bool FrontEnd::isWin32() const
+bool IFrontEnd::isWin32() const
 {
 	return m_fileLoader->getFormat() == LoadFmt::PE;
 }
 
 
-bool FrontEnd::noReturnCallDest(const QString& name)
+bool IFrontEnd::isNoReturnCallDest(const QString& name)
 {
 	return((name == "_exit") || (name == "exit") || (name == "ExitProcess") || (name == "abort") ||
 		   (name == "_assert"));
 }
 
 
-void FrontEnd::readLibraryCatalog(const QString& sPath)
+void IFrontEnd::readLibraryCatalog(const QString& sPath)
 {
 	// TODO: this is a work for generic semantics provider plugin : HeaderReader
 	QFile file(sPath);
@@ -226,10 +203,10 @@ void FrontEnd::readLibraryCatalog(const QString& sPath)
 }
 
 
-void FrontEnd::readLibraryCatalog()
+void IFrontEnd::readLibraryCatalog()
 {
 	// TODO: this is a work for generic semantics provider plugin : HeaderReader
-	LibrarySignatures.clear();
+	   m_librarySignatures.clear();
 	QDir sig_dir(Boomerang::get()->getProgPath());
 
 	if (!sig_dir.cd("signatures")) {
@@ -240,7 +217,7 @@ void FrontEnd::readLibraryCatalog()
 	QString sList = sig_dir.absoluteFilePath("common.hs");
 
 	readLibraryCatalog(sList);
-	sList = sig_dir.absoluteFilePath(Signature::getPlatformName(getFrontEndId()) + ".hs");
+	sList = sig_dir.absoluteFilePath(Signature::getPlatformName(getType()) + ".hs");
 	readLibraryCatalog(sList);
 
 	if (isWin32()) {
@@ -256,15 +233,15 @@ void FrontEnd::readLibraryCatalog()
 }
 
 
-void FrontEnd::checkEntryPoint(std::vector<ADDRESS>& entrypoints, ADDRESS addr, const char *type)
+void IFrontEnd::checkEntryPoint(std::vector<ADDRESS>& entrypoints, ADDRESS addr, const char *type)
 {
 	SharedType ty = NamedType::getNamedType(type);
 
 	assert(ty->isFunc());
-	UserProc *proc = (UserProc *)Program->setNewProc(addr);
+	UserProc *proc = (UserProc *)m_program->setNewProc(addr);
 	assert(proc);
 	auto                sig    = ty->as<FuncType>()->getSignature()->clone();
-	const IBinarySymbol *p_sym = BinarySymbols->find(addr);
+	const IBinarySymbol *p_sym = m_binarySymbols->find(addr);
 	QString             sym    = p_sym ? p_sym->getName() : QString("");
 
 	if (!sym.isEmpty()) {
@@ -277,7 +254,7 @@ void FrontEnd::checkEntryPoint(std::vector<ADDRESS>& entrypoints, ADDRESS addr, 
 }
 
 
-std::vector<ADDRESS> FrontEnd::getEntryPoints()
+std::vector<ADDRESS> IFrontEnd::getEntryPoints()
 {
 	std::vector<ADDRESS> entrypoints;
 	bool                 gotMain = false;
@@ -298,14 +275,14 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
 
 			if (p != fname) {
 				QString             name   = p.mid(0, p.length() - 6) + "ModuleData";
-				const IBinarySymbol *p_sym = BinarySymbols->find(name);
+				const IBinarySymbol *p_sym = m_binarySymbols->find(name);
 
 				if (p_sym) {
 					ADDRESS tmpaddr = p_sym->getLocation();
 					ADDRESS setup, teardown;
-					/*uint32_t vers = */ Image->readNative4(tmpaddr); // TODO: find use for vers ?
-					setup    = ADDRESS::g(Image->readNative4(tmpaddr + 4));
-					teardown = ADDRESS::g(Image->readNative4(tmpaddr + 8));
+					/*uint32_t vers = */ m_image->readNative4(tmpaddr); // TODO: find use for vers ?
+					setup    = ADDRESS::g(m_image->readNative4(tmpaddr + 4));
+					teardown = ADDRESS::g(m_image->readNative4(tmpaddr + 8));
 
 					if (!setup.isZero()) {
 						checkEntryPoint(entrypoints, setup, "ModuleSetupProc");
@@ -320,13 +297,13 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
 
 		// Linux kernel module
 		if (fname.endsWith(".ko")) {
-			const IBinarySymbol *p_sym = BinarySymbols->find("init_module");
+			const IBinarySymbol *p_sym = m_binarySymbols->find("init_module");
 
 			if (p_sym) {
 				entrypoints.push_back(p_sym->getLocation());
 			}
 
-			p_sym = BinarySymbols->find("cleanup_module");
+			p_sym = m_binarySymbols->find("cleanup_module");
 
 			if (p_sym) {
 				entrypoints.push_back(p_sym->getLocation());
@@ -338,20 +315,20 @@ std::vector<ADDRESS> FrontEnd::getEntryPoints()
 }
 
 
-void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
+void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 {
-	assert(Program == prg);
+	assert(m_program == prg);
 
 	if (pname) {
-		Program->setName(pname);
+		      m_program->setName(pname);
 	}
 
 	if (!decodeMain) {
 		return;
 	}
 
-	Boomerang::get()->alertStartDecode(Image->getLimitTextLow(),
-									   (Image->getLimitTextHigh() - Image->getLimitTextLow()).m_value);
+	Boomerang::get()->alertStartDecode(m_image->getLimitTextLow(),
+									   (m_image->getLimitTextHigh() - m_image->getLimitTextLow()).m_value);
 
 	bool    gotMain;
 	ADDRESS a = getMainEntryPoint(gotMain);
@@ -361,21 +338,21 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 		std::vector<ADDRESS> entrypoints = getEntryPoints();
 
 		for (auto& entrypoint : entrypoints) {
-			decode(Program, entrypoint);
+			decode(m_program, entrypoint);
 		}
 
 		return;
 	}
 
-	decode(Program, a);
-	Program->setEntryPoint(a);
+	decode(m_program, a);
+	   m_program->setEntryPoint(a);
 
 	if (not gotMain) {
 		return;
 	}
 
 	static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
-	QString           name        = Program->getSymbolByAddress(a);
+	QString           name        = m_program->getSymbolByAddress(a);
 
 	if (name == nullptr) {
 		name = mainName[0];
@@ -386,7 +363,7 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 			continue;
 		}
 
-		Function *proc = Program->findProc(a);
+		Function *proc = m_program->findProc(a);
 
 		if (proc == nullptr) {
 			LOG_VERBOSE(1) << "no proc found for address " << a << "\n";
@@ -410,15 +387,14 @@ void FrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 }
 
 
-// Somehow, a == NO_ADDRESS has come to mean decode anything not already decoded
-void FrontEnd::decode(Prog *prg, ADDRESS a)
+void IFrontEnd::decode(Prog *prg, ADDRESS a)
 {
-	assert(Program == prg);
+	assert(m_program == prg);
 
 	if (a != NO_ADDRESS) {
-		Program->setNewProc(a);
+		      m_program->setNewProc(a);
 		LOG_VERBOSE(1) << "starting decode at address " << a << "\n";
-		UserProc *p = (UserProc *)Program->findProc(a);
+		UserProc *p = (UserProc *)m_program->findProc(a);
 
 		if (p == nullptr) {
 			LOG_VERBOSE(1) << "no proc found at address " << a << "\n";
@@ -440,7 +416,7 @@ void FrontEnd::decode(Prog *prg, ADDRESS a)
 		while (change) {
 			change = false;
 
-			for (Module *m : *Program) {
+			for (Module *m : *m_program) {
 				for (Function *pProc : *m) {
 					if (pProc->isLib()) {
 						continue;
@@ -476,15 +452,14 @@ void FrontEnd::decode(Prog *prg, ADDRESS a)
 		}
 	}
 
-	Program->wellForm();
+	   m_program->wellForm();
 }
 
 
-/// \a a should be the address of an UserProc
-void FrontEnd::decodeOnly(Prog *prg, ADDRESS a)
+void IFrontEnd::decodeOnly(Prog *prg, ADDRESS a)
 {
-	assert(Program == prg);
-	UserProc *p = (UserProc *)Program->setNewProc(a);
+	assert(m_program == prg);
+	UserProc *p = (UserProc *)m_program->setNewProc(a);
 	assert(!p->isLib());
 	QTextStream os(stderr); // rtl output target
 
@@ -492,11 +467,11 @@ void FrontEnd::decodeOnly(Prog *prg, ADDRESS a)
 		p->setDecoded();
 	}
 
-	Program->wellForm();
+	   m_program->wellForm();
 }
 
 
-void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a)
+void IFrontEnd::decodeFragment(UserProc *proc, ADDRESS a)
 {
 	if (Boomerang::get()->traceDecoder) {
 		LOG << "decoding fragment at 0x" << a << "\n";
@@ -507,9 +482,9 @@ void FrontEnd::decodeFragment(UserProc *proc, ADDRESS a)
 }
 
 
-DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc)
+DecodeResult& IFrontEnd::decodeInstruction(ADDRESS pc)
 {
-	if (!Image || (Image->getSectionInfoByAddr(pc) == nullptr)) {
+	if (!m_image || (m_image->getSectionInfoByAddr(pc) == nullptr)) {
 		LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
 		static DecodeResult invalid;
 		invalid.reset();
@@ -517,19 +492,13 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc)
 		return invalid;
 	}
 
-	const IBinarySection *pSect           = Image->getSectionInfoByAddr(pc);
+	const IBinarySection *pSect           = m_image->getSectionInfoByAddr(pc);
 	ptrdiff_t            host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).m_value;
-	return decoder->decodeInstruction(pc, host_native_diff);
+	return m_decoder->decodeInstruction(pc, host_native_diff);
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief       Read the library signatures from a file
- * \param       sPath The file to read from
- * \param       cc the calling convention assumed
- */
-void FrontEnd::readLibrarySignatures(const char *sPath, CallConv cc)
+void IFrontEnd::readLibrarySignatures(const char *sPath, CallConv cc)
 {
 	std::ifstream ifs;
 
@@ -542,14 +511,14 @@ void FrontEnd::readLibrarySignatures(const char *sPath, CallConv cc)
 
 	AnsiCParser *p = new AnsiCParser(ifs, false);
 
-	Platform plat = getFrontEndId();
+	Platform plat = getType();
 	p->yyparse(plat, cc);
 
 	for (auto& elem : p->signatures) {
 #if 0
 		LOG_STREAM() << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
-		LibrarySignatures[(elem)->getName()] = elem;
+		      m_librarySignatures[(elem)->getName()] = elem;
 		(elem)->setSigFile(sPath);
 	}
 
@@ -558,25 +527,24 @@ void FrontEnd::readLibrarySignatures(const char *sPath, CallConv cc)
 }
 
 
-std::shared_ptr<Signature> FrontEnd::getDefaultSignature(const QString& name)
+std::shared_ptr<Signature> IFrontEnd::getDefaultSignature(const QString& name)
 {
 	// Get a default library signature
 	if (isWin32()) {
 		return Signature::instantiate(Platform::PENTIUM, CallConv::PASCAL, name);
 	}
 
-	return Signature::instantiate(getFrontEndId(), CallConv::C, name);
+	return Signature::instantiate(getType(), CallConv::C, name);
 }
 
 
-// get a library signature by name
-std::shared_ptr<Signature> FrontEnd::getLibSignature(const QString& name)
+std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
 {
 	std::shared_ptr<Signature> signature;
 	// Look up the name in the librarySignatures map
-	auto it = LibrarySignatures.find(name);
+	auto it = m_librarySignatures.find(name);
 
-	if (it == LibrarySignatures.end()) {
+	if (it == m_librarySignatures.end()) {
 		LOG << "Unknown library function " << name << "\n";
 		signature = getDefaultSignature(name);
 	}
@@ -590,7 +558,8 @@ std::shared_ptr<Signature> FrontEnd::getLibSignature(const QString& name)
 }
 
 
-void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS dest, const std::list<Instruction *>& sl,
+void IFrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss,
+								  ADDRESS dest, const std::list<Instruction *>& sl,
 								  RTL *pRtl)
 {
 	assert(sl.back() == *ss);
@@ -599,13 +568,13 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
 		return;
 	}
 
-	Function *proc = Program->findProc(dest);
+	Function *proc = m_program->findProc(dest);
 
 	if (proc == nullptr) {
-		auto symb = BinarySymbols->find(dest);
+		auto symb = m_binarySymbols->find(dest);
 
 		if (symb && symb->isImportedFunction()) {
-			proc = Program->setNewProc(dest);
+			proc = m_program->setNewProc(dest);
 		}
 	}
 
@@ -625,10 +594,10 @@ void FrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS
 }
 
 
-bool FrontEnd::refersToImportedFunction(const SharedExp& pDest)
+bool IFrontEnd::refersToImportedFunction(const SharedExp& pDest)
 {
 	if (pDest && (pDest->getOper() == opMemOf) && (pDest->access<Exp, 1>()->getOper() == opIntConst)) {
-		auto symbol = BinarySymbols->find(pDest->access<Const, 1>()->getAddr());
+		const IBinarySymbol* symbol = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());
 
 		if (symbol && symbol->isImportedFunction()) {
 			return true;
@@ -639,23 +608,7 @@ bool FrontEnd::refersToImportedFunction(const SharedExp& pDest)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief      Process a procedure, given a native (source machine) address.
- *
- * This is the main function for decoding a procedure. It is usually overridden in the derived
- * class to do source machine specific things.  If frag is set, we are decoding just a fragment of the proc
- * (e.g. each arm of a switch statement is decoded). If spec is set, this is a speculative decode.
- * \param uAddr - the address at which the procedure starts
- * \param pProc - the procedure object
- * \param frag - if true, this is just a fragment of a procedure
- * \param spec - if true, this is a speculative decode
- * \param os - the output stream for .rtl output
- * \note This is a sort of generic front end. For many processors, this will be overridden
- *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
- * \returns          true for a good decode (no illegal instructions)
- ******************************************************************************/
-bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, bool /*frag*/ /* = false */,
+bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, bool /*frag*/ /* = false */,
 						   bool spec /* = false */)
 {
 	BasicBlock *pBB; // Pointer to the current basic block
@@ -682,7 +635,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 	assert(pCfg);
 
 	// Initialise the queue of control flow targets that have yet to be decoded.
-	targetQueue.initial(uAddr);
+	   m_targetQueue.initial(uAddr);
 
 	// Clear the pointer used by the caller prologue code to access the last call rtl of this procedure
 	// decoder.resetLastCall();
@@ -692,7 +645,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 	ADDRESS startAddr   = uAddr;
 	ADDRESS lastAddr    = uAddr;
 
-	while ((uAddr = targetQueue.nextAddress(*pCfg)) != NO_ADDRESS) {
+	while ((uAddr = m_targetQueue.nextAddress(*pCfg)) != NO_ADDRESS) {
 		// The list of RTLs for the current basic block
 		std::list<RTL *> *BB_rtls = new std::list<RTL *>();
 
@@ -740,7 +693,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 
 					// Emit the next 4 bytes for debugging
 					for (int ii = 0; ii < 4; ii++) {
-						LOG << ADDRESS::g(Image->readNative1(uAddr + ii) & 0xFF) << " ";
+						LOG << ADDRESS::g(m_image->readNative1(uAddr + ii) & 0xFF) << " ";
 					}
 
 					LOG << "\n";
@@ -761,9 +714,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 			// Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
 			// If so, we throw away the just decoded RTL (but we still may have needed to calculate the number
 			// of bytes.. ick.)
-			std::map<ADDRESS, RTL *>::iterator ff = previouslyDecoded.find(uAddr);
+			std::map<ADDRESS, RTL *>::iterator ff = m_previouslyDecoded.find(uAddr);
 
-			if (ff != previouslyDecoded.end()) {
+			if (ff != m_previouslyDecoded.end()) {
 				pRtl = ff->second;
 			}
 
@@ -810,9 +763,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 				Instruction *s = *ss;
 				s->setProc(pProc); // let's do this really early!
 
-				if (refHints.find(pRtl->getAddress()) != refHints.end()) {
-					const QString& nam(refHints[pRtl->getAddress()]);
-					ADDRESS        gu = Program->getGlobalAddr(nam);
+				if (m_refHints.find(pRtl->getAddress()) != m_refHints.end()) {
+					const QString& nam(m_refHints[pRtl->getAddress()]);
+					ADDRESS        gu = m_program->getGlobalAddr(nam);
 
 					if (gu != NO_ADDRESS) {
 						s->searchAndReplace(Const(gu), Unary::get(opAddrOf, Location::global(nam, pProc)));
@@ -849,8 +802,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 
 						// Add the out edge if it is to a destination within the
 						// procedure
-						if (uDest < Image->getLimitTextHigh()) {
-							targetQueue.visit(pCfg, uDest, pBB);
+						if (uDest < m_image->getLimitTextHigh()) {
+							                     m_targetQueue.visit(pCfg, uDest, pBB);
 							pCfg->addOutEdge(pBB, uDest, true);
 						}
 						else {
@@ -880,7 +833,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 							LOG_VERBOSE(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
 							// jump to a library function
 							// replace with a call ret
-							auto *sym = BinarySymbols->find(pDest->access<Const, 1>()->getAddr());
+							auto *sym = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());
 							assert(sym == nullptr);
 							QString       func  = sym->getName();
 							CallStatement *call = new CallStatement;
@@ -930,11 +883,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 								unsigned int i;
 
 								for (i = 0; ; i++) {
-									ADDRESS destAddr = ADDRESS::g(Image->readNative4(jmptbl + i * 4));
+									ADDRESS destAddr = ADDRESS::g(m_image->readNative4(jmptbl + i * 4));
 
-									if ((Image->getLimitTextLow() <= destAddr) && (destAddr < Image->getLimitTextHigh())) {
+									if ((m_image->getLimitTextLow() <= destAddr) && (destAddr < m_image->getLimitTextHigh())) {
 										LOG << "  guessed uDest " << destAddr << "\n";
-										targetQueue.visit(pCfg, destAddr, pBB);
+										                          m_targetQueue.visit(pCfg, destAddr, pBB);
 										pCfg->addOutEdge(pBB, destAddr, true);
 									}
 									else {
@@ -962,8 +915,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 					}
 					else {
 						// Add the out edge if it is to a destination within the procedure
-						if (uDest < Image->getLimitTextHigh()) {
-							targetQueue.visit(pCfg, uDest, pBB);
+						if (uDest < m_image->getLimitTextHigh()) {
+							                     m_targetQueue.visit(pCfg, uDest, pBB);
 							pCfg->addOutEdge(pBB, uDest, true);
 						}
 						else {
@@ -987,7 +940,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 						if (refersToImportedFunction(call->getDest())) {
 							// Dynamic linked proc pointers are treated as static.
 							ADDRESS  linked_addr = call->getDest()->access<Const, 1>()->getAddr();
-							QString  nam         = BinarySymbols->find(linked_addr)->getName();
+							QString  nam         = m_binarySymbols->find(linked_addr)->getName();
 							Function *p          = pProc->getProg()->getLibraryProc(nam);
 							call->setDestProc(p);
 							call->setIsComputed(false);
@@ -1000,7 +953,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 							ADDRESS callAddr = call->getFixedDest();
 
 							// It should not be in the PLT either, but getLimitTextHigh() takes this into account
-							if (callAddr < Image->getLimitTextHigh()) {
+							if (callAddr < m_image->getLimitTextHigh()) {
 								// Decode it.
 								DecodeResult decoded = decodeInstruction(callAddr);
 
@@ -1020,13 +973,13 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 											refersToImportedFunction(case_stmt->getDest())) { // Is it an "DynamicLinkedProcPointer"?
 											// Yes, it's a library function. Look up it's name.
 											ADDRESS a   = stmt_jump->getDest()->access<Const, 1>()->getAddr();
-											QString nam = BinarySymbols->find(a)->getName();
+											QString nam = m_binarySymbols->find(a)->getName();
 											// Assign the proc to the call
 											Function *p = pProc->getProg()->getLibraryProc(nam);
 
 											if (call->getDestProc()) {
 												// prevent unnecessary __imp procs
-												Program->removeProc(call->getDestProc()->getName());
+												                                m_program->removeProc(call->getDestProc()->getName());
 											}
 
 											call->setDestProc(p);
@@ -1068,7 +1021,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 
 							// Call the virtual helper function. If implemented, will check for machine specific funcion
 							// calls
-							if (helperFunc(uNewAddr, uAddr, BB_rtls)) {
+							if (isHelperFunc(uNewAddr, uAddr, BB_rtls)) {
 								// We have already added to BB_rtls
 								pRtl = nullptr; // Discard the call semantics
 								break;
@@ -1093,14 +1046,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 
 							// Check if this is the _exit or exit function. May prevent us from attempting to decode
 							// invalid instructions, and getting invalid stack height errors
-							QString name = Program->getSymbolByAddress(uNewAddr);
+							QString name = m_program->getSymbolByAddress(uNewAddr);
 
 							if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
 								ADDRESS a = call->getDest()->access<Const, 1>()->getAddr();
-								name = BinarySymbols->find(a)->getName();
+								name = m_binarySymbols->find(a)->getName();
 							}
 
-							if (!name.isEmpty() && noReturnCallDest(name)) {
+							if (!name.isEmpty() && isNoReturnCallDest(name)) {
 								// Make sure it has a return appended (so there is only one exit from the function)
 								// call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
 								// Create the new basic block
@@ -1231,11 +1184,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 
 	for (it = callList.begin(); it != callList.end(); it++) {
 		ADDRESS dest = (*it)->getFixedDest();
-		auto    symb = BinarySymbols->find(dest);
+		auto    symb = m_binarySymbols->find(dest);
 
 		// Don't speculatively decode procs that are outside of the main text section, apart from dynamically
 		// linked ones (in the .plt)
-		if ((symb && symb->isImportedFunction()) || !spec || (dest < Image->getLimitTextHigh())) {
+		if ((symb && symb->isImportedFunction()) || !spec || (dest < m_image->getLimitTextHigh())) {
 			pCfg->addCall(*it);
 			// Don't visit the destination of a register call
 			Function *np = (*it)->getDestProc();
@@ -1262,27 +1215,13 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, 
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Get a Prog object (mainly for testing and not decoding)
- * \returns        Pointer to a Prog object (with pFE and pBF filled in)
- ******************************************************************************/
-Prog *FrontEnd::getProg()
+Prog *IFrontEnd::getProg()
 {
-	return Program;
+	return m_program;
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Create a Return or a Oneway BB if a return statement already exists
- * \param    pProc: pointer to enclosing UserProc
- * \param    BB_rtls: list of RTLs for the current BB (not including pRtl)
- * \param    pRtl: pointer to the current RTL with the semantics for the return statement (including a
- *           ReturnStatement as the last statement)
- * \returns  Pointer to the newly created BB
- ******************************************************************************/
-BasicBlock *FrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl)
+BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl)
 {
 	Cfg        *pCfg = pProc->getCFG();
 	BasicBlock *pBB;
@@ -1329,7 +1268,7 @@ BasicBlock *FrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rt
 			pCfg->addOutEdge(pBB, retAddr, true);
 			// Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
 			// instructions before the return instruction).
-			targetQueue.visit(pCfg, retAddr, pBB);
+			         m_targetQueue.visit(pCfg, retAddr, pBB);
 		}
 		catch (Cfg::BBAlreadyExistsError&) {
 			if (VERBOSE) {
@@ -1342,9 +1281,8 @@ BasicBlock *FrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rt
 }
 
 
-// Add a synthetic return instruction (or branch to the existing return instruction).
-// NOTE: the call BB should be created with one out edge (the return or branch BB)
-void FrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl)
+
+void IFrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl)
 {
 	ReturnStatement *ret = new ReturnStatement();
 

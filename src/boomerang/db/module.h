@@ -33,7 +33,7 @@
 class XMLProgParser;
 class Function;
 class Prog;
-class FrontEnd;
+class IFrontEnd;
 
 
 class Module : public QObject
@@ -53,7 +53,7 @@ public:
 
 private:
 	FunctionList m_functionList; ///< The Functions in the module
-	FrontEnd *m_currentFrontend;
+	IFrontEnd *m_currentFrontend;
 	FunctionMap m_labelsToProcs;
 
 protected:
@@ -73,7 +73,7 @@ signals:
 
 public:
 	Module();
-	Module(const QString& name, Prog *parent, FrontEnd *fe);
+	Module(const QString& name, Prog *parent, IFrontEnd *fe);
 	virtual ~Module();
 
 	QString getName() const { return m_name; }
@@ -146,7 +146,7 @@ protected:
 	std::shared_ptr<CompoundType> m_type;
 
 public:
-	Class(const QString& name, Prog *parent, FrontEnd *fe)
+	Class(const QString& name, Prog *parent, IFrontEnd *fe)
 		: Module(name, parent, fe)
 		, m_type(CompoundType::get())
 	{
@@ -160,13 +160,13 @@ public:
 
 struct ModuleFactory
 {
-	virtual Module *create(const QString& name, Prog *parent, FrontEnd *fe) const = 0;
+	virtual Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const = 0;
 };
 
 
 struct DefaultModFactory : public ModuleFactory
 {
-	Module *create(const QString& name, Prog *parent, FrontEnd *fe) const override
+	Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const override
 	{
 		return new Module(name, parent, fe);
 	}
@@ -175,7 +175,7 @@ struct DefaultModFactory : public ModuleFactory
 
 struct ClassModFactory : public ModuleFactory
 {
-	Module *create(const QString& name, Prog *parent, FrontEnd *fe) const override
+	Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const override
 	{
 		return new Class(name, parent, fe);
 	}

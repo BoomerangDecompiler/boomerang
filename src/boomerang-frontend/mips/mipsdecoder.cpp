@@ -37,22 +37,12 @@
 #include <cassert>
 
 
-/********************************************************************************
-* \fn       unused
-* \brief       A dummy function to suppress "unused local variable" messages
-* \param       x: integer variable to be "used"
-********************************************************************************/
-void MIPSDecoder::unused(int /*x*/)
-{
-}
-
-
 MIPSDecoder::MIPSDecoder(Prog *_prog)
 	: NJMCDecoder(_prog)
 {
 	QDir base_dir = Boomerang::get()->getProgDir();
 
-	RTLDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/mips/mips.ssl"));
+	   m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/mips/mips.ssl"));
 }
 
 
