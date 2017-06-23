@@ -183,7 +183,7 @@ public:
 	* 
 	* \param addr - the address at which the procedure starts
 	* \param proc - the procedure object
-	* \param os - the output stream for .rtl output
+	* \param os   - the output stream for .rtl output
 	* \param frag - if true, this is just a fragment of a procedure
 	* \param spec - if true, this is a speculative decode
 	* 

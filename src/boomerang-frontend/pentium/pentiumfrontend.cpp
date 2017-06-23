@@ -20,7 +20,6 @@
 #include "boomerang/util/Log.h"
 
 #include "boomerang/include/types.h"
-#include "boomerang/include/decoder.h" // prototype for decodeInstruction()
 #include "boomerang/type/type.h"
 
 

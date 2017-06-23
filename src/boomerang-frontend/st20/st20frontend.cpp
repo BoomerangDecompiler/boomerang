@@ -34,8 +34,6 @@
 #include "boomerang/db/prog.h"
 #include "boomerang/db/signature.h"
 
-#include "boomerang/include/decoder.h"
-
 #include "boomerang-frontend/st20/st20decoder.h"
 
 #include <cassert>

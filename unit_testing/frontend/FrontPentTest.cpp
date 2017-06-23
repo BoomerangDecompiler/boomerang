@@ -9,10 +9,10 @@
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/include/types.h"
-#include "boomerang/include/decoder.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 
+#include "boomerang-frontend/decoder.h"
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QDir>
@@ -28,6 +28,8 @@
 static bool    logset = false;
 static QString TEST_BASE;
 static QDir    baseDir;
+
+
 void FrontPentTest::initTestCase()
 {
 	if (!logset) {

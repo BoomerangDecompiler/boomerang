@@ -32,8 +32,6 @@
 #include "boomerang/db/proc.h"
 #include "boomerang/db/rtl.h"
 
-#include "boomerang/include/decoder.h"
-
 #include <cassert>
 
 

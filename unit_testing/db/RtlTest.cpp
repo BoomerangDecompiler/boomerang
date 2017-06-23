@@ -7,7 +7,6 @@
 
 #include "boomerang/db/exp.h"
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/include/decoder.h"
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"

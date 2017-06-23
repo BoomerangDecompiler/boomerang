@@ -6,16 +6,17 @@
 #include <set>
 
 #include "boomerang-frontend/frontend.h"
+#include "boomerang-frontend/decoder.h"
 
-#include "boomerang/include/decoder.h"
 #include "boomerang/db/exp.h"           // Ugh... just for enum OPER
 
 
 class IFrontEnd;
 class SparcDecoder;
+class CallStatement;
+
 struct DecodeResult;
 
-class CallStatement;
 
 class SparcFrontEnd : public IFrontEnd
 {
@@ -24,7 +25,7 @@ public:
 	SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff);
 	virtual ~SparcFrontEnd();
 
-	/// @copydoc IFrontEnd::getFrontEndId
+	/// @copydoc IFrontEnd::getType
 	virtual Platform getType() const override { return Platform::SPARC; }
 
 	/**
@@ -84,5 +85,5 @@ private:
 
 	// This struct represents a single nop instruction. Used as a substitute delay slot instruction
 	DecodeResult nop_inst;
-	class IBinarySymbolTable *SymbolTable;
+	IBinarySymbolTable *SymbolTable;
 };

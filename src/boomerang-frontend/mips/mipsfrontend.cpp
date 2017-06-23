@@ -31,8 +31,6 @@
 #include "boomerang/db/prog.h"
 #include "boomerang/db/signature.h"
 
-#include "boomerang/include/decoder.h"
-
 #include "boomerang-frontend/mips/mipsdecoder.h"
 
 

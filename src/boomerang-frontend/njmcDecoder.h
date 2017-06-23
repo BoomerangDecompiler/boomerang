@@ -11,11 +11,13 @@
 
 #pragma once
 
-#include "include/decoder.h"
 #include "include/types.h"
 #include "db/rtl.h"
 #include "db/statements/branchstatement.h"
 #include "db/statements/boolassign.h"
+
+#include "boomerang-frontend/decoder.h"
+
 
 class IBinaryImage;
 

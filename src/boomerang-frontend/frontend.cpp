@@ -38,7 +38,6 @@
 #include "boomerang/db/SymTab.h"
 
 #include "boomerang/include/types.h"
-#include "boomerang/include/decoder.h"
 
 #include "boomerang-frontend/sparc/sparcfrontend.h"
 #include "boomerang-frontend/pentium/pentiumfrontend.h"

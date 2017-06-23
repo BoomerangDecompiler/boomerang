@@ -33,8 +33,6 @@
 #include "boomerang/db/statements/assign.h"
 #include "boomerang/db/statements/callstatement.h"
 
-#include "boomerang/include/decoder.h"
-
 #include <cassert>
 #include <cstring>
 
