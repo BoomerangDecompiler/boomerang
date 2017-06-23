@@ -35,7 +35,6 @@
 #include "boomerang/db/signature.h"
 
 #include "boomerang/include/decoder.h"
-#include "boomerang/include/frontend.h"
 
 #include "boomerang-frontend/st20/st20decoder.h"
 

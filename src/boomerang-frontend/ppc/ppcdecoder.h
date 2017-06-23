@@ -23,20 +23,24 @@ class Prog;
 
 struct DecodeResult;
 
+
 class PPCDecoder : public NJMCDecoder
 {
 public:
+	/// @copydoc NJMCDecoder::NJMCDecoder
 	PPCDecoder(Prog *prog);
+
+	/// @copydoc NJMCDecoder::decodeInstruction
 	DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+
+	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
 	int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) override;
 
 private:
-
-	/*
-	 * Various functions to decode the operands of an instruction into an Exp* representation.
-	 */
+	/// Various functions to decode the operands of an instruction into an Exp* representation.
 	Exp *dis_Eaddr(ADDRESS pc, int size = 0);
 	Exp *dis_RegImm(ADDRESS pc);
+
 	SharedExp dis_Reg(unsigned r);
 	SharedExp dis_RAmbz(unsigned r); // Special for rA of certain instructions
 

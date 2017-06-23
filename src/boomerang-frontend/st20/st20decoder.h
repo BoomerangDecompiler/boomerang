@@ -19,17 +19,23 @@
 
 #include <cstddef>
 #include <list>
+
 class Prog;
 class NJMCDecoder;
+class Instruction;
 struct DecodeResult;
 
-class Instruction;
 
 class ST20Decoder : public NJMCDecoder
 {
 public:
+	/// @copydoc NJMCDecoder::NJMCDecoder
 	ST20Decoder(Prog *prog);
+
+	/// @copydoc NJMCDecoder::decodeInstruction
 	DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+
+	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
 	int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta)  override;
 
 private:
@@ -43,9 +49,9 @@ private:
 	// Exp*    dis_Reg(unsigned r);
 	// Exp*    dis_RAmbz(unsigned r);        // Special for rA of certain instructions
 
-	void unused(int);
 	RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
 	bool isFuncPrologue(ADDRESS hostPC);
+
 	DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
 	SWord getWord(intptr_t lc);
 	Byte getByte(intptr_t lc);

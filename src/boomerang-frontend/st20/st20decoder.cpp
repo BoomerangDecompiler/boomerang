@@ -34,15 +34,6 @@
 * ST20Decoder methods.
 **********************************/
 
-/***************************************************************************/ /**
- * \brief   A dummy function to suppress "unused local variable" messages
- * \param   x: integer variable to be "used"
- ******************************************************************************/
-void ST20Decoder::unused(int /*x*/)
-{
-}
-
-
 static DecodeResult result;
 
 /***************************************************************************/ /**
@@ -83,7 +74,7 @@ DecodeResult& ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						// #line 74 "frontend/machine/st20/decoder.m"
 
 						processUnconditionalJump("j", result.numBytes, hostPC + result.numBytes + total + oper, delta, pc, stmts,
-										  result);
+												 result);
 					}
 					break;
 
@@ -945,7 +936,7 @@ ST20Decoder::ST20Decoder(Prog *prog_)
 {
 	QDir base_dir = Boomerang::get()->getProgDir();
 
-	   m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/st20/st20.ssl"));
+	m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/st20/st20.ssl"));
 }
 
 

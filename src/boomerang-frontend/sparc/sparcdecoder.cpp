@@ -69,14 +69,6 @@ void DEBUG_STMTS(DecodeResult& result)
 }
 
 
-/***************************************************************************/ /**
- * \fn    SparcDecoder::createBranchRtl
- * \brief Create an RTL for a Bx instruction
- * \param pc - the location counter
- * \param stmts - ptr to list of Statement pointers
- * \param name - instruction name (e.g. "BNE,a", or "BPNE")
- * \returns            Pointer to newly created RTL, or nullptr if invalid
- ******************************************************************************/
 RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name)
 {
 	RTL             *res = new RTL(pc, stmts);
@@ -242,19 +234,6 @@ RTL *SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, 
 }
 
 
-/***************************************************************************/ /**
- * \fn     SparcDecoder::decodeInstruction
- * \brief  Attempt to decode the high level instruction at a given address.
- *
- * Return the corresponding HL type (e.g. CallStatement, GotoStatement etc). If no high level instruction exists at
- * the given address,then simply return the RTL for the low level instruction at this address. There is an option
- * to also include the low level statements for a HL instruction.
- *
- * \param pc - the native address of the pc
- * \param delta - the difference between the above address and the host address of the pc (i.e. the address
- *        that the pc is at in the loaded object file)
- * \returns            a DecodeResult structure containing all the information gathered during decoding
- ******************************************************************************/
 DecodeResult& SparcDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 {
 	static DecodeResult result;
@@ -2589,7 +2568,7 @@ SparcDecoder::SparcDecoder(Prog *_prog)
 {
 	machine = new SparcMachine;
 	QString file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";
-	   m_rtlDict.readSSLFile(file);
+	m_rtlDict.readSSLFile(file);
 }
 
 

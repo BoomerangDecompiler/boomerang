@@ -4,11 +4,12 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/prog.h"
-#include "boomerang/include/frontend.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/signature.h"
 #include "boomerang/db/module.h"
 #include "boomerang/db/IBinarySection.h"
+
+#include "boomerang-frontend/frontend.h"
 
 #include <QtWidgets>
 #include <QtCore>

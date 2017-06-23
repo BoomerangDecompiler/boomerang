@@ -18,20 +18,24 @@ struct DecodeResult;
 class ST20FrontEnd : public IFrontEnd
 {
 public:
+	/// @copydoc IFrontEnd::IFrontEnd
 	ST20FrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
 
-	/**
-	 * Virtual destructor.
-	 */
+	/// @copydoc IFrontEnd::~IFrontEnd
 	virtual ~ST20FrontEnd();
 
+	/// @copydoc IFrontEnd::getType
 	virtual Platform getType() const override { return Platform::ST20; }
 
+	/// @copydoc IFrontEnd::processProc
 	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
+	/// @copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
 
+	/// @copydoc IFrontEnd::getDefaultReturns
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
+	/// @copydoc IFrontEnd::getMainEntryPoint
 	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
 };

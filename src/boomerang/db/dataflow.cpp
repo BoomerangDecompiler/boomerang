@@ -24,8 +24,6 @@
 #include "boomerang/db/statements/assign.h"
 #include "boomerang/db/visitor.h"
 
-#include "boomerang/include/frontend.h"
-
 #include <QtCore/QDebug>
 #include <sstream>
 #include <cstring>

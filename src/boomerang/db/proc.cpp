@@ -26,7 +26,6 @@
 #include "boomerang/codegen/SyntaxNode.h"
 
 #include "boomerang/include/types.h"
-#include "boomerang/include/frontend.h"
 
 #include "boomerang/db/module.h"
 #include "boomerang/db/register.h"

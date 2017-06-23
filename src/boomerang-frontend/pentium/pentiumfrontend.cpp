@@ -20,7 +20,6 @@
 #include "boomerang/util/Log.h"
 
 #include "boomerang/include/types.h"
-#include "boomerang/include/frontend.h"
 #include "boomerang/include/decoder.h" // prototype for decodeInstruction()
 #include "boomerang/type/type.h"
 
@@ -1044,7 +1043,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult& r)
 	r.type     = NCT;
 	r.reDecode = false;
 	r.rtl      = new RTL(pc);
-	
+
 	CallStatement *call = new CallStatement();
 	call->setDestProc(m_program->getLibraryProc("invalid_opcode"));
 	r.rtl->appendStmt(call);

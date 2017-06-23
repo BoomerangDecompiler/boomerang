@@ -9,7 +9,6 @@
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/include/types.h"
-#include "boomerang/include/frontend.h"
 #include "boomerang/include/decoder.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
@@ -235,7 +234,7 @@ void FrontPentTest::testFindMain()
 
 	Prog *prog = new Prog(FEDORA2_TRUE);
 	QVERIFY(pBF->getMachine() == Machine::PENTIUM);
-	
+
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
@@ -254,7 +253,7 @@ void FrontPentTest::testFindMain()
 	addr     = pFE->getMainEntryPoint(found);
 	expected = ADDRESS::n(0x8048c4a);
 	QCOMPARE(addr, expected);
-	
+
 	pBF->close();
 	delete pFE;
 
@@ -267,7 +266,7 @@ void FrontPentTest::testFindMain()
 	expected = ADDRESS::n(0x8048b60);
 	QCOMPARE(addr, expected);
 	pBF->close();
-	
+
 	delete pFE;
 }
 

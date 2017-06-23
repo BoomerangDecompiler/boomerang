@@ -24,7 +24,6 @@
 #include "boomerang/db/proc.h"
 #include "boomerang/db/statements/implicitassign.h"
 
-#include "boomerang/include/frontend.h"
 #include "boomerang/include/managed.h"
 
 #include "boomerang/type/type.h"

@@ -22,7 +22,7 @@
 #include "boomerang/db/signature.h"
 #include "boomerang/db/xmlprogparser.h"
 
-#include "boomerang/include/frontend.h"
+#include "boomerang-frontend/frontend.h"
 #include "boomerang/include/config.h"
 
 // TODO: Move the Objective-C loader code to a more suitable place
@@ -802,7 +802,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 	QTextStream q_cout(stdout);
 
 	q_cout << "loading...\n";
-	Prog     *prog = new Prog(fname);
+	Prog      *prog = new Prog(fname);
 	IFrontEnd *fe   = IFrontEnd::create(fname, prog);
 
 	if (fe == nullptr) {

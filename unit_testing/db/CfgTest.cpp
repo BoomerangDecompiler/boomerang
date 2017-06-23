@@ -7,7 +7,6 @@
 #include "CfgTest.h"
 
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/include/frontend.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/dataflow.h"
@@ -65,7 +64,7 @@ void CfgTest::testDominators()
 
 	QVERIFY(pBF != nullptr);
 
-	Prog     prog(FRONTIER_PENTIUM);
+	Prog      prog(FRONTIER_PENTIUM);
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
@@ -126,7 +125,7 @@ void CfgTest::testSemiDominators()
 	IFileLoader       *pBF = bff.loadFile(SEMI_PENTIUM);
 
 	QVERIFY(pBF != 0);
-	Prog     prog(SEMI_PENTIUM);
+	Prog      prog(SEMI_PENTIUM);
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
@@ -191,7 +190,7 @@ void CfgTest::testPlacePhi()
 	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
 	QVERIFY(pBF != 0);
 
-	Prog     prog(FRONTIER_PENTIUM);
+	Prog      prog(FRONTIER_PENTIUM);
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
@@ -240,7 +239,7 @@ void CfgTest::testPlacePhi2()
 	IFileLoader       *pBF = bff.loadFile(IFTHEN_PENTIUM);
 
 	QVERIFY(pBF != 0);
-	Prog     prog(IFTHEN_PENTIUM);
+	Prog      prog(IFTHEN_PENTIUM);
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
@@ -329,7 +328,7 @@ void CfgTest::testRenameVars()
 	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
 
 	QVERIFY(pBF != 0);
-	Prog     *prog = new Prog(FRONTIER_PENTIUM);
+	Prog      *prog = new Prog(FRONTIER_PENTIUM);
 	IFrontEnd *pFE  = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);

@@ -24,9 +24,16 @@ struct DecodeResult;
 class PentiumDecoder : public NJMCDecoder
 {
 public:
+	/// @copydoc NJMCDecoder::NJMCDecoder
 	PentiumDecoder(Prog *prog);
+
+	/// @copydoc NJMCDecoder::~NJMCDecoder
 	virtual ~PentiumDecoder() = default;
+
+	/// @copydoc NJMCDecoder::decodeInstruction
 	DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+
+	/// @copydoc NJMCDecode::decodeAssemblyInstruction
 	int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) override;
 
 private:
@@ -49,5 +56,6 @@ private:
 	SWord getWord(ADDRESS lc)  { return getWord(lc.m_value); }
 	DWord getDword(ADDRESS lc) { return getDword(lc.m_value); }
 
+private:
 	ADDRESS lastDwordLc;
 };

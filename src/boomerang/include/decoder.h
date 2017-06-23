@@ -46,6 +46,7 @@ enum ICLASS
 	NCTA   // Non Control Transfer, with following instr Anulled
 };
 
+
 /***************************************************************************/ /**
  * The DecodeResult struct contains all the information that results from
  * calling the decoder. This prevents excessive use of confusing
@@ -117,9 +118,9 @@ public:
 	/// Returns size of register in bits
 	virtual int getRegSize(int idx) const = 0;
 
-	/**
-	 * Disassembles the machine instruction at pc and returns the number of bytes disassembled.
-	 * Assembler output goes to global _assembly
-	 */
+	/// Returns the size of the register with name @p name, in bits
+	int getRegSize(const QString& name) const { return getRegSize(getRegIdx(name)); }
+
+	/// Disassembles the machine instruction at address @p pc and returns the number of bytes disassembled.
 	virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) = 0;
 };

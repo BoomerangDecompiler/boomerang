@@ -39,7 +39,6 @@
 #include "boomerang/db/statements/casestatement.h"
 
 #include "boomerang/include/decoder.h"
-#include "boomerang/include/frontend.h"
 
 #include "boomerang-frontend/sparc/sparcdecoder.h"
 

@@ -15,7 +15,6 @@
 #include "boomerang/db/rtl.h"
 
 #include "boomerang/include/types.h"
-#include "boomerang/include/frontend.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"

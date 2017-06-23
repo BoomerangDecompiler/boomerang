@@ -30,8 +30,6 @@
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/include/decoder.h"
-#include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/include/frontend.h"
 #include "boomerang/core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang/util/Log.h"
 #include "boomerang/db/signature.h"

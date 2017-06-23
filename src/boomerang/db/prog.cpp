@@ -37,7 +37,6 @@
 
 #include "boomerang/include/types.h"
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/include/frontend.h"
 #include "boomerang/include/config.h"
 #include "boomerang/include/managed.h"
 
@@ -48,6 +47,8 @@
 #include "boomerang/type/type.h"
 
 #include "boomerang/util/Util.h" // For lockFileWrite etc
+
+#include "boomerang-frontend/frontend.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>
