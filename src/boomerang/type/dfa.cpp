@@ -13,14 +13,6 @@
  ******************************************************************************/
 #include "dfa.h"
 
-#include "boomerang/include/config.h"
-#include "boomerang/util/Log.h"
-
-
-#include "boomerang/type/type.h"
-#include "boomerang/db/visitor.h"
-#include "boomerang/util/Util.h"
-
 #include "boomerang/db/signature.h"
 #include "boomerang/db/exp.h"
 #include "boomerang/db/prog.h"
@@ -31,6 +23,12 @@
 #include "boomerang/db/statements/imprefstatement.h"
 #include "boomerang/db/statements/branchstatement.h"
 #include "boomerang/db/statements/boolassign.h"
+#include "boomerang/db/visitor.h"
+
+#include "boomerang/type/type.h"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
 
 #include <sstream>
 #include <cstring>

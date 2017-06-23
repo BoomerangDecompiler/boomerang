@@ -58,7 +58,6 @@ void *alloca();
 #include <cstdio>
 #define YYBISON 1
 
-#include "boomerang/include/config.h"
 #include "boomerang/util/types.h"
 #include "boomerang/util/Util.h" // E.g. str()
 #include "boomerang/include/operator.h"

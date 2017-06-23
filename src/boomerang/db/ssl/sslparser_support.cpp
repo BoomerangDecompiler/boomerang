@@ -2,8 +2,6 @@
 
 #include "boomerang/util/Log.h"
 
-#include "boomerang/include/config.h"
-
 #include "boomerang/db/ssl/sslscanner.h"
 #include "boomerang/db/table.h"
 #include "boomerang/db/insnameelem.h"

@@ -34,7 +34,6 @@
 #include "boomerang/db/statements/assign.h"
 #include "boomerang/db/visitor.h"
 
-#include "boomerang/include/config.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 
 #include "boomerang/type/type.h"
