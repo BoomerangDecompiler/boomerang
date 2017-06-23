@@ -22,7 +22,8 @@
 #include "boomerang/include/types.h"
 #include "boomerang/include/sigenum.h" // For enums platform and cc
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/include/TargetQueue.h"
+
+#include "boomerang-frontend/TargetQueue.h"
 
 #include <list>
 #include <map>
