@@ -1,9 +1,4 @@
 
-include_directories(
-	"${CMAKE_CURRENT_SOURCE_DIR}"
-	"${CMAKE_CURRENT_BINARY_DIR}"
-)
-
 set(boomerang_SRC
 	c/ansi-c-parser.cpp
 	c/ansi-c-scanner.cpp
@@ -139,4 +134,13 @@ add_library(boomerang ${boomerang_SRC})
 target_link_libraries(boomerang boomerang-frontend ${CMAKE_DL_LIBS})
 
 set_target_properties(boomerang PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
+
+# install library and headers
+install(TARGETS boomerang
+	ARCHIVE DESTINATION lib
+	LIBRARY DESTINATION lib
+)
+
+install(DIRECTORY . DESTINATION include/boomerang
+        FILES_MATCHING PATTERN "*.h")
 

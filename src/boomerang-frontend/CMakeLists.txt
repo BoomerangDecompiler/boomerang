@@ -46,3 +46,9 @@ target_link_libraries(boomerang-frontend boomerang)
 
 add_dependencies(boomerang-frontend CopySSLs)
 
+# installation
+install(TARGETS boomerang-frontend
+	ARCHIVE DESTINATION lib
+	LIBRARY DESTINATION lib
+	RUNTIME DESTINATION bin
+)
