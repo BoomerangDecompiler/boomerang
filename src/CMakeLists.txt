@@ -9,7 +9,7 @@ include_directories(
 
 
 add_subdirectory(boomerang)
-#add_subdirectory(boomerang-cli)
+add_subdirectory(boomerang-cli)
 add_subdirectory(boomerang-gui)
 add_subdirectory(boomerang-frontend)
 

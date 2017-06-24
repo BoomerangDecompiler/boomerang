@@ -1,6 +1,5 @@
-find_package(Qt5Widgets REQUIRED)
-
 set(CMAKE_AUTOMOC ON)
+find_package(Qt5Widgets REQUIRED)
 
 set(gui_UI_FILES
 	boomerang.ui
@@ -14,7 +13,6 @@ SET(boomerang_SRC
     main.cpp
     mainwindow
     rtleditor
-    commandlinedriver
     DecompilerThread
     LoggingSettingsDlg
 )
