@@ -30,3 +30,7 @@ target_link_libraries(boomerang-gui
 
 qt5_use_modules(boomerang-gui Core Xml Widgets)
 
+# installation
+install(TARGETS boomerang-gui
+	RUNTIME DESTINATION bin
+)
