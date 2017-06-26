@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(Boomerang VERSION 0.4.0 LANGUAGES C CXX)
 
+
 ###############################################################################
 # Settings related to build system, and target directories
 ###############################################################################
@@ -21,17 +22,21 @@ if (GIT_FOUND)
 	endif (NOT DESCRIBE_FAILED)
 endif (GIT_FOUND)
 
+message(STATUS "Configuring " ${PROJECT_NAME} " " ${BOOMERANG_VERSION})
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_SHARED_MODULE_PREFIX "") # prevent windows/mingw modules having lib* prefix
-
+set(CMAKE_WARN_DEPRECATED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
+
 if (WIN32)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
 endif ()
+
 
 ###############################################################################
 # Options section
@@ -43,6 +48,7 @@ set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type. Valid values are Debug Re
 
 # help the cmake find 3rd_party compiled/installed packages
 set(CMAKE_PREFIX_PATH  "${CMAKE_PREFIX_PATH};${PROJECT_SOURCE_DIR}/3rd_party")
+
 
 ###############################################################################
 # Compiler specific flags section
