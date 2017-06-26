@@ -1,9 +1,9 @@
 #this script will perform configuration of all system specific settings
 
-INCLUDE(CheckIncludeFile)
-INCLUDE(CheckTypeSize)
-INCLUDE(CheckLibraryExists)
-INCLUDE (TestBigEndian)
+include(CheckIncludeFile)
+include(CheckTypeSize)
+include(CheckLibraryExists)
+include(TestBigEndian)
 
 CHECK_INCLUDE_FILE(byteswap.h HAVE_BYTESWAP_H)
 CHECK_INCLUDE_FILE(dlfcn.h HAVE_DLFCN_H)
@@ -38,10 +38,3 @@ CHECK_TYPE_SIZE("long double" SIZEOF_LONG_DOUBLE)
 CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
 CHECK_TYPE_SIZE(short SIZEOF_SHORT)
 
-# this creates config.h boomerang config.h in-place
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.cmake 
-				${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
-# if this is a problem comment out the above, and uncomment below
-#CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake 
-#				${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
-#INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/include)
