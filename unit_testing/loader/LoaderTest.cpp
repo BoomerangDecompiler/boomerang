@@ -47,9 +47,9 @@ static QDir    baseDir;
 
 /// path to the ELF loader plugin
 #ifdef _WIN32
-#  define ELF_LOADER    baseDir.absoluteFilePath("out/lib/libboomerang_ElfLoader.dll")
+#  define ELF_LOADER    baseDir.absoluteFilePath("lib/libboomerang_ElfLoader.dll")
 #else
-#  define ELF_LOADER    baseDir.absoluteFilePath("out/lib/libboomerang_ElfLoader.so")
+#  define ELF_LOADER    baseDir.absoluteFilePath("lib/libboomerang_ElfLoader.so")
 #endif
 
 #if 1 // FIXME: These programs are proprietary, but they are not used.
@@ -229,7 +229,7 @@ void LoaderTest::testWinLoad()
 	loader = bff.loadFile(CALC_WINXP);
 	QVERIFY(loader != nullptr);
 	QCOMPARE(loader->getMainEntryPoint(), ADDRESS::n(0x01001F51));
-	
+
 	// Test loading the calc.exe found in Windows 2000 (more NT based)
 	loader = bff.loadFile(CALC_WIN2000);
 	QVERIFY(loader != nullptr);

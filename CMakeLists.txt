@@ -26,14 +26,18 @@ message(STATUS "Configuring " ${PROJECT_NAME} " " ${BOOMERANG_VERSION})
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
+# Set a single output directory for lgenerated binaries.
+# This is not ideal, but necessary for tests.
+set(BOOMERANG_OUTPUT_DIR "${PROJECT_BINARY_DIR}/out")
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_SHARED_MODULE_PREFIX "") # prevent windows/mingw modules having lib* prefix
 set(CMAKE_WARN_DEPRECATED ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/bin)
 
 if (WIN32)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG   ${BOOMERANG_OUTPUT_DIR}/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${BOOMERANG_OUTPUT_DIR}/lib)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
 endif ()
 
@@ -47,7 +51,7 @@ option(BOOM_BUILD_TESTS "Build the testing tree." ON)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type. Valid values are Debug Release MinSizeRel RelWithDebInfo")
 
 # help the cmake find 3rd_party compiled/installed packages
-set(CMAKE_PREFIX_PATH  "${CMAKE_PREFIX_PATH};${PROJECT_SOURCE_DIR}/3rd_party")
+list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party")
 
 
 ###############################################################################
@@ -65,6 +69,7 @@ if (MSVC)
     set(DEBUG_LIB Dbghelp.lib)
     
 elseif (CMAKE_CXX_COMPILER MATCHES clang)
+	set(COMMON_COMPILE_OPTIONS "-Weverything")
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
 	#add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
 else ()
@@ -75,7 +80,7 @@ else ()
 	
 	# other warnings:
 	#-fstrict-aliasing  # This will not work with *reinterpret-cast<float*>(&int)
-    #-Wsuggest-attribute=const|pure|etc. -Wcast-qual -Wsuggest-override # TODO
+    #-Wsuggest-attribute=const|pure|etc. -Wcast-qual -Wconversion # TODO
 	#-Wundef -Wzero-as-null-pointer-constant #does not compile with boost
 	
 	# Enable additional warnings for GCC6+
@@ -112,6 +117,7 @@ set(CMAKE_AUTOMOC ON)
 
 add_definitions(-DBOOMERANG_VERSION="${BOOMERANG_VERSION}")
 include(TestBigEndian)
+
 #Does not work with Ubuntu 17.04 and gcc 6.3
 #TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 if (WORDS_BIGENDIAN)
@@ -148,13 +154,15 @@ add_custom_target(check "./full_regression.sh"
 )
 
 
-# copy function signatures to output directory
+# copy function signatures and test files to output directory
 add_custom_target(COPY_FILES ALL)
 add_custom_command(TARGET COPY_FILES POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/signatures ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/signatures)
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/signatures ${BOOMERANG_OUTPUT_DIR}/signatures)
+add_custom_command(TARGET COPY_FILES POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/tests/inputs ${BOOMERANG_OUTPUT_DIR}/tests/inputs)
 
 # delete all files in the 'out/' directory on make clean
-set(EXTRA_CLEAN_FILES "${CMAKE_SOURCE_DIR}/out/")
+set(EXTRA_CLEAN_FILES "${BOOMERANG_OUTPUT_DIR}")
 
-SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${EXTRA_CLEAN_FILES}")
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${EXTRA_CLEAN_FILES}")
 

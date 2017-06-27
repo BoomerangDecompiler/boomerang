@@ -118,7 +118,7 @@ void BinaryFileFactory::populatePlugins()
 {
 	QDir pluginsDir(qApp->applicationDirPath());
 
-	pluginsDir.cd("lib");
+	pluginsDir.cd("../lib");
 
 	if (!qApp->libraryPaths().contains(pluginsDir.absolutePath())) {
 		qApp->addLibraryPath(pluginsDir.absolutePath());
@@ -137,6 +137,6 @@ void BinaryFileFactory::populatePlugins()
 	}
 
 	if (m_loaderPlugins.empty()) {
-		qCritical() << "No loader plugins found !";
+		qCritical() << "No loader plugins found!";
 	}
 }

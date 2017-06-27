@@ -26,7 +26,7 @@ class CommandlineDriver : public QObject
 	Q_OBJECT
 
 public:
-	explicit CommandlineDriver(QObject *parent = 0);
+	explicit CommandlineDriver(QObject *parent = nullptr);
 	int applyCommandline(const QStringList& args);
 	int decompile();
 	int console();

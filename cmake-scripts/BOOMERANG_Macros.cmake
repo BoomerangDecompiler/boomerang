@@ -71,7 +71,7 @@ macro(ADD_UNIT_TEST name)
 		target_link_libraries(${name} ${UNIT_TEST_LIBS})
 		
 		add_test(NAME ${name} COMMAND ${name})
-		set_property(TEST ${name} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${PROJECT_SOURCE_DIR})
+		set_property(TEST ${name} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
 		set(${name}_TEST_VISITED true)
 	endif ()
 endmacro(ADD_UNIT_TEST)
@@ -83,6 +83,6 @@ function(ADD_QTEST NAME)
 	qt5_use_modules(${NAME} Core Test)
 
 	add_test(NAME ${NAME} COMMAND $<TARGET_FILE:${NAME}>)
-	set_property(TEST ${NAME} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${PROJECT_SOURCE_DIR})
+	set_property(TEST ${NAME} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
 endfunction()
 

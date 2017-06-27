@@ -31,14 +31,15 @@ set(SSL_FILES
 
 foreach(ssl_file ${SSL_FILES})
 	add_custom_command(
-		OUTPUT "${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}"
+		OUTPUT "${BOOMERANG_OUTPUT_DIR}/frontend/${ssl_file}"
 		COMMAND cmake -E copy
 		"${CMAKE_CURRENT_SOURCE_DIR}/${ssl_file}"
-		"${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}"
+		"${BOOMERANG_OUTPUT_DIR}/frontend/${ssl_file}"
 		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${ssl_file}"
 	)
-	list( APPEND ssl_files_dest "${PROJECT_SOURCE_DIR}/out/frontend/${ssl_file}" )
+	list(APPEND ssl_files_dest "${BOOMERANG_OUTPUT_DIR}/frontend/${ssl_file}" )
 endforeach()
+
 add_custom_target(CopySSLs ALL DEPENDS ${ssl_files_dest})
 
 add_library(boomerang-frontend STATIC ${SRC})

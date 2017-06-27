@@ -11,16 +11,23 @@ set(IFC_SOURCES
 
 macro(BOOMERANG_ADD_LOADER name)
 	option(BOOM_BUILD_LOADER_${name} "Build the ${name} loader." ON)
-	
+
 	if (BOOM_BUILD_LOADER_${name})
 		set(target_name "boomerang_${name}Loader")
 		add_library(${target_name} SHARED ${IFC_SOURCES} ${ARGN})
-		
+
+		set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib")
 		if (WIN32)
-			set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG "${PROJECT_SOURCE_DIR}/out/lib")
+			set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib")
 		endif (WIN32)
+		
 		qt5_use_modules(${target_name} Core)
-		set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/out/lib")
+
+		install(TARGETS ${target_name}
+			ARCHIVE DESTINATION lib
+			LIBRARY DESTINATION lib
+			RUNTIME DESTINATION bin
+		)
 	endif ()
 endmacro()
 
