@@ -124,6 +124,8 @@ set(boomerang_SRC
     type/TypeRecovery.cpp
     type/TypeRecovery.h
     
+    util/Address.h
+    util/Address.cpp
 	util/Log.h
 	util/Log.cpp
 	util/Util.h
