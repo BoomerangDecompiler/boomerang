@@ -186,7 +186,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
 			if (op2 == 0x15) { // Opcode FF 15 is indirect call
 				// Get the 4 byte address from the instruction
-				addr = LMMH(*(p + m_base + 2));
+				addr = Address(LMMH(*(p + m_base + 2)));
 				//                    const char *c = dlprocptrs[addr].c_str();
 				//                    printf("Checking %x finding %s\n", addr, c);
 				auto exit_sym = m_symbols->find(addr);
@@ -194,7 +194,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 				if (exit_sym && (exit_sym->getName() == "exit")) {
 					if (gap <= 10) {
 						// This is it. The instruction at lastOrdCall is (win)main
-						addr  = LMMH(*(lastOrdCall + m_base + 1));
+						addr  = Address(LMMH(*(lastOrdCall + m_base + 1)));
 						addr += lastOrdCall + 5; // Addr is dest of call
 						//                            printf("*** MAIN AT 0x%x ***\n", addr);
 						return addr + LMMH(m_pPEHeader->Imagebase);
@@ -287,7 +287,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
 		if (dest_sym && (dest_sym->getName() == "GetVersionExA")) {
 			if ((*(unsigned char *)(p + m_base + 0x6d) == 0xff) && (*(unsigned char *)(p + m_base + 0x6e) == 0x15)) {
-				desti    = LMMH(*(p + m_base + 0x6f));
+				desti    = Address(LMMH(*(p + m_base + 0x6f)));
 				dest_sym = m_symbols->find(desti);
 
 				if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
@@ -379,7 +379,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 			if (in_mingw_CRTStartup) {
 				op2 = *(unsigned char *)(dest + m_base);
 				unsigned char op2a  = *(unsigned char *)(dest + m_base + 1);
-				            Address       desti = Address::g(LMMH(*(dest + m_base + 2)));
+				Address       desti = Address::g(LMMH(*(dest + m_base + 2)));
 
 				// skip all the call statements until we hit a call to an indirect call to ExitProcess
 				// main is the 2nd call before this one
@@ -393,7 +393,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 				}
 
 				lastlastcall = lastcall;
-				lastcall     = p;
+				lastcall     = Address(p);
 			}
 			else {
 				p = dest;

@@ -269,7 +269,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
 			SectionParam sect;
 			sect.Name         = QString("seg%i").arg(n); // no section names in LX
-			sect.from         = LMMH(m_pLXObjects[n].RelocBaseAddr);
+			sect.from         = Address(LMMH(m_pLXObjects[n].RelocBaseAddr));
 			sect.ImageAddress = Address::host_ptr(base + (sect.from - params.front().from).m_value);
 			sect.Size         = LMMH(m_pLXObjects[n].VirtualSize);
 			DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);

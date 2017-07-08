@@ -114,8 +114,8 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 
 		// Initial PC and SP. Note that we fake the seg:offset by putting
 		// the segment in the top half, and offset int he bottom
-		m_uInitPC = ((LH(&m_header->initCS)) << 16) + LH(&m_header->initIP);
-		m_uInitSP = ((LH(&m_header->initSS)) << 16) + LH(&m_header->initSP);
+		m_uInitPC = Address((LH(&m_header->initCS)) << 16) + Address(LH(&m_header->initIP));
+		m_uInitSP = Address((LH(&m_header->initSS)) << 16) + Address(LH(&m_header->initSP));
 	}
 	else {
 		/* COM file
@@ -127,8 +127,8 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 		 * This is also the implied start address so if we load the image
 		 * at offset 100H addresses should all line up properly again.
 		 */
-		m_uInitPC  = 0x100;
-		m_uInitSP  = 0xFFFE;
+		m_uInitPC  = Address(0x100);
+		m_uInitSP  = Address(0xFFFE);
 		m_numReloc = 0;
 
 		fp.seek(0);

@@ -24,6 +24,9 @@
 #include <cassert>
 #include <string>
 
+const Address Address::ZERO    = Address(0);
+const Address Address::INVALID = Address(-1);
+
 // Turn things like newline, return, tab into \n, \r, \t etc
 // Note: assumes a C or C++ back end...
 QString escapeStr(const QString& inp)

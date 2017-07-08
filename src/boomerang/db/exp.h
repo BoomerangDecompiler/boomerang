@@ -665,18 +665,12 @@ private:
 	union
 	{
 		int      i;    ///< Integer
-		/// \note although we have i and a as unions, both often use the same operator (opIntConst).
-		/// There is no opCodeAddr any more.
-		      Address  a;    ///< void* conflated with unsigned int: needs fixing
-		QWord    ll;   ///< 64 bit integer
+		QWord    ll;   ///< 64 bit integer / address / pointer
 		double   d;    ///< Double precision float
-		// const char *p; ///< Pointer to string
 
 		/// Don't store string: function could be renamed
 		Function *pp;      ///< Pointer to function
-	}
-
-	u;
+	} u;
 
 	QString m_string;
 	int m_conscript;   ///< like a subscript for constants
@@ -737,7 +731,7 @@ public:
 	QWord getLong() const { return u.ll; }
 	double getFlt() const { return u.d; }
 	QString getStr() const { return m_string; }
-	   Address getAddr() const { return u.a; }
+	Address getAddr() const { return Address((Address::value_type)u.ll); }
 	QString getFuncName() const;
 
 	// Set the constant
@@ -745,7 +739,7 @@ public:
 	void setLong(QWord ll) { u.ll = ll; }
 	void setFlt(double d) { u.d = d; }
 	void setStr(const QString& p) { m_string = p; }
-	void setAddr(Address a) { u.a = a; }
+	void setAddr(Address a) { u.ll = a.m_value; }
 
 	// Get and set the type
 	SharedType getType() { return m_type; }

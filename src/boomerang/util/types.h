@@ -7,6 +7,7 @@
 #include <QObject>
 #include <iosfwd>
 #include <cstdint>
+#include <cassert>
 
 #include "boomerang/util/Util.h"
 
@@ -25,34 +26,35 @@ public:
 	typedef uintptr_t   value_type;
 
 public:
-	value_type     m_value;
+	static const Address ZERO;
+	static const Address INVALID;
+
+	explicit Address() : m_value(0) {}
+	explicit Address(value_type value) : m_value(value) {}
+
+	Address(const Address&) = default;
+	Address& operator=(const Address&) = default;
 
 	static Address g(value_type x)   // construct host/native oblivious address
 	{
-		      Address z;
-
-		z.m_value = x;
-		return z;
+		return Address(x);
 	}
 
 	static Address n(value_type x)   // construct native address
 	{
-		      Address z;
+		assert((x & ~0xFFFFFFFF) == 0);
+		return Address(x);
+	}
 
-		z.m_value = x;
-		return z.native();
+	static Address host_ptr(const void *x)
+	{
+		return Address((value_type)x);
 	}
 
 	/// query if the ADDRESS is the source, if it's host address returns false
 	bool           isSourceAddr() const { return sizeof(m_value) == 4 || (uint64_t(m_value) >> 32) == 0; }
 	Address        native() const { return Address::g(m_value & 0xFFFFFFFF); }
-	static Address host_ptr(const void *x)
-	{
-		Address z;
 
-		z.m_value = value_type(x);
-		return z;
-	}
 
 	bool           isZero() const { return m_value == 0; }
 	bool operator==(const Address& other) const { return m_value == other.m_value; }
@@ -62,62 +64,23 @@ public:
 	bool operator>=(const Address& other) const { return m_value >= other.m_value; }
 	bool operator<=(const Address& other) const { return m_value <= other.m_value; }
 
-	   Address operator+(const Address& other) const { return Address::g(m_value + other.m_value); }
-	   Address operator++()
-	{
-		++m_value;
-		return *this;
-	}
+	Address operator+(const Address& other) const { return Address::g(m_value + other.m_value); }
+	Address operator-(const Address& other) const { return Address::g(m_value - other.m_value); }
 
-	   Address operator++(int)
-	{
-		      Address res = *this;
+	Address operator++() { ++m_value; return *this; }
+	Address operator--() { --m_value; return *this; }
+	Address operator++(int)	{ return Address(m_value++); }
+	Address operator--(int) { return Address(m_value--); }
 
-		++m_value;
-		return res;
-	}
+	Address operator+=(const Address& other) { m_value += other.m_value; return *this; }
 
-	   Address operator--()
-	{
-		--m_value;
-		return *this;
-	}
+	Address operator+=(intptr_t other) { m_value += other; return *this; }
 
-	   Address operator--(int)
-	{
-		      Address res = *this;
+	Address operator+(intptr_t val) const { return Address::g(m_value + val); }
 
-		--m_value;
-		return res;
-	}
+	Address operator-=(intptr_t v) { m_value -= v; return *this; }
 
-	   Address operator+=(const Address& other)
-	{
-		m_value += other.m_value;
-		return *this;
-	}
-
-	   Address operator+=(intptr_t other)
-	{
-		m_value += other;
-		return *this;
-	}
-
-	   Address& operator=(intptr_t v)
-	{
-		m_value = v;
-		return *this;
-	}
-
-	   Address operator+(intptr_t val) const { return Address::g(m_value + val); }
-	   Address operator-(const Address& other) const { return Address::g(m_value - other.m_value); }
-	   Address operator-=(intptr_t v)
-	{
-		m_value -= v;
-		return *this;
-	}
-
-	   Address operator-(intptr_t other) const { return Address::g(m_value - other); }
+	Address operator-(intptr_t other) const { return Address::g(m_value - other); }
 	friend QTextStream& operator<<(QTextStream& os, const Address& mdv);
 
 	QString        toString(bool zerofill = false) const
@@ -129,7 +92,8 @@ public:
 		return "0x" + QString::number(m_value, 16);
 	}
 
-	// operator intptr_t() const {return int(m_value);}
+public:
+	value_type     m_value;
 };
 
 template<class T, class U>

@@ -1150,10 +1150,10 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 			continue;
 		}
 
-		      Address a;
+		Address a;
 
 		if (found->isIntConst()) {
-			a = found->access<Const>()->getInt();
+			a = Address(found->access<Const>()->getInt());
 		}
 		else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
 			QString name = found->access<Const, 1, 1>()->getStr();

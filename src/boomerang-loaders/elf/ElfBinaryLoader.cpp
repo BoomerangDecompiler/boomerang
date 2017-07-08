@@ -95,8 +95,8 @@ void ElfBinaryLoader::init()
 	m_strings       = nullptr;  // No strings
 	m_relocSection  = nullptr;
 	m_symbolSection = nullptr;
-	m_pltMin        = 0;  // No PLT limits
-	m_pltMax        = 0;
+	m_pltMin        = Address::ZERO;  // No PLT limits
+	m_pltMax        = Address::ZERO;
 	m_lastSize      = 0;
 	m_importStubs   = nullptr;
 	m_elfSections.clear();
@@ -233,7 +233,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 			sect.image_ptr = Address::host_ptr(m_loadedImage + _off);
 		}
 
-		sect.SourceAddr = elfRead4(&pShdr->sh_addr);
+		sect.SourceAddr = Address(elfRead4(&pShdr->sh_addr));
 		sect.Size       = elfRead4(&pShdr->sh_size);
 
 		if (sect.SourceAddr.isZero() && strncmp(sectionName, ".rel", 4)) {
@@ -950,7 +950,7 @@ void ElfBinaryLoader::applyRelocations()
 						break;
 
 					case 1: // R_386_32: S + A
-						S = elfRead4((DWord *)&symOrigin[symTabIndex].st_value);
+						S = Address(elfRead4((DWord *)&symOrigin[symTabIndex].st_value));
 
 						if (e_type == E_REL) {
 							nsec = elfRead2(&symOrigin[symTabIndex].st_shndx);
@@ -960,7 +960,7 @@ void ElfBinaryLoader::applyRelocations()
 							}
 						}
 
-						A = elfRead4(pRelWord);
+						A = Address(elfRead4(pRelWord));
 						elfWrite4(pRelWord, (S + A).m_value);
 						break;
 
@@ -974,7 +974,7 @@ void ElfBinaryLoader::applyRelocations()
 							}
 						}
 						else {
-							S = elfRead4((DWord *)&symOrigin[symTabIndex].st_value);
+							S = Address(elfRead4((DWord *)&symOrigin[symTabIndex].st_value));
 
 							if (S.isZero()) {
 								// This means that the symbol doesn't exist in this module, and is not accessed
@@ -989,7 +989,7 @@ void ElfBinaryLoader::applyRelocations()
 								// this is too slow, I'm just going to assume it is 0
 								// S = GetAddressByName(pName);
 								// if (S == (e_type == E_REL ? 0x8000000 : 0)) {
-								S = nextFakeLibAddr--; // Allocate a new fake address
+								S = Address(nextFakeLibAddr--); // Allocate a new fake address
 								m_symbols->create(S, pName);
 								// }
 							}
@@ -1002,7 +1002,7 @@ void ElfBinaryLoader::applyRelocations()
 							}
 						}
 
-						A = elfRead4(pRelWord);
+						A = Address(elfRead4(pRelWord));
 						P = destNatOrigin + r_offset;
 						elfWrite4(pRelWord, (S + A - P).m_value);
 						break;
@@ -1081,7 +1081,7 @@ bool ElfBinaryLoader::isRelocationAt(Address uNative)
 					else {
 						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(Address::g(r_offset));
 						pRelWord      = destSec->getSourceAddr() + r_offset;
-						destNatOrigin = 0;
+						destNatOrigin = Address::ZERO;
 					}
 
 					if (uNative == pRelWord) {

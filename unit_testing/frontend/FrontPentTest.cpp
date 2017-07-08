@@ -87,7 +87,7 @@ void FrontPentTest::test1()
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	addr = 0x804833b;
+	addr = Address(0x804833b);
 	inst = pFE->decodeInstruction(addr);
 	inst.rtl->print(strm);
 	expected = QString("0804833b    0 *32* m[r28 - 4] := 0x80483fc\n"

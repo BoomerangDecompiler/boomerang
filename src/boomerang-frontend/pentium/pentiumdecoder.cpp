@@ -49435,7 +49435,7 @@ SharedExp PentiumDecoder::dis_Mem(Address pc)
 {
 	SharedExp expr = nullptr;
 
-	lastDwordLc = (unsigned)-1;
+	lastDwordLc = Address::INVALID;
 	// #line 2148 "frontend/machine/pentium/decoder.m"
 	{
 		      Address                 MATCH_p = pc;
@@ -49767,7 +49767,7 @@ SWord PentiumDecoder::getWord(intptr_t lc)
 DWord PentiumDecoder::getDword(intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
-	lastDwordLc = lc - m_image->getTextDelta();
+	lastDwordLc = Address(lc) - m_image->getTextDelta();
 	return m_image->readNative4(lastDwordLc);
 	//    assert(lc<prog->getLimitTextHigh().m_value);
 	//    return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));

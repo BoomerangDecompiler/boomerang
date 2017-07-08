@@ -576,7 +576,7 @@ std::pair<Address, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 		// cout << "Subspace " << thisName << " starts " << hex << subSpaces[u].subspace_start << " length " <<
 		// subSpaces[u].subspace_length << endl;
 		if ((thisNameSize == strlen(ssname)) && ((strcmp(thisName, ssname) == 0))) {
-			ret.first  = UINT4(&subSpaces[u].subspace_start);
+			ret.first  = Address(UINT4(&subSpaces[u].subspace_start));
 			ret.second = UINT4(&subSpaces[u].subspace_length);
 			return ret;
 		}

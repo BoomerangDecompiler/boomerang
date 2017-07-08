@@ -1952,11 +1952,10 @@ bool DataIntervalMap::isClear(Address addr, unsigned size)
 
 	it--;            // If any item overlaps, it is this one
 	// Make sure the previous item ends before this one will start
-	   Address end;
+	Address end;
 
 	if (it->first + it->second.size < it->first) {
-		// overflow
-		end = 0xFFFFFFFF; // Overflow
+		end = Address::INVALID; // overflow
 	}
 	else {
 		end = it->first + it->second.size;

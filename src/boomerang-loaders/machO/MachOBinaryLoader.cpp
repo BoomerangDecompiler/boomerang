@@ -212,23 +212,23 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 					if (!strcmp(sect.sectname, SECT_OBJC_SYMBOLS)) {
 						assert(objc_symbols == NO_ADDRESS);
-						objc_symbols = BMMH(sect.addr);
+						objc_symbols = Address(BMMH(sect.addr));
 					}
 
 					if (!strcmp(sect.sectname, SECT_OBJC_MODULES)) {
 						assert(objc_modules == NO_ADDRESS);
-						objc_modules      = BMMH(sect.addr);
+						objc_modules      = Address(BMMH(sect.addr));
 						objc_modules_size = BMMH(sect.size);
 					}
 
 					if (!strcmp(sect.sectname, SECT_OBJC_STRINGS)) {
 						assert(objc_strings == NO_ADDRESS);
-						objc_strings = BMMH(sect.addr);
+						objc_strings = Address(BMMH(sect.addr));
 					}
 
 					if (!strcmp(sect.sectname, SECT_OBJC_REFS)) {
 						assert(objc_refs == NO_ADDRESS);
-						objc_refs = BMMH(sect.addr);
+						objc_refs = Address(BMMH(sect.addr));
 					}
 				}
 			}
@@ -303,7 +303,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 		}
 	}
 
-	loaded_addr = BMMH(lowest->vmaddr);
+	loaded_addr = Address(BMMH(lowest->vmaddr));
 	loaded_size = BMMH(highest->vmaddr) - BMMH(lowest->vmaddr) + BMMH(highest->vmsize);
 
 	base = (char *)malloc(loaded_size);
