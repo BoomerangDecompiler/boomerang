@@ -335,7 +335,7 @@ void PalmBinaryLoader::unload()
 Address PalmBinaryLoader::getEntryPoint()
 {
 	assert(0); /* FIXME: Need to be implemented */
-	return Address::g(0L);
+	return Address::ZERO;
 }
 
 
@@ -372,7 +372,7 @@ bool PalmBinaryLoader::isLibrary() const
 
 Address PalmBinaryLoader::getImageBase()
 {
-	return Address::g(0L);                                      /* FIXME */
+	return Address::ZERO;                                      /* FIXME */
 }
 
 
@@ -402,7 +402,7 @@ void PalmBinaryLoader::addTrapSymbols()
 // (%agp points to the bottom of the global data area).
 std::pair<Address, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
 {
-	   Address              agp = Address::g(0L);
+	   Address              agp = Address::ZERO;
 	const IBinarySection *ps = m_image->getSectionInfoByName("data0");
 
 	if (ps) {
@@ -502,7 +502,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 	IBinarySection *psect = m_image->getSectionInfoByName("code1");
 
 	if (psect == nullptr) {
-		return Address::g(0L); // Failed
+		return Address::ZERO; // Failed
 	}
 
 	// Return the start of the code1 section
@@ -531,7 +531,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 		}
 		else {
 			fprintf(stderr, "Could not find call to PilotMain in CW app\n");
-			return Address::g(0L);
+			return Address::ZERO;
 		}
 	}
 
@@ -545,7 +545,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 	}
 
 	fprintf(stderr, "Cannot find call to PilotMain\n");
-	return Address::g(0L);
+	return Address::ZERO;
 }
 
 

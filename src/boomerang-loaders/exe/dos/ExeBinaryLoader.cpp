@@ -226,7 +226,7 @@ bool ExeBinaryLoader::postLoad(void *handle)
 
 Address ExeBinaryLoader::getImageBase()
 {
-	return Address::g(0L);                                     /* FIXME */
+	return Address::ZERO;                                     /* FIXME */
 }
 
 

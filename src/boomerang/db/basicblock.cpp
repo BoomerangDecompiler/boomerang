@@ -352,7 +352,7 @@ bool BasicBlock::isBackEdge(size_t inEdge) const
 Address BasicBlock::getLowAddr() const
 {
 	if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-		return Address::g(0L);
+		return Address::ZERO;
 	}
 
 	   Address a = m_listOfRTLs->front()->getAddress();
@@ -365,7 +365,7 @@ Address BasicBlock::getLowAddr() const
 		// to change orphan BBs' addresses to Address::INVALID, but I suspect that this will cause many problems. MVE
 		if (add2 < Address::g(0x10)) {
 			// Assume that 0 is the real address
-			return Address::g(0L);
+			return Address::ZERO;
 		}
 
 		return add2;
@@ -1730,7 +1730,7 @@ void BasicBlock::prependStmt(Instruction *s, UserProc *proc)
 
 	// Otherwise, prepend a new RTL
 	std::list<Instruction *> listStmt = { s };
-	RTL *rtl = new RTL(Address::g(0L), &listStmt);
+	RTL *rtl = new RTL(Address::ZERO, &listStmt);
 	m_listOfRTLs->push_front(rtl);
 }
 
@@ -2094,7 +2094,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
 	case 'R':
 		{
 			// Pattern: %pc + m[%pc     + (<expr> * 4) + k]
-			T = Address::g(0L); // ?
+			T = Address::ZERO; // ?
 			// l = m[%pc  + (<expr> * 4) + k]:
 			SharedExp l = e->getSubExp2();
 
@@ -2116,7 +2116,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
 	case 'r':
 		{
 			// Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
-			T = Address::g(0L); // ?
+			T = Address::ZERO; // ?
 			// b = %pc + m[%pc + ((<expr> * 4) - k)]:
 			SharedExp b = e->getSubExp1();
 			// l = m[%pc + ((<expr> * 4) - k)]:

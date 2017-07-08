@@ -24,8 +24,8 @@ public:
 	static const Address ZERO;
 	static const Address INVALID;
 
-	explicit Address() : m_value(0) {}
-	explicit Address(value_type value) : m_value(value) {}
+	explicit Address();
+	explicit Address(value_type value);
 
 	Address(const Address&) = default;
 	Address& operator=(const Address&) = default;

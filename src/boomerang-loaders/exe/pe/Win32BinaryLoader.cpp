@@ -364,7 +364,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 	// mingw pattern
 	p = LMMH(m_pPEHeader->EntrypointRVA);
 	bool    in_mingw_CRTStartup = false;
-	   Address lastcall = Address::g(0L), lastlastcall = Address::g(0L);
+	   Address lastcall = Address::ZERO, lastlastcall = Address::ZERO;
 
 	while (1) {
 		op1 = *(unsigned char *)(p + m_base);

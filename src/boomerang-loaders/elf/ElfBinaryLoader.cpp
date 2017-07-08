@@ -64,7 +64,7 @@ typedef std::map<QString, int, std::less<QString> > StrIntMap;
 
 
 ElfBinaryLoader::ElfBinaryLoader()
-	: m_nextExtern(Address::g(0L))
+	: m_nextExtern(Address::ZERO)
 {
 	init(); // Initialise all the common stuff
 }
@@ -388,7 +388,7 @@ const char *ElfBinaryLoader::getStrPtr(int idx, int offset)
 Address ElfBinaryLoader::findRelPltOffset(int i)
 {
 	const IBinarySection *siPlt    = m_binaryImage->getSectionInfoByName(".plt");
-	Address              addrPlt   = siPlt ? siPlt->getSourceAddr() : Address::g(0L);
+	Address              addrPlt   = siPlt ? siPlt->getSourceAddr() : Address::ZERO;
 	const IBinarySection *siRelPlt = m_binaryImage->getSectionInfoByName(".rel.plt");
 	int sizeRelPlt = 8; // Size of each entry in the .rel.plt table
 
@@ -397,7 +397,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 		sizeRelPlt = 12; // Size of each entry in the .rela.plt table is 12 bytes
 	}
 
-	Address addrRelPlt = Address::g(0L);
+	Address addrRelPlt = Address::ZERO;
 	int     numRelPlt  = 0;
 
 	if (siRelPlt) {
@@ -457,7 +457,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 		}
 	} while (curr != first); // Will eventually wrap around to first if not present
 
-	return Address::g(0L);   // Exit if this happens
+	return Address::ZERO;   // Exit if this happens
 }
 
 
@@ -651,7 +651,7 @@ Address ElfBinaryLoader::getEntryPoint()
 Address ElfBinaryLoader::nativeToHostAddress(Address uNative)
 {
 	if (m_binaryImage->getNumSections() == 0) {
-		return Address::g(0L);
+		return Address::ZERO;
 	}
 
 	return m_binaryImage->getSectionInfo(1)->getHostAddr() - m_binaryImage->getSectionInfo(1)->getSourceAddr() + uNative;
@@ -866,7 +866,7 @@ void ElfBinaryLoader::applyRelocations()
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
-				// ADDRESS destNatOrigin = ADDRESS::g(0L), destHostOrigin = ADDRESS::g(0L);
+				// ADDRESS destNatOrigin = Address::ZERO, destHostOrigin = Address::ZERO;
 				for (unsigned u = 0; u < size; u += sizeof(Elf32_Rela)) {
 					Elf32_Rela r;
 					r.r_offset = elfRead4(pReloc++);
@@ -912,7 +912,7 @@ void ElfBinaryLoader::applyRelocations()
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
-				            Address destNatOrigin = Address::g(0L), destHostOrigin = Address::g(0L);
+				            Address destNatOrigin = Address::ZERO, destHostOrigin = Address::ZERO;
 
 				if (e_type == E_REL) {
 					int destSection = m_shInfo[i];
@@ -938,10 +938,10 @@ void ElfBinaryLoader::applyRelocations()
 					else {
 						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(Address::n(r_offset));
 						pRelWord      = (DWord *)(destSec->getHostAddr() - destSec->getSourceAddr() + r_offset).value();
-						destNatOrigin = Address::g(0L);
+						destNatOrigin = Address::ZERO;
 					}
 
-					Address  A, S = Address::g(0L), P;
+					Address  A, S = Address::ZERO, P;
 					unsigned nsec;
 
 					switch (relType)
@@ -1054,7 +1054,7 @@ bool ElfBinaryLoader::isRelocationAt(Address uNative)
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
-				            Address destNatOrigin = Address::g(0L), destHostOrigin;
+				            Address destNatOrigin = Address::ZERO, destHostOrigin;
 
 				if (e_type == E_REL) {
 					int destSection = m_shInfo[i];

@@ -10,6 +10,16 @@ const Address Address::INVALID = Address(-1);
 Byte Address::m_sourceBits = 32U;
 
 
+Address::Address()
+	: m_value(0)
+{}
+
+Address::Address(value_type value)
+	: m_value(value)
+{
+//	assert(m_value == (value_type)-1 || (value & ~getSourceMask()) == 0);
+}
+
 Address Address::g(value_type x)
 {
     return Address(x);

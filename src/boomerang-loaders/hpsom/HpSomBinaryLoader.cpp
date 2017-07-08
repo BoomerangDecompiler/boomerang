@@ -375,9 +375,9 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	// Section 2: BSS
 	// For now, assume that BSS starts at the end of the initialised data
 	IBinarySection *bss = m_image->createSection("$BSS$", Address::n(AUXHDR(6) + AUXHDR(5)),
-												              Address::n(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
+														  Address::n(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
 	assert(bss);
-	bss->setHostAddr(Address::n(0))
+	bss->setHostAddr(Address::ZERO)
 	   .setEntrySize(1)
 	   .setCode(false)
 	   .setData(false)
@@ -511,7 +511,7 @@ void HpSomBinaryLoader::unload()
 Address HpSomBinaryLoader::getEntryPoint()
 {
 	assert(0); /* FIXME: Someone who understands this file please implement */
-	return Address::g(0L);
+	return Address::ZERO;
 }
 
 
@@ -551,7 +551,7 @@ bool HpSomBinaryLoader::isLibrary() const
 
 Address HpSomBinaryLoader::getImageBase()
 {
-	return Address::g(0L);                                       /* FIXME */
+	return Address::ZERO;                                       /* FIXME */
 }
 
 
@@ -563,7 +563,7 @@ size_t HpSomBinaryLoader::getImageSize()
 
 std::pair<Address, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 {
-	std::pair<Address, int> ret(Address::g(0L), 0);
+	std::pair<Address, int> ret(Address::ZERO, 0);
 	// Get the start and length of the subspace with the given name
 	subspace_dictionary_record *subSpaces = (subspace_dictionary_record *)(m_loadedImage + UINT4(m_loadedImage + 0x34));
 	unsigned   numSubSpaces  = UINT4(m_loadedImage + 0x38);
@@ -594,7 +594,7 @@ std::pair<Address, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 // pa-risc) points just past the end of the $GLOBAL$ subspace.
 std::pair<Address, unsigned> HpSomBinaryLoader::getGlobalPointerInfo()
 {
-	std::pair<Address, unsigned> ret(Address::g(0L), 0);
+	std::pair<Address, unsigned> ret(Address::ZERO, 0);
 	// Search the subspace names for "$GLOBAL$
 	std::pair<Address, int> info = getSubspaceInfo("$GLOBAL$");
 	// We want the end of the $GLOBAL$ section, which is the sum of the start

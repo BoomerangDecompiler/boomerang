@@ -655,12 +655,12 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
 		// be several jumps to the same destination that all require an orphan. The instruction in the orphan will
 		// often but not necessarily be the same, so we can't use the same orphan BB. newBB knows to consider BBs
 		// with address 0 as being in the map, so several BBs can exist with address 0
-		delay_inst.rtl->setAddress(Address::g(0L));
+		delay_inst.rtl->setAddress(Address::ZERO);
 		// Add a branch from the orphan instruction to the dest of the branch. Again, we can't even give the jumps
 		// a special address like 1, since then the BB would have this getLowAddr.
 		std::list<Instruction *> *gl = new std::list<Instruction *>;
 		gl->push_back(new GotoStatement(uDest));
-		pOrphan->push_back(new RTL(Address::g(0L), gl));
+		pOrphan->push_back(new RTL(Address::ZERO, gl));
 		BasicBlock *pOrBB = cfg->newBB(pOrphan, BBTYPE::ONEWAY, 1);
 		// Add an out edge from the orphan as well
 		cfg->addOutEdge(pOrBB, uDest, true);
@@ -734,11 +734,11 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
 		pOrphan->push_back(delay_inst.rtl);
 		// Change the address to 0, since this code has no source address (else we may branch to here when we want to
 		// branch to the real BB with this instruction).
-		delay_inst.rtl->setAddress(Address::g(0L));
+		delay_inst.rtl->setAddress(Address::ZERO);
 		// Add a branch from the orphan instruction to the dest of the branch
 		std::list<Instruction *> *gl = new std::list<Instruction *>;
 		gl->push_back(new GotoStatement(uDest));
-		pOrphan->push_back(new RTL(Address::g(0L), gl));
+		pOrphan->push_back(new RTL(Address::ZERO, gl));
 		BasicBlock *pOrBB = cfg->newBB(pOrphan, BBTYPE::ONEWAY, 1);
 		// Add an out edge from the orphan as well. Set a label there.
 		cfg->addOutEdge(pOrBB, uDest, true);

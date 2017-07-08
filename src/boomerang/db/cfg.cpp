@@ -704,7 +704,7 @@ void Cfg::completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete)
 			continue;
 		}
 
-		if ((*it)->getLowAddr() != Address::g(0)) {
+		if ((*it)->getLowAddr() != Address::ZERO) {
 			m_mapBB.erase((*it)->getLowAddr());
 		}
 
@@ -736,7 +736,7 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2)
 	// but that's good because we only did shallow copies to *pb2
 	BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), pb1);
 
-	if ((*bbit)->getLowAddr() != Address::g(0)) {
+	if ((*bbit)->getLowAddr() != Address::ZERO) {
 		m_mapBB.erase((*bbit)->getLowAddr());
 	}
 
@@ -749,7 +749,7 @@ void Cfg::removeBB(BasicBlock *bb)
 {
 	BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), bb);
 
-	if ((*bbit)->getLowAddr() != Address::g(0)) {
+	if ((*bbit)->getLowAddr() != Address::ZERO) {
 		m_mapBB.erase((*bbit)->getLowAddr());
 	}
 
@@ -814,7 +814,7 @@ bool Cfg::compressCfg()
 				if (pSucc->m_inEdges.empty()) {
 					for (BB_IT it3 = m_listBB.begin(); it3 != m_listBB.end(); it3++) {
 						if (*it3 == pSucc) {
-							if ((*it3)->getLowAddr() != Address::g(0)) {
+							if ((*it3)->getLowAddr() != Address::ZERO) {
 								m_mapBB.erase((*it3)->getLowAddr());
 							}
 
@@ -1891,7 +1891,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
 
 	// Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
 	// creating the rptBB). Or if there is no A, temporarily use 0
-	   Address    a        = (haveA) ? addr : Address::g(0L);
+	   Address    a        = (haveA) ? addr : Address::ZERO;
 	RTL        *skipRtl = new RTL(a, new std::list<Instruction *> { br1 }); // list initializer in braces
 	BasicBlock *skipBB  = newBB(new std::list<RTL *> { skipRtl }, BBTYPE::TWOWAY, 2);
 	rtl->setAddress(addr + 1);

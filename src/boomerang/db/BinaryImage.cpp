@@ -223,7 +223,7 @@ void BinaryImage::writeNative4(Address nat, uint32_t n)
 void BinaryImage::calculateTextLimits()
 {
 	m_limitTextLow  = Address::g(0xFFFFFFFF);
-	m_limitTextHigh = Address::g(0L);
+	m_limitTextHigh = Address::ZERO;
 	m_textDelta     = 0;
 
 	for (IBinarySection *pSect : m_sections) {

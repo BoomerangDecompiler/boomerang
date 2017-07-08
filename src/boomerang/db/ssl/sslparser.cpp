@@ -1192,7 +1192,7 @@ SSLParser::
         break;
     }
     case 76: {
-        yyval.rtlist = std::make_shared<RTL>(Address::g(0L)); // WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
+        yyval.rtlist = std::make_shared<RTL>(Address::ZERO); // WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
         if (yyvsp[0].regtransfer != nullptr)
             yyval.rtlist->appendStmt(yyvsp[0].regtransfer);
         ;

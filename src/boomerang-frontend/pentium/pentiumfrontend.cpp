@@ -735,7 +735,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
 			break;
 		}
 
-		      Address prev, addr = Address::g(0L);
+		Address prev, addr = Address::ZERO;
 		bool    lastRtl = true;
 
 		// For each RTL this BB
