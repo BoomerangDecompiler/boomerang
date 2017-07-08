@@ -5,6 +5,9 @@
 #include <QString>
 #include <QTextStream>
 
+/// Standard pointer size of source machine, in bits
+#define STD_SIZE    32
+
 /* pointer. size depends on platform */
 class Address
 {
@@ -29,8 +32,6 @@ public:
 		return Address((value_type)x);
 	}
 
-	/// query if the ADDRESS is the source, if it's host address returns false
-	bool           isSourceAddr() const { return sizeof(m_value) == 4 || (uint64_t(m_value) >> 32) == 0; }
 	Address        native() const { return Address::g(m_value & 0xFFFFFFFF); }
 	value_type     value() const { return m_value; }
 
@@ -81,5 +82,3 @@ bool IN_RANGE(const T& val, const U& range_start, const U& range_end)
 }
 
 Q_DECLARE_METATYPE(Address)
-
-#define STD_SIZE    32 // Standard size

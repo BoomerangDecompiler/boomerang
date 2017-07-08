@@ -263,10 +263,6 @@ void BinaryImage::calculateTextLimits()
 
 const IBinarySection *BinaryImage::getSectionInfoByAddr(Address uEntry) const
 {
-	if (!uEntry.isSourceAddr()) {
-		qDebug() << "getSectionInfoByAddr with non-Source ADDRESS";
-	}
-
 	auto iter = m_sectionMap.find(uEntry);
 
 	if (iter == m_sectionMap.end()) {
