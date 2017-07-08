@@ -302,7 +302,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 				if (baseType->resolvesToChar()) {
 					// Convert to a string    MVE: check for read-only?
 					// Also, distinguish between pointer to one char, and ptr to many?
-					const char *str = _prog->getStringConstant(Address::n(val), true);
+					const char *str = _prog->getStringConstant(Address(val), true);
 
 					if (str) {
 						// Make a string
@@ -412,7 +412,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 				// MVE: more work if double?
 			}
 			else { /* if (t->resolvesToArray()) */
-				_prog->markGlobalUsed(Address::n(val), t);
+				_prog->markGlobalUsed(Address(val), t);
 			}
 		}
 

@@ -322,8 +322,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 		fp.read(base + a.value() - loaded_addr.value(), fsz);
 		DEBUG_PRINT("loaded segment %tx %i in mem %i in file\n", a.value(), sz, fsz);
 		QString        name  = QByteArray(segments[i].segname, 17);
-		IBinarySection *sect = Image->createSection(name, Address::n(BMMH(segments[i].vmaddr)),
-													                  Address::n(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
+		IBinarySection *sect = Image->createSection(name, Address(BMMH(segments[i].vmaddr)),
+													                  Address(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
 		assert(sect);
 		sect->setHostAddr(Address::g(Address::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.value()));
 		assert((sect->getHostAddr() + sect->getSize()) <= Address::host_ptr(base + loaded_size));
@@ -344,15 +344,14 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 				(0 == strcmp(sections[s_idx].sectname, "__cstring"))
 				) {
 				sect->setAttributeForRange("StringsSection", true,
-										                                 Address::n(BMMH(sections[s_idx].addr)),
-										                                 Address::n(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size))
-										   );
+										   Address(BMMH(sections[s_idx].addr)),
+										   Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size))
+				);
 			}
 
 			sect->setAttributeForRange("ReadOnly", (BMMH(sections[i].flags) & VM_PROT_WRITE) ? true : false,
-									                              Address::n(BMMH(sections[s_idx].addr)),
-									                              Address::n(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size))
-									   );
+										Address(BMMH(sections[s_idx].addr)),
+										Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size)));
 		}
 
 		DEBUG_PRINT("loaded segment %tx %i in mem %i in file code=%i data=%i readonly=%i\n", a.value(), sz, fsz,

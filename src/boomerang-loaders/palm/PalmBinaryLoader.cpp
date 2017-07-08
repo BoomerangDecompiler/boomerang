@@ -141,8 +141,8 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 		p  += 4 + 2;
 		off = UINT4(p);
 		p  += 4;
-		      Address start_addr = Address::n(off);
 
+		Address start_addr(off);
 		// Guess the length
 		if (i > 0) {
 			params.back().to = start_addr;
@@ -389,7 +389,7 @@ void PalmBinaryLoader::addTrapSymbols()
 		unsigned offset = loc & 0xFFF;
 
 		if (offset < numTrapStrings) {
-			m_symbols->create(Address::n(loc), trapNames[offset]);
+			m_symbols->create(Address(loc), trapNames[offset]);
 		}
 	}
 }
@@ -402,7 +402,7 @@ void PalmBinaryLoader::addTrapSymbols()
 // (%agp points to the bottom of the global data area).
 std::pair<Address, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
 {
-	   Address              agp = Address::ZERO;
+	Address              agp = Address::ZERO;
 	const IBinarySection *ps = m_image->getSectionInfoByName("data0");
 
 	if (ps) {
@@ -526,7 +526,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 			// Get the addil operand
 			int _addilOp = Read4((int32_t *)(res + 5));
 			// That operand plus the address of that operand is PilotMain
-			         Address offset_loc = Address::n((char *)(res + 5) - (char *)startCode);
+			Address offset_loc = Address((char *)(res + 5) - (char *)startCode);
 			return offset_loc + _addilOp; // ADDRESS::host_ptr(res) + 10 + addilOp - delta;
 		}
 		else {

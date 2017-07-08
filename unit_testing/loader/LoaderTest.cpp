@@ -90,8 +90,8 @@ void LoaderTest::testElfLoadClang()
 	QCOMPARE(loader->getFormat(), LoadFmt::ELF);
 	QCOMPARE(loader->getMachine(), Machine::PENTIUM);
 	QCOMPARE(loader->hasDebugInfo(), false);
-	QCOMPARE(loader->getEntryPoint(),     Address::n(0x080482F0));
-	QCOMPARE(loader->getMainEntryPoint(), Address::n(0x080483F0));
+	QCOMPARE(loader->getEntryPoint(),     Address(0x080482F0));
+	QCOMPARE(loader->getMainEntryPoint(), Address(0x080483F0));
 
 	// test the loaded image
 	IBinaryImage *image = Boomerang::get()->getImage();
@@ -101,8 +101,8 @@ void LoaderTest::testElfLoadClang()
 	QCOMPARE(image->getSectionInfo(0)->getName(),  QString(".interp"));
 	QCOMPARE(image->getSectionInfo(10)->getName(), QString(".plt"));
 	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
-	QCOMPARE(image->getLimitTextLow(),  Address::n(0x08000001));
-	QCOMPARE(image->getLimitTextHigh(), Address::n(0x0804A020));
+	QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
+	QCOMPARE(image->getLimitTextHigh(), Address(0x0804A020));
 }
 
 
@@ -116,8 +116,8 @@ void LoaderTest::testElfLoadClangStatic()
 	QCOMPARE(loader->getFormat(), LoadFmt::ELF);
 	QCOMPARE(loader->getMachine(), Machine::PENTIUM);
 	QCOMPARE(loader->hasDebugInfo(), false);
-	QCOMPARE(loader->getEntryPoint(),     Address::n(0x0804884F));
-	QCOMPARE(loader->getMainEntryPoint(), Address::n(0x080489A0));
+	QCOMPARE(loader->getEntryPoint(),     Address(0x0804884F));
+	QCOMPARE(loader->getMainEntryPoint(), Address(0x080489A0));
 
 	// test the loaded image
 	IBinaryImage *image = Boomerang::get()->getImage();
@@ -127,8 +127,8 @@ void LoaderTest::testElfLoadClangStatic()
 	QCOMPARE(image->getSectionInfo(0)->getName(), QString(".note.ABI-tag"));
 	QCOMPARE(image->getSectionInfo(13)->getName(), QString(".eh_frame"));
 	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
-	QCOMPARE(image->getLimitTextLow(),  Address::n(0x08000001));
-	QCOMPARE(image->getLimitTextHigh(), Address::n(0x080ECDA4));
+	QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
+	QCOMPARE(image->getLimitTextHigh(), Address(0x080ECDA4));
 }
 
 
@@ -228,23 +228,23 @@ void LoaderTest::testWinLoad()
 	// Test loading the "new style" exes, as found in WinXP etc
 	loader = bff.loadFile(CALC_WINXP);
 	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address::n(0x01001F51));
+	QCOMPARE(loader->getMainEntryPoint(), Address(0x01001F51));
 
 	// Test loading the calc.exe found in Windows 2000 (more NT based)
 	loader = bff.loadFile(CALC_WIN2000);
 	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address::n(0x01001680));
+	QCOMPARE(loader->getMainEntryPoint(), Address(0x01001680));
 
 	// Test loading the lpq.exe program - console mode PE file
 	loader = bff.loadFile(LPQ_WINDOWS);
 	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address::n(0x018C1000));
+	QCOMPARE(loader->getMainEntryPoint(), Address(0x018C1000));
 #endif
 
 	// Borland
 	loader = bff.loadFile(SWITCH_BORLAND);
 	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address::n(401150));
+	QCOMPARE(loader->getMainEntryPoint(), Address(401150));
 }
 
 

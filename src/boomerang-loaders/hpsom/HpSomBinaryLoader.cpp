@@ -31,7 +31,7 @@
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(p)           ((unsigned char *)p)
 #define UINT4(p)        ((UC(p)[0] << 24) | (UC(p)[1] << 16) | (UC(p)[2] << 8) | UC(p)[3])
-#define UINT4ADDR(p)    (Address::n((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
+#define UINT4ADDR(p)    (Address((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
 
 
 HpSomBinaryLoader::HpSomBinaryLoader()
@@ -209,7 +209,7 @@ void HpSomBinaryLoader::processSymbols()
 		// cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u)
 		// << ", aux " << SYMBOLAUX(u) << endl;
 		unsigned symbol_type = SYMBOLTY(u);
-		      Address  value       = Address::n(SYMBOLVAL(u));
+		Address  value       = Address(SYMBOLVAL(u));
 		char     *pSymName   = pNames + SYMBOLNM(u);
 
 		// Only interested in type 3 (code), 8 (stub), and 12 (millicode)
@@ -350,7 +350,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 #define AUXHDR(idx)    (UINT4(m_image + Address::value_type(auxHeaders + idx)))
 
 	// Section 0: text (code)
-	IBinarySection *text = m_image->createSection("$TEXT$", Address::n(AUXHDR(3)), Address::n(AUXHDR(3) + AUXHDR(2)));
+	IBinarySection *text = m_image->createSection("$TEXT$", Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
 	assert(text);
 	text->setHostAddr(Address::host_ptr(m_loadedImage) + AUXHDR(4))
 	   .setEntrySize(1)
@@ -359,10 +359,10 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	   .setBss(false)
 	   .setReadOnly(true)
 	   .setEndian(0)
-	   .addDefinedArea(Address::n(AUXHDR(3)), Address::n(AUXHDR(3) + AUXHDR(2)));
+	   .addDefinedArea(Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
 
 	// Section 1: initialised data
-	IBinarySection *data = m_image->createSection("$DATA$", Address::n(AUXHDR(6)), Address::n(AUXHDR(6) + AUXHDR(5)));
+	IBinarySection *data = m_image->createSection("$DATA$", Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
 	assert(data);
 	data->setHostAddr(Address::host_ptr(m_loadedImage) + AUXHDR(7))
 	   .setEntrySize(1)
@@ -371,11 +371,11 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	   .setBss(false)
 	   .setReadOnly(false)
 	   .setEndian(0)
-	   .addDefinedArea(Address::n(AUXHDR(6)), Address::n(AUXHDR(6) + AUXHDR(5)));
+	   .addDefinedArea(Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
 	// Section 2: BSS
 	// For now, assume that BSS starts at the end of the initialised data
-	IBinarySection *bss = m_image->createSection("$BSS$", Address::n(AUXHDR(6) + AUXHDR(5)),
-														  Address::n(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
+	IBinarySection *bss = m_image->createSection("$BSS$", Address(AUXHDR(6) + AUXHDR(5)),
+														  Address(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
 	assert(bss);
 	bss->setHostAddr(Address::ZERO)
 	   .setEntrySize(1)
@@ -442,7 +442,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 		continue;
 		// TODO: add some type info to the imported symbols
 		// Add it to the set of imports; needed by IsDynamicLinkedProc()
-		m_symbols->create(Address::n(UINT4(&PLTs[v].value)), pDlStrings + UINT4(&import_list[u].name))
+		m_symbols->create(Address(UINT4(&PLTs[v].value)), pDlStrings + UINT4(&import_list[u].name))
 		   .setAttr("Imported", true).setAttr("Function", true);
 	}
 

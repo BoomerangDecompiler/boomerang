@@ -35,7 +35,6 @@ public:
 	static value_type getSourceMask();
 
 	static Address g(value_type x);   // construct host/native oblivious address
-	static Address n(value_type x);   // construct native address
 
 	static Address host_ptr(const void *x)
 	{

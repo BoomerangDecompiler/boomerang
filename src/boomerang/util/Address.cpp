@@ -25,14 +25,6 @@ Address Address::g(value_type x)
     return Address(x);
 }
 
-
-Address Address::n(value_type x)
-{
-    assert((x & ~Address::getSourceMask()) == 0);
-    return Address(x);
-}
-
-
 void Address::setSourceBits(Byte bitCount)
 {
 	m_sourceBits = bitCount;

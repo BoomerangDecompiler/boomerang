@@ -129,8 +129,8 @@ void TypeTest::testDataInterval()
 	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 	dim.setProc(proc);
 
-	dim.addItem(Address::g(0x1000), "first", IntegerType::get(32, 1));
-	dim.addItem(Address::g(0x1004), "second", FloatType::get(64));
+	dim.addItem(Address::g(0x00001000), "first", IntegerType::get(32, 1));
+	dim.addItem(Address::g(0x00001004), "second", FloatType::get(64));
 	QString actual(dim.prints());
 	QString expected("0x00001000-0x00001004 first int\n"
 					 "0x00001004-0x0000100c second double\n");
@@ -142,18 +142,18 @@ void TypeTest::testDataInterval()
 	actual = pdie->second.name;
 	QCOMPARE(actual, expected);
 
-	pdie = dim.find(Address::g(0x0001003));
+	pdie = dim.find(Address::g(0x00001003));
 	QVERIFY(pdie);
 	actual = pdie->second.name;
 	QCOMPARE(actual, expected);
 
-	pdie = dim.find(Address::g(0x0001004));
+	pdie = dim.find(Address::g(0x00001004));
 	QVERIFY(pdie);
 	expected = "second";
 	actual   = pdie->second.name;
 	QCOMPARE(actual, expected);
 
-	pdie = dim.find(Address::g(0x0001007));
+	pdie = dim.find(Address::g(0x00001007));
 	QVERIFY(pdie);
 	actual = pdie->second.name;
 	QCOMPARE(actual, expected);
@@ -165,7 +165,7 @@ void TypeTest::testDataInterval()
 	ct->addType(FloatType::get(32), "float1");
 	dim.addItem(Address::g(0x1010), "struct1", ct);
 
-	ComplexTypeCompList& ctcl = ct->compForAddress(Address::g(0x1012), dim);
+	ComplexTypeCompList& ctcl = ct->compForAddress(Address::g(0x00001012), dim);
 	unsigned             ua   = ctcl.size();
 	unsigned             ue   = 1;
 	QCOMPARE(ua, ue);
@@ -180,7 +180,7 @@ void TypeTest::testDataInterval()
 	// An array of 10 struct1's
 	auto at = ArrayType::get(ct, 10);
 	dim.addItem(Address::g(0x00001020), "array1", at);
-	ComplexTypeCompList& ctcl2 = at->compForAddress(Address::g(0x1020 + 0x3C + 8), dim);
+	ComplexTypeCompList& ctcl2 = at->compForAddress(Address::g(0x00001020 + 0x3C + 8), dim);
 	// Should be 2 components: [5] and .float1
 	ue = 2;
 	ua = ctcl2.size();

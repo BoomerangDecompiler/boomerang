@@ -52,10 +52,10 @@ void CfgTest::initTestCase()
  * \fn        CfgTest::testDominators
  * OVERVIEW:        Test the dominator frontier code
  ******************************************************************************/
-#define FRONTIER_FOUR        Address::n(0x08048347)
-#define FRONTIER_FIVE        Address::n(0x08048351)
-#define FRONTIER_TWELVE      Address::n(0x080483b2)
-#define FRONTIER_THIRTEEN    Address::n(0x080483b9)
+#define FRONTIER_FOUR        Address(0x08048347)
+#define FRONTIER_FIVE        Address(0x08048351)
+#define FRONTIER_TWELVE      Address(0x080483b2)
+#define FRONTIER_THIRTEEN    Address(0x080483b9)
 
 void CfgTest::testDominators()
 {

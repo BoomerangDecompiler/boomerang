@@ -425,7 +425,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 		int   entry_type = entry & 0xFF;
 
 		if (sym == i) {
-			const IBinarySection *targetSect = m_binaryImage->getSectionInfoByAddr(Address::n(elfRead4(pEntry)));
+			const IBinarySection *targetSect = m_binaryImage->getSectionInfoByAddr(Address(elfRead4(pEntry)));
 
 			if (targetSect->getName().contains("got")) {
 				int c           = elfRead4(pEntry) - targetSect->getSourceAddr().value();
@@ -433,7 +433,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 				int plt_idx     = (plt_offset2 % pltEntrySize);
 
 				if (entry_type == R_386_JUMP_SLOT) {
-					return Address::n(plt_offset2 - 6);
+					return Address(plt_offset2 - 6);
 				}
 
 				return addrPlt + plt_idx * pltEntrySize;
@@ -448,7 +448,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 			return addrPlt + plt_offset;
 
 			return addrPlt + pltEntrySize * (curr + 1);
-			// return ADDRESS::n(elfRead4(pEntry));
+			// return ADDRESS(elfRead4(pEntry));
 			// return addrPlt + 0xC * (curr + 1);
 		}
 
@@ -936,7 +936,7 @@ void ElfBinaryLoader::applyRelocations()
 						pRelWord = ((DWord *)(destHostOrigin + r_offset).value());
 					}
 					else {
-						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(Address::n(r_offset));
+						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(Address(r_offset));
 						pRelWord      = (DWord *)(destSec->getHostAddr() - destSec->getSourceAddr() + r_offset).value();
 						destNatOrigin = Address::ZERO;
 					}
