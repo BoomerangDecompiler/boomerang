@@ -222,7 +222,7 @@ void BinaryImage::writeNative4(Address nat, uint32_t n)
 
 void BinaryImage::calculateTextLimits()
 {
-	m_limitTextLow  = Address::g(0xFFFFFFFF);
+	m_limitTextLow  = Address::INVALID;
 	m_limitTextHigh = Address::ZERO;
 	m_textDelta     = 0;
 

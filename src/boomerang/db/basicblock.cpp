@@ -355,11 +355,11 @@ Address BasicBlock::getLowAddr() const
 		return Address::ZERO;
 	}
 
-	   Address a = m_listOfRTLs->front()->getAddress();
+	Address a = m_listOfRTLs->front()->getAddress();
 
 	if (a.isZero() && (m_listOfRTLs->size() > 1)) {
 		std::list<RTL *>::iterator it = m_listOfRTLs->begin();
-		      Address add2 = (*++it)->getAddress();
+		Address add2 = (*++it)->getAddress();
 
 		// This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
 		// to change orphan BBs' addresses to Address::INVALID, but I suspect that this will cause many problems. MVE

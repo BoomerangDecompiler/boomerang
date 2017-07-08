@@ -230,7 +230,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 					// Borland pattern succeeds. p-4 has the offset of mainInfo
 					               Address mainInfo = Address::g(LMMH(*(m_base + p - 4)));
 					               Address main     =
-						                  Address::g(m_image->readNative4(mainInfo + Address::g(0x18)));     // Address of main is at mainInfo+18
+						                  Address::g(m_image->readNative4(mainInfo + 0x18));     // Address of main is at mainInfo+18
 					return main;
 				}
 			}
