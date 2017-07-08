@@ -51,13 +51,13 @@ public:
 	 *        that the pc is at in the loaded object file)
 	 * \returns a DecodeResult structure containing all the information gathered during decoding
 	 ******************************************************************************/
-	DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+	DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
 	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
-	int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta)  override;
+	int decodeAssemblyInstruction(Address pc, ptrdiff_t delta)  override;
 
 	/// Indicates whether the instruction at the given address is a restore instruction.
-	bool isRestore(ADDRESS hostPC);
+	bool isRestore(Address hostPC);
 
 private:
 
@@ -65,8 +65,8 @@ private:
 	 * Various functions to decode the operands of an instruction into
 	 * a SemStr representation.
 	 */
-	SharedExp dis_Eaddr(ADDRESS pc, int size = 0);
-	SharedExp dis_RegImm(ADDRESS pc);
+	SharedExp dis_Eaddr(Address pc, int size = 0);
+	SharedExp dis_RegImm(Address pc);
 	SharedExp dis_RegLhs(unsigned r);
 
 	/***************************************************************************/ /**
@@ -77,7 +77,7 @@ private:
 	 * \param name - instruction name (e.g. "BNE,a", or "BPNE")
 	 * \returns            Pointer to newly created RTL, or nullptr if invalid
 	 ******************************************************************************/
-	RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
-	bool isFuncPrologue(ADDRESS hostPC);
-	DWord getDword(ADDRESS lc);
+	RTL *createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name);
+	bool isFuncPrologue(Address hostPC);
+	DWord getDword(Address lc);
 };

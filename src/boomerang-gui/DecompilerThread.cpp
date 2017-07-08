@@ -19,7 +19,7 @@
 #include <sstream>
 
 #undef NO_ADDRESS
-#define NO_ADDRESS    ADDRESS::g(-1)
+#define NO_ADDRESS    Address::g(-1)
 
 Qt::HANDLE threadToCollect = 0;
 
@@ -78,16 +78,16 @@ void Decompiler::setNoDecodeChildren(bool d)
 }
 
 
-void Decompiler::addEntryPoint(ADDRESS a, const char *nam)
+void Decompiler::addEntryPoint(Address a, const char *nam)
 {
 	user_entrypoints.push_back(a);
 	fe->addSymbol(a, nam);
 }
 
 
-void Decompiler::removeEntryPoint(ADDRESS a)
+void Decompiler::removeEntryPoint(Address a)
 {
-	for (std::vector<ADDRESS>::iterator it = user_entrypoints.begin(); it != user_entrypoints.end(); it++) {
+	for (std::vector<Address>::iterator it = user_entrypoints.begin(); it != user_entrypoints.end(); it++) {
 		if (*it == a) {
 			user_entrypoints.erase(it);
 			break;
@@ -164,7 +164,7 @@ void Decompiler::load()
 	}
 
 	QStringList          entrypointStrings;
-	std::vector<ADDRESS> entrypoints = fe->getEntryPoints();
+	std::vector<Address> entrypoints = fe->getEntryPoints();
 
 	for (size_t i = 0; i < entrypoints.size(); i++) {
 		user_entrypoints.push_back(entrypoints[i]);
@@ -185,7 +185,7 @@ void Decompiler::decode()
 	emit decoding();
 
 	bool    gotMain;
-	ADDRESS a = fe->getMainEntryPoint(gotMain);
+	   Address a = fe->getMainEntryPoint(gotMain);
 
 	for (unsigned int i = 0; i < user_entrypoints.size(); i++) {
 		if (user_entrypoints[i] == a) {

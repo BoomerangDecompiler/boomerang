@@ -28,10 +28,10 @@
  * 22 Aug 01 - Mike: Fixed a warning with "notused(nulli)"
  */
 
-#include "boomerangglobal.h"
-#include "boomeranginclude/decoder.h"
-#include "boomeranghppa-names.h"
-#include "boomerangdb/rtl.h"
+#include "boomerang/global.h"
+#include "boomerang/include/decoder.h"
+#include "boomerang/hppa-names.h"
+#include "boomerang/db/rtl.h"
 
 void c_null(ADDRESS hostpc, char **garble);
 unsigned long c_wcr(ADDRESS hostpc, char **garble);
@@ -580,17 +580,17 @@ unsigned long c_wcr(ADDRESS hostpc, char **garble) {
 
 
 //#line 115 "machine/hppa/decoder_low.m"
-{ 
+{
   dword MATCH_p =
 
 #line 115 "machine/hppa/decoder_low.m"
     hostpc
     ;
   unsigned MATCH_w_32_0;
-  { 
-    MATCH_w_32_0 = getDword(MATCH_p); 
-    if ((MATCH_w_32_0 >> 5 & 0xff) /* ext8_19 at 0 */ == 69) 
-      if ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */ == 0) 
+  {
+    MATCH_w_32_0 = getDword(MATCH_p);
+    if ((MATCH_w_32_0 >> 5 & 0xff) /* ext8_19 at 0 */ == 69)
+      if ((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */ == 0)
         if ((MATCH_w_32_0 >> 14 & 0x1) /* ext_17 at 0 */ == 1)
 
 #line 120 "machine/hppa/decoder_low.m"
@@ -602,9 +602,9 @@ unsigned long c_wcr(ADDRESS hostpc, char **garble) {
 
               }
 
-          
+
            /*opt-block+*/
-        else { 
+        else {
           unsigned r_06 = (MATCH_w_32_0 >> 21 & 0x1f) /* r_06 at 0 */;
 
 #line 117 "machine/hppa/decoder_low.m"
@@ -614,17 +614,17 @@ unsigned long c_wcr(ADDRESS hostpc, char **garble) {
 
               }
 
-          
-          
-          
+
+
+
         } /*opt-block*//*opt-block+*/ /*opt-block+*/
-      else 
-        goto MATCH_label_c0;  /*opt-block+*/ 
-    else 
+      else
+        goto MATCH_label_c0;  /*opt-block+*/
+    else
       goto MATCH_label_c0;  /*opt-block+*/
-    
-  }goto MATCH_finished_c; 
-  
+
+  }goto MATCH_finished_c;
+
   MATCH_label_c0: (void)0; /*placeholder for label*/
 
 #line 124 "machine/hppa/decoder_low.m"
@@ -636,12 +636,12 @@ unsigned long c_wcr(ADDRESS hostpc, char **garble) {
 
         }
 
-    
-     
-    goto MATCH_finished_c; 
-    
+
+
+    goto MATCH_finished_c;
+
   MATCH_finished_c: (void)0; /*placeholder for label*/
-  
+
 }
 
 //#line 129 "machine/hppa/decoder_low.m"
@@ -656,23 +656,23 @@ void c_null(ADDRESS hostpc, char **garble) {
 
 
 //#line 137 "machine/hppa/decoder_low.m"
-{ 
+{
   dword MATCH_p =
 
 #line 137 "machine/hppa/decoder_low.m"
     hostpc
     ;
   unsigned MATCH_w_32_0;
-  { 
-    MATCH_w_32_0 = getDword(MATCH_p); 
-    
+  {
+    MATCH_w_32_0 = getDword(MATCH_p);
+
       switch((MATCH_w_32_0 >> 26 & 0x3f) /* op at 0 */) {
-        case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: 
-        case 8: case 9: case 10: case 11: case 12: case 13: case 14: case 15: 
-        case 16: case 17: case 18: case 19: case 20: case 21: case 22: 
-        case 23: case 24: case 25: case 26: case 27: case 28: case 29: 
-        case 30: case 31: case 36: case 37: case 38: case 44: case 45: 
-        case 46: case 52: case 53: case 54: case 55: case 60: case 61: 
+        case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+        case 8: case 9: case 10: case 11: case 12: case 13: case 14: case 15:
+        case 16: case 17: case 18: case 19: case 20: case 21: case 22:
+        case 23: case 24: case 25: case 26: case 27: case 28: case 29:
+        case 30: case 31: case 36: case 37: case 38: case 44: case 45:
+        case 46: case 52: case 53: case 54: case 55: case 60: case 61:
         case 62: case 63:
 
 #line 144 "machine/hppa/decoder_low.m"
@@ -682,13 +682,13 @@ void c_null(ADDRESS hostpc, char **garble) {
 
               }
 
-          
-          
-          
+
+
+
           break;
-        case 32: case 33: case 34: case 35: case 39: case 40: case 41: 
-        case 42: case 43: case 47: case 48: case 49: case 50: case 51: 
-        case 56: case 57: case 58: case 59: 
+        case 32: case 33: case 34: case 35: case 39: case 40: case 41:
+        case 42: case 43: case 47: case 48: case 49: case 50: case 51:
+        case 56: case 57: case 58: case 59:
           if ((MATCH_w_32_0 >> 1 & 0x1) /* n_30 at 0 */ == 1)
 
 #line 141 "machine/hppa/decoder_low.m"
@@ -698,7 +698,7 @@ void c_null(ADDRESS hostpc, char **garble) {
 
                 }
 
-            
+
              /*opt-block+*/
           else
 
@@ -707,17 +707,17 @@ void c_null(ADDRESS hostpc, char **garble) {
 
                 }
 
-            
+
              /*opt-block+*/
-          
+
           break;
         default: assert(0);
-      } /* (MATCH_w_32_0 >> 26 & 0x3f) -- op at 0 --*/ 
-    
-  }goto MATCH_finished_b; 
-  
+      } /* (MATCH_w_32_0 >> 26 & 0x3f) -- op at 0 --*/
+
+  }goto MATCH_finished_b;
+
   MATCH_finished_b: (void)0; /*placeholder for label*/
-  
+
 }
 
 //#line 148 "machine/hppa/decoder_low.m"

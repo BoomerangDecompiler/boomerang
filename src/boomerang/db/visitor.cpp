@@ -1214,7 +1214,7 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool&
 		if ((base = e->getSubExp1(), base->isMemOf()) &&
 			(addr = base->getSubExp1(), addr->isIntConst())) {
 			// We have a m[K]{-}
-			ADDRESS K     = addr->access<Const>()->getAddr(); // TODO: use getAddr
+			         Address K     = addr->access<Const>()->getAddr(); // TODO: use getAddr
 			int     value = m_prog->readNative4(K);
 			recur = false;
 			return Const::get(value);
@@ -1222,7 +1222,7 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool&
 		else if (base->isGlobal()) {
 			// We have a glo{-}
 			QString gname    = base->access<Const, 1>()->getStr();
-			ADDRESS gloValue = m_prog->getGlobalAddr(gname);
+			         Address gloValue = m_prog->getGlobalAddr(gname);
 			int     value    = m_prog->readNative4(gloValue);
 			recur = false;
 			return Const::get(value);
@@ -1232,7 +1232,7 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool&
 			// We have a glo[K]{-}
 			int        K        = idx->access<Const>()->getInt();
 			QString    gname    = glo->access<Const, 1>()->getStr();
-			ADDRESS    gloValue = m_prog->getGlobalAddr(gname);
+			         Address    gloValue = m_prog->getGlobalAddr(gname);
 			SharedType gloType  = m_prog->getGlobal(gname)->getType();
 			assert(gloType->isArray());
 			SharedType componentType = gloType->as<ArrayType>()->getBaseType();

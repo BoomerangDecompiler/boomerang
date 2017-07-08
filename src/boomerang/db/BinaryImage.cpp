@@ -84,7 +84,7 @@ void BinaryImage::reset()
 }
 
 
-char BinaryImage::readNative1(ADDRESS nat)
+char BinaryImage::readNative1(Address nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -93,12 +93,12 @@ char BinaryImage::readNative1(ADDRESS nat)
 		return -1;
 	}
 
-	ADDRESS host = si->getHostAddr() - si->getSourceAddr() + nat;
+	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return *(char *)host.m_value;
 }
 
 
-int BinaryImage::readNative2(ADDRESS nat)
+int BinaryImage::readNative2(Address nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -106,12 +106,12 @@ int BinaryImage::readNative2(ADDRESS nat)
 		return 0;
 	}
 
-	ADDRESS host = si->getHostAddr() - si->getSourceAddr() + nat;
+	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return Read2((short *)host.m_value, si->getEndian());
 }
 
 
-int BinaryImage::readNative4(ADDRESS nat)
+int BinaryImage::readNative4(Address nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -119,13 +119,13 @@ int BinaryImage::readNative4(ADDRESS nat)
 		return 0;
 	}
 
-	ADDRESS host = si->getHostAddr() - si->getSourceAddr() + nat;
+	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return Read4((int *)host.m_value, si->getEndian());
 }
 
 
 // Read 8 bytes from given native address
-QWord BinaryImage::readNative8(ADDRESS nat)   // TODO: lifted from Win32 loader, likely wrong
+QWord BinaryImage::readNative8(Address nat)   // TODO: lifted from Win32 loader, likely wrong
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -154,7 +154,7 @@ QWord BinaryImage::readNative8(ADDRESS nat)   // TODO: lifted from Win32 loader,
 }
 
 
-float BinaryImage::readNativeFloat4(ADDRESS nat)
+float BinaryImage::readNativeFloat4(Address nat)
 {
 	int raw = readNative4(nat);
 
@@ -164,7 +164,7 @@ float BinaryImage::readNativeFloat4(ADDRESS nat)
 }
 
 
-double BinaryImage::readNativeFloat8(ADDRESS nat)
+double BinaryImage::readNativeFloat8(Address nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -193,7 +193,7 @@ double BinaryImage::readNativeFloat8(ADDRESS nat)
 }
 
 
-void BinaryImage::writeNative4(ADDRESS nat, uint32_t n)
+void BinaryImage::writeNative4(Address nat, uint32_t n)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -202,7 +202,7 @@ void BinaryImage::writeNative4(ADDRESS nat, uint32_t n)
 		return;
 	}
 
-	ADDRESS host      = si->getHostAddr() - si->getSourceAddr() + nat;
+	   Address host      = si->getHostAddr() - si->getSourceAddr() + nat;
 	uint8_t *host_ptr = (unsigned char *)host.m_value;
 
 	if (si->getEndian() == 1) {
@@ -222,8 +222,8 @@ void BinaryImage::writeNative4(ADDRESS nat, uint32_t n)
 
 void BinaryImage::calculateTextLimits()
 {
-	m_limitTextLow  = ADDRESS::g(0xFFFFFFFF);
-	m_limitTextHigh = ADDRESS::g(0L);
+	m_limitTextLow  = Address::g(0xFFFFFFFF);
+	m_limitTextHigh = Address::g(0L);
 	m_textDelta     = 0;
 
 	for (IBinarySection *pSect : m_sections) {
@@ -243,7 +243,7 @@ void BinaryImage::calculateTextLimits()
 			m_limitTextLow = pSect->getSourceAddr();
 		}
 
-		ADDRESS hiAddress = pSect->getSourceAddr() + pSect->getSize();
+		      Address hiAddress = pSect->getSourceAddr() + pSect->getSize();
 
 		if (hiAddress > m_limitTextHigh) {
 			m_limitTextHigh = hiAddress;
@@ -261,7 +261,7 @@ void BinaryImage::calculateTextLimits()
 }
 
 
-const IBinarySection *BinaryImage::getSectionInfoByAddr(ADDRESS uEntry) const
+const IBinarySection *BinaryImage::getSectionInfoByAddr(Address uEntry) const
 {
 	if (!uEntry.isSourceAddr()) {
 		qDebug() << "getSectionInfoByAddr with non-Source ADDRESS";
@@ -301,7 +301,7 @@ IBinarySection *BinaryImage::getSectionInfoByName(const QString& sName)
 }
 
 
-bool BinaryImage::isReadOnly(ADDRESS uEntry)
+bool BinaryImage::isReadOnly(Address uEntry)
 {
 	const SectionInfo *p = static_cast<const SectionInfo *>(getSectionInfoByAddr(uEntry));
 
@@ -318,7 +318,7 @@ bool BinaryImage::isReadOnly(ADDRESS uEntry)
 }
 
 
-ADDRESS BinaryImage::getLimitTextLow()
+Address BinaryImage::getLimitTextLow()
 {
 	auto interval = m_sectionMap.begin()->first;
 
@@ -326,7 +326,7 @@ ADDRESS BinaryImage::getLimitTextLow()
 }
 
 
-ADDRESS BinaryImage::getLimitTextHigh()
+Address BinaryImage::getLimitTextHigh()
 {
 	auto interval = m_sectionMap.rbegin()->first;
 
@@ -334,7 +334,7 @@ ADDRESS BinaryImage::getLimitTextHigh()
 }
 
 
-SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRESS to)
+SectionInfo *BinaryImage::createSection(const QString& name, Address from, Address to)
 {
 	if (from == to) {
 		to += 1; // open interval, so -> [from,to+1) is right
@@ -358,6 +358,6 @@ SectionInfo *BinaryImage::createSection(const QString& name, ADDRESS from, ADDRE
 	SectionInfo *sect = new SectionInfo(from, (to - from).m_value, name);
 	m_sections.push_back(sect);
 
-	m_sectionMap.insert(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), sect));
+	m_sectionMap.insert(std::make_pair(boost::icl::interval<Address>::right_open(from, to), sect));
 	return sect;
 }

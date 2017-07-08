@@ -61,23 +61,23 @@ public:
 	virtual Machine getMachine() const = 0;
 
 	/// @returns the address of main()/WinMain() etc.
-	virtual ADDRESS getMainEntryPoint() = 0;
+	virtual Address getMainEntryPoint() = 0;
 
 	/// @returns the "real" entry point, ie where execution of the program begins
-	virtual ADDRESS getEntryPoint() = 0;
+	virtual Address getEntryPoint() = 0;
 
 	/// @returns the virtual address at which the binary expects to be loaded.
 	/// For position independent / relocatable code this should be NO_ADDDRESS
-	virtual ADDRESS getImageBase() = 0;
+	virtual Address getImageBase() = 0;
 
 	/// @returns the total size of the loaded image
 	virtual size_t getImageSize() = 0;
 
 public:
 	/// Relocation functions
-	virtual bool isRelocationAt(ADDRESS /*uNative*/) { return false; }
+	virtual bool isRelocationAt(Address /*uNative*/) { return false; }
 
-	virtual ADDRESS isJumpToAnotherAddr(ADDRESS /*uNative*/) { return NO_ADDRESS; }
+	virtual Address isJumpToAnotherAddr(Address /*uNative*/) { return NO_ADDRESS; }
 	virtual bool hasDebugInfo() { return false; }
 
 	/// Internal information

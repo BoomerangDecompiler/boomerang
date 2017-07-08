@@ -29,13 +29,13 @@ class SymbolMods;
 class Symbol
 {
 public:
-	ADDRESS addr;
+	   Address addr;
 	QString nam;
 	SharedType ty;
 	std::shared_ptr<Signature> sig;
 	SymbolMods *mods;
 
-	Symbol(ADDRESS a)
+	Symbol(Address a)
 		: addr(a)
 		, nam("")
 		, sig(nullptr)
@@ -67,10 +67,10 @@ public:
 class SymbolRef
 {
 public:
-	ADDRESS addr;
+	   Address addr;
 	QString nam;
 
-	SymbolRef(ADDRESS a, const QString& _nam)
+	SymbolRef(Address a, const QString& _nam)
 		: addr(a)
 		, nam(_nam) {}
 };

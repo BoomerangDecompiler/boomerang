@@ -102,8 +102,8 @@ namespace
 struct SectionParams
 {
 	QString name;
-	ADDRESS from, to;
-	ADDRESS hostAddr;
+	   Address from, to;
+	   Address hostAddr;
 };
 }
 
@@ -141,14 +141,14 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 		p  += 4 + 2;
 		off = UINT4(p);
 		p  += 4;
-		ADDRESS start_addr = ADDRESS::n(off);
+		      Address start_addr = Address::n(off);
 
 		// Guess the length
 		if (i > 0) {
 			params.back().to = start_addr;
 		}
 
-		params.push_back({ name, start_addr, NO_ADDRESS, ADDRESS::host_ptr(m_pImage + off) }); // NO_ADDRESS will be overwritten
+		params.push_back({ name, start_addr, NO_ADDRESS, Address::host_ptr(m_pImage + off) }); // NO_ADDRESS will be overwritten
 	}
 
 	// Set the length for the last section
@@ -301,7 +301,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 
 	// Replace the data pointer and size with the uncompressed versions
 
-	pData->setHostAddr(ADDRESS::host_ptr(m_pData));
+	pData->setHostAddr(Address::host_ptr(m_pData));
 	pData->resize(sizeData);
 	// May as well make the native address zero; certainly the offset in the
 	// file is no longer appropriate (and is confusing)
@@ -332,10 +332,10 @@ void PalmBinaryLoader::unload()
 }
 
 
-ADDRESS PalmBinaryLoader::getEntryPoint()
+Address PalmBinaryLoader::getEntryPoint()
 {
 	assert(0); /* FIXME: Need to be implemented */
-	return ADDRESS::g(0L);
+	return Address::g(0L);
 }
 
 
@@ -370,9 +370,9 @@ bool PalmBinaryLoader::isLibrary() const
 }
 
 
-ADDRESS PalmBinaryLoader::getImageBase()
+Address PalmBinaryLoader::getImageBase()
 {
-	return ADDRESS::g(0L);                                      /* FIXME */
+	return Address::g(0L);                                      /* FIXME */
 }
 
 
@@ -389,7 +389,7 @@ void PalmBinaryLoader::addTrapSymbols()
 		unsigned offset = loc & 0xFFF;
 
 		if (offset < numTrapStrings) {
-			m_symbols->create(ADDRESS::n(loc), trapNames[offset]);
+			m_symbols->create(Address::n(loc), trapNames[offset]);
 		}
 	}
 }
@@ -400,16 +400,16 @@ void PalmBinaryLoader::addTrapSymbols()
 // and the value for GLOBALOFFSET. For Palm, the latter is the amount of
 // space allocated below %a5, i.e. the difference between %a5 and %agp
 // (%agp points to the bottom of the global data area).
-std::pair<ADDRESS, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
+std::pair<Address, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
 {
-	ADDRESS              agp = ADDRESS::g(0L);
+	   Address              agp = Address::g(0L);
 	const IBinarySection *ps = m_image->getSectionInfoByName("data0");
 
 	if (ps) {
 		agp = ps->getSourceAddr();
 	}
 
-	std::pair<ADDRESS, unsigned> ret(agp, m_sizeBelowA5);
+	std::pair<Address, unsigned> ret(agp, m_sizeBelowA5);
 	return ret;
 }
 
@@ -497,16 +497,16 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
 
 // Find the native address for the start of the main entry function.
 // For Palm binaries, this is PilotMain.
-ADDRESS PalmBinaryLoader::getMainEntryPoint()
+Address PalmBinaryLoader::getMainEntryPoint()
 {
 	IBinarySection *psect = m_image->getSectionInfoByName("code1");
 
 	if (psect == nullptr) {
-		return ADDRESS::g(0L); // Failed
+		return Address::g(0L); // Failed
 	}
 
 	// Return the start of the code1 section
-	ADDRESS   ha(psect->getHostAddr());
+	   Address   ha(psect->getHostAddr());
 	uintptr_t gb(ha.m_value);
 	uint16_t  *startCode = (uint16_t *)psect->getHostAddr().m_value;
 	startCode = (uint16_t *)gb;
@@ -518,7 +518,7 @@ ADDRESS PalmBinaryLoader::getMainEntryPoint()
 	if (res) {
 		// We have the code warrior first jump. Get the addil operand
 		int   addilOp      = Read4((uint32_t *)(startCode + 5));
-		SWord *startupCode = (SWord *)(ADDRESS::host_ptr(startCode) + 10 + addilOp).m_value;
+		SWord *startupCode = (SWord *)(Address::host_ptr(startCode) + 10 + addilOp).m_value;
 		// Now check the next 60 SWords for the call to PilotMain
 		res = findPattern(startupCode, CWCallMain, sizeof(CWCallMain) / sizeof(SWord), 60);
 
@@ -526,12 +526,12 @@ ADDRESS PalmBinaryLoader::getMainEntryPoint()
 			// Get the addil operand
 			int _addilOp = Read4((int32_t *)(res + 5));
 			// That operand plus the address of that operand is PilotMain
-			ADDRESS offset_loc = ADDRESS::n((char *)(res + 5) - (char *)startCode);
+			         Address offset_loc = Address::n((char *)(res + 5) - (char *)startCode);
 			return offset_loc + _addilOp; // ADDRESS::host_ptr(res) + 10 + addilOp - delta;
 		}
 		else {
 			fprintf(stderr, "Could not find call to PilotMain in CW app\n");
-			return ADDRESS::g(0L);
+			return Address::g(0L);
 		}
 	}
 
@@ -541,11 +541,11 @@ ADDRESS PalmBinaryLoader::getMainEntryPoint()
 	if (res) {
 		// Get the operand to the bsr
 		SWord bsrOp = res[7];
-		return ADDRESS::host_ptr(res) + 14 + bsrOp - delta;
+		return Address::host_ptr(res) + 14 + bsrOp - delta;
 	}
 
 	fprintf(stderr, "Cannot find call to PilotMain\n");
-	return ADDRESS::g(0L);
+	return Address::g(0L);
 }
 
 

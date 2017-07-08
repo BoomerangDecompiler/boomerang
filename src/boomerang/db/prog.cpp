@@ -224,7 +224,7 @@ void Prog::generateDotFile() const
 }
 
 
-void Prog::generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, ICodeGenerator *code) const
+void Prog::generateDataSectionCode(QString section_name, Address section_start, uint32_t size, ICodeGenerator *code) const
 {
 	code->addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
 	code->addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
@@ -547,7 +547,7 @@ void Prog::clear()
 }
 
 
-Function *Prog::setNewProc(ADDRESS uAddr)
+Function *Prog::setNewProc(Address uAddr)
 {
 	// this test fails when decoding sparc, why?  Please investigate - trent
 	// Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section
@@ -563,7 +563,7 @@ Function *Prog::setNewProc(ADDRESS uAddr)
 		return pProc; // Yes, we are done
 	}
 
-	ADDRESS other = m_loaderIface->isJumpToAnotherAddr(uAddr);
+	   Address other = m_loaderIface->isJumpToAnotherAddr(uAddr);
 
 	if (other != NO_ADDRESS) {
 		uAddr = other;
@@ -821,7 +821,7 @@ int Prog::getNumProcs(bool user_only) const
  * \param uAddr - Native address of the procedure entry point
  * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
  ******************************************************************************/
-Function *Prog::findProc(ADDRESS uAddr) const
+Function *Prog::findProc(Address uAddr) const
 {
 	for (Module *m : m_moduleList) {
 		Function *r = m->getFunction(uAddr);
@@ -899,7 +899,7 @@ bool Prog::isWin32() const
 }
 
 
-QString Prog::getGlobalName(ADDRESS uaddr) const
+QString Prog::getGlobalName(Address uaddr) const
 {
 	// FIXME: inefficient
 	for (Global *glob : m_globals) {
@@ -920,7 +920,7 @@ void Prog::dumpGlobals() const
 }
 
 
-ADDRESS Prog::getGlobalAddr(const QString& nam) const
+Address Prog::getGlobalAddr(const QString& nam) const
 {
 	Global *glob = getGlobal(nam);
 
@@ -948,7 +948,7 @@ Global *Prog::getGlobal(const QString& nam) const
 }
 
 
-bool Prog::markGlobalUsed(ADDRESS uaddr, SharedType knownType)
+bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 {
 	for (Global *glob : m_globals) {
 		if (glob->containsAddress(uaddr)) {
@@ -1011,7 +1011,7 @@ bool Prog::markGlobalUsed(ADDRESS uaddr, SharedType knownType)
 }
 
 
-std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t)
+std::shared_ptr<ArrayType> Prog::makeArrayType(Address u, SharedType t)
 {
 	QString nam = newGlobalName(u);
 
@@ -1034,7 +1034,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(ADDRESS u, SharedType t)
 }
 
 
-SharedType Prog::guessGlobalType(const QString& nam, ADDRESS u) const
+SharedType Prog::guessGlobalType(const QString& nam, Address u) const
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
 	HANDLE               hProcess = GetCurrentProcess();
@@ -1081,7 +1081,7 @@ SharedType Prog::guessGlobalType(const QString& nam, ADDRESS u) const
 }
 
 
-QString Prog::newGlobalName(ADDRESS uaddr)
+QString Prog::newGlobalName(Address uaddr)
 {
 	QString nam = getGlobalName(uaddr);
 
@@ -1121,7 +1121,7 @@ void Prog::setGlobalType(const QString& nam, SharedType ty)
 }
 
 
-const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) const
+const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false */) const
 {
 	const IBinarySection *si = m_image->getSectionInfoByAddr(uaddr);
 
@@ -1168,7 +1168,7 @@ const char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false *
 }
 
 
-double Prog::getFloatConstant(ADDRESS uaddr, bool& ok, int bits) const
+double Prog::getFloatConstant(Address uaddr, bool& ok, int bits) const
 {
 	ok = true;
 	const IBinarySection *si = m_image->getSectionInfoByAddr(uaddr);
@@ -1188,7 +1188,7 @@ double Prog::getFloatConstant(ADDRESS uaddr, bool& ok, int bits) const
 }
 
 
-QString Prog::getSymbolByAddress(ADDRESS dest) const
+QString Prog::getSymbolByAddress(Address dest) const
 {
 	auto sym = m_binarySymbols->find(dest);
 
@@ -1196,49 +1196,49 @@ QString Prog::getSymbolByAddress(ADDRESS dest) const
 }
 
 
-const IBinarySection *Prog::getSectionInfoByAddr(ADDRESS a) const
+const IBinarySection *Prog::getSectionInfoByAddr(Address a) const
 {
 	return m_image->getSectionInfoByAddr(a);
 }
 
 
-ADDRESS Prog::getLimitTextLow() const
+Address Prog::getLimitTextLow() const
 {
 	return Boomerang::get()->getImage()->getLimitTextLow();
 }
 
 
-ADDRESS Prog::getLimitTextHigh() const
+Address Prog::getLimitTextHigh() const
 {
 	return Boomerang::get()->getImage()->getLimitTextHigh();
 }
 
 
-bool Prog::isReadOnly(ADDRESS a) const
+bool Prog::isReadOnly(Address a) const
 {
 	return m_image->isReadOnly(a);
 }
 
 
-int Prog::readNative1(ADDRESS a) const
+int Prog::readNative1(Address a) const
 {
 	return m_image->readNative1(a);
 }
 
 
-int Prog::readNative2(ADDRESS a) const
+int Prog::readNative2(Address a) const
 {
 	return m_image->readNative2(a);
 }
 
 
-int Prog::readNative4(ADDRESS a) const
+int Prog::readNative4(Address a) const
 {
 	return m_image->readNative4(a);
 }
 
 
-Function *Prog::findContainingProc(ADDRESS uAddr) const
+Function *Prog::findContainingProc(Address uAddr) const
 {
 	for (Module *module : m_moduleList) {
 		for (Function *p : *module) {
@@ -1262,7 +1262,7 @@ Function *Prog::findContainingProc(ADDRESS uAddr) const
 }
 
 
-bool Prog::isProcLabel(ADDRESS addr) const
+bool Prog::isProcLabel(Address addr) const
 {
 	for (Module *m : m_moduleList) {
 		if (m->getFunction(addr)) {
@@ -1286,7 +1286,7 @@ QString Prog::getNameNoPathNoExt() const
 }
 
 
-const void *Prog::getCodeInfo(ADDRESS uAddr, const char *& last, int& delta) const
+const void *Prog::getCodeInfo(Address uAddr, const char *& last, int& delta) const
 {
 	delta = 0;
 	last  = nullptr;
@@ -1308,7 +1308,7 @@ const void *Prog::getCodeInfo(ADDRESS uAddr, const char *& last, int& delta) con
 }
 
 
-void Prog::decodeEntryPoint(ADDRESS a)
+void Prog::decodeEntryPoint(Address a)
 {
 	Function *p = (UserProc *)findProc(a);
 
@@ -1334,7 +1334,7 @@ void Prog::decodeEntryPoint(ADDRESS a)
 }
 
 
-void Prog::setEntryPoint(ADDRESS a)
+void Prog::setEntryPoint(Address a)
 {
 	Function *p = (UserProc *)findProc(a);
 
@@ -1344,7 +1344,7 @@ void Prog::setEntryPoint(ADDRESS a)
 }
 
 
-bool Prog::isDynamicLinkedProcPointer(ADDRESS dest) const
+bool Prog::isDynamicLinkedProcPointer(Address dest) const
 {
 	auto sym = m_binarySymbols->find(dest);
 
@@ -1352,7 +1352,7 @@ bool Prog::isDynamicLinkedProcPointer(ADDRESS dest) const
 }
 
 
-const QString& Prog::getDynamicProcName(ADDRESS uNative) const
+const QString& Prog::getDynamicProcName(Address uNative) const
 {
 	static QString dyn("dynamic");
 	auto           sym = m_binarySymbols->find(uNative);
@@ -1694,7 +1694,7 @@ void Prog::printCallGraph() const
 		Function *p = procList.front();
 		procList.erase(procList.begin());
 
-		if (ADDRESS::host_ptr(p) == NO_ADDRESS) {
+		if (Address::host_ptr(p) == NO_ADDRESS) {
 			continue;
 		}
 
@@ -1962,7 +1962,7 @@ QString Global::toString() const
 }
 
 
-SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type) const
+SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 {
 	SharedExp            e   = nullptr;
 	const IBinarySection *si = getSectionInfoByAddr(uaddr);
@@ -1972,7 +1972,7 @@ SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type) const
 	}
 
 	if (type->resolvesToPointer()) {
-		ADDRESS init = ADDRESS::g(readNative4(uaddr));
+		      Address init = Address::g(readNative4(uaddr));
 
 		if (init.isZero()) {
 			return Const::get(0);
@@ -1999,7 +1999,7 @@ SharedExp Prog::readNativeAs(ADDRESS uaddr, SharedType type) const
 		auto n = e = Terminal::get(opNil);
 
 		for (unsigned int i = 0; i < c->getNumTypes(); i++) {
-			ADDRESS    addr = uaddr + c->getOffsetTo(i) / 8;
+			         Address    addr = uaddr + c->getOffsetTo(i) / 8;
 			SharedType t    = c->getType(i);
 			auto       v    = readNativeAs(addr, t);
 
@@ -2129,7 +2129,7 @@ void Prog::reDecode(UserProc *proc)
 }
 
 
-void Prog::decodeFragment(UserProc *proc, ADDRESS a)
+void Prog::decodeFragment(UserProc *proc, Address a)
 {
 	if ((a >= m_image->getLimitTextLow()) && (a < m_image->getLimitTextHigh())) {
 		m_defaultFrontend->decodeFragment(proc, a);
@@ -2144,7 +2144,7 @@ void Prog::decodeFragment(UserProc *proc, ADDRESS a)
 }
 
 
-SharedExp Prog::addReloc(SharedExp e, ADDRESS lc)
+SharedExp Prog::addReloc(SharedExp e, Address lc)
 {
 	assert(e->isConst());
 
@@ -2156,7 +2156,7 @@ SharedExp Prog::addReloc(SharedExp e, ADDRESS lc)
 	// relocations have been applied to the constant, so if there is a
 	// relocation for this lc then we should be able to replace the constant
 	// with a symbol.
-	ADDRESS             c_addr   = c->getAddr();
+	   Address             c_addr   = c->getAddr();
 	const IBinarySymbol *bin_sym = m_binarySymbols->find(c_addr);
 
 	if (bin_sym != nullptr) {
@@ -2194,7 +2194,7 @@ SharedExp Prog::addReloc(SharedExp e, ADDRESS lc)
 }
 
 
-bool Prog::isStringConstant(ADDRESS a) const
+bool Prog::isStringConstant(Address a) const
 {
 	const SectionInfo *si = static_cast<const SectionInfo *>(m_image->getSectionInfoByAddr(a));
 
@@ -2207,7 +2207,7 @@ bool Prog::isStringConstant(ADDRESS a) const
 }
 
 
-bool Prog::isCFStringConstant(ADDRESS a) const
+bool Prog::isCFStringConstant(Address a) const
 {
 	return isStringConstant(a);
 }

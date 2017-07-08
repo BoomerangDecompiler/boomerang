@@ -181,20 +181,20 @@ public:
 	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
-	ADDRESS getMainEntryPoint() override;
+	   Address getMainEntryPoint() override;
 
 	/// @copydoc IFileLoader::getEntryPoint
-	ADDRESS getEntryPoint() override;
+	   Address getEntryPoint() override;
 
 	/// @copydoc IFileLoader::getImageBase
-	ADDRESS getImageBase() override;
+	   Address getImageBase() override;
 
 	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
 
 public:
 	/// @copydoc IFileLoader::isJumpToAnotherAddr
-	ADDRESS isJumpToAnotherAddr(ADDRESS uNative) override;
+	   Address isJumpToAnotherAddr(Address uNative) override;
 
 	/// @copydoc IFileLoader::displayDetails
 	bool displayDetails(const char *fileName, FILE *f = stdout) override;
@@ -214,13 +214,13 @@ protected:
 	int win32Read4(int *pi) const;   // Read 4 bytes from native addr
 
 public:
-	bool isStaticLinkedLibProc(ADDRESS uNative);
+	bool isStaticLinkedLibProc(Address uNative);
 
-	bool isMinGWsAllocStack(ADDRESS uNative);
-	bool isMinGWsFrameInit(ADDRESS uNative);
-	bool isMinGWsFrameEnd(ADDRESS uNative);
-	bool isMinGWsCleanupSetup(ADDRESS uNative);
-	bool isMinGWsMalloc(ADDRESS uNative);
+	bool isMinGWsAllocStack(Address uNative);
+	bool isMinGWsFrameInit(Address uNative);
+	bool isMinGWsFrameEnd(Address uNative);
+	bool isMinGWsCleanupSetup(Address uNative);
+	bool isMinGWsMalloc(Address uNative);
 
 protected:
 	void processIAT();
@@ -228,7 +228,7 @@ protected:
 
 private:
 	/// Find names for jumps to IATs
-	void findJumps(ADDRESS curr);
+	void findJumps(Address curr);
 
 	Header *m_pHeader;                    ///< Pointer to header
 	PEHeader *m_pPEHeader;                ///< Pointer to pe header

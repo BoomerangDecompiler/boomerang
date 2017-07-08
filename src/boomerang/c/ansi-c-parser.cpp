@@ -892,14 +892,14 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 	}
 
 	case 39 : {
-			SymbolRef *ref = new SymbolRef(ADDRESS::g(yyvsp[-2].ival), yyvsp[-1].str);
+			SymbolRef *ref = new SymbolRef(Address::g(yyvsp[-2].ival), yyvsp[-1].str);
 			refs.push_back(ref);
 
 			break;
 	}
 
 	case 40 : {
-			Symbol *sym = new Symbol(ADDRESS::g(yyvsp[-2].ival));
+			Symbol *sym = new Symbol(Address::g(yyvsp[-2].ival));
 			sym->nam = yyvsp[-1].type_ident->nam;
 			sym->ty  = yyvsp[-1].type_ident->ty;
 			symbols.push_back(sym);
@@ -908,7 +908,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 	}
 
 	case 41 : {
-			Symbol *sym = new Symbol(ADDRESS::g(yyvsp[-3].ival));
+			Symbol *sym = new Symbol(Address::g(yyvsp[-3].ival));
 			sym->sig  = yyvsp[-1].sig;
 			sym->mods = yyvsp[-2].mods;
 			symbols.push_back(sym);

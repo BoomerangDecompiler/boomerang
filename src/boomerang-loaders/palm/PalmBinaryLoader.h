@@ -51,13 +51,13 @@ public:
 	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
-	virtual ADDRESS getMainEntryPoint() override;
+	virtual Address getMainEntryPoint() override;
 
 	/// @copydoc IFileLoader::getEntryPoint
-	virtual ADDRESS getEntryPoint() override;
+	virtual Address getEntryPoint() override;
 
 	/// @copydoc IFileLoader::getImageBase
-	ADDRESS getImageBase() override;
+	   Address getImageBase() override;
 
 	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
@@ -73,7 +73,7 @@ public:
 private:
 	// Specific to BinaryFile objects that implement a "global pointer"
 	// Gets a pair of unsigned integers representing the address of %agp (first) and the value for GLOBALOFFSET (second)
-	std::pair<ADDRESS, unsigned> getGlobalPointerInfo();
+	std::pair<Address, unsigned> getGlobalPointerInfo();
 
 	// Palm specific calls
 

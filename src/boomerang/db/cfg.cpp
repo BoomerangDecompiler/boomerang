@@ -151,7 +151,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutE
 
 	// First find the native address of the first RTL
 	// Can't use BasicBlock::GetLowAddr(), since we don't yet have a BB!
-	ADDRESS addr = pRtls->front()->getAddress();
+	   Address addr = pRtls->front()->getAddress();
 
 	// If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a delayed branch only,
 	// with its delay instruction moved in front of it (with 0 address).
@@ -229,7 +229,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutE
 		// the out edges are already created.
 		if (++mi != m_mapBB.end()) {
 			BasicBlock *pNextBB    = (*mi).second;
-			ADDRESS    uNext       = (*mi).first;
+			         Address    uNext       = (*mi).first;
 			bool       bIncomplete = pNextBB->m_incomplete;
 
 			if (uNext <= pRtls->back()->getAddress()) {
@@ -263,7 +263,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutE
 }
 
 
-BasicBlock *Cfg::newIncompleteBB(ADDRESS addr)
+BasicBlock *Cfg::newIncompleteBB(Address addr)
 {
 	// Create a new (basically empty) BB
 	BasicBlock *pBB = new BasicBlock(m_myProc);
@@ -288,7 +288,7 @@ void Cfg::addOutEdge(BasicBlock *pBB, BasicBlock *pDestBB, bool bSetLabel /* = f
 }
 
 
-void Cfg::addOutEdge(BasicBlock *pBB, ADDRESS addr, bool bSetLabel /* = false */)
+void Cfg::addOutEdge(BasicBlock *pBB, Address addr, bool bSetLabel /* = false */)
 {
 	// Check to see if the address is in the map, i.e. we already have a BB for this address
 	MAPBB::iterator it = m_mapBB.find(addr);
@@ -307,7 +307,7 @@ void Cfg::addOutEdge(BasicBlock *pBB, ADDRESS addr, bool bSetLabel /* = false */
 }
 
 
-bool Cfg::existsBB(ADDRESS uNativeAddr) const
+bool Cfg::existsBB(Address uNativeAddr) const
 {
 	auto mi = m_mapBB.find(uNativeAddr);
 
@@ -315,7 +315,7 @@ bool Cfg::existsBB(ADDRESS uNativeAddr) const
 }
 
 
-BasicBlock *Cfg::splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewBB /* = 0 */,
+BasicBlock *Cfg::splitBB(BasicBlock *pBB, Address uNativeAddr, BasicBlock *pNewBB /* = 0 */,
 						 bool bDelRtls /* = false */)
 {
 	std::list<RTL *>::iterator ri;
@@ -451,7 +451,7 @@ const BasicBlock *Cfg::getNextBB(BBC_IT& it) const
 }
 
 
-bool Cfg::label(ADDRESS uNativeAddr, BasicBlock *& pCurBB)
+bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)
 {
 	MAPBB::iterator mi, newi;
 
@@ -535,7 +535,7 @@ bool Cfg::label(ADDRESS uNativeAddr, BasicBlock *& pCurBB)
 
 // Return true if there is an incomplete BB already at this address
 
-bool Cfg::isIncomplete(ADDRESS uAddr) const
+bool Cfg::isIncomplete(Address uAddr) const
 {
 	auto mi = m_mapBB.find(uAddr);
 
@@ -608,7 +608,7 @@ bool Cfg::wellFormCfg() const
 					// Check that the out edge has been written (i.e. nonzero)
 					if (pBB == nullptr) {
 						m_wellFormed = false;                   // At least one problem
-						ADDRESS addr = current->getLowAddr();
+						                  Address addr = current->getLowAddr();
 						q_cerr << "WellFormCfg: BB with native address " << addr << " is missing outedge " << i << '\n';
 					}
 					else {
@@ -704,7 +704,7 @@ void Cfg::completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete)
 			continue;
 		}
 
-		if ((*it)->getLowAddr() != ADDRESS::g(0)) {
+		if ((*it)->getLowAddr() != Address::g(0)) {
 			m_mapBB.erase((*it)->getLowAddr());
 		}
 
@@ -736,7 +736,7 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2)
 	// but that's good because we only did shallow copies to *pb2
 	BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), pb1);
 
-	if ((*bbit)->getLowAddr() != ADDRESS::g(0)) {
+	if ((*bbit)->getLowAddr() != Address::g(0)) {
 		m_mapBB.erase((*bbit)->getLowAddr());
 	}
 
@@ -749,7 +749,7 @@ void Cfg::removeBB(BasicBlock *bb)
 {
 	BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), bb);
 
-	if ((*bbit)->getLowAddr() != ADDRESS::g(0)) {
+	if ((*bbit)->getLowAddr() != Address::g(0)) {
 		m_mapBB.erase((*bbit)->getLowAddr());
 	}
 
@@ -814,7 +814,7 @@ bool Cfg::compressCfg()
 				if (pSucc->m_inEdges.empty()) {
 					for (BB_IT it3 = m_listBB.begin(); it3 != m_listBB.end(); it3++) {
 						if (*it3 == pSucc) {
-							if ((*it3)->getLowAddr() != ADDRESS::g(0)) {
+							if ((*it3)->getLowAddr() != Address::g(0)) {
 								m_mapBB.erase((*it3)->getLowAddr());
 							}
 
@@ -959,7 +959,7 @@ bool Cfg::isWellFormed()
 }
 
 
-bool Cfg::isOrphan(ADDRESS uAddr)
+bool Cfg::isOrphan(Address uAddr)
 {
 	MAPBB::iterator mi = m_mapBB.find(uAddr);
 
@@ -1624,7 +1624,7 @@ void Cfg::removeUnneededLabels(ICodeGenerator *hll)
 
 void Cfg::generateDotFile(QTextStream& of)
 {
-	ADDRESS aret = NO_ADDRESS;
+	   Address aret = NO_ADDRESS;
 
 	// The nodes
 	// std::list<PBB>::iterator it;
@@ -1885,13 +1885,13 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
 
 	bool haveA = (ri != pBB->m_listOfRTLs->begin());
 
-	ADDRESS addr = rtl->getAddress();
+	   Address addr = rtl->getAddress();
 
 	// Make a BB for the br1 instruction
 
 	// Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
 	// creating the rptBB). Or if there is no A, temporarily use 0
-	ADDRESS    a        = (haveA) ? addr : ADDRESS::g(0L);
+	   Address    a        = (haveA) ? addr : Address::g(0L);
 	RTL        *skipRtl = new RTL(a, new std::list<Instruction *> { br1 }); // list initializer in braces
 	BasicBlock *skipBB  = newBB(new std::list<RTL *> { skipRtl }, BBTYPE::TWOWAY, 2);
 	rtl->setAddress(addr + 1);

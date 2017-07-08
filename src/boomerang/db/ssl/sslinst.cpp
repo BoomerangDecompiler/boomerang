@@ -426,7 +426,7 @@ bool RTLInstDict::partialType(Exp *exp, Type& ty)
  * \param actuals - the actual values
  * \returns   the instantiated list of Exps
  ******************************************************************************/
-std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, ADDRESS natPC,
+std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, Address natPC,
 													  const std::vector<SharedExp>& actuals)
 {
 	QTextStream q_cerr(stderr);
@@ -466,7 +466,7 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, ADDRE
  * \param   actuals - the actual parameter values
  * \returns the instantiated list of Exps
  ******************************************************************************/
-std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC, std::list<QString>& params,
+std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std::list<QString>& params,
 													  const std::vector<SharedExp>& actuals)
 {
 	Q_UNUSED(natPC);

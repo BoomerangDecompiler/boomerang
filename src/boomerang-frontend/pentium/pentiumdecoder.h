@@ -32,10 +32,10 @@ public:
 	virtual ~PentiumDecoder() = default;
 
 	/// @copydoc NJMCDecoder::decodeInstruction
-	DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+	DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
 	/// @copydoc NJMCDecode::decodeAssemblyInstruction
-	int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) override;
+	int decodeAssemblyInstruction(Address pc, ptrdiff_t delta) override;
 
 private:
 
@@ -43,20 +43,20 @@ private:
 	 * Various functions to decode the operands of an instruction into
 	 * a SemStr representation.
 	 */
-	SharedExp dis_Eaddr(ADDRESS pc, int size = 0);
-	SharedExp dis_Mem(ADDRESS ps);
+	SharedExp dis_Eaddr(Address pc, int size = 0);
+	SharedExp dis_Mem(Address ps);
 	SharedExp addReloc(const SharedExp& e);
 
-	bool isFuncPrologue(ADDRESS hostPC);
+	bool isFuncPrologue(Address hostPC);
 
 	Byte getByte(intptr_t lc); // TODO: switch to using ADDRESS objects
 	SWord getWord(intptr_t lc);
 	DWord getDword(intptr_t lc);
 
-	Byte getByte(ADDRESS lc)   { return getByte(lc.m_value); }
-	SWord getWord(ADDRESS lc)  { return getWord(lc.m_value); }
-	DWord getDword(ADDRESS lc) { return getDword(lc.m_value); }
+	Byte getByte(Address lc)   { return getByte(lc.m_value); }
+	SWord getWord(Address lc)  { return getWord(lc.m_value); }
+	DWord getDword(Address lc) { return getDword(lc.m_value); }
 
 private:
-	ADDRESS lastDwordLc;
+	   Address lastDwordLc;
 };

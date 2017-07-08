@@ -140,7 +140,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 		// Fall through
 		case 'e':
 			{
-				ADDRESS addr;
+				        Address addr;
 				boom.decodeMain = false;
 
 				if (++i == args.size()) {
@@ -334,7 +334,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 					break;
 				}
 
-				ADDRESS addr;
+				        Address addr;
 
 				if (++i == args.size()) {
 					usage();

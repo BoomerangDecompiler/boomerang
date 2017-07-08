@@ -84,10 +84,10 @@ std::vector<SharedExp>& ST20FrontEnd::getDefaultReturns()
 }
 
 
-ADDRESS ST20FrontEnd::getMainEntryPoint(bool& gotMain)
+Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	gotMain = true;
-	ADDRESS start = m_fileLoader->getMainEntryPoint();
+	   Address start = m_fileLoader->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		return start;
@@ -105,7 +105,7 @@ ADDRESS ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool ST20FrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+bool ST20FrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
 							   bool spec /* = false */)
 {
 	// Call the base class to do most of the work

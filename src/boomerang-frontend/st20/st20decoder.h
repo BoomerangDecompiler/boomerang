@@ -34,10 +34,10 @@ public:
 	ST20Decoder(Prog *prog);
 
 	/// @copydoc NJMCDecoder::decodeInstruction
-	DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+	DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
 	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
-	int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta)  override;
+	int decodeAssemblyInstruction(Address pc, ptrdiff_t delta)  override;
 
 private:
 
@@ -50,8 +50,8 @@ private:
 	// Exp*    dis_Reg(unsigned r);
 	// Exp*    dis_RAmbz(unsigned r);        // Special for rA of certain instructions
 
-	RTL *createBranchRtl(ADDRESS pc, std::list<Instruction *> *stmts, const char *name);
-	bool isFuncPrologue(ADDRESS hostPC);
+	RTL *createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name);
+	bool isFuncPrologue(Address hostPC);
 
 	DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
 	SWord getWord(intptr_t lc);

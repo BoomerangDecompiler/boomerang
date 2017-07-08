@@ -36,14 +36,14 @@
 struct SectionParam
 {
 	QString  Name;
-	ADDRESS  SourceAddr;
+	   Address  SourceAddr;
 	size_t   Size;
 	size_t   entry_size;
 	bool     ReadOnly;
 	bool     Bss;
 	bool     Code;
 	bool     Data;
-	ADDRESS  image_ptr;
+	   Address  image_ptr;
 	unsigned uType;             // Type of section (format dependent)
 };
 
@@ -57,14 +57,14 @@ struct Translated_ElfSym
 	ElfSymVisibility Visibility;
 	uint32_t         SymbolSize;
 	uint16_t         SectionIdx;
-	ADDRESS          Value;
+	   Address          Value;
 };
 
 typedef std::map<QString, int, std::less<QString> > StrIntMap;
 
 
 ElfBinaryLoader::ElfBinaryLoader()
-	: m_nextExtern(ADDRESS::g(0L))
+	: m_nextExtern(Address::g(0L))
 {
 	init(); // Initialise all the common stuff
 }
@@ -200,7 +200,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
 	// Number of elf sections
 	bool    bGotCode         = false; // True when have seen a code sect
-	ADDRESS arbitaryLoadAddr = ADDRESS::g(0x08000000);
+	   Address arbitaryLoadAddr = Address::g(0x08000000);
 
 	for (SWord i = 0; i < numSections; i++) {
 		// Get section information.
@@ -230,7 +230,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 		int _off = elfRead4(&pShdr->sh_offset);
 
 		if (_off) {
-			sect.image_ptr = ADDRESS::host_ptr(m_loadedImage + _off);
+			sect.image_ptr = Address::host_ptr(m_loadedImage + _off);
 		}
 
 		sect.SourceAddr = elfRead4(&pShdr->sh_addr);
@@ -385,10 +385,10 @@ const char *ElfBinaryLoader::getStrPtr(int idx, int offset)
 }
 
 
-ADDRESS ElfBinaryLoader::findRelPltOffset(int i)
+Address ElfBinaryLoader::findRelPltOffset(int i)
 {
 	const IBinarySection *siPlt    = m_binaryImage->getSectionInfoByName(".plt");
-	ADDRESS              addrPlt   = siPlt ? siPlt->getSourceAddr() : ADDRESS::g(0L);
+	   Address              addrPlt   = siPlt ? siPlt->getSourceAddr() : Address::g(0L);
 	const IBinarySection *siRelPlt = m_binaryImage->getSectionInfoByName(".rel.plt");
 	int sizeRelPlt = 8; // Size of each entry in the .rel.plt table
 
@@ -397,7 +397,7 @@ ADDRESS ElfBinaryLoader::findRelPltOffset(int i)
 		sizeRelPlt = 12; // Size of each entry in the .rela.plt table is 12 bytes
 	}
 
-	ADDRESS addrRelPlt = ADDRESS::g(0L);
+	   Address addrRelPlt = Address::g(0L);
 	int     numRelPlt  = 0;
 
 	if (siRelPlt) {
@@ -425,7 +425,7 @@ ADDRESS ElfBinaryLoader::findRelPltOffset(int i)
 		int   entry_type = entry & 0xFF;
 
 		if (sym == i) {
-			const IBinarySection *targetSect = m_binaryImage->getSectionInfoByAddr(ADDRESS::n(elfRead4(pEntry)));
+			const IBinarySection *targetSect = m_binaryImage->getSectionInfoByAddr(Address::n(elfRead4(pEntry)));
 
 			if (targetSect->getName().contains("got")) {
 				int c           = elfRead4(pEntry) - targetSect->getSourceAddr().m_value;
@@ -433,7 +433,7 @@ ADDRESS ElfBinaryLoader::findRelPltOffset(int i)
 				int plt_idx     = (plt_offset2 % pltEntrySize);
 
 				if (entry_type == R_386_JUMP_SLOT) {
-					return ADDRESS::n(plt_offset2 - 6);
+					return Address::n(plt_offset2 - 6);
 				}
 
 				return addrPlt + plt_idx * pltEntrySize;
@@ -457,7 +457,7 @@ ADDRESS ElfBinaryLoader::findRelPltOffset(int i)
 		}
 	} while (curr != first); // Will eventually wrap around to first if not present
 
-	return ADDRESS::g(0L);   // Exit if this happens
+	return Address::g(0L);   // Exit if this happens
 }
 
 
@@ -543,7 +543,7 @@ void ElfBinaryLoader::addSyms(int secIndex)
 	// Index 0 is a dummy entry
 	for (int i = 1; i < nSyms; i++) {
 		Translated_ElfSym trans;
-		ADDRESS           val  = ADDRESS::g(elfRead4(&m_symbolSection[i].st_value));
+		      Address           val  = Address::g(elfRead4(&m_symbolSection[i].st_value));
 		int               name = elfRead4(&m_symbolSection[i].st_name);
 
 		if (name == 0) { /* Silly symbols with no names */
@@ -562,7 +562,7 @@ void ElfBinaryLoader::addSyms(int secIndex)
 		processSymbol(trans, e_type, i);
 	}
 
-	ADDRESS uMain = getMainEntryPoint();
+	   Address uMain = getMainEntryPoint();
 
 	if ((uMain != NO_ADDRESS) && (nullptr == m_symbols->find(uMain))) {
 		// Ugh - main mustn't have the STT_FUNC attribute. Add it
@@ -586,13 +586,13 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
 
 	// Index 0 is a dummy entry
 	for (int i = 1; i < nRelocs; i++) {
-		ADDRESS val      = ADDRESS::g(elfRead4(&m_relocSection[i].r_offset));
+		      Address val      = Address::g(elfRead4(&m_relocSection[i].r_offset));
 		int     symIndex = elfRead4(&m_relocSection[i].r_info) >> 8;
 		int     flags    = elfRead4(&m_relocSection[i].r_info);
 
 		if ((flags & 0xFF) == R_386_32) {
 			// Lookup the value of the symbol table entry
-			ADDRESS a = ADDRESS::g(elfRead4(&m_symbolSection[symIndex].st_value));
+			         Address a = Address::g(elfRead4(&m_symbolSection[symIndex].st_value));
 
 			if (m_symbolSection[symIndex].st_info & STT_SECTION) {
 				a = m_elfSections[elfRead2(&m_symbolSection[symIndex].st_shndx)].SourceAddr;
@@ -615,10 +615,10 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
 
 		str = str.left(str.indexOf("@@")); // Hack off the "@@GLIBC_2.0" of Linux, if present
 
-		std::map<ADDRESS, QString>::iterator it;
+		std::map<Address, QString>::iterator it;
 		auto symbol = m_symbols->find(str);
 		// Add new extern
-		ADDRESS location = symbol ? symbol->getLocation() : m_nextExtern;
+		      Address location = symbol ? symbol->getLocation() : m_nextExtern;
 
 		if (nullptr == symbol) {
 			m_symbols->create(m_nextExtern, str);
@@ -630,7 +630,7 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
 }
 
 
-ADDRESS ElfBinaryLoader::getMainEntryPoint()
+Address ElfBinaryLoader::getMainEntryPoint()
 {
 	auto sym = m_symbols->find("main");
 
@@ -642,16 +642,16 @@ ADDRESS ElfBinaryLoader::getMainEntryPoint()
 }
 
 
-ADDRESS ElfBinaryLoader::getEntryPoint()
+Address ElfBinaryLoader::getEntryPoint()
 {
-	return ADDRESS::g(elfRead4(&m_elfHeader->e_entry));
+	return Address::g(elfRead4(&m_elfHeader->e_entry));
 }
 
 
-ADDRESS ElfBinaryLoader::nativeToHostAddress(ADDRESS uNative)
+Address ElfBinaryLoader::nativeToHostAddress(Address uNative)
 {
 	if (m_binaryImage->getNumSections() == 0) {
-		return ADDRESS::g(0L);
+		return Address::g(0L);
 	}
 
 	return m_binaryImage->getSectionInfo(1)->getHostAddr() - m_binaryImage->getSectionInfo(1)->getSourceAddr() + uNative;
@@ -731,7 +731,7 @@ bool ElfBinaryLoader::isLibrary() const
 QStringList ElfBinaryLoader::getDependencyList()
 {
 	QStringList    result;
-	ADDRESS        stringtab = NO_ADDRESS;
+	   Address        stringtab = NO_ADDRESS;
 	IBinarySection *dynsect  = m_binaryImage->getSectionInfoByName(".dynamic");
 
 	if (dynsect == nullptr) {
@@ -742,7 +742,7 @@ QStringList ElfBinaryLoader::getDependencyList()
 
 	for (dyn = (Elf32_Dyn *)dynsect->getHostAddr().m_value; dyn->d_tag != DT_NULL; dyn++) {
 		if (dyn->d_tag == DT_STRTAB) {
-			stringtab = ADDRESS::g(dyn->d_un.d_ptr);
+			stringtab = Address::g(dyn->d_un.d_ptr);
 			break;
 		}
 	}
@@ -767,7 +767,7 @@ QStringList ElfBinaryLoader::getDependencyList()
 }
 
 
-ADDRESS ElfBinaryLoader::getImageBase()
+Address ElfBinaryLoader::getImageBase()
 {
 	return m_baseAddr;
 }
@@ -912,7 +912,7 @@ void ElfBinaryLoader::applyRelocations()
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
-				ADDRESS destNatOrigin = ADDRESS::g(0L), destHostOrigin = ADDRESS::g(0L);
+				            Address destNatOrigin = Address::g(0L), destHostOrigin = Address::g(0L);
 
 				if (e_type == E_REL) {
 					int destSection = m_shInfo[i];
@@ -936,12 +936,12 @@ void ElfBinaryLoader::applyRelocations()
 						pRelWord = ((DWord *)(destHostOrigin + r_offset).m_value);
 					}
 					else {
-						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(ADDRESS::n(r_offset));
+						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(Address::n(r_offset));
 						pRelWord      = (DWord *)(destSec->getHostAddr() - destSec->getSourceAddr() + r_offset).m_value;
-						destNatOrigin = ADDRESS::g(0L);
+						destNatOrigin = Address::g(0L);
 					}
 
-					ADDRESS  A, S = ADDRESS::g(0L), P;
+					               Address  A, S = Address::g(0L), P;
 					unsigned nsec;
 
 					switch (relType)
@@ -1025,7 +1025,7 @@ void ElfBinaryLoader::applyRelocations()
 }
 
 
-bool ElfBinaryLoader::isRelocationAt(ADDRESS uNative)
+bool ElfBinaryLoader::isRelocationAt(Address uNative)
 {
 	// int nextFakeLibAddr = -2;            // See R_386_PC32 below; -1 sometimes used for main
 	if (m_loadedImage == nullptr) {
@@ -1054,7 +1054,7 @@ bool ElfBinaryLoader::isRelocationAt(ADDRESS uNative)
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
-				ADDRESS destNatOrigin = ADDRESS::g(0L), destHostOrigin;
+				            Address destNatOrigin = Address::g(0L), destHostOrigin;
 
 				if (e_type == E_REL) {
 					int destSection = m_shInfo[i];
@@ -1073,13 +1073,13 @@ bool ElfBinaryLoader::isRelocationAt(ADDRESS uNative)
 
 					// unsigned char relType = (unsigned char) info;
 					// unsigned symTabIndex = info >> 8;
-					ADDRESS pRelWord; // Pointer to the word to be relocated
+					               Address pRelWord; // Pointer to the word to be relocated
 
 					if (e_type == E_REL) {
 						pRelWord = destNatOrigin + r_offset;
 					}
 					else {
-						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(ADDRESS::g(r_offset));
+						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(Address::g(r_offset));
 						pRelWord      = destSec->getSourceAddr() + r_offset;
 						destNatOrigin = 0;
 					}

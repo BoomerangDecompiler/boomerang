@@ -42,17 +42,17 @@ static DecodeResult result;
  *         the pc is at in the loaded object file)
  * \returns            a DecodeResult structure containing all the information gathered during decoding
  ******************************************************************************/
-DecodeResult& ST20Decoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
+DecodeResult& ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta)
 {
 	result.reset();                            // Clear the result structure (numBytes = 0 etc)
-	ADDRESS hostPC = pc + delta;
+	   Address hostPC = pc + delta;
 	std::list<Instruction *> *stmts = nullptr; // The actual list of instantiated Statements
 	int total = 0;                             // Total value from all prefixes
 
 	while (1) {
 		// #line 60 "frontend/machine/st20/decoder.m"
 		{
-			ADDRESS           MATCH_p = hostPC + result.numBytes++;
+			         Address           MATCH_p = hostPC + result.numBytes++;
 			const char        *MATCH_name;
 			static const char *MATCH_name_fc_0[] =
 			{
@@ -939,7 +939,7 @@ ST20Decoder::ST20Decoder(Prog *prog_)
 
 
 // For now...
-int ST20Decoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t)
+int ST20Decoder::decodeAssemblyInstruction(Address, ptrdiff_t)
 {
 	return 0;
 }

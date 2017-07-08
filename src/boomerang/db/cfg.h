@@ -92,7 +92,7 @@ class Cfg
 	typedef std::map<SharedExp, Instruction *, lessExpStar>        ExpStatementMap;
 
 	// A type for the ADDRESS to BB map
-	typedef std::map<ADDRESS, BasicBlock *, std::less<ADDRESS> >   MAPBB;
+	typedef std::map<Address, BasicBlock *, std::less<Address> >   MAPBB;
 	typedef std::list<BasicBlock *>::iterator                      BB_IT;
 	typedef std::list<BasicBlock *>::const_iterator                BBC_IT;
 
@@ -177,7 +177,7 @@ public:
 	 * This function will commonly be called via AddOutEdge()
 	 * \returns           pointer to allocated BasicBlock
 	 ******************************************************************************/
-	BasicBlock *newIncompleteBB(ADDRESS addr);
+	BasicBlock *newIncompleteBB(Address addr);
 
 	/***************************************************************************/ /**
 	 * \brief Add an out edge to this BB (and the in-edge to the dest BB)
@@ -191,7 +191,7 @@ public:
 	 * \param   pDestBB destination BB (to have the out edge point to)
 	 * \param   bSetLabel - indicates that label is required in \a pDestBB
 	 ******************************************************************************/
-	void addOutEdge(BasicBlock *pBB, ADDRESS adr, bool bSetLabel = false);
+	void addOutEdge(BasicBlock *pBB, Address adr, bool bSetLabel = false);
 
 	/***************************************************************************/ /**
 	 * \brief        Add an out edge to this BB (and the in-edge to the dest BB)
@@ -278,7 +278,7 @@ public:
 	 * \returns       True if \a uNativeAddr is a label, i.e. (now) the start of a BB
 	 *                Note: pCurBB may be modified (as above)
 	 ******************************************************************************/
-	bool label(ADDRESS uNativeAddr, BasicBlock *& pNewBB);
+	bool label(Address uNativeAddr, BasicBlock *& pNewBB);
 
 	/***************************************************************************/ /**
 	 * \brief        Return true if given address is the start of an incomplete basic block
@@ -289,7 +289,7 @@ public:
 	 * \param       uAddr Address to look up
 	 * \returns     True if uAddr starts an incomplete BB
 	 ******************************************************************************/
-	bool isIncomplete(ADDRESS uNativeAddr) const;
+	bool isIncomplete(Address uNativeAddr) const;
 
 	/***************************************************************************/ /**
 	 * \brief Return true if the given address is the start of a basic block, complete or not
@@ -302,7 +302,7 @@ public:
 	 * \param        uNativeAddr native address to look up
 	 * \returns      True if uNativeAddr starts a BB
 	 ******************************************************************************/
-	bool existsBB(ADDRESS uNativeAddr) const;
+	bool existsBB(Address uNativeAddr) const;
 
 	/***************************************************************************/ /**
 	 * \brief   Sorts the BBs in a cfg by first address. Just makes it more convenient to read when BBs are
@@ -406,7 +406,7 @@ public:
 	 * \brief Return true if there is a BB at the address given whose first RTL is an orphan,
 	 * i.e. GetAddress() returns 0.
 	 ******************************************************************************/
-	bool isOrphan(ADDRESS uAddr);
+	bool isOrphan(Address uAddr);
 
 	/***************************************************************************/ /**
 	 * \brief Amalgamate the RTLs for pb1 and pb2, and place the result into pb2
@@ -463,7 +463,7 @@ public:
 	void removeJunctionStatements();
 
 	/// return a bb given an address
-	BasicBlock *bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
+	BasicBlock *bbForAddr(Address addr) { return m_mapBB[addr]; }
 	void simplify();
 
 	/**
@@ -487,7 +487,7 @@ private:
 	 *                there is an overlap with existing instructions
 	 * \returns Returns a pointer to the "bottom" (new) part of the split BB.
 	 ******************************************************************************/
-	BasicBlock *splitBB(BasicBlock *pBB, ADDRESS uNativeAddr, BasicBlock *pNewBB = nullptr, bool bDelRtls = false);
+	BasicBlock *splitBB(BasicBlock *pBB, Address uNativeAddr, BasicBlock *pNewBB = nullptr, bool bDelRtls = false);
 
 	/***************************************************************************/ /**
 	 * \brief Complete the merge of two BBs by adjusting in and out edges.  If bDelete is true, delete pb1

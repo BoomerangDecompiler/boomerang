@@ -31,7 +31,7 @@
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(p)           ((unsigned char *)p)
 #define UINT4(p)        ((UC(p)[0] << 24) | (UC(p)[1] << 16) | (UC(p)[2] << 8) | UC(p)[3])
-#define UINT4ADDR(p)    (ADDRESS::n((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
+#define UINT4ADDR(p)    (Address::n((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
 
 
 HpSomBinaryLoader::HpSomBinaryLoader()
@@ -196,7 +196,7 @@ void HpSomBinaryLoader::processSymbols()
 
 	unsigned numSym = UINT4(m_loadedImage + 0x60);
 
-	ADDRESS symPtr  = ADDRESS::host_ptr(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
+	   Address symPtr  = Address::host_ptr(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
 	char    *pNames = (char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
 
 #define SYMSIZE    20 // 5 4-byte words per symbol entry
@@ -209,7 +209,7 @@ void HpSomBinaryLoader::processSymbols()
 		// cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u)
 		// << ", aux " << SYMBOLAUX(u) << endl;
 		unsigned symbol_type = SYMBOLTY(u);
-		ADDRESS  value       = ADDRESS::n(SYMBOLVAL(u));
+		      Address  value       = Address::n(SYMBOLVAL(u));
 		char     *pSymName   = pNames + SYMBOLNM(u);
 
 		// Only interested in type 3 (code), 8 (stub), and 12 (millicode)
@@ -314,7 +314,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	unsigned *maxAux = auxHeaders + sizeAux;
 
 	while (auxHeaders < maxAux) {
-		if ((UINT4(m_loadedImage + ADDRESS::value_type(auxHeaders)) & 0xFFFF) == 0x0004) {
+		if ((UINT4(m_loadedImage + Address::value_type(auxHeaders)) & 0xFFFF) == 0x0004) {
 			found = true;
 			break;
 		}
@@ -337,7 +337,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	// the $TEXT$ space, but the only way I can presently find that is to
 	// assume that the first subspace entry points to it
 	char         *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
-	ADDRESS      first_subspace_fileloc = ADDRESS::g(UINT4(subspace_location + 8));
+	   Address      first_subspace_fileloc = Address::g(UINT4(subspace_location + 8));
 	char         *DLTable     = (char *)m_loadedImage + first_subspace_fileloc.m_value;
 	char         *pDlStrings  = DLTable + UINT4(DLTable + 0x28);
 	unsigned     numImports   = UINT4(DLTable + 0x14); // Number of import strings
@@ -347,37 +347,37 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 
 	// A convenient macro for accessing the fields (0-11) of the auxilliary header
 	// Fields 0, 1 are the header (flags, aux header type, and size)
-#define AUXHDR(idx)    (UINT4(m_image + ADDRESS::value_type(auxHeaders + idx)))
+#define AUXHDR(idx)    (UINT4(m_image + Address::value_type(auxHeaders + idx)))
 
 	// Section 0: text (code)
-	IBinarySection *text = m_image->createSection("$TEXT$", ADDRESS::n(AUXHDR(3)), ADDRESS::n(AUXHDR(3) + AUXHDR(2)));
+	IBinarySection *text = m_image->createSection("$TEXT$", Address::n(AUXHDR(3)), Address::n(AUXHDR(3) + AUXHDR(2)));
 	assert(text);
-	text->setHostAddr(ADDRESS::host_ptr(m_loadedImage) + AUXHDR(4))
+	text->setHostAddr(Address::host_ptr(m_loadedImage) + AUXHDR(4))
 	   .setEntrySize(1)
 	   .setCode(true)
 	   .setData(false)
 	   .setBss(false)
 	   .setReadOnly(true)
 	   .setEndian(0)
-	   .addDefinedArea(ADDRESS::n(AUXHDR(3)), ADDRESS::n(AUXHDR(3) + AUXHDR(2)));
+	   .addDefinedArea(Address::n(AUXHDR(3)), Address::n(AUXHDR(3) + AUXHDR(2)));
 
 	// Section 1: initialised data
-	IBinarySection *data = m_image->createSection("$DATA$", ADDRESS::n(AUXHDR(6)), ADDRESS::n(AUXHDR(6) + AUXHDR(5)));
+	IBinarySection *data = m_image->createSection("$DATA$", Address::n(AUXHDR(6)), Address::n(AUXHDR(6) + AUXHDR(5)));
 	assert(data);
-	data->setHostAddr(ADDRESS::host_ptr(m_loadedImage) + AUXHDR(7))
+	data->setHostAddr(Address::host_ptr(m_loadedImage) + AUXHDR(7))
 	   .setEntrySize(1)
 	   .setCode(false)
 	   .setData(true)
 	   .setBss(false)
 	   .setReadOnly(false)
 	   .setEndian(0)
-	   .addDefinedArea(ADDRESS::n(AUXHDR(6)), ADDRESS::n(AUXHDR(6) + AUXHDR(5)));
+	   .addDefinedArea(Address::n(AUXHDR(6)), Address::n(AUXHDR(6) + AUXHDR(5)));
 	// Section 2: BSS
 	// For now, assume that BSS starts at the end of the initialised data
-	IBinarySection *bss = m_image->createSection("$BSS$", ADDRESS::n(AUXHDR(6) + AUXHDR(5)),
-												 ADDRESS::n(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
+	IBinarySection *bss = m_image->createSection("$BSS$", Address::n(AUXHDR(6) + AUXHDR(5)),
+												              Address::n(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
 	assert(bss);
-	bss->setHostAddr(ADDRESS::n(0))
+	bss->setHostAddr(Address::n(0))
 	   .setEntrySize(1)
 	   .setCode(false)
 	   .setData(false)
@@ -391,13 +391,13 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	ptrdiff_t deltaData = (data->getHostAddr() - data->getSourceAddr()).m_value;
 	// The "end of data" where r27 points is not necessarily the same as
 	// the end of the $DATA$ space. So we have to call getSubSpaceInfo
-	std::pair<ADDRESS, int> pr = getSubspaceInfo("$GLOBAL$");
+	std::pair<Address, int> pr = getSubspaceInfo("$GLOBAL$");
 
 	//  ADDRESS endData = pr.first + pr.second;
 	pr = getSubspaceInfo("$PLT$");
 	//  int minPLT = pr.first - endData;
 	//  int maxPLT = minPLT + pr.second;
-	ADDRESS pltStart = pr.first;
+	   Address pltStart = pr.first;
 	// cout << "Offset limits are " << dec << minPLT << " and " << maxPLT << endl;
 	// Note: DLT entries come before PLT entries in the import array, but
 	// the $DLT$ subsection is not necessarilly just before the $PLT$
@@ -442,7 +442,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 		continue;
 		// TODO: add some type info to the imported symbols
 		// Add it to the set of imports; needed by IsDynamicLinkedProc()
-		m_symbols->create(ADDRESS::n(UINT4(&PLTs[v].value)), pDlStrings + UINT4(&import_list[u].name))
+		m_symbols->create(Address::n(UINT4(&PLTs[v].value)), pDlStrings + UINT4(&import_list[u].name))
 		   .setAttr("Imported", true).setAttr("Function", true);
 	}
 
@@ -508,10 +508,10 @@ void HpSomBinaryLoader::unload()
 }
 
 
-ADDRESS HpSomBinaryLoader::getEntryPoint()
+Address HpSomBinaryLoader::getEntryPoint()
 {
 	assert(0); /* FIXME: Someone who understands this file please implement */
-	return ADDRESS::g(0L);
+	return Address::g(0L);
 }
 
 
@@ -549,9 +549,9 @@ bool HpSomBinaryLoader::isLibrary() const
 }
 
 
-ADDRESS HpSomBinaryLoader::getImageBase()
+Address HpSomBinaryLoader::getImageBase()
 {
-	return ADDRESS::g(0L);                                       /* FIXME */
+	return Address::g(0L);                                       /* FIXME */
 }
 
 
@@ -561,9 +561,9 @@ size_t HpSomBinaryLoader::getImageSize()
 }
 
 
-std::pair<ADDRESS, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
+std::pair<Address, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 {
-	std::pair<ADDRESS, int> ret(ADDRESS::g(0L), 0);
+	std::pair<Address, int> ret(Address::g(0L), 0);
 	// Get the start and length of the subspace with the given name
 	subspace_dictionary_record *subSpaces = (subspace_dictionary_record *)(m_loadedImage + UINT4(m_loadedImage + 0x34));
 	unsigned   numSubSpaces  = UINT4(m_loadedImage + 0x38);
@@ -592,11 +592,11 @@ std::pair<ADDRESS, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 // (first) and the value for GLOBALOFFSET (unused for ra-risc)
 // The understanding at present is that the global data pointer (%r27 for
 // pa-risc) points just past the end of the $GLOBAL$ subspace.
-std::pair<ADDRESS, unsigned> HpSomBinaryLoader::getGlobalPointerInfo()
+std::pair<Address, unsigned> HpSomBinaryLoader::getGlobalPointerInfo()
 {
-	std::pair<ADDRESS, unsigned> ret(ADDRESS::g(0L), 0);
+	std::pair<Address, unsigned> ret(Address::g(0L), 0);
 	// Search the subspace names for "$GLOBAL$
-	std::pair<ADDRESS, int> info = getSubspaceInfo("$GLOBAL$");
+	std::pair<Address, int> info = getSubspaceInfo("$GLOBAL$");
 	// We want the end of the $GLOBAL$ section, which is the sum of the start
 	// address and the size
 	ret.first = info.first + info.second;
@@ -614,14 +614,14 @@ std::pair<ADDRESS, unsigned> HpSomBinaryLoader::getGlobalPointerInfo()
  * \note        The caller should delete the returned map.
  * \returns     Pointer to a new map with the info
  ******************************************************************************/
-std::map<ADDRESS, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
+std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 {
 	// Find the DL Table, if it exists
 	// The DL table (Dynamic Link info) is supposed to be at the start of
 	// the $TEXT$ space, but the only way I can presently find that is to
 	// assume that the first subspace entry points to it
 	const char *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
-	ADDRESS    first_subspace_fileloc = ADDRESS::g(UINT4(subspace_location + 8));
+	   Address    first_subspace_fileloc = Address::g(UINT4(subspace_location + 8));
 	const char *DLTable = (char *)m_loadedImage + first_subspace_fileloc.m_value;
 
 	unsigned numDLT = UINT4(DLTable + 0x40);
@@ -634,7 +634,7 @@ std::map<ADDRESS, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 	// Those names are in the DLT string table
 	const char *pDlStrings = DLTable + UINT4(DLTable + 0x28);
 
-	std::map<ADDRESS, const char *> *ret = new std::map<ADDRESS, const char *>;
+	std::map<Address, const char *> *ret = new std::map<Address, const char *>;
 
 	for (unsigned u = 0; u < numDLT; u++) {
 		// ? Sometimes the names are just -1
@@ -643,14 +643,14 @@ std::map<ADDRESS, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 		}
 
 		const char *str = pDlStrings + import_list[u].name;
-		(*ret)[ADDRESS::g(*p++)] = str;
+		(*ret)[Address::g(*p++)] = str;
 	}
 
 	return ret;
 }
 
 
-ADDRESS HpSomBinaryLoader::getMainEntryPoint()
+Address HpSomBinaryLoader::getMainEntryPoint()
 {
 	auto sym = m_symbols->find("main");
 

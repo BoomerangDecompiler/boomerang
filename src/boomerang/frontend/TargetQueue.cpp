@@ -4,7 +4,7 @@
 #include "boomerang/util/Log.h"
 
 
-void TargetQueue::visit(Cfg *pCfg, ADDRESS uNewAddr, BasicBlock *& pNewBB)
+void TargetQueue::visit(Cfg *pCfg, Address uNewAddr, BasicBlock *& pNewBB)
 {
 	// Find out if we've already parsed the destination
 	bool alreadyParsed = pCfg->label(uNewAddr, pNewBB);
@@ -20,16 +20,16 @@ void TargetQueue::visit(Cfg *pCfg, ADDRESS uNewAddr, BasicBlock *& pNewBB)
 	}
 }
 
-void TargetQueue::initial(ADDRESS uAddr)
+void TargetQueue::initial(Address uAddr)
 {
 	targets.push(uAddr);
 }
 
 
-ADDRESS TargetQueue::nextAddress(const Cfg& cfg)
+Address TargetQueue::nextAddress(const Cfg& cfg)
 {
 	while (!targets.empty()) {
-		ADDRESS address = targets.front();
+		      Address address = targets.front();
 		targets.pop();
 
 		if (Boomerang::get()->traceDecoder) {
@@ -48,10 +48,10 @@ ADDRESS TargetQueue::nextAddress(const Cfg& cfg)
 
 void TargetQueue::dump()
 {
-	std::queue<ADDRESS> copy(targets);
+	std::queue<Address> copy(targets);
 
 	while (!copy.empty()) {
-		ADDRESS a = copy.front();
+		      Address a = copy.front();
 		copy.pop();
 		LOG_STREAM() << a << ", ";
 	}

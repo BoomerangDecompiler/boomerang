@@ -129,7 +129,7 @@ IFrontEnd *IFrontEnd::create(const QString& fname, Prog *prog)
 }
 
 
-void IFrontEnd::addSymbol(ADDRESS addr, const QString& nam)
+void IFrontEnd::addSymbol(Address addr, const QString& nam)
 {
 	   m_binarySymbols->create(addr, nam);
 }
@@ -232,7 +232,7 @@ void IFrontEnd::readLibraryCatalog()
 }
 
 
-void IFrontEnd::checkEntryPoint(std::vector<ADDRESS>& entrypoints, ADDRESS addr, const char *type)
+void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type)
 {
 	SharedType ty = NamedType::getNamedType(type);
 
@@ -253,12 +253,12 @@ void IFrontEnd::checkEntryPoint(std::vector<ADDRESS>& entrypoints, ADDRESS addr,
 }
 
 
-std::vector<ADDRESS> IFrontEnd::getEntryPoints()
+std::vector<Address> IFrontEnd::getEntryPoints()
 {
-	std::vector<ADDRESS> entrypoints;
+	std::vector<Address> entrypoints;
 	bool                 gotMain = false;
 	// AssemblyLayer
-	ADDRESS a = getMainEntryPoint(gotMain);
+	   Address a = getMainEntryPoint(gotMain);
 
 	// TODO: find exported functions and add them too ?
 	if (a != NO_ADDRESS) {
@@ -277,11 +277,11 @@ std::vector<ADDRESS> IFrontEnd::getEntryPoints()
 				const IBinarySymbol *p_sym = m_binarySymbols->find(name);
 
 				if (p_sym) {
-					ADDRESS tmpaddr = p_sym->getLocation();
-					ADDRESS setup, teardown;
+					               Address tmpaddr = p_sym->getLocation();
+					               Address setup, teardown;
 					/*uint32_t vers = */ m_image->readNative4(tmpaddr); // TODO: find use for vers ?
-					setup    = ADDRESS::g(m_image->readNative4(tmpaddr + 4));
-					teardown = ADDRESS::g(m_image->readNative4(tmpaddr + 8));
+					setup    = Address::g(m_image->readNative4(tmpaddr + 4));
+					teardown = Address::g(m_image->readNative4(tmpaddr + 8));
 
 					if (!setup.isZero()) {
 						checkEntryPoint(entrypoints, setup, "ModuleSetupProc");
@@ -330,11 +330,11 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 									   (m_image->getLimitTextHigh() - m_image->getLimitTextLow()).m_value);
 
 	bool    gotMain;
-	ADDRESS a = getMainEntryPoint(gotMain);
+	   Address a = getMainEntryPoint(gotMain);
 	LOG_VERBOSE(1) << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
 
 	if (a == NO_ADDRESS) {
-		std::vector<ADDRESS> entrypoints = getEntryPoints();
+		std::vector<Address> entrypoints = getEntryPoints();
 
 		for (auto& entrypoint : entrypoints) {
 			decode(m_program, entrypoint);
@@ -386,7 +386,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 }
 
 
-void IFrontEnd::decode(Prog *prg, ADDRESS a)
+void IFrontEnd::decode(Prog *prg, Address a)
 {
 	assert(m_program == prg);
 
@@ -455,7 +455,7 @@ void IFrontEnd::decode(Prog *prg, ADDRESS a)
 }
 
 
-void IFrontEnd::decodeOnly(Prog *prg, ADDRESS a)
+void IFrontEnd::decodeOnly(Prog *prg, Address a)
 {
 	assert(m_program == prg);
 	UserProc *p = (UserProc *)m_program->setNewProc(a);
@@ -470,7 +470,7 @@ void IFrontEnd::decodeOnly(Prog *prg, ADDRESS a)
 }
 
 
-void IFrontEnd::decodeFragment(UserProc *proc, ADDRESS a)
+void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
 	if (Boomerang::get()->traceDecoder) {
 		LOG << "decoding fragment at 0x" << a << "\n";
@@ -481,7 +481,7 @@ void IFrontEnd::decodeFragment(UserProc *proc, ADDRESS a)
 }
 
 
-DecodeResult& IFrontEnd::decodeInstruction(ADDRESS pc)
+DecodeResult& IFrontEnd::decodeInstruction(Address pc)
 {
 	if (!m_image || (m_image->getSectionInfoByAddr(pc) == nullptr)) {
 		LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
@@ -558,7 +558,7 @@ std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
 
 
 void IFrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss,
-								  ADDRESS dest, const std::list<Instruction *>& sl,
+								                           Address dest, const std::list<Instruction *>& sl,
 								  RTL *pRtl)
 {
 	assert(sl.back() == *ss);
@@ -607,7 +607,7 @@ bool IFrontEnd::refersToImportedFunction(const SharedExp& pDest)
 }
 
 
-bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/, bool /*frag*/ /* = false */,
+bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/, bool /*frag*/ /* = false */,
 						   bool spec /* = false */)
 {
 	BasicBlock *pBB; // Pointer to the current basic block
@@ -641,8 +641,8 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 
 	// ADDRESS initAddr = uAddr;
 	int     nTotalBytes = 0;
-	ADDRESS startAddr   = uAddr;
-	ADDRESS lastAddr    = uAddr;
+	   Address startAddr   = uAddr;
+	   Address lastAddr    = uAddr;
 
 	while ((uAddr = m_targetQueue.nextAddress(*pCfg)) != NO_ADDRESS) {
 		// The list of RTLs for the current basic block
@@ -692,7 +692,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 
 					// Emit the next 4 bytes for debugging
 					for (int ii = 0; ii < 4; ii++) {
-						LOG << ADDRESS::g(m_image->readNative1(uAddr + ii) & 0xFF) << " ";
+						LOG << Address::g(m_image->readNative1(uAddr + ii) & 0xFF) << " ";
 					}
 
 					LOG << "\n";
@@ -713,7 +713,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 			// Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
 			// If so, we throw away the just decoded RTL (but we still may have needed to calculate the number
 			// of bytes.. ick.)
-			std::map<ADDRESS, RTL *>::iterator ff = m_previouslyDecoded.find(uAddr);
+			std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(uAddr);
 
 			if (ff != m_previouslyDecoded.end()) {
 				pRtl = ff->second;
@@ -737,7 +737,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 				LOG << tgt;
 			}
 
-			ADDRESS uDest;
+			         Address uDest;
 
 			// For each Statement in the RTL
 			std::list<Instruction *> sl = *(std::list<Instruction *> *)pRtl;
@@ -764,7 +764,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 
 				if (m_refHints.find(pRtl->getAddress()) != m_refHints.end()) {
 					const QString& nam(m_refHints[pRtl->getAddress()]);
-					ADDRESS        gu = m_program->getGlobalAddr(nam);
+					               Address        gu = m_program->getGlobalAddr(nam);
 
 					if (gu != NO_ADDRESS) {
 						s->searchAndReplace(Const(gu), Unary::get(opAddrOf, Location::global(nam, pProc)));
@@ -878,11 +878,11 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 							if (pDest->isMemOf() && (pDest->getSubExp1()->getOper() == opPlus) &&
 								pDest->getSubExp1()->getSubExp2()->isIntConst()) {
 								// assume subExp2 is a jump table
-								ADDRESS      jmptbl = pDest->access<Const, 1, 2>()->getAddr();
+								                    Address      jmptbl = pDest->access<Const, 1, 2>()->getAddr();
 								unsigned int i;
 
 								for (i = 0; ; i++) {
-									ADDRESS destAddr = ADDRESS::g(m_image->readNative4(jmptbl + i * 4));
+									                       Address destAddr = Address::g(m_image->readNative4(jmptbl + i * 4));
 
 									if ((m_image->getLimitTextLow() <= destAddr) && (destAddr < m_image->getLimitTextHigh())) {
 										LOG << "  guessed uDest " << destAddr << "\n";
@@ -938,7 +938,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 						// Check for a dynamic linked library function
 						if (refersToImportedFunction(call->getDest())) {
 							// Dynamic linked proc pointers are treated as static.
-							ADDRESS  linked_addr = call->getDest()->access<Const, 1>()->getAddr();
+							                 Address  linked_addr = call->getDest()->access<Const, 1>()->getAddr();
 							QString  nam         = m_binarySymbols->find(linked_addr)->getName();
 							Function *p          = pProc->getProg()->getLibraryProc(nam);
 							call->setDestProc(p);
@@ -949,7 +949,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 						// A "thunk" is a function which only consists of: "GOTO library_function"
 						if (call && (call->getFixedDest() != NO_ADDRESS)) {
 							// Get the address of the called function.
-							ADDRESS callAddr = call->getFixedDest();
+							                 Address callAddr = call->getFixedDest();
 
 							// It should not be in the PLT either, but getLimitTextHigh() takes this into account
 							if (callAddr < m_image->getLimitTextHigh()) {
@@ -971,7 +971,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 										if ((nullptr != case_stmt) &&
 											refersToImportedFunction(case_stmt->getDest())) { // Is it an "DynamicLinkedProcPointer"?
 											// Yes, it's a library function. Look up it's name.
-											ADDRESS a   = stmt_jump->getDest()->access<Const, 1>()->getAddr();
+											                             Address a   = stmt_jump->getDest()->access<Const, 1>()->getAddr();
 											QString nam = m_binarySymbols->find(a)->getName();
 											// Assign the proc to the call
 											Function *p = pProc->getProg()->getLibraryProc(nam);
@@ -1010,7 +1010,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 						}
 						else { // Static call
 							   // Find the address of the callee.
-							ADDRESS uNewAddr = call->getFixedDest();
+							                 Address uNewAddr = call->getFixedDest();
 
 							// Calls with 0 offset (i.e. call the next instruction) are simply pushing the PC to the
 							// stack. Treat these as non-control flow instructions and continue.
@@ -1048,7 +1048,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 							QString name = m_program->getSymbolByAddress(uNewAddr);
 
 							if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
-								ADDRESS a = call->getDest()->access<Const, 1>()->getAddr();
+								                    Address a = call->getDest()->access<Const, 1>()->getAddr();
 								name = m_binarySymbols->find(a)->getName();
 							}
 
@@ -1182,7 +1182,7 @@ bool IFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& /*os*/,
 	std::list<CallStatement *>::iterator it;
 
 	for (it = callList.begin(); it != callList.end(); it++) {
-		ADDRESS dest = (*it)->getFixedDest();
+		      Address dest = (*it)->getFixedDest();
 		auto    symb = m_binarySymbols->find(dest);
 
 		// Don't speculatively decode procs that are outside of the main text section, apart from dynamically
@@ -1232,7 +1232,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
 	}
 
 	BB_rtls->push_back(pRtl);
-	ADDRESS retAddr = pProc->getTheReturnAddr();
+	   Address retAddr = pProc->getTheReturnAddr();
 
 	// LOG << "retAddr = " << retAddr << " rtl = " << pRtl->getAddress() << "\n";
 	if (retAddr == NO_ADDRESS) {

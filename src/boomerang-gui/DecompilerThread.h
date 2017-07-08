@@ -43,8 +43,8 @@ public:
 	void setUseDFTA(bool d);
 	void setNoDecodeChildren(bool d);
 
-	void addEntryPoint(ADDRESS a, const char *nam);
-	void removeEntryPoint(ADDRESS a);
+	void addEntryPoint(Address a, const char *nam);
+	void removeEntryPoint(Address a);
 
 public slots:
 	void changeInputFile(const QString& f);
@@ -67,14 +67,14 @@ signals:
 
 	void consideringProc(const QString& parent, const QString& name);
 	void decompilingProc(const QString& name);
-	void newUserProc(const QString& name, ADDRESS addr);
+	void newUserProc(const QString& name, Address addr);
 	void newLibProc(const QString& name, const QString& params);
-	void removeUserProc(const QString& name, ADDRESS addr);
+	void removeUserProc(const QString& name, Address addr);
 	void removeLibProc(const QString& name);
 	void newCluster(const QString& name);
 	void newProcInCluster(const QString& name, const QString& cluster);
-	void newEntrypoint(ADDRESS addr, const QString& name);
-	void newSection(const QString& name, ADDRESS start, ADDRESS end);
+	void newEntrypoint(Address addr, const QString& name);
+	void newSection(const QString& name, Address start, Address end);
 
 	void machineType(const QString& machine);
 
@@ -91,7 +91,7 @@ protected:
 	const char *procStatus(UserProc *p);
 	void emitClusterAndChildren(Module *root);
 
-	std::vector<ADDRESS> user_entrypoints;
+	std::vector<Address> user_entrypoints;
 };
 
 class DecompilerThread : public QThread

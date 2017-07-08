@@ -63,7 +63,7 @@ public:
 		valid        = true;
 		rtl          = nullptr;
 		reDecode     = false;
-		forceOutEdge = ADDRESS::g(0L);
+		forceOutEdge = Address::g(0L);
 	}
 
 public:
@@ -94,7 +94,7 @@ public:
 	 * If non zero, this field represents a new native address to be used as the out-edge for this instruction's BB.
 	 * At present, only used for the SPARC call/add caller prologue
 	 */
-	ADDRESS forceOutEdge;
+	   Address forceOutEdge;
 };
 
 
@@ -107,7 +107,7 @@ public:
 	virtual ~IDecoder() = default;
 
 	/// Decodes the machine instruction at pc and returns an RTL instance for the instruction.
-	virtual DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) = 0;
+	virtual DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) = 0;
 
 	/// Returns machine-specific register name given it's index
 	virtual QString getRegName(int idx) const = 0;
@@ -122,5 +122,5 @@ public:
 	int getRegSize(const QString& name) const { return getRegSize(getRegIdx(name)); }
 
 	/// Disassembles the machine instruction at address @p pc and returns the number of bytes disassembled.
-	virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) = 0;
+	virtual int decodeAssemblyInstruction(Address pc, ptrdiff_t delta) = 0;
 };

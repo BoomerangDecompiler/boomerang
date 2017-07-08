@@ -104,7 +104,7 @@ void Function::eraseFromParent()
  * \param        mod - the Module this procedure belongs to
  *
  ******************************************************************************/
-Function::Function(ADDRESS uNative, Signature *sig, Module *mod)
+Function::Function(Address uNative, Signature *sig, Module *mod)
 	: m_signature(sig)
 	, m_address(uNative)
 	, m_firstCaller(nullptr)
@@ -145,7 +145,7 @@ void Function::setName(const QString& nam)
  * \brief        Get the native address (entry point).
  * \returns            the native address of this procedure (entry point)
  ******************************************************************************/
-ADDRESS Function::getNativeAddress() const
+Address Function::getNativeAddress() const
 {
 	return m_address;
 }
@@ -157,7 +157,7 @@ ADDRESS Function::getNativeAddress() const
  * \param a native address of the procedure
  *
  ******************************************************************************/
-void Function::setNativeAddress(ADDRESS a)
+void Function::setNativeAddress(Address a)
 {
 	m_address = a;
 }
@@ -200,7 +200,7 @@ bool UserProc::isNoReturn() const
 }
 
 
-bool UserProc::containsAddr(ADDRESS uAddr) const
+bool UserProc::containsAddr(Address uAddr) const
 {
 	BB_IT it;
 
@@ -529,7 +529,7 @@ Function *Function::getFirstCaller()
  * LibProc methods.
  *********************/
 
-LibProc::LibProc(Module *mod, const QString& name, ADDRESS uNative)
+LibProc::LibProc(Module *mod, const QString& name, Address uNative)
 	: Function(uNative, nullptr, mod)
 {
 	m_signature = mod->getLibSignature(name);
@@ -554,7 +554,7 @@ bool LibProc::isPreserved(SharedExp e)
  * UserProc methods.
  *********************/
 
-UserProc::UserProc(Module *mod, const QString& name, ADDRESS uNative)
+UserProc::UserProc(Module *mod, const QString& name, Address uNative)
 	: // Not quite ready for the below fix:
 	  // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
 	Function(uNative, new Signature(name), mod)
@@ -2829,7 +2829,7 @@ void UserProc::processFloatConstants()
 			if ((fsize->getSubExp3()->getOper() == opMemOf) &&
 				(fsize->getSubExp3()->getSubExp1()->getOper() == opIntConst)) {
 				SharedExp memof = fsize->getSubExp3();
-				ADDRESS   u     = memof->access<Const, 1>()->getAddr();
+				            Address   u     = memof->access<Const, 1>()->getAddr();
 				bool      ok;
 				double    d = m_prog->getFloatConstant(u, ok);
 
@@ -4663,7 +4663,7 @@ void UserProc::conTypeAnalysis()
 				}
 				else if (ty->isCString()) {
 					// Convert to a string
-					const char *str = _prog->getStringConstant(ADDRESS::g(val), true);
+					const char *str = _prog->getStringConstant(Address::g(val), true);
 
 					if (str) {
 						// Make a string
@@ -5083,7 +5083,7 @@ void UserProc::replaceSimpleGlobalConstants()
 			continue;
 		}
 
-		ADDRESS addr = assgn->getRight()->access<Const, 1>()->getAddr();
+		      Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
 		LOG << "assgn " << assgn << "\n";
 
 		if (m_prog->isReadOnly(addr)) {

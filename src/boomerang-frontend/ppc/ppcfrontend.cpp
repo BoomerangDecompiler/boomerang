@@ -81,10 +81,10 @@ std::vector<SharedExp>& PPCFrontEnd::getDefaultReturns()
 }
 
 
-ADDRESS PPCFrontEnd::getMainEntryPoint(bool& gotMain)
+Address PPCFrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	gotMain = true;
-	ADDRESS start = m_fileLoader->getMainEntryPoint();
+	   Address start = m_fileLoader->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		return start;
@@ -102,7 +102,7 @@ ADDRESS PPCFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool PPCFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+bool PPCFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
 							  bool spec /* = false */)
 {
 	// Call the base class to do most of the work

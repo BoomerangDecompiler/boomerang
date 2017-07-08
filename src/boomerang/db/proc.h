@@ -98,14 +98,14 @@ protected:
 	friend class XMLProgParser;
 
 public:
-	Function(ADDRESS uNative, Signature *sig, Module *mod);
+	Function(Address uNative, Signature *sig, Module *mod);
 	virtual ~Function();
 
 	void eraseFromParent();
 	QString getName() const;
 	void setName(const QString& nam);
-	ADDRESS getNativeAddress() const;
-	void setNativeAddress(ADDRESS a);
+	   Address getNativeAddress() const;
+	void setNativeAddress(Address a);
 
 	/// Get the program this procedure belongs to.
 	Prog *getProg() const { return m_prog; }
@@ -230,9 +230,9 @@ protected:
 	///////////////////////////////////////////////////
 	// Persistent state
 	///////////////////////////////////////////////////
-	ADDRESS m_address;
+	   Address m_address;
 	Function *m_firstCaller;
-	ADDRESS m_firstCallerAddr;
+	   Address m_firstCallerAddr;
 
 	// FIXME: shouldn't provenTrue be in UserProc, with logic associated with the signature doing the equivalent thing
 	// for LibProcs?
@@ -260,7 +260,7 @@ public:
 	 * \param        name - Name of procedure
 	 * \param        uNative - Native address of entry point of procedure
 	 ******************************************************************************/
-	LibProc(Module *mod, const QString& name, ADDRESS address);
+	LibProc(Module *mod, const QString& name, Address address);
 	virtual ~LibProc() = default;
 
 	/// Return true, since is a library proc
@@ -390,7 +390,7 @@ public:
 	 * \param name - Name of procedure
 	 * \param uNative - Native address of entry point of procedure
 	 ******************************************************************************/
-	UserProc(Module *mod, const QString& name, ADDRESS address);
+	UserProc(Module *mod, const QString& name, Address address);
 	virtual ~UserProc();
 
 	/// Returns a pointer to the CFG object.
@@ -977,7 +977,7 @@ public:
 	 * \param uAddr address to search for
 	 * \returns          true if it does
 	 ******************************************************************************/
-	bool containsAddr(ADDRESS uAddr) const;
+	bool containsAddr(Address uAddr) const;
 
 	/// Change BB containing this statement from a COMPCALL to a CALL.
 	void undoComputedBB(Instruction *stmt) const { m_cfg->undoComputedBB(stmt); }
@@ -1028,8 +1028,8 @@ private:
 	mutable int DFGcount; ///< used in dotty output
 
 public:
-	ADDRESS getTheReturnAddr() { return theReturnStatement == nullptr ? NO_ADDRESS : theReturnStatement->getRetAddr(); }
-	void setTheReturnAddr(ReturnStatement *s, ADDRESS r)
+	   Address getTheReturnAddr() { return theReturnStatement == nullptr ? NO_ADDRESS : theReturnStatement->getRetAddr(); }
+	void setTheReturnAddr(ReturnStatement *s, Address r)
 	{
 		assert(theReturnStatement == nullptr);
 		theReturnStatement = s;

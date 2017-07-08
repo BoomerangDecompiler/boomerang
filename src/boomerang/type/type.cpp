@@ -103,7 +103,7 @@ void PointerType::setPointsTo(SharedType p)
 		points_to = VoidType::get(); // Can't point to self; impossible to compare, print, etc
 
 		if (VERBOSE) {
-			LOG << "Warning: attempted to create pointer to self: " << ADDRESS::host_ptr(this) << "\n";
+			LOG << "Warning: attempted to create pointer to self: " << Address::host_ptr(this) << "\n";
 		}
 	}
 	else {
@@ -1911,7 +1911,7 @@ SharedType Type::newIntegerLikeType(int size, int signedness)
 
 // Find the entry that overlaps with addr. If none, return end(). We have to use upper_bound and decrement the iterator,
 // because we might want an entry that starts earlier than addr yet still overlaps it
-DataIntervalMap::iterator DataIntervalMap::find_it(ADDRESS addr)
+DataIntervalMap::iterator DataIntervalMap::find_it(Address addr)
 {
 	iterator it = dimap.upper_bound(addr); // Find the first item strictly greater than addr
 
@@ -1930,7 +1930,7 @@ DataIntervalMap::iterator DataIntervalMap::find_it(ADDRESS addr)
 }
 
 
-DataIntervalEntry *DataIntervalMap::find(ADDRESS addr)
+DataIntervalEntry *DataIntervalMap::find(Address addr)
 {
 	iterator it = find_it(addr);
 
@@ -1942,7 +1942,7 @@ DataIntervalEntry *DataIntervalMap::find(ADDRESS addr)
 }
 
 
-bool DataIntervalMap::isClear(ADDRESS addr, unsigned size)
+bool DataIntervalMap::isClear(Address addr, unsigned size)
 {
 	iterator it = dimap.upper_bound(addr + size - 1); // Find the first item strictly greater than address of last byte
 
@@ -1952,7 +1952,7 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size)
 
 	it--;            // If any item overlaps, it is this one
 	// Make sure the previous item ends before this one will start
-	ADDRESS end;
+	   Address end;
 
 	if (it->first + it->second.size < it->first) {
 		// overflow
@@ -1978,7 +1978,7 @@ bool DataIntervalMap::isClear(ADDRESS addr, unsigned size)
 
 // With the forced parameter: are we forcing the name, the type, or always both?
 /// Add a new data item
-void DataIntervalMap::addItem(ADDRESS addr, QString name, SharedType ty, bool forced /* = false */)
+void DataIntervalMap::addItem(Address addr, QString name, SharedType ty, bool forced /* = false */)
 {
 	if (name.isNull()) {
 		name = "<noname>";
@@ -2006,8 +2006,8 @@ void DataIntervalMap::addItem(ADDRESS addr, QString name, SharedType ty, bool fo
 	}
 	else if (pdie->first == addr) {
 		// Could go either way, depending on where the data items end
-		ADDRESS endOfCurrent = pdie->first + pdie->second.size;
-		ADDRESS endOfNew     = addr + ty->getSize() / 8;
+		      Address endOfCurrent = pdie->first + pdie->second.size;
+		      Address endOfNew     = addr + ty->getSize() / 8;
 
 		if (endOfCurrent < endOfNew) {
 			replaceComponents(addr, name, ty, forced);
@@ -2034,7 +2034,7 @@ void DataIntervalMap::addItem(ADDRESS addr, QString name, SharedType ty, bool fo
 
 
 // We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
-void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const QString& /*name*/, SharedType ty,
+void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, Address addr, const QString& /*name*/, SharedType ty,
 									 bool /*forced*/)
 {
 	if (pdie->second.type->resolvesToCompound()) {
@@ -2074,10 +2074,10 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, ADDRESS addr, cons
 
 // We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
 // components out of the way, meeting if necessary
-void DataIntervalMap::replaceComponents(ADDRESS addr, const QString& name, SharedType ty, bool /*forced*/)
+void DataIntervalMap::replaceComponents(Address addr, const QString& name, SharedType ty, bool /*forced*/)
 {
 	iterator it;
-	ADDRESS  pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
+	   Address  pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
 
 	// First check that the new entry will be compatible with everything it will overlap
 	if (ty->resolvesToCompound()) {
@@ -2185,7 +2185,7 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, const QString& name, Share
 }
 
 
-void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const QString& /*name*/, SharedType ty,
+void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, Address addr, const QString& /*name*/, SharedType ty,
 									bool /*forced*/)
 {
 	if (pdie->second.type->isCompatibleWith(*ty)) {
@@ -2200,7 +2200,7 @@ void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const
 }
 
 
-void DataIntervalMap::deleteItem(ADDRESS addr)
+void DataIntervalMap::deleteItem(Address addr)
 {
 	iterator it = dimap.find(addr);
 
@@ -2235,7 +2235,7 @@ char *DataIntervalMap::prints()
 }
 
 
-ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim)
+ComplexTypeCompList& Type::compForAddress(Address addr, DataIntervalMap& dim)
 {
 	DataIntervalEntry   *pdie = dim.find(addr);
 	ComplexTypeCompList *res  = new ComplexTypeCompList;
@@ -2244,7 +2244,7 @@ ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim)
 		return *res;
 	}
 
-	ADDRESS    startCurrent = pdie->first;
+	   Address    startCurrent = pdie->first;
 	SharedType curType      = pdie->second.type;
 
 	while (startCurrent < addr) {

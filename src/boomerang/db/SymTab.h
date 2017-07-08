@@ -33,7 +33,7 @@ typedef std::shared_ptr<class Type> SharedType;
 struct BinarySymbol : public IBinarySymbol
 {
 	QString              Name;
-	ADDRESS              Location;
+	   Address              Location;
 	SharedType           type;
 	size_t               Size;
 	/// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
@@ -42,7 +42,7 @@ struct BinarySymbol : public IBinarySymbol
 	const QString&       getName() const override { return Name; }
 	size_t getSize() const override { return Size; }
 	void setSize(size_t v) override { Size = v; }
-	ADDRESS getLocation() const override { return Location; }
+	   Address getLocation() const override { return Location; }
 	const IBinarySymbol& setAttr(const QString& name, const QVariant& v) const override
 	{
 		attributes[name] = v;
@@ -64,7 +64,7 @@ class SymTab : public IBinarySymbolTable
 
 private:
 	// The map indexed by address.
-	std::map<ADDRESS, BinarySymbol *> amap;
+	std::map<Address, BinarySymbol *> amap;
 	// The map indexed by string. Note that the strings are stored twice.
 	std::map<QString, BinarySymbol *> smap;
 	std::vector<IBinarySymbol *> SymbolList;
@@ -74,8 +74,8 @@ public:
 	~SymTab();                    // Destructor
 	BinarySymbol *getOrCreateSymbol();
 
-	IBinarySymbol& create(ADDRESS a, const QString& s, bool local = false) override;
-	const IBinarySymbol *find(ADDRESS a) const override;        ///< Find an entry by address; nullptr if none
+	IBinarySymbol& create(Address a, const QString& s, bool local = false) override;
+	const IBinarySymbol *find(Address a) const override;        ///< Find an entry by address; nullptr if none
 	const IBinarySymbol *find(const QString& s) const override; ///< Find an entry by name; NO_ADDRESS if none
 
 	SymbolListType& getSymbolList() { return SymbolList; }

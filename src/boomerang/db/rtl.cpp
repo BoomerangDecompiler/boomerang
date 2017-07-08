@@ -40,7 +40,7 @@
  *****************************************************************************/
 
 RTL::RTL()
-	: m_nativeAddr(ADDRESS::g(0L))
+	: m_nativeAddr(Address::g(0L))
 {
 }
 
@@ -51,7 +51,7 @@ RTL::RTL()
  * \param   listStmt - ptr to existing list of Statement
  *
  ******************************************************************************/
-RTL::RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt /*= nullptr*/)
+RTL::RTL(Address instNativeAddr, const std::list<Instruction *> *listStmt /*= nullptr*/)
 	: m_nativeAddr(instNativeAddr)
 {
 	if (listStmt) {

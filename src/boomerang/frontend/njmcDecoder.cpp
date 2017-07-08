@@ -42,7 +42,7 @@ NJMCDecoder::NJMCDecoder(Prog *prg)
 }
 
 
-std::list<Instruction *> *NJMCDecoder::instantiate(ADDRESS pc, const char *name, const std::initializer_list<SharedExp>& args)
+std::list<Instruction *> *NJMCDecoder::instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args)
 {
 	// Get the signature of the instruction and extract its parts
 	std::pair<QString, unsigned> sig = m_rtlDict.getSignature(name);
@@ -156,7 +156,7 @@ SharedExp NJMCDecoder::dis_Num(unsigned num)
 }
 
 
-void NJMCDecoder::processUnconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
+void NJMCDecoder::processUnconditionalJump(const char *name, int size, Address relocd, ptrdiff_t delta, Address pc,
 									std::list<Instruction *> *stmts, DecodeResult& result)
 {
 	result.rtl      = new RTL(pc, stmts);
@@ -168,7 +168,7 @@ void NJMCDecoder::processUnconditionalJump(const char *name, int size, ADDRESS r
 }
 
 
-void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
+void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc, std::list<Instruction *> *stmts,
 							   DecodeResult& result)
 {
 	result.rtl      = new RTL(pc, stmts);
@@ -181,7 +181,7 @@ void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest
 }
 
 
-void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, ADDRESS pc, std::list<Instruction *> *stmts,
+void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc, std::list<Instruction *> *stmts,
 							   DecodeResult& result)
 {
 	result.rtl      = new RTL(pc, stmts);

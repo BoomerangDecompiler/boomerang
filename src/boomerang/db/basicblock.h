@@ -277,14 +277,14 @@ public:
 	 * for this BB will be the address of the branch.
 	 * \returns the lowest real address associated with this BB
 	 ******************************************************************************/
-	ADDRESS getLowAddr() const;
+	   Address getLowAddr() const;
 
 	/***************************************************************************/ /**
 	 * \brief  Get the highest address associated with this BB. This is
 	 *         always the address associated with the last RTL.
 	 * \returns the address
 	 ******************************************************************************/
-	ADDRESS getHiAddr();
+	   Address getHiAddr();
 
 	/***************************************************************************/ /**
 	 *
@@ -371,7 +371,7 @@ public:
 	 *  a fixed dest. Otherwise, return -1
 	 * \returns     Native destination of the call, or -1
 	 ******************************************************************************/
-	ADDRESS getCallDest();
+	   Address getCallDest();
 	Function *getCallDestProc();
 
 	/***************************************************************************/ /**
@@ -465,7 +465,7 @@ public:
 	 * \param        a the address
 	 * \returns      the outedge which corresponds to \a a or 0 if there was no such outedge
 	 ******************************************************************************/
-	BasicBlock *getCorrectOutEdge(ADDRESS a);
+	BasicBlock *getCorrectOutEdge(Address a);
 	bool isPostCall();
 	static void doAvail(InstructionSet& s, BasicBlock *inEdge);
 

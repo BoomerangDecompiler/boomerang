@@ -48,10 +48,10 @@ public:
 	* \returns a DecodeResult structure containing all the information
 	*              gathered during decoding
 	*********************************************************************************/
-	virtual DecodeResult& decodeInstruction(ADDRESS pc, ptrdiff_t delta) override;
+	virtual DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
 	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
-	virtual int decodeAssemblyInstruction(ADDRESS pc, ptrdiff_t delta) override;
+	virtual int decodeAssemblyInstruction(Address pc, ptrdiff_t delta) override;
 
 private:
 

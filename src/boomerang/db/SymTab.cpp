@@ -38,7 +38,7 @@ void SymTab::clear()
 		delete s;
 	}
 
-	for (std::pair<const ADDRESS, BinarySymbol *>& s : amap) {
+	for (std::pair<const Address, BinarySymbol *>& s : amap) {
 		delete s.second;
 	}
 
@@ -48,7 +48,7 @@ void SymTab::clear()
 }
 
 
-IBinarySymbol& SymTab::create(ADDRESS a, const QString& s, bool local)
+IBinarySymbol& SymTab::create(Address a, const QString& s, bool local)
 {
 	assert(amap.find(a) == amap.end());
 	assert(smap.find(s) == smap.end());
@@ -66,7 +66,7 @@ IBinarySymbol& SymTab::create(ADDRESS a, const QString& s, bool local)
 }
 
 
-const IBinarySymbol *SymTab::find(ADDRESS a) const
+const IBinarySymbol *SymTab::find(Address a) const
 {
 	auto ff = amap.find(a);
 

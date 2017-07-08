@@ -667,7 +667,7 @@ private:
 		int      i;    ///< Integer
 		/// \note although we have i and a as unions, both often use the same operator (opIntConst).
 		/// There is no opCodeAddr any more.
-		ADDRESS  a;    ///< void* conflated with unsigned int: needs fixing
+		      Address  a;    ///< void* conflated with unsigned int: needs fixing
 		QWord    ll;   ///< 64 bit integer
 		double   d;    ///< Double precision float
 		// const char *p; ///< Pointer to string
@@ -689,7 +689,7 @@ public:
 	Const(QWord ll);
 
 	/// \remark This is bad. We need a way of constructing true unsigned constants
-	Const(ADDRESS a);
+	Const(Address a);
 	Const(double d);
 	//    Const(const char *p);
 	Const(const QString& p);
@@ -737,7 +737,7 @@ public:
 	QWord getLong() const { return u.ll; }
 	double getFlt() const { return u.d; }
 	QString getStr() const { return m_string; }
-	ADDRESS getAddr() const { return u.a; }
+	   Address getAddr() const { return u.a; }
 	QString getFuncName() const;
 
 	// Set the constant
@@ -745,7 +745,7 @@ public:
 	void setLong(QWord ll) { u.ll = ll; }
 	void setFlt(double d) { u.d = d; }
 	void setStr(const QString& p) { m_string = p; }
-	void setAddr(ADDRESS a) { u.a = a; }
+	void setAddr(Address a) { u.a = a; }
 
 	// Get and set the type
 	SharedType getType() { return m_type; }

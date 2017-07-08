@@ -20,7 +20,7 @@ public:
 	virtual Platform getType() const override { return Platform::PENTIUM; }
 
 	/// @copydoc IFrontEnd::processProc
-	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
+	virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
 	/// @copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
@@ -29,7 +29,7 @@ public:
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
 	/// @copydoc IFrontEnd::getMainEntryPoint
-	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
+	virtual Address getMainEntryPoint(bool& gotMain) override;
 	
 private:
 	/*
@@ -40,12 +40,12 @@ private:
 	/*
 	 * Emit a set instruction.
 	 */
-	void emitSet(std::list<RTL *> *pRtls, std::list<RTL *>::iterator& itRtl, ADDRESS uAddr, SharedExp pLHS, SharedExp cond);
+	void emitSet(std::list<RTL *> *pRtls, std::list<RTL *>::iterator& itRtl, Address uAddr, SharedExp pLHS, SharedExp cond);
 
 	/*
 	 * Handle the case of being in state 23 and encountering a set instruction.
 	 */
-	void State25(SharedExp pLHS, SharedExp pRHS, std::list<RTL *> *pRtls, std::list<RTL *>::iterator& rit, ADDRESS uAddr);
+	void State25(SharedExp pLHS, SharedExp pRHS, std::list<RTL *> *pRtls, std::list<RTL *>::iterator& rit, Address uAddr);
 
 	int idPF; // Parity flag
 
@@ -66,7 +66,7 @@ private:
 	* 
 	* \returns true if a helper function is converted; false otherwise
 	******************************************************************************/
-	bool isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) override;
+	bool isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl) override;
 
 	bool isStoreFsw(Instruction *s);
 	bool isDecAh(RTL *r);
@@ -74,11 +74,11 @@ private:
 	bool isAssignFromTern(Instruction *s);
 	void bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask);
 	unsigned fetch4(unsigned char *ptr);
-	bool decodeSpecial(ADDRESS pc, DecodeResult& r);
-	bool decodeSpecial_out(ADDRESS pc, DecodeResult& r);
-	bool decodeSpecial_invalid(ADDRESS pc, DecodeResult& r);
+	bool decodeSpecial(Address pc, DecodeResult& r);
+	bool decodeSpecial_out(Address pc, DecodeResult& r);
+	bool decodeSpecial_invalid(Address pc, DecodeResult& r);
 
 protected:
-	virtual DecodeResult& decodeInstruction(ADDRESS pc) override;
+	virtual DecodeResult& decodeInstruction(Address pc) override;
 	virtual void extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls) override;
 };

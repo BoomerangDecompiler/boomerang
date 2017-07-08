@@ -53,7 +53,7 @@ class ObjcMethod
 {
 public:
 	QString name, types;
-	ADDRESS addr;
+	   Address addr;
 };
 
 
@@ -111,13 +111,13 @@ public:
 	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
-	ADDRESS getMainEntryPoint() override;
+	   Address getMainEntryPoint() override;
 
 	/// @copydoc IFileLoader::getEntryPoint
-	ADDRESS getEntryPoint() override;
+	   Address getEntryPoint() override;
 
 	/// @copydoc IFileLoader::getImageBase
-	ADDRESS getImageBase() override;
+	   Address getImageBase() override;
 
 	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
@@ -150,12 +150,12 @@ private:
 	bool postLoad(void *handle) override;
 
 	/// Find names for jumps to IATs
-	void findJumps(ADDRESS curr);
+	void findJumps(Address curr);
 
 private:
 	char *base;           ///< Beginning of the loaded image
-	ADDRESS entrypoint;
-	ADDRESS loaded_addr;
+	   Address entrypoint;
+	   Address loaded_addr;
 	unsigned loaded_size;
 	Machine machine;
 	bool swap_bytes;

@@ -54,9 +54,9 @@ namespace
 struct SectionParam
 {
 	QString Name;
-	ADDRESS from;
+	   Address from;
 	size_t  Size;
-	ADDRESS ImageAddress;
+	   Address ImageAddress;
 	bool    Bss, Code, Data, ReadOnly;
 };
 }
@@ -89,13 +89,13 @@ void MachOBinaryLoader::close()
 }
 
 
-ADDRESS MachOBinaryLoader::getEntryPoint()
+Address MachOBinaryLoader::getEntryPoint()
 {
 	return entrypoint;
 }
 
 
-ADDRESS MachOBinaryLoader::getMainEntryPoint()
+Address MachOBinaryLoader::getMainEntryPoint()
 {
 	auto symbol = Symbols->find("main");
 
@@ -176,7 +176,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 	char     *strtbl = nullptr;
 	unsigned *indirectsymtbl = nullptr;
-	ADDRESS  objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
+	   Address  objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
 	unsigned objc_modules_size = 0;
 
 	fp.seek(imgoffs + sizeof(*header));
@@ -315,18 +315,18 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 	for (unsigned i = 0; i < segments.size(); i++) {
 		fp.seek(imgoffs + BMMH(segments[i].fileoff));
-		ADDRESS  a   = ADDRESS::g(BMMH(segments[i].vmaddr));
+		      Address  a   = Address::g(BMMH(segments[i].vmaddr));
 		unsigned sz  = BMMH(segments[i].vmsize);
 		unsigned fsz = BMMH(segments[i].filesize);
 		memset(base + a.m_value - loaded_addr.m_value, 0, sz);
 		fp.read(base + a.m_value - loaded_addr.m_value, fsz);
 		DEBUG_PRINT("loaded segment %tx %i in mem %i in file\n", a.m_value, sz, fsz);
 		QString        name  = QByteArray(segments[i].segname, 17);
-		IBinarySection *sect = Image->createSection(name, ADDRESS::n(BMMH(segments[i].vmaddr)),
-													ADDRESS::n(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
+		IBinarySection *sect = Image->createSection(name, Address::n(BMMH(segments[i].vmaddr)),
+													                  Address::n(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
 		assert(sect);
-		sect->setHostAddr(ADDRESS::g(ADDRESS::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value));
-		assert((sect->getHostAddr() + sect->getSize()) <= ADDRESS::host_ptr(base + loaded_size));
+		sect->setHostAddr(Address::g(Address::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value));
+		assert((sect->getHostAddr() + sect->getSize()) <= Address::host_ptr(base + loaded_size));
 
 		unsigned long l = BMMH(segments[i].initprot);
 		sect->setBss(false) // TODO
@@ -344,14 +344,14 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 				(0 == strcmp(sections[s_idx].sectname, "__cstring"))
 				) {
 				sect->setAttributeForRange("StringsSection", true,
-										   ADDRESS::n(BMMH(sections[s_idx].addr)),
-										   ADDRESS::n(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size))
+										                                 Address::n(BMMH(sections[s_idx].addr)),
+										                                 Address::n(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size))
 										   );
 			}
 
 			sect->setAttributeForRange("ReadOnly", (BMMH(sections[i].flags) & VM_PROT_WRITE) ? true : false,
-									   ADDRESS::n(BMMH(sections[s_idx].addr)),
-									   ADDRESS::n(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size))
+									                              Address::n(BMMH(sections[s_idx].addr)),
+									                              Address::n(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size))
 									   );
 		}
 
@@ -364,7 +364,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 		for (unsigned i = 0; i < BMMH(stubs_sects[j].size) / BMMH(stubs_sects[j].reserved2); i++) {
 			unsigned startidx = BMMH(stubs_sects[j].reserved1);
 			unsigned symbol   = BMMH(indirectsymtbl[startidx + i]);
-			ADDRESS  addr     = ADDRESS::g(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
+			         Address  addr     = Address::g(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
 			DEBUG_PRINT("stub for %s at %tx\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr.m_value);
 			char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
 
@@ -394,7 +394,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 				name++;
 			}
 
-			Symbols->create(ADDRESS::g(BMMH(symbols[i].n_value)), name);
+			Symbols->create(Address::g(BMMH(symbols[i].n_value)), name);
 		}
 	}
 
@@ -404,9 +404,9 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 		for (unsigned i = 0; i < objc_modules_size; ) {
 			struct objc_module *module =
-				(struct objc_module *)(ADDRESS::host_ptr(base) + objc_modules - loaded_addr + i).m_value;
+				(struct objc_module *)(Address::host_ptr(base) + objc_modules - loaded_addr + i).m_value;
 			char   *name  = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.m_value);
-			Symtab symtab = (Symtab)(ADDRESS::host_ptr(base) + BMMH(module->symtab) - loaded_addr).m_value;
+			Symtab symtab = (Symtab)(Address::host_ptr(base) + BMMH(module->symtab) - loaded_addr).m_value;
 #ifdef DEBUG_MACHO_LOADER_OBJC
 			fprintf(stdout, "module %s (%i classes)\n", name, BMMHW(symtab->cls_def_cnt));
 #endif
@@ -415,7 +415,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 			for (unsigned j = 0; j < BMMHW(symtab->cls_def_cnt); j++) {
 				struct objc_class *def   = (struct objc_class *)(base + BMMH(symtab->defs[j]) - loaded_addr.m_value);
-				char              *_name = (char *)(ADDRESS::value_type(base) + BMMH(def->name) - loaded_addr.m_value);
+				char              *_name = (char *)(Address::value_type(base) + BMMH(def->name) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
 				fprintf(stdout, "  class %s\n", name);
 #endif
@@ -425,8 +425,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 				for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(ivars->ivar_count)); k++) {
 					struct objc_ivar *ivar  = &ivars->ivar_list[k];
-					char             *name2 = (char *)(ADDRESS::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.m_value);
-					char             *types = (char *)(ADDRESS::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.m_value);
+					char             *name2 = (char *)(Address::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.m_value);
+					char             *types = (char *)(Address::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.m_value);
 #ifdef DEBUG_MACHO_LOADER_OBJC
 					fprintf(stdout, "    ivar %s %s %x\n", name, types, BMMH(ivar->ivar_offset));
 #endif
@@ -450,7 +450,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 					ObjcMethod *me = &cl->methods[name3];
 					me->name  = name3;
 					me->types = types;
-					me->addr  = ADDRESS::g(BMMH(method->method_imp));
+					me->addr  = Address::g(BMMH(method->method_imp));
 				}
 			}
 
@@ -594,7 +594,7 @@ bool MachOBinaryLoader::isLibrary() const
 }
 
 
-ADDRESS MachOBinaryLoader::getImageBase()
+Address MachOBinaryLoader::getImageBase()
 {
 	return loaded_addr;
 }
@@ -611,7 +611,7 @@ DWord MachOBinaryLoader::getDelta()
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
 	//    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-	return (ADDRESS::host_ptr(base) - loaded_addr).m_value;
+	return (Address::host_ptr(base) - loaded_addr).m_value;
 }
 
 

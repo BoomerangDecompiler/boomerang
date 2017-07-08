@@ -28,7 +28,7 @@ public:
 	virtual Platform getType() const override { return Platform::PPC; }
 
 	/// @copydoc IFrontEnd::processProc
-	virtual bool processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
+	virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
 	/// @copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
@@ -37,5 +37,5 @@ public:
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
 	/// @copydoc IFrontEnd::getMainEntryPoint
-	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
+	virtual Address getMainEntryPoint(bool& gotMain) override;
 };

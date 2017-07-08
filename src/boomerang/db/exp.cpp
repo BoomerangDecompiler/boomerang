@@ -91,7 +91,7 @@ Const::Const(Function *p)
 }
 
 
-Const::Const(ADDRESS a)
+Const::Const(Address a)
 	: Exp(opIntConst)
 	, m_conscript(0)
 	, m_type(VoidType::get())
@@ -2181,8 +2181,8 @@ void Exp::createDotFile(const char *name)
 void Const::appendDotFile(QTextStream& of)
 {
 	// We define a unique name for each node as "e123456" if the address of "this" == 0x123456
-	of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
-	of << operStrings[m_oper] << "\\n" << ADDRESS::host_ptr(this) << " | ";
+	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
+	of << operStrings[m_oper] << "\\n" << Address::host_ptr(this) << " | ";
 
 	switch (m_oper)
 	{
@@ -2216,7 +2216,7 @@ void Const::appendDotFile(QTextStream& of)
 //    //    //    //
 void Terminal::appendDotFile(QTextStream& of)
 {
-	of << "e" << ADDRESS::host_ptr(this) << " [shape=parallelogram,label=\"";
+	of << "e" << Address::host_ptr(this) << " [shape=parallelogram,label=\"";
 
 	if (m_oper == opWild) {
 		// Note: value is -1, so can't index array
@@ -2226,7 +2226,7 @@ void Terminal::appendDotFile(QTextStream& of)
 		of << operStrings[m_oper];
 	}
 
-	of << "\\n" << ADDRESS::host_ptr(this);
+	of << "\\n" << Address::host_ptr(this);
 	of << "\"];\n";
 }
 
@@ -2237,9 +2237,9 @@ void Terminal::appendDotFile(QTextStream& of)
 void Unary::appendDotFile(QTextStream& of)
 {
 	// First a node for this Unary object
-	of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
+	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
 	// The (int) cast is to print the address, not the expression!
-	of << operStrings[m_oper] << "\\n" << ADDRESS::host_ptr(this) << " | ";
+	of << operStrings[m_oper] << "\\n" << Address::host_ptr(this) << " | ";
 	of << "<p1>";
 	of << " }\"];\n";
 
@@ -2247,7 +2247,7 @@ void Unary::appendDotFile(QTextStream& of)
 	subExp1->appendDotFile(of);
 
 	// Finally an edge for the subexpression
-	of << "e" << ADDRESS::host_ptr(this) << "->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
+	of << "e" << Address::host_ptr(this) << "->e" << Address::host_ptr(subExp1.get()) << ";\n";
 }
 
 
@@ -2257,15 +2257,15 @@ void Unary::appendDotFile(QTextStream& of)
 void Binary::appendDotFile(QTextStream& of)
 {
 	// First a node for this Binary object
-	of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
-	of << operStrings[m_oper] << "\\n" << ADDRESS::host_ptr(this) << " | ";
+	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
+	of << operStrings[m_oper] << "\\n" << Address::host_ptr(this) << " | ";
 	of << "{<p1> | <p2>}";
 	of << " }\"];\n";
 	subExp1->appendDotFile(of);
 	subExp2->appendDotFile(of);
 	// Now an edge for each subexpression
-	of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
-	of << "e" << ADDRESS::host_ptr(this) << ":p2->e" << ADDRESS::host_ptr(subExp2.get()) << ";\n";
+	of << "e" << Address::host_ptr(this) << ":p1->e" << Address::host_ptr(subExp1.get()) << ";\n";
+	of << "e" << Address::host_ptr(this) << ":p2->e" << Address::host_ptr(subExp2.get()) << ";\n";
 }
 
 
@@ -2275,17 +2275,17 @@ void Binary::appendDotFile(QTextStream& of)
 void Ternary::appendDotFile(QTextStream& of)
 {
 	// First a node for this Ternary object
-	of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
-	of << operStrings[m_oper] << "\\n0x" << ADDRESS::host_ptr(this) << " | ";
+	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
+	of << operStrings[m_oper] << "\\n0x" << Address::host_ptr(this) << " | ";
 	of << "{<p1> | <p2> | <p3>}";
 	of << " }\"];\n";
 	subExp1->appendDotFile(of);
 	subExp2->appendDotFile(of);
 	subExp3->appendDotFile(of);
 	// Now an edge for each subexpression
-	of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
-	of << "e" << ADDRESS::host_ptr(this) << ":p2->e" << ADDRESS::host_ptr(subExp2.get()) << ";\n";
-	of << "e" << ADDRESS::host_ptr(this) << ":p3->e" << ADDRESS::host_ptr(subExp3.get()) << ";\n";
+	of << "e" << Address::host_ptr(this) << ":p1->e" << Address::host_ptr(subExp1.get()) << ";\n";
+	of << "e" << Address::host_ptr(this) << ":p2->e" << Address::host_ptr(subExp2.get()) << ";\n";
+	of << "e" << Address::host_ptr(this) << ":p3->e" << Address::host_ptr(subExp3.get()) << ";\n";
 }
 
 
@@ -2294,13 +2294,13 @@ void Ternary::appendDotFile(QTextStream& of)
 //    //    //    //
 void TypedExp::appendDotFile(QTextStream& of)
 {
-	of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
-	of << "opTypedExp\\n" << ADDRESS::host_ptr(this) << " | ";
+	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
+	of << "opTypedExp\\n" << Address::host_ptr(this) << " | ";
 	// Just display the C type for now
 	of << type->getCtype() << " | <p1>";
 	of << " }\"];\n";
 	subExp1->appendDotFile(of);
-	of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
+	of << "e" << Address::host_ptr(this) << ":p1->e" << Address::host_ptr(subExp1.get()) << ";\n";
 }
 
 
@@ -2309,8 +2309,8 @@ void TypedExp::appendDotFile(QTextStream& of)
 //    //    //    //
 void FlagDef::appendDotFile(QTextStream& of)
 {
-	of << "e" << ADDRESS::host_ptr(this) << " [shape=record,label=\"{";
-	of << "opFlagDef \\n" << ADDRESS::host_ptr(this) << "| ";
+	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
+	of << "opFlagDef \\n" << Address::host_ptr(this) << "| ";
 	// Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
 	of << "{ RTL ";
 	int n = rtl->size();
@@ -2321,7 +2321,7 @@ void FlagDef::appendDotFile(QTextStream& of)
 
 	of << "} | <p1> }\"];\n";
 	subExp1->appendDotFile(of);
-	of << "e" << ADDRESS::host_ptr(this) << ":p1->e" << ADDRESS::host_ptr(subExp1.get()) << ";\n";
+	of << "e" << Address::host_ptr(this) << ":p1->e" << Address::host_ptr(subExp1.get()) << ";\n";
 }
 
 
@@ -4128,7 +4128,7 @@ SharedExp Ternary::polySimplify(bool& bMod)
 	}
 
 	if ((m_oper == opFsize) && (subExp3->getOper() == opMemOf) && (subExp3->getSubExp1()->getOper() == opIntConst)) {
-		ADDRESS  u  = subExp3->access<Const, 1>()->getAddr();
+		      Address  u  = subExp3->access<Const, 1>()->getAddr();
 		auto     l  = std::dynamic_pointer_cast<Location>(subExp3);
 		UserProc *p = l->getProc();
 
@@ -4156,13 +4156,13 @@ SharedExp Ternary::polySimplify(bool& bMod)
 
 		if (from == 32) {
 			if (to == 16) {
-				res  = Const::get(ADDRESS::g(val & 0xffff));
+				res  = Const::get(Address::g(val & 0xffff));
 				bMod = true;
 				return res;
 			}
 
 			if (to == 8) {
-				res  = Const::get(ADDRESS::g(val & 0xff));
+				res  = Const::get(Address::g(val & 0xff));
 				bMod = true;
 				return res;
 			}
@@ -5525,7 +5525,7 @@ void RefExp::printx(int ind) const
 		LOG_STREAM() << "nullptr";
 	}
 	else {
-		LOG_STREAM() << ADDRESS::host_ptr(m_def) << "=" << m_def->getNumber();
+		LOG_STREAM() << Address::host_ptr(m_def) << "=" << m_def->getNumber();
 	}
 
 	LOG_STREAM() << "}\n";

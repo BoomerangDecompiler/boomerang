@@ -44,16 +44,16 @@ public slots:
 	void on_outputPathComboBox_editTextChanged(const QString& text);
 	void showConsideringProc(const QString& parent, const QString& name);
 	void showDecompilingProc(const QString& name);
-	void showNewUserProc(const QString& name, ADDRESS addr);
+	void showNewUserProc(const QString& name, Address addr);
 	void showNewLibProc(const QString& name, const QString& params);
-	void showRemoveUserProc(const QString& name, ADDRESS addr);
+	void showRemoveUserProc(const QString& name, Address addr);
 	void showRemoveLibProc(const QString& name);
-	void showNewEntrypoint(ADDRESS addr, const QString& name);
+	void showNewEntrypoint(Address addr, const QString& name);
 	void showMachineType(const QString& machine);
 	void showNewCluster(const QString& name);
 	void showNewProcInCluster(const QString& name, const QString& cluster);
 	void showDebuggingPoint(const QString& name, const QString& description);
-	void showNewSection(const QString& name, ADDRESS start, ADDRESS end);
+	void showNewSection(const QString& name, Address start, Address end);
 	void showRTLEditor(const QString& name);
 
 	void on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column);

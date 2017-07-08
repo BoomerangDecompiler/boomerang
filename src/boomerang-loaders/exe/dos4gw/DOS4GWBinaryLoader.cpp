@@ -37,9 +37,9 @@ namespace
 struct SectionParam
 {
 	QString Name;
-	ADDRESS from;
+	   Address from;
 	size_t  Size;
-	ADDRESS ImageAddress;
+	   Address ImageAddress;
 	bool    Bss, Code, Data, ReadOnly;
 };
 }
@@ -70,13 +70,13 @@ void DOS4GWBinaryLoader::close()
 }
 
 
-ADDRESS DOS4GWBinaryLoader::getEntryPoint()
+Address DOS4GWBinaryLoader::getEntryPoint()
 {
-	return ADDRESS::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
+	return Address::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
 }
 
 
-ADDRESS DOS4GWBinaryLoader::getMainEntryPoint()
+Address DOS4GWBinaryLoader::getMainEntryPoint()
 {
 	const IBinarySymbol *sym = m_symbols->find("main");
 
@@ -95,7 +95,7 @@ ADDRESS DOS4GWBinaryLoader::getMainEntryPoint()
 	unsigned      p = LMMH(m_pLXHeader->eip);
 	unsigned      lim = p + 0x300;
 	unsigned char op1, op2;
-	ADDRESS       addr;
+	   Address       addr;
 	// unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
 	bool gotSubEbp   = false;                                   // True if see sub ebp, ebp
 	bool lastWasCall = false;                                   // True if the last instruction was a call
@@ -111,7 +111,7 @@ ADDRESS DOS4GWBinaryLoader::getMainEntryPoint()
 	}
 
 	assert(si);
-	ADDRESS  nativeOrigin = si->getSourceAddr();
+	   Address  nativeOrigin = si->getSourceAddr();
 	unsigned textSize     = si->getSize();
 
 	if (textSize < 0x300) {
@@ -270,7 +270,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 			SectionParam sect;
 			sect.Name         = QString("seg%i").arg(n); // no section names in LX
 			sect.from         = LMMH(m_pLXObjects[n].RelocBaseAddr);
-			sect.ImageAddress = ADDRESS::host_ptr(base + (sect.from - params.front().from).m_value);
+			sect.ImageAddress = Address::host_ptr(base + (sect.from - params.front().from).m_value);
 			sect.Size         = LMMH(m_pLXObjects[n].VirtualSize);
 			DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
 			sect.Bss      = 0; // TODO
@@ -439,9 +439,9 @@ Machine DOS4GWBinaryLoader::getMachine() const
 }
 
 
-ADDRESS DOS4GWBinaryLoader::getImageBase()
+Address DOS4GWBinaryLoader::getImageBase()
 {
-	return ADDRESS::g(m_pLXObjects[0].RelocBaseAddr);
+	return Address::g(m_pLXObjects[0].RelocBaseAddr);
 }
 
 

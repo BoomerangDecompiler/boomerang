@@ -94,10 +94,10 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
  * \returns            a DecodeResult structure containing all the information
  *                     gathered during decoding
  ******************************************************************************/
-DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
+DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 {
 	static DecodeResult result;
-	ADDRESS             hostPC = pc + delta;
+	   Address             hostPC = pc + delta;
 
 	// Clear the result structure;
 	result.reset();
@@ -105,11 +105,11 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 	// The actual list of instantiated statements
 	std::list<Instruction *> *stmts = nullptr;
 
-	ADDRESS nextPC = NO_ADDRESS;
+	   Address nextPC = NO_ADDRESS;
 
 	// #line 119 "frontend/machine/ppc/decoder.m"
 	{
-		ADDRESS           MATCH_p = hostPC;
+		      Address           MATCH_p = hostPC;
 		const char        *MATCH_name;
 		static const char *MATCH_name_OPCD_0[] =
 		{
@@ -705,7 +705,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 						{
 							const char *name   = MATCH_name;
 							unsigned   BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-							ADDRESS    reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+							                     Address    reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
 							nextPC = MATCH_p + 4;
 
 							// #line 210 "frontend/machine/ppc/decoder.m"
@@ -788,7 +788,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								const char *name   = MATCH_name;
 								unsigned   BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
 								int16_t    off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
-								ADDRESS    reladdr = addressToPC(MATCH_p) + off;
+								                        Address    reladdr = addressToPC(MATCH_p) + off;
 								nextPC = MATCH_p + 4;
 
 								// #line 275 "frontend/machine/ppc/decoder.m"
@@ -804,7 +804,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								const char *name   = MATCH_name;
 								unsigned   BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
 								int16_t    off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
-								ADDRESS    reladdr = addressToPC(MATCH_p) + off;
+								                        Address    reladdr = addressToPC(MATCH_p) + off;
 								nextPC = MATCH_p + 4;
 
 								// #line 269 "frontend/machine/ppc/decoder.m"
@@ -854,7 +854,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								const char *name   = MATCH_name;
 								unsigned   BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
 								int16_t    off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
-								ADDRESS    reladdr = addressToPC(MATCH_p) + off;
+								                        Address    reladdr = addressToPC(MATCH_p) + off;
 								nextPC = MATCH_p + 4;
 
 								// #line 271 "frontend/machine/ppc/decoder.m"
@@ -870,7 +870,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								const char *name   = MATCH_name;
 								unsigned   BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
 								int16_t    off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
-								ADDRESS    reladdr = addressToPC(MATCH_p) + off;
+								                        Address    reladdr = addressToPC(MATCH_p) + off;
 								nextPC = MATCH_p + 4;
 
 								// #line 278 "frontend/machine/ppc/decoder.m"
@@ -925,7 +925,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
 								int16_t    off   = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
 
-								ADDRESS reladdr = addressToPC(MATCH_p) + off;
+								                        Address reladdr = addressToPC(MATCH_p) + off;
 								nextPC = MATCH_p + 4;
 
 								// #line 282 "frontend/machine/ppc/decoder.m"
@@ -945,7 +945,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								const char *name   = MATCH_name;
 								unsigned   BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
 								int16_t    off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
-								ADDRESS    reladdr = addressToPC(MATCH_p) + off;
+								                        Address    reladdr = addressToPC(MATCH_p) + off;
 								nextPC = MATCH_p + 4;
 
 								// #line 273 "frontend/machine/ppc/decoder.m"
@@ -996,7 +996,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 								unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
 								int16_t    off   = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
 
-								ADDRESS reladdr = addressToPC(MATCH_p) + off;
+								                        Address reladdr = addressToPC(MATCH_p) + off;
 								nextPC = MATCH_p + 4;
 
 								// #line 288 "frontend/machine/ppc/decoder.m"
@@ -1019,7 +1019,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 							{
 								const char *name   = MATCH_name;
 								unsigned   BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-								ADDRESS    reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+								                        Address    reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
 								nextPC = MATCH_p + 4;
 
 								// #line 285 "frontend/machine/ppc/decoder.m"
@@ -1053,7 +1053,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 					MATCH_name = MATCH_name_LK_8[(MATCH_w_32_0 & 0x1)];
 					{
 						const char *name   = MATCH_name;
-						ADDRESS    reladdr = addressToPC(MATCH_p) + 4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
+						                  Address    reladdr = addressToPC(MATCH_p) + 4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
 						nextPC = MATCH_p + 4;
 
 						// #line 193 "frontend/machine/ppc/decoder.m"
@@ -1086,7 +1086,7 @@ DecodeResult& PPCDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
 					}
 				} /*opt-block*/
 				else {
-					ADDRESS reladdr = addressToPC(MATCH_p) + 4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
+					               Address reladdr = addressToPC(MATCH_p) + 4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
 					nextPC = MATCH_p + 4;
 					// #line 207 "frontend/machine/ppc/decoder.m"
 					processUnconditionalJump("b", 4, reladdr, delta, pc, stmts, result);
@@ -8976,7 +8976,7 @@ MATCH_label_a1:
 		(void)0; /*placeholder for label*/
 		{
 			unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-			ADDRESS  reladdr = addressToPC(MATCH_p) + ADDRESS::g(4 * (MATCH_w_32_0 >> 2 & 0x3fff));
+			         Address  reladdr = addressToPC(MATCH_p) + Address::g(4 * (MATCH_w_32_0 >> 2 & 0x3fff));
 			nextPC = MATCH_p + 4;
 
 			// #line 303 "frontend/machine/ppc/decoder.m"
@@ -9362,7 +9362,7 @@ SharedExp PPCDecoder::dis_RAmbz(unsigned r)
  * \param      hostPC - pointer to the code in question (host address)
  * \returns           True if a match found
  ******************************************************************************/
-bool PPCDecoder::isFuncPrologue(ADDRESS /*hostPC*/)
+bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
 {
 	return false;
 }
@@ -9378,7 +9378,7 @@ bool PPCDecoder::isFuncPrologue(ADDRESS /*hostPC*/)
  * \param        lc - address at which to decode the double
  * \returns             the decoded double
  ******************************************************************************/
-DWord PPCDecoder::getDword(ADDRESS lc)
+DWord PPCDecoder::getDword(Address lc)
 {
 	Byte *p = (Byte *)lc.m_value;
 
@@ -9401,7 +9401,7 @@ PPCDecoder::PPCDecoder(Prog *_prog)
 
 
 // For now...
-int PPCDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t)
+int PPCDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
 {
 	return 0;
 }

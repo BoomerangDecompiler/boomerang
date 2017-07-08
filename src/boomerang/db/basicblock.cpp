@@ -349,23 +349,23 @@ bool BasicBlock::isBackEdge(size_t inEdge) const
 }
 
 
-ADDRESS BasicBlock::getLowAddr() const
+Address BasicBlock::getLowAddr() const
 {
 	if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-		return ADDRESS::g(0L);
+		return Address::g(0L);
 	}
 
-	ADDRESS a = m_listOfRTLs->front()->getAddress();
+	   Address a = m_listOfRTLs->front()->getAddress();
 
 	if (a.isZero() && (m_listOfRTLs->size() > 1)) {
 		std::list<RTL *>::iterator it = m_listOfRTLs->begin();
-		ADDRESS add2 = (*++it)->getAddress();
+		      Address add2 = (*++it)->getAddress();
 
 		// This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
 		// to change orphan BBs' addresses to NO_ADDRESS, but I suspect that this will cause many problems. MVE
-		if (add2 < ADDRESS::g(0x10)) {
+		if (add2 < Address::g(0x10)) {
 			// Assume that 0 is the real address
-			return ADDRESS::g(0L);
+			return Address::g(0L);
 		}
 
 		return add2;
@@ -375,7 +375,7 @@ ADDRESS BasicBlock::getLowAddr() const
 }
 
 
-ADDRESS BasicBlock::getHiAddr()
+Address BasicBlock::getHiAddr()
 {
 	assert(m_listOfRTLs != nullptr);
 	return m_listOfRTLs->back()->getAddress();
@@ -454,7 +454,7 @@ BasicBlock *BasicBlock::getOutEdge(size_t i)
 }
 
 
-BasicBlock *BasicBlock::getCorrectOutEdge(ADDRESS a)
+BasicBlock *BasicBlock::getCorrectOutEdge(Address a)
 {
 	for (BasicBlock *it : m_outEdges) {
 		if (it->getLowAddr() == a) {
@@ -562,7 +562,7 @@ bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2)
 }
 
 
-ADDRESS BasicBlock::getCallDest()
+Address BasicBlock::getCallDest()
 {
 	if (m_nodeType != BBTYPE::CALL) {
 		return NO_ADDRESS;
@@ -1285,7 +1285,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
 				SharedExp cond = getCond();
 
 				if (!cond) {
-					cond = Const::get(ADDRESS::g(0xfeedface)); // hack, but better than a crash
+					cond = Const::get(Address::g(0xfeedface)); // hack, but better than a crash
 				}
 
 				if (m_conditionHeaderType == IfElse) {
@@ -1703,7 +1703,7 @@ char *BasicBlock::getStmtNumber()
 		sprintf(ret, "%d", first->getNumber());
 	}
 	else {
-		sprintf(ret, "bb%" PRIxPTR, ADDRESS::value_type(this));
+		sprintf(ret, "bb%" PRIxPTR, Address::value_type(this));
 	}
 
 	return ret;
@@ -1730,7 +1730,7 @@ void BasicBlock::prependStmt(Instruction *s, UserProc *proc)
 
 	// Otherwise, prepend a new RTL
 	std::list<Instruction *> listStmt = { s };
-	RTL *rtl = new RTL(ADDRESS::g(0L), &listStmt);
+	RTL *rtl = new RTL(Address::g(0L), &listStmt);
 	m_listOfRTLs->push_front(rtl);
 }
 
@@ -2033,7 +2033,7 @@ static SharedExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild
 
 static SharedExp hlVfc[] = { vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none };
 
-void findSwParams(char form, SharedExp e, SharedExp& expr, ADDRESS& T)
+void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
 {
 	switch (form)
 	{
@@ -2094,7 +2094,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, ADDRESS& T)
 	case 'R':
 		{
 			// Pattern: %pc + m[%pc     + (<expr> * 4) + k]
-			T = ADDRESS::g(0L); // ?
+			T = Address::g(0L); // ?
 			// l = m[%pc  + (<expr> * 4) + k]:
 			SharedExp l = e->getSubExp2();
 
@@ -2116,7 +2116,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, ADDRESS& T)
 	case 'r':
 		{
 			// Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
-			T = ADDRESS::g(0L); // ?
+			T = Address::g(0L); // ?
 			// b = %pc + m[%pc + ((<expr> * 4) - k)]:
 			SharedExp b = e->getSubExp1();
 			// l = m[%pc + ((<expr> * 4) - k)]:
@@ -2300,7 +2300,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 		if (form) {
 			SWITCH_INFO *swi = new SWITCH_INFO;
 			swi->chForm = form;
-			ADDRESS   T;
+			         Address   T;
 			SharedExp expr;
 			findSwParams(form, e, expr, T);
 
@@ -2313,7 +2313,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 					Prog *prog = proc->getProg();
 
 					for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
-						ADDRESS uSwitch = ADDRESS::g(prog->readNative4(swi->uTable + iPtr * 4));
+						                  Address uSwitch = Address::g(prog->readNative4(swi->uTable + iPtr * 4));
 
 						if ((uSwitch >= prog->getLimitTextHigh()) || (uSwitch < prog->getLimitTextLow())) {
 							if (DEBUG_SWITCH) {
@@ -2372,7 +2372,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 						SWITCH_INFO *swi = new SWITCH_INFO;
 						swi->chForm     = 'F';                          // The "Fortran" form
 						swi->pSwitchVar = e;
-						swi->uTable     = ADDRESS::host_ptr(destArray); // WARN: Abuse the uTable member as a pointer
+						swi->uTable     = Address::host_ptr(destArray); // WARN: Abuse the uTable member as a pointer
 						swi->iNumTable  = num_dests;
 						swi->iLower     = 1;                            // Not used, except to compute
 						swi->iUpper     = num_dests;                    // the number of options
@@ -2474,7 +2474,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 					glo->setType(PointerType::get(FuncType::get()));
 				}
 
-				ADDRESS addr = glo->getAddress();
+				        Address addr = glo->getAddress();
 				// FIXME: not sure how to find K1 from here. I think we need to find the earliest(?) entry in the data
 				// map that overlaps with addr
 				// For now, let K1 = 0:
@@ -2591,8 +2591,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 		bool decodeThru = Boomerang::get()->decodeThruIndCall;
 
 		if (decodeThru && vtExp && vtExp->isIntConst()) {
-			ADDRESS addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
-			ADDRESS pfunc = ADDRESS::g(prog->readNative4(addr));
+			         Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
+			         Address pfunc = Address::g(prog->readNative4(addr));
 
 			if (prog->findProc(pfunc) == nullptr) {
 				// A new, undecoded procedure
@@ -2630,7 +2630,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 		LOG << "lo= " << si->iLower << ", hi= " << si->iUpper << "\n";
 	}
 
-	ADDRESS uSwitch;
+	   Address uSwitch;
 	int     iNumOut, iNum;
 	iNumOut = si->iUpper - si->iLower + 1;
 	iNum    = iNumOut;
@@ -2650,7 +2650,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 	// The switch statement is emitted assuming one out-edge for each switch value, which is assumed to be iLower+i
 	// for the ith zero-based case. It may be that the code for case 5 above will be a goto to the code for case 3,
 	// but a smarter back end could group them
-	std::list<ADDRESS> dests;
+	std::list<Address> dests;
 
 	for (int i = 0; i < iNum; i++) {
 		// Get the destination address from the switch table.
@@ -2661,13 +2661,13 @@ void BasicBlock::processSwitch(UserProc *proc)
 				continue;
 			}
 
-			uSwitch = ADDRESS::g(prog->readNative4(si->uTable + i * 8 + 4));
+			uSwitch = Address::g(prog->readNative4(si->uTable + i * 8 + 4));
 		}
 		else if (si->chForm == 'F') {
-			uSwitch = ADDRESS::g(((int *)si->uTable.m_value)[i]);
+			uSwitch = Address::g(((int *)si->uTable.m_value)[i]);
 		}
 		else {
-			uSwitch = ADDRESS::g(prog->readNative4(si->uTable + i * 4));
+			uSwitch = Address::g(prog->readNative4(si->uTable + i * 4));
 		}
 
 		if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r')) {
@@ -2713,7 +2713,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 	// Decode the newly discovered switch code arms, if any, and if not already decoded
 	int count = 0;
 
-	for (ADDRESS addr : dests) {
+	for (Address addr : dests) {
 		char tmp[1024];
 		count++;
 		sprintf(tmp, "before decoding fragment %i of %zu (%" PRIxPTR ")", count, dests.size(), addr.m_value);

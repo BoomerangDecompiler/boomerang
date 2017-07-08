@@ -29,8 +29,8 @@ struct VariantHolder
 
 struct SectionInfoImpl
 {
-	boost::icl::interval_set<ADDRESS>                m_hasDefinedValue;
-	boost::icl::interval_map<ADDRESS, VariantHolder> m_attributeMap;
+	boost::icl::interval_set<Address>                m_hasDefinedValue;
+	boost::icl::interval_map<Address, VariantHolder> m_attributeMap;
 
 public:
 	void clearDefinedArea()
@@ -38,29 +38,29 @@ public:
 		m_hasDefinedValue.clear();
 	}
 
-	void                                             addDefinedArea(ADDRESS from, ADDRESS to)
+	void                                             addDefinedArea(Address from, Address to)
 	{
-		m_hasDefinedValue.insert(boost::icl::interval<ADDRESS>::right_open(from, to));
+		m_hasDefinedValue.insert(boost::icl::interval<Address>::right_open(from, to));
 	}
 
-	bool                                             isAddressBss(ADDRESS a) const
+	bool                                             isAddressBss(Address a) const
 	{
 		assert(!m_hasDefinedValue.empty());
 		return m_hasDefinedValue.find(a) == m_hasDefinedValue.end();
 	}
 
-	void                                             setAttributeForRange(const QString& name, const QVariant& val, ADDRESS from, ADDRESS to)
+	void                                             setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
 	{
 		QVariantMap vmap;
 
 		vmap[name] = val;
 		VariantHolder map { vmap };
-		m_attributeMap.add(std::make_pair(boost::icl::interval<ADDRESS>::right_open(from, to), map));
+		m_attributeMap.add(std::make_pair(boost::icl::interval<Address>::right_open(from, to), map));
 	}
 
-	QVariant                                         attributeInRange(const QString& attrib, ADDRESS from, ADDRESS to) const
+	QVariant                                         attributeInRange(const QString& attrib, Address from, Address to) const
 	{
-		auto v = m_attributeMap.equal_range(boost::icl::interval<ADDRESS>::right_open(from, to));
+		auto v = m_attributeMap.equal_range(boost::icl::interval<Address>::right_open(from, to));
 
 		if (v.first == m_attributeMap.end()) {
 			return QVariant();
@@ -81,10 +81,10 @@ public:
 		return QVariant(vals);
 	}
 
-	QVariantMap                                      getAttributesForRange(ADDRESS from, ADDRESS to)
+	QVariantMap                                      getAttributesForRange(Address from, Address to)
 	{
 		QVariantMap res;
-		auto        v = m_attributeMap.equal_range(boost::icl::interval<ADDRESS>::right_open(from, to));
+		auto        v = m_attributeMap.equal_range(boost::icl::interval<Address>::right_open(from, to));
 
 		if (v.first == m_attributeMap.end()) {
 			return res;
@@ -99,10 +99,10 @@ public:
 };
 
 
-SectionInfo::SectionInfo(ADDRESS sourceAddr, uint32_t size, const QString& name)
+SectionInfo::SectionInfo(Address sourceAddr, uint32_t size, const QString& name)
 	: m_sectionName(name)
 	, m_nativeAddr(sourceAddr)
-	, m_hostAddr(ADDRESS::g(0L))
+	, m_hostAddr(Address::g(0L))
 	, m_sectionSize(size)
 	, m_sectionEntrySize(0)
 	, m_type(0)
@@ -134,7 +134,7 @@ SectionInfo::~SectionInfo()
 }
 
 
-bool SectionInfo::isAddressBss(ADDRESS a) const
+bool SectionInfo::isAddressBss(Address a) const
 {
 	assert(a >= m_nativeAddr && a < m_nativeAddr + m_sectionSize);
 
@@ -175,25 +175,25 @@ void SectionInfo::clearDefinedArea()
 }
 
 
-void SectionInfo::addDefinedArea(ADDRESS from, ADDRESS to)
+void SectionInfo::addDefinedArea(Address from, Address to)
 {
 	m_impl->addDefinedArea(from, to);
 }
 
 
-void SectionInfo::setAttributeForRange(const QString& name, const QVariant& val, ADDRESS from, ADDRESS to)
+void SectionInfo::setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
 {
 	m_impl->setAttributeForRange(name, val, from, to);
 }
 
 
-QVariantMap SectionInfo::getAttributesForRange(ADDRESS from, ADDRESS to)
+QVariantMap SectionInfo::getAttributesForRange(Address from, Address to)
 {
 	return m_impl->getAttributesForRange(from, to);
 }
 
 
-QVariant SectionInfo::attributeInRange(const QString& attrib, ADDRESS from, ADDRESS to) const
+QVariant SectionInfo::attributeInRange(const QString& attrib, Address from, Address to) const
 {
 	return m_impl->attributeInRange(attrib, from, to);
 }

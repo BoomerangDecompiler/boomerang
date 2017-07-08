@@ -95,13 +95,13 @@ public:
 	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
-	ADDRESS getMainEntryPoint() override;
+	   Address getMainEntryPoint() override;
 
 	/// @copydoc IFileLoader::getEntryPoint
-	ADDRESS getEntryPoint() override;
+	   Address getEntryPoint() override;
 
 	/// @copydoc IFileLoader::getImageBase
-	ADDRESS getImageBase() override;
+	   Address getImageBase() override;
 
 	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
@@ -119,8 +119,8 @@ private:
 	int m_imageSize;      ///< Size of image
 	int m_numReloc;       ///< Number of relocation entries
 	DWord *m_relocTable;  ///< The relocation table
-	ADDRESS m_uInitPC;    ///< Initial program counter
-	ADDRESS m_uInitSP;    ///< Initial stack pointer
+	   Address m_uInitPC;    ///< Initial program counter
+	   Address m_uInitSP;    ///< Initial stack pointer
 	IBinaryImage *m_image;
 	IBinarySymbolTable *m_symbols;
 };

@@ -68,7 +68,7 @@ void FrontPentTest::test1()
 	prog->setFrontEnd(pFE);
 
 	bool    gotMain;
-	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
+	   Address addr = pFE->getMainEntryPoint(gotMain);
 	QVERIFY(addr != NO_ADDRESS);
 
 	// Decode first instruction
@@ -116,7 +116,7 @@ void FrontPentTest::test2()
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
-	inst = pFE->decodeInstruction(ADDRESS::g(0x8048345));
+	inst = pFE->decodeInstruction(Address::g(0x8048345));
 	inst.rtl->print(strm);
 	expected = QString("08048345    0 *32* tmp1 := r28\n"
 					   "            0 *32* r28 := r28 + 16\n"
@@ -124,13 +124,13 @@ void FrontPentTest::test2()
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(ADDRESS::g(0x8048348));
+	inst = pFE->decodeInstruction(Address::g(0x8048348));
 	inst.rtl->print(strm);
 	expected = QString("08048348    0 *32* r24 := 0\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(ADDRESS::g(0x8048329));
+	inst = pFE->decodeInstruction(Address::g(0x8048329));
 	inst.rtl->print(strm);
 	expected = QString("08048329    0 *32* r29 := r28\n");
 	QCOMPARE(actual, expected);
@@ -156,7 +156,7 @@ void FrontPentTest::test3()
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
-	inst = pFE->decodeInstruction(ADDRESS::n(0x804834d));
+	inst = pFE->decodeInstruction(Address::n(0x804834d));
 	inst.rtl->print(strm);
 	expected = QString("0804834d    0 *32* r28 := r29\n"
 					   "            0 *32* r29 := m[r28]\n"
@@ -164,7 +164,7 @@ void FrontPentTest::test3()
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(ADDRESS::n(0x804834e));
+	inst = pFE->decodeInstruction(Address::n(0x804834e));
 	inst.rtl->print(strm);
 	expected = QString("0804834e    0 *32* %pc := m[r28]\n"
 					   "            0 *32* r28 := r28 + 4\n"
@@ -197,7 +197,7 @@ void FrontPentTest::testBranch()
 	prog->setFrontEnd(pFE);
 
 	// jne
-	inst = pFE->decodeInstruction(ADDRESS::n(0x8048979));
+	inst = pFE->decodeInstruction(Address::n(0x8048979));
 	inst.rtl->print(strm);
 	expected = QString("08048979    0 BRANCH 0x8048988, condition "
 					   "not equals\n"
@@ -206,7 +206,7 @@ void FrontPentTest::testBranch()
 	actual.clear();
 
 	// jg
-	inst = pFE->decodeInstruction(ADDRESS::n(0x80489c1));
+	inst = pFE->decodeInstruction(Address::n(0x80489c1));
 	inst.rtl->print(strm);
 	expected = QString("080489c1    0 BRANCH 0x80489d5, condition signed greater\n"
 					   "High level: %flags\n");
@@ -214,7 +214,7 @@ void FrontPentTest::testBranch()
 	actual.clear();
 
 	// jbe
-	inst = pFE->decodeInstruction(ADDRESS::n(0x8048a1b));
+	inst = pFE->decodeInstruction(Address::n(0x8048a1b));
 	inst.rtl->print(strm);
 	expected = QString("08048a1b    0 BRANCH 0x8048a2a, condition unsigned less or equals\n"
 					   "High level: %flags\n");
@@ -242,8 +242,8 @@ void FrontPentTest::testFindMain()
 	prog->setFrontEnd(pFE);
 
 	bool    found;
-	ADDRESS addr     = pFE->getMainEntryPoint(found);
-	ADDRESS expected = ADDRESS::n(0x8048b10);
+	   Address addr     = pFE->getMainEntryPoint(found);
+	   Address expected = Address::n(0x8048b10);
 	QCOMPARE(addr, expected);
 	pBF->close();
 	delete pFE;
@@ -254,7 +254,7 @@ void FrontPentTest::testFindMain()
 	prog->setFrontEnd(pFE);
 	QVERIFY(pFE != nullptr);
 	addr     = pFE->getMainEntryPoint(found);
-	expected = ADDRESS::n(0x8048c4a);
+	expected = Address::n(0x8048c4a);
 	QCOMPARE(addr, expected);
 
 	pBF->close();
@@ -266,7 +266,7 @@ void FrontPentTest::testFindMain()
 	prog->setFrontEnd(pFE);
 	QVERIFY(pFE != nullptr);
 	addr     = pFE->getMainEntryPoint(found);
-	expected = ADDRESS::n(0x8048b60);
+	expected = Address::n(0x8048b60);
 	QCOMPARE(addr, expected);
 	pBF->close();
 

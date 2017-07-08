@@ -53,7 +53,7 @@
  * \param uDest - the address of the first DCTI in the couple
  *
  ******************************************************************************/
-void SparcFrontEnd::warnDCTcouple(ADDRESS uAt, ADDRESS uDest)
+void SparcFrontEnd::warnDCTcouple(Address uAt, Address uDest)
 {
 	LOG_STREAM() << "Error: DCTI couple at " << uAt << " points to delayed branch at " << uDest << "...\n";
 	LOG_STREAM() << "Decompilation will likely be incorrect\n";
@@ -76,7 +76,7 @@ void SparcFrontEnd::warnDCTcouple(ADDRESS uAt, ADDRESS uDest)
  *                    delayed CTI
  * \returns true if delay instruction can be optimized away
  ******************************************************************************/
-bool SparcFrontEnd::optimise_DelayCopy(ADDRESS src, ADDRESS dest, ptrdiff_t delta, ADDRESS uUpper)
+bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper)
 {
 	// Check that the destination is within the main test section; may not be when we speculatively decode junk
 	if ((dest - 4) > uUpper) {
@@ -157,7 +157,7 @@ BasicBlock *SparcFrontEnd::optimise_CallReturn(CallStatement *call, RTL *rtl, RT
  * \param cfg - the CFG of the current procedure
  * \param tq: Object managing the target queue
  ******************************************************************************/
-void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq)
+void SparcFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq)
 {
 	if (newBB == nullptr) {
 		return;
@@ -187,7 +187,7 @@ void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock *& 
  *         means no edge is to be added.
  *
  ******************************************************************************/
-void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock *callBB, Cfg *cfg, ADDRESS address,
+void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB, Cfg *cfg, Address address,
 							   int offset /* = 0*/)
 {
 	if (callBB == nullptr) {
@@ -218,7 +218,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock *callBB,
  * \param         addr - the address of the first CTI in the couple
  *
  ******************************************************************************/
-void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
+void SparcFrontEnd::case_unhandled_stub(Address addr)
 {
 	LOG_STREAM() << "Error: DCTI couple at " << addr << '\n';
 }
@@ -238,7 +238,7 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
  * \returns              true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
-bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult& delay_inst,
+bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst,
 							  std::list<RTL *> *& BB_rtls, UserProc *proc, std::list<CallStatement *>& callList,
 							  QTextStream& os, bool isPattern /* = false*/)
 {
@@ -277,7 +277,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 		assert(disp30 != 1);
 
 		// First check for helper functions
-		ADDRESS             dest  = call_stmt->getFixedDest();
+		      Address             dest  = call_stmt->getFixedDest();
 		const IBinarySymbol *symb = SymbolTable->find(dest);
 
 		// Special check for calls to weird PLT entries which don't have symbols
@@ -382,7 +382,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
  *
  ******************************************************************************/
-void SparcFrontEnd::case_SD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddress, DecodeResult& inst,
+void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
 							DecodeResult& delay_inst, std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq,
 							QTextStream& os)
 {
@@ -424,7 +424,7 @@ void SparcFrontEnd::case_SD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddress
 	}
 
 	// Visit the destination, and add the out-edge
-	ADDRESS uDest = SD_stmt->getFixedDest();
+	   Address uDest = SD_stmt->getFixedDest();
 	handleBranch(uDest, hiAddress, pBB, cfg, tq);
 	BB_rtls = nullptr;
 }
@@ -445,7 +445,7 @@ void SparcFrontEnd::case_SD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddress
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
  * \returns              true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
-bool SparcFrontEnd::case_DD(ADDRESS& address, ptrdiff_t delta, DecodeResult& inst, DecodeResult& delay_inst,
+bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& inst, DecodeResult& delay_inst,
 							std::list<RTL *> *& BB_rtls, TargetQueue& tq, UserProc *proc,
 							std::list<CallStatement *>& callList)
 {
@@ -564,11 +564,11 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, ptrdiff_t delta, DecodeResult& ins
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
  * \returns true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
-bool SparcFrontEnd::case_SCD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddress, DecodeResult& inst,
+bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
 							 DecodeResult& delay_inst, std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq)
 {
 	GotoStatement *stmt_jump = static_cast<GotoStatement *>(inst.rtl->back());
-	ADDRESS       uDest      = stmt_jump->getFixedDest();
+	   Address       uDest      = stmt_jump->getFixedDest();
 
 	// Assume that if we find a call in the delay slot, it's actually a pattern such as move/call/move
 	// MVE: Check this! Only needed for HP PA/RISC
@@ -655,12 +655,12 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddres
 		// be several jumps to the same destination that all require an orphan. The instruction in the orphan will
 		// often but not necessarily be the same, so we can't use the same orphan BB. newBB knows to consider BBs
 		// with address 0 as being in the map, so several BBs can exist with address 0
-		delay_inst.rtl->setAddress(ADDRESS::g(0L));
+		delay_inst.rtl->setAddress(Address::g(0L));
 		// Add a branch from the orphan instruction to the dest of the branch. Again, we can't even give the jumps
 		// a special address like 1, since then the BB would have this getLowAddr.
 		std::list<Instruction *> *gl = new std::list<Instruction *>;
 		gl->push_back(new GotoStatement(uDest));
-		pOrphan->push_back(new RTL(ADDRESS::g(0L), gl));
+		pOrphan->push_back(new RTL(Address::g(0L), gl));
 		BasicBlock *pOrBB = cfg->newBB(pOrphan, BBTYPE::ONEWAY, 1);
 		// Add an out edge from the orphan as well
 		cfg->addOutEdge(pOrBB, uDest, true);
@@ -694,7 +694,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddres
  * SIDE EFFECTS:    address may change; BB_rtls may be appended to or set nullptr
  * \returns             true if next instruction is to be fetched sequentially from this one
  ******************************************************************************/
-bool SparcFrontEnd::case_SCDAN(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddress, DecodeResult& inst,
+bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
 							   DecodeResult& delay_inst, std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq)
 {
 	// We may have to move the delay instruction to an orphan BB, which then branches to the target of the jump.
@@ -702,7 +702,7 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddr
 	// before the target; if so, we can branch to that and not need the orphan. We do just a binary comparison; that
 	// may fail to make this optimisation if the instr has relative fields.
 	GotoStatement *stmt_jump = static_cast<GotoStatement *>(inst.rtl->back());
-	ADDRESS       uDest      = stmt_jump->getFixedDest();
+	   Address       uDest      = stmt_jump->getFixedDest();
 	BasicBlock    *pBB;
 
 	if (optimise_DelayCopy(address, uDest, delta, hiAddress)) {
@@ -734,11 +734,11 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddr
 		pOrphan->push_back(delay_inst.rtl);
 		// Change the address to 0, since this code has no source address (else we may branch to here when we want to
 		// branch to the real BB with this instruction).
-		delay_inst.rtl->setAddress(ADDRESS::g(0L));
+		delay_inst.rtl->setAddress(Address::g(0L));
 		// Add a branch from the orphan instruction to the dest of the branch
 		std::list<Instruction *> *gl = new std::list<Instruction *>;
 		gl->push_back(new GotoStatement(uDest));
-		pOrphan->push_back(new RTL(ADDRESS::g(0L), gl));
+		pOrphan->push_back(new RTL(Address::g(0L), gl));
 		BasicBlock *pOrBB = cfg->newBB(pOrphan, BBTYPE::ONEWAY, 1);
 		// Add an out edge from the orphan as well. Set a label there.
 		cfg->addOutEdge(pOrBB, uDest, true);
@@ -813,7 +813,7 @@ std::vector<SharedExp>& SparcFrontEnd::getDefaultReturns()
  * \param spec - if true, this is a speculative decode
  * \returns              True if a good decode
  ******************************************************************************/
-bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, bool fragment /* = false */,
+bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, bool fragment /* = false */,
 								bool spec /* = false */)
 {
 	Q_UNUSED(fragment);
@@ -866,7 +866,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 
 			// Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
 			// If so, we don't need to decode this instruction
-			std::map<ADDRESS, RTL *>::iterator ff = m_previouslyDecoded.find(uAddr);
+			std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(uAddr);
 
 			if (ff != m_previouslyDecoded.end()) {
 				inst.rtl   = ff->second;
@@ -1117,7 +1117,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 
 							// Adjust the destination of the SD and emit it.
 							GotoStatement *delay_jump = static_cast<GotoStatement *>(delay_rtl->back());
-							ADDRESS       dest        = uAddr + 4 + delay_jump->getFixedDest();
+							             Address       dest        = uAddr + 4 + delay_jump->getFixedDest();
 							stmt_jump->setDest(dest);
 							BB_rtls->push_back(inst.rtl);
 
@@ -1259,7 +1259,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 							}
 
 							// Visit the destination of the branch; add "true" leg
-							ADDRESS uDest = stmt_jump->getFixedDest();
+							             Address uDest = stmt_jump->getFixedDest();
 							handleBranch(uDest, m_image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 							// Add the "false" leg: point past the delay inst
 							cfg->addOutEdge(pBB, uAddr + 8);
@@ -1319,7 +1319,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
 
 	// Add the callees to the set of CallStatements to proces for parameter recovery, and also to the Prog object
 	for (std::list<CallStatement *>::iterator it = callList.begin(); it != callList.end(); it++) {
-		ADDRESS             dest  = (*it)->getFixedDest();
+		      Address             dest  = (*it)->getFixedDest();
 		const IBinarySymbol *symb = SymbolTable->find(dest);
 
 		// Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
@@ -1348,7 +1348,7 @@ bool SparcFrontEnd::processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, 
  * \param   uAddr - Native address of this instruction
  *
  ******************************************************************************/
-void SparcFrontEnd::emitNop(std::list<RTL *> *pRtls, ADDRESS uAddr)
+void SparcFrontEnd::emitNop(std::list<RTL *> *pRtls, Address uAddr)
 {
 	// Emit a null RTL with the given address. Required to cope with
 	// SKIP instructions. Yes, they really happen, e.g. /usr/bin/vi 2.5
@@ -1369,7 +1369,7 @@ void SparcFrontEnd::emitNop(std::list<RTL *> *pRtls, ADDRESS uAddr)
  * \param uAddr - native address for the RTL
  *
  ******************************************************************************/
-void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr)
+void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, Address uAddr)
 {
 	// Emit %o7 = %pc
 	Assign *a = new Assign(Location::regOf(15), // %o7 == r[15]
@@ -1384,7 +1384,7 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr)
 
 
 // Append one assignment to a list of RTLs
-void SparcFrontEnd::appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl)
+void SparcFrontEnd::appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, std::list<RTL *> *lrtl)
 {
 	Assign *a = new Assign(type, lhs, rhs);
 
@@ -1399,7 +1399,7 @@ void SparcFrontEnd::appendAssignment(const SharedExp& lhs, const SharedExp& rhs,
 
 /* Small helper function to build an expression with
  * *128* m[m[r[14]+64]] = m[r[8]] OP m[r[9]] */
-void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op)
+void SparcFrontEnd::quadOperation(Address addr, std::list<RTL *> *lrtl, OPER op)
 {
 	SharedExp lhs = Location::memOf(Location::memOf(Binary::get(opPlus, Location::regOf(14), Const::get(64))));
 	SharedExp rhs = Binary::get(op, Location::memOf(Location::regOf(8)), Location::memOf(Location::regOf(9)));
@@ -1418,7 +1418,7 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op)
  * \param  lrtl: list of RTL* for current BB
  * \returns True if a helper function was found and handled; false otherwise
  ******************************************************************************/
-bool SparcFrontEnd::isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl)
+bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl)
 {
 	const IBinarySymbol *sym = SymbolTable->find(dest);
 
@@ -1512,7 +1512,7 @@ bool SparcFrontEnd::isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *l
  * 32* r8 = r[tmp]
  * 32* r9 = %Y
  */
-void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS addr)
+void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, Address addr)
 {
 	std::list<Instruction *> *ls = new std::list<Instruction *>;
 #ifdef V9_ONLY
@@ -1556,7 +1556,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS ad
 
 
 /// This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
-bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, QString& name)
+bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, std::list<RTL *> *lrtl, QString& name)
 {
 	Q_UNUSED(dest);
 	SharedExp rhs;
@@ -1647,10 +1647,10 @@ SparcFrontEnd::~SparcFrontEnd()
  * \param gotMain set if main found
  * \returns Native pointer if found; NO_ADDRESS if not
  ******************************************************************************/
-ADDRESS SparcFrontEnd::getMainEntryPoint(bool& gotMain)
+Address SparcFrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	gotMain = true;
-	ADDRESS start = m_fileLoader->getMainEntryPoint();
+	   Address start = m_fileLoader->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		return start;

@@ -16,7 +16,7 @@ public:
 	virtual size_t getSize() const         = 0;
 
 	virtual void setSize(size_t) = 0;
-	virtual ADDRESS getLocation() const         = 0;
+	virtual Address getLocation() const         = 0;
 	virtual bool isImportedFunction() const     = 0;
 	virtual bool isStaticFunction() const       = 0;
 	virtual bool isFunction() const             = 0;
@@ -41,12 +41,12 @@ public:
 	typedef SymbolListType::const_iterator const_iterator;
 
 public:
-	virtual const IBinarySymbol *find(ADDRESS a) const        = 0; ///< Find an entry by address; nullptr if none
+	virtual const IBinarySymbol *find(Address a) const        = 0; ///< Find an entry by address; nullptr if none
 	virtual const IBinarySymbol *find(const QString& s) const = 0; ///< Find an entry by name; NO_ADDRESS if none
 
 	/// Add a new symbol to table, if \a local is set than the symbol is local, thus it won't be
 	/// added to global name->symbol mapping
-	virtual IBinarySymbol& create(ADDRESS a, const QString& s, bool local = false) = 0;
+	virtual IBinarySymbol& create(Address a, const QString& s, bool local = false) = 0;
 
 	virtual iterator begin()             = 0;
 	virtual const_iterator begin() const = 0;

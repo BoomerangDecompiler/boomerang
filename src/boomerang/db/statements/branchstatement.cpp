@@ -126,7 +126,7 @@ void BranchStatement::setCondExpr(SharedExp pe)
 
 BasicBlock *BranchStatement::getFallBB() const
 {
-	ADDRESS a = getFixedDest();
+	   Address a = getFixedDest();
 
 	if (a == NO_ADDRESS) {
 		return nullptr;
@@ -150,7 +150,7 @@ BasicBlock *BranchStatement::getFallBB() const
 
 void BranchStatement::setFallBB(BasicBlock *bb)
 {
-	ADDRESS a = getFixedDest();
+	   Address a = getFixedDest();
 
 	if (a == NO_ADDRESS) {
 		return;
@@ -179,7 +179,7 @@ void BranchStatement::setFallBB(BasicBlock *bb)
 
 BasicBlock *BranchStatement::getTakenBB() const
 {
-	ADDRESS a = getFixedDest();
+	   Address a = getFixedDest();
 
 	if (a == NO_ADDRESS) {
 		return nullptr;
@@ -203,7 +203,7 @@ BasicBlock *BranchStatement::getTakenBB() const
 
 void BranchStatement::setTakenBB(BasicBlock *bb)
 {
-	ADDRESS a = getFixedDest();
+	   Address a = getFixedDest();
 
 	if (a == NO_ADDRESS) {
 		return;

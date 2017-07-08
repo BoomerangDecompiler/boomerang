@@ -52,10 +52,10 @@ void CfgTest::initTestCase()
  * \fn        CfgTest::testDominators
  * OVERVIEW:        Test the dominator frontier code
  ******************************************************************************/
-#define FRONTIER_FOUR        ADDRESS::n(0x08048347)
-#define FRONTIER_FIVE        ADDRESS::n(0x08048351)
-#define FRONTIER_TWELVE      ADDRESS::n(0x080483b2)
-#define FRONTIER_THIRTEEN    ADDRESS::n(0x080483b9)
+#define FRONTIER_FOUR        Address::n(0x08048347)
+#define FRONTIER_FIVE        Address::n(0x08048351)
+#define FRONTIER_TWELVE      Address::n(0x080483b2)
+#define FRONTIER_THIRTEEN    Address::n(0x080483b9)
 
 void CfgTest::testDominators()
 {
@@ -71,7 +71,7 @@ void CfgTest::testDominators()
 	pFE->decode(&prog);
 
 	bool    gotMain;
-	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
+	   Address addr = pFE->getMainEntryPoint(gotMain);
 	QVERIFY(addr != NO_ADDRESS);
 	Module *m = *prog.begin();
 	QVERIFY(m != nullptr);
@@ -113,11 +113,11 @@ void CfgTest::testDominators()
  * \fn        CfgTest::testSemiDominators
  * OVERVIEW:        Test a case where semi dominators are different to dominators
  ******************************************************************************/
-#define SEMI_L    ADDRESS::g(0x80483b0)
-#define SEMI_M    ADDRESS::g(0x80483e2)
-#define SEMI_B    ADDRESS::g(0x8048345)
-#define SEMI_D    ADDRESS::g(0x8048354)
-#define SEMI_M    ADDRESS::g(0x80483e2)
+#define SEMI_L    Address::g(0x80483b0)
+#define SEMI_M    Address::g(0x80483e2)
+#define SEMI_B    Address::g(0x8048345)
+#define SEMI_D    Address::g(0x8048354)
+#define SEMI_M    Address::g(0x80483e2)
 
 void CfgTest::testSemiDominators()
 {
@@ -132,7 +132,7 @@ void CfgTest::testSemiDominators()
 	pFE->decode(&prog);
 
 	bool    gotMain;
-	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
+	   Address addr = pFE->getMainEntryPoint(gotMain);
 	QVERIFY(addr != NO_ADDRESS);
 
 	Module *m = *prog.begin();
@@ -158,8 +158,8 @@ void CfgTest::testSemiDominators()
 
 	// The dominator for L should be B, where the semi dominator is D
 	// (book says F)
-	ADDRESS actual_dom  = df->nodeToBB(df->getIdom(nL))->getLowAddr();
-	ADDRESS actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
+	   Address actual_dom  = df->nodeToBB(df->getIdom(nL))->getLowAddr();
+	   Address actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
 	QCOMPARE(actual_dom, SEMI_B);
 	QCOMPARE(actual_semi, SEMI_D);
 	// Check the final dominator frontier as well; should be M and B

@@ -46,7 +46,7 @@ protected:
 public:
 	/// The type for the list of functions.
 	typedef std::list<Function *>           FunctionList;
-	typedef std::map<ADDRESS, Function *>   FunctionMap;
+	typedef std::map<Address, Function *>   FunctionMap;
 
 	typedef FunctionList::iterator          iterator;
 	typedef FunctionList::const_iterator    const_iterator;
@@ -107,7 +107,7 @@ public:
 
 	/// Record the \a fnc location in the ADDRESS->Function map
 	/// If \a fnc is nullptr - remove given function from the map.
-	void setLocationMap(ADDRESS loc, Function *fnc);
+	void setLocationMap(Address loc, Function *fnc);
 
 	Prog *getParent() { return m_parent; }
 	void eraseFromParent();
@@ -131,9 +131,9 @@ public:
 	 * \param bLib - If true, this will be a libProc; else a UserProc
 	 * \returns        A pointer to the new Function object
 	 ******************************************************************************/
-	Function *getOrInsertFunction(const QString& name, ADDRESS uNative, bool bLib = false);
+	Function *getOrInsertFunction(const QString& name, Address uNative, bool bLib = false);
 	Function *getFunction(const QString& name) const;
-	Function *getFunction(ADDRESS loc) const;
+	Function *getFunction(Address loc) const;
 
 	/// Get a library signature for a given name (used when creating a new library proc).
 	std::shared_ptr<Signature> getLibSignature(const QString& name);

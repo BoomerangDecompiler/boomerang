@@ -15,7 +15,7 @@ public:
 protected:
 	/// Native address of the (only) return instruction.
 	/// Needed for branching to this only return statement
-	ADDRESS retAddr;
+	   Address retAddr;
 
 	/**
 	 * The progression of return information is as follows:
@@ -128,8 +128,8 @@ public:
 	DefCollector *getCollector() { return &col; } // Return pointer to the collector object
 
 	// Get and set the native address for the first and only return statement
-	ADDRESS getRetAddr() { return retAddr; }
-	void setRetAddr(ADDRESS r) { retAddr = r; }
+	   Address getRetAddr() { return retAddr; }
+	void setRetAddr(Address r) { retAddr = r; }
 
 	// Find definition for e (in the collector)
 	SharedExp findDefFor(SharedExp e) { return col.findDefFor(e); }

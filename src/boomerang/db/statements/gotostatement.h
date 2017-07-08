@@ -33,7 +33,7 @@ public:
 	 * \brief        Construct a jump to a fixed address
 	 * \param        uDest native address of destination
 	 ******************************************************************************/
-	GotoStatement(ADDRESS jumpDest);
+	GotoStatement(Address jumpDest);
 
 	/***************************************************************************/ /**
 	 * \fn        GotoStatement::~GotoStatement
@@ -63,7 +63,7 @@ public:
 	 * \param   addr - the new fixed address
 	 ******************************************************************************/
 	void setDest(SharedExp pd);
-	void setDest(ADDRESS addr);
+	void setDest(Address addr);
 
 	/***************************************************************************/ /**
 	 * \brief        Returns the destination of this CTI.
@@ -80,7 +80,7 @@ public:
 	 * \returns Fixed dest or NO_ADDRESS if there isn't one, For dynamic CTIs,
 	 *          returns NO_ADDRESS.
 	 ******************************************************************************/
-	ADDRESS getFixedDest() const;
+	   Address getFixedDest() const;
 
 	/***************************************************************************/ /**
 	 * \brief        Adjust the destination of this CTI by a given amount. Causes

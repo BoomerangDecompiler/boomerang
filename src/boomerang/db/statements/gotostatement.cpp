@@ -15,7 +15,7 @@ GotoStatement::GotoStatement()
 }
 
 
-GotoStatement::GotoStatement(ADDRESS uDest)
+GotoStatement::GotoStatement(Address uDest)
 	: m_isComputed(false)
 {
 	m_kind = STMT_GOTO;
@@ -31,7 +31,7 @@ GotoStatement::~GotoStatement()
 }
 
 
-ADDRESS GotoStatement::getFixedDest() const
+Address GotoStatement::getFixedDest() const
 {
 	if (m_dest->getOper() != opIntConst) {
 		return NO_ADDRESS;
@@ -47,7 +47,7 @@ void GotoStatement::setDest(SharedExp pd)
 }
 
 
-void GotoStatement::setDest(ADDRESS addr)
+void GotoStatement::setDest(Address addr)
 {
 	// This fails in FrontSparcTest, do you really want it to Mike? -trent
 	//    assert(addr >= prog.limitTextLow && addr < prog.limitTextHigh);
@@ -75,7 +75,7 @@ void GotoStatement::adjustFixedDest(int delta)
 		LOG << "Can't adjust destination of non-static CTI\n";
 	}
 
-	ADDRESS dest = constDest()->getAddr();
+	   Address dest = constDest()->getAddr();
 	constDest()->setAddr(dest + delta);
 }
 

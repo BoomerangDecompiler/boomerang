@@ -15,27 +15,11 @@
  * 18 Jun 01 - Mike: Added floating point instructions
  */
 
+#include "boomerang/global.h"
+#include "boomerang/include/decoder.h"
+#include "boomerang/core/BinaryFileFactory.h"
 
-/*
-  void NJMCDecoder :: Cmplt_1(ADDRESS hostpc1)
-  {
-  }
-
-  void NJMCDecoder :: Cmplt_2(ADDRESS hostpc2)
-  {
-  }
-
-  void NJMCDecoder :: Cmplt_3(ADDRESS hostpc3)
-  {
-  }
- */
-
-
-#include "boomerangglobal.h"
-#include "boomeranginclude/decoder.h"
-#include "boomerangcore/BinaryFileFactory.h"
-
-#include "boomeranghppa-names.h"
+#include "boomerang/hppa-names.h"
 
 // globals
 extern char _assembly[];
@@ -88,7 +72,7 @@ void NJMCDecoder::dis_c_c(ADDRESS hostpc)
                                 ",*>>",",*NSV",",*EV"};
 /*  static char *bitw[]  = {",<", ",>="};*/
 /*  static char *bitdw[] = {",*<", ",*>="};*/
-  
+
     match hostpc to
         | c_arith_w(c3_16) => {
             astr += sprintf(astr, "%s", logw[c3_16]);
@@ -626,5 +610,5 @@ astr += sprintf(astr, "\t/* Completer c needs decoding */");
                         astr += sprintf(astr, "%s", name);
                         c_disps(cmplt);
                         astr += sprintf(astr, "  %d(%s,%s),%s", ldisp, s2_16_names[s2_16], b_06_names[b_06], t_11_names[t_11]);
-                
+
 */

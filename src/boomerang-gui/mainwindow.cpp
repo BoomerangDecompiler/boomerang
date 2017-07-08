@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui->setupUi(this);
 
-	qRegisterMetaType<ADDRESS>("ADDRESS");
+	qRegisterMetaType<Address>("ADDRESS");
 
 	decompilerThread = new DecompilerThread();
 	decompilerThread->start();
@@ -445,7 +445,7 @@ void MainWindow::showMachineType(const QString& machine)
 }
 
 
-void MainWindow::showNewEntrypoint(ADDRESS addr, const QString& name)
+void MainWindow::showNewEntrypoint(Address addr, const QString& name)
 {
 	int nrows = ui->entrypoints->rowCount();
 
@@ -543,7 +543,7 @@ void MainWindow::showDecompilingProc(const QString& name)
 }
 
 
-void MainWindow::showNewUserProc(const QString& name, ADDRESS addr)
+void MainWindow::showNewUserProc(const QString& name, Address addr)
 {
 	QString s     = addr.toString(true);
 	int     nrows = ui->userProcs->rowCount();
@@ -595,7 +595,7 @@ void MainWindow::showNewLibProc(const QString& name, const QString& params)
 }
 
 
-void MainWindow::showRemoveUserProc(const QString& name, ADDRESS addr)
+void MainWindow::showRemoveUserProc(const QString& name, Address addr)
 {
 	Q_UNUSED(name);
 	QString s     = addr.toString(true);
@@ -629,7 +629,7 @@ void MainWindow::showRemoveLibProc(const QString& name)
 }
 
 
-void MainWindow::showNewSection(const QString& name, ADDRESS start, ADDRESS end)
+void MainWindow::showNewSection(const QString& name, Address start, Address end)
 {
 	int nrows = ui->sections->rowCount();
 
@@ -1085,7 +1085,7 @@ void MainWindow::on_addButton_pressed()
 	}
 
 	bool    ok;
-	ADDRESS a = ADDRESS::g(ui->addressEdit->text().toInt(&ok, 16));
+	   Address a = Address::g(ui->addressEdit->text().toInt(&ok, 16));
 
 	if (!ok) {
 		return;
@@ -1104,7 +1104,7 @@ void MainWindow::on_addButton_pressed()
 void MainWindow::on_removeButton_pressed()
 {
 	bool    ok;
-	ADDRESS a = ADDRESS::g(ui->entrypoints->item(ui->entrypoints->currentRow(), 0)->text().toInt(&ok, 16));
+	   Address a = Address::g(ui->entrypoints->item(ui->entrypoints->currentRow(), 0)->text().toInt(&ok, 16));
 
 	if (!ok) {
 		return;

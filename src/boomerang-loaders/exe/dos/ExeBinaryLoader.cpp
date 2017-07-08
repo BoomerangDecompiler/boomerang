@@ -156,17 +156,17 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 	fp.close();
 
 	// TODO: prevent overlapping of those 3 sections
-	IBinarySection *header = m_image->createSection("$HEADER", ADDRESS::n(0x4000), ADDRESS::n(0x4000) + sizeof(ExeHeader));
-	header->setHostAddr(ADDRESS::host_ptr(m_header))
+	IBinarySection *header = m_image->createSection("$HEADER", Address::n(0x4000), Address::n(0x4000) + sizeof(ExeHeader));
+	header->setHostAddr(Address::host_ptr(m_header))
 	   .setEntrySize(1);
 	// The text and data section
-	IBinarySection *text = m_image->createSection(".text", ADDRESS::n(0x10000), ADDRESS::n(0x10000) + sizeof(m_imageSize));
+	IBinarySection *text = m_image->createSection(".text", Address::n(0x10000), Address::n(0x10000) + sizeof(m_imageSize));
 	text->setCode(true)
 	   .setData(true)
-	   .setHostAddr(ADDRESS::host_ptr(m_loadedImage))
+	   .setHostAddr(Address::host_ptr(m_loadedImage))
 	   .setEntrySize(1);
-	IBinarySection *reloc = m_image->createSection("$RELOC", ADDRESS::n(0x4000) + sizeof(ExeHeader), ADDRESS::n(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
-	reloc->setHostAddr(ADDRESS::host_ptr(m_relocTable))
+	IBinarySection *reloc = m_image->createSection("$RELOC", Address::n(0x4000) + sizeof(ExeHeader), Address::n(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
+	reloc->setHostAddr(Address::host_ptr(m_relocTable))
 	   .setEntrySize(sizeof(DWord));
 	return true;
 }
@@ -224,9 +224,9 @@ bool ExeBinaryLoader::postLoad(void *handle)
 }
 
 
-ADDRESS ExeBinaryLoader::getImageBase()
+Address ExeBinaryLoader::getImageBase()
 {
-	return ADDRESS::g(0L);                                     /* FIXME */
+	return Address::g(0L);                                     /* FIXME */
 }
 
 
@@ -237,16 +237,16 @@ size_t ExeBinaryLoader::getImageSize()
 
 
 // Should be doing a search for this
-ADDRESS ExeBinaryLoader::getMainEntryPoint()
+Address ExeBinaryLoader::getMainEntryPoint()
 {
 	return NO_ADDRESS;
 }
 
 
-ADDRESS ExeBinaryLoader::getEntryPoint()
+Address ExeBinaryLoader::getEntryPoint()
 {
 	// Check this...
-	return ADDRESS::g((LH(&m_header->initCS) << 4) + LH(&m_header->initIP));
+	return Address::g((LH(&m_header->initCS) << 4) + LH(&m_header->initIP));
 }
 
 

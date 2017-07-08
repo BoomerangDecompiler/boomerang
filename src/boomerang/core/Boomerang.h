@@ -77,11 +77,11 @@ public:
 	virtual void alertNew(Function *) {}
 	virtual void alertRemove(Function *) {}
 	virtual void alertUpdateSignature(Function *) {}
-	virtual void alertDecode(ADDRESS /*pc*/, int /*nBytes*/) {}
-	virtual void alertBadDecode(ADDRESS /*pc*/) {}
-	virtual void alertStartDecode(ADDRESS /*start*/, int /*nBytes*/) {}
+	virtual void alertDecode(Address /*pc*/, int /*nBytes*/) {}
+	virtual void alertBadDecode(Address /*pc*/) {}
+	virtual void alertStartDecode(Address /*start*/, int /*nBytes*/) {}
 	virtual void alertEndDecode() {}
-	virtual void alertDecode(Function *, ADDRESS /*pc*/, ADDRESS /*last*/, int /*nBytes*/) {}
+	virtual void alertDecode(Function *, Address /*pc*/, Address /*last*/, int /*nBytes*/) {}
 	virtual void alertStartDecompile(UserProc *) {}
 	virtual void alertProcStatusChange(UserProc *) {}
 	virtual void alertDecompileSSADepth(UserProc *, int /*depth*/) {}
@@ -276,7 +276,7 @@ public:
 	}
 
 	/// Alert the watchers we are currently decoding \a nBytes bytes at address \a pc.
-	void alertDecode(ADDRESS pc, int nBytes)
+	void alertDecode(Address pc, int nBytes)
 	{
 		for (Watcher *it : m_watchers) {
 			it->alertDecode(pc, nBytes);
@@ -284,7 +284,7 @@ public:
 	}
 
 	/// Alert the watchers of a bad decode of an instruction at \a pc.
-	void alertBadDecode(ADDRESS pc)
+	void alertBadDecode(Address pc)
 	{
 		for (Watcher *it : m_watchers) {
 			it->alertBadDecode(pc);
@@ -292,7 +292,7 @@ public:
 	}
 
 	/// Alert the watchers we have succesfully decoded this function
-	void alertDecode(Function *p, ADDRESS pc, ADDRESS last, int nBytes)
+	void alertDecode(Function *p, Address pc, Address last, int nBytes)
 	{
 		for (Watcher *it : m_watchers) {
 			it->alertDecode(p, pc, last, nBytes);
@@ -308,7 +308,7 @@ public:
 	}
 
 	/// Alert the watchers we are starting to decode.
-	void alertStartDecode(ADDRESS start, int nBytes)
+	void alertStartDecode(Address start, int nBytes)
 	{
 		for (Watcher *it : m_watchers) {
 			it->alertStartDecode(start, nBytes);
@@ -448,9 +448,9 @@ public:
 	QTextStream LogStream;
 	QTextStream ErrStream;
 
-	std::vector<ADDRESS> m_entryPoints; ///< A vector which contains all know entrypoints for the Prog.
+	std::vector<Address> m_entryPoints; ///< A vector which contains all know entrypoints for the Prog.
 	std::vector<QString> m_symbolFiles; ///< A vector containing the names off all symbolfiles to load.
-	std::map<ADDRESS, QString> symbols; ///< A map to find a name by a given address.
+	std::map<Address, QString> symbols; ///< A map to find a name by a given address.
 	IProject *m_currentProject;
 };
 

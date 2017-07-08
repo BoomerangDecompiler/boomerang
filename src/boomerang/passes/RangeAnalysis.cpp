@@ -301,7 +301,7 @@ struct RangeVisitor : public StmtVisitor
 			}
 
 			if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
-				ADDRESS c = a_rhs->access<Const, 1>()->getAddr();
+				            Address c = a_rhs->access<Const, 1>()->getAddr();
 
 				if (insn->getProc()->getProg()->isDynamicLinkedProcPointer(c)) {
 					const QString& nam(insn->getProc()->getProg()->getDynamicProcName(c));
@@ -453,7 +453,7 @@ struct RangeVisitor : public StmtVisitor
 
 			if (d->isIntConst() || d->isStrConst()) {
 				if (d->isIntConst()) {
-					ADDRESS dest = d->access<Const>()->getAddr();
+					               Address dest = d->access<Const>()->getAddr();
 					stmt->setDestProc(stmt->getProc()->getProg()->setNewProc(dest));
 				}
 				else {

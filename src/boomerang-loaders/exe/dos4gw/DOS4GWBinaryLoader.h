@@ -159,13 +159,13 @@ public:
 	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
-	ADDRESS getMainEntryPoint() override;
+	   Address getMainEntryPoint() override;
 
 	/// @copydoc IFileLoader::getEntryPoint
-	ADDRESS getEntryPoint() override;
+	   Address getEntryPoint() override;
 
 	/// @copydoc IFileLoader::getImageBase
-	ADDRESS getImageBase() override;
+	   Address getImageBase() override;
 
 	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;

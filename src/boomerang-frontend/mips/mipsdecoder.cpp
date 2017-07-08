@@ -45,13 +45,13 @@ MIPSDecoder::MIPSDecoder(Prog *_prog)
 
 
 // For now...
-int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, ptrdiff_t)
+int MIPSDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
 {
 	return 0;
 }
 
 
-DecodeResult& MIPSDecoder::decodeInstruction(ADDRESS pc, ptrdiff_t delta)
+DecodeResult& MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 {
 	Q_UNUSED(pc);
 	Q_UNUSED(delta);

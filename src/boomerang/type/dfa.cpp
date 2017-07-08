@@ -139,7 +139,7 @@ void DFA_TypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
 		SharedExp t   = rr->getSubExp1(); // idx*K1 + K2
 		SharedExp l   = t->getSubExp1();  // idx*K1
 		SharedExp r   = t->getSubExp2();  // K2
-		ADDRESS   K2  = r->access<Const>()->getAddr().native();
+		      Address   K2  = r->access<Const>()->getAddr().native();
 		SharedExp idx = l->getSubExp1();
 
 		// Replace with the array expression
@@ -194,7 +194,7 @@ void DFA_TypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
 
 		if (sub->isIntConst()) {
 			// We have a m[K] := -
-			ADDRESS K = sub->access<Const>()->getAddr();
+			         Address K = sub->access<Const>()->getAddr();
 			prog->markGlobalUsed(K, iType);
 		}
 	}
@@ -302,7 +302,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 				if (baseType->resolvesToChar()) {
 					// Convert to a string    MVE: check for read-only?
 					// Also, distinguish between pointer to one char, and ptr to many?
-					const char *str = _prog->getStringConstant(ADDRESS::n(val), true);
+					const char *str = _prog->getStringConstant(Address::n(val), true);
 
 					if (str) {
 						// Make a string
@@ -311,12 +311,12 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 					}
 				}
 				else if (baseType->resolvesToInteger() || baseType->resolvesToFloat() || baseType->resolvesToSize()) {
-					ADDRESS addr = ADDRESS::g(con->getInt()); // TODO: use getAddr
+					               Address addr = Address::g(con->getInt()); // TODO: use getAddr
 					_prog->markGlobalUsed(addr, baseType);
 					QString gloName = _prog->getGlobalName(addr);
 
 					if (!gloName.isEmpty()) {
-						ADDRESS   r = addr - _prog->getGlobalAddr(gloName);
+						                  Address   r = addr - _prog->getGlobalAddr(gloName);
 						SharedExp ne;
 
 						if (!r.isZero()) { // TODO: what if r is NO_ADDR ?
@@ -370,7 +370,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 							continue;
 						}
 
-						ADDRESS   K   = ADDRESS::g(constK->getInt());
+						                  Address   K   = Address::g(constK->getInt());
 						SharedExp idx = bin_rr->getSubExp1();
 						SharedExp arr = Unary::get(
 							opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalName(K), proc), idx));
@@ -412,7 +412,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 				// MVE: more work if double?
 			}
 			else { /* if (t->resolvesToArray()) */
-				_prog->markGlobalUsed(ADDRESS::n(val), t);
+				_prog->markGlobalUsed(Address::n(val), t);
 			}
 		}
 
@@ -473,7 +473,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 				SharedType ty = ((TypingStatement *)s)->getType();
 				LOG << "in proc " << proc->getName() << " adding addrExp " << addrExp << "with type " << *ty << " to local table\n";
 				SharedExp loc_mem = Location::memOf(addrExp);
-				proc->localsMap().addItem(ADDRESS::g(addr), proc->lookupSym(loc_mem, ty), typeExp);
+				proc->localsMap().addItem(Address::g(addr), proc->lookupSym(loc_mem, ty), typeExp);
 			}
 		}
 	}
@@ -1755,7 +1755,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
 				x->descendType(IntegerType::get(parentType->getSize(), 0), ch, s);
 				// K2 is of type <array of parentType>
 				auto    constK2 = subExp1->access<Const, 2>();
-				ADDRESS intK2   = ADDRESS::g(constK2->getInt()); // TODO: use getAddr ?
+				        Address intK2   = Address::g(constK2->getInt()); // TODO: use getAddr ?
 				constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
 			}
 			else if (match_l1_K(shared_from_this(), matches)) {

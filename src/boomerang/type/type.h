@@ -236,7 +236,7 @@ public:
 
 	// From a complex type like an array of structs with a float, return a list of components so you
 	// can construct e.g. myarray1[8].mystruct2.myfloat7
-	ComplexTypeCompList& compForAddress(ADDRESS addr, DataIntervalMap& dim);
+	ComplexTypeCompList& compForAddress(Address addr, DataIntervalMap& dim);
 
 	// Dereference this type. For most cases, return null unless you are a pointer type. But for a
 	// union of pointers, return a new union with the dereference of all members. In dfa.cpp
@@ -844,30 +844,30 @@ struct DataInterval
 	SharedType type; ///< The type of the variable
 };
 
-typedef std::pair<const ADDRESS, DataInterval> DataIntervalEntry; // For result of find() below
+typedef std::pair<const Address, DataInterval> DataIntervalEntry; // For result of find() below
 
 class DataIntervalMap
 {
-	std::map<ADDRESS, DataInterval> dimap;
+	std::map<Address, DataInterval> dimap;
 	UserProc *proc; // If used for locals, has ptr to UserProc, else nullptr
 
 public:
 	DataIntervalMap() {}
-	typedef std::map<ADDRESS, DataInterval>::iterator iterator;
+	typedef std::map<Address, DataInterval>::iterator iterator;
 	void setProc(UserProc *p) { proc = p; }    ///< Initialise the proc pointer
-	DataIntervalEntry *find(ADDRESS addr);     ///< Find the DataInterval at address addr, or nullptr if none
-	iterator find_it(ADDRESS addr);            ///< Return an iterator to the entry for it, or end() if none
-	bool isClear(ADDRESS addr, unsigned size); ///< True if from addr for size bytes is clear
-	void addItem(ADDRESS addr, QString name, SharedType ty, bool forced = false);
-	void deleteItem(ADDRESS addr);             // Mainly for testing?
-	void expandItem(ADDRESS addr, unsigned size);
+	DataIntervalEntry *find(Address addr);     ///< Find the DataInterval at address addr, or nullptr if none
+	iterator find_it(Address addr);            ///< Return an iterator to the entry for it, or end() if none
+	bool isClear(Address addr, unsigned size); ///< True if from addr for size bytes is clear
+	void addItem(Address addr, QString name, SharedType ty, bool forced = false);
+	void deleteItem(Address addr);             // Mainly for testing?
+	void expandItem(Address addr, unsigned size);
 	char *prints();                            // For test and debug
 	void dump();                               // For debug
 
 private:
-	void enterComponent(DataIntervalEntry *pdie, ADDRESS addr, const QString&, SharedType ty, bool);
-	void replaceComponents(ADDRESS addr, const QString& name, SharedType ty, bool);
-	void checkMatching(DataIntervalEntry *pdie, ADDRESS addr, const QString&, SharedType ty, bool);
+	void enterComponent(DataIntervalEntry *pdie, Address addr, const QString&, SharedType ty, bool);
+	void replaceComponents(Address addr, const QString& name, SharedType ty, bool);
+	void checkMatching(DataIntervalEntry *pdie, Address addr, const QString&, SharedType ty, bool);
 };
 
 // Not part of the Type class, but logically belongs with it:

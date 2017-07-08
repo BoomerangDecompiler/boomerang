@@ -59,11 +59,11 @@ class RTL : public std::list<Instruction *>
 	friend class BasicBlock;
 
 private:
-	ADDRESS m_nativeAddr; ///< RTL's source program instruction address
+	   Address m_nativeAddr; ///< RTL's source program instruction address
 
 public:
 	RTL();
-	RTL(ADDRESS instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
+	RTL(Address instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
 
 	/***************************************************************************/ /**
 	 * \brief        Copy constructor. A deep clone is made of the given object
@@ -88,8 +88,8 @@ public:
 	RTL& operator=(const RTL& other);
 
 	/// Common enquiry methods
-	ADDRESS getAddress() const { return m_nativeAddr; }    ///< Return RTL's native address
-	void setAddress(ADDRESS a) { m_nativeAddr = a; } ///< Set the address
+	   Address getAddress() const { return m_nativeAddr; }    ///< Return RTL's native address
+	void setAddress(Address a) { m_nativeAddr = a; } ///< Set the address
 
 	// Statement list editing methods
 
@@ -214,9 +214,9 @@ public:
 
 	int appendToDict(const QString& n, std::list<QString>& p, RTL& rtl);
 
-	std::list<Instruction *> *instantiateRTL(const QString& name, ADDRESS natPC, const std::vector<SharedExp>& actuals);
+	std::list<Instruction *> *instantiateRTL(const QString& name, Address natPC, const std::vector<SharedExp>& actuals);
 
-	std::list<Instruction *> *instantiateRTL(RTL & rtls, ADDRESS, std::list<QString> &params,
+	std::list<Instruction *> *instantiateRTL(RTL & rtls, Address, std::list<QString> &params,
 											 const std::vector<SharedExp> &actuals);
 
 	void transformPostVars(std::list<Instruction *>& rts, bool optimise);

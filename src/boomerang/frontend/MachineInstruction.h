@@ -21,9 +21,9 @@ class MachineOperand
 struct MachineInstruction
 {
 	QString                opcode;
-	ADDRESS                location;
+	   Address                location;
 	std::vector<SharedExp> actuals;
-	MachineInstruction(QString op, ADDRESS pc, std::vector<SharedExp>&& acts)
+	MachineInstruction(QString op, Address pc, std::vector<SharedExp>&& acts)
 		: opcode(op)
 		, location(pc)
 		, actuals(acts)

@@ -75,7 +75,7 @@ struct plt_record
 struct symElem
 {
 	const char *name; // Simple symbol table entry
-	ADDRESS    value;
+	   Address    value;
 };
 
 
@@ -101,10 +101,10 @@ public:
 	void close() override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
-	ADDRESS getMainEntryPoint() override;
+	   Address getMainEntryPoint() override;
 
 	/// @copydoc IFileLoader::getEntryPoint
-	ADDRESS getEntryPoint() override;
+	   Address getEntryPoint() override;
 
 
 	/// @copydoc IFileLoader::getFormat
@@ -114,7 +114,7 @@ public:
 	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getImageBase
-	ADDRESS getImageBase() override;
+	   Address getImageBase() override;
 
 	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
@@ -131,20 +131,20 @@ private:
 	/// Specific to BinaryFile objects that implement a "global pointer"
 	/// Gets a pair of unsigned integers representing the address of %agp (first)
 	/// and the value for GLOBALOFFSET (unused for pa-risc)
-	std::pair<ADDRESS, unsigned> getGlobalPointerInfo();
+	std::pair<Address, unsigned> getGlobalPointerInfo();
 
 	// Get a map from ADDRESS to const char*. This map contains the native
 	// addresses and symbolic names of global data items (if any) which are
 	// shared with dynamically linked libraries. Example: __iob (basis for
 	// stdout).The ADDRESS is the native address of a pointer to the real dynamic data object.
-	std::map<ADDRESS, const char *> *getDynamicGlobalMap();
+	std::map<Address, const char *> *getDynamicGlobalMap();
 
 	// Private method to get the start and length of a given subspace
-	std::pair<ADDRESS, int> getSubspaceInfo(const char *ssname);
+	std::pair<Address, int> getSubspaceInfo(const char *ssname);
 
 	Byte *m_loadedImage;            ///< Points to loaded image
 	IBinarySymbolTable *m_symbols;  ///< Symbol table object
-	std::set<ADDRESS> m_imports;    ///< Set of imported proc addr's
+	std::set<Address> m_imports;    ///< Set of imported proc addr's
 	IBinaryImage *m_image;
 
 public:

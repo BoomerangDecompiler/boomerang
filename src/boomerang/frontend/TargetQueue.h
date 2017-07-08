@@ -10,7 +10,7 @@ class BasicBlock;
 /// Put the target queue logic into this small class
 class TargetQueue
 {
-	std::queue<ADDRESS> targets;
+	std::queue<Address> targets;
 
 public:
 	/***************************************************************************/ /**
@@ -24,7 +24,7 @@ public:
 	* \param   pNewBB - set to the lower part of the BB if the address already exists
 	*          as a non explicit label (BB has to be split)
 	******************************************************************************/
-	void visit(Cfg *pCfg, ADDRESS uNewAddr, BasicBlock *& pNewBB);
+	void visit(Cfg *pCfg, Address uNewAddr, BasicBlock *& pNewBB);
 	
 	
 	/***************************************************************************/ /**
@@ -32,7 +32,7 @@ public:
 	* \note        Can be some targets already in the queue now
 	* \param    uAddr Native address to seed the queue with
 	******************************************************************************/
-	void initial(ADDRESS uAddr);
+	void initial(Address uAddr);
 	
 	/***************************************************************************/ /**
 	* \brief   Return the next target from the queue of non-processed
@@ -41,7 +41,7 @@ public:
 	* \returns The next address to process, or NO_ADDRESS if none
 	*          (targets is empty)
 	******************************************************************************/
-	ADDRESS nextAddress(const Cfg& cfg);
+	   Address nextAddress(const Cfg& cfg);
 	
 	/// Print (for debugging)
 	void dump();

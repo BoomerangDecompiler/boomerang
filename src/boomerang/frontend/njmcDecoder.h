@@ -47,7 +47,7 @@ public:
 	 * \param   stmts list of statements (?)
 	 * \param   result ref to decoder result object
 	 ******************************************************************************/
-	void processComputedJump(const char *name, int size, SharedExp dest, ADDRESS pc,
+	void processComputedJump(const char *name, int size, SharedExp dest, Address pc,
 							 std::list<Instruction *> *stmts, DecodeResult& result);
 
 	/***************************************************************************/ /**
@@ -59,7 +59,7 @@ public:
 	 * \param   stmts list of statements (?)
 	 * \param   result ref to decoder result object
 	 ******************************************************************************/
-	void processComputedCall(const char *name, int size, SharedExp dest, ADDRESS pc,
+	void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
 							 std::list<Instruction *> *stmts, DecodeResult& result);
 
 	/// @copydoc IInstructionTranslator::getRegName
@@ -84,7 +84,7 @@ protected:
 	 * \param   ... - Semantic String ptrs representing actual operands
 	 * \returns an instantiated list of Exps
 	 ******************************************************************************/
-	std::list<Instruction *> *instantiate(ADDRESS pc, const char *name, const std::initializer_list<SharedExp>& args = {});
+	std::list<Instruction *> *instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args = {});
 
 	/***************************************************************************/ /**
 	 * \brief   Similarly to NJMCDecoder::instantiate, given a parameter name and a list of Exp*'s representing
@@ -123,7 +123,7 @@ protected:
 	 * \param   stmts list of statements (?)
 	 * \param   result ref to decoder result object
 	 ******************************************************************************/
-	void processUnconditionalJump(const char *name, int size, ADDRESS relocd, ptrdiff_t delta, ADDRESS pc,
+	void processUnconditionalJump(const char *name, int size, Address relocd, ptrdiff_t delta, Address pc,
 								  std::list<Instruction *> *stmts, DecodeResult& result);
 
 
@@ -154,7 +154,7 @@ protected:
  * Does the instruction at the given offset correspond to a caller prologue?
  * \note Implemented in the decoder.m files
  */
-bool isFuncPrologue(ADDRESS hostPC);
+bool isFuncPrologue(Address hostPC);
 
 /***************************************************************************/ /**
  * These are the macros that each of the .m files depend upon.
@@ -178,7 +178,7 @@ bool isFuncPrologue(ADDRESS hostPC);
 	BranchStatement *jump = new BranchStatement;		  \
 	result.rtl->appendStmt(jump);						  \
 	result.numBytes = size;								  \
-	jump->setDest((relocd - ADDRESS::g(delta)).native()); \
+	jump->setDest((relocd - Address::g(delta)).native()); \
 	jump->setCondType(cond);							  \
 	SHOW_ASM(name << " " << relocd.native())
 

@@ -79,10 +79,10 @@ std::vector<SharedExp>& MIPSFrontEnd::getDefaultReturns()
 }
 
 
-ADDRESS MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
+Address MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	gotMain = true;
-	ADDRESS start = m_fileLoader->getMainEntryPoint();
+	   Address start = m_fileLoader->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		return start;
@@ -100,7 +100,7 @@ ADDRESS MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool MIPSFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+bool MIPSFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
 							   bool spec /* = false */)
 {
 	// Call the base class to do most of the work

@@ -57,16 +57,16 @@ public:
 
 	/// Return the virtual address at which the binary expects to be loaded.
 	/// For position independent / relocatable code this should be NO_ADDRESS
-	virtual ADDRESS getImageBase() const = 0;
+	virtual Address getImageBase() const = 0;
 
 	/// Return the total size of the loaded image
 	virtual size_t getImageSize() const = 0;
 
 	/// Get the address of the "real" entry point, e.g. _start()
-	virtual ADDRESS getEntryPoint() const = 0;
+	virtual Address getEntryPoint() const = 0;
 
 	/// Get the address of main()/WinMain
-	virtual ADDRESS getMainEntryPoint() const = 0;
+	virtual Address getMainEntryPoint() const = 0;
 
 	/// Check if this file has debug info available
 	virtual bool hasDebugInfo() const { return false; }

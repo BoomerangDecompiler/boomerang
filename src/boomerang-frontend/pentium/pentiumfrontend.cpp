@@ -201,7 +201,7 @@ void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, 
  * \param  spec - true if this is a speculative decode (so give up on any invalid instruction)
  * \returns           True if successful decode
  ******************************************************************************/
-bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+bool PentiumFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
 								  bool spec /* = false */)
 {
 	// Call the base class to do most of the work
@@ -477,7 +477,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
 
 // Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
 // Insert before rit
-void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::iterator& rit, ADDRESS uAddr, SharedExp lhs,
+void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::iterator& rit, Address uAddr, SharedExp lhs,
 							  SharedExp cond)
 {
 	Instruction *asgn = new Assign(lhs, std::make_shared<Ternary>(opTern, cond, Const::get(1), Const::get(0)));
@@ -490,7 +490,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::itera
 }
 
 
-bool PentiumFrontEnd::isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl)
+bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl)
 {
 	if (dest == NO_ADDRESS) {
 		return false;
@@ -564,9 +564,9 @@ PentiumFrontEnd::~PentiumFrontEnd()
  * \brief    Locate the starting address of "main" in the code section
  * \returns         Native pointer if found; NO_ADDRESS if not
  ******************************************************************************/
-ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
+Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 {
-	ADDRESS start = m_fileLoader->getMainEntryPoint();
+	   Address start = m_fileLoader->getMainEntryPoint();
 
 	if (start != NO_ADDRESS) {
 		gotMain = true;
@@ -582,13 +582,13 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 
 	int     instCount = 100;
 	int     conseq    = 0;
-	ADDRESS addr      = start;
+	   Address addr      = start;
 
 	IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
 	// Look for 3 calls in a row in the first 100 instructions, with no other instructions between them.
 	// This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA followed by
 	// a push of eax and then the call to main.  Or a call to __libc_start_main
-	ADDRESS dest;
+	   Address dest;
 
 	do {
 		DecodeResult inst = decodeInstruction(addr);
@@ -650,7 +650,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 				SharedExp rhs = a->getRight();
 				assert(rhs->isIntConst());
 				gotMain = true;
-				return ADDRESS::g(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
+				return Address::g(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
 			}
 		}
 		else {
@@ -687,7 +687,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-void toBranches(ADDRESS a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb, BB_IT& it)
+void toBranches(Address a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb, BB_IT& it)
 {
 	BranchStatement *br1 = new BranchStatement;
 
@@ -735,7 +735,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
 			break;
 		}
 
-		ADDRESS prev, addr = ADDRESS::g(0L);
+		      Address prev, addr = Address::g(0L);
 		bool    lastRtl = true;
 
 		// For each RTL this BB
@@ -1008,7 +1008,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 }
 
 
-bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult& r)
+bool PentiumFrontEnd::decodeSpecial_out(Address pc, DecodeResult& r)
 {
 	// out dx, al
 	r.reset();
@@ -1028,7 +1028,7 @@ bool PentiumFrontEnd::decodeSpecial_out(ADDRESS pc, DecodeResult& r)
 }
 
 
-bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult& r)
+bool PentiumFrontEnd::decodeSpecial_invalid(Address pc, DecodeResult& r)
 {
 	int n = m_image->readNative1(pc + 1);
 
@@ -1050,7 +1050,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(ADDRESS pc, DecodeResult& r)
 }
 
 
-bool PentiumFrontEnd::decodeSpecial(ADDRESS pc, DecodeResult& r)
+bool PentiumFrontEnd::decodeSpecial(Address pc, DecodeResult& r)
 {
 	int n = m_image->readNative1(pc);
 
@@ -1067,7 +1067,7 @@ bool PentiumFrontEnd::decodeSpecial(ADDRESS pc, DecodeResult& r)
 }
 
 
-DecodeResult& PentiumFrontEnd::decodeInstruction(ADDRESS pc)
+DecodeResult& PentiumFrontEnd::decodeInstruction(Address pc)
 {
 	static DecodeResult r;
 
@@ -1150,7 +1150,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 			continue;
 		}
 
-		ADDRESS a;
+		      Address a;
 
 		if (found->isIntConst()) {
 			a = found->access<Const>()->getInt();
@@ -1188,7 +1188,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 		for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
 			if (compound->getType(n)->resolvesToPointer() &&
 				compound->getType(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
-				ADDRESS d = ADDRESS::g(m_image->readNative4(a));
+				            Address d = Address::g(m_image->readNative4(a));
 
 				if (VERBOSE) {
 					LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "

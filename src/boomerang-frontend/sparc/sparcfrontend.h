@@ -35,7 +35,7 @@ public:
 	 * specific things (but often calls the base class to do most of the
 	 * work. Sparc is an exception)
 	 */
-	virtual bool processProc(ADDRESS uAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
+	virtual bool processProc(Address uAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
 
 	/// @copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
@@ -44,42 +44,42 @@ public:
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
 	/// @copydoc IFrontEnd::getMainEntryPoint
-	virtual ADDRESS getMainEntryPoint(bool& gotMain) override;
+	virtual Address getMainEntryPoint(bool& gotMain) override;
 
 private:
-	void warnDCTcouple(ADDRESS uAt, ADDRESS uDest);
-	bool optimise_DelayCopy(ADDRESS src, ADDRESS dest, ptrdiff_t delta, ADDRESS uUpper);
+	void warnDCTcouple(Address uAt, Address uDest);
+	bool optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper);
 	BasicBlock *optimise_CallReturn(CallStatement *call, RTL *rtl, RTL *delay, UserProc *pProc);
 
-	void handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq);
-	void handleCall(UserProc *proc, ADDRESS dest, BasicBlock *callBB, Cfg *cfg, ADDRESS address, int offset = 0);
+	void handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq);
+	void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, Cfg *cfg, Address address, int offset = 0);
 
-	void case_unhandled_stub(ADDRESS addr);
+	void case_unhandled_stub(Address addr);
 
-	bool case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL *> *& BB_rtls,
+	bool case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL *> *& BB_rtls,
 				   UserProc *proc, std::list<CallStatement *>& callList, QTextStream& os, bool isPattern = false);
 
-	void case_SD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
+	void case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
 				 std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq, QTextStream& os);
 
-	bool case_DD(ADDRESS& address, ptrdiff_t delta, DecodeResult& inst, DecodeResult& delay_inst,
+	bool case_DD(Address& address, ptrdiff_t delta, DecodeResult& inst, DecodeResult& delay_inst,
 				 std::list<RTL *> *& BB_rtls, TargetQueue& tq, UserProc *proc, std::list<CallStatement *>& callList);
 
-	bool case_SCD(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
+	bool case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
 				  std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq);
 
-	bool case_SCDAN(ADDRESS& address, ptrdiff_t delta, ADDRESS hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
+	bool case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
 					std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq);
 
-	void emitNop(std::list<RTL *> *pRtls, ADDRESS uAddr);
-	void emitCopyPC(std::list<RTL *> *pRtls, ADDRESS uAddr);
+	void emitNop(std::list<RTL *> *pRtls, Address uAddr);
+	void emitCopyPC(std::list<RTL *> *pRtls, Address uAddr);
 	unsigned fetch4(unsigned char *ptr);
-	void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, ADDRESS addr, std::list<RTL *> *lrtl);
-	void quadOperation(ADDRESS addr, std::list<RTL *> *lrtl, OPER op);
+	void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, std::list<RTL *> *lrtl);
+	void quadOperation(Address addr, std::list<RTL *> *lrtl, OPER op);
 
-	bool isHelperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl) override;
-	void gen32op32gives64(OPER op, std::list<RTL *> *lrtl, ADDRESS addr);
-	bool helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL *> *lrtl, QString& name);
+	bool isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl) override;
+	void gen32op32gives64(OPER op, std::list<RTL *> *lrtl, Address addr);
+	bool helperFuncLong(Address dest, Address addr, std::list<RTL *> *lrtl, QString& name);
 
 	// void    setReturnLocations(CalleeEpilogue* epilogue, int iReg);
 

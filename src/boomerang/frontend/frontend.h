@@ -136,15 +136,15 @@ public:
 	
 	
 	/// Add a symbol to the loader
-	void addSymbol(ADDRESS addr, const QString& nam);
+	void addSymbol(Address addr, const QString& nam);
 
 	/// Add a "hint" that an instruction at the given address references a named global
-	void addRefHint(ADDRESS addr, const QString& nam) { m_refHints[addr] = nam; }
+	void addRefHint(Address addr, const QString& nam) { m_refHints[addr] = nam; }
 
 	// Function to fetch the smallest machine instruction
 	// virtual    int            getInst(int addr);
 
-	virtual DecodeResult& decodeInstruction(ADDRESS pc);
+	virtual DecodeResult& decodeInstruction(Address pc);
 
 	virtual void extraProcessCall(CallStatement * /*call*/, std::list<RTL *> * /*BB_rtls*/) {}
 
@@ -165,14 +165,14 @@ public:
 	void decode(Prog *Program, bool decodeMain = true, const char *pname = nullptr);
 
 	/// Decode all procs starting at a given address in a given program.
-	void decode(Prog *Program, ADDRESS a);
+	void decode(Prog *Program, Address a);
 
 	/// Decode one proc starting at a given address in a given program.
 	/// \a a should be the address of an UserProc
-	void decodeOnly(Prog *Program, ADDRESS a);
+	void decodeOnly(Prog *Program, Address a);
 
 	/// Decode a fragment of a procedure, e.g. for each destination of a switch statement
-	void decodeFragment(UserProc *proc, ADDRESS a);
+	void decodeFragment(UserProc *proc, Address a);
 
 	
 	/***************************************************************************/ /**
@@ -193,7 +193,7 @@ public:
 	* 
 	* \returns          true for a good decode (no illegal instructions)
 	******************************************************************************/
-	virtual bool processProc(ADDRESS addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false);
+	virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false);
 
 	/**
 	 * Given the dest of a call, determine if this is a machine specific helper function with special semantics.
@@ -201,17 +201,17 @@ public:
 	 * 
 	 * @param addr the native address of the call instruction
 	 */
-	virtual bool isHelperFunc(ADDRESS /*dest*/, ADDRESS /*addr*/, std::list<RTL *> * /*lrtl*/) { return false; }
+	virtual bool isHelperFunc(Address /*dest*/, Address /*addr*/, std::list<RTL *> * /*lrtl*/) { return false; }
 
 	/**
 	 * Locate the starting address of "main", returning a native address
 	 */
-	virtual ADDRESS getMainEntryPoint(bool& gotMain) = 0;
+	virtual Address getMainEntryPoint(bool& gotMain) = 0;
 
 	/**
 	 * Returns a list of all available entrypoints.
 	 */
-	std::vector<ADDRESS> getEntryPoints();
+	std::vector<Address> getEntryPoints();
 
 	static void closeInstance(void *dlHandle); ///< Close the library opened by getInstanceFor
 	
@@ -248,10 +248,10 @@ public:
 	 * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
 	 * incomplete in these cases, and needs to be restarted from scratch
 	 */
-	void addDecodedRtl(ADDRESS a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
-	void preprocessProcGoto(std::list<Instruction *>::iterator ss, ADDRESS dest,
+	void addDecodedRtl(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
+	void preprocessProcGoto(std::list<Instruction *>::iterator ss, Address dest,
 							const std::list<Instruction *>& sl, RTL *pRtl);
-	void checkEntryPoint(std::vector<ADDRESS>& entrypoints, ADDRESS addr, const char *type);
+	void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
 
 private:
 	bool refersToImportedFunction(const SharedExp& pDest);
@@ -276,10 +276,10 @@ protected:
 	QMap<QString, std::shared_ptr<Signature> > m_librarySignatures;
 	
 	/// Map from address to meaningful name
-	std::map<ADDRESS, QString> m_refHints;
+	std::map<Address, QString> m_refHints;
 	
 	/// Map from address to previously decoded RTLs for decoded indirect control transfer instructions
-	std::map<ADDRESS, RTL *> m_previouslyDecoded;
+	std::map<Address, RTL *> m_previouslyDecoded;
 
 private:
 	SymTab *m_binarySymbols;

@@ -220,7 +220,7 @@ void Module::printTree(QTextStream& ostr) const
 }
 
 
-void Module::setLocationMap(ADDRESS loc, Function *fnc)
+void Module::setLocationMap(Address loc, Function *fnc)
 {
 	if (fnc == nullptr) {
 		size_t count = m_labelsToProcs.erase(loc);
@@ -239,7 +239,7 @@ void Module::eraseFromParent()
 }
 
 
-Function *Module::getOrInsertFunction(const QString& name, ADDRESS uNative, bool bLib)
+Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool bLib)
 {
 	Function *pProc;
 
@@ -325,7 +325,7 @@ Function *Module::getFunction(const QString& name) const
 }
 
 
-Function *Module::getFunction(ADDRESS loc) const
+Function *Module::getFunction(Address loc) const
 {
 	auto iter = m_labelsToProcs.find(loc);
 

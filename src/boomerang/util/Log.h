@@ -11,7 +11,7 @@ class Exp;
 class LocationSet;
 class RTL;
 class Type;
-struct ADDRESS;
+struct Address;
 
 struct Printable;
 
@@ -33,7 +33,7 @@ public:
 	virtual Log& operator<<(size_t i);
 	virtual Log& operator<<(char c);
 	virtual Log& operator<<(double d);
-	virtual Log& operator<<(ADDRESS a);
+	virtual Log& operator<<(Address a);
 	virtual Log& operator<<(const LocationSet *l);
 
 	virtual ~Log() {}

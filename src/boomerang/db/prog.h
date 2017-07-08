@@ -50,12 +50,12 @@ protected:
 
 private:
 	SharedType m_type;
-	ADDRESS m_addr;
+	   Address m_addr;
 	QString m_name;
 	Prog *m_parent;
 
 public:
-	Global(SharedType type, ADDRESS addr, const QString& name, Prog *p)
+	Global(SharedType type, Address addr, const QString& name, Prog *p)
 		: m_type(type)
 		, m_addr(addr)
 		, m_name(name)
@@ -67,11 +67,11 @@ public:
 	void setType(SharedType ty) { m_type = ty; }
 	void meetType(SharedType ty);
 
-	ADDRESS getAddress()     const { return m_addr; }
+	   Address getAddress()     const { return m_addr; }
 	const QString& getName() const { return m_name; }
 
 	/// return true if @p address is contained within this global.
-	bool containsAddress(ADDRESS addr) const
+	bool containsAddress(Address addr) const
 	{
 		// TODO: use getType()->getBytes()
 		if (addr == m_addr) {
@@ -88,7 +88,7 @@ public:
 protected:
 	Global()
 		: m_type(nullptr)
-		, m_addr(ADDRESS::g(0L)) {}
+		, m_addr(Address::g(0L)) {}
 };
 
 
@@ -112,7 +112,7 @@ private:
 	ModuleList m_moduleList;  ///< The Modules that make up this program
 
 public:
-	typedef std::map<ADDRESS, BinarySymbol *> AddressToSymbolMap;
+	typedef std::map<Address, BinarySymbol *> AddressToSymbolMap;
 
 	Prog(const QString& name);
 	virtual ~Prog();
@@ -134,7 +134,7 @@ public:
 	 * \returns       Pointer to the Proc object, or 0 if this is a deleted (not to
 	 *                be decoded) address
 	 ******************************************************************************/
-	Function *setNewProc(ADDRESS uNative);
+	Function *setNewProc(Address uNative);
 
 	void removeProc(const QString& name);
 
@@ -150,7 +150,7 @@ public:
 	 ******************************************************************************/
 	int getNumProcs(bool user_only = true) const;
 
-	Function *findProc(ADDRESS uAddr) const;
+	Function *findProc(Address uAddr) const;
 	Function *findProc(const QString& name) const;
 
 	/***************************************************************************/ /**
@@ -159,14 +159,14 @@ public:
 	 * \param uAddr - Native address to search for
 	 * \returns       Pointer to the Proc object, or 0 if none, or -1 if deleted
 	 ******************************************************************************/
-	Function *findContainingProc(ADDRESS uAddr) const;
+	Function *findContainingProc(Address uAddr) const;
 
 	/***************************************************************************/ /**
 	 * \brief    Return true if this is a real procedure
 	 * \param addr   Native address of the procedure entry point
 	 * \returns      True if a real (non deleted) proc
 	 ******************************************************************************/
-	bool isProcLabel(ADDRESS addr) const;
+	bool isProcLabel(Address addr) const;
 
 	/***************************************************************************/ /**
 	 * \brief Get the name for the progam, without any path at the front
@@ -195,7 +195,7 @@ public:
 	 * \returns     Host pointer if in range; nullptr if not
 	 *              Also sets 2 reference parameters (see above)
 	 ******************************************************************************/
-	const void *getCodeInfo(ADDRESS uAddr, const char *& last, int& delta) const;
+	const void *getCodeInfo(Address uAddr, const char *& last, int& delta) const;
 
 	QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
 	int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
@@ -204,15 +204,15 @@ public:
 	 * \brief    Decode from entry point given as an agrument
 	 * \param a -  Native address of the entry point
 	 ******************************************************************************/
-	void decodeEntryPoint(ADDRESS a);
+	void decodeEntryPoint(Address a);
 
 	/***************************************************************************/ /**
 	 * \brief    Add entry point given as an agrument to the list of entryProcs
 	 * \param a -  Native address of the entry point
 	 ******************************************************************************/
-	void setEntryPoint(ADDRESS a);
+	void setEntryPoint(Address a);
 	void decodeEverythingUndecoded();
-	void decodeFragment(UserProc *proc, ADDRESS a);
+	void decodeFragment(UserProc *proc, Address a);
 
 	/// Re-decode this proc from scratch
 	void reDecode(UserProc *proc);
@@ -278,24 +278,24 @@ public:
 	bool isWin32() const;
 
 	/// Get a global variable if possible, looking up the loader's symbol table if necessary
-	QString getGlobalName(ADDRESS uaddr) const;
+	QString getGlobalName(Address uaddr) const;
 
 	/// Get a named global variable if possible, looking up the loader's symbol table if necessary
-	ADDRESS getGlobalAddr(const QString& nam) const;
+	   Address getGlobalAddr(const QString& nam) const;
 	Global *getGlobal(const QString& nam) const;
 
 	/// Make up a name for a new global at address \a uaddr
 	/// (or return an existing name if address already used)
-	QString newGlobalName(ADDRESS uaddr);
+	QString newGlobalName(Address uaddr);
 
 	/// Guess a global's type based on its name and address
-	SharedType guessGlobalType(const QString& nam, ADDRESS u) const;
+	SharedType guessGlobalType(const QString& nam, Address u) const;
 
 	/// Make an array type for the global array at u. Mainly, set the length sensibly
-	std::shared_ptr<ArrayType> makeArrayType(ADDRESS u, SharedType t);
+	std::shared_ptr<ArrayType> makeArrayType(Address u, SharedType t);
 
 	/// Indicate that a given global has been seen used in the program.
-	bool markGlobalUsed(ADDRESS uaddr, SharedType knownType = nullptr);
+	bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
 
 	/// Get the type of a global variable
 	SharedType getGlobalType(const QString& nam) const;
@@ -309,34 +309,34 @@ public:
 	/// get a string constant at a given address if appropriate
 	/// if knownString, it is already known to be a char*
 	/// get a string constant at a give address if appropriate
-	const char *getStringConstant(ADDRESS uaddr, bool knownString = false) const;
-	double getFloatConstant(ADDRESS uaddr, bool& ok, int bits = 64) const;
+	const char *getStringConstant(Address uaddr, bool knownString = false) const;
+	double getFloatConstant(Address uaddr, bool& ok, int bits = 64) const;
 
 	// Hacks for Mike
 	/// Get a code for the machine e.g. MACHINE_SPARC
 	Machine getMachine() const;
 
 	/// Get a symbol from an address
-	QString getSymbolByAddress(ADDRESS dest) const;
+	QString getSymbolByAddress(Address dest) const;
 
-	const IBinarySection *getSectionInfoByAddr(ADDRESS a) const;
-	ADDRESS getLimitTextLow() const;
-	ADDRESS getLimitTextHigh() const;
+	const IBinarySection *getSectionInfoByAddr(Address a) const;
+	   Address getLimitTextLow() const;
+	   Address getLimitTextHigh() const;
 
-	bool isReadOnly(ADDRESS a) const;
-	bool isStringConstant(ADDRESS a) const;
-	bool isCFStringConstant(ADDRESS a) const;
+	bool isReadOnly(Address a) const;
+	bool isStringConstant(Address a) const;
+	bool isCFStringConstant(Address a) const;
 
 	// Read 1, 2, 4, or 8 bytes given a native address
-	int readNative1(ADDRESS a) const;
-	int readNative2(ADDRESS a) const;
-	int readNative4(ADDRESS a) const;
-	SharedExp readNativeAs(ADDRESS uaddr, SharedType type) const;
+	int readNative1(Address a) const;
+	int readNative2(Address a) const;
+	int readNative4(Address a) const;
+	SharedExp readNativeAs(Address uaddr, SharedType type) const;
 
-	bool isDynamicLinkedProcPointer(ADDRESS dest) const;
-	const QString& getDynamicProcName(ADDRESS uNative) const;
+	bool isDynamicLinkedProcPointer(Address dest) const;
+	const QString& getDynamicProcName(Address uNative) const;
 
-	bool processProc(ADDRESS addr, UserProc *proc) // Decode a proc
+	bool processProc(Address addr, UserProc *proc) // Decode a proc
 	{
 		QTextStream os(stderr);                    // rtl output target
 
@@ -346,7 +346,7 @@ public:
 	void readSymbolFile(const QString& fname);
 
 	size_t getImageSize()  const { return m_loaderIface->getImageSize(); }
-	ADDRESS getImageBase() const { return m_loaderIface->getImageBase(); }
+	   Address getImageBase() const { return m_loaderIface->getImageBase(); }
 	void printSymbolsToFile() const;
 	void printCallGraph() const;
 	void printCallGraphXML() const;
@@ -357,7 +357,7 @@ public:
 	bool isModuleUsed(Module *c) const;
 
 	/// Add the given RTL to the front end's map from address to aldready-decoded-RTL
-	void addDecodedRtl(ADDRESS a, RTL *rtl) { m_defaultFrontend->addDecodedRtl(a, rtl); }
+	void addDecodedRtl(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRtl(a, rtl); }
 
 	/***************************************************************************/ /**
 	 * \brief This does extra processing on a constant.
@@ -365,7 +365,7 @@ public:
 	 * location from which the constant was read.
 	 * \returns processed Exp
 	 ******************************************************************************/
-	SharedExp addReloc(SharedExp e, ADDRESS lc);
+	SharedExp addReloc(SharedExp e, Address lc);
 
 
 	/// Create or retrieve existing module
@@ -385,7 +385,7 @@ public:
 	size_t size()  const { return m_moduleList.size(); }
 	bool empty() const { return m_moduleList.empty(); }
 
-	void generateDataSectionCode(QString section_name, ADDRESS section_start, uint32_t size, ICodeGenerator *code) const;
+	void generateDataSectionCode(QString section_name, Address section_start, uint32_t size, ICodeGenerator *code) const;
 
 signals:
 	void rereadLibSignatures();
