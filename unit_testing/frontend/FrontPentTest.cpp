@@ -75,7 +75,7 @@ void FrontPentTest::test1()
 	DecodeResult inst = pFE->decodeInstruction(addr);
 	inst.rtl->print(strm);
 
-	expected = "08048328    0 *32* m[r28 - 4] := r29\n"
+	expected = "0x08048328    0 *32* m[r28 - 4] := r29\n"
 			   "            0 *32* r28 := r28 - 4\n";
 	QCOMPARE(actual, expected);
 	actual.clear();
@@ -83,14 +83,14 @@ void FrontPentTest::test1()
 	addr += inst.numBytes;
 	inst  = pFE->decodeInstruction(addr);
 	inst.rtl->print(strm);
-	expected = QString("08048329    0 *32* r29 := r28\n");
+	expected = QString("0x08048329    0 *32* r29 := r28\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
 	addr = Address(0x804833b);
 	inst = pFE->decodeInstruction(addr);
 	inst.rtl->print(strm);
-	expected = QString("0804833b    0 *32* m[r28 - 4] := 0x80483fc\n"
+	expected = QString("0x0804833b    0 *32* m[r28 - 4] := 0x80483fc\n"
 					   "            0 *32* r28 := r28 - 4\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
@@ -118,7 +118,7 @@ void FrontPentTest::test2()
 
 	inst = pFE->decodeInstruction(Address::g(0x8048345));
 	inst.rtl->print(strm);
-	expected = QString("08048345    0 *32* tmp1 := r28\n"
+	expected = QString("0x08048345    0 *32* tmp1 := r28\n"
 					   "            0 *32* r28 := r28 + 16\n"
 					   "            0 *v* %flags := ADDFLAGS32( tmp1, 16, r28 )\n");
 	QCOMPARE(actual, expected);
@@ -126,13 +126,13 @@ void FrontPentTest::test2()
 
 	inst = pFE->decodeInstruction(Address::g(0x8048348));
 	inst.rtl->print(strm);
-	expected = QString("08048348    0 *32* r24 := 0\n");
+	expected = QString("0x08048348    0 *32* r24 := 0\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
 	inst = pFE->decodeInstruction(Address::g(0x8048329));
 	inst.rtl->print(strm);
-	expected = QString("08048329    0 *32* r29 := r28\n");
+	expected = QString("0x08048329    0 *32* r29 := r28\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
@@ -158,7 +158,7 @@ void FrontPentTest::test3()
 
 	inst = pFE->decodeInstruction(Address::n(0x804834d));
 	inst.rtl->print(strm);
-	expected = QString("0804834d    0 *32* r28 := r29\n"
+	expected = QString("0x0804834d    0 *32* r28 := r29\n"
 					   "            0 *32* r29 := m[r28]\n"
 					   "            0 *32* r28 := r28 + 4\n");
 	QCOMPARE(actual, expected);
@@ -166,7 +166,7 @@ void FrontPentTest::test3()
 
 	inst = pFE->decodeInstruction(Address::n(0x804834e));
 	inst.rtl->print(strm);
-	expected = QString("0804834e    0 *32* %pc := m[r28]\n"
+	expected = QString("0x0804834e    0 *32* %pc := m[r28]\n"
 					   "            0 *32* r28 := r28 + 4\n"
 					   "            0 RET\n"
 					   "              Modifieds: \n"
@@ -199,7 +199,7 @@ void FrontPentTest::testBranch()
 	// jne
 	inst = pFE->decodeInstruction(Address::n(0x8048979));
 	inst.rtl->print(strm);
-	expected = QString("08048979    0 BRANCH 0x8048988, condition "
+	expected = QString("0x08048979    0 BRANCH 0x08048988, condition "
 					   "not equals\n"
 					   "High level: %flags\n");
 	QCOMPARE(actual, expected);
@@ -208,7 +208,7 @@ void FrontPentTest::testBranch()
 	// jg
 	inst = pFE->decodeInstruction(Address::n(0x80489c1));
 	inst.rtl->print(strm);
-	expected = QString("080489c1    0 BRANCH 0x80489d5, condition signed greater\n"
+	expected = QString("0x080489c1    0 BRANCH 0x080489d5, condition signed greater\n"
 					   "High level: %flags\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
@@ -216,7 +216,7 @@ void FrontPentTest::testBranch()
 	// jbe
 	inst = pFE->decodeInstruction(Address::n(0x8048a1b));
 	inst.rtl->print(strm);
-	expected = QString("08048a1b    0 BRANCH 0x8048a2a, condition unsigned less or equals\n"
+	expected = QString("0x08048a1b    0 BRANCH 0x08048a2a, condition unsigned less or equals\n"
 					   "High level: %flags\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
@@ -242,8 +242,8 @@ void FrontPentTest::testFindMain()
 	prog->setFrontEnd(pFE);
 
 	bool    found;
-	   Address addr     = pFE->getMainEntryPoint(found);
-	   Address expected = Address::n(0x8048b10);
+	Address addr     = pFE->getMainEntryPoint(found);
+	Address expected = Address::n(0x8048b10);
 	QCOMPARE(addr, expected);
 	pBF->close();
 	delete pFE;

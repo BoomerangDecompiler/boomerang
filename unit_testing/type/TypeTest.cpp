@@ -132,28 +132,28 @@ void TypeTest::testDataInterval()
 	dim.addItem(Address::g(0x1000), "first", IntegerType::get(32, 1));
 	dim.addItem(Address::g(0x1004), "second", FloatType::get(64));
 	QString actual(dim.prints());
-	QString expected("0x1000-0x1004 first int\n"
-					 "0x1004-0x100c second double\n");
+	QString expected("0x00001000-0x00001004 first int\n"
+					 "0x00001004-0x0000100c second double\n");
 	QCOMPARE(actual, expected);
 
-	DataIntervalEntry *pdie = dim.find(Address::g(0x1000));
+	DataIntervalEntry *pdie = dim.find(Address::g(0x0001000));
 	expected = "first";
 	QVERIFY(pdie);
 	actual = pdie->second.name;
 	QCOMPARE(actual, expected);
 
-	pdie = dim.find(Address::g(0x1003));
+	pdie = dim.find(Address::g(0x0001003));
 	QVERIFY(pdie);
 	actual = pdie->second.name;
 	QCOMPARE(actual, expected);
 
-	pdie = dim.find(Address::g(0x1004));
+	pdie = dim.find(Address::g(0x0001004));
 	QVERIFY(pdie);
 	expected = "second";
 	actual   = pdie->second.name;
 	QCOMPARE(actual, expected);
 
-	pdie = dim.find(Address::g(0x1007));
+	pdie = dim.find(Address::g(0x0001007));
 	QVERIFY(pdie);
 	actual = pdie->second.name;
 	QCOMPARE(actual, expected);
@@ -179,7 +179,7 @@ void TypeTest::testDataInterval()
 
 	// An array of 10 struct1's
 	auto at = ArrayType::get(ct, 10);
-	dim.addItem(Address::g(0x1020), "array1", at);
+	dim.addItem(Address::g(0x00001020), "array1", at);
 	ComplexTypeCompList& ctcl2 = at->compForAddress(Address::g(0x1020 + 0x3C + 8), dim);
 	// Should be 2 components: [5] and .float1
 	ue = 2;
@@ -205,20 +205,20 @@ void TypeTest::testDataIntervalOverlaps()
 	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 	dim.setProc(proc);
 
-	dim.addItem(Address::g(0x1000), "firstInt", IntegerType::get(32, 1));
-	dim.addItem(Address::g(0x1004), "firstFloat", FloatType::get(32));
-	dim.addItem(Address::g(0x1008), "secondInt", IntegerType::get(32, 1));
-	dim.addItem(Address::g(0x100C), "secondFloat", FloatType::get(32));
+	dim.addItem(Address::g(0x00001000), "firstInt", IntegerType::get(32, 1));
+	dim.addItem(Address::g(0x00001004), "firstFloat", FloatType::get(32));
+	dim.addItem(Address::g(0x00001008), "secondInt", IntegerType::get(32, 1));
+	dim.addItem(Address::g(0x0000100C), "secondFloat", FloatType::get(32));
 	auto ct = CompoundType::get();
 	ct->addType(IntegerType::get(32, 1), "int3");
 	ct->addType(FloatType::get(32), "float3");
-	dim.addItem(Address::g(0x1010), "existingStruct", ct);
+	dim.addItem(Address::g(0x00001010), "existingStruct", ct);
 
 	// First insert a new struct over the top of the existing middle pair
 	auto ctu = CompoundType::get();
 	ctu->addType(IntegerType::get(32, 0), "newInt"); // This int has UNKNOWN sign
 	ctu->addType(FloatType::get(32), "newFloat");
-	dim.addItem(Address::g(0x1008), "replacementStruct", ctu);
+	dim.addItem(Address::g(0x00001008), "replacementStruct", ctu);
 
 	DataIntervalEntry *pdie  = dim.find(Address::g(0x1008));
 	QString           actual = pdie->second.type->getCtype();
@@ -228,45 +228,45 @@ void TypeTest::testDataIntervalOverlaps()
 	auto ct3 = CompoundType::get();
 	ct3->addType(FloatType::get(32), "newFloat3");
 	ct3->addType(IntegerType::get(32, 0), "newInt3");
-	dim.addItem(Address::g(0x1004), "weaveStruct1", ct3);
-	pdie = dim.find(Address::g(0x1004));
+	dim.addItem(Address::g(0x00001004), "weaveStruct1", ct3);
+	pdie = dim.find(Address::g(0x00001004));
 	QCOMPARE(pdie->second.name, QString("firstFloat"));
 
 	// Totally unaligned
-	dim.addItem(Address::g(0x1001), "weaveStruct2", ct3);
-	pdie = dim.find(Address::g(0x1001));
+	dim.addItem(Address::g(0x00001001), "weaveStruct2", ct3);
+	pdie = dim.find(Address::g(0x000001001));
 	QCOMPARE(pdie->second.name, QString("firstInt"));
 
-	dim.addItem(Address::g(0x1004), "firstInt", IntegerType::get(32, 1)); // Should fail
-	pdie = dim.find(Address::g(0x1004));
+	dim.addItem(Address::g(0x00001004), "firstInt", IntegerType::get(32, 1)); // Should fail
+	pdie = dim.find(Address::g(0x00001004));
 	QCOMPARE(pdie->second.name, QString("firstFloat"));
 
 	// Set up three ints
-	dim.deleteItem(Address::g(0x1004));
-	dim.addItem(Address::g(0x1004), "firstInt", IntegerType::get(32, 1)); // Definately signed
-	dim.deleteItem(Address::g(0x1008));
-	dim.addItem(Address::g(0x1008), "firstInt", IntegerType::get(32, 0)); // Unknown signedess
+	dim.deleteItem(Address::g(0x00001004));
+	dim.addItem(Address::g(0x00001004), "firstInt", IntegerType::get(32, 1)); // Definately signed
+	dim.deleteItem(Address::g(0x00001008));
+	dim.addItem(Address::g(0x00001008), "firstInt", IntegerType::get(32, 0)); // Unknown signedess
 	// then, add an array over the three integers
 	auto at = ArrayType::get(IntegerType::get(32, 0), 3);
-	dim.addItem(Address::g(0x1000), "newArray", at);
+	dim.addItem(Address::g(0x00001000), "newArray", at);
 
-	pdie = dim.find(Address::g(0x1005)); // Check middle element
+	pdie = dim.find(Address::g(0x00001005)); // Check middle element
 	QCOMPARE(pdie->second.name, QString("newArray"));
-	pdie = dim.find(Address::g(0x1000)); // Check first
+	pdie = dim.find(Address::g(0x00001000)); // Check first
 	QCOMPARE(pdie->second.name, QString("newArray"));
 	pdie = dim.find(Address::g(0x100B)); // Check last
 	QCOMPARE(pdie->second.name, QString("newArray"));
 
 	// Already have an array of 3 ints at 0x1000. Put a new array completely before, then with only one word overlap
-	dim.addItem(Address::g(0xF00), "newArray2", at);
-	pdie = dim.find(Address::g(0x1000)); // Should still be newArray at 0x1000
+	dim.addItem(Address::g(0x00000F00), "newArray2", at);
+	pdie = dim.find(Address::g(0x00001000)); // Should still be newArray at 0x1000
 	QCOMPARE(pdie->second.name, QString("newArray"));
 
-	pdie = dim.find(Address::g(0xF00));
+	pdie = dim.find(Address::g(0x00000F00));
 	QCOMPARE(pdie->second.name, QString("newArray2"));
 
-	dim.addItem(Address::g(0xFF8), "newArray3", at); // Should fail
-	pdie = dim.find(Address::g(0xFF8));
+	dim.addItem(Address::g(0x00000FF8), "newArray3", at); // Should fail
+	pdie = dim.find(Address::g(0x00000FF8));
 	QVERIFY(nullptr == (void *)pdie);                // Expect nullptr
 }
 

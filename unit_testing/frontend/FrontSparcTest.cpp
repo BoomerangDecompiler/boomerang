@@ -74,7 +74,7 @@ void FrontSparcTest::test1()
 	QVERIFY(inst.rtl != nullptr);
 	inst.rtl->print(strm);
 
-	expected = "00010684    0 *32* tmp := r14 - 112\n"
+	expected = "0x00010684    0 *32* tmp := r14 - 112\n"
 			   "            0 *32* m[r14] := r16\n"
 			   "            0 *32* m[r14 + 4] := r17\n"
 			   "            0 *32* m[r14 + 8] := r18\n"
@@ -106,14 +106,14 @@ void FrontSparcTest::test1()
 	addr += inst.numBytes;
 	inst  = pFE->decodeInstruction(addr);
 	inst.rtl->print(strm);
-	expected = QString("00010688    0 *32* r8 := 0x10400\n");
+	expected = QString("0x00010688    0 *32* r8 := 0x10400\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
 	addr += inst.numBytes;
 	inst  = pFE->decodeInstruction(addr);
 	inst.rtl->print(strm);
-	expected = QString("0001068c    0 *32* r8 := r8 | 848\n");
+	expected = QString("0x0001068c    0 *32* r8 := r8 | 848\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
@@ -141,7 +141,7 @@ void FrontSparcTest::test2()
 	inst.rtl->print(strm);
 	// This call is to out of range of the program's text limits (to the Program Linkage Table (PLT), calling printf)
 	// This is quite normal.
-	expected = QString("00010690    0 CALL printf(\n"
+	expected = QString("0x00010690    0 CALL printf(\n"
 					   "              )\n"
 					   "              Reaching definitions: \n"
 					   "              Live variables: \n");
@@ -150,19 +150,19 @@ void FrontSparcTest::test2()
 
 	inst = pFE->decodeInstruction(Address::g(0x10694));
 	inst.rtl->print(strm);
-	expected = QString("00010694\n");
+	expected = QString("0x00010694\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
 	inst = pFE->decodeInstruction(Address::g(0x10698));
 	inst.rtl->print(strm);
-	expected = QString("00010698    0 *32* r8 := 0\n");
+	expected = QString("0x00010698    0 *32* r8 := 0\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
 	inst = pFE->decodeInstruction(Address::g(0x1069c));
 	inst.rtl->print(strm);
-	expected = QString("0001069c    0 *32* r24 := r8\n");
+	expected = QString("0x0001069c    0 *32* r24 := r8\n");
 	QCOMPARE(actual, expected);
 
 	delete pFE;
@@ -187,12 +187,12 @@ void FrontSparcTest::test3()
 
 	inst = pFE->decodeInstruction(Address::g(0x106a0));
 	inst.rtl->print(strm);
-	expected = QString("000106a0\n");
+	expected = QString("0x000106a0\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 	inst = pFE->decodeInstruction(Address::g(0x106a4));
 	inst.rtl->print(strm);
-	expected = QString("000106a4    0 RET\n"
+	expected = QString("0x000106a4    0 RET\n"
 					   "              Modifieds: \n"
 					   "              Reaching definitions: \n");
 	QCOMPARE(actual, expected);
@@ -200,7 +200,7 @@ void FrontSparcTest::test3()
 
 	inst = pFE->decodeInstruction(Address::g(0x106a8));
 	inst.rtl->print(strm);
-	expected = QString("000106a8    0 *32* tmp := 0\n"
+	expected = QString("0x000106a8    0 *32* tmp := 0\n"
 					   "            0 *32* r8 := r24\n"
 					   "            0 *32* r9 := r25\n"
 					   "            0 *32* r10 := r26\n"
@@ -250,26 +250,26 @@ void FrontSparcTest::testBranch()
 	prog->setFrontEnd(pFE);
 
 	// bne
-	inst = pFE->decodeInstruction(Address::g(0x10ab0));
+	inst = pFE->decodeInstruction(Address::g(0x00010ab0));
 	inst.rtl->print(strm);
-	expected = QString("00010ab0    0 BRANCH 0x10ac8, condition not equals\n"
+	expected = QString("0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
 					   "High level: %flags\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
 	// bg
-	inst = pFE->decodeInstruction(Address::g(0x10af8));
+	inst = pFE->decodeInstruction(Address::g(0x00010af8));
 	inst.rtl->print(strm);
-	expected = QString("00010af8    0 BRANCH 0x10b10, condition "
+	expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition "
 					   "signed greater\n"
 					   "High level: %flags\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
 	// bleu
-	inst = pFE->decodeInstruction(Address::g(0x10b44));
+	inst = pFE->decodeInstruction(Address::g(0x00010b44));
 	inst.rtl->print(strm);
-	expected = QString("00010b44    0 BRANCH 0x10b54, condition unsigned less or equals\n"
+	expected = QString("0x00010b44    0 BRANCH 0x00010b54, condition unsigned less or equals\n"
 					   "High level: %flags\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
@@ -312,8 +312,8 @@ void FrontSparcTest::testDelaySlot()
 	bb->print(strm);
 	QString expected("Call BB:\n"
 					 "in edges: \n"
-					 "out edges: 10a98 \n"
-					 "00010a80    0 *32* tmp := r14 - 120\n"
+					 "out edges: 0x00010a98 \n"
+					 "0x00010a80    0 *32* tmp := r14 - 120\n"
 					 "            0 *32* m[r14] := r16\n"
 					 "            0 *32* m[r14 + 4] := r17\n"
 					 "            0 *32* m[r14 + 8] := r18\n"
@@ -339,12 +339,12 @@ void FrontSparcTest::testDelaySlot()
 					 "            0 *32* r30 := r14\n"
 					 "            0 *32* r31 := r15\n"
 					 "            0 *32* r14 := tmp\n"
-					 "00010a84    0 *32* r16 := 0x11400\n"
-					 "00010a88    0 *32* r16 := r16 | 808\n"
-					 "00010a8c    0 *32* r8 := r16\n"
-					 "00010a90    0 *32* tmp := r30\n"
+					 "0x00010a84    0 *32* r16 := 0x11400\n"
+					 "0x00010a88    0 *32* r16 := r16 | 808\n"
+					 "0x00010a8c    0 *32* r8 := r16\n"
+					 "0x00010a90    0 *32* tmp := r30\n"
 					 "            0 *32* r9 := r30 - 20\n"
-					 "00010a90    0 CALL scanf(\n"
+					 "0x00010a90    0 CALL scanf(\n"
 					 "              )\n"
 					 "              Reaching definitions: \n"
 					 "              Live variables: \n");
@@ -356,12 +356,12 @@ void FrontSparcTest::testDelaySlot()
 	QVERIFY(bb);
 	bb->print(strm);
 	expected = "Call BB:\n"
-			   "in edges: 10a90(10a80) \n"
-			   "out edges: 10aa4 \n"
-			   "00010a98    0 *32* r8 := r16\n"
-			   "00010a9c    0 *32* tmp := r30\n"
+			   "in edges: 0x00010a90(0x00010a80) \n"
+			   "out edges: 0x00010aa4 \n"
+			   "0x00010a98    0 *32* r8 := r16\n"
+			   "0x00010a9c    0 *32* tmp := r30\n"
 			   "            0 *32* r9 := r30 - 24\n"
-			   "00010a9c    0 CALL scanf(\n"
+			   "0x00010a9c    0 CALL scanf(\n"
 			   "              )\n"
 			   "              Reaching definitions: \n"
 			   "              Live variables: \n";
@@ -373,15 +373,15 @@ void FrontSparcTest::testDelaySlot()
 	QVERIFY(bb);
 	bb->print(strm);
 	expected = "Twoway BB:\n"
-			   "in edges: 10a9c(10a98) \n"
-			   "out edges: 10ac8 10ab8 \n"
-			   "00010aa4    0 *32* r8 := m[r30 - 20]\n"
-			   "00010aa8    0 *32* r16 := 5\n"
-			   "00010aac    0 *32* tmp := r16\n"
+			   "in edges: 0x00010a9c(0x00010a98) \n"
+			   "out edges: 0x00010ac8 0x00010ab8 \n"
+			   "0x00010aa4    0 *32* r8 := m[r30 - 20]\n"
+			   "0x00010aa8    0 *32* r16 := 5\n"
+			   "0x00010aac    0 *32* tmp := r16\n"
 			   "            0 *32* r0 := r16 - r8\n"
 			   "            0 *v* %flags := SUBFLAGS( tmp, r8, r0 )\n"
-			   "00010ab0    0 *32* r8 := 0x11400\n"
-			   "00010ab0    0 BRANCH 0x10ac8, condition not equals\n"
+			   "0x00010ab0    0 *32* r8 := 0x11400\n"
+			   "0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
 			   "High level: %flags\n";
 	QCOMPARE(actual, expected);
 	actual.clear();
@@ -390,10 +390,10 @@ void FrontSparcTest::testDelaySlot()
 	QVERIFY(bb);
 	bb->print(strm);
 	expected = "L1: Twoway BB:\n"
-			   "in edges: 10ab0(10aa4) 10ac4(10ac0) \n"
-			   "out edges: 10ad8 10ad0 \n"
-			   "00010ac8    0 *32* r8 := 0x11400\n"
-			   "00010ac8    0 BRANCH 0x10ad8, condition equals\n"
+			   "in edges: 0x00010ab0(0x00010aa4) 0x00010ac4(0x00010ac0) \n"
+			   "out edges: 0x00010ad8 0x00010ad0 \n"
+			   "0x00010ac8    0 *32* r8 := 0x11400\n"
+			   "0x00010ac8    0 BRANCH 0x00010ad8, condition equals\n"
 			   "High level: %flags\n";
 	QCOMPARE(actual, expected);
 	actual.clear();
@@ -402,10 +402,10 @@ void FrontSparcTest::testDelaySlot()
 	QVERIFY(bb);
 	bb->print(strm);
 	expected = "Call BB:\n"
-			   "in edges: 10ab0(10aa4) \n"
-			   "out edges: 10ac0 \n"
-			   "00010ab8    0 *32* r8 := r8 | 816\n"
-			   "00010ab8    0 CALL printf(\n"
+			   "in edges: 0x00010ab0(0x00010aa4) \n"
+			   "out edges: 0x00010ac0 \n"
+			   "0x00010ab8    0 *32* r8 := r8 | 816\n"
+			   "0x00010ab8    0 CALL printf(\n"
 			   "              )\n"
 			   "              Reaching definitions: \n"
 			   "              Live variables: \n";
