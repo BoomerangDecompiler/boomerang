@@ -99,7 +99,6 @@ Const::Const(Address a)
 	u.ll = a.value();
 }
 
-
 // Copy constructor
 Const::Const(const Const& o)
 	: Exp(o.m_oper)
@@ -2275,7 +2274,7 @@ void Ternary::appendDotFile(QTextStream& of)
 {
 	// First a node for this Ternary object
 	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
-	of << operStrings[m_oper] << "\\n0x" << Address::host_ptr(this) << " | ";
+	of << operStrings[m_oper] << "\\n" << Address::host_ptr(this) << " | ";
 	of << "{<p1> | <p2> | <p3>}";
 	of << " }\"];\n";
 	subExp1->appendDotFile(of);

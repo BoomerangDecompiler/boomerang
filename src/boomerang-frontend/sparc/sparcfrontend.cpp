@@ -887,8 +887,9 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 				LOG_STREAM() << "Invalid instruction at " << uAddr << ": ";
 				ptrdiff_t delta = m_image->getTextDelta();
 
+				const Byte* instructionData = (const Byte*)(uAddr + delta).value();
 				for (int j = 0; j < inst.numBytes; j++) {
-					LOG_STREAM() << QString("%1").arg((unsigned)*(unsigned char *)(uAddr + delta + j).value(), 2, 16, QChar('0')) << " ";
+					LOG_STREAM() << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0')) << " ";
 				}
 
 				LOG_STREAM() << "\n";

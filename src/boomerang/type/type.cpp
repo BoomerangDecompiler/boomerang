@@ -2224,7 +2224,7 @@ char *DataIntervalMap::prints()
 	iterator    it;
 
 	for (it = dimap.begin(); it != dimap.end(); ++it) {
-		ost << "0x" << it->first << "-0x" << it->first + it->second.type->getBytes() << " " << it->second.name << " " << it->second.type->getCtype()
+		ost << it->first << "-" << it->first + it->second.type->getBytes() << " " << it->second.name << " " << it->second.type->getCtype()
 			<< "\n";
 	}
 

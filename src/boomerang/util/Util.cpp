@@ -68,10 +68,3 @@ QString escapeStr(const QString& inp)
 	return res;
 }
 
-
-QTextStream& operator<<(QTextStream& os, const Address& mdv)
-{
-	// TODO: properly format ADDRESS : 0-fill to max width.
-	os << QString::number(mdv.value(), 16);
-	return os;
-}

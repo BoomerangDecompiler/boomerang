@@ -2621,7 +2621,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 	Boomerang::get()->debugSwitch = true;
 
 	if (Boomerang::get()->debugSwitch) {
-		LOG << "processing switch statement type " << si->chForm << " with table at 0x" << si->uTable << ", ";
+		LOG << "processing switch statement type " << si->chForm << " with table at " << si->uTable << ", ";
 
 		if (si->iNumTable) {
 			LOG << si->iNumTable << " entries, ";
@@ -2630,7 +2630,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 		LOG << "lo= " << si->iLower << ", hi= " << si->iUpper << "\n";
 	}
 
-	   Address uSwitch;
+	Address uSwitch;
 	int     iNumOut, iNum;
 	iNumOut = si->iUpper - si->iLower + 1;
 	iNum    = iNumOut;
@@ -2716,7 +2716,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 	for (Address addr : dests) {
 		char tmp[1024];
 		count++;
-		sprintf(tmp, "before decoding fragment %i of %zu (%" PRIxPTR ")", count, dests.size(), addr.value());
+		sprintf(tmp, "before decoding fragment %i of %zu (%s)", count, dests.size(), qPrintable(addr.toString()));
 		Boomerang::get()->alertDecompileDebugPoint(proc, tmp);
 		prog->decodeFragment(proc, addr);
 	}

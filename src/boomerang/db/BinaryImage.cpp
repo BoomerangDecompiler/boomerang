@@ -89,11 +89,11 @@ char BinaryImage::readNative1(Address nat)
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
 	if (si == nullptr) {
-		qDebug() << "Target Memory access in unmapped section " << nat.value();
+		qDebug() << "Target Memory access in unmapped section " << nat.toString();
 		return -1;
 	}
 
-	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
+	Address host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return *(char *)host.value();
 }
 

@@ -450,7 +450,7 @@ void MainWindow::showNewEntrypoint(Address addr, const QString& name)
 	int nrows = ui->entrypoints->rowCount();
 
 	ui->entrypoints->setRowCount(nrows + 1);
-	ui->entrypoints->setItem(nrows, 0, new QTableWidgetItem(tr("%1").arg(addr.value(), 8, 16, QChar('0'))));
+	ui->entrypoints->setItem(nrows, 0, new QTableWidgetItem(addr.toString()));
 	ui->entrypoints->setItem(nrows, 1, new QTableWidgetItem(name));
 	ui->entrypoints->resizeColumnsToContents();
 	ui->entrypoints->resizeRowsToContents();
@@ -545,8 +545,7 @@ void MainWindow::showDecompilingProc(const QString& name)
 
 void MainWindow::showNewUserProc(const QString& name, Address addr)
 {
-	QString s     = addr.toString(true);
-	int     nrows = ui->userProcs->rowCount();
+	int nrows = ui->userProcs->rowCount();
 
 	for (int i = 0; i < nrows; i++) {
 		if (ui->userProcs->item(i, 1)->text() == name) {
@@ -554,6 +553,7 @@ void MainWindow::showNewUserProc(const QString& name, Address addr)
 		}
 	}
 
+	const QString s = addr.toString();
 	for (int i = 0; i < nrows; i++) {
 		if (ui->userProcs->item(i, 0)->text() == s) {
 			return;
@@ -561,7 +561,7 @@ void MainWindow::showNewUserProc(const QString& name, Address addr)
 	}
 
 	ui->userProcs->setRowCount(nrows + 1);
-	ui->userProcs->setItem(nrows, 0, new QTableWidgetItem(addr.toString(true)));
+	ui->userProcs->setItem(nrows, 0, new QTableWidgetItem(addr.toString()));
 	ui->userProcs->setItem(nrows, 1, new QTableWidgetItem(name));
 	ui->userProcs->item(nrows, 1)->setData(1, name);
 
@@ -598,11 +598,12 @@ void MainWindow::showNewLibProc(const QString& name, const QString& params)
 void MainWindow::showRemoveUserProc(const QString& name, Address addr)
 {
 	Q_UNUSED(name);
-	QString s     = addr.toString(true);
 	int     nrows = ui->userProcs->rowCount();
 
+	const QString addrString = addr.toString();
+
 	for (int i = 0; i < nrows; i++) {
-		if (ui->userProcs->item(i, 0)->text() == s) {
+		if (ui->userProcs->item(i, 0)->text() == addrString) {
 			ui->userProcs->removeRow(i);
 			break;
 		}
@@ -635,8 +636,8 @@ void MainWindow::showNewSection(const QString& name, Address start, Address end)
 
 	ui->sections->setRowCount(nrows + 1);
 	ui->sections->setItem(nrows, 0, new QTableWidgetItem(name));
-	ui->sections->setItem(nrows, 1, new QTableWidgetItem(tr("%1").arg(start.value(), 8, 16, QChar('0'))));
-	ui->sections->setItem(nrows, 2, new QTableWidgetItem(tr("%1").arg(end.value(), 8, 16, QChar('0'))));
+	ui->sections->setItem(nrows, 1, new QTableWidgetItem(start.toString()));
+	ui->sections->setItem(nrows, 2, new QTableWidgetItem(end.toString()));
 	ui->sections->sortItems(1, Qt::AscendingOrder);
 	ui->sections->resizeColumnsToContents();
 	ui->sections->resizeRowsToContents();

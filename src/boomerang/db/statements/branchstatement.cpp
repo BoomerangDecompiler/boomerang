@@ -283,7 +283,7 @@ void BranchStatement::print(QTextStream& os, bool html) const
 	}
 	else {
 		// Really we'd like to display the destination label here...
-		os << "0x" << getFixedDest();
+		os << getFixedDest();
 	}
 
 	os << ", condition ";

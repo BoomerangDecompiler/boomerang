@@ -4,14 +4,7 @@
  */
 #pragma once
 
-#include <QObject>
-#include <iosfwd>
 #include <cstdint>
-#include <cassert>
-
-#include "boomerang/util/Util.h"
-
-class QTextStream;
 
 // Machine types
 typedef uint8_t         Byte;  /*  8 bits */

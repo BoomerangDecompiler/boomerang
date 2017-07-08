@@ -157,19 +157,19 @@ SharedExp NJMCDecoder::dis_Num(unsigned num)
 
 
 void NJMCDecoder::processUnconditionalJump(const char *name, int size, Address relocd, ptrdiff_t delta, Address pc,
-									std::list<Instruction *> *stmts, DecodeResult& result)
+										   std::list<Instruction *> *stmts, DecodeResult& result)
 {
 	result.rtl      = new RTL(pc, stmts);
 	result.numBytes = size;
 	GotoStatement *jump = new GotoStatement();
 	jump->setDest((relocd - delta).native());
 	result.rtl->appendStmt(jump);
-	SHOW_ASM(name << " 0x" << relocd - delta)
+	SHOW_ASM(name << " " << relocd - delta)
 }
 
 
 void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc, std::list<Instruction *> *stmts,
-							   DecodeResult& result)
+									  DecodeResult& result)
 {
 	result.rtl      = new RTL(pc, stmts);
 	result.numBytes = size;
@@ -182,7 +182,7 @@ void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest
 
 
 void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc, std::list<Instruction *> *stmts,
-							   DecodeResult& result)
+									  DecodeResult& result)
 {
 	result.rtl      = new RTL(pc, stmts);
 	result.numBytes = size;

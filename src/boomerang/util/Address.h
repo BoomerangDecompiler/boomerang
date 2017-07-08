@@ -5,10 +5,16 @@
 #include <QString>
 #include <QTextStream>
 
+#include "boomerang/util/types.h"
+
 /// Standard pointer size of source machine, in bits
 #define STD_SIZE    32
 
-/* pointer. size depends on platform */
+/// return a bit mask with exactly @p bitCount of the lowest bits set to 1.
+/// (example: 16 -> 0xFFFF)
+
+
+/// Pointer / address value type for the source machine.
 class Address
 {
 public:
@@ -23,6 +29,10 @@ public:
 
 	Address(const Address&) = default;
 	Address& operator=(const Address&) = default;
+
+	/// Set the bit count of the source machine.
+	static void setSourceBits(Byte bitCount);
+	static value_type getSourceMask();
 
 	static Address g(value_type x);   // construct host/native oblivious address
 	static Address n(value_type x);   // construct native address
@@ -54,31 +64,18 @@ public:
 	Address operator+=(const Address& other) { m_value += other.value(); return *this; }
 
 	Address operator+=(intptr_t other) { m_value += other; return *this; }
-
-	Address operator+(intptr_t val) const { return Address::g(m_value + val); }
-
 	Address operator-=(intptr_t v) { m_value -= v; return *this; }
 
+	Address operator+(intptr_t val) const { return Address::g(m_value + val); }
 	Address operator-(intptr_t other) const { return Address::g(m_value - other); }
-	friend QTextStream& operator<<(QTextStream& os, const Address& mdv);
 
-	QString        toString(bool zerofill = false) const
-	{
-		if (zerofill) {
-			return "0x" + QString("%1").arg(m_value, 8, 16, QChar('0'));
-		}
-
-		return "0x" + QString::number(m_value, 16);
-	}
+	QString toString() const;
 
 private:
-	value_type     m_value;
+	static Byte m_sourceBits;
+	value_type  m_value;
 };
 
-template<class T, class U>
-bool IN_RANGE(const T& val, const U& range_start, const U& range_end)
-{
-	return((val >= range_start) && (val < range_end));
-}
-
 Q_DECLARE_METATYPE(Address)
+
+QTextStream& operator<<(QTextStream& os, const Address& addr);

@@ -401,7 +401,7 @@ void IFrontEnd::decode(Prog *prg, Address a)
 		}
 
 		if (p->isLib()) {
-			LOG << "NOT decoding library proc at address 0x" << a << "\n";
+			LOG << "NOT decoding library proc at address " << a << "\n";
 			return;
 		}
 
@@ -473,7 +473,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address a)
 void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
 	if (Boomerang::get()->traceDecoder) {
-		LOG << "decoding fragment at 0x" << a << "\n";
+		LOG << "decoding fragment at " << a << "\n";
 	}
 
 	QTextStream os(stderr); // rtl output target
