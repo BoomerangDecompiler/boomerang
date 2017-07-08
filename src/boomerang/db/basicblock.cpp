@@ -362,7 +362,7 @@ Address BasicBlock::getLowAddr() const
 		      Address add2 = (*++it)->getAddress();
 
 		// This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
-		// to change orphan BBs' addresses to NO_ADDRESS, but I suspect that this will cause many problems. MVE
+		// to change orphan BBs' addresses to Address::INVALID, but I suspect that this will cause many problems. MVE
 		if (add2 < Address::g(0x10)) {
 			// Assume that 0 is the real address
 			return Address::g(0L);
@@ -565,11 +565,11 @@ bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2)
 Address BasicBlock::getCallDest()
 {
 	if (m_nodeType != BBTYPE::CALL) {
-		return NO_ADDRESS;
+		return Address::INVALID;
 	}
 
 	if (m_listOfRTLs->empty()) {
-		return NO_ADDRESS;
+		return Address::INVALID;
 	}
 
 	RTL *lastRtl = m_listOfRTLs->back();
@@ -580,7 +580,7 @@ Address BasicBlock::getCallDest()
 		}
 	}
 
-	return NO_ADDRESS;
+	return Address::INVALID;
 }
 
 
@@ -2139,7 +2139,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
 
 	default:
 		expr = nullptr;
-		T    = NO_ADDRESS;
+		T    = Address::INVALID;
 	}
 
 	// normalize address to native

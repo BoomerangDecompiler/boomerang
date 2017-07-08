@@ -241,7 +241,7 @@ DecodeResult& SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 	result.reset();
 	// The actual list of instantiated statements
 	std::list<Instruction *> *stmts = nullptr;
-	   Address nextPC = NO_ADDRESS;
+	   Address nextPC = Address::INVALID;
 	// #line 212 "frontend/machine/sparc/decoder.m"
 	{
 		      Address MATCH_p =

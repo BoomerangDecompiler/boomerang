@@ -1028,7 +1028,7 @@ private:
 	mutable int DFGcount; ///< used in dotty output
 
 public:
-	   Address getTheReturnAddr() { return theReturnStatement == nullptr ? NO_ADDRESS : theReturnStatement->getRetAddr(); }
+	   Address getTheReturnAddr() { return theReturnStatement == nullptr ? Address::INVALID : theReturnStatement->getRetAddr(); }
 	void setTheReturnAddr(ReturnStatement *s, Address r)
 	{
 		assert(theReturnStatement == nullptr);

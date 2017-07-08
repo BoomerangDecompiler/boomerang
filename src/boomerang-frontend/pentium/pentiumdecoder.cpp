@@ -80,7 +80,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 	result.reset();
 	// The actual list of instantiated Statements
 	std::list<Instruction *> *stmts = nullptr;
-	   Address nextPC = NO_ADDRESS;
+	   Address nextPC = Address::INVALID;
 	// #line 112 "frontend/machine/pentium/decoder.m"
 	{
 		      Address MATCH_p =
@@ -49895,7 +49895,7 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
 
 SharedExp PentiumDecoder::addReloc(const SharedExp& e)
 {
-	if (lastDwordLc != NO_ADDRESS) {
+	if (lastDwordLc != Address::INVALID) {
 		return m_prog->addReloc(e, lastDwordLc);
 	}
 

@@ -76,7 +76,7 @@ public:
 
 	IBinarySymbol& create(Address a, const QString& s, bool local = false) override;
 	const IBinarySymbol *find(Address a) const override;        ///< Find an entry by address; nullptr if none
-	const IBinarySymbol *find(const QString& s) const override; ///< Find an entry by name; NO_ADDRESS if none
+	const IBinarySymbol *find(const QString& s) const override; ///< Find an entry by name; Address::INVALID if none
 
 	SymbolListType& getSymbolList() { return SymbolList; }
 	iterator begin()       override { return SymbolList.begin(); }

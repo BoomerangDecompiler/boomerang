@@ -116,7 +116,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	// The actual list of instantiated statements
 	std::list<Statement*>* stmts = NULL;
 
-	ADDRESS nextPC = NO_ADDRESS;
+	ADDRESS nextPC = Address::INVALID;
 
 	match [nextPC] hostPC to
 	| XO_ ( rd, ra, rb) [name] =>

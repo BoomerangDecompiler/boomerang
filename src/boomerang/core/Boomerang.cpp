@@ -839,7 +839,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 		if (!noDecodeChildren) {
 			// this causes any undecoded userprocs to be decoded
 			q_cout << "decoding anything undecoded...\n";
-			fe->decode(prog, NO_ADDRESS);
+			fe->decode(prog, Address::INVALID);
 		}
 	}
 

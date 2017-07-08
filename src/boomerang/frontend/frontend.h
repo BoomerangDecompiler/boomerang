@@ -160,7 +160,7 @@ public:
 
 	/**
 	 * Decode all undecoded procedures and return a new program containing them.
-	 * Somehow, a == NO_ADDRESS has come to mean decode anything not already decoded
+	 * Somehow, a == Address::INVALID has come to mean decode anything not already decoded
 	 */
 	void decode(Prog *Program, bool decodeMain = true, const char *pname = nullptr);
 

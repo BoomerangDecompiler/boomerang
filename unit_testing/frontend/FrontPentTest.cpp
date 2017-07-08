@@ -69,7 +69,7 @@ void FrontPentTest::test1()
 
 	bool    gotMain;
 	   Address addr = pFE->getMainEntryPoint(gotMain);
-	QVERIFY(addr != NO_ADDRESS);
+	QVERIFY(addr != Address::INVALID);
 
 	// Decode first instruction
 	DecodeResult inst = pFE->decodeInstruction(addr);

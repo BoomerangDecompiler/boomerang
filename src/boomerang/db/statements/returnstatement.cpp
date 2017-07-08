@@ -14,7 +14,7 @@
 #include <QDebug>
 
 ReturnStatement::ReturnStatement()
-	: retAddr(NO_ADDRESS)
+	: retAddr(Address::INVALID)
 {
 	m_kind = STMT_RET;
 }

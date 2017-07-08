@@ -11,7 +11,7 @@
 #include <QString>
 
 #if defined(_WIN32) && !defined(__MINGW32__)
-#undef NO_ADDRESS
+#undef Address::INVALID
 #include <windows.h>
 namespace dbghelp
 {
@@ -21,8 +21,8 @@ namespace dbghelp
 #undef ADDRESS
 #endif
 }
-#undef NO_ADDRESS
-#define NO_ADDRESS    ADDRESS::g(-1)
+#undef Address::INVALID
+#define Address::INVALID    ADDRESS::g(-1)
 #include <iostream>
 #include "boomerang/util/Log.h"
 #endif
@@ -250,7 +250,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
 		pProc = new UserProc(this, name, uNative);
 	}
 
-	if (NO_ADDRESS != uNative) {
+	if (Address::INVALID != uNative) {
 		assert(m_labelsToProcs.find(uNative) == m_labelsToProcs.end());
 		m_labelsToProcs[uNative] = pProc;
 	}

@@ -72,7 +72,7 @@ void CfgTest::testDominators()
 
 	bool    gotMain;
 	   Address addr = pFE->getMainEntryPoint(gotMain);
-	QVERIFY(addr != NO_ADDRESS);
+	QVERIFY(addr != Address::INVALID);
 	Module *m = *prog.begin();
 	QVERIFY(m != nullptr);
 	QVERIFY(m->size() > 0);
@@ -133,7 +133,7 @@ void CfgTest::testSemiDominators()
 
 	bool    gotMain;
 	   Address addr = pFE->getMainEntryPoint(gotMain);
-	QVERIFY(addr != NO_ADDRESS);
+	QVERIFY(addr != Address::INVALID);
 
 	Module *m = *prog.begin();
 	QVERIFY(m != nullptr);

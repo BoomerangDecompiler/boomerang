@@ -849,7 +849,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 	// Get the next address from which to continue decoding and go from
 	// there. Exit the loop if there are no more addresses or they all
 	// correspond to locations that have been decoded.
-	while ((uAddr = _targetQueue.nextAddress(*cfg)) != NO_ADDRESS) {
+	while ((uAddr = _targetQueue.nextAddress(*cfg)) != Address::INVALID) {
 		// The list of RTLs for the current basic block
 		std::list<RTL *> *BB_rtls = new std::list<RTL *>();
 
@@ -923,7 +923,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 				(last->getKind() == STMT_RET)) {
 				ADDRESS dest = stmt_jump->getFixedDest();
 
-				if ((dest != NO_ADDRESS) && (dest < hiAddress)) {
+				if ((dest != Address::INVALID) && (dest < hiAddress)) {
 					unsigned inst_before_dest = *((unsigned *)(dest - 4 + pBF->getTextDelta()));
 
 					unsigned bits31_30 = inst_before_dest >> 30;
@@ -1328,8 +1328,8 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 			cfg->addCall(*it);
 
 			// Don't visit the destination of a register call
-			// if (dest != NO_ADDRESS) newProc(proc->getProg(), dest);
-			if (dest != NO_ADDRESS) {
+			// if (dest != Address::INVALID) newProc(proc->getProg(), dest);
+			if (dest != Address::INVALID) {
 				proc->getProg()->setNewProc(dest);
 			}
 		}
@@ -1645,22 +1645,22 @@ SparcFrontEnd::~SparcFrontEnd()
  * \fn    SparcFrontEnd::getMainEntryPoint
  * \brief Locate the starting address of "main" in the code section
  * \param gotMain set if main found
- * \returns Native pointer if found; NO_ADDRESS if not
+ * \returns Native pointer if found; Address::INVALID if not
  ******************************************************************************/
 Address SparcFrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	gotMain = true;
 	   Address start = m_fileLoader->getMainEntryPoint();
 
-	if (start != NO_ADDRESS) {
+	if (start != Address::INVALID) {
 		return start;
 	}
 
 	start   = m_fileLoader->getEntryPoint();
 	gotMain = false;
 
-	if (start == NO_ADDRESS) {
-		return NO_ADDRESS;
+	if (start == Address::INVALID) {
+		return Address::INVALID;
 	}
 
 	gotMain = true;

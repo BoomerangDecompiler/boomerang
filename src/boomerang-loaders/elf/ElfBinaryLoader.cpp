@@ -405,7 +405,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 		numRelPlt  = sizeRelPlt ? siRelPlt->getSize() / sizeRelPlt : 0;
 	}
 	else {
-		return NO_ADDRESS; // neither .rel.plt nor .rela.plt are available
+		return Address::INVALID; // neither .rel.plt nor .rela.plt are available
 	}
 
 	int first = i;
@@ -564,7 +564,7 @@ void ElfBinaryLoader::addSyms(int secIndex)
 
 	   Address uMain = getMainEntryPoint();
 
-	if ((uMain != NO_ADDRESS) && (nullptr == m_symbols->find(uMain))) {
+	if ((uMain != Address::INVALID) && (nullptr == m_symbols->find(uMain))) {
 		// Ugh - main mustn't have the STT_FUNC attribute. Add it
 		m_symbols->create(uMain, "main");
 	}
@@ -638,7 +638,7 @@ Address ElfBinaryLoader::getMainEntryPoint()
 		return sym->getLocation();
 	}
 
-	return NO_ADDRESS;
+	return Address::INVALID;
 }
 
 
@@ -731,7 +731,7 @@ bool ElfBinaryLoader::isLibrary() const
 QStringList ElfBinaryLoader::getDependencyList()
 {
 	QStringList    result;
-	   Address        stringtab = NO_ADDRESS;
+	   Address        stringtab = Address::INVALID;
 	IBinarySection *dynsect  = m_binaryImage->getSectionInfoByName(".dynamic");
 
 	if (dynsect == nullptr) {
@@ -747,7 +747,7 @@ QStringList ElfBinaryLoader::getDependencyList()
 		}
 	}
 
-	if (stringtab == NO_ADDRESS) { /* No string table = no names */
+	if (stringtab == Address::INVALID) { /* No string table = no names */
 		return result;
 	}
 

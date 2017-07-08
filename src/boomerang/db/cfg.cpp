@@ -1624,7 +1624,7 @@ void Cfg::removeUnneededLabels(ICodeGenerator *hll)
 
 void Cfg::generateDotFile(QTextStream& of)
 {
-	   Address aret = NO_ADDRESS;
+	   Address aret = Address::INVALID;
 
 	// The nodes
 	// std::list<PBB>::iterator it;

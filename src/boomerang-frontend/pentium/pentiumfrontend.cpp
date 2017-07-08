@@ -492,7 +492,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::itera
 
 bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl)
 {
-	if (dest == NO_ADDRESS) {
+	if (dest == Address::INVALID) {
 		return false;
 	}
 
@@ -562,13 +562,13 @@ PentiumFrontEnd::~PentiumFrontEnd()
 
 /***************************************************************************/ /**
  * \brief    Locate the starting address of "main" in the code section
- * \returns         Native pointer if found; NO_ADDRESS if not
+ * \returns         Native pointer if found; Address::INVALID if not
  ******************************************************************************/
 Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	   Address start = m_fileLoader->getMainEntryPoint();
 
-	if (start != NO_ADDRESS) {
+	if (start != Address::INVALID) {
 		gotMain = true;
 		return start;
 	}
@@ -576,8 +576,8 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 	gotMain = false;
 	start   = m_fileLoader->getEntryPoint();
 
-	if (start.isZero() || (start == NO_ADDRESS)) {
-		return NO_ADDRESS;
+	if (start.isZero() || (start == Address::INVALID)) {
+		return Address::INVALID;
 	}
 
 	int     instCount = 100;
@@ -620,7 +620,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 					if (not inst.rtl->empty()) {
 						CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
 
-						if (toMain && (toMain->getFixedDest() != NO_ADDRESS)) {
+						if (toMain && (toMain->getFixedDest() != Address::INVALID)) {
 							symbols->create(toMain->getFixedDest(), "WinMain");
 							gotMain = true;
 							return toMain->getFixedDest();
@@ -630,7 +630,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 			}
 		}
 
-		if ((cs && ((dest = (cs->getFixedDest())) != NO_ADDRESS))) {
+		if ((cs && ((dest = (cs->getFixedDest())) != Address::INVALID))) {
 			if ((++conseq == 3) && 0) { // FIXME: this isn't working!
 				// Success. Return the target of the last call
 				gotMain = true;

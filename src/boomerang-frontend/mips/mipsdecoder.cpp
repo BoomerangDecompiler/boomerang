@@ -64,7 +64,7 @@ DecodeResult& MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 
 	// The actual list of instantiated statements
 	// std::list<Statement*>* stmts = nullptr;
-	// ADDRESS nextPC = NO_ADDRESS;
+	// ADDRESS nextPC = Address::INVALID;
 	// Decoding goes here....
 
 	return result;

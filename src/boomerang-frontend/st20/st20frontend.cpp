@@ -89,15 +89,15 @@ Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 	gotMain = true;
 	   Address start = m_fileLoader->getMainEntryPoint();
 
-	if (start != NO_ADDRESS) {
+	if (start != Address::INVALID) {
 		return start;
 	}
 
 	start   = m_fileLoader->getEntryPoint();
 	gotMain = false;
 
-	if (start == NO_ADDRESS) {
-		return NO_ADDRESS;
+	if (start == Address::INVALID) {
+		return Address::INVALID;
 	}
 
 	gotMain = true;

@@ -1293,10 +1293,10 @@ void StatementTest::testBypass()
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog, true);       // Decode main
-	pFE->decode(prog, NO_ADDRESS); // Decode anything undecoded
+	pFE->decode(prog, Address::INVALID); // Decode anything undecoded
 	bool    gotMain;
 	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
-	CPPUNIT_ASSERT(addr != NO_ADDRESS);
+	CPPUNIT_ASSERT(addr != Address::INVALID);
 	UserProc *proc = (UserProc *)prog->findProc("foo2");
 	assert(proc);
 	proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)

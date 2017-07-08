@@ -83,8 +83,3 @@ bool IN_RANGE(const T& val, const U& range_start, const U& range_end)
 Q_DECLARE_METATYPE(Address)
 
 #define STD_SIZE    32 // Standard size
-// Note: there is a known name collision with NO_ADDRESS in WinSock.h
-#ifdef NO_ADDRESS
-#undef NO_ADDRESS
-#endif
-#define NO_ADDRESS    (Address::g(-1)) // For invalid ADDRESSes

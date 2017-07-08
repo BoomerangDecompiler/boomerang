@@ -942,7 +942,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc *proc, ofstream& os, boo
 	// Get the next address from which to continue decoding and go from
 	// there. Exit the loop if there are no more addresses or they all
 	// correspond to locations that have been decoded.
-	while ((address = nextAddress(targets, cfg)) != NO_ADDRESS) {
+	while ((address = nextAddress(targets, cfg)) != Address::INVALID) {
 		// The list of RTLs for the current basic block
 		list<HRTL *> *BB_rtls = new list<HRTL *>();
 
@@ -995,7 +995,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc *proc, ofstream& os, boo
 				(rtl->getKind() == RET_HRTL)) {
 				ADDRESS dest = rtl_jump->getFixedDest();
 
-				if ((dest != NO_ADDRESS) && (dest < hiAddress)) {
+				if ((dest != Address::INVALID) && (dest < hiAddress)) {
 					unsigned inst_before_dest = *((unsigned *)(dest - 4 + delta));
 
 					// FIXME! This is sarc specific
@@ -1451,7 +1451,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc *proc, ofstream& os, boo
 			cfg->addCall(*it);
 
 			// Don't visit the destination of a register call
-			if (dest != NO_ADDRESS) {
+			if (dest != Address::INVALID) {
 				prog.visitProc(dest);
 			}
 		}

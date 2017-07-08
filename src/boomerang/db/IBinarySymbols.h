@@ -42,7 +42,7 @@ public:
 
 public:
 	virtual const IBinarySymbol *find(Address a) const        = 0; ///< Find an entry by address; nullptr if none
-	virtual const IBinarySymbol *find(const QString& s) const = 0; ///< Find an entry by name; NO_ADDRESS if none
+	virtual const IBinarySymbol *find(const QString& s) const = 0; ///< Find an entry by name; Address::INVALID if none
 
 	/// Add a new symbol to table, if \a local is set than the symbol is local, thus it won't be
 	/// added to global name->symbol mapping

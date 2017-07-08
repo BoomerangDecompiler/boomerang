@@ -457,7 +457,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 		}
 	}
 
-	return NO_ADDRESS;
+	return Address::INVALID;
 }
 
 
@@ -656,7 +656,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
 	// Give the entry point a symbol
 	   Address entry = getMainEntryPoint();
 
-	if (entry != NO_ADDRESS) {
+	if (entry != Address::INVALID) {
 		if (!m_symbols->find(entry)) {
 			m_symbols->create(entry, "main").setAttr("Function", true);
 		}
@@ -1135,7 +1135,7 @@ bool Win32BinaryLoader::isMinGWsMalloc(Address uNative)
 Address Win32BinaryLoader::isJumpToAnotherAddr(Address uNative)
 {
 	if ((m_image->readNative1(uNative) & 0xff) != 0xe9) {
-		return NO_ADDRESS;
+		return Address::INVALID;
 	}
 
 	return Address::g(m_image->readNative4(uNative + 1)) + uNative + 5;

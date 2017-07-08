@@ -66,7 +66,7 @@
 #include <cmath>
 
 #ifdef _WIN32
-#undef NO_ADDRESS
+#undef Address::INVALID
 #include <windows.h>
 #ifndef __MINGW32__
 namespace dbghelp
@@ -77,8 +77,8 @@ namespace dbghelp
 #endif
 }
 #endif
-#undef NO_ADDRESS
-#define NO_ADDRESS    (ADDRESS::g(-1))
+#undef Address::INVALID
+#define Address::INVALID    (ADDRESS::g(-1))
 #endif
 
 #include <sys/types.h>
@@ -277,7 +277,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 						generateDataSectionCode(sections[j], info->getSourceAddr(), info->getSize(), code);
 					}
 					else {
-						generateDataSectionCode(sections[j], NO_ADDRESS, 0, code);
+						generateDataSectionCode(sections[j], Address::INVALID, 0, code);
 					}
 				}
 
@@ -565,7 +565,7 @@ Function *Prog::setNewProc(Address uAddr)
 
 	   Address other = m_loaderIface->isJumpToAnotherAddr(uAddr);
 
-	if (other != NO_ADDRESS) {
+	if (other != Address::INVALID) {
 		uAddr = other;
 	}
 
@@ -864,7 +864,7 @@ LibProc *Prog::getLibraryProc(const QString& nam) const
 		return (LibProc *)p;
 	}
 
-	return (LibProc *)m_rootCluster->getOrInsertFunction(nam, NO_ADDRESS, true);
+	return (LibProc *)m_rootCluster->getOrInsertFunction(nam, Address::INVALID, true);
 }
 
 
@@ -929,7 +929,7 @@ Address Prog::getGlobalAddr(const QString& nam) const
 	}
 
 	auto symbol = m_binarySymbols->find(nam);
-	return symbol ? symbol->getLocation() : NO_ADDRESS;
+	return symbol ? symbol->getLocation() : Address::INVALID;
 }
 
 
@@ -1694,7 +1694,7 @@ void Prog::printCallGraph() const
 		Function *p = procList.front();
 		procList.erase(procList.begin());
 
-		if (Address::host_ptr(p) == NO_ADDRESS) {
+		if (Address::host_ptr(p) == Address::INVALID) {
 			continue;
 		}
 

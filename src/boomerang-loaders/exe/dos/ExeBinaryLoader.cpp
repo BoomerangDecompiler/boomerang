@@ -239,7 +239,7 @@ size_t ExeBinaryLoader::getImageSize()
 // Should be doing a search for this
 Address ExeBinaryLoader::getMainEntryPoint()
 {
-	return NO_ADDRESS;
+	return Address::INVALID;
 }
 
 

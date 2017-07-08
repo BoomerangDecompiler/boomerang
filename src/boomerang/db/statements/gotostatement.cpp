@@ -34,7 +34,7 @@ GotoStatement::~GotoStatement()
 Address GotoStatement::getFixedDest() const
 {
 	if (m_dest->getOper() != opIntConst) {
-		return NO_ADDRESS;
+		return Address::INVALID;
 	}
 
 	return constDest()->getAddr();

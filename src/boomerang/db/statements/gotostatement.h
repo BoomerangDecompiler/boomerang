@@ -77,8 +77,8 @@ public:
 	 *        simplication has already been done so that a fixed dest will
 	 *        be of the Exp form:
 	 *        opIntConst dest
-	 * \returns Fixed dest or NO_ADDRESS if there isn't one, For dynamic CTIs,
-	 *          returns NO_ADDRESS.
+	 * \returns Fixed dest or Address::INVALID if there isn't one, For dynamic CTIs,
+	 *          returns Address::INVALID.
 	 ******************************************************************************/
 	   Address getFixedDest() const;
 

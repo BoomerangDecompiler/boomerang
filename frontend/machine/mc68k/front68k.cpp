@@ -20,7 +20,7 @@
  * 14 Feb 00 - Mike: converted from front386.cc
  * 23 Feb 00 - Mike: added logic for isReturnAfterCall
  * 09 Nov 00 - Cristina: Added support to generate rtl code to a file
- * 31 Mar 01 - Mike: getFixedDest() returns NO_ADDRESS for non fixed addresses
+ * 31 Mar 01 - Mike: getFixedDest() returns Address::INVALID for non fixed addresses
  * 31 Jul 01 - Brian: New class HRTL replaces RTlist. Renamed LRTL to HRTLList.
 */
 
@@ -213,7 +213,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                 uDest = rtl_jump->getFixedDest();
     
                 // Handle one way jumps and computed jumps separately
-                if (uDest != NO_ADDRESS) {
+                if (uDest != Address::INVALID) {
                     BB_rtls->push_back(pRtl);
                     sequentialDecode = false;
 
@@ -335,7 +335,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
 
                     // Record the called address as the start of a new
                     // procedure if it didn't already exist.
-                    if ((uNewAddr != NO_ADDRESS) &&
+                    if ((uNewAddr != Address::INVALID) &&
                       prog.findProc(uNewAddr) == nullptr) {
                         prog.visitProc(uNewAddr);
                         if (progOptions.trace)

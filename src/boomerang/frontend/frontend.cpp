@@ -261,7 +261,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 	   Address a = getMainEntryPoint(gotMain);
 
 	// TODO: find exported functions and add them too ?
-	if (a != NO_ADDRESS) {
+	if (a != Address::INVALID) {
 		entrypoints.push_back(a);
 	}
 	else { // try some other tricks
@@ -333,7 +333,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 	Address a = getMainEntryPoint(gotMain);
 	LOG_VERBOSE(1) << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
 
-	if (a == NO_ADDRESS) {
+	if (a == Address::INVALID) {
 		std::vector<Address> entrypoints = getEntryPoints();
 
 		for (auto& entrypoint : entrypoints) {
@@ -390,7 +390,7 @@ void IFrontEnd::decode(Prog *prg, Address a)
 {
 	assert(m_program == prg);
 
-	if (a != NO_ADDRESS) {
+	if (a != Address::INVALID) {
 		      m_program->setNewProc(a);
 		LOG_VERBOSE(1) << "starting decode at address " << a << "\n";
 		UserProc *p = (UserProc *)m_program->findProc(a);
@@ -409,7 +409,7 @@ void IFrontEnd::decode(Prog *prg, Address a)
 		processProc(a, p, os);
 		p->setDecoded();
 	}
-	else {   // a == NO_ADDRESS
+	else {   // a == Address::INVALID
 		bool change = true;
 
 		while (change) {
@@ -563,7 +563,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss,
 {
 	assert(sl.back() == *ss);
 
-	if (dest == NO_ADDRESS) {
+	if (dest == Address::INVALID) {
 		return;
 	}
 
@@ -644,7 +644,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 	   Address startAddr   = uAddr;
 	   Address lastAddr    = uAddr;
 
-	while ((uAddr = m_targetQueue.nextAddress(*pCfg)) != NO_ADDRESS) {
+	while ((uAddr = m_targetQueue.nextAddress(*pCfg)) != Address::INVALID) {
 		// The list of RTLs for the current basic block
 		std::list<RTL *> *BB_rtls = new std::list<RTL *>();
 
@@ -766,7 +766,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 					const QString& nam(m_refHints[pRtl->getAddress()]);
 					               Address        gu = m_program->getGlobalAddr(nam);
 
-					if (gu != NO_ADDRESS) {
+					if (gu != Address::INVALID) {
 						s->searchAndReplace(Const(gu), Unary::get(opAddrOf, Location::global(nam, pProc)));
 					}
 				}
@@ -787,7 +787,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 					uDest = stmt_jump->getFixedDest();
 
 					// Handle one way jumps and computed jumps separately
-					if (uDest != NO_ADDRESS) {
+					if (uDest != Address::INVALID) {
 						BB_rtls->push_back(pRtl);
 						sequentialDecode = false;
 
@@ -947,7 +947,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
 						// Is the called function a thunk calling a library function?
 						// A "thunk" is a function which only consists of: "GOTO library_function"
-						if (call && (call->getFixedDest() != NO_ADDRESS)) {
+						if (call && (call->getFixedDest() != Address::INVALID)) {
 							// Get the address of the called function.
 							                 Address callAddr = call->getFixedDest();
 
@@ -1033,7 +1033,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 							callList.push_back(call);
 
 							// Record the called address as the start of a new procedure if it didn't already exist.
-							if (!uNewAddr.isZero() && (uNewAddr != NO_ADDRESS) &&
+							if (!uNewAddr.isZero() && (uNewAddr != Address::INVALID) &&
 								(pProc->getProg()->findProc(uNewAddr) == nullptr)) {
 								callList.push_back(call);
 
@@ -1172,7 +1172,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
 		// Must set sequentialDecode back to true
 		sequentialDecode = true;
-	} // while nextAddress() != NO_ADDRESS
+	} // while nextAddress() != Address::INVALID
 
 	// ProgWatcher *w = prog->getWatcher();
 	// if (w)
@@ -1192,7 +1192,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 			// Don't visit the destination of a register call
 			Function *np = (*it)->getDestProc();
 
-			if ((np == nullptr) && (dest != NO_ADDRESS)) {
+			if ((np == nullptr) && (dest != Address::INVALID)) {
 				// np = newProc(pProc->getProg(), dest);
 				np = pProc->getProg()->setNewProc(dest);
 			}
@@ -1235,7 +1235,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
 	   Address retAddr = pProc->getTheReturnAddr();
 
 	// LOG << "retAddr = " << retAddr << " rtl = " << pRtl->getAddress() << "\n";
-	if (retAddr == NO_ADDRESS) {
+	if (retAddr == Address::INVALID) {
 		// Create the basic block
 		pBB = pCfg->newBB(BB_rtls, BBTYPE::RET, 0);
 		Instruction *s = pRtl->back(); // The last statement should be the ReturnStatement

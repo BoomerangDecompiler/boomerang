@@ -55,7 +55,7 @@
 
 
 #ifdef _WIN32
-#undef NO_ADDRESS
+#undef Address::INVALID
 #include <windows.h>
 #ifndef __MINGW32__
 namespace dbghelp
@@ -67,8 +67,8 @@ namespace dbghelp
 #endif
 }
 #endif
-#undef NO_ADDRESS
-#define NO_ADDRESS    ADDRESS::g(-1)
+#undef Address::INVALID
+#define Address::INVALID    ADDRESS::g(-1)
 #endif
 
 typedef std::map<Instruction *, int> RefCounter;
@@ -516,9 +516,9 @@ void UserProc::printUseGraph()
 /// Get the first procedure that calls this procedure (or null for main/start).
 Function *Function::getFirstCaller()
 {
-	if ((m_firstCaller == nullptr) && (m_firstCallerAddr != NO_ADDRESS)) {
+	if ((m_firstCaller == nullptr) && (m_firstCallerAddr != Address::INVALID)) {
 		m_firstCaller     = m_prog->findProc(m_firstCallerAddr);
-		m_firstCallerAddr = NO_ADDRESS;
+		m_firstCallerAddr = Address::INVALID;
 	}
 
 	return m_firstCaller;

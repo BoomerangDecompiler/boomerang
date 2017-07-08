@@ -42,7 +42,7 @@ Address TargetQueue::nextAddress(const Cfg& cfg)
 		}
 	}
 
-	return NO_ADDRESS;
+	return Address::INVALID;
 }
 
 

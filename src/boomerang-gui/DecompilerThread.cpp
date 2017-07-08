@@ -18,8 +18,6 @@
 #include <QTableWidget>
 #include <sstream>
 
-#undef NO_ADDRESS
-#define NO_ADDRESS    Address::g(-1)
 
 Qt::HANDLE threadToCollect = 0;
 
@@ -200,7 +198,7 @@ void Decompiler::decode()
 
 	if (!Boomerang::get()->noDecodeChildren) {
 		// decode anything undecoded
-		fe->decode(prog, NO_ADDRESS);
+		fe->decode(prog, Address::INVALID);
 	}
 
 	prog->finishDecode();

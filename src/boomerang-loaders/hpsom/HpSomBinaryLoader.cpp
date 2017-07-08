@@ -654,7 +654,7 @@ Address HpSomBinaryLoader::getMainEntryPoint()
 {
 	auto sym = m_symbols->find("main");
 
-	return sym ? sym->getLocation() : NO_ADDRESS;
+	return sym ? sym->getLocation() : Address::INVALID;
 }
 
 

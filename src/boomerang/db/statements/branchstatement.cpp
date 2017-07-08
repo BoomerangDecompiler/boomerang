@@ -128,7 +128,7 @@ BasicBlock *BranchStatement::getFallBB() const
 {
 	   Address a = getFixedDest();
 
-	if (a == NO_ADDRESS) {
+	if (a == Address::INVALID) {
 		return nullptr;
 	}
 
@@ -152,7 +152,7 @@ void BranchStatement::setFallBB(BasicBlock *bb)
 {
 	   Address a = getFixedDest();
 
-	if (a == NO_ADDRESS) {
+	if (a == Address::INVALID) {
 		return;
 	}
 
@@ -181,7 +181,7 @@ BasicBlock *BranchStatement::getTakenBB() const
 {
 	   Address a = getFixedDest();
 
-	if (a == NO_ADDRESS) {
+	if (a == Address::INVALID) {
 		return nullptr;
 	}
 
@@ -205,7 +205,7 @@ void BranchStatement::setTakenBB(BasicBlock *bb)
 {
 	   Address a = getFixedDest();
 
-	if (a == NO_ADDRESS) {
+	if (a == Address::INVALID) {
 		return;
 	}
 

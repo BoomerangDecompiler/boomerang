@@ -77,7 +77,7 @@ public:
 	/// Relocation functions
 	virtual bool isRelocationAt(Address /*uNative*/) { return false; }
 
-	virtual Address isJumpToAnotherAddr(Address /*uNative*/) { return NO_ADDRESS; }
+	virtual Address isJumpToAnotherAddr(Address /*uNative*/) { return Address::INVALID; }
 	virtual bool hasDebugInfo() { return false; }
 
 	/// Internal information

@@ -662,7 +662,7 @@ struct RangeVisitor : public StmtVisitor
 private:
 	RangeMap& getRangesForOutEdgeTo(BranchStatement *b, BasicBlock *out)
 	{
-		assert(b->getFixedDest() != NO_ADDRESS);
+		assert(b->getFixedDest() != Address::INVALID);
 
 		if (out->getLowAddr() == b->getFixedDest()) {
 			return tgt->getRanges(b);

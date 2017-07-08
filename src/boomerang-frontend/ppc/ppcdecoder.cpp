@@ -105,7 +105,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 	// The actual list of instantiated statements
 	std::list<Instruction *> *stmts = nullptr;
 
-	   Address nextPC = NO_ADDRESS;
+	   Address nextPC = Address::INVALID;
 
 	// #line 119 "frontend/machine/ppc/decoder.m"
 	{

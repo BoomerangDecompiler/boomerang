@@ -13,7 +13,7 @@
  * 08 Jul 02 - Mike: Test more exe file formats
  * 30 Sep 02 - Trent: split microDis tests
  * 30 Sep 02 - Trent: remove dependancy between microDis test1 and Elf loader
- * 05 Aug 05 - Mike: added borland test; check address of main (not just != NO_ADDRESS)
+ * 05 Aug 05 - Mike: added borland test; check address of main (not just != Address::INVALID)
  */
 
 #include "LoaderTest.h"
@@ -215,7 +215,7 @@ void LoaderTest::testWinLoad()
 
 	loader = bff.loadFile(CALC_WINDOWS);
 	QVERIFY(loader != nullptr);
-	QVERIFY(loader->getMainEntryPoint() != NO_ADDRESS);
+	QVERIFY(loader->getMainEntryPoint() != Address::INVALID);
 
 	IBinaryImage *image = Boomerang::get()->getImage();
 	QCOMPARE(image->getNumSections(), (size_t)5);

@@ -38,7 +38,7 @@ public:
 	* \brief   Return the next target from the queue of non-processed
 	*              targets.
 	* \param   cfg - the enclosing CFG
-	* \returns The next address to process, or NO_ADDRESS if none
+	* \returns The next address to process, or Address::INVALID if none
 	*          (targets is empty)
 	******************************************************************************/
 	   Address nextAddress(const Cfg& cfg);

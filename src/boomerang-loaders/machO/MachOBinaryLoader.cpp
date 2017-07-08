@@ -109,7 +109,7 @@ Address MachOBinaryLoader::getMainEntryPoint()
 		return symbol->getLocation();
 	}
 
-	return NO_ADDRESS;
+	return Address::INVALID;
 }
 
 
@@ -176,7 +176,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 	char     *strtbl = nullptr;
 	unsigned *indirectsymtbl = nullptr;
-	   Address  objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
+	   Address  objc_symbols = Address::INVALID, objc_modules = Address::INVALID, objc_strings = Address::INVALID, objc_refs = Address::INVALID;
 	unsigned objc_modules_size = 0;
 
 	fp.seek(imgoffs + sizeof(*header));
@@ -211,23 +211,23 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 					}
 
 					if (!strcmp(sect.sectname, SECT_OBJC_SYMBOLS)) {
-						assert(objc_symbols == NO_ADDRESS);
+						assert(objc_symbols == Address::INVALID);
 						objc_symbols = Address(BMMH(sect.addr));
 					}
 
 					if (!strcmp(sect.sectname, SECT_OBJC_MODULES)) {
-						assert(objc_modules == NO_ADDRESS);
+						assert(objc_modules == Address::INVALID);
 						objc_modules      = Address(BMMH(sect.addr));
 						objc_modules_size = BMMH(sect.size);
 					}
 
 					if (!strcmp(sect.sectname, SECT_OBJC_STRINGS)) {
-						assert(objc_strings == NO_ADDRESS);
+						assert(objc_strings == Address::INVALID);
 						objc_strings = Address(BMMH(sect.addr));
 					}
 
 					if (!strcmp(sect.sectname, SECT_OBJC_REFS)) {
-						assert(objc_refs == NO_ADDRESS);
+						assert(objc_refs == Address::INVALID);
 						objc_refs = Address(BMMH(sect.addr));
 					}
 				}
@@ -399,7 +399,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 	}
 
 	// process objective-c section
-	if (objc_modules != NO_ADDRESS) {
+	if (objc_modules != Address::INVALID) {
 		DEBUG_PRINT("processing objective-c section\n");
 
 		for (unsigned i = 0; i < objc_modules_size; ) {

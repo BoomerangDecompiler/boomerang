@@ -148,14 +148,14 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 			params.back().to = start_addr;
 		}
 
-		params.push_back({ name, start_addr, NO_ADDRESS, Address::host_ptr(m_pImage + off) }); // NO_ADDRESS will be overwritten
+		params.push_back({ name, start_addr, Address::INVALID, Address::host_ptr(m_pImage + off) }); // Address::INVALID will be overwritten
 	}
 
 	// Set the length for the last section
 	params.back().to = params.back().from + size - off;
 
 	for (SectionParams param : params) {
-		assert(param.to != NO_ADDRESS);
+		assert(param.to != Address::INVALID);
 		IBinarySection *sect = m_image->createSection(param.name, param.from, param.to);
 
 		if (sect) {

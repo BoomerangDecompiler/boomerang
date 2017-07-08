@@ -56,7 +56,7 @@ public:
 	virtual Machine getMachine() const = 0;
 
 	/// Return the virtual address at which the binary expects to be loaded.
-	/// For position independent / relocatable code this should be NO_ADDRESS
+	/// For position independent / relocatable code this should be Address::INVALID
 	virtual Address getImageBase() const = 0;
 
 	/// Return the total size of the loaded image

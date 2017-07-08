@@ -175,7 +175,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
 		p += size;
 	}
 
-	return NO_ADDRESS;
+	return Address::INVALID;
 }
 
 
