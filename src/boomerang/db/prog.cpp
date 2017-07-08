@@ -1042,7 +1042,7 @@ SharedType Prog::guessGlobalType(const QString& nam, Address u) const
 	sym->SizeOfStruct = sizeof(*sym);
 	sym->MaxNameLen   = 1000;
 	sym->Name[0]      = 0;
-	BOOL got = dbghelp::SymFromAddr(hProcess, u.m_value, 0, sym);
+	BOOL got = dbghelp::SymFromAddr(hProcess, u.value(), 0, sym);
 
 	if (got && *sym->Name && sym->TypeIndex) {
 		assert(nam == sym->Name);
@@ -1089,7 +1089,7 @@ QString Prog::newGlobalName(Address uaddr)
 		return nam;
 	}
 
-	nam = QString("global%1_%2").arg(m_globals.size()).arg(uaddr.m_value, 0, 16);
+	nam = QString("global%1_%2").arg(m_globals.size()).arg(uaddr.value(), 0, 16);
 	LOG_VERBOSE(1) << "naming new global: " << nam << " at address " << uaddr << "\n";
 	return nam;
 }
@@ -1130,7 +1130,7 @@ const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false *
 	if (si && !si->isAddressBss(uaddr)) {
 		// At this stage, only support ascii, null terminated, non unicode strings.
 		// At least 4 of the first 6 chars should be printable ascii
-		char *p = (char *)(uaddr + si->getHostAddr() - si->getSourceAddr()).m_value;
+		char *p = (char *)(uaddr + si->getHostAddr() - si->getSourceAddr()).value();
 
 		if (knownString) {
 			// No need to guess... this is hopefully a known string
@@ -1301,9 +1301,9 @@ const void *Prog::getCodeInfo(Address uAddr, const char *& last, int& delta) con
 	}
 
 	// Search all code and read-only sections
-	delta = (pSect->getHostAddr() - pSect->getSourceAddr()).m_value;
-	last  = (const char *)(pSect->getHostAddr() + pSect->getSize()).m_value;
-	const char *p = (const char *)(uAddr + delta).m_value;
+	delta = (pSect->getHostAddr() - pSect->getSourceAddr()).value();
+	last  = (const char *)(pSect->getHostAddr() + pSect->getSize()).value();
+	const char *p = (const char *)(uAddr + delta).value();
 	return p;
 }
 
@@ -2181,7 +2181,7 @@ SharedExp Prog::addReloc(SharedExp e, Address lc)
 				unsigned int sz = it->getSize();
 
 				if ((it->getLocation() < c_addr) && ((it->getLocation() + sz) > c_addr)) {
-					int off = (c->getAddr() - it->getLocation()).m_value;
+					int off = (c->getAddr() - it->getLocation()).value();
 					e = Binary::get(opPlus, Unary::get(opAddrOf, Location::global(it->getName(), nullptr)),
 									Const::get(off));
 					break;

@@ -148,7 +148,7 @@ void RTL::print(QTextStream& os /*= cout*/, bool html /*=false*/) const
 	}
 
 	// print out the instruction address of this RTL
-	os << QString("%1").arg(m_nativeAddr.m_value, 8, 16, QChar('0'));
+	os << QString("%1").arg(m_nativeAddr.value(), 8, 16, QChar('0'));
 
 	if (html) {
 		os << "</td>";

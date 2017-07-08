@@ -1921,7 +1921,7 @@ DataIntervalMap::iterator DataIntervalMap::find_it(Address addr)
 
 	it--;                   // If any item overlaps, it is this one
 
-	if ((addr >= it->first) && ((addr - it->first).m_value < it->second.size)) {
+	if ((addr >= it->first) && ((addr - it->first).value() < it->second.size)) {
 		// This is the one that overlaps with addr
 		return it;
 	}
@@ -1966,7 +1966,7 @@ bool DataIntervalMap::isClear(Address addr, unsigned size)
 	}
 
 	if (it->second.type->isArray() && it->second.type->as<ArrayType>()->isUnbounded()) {
-		it->second.size = (addr - it->first).m_value;
+		it->second.size = (addr - it->first).value();
 		LOG << "shrinking size of unbound array to " << it->second.size << " bytes\n";
 		return true;
 	}
@@ -2037,7 +2037,7 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, Address addr, cons
 									 bool /*forced*/)
 {
 	if (pdie->second.type->resolvesToCompound()) {
-		unsigned   bitOffset  = (addr - pdie->first).m_value * 8;
+		unsigned   bitOffset  = (addr - pdie->first).value() * 8;
 		SharedType memberType = pdie->second.type->as<CompoundType>()->getTypeAtOffset(bitOffset);
 
 		if (memberType->isCompatibleWith(*ty)) {
@@ -2085,7 +2085,7 @@ void DataIntervalMap::replaceComponents(Address addr, const QString& name, Share
 		iterator it2 = dimap.upper_bound(pastLast - 1); // Iterator to the first item that starts too late
 
 		for (it = it1; it != it2; ++it) {
-			unsigned bitOffset = (it->first - addr).m_value * 8;
+			unsigned bitOffset = (it->first - addr).value() * 8;
 
 			SharedType memberType = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
 
@@ -2144,7 +2144,7 @@ void DataIntervalMap::replaceComponents(Address addr, const QString& name, Share
 			SharedExp locl = Location::memOf(Binary::get(opPlus, rsp0->clone(), Const::get(it->first.native())));
 			locl->simplifyArith(); // Convert m[sp{0} + -4] to m[sp{0} - 4]
 			SharedType elemTy;
-			int        bitOffset = (it->first - addr).m_value / 8;
+			int        bitOffset = (it->first - addr).value() / 8;
 
 			if (ty->resolvesToCompound()) {
 				elemTy = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
@@ -2247,7 +2247,7 @@ ComplexTypeCompList& Type::compForAddress(Address addr, DataIntervalMap& dim)
 	SharedType curType      = pdie->second.type;
 
 	while (startCurrent < addr) {
-		size_t bitOffset = (addr - startCurrent).m_value * 8;
+		size_t bitOffset = (addr - startCurrent).value() * 8;
 
 		if (curType->isCompound()) {
 			auto     compCurType = curType->as<CompoundType>();

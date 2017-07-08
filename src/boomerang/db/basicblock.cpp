@@ -1347,7 +1347,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
 					Const caseVal(0);
 
 					if (psi->chForm == 'F') {                            // "Fortran" style?
-						caseVal.setInt(((int *)psi->uTable.m_value)[i]); // Yes, use the table value itself
+						caseVal.setInt(((int *)psi->uTable.value())[i]); // Yes, use the table value itself
 					}
 					// Note that uTable has the address of an int array
 					else {
@@ -2664,7 +2664,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 			uSwitch = Address::g(prog->readNative4(si->uTable + i * 8 + 4));
 		}
 		else if (si->chForm == 'F') {
-			uSwitch = Address::g(((int *)si->uTable.m_value)[i]);
+			uSwitch = Address::g(((int *)si->uTable.value())[i]);
 		}
 		else {
 			uSwitch = Address::g(prog->readNative4(si->uTable + i * 4));
@@ -2716,7 +2716,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 	for (Address addr : dests) {
 		char tmp[1024];
 		count++;
-		sprintf(tmp, "before decoding fragment %i of %zu (%" PRIxPTR ")", count, dests.size(), addr.m_value);
+		sprintf(tmp, "before decoding fragment %i of %zu (%" PRIxPTR ")", count, dests.size(), addr.value());
 		Boomerang::get()->alertDecompileDebugPoint(proc, tmp);
 		prog->decodeFragment(proc, addr);
 	}

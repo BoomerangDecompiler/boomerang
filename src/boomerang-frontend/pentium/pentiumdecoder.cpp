@@ -4728,7 +4728,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 											// #line 1372 "frontend/machine/pentium/decoder.m"
 											// stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
 											genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus,
-													int((nextPC - hostPC).m_value));
+													int((nextPC - hostPC).value()));
 											return result;
 										} /*opt-block*/ /*opt-block+*/
 										else {
@@ -4830,7 +4830,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 											// stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
 											// Bit Scan Forward: need helper function
 											genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus,
-													int((nextPC - hostPC).m_value));
+													int((nextPC - hostPC).value()));
 											return result;
 										} /*opt-block*/ /*opt-block+*/
 										else {
@@ -14390,17 +14390,17 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 					case 0:
 						MATCH_w_32_8 = getDword(MATCH_p + 1);
 						{
-							                     Address relocd = addressToPC(MATCH_p) + 5 + MATCH_w_32_8 /* i32 at 8 */;
+							Address relocd = addressToPC(MATCH_p) + 5 + MATCH_w_32_8 /* i32 at 8 */;
 							nextPC = MATCH_p + 5;
 							// #line 1283 "frontend/machine/pentium/decoder.m"
-							stmts = instantiate(pc, "CALL.Jvod", { dis_Num(relocd.m_value) });
+							stmts = instantiate(pc, "CALL.Jvod", { dis_Num(relocd.value()) });
 							// Fix the last assignment, which is now %pc := %pc + (K + hostPC)
 							Assign *last = (Assign *)stmts->back();
 							auto   reloc = last->getRight()->access<Const, 2>();
 							assert(reloc->isIntConst());
 							// Subtract off the host pc
-							reloc->setInt(reloc->getInt() - hostPC.m_value);
-							                     Address nativeDest = (relocd - delta).native();
+							reloc->setInt(reloc->getInt() - hostPC.value());
+							Address nativeDest = (relocd - delta).native();
 
 							if (nativeDest == pc + 5) {
 								// This is a call $+5
@@ -14432,7 +14432,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 						MATCH_name   = MATCH_name_col_59[(MATCH_w_8_0 & 0x7) /* col at 0 */];
 						{
 							const char *name  = MATCH_name;
-							                     Address    relocd = addressToPC(MATCH_p) + 5 + MATCH_w_32_8;
+							Address    relocd = addressToPC(MATCH_p) + 5 + MATCH_w_32_8;
 							nextPC = MATCH_p + 5;
 							                     processUnconditionalJump(name, 5, relocd, delta, pc, stmts, result);
 						}
@@ -19322,7 +19322,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 														// #line 1377 "frontend/machine/pentium/decoder.m"
 														// stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
 														genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus,
-																int((nextPC - hostPC).m_value));
+																int((nextPC - hostPC).value()));
 														return result;
 														// Not "user" instructions:
 														//    | BOUNDod(reg, Mem) =>
@@ -19447,7 +19447,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 														nextPC = MATCH_p + 6;
 														// stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
 														genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus,
-																int((nextPC - hostPC).m_value));
+																int((nextPC - hostPC).value()));
 														return result;
 													} /*opt-block*/ /*opt-block+*/
 													else {
@@ -34722,7 +34722,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 							                     Address relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
 							nextPC = MATCH_p + 2;
 							// #line 1052 "frontend/machine/pentium/decoder.m"
-							stmts = instantiate(pc, "LOOPNE", { dis_Num((relocd - hostPC - 2).native().m_value) });
+							stmts = instantiate(pc, "LOOPNE", { dis_Num((relocd - hostPC - 2).native().value()) });
 						}
 						break;
 
@@ -34732,7 +34732,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 							                     Address relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
 							nextPC = MATCH_p + 2;
 							// #line 1055 "frontend/machine/pentium/decoder.m"
-							stmts = instantiate(pc, "LOOPE", { dis_Num((relocd - hostPC - 2).native().native().m_value) });
+							stmts = instantiate(pc, "LOOPE", { dis_Num((relocd - hostPC - 2).native().native().value()) });
 						}
 						break;
 
@@ -34742,7 +34742,7 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 							                     Address relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
 							nextPC = MATCH_p + 2;
 							// #line 1058 "frontend/machine/pentium/decoder.m"
-							stmts = instantiate(pc, "LOOP", { dis_Num((relocd - hostPC - 2).native().m_value) });
+							stmts = instantiate(pc, "LOOP", { dis_Num((relocd - hostPC - 2).native().value()) });
 						}
 						break;
 
@@ -38085,7 +38085,7 @@ MATCH_label_c145:
 			nextPC = MATCH_p + 4;
 			// #line 1377 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-			genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC - hostPC).value()));
 			return result;
 			// Not "user" instructions:
 			//    | BOUNDod(reg, Mem) =>
@@ -38112,7 +38112,7 @@ MATCH_label_c146:
 			nextPC = MATCH_p + 5;
 			// #line 1377 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-			genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC - hostPC).value()));
 			return result;
 			// Not "user" instructions:
 			//    | BOUNDod(reg, Mem) =>
@@ -38139,7 +38139,7 @@ MATCH_label_c147:
 			nextPC = MATCH_p + 9;
 			// #line 1377 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-			genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC - hostPC).value()));
 			return result;
 			// Not "user" instructions:
 			//    | BOUNDod(reg, Mem) =>
@@ -38166,7 +38166,7 @@ MATCH_label_c148:
 			nextPC = MATCH_p + 8;
 			// #line 1377 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-			genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, int((nextPC - hostPC).value()));
 			return result;
 			// Not "user" instructions:
 			//    | BOUNDod(reg, Mem) =>
@@ -38193,7 +38193,7 @@ MATCH_label_c149:
 			nextPC = MATCH_p + 4;
 			// #line 1367 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-			genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c150:
@@ -38204,7 +38204,7 @@ MATCH_label_c150:
 			nextPC = MATCH_p + 5;
 			// #line 1367 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-			genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c151:
@@ -38215,7 +38215,7 @@ MATCH_label_c151:
 			nextPC = MATCH_p + 9;
 			// #line 1367 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-			genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c152:
@@ -38225,7 +38225,7 @@ MATCH_label_c152:
 			unsigned reg   = (MATCH_w_8_24 >> 3 & 0x7) /* reg_opcode at 24 */;
 			nextPC = MATCH_p + 8;
 			// stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-			genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c153:
@@ -46373,7 +46373,7 @@ MATCH_label_c967:
 			nextPC = MATCH_p + 3;
 			// #line 1372 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-			genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c968:
@@ -46383,7 +46383,7 @@ MATCH_label_c968:
 			unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
 			nextPC = MATCH_p + 4;
 			// stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-			genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c969:
@@ -46394,7 +46394,7 @@ MATCH_label_c969:
 			nextPC = MATCH_p + 8;
 			// #line 1372 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-			genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c970: {
@@ -46402,7 +46402,7 @@ MATCH_label_c970: {
 			unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
 			nextPC = MATCH_p + 7;
 			// stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-			genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c971: {
@@ -46411,7 +46411,7 @@ MATCH_label_c971: {
 			nextPC = MATCH_p + 3;
 			// stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
 			// Bit Scan Forward: need helper function
-			genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c972: {
@@ -46420,7 +46420,7 @@ MATCH_label_c972: {
 			nextPC = MATCH_p + 4;
 			// stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
 			// Bit Scan Forward: need helper function
-			genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c973:
@@ -46431,7 +46431,7 @@ MATCH_label_c973:
 			nextPC = MATCH_p + 8;
 			// stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
 			// Bit Scan Forward: need helper function
-			genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c974:
@@ -46443,7 +46443,7 @@ MATCH_label_c974:
 			// #line 1361 "frontend/machine/pentium/decoder.m"
 			// stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
 			// Bit Scan Forward: need helper function
-			genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC - hostPC).m_value));
+			genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, int((nextPC - hostPC).value()));
 			return result;
 		}
 MATCH_label_c975:
@@ -49413,7 +49413,7 @@ MATCH_finished_c:
 	}
 
 	assert(nextPC >= hostPC);
-	result.numBytes = int((nextPC - hostPC).m_value);
+	result.numBytes = int((nextPC - hostPC).value());
 	return result;
 }
 
@@ -49769,7 +49769,7 @@ DWord PentiumDecoder::getDword(intptr_t lc)
 {
 	lastDwordLc = Address(lc) - m_image->getTextDelta();
 	return m_image->readNative4(lastDwordLc);
-	//    assert(lc<prog->getLimitTextHigh().m_value);
+	//    assert(lc<prog->getLimitTextHigh().value());
 	//    return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
 }
 

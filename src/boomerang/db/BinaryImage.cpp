@@ -89,12 +89,12 @@ char BinaryImage::readNative1(Address nat)
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
 	if (si == nullptr) {
-		qDebug() << "Target Memory access in unmapped section " << nat.m_value;
+		qDebug() << "Target Memory access in unmapped section " << nat.value();
 		return -1;
 	}
 
 	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
-	return *(char *)host.m_value;
+	return *(char *)host.value();
 }
 
 
@@ -107,7 +107,7 @@ int BinaryImage::readNative2(Address nat)
 	}
 
 	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
-	return Read2((short *)host.m_value, si->getEndian());
+	return Read2((short *)host.value(), si->getEndian());
 }
 
 
@@ -120,7 +120,7 @@ int BinaryImage::readNative4(Address nat)
 	}
 
 	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
-	return Read4((int *)host.m_value, si->getEndian());
+	return Read4((int *)host.value(), si->getEndian());
 }
 
 
@@ -203,7 +203,7 @@ void BinaryImage::writeNative4(Address nat, uint32_t n)
 	}
 
 	   Address host      = si->getHostAddr() - si->getSourceAddr() + nat;
-	uint8_t *host_ptr = (unsigned char *)host.m_value;
+	uint8_t *host_ptr = (unsigned char *)host.value();
 
 	if (si->getEndian() == 1) {
 		host_ptr[0] = (n >> 24) & 0xff;
@@ -249,7 +249,7 @@ void BinaryImage::calculateTextLimits()
 			m_limitTextHigh = hiAddress;
 		}
 
-		ptrdiff_t host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).m_value;
+		ptrdiff_t host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).value();
 
 		if (m_textDelta == 0) {
 			m_textDelta = host_native_diff;
@@ -355,7 +355,7 @@ SectionInfo *BinaryImage::createSection(const QString& name, Address from, Addre
 	}
 #endif
 
-	SectionInfo *sect = new SectionInfo(from, (to - from).m_value, name);
+	SectionInfo *sect = new SectionInfo(from, (to - from).value(), name);
 	m_sections.push_back(sect);
 
 	m_sectionMap.insert(std::make_pair(boost::icl::interval<Address>::right_open(from, to), sect));

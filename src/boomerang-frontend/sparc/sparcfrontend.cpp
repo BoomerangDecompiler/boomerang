@@ -83,8 +83,8 @@ bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delt
 		return false;
 	}
 
-	unsigned delay_inst       = *((unsigned *)(src + 4 + delta).m_value);
-	unsigned inst_before_dest = *((unsigned *)(dest - 4 + delta).m_value);
+	unsigned delay_inst       = *((unsigned *)(src + 4 + delta).value());
+	unsigned inst_before_dest = *((unsigned *)(dest - 4 + delta).value());
 	return(delay_inst == inst_before_dest);
 }
 
@@ -260,7 +260,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 	// Get the new return basic block for the special case where the delay instruction is a restore
 	BasicBlock *returnBB = optimise_CallReturn(call_stmt, inst.rtl, delay_rtl, proc);
 
-	int disp30 = (call_stmt->getFixedDest() - address).m_value >> 2;
+	int disp30 = (call_stmt->getFixedDest() - address).value() >> 2;
 
 	// Don't test for small offsets if part of a move_call_move pattern.
 	// These patterns assign to %o7 in the delay slot, and so can't possibly be used to copy %pc to %o7
@@ -277,7 +277,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 		assert(disp30 != 1);
 
 		// First check for helper functions
-		      Address             dest  = call_stmt->getFixedDest();
+		Address             dest  = call_stmt->getFixedDest();
 		const IBinarySymbol *symb = SymbolTable->find(dest);
 
 		// Special check for calls to weird PLT entries which don't have symbols
@@ -888,7 +888,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 				ptrdiff_t delta = m_image->getTextDelta();
 
 				for (int j = 0; j < inst.numBytes; j++) {
-					LOG_STREAM() << QString("%1").arg((unsigned)*(unsigned char *)(uAddr + delta + j).m_value, 2, 16, QChar('0')) << " ";
+					LOG_STREAM() << QString("%1").arg((unsigned)*(unsigned char *)(uAddr + delta + j).value(), 2, 16, QChar('0')) << " ";
 				}
 
 				LOG_STREAM() << "\n";

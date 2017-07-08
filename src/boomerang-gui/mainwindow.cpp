@@ -450,7 +450,7 @@ void MainWindow::showNewEntrypoint(Address addr, const QString& name)
 	int nrows = ui->entrypoints->rowCount();
 
 	ui->entrypoints->setRowCount(nrows + 1);
-	ui->entrypoints->setItem(nrows, 0, new QTableWidgetItem(tr("%1").arg(addr.m_value, 8, 16, QChar('0'))));
+	ui->entrypoints->setItem(nrows, 0, new QTableWidgetItem(tr("%1").arg(addr.value(), 8, 16, QChar('0'))));
 	ui->entrypoints->setItem(nrows, 1, new QTableWidgetItem(name));
 	ui->entrypoints->resizeColumnsToContents();
 	ui->entrypoints->resizeRowsToContents();
@@ -635,8 +635,8 @@ void MainWindow::showNewSection(const QString& name, Address start, Address end)
 
 	ui->sections->setRowCount(nrows + 1);
 	ui->sections->setItem(nrows, 0, new QTableWidgetItem(name));
-	ui->sections->setItem(nrows, 1, new QTableWidgetItem(tr("%1").arg(start.m_value, 8, 16, QChar('0'))));
-	ui->sections->setItem(nrows, 2, new QTableWidgetItem(tr("%1").arg(end.m_value, 8, 16, QChar('0'))));
+	ui->sections->setItem(nrows, 1, new QTableWidgetItem(tr("%1").arg(start.value(), 8, 16, QChar('0'))));
+	ui->sections->setItem(nrows, 2, new QTableWidgetItem(tr("%1").arg(end.value(), 8, 16, QChar('0'))));
 	ui->sections->sortItems(1, Qt::AscendingOrder);
 	ui->sections->resizeColumnsToContents();
 	ui->sections->resizeRowsToContents();

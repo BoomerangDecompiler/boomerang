@@ -3045,7 +3045,7 @@ int XMLProgParser::operFromString(const QStringRef& s)
 void XMLProgParser::persistToXML(QXmlStreamWriter& out, Module *c)
 {
 	out.writeStartElement("module");
-	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).m_value));
+	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(c).value()));
 	out.writeAttribute("name", c->m_name);
 
 	for (auto p : *c) {
@@ -3069,7 +3069,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Global *g)
 {
 	out.writeStartElement("global");
 	out.writeAttribute("name", g->m_name);
-	out.writeAttribute("uaddr", QString::number(g->m_addr.m_value, 16));
+	out.writeAttribute("uaddr", QString::number(g->m_addr.value(), 16));
 	out.writeStartElement("type");
 	persistToXML(out, g->m_type);
 	out.writeEndElement();
@@ -3112,23 +3112,23 @@ void XMLProgParser::persistToXML(Prog *prog)
 void XMLProgParser::persistToXML(QXmlStreamWriter& out, LibProc *proc)
 {
 	out.writeStartElement("libproc");
-	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).m_value));
-	out.writeAttribute("address", QString::number(proc->m_address.m_value));
-	out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value));
+	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).value()));
+	out.writeAttribute("address", QString::number(proc->m_address.value()));
+	out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.value()));
 
 	if (proc->m_firstCaller) {
-		out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value));
+		out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).value()));
 	}
 
 	if (proc->m_parent) {
-		out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->m_parent).m_value));
+		out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->m_parent).value()));
 	}
 
 	persistToXML(out, proc->signature);
 
 	for (auto const& elem : proc->m_callerSet) {
 		out.writeStartElement("caller");
-		out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).m_value));
+		out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).value()));
 		out.writeEndElement();
 	}
 
@@ -3146,28 +3146,28 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, LibProc *proc)
 void XMLProgParser::persistToXML(QXmlStreamWriter& out, UserProc *proc)
 {
 	out.writeStartElement("userproc");
-	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).m_value));
-	out.writeAttribute("address", QString::number(proc->m_address.m_value));
+	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(proc).value()));
+	out.writeAttribute("address", QString::number(proc->m_address.value()));
 	out.writeAttribute("status", QString::number((int)proc->m_status));
-	out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.m_value));
+	out.writeAttribute("firstCallerAddress", QString::number(proc->m_firstCallerAddr.value()));
 
 	if (proc->m_firstCaller) {
-		out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).m_value));
+		out.writeAttribute("firstCaller", QString::number(ADDRESS::host_ptr(proc->m_firstCaller).value()));
 	}
 
 	if (proc->m_parent) {
-		out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->m_parent).m_value));
+		out.writeAttribute("cluster", QString::number(ADDRESS::host_ptr(proc->m_parent).value()));
 	}
 
 	if (proc->theReturnStatement) {
-		out.writeAttribute("retstmt", QString::number(ADDRESS::host_ptr(proc->theReturnStatement).m_value));
+		out.writeAttribute("retstmt", QString::number(ADDRESS::host_ptr(proc->theReturnStatement).value()));
 	}
 
 	persistToXML(out, proc->signature);
 
 	for (auto const& elem : proc->m_callerSet) {
 		out.writeStartElement("caller");
-		out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).m_value));
+		out.writeAttribute("call", QString::number(ADDRESS::host_ptr(elem).value()));
 		out.writeEndElement();
 	}
 
@@ -3200,7 +3200,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, UserProc *proc)
 
 	for (auto& elem : proc->m_calleeList) {
 		out.writeStartElement("callee");
-		out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(elem).m_value));
+		out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(elem).value()));
 		out.writeEndElement();
 	}
 
@@ -3224,7 +3224,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Function *proc)
 void XMLProgParser::persistToXML(QXmlStreamWriter& out, Signature *sig)
 {
 	out.writeStartElement("signature");
-	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(sig).m_value));
+	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(sig).value()));
 	out.writeAttribute("name", sig->m_name);
 	out.writeAttribute("ellipsis", QString::number((int)sig->m_ellipsis));
 	out.writeAttribute("preferedName", sig->m_preferredName);
@@ -3239,7 +3239,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Signature *sig)
 
 	for (auto& elem : sig->m_params) {
 		out.writeStartElement("param");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(elem).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(elem).value()));
 		out.writeAttribute("name", elem->name());
 		out.writeStartElement("type");
 		persistToXML(out, elem->getType());
@@ -3289,7 +3289,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (v) {
 		out.writeStartElement("voidtype");
-		out.writeAttribute("index", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("index", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		out.writeEndElement();
 		return;
 	}
@@ -3298,7 +3298,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (f) {
 		out.writeStartElement("functype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		persistToXML(out, f->signature);
 		out.writeEndElement();
 		return;
@@ -3308,7 +3308,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (i) {
 		out.writeStartElement("integertype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		out.writeAttribute("size", QString::number(i->size));
 		out.writeAttribute("signedness", QString::number(i->signedness));
 		out.writeEndElement();
@@ -3319,7 +3319,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (fl) {
 		out.writeStartElement("floattype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		out.writeAttribute("size", QString::number(fl->size));
 		out.writeEndElement();
 		return;
@@ -3329,7 +3329,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (b) {
 		out.writeStartElement("booleantype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		out.writeEndElement();
 		return;
 	}
@@ -3338,7 +3338,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (c) {
 		out.writeStartElement("chartype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		out.writeEndElement();
 		return;
 	}
@@ -3347,7 +3347,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (p) {
 		out.writeStartElement("pointertype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		persistToXML(out, p->points_to);
 		out.writeEndElement();
 		return;
@@ -3357,7 +3357,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (a) {
 		out.writeStartElement("arraytype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		out.writeAttribute("length", QString::number((int)a->Length));
 		out.writeStartElement("basetype");
 		persistToXML(out, a->BaseType);
@@ -3370,7 +3370,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (n) {
 		out.writeStartElement("namedtype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		out.writeAttribute("name", n->name);
 		out.writeEndElement();
 		return;
@@ -3380,7 +3380,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (co) {
 		out.writeStartElement("compoundtype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 
 		for (unsigned i = 0; i < co->names.size(); i++) {
 			out.writeStartElement("member");
@@ -3397,7 +3397,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedType& ty)
 
 	if (sz) {
 		out.writeStartElement("sizetype");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(ty.get()).value()));
 		out.writeAttribute("size", QString::number(sz->getSize()));
 		out.writeEndElement();
 		return;
@@ -3415,7 +3415,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (t) {
 		out.writeStartElement("typeval");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 		out.writeAttribute("op", op_name);
 		out.writeStartElement("type");
 		persistToXML(out, t->val);
@@ -3428,7 +3428,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (te) {
 		out.writeStartElement("terminal");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 		out.writeAttribute("op", op_name);
 		out.writeEndElement();
 		return;
@@ -3438,7 +3438,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (c) {
 		out.writeStartElement("const");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 		out.writeAttribute("op", op_name);
 		out.writeAttribute("conscript", QString::number(c->conscript));
 
@@ -3446,7 +3446,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 			out.writeAttribute("value", QString::number(c->u.i));
 		}
 		else if (c->op == opFuncConst) {
-			out.writeAttribute("value", QString::number(c->u.a.m_value));
+			out.writeAttribute("value", QString::number(c->u.a.value()));
 		}
 		else if (c->op == opFltConst) {
 			out.writeAttribute("value", QString::number(c->u.d));
@@ -3469,10 +3469,10 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (l) {
 		out.writeStartElement("location");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 
 		if (l->proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(l->proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(l->proc).value()));
 		}
 
 		out.writeAttribute("op", op_name);
@@ -3487,10 +3487,10 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (r) {
 		out.writeStartElement("refexp");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 
 		if (r->def) {
-			out.writeAttribute("def", QString::number(ADDRESS::host_ptr(r->def).m_value));
+			out.writeAttribute("def", QString::number(ADDRESS::host_ptr(r->def).value()));
 		}
 
 		out.writeAttribute("op", op_name);
@@ -3505,10 +3505,10 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (f) {
 		out.writeStartElement("flagdef");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 
 		if (f->rtl) {
-			out.writeAttribute("rtl", QString::number(ADDRESS::host_ptr(f->rtl.get()).m_value));
+			out.writeAttribute("rtl", QString::number(ADDRESS::host_ptr(f->rtl.get()).value()));
 		}
 
 		out.writeAttribute("op", op_name);
@@ -3523,7 +3523,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (ty) {
 		out.writeStartElement("typedexp");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 		out.writeAttribute("op", op_name);
 		out.writeStartElement("subexp1");
 		persistToXML(out, ty->subExp1);
@@ -3539,7 +3539,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (tn) {
 		out.writeStartElement("ternary");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 		out.writeAttribute("op", op_name);
 		out.writeStartElement("subexp1");
 		persistToXML(out, tn->subExp1);
@@ -3558,7 +3558,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (b) {
 		out.writeStartElement("binary");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 		out.writeAttribute("op", op_name);
 		out.writeStartElement("subexp1");
 		persistToXML(out, b->subExp1);
@@ -3574,7 +3574,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 
 	if (u) {
 		out.writeStartElement("unary");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(e).value()));
 		out.writeAttribute("op", op_name);
 		out.writeStartElement("subexp1");
 		persistToXML(out, u->subExp1);
@@ -3591,11 +3591,11 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const SharedExp& e)
 void XMLProgParser::persistToXML(QXmlStreamWriter& out, Cfg *cfg)
 {
 	out.writeStartElement("cfg");
-	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(cfg).m_value));
+	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(cfg).value()));
 	out.writeAttribute("wellformed", QString::number(cfg->WellFormed));
 	out.writeAttribute("lastLabel", QString::number(cfg->lastLabel));
-	out.writeAttribute("entryBB", QString::number(ADDRESS::host_ptr(cfg->entryBB).m_value));
-	out.writeAttribute("exitBB", QString::number(ADDRESS::host_ptr(cfg->exitBB).m_value));
+	out.writeAttribute("entryBB", QString::number(ADDRESS::host_ptr(cfg->entryBB).value()));
+	out.writeAttribute("exitBB", QString::number(ADDRESS::host_ptr(cfg->exitBB).value()));
 
 	for (auto& elem : cfg->m_listBB) {
 		persistToXML(out, elem);
@@ -3603,13 +3603,13 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Cfg *cfg)
 
 	for (auto& elem : cfg->Ordering) {
 		out.writeStartElement("order");
-		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
+		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).value()));
 		out.writeEndElement();
 	}
 
 	for (auto& elem : cfg->revOrdering) {
 		out.writeStartElement("revorder");
-		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
+		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).value()));
 		out.writeEndElement();
 	}
 
@@ -3626,7 +3626,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, Cfg *cfg)
 void XMLProgParser::persistToXML(QXmlStreamWriter& out, const BasicBlock *bb)
 {
 	out.writeStartElement("order");
-	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(bb).m_value));
+	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(bb).value()));
 	out.writeAttribute("nodeType", QString::number((int)bb->m_nodeType));
 	out.writeAttribute("labelNum", QString::number(bb->m_labelNum));
 	out.writeAttribute("labelneeded", QString::number(bb->m_labelNeeded));
@@ -3659,27 +3659,27 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const BasicBlock *bb)
 
 	// note the rediculous duplication here
 	if (bb->m_immPDom) {
-		out.writeAttribute("immPDom", QString::number(ADDRESS::host_ptr(bb->m_immPDom).m_value));
+		out.writeAttribute("immPDom", QString::number(ADDRESS::host_ptr(bb->m_immPDom).value()));
 	}
 
 	if (bb->m_loopHead) {
-		out.writeAttribute("loopHead", QString::number(ADDRESS::host_ptr(bb->m_loopHead).m_value));
+		out.writeAttribute("loopHead", QString::number(ADDRESS::host_ptr(bb->m_loopHead).value()));
 	}
 
 	if (bb->m_caseHead) {
-		out.writeAttribute("caseHead", QString::number(ADDRESS::host_ptr(bb->m_caseHead).m_value));
+		out.writeAttribute("caseHead", QString::number(ADDRESS::host_ptr(bb->m_caseHead).value()));
 	}
 
 	if (bb->m_condFollow) {
-		out.writeAttribute("condFollow", QString::number(ADDRESS::host_ptr(bb->m_condFollow).m_value));
+		out.writeAttribute("condFollow", QString::number(ADDRESS::host_ptr(bb->m_condFollow).value()));
 	}
 
 	if (bb->m_loopFollow) {
-		out.writeAttribute("loopFollow", QString::number(ADDRESS::host_ptr(bb->m_loopFollow).m_value));
+		out.writeAttribute("loopFollow", QString::number(ADDRESS::host_ptr(bb->m_loopFollow).value()));
 	}
 
 	if (bb->m_latchNode) {
-		out.writeAttribute("latchNode", QString::number(ADDRESS::host_ptr(bb->m_latchNode).m_value));
+		out.writeAttribute("latchNode", QString::number(ADDRESS::host_ptr(bb->m_latchNode).value()));
 	}
 
 	out.writeAttribute("sType", QString::number((int)bb->m_structuringType));
@@ -3689,13 +3689,13 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const BasicBlock *bb)
 
 	for (auto& elem : bb->m_inEdges) {
 		out.writeStartElement("inedge");
-		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
+		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).value()));
 		out.writeEndElement();
 	}
 
 	for (auto& elem : bb->m_outEdges) {
 		out.writeStartElement("outedge");
-		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).m_value));
+		out.writeAttribute("bb", QString::number(ADDRESS::host_ptr(elem).value()));
 		out.writeEndElement();
 	}
 
@@ -3720,8 +3720,8 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const BasicBlock *bb)
 void XMLProgParser::persistToXML(QXmlStreamWriter& out, const RTL *rtl)
 {
 	out.writeStartElement("rtl");
-	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(rtl).m_value));
-	out.writeAttribute("addr", QString::number(rtl->m_nativeAddr.m_value));
+	out.writeAttribute("id", QString::number(ADDRESS::host_ptr(rtl).value()));
+	out.writeAttribute("addr", QString::number(rtl->m_nativeAddr.value()));
 
 	for (auto const& elem : *rtl) {
 		out.writeStartElement("stmt");
@@ -3739,13 +3739,13 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 	if (b) {
 		out.writeStartElement("boolasgn");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).value()));
 		out.writeAttribute("number", QString::number(b->m_number));
 
 		//        if (b->parent)
-		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(b->parent).m_value));
+		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(b->parent).value()));
 		if (b->m_proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(b->m_proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(b->m_proc).value()));
 		}
 
 		out.writeAttribute("jtcond", QString::number(b->jtCond));
@@ -3766,16 +3766,16 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 	if (r) {
 		out.writeStartElement("returnstmt");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).value()));
 		out.writeAttribute("number", QString::number(r->m_number));
 
 		//        if (r->parent)
-		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(r->parent).m_value));
+		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(r->parent).value()));
 		if (r->m_proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(r->m_proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(r->m_proc).value()));
 		}
 
-		out.writeAttribute("retAddr", QString::number(r->retAddr.m_value));
+		out.writeAttribute("retAddr", QString::number(r->retAddr.value()));
 
 		for (auto const& elem : r->modifieds) {
 			out.writeStartElement("modifieds");
@@ -3797,14 +3797,14 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 	if (c) {
 		out.writeStartElement("callstmt");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).value()));
 		out.writeAttribute("number", QString::number(c->m_number));
 		out.writeAttribute("computed", QString::number(c->m_isComputed));
 
 		//        if (c->parent)
-		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(c->parent).m_value));
+		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(c->parent).value()));
 		if (c->m_proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(c->m_proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(c->m_proc).value()));
 		}
 
 		out.writeAttribute("returnAfterCall", QString::number((int)c->returnAfterCall));
@@ -3813,7 +3813,7 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 			out.writeStartElement("dest");
 
 			if (c->procDest) {
-				out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(c->procDest).m_value));
+				out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(c->procDest).value()));
 			}
 
 			persistToXML(out, c->pDest);
@@ -3840,14 +3840,14 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 	if (ca) {
 		out.writeStartElement("casestmt");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).value()));
 		out.writeAttribute("number", QString::number(ca->m_number));
 		out.writeAttribute("computed", QString::number(ca->m_isComputed));
 
 		//        if (ca->parent)
-		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(ca->parent).m_value));
+		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(ca->parent).value()));
 		if (ca->m_proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(ca->m_proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(ca->m_proc).value()));
 		}
 
 		if (ca->pDest) {
@@ -3866,16 +3866,16 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 	if (br) {
 		out.writeStartElement("branchstmt");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).value()));
 		out.writeAttribute("number", QString::number(br->m_number));
 		out.writeAttribute("computed", QString::number(br->m_isComputed));
 		out.writeAttribute("jtcond", QString::number(br->jtCond));
 		out.writeAttribute("float", QString::number(br->bFloat));
 
 		//        if (br->parent)
-		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(br->parent).m_value));
+		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(br->parent).value()));
 		if (br->m_proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(br->m_proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(br->m_proc).value()));
 		}
 
 		if (br->pDest) {
@@ -3898,14 +3898,14 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 	if (g) {
 		out.writeStartElement("gotostmt");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).value()));
 		out.writeAttribute("number", QString::number(g->m_number));
 		out.writeAttribute("computed", QString::number(g->m_isComputed));
 
 		//        if (g->parent)
-		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(g->parent).m_value));
+		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(g->parent).value()));
 		if (g->m_proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(g->m_proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(g->m_proc).value()));
 		}
 
 		if (g->pDest) {
@@ -3922,13 +3922,13 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 	if (p) {
 		out.writeStartElement("phiassign");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).value()));
 		out.writeAttribute("number", QString::number(p->m_number));
 
 		//        if (p->parent)
-		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(p->parent).m_value));
+		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(p->parent).value()));
 		if (p->m_proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(p->m_proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(p->m_proc).value()));
 		}
 
 		out.writeStartElement("lhs");
@@ -3937,8 +3937,8 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 		for (auto it = p->cbegin(); it != p->cend(); p++) {
 			out.writeStartElement("def");
-			out.writeAttribute("stmt", QString::number(ADDRESS::host_ptr(it->second.def()).m_value));
-			out.writeAttribute("exp", QString::number(ADDRESS::host_ptr(it->second.e).m_value));
+			out.writeAttribute("stmt", QString::number(ADDRESS::host_ptr(it->second.def()).value()));
+			out.writeAttribute("exp", QString::number(ADDRESS::host_ptr(it->second.e).value()));
 			out.writeEndElement();
 		}
 
@@ -3950,13 +3950,13 @@ void XMLProgParser::persistToXML(QXmlStreamWriter& out, const Instruction *stmt)
 
 	if (a) {
 		out.writeStartElement("assign");
-		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).m_value));
+		out.writeAttribute("id", QString::number(ADDRESS::host_ptr(stmt).value()));
 		out.writeAttribute("number", QString::number(a->m_number));
 
 		//        if (a->parent)
-		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(a->parent).m_value));
+		//            out.writeAttribute("parent",QString::number(ADDRESS::host_ptr(a->parent).value()));
 		if (a->m_proc) {
-			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(a->m_proc).m_value));
+			out.writeAttribute("proc", QString::number(ADDRESS::host_ptr(a->m_proc).value()));
 		}
 
 		out.writeStartElement("lhs");

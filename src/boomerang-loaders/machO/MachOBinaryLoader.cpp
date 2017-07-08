@@ -315,17 +315,17 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 	for (unsigned i = 0; i < segments.size(); i++) {
 		fp.seek(imgoffs + BMMH(segments[i].fileoff));
-		      Address  a   = Address::g(BMMH(segments[i].vmaddr));
+		Address  a   = Address::g(BMMH(segments[i].vmaddr));
 		unsigned sz  = BMMH(segments[i].vmsize);
 		unsigned fsz = BMMH(segments[i].filesize);
-		memset(base + a.m_value - loaded_addr.m_value, 0, sz);
-		fp.read(base + a.m_value - loaded_addr.m_value, fsz);
-		DEBUG_PRINT("loaded segment %tx %i in mem %i in file\n", a.m_value, sz, fsz);
+		memset(base + a.value() - loaded_addr.value(), 0, sz);
+		fp.read(base + a.value() - loaded_addr.value(), fsz);
+		DEBUG_PRINT("loaded segment %tx %i in mem %i in file\n", a.value(), sz, fsz);
 		QString        name  = QByteArray(segments[i].segname, 17);
 		IBinarySection *sect = Image->createSection(name, Address::n(BMMH(segments[i].vmaddr)),
 													                  Address::n(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
 		assert(sect);
-		sect->setHostAddr(Address::g(Address::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.m_value));
+		sect->setHostAddr(Address::g(Address::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.value()));
 		assert((sect->getHostAddr() + sect->getSize()) <= Address::host_ptr(base + loaded_size));
 
 		unsigned long l = BMMH(segments[i].initprot);
@@ -355,7 +355,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 									   );
 		}
 
-		DEBUG_PRINT("loaded segment %tx %i in mem %i in file code=%i data=%i readonly=%i\n", a.m_value, sz, fsz,
+		DEBUG_PRINT("loaded segment %tx %i in mem %i in file code=%i data=%i readonly=%i\n", a.value(), sz, fsz,
 					sect->isCode(), sect->isData(), sect->isReadOnly());
 	}
 
@@ -365,7 +365,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 			unsigned startidx = BMMH(stubs_sects[j].reserved1);
 			unsigned symbol   = BMMH(indirectsymtbl[startidx + i]);
 			         Address  addr     = Address::g(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
-			DEBUG_PRINT("stub for %s at %tx\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr.m_value);
+			DEBUG_PRINT("stub for %s at %tx\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr.value());
 			char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
 
 			if (*name == '_') { // we want printf not _printf
@@ -404,9 +404,9 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 		for (unsigned i = 0; i < objc_modules_size; ) {
 			struct objc_module *module =
-				(struct objc_module *)(Address::host_ptr(base) + objc_modules - loaded_addr + i).m_value;
-			char   *name  = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.m_value);
-			Symtab symtab = (Symtab)(Address::host_ptr(base) + BMMH(module->symtab) - loaded_addr).m_value;
+				(struct objc_module *)(Address::host_ptr(base) + objc_modules - loaded_addr + i).value();
+			char   *name  = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.value());
+			Symtab symtab = (Symtab)(Address::host_ptr(base) + BMMH(module->symtab) - loaded_addr).value();
 #ifdef DEBUG_MACHO_LOADER_OBJC
 			fprintf(stdout, "module %s (%i classes)\n", name, BMMHW(symtab->cls_def_cnt));
 #endif
@@ -414,19 +414,19 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 			m->name = name;
 
 			for (unsigned j = 0; j < BMMHW(symtab->cls_def_cnt); j++) {
-				struct objc_class *def   = (struct objc_class *)(base + BMMH(symtab->defs[j]) - loaded_addr.m_value);
-				char              *_name = (char *)(Address::value_type(base) + BMMH(def->name) - loaded_addr.m_value);
+				struct objc_class *def   = (struct objc_class *)(base + BMMH(symtab->defs[j]) - loaded_addr.value());
+				char              *_name = (char *)(Address::value_type(base) + BMMH(def->name) - loaded_addr.value());
 #ifdef DEBUG_MACHO_LOADER_OBJC
 				fprintf(stdout, "  class %s\n", name);
 #endif
 				ObjcClass *cl = &m->classes[_name];
 				cl->name = _name;
-				struct objc_ivar_list *ivars = (struct objc_ivar_list *)(base + BMMH(def->ivars) - loaded_addr.m_value);
+				struct objc_ivar_list *ivars = (struct objc_ivar_list *)(base + BMMH(def->ivars) - loaded_addr.value());
 
 				for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(ivars->ivar_count)); k++) {
 					struct objc_ivar *ivar  = &ivars->ivar_list[k];
-					char             *name2 = (char *)(Address::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.m_value);
-					char             *types = (char *)(Address::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.m_value);
+					char             *name2 = (char *)(Address::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.value());
+					char             *types = (char *)(Address::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.value());
 #ifdef DEBUG_MACHO_LOADER_OBJC
 					fprintf(stdout, "    ivar %s %s %x\n", name, types, BMMH(ivar->ivar_offset));
 #endif
@@ -438,12 +438,12 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 				// this is weird, why is it defined as a ** in the struct but used as a * in otool?
 				struct objc_method_list *methods =
-					(struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr.m_value);
+					(struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr.value());
 
 				for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(methods->method_count)); k++) {
 					struct objc_method *method = &methods->method_list[k];
-					char               *name3  = (char *)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.m_value);
-					char               *types  = (char *)(intptr_t(base) + BMMH(method->method_types) - loaded_addr.m_value);
+					char               *name3  = (char *)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.value());
+					char               *types  = (char *)(intptr_t(base) + BMMH(method->method_types) - loaded_addr.value());
 #ifdef DEBUG_MACHO_LOADER_OBJC
 					fprintf(stdout, "    method %s %s %x\n", name, types, BMMH((void *)method->method_imp));
 #endif
@@ -611,7 +611,7 @@ DWord MachOBinaryLoader::getDelta()
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
 	//    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-	return (Address::host_ptr(base) - loaded_addr).m_value;
+	return (Address::host_ptr(base) - loaded_addr).value();
 }
 
 

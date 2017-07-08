@@ -122,7 +122,7 @@ Log& Log::operator<<(double d)
 
 Log& Log::operator<<(Address a)
 {
-	*this << "0x" << QString::number(a.m_value, 16);
+	*this << "0x" << QString::number(a.value(), 16);
 	return *this;
 }
 

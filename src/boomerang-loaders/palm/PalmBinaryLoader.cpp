@@ -31,7 +31,7 @@
 #define UC(ad)      ((unsigned char *)ad)
 #define UINT4(p)    ((UC((p))[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3])
 #define UINT4ADDR(p) \
-	((UC((p).m_value)[0] << 24) + (UC((p).m_value)[1] << 16) + (UC((p).m_value)[2] << 8) + UC((p).m_value)[3])
+	((UC((p).value())[0] << 24) + (UC((p).value())[1] << 16) + (UC((p).value())[2] << 8) + UC((p).value())[3])
 
 
 PalmBinaryLoader::PalmBinaryLoader()
@@ -199,13 +199,13 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 	}
 
 	// Uncompress the data. Skip first long (offset of CODE1 "xrefs")
-	p = (unsigned char *)(pData->getHostAddr() + 4).m_value;
+	p = (unsigned char *)(pData->getHostAddr() + 4).value();
 	int start = (int)UINT4(p);
 	p += 4;
 	unsigned char *q   = (m_pData + m_sizeBelowA5 + start);
 	bool          done = false;
 
-	while (!done && (p < (unsigned char *)(pData->getHostAddr() + pData->getSize()).m_value)) {
+	while (!done && (p < (unsigned char *)(pData->getHostAddr() + pData->getSize()).value())) {
 		unsigned char rle = *p++;
 
 		if (rle == 0) {
@@ -507,10 +507,10 @@ Address PalmBinaryLoader::getMainEntryPoint()
 
 	// Return the start of the code1 section
 	   Address   ha(psect->getHostAddr());
-	uintptr_t gb(ha.m_value);
-	uint16_t  *startCode = (uint16_t *)psect->getHostAddr().m_value;
+	uintptr_t gb(ha.value());
+	uint16_t  *startCode = (uint16_t *)psect->getHostAddr().value();
 	startCode = (uint16_t *)gb;
-	int delta = (psect->getHostAddr() - psect->getSourceAddr()).m_value;
+	int delta = (psect->getHostAddr() - psect->getSourceAddr()).value();
 
 	// First try the CW first jump pattern
 	SWord *res = findPattern(startCode, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord), 1);
@@ -518,7 +518,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 	if (res) {
 		// We have the code warrior first jump. Get the addil operand
 		int   addilOp      = Read4((uint32_t *)(startCode + 5));
-		SWord *startupCode = (SWord *)(Address::host_ptr(startCode) + 10 + addilOp).m_value;
+		SWord *startupCode = (SWord *)(Address::host_ptr(startCode) + 10 + addilOp).value();
 		// Now check the next 60 SWords for the call to PilotMain
 		res = findPattern(startupCode, CWCallMain, sizeof(CWCallMain) / sizeof(SWord), 60);
 
@@ -572,7 +572,7 @@ void PalmBinaryLoader::generateBinFiles(const QString& path) const
 			return;
 		}
 
-		fwrite((void *)psect.getHostAddr().m_value, psect.getSize(), 1, f);
+		fwrite((void *)psect.getHostAddr().value(), psect.getSize(), 1, f);
 		fclose(f);
 	}
 }

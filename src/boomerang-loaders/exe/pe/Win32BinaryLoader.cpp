@@ -315,11 +315,11 @@ Address Win32BinaryLoader::getMainEntryPoint()
 				int     off  = LMMH(*(p + m_base + 1));
 				            Address dest = Address::g((unsigned)p + 5 + off);
 				// Check for a jump there
-				op1 = *(unsigned char *)(dest.m_value + m_base);
+				op1 = *(unsigned char *)(dest.value() + m_base);
 
 				if (op1 == 0xE9) {
 					// Follow that jump
-					off  = LMMH(*(dest.m_value + m_base + 1));
+					off  = LMMH(*(dest.value() + m_base + 1));
 					dest = dest + 5 + off;
 				}
 
@@ -388,7 +388,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
 					if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
 						m_mingw_main = true;
-						return lastlastcall + 5 + LMMH(*(lastlastcall.m_value + m_base + 1)) + LMMH(m_pPEHeader->Imagebase);
+						return lastlastcall + 5 + LMMH(*(lastlastcall.value() + m_base + 1)) + LMMH(m_pPEHeader->Imagebase);
 					}
 				}
 
@@ -717,7 +717,7 @@ void Win32BinaryLoader::findJumps(Address curr)
 
 	assert(sec);
 	// Add to native addr to get host:
-	ptrdiff_t delta = (sec->getHostAddr() - sec->getSourceAddr()).m_value;
+	ptrdiff_t delta = (sec->getHostAddr() - sec->getSourceAddr()).value();
 
 	while (cnt < 0x60) { // Max of 0x60 bytes without a match
 		curr -= 2;       // Has to be on 2-byte boundary
@@ -727,11 +727,11 @@ void Win32BinaryLoader::findJumps(Address curr)
 			break; // stepped out of section
 		}
 
-		if (LH((curr + delta).m_value) != 0xFF + (0x25 << 8)) {
+		if (LH((curr + delta).value()) != 0xFF + (0x25 << 8)) {
 			continue;
 		}
 
-		      Address operand   = Address::g(LMMH2((curr + delta + 2).m_value));
+		Address operand   = Address::g(LMMH2((curr + delta + 2).value()));
 		auto    symbol_it = m_symbols->find(operand);
 
 		if (nullptr == symbol_it) {
@@ -974,7 +974,7 @@ bool Win32BinaryLoader::isStaticLinkedLibProc(Address uNative)
 	dbghelp::IMAGEHLP_LINE64 line;
 	line.SizeOfStruct = sizeof(line);
 	line.FileName     = nullptr;
-	dbghelp::SymGetLineFromAddr64(hProcess, uNative.m_value, 0, &line);
+	dbghelp::SymGetLineFromAddr64(hProcess, uNative.value(), 0, &line);
 
 	if (haveDebugInfo && (line.FileName == nullptr) || line.FileName && (*line.FileName == 'f')) {
 		return true;
@@ -1005,7 +1005,7 @@ bool Win32BinaryLoader::isMinGWsAllocStack(Address uNative)
 				0x89, 0xCC, 0x8B, 0x08, 0x8B, 0x40, 0x04, 0xFF, 0xE0
 			};
 
-			if (memcmp((void *)host.m_value, pat, sizeof(pat)) == 0) {
+			if (memcmp((void *)host.value(), pat, sizeof(pat)) == 0) {
 				return true;
 			}
 		}
@@ -1028,7 +1028,7 @@ bool Win32BinaryLoader::isMinGWsFrameInit(Address uNative)
 				0x8B, 0x7D, 0x08, 0x89, 0x5D, 0xF4, 0x89, 0x75, 0xF8
 			};
 
-			if (memcmp((void *)host.m_value, pat1, sizeof(pat1)) == 0) {
+			if (memcmp((void *)host.value(), pat1, sizeof(pat1)) == 0) {
 				unsigned char pat2[] =
 				{
 					0x85, 0xD2, 0x74, 0x24, 0x8B, 0x42, 0x2C, 0x85, 0xC0, 0x78, 0x3D, 0x8B, 0x42,
@@ -1036,7 +1036,7 @@ bool Win32BinaryLoader::isMinGWsFrameInit(Address uNative)
 					0x8B, 0x5D, 0xF4, 0x8B, 0x75, 0xF8, 0x8B, 0x7D, 0xFC, 0x89, 0xEC, 0x5D, 0xC3
 				};
 
-				if (memcmp((void *)(host.m_value + sizeof(pat1) + 6), pat2, sizeof(pat2)) == 0) {
+				if (memcmp((void *)(host.value() + sizeof(pat1) + 6), pat2, sizeof(pat2)) == 0) {
 					return true;
 				}
 			}
@@ -1053,17 +1053,17 @@ bool Win32BinaryLoader::isMinGWsFrameEnd(Address uNative)
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
 
 		if (si) {
-			         Address       host   = si->getHostAddr() - si->getSourceAddr() + uNative;
+			Address       host   = si->getHostAddr() - si->getSourceAddr() + uNative;
 			unsigned char pat1[] = { 0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x14, 0x8B, 0x45, 0x08, 0x8B, 0x18 };
 
-			if (memcmp((void *)host.m_value, pat1, sizeof(pat1)) == 0) {
+			if (memcmp((void *)host.value(), pat1, sizeof(pat1)) == 0) {
 				unsigned char pat2[] =
 				{
 					0x85, 0xC0, 0x74, 0x1B, 0x8B, 0x48, 0x2C, 0x85, 0xC9, 0x78, 0x34, 0x8B, 0x50,
 					0x2C, 0x85, 0xD2, 0x75, 0x4D, 0x89, 0x58, 0x28, 0x8B, 0x5D, 0xFC, 0xC9, 0xC3
 				};
 
-				if (memcmp((void *)(host.m_value + sizeof(pat1) + 5), pat2, sizeof(pat2)) == 0) {
+				if (memcmp((void *)(host.value() + sizeof(pat1) + 5), pat2, sizeof(pat2)) == 0) {
 					return true;
 				}
 			}
@@ -1083,18 +1083,17 @@ bool Win32BinaryLoader::isMinGWsCleanupSetup(Address uNative)
 			         Address       host   = si->getHostAddr() - si->getSourceAddr() + uNative;
 			unsigned char pat1[] = { 0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x04 };
 
-			if (memcmp((void *)host.m_value, pat1, sizeof(pat1)) == 0) {
+			if (memcmp((void *)host.value(), pat1, sizeof(pat1)) == 0) {
 				unsigned char pat2[] = { 0x85, 0xDB, 0x75, 0x35 };
 
-				if (memcmp((void *)(host.m_value + sizeof(pat1) + 6), pat2, sizeof(pat2)) == 0) {
+				if (memcmp((void *)(host.value() + sizeof(pat1) + 6), pat2, sizeof(pat2)) == 0) {
 					unsigned char pat3[] =
 					{
 						0x83, 0xF8, 0xFF, 0x74, 0x24, 0x85, 0xC0, 0x89,
 						0xC3, 0x74, 0x0E, 0x8D, 0x74, 0x26, 0x00
 					};
 
-					if (memcmp((void *)(host.m_value + sizeof(pat1) + 6 + sizeof(pat2) + 16), pat3, sizeof(pat3)) ==
-						0) {
+					if (memcmp((void *)(host.value() + sizeof(pat1) + 6 + sizeof(pat2) + 16), pat3, sizeof(pat3)) == 0) {
 						return true;
 					}
 				}
@@ -1119,10 +1118,10 @@ bool Win32BinaryLoader::isMinGWsMalloc(Address uNative)
 				0xC0, 0x89, 0x04, 0x24, 0x89, 0x5D, 0xF4, 0x89, 0x75, 0xF8, 0x89, 0x7D, 0xFC
 			};
 
-			if (memcmp((void *)host.m_value, pat1, sizeof(pat1)) == 0) {
+			if (memcmp((void *)host.value(), pat1, sizeof(pat1)) == 0) {
 				unsigned char pat2[] = { 0x89, 0x65, 0xE8 };
 
-				if (memcmp((void *)(host.m_value + sizeof(pat1) + 0x15), pat2, sizeof(pat2)) == 0) {
+				if (memcmp((void *)(host.value() + sizeof(pat1) + 0x15), pat2, sizeof(pat2)) == 0) {
 					return true;
 				}
 			}

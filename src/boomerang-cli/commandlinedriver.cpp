@@ -140,7 +140,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 		// Fall through
 		case 'e':
 			{
-				        Address addr;
+				Address addr;
 				boom.decodeMain = false;
 
 				if (++i == args.size()) {
@@ -149,7 +149,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 				}
 
 				bool converted = false;
-				addr.m_value = args[i].toLongLong(&converted, 0);
+				addr = Address(args[i].toLongLong(&converted, 0));
 
 				if (not converted) {
 					LOG_STREAM() << "bad address: " << args[i] << '\n';
@@ -342,7 +342,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 				}
 
 				bool converted = false;
-				addr.m_value = args[i].toLongLong(&converted, 0);
+				addr = Address(args[i].toLongLong(&converted, 0));
 
 				if (not converted) {
 					LOG_STREAM() << "bad address: " << args[i + 1] << '\n';

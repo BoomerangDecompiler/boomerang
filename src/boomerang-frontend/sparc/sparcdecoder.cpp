@@ -2372,7 +2372,7 @@ MATCH_finished_d:
 
 	// #line 645 "frontend/machine/sparc/decoder.m"
 
-	result.numBytes = (nextPC - hostPC).m_value;
+	result.numBytes = (nextPC - hostPC).value();
 	assert(result.numBytes > 0);
 
 	if (result.valid && (result.rtl == 0)) { // Don't override higher level res
@@ -2555,7 +2555,7 @@ bool SparcDecoder::isRestore(Address hostPC)
  ******************************************************************************/
 DWord SparcDecoder::getDword(Address lc)
 {
-	Byte *p = (Byte *)lc.m_value;
+	Byte *p = (Byte *)lc.value();
 
 	return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 }

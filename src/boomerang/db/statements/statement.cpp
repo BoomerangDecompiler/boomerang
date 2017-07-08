@@ -94,9 +94,9 @@ bool Instruction::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
 
 	// constant memory accesses
 	if (e1a->isIntConst() && e2a->isIntConst()) {
-		      Address   a1   = e1a->access<Const>()->getAddr();
-		      Address   a2   = e2a->access<Const>()->getAddr();
-		ptrdiff_t diff = (a1 - a2).m_value;
+		Address   a1   = e1a->access<Const>()->getAddr();
+		Address   a2   = e2a->access<Const>()->getAddr();
+		ptrdiff_t diff = (a1 - a2).value();
 
 		if (diff < 0) {
 			diff = -diff;

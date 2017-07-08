@@ -739,7 +739,7 @@ public:
 	void setLong(QWord ll) { u.ll = ll; }
 	void setFlt(double d) { u.d = d; }
 	void setStr(const QString& p) { m_string = p; }
-	void setAddr(Address a) { u.ll = a.m_value; }
+	void setAddr(Address a) { u.ll = a.value(); }
 
 	// Get and set the type
 	SharedType getType() { return m_type; }

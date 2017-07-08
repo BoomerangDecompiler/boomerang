@@ -270,7 +270,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
 		sym->SizeOfStruct = sizeof(*sym);
 		sym->MaxNameLen   = 1000;
 		sym->Name[0]      = 0;
-		BOOL  got = dbghelp::SymFromAddr(hProcess, uNative.m_value, 0, sym);
+		BOOL  got = dbghelp::SymFromAddr(hProcess, uNative.value(), 0, sym);
 		DWORD retType;
 
 		if (got && *sym->Name &&
@@ -298,7 +298,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
 
 			// find params and locals
 			dbghelp::IMAGEHLP_STACK_FRAME stack;
-			stack.InstructionOffset = uNative.m_value;
+			stack.InstructionOffset = uNative.value();
 			dbghelp::SymSetContext(hProcess, &stack, 0);
 			dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
 

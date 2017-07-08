@@ -327,10 +327,10 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 	}
 
 	Boomerang::get()->alertStartDecode(m_image->getLimitTextLow(),
-									   (m_image->getLimitTextHigh() - m_image->getLimitTextLow()).m_value);
+									   (m_image->getLimitTextHigh() - m_image->getLimitTextLow()).value());
 
 	bool    gotMain;
-	   Address a = getMainEntryPoint(gotMain);
+	Address a = getMainEntryPoint(gotMain);
 	LOG_VERBOSE(1) << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
 
 	if (a == NO_ADDRESS) {
@@ -492,7 +492,7 @@ DecodeResult& IFrontEnd::decodeInstruction(Address pc)
 	}
 
 	const IBinarySection *pSect           = m_image->getSectionInfoByAddr(pc);
-	ptrdiff_t            host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).m_value;
+	ptrdiff_t            host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).value();
 	return m_decoder->decodeInstruction(pc, host_native_diff);
 }
 

@@ -97,7 +97,7 @@ Const::Const(Address a)
 	, m_type(VoidType::get())
 {
 	assert(a.isSourceAddr());
-	u.ll = a.m_value;
+	u.ll = a.value();
 }
 
 

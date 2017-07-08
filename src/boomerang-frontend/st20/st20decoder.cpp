@@ -61,7 +61,7 @@ DecodeResult& ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta)
 			};
 			unsigned /* [0..255] */ MATCH_w_8_0;
 			{
-				MATCH_w_8_0 = getByte(MATCH_p.m_value);
+				MATCH_w_8_0 = getByte(MATCH_p.value());
 
 				switch ((MATCH_w_8_0 >> 4 & 0xf) /* fc at 0 */)
 				{

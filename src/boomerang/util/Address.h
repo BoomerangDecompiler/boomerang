@@ -32,25 +32,25 @@ public:
 	/// query if the ADDRESS is the source, if it's host address returns false
 	bool           isSourceAddr() const { return sizeof(m_value) == 4 || (uint64_t(m_value) >> 32) == 0; }
 	Address        native() const { return Address::g(m_value & 0xFFFFFFFF); }
-
+	value_type     value() const { return m_value; }
 
 	bool           isZero() const { return m_value == 0; }
-	bool operator==(const Address& other) const { return m_value == other.m_value; }
-	bool operator!=(const Address& other) const { return m_value != other.m_value; }
-	bool operator<(const Address& other) const { return m_value < other.m_value; }
-	bool operator>(const Address& other) const { return m_value > other.m_value; }
-	bool operator>=(const Address& other) const { return m_value >= other.m_value; }
-	bool operator<=(const Address& other) const { return m_value <= other.m_value; }
+	bool operator==(const Address& other) const { return m_value == other.value(); }
+	bool operator!=(const Address& other) const { return m_value != other.value(); }
+	bool operator<(const Address& other) const { return m_value < other.value(); }
+	bool operator>(const Address& other) const { return m_value > other.value(); }
+	bool operator>=(const Address& other) const { return m_value >= other.value(); }
+	bool operator<=(const Address& other) const { return m_value <= other.value(); }
 
-	Address operator+(const Address& other) const { return Address::g(m_value + other.m_value); }
-	Address operator-(const Address& other) const { return Address::g(m_value - other.m_value); }
+	Address operator+(const Address& other) const { return Address::g(m_value + other.value()); }
+	Address operator-(const Address& other) const { return Address::g(m_value - other.value()); }
 
 	Address operator++() { ++m_value; return *this; }
 	Address operator--() { --m_value; return *this; }
 	Address operator++(int)	{ return Address(m_value++); }
 	Address operator--(int) { return Address(m_value--); }
 
-	Address operator+=(const Address& other) { m_value += other.m_value; return *this; }
+	Address operator+=(const Address& other) { m_value += other.value(); return *this; }
 
 	Address operator+=(intptr_t other) { m_value += other; return *this; }
 
@@ -70,7 +70,7 @@ public:
 		return "0x" + QString::number(m_value, 16);
 	}
 
-public:
+private:
 	value_type     m_value;
 };
 

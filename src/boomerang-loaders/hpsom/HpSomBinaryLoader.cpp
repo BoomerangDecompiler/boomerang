@@ -200,10 +200,10 @@ void HpSomBinaryLoader::processSymbols()
 	char    *pNames = (char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
 
 #define SYMSIZE    20 // 5 4-byte words per symbol entry
-#define SYMBOLNM(idx)     (UINT4((symPtr + idx * SYMSIZE + 4).m_value))
-#define SYMBOLAUX(idx)    (UINT4((symPtr + idx * SYMSIZE + 8).m_value))
-#define SYMBOLVAL(idx)    (UINT4((symPtr + idx * SYMSIZE + 16).m_value))
-#define SYMBOLTY(idx)     ((UINT4((symPtr + idx * SYMSIZE).m_value) >> 24) & 0x3f)
+#define SYMBOLNM(idx)     (UINT4((symPtr + idx * SYMSIZE + 4).value()))
+#define SYMBOLAUX(idx)    (UINT4((symPtr + idx * SYMSIZE + 8).value()))
+#define SYMBOLVAL(idx)    (UINT4((symPtr + idx * SYMSIZE + 16).value()))
+#define SYMBOLTY(idx)     ((UINT4((symPtr + idx * SYMSIZE).value()) >> 24) & 0x3f)
 
 	for (unsigned u = 0; u < numSym; u++) {
 		// cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u)
@@ -242,7 +242,7 @@ void HpSomBinaryLoader::processSymbols()
 
 		//          if ((symbol_type >= 3) && (symbol_type <= 8))
 		// Addresses of code; remove the privilege bits
-		value.m_value &= ~3;
+		value = Address(value.value() & 3);
 
 		// HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
 		// value. So we have to check whether the symbol has already been entered (assume first one is correct).
@@ -337,8 +337,8 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	// the $TEXT$ space, but the only way I can presently find that is to
 	// assume that the first subspace entry points to it
 	char         *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
-	   Address      first_subspace_fileloc = Address::g(UINT4(subspace_location + 8));
-	char         *DLTable     = (char *)m_loadedImage + first_subspace_fileloc.m_value;
+	Address      first_subspace_fileloc = Address::g(UINT4(subspace_location + 8));
+	char         *DLTable     = (char *)m_loadedImage + first_subspace_fileloc.value();
 	char         *pDlStrings  = DLTable + UINT4(DLTable + 0x28);
 	unsigned     numImports   = UINT4(DLTable + 0x14); // Number of import strings
 	import_entry *import_list = (import_entry *)(DLTable + UINT4(DLTable + 0x10));
@@ -387,8 +387,8 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 
 	// Work through the imports, and find those for which there are stubs using that import entry.
 	// Add the addresses of any such stubs.
-	ptrdiff_t deltaText = (text->getHostAddr() - text->getSourceAddr()).m_value;
-	ptrdiff_t deltaData = (data->getHostAddr() - data->getSourceAddr()).m_value;
+	ptrdiff_t deltaText = (text->getHostAddr() - text->getSourceAddr()).value();
+	ptrdiff_t deltaData = (data->getHostAddr() - data->getSourceAddr()).value();
 	// The "end of data" where r27 points is not necessarily the same as
 	// the end of the $DATA$ space. So we have to call getSubSpaceInfo
 	std::pair<Address, int> pr = getSubspaceInfo("$GLOBAL$");
@@ -435,7 +435,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	// There should be a one to one correspondance between (DLT + PLT) entries and import table entries.
 	// The DLT entries always come first in the import table
 	unsigned   u = (unsigned)numDLT, v = 0;
-	plt_record *PLTs = (plt_record *)(pltStart + deltaData).m_value;
+	plt_record *PLTs = (plt_record *)(pltStart + deltaData).value();
 
 	for ( ; u < numImports; u++, v++) {
 		// TODO: this is a mess, needs someone who actually knows how the SOM's PLT contents are structured
@@ -621,12 +621,12 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 	// the $TEXT$ space, but the only way I can presently find that is to
 	// assume that the first subspace entry points to it
 	const char *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
-	   Address    first_subspace_fileloc = Address::g(UINT4(subspace_location + 8));
-	const char *DLTable = (char *)m_loadedImage + first_subspace_fileloc.m_value;
+	Address    first_subspace_fileloc = Address::g(UINT4(subspace_location + 8));
+	const char *DLTable = (char *)m_loadedImage + first_subspace_fileloc.value();
 
 	unsigned numDLT = UINT4(DLTable + 0x40);
 	// Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-	unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + m_image->getSectionInfo(1)->getHostAddr().m_value);
+	unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + m_image->getSectionInfo(1)->getHostAddr().value());
 
 	// The DLT is paralelled by the first <numDLT> entries in the import table;
 	// the import table has the symbolic names

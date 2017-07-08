@@ -711,7 +711,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 							// #line 210 "frontend/machine/ppc/decoder.m"
 							// Always "conditional" branch with link, test/OSX/hello has this
 
-							if ((reladdr - delta - pc).m_value == 4) { // Branch to next instr?
+							if ((reladdr - delta - pc).value() == 4) { // Branch to next instr?
 								// Effectively %LR = %pc+4, but give the actual value for %pc
 
 								Assign *as = new Assign(IntegerType::get(STD_SIZE, 0),
@@ -9311,7 +9311,7 @@ MATCH_finished_a:
 
 	// #line 358 "frontend/machine/ppc/decoder.m"
 
-	result.numBytes = (nextPC - hostPC).m_value;
+	result.numBytes = (nextPC - hostPC).value();
 
 	if (result.valid && (result.rtl == 0)) { // Don't override higher level res
 		result.rtl = new RTL(pc, stmts);
@@ -9380,7 +9380,7 @@ bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
  ******************************************************************************/
 DWord PPCDecoder::getDword(Address lc)
 {
-	Byte *p = (Byte *)lc.m_value;
+	Byte *p = (Byte *)lc.value();
 
 	return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 }

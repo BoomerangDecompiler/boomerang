@@ -53,9 +53,9 @@ private:
 	SWord getWord(intptr_t lc);
 	DWord getDword(intptr_t lc);
 
-	Byte getByte(Address lc)   { return getByte(lc.m_value); }
-	SWord getWord(Address lc)  { return getWord(lc.m_value); }
-	DWord getDword(Address lc) { return getDword(lc.m_value); }
+	Byte getByte(Address lc)   { return getByte(lc.value()); }
+	SWord getWord(Address lc)  { return getWord(lc.value()); }
+	DWord getDword(Address lc) { return getDword(lc.value()); }
 
 private:
 	   Address lastDwordLc;
