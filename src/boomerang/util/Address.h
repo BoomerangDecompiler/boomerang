@@ -10,9 +10,6 @@
 /// Standard pointer size of source machine, in bits
 #define STD_SIZE    32
 
-/// return a bit mask with exactly @p bitCount of the lowest bits set to 1.
-/// (example: 16 -> 0xFFFF)
-
 
 /// Pointer / address value type for the source machine.
 class Address
@@ -77,4 +74,47 @@ private:
 
 Q_DECLARE_METATYPE(Address)
 
+/// Like above, but only for addresses of the host machine
+class HostAddress
+{
+public:
+	typedef uintptr_t value_type;
+
+public:
+	HostAddress() { m_value = 0; }
+	explicit HostAddress(value_type value);
+	explicit HostAddress(const void* ptr);
+
+	HostAddress(const HostAddress& other) = default;
+	HostAddress& operator=(const HostAddress& other) = default;
+
+	inline value_type value() const { return m_value; }
+	inline bool isZero() const { return m_value == 0; }
+
+	inline bool operator==(const HostAddress& other) { return m_value == other.m_value; }
+	inline bool operator!=(const HostAddress& other) { return m_value != other.m_value; }
+	inline bool operator<(const HostAddress& other) { return m_value < other.m_value; }
+	inline bool operator>(const HostAddress& other) { return m_value > other.m_value; }
+	inline bool operator<=(const HostAddress& other) { return m_value <= other.m_value; }
+	inline bool operator>=(const HostAddress& other) { return m_value >= other.m_value; }
+
+	HostAddress operator+=(const Address& other) { m_value += other.value(); return *this; }
+	HostAddress operator-=(const Address& other) { m_value -= other.value(); return *this; }
+
+	HostAddress operator+=(intptr_t offset) { m_value += offset; return *this; }
+	HostAddress operator-=(intptr_t offset) { m_value -= offset; return *this; }
+
+	HostAddress operator+(const Address& other) { return HostAddress(*this) += other; }
+	HostAddress operator-(const Address& other) { return HostAddress(*this) -= other; }
+
+	HostAddress operator+(intptr_t offset) { return HostAddress(*this) += offset; }
+	HostAddress operator-(intptr_t offset) { return HostAddress(*this) -= offset; }
+
+	QString toString() const;
+
+private:
+	value_type m_value;
+};
+
 QTextStream& operator<<(QTextStream& os, const Address& addr);
+

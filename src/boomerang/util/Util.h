@@ -20,6 +20,8 @@ struct Printable
 
 QString escapeStr(const QString& str);
 
+/// return a bit mask with exactly @p bitCount of the lowest bits set to 1.
+/// (example: 16 -> 0xFFFF)
 inline QWord getLowerBitMask(DWord bitCount)
 {
 	return (1ULL << (QWord)(bitCount % (8*sizeof(void*)))) - 1ULL;

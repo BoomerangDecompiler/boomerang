@@ -46,4 +46,16 @@ Address::value_type Address::getSourceMask()
     return getLowerBitMask(m_sourceBits);
 }
 
+HostAddress::HostAddress(const void* ptr)
+	: m_value((value_type)ptr)
+{}
+
+HostAddress::HostAddress(value_type value)
+	: m_value(value)
+{}
+
+QString HostAddress::toString() const
+{
+	return QString("0x%1").arg(m_value, 2*sizeof(value_type), 16, QChar('0'));
+}
 
