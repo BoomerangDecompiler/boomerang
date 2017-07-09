@@ -196,7 +196,7 @@ void HpSomBinaryLoader::processSymbols()
 
 	unsigned numSym = UINT4(m_loadedImage + 0x60);
 
-	   Address symPtr  = Address::host_ptr(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
+	HostAddress symPtr  = HostAddress(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
 	char    *pNames = (char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
 
 #define SYMSIZE    20 // 5 4-byte words per symbol entry
@@ -352,7 +352,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	// Section 0: text (code)
 	IBinarySection *text = m_image->createSection("$TEXT$", Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
 	assert(text);
-	text->setHostAddr(Address::host_ptr(m_loadedImage) + AUXHDR(4))
+	text->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(4))
 	   .setEntrySize(1)
 	   .setCode(true)
 	   .setData(false)
@@ -364,7 +364,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	// Section 1: initialised data
 	IBinarySection *data = m_image->createSection("$DATA$", Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
 	assert(data);
-	data->setHostAddr(Address::host_ptr(m_loadedImage) + AUXHDR(7))
+	data->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(7))
 	   .setEntrySize(1)
 	   .setCode(false)
 	   .setData(true)
@@ -377,7 +377,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	IBinarySection *bss = m_image->createSection("$BSS$", Address(AUXHDR(6) + AUXHDR(5)),
 														  Address(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
 	assert(bss);
-	bss->setHostAddr(Address::ZERO)
+	bss->setHostAddr(HostAddress::ZERO)
 	   .setEntrySize(1)
 	   .setCode(false)
 	   .setData(false)

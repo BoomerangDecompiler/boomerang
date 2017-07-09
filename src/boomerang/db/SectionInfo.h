@@ -17,8 +17,8 @@ private:
 
 
 	QString         m_sectionName;          ///< Name of section
-	   Address         m_nativeAddr;           ///< Logical or native load address
-	   Address         m_hostAddr;             ///< Host or actual address of data
+	Address         m_nativeAddr;           ///< Logical or native load address
+	HostAddress     m_hostAddr;             ///< Host or actual address of data
 	uint32_t        m_sectionSize;          ///< Size of section in bytes
 	uint32_t        m_sectionEntrySize;     ///< Size of one section entry (if applicable)
 	unsigned        m_type;                 ///< Type of section (format dependent)
@@ -33,8 +33,8 @@ public:
 	SectionInfo(const SectionInfo& other);
 	virtual ~SectionInfo();
 
-	   Address getHostAddr()   const override { return m_hostAddr; }
-	   Address getSourceAddr() const override { return m_nativeAddr; }
+	HostAddress getHostAddr()   const override { return m_hostAddr; }
+	Address getSourceAddr() const override { return m_nativeAddr; }
 	uint8_t getEndian()     const override { return m_endianness; }
 	bool isReadOnly()    const override { return m_readOnly; }
 	bool isCode()        const override { return m_code; }
@@ -47,7 +47,7 @@ public:
 	IBinarySection& setCode(bool v) override { m_code = v;  return *this; }
 	IBinarySection& setData(bool v) override { m_data = v; return *this; }
 	IBinarySection& setReadOnly(bool v) override { m_readOnly = v; return *this; }
-	IBinarySection& setHostAddr(Address v) override { m_hostAddr = v; return *this; }
+	IBinarySection& setHostAddr(HostAddress v) override { m_hostAddr = v; return *this; }
 	IBinarySection& setSourceAddr(Address v) override { m_nativeAddr = v; return *this; }
 	IBinarySection& setEntrySize(uint32_t v) override { m_sectionEntrySize = v; return *this; }
 	IBinarySection& setEndian(uint8_t v) override { m_endianness = v; return *this; }
@@ -58,7 +58,7 @@ public:
 	bool isAddressBss(Address a) const override;
 	bool anyDefinedValues() const override;
 
-	void            resize(uint32_t) override;
+	void resize(uint32_t) override;
 
 	void clearDefinedArea();
 	void addDefinedArea(Address from, Address to) override;

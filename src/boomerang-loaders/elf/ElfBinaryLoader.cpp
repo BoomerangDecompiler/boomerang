@@ -36,14 +36,14 @@
 struct SectionParam
 {
 	QString  Name;
-	   Address  SourceAddr;
+	Address  SourceAddr;
 	size_t   Size;
 	size_t   entry_size;
 	bool     ReadOnly;
 	bool     Bss;
 	bool     Code;
 	bool     Data;
-	   Address  image_ptr;
+	HostAddress  image_ptr;
 	unsigned uType;             // Type of section (format dependent)
 };
 
@@ -230,7 +230,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 		int _off = elfRead4(&pShdr->sh_offset);
 
 		if (_off) {
-			sect.image_ptr = Address::host_ptr(m_loadedImage + _off);
+			sect.image_ptr = HostAddress(m_loadedImage) + _off;
 		}
 
 		sect.SourceAddr = Address(elfRead4(&pShdr->sh_addr));
@@ -397,7 +397,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 		sizeRelPlt = 12; // Size of each entry in the .rela.plt table is 12 bytes
 	}
 
-	Address addrRelPlt = Address::ZERO;
+	HostAddress addrRelPlt = HostAddress::ZERO;
 	int     numRelPlt  = 0;
 
 	if (siRelPlt) {
@@ -648,10 +648,10 @@ Address ElfBinaryLoader::getEntryPoint()
 }
 
 
-Address ElfBinaryLoader::nativeToHostAddress(Address uNative)
+HostAddress ElfBinaryLoader::nativeToHostAddress(Address uNative)
 {
 	if (m_binaryImage->getNumSections() == 0) {
-		return Address::ZERO;
+		return HostAddress::ZERO;
 	}
 
 	return m_binaryImage->getSectionInfo(1)->getHostAddr() - m_binaryImage->getSectionInfo(1)->getSourceAddr() + uNative;
@@ -751,11 +751,11 @@ QStringList ElfBinaryLoader::getDependencyList()
 		return result;
 	}
 
-	stringtab = nativeToHostAddress(stringtab);
+	HostAddress strTab = nativeToHostAddress(stringtab);
 
 	for (dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
 		if (dyn->d_tag == DT_NEEDED) {
-			const char *need = (char *)(stringtab + dyn->d_un.d_val).value();
+			const char *need = (char *)(strTab + dyn->d_un.d_val).value();
 
 			if (need != nullptr) {
 				result << need;
@@ -912,7 +912,8 @@ void ElfBinaryLoader::applyRelocations()
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
-				            Address destNatOrigin = Address::ZERO, destHostOrigin = Address::ZERO;
+				Address destNatOrigin = Address::ZERO;
+				HostAddress destHostOrigin = HostAddress::ZERO;
 
 				if (e_type == E_REL) {
 					int destSection = m_shInfo[i];
@@ -1054,7 +1055,8 @@ bool ElfBinaryLoader::isRelocationAt(Address uNative)
 
 				// NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
 				// and shared objects!
-				            Address destNatOrigin = Address::ZERO, destHostOrigin;
+				Address destNatOrigin = Address::ZERO;
+				HostAddress destHostOrigin = HostAddress::ZERO;
 
 				if (e_type == E_REL) {
 					int destSection = m_shInfo[i];

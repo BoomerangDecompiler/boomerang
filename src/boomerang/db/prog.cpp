@@ -1130,7 +1130,7 @@ const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false *
 	if (si && !si->isAddressBss(uaddr)) {
 		// At this stage, only support ascii, null terminated, non unicode strings.
 		// At least 4 of the first 6 chars should be printable ascii
-		char *p = (char *)(uaddr + si->getHostAddr() - si->getSourceAddr()).value();
+		char *p = (char *)(si->getHostAddr() - si->getSourceAddr() + uaddr).value();
 
 		if (knownString) {
 			// No need to guess... this is hopefully a known string
@@ -1694,7 +1694,7 @@ void Prog::printCallGraph() const
 		Function *p = procList.front();
 		procList.erase(procList.begin());
 
-		if (Address::host_ptr(p) == Address::INVALID) {
+		if (HostAddress(p) == HostAddress::INVALID) {
 			continue;
 		}
 

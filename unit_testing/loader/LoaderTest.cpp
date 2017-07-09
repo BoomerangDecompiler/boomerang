@@ -483,7 +483,7 @@ void LoaderTest::testMicroDis1()
 
 		if (size >= 0x40) {
 			deb_str << "Not handled instruction at offset "
-					<< Address::host_ptr(p) - Address::host_ptr(pent_hello_text) << '\n';
+					<< HostAddress(p).value() - HostAddress(pent_hello_text).value() << '\n';
 			qDebug() << deb;
 			QVERIFY(size != 0x40);
 			return;
@@ -492,7 +492,7 @@ void LoaderTest::testMicroDis1()
 		int expected = lengths[i++];
 
 		if (expected != size) {
-			deb_str << "At offset " << Address::host_ptr(p) - Address::host_ptr(pent_hello_text) << " ("
+			deb_str << "At offset " << HostAddress(p).value() - HostAddress(pent_hello_text).value() << " ("
 					<< (int)*((unsigned char *)p) << " " << (int)*((unsigned char *)p + 1) << " "
 					<< (int)*((unsigned char *)p + 2) << " " << (int)*((unsigned char *)p + 3) << " "
 					<< ") expected " << expected << ", actual " << size << '\n';

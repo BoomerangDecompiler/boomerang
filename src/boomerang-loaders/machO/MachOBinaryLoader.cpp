@@ -325,8 +325,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 		IBinarySection *sect = Image->createSection(name, Address(BMMH(segments[i].vmaddr)),
 													                  Address(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
 		assert(sect);
-		sect->setHostAddr(Address::g(Address::value_type(base) + BMMH(segments[i].vmaddr) - loaded_addr.value()));
-		assert((sect->getHostAddr() + sect->getSize()) <= Address::host_ptr(base + loaded_size));
+		sect->setHostAddr(HostAddress(base) + BMMH(segments[i].vmaddr) - loaded_addr);
+		assert(sect->getHostAddr() + sect->getSize() <= HostAddress(base) + loaded_size);
 
 		unsigned long l = BMMH(segments[i].initprot);
 		sect->setBss(false) // TODO
@@ -403,9 +403,9 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 		for (unsigned i = 0; i < objc_modules_size; ) {
 			struct objc_module *module =
-				(struct objc_module *)(Address::host_ptr(base) + objc_modules - loaded_addr + i).value();
+				(struct objc_module *)(HostAddress(base) + objc_modules - loaded_addr + i).value();
 			char   *name  = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.value());
-			Symtab symtab = (Symtab)(Address::host_ptr(base) + BMMH(module->symtab) - loaded_addr).value();
+			Symtab symtab = (Symtab)(HostAddress(base) + BMMH(module->symtab) - loaded_addr).value();
 #ifdef DEBUG_MACHO_LOADER_OBJC
 			fprintf(stdout, "module %s (%i classes)\n", name, BMMHW(symtab->cls_def_cnt));
 #endif
@@ -610,7 +610,7 @@ DWord MachOBinaryLoader::getDelta()
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
 	//    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-	return (Address::host_ptr(base) - loaded_addr).value();
+	return (HostAddress(base) - loaded_addr).value();
 }
 
 

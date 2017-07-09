@@ -37,9 +37,9 @@ namespace
 struct SectionParam
 {
 	QString Name;
-	   Address from;
+	Address from;
 	size_t  Size;
-	   Address ImageAddress;
+	HostAddress ImageAddress;
 	bool    Bss, Code, Data, ReadOnly;
 };
 }
@@ -268,11 +268,12 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 				   LMMH(m_pLXObjects[n].PageTblIdx), LMMH(m_pLXObjects[n].NumPageTblEntries));
 
 			SectionParam sect;
+			DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
+
 			sect.Name         = QString("seg%i").arg(n); // no section names in LX
 			sect.from         = Address(LMMH(m_pLXObjects[n].RelocBaseAddr));
-			sect.ImageAddress = Address::host_ptr(base + (sect.from - params.front().from).value());
+			sect.ImageAddress = HostAddress(base) + (sect.from - params.front().from).value();
 			sect.Size         = LMMH(m_pLXObjects[n].VirtualSize);
-			DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
 			sect.Bss      = 0; // TODO
 			sect.Code     = Flags & 0x4 ? 1 : 0;
 			sect.Data     = Flags & 0x4 ? 0 : 1;

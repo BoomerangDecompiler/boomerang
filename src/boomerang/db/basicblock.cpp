@@ -2372,7 +2372,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 						SWITCH_INFO *swi = new SWITCH_INFO;
 						swi->chForm     = 'F';                          // The "Fortran" form
 						swi->pSwitchVar = e;
-						swi->uTable     = Address::host_ptr(destArray); // WARN: Abuse the uTable member as a pointer
+						swi->uTable     = Address(HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the uTable member as a pointer
 						swi->iNumTable  = num_dests;
 						swi->iLower     = 1;                            // Not used, except to compute
 						swi->iUpper     = num_dests;                    // the number of options

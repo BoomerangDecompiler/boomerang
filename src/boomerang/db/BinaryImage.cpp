@@ -93,7 +93,7 @@ char BinaryImage::readNative1(Address nat)
 		return -1;
 	}
 
-	Address host = si->getHostAddr() - si->getSourceAddr() + nat;
+	HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return *(char *)host.value();
 }
 
@@ -106,7 +106,7 @@ int BinaryImage::readNative2(Address nat)
 		return 0;
 	}
 
-	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
+	HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return Read2((short *)host.value(), si->getEndian());
 }
 
@@ -119,7 +119,7 @@ int BinaryImage::readNative4(Address nat)
 		return 0;
 	}
 
-	   Address host = si->getHostAddr() - si->getSourceAddr() + nat;
+	HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
 	return Read4((int *)host.value(), si->getEndian());
 }
 
@@ -202,7 +202,7 @@ void BinaryImage::writeNative4(Address nat, uint32_t n)
 		return;
 	}
 
-	   Address host      = si->getHostAddr() - si->getSourceAddr() + nat;
+	HostAddress host  = si->getHostAddr() - si->getSourceAddr() + nat;
 	uint8_t *host_ptr = (unsigned char *)host.value();
 
 	if (si->getEndian() == 1) {

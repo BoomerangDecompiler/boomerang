@@ -102,8 +102,8 @@ namespace
 struct SectionParams
 {
 	QString name;
-	   Address from, to;
-	   Address hostAddr;
+	Address from, to;
+	HostAddress hostAddr;
 };
 }
 
@@ -148,7 +148,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 			params.back().to = start_addr;
 		}
 
-		params.push_back({ name, start_addr, Address::INVALID, Address::host_ptr(m_pImage + off) }); // Address::INVALID will be overwritten
+		params.push_back({ name, start_addr, Address::INVALID, HostAddress(m_pImage + off) }); // Address::INVALID will be overwritten
 	}
 
 	// Set the length for the last section
@@ -301,7 +301,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 
 	// Replace the data pointer and size with the uncompressed versions
 
-	pData->setHostAddr(Address::host_ptr(m_pData));
+	pData->setHostAddr(HostAddress(m_pData));
 	pData->resize(sizeData);
 	// May as well make the native address zero; certainly the offset in the
 	// file is no longer appropriate (and is confusing)
@@ -506,10 +506,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 	}
 
 	// Return the start of the code1 section
-	   Address   ha(psect->getHostAddr());
-	uintptr_t gb(ha.value());
 	uint16_t  *startCode = (uint16_t *)psect->getHostAddr().value();
-	startCode = (uint16_t *)gb;
 	int delta = (psect->getHostAddr() - psect->getSourceAddr()).value();
 
 	// First try the CW first jump pattern
@@ -518,7 +515,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 	if (res) {
 		// We have the code warrior first jump. Get the addil operand
 		int   addilOp      = Read4((uint32_t *)(startCode + 5));
-		SWord *startupCode = (SWord *)(Address::host_ptr(startCode) + 10 + addilOp).value();
+		SWord *startupCode = (SWord *)(HostAddress(startCode) + 10 + addilOp).value();
 		// Now check the next 60 SWords for the call to PilotMain
 		res = findPattern(startupCode, CWCallMain, sizeof(CWCallMain) / sizeof(SWord), 60);
 
@@ -541,7 +538,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 	if (res) {
 		// Get the operand to the bsr
 		SWord bsrOp = res[7];
-		return Address::host_ptr(res) + 14 + bsrOp - delta;
+		return Address((HostAddress(res) - delta).value() + 14 + bsrOp);
 	}
 
 	fprintf(stderr, "Cannot find call to PilotMain\n");

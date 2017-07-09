@@ -102,7 +102,7 @@ public:
 SectionInfo::SectionInfo(Address sourceAddr, uint32_t size, const QString& name)
 	: m_sectionName(name)
 	, m_nativeAddr(sourceAddr)
-	, m_hostAddr(Address::ZERO)
+	, m_hostAddr(HostAddress::ZERO)
 	, m_sectionSize(size)
 	, m_sectionEntrySize(0)
 	, m_type(0)

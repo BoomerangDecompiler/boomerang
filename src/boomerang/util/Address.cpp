@@ -9,6 +9,9 @@ const Address Address::ZERO    = Address(0);
 const Address Address::INVALID = Address(-1);
 Byte Address::m_sourceBits = 32U;
 
+const HostAddress HostAddress::ZERO = HostAddress(nullptr);
+const HostAddress HostAddress::INVALID = HostAddress(-1);
+
 
 Address::Address()
 	: m_value(0)
@@ -36,11 +39,6 @@ QString Address::toString() const
 	return QString("0x%1").arg(m_value, m_sourceBits / 4, 16, QChar('0'));
 }
 
-QTextStream& operator<<(QTextStream& os, const Address& addr)
-{
-	return os << addr.toString();
-}
-
 Address::value_type Address::getSourceMask()
 {
     return getLowerBitMask(m_sourceBits);
@@ -59,3 +57,13 @@ QString HostAddress::toString() const
 	return QString("0x%1").arg(m_value, 2*sizeof(value_type), 16, QChar('0'));
 }
 
+
+QTextStream& operator<<(QTextStream& os, const Address& addr)
+{
+	return os << addr.toString();
+}
+
+QTextStream& operator<<(QTextStream& os, const HostAddress& addr)
+{
+	return os << addr.toString();
+}

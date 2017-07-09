@@ -103,7 +103,7 @@ void PointerType::setPointsTo(SharedType p)
 		points_to = VoidType::get(); // Can't point to self; impossible to compare, print, etc
 
 		if (VERBOSE) {
-			LOG << "Warning: attempted to create pointer to self: " << Address::host_ptr(this) << "\n";
+			LOG << "Warning: attempted to create pointer to self: " << HostAddress(this).toString() << "\n";
 		}
 	}
 	else {

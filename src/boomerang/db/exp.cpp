@@ -2178,9 +2178,9 @@ void Exp::createDotFile(const char *name)
 //    //    //    //
 void Const::appendDotFile(QTextStream& of)
 {
-	// We define a unique name for each node as "e123456" if the address of "this" == 0x123456
-	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
-	of << operStrings[m_oper] << "\\n" << Address::host_ptr(this) << " | ";
+	// We define a unique name for each node as "e_0x123456" if the address of "this" == 0x123456
+	of << "e_" << HostAddress(this).toString() << " [shape=record,label=\"{";
+	of << operStrings[m_oper] << "\\n" << HostAddress(this).toString() << " | ";
 
 	switch (m_oper)
 	{
@@ -2214,7 +2214,7 @@ void Const::appendDotFile(QTextStream& of)
 //    //    //    //
 void Terminal::appendDotFile(QTextStream& of)
 {
-	of << "e" << Address::host_ptr(this) << " [shape=parallelogram,label=\"";
+	of << "e_" << HostAddress(this).toString() << " [shape=parallelogram,label=\"";
 
 	if (m_oper == opWild) {
 		// Note: value is -1, so can't index array
@@ -2224,7 +2224,7 @@ void Terminal::appendDotFile(QTextStream& of)
 		of << operStrings[m_oper];
 	}
 
-	of << "\\n" << Address::host_ptr(this);
+	of << "\\n" << HostAddress(this).toString();
 	of << "\"];\n";
 }
 
@@ -2235,9 +2235,9 @@ void Terminal::appendDotFile(QTextStream& of)
 void Unary::appendDotFile(QTextStream& of)
 {
 	// First a node for this Unary object
-	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
+	of << "e_" << HostAddress(this).toString() << " [shape=record,label=\"{";
 	// The (int) cast is to print the address, not the expression!
-	of << operStrings[m_oper] << "\\n" << Address::host_ptr(this) << " | ";
+	of << operStrings[m_oper] << "\\n" << HostAddress(this).toString() << " | ";
 	of << "<p1>";
 	of << " }\"];\n";
 
@@ -2245,7 +2245,7 @@ void Unary::appendDotFile(QTextStream& of)
 	subExp1->appendDotFile(of);
 
 	// Finally an edge for the subexpression
-	of << "e" << Address::host_ptr(this) << "->e" << Address::host_ptr(subExp1.get()) << ";\n";
+	of << "e_" << HostAddress(this) << "->e_" << HostAddress(subExp1.get()) << ";\n";
 }
 
 
@@ -2255,15 +2255,15 @@ void Unary::appendDotFile(QTextStream& of)
 void Binary::appendDotFile(QTextStream& of)
 {
 	// First a node for this Binary object
-	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
-	of << operStrings[m_oper] << "\\n" << Address::host_ptr(this) << " | ";
+	of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
+	of << operStrings[m_oper] << "\\n" << HostAddress(this) << " | ";
 	of << "{<p1> | <p2>}";
 	of << " }\"];\n";
 	subExp1->appendDotFile(of);
 	subExp2->appendDotFile(of);
 	// Now an edge for each subexpression
-	of << "e" << Address::host_ptr(this) << ":p1->e" << Address::host_ptr(subExp1.get()) << ";\n";
-	of << "e" << Address::host_ptr(this) << ":p2->e" << Address::host_ptr(subExp2.get()) << ";\n";
+	of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
+	of << "e_" << HostAddress(this) << ":p2->e_" << HostAddress(subExp2.get()) << ";\n";
 }
 
 
@@ -2273,17 +2273,17 @@ void Binary::appendDotFile(QTextStream& of)
 void Ternary::appendDotFile(QTextStream& of)
 {
 	// First a node for this Ternary object
-	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
-	of << operStrings[m_oper] << "\\n" << Address::host_ptr(this) << " | ";
+	of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
+	of << operStrings[m_oper] << "\\n" << HostAddress(this) << " | ";
 	of << "{<p1> | <p2> | <p3>}";
 	of << " }\"];\n";
 	subExp1->appendDotFile(of);
 	subExp2->appendDotFile(of);
 	subExp3->appendDotFile(of);
 	// Now an edge for each subexpression
-	of << "e" << Address::host_ptr(this) << ":p1->e" << Address::host_ptr(subExp1.get()) << ";\n";
-	of << "e" << Address::host_ptr(this) << ":p2->e" << Address::host_ptr(subExp2.get()) << ";\n";
-	of << "e" << Address::host_ptr(this) << ":p3->e" << Address::host_ptr(subExp3.get()) << ";\n";
+	of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
+	of << "e_" << HostAddress(this) << ":p2->e_" << HostAddress(subExp2.get()) << ";\n";
+	of << "e_" << HostAddress(this) << ":p3->e_" << HostAddress(subExp3.get()) << ";\n";
 }
 
 
@@ -2292,13 +2292,13 @@ void Ternary::appendDotFile(QTextStream& of)
 //    //    //    //
 void TypedExp::appendDotFile(QTextStream& of)
 {
-	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
-	of << "opTypedExp\\n" << Address::host_ptr(this) << " | ";
+	of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
+	of << "opTypedExp\\n" << HostAddress(this) << " | ";
 	// Just display the C type for now
 	of << type->getCtype() << " | <p1>";
 	of << " }\"];\n";
 	subExp1->appendDotFile(of);
-	of << "e" << Address::host_ptr(this) << ":p1->e" << Address::host_ptr(subExp1.get()) << ";\n";
+	of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
 }
 
 
@@ -2307,8 +2307,8 @@ void TypedExp::appendDotFile(QTextStream& of)
 //    //    //    //
 void FlagDef::appendDotFile(QTextStream& of)
 {
-	of << "e" << Address::host_ptr(this) << " [shape=record,label=\"{";
-	of << "opFlagDef \\n" << Address::host_ptr(this) << "| ";
+	of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
+	of << "opFlagDef \\n" << HostAddress(this) << "| ";
 	// Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
 	of << "{ RTL ";
 	int n = rtl->size();
@@ -2319,7 +2319,7 @@ void FlagDef::appendDotFile(QTextStream& of)
 
 	of << "} | <p1> }\"];\n";
 	subExp1->appendDotFile(of);
-	of << "e" << Address::host_ptr(this) << ":p1->e" << Address::host_ptr(subExp1.get()) << ";\n";
+	of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
 }
 
 
@@ -5523,7 +5523,7 @@ void RefExp::printx(int ind) const
 		LOG_STREAM() << "nullptr";
 	}
 	else {
-		LOG_STREAM() << Address::host_ptr(m_def) << "=" << m_def->getNumber();
+		LOG_STREAM() << HostAddress(m_def) << "=" << m_def->getNumber();
 	}
 
 	LOG_STREAM() << "}\n";

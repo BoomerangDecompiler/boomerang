@@ -33,11 +33,6 @@ public:
 
 	static Address g(value_type x);   // construct host/native oblivious address
 
-	static Address host_ptr(const void *x)
-	{
-		return Address((value_type)x);
-	}
-
 	Address        native() const { return Address::g(m_value & 0xFFFFFFFF); }
 	value_type     value() const { return m_value; }
 
@@ -81,6 +76,9 @@ public:
 	typedef uintptr_t value_type;
 
 public:
+	static const HostAddress ZERO;
+	static const HostAddress INVALID;
+
 	HostAddress() { m_value = 0; }
 	explicit HostAddress(value_type value);
 	explicit HostAddress(const void* ptr);
@@ -117,4 +115,4 @@ private:
 };
 
 QTextStream& operator<<(QTextStream& os, const Address& addr);
-
+QTextStream& operator<<(QTextStream& os, const HostAddress& addr);

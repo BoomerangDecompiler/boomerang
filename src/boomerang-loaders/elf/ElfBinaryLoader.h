@@ -104,7 +104,7 @@ private:
 
 
 	/// FIXME: the below assumes a fixed delta
-	   Address nativeToHostAddress(Address uNative);
+	HostAddress nativeToHostAddress(Address uNative);
 
 	/// Add appropriate symbols to the symbol table.
 	/// @p secIndex is the section index of the symbol table.
@@ -159,15 +159,15 @@ private:
 	const Elf32_Sym *m_symbolSection = nullptr; ///< Pointer to loaded symbol section
 
 	bool m_relocHasAddend;                      ///< true if reloc table has addend
-	   Address m_lastAddr;                         ///< Save last address looked up
+	Address m_lastAddr;                         ///< Save last address looked up
 	int m_lastSize;                             ///< Size associated with that name
-	   Address m_pltMin;                           ///< Min address of PLT table
-	   Address m_pltMax;                           ///< Max address (1 past last) of PLT
-	   Address *m_importStubs = nullptr;           ///< An array of import stubs
-	   Address m_baseAddr;                         ///< Base image virtual address
+	Address m_pltMin;                           ///< Min address of PLT table
+	Address m_pltMax;                           ///< Max address (1 past last) of PLT
+	Address *m_importStubs = nullptr;           ///< An array of import stubs
+	Address m_baseAddr;                         ///< Base image virtual address
 	size_t m_imageSize;                         ///< total image size (bytes)
-	   Address m_firstExtern;                      ///< where the first extern will be placed
-	   Address m_nextExtern;                       ///< where the next extern will be placed
+	Address m_firstExtern;                      ///< where the first extern will be placed
+	Address m_nextExtern;                       ///< where the next extern will be placed
 	int *m_shLink = nullptr;                    ///< pointer to array of sh_link values
 	int *m_shInfo = nullptr;                    ///< pointer to array of sh_info values
 

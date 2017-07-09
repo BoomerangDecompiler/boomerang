@@ -57,10 +57,10 @@ namespace
 struct SectionParam
 {
 	QString Name;
-	   Address From;
+	Address From;
 	size_t  Size;
 	size_t  PhysSize;
-	   Address ImageAddress;
+	HostAddress ImageAddress;
 	bool    Bss, Code, Data, ReadOnly;
 };
 }
@@ -473,7 +473,7 @@ BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE pSourceFile, PVOID UserContext)
 
 void Win32BinaryLoader::processIAT()
 {
-	PEImportDtor *id = (PEImportDtor *)(LMMH(m_pPEHeader->ImportTableRVA) + m_base);
+	PEImportDtor *id = (PEImportDtor *)(HostAddress(m_base) + LMMH(m_pPEHeader->ImportTableRVA)).value();
 
 	if (m_pPEHeader->ImportTableRVA) { // If any import table entry exists
 		while (id->name != 0) {
@@ -481,7 +481,7 @@ void Win32BinaryLoader::processIAT()
 			unsigned thunk    = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
 			unsigned *iat     = (unsigned *)(LMMH(thunk) + m_base);
 			unsigned iatEntry = LMMH(*iat);
-			         Address  paddr    = Address::g(LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase));
+			Address  paddr = Address(LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase)); //
 
 			while (iatEntry) {
 				if (iatEntry >> 31) {
@@ -494,7 +494,7 @@ void Win32BinaryLoader::processIAT()
 					// Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
 					QString name((const char *)(iatEntry + 2 + m_base));
 					m_symbols->create(paddr, name).setAttr("Imported", true).setAttr("Function", true);
-					               Address old_loc = Address::host_ptr(iat) - Address::host_ptr(m_base) + LMMH(m_pPEHeader->Imagebase);
+					Address old_loc = Address(HostAddress(iat).value() - HostAddress(m_base).value() + LMMH(m_pPEHeader->Imagebase));
 
 					if (paddr != old_loc) { // add both possibilities
 						m_symbols->create(old_loc, QString("old_") + name).setAttr("Imported", true).setAttr("Function", true);
@@ -615,14 +615,14 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
 
 		sect.Name         = QByteArray(o->ObjectName, 8);
 		sect.From         = Address::g(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
-		sect.ImageAddress = Address::host_ptr(LMMH(o->RVA) + m_base);
+		sect.ImageAddress = HostAddress(m_base) + LMMH(o->RVA);
 		sect.Size         = LMMH(o->VirtualSize);
 		sect.PhysSize     = LMMH(o->PhysicalSize);
-		DWord Flags = LMMH(o->Flags);
-		sect.Bss      = (Flags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? 1 : 0;
-		sect.Code     = (Flags & IMAGE_SCN_CNT_CODE) ? 1 : 0;
-		sect.Data     = (Flags & IMAGE_SCN_CNT_INITIALIZED_DATA) ? 1 : 0;
-		sect.ReadOnly = (Flags & IMAGE_SCN_MEM_WRITE) ? 0 : 1;
+		DWord peFlags = LMMH(o->Flags);
+		sect.Bss      = (peFlags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? 1 : 0;
+		sect.Code     = (peFlags & IMAGE_SCN_CNT_CODE) ? 1 : 0;
+		sect.Data     = (peFlags & IMAGE_SCN_CNT_INITIALIZED_DATA) ? 1 : 0;
+		sect.ReadOnly = (peFlags & IMAGE_SCN_MEM_WRITE) ? 0 : 1;
 		params.push_back(sect);
 	}
 
@@ -996,7 +996,7 @@ bool Win32BinaryLoader::isMinGWsAllocStack(Address uNative)
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
 
 		if (si) {
-			         Address       host  = si->getHostAddr() - si->getSourceAddr() + uNative;
+			HostAddress host  = si->getHostAddr() - si->getSourceAddr() + uNative;
 			unsigned char pat[] =
 			{
 				0x51, 0x89, 0xE1, 0x83, 0xC1, 0x08, 0x3D, 0x00, 0x10, 0x00, 0x00, 0x72,
@@ -1021,7 +1021,7 @@ bool Win32BinaryLoader::isMinGWsFrameInit(Address uNative)
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
 
 		if (si) {
-			         Address       host   = si->getHostAddr() - si->getSourceAddr() + uNative;
+			HostAddress host = si->getHostAddr() - si->getSourceAddr() + uNative;
 			unsigned char pat1[] =
 			{
 				0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0x89, 0x7D, 0xFC,
@@ -1053,7 +1053,7 @@ bool Win32BinaryLoader::isMinGWsFrameEnd(Address uNative)
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
 
 		if (si) {
-			Address       host   = si->getHostAddr() - si->getSourceAddr() + uNative;
+			HostAddress host   = si->getHostAddr() - si->getSourceAddr() + uNative;
 			unsigned char pat1[] = { 0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x14, 0x8B, 0x45, 0x08, 0x8B, 0x18 };
 
 			if (memcmp((void *)host.value(), pat1, sizeof(pat1)) == 0) {
@@ -1080,7 +1080,7 @@ bool Win32BinaryLoader::isMinGWsCleanupSetup(Address uNative)
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
 
 		if (si) {
-			         Address       host   = si->getHostAddr() - si->getSourceAddr() + uNative;
+			HostAddress host   = si->getHostAddr() - si->getSourceAddr() + uNative;
 			unsigned char pat1[] = { 0x55, 0x89, 0xE5, 0x53, 0x83, 0xEC, 0x04 };
 
 			if (memcmp((void *)host.value(), pat1, sizeof(pat1)) == 0) {
@@ -1111,7 +1111,7 @@ bool Win32BinaryLoader::isMinGWsMalloc(Address uNative)
 		const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
 
 		if (si) {
-			         Address       host   = si->getHostAddr() - si->getSourceAddr() + uNative;
+			HostAddress host = si->getHostAddr() - si->getSourceAddr() + uNative;
 			unsigned char pat1[] =
 			{
 				0x55, 0x89, 0xE5, 0x8D, 0x45, 0xF4, 0x83, 0xEC, 0x58, 0x89, 0x45, 0xE0, 0x8D, 0x45,
