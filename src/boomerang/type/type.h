@@ -854,9 +854,11 @@ class DataIntervalMap
 public:
 	DataIntervalMap() {}
 	typedef std::map<Address, DataInterval>::iterator iterator;
+
 	void setProc(UserProc *p) { proc = p; }    ///< Initialise the proc pointer
 	DataIntervalEntry *find(Address addr);     ///< Find the DataInterval at address addr, or nullptr if none
 	iterator find_it(Address addr);            ///< Return an iterator to the entry for it, or end() if none
+
 	bool isClear(Address addr, unsigned size); ///< True if from addr for size bytes is clear
 	void addItem(Address addr, QString name, SharedType ty, bool forced = false);
 	void deleteItem(Address addr);             // Mainly for testing?

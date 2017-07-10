@@ -1015,7 +1015,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 						// e.g.
 						// 142c8:  40 00 5b 91          call           exit
 						// 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
-						if (((SparcDecoder *)m_decoder)->isRestore(uAddr + 4 + m_image->getTextDelta())) {
+						if (((SparcDecoder *)m_decoder)->isRestore(HostAddress(uAddr.value() + 4 + m_image->getTextDelta()))) {
 							// Give the address of the call; I think that this is actually important, if faintly annoying
 							delay_inst.rtl->setAddress(uAddr);
 							BB_rtls->push_back(delay_inst.rtl);

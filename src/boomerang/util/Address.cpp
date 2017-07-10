@@ -3,6 +3,7 @@
 #include "boomerang/util/Util.h"
 
 #include <cassert>
+#include <QDebug>
 
 
 const Address Address::ZERO    = Address(0);
@@ -20,12 +21,10 @@ Address::Address()
 Address::Address(value_type value)
 	: m_value(value)
 {
-//	assert(m_value == (value_type)-1 || (value & ~getSourceMask()) == 0);
-}
-
-Address Address::g(value_type x)
-{
-    return Address(x);
+// 	if (!(m_value == (value_type)-1 || (value & ~getSourceMask()) == 0)) {
+// 		qWarning() << "Address initialized with invalid value " <<
+// 			QString("0x%1").arg(m_value, 2*sizeof(value_type), 16, QChar('0'));
+// 	}
 }
 
 void Address::setSourceBits(Byte bitCount)

@@ -1086,7 +1086,7 @@ void MainWindow::on_addButton_pressed()
 	}
 
 	bool    ok;
-	   Address a = Address::g(ui->addressEdit->text().toInt(&ok, 16));
+	   Address a = Address(ui->addressEdit->text().toInt(&ok, 16));
 
 	if (!ok) {
 		return;
@@ -1105,7 +1105,7 @@ void MainWindow::on_addButton_pressed()
 void MainWindow::on_removeButton_pressed()
 {
 	bool    ok;
-	   Address a = Address::g(ui->entrypoints->item(ui->entrypoints->currentRow(), 0)->text().toInt(&ok, 16));
+	   Address a = Address(ui->entrypoints->item(ui->entrypoints->currentRow(), 0)->text().toInt(&ok, 16));
 
 	if (!ok) {
 		return;

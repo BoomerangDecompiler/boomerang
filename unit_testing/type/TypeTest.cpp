@@ -120,40 +120,37 @@ void TypeTest::testCompound()
 
 void TypeTest::testDataInterval()
 {
-	DataIntervalMap dim;
 
 	Prog     *prog = new Prog("test");
 	Module   *m    = prog->getOrInsertModule("test");
-	UserProc *proc = (UserProc *)m->getOrInsertFunction("test", Address::g(0x123));
+	UserProc *proc = (UserProc *)m->getOrInsertFunction("test", Address(0x123));
+	DataIntervalMap dim;
 
 	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 	dim.setProc(proc);
 
-	dim.addItem(Address::g(0x00001000), "first", IntegerType::get(32, 1));
-	dim.addItem(Address::g(0x00001004), "second", FloatType::get(64));
+	dim.addItem(Address(0x00001000), "first", IntegerType::get(32, 1));
+	dim.addItem(Address(0x00001004), "second", FloatType::get(64));
 	QString actual(dim.prints());
 	QString expected("0x00001000-0x00001004 first int\n"
 					 "0x00001004-0x0000100c second double\n");
 	QCOMPARE(actual, expected);
 
-	DataIntervalEntry *pdie = dim.find(Address::g(0x0001000));
-	expected = "first";
+	DataIntervalEntry *pdie = dim.find(Address(0x00001000));
 	QVERIFY(pdie);
-	actual = pdie->second.name;
-	QCOMPARE(actual, expected);
+	QCOMPARE(pdie->second.name, QString("first"));
 
-	pdie = dim.find(Address::g(0x00001003));
+	pdie = dim.find(Address(0x00001003));
 	QVERIFY(pdie);
-	actual = pdie->second.name;
-	QCOMPARE(actual, expected);
+	QCOMPARE(pdie->second.name, QString("first"));
 
-	pdie = dim.find(Address::g(0x00001004));
+	pdie = dim.find(Address(0x00001004));
 	QVERIFY(pdie);
 	expected = "second";
 	actual   = pdie->second.name;
 	QCOMPARE(actual, expected);
 
-	pdie = dim.find(Address::g(0x00001007));
+	pdie = dim.find(Address(0x00001007));
 	QVERIFY(pdie);
 	actual = pdie->second.name;
 	QCOMPARE(actual, expected);
@@ -163,9 +160,9 @@ void TypeTest::testDataInterval()
 	ct->addType(IntegerType::get(16, 1), "short2");
 	ct->addType(IntegerType::get(32, 1), "int1");
 	ct->addType(FloatType::get(32), "float1");
-	dim.addItem(Address::g(0x1010), "struct1", ct);
+	dim.addItem(Address(0x00001010), "struct1", ct);
 
-	ComplexTypeCompList& ctcl = ct->compForAddress(Address::g(0x00001012), dim);
+	ComplexTypeCompList& ctcl = ct->compForAddress(Address(0x00001012), dim);
 	unsigned             ua   = ctcl.size();
 	unsigned             ue   = 1;
 	QCOMPARE(ua, ue);
@@ -179,8 +176,8 @@ void TypeTest::testDataInterval()
 
 	// An array of 10 struct1's
 	auto at = ArrayType::get(ct, 10);
-	dim.addItem(Address::g(0x00001020), "array1", at);
-	ComplexTypeCompList& ctcl2 = at->compForAddress(Address::g(0x00001020 + 0x3C + 8), dim);
+	dim.addItem(Address(0x00001020), "array1", at);
+	ComplexTypeCompList& ctcl2 = at->compForAddress(Address(0x00001020 + 0x3C + 8), dim);
 	// Should be 2 components: [5] and .float1
 	ue = 2;
 	ua = ctcl2.size();
@@ -200,27 +197,27 @@ void TypeTest::testDataIntervalOverlaps()
 
 	Prog     *prog = new Prog("test");
 	Module   *m    = prog->getOrInsertModule("test");
-	UserProc *proc = (UserProc *)m->getOrInsertFunction("test", Address::g(0x123));
+	UserProc *proc = (UserProc *)m->getOrInsertFunction("test", Address(0x123));
 
 	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 	dim.setProc(proc);
 
-	dim.addItem(Address::g(0x00001000), "firstInt", IntegerType::get(32, 1));
-	dim.addItem(Address::g(0x00001004), "firstFloat", FloatType::get(32));
-	dim.addItem(Address::g(0x00001008), "secondInt", IntegerType::get(32, 1));
-	dim.addItem(Address::g(0x0000100C), "secondFloat", FloatType::get(32));
+	dim.addItem(Address(0x00001000), "firstInt", IntegerType::get(32, 1));
+	dim.addItem(Address(0x00001004), "firstFloat", FloatType::get(32));
+	dim.addItem(Address(0x00001008), "secondInt", IntegerType::get(32, 1));
+	dim.addItem(Address(0x0000100C), "secondFloat", FloatType::get(32));
 	auto ct = CompoundType::get();
 	ct->addType(IntegerType::get(32, 1), "int3");
 	ct->addType(FloatType::get(32), "float3");
-	dim.addItem(Address::g(0x00001010), "existingStruct", ct);
+	dim.addItem(Address(0x00001010), "existingStruct", ct);
 
 	// First insert a new struct over the top of the existing middle pair
 	auto ctu = CompoundType::get();
 	ctu->addType(IntegerType::get(32, 0), "newInt"); // This int has UNKNOWN sign
 	ctu->addType(FloatType::get(32), "newFloat");
-	dim.addItem(Address::g(0x00001008), "replacementStruct", ctu);
+	dim.addItem(Address(0x00001008), "replacementStruct", ctu);
 
-	DataIntervalEntry *pdie  = dim.find(Address::g(0x1008));
+	DataIntervalEntry *pdie  = dim.find(Address(0x1008));
 	QString           actual = pdie->second.type->getCtype();
 	QCOMPARE(actual, QString("struct { int newInt; float newFloat; }"));
 
@@ -228,45 +225,45 @@ void TypeTest::testDataIntervalOverlaps()
 	auto ct3 = CompoundType::get();
 	ct3->addType(FloatType::get(32), "newFloat3");
 	ct3->addType(IntegerType::get(32, 0), "newInt3");
-	dim.addItem(Address::g(0x00001004), "weaveStruct1", ct3);
-	pdie = dim.find(Address::g(0x00001004));
+	dim.addItem(Address(0x00001004), "weaveStruct1", ct3);
+	pdie = dim.find(Address(0x00001004));
 	QCOMPARE(pdie->second.name, QString("firstFloat"));
 
 	// Totally unaligned
-	dim.addItem(Address::g(0x00001001), "weaveStruct2", ct3);
-	pdie = dim.find(Address::g(0x000001001));
+	dim.addItem(Address(0x00001001), "weaveStruct2", ct3);
+	pdie = dim.find(Address(0x000001001));
 	QCOMPARE(pdie->second.name, QString("firstInt"));
 
-	dim.addItem(Address::g(0x00001004), "firstInt", IntegerType::get(32, 1)); // Should fail
-	pdie = dim.find(Address::g(0x00001004));
+	dim.addItem(Address(0x00001004), "firstInt", IntegerType::get(32, 1)); // Should fail
+	pdie = dim.find(Address(0x00001004));
 	QCOMPARE(pdie->second.name, QString("firstFloat"));
 
 	// Set up three ints
-	dim.deleteItem(Address::g(0x00001004));
-	dim.addItem(Address::g(0x00001004), "firstInt", IntegerType::get(32, 1)); // Definately signed
-	dim.deleteItem(Address::g(0x00001008));
-	dim.addItem(Address::g(0x00001008), "firstInt", IntegerType::get(32, 0)); // Unknown signedess
+	dim.deleteItem(Address(0x00001004));
+	dim.addItem(Address(0x00001004), "firstInt", IntegerType::get(32, 1)); // Definately signed
+	dim.deleteItem(Address(0x00001008));
+	dim.addItem(Address(0x00001008), "firstInt", IntegerType::get(32, 0)); // Unknown signedess
 	// then, add an array over the three integers
 	auto at = ArrayType::get(IntegerType::get(32, 0), 3);
-	dim.addItem(Address::g(0x00001000), "newArray", at);
+	dim.addItem(Address(0x00001000), "newArray", at);
 
-	pdie = dim.find(Address::g(0x00001005)); // Check middle element
+	pdie = dim.find(Address(0x00001005)); // Check middle element
 	QCOMPARE(pdie->second.name, QString("newArray"));
-	pdie = dim.find(Address::g(0x00001000)); // Check first
+	pdie = dim.find(Address(0x00001000)); // Check first
 	QCOMPARE(pdie->second.name, QString("newArray"));
-	pdie = dim.find(Address::g(0x100B)); // Check last
+	pdie = dim.find(Address(0x100B)); // Check last
 	QCOMPARE(pdie->second.name, QString("newArray"));
 
 	// Already have an array of 3 ints at 0x1000. Put a new array completely before, then with only one word overlap
-	dim.addItem(Address::g(0x00000F00), "newArray2", at);
-	pdie = dim.find(Address::g(0x00001000)); // Should still be newArray at 0x1000
+	dim.addItem(Address(0x00000F00), "newArray2", at);
+	pdie = dim.find(Address(0x00001000)); // Should still be newArray at 0x1000
 	QCOMPARE(pdie->second.name, QString("newArray"));
 
-	pdie = dim.find(Address::g(0x00000F00));
+	pdie = dim.find(Address(0x00000F00));
 	QCOMPARE(pdie->second.name, QString("newArray2"));
 
-	dim.addItem(Address::g(0x00000FF8), "newArray3", at); // Should fail
-	pdie = dim.find(Address::g(0x00000FF8));
+	dim.addItem(Address(0x00000FF8), "newArray3", at); // Should fail
+	pdie = dim.find(Address(0x00000FF8));
 	QVERIFY(nullptr == (void *)pdie);                // Expect nullptr
 }
 

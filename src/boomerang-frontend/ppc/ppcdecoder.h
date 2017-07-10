@@ -47,5 +47,5 @@ private:
 	RTL *createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name);
 
 	bool isFuncPrologue(Address);
-	DWord getDword(Address lc);
+	DWord getDword(HostAddress lc);
 };

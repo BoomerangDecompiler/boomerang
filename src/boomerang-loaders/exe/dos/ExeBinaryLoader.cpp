@@ -246,7 +246,7 @@ Address ExeBinaryLoader::getMainEntryPoint()
 Address ExeBinaryLoader::getEntryPoint()
 {
 	// Check this...
-	return Address::g((LH(&m_header->initCS) << 4) + LH(&m_header->initIP));
+	return Address((LH(&m_header->initCS) << 4) + LH(&m_header->initIP));
 }
 
 

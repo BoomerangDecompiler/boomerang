@@ -22,7 +22,7 @@ namespace dbghelp
 #endif
 }
 #undef Address::INVALID
-#define Address::INVALID    ADDRESS::g(-1)
+#define Address::INVALID    Address(-1)
 #include <iostream>
 #include "boomerang/util/Log.h"
 #endif

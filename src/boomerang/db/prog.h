@@ -88,7 +88,7 @@ public:
 protected:
 	Global()
 		: m_type(nullptr)
-		, m_addr(Address::g(0L)) {}
+		, m_addr(Address::ZERO) {}
 };
 
 

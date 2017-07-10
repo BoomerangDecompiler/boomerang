@@ -200,7 +200,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
 	// Number of elf sections
 	bool    bGotCode         = false; // True when have seen a code sect
-	   Address arbitaryLoadAddr = Address::g(0x08000000);
+	Address arbitaryLoadAddr = Address(0x08000000);
 
 	for (SWord i = 0; i < numSections; i++) {
 		// Get section information.
@@ -543,7 +543,7 @@ void ElfBinaryLoader::addSyms(int secIndex)
 	// Index 0 is a dummy entry
 	for (int i = 1; i < nSyms; i++) {
 		Translated_ElfSym trans;
-		      Address           val  = Address::g(elfRead4(&m_symbolSection[i].st_value));
+		Address           val  = Address(elfRead4(&m_symbolSection[i].st_value));
 		int               name = elfRead4(&m_symbolSection[i].st_name);
 
 		if (name == 0) { /* Silly symbols with no names */
@@ -586,13 +586,13 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
 
 	// Index 0 is a dummy entry
 	for (int i = 1; i < nRelocs; i++) {
-		      Address val      = Address::g(elfRead4(&m_relocSection[i].r_offset));
+		Address val      = Address(elfRead4(&m_relocSection[i].r_offset));
 		int     symIndex = elfRead4(&m_relocSection[i].r_info) >> 8;
 		int     flags    = elfRead4(&m_relocSection[i].r_info);
 
 		if ((flags & 0xFF) == R_386_32) {
 			// Lookup the value of the symbol table entry
-			         Address a = Address::g(elfRead4(&m_symbolSection[symIndex].st_value));
+			Address a = Address(elfRead4(&m_symbolSection[symIndex].st_value));
 
 			if (m_symbolSection[symIndex].st_info & STT_SECTION) {
 				a = m_elfSections[elfRead2(&m_symbolSection[symIndex].st_shndx)].SourceAddr;
@@ -644,7 +644,7 @@ Address ElfBinaryLoader::getMainEntryPoint()
 
 Address ElfBinaryLoader::getEntryPoint()
 {
-	return Address::g(elfRead4(&m_elfHeader->e_entry));
+	return Address(elfRead4(&m_elfHeader->e_entry));
 }
 
 
@@ -742,7 +742,7 @@ QStringList ElfBinaryLoader::getDependencyList()
 
 	for (dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
 		if (dyn->d_tag == DT_STRTAB) {
-			stringtab = Address::g(dyn->d_un.d_ptr);
+			stringtab = Address(dyn->d_un.d_ptr);
 			break;
 		}
 	}
@@ -1081,7 +1081,7 @@ bool ElfBinaryLoader::isRelocationAt(Address uNative)
 						pRelWord = destNatOrigin + r_offset;
 					}
 					else {
-						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(Address::g(r_offset));
+						const IBinarySection *destSec = m_binaryImage->getSectionInfoByAddr(Address(r_offset));
 						pRelWord      = destSec->getSourceAddr() + r_offset;
 						destNatOrigin = Address::ZERO;
 					}

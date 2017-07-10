@@ -63,7 +63,7 @@ public:
 		valid        = true;
 		rtl          = nullptr;
 		reDecode     = false;
-		forceOutEdge = Address::g(0L);
+		forceOutEdge = Address::ZERO;
 	}
 
 public:

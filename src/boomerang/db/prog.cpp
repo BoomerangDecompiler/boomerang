@@ -78,7 +78,7 @@ namespace dbghelp
 }
 #endif
 #undef Address::INVALID
-#define Address::INVALID    (ADDRESS::g(-1))
+#define Address::INVALID    (Address(-1))
 #endif
 
 #include <sys/types.h>
@@ -1972,7 +1972,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 	}
 
 	if (type->resolvesToPointer()) {
-		      Address init = Address::g(readNative4(uaddr));
+		      Address init = Address(readNative4(uaddr));
 
 		if (init.isZero()) {
 			return Const::get(0);

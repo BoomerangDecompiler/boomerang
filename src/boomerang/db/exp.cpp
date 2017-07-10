@@ -4154,13 +4154,13 @@ SharedExp Ternary::polySimplify(bool& bMod)
 
 		if (from == 32) {
 			if (to == 16) {
-				res  = Const::get(Address::g(val & 0xffff));
+				res  = Const::get(Address(val & 0xffff));
 				bMod = true;
 				return res;
 			}
 
 			if (to == 8) {
-				res  = Const::get(Address::g(val & 0xff));
+				res  = Const::get(Address(val & 0xff));
 				bMod = true;
 				return res;
 			}

@@ -28,24 +28,22 @@ public:
 	Address& operator=(const Address&) = default;
 
 	/// Set the bit count of the source machine.
-	static void setSourceBits(Byte bitCount);
+	static void setSourceBits(Byte bitCount = STD_SIZE);
 	static value_type getSourceMask();
 
-	static Address g(value_type x);   // construct host/native oblivious address
-
-	Address        native() const { return Address::g(m_value & 0xFFFFFFFF); }
+	Address        native() const { return Address(m_value & 0xFFFFFFFF); }
 	value_type     value() const { return m_value; }
 
 	bool           isZero() const { return m_value == 0; }
 	bool operator==(const Address& other) const { return m_value == other.value(); }
 	bool operator!=(const Address& other) const { return m_value != other.value(); }
-	bool operator<(const Address& other) const { return m_value < other.value(); }
-	bool operator>(const Address& other) const { return m_value > other.value(); }
+	bool operator<(const Address& other)  const { return m_value < other.value(); }
+	bool operator>(const Address& other)  const { return m_value > other.value(); }
 	bool operator>=(const Address& other) const { return m_value >= other.value(); }
 	bool operator<=(const Address& other) const { return m_value <= other.value(); }
 
-	Address operator+(const Address& other) const { return Address::g(m_value + other.value()); }
-	Address operator-(const Address& other) const { return Address::g(m_value - other.value()); }
+	Address operator+(const Address& other) const { return Address(m_value + other.value()); }
+	Address operator-(const Address& other) const { return Address(m_value - other.value()); }
 
 	Address operator++() { ++m_value; return *this; }
 	Address operator--() { --m_value; return *this; }
@@ -57,14 +55,14 @@ public:
 	Address operator+=(intptr_t other) { m_value += other; return *this; }
 	Address operator-=(intptr_t v) { m_value -= v; return *this; }
 
-	Address operator+(intptr_t val) const { return Address::g(m_value + val); }
-	Address operator-(intptr_t other) const { return Address::g(m_value - other); }
+	Address operator+(intptr_t val) const { return Address(m_value + val); }
+	Address operator-(intptr_t other) const { return Address(m_value - other); }
 
 	QString toString() const;
 
 private:
-	static Byte m_sourceBits;
-	value_type  m_value;
+	static Byte m_sourceBits; ///< number of bits in a source address (typically 32 or 64 bits)
+	value_type  m_value;      ///< Value of this address
 };
 
 Q_DECLARE_METATYPE(Address)
@@ -107,6 +105,9 @@ public:
 
 	HostAddress operator+(intptr_t offset) { return HostAddress(*this) += offset; }
 	HostAddress operator-(intptr_t offset) { return HostAddress(*this) -= offset; }
+
+	HostAddress operator+(const HostAddress& other) { return HostAddress(m_value + other.m_value); }
+	HostAddress operator-(const HostAddress& other) { return HostAddress(m_value - other.m_value); }
 
 	QString toString() const;
 

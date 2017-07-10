@@ -280,8 +280,8 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 					               Address tmpaddr = p_sym->getLocation();
 					               Address setup, teardown;
 					/*uint32_t vers = */ m_image->readNative4(tmpaddr); // TODO: find use for vers ?
-					setup    = Address::g(m_image->readNative4(tmpaddr + 4));
-					teardown = Address::g(m_image->readNative4(tmpaddr + 8));
+					setup    = Address(m_image->readNative4(tmpaddr + 4));
+					teardown = Address(m_image->readNative4(tmpaddr + 8));
 
 					if (!setup.isZero()) {
 						checkEntryPoint(entrypoints, setup, "ModuleSetupProc");
@@ -692,7 +692,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
 					// Emit the next 4 bytes for debugging
 					for (int ii = 0; ii < 4; ii++) {
-						LOG << Address::g(m_image->readNative1(uAddr + ii) & 0xFF) << " ";
+						LOG << Address(m_image->readNative1(uAddr + ii) & 0xFF) << " ";
 					}
 
 					LOG << "\n";
@@ -882,7 +882,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 								unsigned int i;
 
 								for (i = 0; ; i++) {
-									                       Address destAddr = Address::g(m_image->readNative4(jmptbl + i * 4));
+									                       Address destAddr = Address(m_image->readNative4(jmptbl + i * 4));
 
 									if ((m_image->getLimitTextLow() <= destAddr) && (destAddr < m_image->getLimitTextHigh())) {
 										LOG << "  guessed uDest " << destAddr << "\n";

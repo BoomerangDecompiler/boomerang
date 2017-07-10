@@ -113,11 +113,11 @@ void CfgTest::testDominators()
  * \fn        CfgTest::testSemiDominators
  * OVERVIEW:        Test a case where semi dominators are different to dominators
  ******************************************************************************/
-#define SEMI_L    Address::g(0x80483b0)
-#define SEMI_M    Address::g(0x80483e2)
-#define SEMI_B    Address::g(0x8048345)
-#define SEMI_D    Address::g(0x8048354)
-#define SEMI_M    Address::g(0x80483e2)
+#define SEMI_L    Address(0x80483b0)
+#define SEMI_M    Address(0x80483e2)
+#define SEMI_B    Address(0x8048345)
+#define SEMI_D    Address(0x8048354)
+#define SEMI_M    Address(0x80483e2)
 
 void CfgTest::testSemiDominators()
 {

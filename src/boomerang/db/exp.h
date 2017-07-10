@@ -378,14 +378,12 @@ public:
 	 * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
 	 */
 	template<class T>
-	std::shared_ptr<T> access()
-	{
-		return shared_from_base<T>();
-	}
+	std::shared_ptr<T> access() { return shared_from_base<T>(); }
 
 	template<class T>
 	std::shared_ptr<const T> access() const { return const_cast<Exp *>(this)->access<T>(); }
 
+	/// Access sub-expressions recursively
 	template<class T, int SUB_IDX, int ... Path>
 	std::shared_ptr<T> access()
 	{
@@ -405,7 +403,7 @@ public:
 		}
 	}
 
-	template<class T, int SUB_IDX, int ... Path>
+	template<class T, int SUB_IDX, int... Path>
 	std::shared_ptr<const T> access() const
 	{
 		switch (SUB_IDX)
@@ -644,7 +642,7 @@ protected:
 };
 
 // Not part of the Exp class, but logically belongs with it:
-QTextStream& operator<<(QTextStream& os, const Exp *p); // Print the Exp poited to by p
+QTextStream& operator<<(QTextStream& os, const Exp *p); // Print the Exp pointed to by p
 
 inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
 {

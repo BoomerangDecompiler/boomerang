@@ -88,7 +88,7 @@ void RtlTest::testClone()
 	std::list<Instruction *> ls;
 	ls.push_back(a1);
 	ls.push_back(a2);
-	RTL         *r = new RTL(Address::g(0x1234), &ls);
+	RTL         *r = new RTL(Address(0x1234), &ls);
 	RTL         *r2 = r->clone();
 	QString     act1, act2;
 	QTextStream o1(&act1), o2(&act2);
@@ -247,7 +247,7 @@ void RtlTest::testVisitor()
 //    // Decode second instruction: "sub        %i0, 2, %o1"
 //    int iReg;
 //    Exp* eOperand = nullptr;
-//    DecodeResult inst = pFE->decodeInstruction(ADDRESS::g(0x10910));
+//    DecodeResult inst = pFE->decodeInstruction(Address(0x10910));
 //    QVERIFY(inst.rtl != nullptr);
 //    QVERIFY(inst.rtl->isCompare(iReg, eOperand) == false);
 
@@ -299,7 +299,7 @@ void RtlTest::testSetConscripts()
 	CallStatement *s2   = new CallStatement();
 	Prog          *p    = new Prog("fake_prog");
 	Module        *m    = p->getOrInsertModule("test");
-	Function      *proc = new UserProc(m, "printf", Address::g(0x2000)); // Making a true LibProc is problematic
+	Function      *proc = new UserProc(m, "printf", Address(0x2000)); // Making a true LibProc is problematic
 
 	s2->setDestProc(proc);
 	s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call
@@ -314,7 +314,7 @@ void RtlTest::testSetConscripts()
 	std::list<Instruction *> list;
 	list.push_back(s1);
 	list.push_back(s2);
-	RTL                 *rtl = new RTL(Address::g(0x1000), &list);
+	RTL                 *rtl = new RTL(Address(0x1000), &list);
 	StmtConscriptSetter sc(0, false);
 
 	for (Instruction *s : *rtl) {

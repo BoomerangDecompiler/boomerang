@@ -337,7 +337,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	// the $TEXT$ space, but the only way I can presently find that is to
 	// assume that the first subspace entry points to it
 	char         *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
-	Address      first_subspace_fileloc = Address::g(UINT4(subspace_location + 8));
+	Address      first_subspace_fileloc = Address(UINT4(subspace_location + 8));
 	char         *DLTable     = (char *)m_loadedImage + first_subspace_fileloc.value();
 	char         *pDlStrings  = DLTable + UINT4(DLTable + 0x28);
 	unsigned     numImports   = UINT4(DLTable + 0x14); // Number of import strings
@@ -621,7 +621,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 	// the $TEXT$ space, but the only way I can presently find that is to
 	// assume that the first subspace entry points to it
 	const char *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
-	Address    first_subspace_fileloc = Address::g(UINT4(subspace_location + 8));
+	Address    first_subspace_fileloc = Address(UINT4(subspace_location + 8));
 	const char *DLTable = (char *)m_loadedImage + first_subspace_fileloc.value();
 
 	unsigned numDLT = UINT4(DLTable + 0x40);
@@ -643,7 +643,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 		}
 
 		const char *str = pDlStrings + import_list[u].name;
-		(*ret)[Address::g(*p++)] = str;
+		(*ret)[Address(*p++)] = str;
 	}
 
 	return ret;

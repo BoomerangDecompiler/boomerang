@@ -2005,8 +2005,8 @@ void DataIntervalMap::addItem(Address addr, QString name, SharedType ty, bool fo
 	}
 	else if (pdie->first == addr) {
 		// Could go either way, depending on where the data items end
-		      Address endOfCurrent = pdie->first + pdie->second.size;
-		      Address endOfNew     = addr + ty->getSize() / 8;
+		Address endOfCurrent = pdie->first + pdie->second.size;
+		Address endOfNew     = addr + ty->getSize() / 8;
 
 		if (endOfCurrent < endOfNew) {
 			replaceComponents(addr, name, ty, forced);
@@ -2076,7 +2076,7 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, Address addr, cons
 void DataIntervalMap::replaceComponents(Address addr, const QString& name, SharedType ty, bool /*forced*/)
 {
 	iterator it;
-	   Address  pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
+	Address  pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
 
 	// First check that the new entry will be compatible with everything it will overlap
 	if (ty->resolvesToCompound()) {
@@ -2243,7 +2243,7 @@ ComplexTypeCompList& Type::compForAddress(Address addr, DataIntervalMap& dim)
 		return *res;
 	}
 
-	   Address    startCurrent = pdie->first;
+	Address    startCurrent = pdie->first;
 	SharedType curType      = pdie->second.type;
 
 	while (startCurrent < addr) {

@@ -315,7 +315,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 	for (unsigned i = 0; i < segments.size(); i++) {
 		fp.seek(imgoffs + BMMH(segments[i].fileoff));
-		Address  a   = Address::g(BMMH(segments[i].vmaddr));
+		Address  a   = Address(BMMH(segments[i].vmaddr));
 		unsigned sz  = BMMH(segments[i].vmsize);
 		unsigned fsz = BMMH(segments[i].filesize);
 		memset(base + a.value() - loaded_addr.value(), 0, sz);
@@ -363,7 +363,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 		for (unsigned i = 0; i < BMMH(stubs_sects[j].size) / BMMH(stubs_sects[j].reserved2); i++) {
 			unsigned startidx = BMMH(stubs_sects[j].reserved1);
 			unsigned symbol   = BMMH(indirectsymtbl[startidx + i]);
-			         Address  addr     = Address::g(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
+			Address  addr     = Address(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
 			DEBUG_PRINT("stub for %s at %tx\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr.value());
 			char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
 
@@ -393,7 +393,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 				name++;
 			}
 
-			Symbols->create(Address::g(BMMH(symbols[i].n_value)), name);
+			Symbols->create(Address(BMMH(symbols[i].n_value)), name);
 		}
 	}
 
@@ -449,7 +449,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 					ObjcMethod *me = &cl->methods[name3];
 					me->name  = name3;
 					me->types = types;
-					me->addr  = Address::g(BMMH(method->method_imp));
+					me->addr  = Address(BMMH(method->method_imp));
 				}
 			}
 

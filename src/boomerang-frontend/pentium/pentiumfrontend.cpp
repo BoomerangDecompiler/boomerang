@@ -650,7 +650,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 				SharedExp rhs = a->getRight();
 				assert(rhs->isIntConst());
 				gotMain = true;
-				return Address::g(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
+				return Address(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
 			}
 		}
 		else {
@@ -1188,7 +1188,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 		for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
 			if (compound->getType(n)->resolvesToPointer() &&
 				compound->getType(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
-				            Address d = Address::g(m_image->readNative4(a));
+				            Address d = Address(m_image->readNative4(a));
 
 				if (VERBOSE) {
 					LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "

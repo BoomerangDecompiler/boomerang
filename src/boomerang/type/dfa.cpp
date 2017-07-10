@@ -139,7 +139,7 @@ void DFA_TypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
 		SharedExp t   = rr->getSubExp1(); // idx*K1 + K2
 		SharedExp l   = t->getSubExp1();  // idx*K1
 		SharedExp r   = t->getSubExp2();  // K2
-		      Address   K2  = r->access<Const>()->getAddr().native();
+		Address   K2  = r->access<Const>()->getAddr().native();
 		SharedExp idx = l->getSubExp1();
 
 		// Replace with the array expression
@@ -311,7 +311,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 					}
 				}
 				else if (baseType->resolvesToInteger() || baseType->resolvesToFloat() || baseType->resolvesToSize()) {
-					               Address addr = Address::g(con->getInt()); // TODO: use getAddr
+					               Address addr = Address(con->getInt()); // TODO: use getAddr
 					_prog->markGlobalUsed(addr, baseType);
 					QString gloName = _prog->getGlobalName(addr);
 
@@ -370,7 +370,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 							continue;
 						}
 
-						                  Address   K   = Address::g(constK->getInt());
+						                  Address   K   = Address(constK->getInt());
 						SharedExp idx = bin_rr->getSubExp1();
 						SharedExp arr = Unary::get(
 							opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalName(K), proc), idx));
@@ -456,16 +456,16 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 			}
 
 			if (addrExp && proc->getSignature()->isAddrOfStackLocal(_prog, addrExp)) {
-				int addr = 0;
+				int localAddressOffset = 0;
 
 				if ((addrExp->getArity() == 2) && proc->getSignature()->isOpCompatStackLocal(addrExp->getOper())) {
 					auto K = addrExp->access<Const, 2>();
 
 					if (K->isConst()) {
-						addr = K->getInt();
+						localAddressOffset = K->getInt();
 
 						if (addrExp->getOper() == opMinus) {
-							addr = -addr;
+							localAddressOffset = -localAddressOffset;
 						}
 					}
 				}
@@ -473,7 +473,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 				SharedType ty = ((TypingStatement *)s)->getType();
 				LOG << "in proc " << proc->getName() << " adding addrExp " << addrExp << "with type " << *ty << " to local table\n";
 				SharedExp loc_mem = Location::memOf(addrExp);
-				proc->localsMap().addItem(Address::g(addr), proc->lookupSym(loc_mem, ty), typeExp);
+				proc->localsMap().addItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
 			}
 		}
 	}
@@ -1755,7 +1755,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
 				x->descendType(IntegerType::get(parentType->getSize(), 0), ch, s);
 				// K2 is of type <array of parentType>
 				auto    constK2 = subExp1->access<Const, 2>();
-				        Address intK2   = Address::g(constK2->getInt()); // TODO: use getAddr ?
+				        Address intK2   = Address(constK2->getInt()); // TODO: use getAddr ?
 				constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
 			}
 			else if (match_l1_K(shared_from_this(), matches)) {

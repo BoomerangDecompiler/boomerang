@@ -116,7 +116,7 @@ void FrontPentTest::test2()
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
-	inst = pFE->decodeInstruction(Address::g(0x8048345));
+	inst = pFE->decodeInstruction(Address(0x8048345));
 	inst.rtl->print(strm);
 	expected = QString("0x08048345    0 *32* tmp1 := r28\n"
 					   "            0 *32* r28 := r28 + 16\n"
@@ -124,13 +124,13 @@ void FrontPentTest::test2()
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(Address::g(0x8048348));
+	inst = pFE->decodeInstruction(Address(0x8048348));
 	inst.rtl->print(strm);
 	expected = QString("0x08048348    0 *32* r24 := 0\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(Address::g(0x8048329));
+	inst = pFE->decodeInstruction(Address(0x8048329));
 	inst.rtl->print(strm);
 	expected = QString("0x08048329    0 *32* r29 := r28\n");
 	QCOMPARE(actual, expected);

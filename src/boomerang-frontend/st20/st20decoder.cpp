@@ -45,14 +45,14 @@ static DecodeResult result;
 DecodeResult& ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta)
 {
 	result.reset();                            // Clear the result structure (numBytes = 0 etc)
-	   Address hostPC = pc + delta;
+	HostAddress hostPC = HostAddress(delta) + pc;
 	std::list<Instruction *> *stmts = nullptr; // The actual list of instantiated Statements
 	int total = 0;                             // Total value from all prefixes
 
 	while (1) {
 		// #line 60 "frontend/machine/st20/decoder.m"
 		{
-			         Address           MATCH_p = hostPC + result.numBytes++;
+			HostAddress       MATCH_p = hostPC + result.numBytes++;
 			const char        *MATCH_name;
 			static const char *MATCH_name_fc_0[] =
 			{

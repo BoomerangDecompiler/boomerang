@@ -156,13 +156,13 @@ SharedExp NJMCDecoder::dis_Num(unsigned num)
 }
 
 
-void NJMCDecoder::processUnconditionalJump(const char *name, int size, Address relocd, ptrdiff_t delta, Address pc,
+void NJMCDecoder::processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta, Address pc,
 										   std::list<Instruction *> *stmts, DecodeResult& result)
 {
 	result.rtl      = new RTL(pc, stmts);
 	result.numBytes = size;
 	GotoStatement *jump = new GotoStatement();
-	jump->setDest((relocd - delta).native());
+	jump->setDest(Address((relocd - delta).value()));
 	result.rtl->appendStmt(jump);
 	SHOW_ASM(name << " " << relocd - delta)
 }

@@ -105,7 +105,7 @@ void Win32BinaryLoader::close()
 
 Address Win32BinaryLoader::getEntryPoint()
 {
-	return Address::g(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
+	return Address(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
 }
 
 
@@ -155,7 +155,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 	}
 
 	if (m_pPEHeader->Subsystem == 1) { // native
-		return Address::g(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
+		return Address(LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase));
 	}
 
 	gap = 0xF0000000; // Large positive number (in case no ordinary calls)
@@ -228,9 +228,9 @@ Address Win32BinaryLoader::getMainEntryPoint()
 				}
 				else if (borlandState == 4) {
 					// Borland pattern succeeds. p-4 has the offset of mainInfo
-					               Address mainInfo = Address::g(LMMH(*(m_base + p - 4)));
+					               Address mainInfo = Address(LMMH(*(m_base + p - 4)));
 					               Address main     =
-						                  Address::g(m_image->readNative4(mainInfo + 0x18));     // Address of main is at mainInfo+18
+						                  Address(m_image->readNative4(mainInfo + 0x18));     // Address of main is at mainInfo+0x18
 					return main;
 				}
 			}
@@ -282,7 +282,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 	p = LMMH(m_pPEHeader->EntrypointRVA);
 
 	if ((*(unsigned char *)(p + m_base + 0x20) == 0xff) && (*(unsigned char *)(p + m_base + 0x21) == 0x15)) {
-		      Address desti    = Address::g(LMMH(*(p + m_base + 0x22)));
+		      Address desti    = Address(LMMH(*(p + m_base + 0x22)));
 		auto    dest_sym = m_symbols->find(desti);
 
 		if (dest_sym && (dest_sym->getName() == "GetVersionExA")) {
@@ -292,7 +292,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
 				if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
 					if (*(unsigned char *)(p + m_base + 0x16e) == 0xe8) {
-						                  Address dest = Address::g(p + 0x16e + 5 + LMMH(*(p + m_base + 0x16f)));
+						                  Address dest = Address(p + 0x16e + 5 + LMMH(*(p + m_base + 0x16f)));
 						return dest + LMMH(m_pPEHeader->Imagebase);
 					}
 				}
@@ -313,7 +313,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 			if (pushes == 3) {
 				// Get the offset
 				int     off  = LMMH(*(p + m_base + 1));
-				            Address dest = Address::g((unsigned)p + 5 + off);
+				            Address dest = Address((unsigned)p + 5 + off);
 				// Check for a jump there
 				op1 = *(unsigned char *)(dest.value() + m_base);
 
@@ -379,7 +379,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 			if (in_mingw_CRTStartup) {
 				op2 = *(unsigned char *)(dest + m_base);
 				unsigned char op2a  = *(unsigned char *)(dest + m_base + 1);
-				Address       desti = Address::g(LMMH(*(dest + m_base + 2)));
+				Address       desti = Address(LMMH(*(dest + m_base + 2)));
 
 				// skip all the call statements until we hit a call to an indirect call to ExitProcess
 				// main is the 2nd call before this one
@@ -425,7 +425,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 		op2 = *(unsigned char *)(p + m_base + 1);
 
 		if ((op1 == 0xFF) && (op2 == 0x15)) { // indirect CALL opcode
-			         Address desti    = Address::g(LMMH(*(p + m_base + 2)));
+			         Address desti    = Address(LMMH(*(p + m_base + 2)));
 			auto    dest_sym = m_symbols->find(desti);
 
 			if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
@@ -434,7 +434,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 		}
 
 		if ((op1 == 0xE8) && gotGMHA) { // CALL opcode
-			         Address dest = Address::g(p + 5 + LMMH(*(p + m_base + 1)));
+			         Address dest = Address(p + 5 + LMMH(*(p + m_base + 1)));
 			m_symbols->create(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
 			return dest + LMMH(m_pPEHeader->Imagebase);
 		}
@@ -614,7 +614,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
 		memcpy(m_base + LMMH(o->RVA), data + LMMH(o->PhysicalOffset), LMMH(o->PhysicalSize));
 
 		sect.Name         = QByteArray(o->ObjectName, 8);
-		sect.From         = Address::g(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
+		sect.From         = Address(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
 		sect.ImageAddress = HostAddress(m_base) + LMMH(o->RVA);
 		sect.Size         = LMMH(o->VirtualSize);
 		sect.PhysSize     = LMMH(o->PhysicalSize);
@@ -731,7 +731,7 @@ void Win32BinaryLoader::findJumps(Address curr)
 			continue;
 		}
 
-		Address operand   = Address::g(LMMH2((curr + delta + 2).value()));
+		Address operand   = Address(LMMH2((curr + delta + 2).value()));
 		auto    symbol_it = m_symbols->find(operand);
 
 		if (nullptr == symbol_it) {
@@ -1138,7 +1138,7 @@ Address Win32BinaryLoader::isJumpToAnotherAddr(Address uNative)
 		return Address::INVALID;
 	}
 
-	return Address::g(m_image->readNative4(uNative + 1)) + uNative + 5;
+	return Address(m_image->readNative4(uNative + 1)) + uNative + 5;
 }
 
 
@@ -1162,7 +1162,7 @@ bool Win32BinaryLoader::isLibrary() const
 
 Address Win32BinaryLoader::getImageBase()
 {
-	return Address::g(m_pPEHeader->Imagebase);
+	return Address(m_pPEHeader->Imagebase);
 }
 
 

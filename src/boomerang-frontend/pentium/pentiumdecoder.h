@@ -43,20 +43,17 @@ private:
 	 * Various functions to decode the operands of an instruction into
 	 * a SemStr representation.
 	 */
-	SharedExp dis_Eaddr(Address pc, int size = 0);
-	SharedExp dis_Mem(Address ps);
+	SharedExp dis_Eaddr(HostAddress hostPC, int size = 0);
+	SharedExp dis_Mem(HostAddress ps);
 	SharedExp addReloc(const SharedExp& e);
 
 	bool isFuncPrologue(Address hostPC);
 
-	Byte getByte(intptr_t lc); // TODO: switch to using ADDRESS objects
-	SWord getWord(intptr_t lc);
-	DWord getDword(intptr_t lc);
-
-	Byte getByte(Address lc)   { return getByte(lc.value()); }
-	SWord getWord(Address lc)  { return getWord(lc.value()); }
-	DWord getDword(Address lc) { return getDword(lc.value()); }
+	/// Read bytes, words or dwords from the memory at address @p addr
+	Byte  getByte(HostAddress addr)  { return *(Byte*)addr.value(); }
+	SWord getWord(HostAddress addr)  { return *(SWord*)addr.value(); }
+	DWord getDword(HostAddress addr) { return *(DWord*)addr.value(); }
 
 private:
-	   Address lastDwordLc;
+	Address lastDwordLc;
 };

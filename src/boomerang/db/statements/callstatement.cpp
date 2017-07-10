@@ -757,7 +757,7 @@ bool CallStatement::convertToDirect()
 
 		if (sub->isIntConst()) {
 			// m[K]: convert it to a global right here
-			         Address u = Address::g(sub->access<Const>()->getInt());
+			         Address u = Address(sub->access<Const>()->getInt());
 			m_proc->getProg()->markGlobalUsed(u);
 			QString nam = m_proc->getProg()->newGlobalName(u);
 			e      = Location::global(nam, m_proc);
@@ -772,7 +772,7 @@ bool CallStatement::convertToDirect()
 	QString nam     = e->access<Const, 1>()->getStr();
 	Prog    *prog   = m_proc->getProg();
 	   Address gloAddr = prog->getGlobalAddr(nam);
-	   Address dest    = Address::g(prog->readNative4(gloAddr));
+	   Address dest    = Address(prog->readNative4(gloAddr));
 
 	// We'd better do some limit checking on the value.
 	// This does not guarantee that it's a valid proc pointer,
@@ -995,7 +995,7 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
 				LOG << "arg " << i << " e: " << e << " ty: " << ty << "\n";
 
 				if (!(ty->isPointer() && (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) && e->isIntConst())) {
-					               Address addr = Address::g(e->access<Const>()->getInt());
+					               Address addr = Address(e->access<Const>()->getInt());
 					LOG << "addr: " << addr << "\n";
 
 					if (_proc->getProg()->isStringConstant(addr)) {
@@ -1004,7 +1004,7 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
 						change = true;
 					}
 					else if (_proc->getProg()->isCFStringConstant(addr)) {
-						                  Address addr2 = Address::g(_proc->getProg()->readNative4(addr + 8));
+						                  Address addr2 = Address(_proc->getProg()->readNative4(addr + 8));
 						LOG << "arg " << i << " of call is a cfstring\n";
 						setArgumentType(i, PointerType::get(CharType::get()));
 						// TODO: we'd really like to change this to CFSTR(addr)

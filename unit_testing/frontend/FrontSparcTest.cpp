@@ -137,7 +137,7 @@ void FrontSparcTest::test2()
 	IFrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
-	inst = pFE->decodeInstruction(Address::g(0x10690));
+	inst = pFE->decodeInstruction(Address(0x10690));
 	inst.rtl->print(strm);
 	// This call is to out of range of the program's text limits (to the Program Linkage Table (PLT), calling printf)
 	// This is quite normal.
@@ -148,19 +148,19 @@ void FrontSparcTest::test2()
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(Address::g(0x10694));
+	inst = pFE->decodeInstruction(Address(0x10694));
 	inst.rtl->print(strm);
 	expected = QString("0x00010694\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(Address::g(0x10698));
+	inst = pFE->decodeInstruction(Address(0x10698));
 	inst.rtl->print(strm);
 	expected = QString("0x00010698    0 *32* r8 := 0\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(Address::g(0x1069c));
+	inst = pFE->decodeInstruction(Address(0x1069c));
 	inst.rtl->print(strm);
 	expected = QString("0x0001069c    0 *32* r24 := r8\n");
 	QCOMPARE(actual, expected);
@@ -185,12 +185,12 @@ void FrontSparcTest::test3()
 	IFrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
-	inst = pFE->decodeInstruction(Address::g(0x106a0));
+	inst = pFE->decodeInstruction(Address(0x106a0));
 	inst.rtl->print(strm);
 	expected = QString("0x000106a0\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
-	inst = pFE->decodeInstruction(Address::g(0x106a4));
+	inst = pFE->decodeInstruction(Address(0x106a4));
 	inst.rtl->print(strm);
 	expected = QString("0x000106a4    0 RET\n"
 					   "              Modifieds: \n"
@@ -198,7 +198,7 @@ void FrontSparcTest::test3()
 	QCOMPARE(actual, expected);
 	actual.clear();
 
-	inst = pFE->decodeInstruction(Address::g(0x106a8));
+	inst = pFE->decodeInstruction(Address(0x106a8));
 	inst.rtl->print(strm);
 	expected = QString("0x000106a8    0 *32* tmp := 0\n"
 					   "            0 *32* r8 := r24\n"
@@ -250,7 +250,7 @@ void FrontSparcTest::testBranch()
 	prog->setFrontEnd(pFE);
 
 	// bne
-	inst = pFE->decodeInstruction(Address::g(0x00010ab0));
+	inst = pFE->decodeInstruction(Address(0x00010ab0));
 	inst.rtl->print(strm);
 	expected = QString("0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
 					   "High level: %flags\n");
@@ -258,7 +258,7 @@ void FrontSparcTest::testBranch()
 	actual.clear();
 
 	// bg
-	inst = pFE->decodeInstruction(Address::g(0x00010af8));
+	inst = pFE->decodeInstruction(Address(0x00010af8));
 	inst.rtl->print(strm);
 	expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition "
 					   "signed greater\n"
@@ -267,7 +267,7 @@ void FrontSparcTest::testBranch()
 	actual.clear();
 
 	// bleu
-	inst = pFE->decodeInstruction(Address::g(0x00010b44));
+	inst = pFE->decodeInstruction(Address(0x00010b44));
 	inst.rtl->print(strm);
 	expected = QString("0x00010b44    0 BRANCH 0x00010b54, condition unsigned less or equals\n"
 					   "High level: %flags\n");

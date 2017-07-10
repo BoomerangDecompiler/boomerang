@@ -68,7 +68,7 @@ namespace dbghelp
 }
 #endif
 #undef Address::INVALID
-#define Address::INVALID    ADDRESS::g(-1)
+#define Address::INVALID    Address(-1)
 #endif
 
 typedef std::map<Instruction *, int> RefCounter;
@@ -811,7 +811,7 @@ void UserProc::print(QTextStream& out, bool html) const
 
 	printParams(ost1, html);
 	dumpLocals(ost1, html);
-	m_procUseCollector.print(ost2);
+	m_procUseCollector.print(ost2, html);
 	m_cfg->print(ost3, html);
 
 	m_signature->print(out, html);
@@ -4663,7 +4663,7 @@ void UserProc::conTypeAnalysis()
 				}
 				else if (ty->isCString()) {
 					// Convert to a string
-					const char *str = _prog->getStringConstant(Address::g(val), true);
+					const char *str = _prog->getStringConstant(Address(val), true);
 
 					if (str) {
 						// Make a string

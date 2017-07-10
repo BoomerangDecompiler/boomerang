@@ -123,7 +123,7 @@ protected:
 	 * \param   stmts list of statements (?)
 	 * \param   result ref to decoder result object
 	 ******************************************************************************/
-	void processUnconditionalJump(const char *name, int size, Address relocd, ptrdiff_t delta, Address pc,
+	void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta, Address pc,
 								  std::list<Instruction *> *stmts, DecodeResult& result);
 
 
@@ -178,9 +178,9 @@ bool isFuncPrologue(Address hostPC);
 	BranchStatement *jump = new BranchStatement;		  \
 	result.rtl->appendStmt(jump);						  \
 	result.numBytes = size;								  \
-	jump->setDest((relocd - Address::g(delta)).native()); \
+	jump->setDest(Address(relocd.value() - delta)); \
 	jump->setCondType(cond);							  \
-	SHOW_ASM(name << " " << relocd.native())
+	SHOW_ASM(name << " " << relocd)
 
 // This one is X86 specific
 #define SETS(name, dest, cond)			 \

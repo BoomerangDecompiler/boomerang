@@ -472,7 +472,7 @@ void XMLProgParser::start_global(const QXmlStreamAttributes& attr)
 	QStringRef uaddr = attr.value(QLatin1Literal("uaddr"));
 
 	if (!uaddr.isEmpty()) {
-		ctx->global->m_addr = ADDRESS::g(uaddr.toInt(nullptr, 16));
+		ctx->global->m_addr = Address(uaddr.toInt(nullptr, 16));
 	}
 }
 
@@ -572,13 +572,13 @@ void XMLProgParser::start_libproc(const QXmlStreamAttributes& attr)
 	QStringRef address = attr.value(QLatin1Literal("address"));
 
 	if (!address.isEmpty()) {
-		stack.front()->proc->m_address = ADDRESS::g(address.toInt());
+		stack.front()->proc->m_address = Address(address.toInt());
 	}
 
 	address = attr.value(QLatin1Literal("firstCallerAddress"));
 
 	if (!address.isEmpty()) {
-		stack.front()->proc->m_firstCallerAddr = ADDRESS::g(address.toInt());
+		stack.front()->proc->m_firstCallerAddr = Address(address.toInt());
 	}
 }
 
@@ -659,7 +659,7 @@ void XMLProgParser::start_userproc(const QXmlStreamAttributes& attr)
 	QStringRef address = attr.value(QLatin1Literal("address"));
 
 	if (!address.isEmpty()) {
-		proc->m_address = ADDRESS::g(address.toInt());
+		proc->m_address = Address(address.toInt());
 	}
 
 	address = attr.value(QLatin1Literal("status"));
@@ -671,7 +671,7 @@ void XMLProgParser::start_userproc(const QXmlStreamAttributes& attr)
 	address = attr.value(QLatin1Literal("firstCallerAddress"));
 
 	if (!address.isEmpty()) {
-		proc->m_firstCallerAddr = ADDRESS::g(address.toInt());
+		proc->m_firstCallerAddr = Address(address.toInt());
 	}
 }
 
@@ -1602,7 +1602,7 @@ void XMLProgParser::start_rtl(const QXmlStreamAttributes& attr)
 	QStringRef a = attr.value(QLatin1Literal("addr"));
 
 	if (!a.isEmpty()) {
-		stack.front()->rtl->m_nativeAddr = ADDRESS::g(a.toInt());
+		stack.front()->rtl->m_nativeAddr = Address(a.toInt());
 	}
 }
 
@@ -1858,7 +1858,7 @@ void XMLProgParser::start_returnstmt(const QXmlStreamAttributes& attr)
 	n = attr.value(QLatin1Literal("retAddr"));
 
 	if (!n.isEmpty()) {
-		ret->retAddr = ADDRESS::g(n.toInt());
+		ret->retAddr = Address(n.toInt());
 	}
 }
 

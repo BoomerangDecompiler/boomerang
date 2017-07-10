@@ -363,7 +363,7 @@ Address BasicBlock::getLowAddr() const
 
 		// This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
 		// to change orphan BBs' addresses to Address::INVALID, but I suspect that this will cause many problems. MVE
-		if (add2 < Address::g(0x10)) {
+		if (add2 < Address(0x10)) {
 			// Assume that 0 is the real address
 			return Address::ZERO;
 		}
@@ -1285,7 +1285,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
 				SharedExp cond = getCond();
 
 				if (!cond) {
-					cond = Const::get(Address::g(0xfeedface)); // hack, but better than a crash
+					cond = Const::get(Address(0xfeedface)); // hack, but better than a crash
 				}
 
 				if (m_conditionHeaderType == IfElse) {
@@ -2313,7 +2313,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 					Prog *prog = proc->getProg();
 
 					for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
-						                  Address uSwitch = Address::g(prog->readNative4(swi->uTable + iPtr * 4));
+						                  Address uSwitch = Address(prog->readNative4(swi->uTable + iPtr * 4));
 
 						if ((uSwitch >= prog->getLimitTextHigh()) || (uSwitch < prog->getLimitTextLow())) {
 							if (DEBUG_SWITCH) {
@@ -2592,7 +2592,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 
 		if (decodeThru && vtExp && vtExp->isIntConst()) {
 			         Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
-			         Address pfunc = Address::g(prog->readNative4(addr));
+			         Address pfunc = Address(prog->readNative4(addr));
 
 			if (prog->findProc(pfunc) == nullptr) {
 				// A new, undecoded procedure
@@ -2661,13 +2661,13 @@ void BasicBlock::processSwitch(UserProc *proc)
 				continue;
 			}
 
-			uSwitch = Address::g(prog->readNative4(si->uTable + i * 8 + 4));
+			uSwitch = Address(prog->readNative4(si->uTable + i * 8 + 4));
 		}
 		else if (si->chForm == 'F') {
-			uSwitch = Address::g(((int *)si->uTable.value())[i]);
+			uSwitch = Address(((int *)si->uTable.value())[i]);
 		}
 		else {
-			uSwitch = Address::g(prog->readNative4(si->uTable + i * 4));
+			uSwitch = Address(prog->readNative4(si->uTable + i * 4));
 		}
 
 		if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r')) {

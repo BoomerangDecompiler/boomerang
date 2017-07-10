@@ -57,7 +57,7 @@ public:
 	int decodeAssemblyInstruction(Address pc, ptrdiff_t delta)  override;
 
 	/// Indicates whether the instruction at the given address is a restore instruction.
-	bool isRestore(Address hostPC);
+	bool isRestore(HostAddress hostPC);
 
 private:
 
@@ -65,8 +65,8 @@ private:
 	 * Various functions to decode the operands of an instruction into
 	 * a SemStr representation.
 	 */
-	SharedExp dis_Eaddr(Address pc, int size = 0);
-	SharedExp dis_RegImm(Address pc);
+	SharedExp dis_Eaddr(HostAddress pc, int size = 0);
+	SharedExp dis_RegImm(HostAddress pc);
 	SharedExp dis_RegLhs(unsigned r);
 
 	/***************************************************************************/ /**
@@ -78,6 +78,6 @@ private:
 	 * \returns            Pointer to newly created RTL, or nullptr if invalid
 	 ******************************************************************************/
 	RTL *createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name);
-	bool isFuncPrologue(Address hostPC);
-	DWord getDword(Address lc);
+	bool isFuncPrologue(HostAddress hostPC);
+	DWord getDword(HostAddress lc);
 };

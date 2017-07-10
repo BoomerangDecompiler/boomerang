@@ -72,7 +72,7 @@ void DOS4GWBinaryLoader::close()
 
 Address DOS4GWBinaryLoader::getEntryPoint()
 {
-	return Address::g((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
+	return Address((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
 }
 
 
@@ -442,7 +442,7 @@ Machine DOS4GWBinaryLoader::getMachine() const
 
 Address DOS4GWBinaryLoader::getImageBase()
 {
-	return Address::g(m_pLXObjects[0].RelocBaseAddr);
+	return Address(m_pLXObjects[0].RelocBaseAddr);
 }
 
 
