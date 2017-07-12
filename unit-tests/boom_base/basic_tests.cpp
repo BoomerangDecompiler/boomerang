@@ -13,11 +13,12 @@ const char *test_data = {""
                          "}"
                          "data: '111\01'"};
 
-void CodeBlockLoader::load_basic_data() {
+void CodeBlockLoader::load_basic_data()
+{
     /*CodeBlock b;
     QVERIFY(loader.readFromString(test_data,b)==true);
     QVERIFY(b.has_machine());
     QVERIFY(b.has_loader());
     QVERIFY(b.has_data());*/
 }
-QTEST_MAIN(CodeBlockLoader)
+

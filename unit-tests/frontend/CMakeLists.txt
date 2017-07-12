@@ -1,12 +1,5 @@
 
-set(test_LIBRARIES
-	${PROTOBUF_LIBRARIES}
-	${GC_LIBS}
-	${DEBUG_LIB}
-	boomerang-frontend
-	${CMAKE_DL_LIBS}
-	${CMAKE_THREAD_LIBS_INIT}
-)
+include(boomerang-macros)
 
 set(TESTS
     FrontendTest
@@ -15,6 +8,14 @@ set(TESTS
 )
 
 foreach(t ${TESTS})
-	ADD_QTEST(${t})
+	BOOMERANG_ADD_TEST(
+		NAME ${t}
+		SOURCES ${t}.h ${t}.cpp
+		LIBRARIES
+			${DEBUG_LIB}
+			boomerang-frontend
+			${CMAKE_DL_LIBS}
+			${CMAKE_THREAD_LIBS_INIT}
+	)
 endforeach()
 

@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "core/BinaryFileFactory.h"
+#include "boomerang/core/BinaryFileFactory.h"
 #include <string>
 
 /**
