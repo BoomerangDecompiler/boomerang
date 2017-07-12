@@ -23,7 +23,6 @@ if (GIT_FOUND)
 endif (GIT_FOUND)
 
 message(STATUS "Configuring " ${PROJECT_NAME} " " ${BOOMERANG_VERSION})
-
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 # Set a single output directory for generated binaries.
@@ -111,20 +110,27 @@ set(CMAKE_AUTOMOC ON)
 
 
 ###############################################################################
-# Defines section
+# Defines/configuration section
 ###############################################################################
 
 add_definitions(-DBOOMERANG_VERSION="${BOOMERANG_VERSION}")
-include(TestBigEndian)
+include(boomerang-configure)
 
-#Does not work with Ubuntu 17.04 and gcc 6.3
-#TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
+# Check for big/little endian
 if (WORDS_BIGENDIAN)
 	add_definitions(-DBOOMERANG_BIG_ENDIAN=1)
 else ()
 	add_definitions(-DBOOMERANG_BIG_ENDIAN=0)
 endif ()
 
+# Check 32/64 bit system
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+	add_definitions(-DBOOMERANG_BIT_COUNT=64)
+elseif (CMAKE_SIZEOF_VOID_P EQUAL 4)
+	add_definitions(-DBOOMERANG_BIT_COUNT=32)
+else ()
+	message(FATAL_ERROR "Unknown platform with sizeof(void*) == " ${CMAKE_SIZEOF_VOID_P})
+endif ()
 
 ###############################################################################
 # Code section
@@ -141,17 +147,19 @@ add_subdirectory(src)
 if (BOOM_BUILD_TESTS)
     enable_testing()
     find_package(Qt5Test REQUIRED)
-    #find_package(Protobuf REQUIRED)
     
-	add_subdirectory(unit_testing)
+	add_subdirectory(unit-tests)
 endif (BOOM_BUILD_TESTS)
 
 
-# run regression suite by 'run check'
+# run regression suite by 'make check'
 add_custom_target(check "./full_regression.sh"
 	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
 
+###############################################################################
+# Additional targets section
+###############################################################################
 
 # copy function signatures and test files to output directory
 add_custom_target(COPY_FILES ALL)
