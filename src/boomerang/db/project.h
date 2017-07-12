@@ -15,7 +15,7 @@
  * \brief    This file contains the definition for the Project class
  ******************************************************************************/
 
-#include "db/IProject.h"
+#include "boomerang/db/IProject.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QIODevice>

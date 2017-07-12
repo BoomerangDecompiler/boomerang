@@ -1,5 +1,5 @@
 #include "LoggingSettingsDlg.h"
-#include "ui_LoggingSettingsDlg.h"
+#include "boomerang-gui/ui_LoggingSettingsDlg.h"
 
 #include "boomerang/util/Log.h"
 

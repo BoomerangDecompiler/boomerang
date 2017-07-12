@@ -14,9 +14,9 @@
  ******************************************************************************/
 
 
-#include "db/exphelp.h"
-#include "type/type.h"
-#include "include/managed.h"
+#include "boomerang/db/exphelp.h"
+#include "boomerang/type/type.h"
+#include "boomerang/include/managed.h"
 
 #include <sstream>
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(Boomerang VERSION 0.4.0 LANGUAGES C CXX)
-
+set(CMAKE_WARN_DEPRECATED ON)
 
 ###############################################################################
 # Settings related to build system, and target directories
@@ -26,18 +26,17 @@ message(STATUS "Configuring " ${PROJECT_NAME} " " ${BOOMERANG_VERSION})
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
-# Set a single output directory for lgenerated binaries.
+# Set a single output directory for generated binaries.
 # This is not ideal, but necessary for tests.
 set(BOOMERANG_OUTPUT_DIR "${PROJECT_BINARY_DIR}/out")
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_SHARED_MODULE_PREFIX "") # prevent windows/mingw modules having lib* prefix
-set(CMAKE_WARN_DEPRECATED ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib")
 
 if (WIN32)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG   ${BOOMERANG_OUTPUT_DIR}/lib)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${BOOMERANG_OUTPUT_DIR}/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
 endif ()
 

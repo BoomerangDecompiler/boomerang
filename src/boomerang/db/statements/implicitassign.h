@@ -1,6 +1,6 @@
 #pragma once
 
-#include "db/statements/assignment.h"
+#include "boomerang/db/statements/assignment.h"
 
 // An implicit assignment has only a left hand side. It is a placeholder for storing the types of parameters and
 // globals.  That way, you can always find the type of a subscripted variable by looking in its defining Assignment

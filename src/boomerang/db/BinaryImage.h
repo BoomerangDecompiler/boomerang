@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SectionInfo.h"
-#include "db/IBinaryImage.h"
+#include "boomerang/db/IBinaryImage.h"
 
 #include <boost/icl/interval_map.hpp>
 

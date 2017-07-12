@@ -1,6 +1,6 @@
 #pragma once
 
-#include "db/statements/statement.h"
+#include "boomerang/db/statements/statement.h"
 
 class JunctionStatement : public Instruction
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "db/statements/assignment.h"
+#include "boomerang/db/statements/assignment.h"
 
 // The below could almost be a RefExp. But we could not at one stage #include exp.h as part of statement,h; that's since
 // changed so it is now possible, and arguably desirable.  However, it's convenient to have these members public

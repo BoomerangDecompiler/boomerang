@@ -7,8 +7,8 @@
 #include <QtWidgets/QtWidgets>
 
 
-#include "ui_boomerang.h"
-#include "ui_about.h"
+#include "boomerang-gui/ui_boomerang.h"
+#include "boomerang-gui/ui_about.h"
 
 
 MainWindow::MainWindow(QWidget *parent)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "db/statements/typingstatement.h"
+#include "boomerang/db/statements/typingstatement.h"
 
 // An implicit reference has only an expression. It holds the type information that results from taking the address
 // of a location. Note that dataflow can't decide which local variable (in the decompiled output) is being taken,

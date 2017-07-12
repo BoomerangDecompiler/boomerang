@@ -9,7 +9,8 @@
  *
  */
 
-#include "codegen/ICodeGenerator.h"
+#include "boomerang/codegen/ICodeGenerator.h"
+
 #include <string>
 #include <sstream>
 
