@@ -11,8 +11,9 @@
 class QVariant;
 class QString;
 
-struct IBinarySection
+class IBinarySection
 {
+public:
 	virtual ~IBinarySection() {}
 	virtual HostAddress     getHostAddr() const           = 0; ///< address of this section's data in the allocated memory
 	virtual Address         getSourceAddr() const         = 0; ///< section's address in Source machine's 'coordinates'

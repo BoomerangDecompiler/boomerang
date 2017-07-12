@@ -140,8 +140,9 @@ void RangeAnalysis::clearRanges()
 }
 
 
-struct RangeVisitor : public StmtVisitor
+class RangeVisitor : public StmtVisitor
 {
+public:
 	RangePrivateData          *tgt;
 	std::list<Instruction *>& execution_paths;
 	RangeVisitor(RangePrivateData *t, std::list<Instruction *>& ex_paths)

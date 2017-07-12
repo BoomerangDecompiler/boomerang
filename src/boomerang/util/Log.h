@@ -11,7 +11,7 @@ class Exp;
 class LocationSet;
 class RTL;
 class Type;
-struct Address;
+class Address;
 
 struct Printable;
 

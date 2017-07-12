@@ -867,12 +867,10 @@ public:
 class ExpHasMemofTester : public ExpVisitor
 {
 	bool result;
-	UserProc *proc;
 
 public:
-	ExpHasMemofTester(UserProc *p)
-		: result(false)
-		, proc(p) {}
+	ExpHasMemofTester(UserProc *)
+		: result(false) {}
 	bool getResult() { return result; }
 	bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 };
@@ -968,12 +966,9 @@ private:
 class BadMemofFinder : public ExpVisitor
 {
 	bool m_found;
-	UserProc *m_proc;
-
 public:
-	BadMemofFinder(UserProc *p)
-		: m_found(false)
-		, m_proc(p) {}
+	BadMemofFinder(UserProc *)
+		: m_found(false) {}
 	bool isFound() { return m_found; }
 
 private:
@@ -984,11 +979,8 @@ private:
 
 class ExpCastInserter : public ExpModifier
 {
-	UserProc *m_proc; // The enclising UserProc
-
 public:
-	ExpCastInserter(UserProc *p)
-		: m_proc(p) {}
+	ExpCastInserter(UserProc *) {}
 	static void checkMemofType(const SharedExp& memof, SharedType memofType);
 	SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
 	SharedExp postVisit(const std::shared_ptr<Binary>& e) override;
