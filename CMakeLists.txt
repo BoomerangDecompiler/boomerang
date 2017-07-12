@@ -67,7 +67,11 @@ if (MSVC)
     set(DEBUG_LIB Dbghelp.lib)
     
 elseif (CMAKE_CXX_COMPILER MATCHES clang)
-	set(COMMON_COMPILE_OPTIONS "-Weverything")
+	set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
+		-Wall -Wextra -Werror \
+		-Wno-return-type-c-linkage") # TODO: Enable again
+
+	#"-Weverything")
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything  -Wno-padded -Wno-c++98-compat -Wno-weak-vtables -Wno-global-constructors -Wno-c++98-compat-pedantic -Wno-exit-time-destructors" )
 	#add_definitions(-D_GLIBCXX_DEBUG) #-D_GLIBCXX_DEBUG
 else ()
