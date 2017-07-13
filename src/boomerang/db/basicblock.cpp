@@ -1934,9 +1934,9 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 
 int BasicBlock::whichPred(BasicBlock *pred)
 {
-	int n = m_inEdges.size();
+	size_t n = m_inEdges.size();
 
-	for (int i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		if (m_inEdges[i] == pred) {
 			return i;
 		}
@@ -2374,9 +2374,9 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 						swi->chForm     = 'F';                          // The "Fortran" form
 						swi->pSwitchVar = e;
 						swi->uTable     = Address(HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the uTable member as a pointer
-						swi->iNumTable  = num_dests;
+						swi->iNumTable  = (int)num_dests;
 						swi->iLower     = 1;                            // Not used, except to compute
-						swi->iUpper     = num_dests;                    // the number of options
+						swi->iUpper     = (int)num_dests;               // the number of options
 						lastStmt->setDest((SharedExp)nullptr);
 						lastStmt->setSwitchInfo(swi);
 						return true;

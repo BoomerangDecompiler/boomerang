@@ -18,7 +18,7 @@ function(BOOMERANG_ADD_LOADER)
 			set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 		endif (WIN32)
 		
-		target_link_libraries(${target_name} Qt5::Core ${LOADER_LIBRARIES})
+		target_link_libraries(${target_name} Qt5::Core boomerang ${LOADER_LIBRARIES})
 
 		install(TARGETS ${target_name}
 			ARCHIVE DESTINATION lib
@@ -81,3 +81,40 @@ function(BOOMERANG_ADD_TEST)
 	set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
 endfunction(BOOMERANG_ADD_TEST)
 
+
+#
+# Copy files, but only if the sourc(es) differ from the destination.
+# Usage:
+# BOOMERANG_COPY(
+#     TARGET <tgt>
+#     [PRE_BUILD|POST_BUILD]
+#     [FILES <src_file(s)> | DIRECTORIES <src directories>]
+#     DESTINATION <target dir or file>
+# )
+#
+function(BOOMERANG_COPY)
+	cmake_parse_arguments(CP "PRE_BUILD;POST_BUILD;RECURSIVE" "DESTINATION;TARGET" "FILES;DIRECTORIES" ${ARGN})
+	
+	if (NOT CP_FILES AND NOT CP_DIRECTORIES)
+		message(AUTHOR_WARNING "You need to specify files or directories to copy.")
+		return()
+	endif ()
+	
+	if (CP_PRE_BUILD AND CP_POST_BUILD)
+		message(AUTHOR_WARNING "You must not specify both PRE_BUILD and POST_BUILD options.")
+		return()
+	elseif (CP_PRE_BUILD)
+		set(CP_RUN_TIME PRE_BUILD)
+	elseif (CP_POST_BUILD)
+		set(CP_RUN_TIME POST_BUILD)
+	endif ()
+
+	foreach (f ${CP_FILES})
+		add_custom_command(
+			TARGET ${CP_TARGET}
+			${CP_RUN_TIME}
+			COMMAND ${CMAKE_COMMAND}
+			ARGS -E copy_if_different ${f} ${CP_DESTINATION}
+		)
+	endforeach ()
+endfunction(BOOMERANG_COPY)

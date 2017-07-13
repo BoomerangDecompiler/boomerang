@@ -190,11 +190,11 @@ void IFrontEnd::readLibraryCatalog(const QString& sPath)
 		CallConv cc = CallConv::C; // Most APIs are C calling convention
 
 		if (sFile == "windows.h") {
-			cc = CallConv::PASCAL; // One exception
+			cc = CallConv::Pascal; // One exception
 		}
 
 		if (sFile == "mfc.h") {
-			cc = CallConv::THISCALL; // Another exception
+			cc = CallConv::ThisCall; // Another exception
 		}
 
 		readLibrarySignatures(qPrintable(sig_path), cc);
@@ -530,7 +530,7 @@ std::shared_ptr<Signature> IFrontEnd::getDefaultSignature(const QString& name)
 {
 	// Get a default library signature
 	if (isWin32()) {
-		return Signature::instantiate(Platform::PENTIUM, CallConv::PASCAL, name);
+		return Signature::instantiate(Platform::PENTIUM, CallConv::Pascal, name);
 	}
 
 	return Signature::instantiate(getType(), CallConv::C, name);

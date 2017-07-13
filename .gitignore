@@ -7,3 +7,4 @@ output/log
 3rd_party/gmock
 tests/outputs_prev
 output/*.log
+Win32

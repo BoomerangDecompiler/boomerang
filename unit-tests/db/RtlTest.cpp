@@ -108,49 +108,49 @@ public:
 	void clear() { a = b = c = d = e = f = g = h = false; }
 	StmtVisitorStub() { clear(); }
 	virtual ~StmtVisitorStub() {}
-	virtual bool visit(RTL */*s*/) override
+	virtual bool visit(RTL *) override
 	{
 		a = true;
 		return false;
 	}
 
-	virtual bool visit(GotoStatement */*s*/) override
+	virtual bool visit(GotoStatement *) override
 	{
 		b = true;
 		return false;
 	}
 
-	virtual bool visit(BranchStatement */*s*/) override
+	virtual bool visit(BranchStatement *) override
 	{
 		c = true;
 		return false;
 	}
 
-	virtual bool visit(CaseStatement */*s*/) override
+	virtual bool visit(CaseStatement *) override
 	{
 		d = true;
 		return false;
 	}
 
-	virtual bool visit(CallStatement */*s*/) override
+	virtual bool visit(CallStatement *) override
 	{
 		e = true;
 		return false;
 	}
 
-	virtual bool visit(ReturnStatement */*s*/) override
+	virtual bool visit(ReturnStatement *) override
 	{
 		f = true;
 		return false;
 	}
 
-	virtual bool visit(BoolAssign */*s*/) override
+	virtual bool visit(BoolAssign *) override
 	{
 		g = true;
 		return false;
 	}
 
-	virtual bool visit(Assign */*s*/) override
+	virtual bool visit(Assign *) override
 	{
 		h = true;
 		return false;

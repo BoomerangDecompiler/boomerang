@@ -55,20 +55,13 @@
 
 
 #ifdef _WIN32
-#undef Address::INVALID
-#include <windows.h>
-#ifndef __MINGW32__
+#  include <windows.h>
+#  ifndef __MINGW32__
 namespace dbghelp
 {
-#include <dbghelp.h>
-// dbghelp.h can define ADDRESS
-#ifdef ADDRESS
-#undef ADDRESS
-#endif
+#    include <dbghelp.h>
 }
-#endif
-#undef Address::INVALID
-#define Address::INVALID    Address(-1)
+#  endif
 #endif
 
 typedef std::map<Instruction *, int> RefCounter;

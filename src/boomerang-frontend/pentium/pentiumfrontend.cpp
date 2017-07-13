@@ -425,7 +425,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
 
 	// Now recurse to process my out edges, if not already processed
 	const std::vector<BasicBlock *>& outs = pBB->getOutEdges();
-	unsigned n;
+	size_t n;
 
 	do {
 		n = outs.size();

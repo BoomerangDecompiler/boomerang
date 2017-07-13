@@ -56,8 +56,11 @@ list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party")
 # Compiler specific flags section
 ###############################################################################
 
-set(COMMON_COMPILE_OPTIONS "")
+# Force C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(COMMON_COMPILE_OPTIONS "")
 if (MSVC)
     add_definitions(
     	-D_CRT_SECURE_NO_WARNINGS
@@ -66,6 +69,8 @@ if (MSVC)
     )
     set(DEBUG_LIB Dbghelp.lib)
     
+	set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} /W3")
+	
 elseif (CMAKE_CXX_COMPILER MATCHES clang)
 	set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
 		-Wall -Wextra -Werror \
@@ -137,7 +142,7 @@ find_package(Qt5Xml REQUIRED)
 find_package(Threads)
 
 set(CMAKE_AUTOMOC ON)
-
+include_directories("${CMAKE_SOURCE_DIR}/3rd_party/")
 
 ###############################################################################
 # Defines/configuration section
@@ -202,10 +207,18 @@ add_custom_target(check "./full_regression.sh"
 
 # copy function signatures and test files to output directory
 add_custom_target(COPY_FILES ALL)
-add_custom_command(TARGET COPY_FILES POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/signatures ${BOOMERANG_OUTPUT_DIR}/signatures)
-add_custom_command(TARGET COPY_FILES POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/tests/inputs ${BOOMERANG_OUTPUT_DIR}/tests/inputs)
+BOOMERANG_COPY(TARGET COPY_FILES POST_BUILD
+	DIRECTORIES ${CMAKE_SOURCE_DIR}/signatures/
+	DESTINATION ${BOOMERANG_OUTPUT_DIR}/signatures/
+)
+
+if (BOOM_BUILD_TESTS)
+	BOOMERANG_COPY(TARGET COPY_FILES POST_BUILD
+		DIRECTORIES ${CMAKE_SOURCE_DIR}/tests/inputs/
+		DESTINATION ${BOOMERANG_OUTPUT_DIR}/tests/inputs/
+	)
+endif (BOOM_BUILD_TESTS)
+
 
 # delete all files in the 'out/' directory on make clean
 set(EXTRA_CLEAN_FILES "${BOOMERANG_OUTPUT_DIR}")

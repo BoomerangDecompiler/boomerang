@@ -345,7 +345,7 @@ void PalmBinaryLoader::close()
 }
 
 
-bool PalmBinaryLoader::postLoad(void */*handle*/)
+bool PalmBinaryLoader::postLoad(void *)
 {
 	// Not needed: for archives only
 	return false;

@@ -612,7 +612,7 @@ unsigned CompoundType::getOffsetRemainder(unsigned n)
 }
 
 
-SharedType Type::parseType(const char */*str*/)
+SharedType Type::parseType(const char *)
 {
 	assert(!"Not implemented");
 	return nullptr;

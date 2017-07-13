@@ -594,12 +594,12 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 	}
 
 	case 9 : {
-			yyval.cc = CallConv::PASCAL;
+			yyval.cc = CallConv::Pascal;
 			break;
 	}
 
 	case 10 : {
-			yyval.cc = CallConv::THISCALL;
+			yyval.cc = CallConv::ThisCall;
 			break;
 	}
 

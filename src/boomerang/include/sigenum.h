@@ -18,7 +18,7 @@ enum class CallConv
 {
 	INVALID = 0,
 	C,        ///< Standard C, no callee pop
-	PASCAL,   ///< callee pop
-	THISCALL, ///< MSVC "thiscall": one parameter in register ecx
-	FASTCALL, ///< MSVC fastcall convention ECX,EDX,stack, callee pop
+	Pascal,   ///< callee pop
+	ThisCall, ///< MSVC "thiscall": one parameter in register ecx
+	FastCall, ///< MSVC fastcall convention ECX,EDX,stack, callee pop
 };

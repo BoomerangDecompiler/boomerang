@@ -1,6 +1,6 @@
 
 set(SRC
-    pentium/pentiumdecoder.cpp #-fno-exceptions
+    pentium/pentiumdecoder.cpp
     pentium/pentiumfrontend.cpp
     ppc/ppcdecoder.cpp
     ppc/ppcfrontend.cpp
@@ -20,6 +20,9 @@ set(SRC
     st20/st20frontend.h
 )
 
+add_library(boomerang-frontend STATIC ${SRC})
+target_link_libraries(boomerang-frontend boomerang)
+
 set(SSL_FILES
 	machine/st20/st20.ssl
 	machine/mips/mips.ssl
@@ -29,23 +32,13 @@ set(SSL_FILES
 	machine/sparc/sparc.ssl
 )
 
-foreach(ssl_file ${SSL_FILES})
-	add_custom_command(
-		OUTPUT "${BOOMERANG_OUTPUT_DIR}/frontend/${ssl_file}"
-		COMMAND cmake -E copy
-		"${CMAKE_CURRENT_SOURCE_DIR}/${ssl_file}"
-		"${BOOMERANG_OUTPUT_DIR}/frontend/${ssl_file}"
-		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${ssl_file}"
+foreach (SSLFile ${ssl_file})
+	BOOMERANG_COPY(
+		TARGET boomerang-frontend PRE_BUILD
+		FILES ${ssl_file}
+		DESTINATION "${BOOMERANG_OUTPUT_DIR}/frontend/${ssl_file}"
 	)
-	list(APPEND ssl_files_dest "${BOOMERANG_OUTPUT_DIR}/frontend/${ssl_file}" )
-endforeach()
-
-add_custom_target(CopySSLs ALL DEPENDS ${ssl_files_dest})
-
-add_library(boomerang-frontend STATIC ${SRC})
-target_link_libraries(boomerang-frontend boomerang)
-
-add_dependencies(boomerang-frontend CopySSLs)
+endforeach ()
 
 # installation
 install(TARGETS boomerang-frontend

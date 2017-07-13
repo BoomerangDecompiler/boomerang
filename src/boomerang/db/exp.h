@@ -401,6 +401,8 @@ public:
 		default:
 			assert(false);
 		}
+
+		return nullptr;
 	}
 
 	template<class T, int SUB_IDX, int... Path>
@@ -420,6 +422,8 @@ public:
 		default:
 			assert(false);
 		}
+
+		return nullptr;
 	}
 
 	/***************************************************************************/ /**

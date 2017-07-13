@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <dlfcn.h>
 
 #include "boomerang/loader/IBinaryFile.h"
 #include "boomerang/core/Plugin.h"

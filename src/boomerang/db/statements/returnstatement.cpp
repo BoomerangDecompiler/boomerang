@@ -596,7 +596,7 @@ void ReturnStatement::removeModified(SharedExp loc)
 void ReturnStatement::dfaTypeAnalysis(bool& ch)
 {
 	for (Instruction *mm : modifieds) {
-		if (not mm->isAssignment()) {
+		if (!mm->isAssignment()) {
 			qDebug() << "non assignment in modifieds of ReturnStatement";
 		}
 
@@ -604,7 +604,7 @@ void ReturnStatement::dfaTypeAnalysis(bool& ch)
 	}
 
 	for (Instruction *rr : returns) {
-		if (not rr->isAssignment()) {
+		if (!rr->isAssignment()) {
 			qDebug() << "non assignment in returns of ReturnStatement";
 		}
 
