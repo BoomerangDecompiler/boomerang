@@ -7,6 +7,7 @@ class MachineSemanticsSSLBased : public MachineSemantics
 	RTLInstDict RTLDict;
 
 public:
+	virtual ~MachineSemanticsSSLBased() {}
 	Exp *convertOperand(MachineOperand *Operand) override;
 
 	std::list<Instruction *> *convertInstruction(MachineInstruction *Insn) override;

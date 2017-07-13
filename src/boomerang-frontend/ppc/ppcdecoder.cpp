@@ -9326,24 +9326,12 @@ MATCH_finished_a:
  * expressions (Exp*s).
  **********************************************************************/
 
-/***************************************************************************/ /**
- * \fn        PPCDecoder::dis_Reg
- * \brief        Decode the register
- * \param        r - register (0-31)
- * \returns             the expression representing the register
- ******************************************************************************/
 SharedExp PPCDecoder::dis_Reg(unsigned r)
 {
 	return Location::regOf(r);
 }
 
 
-/***************************************************************************/ /**
- * \fn        PPCDecoder::dis_RAmbz
- * \brief        Decode the register rA when rA represents constant 0 if r == 0
- * \param        r - register (0-31)
- * \returns             the expression representing the register
- ******************************************************************************/
 SharedExp PPCDecoder::dis_RAmbz(unsigned r)
 {
 	if (r == 0) {
@@ -9354,14 +9342,6 @@ SharedExp PPCDecoder::dis_RAmbz(unsigned r)
 }
 
 
-/***************************************************************************/ /**
- * \fn      PPCDecoder::isFuncPrologue()
- * \brief      Check to see if the instructions at the given offset match
- *                    any callee prologue, i.e. does it look like this offset
- *                    is a pointer to a function?
- * \param      hostPC - pointer to the code in question (host address)
- * \returns           True if a match found
- ******************************************************************************/
 bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
 {
 	return false;

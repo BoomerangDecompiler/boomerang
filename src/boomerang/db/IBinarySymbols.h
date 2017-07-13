@@ -41,6 +41,8 @@ public:
 	typedef SymbolListType::const_iterator const_iterator;
 
 public:
+	virtual ~IBinarySymbolTable() {}
+
 	virtual const IBinarySymbol *find(Address a) const        = 0; ///< Find an entry by address; nullptr if none
 	virtual const IBinarySymbol *find(const QString& s) const = 0; ///< Find an entry by name; Address::INVALID if none
 

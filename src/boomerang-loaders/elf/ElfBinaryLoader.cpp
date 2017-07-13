@@ -1019,6 +1019,7 @@ void ElfBinaryLoader::applyRelocations()
 				}
 			}
 		}
+		break;
 
 	default:
 		break; // Not implemented

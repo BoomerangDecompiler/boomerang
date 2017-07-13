@@ -959,10 +959,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 void Boomerang::persistToXML(Prog *prog)
 {
 	Q_UNUSED(prog);
-	assert(!"TODO: use cereal");
-//    LOG << "saving persistable state...\n";
-//    XMLProgParser *p = new XMLProgParser();
-//    p->persistToXML(prog);
+	// TODO remove
 }
 
 

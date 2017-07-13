@@ -1829,8 +1829,8 @@ void CallStatement::genConstraints(LocationSet& cons)
 
 					case 'x':
 						sign = false;
+						// fallthrough
 
-					// Fall through
 					case 'i':
 					case 'd':
 						{

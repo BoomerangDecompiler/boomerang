@@ -168,7 +168,7 @@ public:
 
 	/***************************************************************************/ /**
 	 * \brief        Returns true if the expression is r[N] where N is the given int const
-	 * \param N - the specific register to be tested for
+	 * \param n      the specific register to be tested for
 	 * \returns      True if this is a specific numeric register
 	 ******************************************************************************/
 	bool isRegN(int n) const;
@@ -355,7 +355,7 @@ public:
 	 * \param       li - list of Exp** where pointers to the matches are found
 	 * \param       once - true if not all occurrences to be found, false for all
 	 ******************************************************************************/
-	virtual void doSearchChildren(const Exp&, std::list<SharedExp *>&, bool);
+	virtual void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once);
 
 	/// Propagate all possible assignments to components of this expression.
 	/// Propagate all possible statements to this expression.
@@ -438,7 +438,7 @@ public:
 
 	/***************************************************************************/ /**
 	 * \brief  Set requested subexpression; 1 is first
-	 * \param  e Pointer to subexpression to set
+	 * param  e Pointer to subexpression to set
 	 * \note   If an expression already exists, it is ;//deleted
 	 ******************************************************************************/
 	virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
@@ -1266,9 +1266,9 @@ public:
 	 * Create a new Location expression.
 	 * \param op Should be opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
 	 * \param exp - child expression
-	 * \param p - enclosing procedure, if null this constructor will try to find it.
+	 * \param proc - enclosing procedure, if null this constructor will try to find it.
 	 */
-	Location(OPER op, SharedExp e, UserProc *proc);
+	Location(OPER op, SharedExp exp, UserProc *proc);
 
 	// Copy constructor
 	Location(Location& o);

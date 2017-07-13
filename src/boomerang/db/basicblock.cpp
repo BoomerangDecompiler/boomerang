@@ -48,6 +48,9 @@
 #include <inttypes.h>
 
 
+char debug_buffer[DEBUG_BUFSIZE];
+
+
 /**********************************
 * BasicBlock methods
 **********************************/
@@ -210,8 +213,6 @@ bool BasicBlock::isJumpReqd()
 	return m_jumpReqd;
 }
 
-
-char debug_buffer[DEBUG_BUFSIZE];
 
 const char *BasicBlock::prints()
 {

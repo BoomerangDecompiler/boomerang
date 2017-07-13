@@ -90,9 +90,9 @@ public:
 
 	/***************************************************************************/ /**
 	 * \fn        BranchStatement::print
-	 * \brief        Write a text representation to the given stream
-	 * \param        os: stream
-	 * \param html - produce html encoded representation
+	 * \brief     Write a text representation to the given stream
+	 * \param     os stream
+	 * \param     html produce html encoded representation
 	 ******************************************************************************/
 	void print(QTextStream& os, bool html = false) const override;
 

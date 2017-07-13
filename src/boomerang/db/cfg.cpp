@@ -147,7 +147,7 @@ bool Cfg::checkEntryBB()
 BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
 {
 	MAPBB::iterator mi;
-	BasicBlock      *pBB;
+	BasicBlock      *pBB = nullptr;
 
 	// First find the native address of the first RTL
 	// Can't use BasicBlock::GetLowAddr(), since we don't yet have a BB!
@@ -509,7 +509,7 @@ bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)
 		// We are finalising an incomplete BB. Still need to check previous map
 		// entry to see if there is a complete BB overlapping
 		bool       bSplit = false;
-		BasicBlock *pPrevBB, *pBB = (*mi).second;
+		BasicBlock *pPrevBB = nullptr, *pBB = (*mi).second;
 
 		if (mi != m_mapBB.begin()) {
 			pPrevBB = (*--mi).second;

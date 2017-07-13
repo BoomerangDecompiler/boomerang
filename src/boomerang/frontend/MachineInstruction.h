@@ -21,8 +21,9 @@ class MachineOperand
 struct MachineInstruction
 {
 	QString                opcode;
-	   Address                location;
+	Address                location;
 	std::vector<SharedExp> actuals;
+
 	MachineInstruction(QString op, Address pc, std::vector<SharedExp>&& acts)
 		: opcode(op)
 		, location(pc)
@@ -34,6 +35,8 @@ struct MachineInstruction
 class MachineSemantics
 {
 public:
+	virtual ~MachineSemantics() {}
+
 	virtual Exp *convertOperand(MachineOperand *Operand) = 0;
 
 	virtual std::list<Instruction *> *convertInstruction(MachineInstruction *Insn) = 0;

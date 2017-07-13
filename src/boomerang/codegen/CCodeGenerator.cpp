@@ -41,22 +41,17 @@
 static int codegen_progress = 0;
 static bool isBareMemof(const Exp& e, UserProc *proc);
 
-// extern char *operStrings[];
-
-/// Empty constructor, calls ICodeGenerator(p)
 CCodeGenerator::CCodeGenerator(UserProc *p)
 	: ICodeGenerator(p)
 {
 }
 
 
-/// Empty destructor
 CCodeGenerator::~CCodeGenerator()
 {
 }
 
 
-/// Output 4 * \a indLevel spaces to \a str
 void CCodeGenerator::indent(QTextStream& str, int indLevel)
 {
 	// Can probably do more efficiently
@@ -66,16 +61,6 @@ void CCodeGenerator::indent(QTextStream& str, int indLevel)
 }
 
 
-/**
- * Append code for the given expression \a exp to stream \a str.
- *
- * \param str        The stream to output to.
- * \param exp        The expresson to output.
- * \param curPrec     The current operator precedence. Add parens around this expression if necessary.
- * \param uns         If true, cast operands to unsigned if necessary.
- *
- * \todo This function is 800+ lines, and should possibly be split up.
- */
 void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool uns /* = false */)
 {
 	if (++codegen_progress > 500) {
@@ -86,7 +71,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
 	OPER op = exp.getOper();
 
-#ifdef SYMS_IN_BACK_END                 // Should no longer be any unmapped symbols by the back end
+#if SYMS_IN_BACK_END                 // Should no longer be any unmapped symbols by the back end
 	// Check if it's mapped to a symbol
 	if (m_proc && !exp->isTypedExp()) { // Beware: lookupSym will match (cast)r24 to local0, stripping the cast!
 		const char *sym = m_proc->lookupSym(exp);
@@ -241,7 +226,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 				}
 			}
 
-#ifdef SYMS_IN_BACK_END
+#if SYMS_IN_BACK_END
 			if (sub->isMemOf() && (m_proc->lookupSym(sub) == nullptr)) { // }
 #else
 			if (sub->isMemOf()) {
@@ -867,7 +852,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
 	case opTypedExp:
 		{
-#ifdef SYMS_IN_BACK_END
+#if SYMS_IN_BACK_END
 			Exp        *b   = u.getSubExp1();         // Base expression
 			const char *sym = m_proc->lookupSym(exp); // Check for (cast)sym
 
@@ -930,7 +915,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 				SharedType tt = ((TypedExp&)u).getType();
 
 				if (std::dynamic_pointer_cast<PointerType>(tt)) {
-#ifdef SYMS_IN_BACK_END
+#if SYMS_IN_BACK_END
 					const char *sym = m_proc->lookupSym(Location::memOf(b));
 
 					if (sym) {
@@ -1543,7 +1528,7 @@ bool isBareMemof(const Exp& e, UserProc * /*proc*/)
 		return false;
 	}
 
-#ifdef SYMS_IN_BACK_END
+#if SYMS_IN_BACK_END
 	// Check if it maps to a symbol
 	const char *sym = proc->lookupSym(e);
 
@@ -1790,13 +1775,9 @@ void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QStrin
 /**
  * Adds an indirect call to \a exp.
  * \see AddCallStatement
- * \param indLevel
- * \param exp
- * \param args
  * \param results UNUSED
  * \todo Add the use of \a results like AddCallStatement.
  */
-// Ugh - almost the same as the above, but it needs to take an expression, // not a Proc*
 void CCodeGenerator::addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results)
 {
 	Q_UNUSED(results);

@@ -52,11 +52,11 @@ public:
 
 	Address operator+=(const Address& other) { m_value += other.value(); return *this; }
 
-	Address operator+=(intptr_t other) { m_value += other; return *this; }
-	Address operator-=(intptr_t v) { m_value -= v; return *this; }
+	Address operator+=(value_type value) { m_value += value; return *this; }
+	Address operator-=(value_type value) { m_value -= value; return *this; }
 
-	Address operator+(intptr_t val) const { return Address(m_value + val); }
-	Address operator-(intptr_t other) const { return Address(m_value - other); }
+	Address operator+(value_type value) const { return Address(m_value + value); }
+	Address operator-(value_type value) const { return Address(m_value - value); }
 
 	QString toString() const;
 
@@ -97,14 +97,14 @@ public:
 	HostAddress operator+=(const Address& other) { m_value += other.value(); return *this; }
 	HostAddress operator-=(const Address& other) { m_value -= other.value(); return *this; }
 
-	HostAddress operator+=(intptr_t offset) { m_value += offset; return *this; }
-	HostAddress operator-=(intptr_t offset) { m_value -= offset; return *this; }
+	HostAddress operator+=(value_type offset) { m_value += offset; return *this; }
+	HostAddress operator-=(value_type offset) { m_value -= offset; return *this; }
 
 	HostAddress operator+(const Address& other) { return HostAddress(*this) += other; }
 	HostAddress operator-(const Address& other) { return HostAddress(*this) -= other; }
 
-	HostAddress operator+(intptr_t offset) { return HostAddress(*this) += offset; }
-	HostAddress operator-(intptr_t offset) { return HostAddress(*this) -= offset; }
+	HostAddress operator+(value_type offset) { return HostAddress(*this) += offset; }
+	HostAddress operator-(value_type offset) { return HostAddress(*this) -= offset; }
 
 	HostAddress operator+(const HostAddress& other) { return HostAddress(m_value + other.m_value); }
 	HostAddress operator-(const HostAddress& other) { return HostAddress(m_value - other.m_value); }

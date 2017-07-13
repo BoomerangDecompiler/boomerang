@@ -567,7 +567,7 @@ uint32_t MachOBinaryLoader::BMMH(uint32_t x)
 unsigned short MachOBinaryLoader::BMMHW(unsigned short x)
 {
 	if (swap_bytes) {
-		return _BMMHW(x);
+		return (unsigned short)_BMMHW(x);
 	}
 	else {
 		return x;

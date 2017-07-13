@@ -65,11 +65,11 @@ static int Read2(short *ps)
 }
 
 
-static int Read2(uint16_t *ps)
+static SWord Read2(uint16_t *ps)
 {
 	unsigned char *p = (unsigned char *)ps;
 	// Little endian
-	uint16_t n = (uint16_t(p[0]) << 8) | p[1];
+	uint16_t n = (uint16_t)((p[0] << 8) | p[1]);
 
 	return n;
 }

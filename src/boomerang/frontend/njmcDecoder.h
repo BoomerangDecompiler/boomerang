@@ -81,7 +81,7 @@ protected:
 	 *
 	 * \param   pc  native PC
 	 * \param   name - instruction name
-	 * \param   ... - Semantic String ptrs representing actual operands
+	 * \param   args Semantic String ptrs representing actual operands
 	 * \returns an instantiated list of Exps
 	 ******************************************************************************/
 	std::list<Instruction *> *instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args = {});
@@ -106,9 +106,7 @@ protected:
 	 *
 	 * \param   name - parameter name
 	 * \param   exp - expression to instantiate into
-	 * \param   ... - Exp* representing actual operands
-	 *
-	 * \returns an instantiated list of Exps
+	 * \param   args Exp* representing actual operands
 	 ******************************************************************************/
 	void substituteCallArgs(char *name, SharedExp *exp, const std::initializer_list<SharedExp>& args);
 
@@ -117,8 +115,6 @@ protected:
 	 *              Also check if the destination is a label (MVE: is this done?)
 	 * \param   name name of instruction (for debugging)
 	 * \param   size size of instruction in bytes
-	 * \param   relocd
-	 * \param   delta
 	 * \param   pc native pc
 	 * \param   stmts list of statements (?)
 	 * \param   result ref to decoder result object

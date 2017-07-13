@@ -60,23 +60,16 @@ class Log;
 /// procedure such as parameters and locals.
 
 /***************************************************************************/ /**
- * \var Function::Visited
- * \brief For printCallGraphXML
- * \var Function::prog
- * \brief Program containing this procedure.
- * \var Function::signature
- * \brief The formal signature of this procedure.
- * This information is determined
- * either by the common.hs file (for a library function) or by analysis.
- * \note This belongs in the CALL, because the same procedure can have different
- * signatures if it happens to have varargs. Temporarily here till it can be permanently
- * moved.
- * \var Function::address
- * Procedure's address.
- * \var Function::m_firstCaller
- * first procedure to call this procedure.
- * \var Function::m_firstCallerAddr
- * can only be used once.
+ * \var Function::Visited For printCallGraphXML
+ * \var Function::prog Program containing this procedure.
+ * \var Function::signature The formal signature of this procedure.
+ *      This information is determined either by the common.hs file (for a library function) or by analysis.
+ *      \note This belongs in the CALL, because the same procedure can have different
+ *      signatures if it happens to have varargs. Temporarily here till it can be permanently
+ *      moved.
+ * \var Function::address Procedure's address.
+ * \var Function::m_firstCaller first procedure to call this procedure.
+ * \var Function::m_firstCallerAddr can only be used once.
  * \var Function::provenTrue
  * All the expressions that have been proven true.
  * (Could perhaps do with a list of some that are proven false)
@@ -258,7 +251,7 @@ public:
 	 * \brief        Constructor with name, native address.
 	 * \param        mod - Module that contains this Function
 	 * \param        name - Name of procedure
-	 * \param        uNative - Native address of entry point of procedure
+	 * \param        address - Native address of entry point of procedure
 	 ******************************************************************************/
 	LibProc(Module *mod, const QString& name, Address address);
 	virtual ~LibProc() = default;
@@ -388,7 +381,7 @@ public:
 	 * \brief        Constructor with name, native address.
 	 * \param mod - Module that contains this Function
 	 * \param name - Name of procedure
-	 * \param uNative - Native address of entry point of procedure
+	 * \param address - Native address of entry point of procedure
 	 ******************************************************************************/
 	UserProc(Module *mod, const QString& name, Address address);
 	virtual ~UserProc();
@@ -737,8 +730,6 @@ public:
 	 * mapped
 	 * to param1; insert a mapping for m[r28{-} + 8]{18} to param1. This will avoid a copy, and will use the name of the
 	 * parameter only when it is acually used as a parameter
-	 *
-	 * \returns the cycle set from the recursive call to decompile()
 	 ******************************************************************************/
 	void nameParameterPhis();
 	void mapParameters();
@@ -775,7 +766,7 @@ public:
 	 * \param visited - a set of procs already visited, to prevent infinite recursion
 	 * \returns true/false :P
 	 ******************************************************************************/
-	bool doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *Visited);
+	bool doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited);
 	bool isRetNonFakeUsed(CallStatement *c, SharedExp loc, UserProc *p, ProcSet *Visited);
 
 	/// Remove redundant parameters. Return true if remove any

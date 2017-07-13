@@ -178,10 +178,6 @@ void CfgTest::testSemiDominators()
 }
 
 
-/***************************************************************************/ /**
- * \fn        CfgTest::testPlacePhi
- * OVERVIEW:        Test the placing of phi functions
- ******************************************************************************/
 void CfgTest::testPlacePhi()
 {
 	QSKIP("Disabled.");
@@ -227,10 +223,7 @@ void CfgTest::testPlacePhi()
 }
 
 
-/***************************************************************************/ /**
- * \fn        CfgTest::testPlacePhi2
- * OVERVIEW:        Test a case where a phi function is not needed
- ******************************************************************************/
+
 void CfgTest::testPlacePhi2()
 {
 	QSKIP("Disabled.");

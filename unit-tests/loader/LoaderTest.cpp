@@ -52,7 +52,7 @@ static QDir    baseDir;
 #  define ELF_LOADER    baseDir.absoluteFilePath("lib/libboomerang_ElfLoader.so")
 #endif
 
-#if 1 // FIXME: These programs are proprietary, but they are not used.
+#if 0 // FIXME: These programs are proprietary, but they are not used.
 #define CALC_WINDOWS    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calc.exe"))
 #define CALC_WINXP      qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calcXP.exe"))
 #define CALC_WIN2000    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calc2000.exe"))
@@ -210,7 +210,7 @@ void LoaderTest::testWinLoad()
 	BinaryFileFactory bff;
 	IFileLoader       *loader = nullptr;
 
-#if 1 // FIXME: these tests should use non-proprietary programs
+#if 0 // FIXME: these tests should use non-proprietary programs
 	// Load Windows program calc.exe
 
 	loader = bff.loadFile(CALC_WINDOWS);

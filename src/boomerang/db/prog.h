@@ -130,11 +130,11 @@ public:
 	 *           decoding a call instruction). That way, it is given a name
 	 *           that can be displayed in the dot file, etc. If we assign it
 	 *           a number now, then it will retain this number always
-	 * \param uAddr - Native address of the procedure entry point
+	 * \param addr    Native address of the procedure entry point
 	 * \returns       Pointer to the Proc object, or 0 if this is a deleted (not to
 	 *                be decoded) address
 	 ******************************************************************************/
-	Function *setNewProc(Address uNative);
+	Function *setNewProc(Address addr);
 
 	void removeProc(const QString& name);
 

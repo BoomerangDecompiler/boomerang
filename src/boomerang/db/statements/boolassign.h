@@ -84,7 +84,7 @@ public:
 	/***************************************************************************/ /**
 	 * \fn    BoolAssign::printCompact
 	 * \brief Write a text representation to the given stream
-	 * \param os: stream
+	 * \param os -  stream
 	 * \param html - produce html encoded representation
 	 ******************************************************************************/
 	virtual void printCompact(QTextStream& os, bool html = false) const override;

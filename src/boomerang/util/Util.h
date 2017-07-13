@@ -10,10 +10,13 @@
 
 #include "boomerang/util/types.h"
 
-struct Printable
+class Printable
 {
+public:
+	virtual ~Printable() {}
 	virtual QString toString() const = 0;
 };
+
 
 // was a workaround
 #define STR(x)    (char *)(x.str().c_str())

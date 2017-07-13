@@ -251,9 +251,6 @@ Address ExeBinaryLoader::getEntryPoint()
 
 
 #define TESTMAGIC2(buf, off, a, b)    (buf[off] == a && buf[off + 1] == b)
-#define LMMH(x)																								  \
-	((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
-	 ((unsigned)((Byte *)(&x))[3] << 24))
 
 int ExeBinaryLoader::canLoad(QIODevice& fl) const
 {

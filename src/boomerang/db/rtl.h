@@ -221,6 +221,13 @@ public:
 
 	void transformPostVars(std::list<Instruction *>& rts, bool optimise);
 	void print(QTextStream& os);
+
+	/***************************************************************************/ /**
+	* \brief Add a new register definition to the dictionary
+	* \param name register's name
+	* \param size - register size in bits
+	* \param flt  - is float register?
+	******************************************************************************/
 	void addRegister(const QString& name, int id, int size, bool flt);
 	bool partialType(Exp *exp, Type& ty);
 	void fixupParams();

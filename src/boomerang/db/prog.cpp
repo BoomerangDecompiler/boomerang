@@ -247,14 +247,14 @@ void Prog::generateDataSectionCode(QString section_name, Address section_start, 
 void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) const
 {
 	// QString basedir = m_rootCluster->makeDirs();
-	QTextStream *os;
+	QTextStream *os = nullptr;
 
 	if (cluster) {
 		cluster->openStream("c");
 		cluster->closeStreams();
 	}
 
-	bool generate_all   = cluster == nullptr || cluster == m_rootCluster;
+	const bool generate_all   = cluster == nullptr || cluster == m_rootCluster;
 	bool all_procedures = proc == nullptr;
 
 	if (generate_all) {
