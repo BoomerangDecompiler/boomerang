@@ -136,8 +136,8 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 		{
 		case 'E':
 			boom.noDecodeChildren = true;
+			// Fall through
 
-		// Fall through
 		case 'e':
 			{
 				Address addr;

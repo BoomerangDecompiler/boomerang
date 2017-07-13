@@ -33,48 +33,37 @@
 #include <sstream>
 
 static bool    logset = false;
-static QString TEST_BASE;
-static QDir    baseDir;
 
 //
-#define HELLO_CLANG4           qPrintable(baseDir.absoluteFilePath("tests/inputs/elf/hello-clang4-dynamic"))
-#define HELLO_CLANG4_STATIC    qPrintable(baseDir.absoluteFilePath("tests/inputs/elf/hello-clang4-static"))
-#define HELLO_SPARC            qPrintable(baseDir.absoluteFilePath("tests/inputs/sparc/hello"))
-#define HELLO_PENTIUM          qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/hello"))
-#define HELLO_HPPA             qPrintable(baseDir.absoluteFilePath("tests/inputs/hppa/hello"))
-#define STARTER_PALM           qPrintable(baseDir.absoluteFilePath("tests/inputs/mc68328/Starter.prc"))
-#define SWITCH_BORLAND         qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/switch_borland.exe"))
+#define HELLO_CLANG4           (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-dynamic")
+#define HELLO_CLANG4_STATIC    (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-static")
+#define HELLO_SPARC            (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
+#define HELLO_PENTIUM          (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
+#define HELLO_HPPA             (BOOMERANG_TEST_BASE "/tests/inputs/hppa/hello")
+#define STARTER_PALM           (BOOMERANG_TEST_BASE "/tests/inputs/mc68328/Starter.prc")
+#define SWITCH_BORLAND         (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
 
 /// path to the ELF loader plugin
 #ifdef _WIN32
-#  define ELF_LOADER    baseDir.absoluteFilePath("lib/libboomerang_ElfLoader.dll")
+#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/libboomerang-ElfLoader.dll")
 #else
-#  define ELF_LOADER    baseDir.absoluteFilePath("lib/libboomerang_ElfLoader.so")
+#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/libboomerang-ElfLoader.so")
 #endif
 
 #if 0 // FIXME: These programs are proprietary, but they are not used.
-#define CALC_WINDOWS    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calc.exe"))
-#define CALC_WINXP      qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calcXP.exe"))
-#define CALC_WIN2000    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/calc2000.exe"))
-#define LPQ_WINDOWS     qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/lpq.exe"))
+#  define CALC_WINDOWS    (BOOMERANG_TEST_BASE "/tests/inputs/windows/calc.exe")
+#  define CALC_WINXP      (BOOMERANG_TEST_BASE "/tests/inputs/windows/calcXP.exe")
+#  define CALC_WIN2000    (BOOMERANG_TEST_BASE "/tests/inputs/windows/calc2000.exe")
+#  define LPQ_WINDOWS     (BOOMERANG_TEST_BASE "/tests/inputs/windows/lpq.exe")
 #endif
 
 
 void LoaderTest::initTestCase()
 {
 	if (!logset) {
-		TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
-		baseDir   = QDir(TEST_BASE);
-
-		if (TEST_BASE.isEmpty()) {
-			qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
-			TEST_BASE = "..";
-			baseDir   = QDir("..");
-		}
-
 		logset = true;
-		Boomerang::get()->setProgPath(TEST_BASE);
-		Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+		Boomerang::get()->setProgPath(BOOMERANG_TEST_BASE);
+		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }
@@ -244,7 +233,7 @@ void LoaderTest::testWinLoad()
 	// Borland
 	loader = bff.loadFile(SWITCH_BORLAND);
 	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address(401150));
+	QCOMPARE(loader->getMainEntryPoint(), Address(0x401150));
 }
 
 

@@ -16,26 +16,17 @@
 #include <QtCore/QDebug>
 
 
-#define SPARC_SSL    Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl"
+#define SPARC_SSL    (BOOMERANG_TEST_BASE "/frontend/machine/sparc/sparc.ssl")
+
 static bool    logset = false;
-static QString TEST_BASE;
-static QDir    baseDir;
 
 void ParserTest::initTestCase()
 {
 	if (!logset) {
-		TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
-		baseDir   = QDir(TEST_BASE);
-
-		if (TEST_BASE.isEmpty()) {
-			qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
-			TEST_BASE = "..";
-			baseDir   = QDir("..");
-		}
 
 		logset = true;
-		Boomerang::get()->setProgPath(TEST_BASE);
-		Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+		Boomerang::get()->setProgPath(BOOMERANG_TEST_BASE);
+		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/out");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }

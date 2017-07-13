@@ -186,6 +186,7 @@ if (BOOM_BUILD_TESTS)
     enable_testing()
     find_package(Qt5Test REQUIRED)
     
+    add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
 	add_subdirectory(unit-tests)
 endif (BOOM_BUILD_TESTS)
 

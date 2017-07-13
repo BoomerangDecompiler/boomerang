@@ -1828,7 +1828,7 @@ void Unary::print(QTextStream& os, bool html) const
 			os << "]";
 			return;
 		}
-		break;
+		// fallthrough
 
 	// Temp: just print the string, no quotes
 	case opGlobal:

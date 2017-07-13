@@ -27,27 +27,16 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_WINDOWS    qPrintable(baseDir.absoluteFilePath("tests/inputs/windows/hello.exe"))
+#define HELLO_WINDOWS    (BOOMERANG_TEST_BASE "/tests/inputs/windows/hello.exe")
 
 static bool    logset = false;
-static QString TEST_BASE;
-static QDir    baseDir;
 
 void TypeTest::initTestCase()
 {
 	if (!logset) {
-		TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
-		baseDir   = QDir(TEST_BASE);
-
-		if (TEST_BASE.isEmpty()) {
-			qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
-			TEST_BASE = "..";
-			baseDir   = QDir("..");
-		}
-
 		logset = true;
-		Boomerang::get()->setProgPath(TEST_BASE);
-		Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+		Boomerang::get()->setProgPath(BOOMERANG_TEST_BASE);
+		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }

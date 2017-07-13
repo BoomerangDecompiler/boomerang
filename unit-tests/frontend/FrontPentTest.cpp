@@ -20,32 +20,20 @@
 #include <QProcessEnvironment>
 #include <QDebug>
 
-#define HELLO_PENT      qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/hello"))
-#define BRANCH_PENT     qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/branch"))
-#define FEDORA2_TRUE    qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/fedora2_true"))
-#define FEDORA3_TRUE    qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/fedora3_true"))
-#define SUSE_TRUE       qPrintable(baseDir.absoluteFilePath("tests/inputs/pentium/suse_true"))
+#define HELLO_PENT      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
+#define BRANCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/branch")
+#define FEDORA2_TRUE    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/fedora2_true")
+#define FEDORA3_TRUE    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/fedora3_true")
+#define SUSE_TRUE       (BOOMERANG_TEST_BASE "/tests/inputs/pentium/suse_true")
 
 static bool    logset = false;
-static QString TEST_BASE;
-static QDir    baseDir;
-
 
 void FrontPentTest::initTestCase()
 {
 	if (!logset) {
-		TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
-		baseDir   = QDir(TEST_BASE);
-
-		if (TEST_BASE.isEmpty()) {
-			qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
-			TEST_BASE = "..";
-			baseDir   = QDir("..");
-		}
-
 		logset = true;
-		Boomerang::get()->setProgPath(TEST_BASE);
-		Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+		Boomerang::get()->setProgPath(BOOMERANG_TEST_BASE);
+		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }
@@ -68,7 +56,7 @@ void FrontPentTest::test1()
 	prog->setFrontEnd(pFE);
 
 	bool    gotMain;
-	   Address addr = pFE->getMainEntryPoint(gotMain);
+	Address addr = pFE->getMainEntryPoint(gotMain);
 	QVERIFY(addr != Address::INVALID);
 
 	// Decode first instruction

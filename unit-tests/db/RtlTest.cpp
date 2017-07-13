@@ -27,27 +27,17 @@
 
 #include <sstream>
 
-#define SWITCH_SPARC    "tests/inputs/sparc/switch_cc"
-#define SWITCH_PENT     "tests/inputs/pentium/switch_cc"
+#define SWITCH_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/switch_cc")
+#define SWITCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/switch_cc")
+
 static bool logset = false;
-QString     TEST_BASE;
-QDir        baseDir;
 
 void RtlTest::initTestCase()
 {
 	if (!logset) {
-		TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
-		baseDir   = QDir(TEST_BASE);
-
-		if (TEST_BASE.isEmpty()) {
-			qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
-			TEST_BASE = "..";
-			baseDir   = QDir("..");
-		}
-
 		logset = true;
-		Boomerang::get()->setProgPath(TEST_BASE);
-		Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+		Boomerang::get()->setProgPath(BOOMERANG_TEST_BASE);
+		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }
