@@ -17,7 +17,13 @@
  ******************************************************************************/
 
 #include "boomerang/include/memo.h"
+#include "boomerang/util/Address.h"
 #include "boomerang/util/Util.h"
+
+#include <QString>
+#include <QMap>
+#include <QHash>
+#include <QTextStream>
 
 #include <string>
 #include <map>
@@ -29,9 +35,6 @@
 #include <set>
 #include <unordered_set>
 #include <fstream>
-#include <QString>
-#include <QMap>
-#include <QHash>
 
 class Signature;
 class UserProc;

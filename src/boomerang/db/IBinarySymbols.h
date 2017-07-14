@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Address.h"
 
 #include <memory>
 #include <vector>

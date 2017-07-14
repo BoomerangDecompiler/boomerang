@@ -16,7 +16,6 @@
 
 #include "boomerang/db/cfg.h"
 
-#include "boomerang/util/Log.h"
 
 #include "boomerang/db/signature.h"
 #include "boomerang/db/exp.h"
@@ -29,6 +28,7 @@
 #include "boomerang/db/statements/implicitassign.h"
 
 #include "boomerang/util/types.h"
+#include "boomerang/util/Log.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 
 #include "boomerang/util/Util.h"

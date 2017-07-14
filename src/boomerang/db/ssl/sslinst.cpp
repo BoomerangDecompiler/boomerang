@@ -31,7 +31,6 @@
 #include "boomerang/db/statements/assign.h"
 #include "boomerang/db/ssl/sslparser.h"
 
-#include "boomerang/util/types.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 

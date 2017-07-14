@@ -11,11 +11,11 @@
 
 #pragma once
 
-#include "boomerang/util/types.h"
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/statements/branchstatement.h"
 #include "boomerang/db/statements/boolassign.h"
 
+#include "boomerang/util/types.h"
 #include "boomerang/frontend/decoder.h"
 
 

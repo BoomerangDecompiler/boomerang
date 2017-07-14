@@ -1,11 +1,12 @@
 #pragma once
 
-#include <cstdint>
 
-#include "boomerang/util/types.h"
 #include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/util/Address.h"
+#include "boomerang/util/types.h"
 
-// class IFileData;
+#include <QByteArray>
+
 typedef QByteArray IFileData;
 
 class IBoomerang;

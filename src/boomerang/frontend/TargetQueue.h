@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Address.h"
 
 #include <queue>
 
@@ -25,15 +25,15 @@ public:
 	*          as a non explicit label (BB has to be split)
 	******************************************************************************/
 	void visit(Cfg *pCfg, Address uNewAddr, BasicBlock *& pNewBB);
-	
-	
+
+
 	/***************************************************************************/ /**
 	* \brief    Seed the queue with an initial address
 	* \note        Can be some targets already in the queue now
 	* \param    uAddr Native address to seed the queue with
 	******************************************************************************/
 	void initial(Address uAddr);
-	
+
 	/***************************************************************************/ /**
 	* \brief   Return the next target from the queue of non-processed
 	*              targets.
@@ -42,7 +42,7 @@ public:
 	*          (targets is empty)
 	******************************************************************************/
 	   Address nextAddress(const Cfg& cfg);
-	
+
 	/// Print (for debugging)
 	void dump();
 };

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Address.h"
 
 #include <list>
 #include <cstddef>

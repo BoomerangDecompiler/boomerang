@@ -6,11 +6,9 @@
  * \file       exp.cpp
  * \brief   Implementation of the Exp and related classes.
  ******************************************************************************/
-#include "boomerang/util/types.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/db/exp.h"
 
 #include "boomerang/db/cfg.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/register.h"
 #include "boomerang/db/rtl.h" // E.g. class ParamEntry in decideType()
 #include "boomerang/db/proc.h"
@@ -19,6 +17,8 @@
 #include "boomerang/db/visitor.h"
 #include "boomerang/db/operstrings.h" // Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 
+#include "boomerang/util/Log.h"
+#include "boomerang/util/types.h"
 #include "boomerang/util/Util.h"
 
 #include <QRegularExpression>

@@ -25,7 +25,7 @@
 #include "boomerang/db/statements/assign.h"
 
 #include "boomerang/util/Log.h"                  // for LOG_VERBOSE
-#include "boomerang/util/types.h"             // for ADDRESS
+#include "boomerang/util/types.h"             // for Address
 
 #include <QString>
 #include <QTextStream>

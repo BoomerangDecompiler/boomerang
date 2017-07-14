@@ -15,8 +15,8 @@
  ******************************************************************************/
 #pragma once
 
-#include "boomerang/util/types.h"
 #include "boomerang/include/managed.h" // For LocationSet etc
+#include "boomerang/util/Address.h"
 
 #include <QtCore/QString>
 
@@ -277,14 +277,14 @@ public:
 	 * for this BB will be the address of the branch.
 	 * \returns the lowest real address associated with this BB
 	 ******************************************************************************/
-	   Address getLowAddr() const;
+	Address getLowAddr() const;
 
 	/***************************************************************************/ /**
 	 * \brief  Get the highest address associated with this BB. This is
 	 *         always the address associated with the last RTL.
 	 * \returns the address
 	 ******************************************************************************/
-	   Address getHiAddr();
+	Address getHiAddr();
 
 	/***************************************************************************/ /**
 	 *

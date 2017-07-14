@@ -11,7 +11,6 @@
 #include "boomerang/db/table.h"
 #include "boomerang/db/insnameelem.h"
 
-#include "boomerang/util/types.h"
 #include "boomerang/util/Util.h" // E.g. str()
 
 

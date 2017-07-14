@@ -28,9 +28,10 @@
 
 #include "boomerang/include/msvc_fixes.h"
 
-#include "boomerang/util/types.h"
 #include "boomerang/include/IBoomerang.h"
 #include "boomerang/db/IProject.h"
+
+#include "boomerang/util/Address.h"
 
 #include <QObject>
 #include <QDir>

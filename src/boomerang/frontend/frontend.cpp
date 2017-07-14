@@ -17,7 +17,6 @@
  ******************************************************************************/
 #include "frontend.h"
 
-#include "boomerang/util/Log.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/c/ansi-c-parser.h"
@@ -37,6 +36,7 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/SymTab.h"
 
+#include "boomerang/util/Log.h"
 #include "boomerang/util/types.h"
 
 #include "boomerang-frontend/sparc/sparcfrontend.h"
