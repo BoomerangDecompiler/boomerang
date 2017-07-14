@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #  include "Windows.h"
 #else
 #  include <dlfcn.h>
@@ -11,14 +11,13 @@
 
 PluginHandle::PluginHandle(const QString& filePath)
 {
-#if _MSC_VER
+#ifdef _MSC_VER
 	m_handle = LoadLibrary(qPrintable(filePath));
 	if (m_handle == nullptr) {
 		throw "Loading plugin failed!";
 	}
-
 #else
-	m_handle = dlopen(qPrintable(path), RTLD_NOW);
+	m_handle = dlopen(qPrintable(filePath), RTLD_NOW);
 	if (m_handle == nullptr) {
 		throw dlerror();
 	}

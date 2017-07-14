@@ -62,6 +62,7 @@ public:
 	/// @param pluginPath path to the library file.
 	explicit Plugin(const QString& pluginPath)
 		: m_pluginHandle(pluginPath)
+		, m_ifc(nullptr)
 	{
 		init();
 	}

@@ -8,8 +8,8 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 #ifndef BOOST_ICL_DISCRETE_INTERVAL_HPP_JOFA_100403
 #define BOOST_ICL_DISCRETE_INTERVAL_HPP_JOFA_100403
 
-#include <functional> 
-#include <boost/static_assert.hpp> 
+#include <functional>
+#include <boost/static_assert.hpp>
 #include <boost/concept/assert.hpp>
 #include <boost/icl/detail/concept_check.hpp>
 #include <boost/icl/type_traits/succ_pred.hpp>
@@ -23,7 +23,7 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 namespace boost{namespace icl
 {
 
-template <class DomainT, 
+template <class DomainT,
           ICL_COMPARE Compare = ICL_COMPARE_INSTANCE(ICL_COMPARE_DEFAULT, DomainT)>
 class discrete_interval
 {
@@ -59,7 +59,7 @@ public:
     }
 
     /** Interval from <tt>low</tt> to <tt>up</tt> with bounds <tt>bounds</tt> */
-    discrete_interval(const DomainT& low, const DomainT& up, 
+    discrete_interval(const DomainT& low, const DomainT& up,
                       interval_bounds bounds = interval_bounds::right_open(),
                       discrete_interval* = 0)
         : _lwb(low), _upb(up), _bounds(bounds)
@@ -100,8 +100,8 @@ struct interval_traits< icl::discrete_interval<DomainT, Compare> >
         return interval_type(lo, up);
     }
 
-    static domain_type lower(const interval_type& inter_val){ return inter_val.lower(); };
-    static domain_type upper(const interval_type& inter_val){ return inter_val.upper(); };
+    static domain_type lower(const interval_type& inter_val){ return inter_val.lower(); }
+    static domain_type upper(const interval_type& inter_val){ return inter_val.upper(); }
 };
 
 //==============================================================================
@@ -120,14 +120,14 @@ struct dynamic_interval_traits<boost::icl::discrete_interval<DomainT,Compare> >
         return interval_type(lo, up, bounds, static_cast<interval_type*>(0) );
     }
 
-    static interval_type construct_bounded(const bounded_value<DomainT>& lo, 
+    static interval_type construct_bounded(const bounded_value<DomainT>& lo,
                                            const bounded_value<DomainT>& up)
     {
         return  interval_type
                 (
                     lo.value(), up.value(),
                     lo.bound().left() | up.bound().right(),
-                    static_cast<interval_type* >(0) 
+                    static_cast<interval_type* >(0)
                 );
     }
 };
@@ -135,14 +135,14 @@ struct dynamic_interval_traits<boost::icl::discrete_interval<DomainT,Compare> >
 //==============================================================================
 //= Type traits
 //==============================================================================
-template <class DomainT, ICL_COMPARE Compare> 
+template <class DomainT, ICL_COMPARE Compare>
 struct interval_bound_type< discrete_interval<DomainT,Compare> >
 {
     typedef interval_bound_type type;
     BOOST_STATIC_CONSTANT(bound_type, value = interval_bounds::dynamic);
 };
 
-template <class DomainT, ICL_COMPARE Compare> 
+template <class DomainT, ICL_COMPARE Compare>
 struct is_discrete_interval<discrete_interval<DomainT,Compare> >
 {
     typedef is_discrete_interval<discrete_interval<DomainT,Compare> > type;
@@ -156,10 +156,10 @@ struct type_to_string<icl::discrete_interval<DomainT,Compare> >
     { return "dI<"+ type_to_string<DomainT>::apply() +">"; }
 };
 
-template<class DomainT> 
+template<class DomainT>
 struct value_size<icl::discrete_interval<DomainT> >
 {
-    static std::size_t apply(const icl::discrete_interval<DomainT>&) 
+    static std::size_t apply(const icl::discrete_interval<DomainT>&)
     { return 2; }
 };
 

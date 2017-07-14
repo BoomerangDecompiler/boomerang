@@ -218,6 +218,7 @@ void Module::setLocationMap(Address loc, Function *fnc)
 {
 	if (fnc == nullptr) {
 		size_t count = m_labelsToProcs.erase(loc);
+		Q_UNUSED(count);
 		assert(count == 1);
 	}
 	else {

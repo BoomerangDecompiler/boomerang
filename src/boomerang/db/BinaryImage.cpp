@@ -275,7 +275,7 @@ const IBinarySection *BinaryImage::getSectionInfoByAddr(Address uEntry) const
 
 int BinaryImage::getSectionIndexByName(const QString& sName)
 {
-	for (size_t i = m_sections.size() - 1; i >= 0; --i) {
+	for (size_t i = 0; i < m_sections.size(); i++) {
 		if (m_sections[i]->getName() == sName) {
 			return i;
 		}

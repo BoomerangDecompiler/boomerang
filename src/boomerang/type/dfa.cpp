@@ -1859,7 +1859,7 @@ void TypedExp::descendType(SharedType, bool &, Instruction *)
 }
 
 
-void Terminal::descendType(SharedType parentType, bool& ch, Instruction *s)
+void Terminal::descendType(SharedType, bool &, Instruction *)
 {
 }
 

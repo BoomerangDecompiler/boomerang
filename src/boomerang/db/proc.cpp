@@ -5081,7 +5081,7 @@ void UserProc::replaceSimpleGlobalConstants()
 
 		if (m_prog->isReadOnly(addr)) {
 			LOG << "is readonly\n";
-			int val;
+			int val = 0;
 
 			switch (assgn->getType()->getSize())
 			{
@@ -6778,6 +6778,7 @@ void UserProc::verifyPHIs()
 		PhiAssign *pi = (PhiAssign *)st;
 
 		for (const auto& pas : *pi) {
+			Q_UNUSED(pas);
 			assert(pas.second.def());
 		}
 	}

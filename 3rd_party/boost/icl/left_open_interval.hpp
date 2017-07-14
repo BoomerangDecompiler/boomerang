@@ -17,7 +17,7 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 namespace boost{namespace icl
 {
 
-template <class DomainT, 
+template <class DomainT,
           ICL_COMPARE Compare = ICL_COMPARE_INSTANCE(ICL_COMPARE_DEFAULT, DomainT)>
 class left_open_interval
 {
@@ -31,8 +31,8 @@ public:
     //= Construct, copy, destruct
     //==========================================================================
     /** Default constructor; yields an empty interval <tt>(0,0]</tt>. */
-    left_open_interval() 
-        : _lwb(identity_element<DomainT>::value()), _upb(identity_element<DomainT>::value()) 
+    left_open_interval()
+        : _lwb(identity_element<DomainT>::value()), _upb(identity_element<DomainT>::value())
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
@@ -46,11 +46,11 @@ public:
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
-        // Only for discrete types this ctor creates an interval containing 
+        // Only for discrete types this ctor creates an interval containing
         // a single element only.
         BOOST_STATIC_ASSERT((icl::is_discrete<DomainT>::value));
         BOOST_ASSERT((numeric_minimum<DomainT, domain_compare, is_numeric<DomainT>::value >
-                                     ::is_less_than(val) )); 
+                                     ::is_less_than(val) ));
     }
 
     /** Interval from <tt>low</tt> to <tt>up</tt> with bounds <tt>bounds</tt> */
@@ -84,15 +84,15 @@ struct interval_traits< icl::left_open_interval<DomainT, Compare> >
         return interval_type(lo, up);
     }
 
-    static domain_type lower(const interval_type& inter_val){ return inter_val.lower(); };
-    static domain_type upper(const interval_type& inter_val){ return inter_val.upper(); };
+    static domain_type lower(const interval_type& inter_val){ return inter_val.lower(); }
+    static domain_type upper(const interval_type& inter_val){ return inter_val.upper(); }
 };
 
 
 //==============================================================================
 //= Type traits
 //==============================================================================
-template <class DomainT, ICL_COMPARE Compare> 
+template <class DomainT, ICL_COMPARE Compare>
 struct interval_bound_type< left_open_interval<DomainT,Compare> >
 {
     typedef interval_bound_type type;
@@ -106,10 +106,10 @@ struct type_to_string<icl::left_open_interval<DomainT,Compare> >
     { return "(I]<"+ type_to_string<DomainT>::apply() +">"; }
 };
 
-template<class DomainT, ICL_COMPARE Compare> 
+template<class DomainT, ICL_COMPARE Compare>
 struct value_size<icl::left_open_interval<DomainT,Compare> >
 {
-    static std::size_t apply(const icl::left_open_interval<DomainT>&) 
+    static std::size_t apply(const icl::left_open_interval<DomainT>&)
     { return 2; }
 };
 

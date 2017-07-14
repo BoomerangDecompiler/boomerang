@@ -496,7 +496,11 @@ public:
 
 	virtual size_t getSize() const override;
 
-	virtual void setSize(size_t sz)  override { assert(sz == STD_SIZE); }
+	virtual void setSize(size_t sz)  override
+	{
+		Q_UNUSED(sz);
+		assert(sz == STD_SIZE);
+	}
 
 	virtual QString getCtype(bool final = false) const override;
 

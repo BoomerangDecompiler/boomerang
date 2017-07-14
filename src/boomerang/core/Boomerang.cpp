@@ -870,7 +870,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 
 int Boomerang::decompile(const QString& fname, const char *pname)
 {
-	Prog   *prog;
+	Prog   *prog = nullptr;
 	time_t start;
 
 	time(&start);

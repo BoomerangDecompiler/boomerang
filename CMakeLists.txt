@@ -104,7 +104,10 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
 		-Wno-undefined-reinterpret-cast \
 		-Wno-implicit-fallthrough \
 		-Wno-missing-noreturn \
-		-Wno-gnu-zero-variadic-macro-arguments")
+		-Wno-gnu-zero-variadic-macro-arguments \
+		-Wno-documentation \
+		-Wno-undef \
+		-Wno-unused-local-typedef")
 else ()
 	set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic \
 		-Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs \

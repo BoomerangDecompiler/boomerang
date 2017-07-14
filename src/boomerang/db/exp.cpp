@@ -2311,9 +2311,9 @@ void FlagDef::appendDotFile(QTextStream& of)
 	of << "opFlagDef \\n" << HostAddress(this) << "| ";
 	// Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
 	of << "{ RTL ";
-	size_t n = rtl->size();
+	const size_t n = rtl->size();
 
-	for (int i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		of << "| <r" << i << "> ";
 	}
 
@@ -3315,8 +3315,8 @@ SharedExp accessMember(SharedExp parent, const std::shared_ptr<CompoundType>& c,
 		std::shared_ptr<ArrayType> a = t->as<ArrayType>();
 		SharedType                 array_member_type = a->getBaseType();
 		int b  = array_member_type->getSize() / 8;
-		int br = array_member_type->getSize() % 8;
-		assert(br == 0);
+		assert(array_member_type->getSize() % 8);
+
 		res = Binary::get(opArrayIndex, res, Const::get(n / b));
 
 		if (array_member_type->resolvesToCompound()) {

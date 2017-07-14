@@ -16,7 +16,7 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 namespace boost{namespace icl
 {
 
-template <class DomainT, 
+template <class DomainT,
           ICL_COMPARE Compare = ICL_COMPARE_INSTANCE(ICL_COMPARE_DEFAULT, DomainT)>
 class closed_interval
 {
@@ -30,8 +30,8 @@ public:
     //= Construct, copy, destruct
     //==========================================================================
     /** Default constructor; yields an empty interval <tt>[0,0)</tt>. */
-    closed_interval() 
-        : _lwb(unit_element<DomainT>::value()), _upb(identity_element<DomainT>::value()) 
+    closed_interval()
+        : _lwb(unit_element<DomainT>::value()), _upb(identity_element<DomainT>::value())
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
@@ -84,14 +84,14 @@ struct interval_traits< icl::closed_interval<DomainT, Compare> >
         return interval_type(lo, up);
     }
 
-    static domain_type lower(const interval_type& inter_val){ return inter_val.lower(); };
-    static domain_type upper(const interval_type& inter_val){ return inter_val.upper(); };
+    static domain_type lower(const interval_type& inter_val){ return inter_val.lower(); }
+    static domain_type upper(const interval_type& inter_val){ return inter_val.upper(); }
 };
 
 //==============================================================================
 //= Type traits
 //==============================================================================
-template <class DomainT, ICL_COMPARE Compare> 
+template <class DomainT, ICL_COMPARE Compare>
 struct interval_bound_type< closed_interval<DomainT,Compare> >
 {
     typedef interval_bound_type type;
@@ -105,10 +105,10 @@ struct type_to_string<icl::closed_interval<DomainT,Compare> >
     { return "[I]<"+ type_to_string<DomainT>::apply() +">"; }
 };
 
-template<class DomainT> 
+template<class DomainT>
 struct value_size<icl::closed_interval<DomainT> >
 {
-    static std::size_t apply(const icl::closed_interval<DomainT>&) 
+    static std::size_t apply(const icl::closed_interval<DomainT>&)
     { return 2; }
 };
 

@@ -316,6 +316,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 
 void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 {
+	Q_UNUSED(prg);
 	assert(m_program == prg);
 
 	if (pname) {
@@ -388,6 +389,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 
 void IFrontEnd::decode(Prog *prg, Address a)
 {
+	Q_UNUSED(prg);
 	assert(m_program == prg);
 
 	if (a != Address::INVALID) {
@@ -457,7 +459,9 @@ void IFrontEnd::decode(Prog *prg, Address a)
 
 void IFrontEnd::decodeOnly(Prog *prg, Address a)
 {
+	Q_UNUSED(prg);
 	assert(m_program == prg);
+
 	UserProc *p = (UserProc *)m_program->setNewProc(a);
 	assert(!p->isLib());
 	QTextStream os(stderr); // rtl output target
@@ -558,9 +562,10 @@ std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
 
 
 void IFrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss,
-								                           Address dest, const std::list<Instruction *>& sl,
-								  RTL *pRtl)
+								   Address dest, const std::list<Instruction *>& sl,
+								   RTL *pRtl)
 {
+	Q_UNUSED(sl);
 	assert(sl.back() == *ss);
 
 	if (dest == Address::INVALID) {
