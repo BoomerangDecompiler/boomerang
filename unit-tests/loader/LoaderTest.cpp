@@ -50,7 +50,9 @@ static bool    logset = false;
 #  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/libboomerang-ElfLoader.so")
 #endif
 
-#if 0 // FIXME: These programs are proprietary, but they are not used.
+#define TEST_PROPRIETARY 0
+
+#if TEST_PROPRIETARY
 #  define CALC_WINDOWS    (BOOMERANG_TEST_BASE "/tests/inputs/windows/calc.exe")
 #  define CALC_WINXP      (BOOMERANG_TEST_BASE "/tests/inputs/windows/calcXP.exe")
 #  define CALC_WIN2000    (BOOMERANG_TEST_BASE "/tests/inputs/windows/calc2000.exe")
@@ -199,7 +201,7 @@ void LoaderTest::testWinLoad()
 	BinaryFileFactory bff;
 	IFileLoader       *loader = nullptr;
 
-#if 0 // FIXME: these tests should use non-proprietary programs
+#if TEST_PROPRIETARY
 	// Load Windows program calc.exe
 
 	loader = bff.loadFile(CALC_WINDOWS);
