@@ -72,4 +72,70 @@ QString escapeStr(const QString& inp)
 }
 
 
+SWord normEndian(SWord value, bool srcBigEndian)
+{
+	return (srcBigEndian == BOOMERANG_BIG_ENDIAN) ? value : swapEndian(value);
+}
+
+DWord normEndian(DWord value, bool srcBigEndian)
+{
+	return (srcBigEndian == BOOMERANG_BIG_ENDIAN) ? value : swapEndian(value);
+}
+
+QWord normEndian(QWord value, bool srcBigEndian)
+{
+	return (srcBigEndian == BOOMERANG_BIG_ENDIAN) ? value : swapEndian(value);
+}
+
+Byte readByte(const void* src)
+{
+	assert(src);
+	return *(const Byte*)src;
+}
+
+SWord readWord(const void* src, bool srcBigEndian)
+{
+	assert(src);
+	return  normEndian(*(const SWord*)src, srcBigEndian);
+}
+
+DWord readDWord(const void* src, bool srcBigEndian)
+{
+	assert(src);
+	return normEndian(*(const DWord*)src, srcBigEndian);
+}
+
+QWord readQWord(const void* src, bool srcBigEndian)
+{
+	assert(src);
+	return normEndian(*(const QWord*)src, srcBigEndian);
+}
+
+
+void writeByte(void* dst, Byte value)
+{
+	assert(dst);
+	*(Byte*)dst = value;
+}
+
+void writeWord(void* dst, SWord value, bool dstBigEndian)
+{
+	assert(dst);
+	*(SWord*)dst = normEndian(value, dstBigEndian);
+}
+
+
+void writeDWord(void* dst, DWord value, bool dstBigEndian)
+{
+	assert(dst);
+	*(DWord*)dst = normEndian(value, dstBigEndian);
+}
+
+void writeQWord(void* dst, DWord value, bool dstBigEndian)
+{
+	assert(dst);
+	*(QWord*)dst = normEndian(value, dstBigEndian);
+}
+
+
 }
