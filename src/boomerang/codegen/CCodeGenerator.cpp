@@ -203,7 +203,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
 	case opStrConst:
 		// escape string:
-		str << "\"" << escapeStr(c.getStr()) << "\"";
+		str << "\"" << Util::escapeStr(c.getStr()) << "\"";
 		break;
 
 	case opFuncConst:

@@ -18,8 +18,8 @@ public:
 };
 
 
-// was a workaround
-#define STR(x)    (char *)(x.str().c_str())
+namespace Util
+{
 
 QString escapeStr(const QString& str);
 
@@ -31,7 +31,9 @@ inline QWord getLowerBitMask(DWord bitCount)
 }
 
 template<class T, class U>
-bool IN_RANGE(const T& val, const U& range_start, const U& range_end)
+bool inRange(const T& val, const U& range_start, const U& range_end)
 {
 	return((val >= range_start) && (val < range_end));
+}
+
 }

@@ -24,6 +24,9 @@
 #include <cassert>
 #include <string>
 
+namespace Util
+{
+
 // Turn things like newline, return, tab into \n, \r, \t etc
 // Note: assumes a C or C++ back end...
 QString escapeStr(const QString& inp)
@@ -68,3 +71,5 @@ QString escapeStr(const QString& inp)
 	return res;
 }
 
+
+}

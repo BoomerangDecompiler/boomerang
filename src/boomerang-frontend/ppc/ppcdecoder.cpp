@@ -1096,11 +1096,11 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 
 			case 19:
 
-				if (IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 34U, 129U) ||
-					IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 130U, 193U) ||
-					IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 290U, 417U) ||
-					IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 450U, 528U) ||
-					IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 529U, 1024U)) {
+				if (Util::inRange(((MATCH_w_32_0 >> 1) & 0x3ff), 34U, 129U) ||
+					Util::inRange(((MATCH_w_32_0 >> 1) & 0x3ff), 130U, 193U) ||
+					Util::inRange(((MATCH_w_32_0 >> 1) & 0x3ff), 290U, 417U) ||
+					Util::inRange(((MATCH_w_32_0 >> 1) & 0x3ff), 450U, 528U) ||
+					Util::inRange(((MATCH_w_32_0 >> 1) & 0x3ff), 529U, 1024U)) {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
 				else {
@@ -1735,14 +1735,14 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 			case 31:
 
 				if ((MATCH_w_32_0 & 0x1) == 1) {
-					if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 61U, 124U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 151U, 214U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 215U, 284U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 317U, 412U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 536U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 540U, 792U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 922U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
+					if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 61U, 124U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 151U, 214U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 215U, 284U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 317U, 412U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 536U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 540U, 792U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 922U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 					else {
@@ -2127,9 +2127,9 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 				}
 				else if ((MATCH_w_32_0 >> 11 & 0x1f) == 0) {
 					if ((MATCH_w_32_0 >> 10 & 0x1) == 1) {
-						if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
-							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
-							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
+						if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
+							Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
+							Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 						else {
@@ -3070,12 +3070,12 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 							} /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
 						}
 					}
-					else if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x1ff), 41U, 104U) ||
-							 IN_RANGE((MATCH_w_32_0 >> 1 & 0x1ff), 139U, 200U) ||
-							 IN_RANGE((MATCH_w_32_0 >> 1 & 0x1ff), 267U, 457U)) {
-						if (IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 477U, 533U) ||
-							IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 825U, 918U) ||
-							IN_RANGE(((MATCH_w_32_0 >> 1) & 0x3ff), 987U, 1024U)) {
+					else if (Util::inRange((MATCH_w_32_0 >> 1 & 0x1ff), 41U, 104U) ||
+							 Util::inRange((MATCH_w_32_0 >> 1 & 0x1ff), 139U, 200U) ||
+							 Util::inRange((MATCH_w_32_0 >> 1 & 0x1ff), 267U, 457U)) {
+						if (Util::inRange(((MATCH_w_32_0 >> 1) & 0x3ff), 477U, 533U) ||
+							Util::inRange(((MATCH_w_32_0 >> 1) & 0x3ff), 825U, 918U) ||
+							Util::inRange(((MATCH_w_32_0 >> 1) & 0x3ff), 987U, 1024U)) {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 						else {
@@ -4201,9 +4201,9 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 						case 510:
 						case 511:
 
-							if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
-								IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
-								IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
+							if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
+								Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
+								Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 987U, 1024U)) {
 								goto MATCH_label_a0; /*opt-block+*/
 							}
 							else {
@@ -5188,10 +5188,10 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 					}
 				}
 				else if ((MATCH_w_32_0 >> 10 & 0x1) == 1) {
-					if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 919U, 983U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
+					if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 919U, 983U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 					else {
@@ -6038,13 +6038,13 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 						} /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
 					}
 				}
-				else if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x1ff), 41U, 136U) ||
-						 IN_RANGE((MATCH_w_32_0 >> 1 & 0x1ff), 139U, 233U) ||
-						 IN_RANGE((MATCH_w_32_0 >> 1 & 0x1ff), 267U, 457U)) {
-					if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 919U, 983U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
+				else if (Util::inRange((MATCH_w_32_0 >> 1 & 0x1ff), 41U, 136U) ||
+						 Util::inRange((MATCH_w_32_0 >> 1 & 0x1ff), 139U, 233U) ||
+						 Util::inRange((MATCH_w_32_0 >> 1 & 0x1ff), 267U, 457U)) {
+					if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 919U, 983U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 					else {
@@ -7016,10 +7016,10 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 					case 510:
 					case 511:
 
-						if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
-							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
-							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 919U, 983U) ||
-							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
+						if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 477U, 533U) ||
+							Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 825U, 918U) ||
+							Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 919U, 983U) ||
+							Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 984U, 1024U)) {
 							goto MATCH_label_a0; /*opt-block+*/
 						}
 						else {
@@ -8048,7 +8048,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 
 				case 18:
 
-					if (IN_RANGE((MATCH_w_32_0 >> 6 & 0x1f), 1U, 32U)) {
+					if (Util::inRange((MATCH_w_32_0 >> 6 & 0x1f), 1U, 32U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 					else {
@@ -8060,7 +8060,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 
 				case 20:
 
-					if (IN_RANGE((MATCH_w_32_0 >> 6 & 0x1f), 1U, 32U)) {
+					if (Util::inRange((MATCH_w_32_0 >> 6 & 0x1f), 1U, 32U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 					else {
@@ -8072,7 +8072,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 
 				case 21:
 
-					if (IN_RANGE((MATCH_w_32_0 >> 6 & 0x1f), 1U, 32U)) {
+					if (Util::inRange((MATCH_w_32_0 >> 6 & 0x1f), 1U, 32U)) {
 						goto MATCH_label_a0; /*opt-block+*/
 					}
 					else {
@@ -8092,10 +8092,10 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 
 				if ((MATCH_w_32_0 & 0x1) == 1) {
 					if ((MATCH_w_32_0 >> 16 & 0x1f) == 0) {
-						if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 73U, 136U) ||
-							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 137U, 264U) ||
-							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 265U, 814U) ||
-							IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 847U, 1024U)) {
+						if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 73U, 136U) ||
+							Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 137U, 264U) ||
+							Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 265U, 814U) ||
+							Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 847U, 1024U)) {
 							switch ((MATCH_w_32_0 >> 1 & 0x1f))
 							{
 							case 0:
@@ -8445,10 +8445,10 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 					}
 				}
 				else if ((MATCH_w_32_0 >> 16 & 0x1f) == 0) {
-					if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 73U, 136U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 137U, 264U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 265U, 814U) ||
-						IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 847U, 1024U)) {
+					if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 73U, 136U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 137U, 264U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 265U, 814U) ||
+						Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 847U, 1024U)) {
 						switch ((MATCH_w_32_0 >> 1 & 0x1f))
 						{
 						case 0:
@@ -8531,7 +8531,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 							if ((MATCH_w_32_0 >> 6 & 0x1f) == 0) {
 								if ((MATCH_w_32_0 >> 21 & 0x1) == 1) {
 									if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) ||
-										IN_RANGE((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+										Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
 										MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 										goto MATCH_label_a17;
 									} /*opt-block*/
@@ -8541,7 +8541,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 								}
 								else if ((MATCH_w_32_0 >> 22 & 0x1) == 1) {
 									if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) ||
-										IN_RANGE((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+										Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
 										MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 										goto MATCH_label_a17;
 									} /*opt-block*/
@@ -8754,7 +8754,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 							if ((MATCH_w_32_0 >> 6 & 0x1f) == 0) {
 								if ((MATCH_w_32_0 >> 21 & 0x1) == 1) {
 									if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) ||
-										IN_RANGE((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+										Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
 										MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 										goto MATCH_label_a17;
 									} /*opt-block*/
@@ -8764,7 +8764,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 								}
 								else if ((MATCH_w_32_0 >> 22 & 0x1) == 1) {
 									if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) ||
-										IN_RANGE((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+										Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
 										MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 										goto MATCH_label_a17;
 									} /*opt-block*/
@@ -8795,7 +8795,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 				}
 				else if ((MATCH_w_32_0 >> 6 & 0x1f) == 0) {
 					if ((MATCH_w_32_0 >> 21 & 0x1) == 1) {
-						if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || IN_RANGE((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+						if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
 							MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 							goto MATCH_label_a17;
 						} /*opt-block*/
@@ -8804,7 +8804,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 						}
 					}
 					else if ((MATCH_w_32_0 >> 22 & 0x1) == 1) {
-						if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || IN_RANGE((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+						if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
 							MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 							goto MATCH_label_a17;
 						} /*opt-block*/
@@ -8812,8 +8812,8 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 							goto MATCH_label_a0; /*opt-block+*/ /*opt-block+*/
 						}
 					}
-					else if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 33U, 1024U)) {
-						if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || IN_RANGE((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+					else if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 33U, 1024U)) {
+						if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
 							MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 							goto MATCH_label_a17;
 						} /*opt-block*/
@@ -8863,7 +8863,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 						case 30:
 						case 31:
 
-							if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || IN_RANGE((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+							if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
 								MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
 								goto MATCH_label_a17;
 							} /*opt-block*/
@@ -8878,7 +8878,7 @@ DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 						} /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
 					}
 				}
-				else if (IN_RANGE((MATCH_w_32_0 >> 1 & 0x3ff), 33U, 1024U)) {
+				else if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 33U, 1024U)) {
 					goto MATCH_label_a0; /*opt-block+*/
 				}
 				else {

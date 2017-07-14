@@ -41,7 +41,7 @@ QString Address::toString() const
 
 Address::value_type Address::getSourceMask()
 {
-    return getLowerBitMask(m_sourceBits);
+    return Util::getLowerBitMask(m_sourceBits);
 }
 
 
