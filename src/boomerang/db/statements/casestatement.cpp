@@ -111,7 +111,7 @@ bool CaseStatement::accept(StmtVisitor *visitor)
 
 void CaseStatement::generateCode(ICodeGenerator * /*hll*/, BasicBlock * /*pbb*/, int /*indLevel*/)
 {
-	// dont generate any code for switches, they will be handled by the bb
+	// don't generate any code for switches, they will be handled by the bb
 }
 
 

@@ -104,27 +104,28 @@ void Boomerang::helpcmd() const
 	QTextStream c_out(stdout);
 
 	// Column 98 of this source file is column 80 of output (don't use tabs)
-	//        ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
-	c_out << "Available commands (for use with -k):\n";
-	c_out << "  decode                             : Loads and decodes the specified binary.\n";
-	c_out << "  decompile [proc]                   : Decompiles the program or specified proc.\n";
-	c_out << "  codegen [cluster]                  : Generates code for the program or a\n";
-	c_out << "                                       specified cluster.\n";
-	c_out << "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n";
-	c_out << "                                       cluster.\n";
-	c_out << "  move cluster <cluster> <parent>    : Moves the specified cluster to the\n";
-	c_out << "                                       specified parent cluster.\n";
-	c_out << "  add cluster <cluster> [parent]     : Adds a new cluster to the root/specified\n";
-	c_out << "                                       cluster.\n";
-	c_out << "  delete cluster <cluster>           : Deletes an empty cluster.\n";
-	c_out << "  rename proc <proc> <newname>       : Renames the specified proc.\n";
-	c_out << "  rename cluster <cluster> <newname> : Renames the specified cluster.\n";
-	c_out << "  info prog                          : Print info about the program.\n";
-	c_out << "  info cluster <cluster>             : Print info about a cluster.\n";
-	c_out << "  info proc <proc>                   : Print info about a proc.\n";
-	c_out << "  print <proc>                       : Print the RTL for a proc.\n";
-	c_out << "  help                               : This help.\n";
-	c_out << "  exit                               : Quit the shell.\n";
+	//  ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
+	c_out <<
+		"Available commands (for use with -k):\n"
+		"  decode                             : Loads and decodes the specified binary.\n"
+		"  decompile [proc]                   : Decompiles the program or specified proc.\n"
+		"  codegen [cluster]                  : Generates code for the program or a\n"
+		"                                       specified cluster.\n"
+		"  move proc <proc> <cluster>         : Moves the specified proc to the specified\n"
+		"                                       cluster.\n"
+		"  move cluster <cluster> <parent>    : Moves the specified cluster to the\n"
+		"                                       specified parent cluster.\n"
+		"  add cluster <cluster> [parent]     : Adds a new cluster to the root/specified\n"
+		"                                       cluster.\n"
+		"  delete cluster <cluster>           : Deletes an empty cluster.\n"
+		"  rename proc <proc> <newname>       : Renames the specified proc.\n"
+		"  rename cluster <cluster> <newname> : Renames the specified cluster.\n"
+		"  info prog                          : Print info about the program.\n"
+		"  info cluster <cluster>             : Print info about a cluster.\n"
+		"  info proc <proc>                   : Print info about a proc.\n"
+		"  print <proc>                       : Print the RTL for a proc.\n"
+		"  help                               : This help.\n"
+		"  exit                               : Quit the shell.\n"
 }
 
 
@@ -239,7 +240,7 @@ int Boomerang::processCommand(QStringList& args)
 	case CT_decode:
 		{
 			if (args.size() < 2) {
-				err_stream << "not enough arguments for cmd\n";
+				err_stream << "Not enough arguments for cmd\n";
 				return 1;
 			}
 

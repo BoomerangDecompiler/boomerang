@@ -95,21 +95,18 @@ void ConstraintMap::constrain(SharedExp loc1, SharedExp loc2)
 }
 
 
-/// Insert a constraint given a location and a Type
 void ConstraintMap::constrain(SharedExp loc, SharedType t)
 {
 	cmap[Unary::get(opTypeOf, loc)] = std::make_shared<TypeVal>(t);
 }
 
 
-/// Insert a constraint given two Types (at least one variable)
 void ConstraintMap::constrain(SharedType t1, SharedType t2)   // Example: alpha1 = alpha2
 {
 	cmap[std::make_shared<TypeVal>(t1)] = std::make_shared<TypeVal>(t2);
 }
 
 
-/// Insert a constraint given two locations (i.e. Tloc1 = Tloc2)
 void ConstraintMap::insert(SharedExp term)
 {
 	assert(term->isEquality());
@@ -143,7 +140,6 @@ char *EquateMap::prints()
 }
 
 
-// Substitute the given constraints into this map
 void ConstraintMap::substitute(ConstraintMap& other)
 {
 	std::map<SharedExp, SharedExp, lessExpStar>::iterator oo, cc;
@@ -232,10 +228,6 @@ void ConstraintMap::substAlpha()
 
 Constraints::~Constraints()
 {
-//    LocationSet::iterator cc;
-//    for (cc = conSet.begin(); cc != conSet.end(); cc++) {
-//        delete *cc;
-//    }
 }
 
 
@@ -552,9 +544,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
 
 
 static int level = 0;
-// Constraints up to but not including iterator it have been unified.
-// The current solution is soln
-// The set of all solutions is in solns
+
 bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln, std::list<ConstraintMap>& solns)
 {
 	LOG << "Begin doSolve at level " << ++level << "\n";
@@ -704,11 +694,6 @@ bool Constraints::unify(SharedExp x, SharedExp y, ConstraintMap& extra)
 }
 
 
-/**
- * Perform "alpha substitution". Example:
- *   <fixedtype*> = alphaX* and T[Y] = alphaX*    ->
- *   T[Y] = <fixedtype*>
- */
 void Constraints::alphaSubst()
 {
 	std::list<SharedExp>::iterator it;

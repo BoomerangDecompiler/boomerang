@@ -29,27 +29,24 @@ struct VariantHolder
 
 struct SectionInfoImpl
 {
-	boost::icl::interval_set<Address>                m_hasDefinedValue;
-	boost::icl::interval_map<Address, VariantHolder> m_attributeMap;
-
 public:
 	void clearDefinedArea()
 	{
 		m_hasDefinedValue.clear();
 	}
 
-	void                                             addDefinedArea(Address from, Address to)
+	void addDefinedArea(Address from, Address to)
 	{
 		m_hasDefinedValue.insert(boost::icl::interval<Address>::right_open(from, to));
 	}
 
-	bool                                             isAddressBss(Address a) const
+	bool isAddressBss(Address a) const
 	{
 		assert(!m_hasDefinedValue.empty());
 		return m_hasDefinedValue.find(a) == m_hasDefinedValue.end();
 	}
 
-	void                                             setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
+	void setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
 	{
 		QVariantMap vmap;
 
@@ -58,7 +55,7 @@ public:
 		m_attributeMap.add(std::make_pair(boost::icl::interval<Address>::right_open(from, to), map));
 	}
 
-	QVariant                                         attributeInRange(const QString& attrib, Address from, Address to) const
+	QVariant attributeInRange(const QString& attrib, Address from, Address to) const
 	{
 		auto v = m_attributeMap.equal_range(boost::icl::interval<Address>::right_open(from, to));
 
@@ -81,7 +78,7 @@ public:
 		return QVariant(vals);
 	}
 
-	QVariantMap                                      getAttributesForRange(Address from, Address to)
+	QVariantMap getAttributesForRange(Address from, Address to)
 	{
 		QVariantMap res;
 		auto        v = m_attributeMap.equal_range(boost::icl::interval<Address>::right_open(from, to));
@@ -96,6 +93,11 @@ public:
 
 		return res;
 	}
+
+public:
+	boost::icl::interval_set<Address>                m_hasDefinedValue;
+	boost::icl::interval_map<Address, VariantHolder> m_attributeMap;
+
 };
 
 

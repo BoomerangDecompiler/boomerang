@@ -147,12 +147,6 @@ void Assignment::print(QTextStream& os, bool html) const
 	if (html) {
 		os << "</a>";
 	}
-
-// PassManager::printPassData(this,os,html);
-//    if (!Ranges.empty()) {
-//        os << "\n\t\t\tranges: ";
-//        Ranges.print(os);
-//    }
 }
 
 

@@ -139,11 +139,6 @@ void NJMCDecoder::substituteCallArgs(char *name, SharedExp *exp, const std::init
 }
 
 
-/***************************************************************************/ /**
- * These are functions used to decode instruction operands into
- * Exp*s.
- ******************************************************************************/
-
 SharedExp NJMCDecoder::dis_Reg(int regNum)
 {
 	return Location::regOf(regNum);

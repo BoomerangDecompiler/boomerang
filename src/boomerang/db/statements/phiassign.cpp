@@ -255,6 +255,7 @@ void PhiAssign::convertToAssign(SharedExp rhs)
 	SharedExp  lhs_  = m_lhs;
 	SharedExp  rhs_  = rhs;
 	SharedType type_ = m_type;
+
 	this->~PhiAssign();                                   // Explicitly destroy this, but keep the memory allocated.
 	Assign *a = new (this) Assign(type_, lhs_, rhs_);     // construct in-place. Note that 'a' == 'this'
 	a->setNumber(n);

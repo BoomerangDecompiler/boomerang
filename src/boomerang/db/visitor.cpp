@@ -377,7 +377,6 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Terminal>& e)
 }
 
 
-// Add used locations finder
 bool UsedLocsFinder::visit(const std::shared_ptr<Location>& e, bool& override)
 {
 	if (!m_memOnly) {
@@ -717,9 +716,6 @@ bool UsedLocsVisitor::visit(BoolAssign *s, bool& override)
 }
 
 
-//
-// Expression subscripter
-//
 SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Location>& e, bool& recur)
 {
 	if (*e == *m_search) {
@@ -762,7 +758,6 @@ SharedExp ExpSubscripter::preVisit(const std::shared_ptr<RefExp>& e, bool& recur
 }
 
 
-// The Statement subscripter class
 void StmtSubscripter::visit(Assign *s, bool& recur)
 {
 	SharedExp rhs = s->getRight();
@@ -839,7 +834,6 @@ void StmtSubscripter::visit(CallStatement *s, bool& recur)
 }
 
 
-// Size stripper
 SharedExp SizeStripper::preVisit(const std::shared_ptr<Binary>& b, bool& recur)
 {
 	recur = true; // Visit the binary's children
@@ -864,7 +858,6 @@ SharedExp ExpConstCaster::preVisit(const std::shared_ptr<Const>& c)
 }
 
 
-// This is the code (apart from definitions) to find all constants in a Statement
 bool ConstFinder::visit(const std::shared_ptr<Const>& e)
 {
 	m_constList.push_back(e);
@@ -885,8 +878,6 @@ bool ConstFinder::visit(const std::shared_ptr<Location>& e, bool& override)
 }
 
 
-// This is in the POST visit function, because it's important to process any child expressions first.
-// Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a nullptr definition for r28.
 SharedExp ImplicitConverter::postVisit(const std::shared_ptr<RefExp>& e)
 {
 	if (e->getDef() == nullptr) {
@@ -914,7 +905,6 @@ void StmtImplicitConverter::visit(PhiAssign *s, bool& recur)
 }
 
 
-// Localiser. Subscript a location with the definitions that reach the call, or with {-} if none
 SharedExp Localiser::preVisit(const std::shared_ptr<RefExp>& e, bool& recur)
 {
 	recur    = false; // Don't recurse into already subscripted variables
@@ -964,7 +954,6 @@ SharedExp Localiser::postVisit(const std::shared_ptr<Location>& e)
 }
 
 
-// Want to be able to localise a few terminals, in particular <all>
 SharedExp Localiser::postVisit(const std::shared_ptr<Terminal>& e)
 {
 	SharedExp ret = e;
@@ -1041,7 +1030,6 @@ bool MemDepthFinder::visit(const std::shared_ptr<Location>& e, bool& override)
 }
 
 
-// Ugh! This is still a separate propagation mechanism from Statement::propagateTo().
 SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& e)
 {
 	// No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
@@ -1073,13 +1061,6 @@ SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& e)
 }
 
 
-// Return true if e is a primitive expression; basically, an expression you can propagate to without causing
-// memory expression problems. See Mike's thesis for details
-// Algorithm: if find any unsubscripted location, not primitive
-//   Implicit definitions are primitive (but keep searching for non primitives)
-//   References to the results of calls are considered primitive... but only if bypassed?
-//   Other references considered non primitive
-// Start with result=true, must find primitivity in all components
 bool PrimitiveTester::visit(const std::shared_ptr<Location>& /*e*/, bool& override)
 {
 	// We reached a bare (unsubscripted) location. This is certainly not primitive
@@ -1143,8 +1124,6 @@ ExpRegMapper::ExpRegMapper(UserProc *p)
 }
 
 
-// The idea here is to map the default of a register to a symbol with the type of that first use. If the register is
-// not involved in any conflicts, it will use this name by default
 bool ExpRegMapper::visit(const std::shared_ptr<RefExp>& e, bool& override)
 {
 	SharedExp base = e->getSubExp1();
@@ -1271,7 +1250,6 @@ bool FlagsFinder::visit(const std::shared_ptr<Binary>& e, bool& override)
 }
 
 
-// Search for bare memofs (not subscripted) in the expression
 bool BadMemofFinder::visit(const std::shared_ptr<Location>& e, bool& override)
 {
 	if (e->isMemOf()) {
@@ -1606,11 +1584,6 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
 }
 
 
-// Map expressions to locals, using the (so far DFA based) type analysis information
-// Basically, descend types, and when you get to m[...] compare with the local high level pattern;
-// when at a sum or difference, check for the address of locals high level pattern that is a pointer
-
-// Map expressions to locals, some with names like param3
 DfaLocalMapper::DfaLocalMapper(UserProc *_proc)
 	: m_proc(_proc)
 {
@@ -1620,7 +1593,6 @@ DfaLocalMapper::DfaLocalMapper(UserProc *_proc)
 }
 
 
-// Common processing for the two main cases (visiting a Location or a Binary)
 bool DfaLocalMapper::processExp(const SharedExp& e)
 {
 	if (m_proc->isLocalOrParamPattern(e)) { // Check if this is an appropriate pattern for local variables

@@ -47,7 +47,6 @@ PPCFrontEnd::PPCFrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
 }
 
 
-// destructor
 PPCFrontEnd::~PPCFrontEnd()
 {
 }

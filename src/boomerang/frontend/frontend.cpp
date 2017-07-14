@@ -124,14 +124,14 @@ IFrontEnd *IFrontEnd::create(const QString& fname, Prog *prog)
 		return nullptr;
 	}
 
-	   IFrontEnd *fe = instantiate(loader, prog, pbff);
+	IFrontEnd *fe = instantiate(loader, prog, pbff);
 	return fe;
 }
 
 
 void IFrontEnd::addSymbol(Address addr, const QString& nam)
 {
-	   m_binarySymbols->create(addr, nam);
+	m_binarySymbols->create(addr, nam);
 }
 
 
@@ -453,7 +453,7 @@ void IFrontEnd::decode(Prog *prg, Address a)
 		}
 	}
 
-	   m_program->wellForm();
+	m_program->wellForm();
 }
 
 
@@ -470,7 +470,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address a)
 		p->setDecoded();
 	}
 
-	   m_program->wellForm();
+	m_program->wellForm();
 }
 
 
@@ -636,7 +636,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 	assert(pCfg);
 
 	// Initialise the queue of control flow targets that have yet to be decoded.
-	   m_targetQueue.initial(uAddr);
+	m_targetQueue.initial(uAddr);
 
 	// Clear the pointer used by the caller prologue code to access the last call rtl of this procedure
 	// decoder.resetLastCall();
@@ -752,15 +752,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 			// FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL followed by a return
 			// if it points to the start of a known procedure
 			std::list<Instruction *>::iterator ss;
-#if 1
-			for (ss = sl.begin(); ss != sl.end(); ss++) { // }
-#else
-			// The counter is introduced because ss != sl.end() does not work as it should
-			// FIXME: why? Does this really fix the problem?
-			int counter = sl.size();
 
-			for (ss = sl.begin(); counter > 0; ss++, counter--) {
-#endif
+			for (ss = sl.begin(); ss != sl.end(); ss++) {
 				Instruction *s = *ss;
 				s->setProc(pProc); // let's do this really early!
 
@@ -1176,10 +1169,6 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 		sequentialDecode = true;
 	} // while nextAddress() != Address::INVALID
 
-	// ProgWatcher *w = prog->getWatcher();
-	// if (w)
-	//      w->alert_done(pProc, initAddr, lastAddr, nTotalBytes);
-
 	// Add the callees to the set of CallStatements, and also to the Prog object
 	std::list<CallStatement *>::iterator it;
 
@@ -1280,7 +1269,6 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
 
 	return pBB;
 }
-
 
 
 void IFrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl)

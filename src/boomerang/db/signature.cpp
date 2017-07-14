@@ -571,7 +571,7 @@ SharedExp CallingConvention::Win32Signature::getStackWildcard() const
 
 SharedExp CallingConvention::Win32Signature::getProven(SharedExp left) const
 {
-	int nparams = m_params.size();
+	const size_t nparams = m_params.size();
 
 	if ((nparams > 0) && (*m_params[0]->getExp() == *Location::regOf(28))) {
 		nparams--;
@@ -1118,7 +1118,6 @@ SharedExp CallingConvention::StdC::ST20Signature::getStackWildcard() const
 }
 
 
-#if 1
 SharedExp CallingConvention::StdC::ST20Signature::getProven(SharedExp left) const
 {
 	if (left->isRegOfK()) {
@@ -1141,25 +1140,6 @@ SharedExp CallingConvention::StdC::ST20Signature::getProven(SharedExp left) cons
 	return nullptr;
 }
 
-
-#else
-SharedExp CallingConvention::StdC::ST20Signature::getProven(SharedExp left)
-{
-	if (left->isRegOfK()) {
-		int r = ((Const *)((Location *)left)->getSubExp1())->getInt();
-
-		switch (r)
-		{
-		case 3: // stack
-			return left;
-		}
-	}
-
-	return nullptr;
-}
-
-
-#endif
 
 bool CallingConvention::StdC::ST20Signature::qualified(UserProc *p, Signature& /*candidate*/)
 {

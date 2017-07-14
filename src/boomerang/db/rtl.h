@@ -63,11 +63,17 @@ private:
 
 public:
 	RTL();
+
+	/***************************************************************************/ /**
+	* \brief   Constructor.
+	* \param   instNativeAddr - the native address of the instruction
+	* \param   listStmt - ptr to existing list of Statement
+	******************************************************************************/
 	RTL(Address instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
 
 	/***************************************************************************/ /**
 	 * \brief        Copy constructor. A deep clone is made of the given object
-	 *                    so that the lists of Exps do not share memory.
+	 *               so that the lists of Exps do not share memory.
 	 * \param        other RTL to copy from
 	 ******************************************************************************/
 	RTL(const RTL& other);

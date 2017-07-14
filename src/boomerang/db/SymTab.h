@@ -33,7 +33,7 @@ typedef std::shared_ptr<class Type> SharedType;
 struct BinarySymbol : public IBinarySymbol
 {
 	QString              Name;
-	   Address              Location;
+	Address              Location;
 	SharedType           type;
 	size_t               Size;
 	/// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
@@ -42,7 +42,8 @@ struct BinarySymbol : public IBinarySymbol
 	const QString&       getName() const override { return Name; }
 	size_t getSize() const override { return Size; }
 	void setSize(size_t v) override { Size = v; }
-	   Address getLocation() const override { return Location; }
+	Address getLocation() const override { return Location; }
+
 	const IBinarySymbol& setAttr(const QString& name, const QVariant& v) const override
 	{
 		attributes[name] = v;

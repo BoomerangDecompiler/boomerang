@@ -203,9 +203,9 @@ BasicBlock *BranchStatement::getTakenBB() const
 
 void BranchStatement::setTakenBB(BasicBlock *bb)
 {
-	   Address a = getFixedDest();
+	Address destination = getFixedDest();
 
-	if (a == Address::INVALID) {
+	if (destination == Address::INVALID) {
 		return;
 	}
 
@@ -217,7 +217,7 @@ void BranchStatement::setTakenBB(BasicBlock *bb)
 		return;
 	}
 
-	if (m_parent->getOutEdge(0)->getLowAddr() == a) {
+	if (m_parent->getOutEdge(0)->getLowAddr() == destination) {
 		m_parent->getOutEdge(0)->deleteInEdge(m_parent);
 		m_parent->setOutEdge(0, bb);
 		bb->addInEdge(m_parent);

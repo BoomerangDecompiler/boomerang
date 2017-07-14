@@ -108,7 +108,11 @@ public:
 	static void addNamedType(const QString& name, SharedType type);
 	static SharedType getNamedType(const QString& name);
 
-	// Return type for given temporary variable name
+	/***************************************************************************/ /**
+	* \brief   Given the name of a temporary variable, return its Type
+	* \param   name reference to a string (e.g. "tmp", "tmpd")
+	* \returns       Ptr to a new Type object
+	******************************************************************************/
 	static SharedType getTempType(const QString& name);
 
 	/***************************************************************************/ /**
@@ -167,9 +171,20 @@ public:
 
 	// Comparisons
 	virtual bool operator==(const Type& other) const = 0; // Considers sign
+
+	/***************************************************************************/ /**
+	* \brief        Inequality comparsion.
+	* \param        other - Type being compared to
+	* \returns            this != other
+	******************************************************************************/
 	virtual bool operator!=(const Type& other) const;     // Considers sign
 
-	// virtual bool        operator-=(const Type& other) const = 0;    // Ignores sign
+	/***************************************************************************/ /**
+	* \brief        Defines an ordering between Type's
+	*               (and hence sets etc of Exp* using lessExpStar).
+	* \param        other - Type being compared to
+	* \returns      this is less than other
+	******************************************************************************/
 	virtual bool operator<(const Type& other) const = 0; // Considers sign
 
 	bool operator*=(const Type& other) const             // Consider only
@@ -177,6 +192,11 @@ public:
 		return id == other.id;
 	} // broad type
 
+	/***************************************************************************/ /**
+	* \brief        Match operation.
+	* \param        pattern - Type to match
+	* \returns            Exp list of bindings if match or nullptr
+	******************************************************************************/
 	virtual SharedExp match(SharedType pattern);
 
 	// Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
@@ -204,11 +224,19 @@ public:
 	// When final, choose a signedness etc
 	virtual QString getCtype(bool final = false) const = 0;
 
+	/// Print in *i32* format
 	void starPrint(QTextStream& os);
 	QString prints();                    // For debugging
 	void dump();                         // For debugging
 	static void dumpNames();             // For debugging
 
+	/***************************************************************************/ /**
+	* \brief  Return a minimal temporary name for this type. It'd be even
+	*          nicer to return a unique name, but we don't know scope at
+	*          this point, and even so we could still clash with a user-defined
+	*          name later on :(
+	* \returns        a string
+	******************************************************************************/
 	virtual QString getTempName() const; // Get a temporary name for the type
 
 	// Clear the named type map. This is necessary when testing; the
@@ -311,6 +339,7 @@ public:
 	virtual QString getCtype(bool final = false) const override;
 
 	// Split the C type into return and parameter parts
+	// As above, but split into the return and parameter parts
 	void getReturnAndParam(QString& ret, QString& param);
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
@@ -320,11 +349,16 @@ protected:
 	friend class XMLProgParser;
 };
 
+
+/***************************************************************************/ /**
+ * \brief        Deep copy of this type
+ * \returns            Copy of the type
+ ******************************************************************************/
 class IntegerType : public Type
 {
 private:
-	mutable size_t size;    // Size in bits, e.g. 16
-	mutable int signedness; // pos=signed, neg=unsigned, 0=unknown or evenly matched
+	mutable size_t size;    ///< Size in bits, e.g. 16
+	mutable int signedness; ///< pos=signed, neg=unsigned, 0=unknown or evenly matched
 
 public:
 	explicit IntegerType(unsigned NumBits, int sign = 0)
@@ -351,6 +385,9 @@ public:
 
 	// virtual bool          operator-=(const Type& other) const;
 	virtual bool operator<(const Type& other) const override;
+
+	// FIXME: aren't mergeWith and meetWith really the same thing?
+	// Merge this IntegerType with another
 	virtual SharedType mergeWith(SharedType other) const override;
 	virtual SharedExp match(SharedType pattern)  override;
 
@@ -377,7 +414,8 @@ public:
 
 protected:
 	friend class XMLProgParser;
-}; // class IntegerType
+};
+
 
 class FloatType : public Type
 {
@@ -413,6 +451,7 @@ public:
 protected:
 	friend class XMLProgParser;
 }; // class FloatType
+
 
 class BooleanType : public Type
 {
@@ -482,6 +521,8 @@ public:
 	const SharedType getPointsTo() const { return points_to; }
 	static std::shared_ptr<PointerType> get(SharedType t) { return std::make_shared<PointerType>(t); }
 	static std::shared_ptr<PointerType> newPtrAlpha();
+
+	// Note: alpha is therefore a "reserved name" for types
 	bool pointsToAlpha() const;
 	int pointerDepth() const;            // Return 2 for **x
 	SharedType getFinalPointsTo() const; // Return x for **x
@@ -563,7 +604,7 @@ protected:
 		: Type(eArray)
 		, BaseType(nullptr)
 		, Length(0) {}
-}; // class ArrayType
+};
 
 class NamedType : public Type
 {
@@ -599,7 +640,7 @@ public:
 
 protected:
 	friend class XMLProgParser;
-}; // class NamedType
+};
 
 // The compound type represents structures, not unions
 class CompoundType : public Type
@@ -649,6 +690,8 @@ public:
 	QString getNameAtOffset(size_t n);
 
 	bool isGeneric() { return generic; }
+
+	// Update this compound to use the fact that offset off has type ty
 	void updateGenericMember(int off, SharedType ty, bool& ch); // Add a new generic member if necessary
 	unsigned getOffsetTo(unsigned n);
 	unsigned getOffsetTo(const QString& member);
@@ -667,7 +710,14 @@ public:
 
 	virtual QString getCtype(bool final = false) const override;
 
+
+	// Return true if this is a superstructure of other,
+	// i.e. we have the same types at the same offsets as other
 	bool isSuperStructOf(const SharedType& other); // True if this is is a superstructure of other
+
+	// Return true if this is a substructure of other,
+	// i.e. other has the same types at the same offsets as this
+
 	bool isSubStructOf(SharedType other) const;    // True if this is is a substructure of other
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
@@ -715,6 +765,8 @@ public:
 	void addType(SharedType n, const QString& str);
 
 	size_t getNumTypes() const { return li.size(); }
+
+	// Return true if this type is already in the union. Note: linear search, but number of types is usually small
 	bool findType(SharedType ty); // Return true if ty is already in the union
 
 	ilUnionElement begin() { return li.begin(); }
@@ -767,7 +819,9 @@ public:
 	virtual bool operator==(const Type& other) const override;
 	virtual bool operator<(const Type& other) const override;
 
-	// virtual Exp          *match(SharedType pattern);
+//	virtual SharedExp match(SharedType pattern);
+
+	// Merge this SizeType with another type
 	virtual SharedType mergeWith(SharedType other) const override;
 
 	virtual size_t getSize() const override;
@@ -780,7 +834,8 @@ public:
 	virtual bool isCompatible(const Type& other, bool) const override;
 
 	friend class XMLProgParser;
-}; // class SizeType
+};
+
 
 // This class represents the upper half of its base type
 // Mainly needed to represent the upper and lower half for type double
@@ -877,9 +932,16 @@ public:
 
 	void setProc(UserProc *p) { proc = p; }    ///< Initialise the proc pointer
 	DataIntervalEntry *find(Address addr);     ///< Find the DataInterval at address addr, or nullptr if none
+
+	// Find the entry that overlaps with addr. If none, return end().
+	// We have to use upper_bound and decrement the iterator,
+	// because we might want an entry that starts earlier than addr yet still overlaps it
 	iterator find_it(Address addr);            ///< Return an iterator to the entry for it, or end() if none
 
 	bool isClear(Address addr, unsigned size); ///< True if from addr for size bytes is clear
+
+	// With the forced parameter: are we forcing the name, the type, or always both?
+	/// Add a new data item
 	void addItem(Address addr, QString name, SharedType ty, bool forced = false);
 	void deleteItem(Address addr);             // Mainly for testing?
 	void expandItem(Address addr, unsigned size);
@@ -887,7 +949,11 @@ public:
 	void dump();                               // For debug
 
 private:
+	// We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
 	void enterComponent(DataIntervalEntry *pdie, Address addr, const QString&, SharedType ty, bool);
+
+	// We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
+	// components out of the way, meeting if necessary
 	void replaceComponents(Address addr, const QString& name, SharedType ty, bool);
 	void checkMatching(DataIntervalEntry *pdie, Address addr, const QString&, SharedType ty, bool);
 };

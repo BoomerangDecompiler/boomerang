@@ -114,6 +114,11 @@ public:
 	 * \param os Output stream to send the output to
 	 ******************************************************************************/
 	void printAsHL(QTextStream& os); ///< Print with v[5] as v5
+
+	/***************************************************************************/ /**
+	* \brief        Print to a static string (for debugging)
+	* \returns            Address of the static buffer
+	******************************************************************************/
 	char *prints();                  ///< Print to string (for debugging and logging)
 	void dump();                     ///< Print to standard error (for debugging)
 
@@ -125,6 +130,12 @@ public:
 	virtual void printx(int ind) const = 0;
 
 	/// Display as a dotty graph
+
+	/***************************************************************************/ /**
+	* \brief Create a dotty file (use dotty to display the file; search the web for "graphviz").
+	*        Mainly for debugging
+	* \param name - Name of the file to create
+	******************************************************************************/
 	void createDotFile(const char *name);
 	virtual void appendDotFile(QTextStream& os) = 0;
 

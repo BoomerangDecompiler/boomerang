@@ -47,6 +47,7 @@ public:
 	SharedExp localise(SharedExp e);     // Localise to this call if necessary
 };
 
+
 ArgSourceProvider::ArgSourceProvider(CallStatement *_call)
 	: call(_call)
 {
@@ -522,7 +523,6 @@ void CallStatement::print(QTextStream& os, bool html) const
 		os << "              )";
 	}
 
-#if 1
 	// Collected reaching definitions
 	if (html) {
 		os << "<br>";
@@ -543,7 +543,6 @@ void CallStatement::print(QTextStream& os, bool html) const
 
 	os << "Live variables: ";
 	m_useCol.print(os, html);
-#endif
 
 	if (html) {
 		os << "</a></td>";
@@ -762,8 +761,8 @@ bool CallStatement::convertToDirect()
 
 	QString nam     = e->access<Const, 1>()->getStr();
 	Prog    *prog   = m_proc->getProg();
-	   Address gloAddr = prog->getGlobalAddr(nam);
-	   Address dest    = Address(prog->readNative4(gloAddr));
+	Address gloAddr = prog->getGlobalAddr(nam);
+	Address dest    = Address(prog->readNative4(gloAddr));
 
 	// We'd better do some limit checking on the value.
 	// This does not guarantee that it's a valid proc pointer,

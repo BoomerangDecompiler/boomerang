@@ -30,7 +30,9 @@
 class Range : public Printable
 {
 protected:
-	int m_stride, m_lowerBound, m_upperBound;
+	int m_stride;
+	int m_lowerBound;
+	int m_upperBound;
 	SharedExp m_base;
 
 public:
@@ -79,11 +81,6 @@ public:
 
 struct RangePrivateData
 {
-	std::map<Instruction *, RangeMap>     SavedInputRanges; ///< overestimation of ranges of locations
-	std::map<Instruction *, RangeMap>     Ranges;           ///< saved overestimation of ranges of locations
-	std::map<BranchStatement *, RangeMap> BranchRanges;
-
-
 	RangeMap&                             getRanges(Instruction *insn)
 	{
 		return Ranges[insn];
@@ -109,9 +106,13 @@ struct RangePrivateData
 		BranchRanges[s] = rm;
 	}
 
-public:
 	void setSavedRanges(Instruction *insn, RangeMap map);
 	RangeMap                              getSavedRanges(Instruction *insn);
+
+public:
+	std::map<Instruction *, RangeMap>     SavedInputRanges; ///< overestimation of ranges of locations
+	std::map<Instruction *, RangeMap>     Ranges;           ///< saved overestimation of ranges of locations
+	std::map<BranchStatement *, RangeMap> BranchRanges;
 };
 
 

@@ -21,19 +21,6 @@
 
 Qt::HANDLE threadToCollect = 0;
 
-// void* operator new(size_t n) {
-//    Qt::HANDLE curThreadId = QThread::currentThreadId();
-//    if (curThreadId == threadToCollect)
-//        return GC_malloc(n);
-//    else
-//        return GC_malloc_uncollectable(n);    // Don't collect, but mark
-// }
-
-// void operator delete(void* p) {
-//    Qt::HANDLE curThreadId = QThread::currentThreadId();
-//    if (curThreadId != threadToCollect)
-//        GC_free(p); // Important to call this if you call GC_malloc_uncollectable
-// }
 
 void DecompilerThread::run()
 {

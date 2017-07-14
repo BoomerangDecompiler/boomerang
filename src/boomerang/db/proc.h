@@ -91,19 +91,48 @@ protected:
 	friend class XMLProgParser;
 
 public:
+	/***************************************************************************/ /**
+	*
+	* \brief        Constructor with name, native address.
+	* \param        uNative - Native address of entry point of procedure
+	* \param        sig - the Signature for this Proc
+	* \param        mod - the Module this procedure belongs to
+	*
+	******************************************************************************/
 	Function(Address uNative, Signature *sig, Module *mod);
 	virtual ~Function();
 
 	void eraseFromParent();
+
+	/***************************************************************************/ /**
+	* \brief        Returns the name of this procedure
+	* \returns            the name of this procedure
+	******************************************************************************/
 	QString getName() const;
+
+	/***************************************************************************/ /**
+	* \brief        Sets the name of this procedure
+	* \param        nam - new name
+	******************************************************************************/
 	void setName(const QString& nam);
-	   Address getNativeAddress() const;
+
+	/***************************************************************************/ /**
+	* \brief        Get the native address (entry point).
+	* \returns            the native address of this procedure (entry point)
+	******************************************************************************/
+	Address getNativeAddress() const;
+
+	/***************************************************************************/ /**
+	* \brief        Set the native address
+	* \param a native address of the procedure
+	******************************************************************************/
 	void setNativeAddress(Address a);
 
 	/// Get the program this procedure belongs to.
 	Prog *getProg() const { return m_prog; }
 	void setProg(Prog *p) { m_prog = p; }
 
+	/// Get the first procedure that calls this procedure (or null for main/start).
 	Function *getFirstCaller();
 
 	/// Set the first procedure that calls this procedure (or null for main/start).
@@ -182,6 +211,7 @@ public:
 	 */
 	friend QTextStream& operator<<(QTextStream& os, const Function& proc);
 
+	/// Get the RHS that is proven for left
 	virtual SharedExp getProven(SharedExp left)   = 0; ///< Get the RHS, if any, that is proven for left
 	virtual SharedExp getPremised(SharedExp left) = 0; ///< Get the RHS, if any, that is premised for left
 	virtual bool isPreserved(SharedExp e)         = 0; ///< Return whether e is preserved by this proc

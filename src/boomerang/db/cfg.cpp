@@ -14,9 +14,6 @@
  * \brief   Implementation of the CFG class.
  ******************************************************************************/
 
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
 #include "boomerang/db/cfg.h"
 
 #include "boomerang/util/Log.h"
@@ -41,13 +38,12 @@
 #include <algorithm> // For find()
 #include <cstring>
 
+
 void delete_lrtls(std::list<RTL *>& pLrtl);
 void erase_lrtls(std::list<RTL *>& pLrtl, std::list<RTL *>::iterator begin, std::list<RTL *>::iterator end);
 
-namespace
-{
 static int progress = 0;
-}
+
 
 /**********************************
 * Cfg methods.
@@ -66,9 +62,8 @@ Cfg::Cfg()
 
 Cfg::~Cfg()
 {
-	// Delete the BBs
-	for (BasicBlock *it : m_listBB) {
-		delete it;
+	for (BasicBlock *bb : m_listBB) {
+		delete bb;
 	}
 }
 
@@ -532,8 +527,6 @@ bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)
 	}
 }
 
-
-// Return true if there is an incomplete BB already at this address
 
 bool Cfg::isIncomplete(Address uAddr) const
 {
@@ -1076,26 +1069,20 @@ void Cfg::addNewOutEdge(BasicBlock *pFromBB, BasicBlock *pNewOutEdge)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Simplify all the expressions in the CFG
- *
- ******************************************************************************/
 void Cfg::simplify()
 {
 	LOG_VERBOSE(1) << "simplifying...\n";
 
-	for (BasicBlock *it : m_listBB) {
-		it->simplify();
+	for (BasicBlock *bb : m_listBB) {
+		bb->simplify();
 	}
 }
 
 
-// print this cfg, mainly for debugging
 void Cfg::print(QTextStream& out, bool html)
 {
-	for (BasicBlock *it : m_listBB) {
-		it->print(out, html);
+	for (BasicBlock *bb : m_listBB) {
+		bb->print(out, html);
 	}
 
 	out << '\n';
@@ -1619,9 +1606,6 @@ void Cfg::removeUnneededLabels(ICodeGenerator *hll)
 }
 
 
-#define BBINDEX       0 // Non zero to print <index>: before <statement number>
-#define BACK_EDGES    0 // Non zero to generate green back edges
-
 void Cfg::generateDotFile(QTextStream& of)
 {
 	   Address aret = Address::INVALID;
@@ -1633,7 +1617,7 @@ void Cfg::generateDotFile(QTextStream& of)
 		   << "bb" << pbb->getLowAddr() << " ["
 		   << "label=\"";
 		char *p = pbb->getStmtNumber();
-#if BBINDEX
+#if PRINT_BBINDEX
 		of << std::dec << indices[*it];
 
 		if (p[0] != 'b') {
@@ -1745,7 +1729,7 @@ void Cfg::generateDotFile(QTextStream& of)
 		}
 	}
 
-#if BACK_EDGES
+#if PRINT_BACK_EDGES
 	for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
 		std::vector<PBB>& inEdges = (*it)->getInEdges();
 
@@ -1759,10 +1743,6 @@ void Cfg::generateDotFile(QTextStream& of)
 #endif
 }
 
-
-////////////////////////////////////
-//            Liveness             //
-////////////////////////////////////
 
 void updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *>& workList, std::set<BasicBlock *>& workSet)
 {

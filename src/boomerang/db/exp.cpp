@@ -123,16 +123,15 @@ Terminal::Terminal(const Terminal& o)
 
 
 Unary::Unary(OPER _op)
-	: Exp(_op)                    /*,subExp1(nullptr)*/
+	: Exp(_op)
 {
-	// pointer uninitialized to help out finding usages of null pointers ?
 	assert(m_oper != opRegOf);
 }
 
 
-Unary::Unary(OPER _op, SharedExp _e)
+Unary::Unary(OPER _op, SharedExp e)
 	: Exp(_op)
-	, subExp1(_e)
+	, subExp1(e)
 {
 	assert(subExp1);
 }
@@ -146,17 +145,17 @@ Unary::Unary(const Unary& o)
 }
 
 
-Binary::Binary(OPER _op)
-	: Unary(_op)
+Binary::Binary(OPER op)
+	: Unary(op)
 {
 	// Initialise the 2nd pointer. The first pointer is initialised in the Unary constructor
 	// subExp2 = 0;
 }
 
 
-Binary::Binary(OPER _op, SharedExp _e1, SharedExp _e2)
-	: Unary(_op, _e1)
-	, subExp2(_e2)
+Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
+	: Unary(op, e1)
+	, subExp2(e2)
 {
 	assert(subExp1 && subExp2);
 }
@@ -2125,11 +2124,6 @@ void TypeVal::print(QTextStream& os, bool /*html*/) const
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Print to a static string (for debugging)
- * \returns            Address of the static buffer
- ******************************************************************************/
 char *Exp::prints()
 {
 	QString     tgt;
@@ -2150,13 +2144,6 @@ void Exp::dump()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief Create a dotty file (use dotty to display the file; search the web for "graphviz").
- *        Mainly for debugging
- * \param name - Name of the file to create
- *
- ******************************************************************************/
 void Exp::createDotFile(const char *name)
 {
 	QFile fl(name);
@@ -3087,7 +3074,6 @@ SharedExp Exp::accumulate(std::list<SharedExp>& exprs)
 }
 
 
-#define DEBUG_SIMP    0  // Set to 1 to print every change
 SharedExp Exp::simplify()
 {
 #if DEBUG_SIMP
@@ -3102,23 +3088,17 @@ SharedExp Exp::simplify()
 		bMod = false;
 		// SharedExp before = res->clone();
 		res = res->polySimplify(bMod); // Call the polymorphic simplify
-
-		/*      if (bMod) {
-		 *              LOG << "polySimplify hit: " << before << " to " << res << "\n";
-		 *              // polySimplify is now redundant, if you see this in the log you need to update one of the files
-		 * in the
-		 *              // transformations directory to include a rule for the reported transform.
-		 *      } */
 	} while (bMod);                    // If modified at this (or a lower) level, redo
 
-// The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is the same as a + b + K
-// No! This slows everything down, and it's slow enough as it is. Call only where needed:
-// res = res->simplifyArith();
+
+	// The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is the same as a + b + K
+	// No! This slows everything down, and it's slow enough as it is. Call only where needed:
+//	res = res->simplifyArith();
+
 #if DEBUG_SIMP
 	if (!(*res == *save)) {
 		std::cout << "simplified " << save << "  to  " << res << "\n";
 	}
-	// delete save;
 #endif
 	return res;
 }
@@ -4131,7 +4111,8 @@ SharedExp RefExp::polySimplify(bool& bMod)
 		return res;
 	}
 
-	/* This is a nasty hack.  We assume that %DF{0} is 0.  This happens when string instructions are used without first
+	/*
+	 * This is a nasty hack.  We assume that %DF{0} is 0.  This happens when string instructions are used without first
 	 * clearing the direction flag.  By convention, the direction flag is assumed to be clear on entry to a
 	 * procedure.
 	 */
@@ -4282,12 +4263,8 @@ void Exp::printAsHL(QTextStream& os /*= cout*/)
  ******************************************************************************/
 QTextStream& operator<<(QTextStream& os, const Exp *p)
 {
-#if 1
 	// Useful for debugging, but can clutter the output
 	p->printt(os);
-#else
-	p->print(os);
-#endif
 	return os;
 }
 

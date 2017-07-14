@@ -41,6 +41,7 @@
 static int codegen_progress = 0;
 static bool isBareMemof(const Exp& e, UserProc *proc);
 
+
 CCodeGenerator::CCodeGenerator(UserProc *p)
 	: ICodeGenerator(p)
 {
@@ -844,7 +845,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 				appendExp(str, *u.getSubExp1(), curPrec);
 			}
 			else if (u.getSubExp1()->getOper() == opMemOf) {
-// We have (tt)m[x]
+				// We have (tt)m[x]
 				PointerType *pty = nullptr;
 
 				// pty = T(x)
@@ -1128,7 +1129,6 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 }
 
 
-/// Print the type represented by \a typ to \a str.
 void CCodeGenerator::appendType(QTextStream& str, SharedType typ)
 {
 	if (!typ) {
@@ -1147,9 +1147,6 @@ void CCodeGenerator::appendType(QTextStream& str, SharedType typ)
 }
 
 
-/**
- * Print the indented type to \a str.
- */
 void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString ident)
 {
 	if (typ == nullptr) {
@@ -1191,14 +1188,12 @@ void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString i
 }
 
 
-/// Remove all generated code.
 void CCodeGenerator::reset()
 {
 	m_lines.clear();
 }
 
 
-/// Adds: while( \a cond) {
 void CCodeGenerator::addPretestedLoopHeader(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
@@ -1212,7 +1207,6 @@ void CCodeGenerator::addPretestedLoopHeader(int indLevel, const SharedExp& cond)
 }
 
 
-/// Adds: }
 void CCodeGenerator::addPretestedLoopEnd(int indLevel)
 {
 	QString tgt;
@@ -1224,7 +1218,6 @@ void CCodeGenerator::addPretestedLoopEnd(int indLevel)
 }
 
 
-/// Adds: for(;;) {
 void CCodeGenerator::addEndlessLoopHeader(int indLevel)
 {
 	QString tgt;
@@ -1236,7 +1229,6 @@ void CCodeGenerator::addEndlessLoopHeader(int indLevel)
 }
 
 
-/// Adds: }
 void CCodeGenerator::addEndlessLoopEnd(int indLevel)
 {
 	QString tgt;
@@ -1248,7 +1240,6 @@ void CCodeGenerator::addEndlessLoopEnd(int indLevel)
 }
 
 
-/// Adds: do {
 void CCodeGenerator::addPostTestedLoopHeader(int indLevel)
 {
 	QString tgt;
@@ -1260,7 +1251,6 @@ void CCodeGenerator::addPostTestedLoopHeader(int indLevel)
 }
 
 
-/// Adds: } while (\a cond);
 void CCodeGenerator::addPostTestedLoopEnd(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
@@ -1274,7 +1264,6 @@ void CCodeGenerator::addPostTestedLoopEnd(int indLevel, const SharedExp& cond)
 }
 
 
-/// Adds: switch(\a cond) {
 void CCodeGenerator::addCaseCondHeader(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
@@ -1288,7 +1277,6 @@ void CCodeGenerator::addCaseCondHeader(int indLevel, const SharedExp& cond)
 }
 
 
-/// Adds: case \a opt :
 void CCodeGenerator::addCaseCondOption(int indLevel, Exp& opt)
 {
 	QString tgt;
@@ -1302,7 +1290,6 @@ void CCodeGenerator::addCaseCondOption(int indLevel, Exp& opt)
 }
 
 
-/// Adds: break;
 void CCodeGenerator::addCaseCondOptionEnd(int indLevel)
 {
 	QString tgt;
@@ -1314,7 +1301,6 @@ void CCodeGenerator::addCaseCondOptionEnd(int indLevel)
 }
 
 
-/// Adds: default:
 void CCodeGenerator::addCaseCondElse(int indLevel)
 {
 	QString tgt;
@@ -1326,7 +1312,6 @@ void CCodeGenerator::addCaseCondElse(int indLevel)
 }
 
 
-/// Adds: }
 void CCodeGenerator::addCaseCondEnd(int indLevel)
 {
 	QString tgt;
@@ -1338,7 +1323,6 @@ void CCodeGenerator::addCaseCondEnd(int indLevel)
 }
 
 
-/// Adds: if(\a cond) {
 void CCodeGenerator::addIfCondHeader(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
@@ -1352,7 +1336,6 @@ void CCodeGenerator::addIfCondHeader(int indLevel, const SharedExp& cond)
 }
 
 
-/// Adds: }
 void CCodeGenerator::addIfCondEnd(int indLevel)
 {
 	QString tgt;
@@ -1364,7 +1347,6 @@ void CCodeGenerator::addIfCondEnd(int indLevel)
 }
 
 
-/// Adds: if(\a cond) {
 void CCodeGenerator::addIfElseCondHeader(int indLevel, const SharedExp& cond)
 {
 	QString tgt;
@@ -1378,7 +1360,6 @@ void CCodeGenerator::addIfElseCondHeader(int indLevel, const SharedExp& cond)
 }
 
 
-/// Adds: } else {
 void CCodeGenerator::addIfElseCondOption(int indLevel)
 {
 	QString tgt;
@@ -1391,7 +1372,6 @@ void CCodeGenerator::addIfElseCondOption(int indLevel)
 }
 
 
-/// Adds: }
 void CCodeGenerator::addIfElseCondEnd(int indLevel)
 {
 	QString tgt;
@@ -1403,7 +1383,6 @@ void CCodeGenerator::addIfElseCondEnd(int indLevel)
 }
 
 
-/// Adds: goto L \em ord
 void CCodeGenerator::addGoto(int indLevel, int ord)
 {
 	QString tgt;
@@ -1416,11 +1395,7 @@ void CCodeGenerator::addGoto(int indLevel, int ord)
 }
 
 
-/**
- * Removes labels from the code which are not in usedLabels.
- * maxOrd UNUSED
- */
-void CCodeGenerator::removeUnusedLabels(int /*maxOrd*/)
+void CCodeGenerator::removeUnusedLabels(int)
 {
 	for (QStringList::iterator it = m_lines.begin(); it != m_lines.end(); ) {
 		if (it->startsWith('L') && it->contains(':')) {
@@ -1438,7 +1413,6 @@ void CCodeGenerator::removeUnusedLabels(int /*maxOrd*/)
 }
 
 
-/// Adds: continue;
 void CCodeGenerator::addContinue(int indLevel)
 {
 	QString tgt;
@@ -1450,7 +1424,6 @@ void CCodeGenerator::addContinue(int indLevel)
 }
 
 
-/// Adds: break;
 void CCodeGenerator::addBreak(int indLevel)
 {
 	QString tgt;
@@ -1462,7 +1435,6 @@ void CCodeGenerator::addBreak(int indLevel)
 }
 
 
-/// Adds: L \a ord :
 void CCodeGenerator::addLabel(int /*indLevel*/, int ord)
 {
 	QString tgt;
@@ -1473,7 +1445,6 @@ void CCodeGenerator::addLabel(int /*indLevel*/, int ord)
 }
 
 
-/// Search for the label L \a ord and remove it from the generated code.
 void CCodeGenerator::removeLabel(int ord)
 {
 	QString tgt;
@@ -1505,7 +1476,6 @@ bool isBareMemof(const Exp& e, UserProc * /*proc*/)
 }
 
 
-/// Prints an assignment expression.
 void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
 {
 	// Gerard: shouldn't these  3 types of statements be removed earlier?
@@ -1637,18 +1607,6 @@ void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
 }
 
 
-/**
- * Adds a call to \a proc.
- *
- * \param indLevel        A string containing spaces to the indentation level.
- * \param proc            The Proc the call is to.
- * \param name            The name the Proc has.
- * \param args            The arguments to the call.
- * \param results        The variable that will receive the return value of the function.
- *
- * \todo                Remove the \a name parameter and use Proc::getName()
- * \todo                Add assingment for when the function returns a struct.
- */
 void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
 									  StatementList *results)
 {
@@ -1734,12 +1692,6 @@ void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QStrin
 }
 
 
-/**
- * Adds an indirect call to \a exp.
- * \see AddCallStatement
- * \param results UNUSED
- * \todo Add the use of \a results like AddCallStatement.
- */
 void CCodeGenerator::addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results)
 {
 	Q_UNUSED(results);
@@ -1766,10 +1718,6 @@ void CCodeGenerator::addIndCallStatement(int indLevel, const SharedExp& exp, Sta
 }
 
 
-/**
- * Adds a return statement and returns the first expression in \a rets.
- * \todo This should be returning a struct if more than one real return value.
- */
 void CCodeGenerator::addReturnStatement(int indLevel, StatementList *rets)
 {
 	// FIXME: should be returning a struct of more than one real return */
@@ -1821,9 +1769,6 @@ void CCodeGenerator::addReturnStatement(int indLevel, StatementList *rets)
 }
 
 
-/**
- * Print the start of a function, and also as a comment its address.
- */
 void CCodeGenerator::addProcStart(UserProc *proc)
 {
 	QString tgt;
@@ -1835,18 +1780,12 @@ void CCodeGenerator::addProcStart(UserProc *proc)
 }
 
 
-/// Add a prototype (for forward declaration)
 void CCodeGenerator::addPrototype(UserProc *proc)
 {
 	addProcDec(proc, false);
 }
 
 
-/**
- * Print the declaration of a function.
- * \param proc to print
- * \param open False if this is just a prototype and ";" should be printed instead of "{"
- */
 void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 {
 	QString tgt;
@@ -1963,7 +1902,6 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 }
 
 
-/// Adds: }
 void CCodeGenerator::addProcEnd()
 {
 	appendLine("}");
@@ -1971,12 +1909,6 @@ void CCodeGenerator::addProcEnd()
 }
 
 
-/**
- * Declare a local variable.
- * \param name given to the new local
- * \param type of this local variable
- * \param last true if an empty line should be added.
- */
 void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 {
 	QString tgt;
@@ -2012,12 +1944,6 @@ void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 }
 
 
-/**
- * Add the declaration for a global.
- * \param name given name for the global
- * \param type The type of the global
- * \param init The initial value of the global.
- */
 void CCodeGenerator::addGlobal(const QString& name, SharedType type, const SharedExp& init)
 {
 	QString tgt;
@@ -2062,7 +1988,6 @@ void CCodeGenerator::addGlobal(const QString& name, SharedType type, const Share
 }
 
 
-/// Dump all generated code to \a os.
 void CCodeGenerator::print(QTextStream& os)
 {
 	os << m_lines.join('\n');
@@ -2073,15 +1998,12 @@ void CCodeGenerator::print(QTextStream& os)
 }
 
 
-/// Adds one line of comment to the code.
 void CCodeGenerator::addLineComment(const QString& cmt)
 {
 	appendLine(QString("/* %1*/").arg(cmt));
 }
 
 
-// Private helper functions, to reduce redundant code, and
-// have a single place to put a breakpoint on.
 void CCodeGenerator::appendLine(const QString& s)
 {
 	m_lines.push_back(s);

@@ -25,66 +25,67 @@ static void help()
 {
 	QTextStream q_cout(stdout);
 
-	q_cout << "Symbols\n";
-	q_cout << "  -s <addr> <name> : Define a symbol\n";
-	q_cout << "  -sf <filename>   : Read a symbol/signature file\n";
-	q_cout << "Decoding/decompilation options\n";
-	q_cout << "  -e <addr>        : Decode the procedure beginning at addr, and callees\n";
-	q_cout << "  -E <addr>        : Decode the procedure at addr, no callees\n";
-	q_cout << "                     Use -e and -E repeatedly for multiple entry points\n";
-	q_cout << "  -ic              : Decode through type 0 Indirect Calls\n";
-	q_cout << "  -S <min>         : Stop decompilation after specified number of minutes\n";
-	q_cout << "  -t               : Trace (print address of) every instruction decoded\n";
-	q_cout << "  -Tc              : Use old constraint-based type analysis\n";
-	q_cout << "  -Td              : Use data-flow-based type analysis\n";
-	q_cout << "  -LD              : Load before decompile (<program> becomes xml input file)\n";
-	q_cout << "  -SD              : Save before decompile\n";
-	q_cout << "  -a               : Assume ABI compliance\n";
-	q_cout << "  -W               : Windows specific decompilation mode (requires pdb information)\n";
-	//    q_cout << "  -pa              : only propagate if can propagate to all\n";
-	q_cout << "Output\n";
-	q_cout << "  -v               : Verbose\n";
-	q_cout << "  -h               : This help\n";
-	q_cout << "  -o <output path> : Where to generate output (defaults to ./output/)\n";
-	q_cout << "  -x               : Dump XML files\n";
-	q_cout << "  -r               : Print RTL for each proc to log before code generation\n";
-	q_cout << "  -gd <dot file>   : Generate a dotty graph of the program's CFG and DFG\n";
-	q_cout << "  -gc              : Generate a call graph (callgraph.out and callgraph.dot)\n";
-	q_cout << "  -gs              : Generate a symbol file (symbols.h)\n";
-	q_cout << "  -iw              : Write indirect call report to output/indirect.txt\n";
-	q_cout << "Misc.\n";
-	q_cout << "  -k               : Command mode, for available commands see -h cmd\n";
-	q_cout << "  -P <path>        : Path to Boomerang files, defaults to where you run\n";
-	q_cout << "                     Boomerang from\n";
-	q_cout << "  -X               : activate eXperimental code; errors likely\n";
-	q_cout << "  --               : No effect (used for testing)\n";
-	q_cout << "Debug\n";
-	q_cout << "  -da              : Print AST before code generation\n";
-	q_cout << "  -dc              : Debug switch (Case) analysis\n";
-	q_cout << "  -dd              : Debug decoder to stdout\n";
-	q_cout << "  -dg              : Debug code Generation\n";
-	q_cout << "  -dl              : Debug liveness (from SSA) code\n";
-	q_cout << "  -dp              : Debug proof engine\n";
-	q_cout << "  -ds              : Stop at debug points for keypress\n";
-	q_cout << "  -dt              : Debug type analysis\n";
-	q_cout << "  -du              : Debug removing unused statements etc\n";
-	q_cout << "Restrictions\n";
-	q_cout << "  -nb              : No simplifications for branches\n";
-	q_cout << "  -nc              : No decode children in the call graph (callees)\n";
-	q_cout << "  -nd              : No (reduced) dataflow analysis\n";
-	q_cout << "  -nD              : No decompilation (at all!)\n";
-	q_cout << "  -nl              : No creation of local variables\n";
-	//    q_cout << "  -nm              : No decoding of the 'main' procedure\n";
-	q_cout << "  -ng              : No replacement of expressions with Globals\n";
-	q_cout << "  -nn              : No removal of nullptr and unused statements\n";
-	q_cout << "  -np              : No replacement of expressions with Parameter names\n";
-	q_cout << "  -nP              : No promotion of signatures (other than main/WinMain/\n";
-	q_cout << "                     DriverMain)\n";
-	q_cout << "  -nr              : No removal of unneeded labels\n";
-	q_cout << "  -nR              : No removal of unused Returns\n";
-	q_cout << "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n";
-	q_cout << "  -p <num>         : Only do num propagations\n";
-	q_cout << "  -m <num>         : Max memory depth\n";
+	q_cout <<
+		"Symbols\n"
+		"  -s <addr> <name> : Define a symbol\n"
+		"  -sf <filename>   : Read a symbol/signature file\n"
+		"Decoding/decompilation options\n"
+		"  -e <addr>        : Decode the procedure beginning at addr, and callees\n"
+		"  -E <addr>        : Decode the procedure at addr, no callees\n"
+		"                     Use -e and -E repeatedly for multiple entry points\n"
+		"  -ic              : Decode through type 0 Indirect Calls\n"
+		"  -S <min>         : Stop decompilation after specified number of minutes\n"
+		"  -t               : Trace (print address of) every instruction decoded\n"
+		"  -Tc              : Use old constraint-based type analysis\n"
+		"  -Td              : Use data-flow-based type analysis\n"
+		"  -LD              : Load before decompile (<program> becomes xml input file)\n"
+		"  -SD              : Save before decompile\n"
+		"  -a               : Assume ABI compliance\n"
+		"  -W               : Windows specific decompilation mode (requires pdb information)\n"
+//		"  -pa              : only propagate if can propagate to all\n"
+		"Output\n"
+		"  -v               : Verbose\n"
+		"  -h               : This help\n"
+		"  -o <output path> : Where to generate output (defaults to ./output/)\n"
+		"  -x               : Dump XML files\n"
+		"  -r               : Print RTL for each proc to log before code generation\n"
+		"  -gd <dot file>   : Generate a dotty graph of the program's CFG and DFG\n"
+		"  -gc              : Generate a call graph (callgraph.out and callgraph.dot)\n"
+		"  -gs              : Generate a symbol file (symbols.h)\n"
+		"  -iw              : Write indirect call report to output/indirect.txt\n"
+		"Misc.\n"
+		"  -k               : Command mode, for available commands see -h cmd\n"
+		"  -P <path>        : Path to Boomerang files, defaults to where you run\n"
+		"                     Boomerang from\n"
+		"  -X               : activate eXperimental code; errors likely\n"
+		"  --               : No effect (used for testing)\n"
+		"Debug\n"
+		"  -da              : Print AST before code generation\n"
+		"  -dc              : Debug switch (Case) analysis\n"
+		"  -dd              : Debug decoder to stdout\n"
+		"  -dg              : Debug code Generation\n"
+		"  -dl              : Debug liveness (from SSA) code\n"
+		"  -dp              : Debug proof engine\n"
+		"  -ds              : Stop at debug points for keypress\n"
+		"  -dt              : Debug type analysis\n"
+		"  -du              : Debug removing unused statements etc\n"
+		"Restrictions\n"
+		"  -nb              : No simplifications for branches\n"
+		"  -nc              : No decode children in the call graph (callees)\n"
+		"  -nd              : No (reduced) dataflow analysis\n"
+		"  -nD              : No decompilation (at all!)\n"
+		"  -nl              : No creation of local variables\n"
+//		"  -nm              : No decoding of the 'main' procedure\n"
+		"  -ng              : No replacement of expressions with Globals\n"
+		"  -nn              : No removal of nullptr and unused statements\n"
+		"  -np              : No replacement of expressions with Parameter names\n"
+		"  -nP              : No promotion of signatures (other than main/WinMain/\n"
+		"                     DriverMain)\n"
+		"  -nr              : No removal of unneeded labels\n"
+		"  -nR              : No removal of unused Returns\n"
+		"  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n"
+		"  -p <num>         : Only do num propagations\n"
+		"  -m <num>         : Max memory depth\n";
 }
 
 

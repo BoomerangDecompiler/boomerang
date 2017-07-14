@@ -37,7 +37,6 @@ public:
 	SparcDecoder(Prog *prog);
 
 	/// @copydoc NJMCDecoder::decodeInstruction
-
 	/***************************************************************************/ /**
 	 * \fn     SparcDecoder::decodeInstruction
 	 * \brief  Attempt to decode the high level instruction at a given address.

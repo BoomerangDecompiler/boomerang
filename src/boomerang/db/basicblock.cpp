@@ -51,10 +51,6 @@
 char debug_buffer[DEBUG_BUFSIZE];
 
 
-/**********************************
-* BasicBlock methods
-**********************************/
-
 BasicBlock::BasicBlock(Function *parent)
 	: m_targetOutEdges(0)
 	, m_inEdgesVisited(0) // From Doug's code
@@ -747,14 +743,6 @@ void BasicBlock::getStatements(StatementList& stmts) const
 }
 
 
-/*
- * Structuring and code generation.
- *
- * This code is whole heartly based on AST by Doug Simon. Portions may be copyright to him and are available under a BSD
- * style license.
- *
- * Adapted for Boomerang by Trent Waddington, 20 June 2002.
- */
 SharedExp BasicBlock::getCond()
 {
 	// the condition will be in the last rtl
@@ -2207,7 +2195,6 @@ static void findConstantValues(const Instruction *s, std::list<int>& dests)
 
 bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 {
-#define CHECK_REAL_PHI_LOOPS    0
 #if CHECK_REAL_PHI_LOOPS
 	rtlit rit;
 	StatementList::iterator sit;
@@ -2293,7 +2280,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 			if (expr) {
 				swi->uTable    = T;
 				swi->iNumTable = findNumCases();
-#if 1           // TMN: Added actual control of the array members, to possibly truncate what findNumCases()
+
+				// TMN: Added actual control of the array members, to possibly truncate what findNumCases()
 				// thinks is the number of cases, when finding the first array element not pointing to code.
 				if (form == 'A') {
 					Prog *prog = proc->getProg();
@@ -2321,7 +2309,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 					LOG << "Switch analysis failure at: " << this->getLowAddr();
 					return false;
 				}
-#endif
+
 				// TODO: missing form = 'R' iOffset is not being set
 				swi->iUpper = swi->iNumTable - 1;
 				swi->iLower = 0;
@@ -2676,7 +2664,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 		}
 		else {
 			LOG << "switch table entry branches to past end of text section " << uSwitch << "\n";
-#if 1       // TMN: If we reached an array entry pointing outside the program text, we can be quite confident the array
+			// TMN: If we reached an array entry pointing outside the program text, we can be quite confident the array
 			// has ended. Don't try to pull any more data from it.
 			LOG << "Assuming the end of the pointer-array has been reached at index " << i << "\n";
 			// TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
@@ -2689,10 +2677,6 @@ void BasicBlock::processSwitch(UserProc *proc)
 			//            iNumOut        -= (iNum - i);
 			m_targetOutEdges -= (iNum - i);
 			break;
-#else
-			iNumOut--;
-			m_iNumOutEdges--; // FIXME: where is this set?
-#endif
 		}
 	}
 

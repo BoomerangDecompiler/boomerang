@@ -29,7 +29,7 @@ enum TABLE_TYPE
 
 class Table
 {
-	typedef std::deque<QString> tRecords;
+	typedef std::deque<QString> StringQueue;
 
 public:
 	Table(const std::deque<QString>& recs, TABLE_TYPE t = NAMETABLE);
@@ -37,7 +37,7 @@ public:
 	virtual ~Table() {}
 	TABLE_TYPE getType() const;
 
-	tRecords Records;
+   StringQueue Records;
 
 private:
 	TABLE_TYPE TableType;

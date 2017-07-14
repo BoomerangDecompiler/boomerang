@@ -597,6 +597,7 @@ public:
 	bool isMemOnly() { return m_memOnly; }
 
 	bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
+	// Add used locations finder
 	bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 	bool visit(const std::shared_ptr<Terminal>& e) override;
 };
@@ -728,6 +729,7 @@ public:
 		: m_constList(_lc) {}
 	virtual ~ConstFinder() {}
 
+	// This is the code (apart from definitions) to find all constants in a Statement
 	virtual bool visit(const std::shared_ptr<Const>& e) override;
 	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 };
@@ -749,16 +751,21 @@ class DfaLocalMapper : public ExpModifier
 	UserProc *m_proc;
 	Prog *m_prog;
 	std::shared_ptr<Signature> m_sig;      ///< Look up once (from proc) for speed
+
+	// Common processing for the two main cases (visiting a Location or a Binary)
 	bool processExp(const SharedExp& e);   ///< Common processing here
 
 public:
 	bool change; // True if changed this statement
 
+	// Map expressions to locals, using the (so far DFA based) type analysis information
+	// Basically, descend types, and when you get to m[...] compare with the local high level pattern;
+	// when at a sum or difference, check for the address of locals high level pattern that is a pointer
 	DfaLocalMapper(UserProc *proc);
 
 	SharedExp preVisit(const std::shared_ptr<Location>& e, bool& recur) override; // To process m[X]
 
-	//        Exp*        preVisit( const std::shared_ptr<Unary> &    e, bool& recur);        // To process a[X]
+//	SharedExp preVisit(const std::shared_ptr<Unary> & e, bool& recur) override;        // To process a[X]
 	SharedExp preVisit(const std::shared_ptr<Binary>& e, bool& recur) override;   // To look for sp -+ K
 	SharedExp preVisit(const std::shared_ptr<TypedExp>& e, bool& recur) override; // To prevent processing TypedExps more than once
 };
@@ -774,8 +781,12 @@ class ImplicitConverter : public ExpModifier
 public:
 	ImplicitConverter(Cfg *cfg)
 		: m_cfg(cfg) {}
+
+	// This is in the POST visit function, because it's important to process any child expressions first.
+	// Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a nullptr definition for r28.
 	SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
 };
+
 
 class StmtImplicitConverter : public StmtModifier
 {
@@ -789,6 +800,8 @@ public:
 	virtual void visit(PhiAssign *s, bool& recur) override;
 };
 
+
+// Localiser. Subscript a location with the definitions that reach the call, or with {-} if none
 class Localiser : public SimpExpModifier
 {
 	CallStatement *call; // The call to localise to
@@ -796,9 +809,12 @@ class Localiser : public SimpExpModifier
 public:
 	Localiser(CallStatement *c)
 		: call(c) {}
+
 	SharedExp preVisit(const std::shared_ptr<RefExp>& e, bool& recur) override;
 	SharedExp preVisit(const std::shared_ptr<Location>& e, bool& recur) override;
 	SharedExp postVisit(const std::shared_ptr<Location>& e) override;
+
+	// Want to be able to localise a few terminals, in particular <all>
 	SharedExp postVisit(const std::shared_ptr<Terminal>& e) override;
 };
 
@@ -843,8 +859,11 @@ class ExpPropagator : public SimpExpModifier
 public:
 	ExpPropagator()
 		: change(false) {}
+
 	bool isChanged() { return change; }
 	void clearChanged() { change = false; }
+
+	// Ugh! This is still a separate propagation mechanism from Statement::propagateTo()
 	SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
 };
 
@@ -858,6 +877,14 @@ public:
 	PrimitiveTester()
 		: result(true) {}               // Initialise result true: need AND of all components
 	bool getResult() { return result; }
+
+	// Return true if e is a primitive expression; basically, an expression you can propagate to without causing
+	// memory expression problems. See Mike's thesis for details
+	// Algorithm: if find any unsubscripted location, not primitive
+	//   Implicit definitions are primitive (but keep searching for non primitives)
+	//   References to the results of calls are considered primitive... but only if bypassed?
+	//   Other references considered non primitive
+	// Start with result=true, must find primitivity in all components
 	bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 	bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
 };
@@ -894,6 +921,9 @@ class ExpRegMapper : public ExpVisitor
 
 public:
 	ExpRegMapper(UserProc *proc);
+
+	// The idea here is to map the default of a register to a symbol with the type of that first use. If the register is
+	// not involved in any conflicts, it will use this name by default
 	bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
 };
 
@@ -977,6 +1007,7 @@ public:
 	bool isFound() { return m_found; }
 
 private:
+	// Search for bare memofs (not subscripted) in the expression
 	virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 	virtual bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
 };

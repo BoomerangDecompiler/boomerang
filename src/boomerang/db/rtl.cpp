@@ -34,23 +34,12 @@
 #include <cassert>                      // for assert
 #include <cstring>                      // for strncpy
 
-/******************************************************************************
- * RTL methods.
- * Class RTL represents low-level register transfer lists.
- *****************************************************************************/
-
 RTL::RTL()
 	: m_nativeAddr(Address::ZERO)
 {
 }
 
 
-/***************************************************************************/ /**
- * \brief   Constructor.
- * \param   instNativeAddr - the native address of the instruction
- * \param   listStmt - ptr to existing list of Statement
- *
- ******************************************************************************/
 RTL::RTL(Address instNativeAddr, const std::list<Instruction *> *listStmt /*= nullptr*/)
 	: m_nativeAddr(instNativeAddr)
 {
@@ -94,8 +83,6 @@ RTL& RTL::operator=(const RTL& other)
 	return *this;
 }
 
-
-// Return a deep copy, including a deep copy of the list of Statements
 
 RTL *RTL::clone() const
 {

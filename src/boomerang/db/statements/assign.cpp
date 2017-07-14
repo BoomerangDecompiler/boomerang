@@ -9,19 +9,19 @@
 #include "boomerang/codegen/ICodeGenerator.h"
 
 
-Assign::Assign(SharedExp _lhs, SharedExp r, SharedExp _guard)
-	: Assignment(_lhs)
+Assign::Assign(SharedExp lhs, SharedExp r, SharedExp guard)
+	: Assignment(lhs)
 	, m_rhs(r)
-	, m_guard(_guard)
+	, m_guard(guard)
 {
 	m_kind = STMT_ASSIGN;
 }
 
 
-Assign::Assign(SharedType ty, SharedExp _lhs, SharedExp r, SharedExp _guard)
-	: Assignment(ty, _lhs)
+Assign::Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard)
+	: Assignment(ty, lhs)
 	, m_rhs(r)
-	, m_guard(_guard)
+	, m_guard(guard)
 {
 	m_kind = STMT_ASSIGN;
 }

@@ -38,18 +38,22 @@ QString Address::toString() const
 	return QString("0x%1").arg(m_value, m_sourceBits / 4, 16, QChar('0'));
 }
 
+
 Address::value_type Address::getSourceMask()
 {
     return getLowerBitMask(m_sourceBits);
 }
 
+
 HostAddress::HostAddress(const void* ptr)
 	: m_value((value_type)ptr)
 {}
 
+
 HostAddress::HostAddress(value_type value)
 	: m_value(value)
 {}
+
 
 QString HostAddress::toString() const
 {
@@ -61,6 +65,7 @@ QTextStream& operator<<(QTextStream& os, const Address& addr)
 {
 	return os << addr.toString();
 }
+
 
 QTextStream& operator<<(QTextStream& os, const HostAddress& addr)
 {

@@ -32,6 +32,7 @@
 extern char               debug_buffer[]; // For prints functions
 QMap<QString, SharedType> Type::namedTypes;
 
+
 bool Type::isCString() const
 {
 	if (!resolvesToPointer()) {
@@ -225,7 +226,6 @@ FuncType::~FuncType()
 }
 
 
-// IntegerType::~IntegerType() { }
 FloatType::~FloatType()
 {
 }
@@ -274,11 +274,6 @@ std::shared_ptr<IntegerType> IntegerType::get(unsigned NumBits, int sign)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Deep copy of this type
- * \returns            Copy of the type
- ******************************************************************************/
 SharedType IntegerType::clone() const
 {
 	return IntegerType::get(size, signedness);
@@ -763,45 +758,12 @@ bool LowerType::operator==(const Type& other) const
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Inequality comparsion.
- * \param        other - Type being compared to
- * \returns            this == other
- ******************************************************************************/
 bool Type::operator!=(const Type& other) const
 {
 	return !(*this == other);
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Equality operator, ignoring sign. True if equal in broad
- *                      type and size, but not necessarily sign
- *                      Considers all float types > 64 bits to be the same
- * \param        other - Type being compared to
- * \returns            this == other (ignoring sign)
- ******************************************************************************/
-// bool IntegerType::operator-=(const Type& other) const {
-//        if (!other.isInteger()) return false;
-//        return size == ((IntegerType&)other).size;
-// }
-
-// bool FloatType::operator-=(const Type& other) const {
-//        if (!other.isFloat()) return false;
-//        if (size > 64 && ((FloatType&)other).size > 64)
-//        return true;
-//        return size == ((FloatType&)other).size;
-// }
-
-/***************************************************************************/ /**
- *
- * \brief        Defines an ordering between Type's
- *                      (and hence sets etc of Exp* using lessExpStar).
- * \param        other - Type being compared to
- * \returns            this is less than other
- ******************************************************************************/
 bool IntegerType::operator<(const Type& other) const
 {
 	if (id < other.getId()) {
@@ -820,7 +782,7 @@ bool IntegerType::operator<(const Type& other) const
 		return false;
 	}
 
-	return(signedness < ((IntegerType&)other).signedness);
+	return (signedness < ((IntegerType&)other).signedness);
 }
 
 
@@ -991,12 +953,6 @@ bool LowerType::operator<(const Type& other) const
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Match operation.
- * \param        pattern - Type to match
- * \returns            Exp list of bindings if match or nullptr
- ******************************************************************************/
 SharedExp Type::match(SharedType pattern)
 {
 	if (pattern->isNamed()) {
@@ -1121,7 +1077,6 @@ QString FuncType::getCtype(bool final) const
 }
 
 
-// As above, but split into the return and parameter parts
 void FuncType::getReturnAndParam(QString& ret, QString& param)
 {
 	if (signature == nullptr) {
@@ -1420,12 +1375,6 @@ void Type::dumpNames()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief   Given the name of a temporary variable, return its Type
- * \param   name reference to a string (e.g. "tmp", "tmpd")
- * \returns       Ptr to a new Type object
- ******************************************************************************/
 SharedType Type::getTempType(const QString& name)
 {
 	SharedType ty;
@@ -1475,14 +1424,6 @@ SharedType Type::getTempType(const QString& name)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief   Return a minimal temporary name for this type. It'd be even
- *          nicer to return a unique name, but we don't know scope at
- *          this point, and even so we could still clash with a user-defined
- *          name later on :(
- * \returns        a string
- ******************************************************************************/
 QString IntegerType::getTempName() const
 {
 	switch (size)
@@ -1551,7 +1492,6 @@ std::shared_ptr<PointerType> PointerType::newPtrAlpha()
 }
 
 
-// Note: alpha is therefore a "reserved name" for types
 bool PointerType::pointsToAlpha() const
 {
 	// void* counts as alpha* (and may replace it soon)
@@ -1619,7 +1559,6 @@ void ArrayType::fixBaseType(SharedType b)
 
 // Note: don't want to call this->resolve() for this case, since then we (probably) won't have a NamedType and the
 // assert will fail
-
 #define RESOLVES_TO_TYPE(x)														\
 	bool Type::resolvesTo ## x() const {										\
 		auto ty = shared_from_this();											\
@@ -1648,7 +1587,6 @@ bool Type::isPointerToAlpha()
 }
 
 
-/// Print in *i32* format
 void Type::starPrint(QTextStream& os)
 {
 	os << "*" << this << "*";
@@ -1754,8 +1692,6 @@ QTextStream& operator<<(QTextStream& os, const SharedConstType& t)
 }
 
 
-// FIXME: aren't mergeWith and meetWith really the same thing?
-// Merge this IntegerType with another
 SharedType IntegerType::mergeWith(SharedType other) const
 {
 	if (*this == *other) {
@@ -1781,7 +1717,6 @@ SharedType IntegerType::mergeWith(SharedType other) const
 }
 
 
-// Merge this SizeType with another type
 SharedType SizeType::mergeWith(SharedType other) const
 {
 	SharedType ret = other->clone();
@@ -1805,7 +1740,6 @@ SharedType LowerType::mergeWith(SharedType /*other*/) const
 }
 
 
-// Return true if this is a superstructure of other, i.e. we have the same types at the same offsets as other
 bool CompoundType::isSuperStructOf(const SharedType& other)
 {
 	if (!other->isCompound()) {
@@ -1829,7 +1763,6 @@ bool CompoundType::isSuperStructOf(const SharedType& other)
 }
 
 
-// Return true if this is a substructure of other, i.e. other has the same types at the same offsets as this
 bool CompoundType::isSubStructOf(SharedType other) const
 {
 	if (!other->isCompound()) {
@@ -1853,7 +1786,6 @@ bool CompoundType::isSubStructOf(SharedType other) const
 }
 
 
-// Return true if this type is already in the union. Note: linear search, but number of types is usually small
 bool UnionType::findType(SharedType ty)
 {
 	UnionElement ue;
@@ -1891,8 +1823,6 @@ SharedType Type::newIntegerLikeType(int size, int signedness)
 }
 
 
-// Find the entry that overlaps with addr. If none, return end(). We have to use upper_bound and decrement the iterator,
-// because we might want an entry that starts earlier than addr yet still overlaps it
 DataIntervalMap::iterator DataIntervalMap::find_it(Address addr)
 {
 	iterator it = dimap.upper_bound(addr); // Find the first item strictly greater than addr
@@ -1957,8 +1887,6 @@ bool DataIntervalMap::isClear(Address addr, unsigned size)
 }
 
 
-// With the forced parameter: are we forcing the name, the type, or always both?
-/// Add a new data item
 void DataIntervalMap::addItem(Address addr, QString name, SharedType ty, bool forced /* = false */)
 {
 	if (name.isNull()) {
@@ -2014,7 +1942,6 @@ void DataIntervalMap::addItem(Address addr, QString name, SharedType ty, bool fo
 }
 
 
-// We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
 void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, Address addr, const QString& /*name*/, SharedType ty,
 									 bool /*forced*/)
 {
@@ -2053,8 +1980,6 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, Address addr, cons
 }
 
 
-// We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
-// components out of the way, meeting if necessary
 void DataIntervalMap::replaceComponents(Address addr, const QString& name, SharedType ty, bool /*forced*/)
 {
 	iterator it;
@@ -2282,7 +2207,6 @@ void UnionType::addType(SharedType n, const QString& str)
 }
 
 
-// Update this compound to use the fact that offset off has type ty
 void CompoundType::updateGenericMember(int off, SharedType ty, bool& ch)
 {
 	assert(generic);

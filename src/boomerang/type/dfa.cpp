@@ -161,7 +161,6 @@ void DFA_TypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
 }
 
 
-// 3) Check implicit assigns for parameter and global types.
 void DFA_TypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
 {
 	bool       allZero;
@@ -883,7 +882,6 @@ SharedType CompoundType::meetWith(SharedType other, bool& ch, bool bHighestPtr) 
 }
 
 
-#define PRINT_UNION    0 // Set to 1 to debug unions to stderr
 #ifdef PRINT_UNION
 unsigned unionCount = 0;
 #endif

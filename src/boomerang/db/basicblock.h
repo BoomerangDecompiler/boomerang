@@ -441,6 +441,14 @@ public:
 
 
 	/// Get the condition
+	/*
+	* Structuring and code generation.
+	*
+	* This code is whole heartly based on AST by Doug Simon. Portions may be copyright to him and are available under a BSD
+	* style license.
+	*
+	* Adapted for Boomerang by Trent Waddington, 20 June 2002.
+	*/
 	SharedExp getCond() noexcept(false);
 
 	/** set the condition */

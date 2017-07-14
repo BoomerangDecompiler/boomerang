@@ -18,6 +18,8 @@ public:
 	virtual ~ImplicitAssign();
 
 	virtual Instruction *clone() const override;
+
+	/// Data flow based type analysis
 	void dfaTypeAnalysis(bool& ch) override;
 
 	// general search

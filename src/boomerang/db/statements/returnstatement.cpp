@@ -398,7 +398,6 @@ void ReturnStatement::print(QTextStream& os, bool html) const
 		column += len;
 	}
 
-#if 1
 	// Collected reaching definitions
 	if (html) {
 		os << "<br>";
@@ -409,7 +408,6 @@ void ReturnStatement::print(QTextStream& os, bool html) const
 
 	os << "Reaching definitions: ";
 	col.print(os, html);
-#endif
 }
 
 
@@ -557,7 +555,6 @@ void ReturnStatement::updateReturns()
 			continue;     // Filtered out: delete it
 		}
 
-#if 1
 		// Preserveds are NOT returns (nothing changes, so what are we returning?)
 		// Check if it is a preserved location, e.g. r29 := r29{-}
 		SharedExp rhs = as->getRight();
@@ -565,7 +562,6 @@ void ReturnStatement::updateReturns()
 		if (rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef() && (*rhs->getSubExp1() == *lhs)) {
 			continue;     // Filter out the preserveds
 		}
-#endif
 
 		// Insert as, in order, into the existing set of returns
 		StatementList::iterator nn;

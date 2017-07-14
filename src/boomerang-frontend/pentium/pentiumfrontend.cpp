@@ -41,21 +41,9 @@
 #include <cstring>
 #include <sstream>
 
-
-/***************************************************************************/ /**
- * Forward declarations.
- ******************************************************************************/
-
 #define FSW    40 // Numeric registers
 #define AH     12
 
-/***************************************************************************/ /**
- * \fn      isStoreFsw
- * \brief      Return true if the given Statement is an assignment that stores the FSW (Floating point Status Word)
- *                    reg
- * \param      s - Ptr to the given Statement
- * \returns           True if it is
- ******************************************************************************/
 bool PentiumFrontEnd::isStoreFsw(Instruction *s)
 {
 	if (!s->isAssign()) {
@@ -69,11 +57,6 @@ bool PentiumFrontEnd::isStoreFsw(Instruction *s)
 }
 
 
-/***************************************************************************/ /**
- * \brief      Return true if the given RTL is a decrement of register AH
- * \param r - Ptr to the given RTL
- * \returns           True if it is
- ******************************************************************************/
 bool PentiumFrontEnd::isDecAh(RTL *r)
 {
 	// Check for decrement; RHS of middle Exp will be r[12]{8} - 1
@@ -95,12 +78,6 @@ bool PentiumFrontEnd::isDecAh(RTL *r)
 }
 
 
-/***************************************************************************/ /**
- * \fn      isSetX
- * \brief      Return true if the given Statement is a setX instruction
- * \param      s - Ptr to the given Statement
- * \returns           True if it is
- ******************************************************************************/
 bool PentiumFrontEnd::isSetX(Instruction *s)
 {
 	// Check for SETX, i.e. <exp> ? 1 : 0
@@ -134,12 +111,6 @@ bool PentiumFrontEnd::isSetX(Instruction *s)
 }
 
 
-/***************************************************************************/ /**
- * \fn      isAssignFromTern
- * \brief      Return true if the given Statement is an expression whose RHS is a ?: ternary
- * \param      s - Ptr to the given Statement
- * \returns           True if it is
- ******************************************************************************/
 bool PentiumFrontEnd::isAssignFromTern(Instruction *s)
 {
 	if (!s->isAssign()) {
@@ -173,19 +144,6 @@ void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, 
 }
 
 
-/***************************************************************************/ /**
- * \fn      PentiumFrontEnd::processProc
- * \brief      Process a procedure, given a native (source machine) address.
- * This is the main function for decoding a procedure.
- * This overrides the base class processProc to do source machine specific things (but often calls the base
- * class to do most of the work. Sparc is an exception)
- * \param  uAddr - the address at which the procedure starts
- * \param  pProc - the procedure object
- * \param  os - output stream for rtl output
- * \param  frag - true if decoding only a fragment of the proc
- * \param  spec - true if this is a speculative decode (so give up on any invalid instruction)
- * \returns           True if successful decode
- ******************************************************************************/
 bool PentiumFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
 								  bool spec /* = false */)
 {
@@ -264,10 +222,6 @@ std::vector<SharedExp>& PentiumFrontEnd::getDefaultReturns()
 }
 
 
-/**
- * Little simpler, just replaces FPUSH and FPOP with more complex
- * semantics.
- */
 void PentiumFrontEnd::processFloatCode(Cfg *pCfg)
 {
 	BB_IT it;
@@ -447,8 +401,6 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
 }
 
 
-// Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
-// Insert before rit
 void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::iterator& rit, Address uAddr, SharedExp lhs,
 							  SharedExp cond)
 {
@@ -532,10 +484,6 @@ PentiumFrontEnd::~PentiumFrontEnd()
 }
 
 
-/***************************************************************************/ /**
- * \brief    Locate the starting address of "main" in the code section
- * \returns         Native pointer if found; Address::INVALID if not
- ******************************************************************************/
 Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 {
 	   Address start = m_fileLoader->getMainEntryPoint();
@@ -689,9 +637,6 @@ void toBranches(Address a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb,
 }
 
 
-/**
- * Process away %rpt and %skip in string instructions
- */
 void PentiumFrontEnd::processStringInst(UserProc *proc)
 {
 	Cfg::iterator it;
@@ -750,9 +695,6 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
 }
 
 
-/**
- * Process for overlapped registers
- */
 void PentiumFrontEnd::processOverlapped(UserProc *proc)
 {
 	// first, lets look for any uses of the registers
@@ -1051,7 +993,6 @@ DecodeResult& PentiumFrontEnd::decodeInstruction(Address pc)
 }
 
 
-// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
 void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls)
 {
 	if (not call->getDestProc()) {

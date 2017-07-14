@@ -15,6 +15,7 @@ class CallStatement;
 
 struct DecodeResult;
 
+
 class ST20FrontEnd : public IFrontEnd
 {
 public:

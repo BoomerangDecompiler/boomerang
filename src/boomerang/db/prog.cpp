@@ -504,7 +504,6 @@ void Prog::generateCode(QTextStream& os) const
 }
 
 
-/// Print this program (primarily for debugging)
 void Prog::print(QTextStream& out) const
 {
 	for (Module *module : m_moduleList) {
@@ -526,7 +525,6 @@ void Prog::print(QTextStream& out) const
 }
 
 
-/// clear the prog object \note deletes everything!
 void Prog::clear()
 {
 	m_name = "";
@@ -808,13 +806,6 @@ int Prog::getNumProcs(bool user_only) const
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief    Return a pointer to the associated Proc object, or nullptr if none
- * \note        Could return -1 for a deleted Proc
- * \param uAddr - Native address of the procedure entry point
- * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
- ******************************************************************************/
 Function *Prog::findProc(Address uAddr) const
 {
 	for (Module *m : m_moduleList) {
@@ -829,12 +820,6 @@ Function *Prog::findProc(Address uAddr) const
 }
 
 
-/***************************************************************************/ /**
- * \brief    Return a pointer to the associated Proc object, or nullptr if none
- * \note        Could return -1 for a deleted Proc
- * \param name - name of the searched-for procedure
- * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
- ******************************************************************************/
 Function *Prog::findProc(const QString& name) const
 {
 	for (Module *m : m_moduleList) {
@@ -849,7 +834,6 @@ Function *Prog::findProc(const QString& name) const
 }
 
 
-/// lookup a library procedure by name; create if does not exist
 LibProc *Prog::getLibraryProc(const QString& nam) const
 {
 	Function *p = findProc(nam);
@@ -862,7 +846,6 @@ LibProc *Prog::getLibraryProc(const QString& nam) const
 }
 
 
-/// Get the front end id used to make this prog
 Platform Prog::getFrontEndId() const
 {
 	return m_defaultFrontend->getType();

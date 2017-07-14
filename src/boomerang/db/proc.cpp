@@ -69,10 +69,6 @@ typedef std::map<Instruction *, int> RefCounter;
 extern char         debug_buffer[]; // Defined in basicblock.cpp, size DEBUG_BUFSIZE
 extern QTextStream& alignStream(QTextStream& str, int align);
 
-/************************
- * Proc methods.
- ***********************/
-
 Function::~Function()
 {
 }
@@ -89,14 +85,6 @@ void Function::eraseFromParent()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Constructor with name, native address.
- * \param        uNative - Native address of entry point of procedure
- * \param        sig - the Signature for this Proc
- * \param        mod - the Module this procedure belongs to
- *
- ******************************************************************************/
 Function::Function(Address uNative, Signature *sig, Module *mod)
 	: m_signature(sig)
 	, m_address(uNative)
@@ -108,11 +96,6 @@ Function::Function(Address uNative, Signature *sig, Module *mod)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Returns the name of this procedure
- * \returns            the name of this procedure
- ******************************************************************************/
 QString Function::getName() const
 {
 	assert(m_signature);
@@ -120,12 +103,6 @@ QString Function::getName() const
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Sets the name of this procedure
- * \param        nam - new name
- *
- ******************************************************************************/
 void Function::setName(const QString& nam)
 {
 	assert(m_signature);
@@ -133,23 +110,12 @@ void Function::setName(const QString& nam)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Get the native address (entry point).
- * \returns            the native address of this procedure (entry point)
- ******************************************************************************/
 Address Function::getNativeAddress() const
 {
 	return m_address;
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Set the native address
- * \param a native address of the procedure
- *
- ******************************************************************************/
 void Function::setNativeAddress(Address a)
 {
 	m_address = a;
@@ -506,7 +472,6 @@ void UserProc::printUseGraph()
 }
 
 
-/// Get the first procedure that calls this procedure (or null for main/start).
 Function *Function::getFirstCaller()
 {
 	if ((m_firstCaller == nullptr) && (m_firstCallerAddr != Address::INVALID)) {
@@ -518,10 +483,6 @@ Function *Function::getFirstCaller()
 }
 
 
-/**********************
- * LibProc methods.
- *********************/
-
 LibProc::LibProc(Module *mod, const QString& name, Address uNative)
 	: Function(uNative, nullptr, mod)
 {
@@ -529,7 +490,6 @@ LibProc::LibProc(Module *mod, const QString& name, Address uNative)
 }
 
 
-/// Get the RHS that is proven for left
 SharedExp LibProc::getProven(SharedExp left)
 {
 	// Just use the signature information (all we have, after all)
@@ -542,10 +502,6 @@ bool LibProc::isPreserved(SharedExp e)
 	return m_signature->isPreserved(e);
 }
 
-
-/**********************
- * UserProc methods.
- *********************/
 
 UserProc::UserProc(Module *mod, const QString& name, Address uNative)
 	: // Not quite ready for the below fix:
@@ -1128,57 +1084,57 @@ void UserProc::insertStatementAfter(Instruction *s, Instruction *a)
 }
 
 
-/** Cycle detection logic:
- * *********************
- * cycleGrp is an initially null pointer to a set of procedures, representing the procedures involved in the current
- * recursion group, if any. These procedures have to be analysed together as a group, after individual pre-group
- * analysis.
- * child is a set of procedures, cleared at the top of decompile(), representing the cycles associated with the
- * current procedure and all of its children. If this is empty, the current procedure is not involved in recursion,
- * and can be decompiled up to and including removing unused statements.
- * path is an initially empty list of procedures, representing the call path from the current entry point to the
- * current procedure, inclusive.
- * If (after all children have been processed: important!) the first element in path and also cycleGrp is the current
- * procedure, we have the maximal set of distinct cycles, so we can do the recursion group analysis and return an empty
- * set. At the end of the recursion group analysis, the whole group is complete, ready for the global analyses.
- * cycleSet decompile(ProcList path)        // path initially empty
- *      child = new ProcSet
- *      append this proc to path
- *      for each child c called by this proc
- *              if c has already been visited but not finished
- *                      // have new cycle
- *                      if c is in path
- *                        // this is a completely new cycle
- *                        insert every proc from c to the end of path into child
- *                      else
- *                        // this is a new branch of an existing cycle
- *                        child = c->cycleGrp
- *                        find first element f of path that is in cycleGrp
- *                        insert every proc after f to the end of path into child
- *                      for each element e of child
- *            insert e->cycleGrp into child
- *                        e->cycleGrp = child
- *              else
- *                      // no new cycle
- *                      tmp = c->decompile(path)
- *                      child = union(child, tmp)
- *                      set return statement in call to that of c
- *      if (child empty)
- *              earlyDecompile()
- *              child = middleDecompile()
- *              removeUnusedStatments()            // Not involved in recursion
- *      else
- *              // Is involved in recursion
- *              find first element f in path that is also in cycleGrp
- *              if (f == this)          // The big test: have we got the complete strongly connected component?
- *                      recursionGroupAnalysis()        // Yes, we have
- *                      child = new ProcSet            // Don't add these processed cycles to the parent
- *      remove last element (= this) from path
- *      return child
- */
-
 std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 {
+	/* Cycle detection logic:
+	* *********************
+	* cycleGrp is an initially null pointer to a set of procedures, representing the procedures involved in the current
+	* recursion group, if any. These procedures have to be analysed together as a group, after individual pre-group
+	* analysis.
+	* child is a set of procedures, cleared at the top of decompile(), representing the cycles associated with the
+	* current procedure and all of its children. If this is empty, the current procedure is not involved in recursion,
+	* and can be decompiled up to and including removing unused statements.
+	* path is an initially empty list of procedures, representing the call path from the current entry point to the
+	* current procedure, inclusive.
+	* If (after all children have been processed: important!) the first element in path and also cycleGrp is the current
+	* procedure, we have the maximal set of distinct cycles, so we can do the recursion group analysis and return an empty
+	* set. At the end of the recursion group analysis, the whole group is complete, ready for the global analyses.
+	* cycleSet decompile(ProcList path)        // path initially empty
+	*      child = new ProcSet
+	*      append this proc to path
+	*      for each child c called by this proc
+	*              if c has already been visited but not finished
+	*                      // have new cycle
+	*                      if c is in path
+	*                        // this is a completely new cycle
+	*                        insert every proc from c to the end of path into child
+	*                      else
+	*                        // this is a new branch of an existing cycle
+	*                        child = c->cycleGrp
+	*                        find first element f of path that is in cycleGrp
+	*                        insert every proc after f to the end of path into child
+	*                      for each element e of child
+	*            insert e->cycleGrp into child
+	*                        e->cycleGrp = child
+	*              else
+	*                      // no new cycle
+	*                      tmp = c->decompile(path)
+	*                      child = union(child, tmp)
+	*                      set return statement in call to that of c
+	*      if (child empty)
+	*              earlyDecompile()
+	*              child = middleDecompile()
+	*              removeUnusedStatments()            // Not involved in recursion
+	*      else
+	*              // Is involved in recursion
+	*              find first element f in path that is also in cycleGrp
+	*              if (f == this)          // The big test: have we got the complete strongly connected component?
+	*                      recursionGroupAnalysis()        // Yes, we have
+	*                      child = new ProcSet            // Don't add these processed cycles to the parent
+	*      remove last element (= this) from path
+	*      return child
+	*/
+
 	Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
 	alignStream(LOG_STREAM(), ++indent) << (m_status >= PROC_VISITED ? "re" : "") << "considering "
 										<< getName() << "\n";
@@ -1583,7 +1539,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
 // (* Was: mapping expressions to Parameters as we go *)
 
-#if 1   // FIXME: Check if this is needed any more. At least fib seems to need it at present.
+		// FIXME: Check if this is needed any more. At least fib seems to need it at present.
 		if (!Boomerang::get()->noChangeSignatures) {
 			// addNewReturns(depth);
 			for (int i = 0; i < 3; i++) { // FIXME: should be iterate until no change
@@ -1609,7 +1565,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 										<< getName() << " at pass " << pass << " ===\n\n";
 			}
 		}
-#endif
 
 		printXML();
 
@@ -2464,7 +2419,6 @@ static SharedExp memOfWild = RefExp::get(Location::memOf(Terminal::get(opWild)),
 static SharedExp regOfWild = RefExp::get(Location::regOf(Terminal::get(opWildIntConst)), nullptr);
 
 
-#define DEBUG_PARAMS    1
 void UserProc::findFinalParameters()
 {
 	Boomerang::get()->alertDecompileDebugPoint(this, "before find final parameters.");
@@ -2528,88 +2482,11 @@ void UserProc::findFinalParameters()
 				LOG << "potential param " << e << "\n";
 			}
 
-#if 1       // I believe that the only true parameters will be registers or memofs that look like locals (stack
+			// I believe that the only true parameters will be registers or memofs that look like locals (stack
 			// pararameters)
 			if (!(e->isRegOf() || isLocalOrParamPattern(e))) {
 				continue;
 			}
-#else
-			if (signature->isStackLocal(prog, e) || (e->getOper() == opLocal)) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring local " << e << "\n";
-				}
-
-				continue;
-			}
-
-			if (e->isGlobal()) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring global " << e << "\n";
-				}
-
-				continue;
-			}
-
-			if (e->getMemDepth() > 1) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring complex " << e << "\n";
-				}
-
-				continue;
-			}
-
-			if (e->isMemOf() && e->getSubExp1()->isGlobal()) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring m[global] " << e << "\n";
-				}
-
-				continue;
-			}
-
-			if (e->isMemOf() && (e->getSubExp1()->getOper() == opParam)) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring m[param] " << e << "\n";
-				}
-
-				continue;
-			}
-
-			if (e->isMemOf() && (e->getSubExp1()->getOper() == opPlus) && e->getSubExp1()->getSubExp1()->isGlobal() &&
-				e->getSubExp1()->getSubExp2()->isIntConst()) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring m[global + int] " << e << "\n";
-				}
-
-				continue;
-			}
-
-			if (e->isRegN(sp)) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring stack pointer register\n";
-				}
-
-				continue;
-			}
-
-			if (e->isMemOf() && e->getSubExp1()->isConst()) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring m[const]\n";
-				}
-
-				continue;
-			}
-
-			bool allZero;
-			e->clone()->removeSubscripts(allZero);
-
-			if (!allZero) {
-				if (VERBOSE || DEBUG_PARAMS) {
-					LOG << "ignoring not all-zero\n";
-				}
-
-				continue;
-			}
-#endif
 
 			if (DEBUG_PARAMS) {
 				LOG_VERBOSE(1) << "found new parameter " << e << "\n";
@@ -3082,7 +2959,7 @@ bool UserProc::propagateStatements(bool& convert, int pass)
 	propagateToCollector();
 	LOG_VERBOSE(1) << "=== end propagating statements at pass " << pass << " ===\n";
 	return change;
-} // propagateStatements
+}
 
 
 Instruction *UserProc::getStmtAtLex(unsigned int begin, unsigned int end)
@@ -5133,38 +5010,35 @@ QString UserProc::findFirstSymbol(const SharedExp& e)
 	return std::static_pointer_cast<Const>(ff->second->getSubExp1())->getStr();
 }
 
-
-// Algorithm:
-
-/* fixCallAndPhiRefs
- *      for each statement s in this proc
- *        if s is a phi statement ps
- *              let r be a ref made up of lhs and s
- *              for each parameter p of ps
- *                if p == r                        // e.g. test/pentium/fromssa2 r28{56}
- *                      remove p from ps
- *              let lhs be left hand side of ps
- *              allSame = true
- *              let first be a ref built from first p
- *              do bypass but not propagation on first
- *              if result is of the form lhs{x}
- *                replace first with x
- *              for each parameter p of ps after the first
- *                let current be a ref built from p
- *                do bypass but not propagation on current
- *                if result is of form lhs{x}
- *                      replace cur with x
- *                if first != current
- *                      allSame = false
- *              if allSame
- *                let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
- *                replace ps with an assignment lhs := best
- *      else (ordinary statement)
- *        do bypass and propagation for s
- */
 // Perform call and phi statement bypassing at depth d <- missing
 void UserProc::fixCallAndPhiRefs()
 {
+	/* Algorithm:
+	*      for each statement s in this proc
+	*        if s is a phi statement ps
+	*              let r be a ref made up of lhs and s
+	*              for each parameter p of ps
+	*                if p == r                        // e.g. test/pentium/fromssa2 r28{56}
+	*                      remove p from ps
+	*              let lhs be left hand side of ps
+	*              allSame = true
+	*              let first be a ref built from first p
+	*              do bypass but not propagation on first
+	*              if result is of the form lhs{x}
+	*                replace first with x
+	*              for each parameter p of ps after the first
+	*                let current be a ref built from p
+	*                do bypass but not propagation on current
+	*                if result is of form lhs{x}
+	*                      replace cur with x
+	*                if first != current
+	*                      allSame = false
+	*              if allSame
+	*                let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
+	*                replace ps with an assignment lhs := best
+	*      else (ordinary statement)
+	*        do bypass and propagation for s
+	*/
 	if (VERBOSE) {
 		LOG << "### start fix call and phi bypass analysis for " << getName() << " ###\n";
 	}
@@ -5934,8 +5808,8 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 		std::set<CallStatement *>& callers = getCallers();
 
 		for (CallStatement *cc : callers) {
-#ifdef RECURSION_WIP
-// TODO: prevent function from blocking it's own removals, needs more work
+#if RECURSION_WIP
+			// TODO: prevent function from blocking it's own removals, needs more work
 			if (cc->getProc()->doesRecurseTo(this)) {
 				continue;
 			}
@@ -6459,8 +6333,6 @@ void UserProc::setDominanceNumbers()
 
 	m_df.setDominanceNums(0, currNum);
 }
-
-
 #endif
 
 

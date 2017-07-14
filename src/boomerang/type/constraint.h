@@ -45,12 +45,17 @@ public:
 	/// Return iterators for the begin() and end() of the map
 	iterator begin() { return cmap.begin(); }
 	iterator end() { return cmap.end(); }
+
+	/// Insert a constraint given a location and a Type
 	void constrain(SharedExp loc1, SharedExp loc2);
 	void constrain(SharedExp loc, SharedType t);
+
+	/// Insert a constraint given two Types (at least one variable)
 	void constrain(SharedType t1, SharedType t2);
 
 	/// Insert a constraint given an equality expression
 	/// e.g. Tlocal1 = <char*>
+	/// Insert a constraint given two locations (i.e. Tloc1 = Tloc2)
 	void insert(SharedExp term);
 
 	/// Insert a constraint given left and right hand sides (as type Exps)
@@ -126,6 +131,12 @@ public:
 
 	/// Substitute the given constraintMap into the equates
 	void substIntoEquates(ConstraintMap& in);
+
+	/**
+	 * Perform "alpha substitution". Example:
+	 *   <fixedtype*> = alphaX* and T[Y] = alphaX*    ->
+	 *   T[Y] = <fixedtype*>
+	 */
 	void alphaSubst();
 
 	/// Solve the constraints. If they can be solved, return true and put
@@ -134,6 +145,9 @@ public:
 	bool solve(std::list<ConstraintMap>& solns);
 
 private:
+	// Constraints up to but not including iterator it have been unified.
+	// The current solution is soln
+	// The set of all solutions is in solns
 	bool doSolve(std::list<SharedExp>::iterator it, ConstraintMap& extra, std::list<ConstraintMap>& solns);
 
 	/// Test for compatibility of these types. Sometimes, they are compatible

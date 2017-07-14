@@ -22,5 +22,7 @@ protected:
 
 private:
 	void dfa_analyze_scaled_array_ref(Instruction *s);
+
+	// 3) Check implicit assigns for parameter and global types.
 	void dfa_analyze_implict_assigns(Instruction *s);
 };

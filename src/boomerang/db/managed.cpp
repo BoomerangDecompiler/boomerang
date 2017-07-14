@@ -47,11 +47,6 @@ QTextStream& operator<<(QTextStream& os, const LocationSet *ls)
 }
 
 
-//
-// InstructionSet methods
-//
-
-/// Make this set the union of itself and other
 void InstructionSet::makeUnion(InstructionSet& other)
 {
 	std::set<Instruction *>::iterator it;
@@ -62,7 +57,6 @@ void InstructionSet::makeUnion(InstructionSet& other)
 }
 
 
-/// Make this set the difference of itself and other
 void InstructionSet::makeDiff(InstructionSet& other)
 {
 	std::set<Instruction *>::iterator it;
@@ -73,7 +67,6 @@ void InstructionSet::makeDiff(InstructionSet& other)
 }
 
 
-/// Make this set the intersection of itself and other
 void InstructionSet::makeIsect(InstructionSet& other)
 {
 	std::set<Instruction *>::iterator it, ff;
@@ -89,8 +82,6 @@ void InstructionSet::makeIsect(InstructionSet& other)
 }
 
 
-/// Check for the subset relation, i.e. are all my elements also in the set
-/// other. Effectively (this intersect other) == this
 bool InstructionSet::isSubSetOf(InstructionSet& other)
 {
 	std::set<Instruction *>::iterator it, ff;
@@ -107,7 +98,6 @@ bool InstructionSet::isSubSetOf(InstructionSet& other)
 }
 
 
-// Remove this Statement. Return false if it was not found
 bool InstructionSet::remove(Instruction *s)
 {
 	if (find(s) != end()) {
@@ -119,7 +109,6 @@ bool InstructionSet::remove(Instruction *s)
 }
 
 
-// Search for s in this Statement set. Return true if found
 bool InstructionSet::exists(Instruction *s)
 {
 	iterator it = find(s);
@@ -128,7 +117,6 @@ bool InstructionSet::exists(Instruction *s)
 }
 
 
-// Find a definition for loc in this Statement set. Return true if found
 bool InstructionSet::definesLoc(SharedExp loc)
 {
 	for (auto const& elem : *this) {
@@ -141,7 +129,6 @@ bool InstructionSet::definesLoc(SharedExp loc)
 }
 
 
-// Print to a string, for debugging
 const char *InstructionSet::prints()
 {
 	QString     tgt;
@@ -188,7 +175,6 @@ void InstructionSet::print(QTextStream& os) const
 }
 
 
-// Print just the numbers to stream os
 void InstructionSet::printNums(QTextStream& os)
 {
 	for (iterator it = begin(); it != end(); ) {
@@ -232,11 +218,6 @@ bool InstructionSet::operator<(const InstructionSet& o) const
 }
 
 
-//
-// AssignSet methods
-//
-
-// Make this set the union of itself and other
 void AssignSet::makeUnion(AssignSet& other)
 {
 	iterator it;
@@ -247,7 +228,6 @@ void AssignSet::makeUnion(AssignSet& other)
 }
 
 
-// Make this set the difference of itself and other
 void AssignSet::makeDiff(AssignSet& other)
 {
 	iterator it;
@@ -258,7 +238,6 @@ void AssignSet::makeDiff(AssignSet& other)
 }
 
 
-// Make this set the intersection of itself and other
 void AssignSet::makeIsect(AssignSet& other)
 {
 	iterator it, ff;
@@ -274,8 +253,6 @@ void AssignSet::makeIsect(AssignSet& other)
 }
 
 
-// Check for the subset relation, i.e. are all my elements also in the set
-// other. Effectively (this intersect other) == this
 bool AssignSet::isSubSetOf(AssignSet& other)
 {
 	iterator it, ff;
@@ -292,7 +269,6 @@ bool AssignSet::isSubSetOf(AssignSet& other)
 }
 
 
-// Remove this Assign. Return false if it was not found
 bool AssignSet::remove(Assign *a)
 {
 	if (find(a) != end()) {
@@ -304,7 +280,6 @@ bool AssignSet::remove(Assign *a)
 }
 
 
-// Search for a in this Assign set. Return true if found
 bool AssignSet::exists(Assign *a)
 {
 	iterator it = find(a);
@@ -313,7 +288,6 @@ bool AssignSet::exists(Assign *a)
 }
 
 
-// Find a definition for loc in this Assign set. Return true if found
 bool AssignSet::definesLoc(SharedExp loc) const
 {
 	Assign as(loc, Terminal::get(opWild));
@@ -322,7 +296,6 @@ bool AssignSet::definesLoc(SharedExp loc) const
 }
 
 
-// Find a definition for loc on the LHS in this Assign set. If found, return pointer to the Assign with that LHS
 Assign *AssignSet::lookupLoc(SharedExp loc)
 {
 	Assign   as(loc, Terminal::get(opWild));
@@ -336,7 +309,6 @@ Assign *AssignSet::lookupLoc(SharedExp loc)
 }
 
 
-// Print to a string, for debugging
 char *AssignSet::prints()
 {
 	QString     tgt;
@@ -382,7 +354,6 @@ void AssignSet::print(QTextStream& os) const
 }
 
 
-// Print just the numbers to stream os
 void AssignSet::printNums(QTextStream& os)
 {
 	for (iterator it = begin(); it != end(); ) {
@@ -426,11 +397,6 @@ bool AssignSet::operator<(const AssignSet& o) const
 }
 
 
-//
-// LocationSet methods
-//
-
-// Assignment operator
 LocationSet& LocationSet::operator=(const LocationSet& o)
 {
 	lset.clear();
@@ -444,7 +410,6 @@ LocationSet& LocationSet::operator=(const LocationSet& o)
 }
 
 
-// Copy constructor
 LocationSet::LocationSet(const LocationSet& o)
 {
 	std::set<SharedExp, lessExpStar>::const_iterator it;
@@ -498,7 +463,6 @@ void LocationSet::print(QTextStream& os) const
 }
 
 
-/// \param given is not modified, and could be const'd if not for std::set requirements
 void LocationSet::remove(SharedExp given)
 {
 	std::set<SharedExp, lessExpStar>::iterator it = lset.find(given);
@@ -517,8 +481,6 @@ void LocationSet::remove(SharedExp given)
 }
 
 
-// Remove locations defined by any of the given set of statements
-// Used for killing in liveness sets
 void LocationSet::removeIfDefines(InstructionSet& given)
 {
 	InstructionSet::iterator it;
@@ -536,7 +498,6 @@ void LocationSet::removeIfDefines(InstructionSet& given)
 }
 
 
-// Make this set the union of itself and other
 void LocationSet::makeUnion(LocationSet& other)
 {
 	iterator it;
@@ -547,7 +508,6 @@ void LocationSet::makeUnion(LocationSet& other)
 }
 
 
-// Make this set the set difference of itself and other
 void LocationSet::makeDiff(LocationSet& other)
 {
 	std::set<SharedExp, lessExpStar>::iterator it;
@@ -583,8 +543,6 @@ bool LocationSet::exists(SharedExp e) const
 }
 
 
-// This set is assumed to be of subscripted locations (e.g. a Collector), and we want to find the unsubscripted
-// location e in the set
 SharedExp LocationSet::findNS(SharedExp e)
 {
 	// Note: can't search with a wildcard, since it doesn't have the weak ordering required (I think)
@@ -605,7 +563,6 @@ SharedExp LocationSet::findNS(SharedExp e)
 }
 
 
-// Given an unsubscripted location e, return true if e{-} or e{0} exists in the set
 bool LocationSet::existsImplicit(SharedExp e) const
 {
 	auto     r(RefExp::get(e, nullptr));
@@ -632,8 +589,6 @@ bool LocationSet::existsImplicit(SharedExp e) const
 }
 
 
-// Find a location with a different def, but same expression. For example, pass r28{10},
-// return true if r28{20} in the set. If return true, dr points to the first different ref
 bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr)
 {
 	assert(e);
@@ -668,7 +623,6 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& 
 }
 
 
-// Add a subscript (to definition d) to each element
 void LocationSet::addSubscript(Instruction *d /* , Cfg* cfg */)
 {
 	std::set<SharedExp, lessExpStar> newSet;
@@ -682,7 +636,6 @@ void LocationSet::addSubscript(Instruction *d /* , Cfg* cfg */)
 }
 
 
-// Substitute s into all members of the set
 void LocationSet::substitute(Assign& a)
 {
 	auto lhs = a.getLeft();
@@ -754,10 +707,6 @@ void LocationSet::substitute(Assign& a)
 }
 
 
-//
-// StatementList methods
-//
-
 bool StatementList::remove(Instruction *s)
 {
 	iterator it;
@@ -800,10 +749,6 @@ char *StatementList::prints()
 }
 
 
-//
-// StatementVec methods
-//
-
 void StatementVec::putAt(int idx, Instruction *s)
 {
 	if (idx >= (int)svec.size()) {
@@ -843,7 +788,6 @@ char *StatementVec::prints()
 }
 
 
-// Print just the numbers to stream os
 void StatementVec::printNums(QTextStream& os)
 {
 	for (iterator it = svec.begin(); it != svec.end(); ) {
@@ -861,7 +805,6 @@ void StatementVec::printNums(QTextStream& os)
 }
 
 
-// Special intersection method: this := a intersect b
 void StatementList::makeIsect(StatementList& a, LocationSet& b)
 {
 	clear();
@@ -898,8 +841,6 @@ bool StatementList::existsOnLeft(const SharedExp& loc) const
 }
 
 
-/// Remove the first definition where loc appears on the left
-/// \note statements in this list are assumed to be assignments
 void StatementList::removeDefOf(SharedExp loc)
 {
 	for (iterator it = begin(); it != end(); it++) {
@@ -911,7 +852,6 @@ void StatementList::removeDefOf(SharedExp loc)
 }
 
 
-// Find the first Assignment with loc on the LHS
 Assignment *StatementList::findOnLeft(SharedExp loc) const
 {
 	if (empty()) {
@@ -982,8 +922,6 @@ void LocationSet::printDiff(LocationSet *o) const
 }
 
 
-//    class ConnectionGraph
-
 void ConnectionGraph::add(SharedExp a, SharedExp b)
 {
 	iterator ff = emap.find(a);
@@ -1036,7 +974,6 @@ void ConnectionGraph::connect(SharedExp a, SharedExp b)
 }
 
 
-/// Return a count of locations connected to \a e
 int ConnectionGraph::count(SharedExp e) const
 {
 	const_iterator ff = emap.find(e);
@@ -1051,7 +988,6 @@ int ConnectionGraph::count(SharedExp e) const
 }
 
 
-/// Return true if a is connected to b
 bool ConnectionGraph::isConnected(SharedExp a, const Exp& b) const
 {
 	const_iterator ff = emap.find(a);
@@ -1089,8 +1025,6 @@ bool ConnectionGraph::allRefsHaveDefs() const
 }
 
 
-// Modify the map so that a <-> b becomes a <-> c
-/// Update the map that used to be a <-> b, now it is a <-> c
 void ConnectionGraph::update(SharedExp a, SharedExp b, SharedExp c)
 {
 	// find a->b
@@ -1120,7 +1054,6 @@ void ConnectionGraph::update(SharedExp a, SharedExp b, SharedExp c)
 }
 
 
-// Remove the mapping at *aa, and return a valid iterator for looping
 ConnectionGraph::iterator ConnectionGraph::remove(iterator aa)
 {
 	assert(aa != emap.end());
@@ -1138,20 +1071,10 @@ ConnectionGraph::iterator ConnectionGraph::remove(iterator aa)
 }
 
 
-// For debugging
-void dumpConnectionGraph(const ConnectionGraph *cg)
-{
-	ConnectionGraph::const_iterator cc;
-
-	for (cc = cg->begin(); cc != cg->end(); ++cc) {
-		LOG_STREAM() << cc->first << " <-> " << cc->second << "\n";
-	}
-}
-
-
 void ConnectionGraph::dump() const
 {
 	for (auto iter : *this) {
 		LOG_STREAM() << iter.first << " <-> " << iter.second << "\n";
 	}
 }
+

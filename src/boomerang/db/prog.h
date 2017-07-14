@@ -150,7 +150,20 @@ public:
 	 ******************************************************************************/
 	int getNumProcs(bool user_only = true) const;
 
+	/***************************************************************************/ /**
+	* \brief    Return a pointer to the associated Proc object, or nullptr if none
+	* \note        Could return -1 for a deleted Proc
+	* \param uAddr - Native address of the procedure entry point
+	* \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
+	******************************************************************************/
 	Function *findProc(Address uAddr) const;
+
+	/***************************************************************************/ /**
+	* \brief    Return a pointer to the associated Proc object, or nullptr if none
+	* \note        Could return -1 for a deleted Proc
+	* \param name - name of the searched-for procedure
+	* \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
+	******************************************************************************/
 	Function *findProc(const QString& name) const;
 
 	/***************************************************************************/ /**
@@ -183,6 +196,8 @@ public:
 	UserProc *getFirstUserProc(std::list<Function *>::iterator& it) const;
 	UserProc *getNextUserProc(std::list<Function *>::iterator& it) const;
 
+	/// clear the prog object
+	/// \note deletes everything!
 	void clear();
 
 	/***************************************************************************/ /**
@@ -261,11 +276,16 @@ public:
 	void generateCode(QTextStream& os) const;
 	void generateCode(Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) const;
 	void generateRTL(Module *cluster = nullptr, UserProc *proc = nullptr) const;
+
+	/// Print this program (primarily for debugging)
 	void print(QTextStream& out) const;
 
+	/// lookup a library procedure by name; create if does not exist
 	LibProc *getLibraryProc(const QString& nam) const;
 	Signature *getLibSignature(const QString& name) const;
 	Instruction *getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) const;
+
+	/// Get the front end id used to make this prog
 	Platform getFrontEndId() const;
 
 	std::shared_ptr<Signature> getDefaultSignature(const char *name) const;

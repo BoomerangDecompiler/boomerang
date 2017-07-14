@@ -20,6 +20,19 @@ public:
 	virtual Platform getType() const override { return Platform::PENTIUM; }
 
 	/// @copydoc IFrontEnd::processProc
+	/***************************************************************************/ /**
+	* \fn      PentiumFrontEnd::processProc
+	* \brief      Process a procedure, given a native (source machine) address.
+	* This is the main function for decoding a procedure.
+	* This overrides the base class processProc to do source machine specific things (but often calls the base
+	* class to do most of the work. Sparc is an exception)
+	* \param  uAddr - the address at which the procedure starts
+	* \param  pProc - the procedure object
+	* \param  os - output stream for rtl output
+	* \param  frag - true if decoding only a fragment of the proc
+	* \param  spec - true if this is a speculative decode (so give up on any invalid instruction)
+	* \returns           True if successful decode
+	******************************************************************************/
 	virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
 	/// @copydoc IFrontEnd::getDefaultParams
@@ -29,6 +42,10 @@ public:
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
 	/// @copydoc IFrontEnd::getMainEntryPoint
+	/***************************************************************************/ /**
+	* \brief    Locate the starting address of "main" in the code section
+	* \returns  Native pointer if found; Address::INVALID if not
+	******************************************************************************/
 	virtual Address getMainEntryPoint(bool& gotMain) override;
 
 private:
@@ -37,18 +54,23 @@ private:
 	 */
 	bool processStsw(std::list<RTL *>::iterator& rit, std::list<RTL *> *pRtls, BasicBlock *pBB, Cfg *pCfg);
 
-	/*
-	 * Emit a set instruction.
-	 */
+	/// Emit a set instruction.
+	/// Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
+	/// Insert before rit
 	void emitSet(std::list<RTL *> *pRtls, std::list<RTL *>::iterator& itRtl, Address uAddr, SharedExp pLHS, SharedExp cond);
 
-	/*
+	/**
 	 * Handle the case of being in state 23 and encountering a set instruction.
 	 */
 	void State25(SharedExp pLHS, SharedExp pRHS, std::list<RTL *> *pRtls, std::list<RTL *>::iterator& rit, Address uAddr);
 
 	int idPF; // Parity flag
 
+
+	/**
+	* Little simpler, just replaces FPUSH and FPOP with more complex
+	* semantics.
+	*/
 	void processFloatCode(Cfg *pCfg);
 
 	/***************************************************************************/ /**
@@ -64,7 +86,15 @@ private:
 	* \param pCfg passed to processFloatCode
 	******************************************************************************/
 	void processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg);
+
+	/**
+	* Process away %rpt and %skip in string instructions
+	*/
 	void processStringInst(UserProc *proc);
+
+	/**
+	* Process for overlapped registers
+	*/
 	void processOverlapped(UserProc *proc);
 
 	/***************************************************************************/ /**
@@ -80,9 +110,36 @@ private:
 	******************************************************************************/
 	bool isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl) override;
 
+	/***************************************************************************/ /**
+	* \fn      isStoreFsw
+	* \brief      Return true if the given Statement is an assignment that stores the FSW
+	*             (Floating point Status Word) reg
+	* \param      s - Ptr to the given Statement
+	* \returns    True if it is
+	******************************************************************************/
 	bool isStoreFsw(Instruction *s);
+
+	/***************************************************************************/ /**
+	* \brief      Return true if the given RTL is a decrement of register AH
+	* \param r - Ptr to the given RTL
+	* \returns           True if it is
+	******************************************************************************/
 	bool isDecAh(RTL *r);
+
+	/***************************************************************************/ /**
+	* \fn      isSetX
+	* \brief      Return true if the given Statement is a setX instruction
+	* \param      s - Ptr to the given Statement
+	* \returns           True if it is
+	******************************************************************************/
 	bool isSetX(Instruction *s);
+
+	/***************************************************************************/ /**
+	* \fn      isAssignFromTern
+	* \brief      Return true if the given Statement is an expression whose RHS is a ?: ternary
+	* \param      s - Ptr to the given Statement
+	* \returns           True if it is
+	******************************************************************************/
 	bool isAssignFromTern(Instruction *s);
 
 	/***************************************************************************/ /**
@@ -108,5 +165,7 @@ private:
 
 protected:
 	virtual DecodeResult& decodeInstruction(Address pc) override;
+
+	// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
 	virtual void extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls) override;
 };

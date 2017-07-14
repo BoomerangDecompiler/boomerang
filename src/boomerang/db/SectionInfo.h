@@ -15,7 +15,6 @@ struct SectionInfo : public IBinarySection
 private:
 	SectionInfo& operator=(const SectionInfo& other);
 
-
 	QString         m_sectionName;          ///< Name of section
 	Address         m_nativeAddr;           ///< Logical or native load address
 	HostAddress     m_hostAddr;             ///< Host or actual address of data

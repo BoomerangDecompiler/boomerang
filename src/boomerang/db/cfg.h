@@ -464,6 +464,10 @@ public:
 
 	/// return a bb given an address
 	BasicBlock *bbForAddr(Address addr) { return m_mapBB[addr]; }
+
+	/***************************************************************************/ /**
+	* \brief Simplify all the expressions in the CFG
+	******************************************************************************/
 	void simplify();
 
 	/**

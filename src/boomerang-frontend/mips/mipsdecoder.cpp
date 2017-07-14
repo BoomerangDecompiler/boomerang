@@ -44,7 +44,6 @@ MIPSDecoder::MIPSDecoder(Prog *_prog)
 }
 
 
-// For now...
 int MIPSDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
 {
 	return 0;
