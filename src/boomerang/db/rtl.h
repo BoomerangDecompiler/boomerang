@@ -55,7 +55,6 @@ using SharedExp = std::shared_ptr<Exp>;
  ******************************************************************************/
 class RTL : public std::list<Instruction *>
 {
-	friend class XMLProgParser;
 	friend class BasicBlock;
 
 private:

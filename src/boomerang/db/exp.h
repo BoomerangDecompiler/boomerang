@@ -48,7 +48,6 @@ class InstructionSet;
 class TypeVal;
 class ExpVisitor;
 class ExpModifier;
-class XMLProgParser;
 class Function;
 class UserProc;
 class Exp;
@@ -671,9 +670,6 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
  ******************************************************************************/
 class Const : public Exp
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	union
 	{
@@ -796,9 +792,6 @@ public:
  ******************************************************************************/
 class Terminal : public Exp
 {
-protected:
-	friend class XMLProgParser;
-
 public:
 	// Constructors
 	Terminal(OPER op);
@@ -911,10 +904,7 @@ public:
 
 	virtual SharedType ascendType() override;
 	virtual void descendType(SharedType parentType, bool& ch, Instruction *s) override;
-
-protected:
-	friend class XMLProgParser;
-}; // class Unary
+};
 
 
 /**
@@ -922,9 +912,6 @@ protected:
  */
 class Binary : public Unary
 {
-protected:
-	friend class XMLProgParser;
-
 protected:
 	SharedExp subExp2; ///< Second subexpression pointer
 
@@ -1006,9 +993,6 @@ private:
  ******************************************************************************/
 class Ternary : public Binary
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	SharedExp subExp3; // Third subexpression pointer
 
@@ -1084,9 +1068,6 @@ public:
  ******************************************************************************/
 class TypedExp : public Unary
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	SharedType type;
 
@@ -1140,9 +1121,6 @@ public:
  ******************************************************************************/
 class FlagDef : public Unary
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	SharedRTL rtl;
 
@@ -1166,9 +1144,6 @@ public:
  ******************************************************************************/
 class RefExp : public Unary
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	Instruction *m_def; // The defining statement
 	// Constructor with expression (e) and statement defining it (def)
@@ -1231,9 +1206,6 @@ protected:
  * ==============================================================================*/
 class TypeVal : public Terminal
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	SharedType val;
 
@@ -1268,9 +1240,6 @@ public:
 
 class Location : public Unary
 {
-protected:
-	friend class XMLProgParser;
-
 protected:
 	UserProc *proc;
 

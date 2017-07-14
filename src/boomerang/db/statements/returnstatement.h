@@ -138,9 +138,4 @@ public:
 
 	// Remove the stack pointer and return a statement list
 	StatementList *getCleanReturns();
-
-	// Temporary hack (not neccesary anymore)
-	// void        specialProcessing();
-
-	friend class XMLProgParser;
-}; // class ReturnStatement
+};

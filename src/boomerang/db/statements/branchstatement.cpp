@@ -12,7 +12,6 @@ BranchStatement::BranchStatement()
 	: m_jumpType((BranchType)0)
 	, m_cond(nullptr)
 	, m_isFloat(false)
-	, m_size(0)
 {
 	m_kind = STMT_BRANCH;
 }

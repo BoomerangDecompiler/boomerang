@@ -571,7 +571,7 @@ SharedExp CallingConvention::Win32Signature::getStackWildcard() const
 
 SharedExp CallingConvention::Win32Signature::getProven(SharedExp left) const
 {
-	const size_t nparams = m_params.size();
+	size_t nparams = m_params.size();
 
 	if ((nparams > 0) && (*m_params[0]->getExp() == *Location::regOf(28))) {
 		nparams--;

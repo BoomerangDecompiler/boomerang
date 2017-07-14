@@ -33,8 +33,6 @@ protected:
  ******************************************************************************/
 class PhiAssign : public Assignment
 {
-	friend class XMLProgParser;
-
 public:
 	typedef std::map<BasicBlock *, PhiInfo>   Definitions;
 	typedef Definitions::iterator             iterator;

@@ -7,18 +7,14 @@
  ******************************************************************************/
 class BranchStatement : public GotoStatement
 {
-	friend class XMLProgParser;
-
 private:
 	BranchType m_jumpType; ///< The condition for jumping
 	SharedExp m_cond;      ///< The Exp representation of the high level condition: e.g., r[8] == 5
 	bool m_isFloat;        ///< True if uses floating point CC
 	// jtCond seems to be mainly needed for the Pentium weirdness.
 	// Perhaps m_isFloat, m_jumpType, and m_size could one day be merged into a type
-	int m_size;            ///< Size of the operands, in bits
 
 public:
-
 	/***************************************************************************/ /**
 	 * \fn        BranchStatement::BranchStatement
 	 * \brief     Constructor.

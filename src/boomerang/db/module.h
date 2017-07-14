@@ -30,7 +30,6 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QFile>
 
-class XMLProgParser;
 class Function;
 class Prog;
 class IFrontEnd;
@@ -39,9 +38,6 @@ class IFrontEnd;
 class Module : public QObject
 {
 	Q_OBJECT
-
-protected:
-	friend class XMLProgParser;
 
 public:
 	/// The type for the list of functions.

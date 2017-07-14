@@ -48,7 +48,6 @@ class Parameter;
 class Argument;
 class Signature;
 class Module;
-class XMLProgParser;
 class QTextStream;
 class Log;
 
@@ -86,9 +85,6 @@ class Log;
 class Function
 {
 	typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
-
-protected:
-	friend class XMLProgParser;
 
 public:
 	/***************************************************************************/ /**
@@ -272,9 +268,6 @@ protected:
  ******************************************************************************/
 class LibProc : public Function
 {
-protected:
-	friend class XMLProgParser;
-
 public:
 
 	/***************************************************************************/ /**
@@ -342,9 +335,6 @@ typedef std::list<UserProc *> ProcList;
  */
 class UserProc : public Function
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	Cfg *m_cfg; ///< The control flow graph.
 

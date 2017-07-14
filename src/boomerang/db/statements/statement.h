@@ -60,7 +60,6 @@ class ICodeGenerator;
 class Assign;
 class RTL;
 class InstructionSet;
-class XMLProgParser;
 class ReturnStatement;
 
 typedef std::set<UserProc *>           CycleSet;
@@ -124,8 +123,6 @@ enum BranchType
 class Instruction
 {
 	typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
-
-	friend class XMLProgParser;
 
 protected:
 	BasicBlock *m_parent; // contains a pointer to the enclosing BB

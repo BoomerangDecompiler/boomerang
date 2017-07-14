@@ -622,8 +622,6 @@ protected:
 		return false;
 	}
 
-	friend class XMLProgParser;
-
 	/// establish if this bb is an ancestor of another BB
 	bool isAncestorOf(BasicBlock *other);
 	bool inLoop(BasicBlock *header, BasicBlock *latch);

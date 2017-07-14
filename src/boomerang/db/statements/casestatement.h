@@ -5,8 +5,6 @@
 
 class CaseStatement : public GotoStatement
 {
-	friend class XMLProgParser;
-
 private:
 	SWITCH_INFO *pSwitchInfo; // Ptr to struct with info about the switch
 

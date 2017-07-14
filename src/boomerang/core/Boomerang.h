@@ -223,19 +223,6 @@ public:
 	void addWatcher(Watcher *watcher) { m_watchers.insert(watcher); }
 
 	/**
-	 * Saves the state of the Prog object to a XML file.
-	 * \param prog The Prog object to save.
-	 */
-	void persistToXML(Prog *prog);
-
-	/**
-	 * Loads the state of a Prog object from a XML file.
-	 * \param fname The name of the XML file.
-	 * \return The loaded Prog object.
-	 */
-	Prog *loadFromXML(const char *fname);
-
-	/**
 	 * Adds information about functions and classes from Objective-C modules to the Prog object.
 	 *
 	 * \param modules A map from name to the Objective-C modules.

@@ -13,8 +13,6 @@
  *===========================================================================*/
 class GotoStatement : public Instruction
 {
-	friend class XMLProgParser;
-
 protected:
 	/// Destination of a jump or call. This is the absolute destinatio
 	/// for both static and dynamic CTIs.

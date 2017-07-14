@@ -50,7 +50,6 @@ class SizeType;
 class UpperType;
 class LowerType;
 class Exp;
-class XMLProgParser;
 class DataIntervalMap;
 using SharedExp = std::shared_ptr<Exp>;
 
@@ -277,8 +276,7 @@ public:
 	SharedType dereference();
 
 protected:
-	friend class XMLProgParser;
-}; // class Type
+};
 
 class VoidType : public Type
 {
@@ -308,9 +306,6 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
 };
 
 class FuncType : public Type
@@ -344,9 +339,6 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
 };
 
 
@@ -411,9 +403,6 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
 };
 
 
@@ -447,9 +436,6 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
 }; // class FloatType
 
 
@@ -474,9 +460,6 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
 };
 
 class CharType : public Type
@@ -501,9 +484,6 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
 };
 
 class PointerType : public Type
@@ -547,10 +527,7 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
-}; // class PointerType
+};
 
 // we actually want unbounded arrays to still work correctly when
 // computing aliases.. as such, we give them a very large bound
@@ -599,7 +576,6 @@ public:
 	size_t convertLength(SharedType b) const;
 
 protected:
-	friend class XMLProgParser;
 	ArrayType()
 		: Type(eArray)
 		, BaseType(nullptr)
@@ -637,9 +613,6 @@ public:
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
 };
 
 // The compound type represents structures, not unions
@@ -724,10 +697,7 @@ public:
 
 	virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
 	virtual bool isCompatible(const Type& other, bool all) const override;
-
-protected:
-	friend class XMLProgParser;
-}; // class CompoundType
+};
 
 // The union type represents the union of any number of any other types
 struct UnionElement
@@ -793,10 +763,7 @@ public:
 
 	// if this is a union of pointer types, get the union of things they point to. In dfa.cpp
 	SharedType dereferenceUnion();
-
-protected:
-	friend class XMLProgParser;
-}; // class UnionType
+};
 
 // This class is for before type analysis. Typically, you have no info at all, or only know the size (e.g.
 // width of a register or memory transfer)
@@ -832,8 +799,6 @@ public:
 	virtual QString getCtype(bool final = false) const override;
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
 	virtual bool isCompatible(const Type& other, bool) const override;
-
-	friend class XMLProgParser;
 };
 
 

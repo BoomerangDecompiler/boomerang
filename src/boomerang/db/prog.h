@@ -36,7 +36,6 @@ class Signature;
 class Instruction;
 class InstructionSet;
 class Module;
-class XMLProgParser;
 class IBinarySection;
 class ICodeGenerator;
 
@@ -45,9 +44,6 @@ struct BinarySymbol;
 
 class Global : public Printable
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	SharedType m_type;
 	   Address m_addr;
@@ -95,8 +91,6 @@ protected:
 class Prog : public QObject
 {
 	Q_OBJECT
-
-	friend class XMLProgParser;
 
 private:
 	class IBinaryImage *m_image;

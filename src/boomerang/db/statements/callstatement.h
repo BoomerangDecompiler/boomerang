@@ -11,8 +11,6 @@ class ImplicitAssign;
  ******************************************************************************/
 class CallStatement : public GotoStatement
 {
-	friend class XMLProgParser;
-
 private:
 	bool m_returnAfterCall; // True if call is effectively followed by a return.
 

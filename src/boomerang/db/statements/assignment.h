@@ -7,8 +7,6 @@
  ****************************************************************************/
 class Assignment : public TypingStatement
 {
-	friend class XMLProgParser;
-
 protected:
 	SharedExp m_lhs; // The left hand side
 

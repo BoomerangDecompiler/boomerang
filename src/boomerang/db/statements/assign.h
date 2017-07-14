@@ -7,8 +7,6 @@
  */
 class Assign : public Assignment
 {
-	friend class XMLProgParser;
-
 private:
 	SharedExp m_rhs;
 	SharedExp m_guard;

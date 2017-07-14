@@ -40,8 +40,6 @@ class CallStatement;
 class BranchStatement;
 class RTL;
 struct DOM;
-
-class XMLProgParser;
 class Global;
 class Parameter;
 class ConnectionGraph;
@@ -86,8 +84,6 @@ enum class BBTYPE;
  ******************************************************************************/
 class Cfg
 {
-	friend class XMLProgParser;
-
 	typedef std::set<CallStatement *>                              CallStatementSet;
 	typedef std::map<SharedExp, Instruction *, lessExpStar>        ExpStatementMap;
 

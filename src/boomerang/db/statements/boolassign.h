@@ -113,6 +113,4 @@ public:
 	void setLeftFromList(std::list<Instruction *> *stmts);
 
 	virtual void dfaTypeAnalysis(bool& ch) override;
-
-	friend class XMLProgParser;
-}; // class BoolAssign
+};

@@ -20,7 +20,6 @@
 #include "boomerang/db/proc.h"
 #include "boomerang/db/project.h"
 #include "boomerang/db/signature.h"
-#include "boomerang/db/xmlprogparser.h"
 
 #include "boomerang/frontend/frontend.h"
 
@@ -125,7 +124,7 @@ void Boomerang::helpcmd() const
 		"  info proc <proc>                   : Print info about a proc.\n"
 		"  print <proc>                       : Print the RTL for a proc.\n"
 		"  help                               : This help.\n"
-		"  exit                               : Quit the shell.\n"
+		"  exit                               : Quit the shell.\n";
 }
 
 
@@ -263,18 +262,7 @@ int Boomerang::processCommand(QStringList& args)
 			}
 
 			QString fname = args[1];
-			assert(!"TODO: use cereal");
-//        XMLProgParser *p = new XMLProgParser();
-//        Prog *pr = p->parse(fname);
-//        if (pr == nullptr) {
-//            // try guessing
-//            pr = p->parse(outputPath + fname + "/" + fname + ".xml");
-//            if (pr == nullptr) {
-//                err_stream << "failed to read xml " << fname << "\n";
-//                return 1;
-//            }
-//        }
-//        prog = pr;
+			err_stream << "Cannot load " << fname << ": Operation not implemented.\n";
 			break;
 		}
 
@@ -285,9 +273,7 @@ int Boomerang::processCommand(QStringList& args)
 			return 1;
 		}
 
-		assert(!"TODO: use cereal");
-//        XMLProgParser *p = new XMLProgParser();
-//        p->persistToXML(prog);
+		err_stream << "Cannot save: Operation not implemented.\n";
 		break;
 
 	case CT_decompile:
@@ -880,16 +866,9 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 		setLogger(new FileLogger());
 	}
 
-	QTextStream q_cout(stdout);
-
-//    std::cout << "setting up transformers...\n";
-//    ExpTransformer::loadAll();
-
 	if (loadBeforeDecompile) {
 		LOG_STREAM() << "loading persisted state...\n";
-		assert(!"TODO: use cereal");
-//        XMLProgParser *p = new XMLProgParser();
-//        prog = p->parse(fname);
+		assert(false);
 	}
 	else {
 		prog = loadAndDecode(fname, pname);
@@ -900,10 +879,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 	}
 
 	if (saveBeforeDecompile) {
-		LOG_STREAM() << "saving persistable state...\n";
-		assert(!"TODO: use cereal");
-//        XMLProgParser *p = new XMLProgParser();
-//        p->persistToXML(prog);
+		assert(false);
 	}
 
 	if (stopBeforeDecompile) {
@@ -931,6 +907,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 		}
 	}
 
+	QTextStream q_cout(stdout);
 	q_cout << "generating code...\n";
 	prog->generateCode();
 
@@ -954,24 +931,6 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 	q_cout << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
 	delete prog;
 	return 0;
-}
-
-
-void Boomerang::persistToXML(Prog *prog)
-{
-	Q_UNUSED(prog);
-	// TODO remove
-}
-
-
-Prog *Boomerang::loadFromXML(const char *fname)
-{
-	Q_UNUSED(fname);
-	assert(!"TODO: use cereal");
-//    LOG << "loading persistable state...\n";
-//    XMLProgParser *p = new XMLProgParser();
-//    return p->parse(fname);
-	return nullptr;
 }
 
 

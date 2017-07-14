@@ -33,15 +33,11 @@
 class Instruction;
 class StatementList;
 class IFileLoader;
-class XMLProgParser;
 class Exp;
 
 
 class Parameter
 {
-protected:
-	friend class XMLProgParser;
-
 private:
 	SharedType m_type;
 	QString m_name  = "";
@@ -99,8 +95,6 @@ typedef std::vector<std::shared_ptr<Return> > Returns;
 
 class Signature : public std::enable_shared_from_this<Signature>
 {
-	friend class XMLProgParser;
-
 protected:
 	QString m_name;                                    ///< name of procedure
 	QString m_sigFile;                                 ///< signature file this signature was read from (for libprocs)
