@@ -140,8 +140,9 @@ void RangeAnalysis::clearRanges()
 }
 
 
-struct RangeVisitor : public StmtVisitor
+class RangeVisitor : public StmtVisitor
 {
+public:
 	RangePrivateData          *tgt;
 	std::list<Instruction *>& execution_paths;
 	RangeVisitor(RangePrivateData *t, std::list<Instruction *>& ex_paths)
@@ -501,7 +502,7 @@ struct RangeVisitor : public StmtVisitor
 					prev = prev->getPreviousStatementInBB();
 				}
 			}
-			else if (stmt->getDestProc()->getSignature()->getConvention() == CallConv::PASCAL) {
+			else if (stmt->getDestProc()->getSignature()->getConvention() == CallConv::Pascal) {
 				c += stmt->getDestProc()->getSignature()->getNumParams() * 4;
 			}
 			else if (!strncmp(qPrintable(stmt->getDestProc()->getName()), "__imp_", 6)) {
@@ -509,7 +510,7 @@ struct RangeVisitor : public StmtVisitor
 				assert(first && first->isCall());
 				Function *d = ((CallStatement *)first)->getDestProc();
 
-				if (d->getSignature()->getConvention() == CallConv::PASCAL) {
+				if (d->getSignature()->getConvention() == CallConv::Pascal) {
 					c += d->getSignature()->getNumParams() * 4;
 				}
 			}
@@ -554,7 +555,7 @@ struct RangeVisitor : public StmtVisitor
 						if (last->isCall()) {
 							Function *d = ((CallStatement *)last)->getDestProc();
 
-							if (d && (d->getSignature()->getConvention() == CallConv::PASCAL)) {
+							if (d && (d->getSignature()->getConvention() == CallConv::Pascal)) {
 								c += d->getSignature()->getNumParams() * 4;
 							}
 						}
@@ -671,8 +672,9 @@ private:
 		return tgt->getBranchRange(b);
 	}
 
-	void limitOutputWithCondition(BranchStatement */*stmt*/, RangeMap& output, const SharedExp& e)
+	void limitOutputWithCondition(BranchStatement *stmt, RangeMap& output, const SharedExp& e)
 	{
+		Q_UNUSED(stmt);
 		assert(e);
 
 		if (!output.hasRange(e->getSubExp1())) {

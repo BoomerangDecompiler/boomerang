@@ -1821,7 +1821,6 @@ void Unary::print(QTextStream& os, bool html) const
 		return;
 
 	case opTemp:
-
 		if (p1->getOper() == opWildStrConst) {
 			assert(p1->isTerminal());
 			os << "t[";
@@ -1829,9 +1828,10 @@ void Unary::print(QTextStream& os, bool html) const
 			os << "]";
 			return;
 		}
+		// fallthrough
 
 	// Temp: just print the string, no quotes
-	case opGlobal: // [[clang::fallthrough]];
+	case opGlobal:
 	case opLocal:
 	case opParam:
 		// Print a more concise form than param["foo"] (just foo)
@@ -2311,9 +2311,9 @@ void FlagDef::appendDotFile(QTextStream& of)
 	of << "opFlagDef \\n" << HostAddress(this) << "| ";
 	// Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
 	of << "{ RTL ";
-	int n = rtl->size();
+	const size_t n = rtl->size();
 
-	for (int i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		of << "| <r" << i << "> ";
 	}
 
@@ -2352,10 +2352,11 @@ bool Exp::isAfpTerm()
 		cur = getSubExp1();
 	}
 
-	SharedExp p;
-
-	if ((cur->getOper() == opAddrOf) && ((p = cur->getSubExp1()), (p->getOper() == opMemOf))) {
-		cur = p->getSubExp1();
+	if (cur->getOper() == opAddrOf) {
+		SharedExp p = cur->getSubExp1();
+		if (p && p->getOper() == opMemOf) {
+			cur = p->getSubExp1();
+		}
 	}
 
 	OPER curOp = cur->getOper();
@@ -3314,8 +3315,8 @@ SharedExp accessMember(SharedExp parent, const std::shared_ptr<CompoundType>& c,
 		std::shared_ptr<ArrayType> a = t->as<ArrayType>();
 		SharedType                 array_member_type = a->getBaseType();
 		int b  = array_member_type->getSize() / 8;
-		int br = array_member_type->getSize() % 8;
-		assert(br == 0);
+		assert(array_member_type->getSize() % 8);
+
 		res = Binary::get(opArrayIndex, res, Const::get(n / b));
 
 		if (array_member_type->resolvesToCompound()) {
@@ -3667,20 +3668,25 @@ SharedExp Binary::polySimplify(bool& bMod)
 	}
 
 	// Check for [exp] << k where k is a positive integer const
-	int k;
 
-	if ((m_oper == opShiftL) && (opSub2 == opIntConst) && ((k = std::static_pointer_cast<const Const>(subExp2)->getInt(), ((k >= 0) && (k < 32))))) {
-		res->setOper(opMult);
-		std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
-		bMod = true;
-		return res;
+	if ((m_oper == opShiftL) && (opSub2 == opIntConst)) {
+		int k = std::static_pointer_cast<const Const>(subExp2)->getInt();
+		if ((k >= 0) && (k < 32)) {
+			res->setOper(opMult);
+			std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
+			bMod = true;
+			return res;
+		}
 	}
 
-	if ((m_oper == opShiftR) && (opSub2 == opIntConst) && ((k = std::static_pointer_cast<const Const>(subExp2)->getInt(), ((k >= 0) && (k < 32))))) {
-		res->setOper(opDiv);
-		std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
-		bMod = true;
-		return res;
+	if ((m_oper == opShiftR) && (opSub2 == opIntConst)) {
+		int k = std::static_pointer_cast<const Const>(subExp2)->getInt();
+		if ((k >= 0) && (k < 32)) {
+			res->setOper(opDiv);
+			std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
+			bMod = true;
+			return res;
+		}
 	}
 
 	/*
@@ -4668,6 +4674,7 @@ SharedExp Ternary::genConstraints(SharedExp result)
 				break;
 			}
 		}
+		break;
 
 	default:
 		break;

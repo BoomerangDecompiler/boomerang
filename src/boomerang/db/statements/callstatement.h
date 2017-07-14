@@ -199,7 +199,7 @@ public:
 	 * \fn    CallStatement::setReturnAfterCall
 	 * \brief Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
 	 *        Sparc when there is a restore in the delay slot of the call
-	 * \param b: true if this is to be set; false to clear the bit
+	 * \param b true if this is to be set; false to clear the bit
 	 ******************************************************************************/
 	void setReturnAfterCall(bool b);
 
@@ -221,7 +221,7 @@ public:
 
 	/***************************************************************************/ /**
 	 * \brief        Set the destination of this jump to be a given expression.
-	 * \param        pd - the new target
+	 * \param        dest - the new target
 	 ******************************************************************************/
 	void setDestProc(Function *dest);
 	Function *getDestProc();

@@ -125,7 +125,7 @@ void BinaryFileFactory::populatePlugins()
 	}
 
 	for (QString fileName : pluginsDir.entryList(QDir::Files)) {
-		std::string sofilename = pluginsDir.absoluteFilePath(fileName).toUtf8().constData();
+		QString sofilename = pluginsDir.absoluteFilePath(fileName);
 
 		try {
 			std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));

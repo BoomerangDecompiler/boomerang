@@ -842,7 +842,7 @@ void UseCollector::print(QTextStream& os, bool html) const
 void DefCollector::print(QTextStream& os, bool html) const
 {
 	iterator it;
-	unsigned col   = 36;
+	size_t col   = 36;
 	bool     first = true;
 
 	for (it = m_defs.begin(); it != m_defs.end(); ++it) {
@@ -1105,9 +1105,9 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 	// Note: this is a linear search!
 	// Note also that usedByDomPhi0 may have some irrelevant entries, but this will do no harm, and attempting to erase
 	// the irrelevant ones would probably cost more than leaving them alone
-	int sz = m_idom.size();
+	const size_t sz = m_idom.size();
 
-	for (int c = 0; c < sz; ++c) {
+	for (size_t c = 0; c < sz; ++c) {
 		if (m_idom[c] != n) {
 			continue;
 		}

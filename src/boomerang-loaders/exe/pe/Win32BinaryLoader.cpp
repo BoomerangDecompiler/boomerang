@@ -531,13 +531,13 @@ void Win32BinaryLoader::readDebugData(QString exename)
 		return;
 	}
 
-	DWORD64 dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0)
+	DWORD64 dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0);
 
-						 if (dwBaseAddr != 0) {
+	if (dwBaseAddr != 0) {
 		assert(dwBaseAddr == m_pPEHeader->Imagebase);
 		bool found = false;
 		dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr, 0, lookforsource, &found);
-		haveDebugInfo = found;
+		m_hasDebugInfo = found;
 	}
 	else {
 		// SymLoadModule64 failed
@@ -976,7 +976,7 @@ bool Win32BinaryLoader::isStaticLinkedLibProc(Address uNative)
 	line.FileName     = nullptr;
 	dbghelp::SymGetLineFromAddr64(hProcess, uNative.value(), 0, &line);
 
-	if (haveDebugInfo && (line.FileName == nullptr) || line.FileName && (*line.FileName == 'f')) {
+	if (m_hasDebugInfo && (line.FileName == nullptr) || line.FileName && (*line.FileName == 'f')) {
 		return true;
 	}
 #endif

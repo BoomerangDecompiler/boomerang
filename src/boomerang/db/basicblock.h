@@ -317,7 +317,7 @@ public:
 	 * \brief Change the given in-edge (0 is first) to the given value
 	 * Needed for example when duplicating BBs
 	 * \param i - index (0 based) of in-edge to change
-	 * \param pNewInEdge - pointer to BasicBlock that will be a new parent
+	 * \param newIn - pointer to BasicBlock that will be a new parent
 	 ******************************************************************************/
 	void setInEdge(size_t i, BasicBlock *newIn);
 
@@ -326,9 +326,9 @@ public:
 	 * Needed for example when duplicating BBs
 	 * \note Cannot add an additional out-edge with this function; use addOutEdge for this rare case
 	 * \param i - index (0 based) of out-edge to change
-	 * \param pNewOutEdge - pointer to BB that will be the new successor
+	 * \param newOutEdge - pointer to BB that will be the new successor
 	 ******************************************************************************/
-	void setOutEdge(size_t i, BasicBlock *newInEdge);
+	void setOutEdge(size_t i, BasicBlock *newOutEdge);
 
 	/***************************************************************************/ /**
 	 * \brief        Returns the i-th out edge of this BB; counting starts at 0
@@ -348,7 +348,7 @@ public:
 	/***************************************************************************/ /**
 	 * \brief Add the given in-edge
 	 * Needed for example when duplicating BBs
-	 * \param pNewInEdge -  pointer to BB that will be a new parent
+	 * \param newInEdge -  pointer to BB that will be a new parent
 	 ******************************************************************************/
 	void addInEdge(BasicBlock *newInEdge);
 	void deleteEdge(BasicBlock *edge);

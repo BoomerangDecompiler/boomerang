@@ -867,12 +867,10 @@ public:
 class ExpHasMemofTester : public ExpVisitor
 {
 	bool result;
-	UserProc *proc;
 
 public:
-	ExpHasMemofTester(UserProc *p)
-		: result(false)
-		, proc(p) {}
+	ExpHasMemofTester(UserProc *)
+		: result(false) {}
 	bool getResult() { return result; }
 	bool visit(const std::shared_ptr<Location>& e, bool& override) override;
 };
@@ -905,6 +903,7 @@ class StmtRegMapper : public StmtExpVisitor
 public:
 	StmtRegMapper(ExpRegMapper *erm)
 		: StmtExpVisitor(erm) {}
+
 	virtual bool common(Assignment *stmt, bool& override);
 	virtual bool visit(Assign *stmt, bool& override) override;
 	virtual bool visit(PhiAssign *stmt, bool& override) override;
@@ -921,8 +920,12 @@ public:
 	ConstGlobalConverter(Prog *pg)
 		: m_prog(pg)
 	{}
+
+	/// Constant global converter. Example: m[m[r24{16} + m[0x8048d60]{-}]{-}]{-} -> m[m[r24{16} + 32]{-}]{-}
+	/// Allows some complex variations to be matched to standard indirect call forms
 	SharedExp preVisit(const std::shared_ptr<RefExp>& e, bool& recur)  override;
 };
+
 
 /// Count the number of times a reference expression is used. Increments the count multiple times if the same reference
 /// expression appears multiple times (so can't use UsedLocsFinder for this)
@@ -968,12 +971,9 @@ private:
 class BadMemofFinder : public ExpVisitor
 {
 	bool m_found;
-	UserProc *m_proc;
-
 public:
-	BadMemofFinder(UserProc *p)
-		: m_found(false)
-		, m_proc(p) {}
+	BadMemofFinder(UserProc *)
+		: m_found(false) {}
 	bool isFound() { return m_found; }
 
 private:
@@ -984,11 +984,8 @@ private:
 
 class ExpCastInserter : public ExpModifier
 {
-	UserProc *m_proc; // The enclising UserProc
-
 public:
-	ExpCastInserter(UserProc *p)
-		: m_proc(p) {}
+	ExpCastInserter(UserProc *) {}
 	static void checkMemofType(const SharedExp& memof, SharedType memofType);
 	SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
 	SharedExp postVisit(const std::shared_ptr<Binary>& e) override;

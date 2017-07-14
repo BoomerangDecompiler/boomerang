@@ -27,27 +27,17 @@
 
 #include <sstream>
 
-#define SWITCH_SPARC    "tests/inputs/sparc/switch_cc"
-#define SWITCH_PENT     "tests/inputs/pentium/switch_cc"
+#define SWITCH_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/switch_cc")
+#define SWITCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/switch_cc")
+
 static bool logset = false;
-QString     TEST_BASE;
-QDir        baseDir;
 
 void RtlTest::initTestCase()
 {
 	if (!logset) {
-		TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
-		baseDir   = QDir(TEST_BASE);
-
-		if (TEST_BASE.isEmpty()) {
-			qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
-			TEST_BASE = "..";
-			baseDir   = QDir("..");
-		}
-
 		logset = true;
-		Boomerang::get()->setProgPath(TEST_BASE);
-		Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+		Boomerang::get()->setProgPath(BOOMERANG_TEST_BASE);
+		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }
@@ -118,49 +108,49 @@ public:
 	void clear() { a = b = c = d = e = f = g = h = false; }
 	StmtVisitorStub() { clear(); }
 	virtual ~StmtVisitorStub() {}
-	virtual bool visit(RTL */*s*/) override
+	virtual bool visit(RTL *) override
 	{
 		a = true;
 		return false;
 	}
 
-	virtual bool visit(GotoStatement */*s*/) override
+	virtual bool visit(GotoStatement *) override
 	{
 		b = true;
 		return false;
 	}
 
-	virtual bool visit(BranchStatement */*s*/) override
+	virtual bool visit(BranchStatement *) override
 	{
 		c = true;
 		return false;
 	}
 
-	virtual bool visit(CaseStatement */*s*/) override
+	virtual bool visit(CaseStatement *) override
 	{
 		d = true;
 		return false;
 	}
 
-	virtual bool visit(CallStatement */*s*/) override
+	virtual bool visit(CallStatement *) override
 	{
 		e = true;
 		return false;
 	}
 
-	virtual bool visit(ReturnStatement */*s*/) override
+	virtual bool visit(ReturnStatement *) override
 	{
 		f = true;
 		return false;
 	}
 
-	virtual bool visit(BoolAssign */*s*/) override
+	virtual bool visit(BoolAssign *) override
 	{
 		g = true;
 		return false;
 	}
 
-	virtual bool visit(Assign */*s*/) override
+	virtual bool visit(Assign *) override
 	{
 		h = true;
 		return false;

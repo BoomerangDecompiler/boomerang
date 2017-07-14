@@ -208,13 +208,6 @@ bool RTLInstDict::readSSLFile(const QString& SSLFileName)
 }
 
 
-/***************************************************************************/ /**
- * \brief Add a new register definition to the dictionary
- * \param name register's name
- * \param id
- * \param size - register size in bits
- * \param flt - is float ?
- ******************************************************************************/
 void RTLInstDict::addRegister(const QString& name, int id, int size, bool flt)
 {
 	RegMap[name] = id;

@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "core/BinaryFileFactory.h"
+#include "boomerang/core/BinaryFileFactory.h"
 #include <string>
 
 /**
@@ -234,7 +234,6 @@ private:
 	PEHeader *m_pPEHeader;                ///< Pointer to pe header
 	int m_cbImage;                        ///< Size of image
 	int m_cReloc;                         ///< Number of relocation entries
-	DWord *m_relocTable;                  ///< The relocation table
 	char *m_base;                         ///< Beginning of the loaded image
 	bool m_hasDebugInfo;
 	bool m_mingw_main;

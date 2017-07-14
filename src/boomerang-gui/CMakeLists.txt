@@ -26,11 +26,13 @@ target_link_libraries(boomerang-gui
 	${GC_LIBS}
 	${DEBUG_LIB}
 	${CMAKE_THREAD_LIBS_INIT}
+	Qt5::Core
+	Qt5::Xml
+	Qt5::Widgets
 )
-
-qt5_use_modules(boomerang-gui Core Xml Widgets)
 
 # installation
 install(TARGETS boomerang-gui
 	RUNTIME DESTINATION bin
 )
+

@@ -49753,19 +49753,19 @@ int PentiumDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
 }
 
 
-/***************************************************************************/ /**
- * \fn    PentiumDecoder::genBSFR
- * \brief Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
- * \param pc: native PC address (start of the BSF/BSR instruction)
- * \param reg: an expression for the destination register
- * \param modrm: an expression for the operand being scanned
- * \param init: initial value for the dest register
- * \param size: sizeof(modrm) (in bits)
- * \param incdec: either opPlus for Forward scans, or opMinus for Reverse scans
- * \param numBytes: number of bytes this instruction
- * \returns true if have to exit early (not in last state)
- ******************************************************************************/
+
 static int BSFRstate = 0;                                                     // State number for this state machine
+
+/***************************************************************************/ /**
+ * \brief Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
+ * \param pc native PC address (start of the BSF/BSR instruction)
+ * \param dest an expression for the destination register
+ * \param modrm an expression for the operand being scanned
+ * \param init initial value for the dest register
+ * \param size sizeof(modrm) (in bits)
+ * \param incdec either opPlus for Forward scans, or opMinus for Reverse scans
+ * \param numBytes number of bytes this instruction
+ ******************************************************************************/
 void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OPER incdec, int numBytes)
 {
 	// Note the horrible hack needed here. We need initialisation code, and an extra branch, so the %SKIP/%RPT won't

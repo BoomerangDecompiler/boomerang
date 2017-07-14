@@ -1,9 +1,7 @@
 
-include(BOOMERANG_Macros)
+include(boomerang-macros)
 
 set(test_LIBRARIES
-	${PROTOBUF_LIBRARIES}
-	${GC_LIBS}
 	${DEBUG_LIB}
 	boomerang
 	boomerang-frontend
@@ -18,7 +16,14 @@ set(TESTS
 )
 
 foreach(t ${TESTS})
-	ADD_QTEST(${t})
+	BOOMERANG_ADD_TEST(
+		NAME ${t}
+		SOURCES ${t}.h ${t}.cpp
+		LIBRARIES
+			${DEBUG_LIB}
+			boomerang
+			boomerang-frontend
+			${CMAKE_THREAD_LIBS_INIT}
+	)
 endforeach()
 
-#PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS codeblock.proto)

@@ -15,7 +15,6 @@
 #include "ElfBinaryLoader.h"
 #include "ElfTypes.h"
 
-#include "boomerang/util/Util.h"
 #include "boomerang/include/IBoomerang.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
@@ -1019,6 +1018,7 @@ void ElfBinaryLoader::applyRelocations()
 				}
 			}
 		}
+		break;
 
 	default:
 		break; // Not implemented

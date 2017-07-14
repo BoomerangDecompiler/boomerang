@@ -11,9 +11,9 @@ class Exp;
 class LocationSet;
 class RTL;
 class Type;
-struct Address;
+class Address;
 
-struct Printable;
+class Printable;
 
 using SharedType     = std::shared_ptr<Type>;
 using SharedConstExp = std::shared_ptr<const Exp>;
@@ -46,7 +46,7 @@ protected:
 	std::ofstream out;
 
 public:
-	FileLogger(); // Implemented in boomerang.cpp
+	FileLogger();
 	virtual ~FileLogger() {}
 	Log& operator<<(const QString& str)  override;
 };
@@ -57,8 +57,11 @@ protected:
 	std::ofstream *out;
 
 public:
-	SeparateLogger(const QString&);  // Implemented in boomerang.cpp
+	SeparateLogger(const QString& filePath);
+	SeparateLogger(const SeparateLogger&) {}
+
 	virtual ~SeparateLogger();
+
 	Log& operator<<(const QString& str) override;
 };
 

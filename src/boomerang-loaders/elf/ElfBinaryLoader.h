@@ -18,7 +18,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "core/BinaryFileFactory.h"
+#include "boomerang/core/BinaryFileFactory.h"
 
 struct Elf32_Ehdr;
 struct Elf32_Phdr;

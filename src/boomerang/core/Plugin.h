@@ -1,9 +1,8 @@
 #pragma once
 
+#include <QString>
 #include <string>
-#include <dlfcn.h>
 #include <cassert>
-
 
 enum class PluginType
 {
@@ -20,6 +19,20 @@ struct PluginInfo
 	std::string author;  ///< Plugin creator (copyright information)
 };
 
+class PluginHandle
+{
+public:
+	typedef void* Symbol;
+
+public:
+	PluginHandle(const QString& filePath);
+	~PluginHandle();
+
+	Symbol getSymbol(const char* name) const;
+
+private:
+	void* m_handle;
+};
 
 /**
  * Class for managing an interface plugin.
@@ -40,34 +53,30 @@ struct PluginInfo
 template<typename IFC, PluginType ty = PluginType::Invalid>
 class Plugin
 {
-	using PluginInitFunction   = IFC * (*)();
-	using PluginDeinitFunction = void (*)();
-	using PluginInfoFunction   = const PluginInfo (*)();
+	using PluginInitFunction = IFC * (*)();
+	using PluginDeinitFunction = void(*)();
+	using PluginInfoFunction = const PluginInfo(*)();
 
 public:
 	/// Create a plugin from a dynamic library file.
 	/// @param pluginPath path to the library file.
-	explicit Plugin(const std::string& pluginPath)
-		: m_pluginHandle(nullptr)
+	explicit Plugin(const QString& pluginPath)
+		: m_pluginHandle(pluginPath)
 		, m_ifc(nullptr)
 	{
-		load(pluginPath);
 		init();
 	}
 
 	~Plugin()
 	{
 		deinit();
-		unload();
+		// library is automatically unloaded
 	}
-
-	Plugin(const Plugin& other) = delete;
-	const Plugin& operator=(const Plugin& other) = delete;
 
 	/// Get information about the plugin.
 	PluginInfo getInfo() const
 	{
-		return getFunc<PluginInfoFunction>("getInfo")();
+		return m_pluginHandle.getSymbol("getInfo")();
 	}
 
 	/// Get the interface pointer for this plugin.
@@ -78,16 +87,8 @@ public:
 	inline IFC *operator->() { return this->get(); }
 
 private:
-	/// open the dynamic library for this plugin.
-	void load(const std::string& path)
-	{
-		assert(m_pluginHandle == nullptr);
-		m_pluginHandle = dlopen(path.c_str(), RTLD_NOW);
-
-		if (m_pluginHandle == nullptr) {
-			throw dlerror();
-		}
-	}
+	Plugin(const Plugin& other) = delete;
+	const Plugin& operator=(const Plugin& other) = delete;
 
 	/// Initialize the plugin.
 	void init()
@@ -104,30 +105,23 @@ private:
 		m_ifc = nullptr;
 	}
 
-	/// Unload the plugin.
-	void unload()
-	{
-		assert(m_pluginHandle != nullptr);
-		dlclose(m_pluginHandle);
-	}
-
 	/// Given a non-mangled function name (e.g. initPlugin),
 	/// get the function pointer for the function exported by this plugin.
 	template<class FuncPtr>
-	FuncPtr getFunc(const char *name) const
+	FuncPtr getFunc(const char* name) const
 	{
-		assert(m_pluginHandle != nullptr);
-		void *funcAddress = dlsym(m_pluginHandle, name);
+		PluginHandle::Symbol symbol = m_pluginHandle.getSymbol(name);
 
-		if (funcAddress == nullptr) {
-			throw dlerror();
+		if (!symbol) {
+			return nullptr;
 		}
-
-		return *(FuncPtr *)&funcAddress;
+		else {
+			return *(FuncPtr *)&symbol;
+		}
 	}
 
 private:
-	void *m_pluginHandle; ///< handle to the dynamic library
+	PluginHandle m_pluginHandle; ///< handle to the dynamic library
 	IFC *m_ifc;           ///< Interface pointer
 };
 

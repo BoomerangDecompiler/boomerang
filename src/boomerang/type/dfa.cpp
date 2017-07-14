@@ -1660,7 +1660,7 @@ void RefExp::descendType(SharedType parentType, bool& ch, Instruction *s)
 }
 
 
-void Const::descendType(SharedType parentType, bool& ch, Instruction */*s*/)
+void Const::descendType(SharedType parentType, bool& ch, Instruction *)
 {
 	bool thisCh = false;
 
@@ -1854,12 +1854,12 @@ void Ternary::descendType(SharedType /*parentType*/, bool& ch, Instruction *s)
 }
 
 
-void TypedExp::descendType(SharedType /*parentType*/, bool& /*ch*/, Instruction */*s*/)
+void TypedExp::descendType(SharedType, bool &, Instruction *)
 {
 }
 
 
-void Terminal::descendType(SharedType /*parentType*/, bool& /*ch*/, Instruction */*s*/)
+void Terminal::descendType(SharedType, bool &, Instruction *)
 {
 }
 

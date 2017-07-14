@@ -31,7 +31,7 @@ public:
 
 	/***************************************************************************/ /**
 	 * \brief        Construct a jump to a fixed address
-	 * \param        uDest native address of destination
+	 * \param        jumpDest native address of destination
 	 ******************************************************************************/
 	GotoStatement(Address jumpDest);
 
@@ -62,8 +62,8 @@ public:
 	 * \brief        Set the destination of this jump to be a given fixed address.
 	 * \param   addr - the new fixed address
 	 ******************************************************************************/
-	void setDest(SharedExp pd);
 	void setDest(Address addr);
+	void setDest(SharedExp pd);
 
 	/***************************************************************************/ /**
 	 * \brief        Returns the destination of this CTI.

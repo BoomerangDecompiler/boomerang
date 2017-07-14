@@ -422,6 +422,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& e)
 	case opNF:
 	case opOF: // also these
 		m_used->insert(e);
+		break;
 
 	default:
 		break;
@@ -1203,18 +1204,17 @@ bool StmtRegMapper::visit(BoolAssign *stmt, bool& override)
 }
 
 
-// Constant global converter. Example: m[m[r24{16} + m[0x8048d60]{-}]{-}]{-} -> m[m[r24{16} + 32]{-}]{-}
-// Allows some complex variations to be matched to standard indirect call forms
 SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool& recur)
 {
 	Instruction *def = e->getDef();
-	SharedExp   base, addr, idx, glo;
 
-	if ((def == nullptr) || def->isImplicit()) {
-		if ((base = e->getSubExp1(), base->isMemOf()) &&
-			(addr = base->getSubExp1(), addr->isIntConst())) {
+	if (!def || def->isImplicit()) {
+		SharedExp base = e->getSubExp1();
+		SharedExp addr = base->isMemOf() ? base->getSubExp1() : nullptr;
+
+		if (base->isMemOf() && addr && addr->isIntConst()) {
 			// We have a m[K]{-}
-			         Address K     = addr->access<Const>()->getAddr(); // TODO: use getAddr
+			Address K     = addr->access<Const>()->getAddr();
 			int     value = m_prog->readNative4(K);
 			recur = false;
 			return Const::get(value);
@@ -1222,23 +1222,27 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool&
 		else if (base->isGlobal()) {
 			// We have a glo{-}
 			QString gname    = base->access<Const, 1>()->getStr();
-			         Address gloValue = m_prog->getGlobalAddr(gname);
+			Address gloValue = m_prog->getGlobalAddr(gname);
 			int     value    = m_prog->readNative4(gloValue);
 			recur = false;
 			return Const::get(value);
 		}
-		else if (base->isArrayIndex() && (idx = base->getSubExp2(), idx->isIntConst()) &&
-				 (glo = base->getSubExp1(), glo->isGlobal())) {
-			// We have a glo[K]{-}
-			int        K        = idx->access<Const>()->getInt();
-			QString    gname    = glo->access<Const, 1>()->getStr();
-			         Address    gloValue = m_prog->getGlobalAddr(gname);
-			SharedType gloType  = m_prog->getGlobal(gname)->getType();
-			assert(gloType->isArray());
-			SharedType componentType = gloType->as<ArrayType>()->getBaseType();
-			int        value         = m_prog->readNative4(gloValue + K * (componentType->getSize() / 8));
-			recur = false;
-			return Const::get(value);
+		else if (base->isArrayIndex()) {
+			SharedExp idx = base->getSubExp2();
+			SharedExp glo = base->getSubExp1();
+			if (idx && idx->isIntConst() && glo && glo->isGlobal()) {
+				// We have a glo[K]{-}
+				int        K        = idx->access<Const>()->getInt();
+				QString    gname    = glo->access<Const, 1>()->getStr();
+				Address    gloValue = m_prog->getGlobalAddr(gname);
+				SharedType gloType  = m_prog->getGlobal(gname)->getType();
+
+				assert(gloType->isArray());
+				SharedType componentType = gloType->as<ArrayType>()->getBaseType();
+				int        value         = m_prog->readNative4(gloValue + K * (componentType->getSize() / 8));
+				recur = false;
+				return Const::get(value);
+			}
 		}
 	}
 

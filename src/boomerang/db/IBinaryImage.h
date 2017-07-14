@@ -2,7 +2,7 @@
 
 #include "boomerang/util/types.h"
 
-struct IBinarySection;
+class IBinarySection;
 
 class QString;
 

@@ -35,12 +35,10 @@
 #include "boomerang/db/prog.h"
 #include "boomerang/db/proc.h"
 
-#define HELLO_PENTIUM      baseDir.absoluteFilePath("tests/inputs/pentium/hello")
-#define GLOBAL1_PENTIUM    baseDir.absoluteFilePath("tests/inputs/pentium/global1")
+#define HELLO_PENTIUM      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
+#define GLOBAL1_PENTIUM    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/global1")
 
 static bool    logset = false;
-static QString TEST_BASE;
-static QDir    baseDir;
 
 /***************************************************************************/ /**
  * FUNCTION:        StatementTest::initTestCase
@@ -52,18 +50,9 @@ static QDir    baseDir;
 void StatementTest::initTestCase()
 {
 	if (!logset) {
-		TEST_BASE = QProcessEnvironment::systemEnvironment().value("BOOMERANG_TEST_BASE", "");
-		baseDir   = QDir(TEST_BASE);
-
-		if (TEST_BASE.isEmpty()) {
-			qWarning() << "BOOMERANG_TEST_BASE environment variable not set, will assume '..', many test may fail";
-			TEST_BASE = "..";
-			baseDir   = QDir("..");
-		}
-
 		logset = true;
-		Boomerang::get()->setProgPath(TEST_BASE);
-		Boomerang::get()->setPluginPath(TEST_BASE + "/out");
+		Boomerang::get()->setProgPath(BOOMERANG_TEST_BASE);
+		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }

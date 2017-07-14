@@ -30,7 +30,7 @@ public:
 
 	/// @copydoc IFrontEnd::getMainEntryPoint
 	virtual Address getMainEntryPoint(bool& gotMain) override;
-	
+
 private:
 	/*
 	 * Process an F(n)STSW instruction.
@@ -51,19 +51,31 @@ private:
 
 	void processFloatCode(Cfg *pCfg);
 
+	/***************************************************************************/ /**
+	* \brief Process a basic block, and all its successors, for floating point code.
+	*  Remove FPUSH/FPOP, instead decrementing or incrementing respectively the tos value to be used from
+	*  here down.
+	* \note tos has to be a parameter, not a global, to get the right value at any point in
+	*  the call tree
+	* \param pBB pointer to the current BB
+	* \param tos reference to the value of the "top of stack" pointer currently. Starts at zero, and is
+	*        decremented to 7 with the first load, so r[39] should be used first, then r[38] etc. However, it is
+	*        reset to 0 for calls, so that if a function returns a float, then it will always appear in r[32]
+	* \param pCfg passed to processFloatCode
+	******************************************************************************/
 	void processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg);
 	void processStringInst(UserProc *proc);
 	void processOverlapped(UserProc *proc);
 
 	/***************************************************************************/ /**
 	* \brief Checks for pentium specific helper functions like __xtol which have specific sematics.
-	* 
+	*
 	* \note This needs to be handled in a resourcable way.
-	* 
+	*
 	* \param dest - the native destination of this call
 	* \param addr - the native address of this call instruction
 	* \param lrtl - pointer to a list of RTL pointers for this BB
-	* 
+	*
 	* \returns true if a helper function is converted; false otherwise
 	******************************************************************************/
 	bool isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl) override;
@@ -72,6 +84,22 @@ private:
 	bool isDecAh(RTL *r);
 	bool isSetX(Instruction *s);
 	bool isAssignFromTern(Instruction *s);
+
+	/***************************************************************************/ /**
+	* \fn        PentiumFrontEnd::bumpRegisterAll
+	* \brief        Finds a subexpression within this expression of the form
+	*                      r[ int x] where min <= x <= max, and replaces it with
+	*                      r[ int y] where y = min + (x - min + delta & mask)
+	* \param e - Expression to modify
+	* \param min - minimum register numbers before any change is considered
+	* \param max - maximum register numbers before any change is considered
+	* \param delta amount to bump up the register number by
+	* \param mask see above
+	* APPLICATION:        Used to "flatten" stack floating point arithmetic (e.g. Pentium floating point code)
+	*                      If registers are not replaced "all at once" like this, there can be subtle errors from
+	*                      re-replacing already replaced registers
+	*
+	******************************************************************************/
 	void bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask);
 	unsigned fetch4(unsigned char *ptr);
 	bool decodeSpecial(Address pc, DecodeResult& r);

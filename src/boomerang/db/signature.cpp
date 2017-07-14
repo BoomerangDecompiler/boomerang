@@ -88,11 +88,14 @@ QString Signature::getConventionName(CallConv cc)
 	case CallConv::C:
 		return "stdc";
 
-	case CallConv::PASCAL:
+	case CallConv::Pascal:
 		return "pascal";
 
-	case CallConv::THISCALL:
+	case CallConv::ThisCall:
 		return "thiscall";
+
+	case CallConv::FastCall:
+		return "fastcall";
 
 	default:
 		return "??";
@@ -130,7 +133,7 @@ public:
 
 	virtual bool isPromoted()        const override { return true; }
 	virtual Platform getPlatform()   const override { return Platform::PENTIUM; }
-	virtual CallConv getConvention() const override { return CallConv::PASCAL; }
+	virtual CallConv getConvention() const override { return CallConv::Pascal; }
 };
 
 
@@ -148,7 +151,7 @@ public:
 	virtual std::shared_ptr<Signature> clone() const override;
 
 	virtual Platform getPlatform() const override { return Platform::PENTIUM; }
-	virtual CallConv getConvention() const override { return CallConv::THISCALL; }
+	virtual CallConv getConvention() const override { return CallConv::ThisCall; }
 };
 
 namespace StdC
@@ -2051,11 +2054,11 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 	{
 	case Platform::PENTIUM:
 
-		if (cc == CallConv::PASCAL) {
+		if (cc == CallConv::Pascal) {
 			// For now, assume the only pascal calling convention pentium signatures will be Windows
 			return std::make_shared<CallingConvention::Win32Signature>(nam);
 		}
-		else if (cc == CallConv::THISCALL) {
+		else if (cc == CallConv::ThisCall) {
 			return std::make_shared<CallingConvention::Win32TcSignature>(nam);
 		}
 		else {
@@ -2064,7 +2067,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 
 	case Platform::SPARC:
 
-		if (cc == CallConv::PASCAL) {
+		if (cc == CallConv::Pascal) {
 			cc = CallConv::C;
 		}
 
@@ -2073,7 +2076,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 
 	case Platform::PPC:
 
-		if (cc == CallConv::PASCAL) {
+		if (cc == CallConv::Pascal) {
 			cc = CallConv::C;
 		}
 
@@ -2081,7 +2084,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 
 	case Platform::ST20:
 
-		if (cc == CallConv::PASCAL) {
+		if (cc == CallConv::Pascal) {
 			cc = CallConv::C;
 		}
 
@@ -2089,7 +2092,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 
 	case Platform::MIPS:
 
-		if (cc == CallConv::PASCAL) {
+		if (cc == CallConv::Pascal) {
 			cc = CallConv::C;
 		}
 

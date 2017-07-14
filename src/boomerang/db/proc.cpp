@@ -55,20 +55,13 @@
 
 
 #ifdef _WIN32
-#undef Address::INVALID
-#include <windows.h>
-#ifndef __MINGW32__
+#  include <windows.h>
+#  ifndef __MINGW32__
 namespace dbghelp
 {
-#include <dbghelp.h>
-// dbghelp.h can define ADDRESS
-#ifdef ADDRESS
-#undef ADDRESS
-#endif
+#    include <dbghelp.h>
 }
-#endif
-#undef Address::INVALID
-#define Address::INVALID    Address(-1)
+#  endif
 #endif
 
 typedef std::map<Instruction *, int> RefCounter;
@@ -5088,7 +5081,7 @@ void UserProc::replaceSimpleGlobalConstants()
 
 		if (m_prog->isReadOnly(addr)) {
 			LOG << "is readonly\n";
-			int val;
+			int val = 0;
 
 			switch (assgn->getType()->getSize())
 			{
@@ -6785,6 +6778,7 @@ void UserProc::verifyPHIs()
 		PhiAssign *pi = (PhiAssign *)st;
 
 		for (const auto& pas : *pi) {
+			Q_UNUSED(pas);
 			assert(pas.second.def());
 		}
 	}

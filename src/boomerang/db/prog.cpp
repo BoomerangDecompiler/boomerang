@@ -66,19 +66,13 @@
 #include <cmath>
 
 #ifdef _WIN32
-#undef Address::INVALID
-#include <windows.h>
-#ifndef __MINGW32__
+#  include <windows.h>
+#  ifndef __MINGW32__
 namespace dbghelp
 {
-#include <dbghelp.h>
-#ifdef ADDRESS
-#undef ADDRESS
-#endif
+#    include <dbghelp.h>
+#  endif
 }
-#endif
-#undef Address::INVALID
-#define Address::INVALID    (Address(-1))
 #endif
 
 #include <sys/types.h>
@@ -247,14 +241,14 @@ void Prog::generateDataSectionCode(QString section_name, Address section_start, 
 void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) const
 {
 	// QString basedir = m_rootCluster->makeDirs();
-	QTextStream *os;
+	QTextStream *os = nullptr;
 
 	if (cluster) {
 		cluster->openStream("c");
 		cluster->closeStreams();
 	}
 
-	bool generate_all   = cluster == nullptr || cluster == m_rootCluster;
+	const bool generate_all   = cluster == nullptr || cluster == m_rootCluster;
 	bool all_procedures = proc == nullptr;
 
 	if (generate_all) {
@@ -766,7 +760,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID 
 		UserProc *u = (UserProc *)proc;
 		assert(pSymInfo->Flags & SYMFLAG_REGREL);
 		assert(pSymInfo->Register == 8);
-		Exp *memref =
+		SharedExp memref =
 			Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(-((int)pSymInfo->Address - 4))));
 		SharedType ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
 		u->addLocal(ty, pSymInfo->Name, memref);
@@ -1882,7 +1876,7 @@ void Prog::readSymbolFile(const QString& fname)
 	CallConv    cc   = CallConv::C;
 
 	if (isWin32()) {
-		cc = CallConv::PASCAL;
+		cc = CallConv::Pascal;
 	}
 
 	par->yyparse(plat, cc);

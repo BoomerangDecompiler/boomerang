@@ -36,11 +36,6 @@ class Register
 {
 public:
 	Register(); ///< needed for use in stl classes.
-
-	/***************************************************************************/ /**
-	 * \brief      Copy constructor.
-	 * \param      r - Reference to another Register object to construct from
-	 ******************************************************************************/
 	Register(const Register&);
 
 	/***************************************************************************/ /**
@@ -70,9 +65,9 @@ public:
 
 	/***************************************************************************/ /**
 	 * \brief      Set the name for this register
-	 * \param      s - name to set it to
+	 * \param      name - name to set it to
 	 ******************************************************************************/
-	void setName(const QString&);
+	void setName(const QString& name);
 
 	void setSize(uint16_t s) { m_size = s; }
 	void setFloat(bool f) { m_fltRegister = f; }

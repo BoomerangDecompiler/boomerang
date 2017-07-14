@@ -15,6 +15,7 @@ set(boomerang_SRC
 	core/Boomerang.cpp
 	core/BinaryFileFactory.cpp
 	core/Plugin.h
+	core/Plugin.cpp
 	
 	db/SymTab
 	db/SectionInfo
@@ -133,7 +134,7 @@ set(boomerang_SRC
 )
 
 add_library(boomerang ${boomerang_SRC})
-target_link_libraries(boomerang boomerang-frontend ${CMAKE_DL_LIBS})
+target_link_libraries(boomerang boomerang-frontend ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB})
 
 set_target_properties(boomerang PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
 

@@ -16,8 +16,9 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "core/BinaryFileFactory.h"
-#include "db/IBinarySymbols.h"
+#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/db/IBinarySymbols.h"
+
 #include <set>
 
 struct import_entry

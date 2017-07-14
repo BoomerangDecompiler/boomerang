@@ -360,7 +360,6 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
 
 #define TESTMAGIC2(buf, off, a, b)          (buf[off] == a && buf[off + 1] == b)
-#define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
 int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
 {

@@ -17,7 +17,7 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "core/BinaryFileFactory.h"
+#include "boomerang/core/BinaryFileFactory.h"
 #include <QtCore/QObject>
 
 /**

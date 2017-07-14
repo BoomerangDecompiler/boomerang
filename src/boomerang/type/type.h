@@ -110,6 +110,12 @@ public:
 
 	// Return type for given temporary variable name
 	static SharedType getTempType(const QString& name);
+
+	/***************************************************************************/ /**
+	* \brief        static Constructor from string
+	* \param        str string to parse
+	* \returns      constructed type.
+	******************************************************************************/
 	static SharedType parseType(const char *str); // parse a C type
 
 	bool isCString() const;
@@ -265,6 +271,11 @@ public:
 
 	virtual size_t getSize() const override;
 
+	/***************************************************************************/ /**
+	* \brief        Return a string representing this type
+	* \param        final if true, this is final output
+	* \returns      Pointer to a constant string of char
+	******************************************************************************/
 	virtual QString getCtype(bool final = false) const override;
 
 	virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
@@ -331,6 +342,11 @@ public:
 
 	virtual SharedType clone() const override;
 
+	/***************************************************************************/ /**
+	* \brief        Equality comparsion.
+	* \param        other - Type being compared to
+	* \returns      *this == other
+	******************************************************************************/
 	virtual bool operator==(const Type& other) const override;
 
 	// virtual bool          operator-=(const Type& other) const;
@@ -480,7 +496,11 @@ public:
 
 	virtual size_t getSize() const override;
 
-	virtual void setSize(size_t sz)  override { assert(sz == STD_SIZE); }
+	virtual void setSize(size_t sz)  override
+	{
+		Q_UNUSED(sz);
+		assert(sz == STD_SIZE);
+	}
 
 	virtual QString getCtype(bool final = false) const override;
 

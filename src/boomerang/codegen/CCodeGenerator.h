@@ -9,7 +9,8 @@
  *
  */
 
-#include "codegen/ICodeGenerator.h"
+#include "boomerang/codegen/ICodeGenerator.h"
+
 #include <string>
 #include <sstream>
 
@@ -156,7 +157,19 @@ private:
 	/// The generated code.
 	QStringList m_lines;
 
+	/// Output 4 * \a indLevel spaces to \a str
 	void indent(QTextStream& str, int indLevel);
+
+	/**
+	* Append code for the given expression \a exp to stream \a str.
+	*
+	* \param str        The stream to output to.
+	* \param exp        The expresson to output.
+	* \param curPrec     The current operator precedence. Add parens around this expression if necessary.
+	* \param uns         If true, cast operands to unsigned if necessary.
+	*
+	* \todo This function is 800+ lines, and should possibly be split up.
+	*/
 	void appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool uns = false);
 	void appendType(QTextStream& str, SharedType typ);
 	void appendTypeIdent(QTextStream& str, SharedType typ, QString ident);

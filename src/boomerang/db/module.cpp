@@ -11,20 +11,14 @@
 #include <QString>
 
 #if defined(_WIN32) && !defined(__MINGW32__)
-#undef Address::INVALID
-#include <windows.h>
+#  include <windows.h>
 namespace dbghelp
 {
-#include <dbghelp.h>
-// dbghelp.h can define ADDRESS
-#ifdef ADDRESS
-#undef ADDRESS
-#endif
+#  include <dbghelp.h>
 }
-#undef Address::INVALID
-#define Address::INVALID    Address(-1)
-#include <iostream>
-#include "boomerang/util/Log.h"
+
+#  include <iostream>
+#  include "boomerang/util/Log.h"
 #endif
 
 #if defined(_WIN32) && !defined(__MINGW32__)
@@ -224,6 +218,7 @@ void Module::setLocationMap(Address loc, Function *fnc)
 {
 	if (fnc == nullptr) {
 		size_t count = m_labelsToProcs.erase(loc);
+		Q_UNUSED(count);
 		assert(count == 1);
 	}
 	else {
@@ -263,7 +258,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
 	// from Loader
 
 #if defined(_WIN32) && !defined(__MINGW32__)
-	if (CurrentFrontend->isWin32()) {
+	if (m_currentFrontend->isWin32()) {
 		// use debugging information
 		HANDLE               hProcess = GetCurrentProcess();
 		dbghelp::SYMBOL_INFO *sym     = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
@@ -286,7 +281,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
 			}
 			else {
 				// assume we're stdc calling convention, remove r28, r24 returns
-				pProc->setSignature(Signature::instantiate(Platform::PENTIUM, CONV_C, name));
+				pProc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name));
 			}
 
 			// get a return type

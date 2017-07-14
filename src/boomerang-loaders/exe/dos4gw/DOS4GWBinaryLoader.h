@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "core/BinaryFileFactory.h"
+#include "boomerang/core/BinaryFileFactory.h"
 
 #include <string>
 
@@ -184,10 +184,8 @@ protected:
 private:
 	bool postLoad(void *handle) override; ///< Called after archive member loaded
 
-	Header *m_pHeader;                    ///< Pointer to header
 	LXHeader *m_pLXHeader  = nullptr;     ///< Pointer to lx header
 	LXObject *m_pLXObjects = nullptr;     ///< Pointer to lx objects
-	LXPage *m_pLXPages     = nullptr;     ///< Pointer to lx pages
 	int m_cbImage;                        ///< Size of image
 	char *base;                           ///< Beginning of the loaded image
 

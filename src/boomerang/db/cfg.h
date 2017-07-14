@@ -188,10 +188,10 @@ public:
 	 *
 	 * \note    Overloaded with address as 2nd argument (calls this proc in the end)
 	 * \param   pBB source BB (to have the out edge added to)
-	 * \param   pDestBB destination BB (to have the out edge point to)
+	 * \param   addr Start address of the BB reached by the out edge
 	 * \param   bSetLabel - indicates that label is required in \a pDestBB
 	 ******************************************************************************/
-	void addOutEdge(BasicBlock *pBB, Address adr, bool bSetLabel = false);
+	void addOutEdge(BasicBlock *pBB, Address addr, bool bSetLabel = false);
 
 	/***************************************************************************/ /**
 	 * \brief        Add an out edge to this BB (and the in-edge to the dest BB)
@@ -203,8 +203,7 @@ public:
 	 *
 	 * \note            Calls the above
 	 * \param pBB source BB (to have the out edge added to)
-	 * \param addr source address of destination
-	 * (the out edge is to point to the BB whose lowest address is addr)
+	 * \param pDestBB   Destination BB of the out edge
 	 * \param bSetLabel if true, set a label at the destination address.  Set true on "true" branches of labels
 	 ******************************************************************************/
 	void addOutEdge(BasicBlock *pBB, BasicBlock *pDestBB, bool bSetLabel = false);
@@ -273,8 +272,9 @@ public:
 	 *  address of the new (lower) part of the split BB.
 	 *  If there is an incomplete entry in the table for this address which overlaps with a completed address,
 	 *  the completed BB is split and the BB for this address is completed.
+	 *
 	 * \param         uNativeAddr - native (source) address to check
-	 * \param         pCurBB - See above
+	 * \param         pNewBB - See above
 	 * \returns       True if \a uNativeAddr is a label, i.e. (now) the start of a BB
 	 *                Note: pCurBB may be modified (as above)
 	 ******************************************************************************/
@@ -286,10 +286,10 @@ public:
 	 * Checks whether the given native address is in the map. If not, returns false. If so, returns true if it is
 	 * incomplete. Otherwise, returns false.
 	 *
-	 * \param       uAddr Address to look up
+	 * \param       addr Address to look up
 	 * \returns     True if uAddr starts an incomplete BB
 	 ******************************************************************************/
-	bool isIncomplete(Address uNativeAddr) const;
+	bool isIncomplete(Address addr) const;
 
 	/***************************************************************************/ /**
 	 * \brief Return true if the given address is the start of a basic block, complete or not
@@ -600,7 +600,7 @@ public:
 	/***************************************************************************/ /**
 	 * \brief       Set the entry and calculate exit BB pointers
 	 * \note        Each cfg should have only one exit node now
-	 * \param       bb: pointer to the entry BB
+	 * \param       bb pointer to the entry BB
 	 ******************************************************************************/
 	void setEntryBB(BasicBlock *bb);
 	void setExitBB(BasicBlock *bb);
@@ -617,8 +617,8 @@ public:
 	 * \note        Use Cfg::addOutEdge for ordinary BB creation; this is for unusual cfg manipulation
 	 * \note        side effect : Increments m_iNumOutEdges
 	 *
-	 * \param pFromBB pointer to the BB getting the new out edge
-	 * \param pNewOutEdge pointer to BB that will be the new successor
+	 * \param fromBB pointer to the BB getting the new out edge
+	 * \param newOutEdge pointer to BB that will be the new successor
 	 ******************************************************************************/
 	void addNewOutEdge(BasicBlock *fromBB, BasicBlock *newOutEdge);
 

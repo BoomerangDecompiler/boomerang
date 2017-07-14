@@ -612,25 +612,13 @@ unsigned CompoundType::getOffsetRemainder(unsigned n)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        static Constructor from string
- * \param        str: string to parse
- * \returns       constructed type.
- ******************************************************************************/
-SharedType Type::parseType(const char */*str*/)
+SharedType Type::parseType(const char *)
 {
 	assert(!"Not implemented");
 	return nullptr;
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Equality comparsion.
- * \param        other - Type being compared to
- * \returns            this == other
- ******************************************************************************/
 bool IntegerType::operator==(const Type& other) const
 {
 	if (not other.isInteger()) {
@@ -1097,12 +1085,6 @@ SharedExp UnionType::match(SharedType pattern)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief        Return a string representing this type
- * \param        final: if true, this is final output
- * \returns            Pointer to a constant string of char
- ******************************************************************************/
 QString VoidType::getCtype(bool /*final*/) const
 {
 	return "void";
