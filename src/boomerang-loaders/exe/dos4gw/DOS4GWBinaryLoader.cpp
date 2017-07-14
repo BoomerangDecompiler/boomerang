@@ -381,24 +381,15 @@ bool DOS4GWBinaryLoader::displayDetails(const char *fileName, FILE *f
 }
 
 
-int DOS4GWBinaryLoader::dos4gwRead2(short *ps) const
+SWord DOS4GWBinaryLoader::dos4gwRead2(const void* src) const
 {
-	unsigned char *p = (unsigned char *)ps;
-	// Little endian
-	int n = (int)(p[0] + (p[1] << 8));
-
-	return n;
+	return Util::readWord(src, false);
 }
 
 
-int DOS4GWBinaryLoader::dos4gwRead4(int *pi) const
+DWord DOS4GWBinaryLoader::dos4gwRead4(const void* src) const
 {
-	short *p = (short *)pi;
-	int   n1 = dos4gwRead2(p);
-	int   n2 = dos4gwRead2(p + 1);
-	int   n  = (int)(n1 | (n2 << 16));
-
-	return n;
+	return Util::readDWord(src, false);
 }
 
 

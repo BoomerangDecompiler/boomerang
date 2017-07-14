@@ -178,8 +178,8 @@ public:
 	DWord getDelta();
 
 protected:
-	int dos4gwRead2(short *ps) const; // Read 2 bytes from native addr
-	int dos4gwRead4(int *pi) const;   // Read 4 bytes from native addr
+	SWord dos4gwRead2(const void* src) const; // Read 2 bytes from native addr
+	DWord dos4gwRead4(const void* src) const;   // Read 4 bytes from native addr
 
 private:
 	bool postLoad(void *handle) override; ///< Called after archive member loaded

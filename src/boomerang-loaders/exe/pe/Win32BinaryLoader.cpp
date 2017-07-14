@@ -136,7 +136,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 	unsigned      p = LMMH(m_pPEHeader->EntrypointRVA);
 	unsigned      lim = p + 0x200;
 	unsigned char op1, op2;
-	   Address       addr;
+	Address       addr;
 	unsigned      lastOrdCall = 0;
 	int           gap;              // Number of instructions from the last ordinary call
 	int           borlandState = 0; // State machine for Borland
@@ -946,24 +946,15 @@ bool Win32BinaryLoader::displayDetails(const char *fileName, FILE *f /* = stdout
 }
 
 
-int Win32BinaryLoader::win32Read2(short *ps) const
+SWord Win32BinaryLoader::win32Read2(const void* src) const
 {
-	unsigned char *p = (unsigned char *)ps;
-	// Little endian
-	int n = (int)(p[0] + (p[1] << 8));
-
-	return n;
+	return Util::readWord(src, false);
 }
 
 
-int Win32BinaryLoader::win32Read4(int *pi) const
+DWord Win32BinaryLoader::win32Read4(const void* src) const
 {
-	short *p = (short *)pi;
-	int   n1 = win32Read2(p);
-	int   n2 = win32Read2(p + 1);
-	int   n  = (int)(n1 | (n2 << 16));
-
-	return n;
+	return Util::readDWord(src, false);
 }
 
 

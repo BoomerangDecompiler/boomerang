@@ -181,20 +181,20 @@ public:
 	Machine getMachine() const override;
 
 	/// @copydoc IFileLoader::getMainEntryPoint
-	   Address getMainEntryPoint() override;
+	Address getMainEntryPoint() override;
 
 	/// @copydoc IFileLoader::getEntryPoint
-	   Address getEntryPoint() override;
+	Address getEntryPoint() override;
 
 	/// @copydoc IFileLoader::getImageBase
-	   Address getImageBase() override;
+	Address getImageBase() override;
 
 	/// @copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
 
 public:
 	/// @copydoc IFileLoader::isJumpToAnotherAddr
-	   Address isJumpToAnotherAddr(Address uNative) override;
+	Address isJumpToAnotherAddr(Address uNative) override;
 
 	/// @copydoc IFileLoader::displayDetails
 	bool displayDetails(const char *fileName, FILE *f = stdout) override;
@@ -210,8 +210,8 @@ protected:
 	/// @copydoc IFileLoader::postLoad
 	bool postLoad(void *handle) override;
 
-	int win32Read2(short *ps) const; // Read 2 bytes from native addr
-	int win32Read4(int *pi) const;   // Read 4 bytes from native addr
+	SWord win32Read2(const void* src) const; ///< Read 2 bytes from native addr
+	DWord win32Read4(const void* src) const; ///< Read 4 bytes from native addr
 
 public:
 	bool isStaticLinkedLibProc(Address uNative);

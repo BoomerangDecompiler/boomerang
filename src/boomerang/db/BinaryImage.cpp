@@ -5,62 +5,6 @@
 #include <QDebug>
 #include <algorithm>
 
-namespace
-{
-/***************************************************************************/ /**
- *
- * \brief    Read a 2 or 4 byte quantity from host address (C pointer) p
- * \note        Takes care of reading the correct endianness, set early on into m_elfEndianness
- * \param    ps or pi: host pointer to the data
- * \returns        An integer representing the data
- ******************************************************************************/
-int Read2(const short *ps, bool bigEndian)
-{
-	const unsigned char *p = (const unsigned char *)ps;
-
-	if (bigEndian) {
-		// Big endian
-		return (int)((p[0] << 8) + p[1]);
-	}
-	else {
-		// Little endian
-		return (int)(p[0] + (p[1] << 8));
-	}
-}
-
-
-int Read4(const int *pi, bool bigEndian)
-{
-	const short *p = (const short *)pi;
-
-	if (bigEndian) {
-		return (int)((Read2(p, bigEndian) << 16) + Read2(p + 1, bigEndian));
-	}
-	else {
-		return (int)(Read2(p, bigEndian) + (Read2(p + 1, bigEndian) << 16));
-	}
-}
-}
-
-void Write4(int *pi, int val, bool bigEndian)
-{
-	char *p = (char *)pi;
-
-	if (bigEndian) {
-		// Big endian
-		*p++ = (char)(val >> 24);
-		*p++ = (char)(val >> 16);
-		*p++ = (char)(val >> 8);
-		*p   = (char)val;
-	}
-	else {
-		*p++ = (char)val;
-		*p++ = (char)(val >> 8);
-		*p++ = (char)(val >> 16);
-		*p   = (char)(val >> 24);
-	}
-}
-
 
 BinaryImage::BinaryImage()
 {
@@ -84,7 +28,7 @@ void BinaryImage::reset()
 }
 
 
-char BinaryImage::readNative1(Address nat)
+Byte BinaryImage::readNative1(Address nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -94,11 +38,11 @@ char BinaryImage::readNative1(Address nat)
 	}
 
 	HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
-	return *(char *)host.value();
+	return *(Byte *)host.value();
 }
 
 
-int BinaryImage::readNative2(Address nat)
+SWord BinaryImage::readNative2(Address nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -107,11 +51,11 @@ int BinaryImage::readNative2(Address nat)
 	}
 
 	HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
-	return Read2((short *)host.value(), si->getEndian());
+	return Util::readWord((const void*)host.value(), si->getEndian());
 }
 
 
-int BinaryImage::readNative4(Address nat)
+DWord BinaryImage::readNative4(Address nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -120,12 +64,11 @@ int BinaryImage::readNative4(Address nat)
 	}
 
 	HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
-	return Read4((int *)host.value(), si->getEndian());
+	return Util::readDWord((const void*)host.value(), si->getEndian());
 }
 
 
-// Read 8 bytes from given native address
-QWord BinaryImage::readNative8(Address nat)   // TODO: lifted from Win32 loader, likely wrong
+QWord BinaryImage::readNative8(Address nat)
 {
 	const IBinarySection *si = getSectionInfoByAddr(nat);
 
@@ -133,33 +76,14 @@ QWord BinaryImage::readNative8(Address nat)   // TODO: lifted from Win32 loader,
 		return 0;
 	}
 
-	QWord raw = 0;
-#ifdef WORDS_BIGENDIAN   // This tests the  host     machine
-	if (si->Endiannes) { // This tests the source machine
-#else
-	if (si->getEndian() == 0) {
-#endif  // Balance }
-		// Source and host are same endianness
-		raw |= (QWord)readNative4(nat);
-		raw |= (QWord)readNative4(nat + 4) << 32;
-	}
-	else {
-		// Source and host are different endianness
-		raw |= (QWord)readNative4(nat + 4);
-		raw |= (QWord)readNative4(nat) << 32;
-	}
-
-	// return reinterpret_cast<long long>(*raw);       // Note: cast, not convert!!
-	return raw;
+	HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
+	return Util::readQWord((const void*)host.value(), si->getEndian());
 }
 
 
 float BinaryImage::readNativeFloat4(Address nat)
 {
-	int raw = readNative4(nat);
-
-	// Ugh! gcc says that reinterpreting from int to float is invalid!!
-	// return reinterpret_cast<float>(raw);      // Note: cast, not convert!!
+	DWord raw = readNative4(nat);
 	return *(float *)&raw; // Note: cast, not convert
 }
 
@@ -172,24 +96,8 @@ double BinaryImage::readNativeFloat8(Address nat)
 		return 0;
 	}
 
-	int raw[2];
-#ifdef WORDS_BIGENDIAN   // This tests the  host     machine
-	if (si->Endiannes) { // This tests the source machine
-#else
-	if (si->getEndian() == 0) {
-#endif  // Balance }
-		// Source and host are same endianness
-		raw[0] = readNative4(nat);
-		raw[1] = readNative4(nat + 4);
-	}
-	else {
-		// Source and host are different endianness
-		raw[1] = readNative4(nat);
-		raw[0] = readNative4(nat + 4);
-	}
-
-	// return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
-	return *(double *)raw;
+	QWord raw = readNative8(nat);
+	return *(double *)&raw;
 }
 
 
@@ -203,20 +111,8 @@ void BinaryImage::writeNative4(Address nat, uint32_t n)
 	}
 
 	HostAddress host  = si->getHostAddr() - si->getSourceAddr() + nat;
-	uint8_t *host_ptr = (unsigned char *)host.value();
 
-	if (si->getEndian() == 1) {
-		host_ptr[0] = (n >> 24) & 0xff;
-		host_ptr[1] = (n >> 16) & 0xff;
-		host_ptr[2] = (n >> 8) & 0xff;
-		host_ptr[3] = n & 0xff;
-	}
-	else {
-		host_ptr[3] = (n >> 24) & 0xff;
-		host_ptr[2] = (n >> 16) & 0xff;
-		host_ptr[1] = (n >> 8) & 0xff;
-		host_ptr[0] = n & 0xff;
-	}
+	Util::writeDWord((void*)host.value(), n, si->getEndian());
 }
 
 

@@ -42,20 +42,21 @@ public:
 	void reset() override;
 
 	size_t getNumSections() const override { return m_sections.size(); }
-	   Address                  imageToSource(Address); /// convert image address ( host pointer into image data ) to valid Source machine ADDRESS
-	   Address                  sourceToImage(Address); /// convert Source machine ADDRESS into valid image ADDRESS
+	Address imageToSource(Address); /// convert image address ( host pointer into image data ) to valid Source machine ADDRESS
+	Address sourceToImage(Address); /// convert Source machine ADDRESS into valid image ADDRESS
 
-	char readNative1(Address nat) override;
-	int readNative2(Address nat) override;
-	int readNative4(Address nat) override;
-	QWord readNative8(Address nat) override;
+	Byte  readNative1(Address addr) override;
+	SWord readNative2(Address addr) override;
+	DWord readNative4(Address addr) override;
+	QWord readNative8(Address addr) override;
 
 	/// Read 4 bytes as a float
-	float readNativeFloat4(Address nat) override;
+	float readNativeFloat4(Address addr) override;
 
 	/// Read 8 bytes as a double value
-	double readNativeFloat8(Address nat) override;
-	void writeNative4(Address nat, uint32_t n) override;
+	double readNativeFloat8(Address addr) override;
+	void writeNative4(Address addr, DWord value) override;
+
 	void calculateTextLimits() override;
 
 	/// Find the section, given an address in the section
@@ -84,8 +85,8 @@ public:
 	bool empty()  const override { return m_sections.empty(); }
 
 private:
-	   Address                  m_limitTextLow;
-	   Address                  m_limitTextHigh;
+	Address                  m_limitTextLow;
+	Address                  m_limitTextHigh;
 	ptrdiff_t                m_textDelta;
 	MapAddressRangeToSection m_sectionMap;
 	SectionListType          m_sections; ///< The section info

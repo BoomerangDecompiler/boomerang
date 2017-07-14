@@ -55,48 +55,6 @@ void PalmBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbo
 }
 
 
-static int Read2(short *ps)
-{
-	unsigned char *p = (unsigned char *)ps;
-	// Little endian
-	int n = (int(p[0]) << 8) | p[1];
-
-	return n;
-}
-
-
-static SWord Read2(uint16_t *ps)
-{
-	unsigned char *p = (unsigned char *)ps;
-	// Little endian
-	uint16_t n = (uint16_t)((p[0] << 8) | p[1]);
-
-	return n;
-}
-
-
-static int Read4(int *pi)
-{
-	short *p = (short *)pi;
-	int   n1 = Read2(p);
-	int   n2 = Read2(p + 1);
-	int   n  = (int)((n1 << 16) | n2);
-
-	return n;
-}
-
-
-static int Read4(uint32_t *pi)
-{
-	uint16_t *p = (uint16_t *)pi;
-	uint32_t n1 = Read2(p);
-	uint32_t n2 = Read2(p + 1);
-	uint32_t n  = (uint32_t)((n1 << 16) | n2);
-
-	return n;
-}
-
-
 namespace
 {
 struct SectionParams
@@ -476,7 +434,7 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
 
 		for (int i = 0; i < pattSize; i++) {
 			SWord curr = patt[i];
-			SWord val  = Read2(start + i);
+			SWord val  = Util::readWord(start + i, true);
 
 			if ((curr != WILD) && (curr != val)) {
 				found = false;
@@ -514,16 +472,17 @@ Address PalmBinaryLoader::getMainEntryPoint()
 
 	if (res) {
 		// We have the code warrior first jump. Get the addil operand
-		int   addilOp      = Read4((uint32_t *)(startCode + 5));
+		const int   addilOp      = Util::readDWord((startCode + 5), true);
 		SWord *startupCode = (SWord *)(HostAddress(startCode) + 10 + addilOp).value();
 		// Now check the next 60 SWords for the call to PilotMain
 		res = findPattern(startupCode, CWCallMain, sizeof(CWCallMain) / sizeof(SWord), 60);
 
 		if (res) {
 			// Get the addil operand
-			int _addilOp = Read4((int32_t *)(res + 5));
+			const int _addilOp = Util::readDWord((res + 5), true);
+
 			// That operand plus the address of that operand is PilotMain
-			Address offset_loc = Address((char *)(res + 5) - (char *)startCode);
+			Address offset_loc = Address((Byte*)res - (Byte*)startCode + 5);
 			return offset_loc + _addilOp; // ADDRESS::host_ptr(res) + 10 + addilOp - delta;
 		}
 		else {

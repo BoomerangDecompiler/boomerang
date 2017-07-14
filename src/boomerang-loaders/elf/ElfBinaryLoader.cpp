@@ -804,40 +804,21 @@ void ElfBinaryLoader::markImports()
 SWord ElfBinaryLoader::elfRead2(const SWord *ps) const
 {
 	assert(ps);
-	SWord r = *ps;
-
-	if (m_bigEndian) {
-		r = (r >> 8 & 0x00FF) | (r << 8 & 0xFF00);
-	}
-
-	return r;
+	return Util::readWord(ps, m_bigEndian);
 }
 
 
 DWord ElfBinaryLoader::elfRead4(const DWord *pi) const
 {
 	assert(pi);
-	DWord r = *pi;
-
-	if (m_bigEndian) {
-		r = (r >> 16 & 0x0000FFFF) | (r << 16 & 0xFFFF0000);
-		r = (r >> 8 & 0x00FF00FF) | (r << 8 & 0xFF00FF00);
-	}
-
-	return r;
+	return Util::readDWord(pi, m_bigEndian);
 }
 
 
 void ElfBinaryLoader::elfWrite4(DWord *pi, DWord val)
 {
-	// swap endian
-	val = elfRead4(&val);
-
-	Byte *p = (Byte *)pi;
-	*p++ = (char)val;
-	*p++ = (char)(val >> 8);
-	*p++ = (char)(val >> 16);
-	*p   = (char)(val >> 24);
+	assert(pi);
+	Util::writeDWord(pi, val, m_bigEndian);
 }
 
 
