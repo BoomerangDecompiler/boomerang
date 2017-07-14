@@ -260,14 +260,6 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 			openParen(str, curPrec, PREC_EQUAL);
 			appendExp(str, *b.getSubExp1(), PREC_EQUAL);
 			str << " == ";
-#if 0       // Suspect only for ADHOC TA
-			SharedType ty = b.getSubExp1()->getType();
-
-			if (ty && ty->isPointer() && b.getSubExp2()->isIntConst() && (((Const *)b.getSubExp2())->getInt() == 0)) {
-				str << "nullptr";
-			}
-			else
-#endif
 			appendExp(str, *b.getSubExp2(), PREC_EQUAL);
 			closeParen(str, curPrec, PREC_EQUAL);
 		}
@@ -278,14 +270,6 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 			openParen(str, curPrec, PREC_EQUAL);
 			appendExp(str, *b.getSubExp1(), PREC_EQUAL);
 			str << " != ";
-#if 0       // Suspect only for ADHOC_TA
-			SharedType ty = b.getSubExp1()->getType();
-
-			if (ty && ty->isPointer() && b.getSubExp2()->isIntConst() && (((Const *)b.getSubExp2())->getInt() == 0)) {
-				str << "nullptr";
-			}
-			else
-#endif
 			appendExp(str, *b.getSubExp2(), PREC_EQUAL);
 			closeParen(str, curPrec, PREC_EQUAL);
 		}
@@ -812,13 +796,6 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 			if ((sz == 8) || (sz == 16)) {
 				bool close = false;
 				str << "*";
-#if 0           // Suspect ADHOC TA only
-				SharedType ty = t.getSubExp3()->getSubExp1()->getType();
-
-				if ((ty == nullptr) || !ty->isPointer() ||
-					!ty->as<PointerType>()->getPointsTo()->isInteger() ||
-					(ty->as<PointerType>()->getPointsTo()->as<IntegerType>()->getSize() != sz)) {
-#endif
 				str << "(unsigned ";
 
 				if (sz == 8) {
@@ -831,9 +808,6 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 				str << "*)";
 				openParen(str, curPrec, PREC_UNARY);
 				close = true;
-#if 0           // ADHOC TA as above
-			}
-#endif
 				appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_UNARY);
 
 				if (close) {
@@ -871,11 +845,8 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 			}
 			else if (u.getSubExp1()->getOper() == opMemOf) {
 // We have (tt)m[x]
-#if 0           // ADHOC TA
-				PointerType *pty = dynamic_cast<PointerType *>(u.getSubExp1()->getSubExp1()->getType());
-#else
 				PointerType *pty = nullptr;
-#endif
+
 				// pty = T(x)
 				SharedType tt = ((const TypedExp&)u).getType();
 
@@ -1080,11 +1051,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
 	case opMemberAccess:
 		{
-#if 0       // ADHOC TA
-			SharedType ty = b.getSubExp1()->getType();
-#else
 			SharedType ty = nullptr;
-#endif
 
 			if (ty == nullptr) {
 				LOG << "type failure: no type for subexp1 of " << b.shared_from_this() << "\n";
@@ -1115,11 +1082,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 		openParen(str, curPrec, PREC_PRIM);
 
 		if (b.getSubExp1()->isMemOf()) {
-#if 0       // ADHOC TA
-			SharedType ty = b.getSubExp1()->getSubExp1()->getType();
-#else
 			SharedType ty = nullptr;
-#endif
 
 			if (ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
 				// a pointer to an array is automatically dereferenced in C
@@ -1212,13 +1175,12 @@ void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString i
 
 		str << "]";
 	}
-	else if (typ->isVoid()) {
-// Can happen in e.g. twoproc, where really need global parameter and return analysis
-#if 1   // TMN: Stop crashes by this workaround
+	else if (typ->isVoid()) { // Can happen in e.g. twoproc, where really need global parameter and return analysis
+		// TMN: Stop crashes by this workaround
 		if (ident.isEmpty()) {
 			ident = "unknownVoidType";
 		}
-#endif
+
 		LOG << "WARNING: CCodeGenerator::appendTypeIdent: declaring type void as int for " << ident << "\n";
 		str << "int " << ident;
 	}

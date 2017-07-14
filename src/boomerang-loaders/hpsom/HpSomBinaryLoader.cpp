@@ -74,121 +74,6 @@ int Read4(int *pi)
 }
 
 
-// Functions to recognise various instruction patterns
-// Note: these are not presently used. May be needed again if it turns out
-// that addresses in the PLT do not always point to the BOR (Bind On Reference,
-// a kind of stub)
-#if 0
-bool isLDW(unsigned instr, int& offset, unsigned dest)
-{
-	if (((instr >> 26) == 0x12) &&              // Opcode
-		(instr & 1) &&                          // Offset is neg
-		(((instr >> 21) & 0x1f) == 27) &&       // register b
-		(((instr >> 16) & 0x1f) == dest)) {     // register t
-		offset = ((((int)instr << 31) >> 18) |
-				  ((instr & 0x3ffe) >> 1));
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-
-bool isLDSID(unsigned instr)
-{
-	// Looking for LDSID       (%s0,%r21),%r1
-	return(instr == 0x02a010a1);
-}
-
-
-bool isMSTP(unsigned instr)
-{
-	// Looking for MTSP        %r1,%s0
-	return(instr == 0x00011820);
-}
-
-
-bool isBE(unsigned instr)
-{
-	// Looking for BE          0(%s0,%r21)
-	return(instr == 0xe2a00000);
-}
-
-
-bool isSTW(unsigned instr)
-{
-	// Looking for STW         %r2,-24(%s0,%r30)
-	return(instr == 0x6bc23fd1);
-}
-
-
-bool isStub(ADDRESS hostAddr, int& offset)
-{
-	// Looking for this pattern:
-	// 2600: 4b753f91  LDW         -56(%s0,%r27),%r21
-	// 2604: 4b733f99  LDW         -52(%s0,%r27),%r19
-	// 2608: 02a010a1  LDSID       (%s0,%r21),%r1
-	// 260c: 00011820  MTSP        %r1,%s0
-	// 2610: e2a00000  BE          0(%s0,%r21)
-	// 2614: 6bc23fd1  STW         %r2,-24(%s0,%r30)
-	// Where the only things that vary are the first two offsets (here -56 and
-	// -52)
-	unsigned instr;
-	int      offset1, offset2;
-
-	instr     = *((unsigned *)hostAddr);
-	hostAddr += 4;
-
-	if (!isLDW(instr, offset1, 21)) {
-		return false;
-	}
-
-	instr     = *((unsigned *)hostAddr);
-	hostAddr += 4;
-
-	if (!isLDW(instr, offset2, 19)) {
-		return false;
-	}
-
-	instr     = *((unsigned *)hostAddr);
-	hostAddr += 4;
-
-	if (!isLDSID(instr)) {
-		return false;
-	}
-
-	instr     = *((unsigned *)hostAddr);
-	hostAddr += 4;
-
-	if (!isMSTP(instr)) {
-		return false;
-	}
-
-	instr     = *((unsigned *)hostAddr);
-	hostAddr += 4;
-
-	if (!isBE(instr)) {
-		return false;
-	}
-
-	instr = *((unsigned *)hostAddr);
-
-	if (!isSTW(instr)) {
-		return false;
-	}
-
-	if ((offset2 - offset1) != 4) {
-		return false;
-	}
-
-	offset = offset1;
-	return true;
-}
-
-
-#endif
-
 // Read the main symbol table, if any
 void HpSomBinaryLoader::processSymbols()
 {
@@ -397,38 +282,12 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 	pr = getSubspaceInfo("$PLT$");
 	//  int minPLT = pr.first - endData;
 	//  int maxPLT = minPLT + pr.second;
-	   Address pltStart = pr.first;
+	Address pltStart = pr.first;
 	// cout << "Offset limits are " << dec << minPLT << " and " << maxPLT << endl;
 	// Note: DLT entries come before PLT entries in the import array, but
 	// the $DLT$ subsection is not necessarilly just before the $PLT$
 	// subsection in memory.
 	int numDLT = UINT4(DLTable + 0x40);
-
-	// This code was for pattern patching the BOR (Bind On Reference, or library call stub) routines. It appears to be
-	// unnecessary, since as they appear in the file, the PLT entries point to the BORs
-#if 0
-	ADDRESS startText = m_pSections[1].uHostAddr;
-	ADDRESS endText   = startText + m_pSections[1].uSectionSize - 0x10;
-	ADDRESS host;
-
-	for (host = startText; host != endText; host += 4) {
-		// Test this location for a BOR (library stub)
-		int offset;
-
-		if (isStub(host, offset)) {
-			cout << "Found a stub with offset " << dec << offset << endl;
-
-			if ((offset >= minPLT) && (offset < maxPLT)) {
-				// This stub corresponds with an import entry
-				u = (offset - minPLT) / sizeof(plt_record);
-				// Add an offset for the DLT entries
-				u += numDLT;
-				symbols[import_list[u].name + pDlStrings] = host - deltaText;
-				cout << "Added sym " << (import_list[u].name + pDlStrings) << ", value " << hex << (host - deltaText) << endl;
-			}
-		}
-	}
-#endif
 
 	// For each PLT import table entry, add a symbol
 	// u runs through import table; v through $PLT$ subspace

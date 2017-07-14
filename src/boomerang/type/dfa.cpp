@@ -1401,14 +1401,6 @@ SharedType Const::ascendType()
 		{
 		case opIntConst:
 			// could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
-#if 0
-			if ((u.i != 0) && ((u.i < 0x1000) && (u.i > -0x100))) {
-				// Assume that small nonzero integer constants are of integer type (can't be pointers)
-				// But note that you can't say anything about sign; these are bit patterns, not HLL constants
-				// (e.g. all ones could be signed -1 or unsigned 0xFFFFFFFF)
-				type = IntegerType::get(STD_SIZE, 0);
-			}
-#endif
 			break;
 
 		case opLongConst:
@@ -1538,18 +1530,6 @@ void Binary::descendType(SharedType parentType, bool& ch, Instruction *s)
 	// The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
 	// where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
 	// triggers with every ordinary local reference, causing esp to appear used in the final program
-#if 0
-	Signature *sig  = s->getProc()->getSignature();
-	Prog      *prog = s->getProc()->getProg();
-
-	if (parentType->resolvesToPointer() && !parentType->as<PointerType>()->getPointsTo()->resolvesToVoid() &&
-		sig->isAddrOfStackLocal(prog, this)) {
-		// This is the address of some local. What I used to do is to make an implicit assignment for the local, and
-		// try to meet with the real assignment later. But this had some problems. Now, make an implicit *reference*
-		// to the specified address; this should eventually meet with the main assignment(s).
-		s->getProc()->setImplicitRef(s, this, parentType);
-	}
-#endif
 
 	switch (m_oper)
 	{

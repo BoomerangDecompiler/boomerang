@@ -640,15 +640,6 @@ void CallingConvention::Win32Signature::setLibraryDefines(StatementList *defs)
 
 	if (m_returns.size() > 1) {                  // Ugh - note the stack pointer is the first return still
 		ty = m_returns[1]->m_type;
-#if 0                                            // ADHOC TA
-		if (ty->isFloat()) {
-			Location *r32 = Location::regOf(32); // Top of FP stack
-			r32->setType(ty);
-		}
-		else {
-			r24->setType(ty);                                    // All others return in r24 (check!)
-		}
-#endif
 	}
 
 	defs->append(new ImplicitAssign(ty, r24));             // eax
@@ -896,15 +887,6 @@ void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList 
 
 	if (m_returns.size() > 1) {                  // Ugh - note the stack pointer is the first return still
 		ty = m_returns[1]->m_type;
-#if 0                                            // ADHOC TA
-		if (ty->isFloat()) {
-			Location *r32 = Location::regOf(32); // Top of FP stack
-			r32->setType(ty);
-		}
-		else {
-			r24->setType(ty);                                    // All others return in r24 (check!)
-		}
-#endif
 	}
 
 	defs->append(new ImplicitAssign(ty, r24));             // eax

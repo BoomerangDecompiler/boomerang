@@ -158,53 +158,6 @@ bool PhiAssign::searchAndReplace(const Exp& search, SharedExp replace, bool /*cc
 }
 
 
-#if 0
-void addPhiReferences(InstructionSet& stmts, Statement *def);
-
-void addSimpleCopyReferences(InstructionSet& stmts, Statement *def)
-{
-	if (!(*((Assign *)def)->getLeft() == *((Assign *)def)->getRight()->getSubExp1())) {
-		return;
-	}
-
-	Statement *copy = ((RefExp *)((Assign *)def)->getRight())->getDef();
-
-	if (!stmts.exists(copy)) {
-		stmts.insert(copy);
-
-		if (copy->isPhi()) {
-			addPhiReferences(stmts, copy);
-		}
-		else if (copy->isAssign() && ((Assign *)copy)->getRight()->isSubscript()) {
-			addSimpleCopyReferences(stmts, copy);
-		}
-	}
-}
-
-
-void addPhiReferences(InstructionSet& stmts, Statement *def)
-{
-	PhiAssign *p = (PhiAssign *)def;
-
-	for (PhiAssign::iterator it = p->begin(); it != p->end(); it++) {
-		if ((*it).def->isPhi() && !stmts.exists((*it).def)) {
-			stmts.insert((*it).def);
-			addPhiReferences(stmts, (*it).def);
-		}
-		else if ((*it).def->isAssign() && ((Assign *)(*it).def)->getRight()->isSubscript()) {
-			stmts.insert((*it).def);
-			addSimpleCopyReferences(stmts, (*it).def);
-		}
-		else {
-			stmts.insert((*it).def);
-		}
-	}
-}
-
-
-#endif
-
-
 void PhiAssign::genConstraints(LocationSet& cons)
 {
 	// Generate a constraints st that all the phi's have to be the same type as

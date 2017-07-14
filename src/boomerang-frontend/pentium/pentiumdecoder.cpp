@@ -49704,27 +49704,8 @@ MATCH_finished_a:
  * \param      hostPC - pointer to the code in question (native address)
  * \returns           True if a match found
  ******************************************************************************/
-bool PentiumDecoder::isFuncPrologue(Address hostPC)
+bool PentiumDecoder::isFuncPrologue(Address)
 {
-	Q_UNUSED(hostPC);
-#if 0
-	int locals, regs;
-
-	if ((InstructionPatterns::frameless_pro(prog.csrSrc, hostPC, locals, regs))
-		!= nullptr) {
-		return true;
-	}
-
-	if ((InstructionPatterns::struct_ptr(prog.csrSrc, hostPC, locals, regs))
-		!= nullptr) {
-		return true;
-	}
-
-	if ((InstructionPatterns::std_entry(prog.csrSrc, hostPC, locals, regs))
-		!= nullptr) {
-		return true;
-	}
-#endif
 	return false;
 }
 

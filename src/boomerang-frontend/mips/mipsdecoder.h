@@ -52,22 +52,4 @@ public:
 
 	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
 	virtual int decodeAssemblyInstruction(Address pc, ptrdiff_t delta) override;
-
-private:
-
-/*
- * Various functions to decode the operands of an instruction into an Exp* representation.
- */
-#if 0
-	Exp *dis_Eaddr(ADDRESS pc, int size = 0);
-	Exp *dis_RegImm(ADDRESS pc);
-	Exp *dis_Reg(unsigned r);
-	Exp *dis_RAmbz(unsigned r);               // Special for rA of certain instructions
-#endif
-
-#if 0
-	RTL *createBranchRtl(ADDRESS pc, std::list<Statement *> *stmts, const char *name);
-	bool isFuncPrologue(ADDRESS hostPC);
-	DWord getDword(ADDRESS lc);
-#endif
 };

@@ -469,17 +469,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& arg, bool& override)
 bool UsedLocalFinder::visit(const std::shared_ptr<Location>& e, bool& override)
 {
 	override = false;
-#if 0
-	char *sym = proc->lookupSym(e);
-
-	if (sym) {
-		override = true;                // Don't look inside this local or parameter
-	}
-
-	if (proc->findLocal(e))
-#else
 	if (e->isLocal())
-#endif
 	{
 		used->insert(e); // Found a local
 	}
@@ -1639,12 +1629,6 @@ bool DfaLocalMapper::processExp(const SharedExp& e)
 			// We have probably not even run TA yet, so doing a full descendtype here would be silly
 			// Note also that void is compatible with all types, so the symbol effectively covers all types
 			m_proc->getSymbolExp(e, VoidType::get(), true);
-#if 0
-		}
-		else {
-			QString name = QString("tparam%1").arg(proc->nextParamNum());
-			proc->mapSymbolTo(e, Location::param(name, proc));
-#endif
 		}
 
 		return false; // set recur false: Don't dig inside m[x] to make m[a[m[x]]] !

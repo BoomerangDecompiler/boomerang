@@ -1708,16 +1708,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 	// Now that memofs are renamed, the bypassing for memofs can work
 	fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
 
-#if 0                    // Now also done where ellipsis processing is done for dfa-based TA
-	// Note: processConstants is also where ellipsis processing is done
-	if (processConstants()) {
-		if (status != PROC_INCYCLE) {
-			doRenameBlockVars(-1, true);            // Needed if there was an indirect call to an ellipsis function
-		}
-	}
-	processTypes();
-#endif
-
 	if (!Boomerang::get()->noParameterNames) {
 		// ? Crazy time to do this... haven't even done "final" parameters as yet
 		// mapExpressionsToParameters();
@@ -1816,15 +1806,6 @@ void UserProc::remUnusedStmtEtc()
 		if (VERBOSE) {
 			debugPrintAll("after propagating locals");
 		}
-
-#if 0
-		// Note: processConstants is also where ellipsis processing is done
-		if (processConstants()) {
-			if (status != PROC_INCYCLE) {
-				doRenameBlockVars(-1, true);            // Needed if there was an indirect call to an ellipsis function
-			}
-		}
-#endif
 	}
 
 	// Only remove unused statements after decompiling as much as possible of the proc
@@ -1859,17 +1840,6 @@ void UserProc::remUnusedStmtEtc()
 		addParameterSymbols();
 		debugPrintAll("after adding new parameters");
 	}
-
-#if 0                                  // Construction zone; pay no attention
-	bool convert;
-	propagateStatements(convert, 222); // This is the first opportunity to safely propagate memory parameters
-
-	if (VERBOSE) {
-		LOG << "--- after propagating new parameters ---\n";
-		printToLog();
-		LOG << "=== end after propagating new parameters ===\n";
-	}
-#endif
 
 	updateCalls(); // Or just updateArguments?
 
@@ -2657,108 +2627,6 @@ void UserProc::findFinalParameters()
 }
 
 
-#if 0 // FIXME: not currently used; do we want this any more?
-/// Trim parameters. If depth not given or == -1, perform at all depths
-void UserProc::trimParameters(int depth)
-{
-	if (signature->isForced()) {
-		return;
-	}
-
-	if (VERBOSE) {
-		LOG << "trimming parameters for " << getName() << "\n";
-	}
-
-	StatementList stmts;
-	getStatements(stmts);
-
-	// find parameters that are referenced (ignore calls to this)
-	int                nparams   = signature->getNumParams();
-	int                totparams = nparams;
-	std::vector<Exp *> params;
-	bool               referenced[64];
-	assert(totparams <= (int)(sizeof(referenced) / sizeof(bool)));
-	int i;
-
-	for (i = 0; i < nparams; i++) {
-		referenced[i] = false;
-		// Push parameters implicitly defined e.g. m[r28{0}+8]{0}, (these are the parameters for the current proc)
-		params.push_back(signature->getParamExp(i)->clone()->expSubscriptAllNull());
-	}
-
-	std::set<Statement *>   excluded;
-	StatementList::iterator it;
-
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement *s = *it;
-
-		if (!s->isCall() || (((CallStatement *)s)->getDestProc() != this)) {
-			for (int i = 0; i < totparams; i++) {
-				SharedExp p, *pe;
-				// if (i < nparams) {
-				p  = Location::param(signature->getParamName(i), this);
-				pe = signature->getParamExp(i);
-
-				// } else {
-				//    p = Location::param(signature->getImplicitParamName( i - nparams), this);
-				//    pe = signature->getImplicitParamExp(i - nparams);
-				// }
-				if (!referenced[i] && (excluded.find(s) == excluded.end()) &&
-				    // Search for the named parameter (e.g. param1), and just in case, also for the expression
-				    // (e.g. r8{0})
-					(s->usesExp(p) || s->usesExp(params[i]))) {
-					referenced[i] = true;
-
-					if (DEBUG_UNUSED) {
-						LOG << "parameter " << p << " used by statement " << s->getNumber() << " : " << s->getKind() <<
-							"\n";
-					}
-				}
-
-				if (!referenced[i] && (excluded.find(s) == excluded.end()) &&
-					s->isPhi() && (*((PhiAssign *)s)->getLeft() == *pe)) {
-					if (DEBUG_UNUSED) {
-						LOG << "searching " << s << " for uses of " << params[i] << "\n";
-					}
-
-					PhiAssign           *pa = (PhiAssign *)s;
-					PhiAssign::iterator it1;
-
-					for (it1 = pa->begin(); it1 != pa->end(); it1++) {
-						if (it1->def == nullptr) {
-							referenced[i] = true;
-
-							if (DEBUG_UNUSED) {
-								LOG << "parameter " << p << " used by phi statement " << s->getNumber() << "\n";
-							}
-
-							break;
-						}
-					}
-				}
-
-				// delete p;
-			}
-		}
-	}
-
-	for (i = 0; i < totparams; i++) {
-		if (!referenced[i] && ((depth == -1) || (params[i]->getMemDepth() == depth))) {
-			bool      allZero;
-			SharedExp e = params[i]->removeSubscripts(allZero);
-
-			if (VERBOSE) {
-				LOG << "removing unused parameter " << e << "\n";
-			}
-
-			removeParameter(e);
-		}
-	}
-}
-
-
-#endif
-
 void UserProc::removeReturn(SharedExp e)
 {
 	if (theReturnStatement) {
@@ -2915,46 +2783,7 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 		}
 	}
 	else {
-#if 0   // This code was assuming that locations only every have one type associated with them. The reality is that
-		// compilers and machine language programmers sometimes re-use the same locations with different types.
-		// Let type analysis sort out which live ranges have which type
-		e = symbolMap[le]->clone();
-
-		if ((e->getOper() == opLocal) && (e->getSubExp1()->getOper() == opStrConst)) {
-			QString    name = ((Const *)e->getSubExp1())->getStr();
-			SharedType nty  = ty;
-			SharedType ty   = locals[name];
-			assert(ty);
-
-			if (nty && !(*ty == *nty) && (nty->getSize() > ty->getSize())) {
-				// FIXME: should this be a type meeting?
-				if (DEBUG_TA) {
-					LOG << "getSymbolExp: updating type of " << name.c_str() << " to " << nty->getCtype() << "\n";
-				}
-
-				ty           = nty;
-				locals[name] = ty;
-			}
-
-			if (ty->resolvesToCompound()) {
-				auto compound = ty->as<CompoundType>();
-
-				if (VERBOSE) {
-					LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
-				}
-
-				char *nam = (char *)compound->getName(0);
-
-				if (nam == nullptr) {
-					nam = "??";
-				}
-
-				return new TypedExp(ty, Binary::get(opMemberAccess, e, Const::get(nam)));
-			}
-		}
-#else
 		e = getSymbolFor(le, ty);
-#endif
 	}
 
 	return e;
@@ -3711,19 +3540,7 @@ void UserProc::fromSSAform()
 	FirstTypesMap::iterator ff;
 	ConnectionGraph         ig; // The interference graph; these can't have the same local variable
 	ConnectionGraph         pu; // The Phi Unites: these need the same local variable or copies
-#if 0
-	// Start with the parameters. There is not always a use of every parameter, yet that location may be used with
-	// a different type (e.g. envp used as int in test/sparc/fibo-O4)
-	int n = signature->getNumParams();
 
-	for (int i = 0; i < n; i++) {
-		Exp          *paramExp = signature->getParamExp(i);
-		FirstTypeEnt fte;
-		fte.first            = signature->getParamType(i);
-		fte.second           = RefExp::get(paramExp, cfg->findTheImplicitAssign(paramExp));
-		firstTypes[paramExp] = fte;
-	}
-#endif
 	int progress = 0;
 
 	for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -3824,21 +3641,9 @@ void UserProc::fromSSAform()
 		}
 
 		if (rename == nullptr) {
-#if 0
-			// By preferring to rename the destination of the phi, we have more chance that all the phi operands will
-			// end up being the same, so the phi can end up as one copy assignment
-
-			// In general, it is best to rename the location (r1 or r2) which has the smallest number of uniting
-			// connections (or at least, this seems like a reasonable criterion)
-			int n1 = pu.count(r1);
-			int n2 = pu.count(r2);
-
-			if (n2 <= n1)
-#else
 			Instruction *def2 = r2->getDef();
 
 			if (def2->isPhi()) // Prefer the destinations of phis
-#endif
 			{
 				rename = r2;
 			}
@@ -4003,29 +3808,9 @@ void UserProc::fromSSAform()
 			}
 		}
 		else {
-// Need new local(s) for phi operands that have different names from the lhs
-#if 0       // The big problem with this idea is that it extends the range of the phi destination, and it could "pass"
-			// definitions and uses of that variable. It could be that the dominance numbers could solve this, but it
-			// seems unlikely
-			Exp    *lhs         = pa->getLeft();
-			RefExp *wrappedLeft = RefExp::get(lhs, pa)
-								  char *lhsName = lookupSymForRef(wrappedLeft);
-			PhiAssign::iterator rr;
+			// Need new local(s) for phi operands that have different names from the lhs
 
-			for (rr = pa->begin(); rr != pa->end(); rr++) {
-				RefExp *operand  = RefExp::get(rr->e, rr->def);
-				char   *operName = lookupSymFromRef(operand);
-
-				if (strcmp(operName, lhsName) == 0) {
-					continue;                    // No need for copies for this operand
-				}
-
-				// Consider possible optimisation here: if have a = phi(b, b, b, b, a), then there is only one copy
-				// needed. If by some fluke the program already had a=b after the definition for b, then no copy is
-				// needed at all. So a map of existing copies could be useful
-				insertAssignAfter(rr->def, lhs, operand);
-			}
-#else       // This way is costly in copies, but has no problems with extending live ranges
+			// This way is costly in copies, but has no problems with extending live ranges
 			// Exp* tempLoc = newLocal(pa->getType());
 			SharedExp tempLoc = getSymbolExp(RefExp::get(pa->getLeft(), pa), pa->getType());
 
@@ -4046,7 +3831,6 @@ void UserProc::fromSSAform()
 
 			// Replace the RHS of the phi with tempLoc
 			pa->convertToAssign(tempLoc);
-#endif
 		}
 	}
 
@@ -4884,14 +4668,6 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
 		++it;
 	}
 
-#if 0
-	if (e->isSubscript()) {
-		// A subscripted location, where there was no specific mapping. Check for a general mapping covering all
-		// versions of the location
-		assert(dynamic_cast<const RefExp *>(e) != nullptr);
-	}
-	return lookupSym(*e->getSubExp1(), ty);
-#endif
 	// Else there is no symbol
 	return QString::null;
 }

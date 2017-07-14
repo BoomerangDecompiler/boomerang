@@ -345,21 +345,6 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
 			SharedExp lhs = def->getLeft();
 
 			if (EXPERIMENTAL) {
-#if 0
-				// This is the old "don't propagate x=f(x)" heuristic. Hopefully it will work better now that we always
-				// propagate into memofs etc. However, it might need a "and we're inside the right kind of loop"
-				// condition
-				LocationSet used;
-				def->addUsedLocs(used);
-				RefExp left(def->getLeft(), (Statement *)-1);
-				RefExp *right = dynamic_cast<RefExp *>(def->getRight());
-
-				// Beware of x := x{something else} (because we do want to do copy propagation)
-				if (used.exists(&left) && !(right && (*right->getSubExp1() == *left.getSubExp1()))) {
-					// We have something like eax = eax + 1
-					continue;
-				}
-#else
 				// This is Mike's experimental propagation limiting heuristic. At present, it is:
 				// for each component of def->rhs
 				//   test if the base expression is in the set usedByDomPhi
@@ -431,7 +416,6 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
 						continue;
 					}
 				}
-#endif
 			}
 
 

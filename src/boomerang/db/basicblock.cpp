@@ -1794,22 +1794,7 @@ bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc *myProc)
 				s->getDefinitions(defs);
 				// The definitions don't have refs yet
 				defs.addSubscript(s /* , myProc->getCFG() */);
-#if 0
-				// I used to think it necessary to consider definitions as a special case. However, I now believe that
-				// this was either an error of implementation (e.g. it didn't seem to correctly consider the livenesses
-				// causesd by phis) or something to do with renaming but not propagating certain memory locations.
-				// The idea is now to clearly divide locations into those that can be renamed and propagated, and those
-				// which are not renamed or propagated. (Check this.)
 
-				// Also consider it an interference if we define a location that is the same base variable. This can happen
-				// when there is a definition that is unused but for whatever reason not eliminated
-				// This check is done at the "bottom" of the statement, i.e. before we add s's uses and remove s's
-				// definitions to liveLocs
-				// Note that phi assignments don't count
-				if (!s->isPhi()) {
-					checkForOverlap(liveLocs, defs, ig, myProc, false);
-				}
-#endif
 				// Definitions kill uses. Now we are moving to the "top" of statement s
 				liveLocs.makeDiff(defs);
 

@@ -58,11 +58,6 @@ std::vector<SharedExp>& ST20FrontEnd::getDefaultParams()
 	static std::vector<SharedExp> params;
 
 	if (params.size() == 0) {
-#if 0
-		for (int r = 0; r <= 2; r++) {
-			params.push_back(Location::regOf(r));
-		}
-#endif
 		params.push_back(Location::memOf(Location::regOf(3)));
 	}
 

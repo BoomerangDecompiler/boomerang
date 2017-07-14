@@ -1352,13 +1352,4 @@ void ExpTest::testVisitors()
 	CPPUNIT_ASSERT_EQUAL(0, res);
 	res = e3->containsFlags();
 	CPPUNIT_ASSERT_EQUAL(0, res);
-
-#if 0 // No longer used
-	res = e1->containsBareMemof();
-	CPPUNIT_ASSERT_EQUAL(1, res);
-	res = e2->containsBareMemof();
-	CPPUNIT_ASSERT_EQUAL(1, res);
-	res = e3->containsBareMemof();
-	CPPUNIT_ASSERT_EQUAL(0, res);
-#endif
 }

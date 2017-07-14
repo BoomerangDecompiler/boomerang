@@ -257,24 +257,6 @@ void RTLInstDict::print(QTextStream& os /*= std::cout*/)
 		rtlist.print(os);
 		os << "\n";
 	}
-
-#if 0
-	// Detailed register map
-	os << "\nDetailed register map\n";
-	std::map<int, Register, std::less<int> >::iterator rr;
-
-	for (rr = DetRegMap.begin(); rr != DetRegMap.end(); rr++) {
-		int      n   = rr->first;
-		Register *pr = &rr->second;
-		os << "number " << n <<
-			" name " << pr->g_name() <<
-			" size " << std::dec << pr->g_size() <<
-			" address 0x" << std::hex << (unsigned)pr->g_address() <<
-			" mappedIndex " << std::dec << pr->g_mappedIndex() <<
-			" mappedOffset " << pr->g_mappedOffset() <<
-			" flt " << pr->isFloat() << "\n";
-	}
-#endif
 }
 
 

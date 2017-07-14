@@ -39,12 +39,9 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs)
 		SharedExp p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
 		assert(p1->getOper() == opTypeVal);
 		assert(p2->getOper() == opIntConst);
-#if 0
-		SharedType ty = p1->getType();
-		assert(ty && ty->resolvesToCompound());
-#else
+
 		SharedType ty = nullptr; // Note: will cause a segfault
-#endif
+
 		// probably need to make this func take bits in future
 		int       offset = p2->access<Const>()->getInt() * 8;
 		QString   member = ty->as<CompoundType>()->getNameAtOffset(offset);
@@ -52,9 +49,6 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs)
 		bool      change;
 		rhs = rhs->searchReplace(*callw, result->clone(), change);
 		assert(change);
-#if 0
-		LOG << "replaced " << call << " with " << result << "\n";
-#endif
 	}
 
 	callw = Binary::get(opFlagCall, Const::get("offsetToMember"), Terminal::get(opWild));
@@ -65,21 +59,14 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs)
 		SharedExp p2 = applyFuncs(call->getSubExp2()->getSubExp2()->getSubExp1());
 		assert(p1->getOper() == opTypeVal);
 		assert(p2->getOper() == opStrConst);
-#if 0   // ADHOC TA
-		SharedType ty = p1->getType();
-		assert(ty && ty->resolvesToCompound());
-#else
 		SharedType ty = nullptr; // Note: will cause a segfault
-#endif
+
 		QString   member = p2->access<Const>()->getStr();
 		int       offset = ty->as<CompoundType>()->getOffsetTo(member) / 8;
 		SharedExp result = Const::get(offset);
 		bool      change;
 		rhs = rhs->searchReplace(*callw, result->clone(), change);
 		assert(change);
-#if 0
-		LOG << "replaced " << call << " with " << result << "\n";
-#endif
 	}
 
 	callw = Binary::get(opFlagCall, Const::get("plus"), Terminal::get(opWild));
@@ -96,9 +83,6 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs)
 		bool      change;
 		rhs = rhs->searchReplace(*callw, result->clone(), change);
 		assert(change);
-#if 0
-		LOG << "replaced " << call << " with " << result << "\n";
-#endif
 	}
 
 	callw = Binary::get(opFlagCall, Const::get("neg"), Terminal::get(opWild));
@@ -111,9 +95,6 @@ SharedExp GenericExpTransformer::applyFuncs(SharedExp rhs)
 		bool      change;
 		rhs = rhs->searchReplace(*callw, result->clone(), change);
 		assert(change);
-#if 0
-		LOG << "replaced " << call << " with " << result << "\n";
-#endif
 	}
 
 	return rhs;
@@ -135,26 +116,13 @@ bool GenericExpTransformer::checkCond(SharedExp cond, SharedExp bindings)
 				SharedExp e      = l->getSubExp1();
 				bool      change = false;
 				lhs = lhs->searchReplaceAll(*e->getSubExp1(), e->getSubExp2()->clone(), change);
-#if 0
-				if (change) {
-					LOG << "replaced " << e->getSubExp1() << " with " << e->getSubExp2() << "\n";
-				}
-#endif
+
 				change = false;
 				rhs    = rhs->searchReplaceAll(*e->getSubExp1(), e->getSubExp2()->clone(), change);
-#if 0
-				if (change) {
-					LOG << "replaced " << e->getSubExp1() << " with " << e->getSubExp2() << "\n";
-				}
-#endif
 			}
 
 			if (lhs->getOper() == opTypeOf) {
-#if 0           // ADHOC TA
-				SharedType ty = lhs->getSubExp1()->getType();
-#else
 				SharedType ty = nullptr;
-#endif
 
 				if (ty == nullptr) {
 					if (VERBOSE) {
@@ -175,10 +143,6 @@ bool GenericExpTransformer::checkCond(SharedExp cond, SharedExp bindings)
 
 			rhs = applyFuncs(rhs);
 
-#if 0
-			LOG << "check equals in cond: " << lhs << " == " << rhs << "\n";
-#endif
-
 			if (lhs->getOper() == opVar) {
 				SharedExp le;
 
@@ -187,9 +151,6 @@ bool GenericExpTransformer::checkCond(SharedExp cond, SharedExp bindings)
 
 				assert(le->getOper() != opNil);
 				le->setSubExp2(Binary::get(opList, Binary::get(opEquals, lhs->clone(), rhs->clone()), Terminal::get(opNil)));
-#if 0
-				LOG << "bindings now: " << bindings << "\n";
-#endif
 				return true;
 			}
 
@@ -197,23 +158,12 @@ bool GenericExpTransformer::checkCond(SharedExp cond, SharedExp bindings)
 				return true;
 			}
 
-#if 0       // ADHOC TA
-			if ((lhs->getOper() == opTypeVal) && (rhs->getOper() == opTypeVal) &&
-				lhs->getType()->resolvesToCompound() &&
-				rhs->getType()->isCompound()) {
-				return true;
-			}
-#endif
-
 			SharedExp new_bindings = lhs->match(rhs);
 
 			if (new_bindings == nullptr) {
 				return false;
 			}
 
-#if 0
-			LOG << "matched lhs with rhs, bindings: " << new_bindings << "\n";
-#endif
 
 			SharedExp le;
 
@@ -222,10 +172,6 @@ bool GenericExpTransformer::checkCond(SharedExp cond, SharedExp bindings)
 
 			assert(le->getOper() != opNil);
 			le->setSubExp2(new_bindings);
-
-#if 0
-			LOG << "bindings now: " << bindings << "\n";
-#endif
 
 			return true;
 		}
@@ -244,11 +190,6 @@ SharedExp GenericExpTransformer::applyTo(SharedExp e, bool& bMod)
 	SharedExp bindings = e->match(match);
 
 	if (bindings == nullptr) {
-#if 0
-		if (e->getOper() == match->getOper()) {
-			LOG << "match failed: " << e << " with " << match << "\n";
-		}
-#endif
 		return e;
 	}
 

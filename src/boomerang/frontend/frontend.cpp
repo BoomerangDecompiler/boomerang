@@ -518,10 +518,7 @@ void IFrontEnd::readLibrarySignatures(const char *sPath, CallConv cc)
 	p->yyparse(plat, cc);
 
 	for (auto& elem : p->signatures) {
-#if 0
-		LOG_STREAM() << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
-#endif
-		      m_librarySignatures[(elem)->getName()] = elem;
+		m_librarySignatures[(elem)->getName()] = elem;
 		(elem)->setSigFile(sPath);
 	}
 

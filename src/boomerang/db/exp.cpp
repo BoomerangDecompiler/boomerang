@@ -2448,9 +2448,6 @@ SharedExp Binary::match(const SharedConstExp& pattern)
 		return b_lhs;
 	}
 
-#if 0
-	LOG << "got lhs list " << b_lhs << " and rhs list " << b_rhs << "\n";
-#endif
 	SharedExp result = Terminal::get(opNil);
 
 	// TODO: verify that adding (l &&) is not violating unwritten validity assertion
@@ -2458,10 +2455,7 @@ SharedExp Binary::match(const SharedConstExp& pattern)
 		for (SharedExp r = b_rhs; r && r->getOper() != opNil; r = r->getSubExp2()) {
 			if ((*l->getSubExp1()->getSubExp1() == *r->getSubExp1()->getSubExp1()) &&
 				!(*l->getSubExp1()->getSubExp2() == *r->getSubExp1()->getSubExp2())) {
-#if 0
-				LOG << "disagreement in match: " << l->getSubExp1()->getSubExp2() << " != " <<
-					r->getSubExp1()->getSubExp2() << "\n";
-#endif
+
 				return nullptr; // must be agreement between LHS and RHS
 			}
 			else {
@@ -2495,25 +2489,12 @@ SharedExp RefExp::match(const SharedConstExp& pattern)
 }
 
 
-#if 0 // Suspect ADHOC TA only
-Exp *TypeVal::match(SharedExp pattern)
-{
-	if (op == pattern->getOper()) {
-		return val->match(pattern->getType());
-	}
-
-	return Exp::match(pattern);
-}
-
-
-#endif
-
 static QRegularExpression variableRegexp("[a-zA-Z0-9]+");
+
 
 // TODO use regexp ?
 #define ISVARIABLE_S(x)	\
 	(strspn((x.c_str()), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == (x).length())
-// #define DEBUG_MATCH
 
 int tlstrchr(const QString& str, char ch)
 {
@@ -3856,24 +3837,6 @@ SharedExp Binary::polySimplify(bool& bMod)
 		return res;
 	}
 
-#if 0 // FIXME! ADHOC TA assumed!
-	// check for (exp + x) + n where exp is a pointer to a compound type becomes (exp + n) + x
-	if ((op == opPlus) &&
-		(subExp1->getOper() == opPlus) &&
-		subExp1->getSubExp1()->getType() &&
-		(subExp2->getOper() == opIntConst)) {
-		SharedType ty = subExp1->getSubExp1()->getType();
-
-		if (ty->resolvesToPointer() &&
-			ty->as<PointerType>()->getPointsTo()->resolvesToCompound()) {
-			res  = Binary::get(opPlus, subExp1->getSubExp1(), subExp2);
-			res  = Binary::get(opPlus, res, subExp1->getSubExp2());
-			bMod = true;
-			return res;
-		}
-	}
-#endif
-
 	// FIXME: suspect this was only needed for ADHOC TA
 	// check for exp + n where exp is a pointer to a compound type
 	// becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
@@ -3899,50 +3862,6 @@ SharedExp Binary::polySimplify(bool& bMod)
 			return res;
 		}
 	}
-
-#if 0 // FIXME: ADHOC TA assumed
-	// check for exp + x where exp is a pointer to an array
-	// becomes &exp[x / b] + (x % b) where b is the size of the base type in bytes
-	if ((op == opPlus) &&
-		subExp1->getType()) {
-		SharedExp  x  = subExp2;
-		SharedExp  l  = subExp1;
-		SharedType ty = l->getType();
-
-		if (ty && ty->resolvesToPointer() &&
-			ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
-			auto a  = ty->as<PointerType>()->getPointsTo()->as<ArrayType>();
-			int  b  = a->getBaseType()->getSize() / 8;
-			int  br = a->getBaseType()->getSize() % 8;
-			assert(br == 0);
-
-			if ((x->getOper() != opIntConst) || (((Const *)x)->getInt() >= b) || a->getBaseType()->isArray()) {
-				res = Binary::get(opPlus,
-								  Unary::get(opAddrOf,
-											 Binary::get(opArrayIndex,
-														 Location::memOf(l->clone()),
-														 Binary::get(opDiv, x->clone(), Const::get(b)))),
-								  Binary::get(opMod, x->clone(), Const::get(b)));
-
-				if (VERBOSE) {
-					LOG << "replacing " << this << " with " << res << "\n";
-				}
-
-				if (l->getOper() == opSubscript) {
-					RefExp *r = (RefExp *)l;
-
-					if (r->getDef() && r->getDef()->isPhi()) {
-						PhiAssign *pa = (PhiAssign *)r->getDef();
-						LOG << "argh: " << pa->getStmtAt(1) << "\n";
-					}
-				}
-
-				bMod = true;
-				return res;
-			}
-		}
-	}
-#endif
 
 	if ((m_oper == opFMinus) && (subExp1->getOper() == opFltConst) && (std::static_pointer_cast<const Const>(subExp1)->getFlt() == 0.0)) {
 		res  = Unary::get(opFNeg, subExp2);
@@ -4049,18 +3968,6 @@ SharedExp Binary::polySimplify(bool& bMod)
 
 	// Replace opSize(n, loc) with loc and set the type if needed
 	if ((m_oper == opSize) && subExp2->isLocation()) {
-#if 0   // FIXME: ADHOC TA assumed here
-		Location   *loc = (Location *)subExp2;
-		unsigned   n    = (unsigned)((Const *)subExp1)->getInt();
-		SharedType ty   = loc->getType();
-
-		if (ty == nullptr) {
-			loc->setType(SizeType::get(n));
-		}
-		else if (ty->getSize() != n) {
-			ty->setSize(n);
-		}
-#endif
 		res  = res->getSubExp2();
 		bMod = true;
 		return res;

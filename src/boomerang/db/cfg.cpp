@@ -1868,10 +1868,6 @@ void dumpBB(BasicBlock *bb)
 
 BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2, BB_IT& it)
 {
-#if 0
-	LOG_STREAM() << "splitForBranch before:\n";
-	LOG_STREAM() << pBB->prints() << "\n";
-#endif
 	std::list<RTL *>::iterator ri;
 
 	// First find which RTL has the split address
@@ -2026,20 +2022,6 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
 		it++;
 	}
 
-#if 0
-	LOG_STREAM() << "splitForBranch after:\n";
-
-	if (pBB) {
-		LOG_STREAM() << pBB->prints();
-	}
-	else {
-		LOG_STREAM() << "<null>\n";
-	}
-
-	LOG_STREAM() << skipBB->prints();
-	LOG_STREAM() << rptBB->prints();
-	LOG_STREAM() << newBb->prints() << "\n";
-#endif
 	return newBb;
 }
 

@@ -79,9 +79,6 @@ SharedExp ExpTransformer::applyAllTo(const SharedExp& p, bool& bMod)
 		}
 	}
 
-#if 0
-	LOG << "applyAllTo called on " << e << "\n";
-#endif
 	bool mod;
 	// do {
 	mod = false;

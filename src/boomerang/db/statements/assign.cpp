@@ -99,73 +99,6 @@ void Assign::simplify()
 	if (m_lhs->getOper() == opMemOf) {
 		m_lhs->setSubExp1(m_lhs->getSubExp1()->simplifyArith());
 	}
-
-// this hack finds address constants.. it should go away when Mike writes some decent type analysis.
-#if 0
-	if (DFA_TYPE_ANALYSIS) {
-		return;
-	}
-
-	if ((lhs->getOper() == opMemOf) && (lhs->getSubExp1()->getOper() == opSubscript)) {
-		RefExp    *ref   = (RefExp *)lhs->getSubExp1();
-		Statement *phist = ref->getDef();
-		PhiAssign *phi   = nullptr;
-
-		if (phist /* && phist->getRight() */) {     // ?
-			phi = dynamic_cast<PhiAssign *>(phist);
-		}
-
-		for (int i = 0; phi && i < phi->getNumDefs(); i++) {
-			if (phi->getStmtAt(i)) {
-				Assign *def = dynamic_cast<Assign *>(phi->getStmtAt(i));
-
-				// Look for rX{-} - K or K
-				if (def && (def->rhs->isIntConst() ||
-							((def->rhs->getOper() == opMinus) &&
-							 def->rhs->getSubExp1()->isSubscript() &&
-							 ((RefExp *)def->rhs->getSubExp1())->isImplicitDef() &&
-							 def->rhs->getSubExp1()->getSubExp1()->isRegOf() &&
-							 def->rhs->getSubExp2()->isIntConst()))) {
-					SharedExp ne = Unary::get(opAddrOf, Location::memOf(def->rhs, proc));
-
-					if (VERBOSE) {
-						LOG << "replacing " << def->rhs << " with " << ne << " in " << def << "\n";
-					}
-
-					def->rhs = ne;
-				}
-
-				if (def && (def->rhs->getOper() == opAddrOf) &&
-					(def->rhs->getSubExp1()->getOper() == opSubscript) &&
-					(def->rhs->getSubExp1()->getSubExp1()->getOper() == opGlobal) &&
-				    // MVE: opPhi!!
-					(rhs->getOper() != opPhi) && (rhs->getOper() != opItof) &&
-					(rhs->getOper() != opFltConst)) {
-					SharedType ty = proc->getProg()->getGlobalType(
-						((Const *)def->rhs->getSubExp1()->
-							getSubExp1()->
-							getSubExp1())->getStr());
-
-					if (ty && ty->isArray()) {
-						SharedType bty = ((ArrayType *)ty)->getBaseType();
-
-						if (bty->isFloat()) {
-							if (VERBOSE) {
-								LOG << "replacing " << rhs << " with ";
-							}
-
-							rhs = new Ternary(opItof, Const::get(32), Const::get(bty->getSize()), rhs);
-
-							if (VERBOSE) {
-								LOG << rhs << " (assign indicates float type)\n";
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-#endif
 }
 
 
@@ -266,36 +199,6 @@ bool Assign::usesExp(const Exp& e) const
 	return(m_rhs->search(e, where) ||
 		   ((m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where)));
 }
-
-
-#if 0
-bool Assign::match(const QString& pattern, std::map<QString, Exp *>& bindings)
-{
-	if (strstr(pattern, ":=") == nullptr) {
-		return false;
-	}
-
-	QString left   = pattern;
-	char    *right = strstr(left, ":=");
-	*right++ = 0;
-	right++;
-
-	while (*right == ' ') {
-		right++;
-	}
-
-	char *endleft = left + strlen(left) - 1;
-
-	while (*endleft == ' ') {
-		*endleft = 0;
-		endleft--;
-	}
-
-	return lhs->match(left, bindings) && rhs->match(right, bindings);
-}
-
-
-#endif
 
 
 void Assign::genConstraints(LocationSet& cons)

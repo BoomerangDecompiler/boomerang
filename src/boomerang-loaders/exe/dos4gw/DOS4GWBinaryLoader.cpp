@@ -216,31 +216,6 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 	m_pLXObjects = new LXObject[LMMH(m_pLXHeader->numobjsinmodule)];
 	buf.read((char *)m_pLXObjects, sizeof(LXObject) * LMMH(m_pLXHeader->numobjsinmodule));
 
-// at this point we're supposed to read in the page table and fuss around with it
-// but I'm just going to assume the file is flat.
-#if 0
-	unsigned npagetblentries = 0;
-	m_cbImage = 0;
-
-	for (unsigned n = 0; n < LMMH(m_pLXHeader->numobjsinmodule); n++) {
-		if (LMMH(m_pLXObjects[n].PageTblIdx) + LMMH(m_pLXObjects[n].NumPageTblEntries) - 1 > npagetblentries) {
-			npagetblentries = LMMH(m_pLXObjects[n].PageTblIdx) + LMMH(m_pLXObjects[n].NumPageTblEntries) - 1;
-		}
-
-		if (LMMH(m_pLXObjects[n].ObjectFlags) & 0x40) {
-			if (LMMH(m_pLXObjects[n].RelocBaseAddr) + LMMH(m_pLXObjects[n].VirtualSize) > m_cbImage) {
-				m_cbImage = LMMH(m_pLXObjects[n].RelocBaseAddr) + LMMH(m_pLXObjects[n].VirtualSize);
-			}
-		}
-	}
-
-	m_cbImage -= LMMH(m_pLXObjects[0].RelocBaseAddr);
-
-	fseek(fp, lxoff + LMMH(m_pLXHeader->objpagetbloffset), SEEK_SET);
-	m_pLXPages = new LXPage[npagetblentries];
-	fread(m_pLXPages, sizeof(LXPage), npagetblentries, fp);
-#endif
-
 	unsigned npages = 0;
 	m_cbImage = 0;
 

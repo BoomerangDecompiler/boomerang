@@ -617,15 +617,6 @@ void CallStatement::generateCode(ICodeGenerator *hll, BasicBlock *pbb, int indLe
 	}
 
 	StatementList *results = calcResults();
-
-#if 0
-	LOG << "call: " << this;
-	LOG << " in proc " << proc->getName() << "\n";
-
-	for (StatementList::iterator it = results->begin(); it != results->end(); it++) {
-		LOG << "result: " << *it << "\n";
-	}
-#endif
 	assert(p);
 
 	if (Boomerang::get()->noDecompile) {
@@ -1963,16 +1954,6 @@ bool CallStatement::accept(StmtExpVisitor *v)
 		ret = (*it)->accept(v);
 	}
 
-// FIXME: why aren't defines counted?
-#if 0   // Do we want to accept visits to the defines? Not sure now...
-	std::vector<ReturnInfo>::iterator rr;
-
-	for (rr = defines.begin(); ret && rr != defines.end(); rr++) {
-		if (rr->e) {      // Can be nullptr now to line up with other returns
-			ret = rr->e->accept(v->ev);
-		}
-	}
-#endif
 	// FIXME: surely collectors should be counted?
 	return ret;
 }

@@ -1607,21 +1607,7 @@ SemStr *NJMCDecoder::dis_Sreg(int regNum) {
   * PARAMETERS:    hostPC - pointer to the code in question (native address)
   * \returns        True if a match found
   *============================================================================*/
-bool isFuncPrologue(ADDRESS hostPC) {
-#if 0
-    int hiVal, loVal, reg, locals;
-    if ((InstructionPatterns::new_reg_win(prog.csrSrc,hostPC, locals)) != nullptr)
-            return true;
-    if ((InstructionPatterns::new_reg_win_large(prog.csrSrc, hostPC,
-        hiVal, loVal, reg)) != nullptr)
-            return true;
-    if ((InstructionPatterns::same_reg_win(prog.csrSrc, hostPC, locals))
-        != nullptr)
-            return true;
-    if ((InstructionPatterns::same_reg_win_large(prog.csrSrc, hostPC,
-        hiVal, loVal, reg)) != nullptr)
-            return true;
-#endif
-
+bool isFuncPrologue(HostAddress hostPC)
+{
     return false;
 }
