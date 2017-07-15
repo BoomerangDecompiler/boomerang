@@ -10,16 +10,16 @@ class PentiumDecoder;
 class PentiumFrontEnd : public IFrontEnd
 {
 public:
-	/// @copydoc IFrontEnd::IFrontEnd
+	/// \copydoc IFrontEnd::IFrontEnd
 	PentiumFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
 
-	/// @copydoc IFrontEnd::~IFrontEnd
+	/// \copydoc IFrontEnd::~IFrontEnd
 	virtual ~PentiumFrontEnd();
 
-	/// @copydoc IFrontEnd::getFrontEndId
+	/// \copydoc IFrontEnd::getFrontEndId
 	virtual Platform getType() const override { return Platform::PENTIUM; }
 
-	/// @copydoc IFrontEnd::processProc
+	/// \copydoc IFrontEnd::processProc
 	/***************************************************************************/ /**
 	* \fn      PentiumFrontEnd::processProc
 	* \brief      Process a procedure, given a native (source machine) address.
@@ -35,13 +35,13 @@ public:
 	******************************************************************************/
 	virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
-	/// @copydoc IFrontEnd::getDefaultParams
+	/// \copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
 
-	/// @copydoc IFrontEnd::getDefaultReturns
+	/// \copydoc IFrontEnd::getDefaultReturns
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
-	/// @copydoc IFrontEnd::getMainEntryPoint
+	/// \copydoc IFrontEnd::getMainEntryPoint
 	/***************************************************************************/ /**
 	* \brief    Locate the starting address of "main" in the code section
 	* \returns  Native pointer if found; Address::INVALID if not

@@ -90,7 +90,7 @@ public:
 	 */
 
 	// pretested loops (cond is optional because it is in the bb [somewhere])
-	/// Adds: while (@p cond) {
+	/// Adds: while (\p cond) {
 	virtual void addPretestedLoopHeader(int indLevel, const SharedExp& cond) override;
 	/// Adds: }
 	virtual void addPretestedLoopEnd(int indLevel) override;
@@ -149,7 +149,7 @@ public:
 
 	/**
 	* Removes labels from the code which are not in usedLabels.
-	* @param maxOrd UNUSED
+	* \param maxOrd UNUSED
 	*/
 	virtual void removeUnusedLabels(int maxOrd) override;
 

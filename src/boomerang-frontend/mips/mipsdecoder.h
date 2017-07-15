@@ -30,10 +30,10 @@ struct DecodeResult;
 class MIPSDecoder : public NJMCDecoder
 {
 public:
-	/// @copydoc NJMCDecoder::NJMCDecoder
+	/// \copydoc NJMCDecoder::NJMCDecoder
 	MIPSDecoder(Prog *prog);
 
-	/// @copydoc NJMCDecoder::decodeInstruction
+	/// \copydoc NJMCDecoder::decodeInstruction
 
 	/****************************************************************************/ /**
 	* \brief   Attempt to decode the high level instruction at a given

@@ -66,7 +66,7 @@ public:
 	   Address getAddress()     const { return m_addr; }
 	const QString& getName() const { return m_name; }
 
-	/// return true if @p address is contained within this global.
+	/// return true if \p address is contained within this global.
 	bool containsAddress(Address addr) const
 	{
 		// TODO: use getType()->getBytes()

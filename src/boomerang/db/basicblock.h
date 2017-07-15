@@ -217,8 +217,7 @@ public:
 	bool isCaseOption();
 
 	/***************************************************************************/ /**
-	 * \brief        Returns nonzero if this BB has been traversed
-	 * \returns     True if traversed
+	 * \returns true if this BB has been traversed
 	 ******************************************************************************/
 	bool isTraversed();
 
@@ -262,7 +261,7 @@ public:
 
 
 	/***************************************************************************/ /**
-	 * \brief    Returns the "jump required" bit. See @ref setJumpReqd for details
+	 * \brief    Returns the "jump required" bit. See \ref setJumpReqd for details
 	 * \returns True if a jump is required
 	 ******************************************************************************/
 	bool isJumpReqd();

@@ -36,12 +36,12 @@ private:
 
 /**
  * Class for managing an interface plugin.
- * Interface plugins are defined by the interface @p IFC
+ * Interface plugins are defined by the interface \p IFC
  *
  * General notes on creating plugins:
  *  - The main plugin class must derive from the interface class IFC.
  *    Currently supported interfaces are:
- *    - @ref IFileLoader (loader pluins)
+ *    - \ref IFileLoader (loader pluins)
  *
  * - The plugin must define the following functions (with extern "C" linkage):
  *   - IFC* initPlugin(): to initialize the plugin class and allocate resources etc.
@@ -59,7 +59,7 @@ class Plugin
 
 public:
 	/// Create a plugin from a dynamic library file.
-	/// @param pluginPath path to the library file.
+	/// \param pluginPath path to the library file.
 	explicit Plugin(const QString& pluginPath)
 		: m_pluginHandle(pluginPath)
 		, m_ifc(nullptr)

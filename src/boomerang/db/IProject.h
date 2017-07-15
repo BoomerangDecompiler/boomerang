@@ -7,7 +7,7 @@ class QByteArray;
 struct ITypeRecovery;
 
 /**
- * @brief The Project interface class
+ * \brief The Project interface class
  */
 class IProject
 {

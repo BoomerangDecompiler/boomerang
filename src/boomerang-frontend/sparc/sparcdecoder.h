@@ -33,10 +33,10 @@ class SparcDecoder : public NJMCDecoder
 	SparcMachine *machine;
 
 public:
-	/// @copydoc NJMCDecoder::NJMCDecoder
+	/// \copydoc NJMCDecoder::NJMCDecoder
 	SparcDecoder(Prog *prog);
 
-	/// @copydoc NJMCDecoder::decodeInstruction
+	/// \copydoc NJMCDecoder::decodeInstruction
 	/***************************************************************************/ /**
 	 * \fn     SparcDecoder::decodeInstruction
 	 * \brief  Attempt to decode the high level instruction at a given address.

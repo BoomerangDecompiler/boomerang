@@ -22,8 +22,8 @@ public:
 
 	/**
 	 * Initialize this loader.
-	 * @param image   Binary image to load this file into.
-	 * @param symbols Symbol table to fill
+	 * \param image   Binary image to load this file into.
+	 * \param symbols Symbol table to fill
 	 */
 	virtual void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) = 0;
 
@@ -38,12 +38,12 @@ public:
 	/// If the file cannot be loaded, this function returns 0.
 	virtual int canLoad(QIODevice& data) const = 0;
 
-	/// Load the file with path @p path into memory.
+	/// Load the file with path \p path into memory.
 //	virtual IBinaryFile* loadFromFile(const std::string& path) = 0;
 
 	/// Load the file from an already existing buffer.
-	/// @note @p data cannot be const
-	/// @returns true for a good load
+	/// \note \p data cannot be const
+	/// \returns true for a good load
 	virtual bool loadFromMemory(QByteArray& data) = 0;
 
 	/// Unload the file.
@@ -59,17 +59,17 @@ public:
 	/// Get the expected machine (e.g. MACHINE_PENTIUM)
 	virtual Machine getMachine() const = 0;
 
-	/// @returns the address of main()/WinMain() etc.
+	/// \returns the address of main()/WinMain() etc.
 	virtual Address getMainEntryPoint() = 0;
 
-	/// @returns the "real" entry point, ie where execution of the program begins
+	/// \returns the "real" entry point, ie where execution of the program begins
 	virtual Address getEntryPoint() = 0;
 
-	/// @returns the virtual address at which the binary expects to be loaded.
+	/// \returns the virtual address at which the binary expects to be loaded.
 	/// For position independent / relocatable code this should be NO_ADDDRESS
 	virtual Address getImageBase() = 0;
 
-	/// @returns the total size of the loaded image
+	/// \returns the total size of the loaded image
 	virtual size_t getImageSize() = 0;
 
 public:

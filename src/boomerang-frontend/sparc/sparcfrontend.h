@@ -21,15 +21,15 @@ struct DecodeResult;
 class SparcFrontEnd : public IFrontEnd
 {
 public:
-	/// @copydoc IFrontEnd::IFrontEnd
+	/// \copydoc IFrontEnd::IFrontEnd
 	SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff);
 	virtual ~SparcFrontEnd();
 
-	/// @copydoc IFrontEnd::getType
+	/// \copydoc IFrontEnd::getType
 	virtual Platform getType() const override { return Platform::SPARC; }
 
 	/**
-	 * @copydoc IFrontEnd::processProc
+	 * \copydoc IFrontEnd::processProc
 	 *
 	 * This overrides the base class processProc to do source machine
 	 * specific things (but often calls the base class to do most of the
@@ -53,13 +53,13 @@ public:
 	******************************************************************************/
 	virtual bool processProc(Address uAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
 
-	/// @copydoc IFrontEnd::getDefaultParams
+	/// \copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
 
-	/// @copydoc IFrontEnd::getDefaultReturns
+	/// \copydoc IFrontEnd::getDefaultReturns
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
-	/// @copydoc IFrontEnd::getMainEntryPoint
+	/// \copydoc IFrontEnd::getMainEntryPoint
 	/***************************************************************************/ /**
 	* \fn    SparcFrontEnd::getMainEntryPoint
 	* \brief Locate the starting address of "main" in the code section

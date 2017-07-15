@@ -33,10 +33,10 @@ public:
 
 	BinaryFileFactory();
 
-	/// @param pluginsPath Path of the directory where the loader plugins are located.
+	/// \param pluginsPath Path of the directory where the loader plugins are located.
 	static void setPluginsPath(const std::string& pluginsPath);
 
-	/// Load the binary file located at @p filePath.
+	/// Load the binary file located at \p filePath.
 	/// Automatically returns the appropriate loader for the binary file.
 	IFileLoader *loadFile(const std::string& filePath);
 
@@ -45,8 +45,8 @@ private:
 	/**
 	 * Test all plugins against the file, select the one with the best match, and then return an
 	 * instance of the appropriate subclass.
-	 * @param filePath - name of the file to load
-	 * @return Instance of the plugin that can load the file with given @p filePath
+	 * \param filePath - name of the file to load
+	 * \returns Instance of the plugin that can load the file with given \p filePath
 	 */
 	IFileLoader *getInstanceFor(const std::string& filePath);
 

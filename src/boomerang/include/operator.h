@@ -70,14 +70,14 @@ enum OPER
 	opTypedExp,   ///< Typed expression
 	opNamedExp,   ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
 	opGuard,      ///< Guarded expression (should be assignment)
-	
-	/// @deprecated The below is (and should) probably no longer used. Use opList instead
+
+	/// \deprecated The below is (and should) probably no longer used. Use opList instead
 	opComma,      ///< Separate expressions in a list (e.g. params)
 	opFlagCall,   ///< A flag call (Binary with string and params)
 	opFlagDef,    ///< A flag function definition (class FlagDef)
 	opList,       ///< A binary, with expression (1) and next element
 	              ///<    in chain (2). Last element in chain is opNil
-	              
+
 	// Next three are for parser use only. Binary with name of table and name
 	// of string as Const string subexpressions. Actual table info held in the
 	// TableDict object
@@ -88,7 +88,7 @@ enum OPER
 	// index, and a list of expressions to operate on. This actually allows
 	// more generality, e.g. unary or ternary operators int the table
 	opOpTable,      // A table of operators
-	
+
 	opSuccessor,    ///< Get the successor register of this parameter
 	opTern,         ///< Ternary (i.e. ? : )
 	opAt,           ///< Bit extraction (expr@first:last in that order)
@@ -157,7 +157,7 @@ enum OPER
 	opFlags,  ///< This is the abstracted integer flags register terminal
 	opFflags, ///< This is the abstracted floating point flags terminal
 	opAnull,  ///< This is an abstract boolean that if true causes the following instruction to be anulled
-	
+
 	// This is a special terminal representing "all locations", which in practice means "every location whose definition
 	// reaches here".
 

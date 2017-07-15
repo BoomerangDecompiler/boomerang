@@ -38,24 +38,24 @@ struct DecodeResult;
 class MIPSFrontEnd : public IFrontEnd
 {
 public:
-	/// @copydoc IFrontEnd::IFrontEnd
+	/// \copydoc IFrontEnd::IFrontEnd
 	MIPSFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
 	
-	/// @copydoc IFrontEnd::~IFrontEnd
+	/// \copydoc IFrontEnd::~IFrontEnd
 	virtual ~MIPSFrontEnd();
 
-	/// @copydoc IFrontEnd::getFrontEndId
+	/// \copydoc IFrontEnd::getFrontEndId
 	virtual Platform getType() const override { return Platform::MIPS; }
 
-	/// @copydoc IFrontEnd::processProc
+	/// \copydoc IFrontEnd::processProc
 	virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
-	/// @copydoc IFrontEnd::getDefaultParams
+	/// \copydoc IFrontEnd::getDefaultParams
 	virtual std::vector<SharedExp>& getDefaultParams() override;
 
-	/// @copydoc IFrontEnd::getDefaultReturns
+	/// \copydoc IFrontEnd::getDefaultReturns
 	virtual std::vector<SharedExp>& getDefaultReturns() override;
 
-	/// @copydoc IFrontEnd::getMainEntryPoint
+	/// \copydoc IFrontEnd::getMainEntryPoint
 	virtual Address getMainEntryPoint(bool& gotMain) override;
 };

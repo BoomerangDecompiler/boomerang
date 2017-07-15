@@ -99,7 +99,7 @@ public:
 
 
 /**
- * @brief The IDecoder class - responsible for translating raw bytes to Instruction lists
+ * \brief The IDecoder class - responsible for translating raw bytes to Instruction lists
  */
 class IDecoder
 {
@@ -118,6 +118,6 @@ public:
 	/// Returns size of register in bits
 	virtual int getRegSize(int idx) const = 0;
 
-	/// Returns the size of the register with name @p name, in bits
+	/// Returns the size of the register with name \p name, in bits
 	int getRegSize(const QString& name) const { return getRegSize(getRegIdx(name)); }
 };

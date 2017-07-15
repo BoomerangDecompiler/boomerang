@@ -29,37 +29,37 @@ public:
 	PalmBinaryLoader(); // Constructor
 	virtual ~PalmBinaryLoader();
 
-	/// @copydoc IFileLoader::initialize
+	/// \copydoc IFileLoader::initialize
 	void initialize(IBinaryImage *image, IBinarySymbolTable *table) override;
 
-	/// @copydoc IFileLoader::canLoad
+	/// \copydoc IFileLoader::canLoad
 	int canLoad(QIODevice& dev) const override;
 
-	/// @copydoc IFileLoader::loadFromMemory
+	/// \copydoc IFileLoader::loadFromMemory
 	bool loadFromMemory(QByteArray& data) override;
 
-	/// @copydoc IFileLoader::unload
+	/// \copydoc IFileLoader::unload
 	void unload() override;
 
-	/// @copydoc IFileLoader::close
+	/// \copydoc IFileLoader::close
 	void close() override;
 
-	/// @copydoc IFileLoader::getFormat
+	/// \copydoc IFileLoader::getFormat
 	LoadFmt getFormat() const override;
 
-	/// @copydoc IFileLoader::getMachine
+	/// \copydoc IFileLoader::getMachine
 	Machine getMachine() const override;
 
-	/// @copydoc IFileLoader::getMainEntryPoint
+	/// \copydoc IFileLoader::getMainEntryPoint
 	virtual Address getMainEntryPoint() override;
 
-	/// @copydoc IFileLoader::getEntryPoint
+	/// \copydoc IFileLoader::getEntryPoint
 	virtual Address getEntryPoint() override;
 
-	/// @copydoc IFileLoader::getImageBase
+	/// \copydoc IFileLoader::getImageBase
 	   Address getImageBase() override;
 
-	/// @copydoc IFileLoader::getImageSize
+	/// \copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
 
 	// Analysis functions
@@ -67,7 +67,7 @@ public:
 	//    ADDRESS     NativeToHostAddress(ADDRESS uNative);
 	bool isLibrary() const;
 
-	/// @copydoc IFileLoader::postLoad
+	/// \copydoc IFileLoader::postLoad
 	bool postLoad(void *handle) override;  // For archive files only
 
 private:

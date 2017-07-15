@@ -20,14 +20,14 @@ namespace Util
  */
 QString escapeStr(const QString& str);
 
-/// return a bit mask with exactly @p bitCount of the lowest bits set to 1.
+/// return a bit mask with exactly \p bitCount of the lowest bits set to 1.
 /// (example: 16 -> 0xFFFF)
 inline QWord getLowerBitMask(DWord bitCount)
 {
 	return (1ULL << (bitCount % (8*sizeof(QWord)))) - 1ULL;
 }
 
-/// Check if @p value is in [@p rangeStart, @p rangeEnd)
+/// Check if \p value is in [\p rangeStart, \p rangeEnd)
 template<class T, class U>
 bool inRange(const T& value, const U& rangeStart, const U& rangeEnd)
 {
@@ -57,8 +57,8 @@ inline QWord swapEndian(QWord value)
 
 /**
  * Normalize endianness of a value.
- * Swaps bytes of @p value if the endianness of the source,
- * indicated by @p srcBigEndian, is different from the endianness
+ * Swaps bytes of \p value if the endianness of the source,
+ * indicated by \p srcBigEndian, is different from the endianness
  * of the host.
  */
 SWord normEndian(SWord value, bool srcBigEndian);
@@ -66,14 +66,14 @@ DWord normEndian(DWord value, bool srcBigEndian);
 QWord normEndian(QWord value, bool srcBigEndian);
 
 /// Read values, respecting endianness
-/// @sa normEndian
+/// \sa normEndian
 Byte readByte(const void* src);
 SWord readWord(const void* src, bool srcBigEndian);
 DWord readDWord(const void* src, bool srcBigEndian);
 QWord readQWord(const void* src, bool srcBigEndian);
 
 
-/// Write values to @p dst, respecting endianness
+/// Write values to \p dst, respecting endianness
 void writeByte(void* dst, Byte value);
 void writeWord(void* dst, SWord value, bool dstBigEndian);
 void writeDWord(void* dst, DWord value, bool dstBigEndian);

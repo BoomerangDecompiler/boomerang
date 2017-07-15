@@ -27,10 +27,10 @@ struct DecodeResult;
 class PPCDecoder : public NJMCDecoder
 {
 public:
-	/// @copydoc NJMCDecoder::NJMCDecoder
+	/// \copydoc NJMCDecoder::NJMCDecoder
 	PPCDecoder(Prog *prog);
 
-	/// @copydoc NJMCDecoder::decodeInstruction
+	/// \copydoc NJMCDecoder::decodeInstruction
 	DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
 private:

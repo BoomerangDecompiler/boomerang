@@ -279,7 +279,7 @@ public:
 	 */
 	void makeCloneOf(UseCollector& other);
 
-	/// @return true if initialised
+	/// \returns true if initialised
 	bool isInitialised() const { return m_initialised; }
 
 	/*

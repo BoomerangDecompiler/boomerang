@@ -110,7 +110,7 @@ public:
 	/// Get the mapped offset (see above)
 	int getMappedOffset() const { return m_mappedOffset; }
 
-	/// @returns true if this is a floating point register
+	/// \returns true if this is a floating point register
 	bool isFloat() const { return m_fltRegister; }
 
 private:

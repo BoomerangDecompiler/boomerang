@@ -25,13 +25,13 @@ struct DecodeResult;
 class PentiumDecoder : public NJMCDecoder
 {
 public:
-	/// @copydoc NJMCDecoder::NJMCDecoder
+	/// \copydoc NJMCDecoder::NJMCDecoder
 	PentiumDecoder(Prog *prog);
 
-	/// @copydoc NJMCDecoder::~NJMCDecoder
+	/// \copydoc NJMCDecoder::~NJMCDecoder
 	virtual ~PentiumDecoder() = default;
 
-	/// @copydoc NJMCDecoder::decodeInstruction
+	/// \copydoc NJMCDecoder::decodeInstruction
 	/***************************************************************************/ /**
 	* \brief   Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
 	*              decoded. However, if a higher level construct that may consist of multiple instructions is matched,
@@ -56,7 +56,7 @@ private:
 
 	bool isFuncPrologue(Address hostPC);
 
-	/// Read bytes, words or dwords from the memory at address @p addr
+	/// Read bytes, words or dwords from the memory at address \p addr
 	Byte  getByte(HostAddress addr)  { return *(Byte*)addr.value(); }
 	SWord getWord(HostAddress addr)  { return *(SWord*)addr.value(); }
 	DWord getDword(HostAddress addr) { return *(DWord*)addr.value(); }

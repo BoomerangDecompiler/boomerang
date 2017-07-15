@@ -30,10 +30,10 @@ struct DecodeResult;
 class ST20Decoder : public NJMCDecoder
 {
 public:
-	/// @copydoc NJMCDecoder::NJMCDecoder
+	/// \copydoc NJMCDecoder::NJMCDecoder
 	ST20Decoder(Prog *prog);
 
-	/// @copydoc NJMCDecoder::decodeInstruction
+	/// \copydoc NJMCDecoder::decodeInstruction
 	DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
 private:

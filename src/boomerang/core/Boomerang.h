@@ -135,7 +135,7 @@ private:
 
 public:
 
-	/// @returns The global boomerang object. It will be created if it does not already exist.
+	/// \returns The global boomerang object. It will be created if it does not already exist.
 	static Boomerang *get();
 
 	IBinaryImage *getImage() override;

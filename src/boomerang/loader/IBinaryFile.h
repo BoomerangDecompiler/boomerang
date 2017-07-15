@@ -45,7 +45,7 @@ enum class Machine : uint8_t
 class IBinaryFile
 {
 public:
-	/// @param data Raw file data
+	/// \param data Raw file data
 	IBinaryFile(IFileData *data);
 	virtual ~IBinaryFile() = default;
 

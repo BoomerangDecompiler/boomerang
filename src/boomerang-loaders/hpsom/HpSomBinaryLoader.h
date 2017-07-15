@@ -86,38 +86,38 @@ public:
 	HpSomBinaryLoader();    // Constructor
 	virtual ~HpSomBinaryLoader();
 
-	/// @copydoc IFileLoader::initialize
+	/// \copydoc IFileLoader::initialize
 	void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 
-	/// @copydoc IFileLoader::canLoad
+	/// \copydoc IFileLoader::canLoad
 	int canLoad(QIODevice& dev) const override;
 
-	/// @copydoc IFileLoader::loadFromMemory
+	/// \copydoc IFileLoader::loadFromMemory
 	bool loadFromMemory(QByteArray& data) override;
 
-	/// @copydoc IFileLoader::unload
+	/// \copydoc IFileLoader::unload
 	void unload() override;
 
-	/// @copydoc IFileLoader::close
+	/// \copydoc IFileLoader::close
 	void close() override;
 
-	/// @copydoc IFileLoader::getMainEntryPoint
+	/// \copydoc IFileLoader::getMainEntryPoint
 	   Address getMainEntryPoint() override;
 
-	/// @copydoc IFileLoader::getEntryPoint
+	/// \copydoc IFileLoader::getEntryPoint
 	   Address getEntryPoint() override;
 
 
-	/// @copydoc IFileLoader::getFormat
+	/// \copydoc IFileLoader::getFormat
 	LoadFmt getFormat() const override;
 
-	/// @copydoc IFileLoader::getMachine
+	/// \copydoc IFileLoader::getMachine
 	Machine getMachine() const override;
 
-	/// @copydoc IFileLoader::getImageBase
+	/// \copydoc IFileLoader::getImageBase
 	   Address getImageBase() override;
 
-	/// @copydoc IFileLoader::getImageSize
+	/// \copydoc IFileLoader::getImageSize
 	size_t getImageSize() override;
 
 	bool isLibrary() const;

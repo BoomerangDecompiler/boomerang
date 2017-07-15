@@ -33,7 +33,7 @@ public:
 	 ******************************************************************************/
 	NJMCDecoder(Prog *prog);
 
-	/// @copydoc IInstructionTranslator::~IInstructionTranslator
+	/// \copydoc IInstructionTranslator::~IInstructionTranslator
 	virtual ~NJMCDecoder() = default;
 
 	RTLInstDict& getRTLDict() { return m_rtlDict; }
@@ -62,13 +62,13 @@ public:
 	void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
 							 std::list<Instruction *> *stmts, DecodeResult& result);
 
-	/// @copydoc IInstructionTranslator::getRegName
+	/// \copydoc IInstructionTranslator::getRegName
 	QString getRegName(int idx) const override;
 
-	/// @copydoc IInstructionTranslator::getRegSize
+	/// \copydoc IInstructionTranslator::getRegSize
 	int getRegSize(int idx) const override;
 
-	/// @copydoc IInstructionTranslator::getRegIdx
+	/// \copydoc IInstructionTranslator::getRegIdx
 	int getRegIdx(const QString& name) const override;
 
 protected:
