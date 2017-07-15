@@ -49,7 +49,4 @@ public:
 	*              gathered during decoding
 	*********************************************************************************/
 	virtual DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
-
-	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
-	virtual int decodeAssemblyInstruction(Address pc, ptrdiff_t delta) override;
 };

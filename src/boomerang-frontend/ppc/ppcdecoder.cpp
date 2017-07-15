@@ -9380,13 +9380,6 @@ PPCDecoder::PPCDecoder(Prog *_prog)
 }
 
 
-// For now...
-int PPCDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
-{
-	return 0;
-}
-
-
 // Get an expression for a CR bit. For example, if bitNum is 6, return r65@[2:2]
 // (r64 .. r71 are the %cr0 .. %cr7 flag sets)
 SharedExp crBit(int bitNum)

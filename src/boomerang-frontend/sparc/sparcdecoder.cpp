@@ -2567,9 +2567,3 @@ SparcDecoder::SparcDecoder(Prog *_prog)
 	m_rtlDict.readSSLFile(file);
 }
 
-
-// For now...
-int SparcDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
-{
-	return 0;
-}

@@ -52,9 +52,6 @@ public:
 	 ******************************************************************************/
 	DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
-	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
-	int decodeAssemblyInstruction(Address pc, ptrdiff_t delta)  override;
-
 	/// Indicates whether the instruction at the given address is a restore instruction.
 	bool isRestore(HostAddress hostPC);
 

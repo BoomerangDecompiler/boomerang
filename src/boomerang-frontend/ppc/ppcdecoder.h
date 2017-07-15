@@ -33,9 +33,6 @@ public:
 	/// @copydoc NJMCDecoder::decodeInstruction
 	DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
-	/// @copydoc NJMCDecoder::decodeAssemblyInstruction
-	int decodeAssemblyInstruction(Address pc, ptrdiff_t delta) override;
-
 private:
 	/// Various functions to decode the operands of an instruction into an Exp* representation.
 	Exp *dis_Eaddr(Address pc, int size = 0);

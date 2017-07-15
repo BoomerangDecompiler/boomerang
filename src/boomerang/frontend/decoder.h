@@ -120,7 +120,4 @@ public:
 
 	/// Returns the size of the register with name @p name, in bits
 	int getRegSize(const QString& name) const { return getRegSize(getRegIdx(name)); }
-
-	/// Disassembles the machine instruction at address @p pc and returns the number of bytes disassembled.
-	virtual int decodeAssemblyInstruction(Address pc, ptrdiff_t delta) = 0;
 };

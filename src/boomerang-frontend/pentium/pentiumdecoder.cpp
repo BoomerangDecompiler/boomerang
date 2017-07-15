@@ -49709,20 +49709,6 @@ PentiumDecoder::PentiumDecoder(Prog *_prog)
 	   m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/pentium/pentium.ssl"));
 }
 
-
-// For now...
-
-/**
- * Disassembles the machine instruction at pc and returns the number of
- * bytes disassembled. Assembler output goes to global _assembly
- */
-int PentiumDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
-{
-	return 0;
-}
-
-
-
 static int BSFRstate = 0;                                                     // State number for this state machine
 
 /***************************************************************************/ /**

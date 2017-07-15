@@ -937,9 +937,3 @@ ST20Decoder::ST20Decoder(Prog *prog_)
 	m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/st20/st20.ssl"));
 }
 
-
-// For now...
-int ST20Decoder::decodeAssemblyInstruction(Address, ptrdiff_t)
-{
-	return 0;
-}

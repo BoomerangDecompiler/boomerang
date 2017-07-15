@@ -44,12 +44,6 @@ MIPSDecoder::MIPSDecoder(Prog *_prog)
 }
 
 
-int MIPSDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
-{
-	return 0;
-}
-
-
 DecodeResult& MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 {
 	Q_UNUSED(pc);

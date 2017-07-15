@@ -44,9 +44,6 @@ public:
 	******************************************************************************/
 	DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
-	/// @copydoc NJMCDecode::decodeAssemblyInstruction
-	int decodeAssemblyInstruction(Address pc, ptrdiff_t delta) override;
-
 private:
 
 	/*
