@@ -49706,7 +49706,7 @@ PentiumDecoder::PentiumDecoder(Prog *_prog)
 {
 	QDir base_dir = Boomerang::get()->getProgDir();
 
-	   m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/pentium/pentium.ssl"));
+	m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/pentium/pentium.ssl"));
 }
 
 static int BSFRstate = 0;                                                     // State number for this state machine

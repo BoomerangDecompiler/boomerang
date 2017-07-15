@@ -76,7 +76,7 @@ public:
 	/// Get information about the plugin.
 	PluginInfo getInfo() const
 	{
-		return m_pluginHandle.getSymbol("getInfo")();
+		return m_pluginHandle.getFunction<PluginInfoFunction>("getInfo")();
 	}
 
 	/// Get the interface pointer for this plugin.
@@ -94,21 +94,21 @@ private:
 	void init()
 	{
 		assert(m_ifc == nullptr);
-		m_ifc = getFunc<PluginInitFunction>("initPlugin")();
+		m_ifc = getFunction<PluginInitFunction>("initPlugin")();
 	}
 
 	/// De-initialize the plugin.
 	void deinit()
 	{
 		assert(m_ifc != nullptr);
-		getFunc<PluginDeinitFunction>("deinitPlugin")();
+		getFunction<PluginDeinitFunction>("deinitPlugin")();
 		m_ifc = nullptr;
 	}
 
 	/// Given a non-mangled function name (e.g. initPlugin),
 	/// get the function pointer for the function exported by this plugin.
 	template<class FuncPtr>
-	FuncPtr getFunc(const char* name) const
+	FuncPtr getFunction(const char* name) const
 	{
 		PluginHandle::Symbol symbol = m_pluginHandle.getSymbol(name);
 

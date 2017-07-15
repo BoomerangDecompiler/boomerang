@@ -1,5 +1,5 @@
 
-include(boomerang-macros)
+include(boomerang-utils)
 
 set(test_LIBRARIES
 	${DEBUG_LIB}

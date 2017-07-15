@@ -1,4 +1,4 @@
-#this script will perform configuration of all system specific settings
+# This script will perform configuration of all system specific settings
 
 include(CheckIncludeFile)
 include(CheckTypeSize)

@@ -5,7 +5,7 @@ include(CMakeParseArguments)
 # Usage: BOOMERANG_ADD_LOADER(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_LOADER)
-	cmake_parse_arguments(LOADER "foo" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+	cmake_parse_arguments(LOADER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
 	option(BOOM_BUILD_LOADER_${LOADER_NAME} "Build the ${LOADER_NAME} loader." ON)
 
@@ -36,7 +36,7 @@ endfunction()
 # in the same directory as the CMakeLists.txt where this function is invoked.
 #
 function(BOOMERANG_ADD_FRONTEND)
-	cmake_parse_arguments(FRONTEND "foo" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+	cmake_parse_arguments(FRONTEND "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
 	# add the frontend as a static library
 	add_library(boomerang-${FRONTEND_NAME}Frontend STATIC
@@ -55,7 +55,7 @@ endfunction(BOOMERANG_ADD_FRONTEND)
 # Usage: BOOMERANG_ADD_CODEGEN(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_CODEGEN)
-	cmake_parse_arguments(CODEGEN "foo" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+	cmake_parse_arguments(CODEGEN "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 	
 	add_library(boomerang-${CODEGEN_NAME}Codegen STATIC
 		${CODEGEN_SOURCES}
@@ -69,7 +69,7 @@ endfunction(BOOMERANG_ADD_CODEGEN)
 # Usage: BOOMERANG_ADD_TEST(NAME <name> SOURCES <souce files> [ LIBRARIES <additional libs ])
 #
 function(BOOMERANG_ADD_TEST)
-	cmake_parse_arguments(TEST "foo" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+	cmake_parse_arguments(TEST "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
 	add_executable(${TEST_NAME} ${TEST_SOURCES})
 	target_link_libraries(${TEST_NAME}
@@ -84,6 +84,7 @@ endfunction(BOOMERANG_ADD_TEST)
 
 #
 # Copy files, but only if the sourc(es) differ from the destination.
+# 
 # Usage:
 # BOOMERANG_COPY(
 #     TARGET <tgt>

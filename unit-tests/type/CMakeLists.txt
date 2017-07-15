@@ -1,4 +1,4 @@
-include(boomerang-macros)
+include(boomerang-utils)
 
 set(test_LIBRARIES
 	${GC_LIBS}

@@ -1,11 +1,5 @@
 #pragma once
 
-/***************************************************************************/ /**
- * \file       util.h
- * OVERVIEW:   Provides the definition for the miscellaneous bits and pieces
- *                 implemented in the util.so library
- ******************************************************************************/
-
 #include <QString>
 
 #include "boomerang/util/types.h"
@@ -21,6 +15,9 @@ public:
 namespace Util
 {
 
+/**
+ * Escape strings properly for code generation.
+ */
 QString escapeStr(const QString& str);
 
 /// return a bit mask with exactly @p bitCount of the lowest bits set to 1.
@@ -30,10 +27,11 @@ inline QWord getLowerBitMask(DWord bitCount)
 	return (1ULL << (bitCount % (8*sizeof(QWord)))) - 1ULL;
 }
 
+/// Check if @p value is in [@p rangeStart, @p rangeEnd)
 template<class T, class U>
-bool inRange(const T& val, const U& range_start, const U& range_end)
+bool inRange(const T& value, const U& rangeStart, const U& rangeEnd)
 {
-	return ((val >= range_start) && (val < range_end));
+	return (value >= rangeStart) && (value < rangeEnd);
 }
 
 inline SWord swapEndian(SWord value)
@@ -57,17 +55,25 @@ inline QWord swapEndian(QWord value)
 	return value;
 }
 
+/**
+ * Normalize endianness of a value.
+ * Swaps bytes of @p value if the endianness of the source,
+ * indicated by @p srcBigEndian, is different from the endianness
+ * of the host.
+ */
 SWord normEndian(SWord value, bool srcBigEndian);
 DWord normEndian(DWord value, bool srcBigEndian);
 QWord normEndian(QWord value, bool srcBigEndian);
 
-/// Read values, especting endianness
+/// Read values, respecting endianness
+/// @sa normEndian
 Byte readByte(const void* src);
 SWord readWord(const void* src, bool srcBigEndian);
 DWord readDWord(const void* src, bool srcBigEndian);
 QWord readQWord(const void* src, bool srcBigEndian);
 
 
+/// Write values to @p dst, respecting endianness
 void writeByte(void* dst, Byte value);
 void writeWord(void* dst, SWord value, bool dstBigEndian);
 void writeDWord(void* dst, DWord value, bool dstBigEndian);

@@ -1,5 +1,5 @@
 
-include(boomerang-macros)
+include(boomerang-utils)
 
 include_directories(
 	"${CMAKE_SOURCE_DIR}/src"
