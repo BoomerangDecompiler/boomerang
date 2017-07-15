@@ -32,59 +32,59 @@ typedef std::shared_ptr<class Type> SharedType;
 
 struct BinarySymbol : public IBinarySymbol
 {
-	QString              Name;
-	Address              Location;
-	SharedType           type;
-	size_t               Size;
-	/// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
-	mutable QVariantMap  attributes;
+    QString              Name;
+    Address              Location;
+    SharedType           type;
+    size_t               Size;
+    /// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
+    mutable QVariantMap  attributes;
 
-	const QString&       getName() const override { return Name; }
-	size_t getSize() const override { return Size; }
-	void setSize(size_t v) override { Size = v; }
-	Address getLocation() const override { return Location; }
+    const QString&       getName() const override { return Name; }
+    size_t getSize() const override { return Size; }
+    void setSize(size_t v) override { Size = v; }
+    Address getLocation() const override { return Location; }
 
-	const IBinarySymbol& setAttr(const QString& name, const QVariant& v) const override
-	{
-		attributes[name] = v;
-		return *this;
-	}
+    const IBinarySymbol& setAttr(const QString& name, const QVariant& v) const override
+    {
+        attributes[name] = v;
+        return *this;
+    }
 
-	bool rename(const QString& s) override;
+    bool rename(const QString& s) override;
 
-	bool isImportedFunction() const override;
-	bool isStaticFunction() const override;
-	bool isFunction() const override;
-	bool isImported() const override;
-	QString belongsToSourceFile() const override;
+    bool isImportedFunction() const override;
+    bool isStaticFunction() const override;
+    bool isFunction() const override;
+    bool isImported() const override;
+    QString belongsToSourceFile() const override;
 };
 
 class SymTab : public IBinarySymbolTable
 {
-	friend struct BinarySymbol;
+    friend struct BinarySymbol;
 
 private:
-	// The map indexed by address.
-	std::map<Address, BinarySymbol *> amap;
-	// The map indexed by string. Note that the strings are stored twice.
-	std::map<QString, BinarySymbol *> smap;
-	std::vector<IBinarySymbol *> SymbolList;
+    // The map indexed by address.
+    std::map<Address, BinarySymbol *> amap;
+    // The map indexed by string. Note that the strings are stored twice.
+    std::map<QString, BinarySymbol *> smap;
+    std::vector<IBinarySymbol *> SymbolList;
 
 public:
-	SymTab();                     // Constructor
-	~SymTab();                    // Destructor
-	BinarySymbol *getOrCreateSymbol();
+    SymTab();                     // Constructor
+    ~SymTab();                    // Destructor
+    BinarySymbol *getOrCreateSymbol();
 
-	IBinarySymbol& create(Address a, const QString& s, bool local = false) override;
-	const IBinarySymbol *find(Address a) const override;        ///< Find an entry by address; nullptr if none
-	const IBinarySymbol *find(const QString& s) const override; ///< Find an entry by name; Address::INVALID if none
+    IBinarySymbol& create(Address a, const QString& s, bool local = false) override;
+    const IBinarySymbol *find(Address a) const override;        ///< Find an entry by address; nullptr if none
+    const IBinarySymbol *find(const QString& s) const override; ///< Find an entry by name; Address::INVALID if none
 
-	SymbolListType& getSymbolList() { return SymbolList; }
-	iterator begin()       override { return SymbolList.begin(); }
-	const_iterator begin() const override { return SymbolList.begin(); }
-	iterator end()       override { return SymbolList.end(); }
-	const_iterator end() const override { return SymbolList.end(); }
-	size_t size()  const { return SymbolList.size(); }
-	bool empty() const { return SymbolList.empty(); }
-	void clear() override;
+    SymbolListType& getSymbolList() { return SymbolList; }
+    iterator begin()       override { return SymbolList.begin(); }
+    const_iterator begin() const override { return SymbolList.begin(); }
+    iterator end()       override { return SymbolList.end(); }
+    const_iterator end() const override { return SymbolList.end(); }
+    size_t size()  const { return SymbolList.size(); }
+    bool empty() const { return SymbolList.empty(); }
+    void clear() override;
 };

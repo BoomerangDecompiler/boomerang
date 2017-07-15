@@ -20,33 +20,33 @@
 
 
 Table::Table(TABLE_TYPE t)
-	: TableType(t)
+    : TableType(t)
 {
 }
 
 
 Table::Table(const std::deque<QString>& recs, TABLE_TYPE t /* = NAMETABLE */)
-	: Records(recs)
-	, TableType(t)
+    : Records(recs)
+    , TableType(t)
 {
 }
 
 
 TABLE_TYPE Table::getType() const
 {
-	return TableType;
+    return TableType;
 }
 
 
 OpTable::OpTable(const std::deque<QString>& ops)
-	: Table(ops, OPTABLE)
+    : Table(ops, OPTABLE)
 {
 }
 
 
 ExprTable::ExprTable(const std::deque<SharedExp>& exprs)
-	: Table(EXPRTABLE)
-	, expressions(exprs)
+    : Table(EXPRTABLE)
+    , expressions(exprs)
 {
 }
 

@@ -7,26 +7,26 @@
 /// Internal elf info
 struct Elf32_Ehdr
 {
-	Byte  e_ident[4];  ///< Magic number. Should be 0x7F 'E' 'L' 'F'
-	Byte  e_class;     ///< Bit format. Must be 1. (32 bit)
-	Byte  endianness;  ///< 1 = little endian, 2 = big endian;
-	Byte  version;     ///< ELF version. 1 = original version
-	Byte  osAbi;       ///< OS ABI. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
-	Byte  abiVersion;  ///< OS ABI version. May be unused.
-	Byte  pad[7];      ///< Currently unused.
-	SWord e_type;      ///< 1 = relocatable, 2 = executable, 3 = shared, 4 = core
-	SWord e_machine;   ///< Instruction set architecture. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
-	Byte  e_version;   ///< See above.
-	DWord e_entry;     ///< Address of the entry point.
-	DWord e_phoff;     ///< Offset of the Program Header table.
-	DWord e_shoff;     ///< Offset of the Section Header table.
-	DWord e_flags;     ///< architecture specific flags.
-	SWord e_ehsize;    ///< Size of this header. Normally 64 bytes.
-	SWord e_phentsize; ///< Size of an entry in the Program Header table.
-	SWord e_phnum;     ///< Number of entries in the Program Header table.
-	SWord e_shentsize; ///< Size of an entry in the Section Header table.
-	SWord e_shnum;     ///< Number of entries in the Section Header table.
-	SWord e_shstrndx;  ///< The index of the entry in the Section Header Table containing the section names.
+    Byte  e_ident[4];  ///< Magic number. Should be 0x7F 'E' 'L' 'F'
+    Byte  e_class;     ///< Bit format. Must be 1. (32 bit)
+    Byte  endianness;  ///< 1 = little endian, 2 = big endian;
+    Byte  version;     ///< ELF version. 1 = original version
+    Byte  osAbi;       ///< OS ABI. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+    Byte  abiVersion;  ///< OS ABI version. May be unused.
+    Byte  pad[7];      ///< Currently unused.
+    SWord e_type;      ///< 1 = relocatable, 2 = executable, 3 = shared, 4 = core
+    SWord e_machine;   ///< Instruction set architecture. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+    Byte  e_version;   ///< See above.
+    DWord e_entry;     ///< Address of the entry point.
+    DWord e_phoff;     ///< Offset of the Program Header table.
+    DWord e_shoff;     ///< Offset of the Section Header table.
+    DWord e_flags;     ///< architecture specific flags.
+    SWord e_ehsize;    ///< Size of this header. Normally 64 bytes.
+    SWord e_phentsize; ///< Size of an entry in the Program Header table.
+    SWord e_phnum;     ///< Number of entries in the Program Header table.
+    SWord e_shentsize; ///< Size of an entry in the Section Header table.
+    SWord e_shnum;     ///< Number of entries in the Section Header table.
+    SWord e_shstrndx;  ///< The index of the entry in the Section Header Table containing the section names.
 };
 
 #define EM_SPARC          2    // Sun SPARC
@@ -43,16 +43,16 @@ struct Elf32_Ehdr
 
 enum ElfRelocKind
 {
-	R_386_32        = 1,
-	R_386_PC32      = 2,
-	R_386_GOT32     = 3,
-	R_386_PLT32     = 4,
-	R_386_COPY      = 5,
-	R_386_GLOB_DAT  = 6,
-	R_386_JUMP_SLOT = 7,
-	R_386_RELATIVE  = 8,
-	R_386_GOTOFF    = 9,
-	R_386_GOTPC     = 10
+    R_386_32        = 1,
+    R_386_PC32      = 2,
+    R_386_GOT32     = 3,
+    R_386_PLT32     = 4,
+    R_386_COPY      = 5,
+    R_386_GLOB_DAT  = 6,
+    R_386_JUMP_SLOT = 7,
+    R_386_RELATIVE  = 8,
+    R_386_GOTOFF    = 9,
+    R_386_GOTPC     = 10
 };
 
 
@@ -117,29 +117,29 @@ enum ElfRelocKind
 /// Program header
 struct Elf32_Phdr
 {
-	DWord p_type;   /* entry type */
-	DWord p_offset; /* file offset */
-	DWord p_vaddr;  /* virtual address */
-	DWord p_paddr;  /* physical address */
-	DWord p_filesz; /* file size */
-	DWord p_memsz;  /* memory size */
-	DWord p_flags;  /* entry flags */
-	DWord p_align;  /* memory/file alignment */
+    DWord p_type;   /* entry type */
+    DWord p_offset; /* file offset */
+    DWord p_vaddr;  /* virtual address */
+    DWord p_paddr;  /* physical address */
+    DWord p_filesz; /* file size */
+    DWord p_memsz;  /* memory size */
+    DWord p_flags;  /* entry flags */
+    DWord p_align;  /* memory/file alignment */
 };
 
 /// Section header
 struct Elf32_Shdr
 {
-	DWord sh_name;
-	DWord sh_type;
-	DWord sh_flags;
-	DWord sh_addr;
-	DWord sh_offset;
-	DWord sh_size;
-	DWord sh_link;
-	DWord sh_info;
-	DWord sh_addralign;
-	DWord sh_entsize;
+    DWord sh_name;
+    DWord sh_type;
+    DWord sh_flags;
+    DWord sh_addr;
+    DWord sh_offset;
+    DWord sh_size;
+    DWord sh_link;
+    DWord sh_info;
+    DWord sh_addralign;
+    DWord sh_entsize;
 };
 
 #define SHF_WRITE        0x01 // Writeable
@@ -150,40 +150,40 @@ struct Elf32_Shdr
 
 enum ElfSectionTypes
 {
-	SHT_NULL     = 0,
-	SHT_PROGBITS = 1,
-	SHT_SYMTAB   = 2, // Symbol table
-	SHT_STRTAB   = 3,
-	SHT_RELA     = 4, // Relocation table (with addend, e.g. RISC)
-	SHT_NOBITS   = 8, // Bss
-	SHT_REL      = 9, // Relocation table (no addend)
-	SHT_DYNSYM   = 11 // Dynamic symbol table
+    SHT_NULL     = 0,
+    SHT_PROGBITS = 1,
+    SHT_SYMTAB   = 2, // Symbol table
+    SHT_STRTAB   = 3,
+    SHT_RELA     = 4, // Relocation table (with addend, e.g. RISC)
+    SHT_NOBITS   = 8, // Bss
+    SHT_REL      = 9, // Relocation table (no addend)
+    SHT_DYNSYM   = 11 // Dynamic symbol table
 };
 
 #pragma pack(push,1)
 struct Elf32_Sym
 {
-	DWord st_name;
-	DWord st_value;
-	DWord st_size;
-	Byte  st_info;
-	Byte  st_other;
-	SWord st_shndx;
+    DWord st_name;
+    DWord st_value;
+    DWord st_size;
+    Byte  st_info;
+    Byte  st_other;
+    SWord st_shndx;
 };
 
 #pragma pack(pop)
 
 struct Elf32_Rel
 {
-	DWord r_offset;
-	DWord r_info;
+    DWord r_offset;
+    DWord r_info;
 };
 
 struct Elf32_Rela
 {
-	DWord r_offset;
-	DWord r_info;
-	DWord r_addend;
+    DWord r_offset;
+    DWord r_info;
+    DWord r_addend;
 };
 
 
@@ -196,39 +196,39 @@ struct Elf32_Rela
 
 enum ElfSymType
 {
-	STT_NOTYPE  = 0, // Symbol table type: none
-	STT_OBJECT  = 1,
-	STT_FUNC    = 2, // Symbol table type: function
-	STT_SECTION = 3,
-	STT_FILE    = 4,
-	STT_COMMON  = 5
+    STT_NOTYPE  = 0, // Symbol table type: none
+    STT_OBJECT  = 1,
+    STT_FUNC    = 2, // Symbol table type: function
+    STT_SECTION = 3,
+    STT_FILE    = 4,
+    STT_COMMON  = 5
 };
 
 enum ElfSymBinding
 {
-	STB_LOCAL  = 0,
-	STB_GLOBAL = 1,
-	STB_WEAK   = 2
+    STB_LOCAL  = 0,
+    STB_GLOBAL = 1,
+    STB_WEAK   = 2
 };
 
 enum ElfSymVisibility
 {
-	STV_DEFAULT   = 0,
-	STV_INTERNAL  = 1,
-	STV_HIDDEN    = 2,
-	STV_PROTECTED = 3
+    STV_DEFAULT   = 0,
+    STV_INTERNAL  = 1,
+    STV_HIDDEN    = 2,
+    STV_PROTECTED = 3
 };
 
 
 typedef struct
 {
-	short d_tag; /* how to interpret value */
-	union
-	{
-		int d_val;
-		int d_ptr;
-		int d_off;
-	}     d_un;
+    short d_tag; /* how to interpret value */
+    union
+    {
+        int d_val;
+        int d_ptr;
+        int d_off;
+    }     d_un;
 } Elf32_Dyn;
 
 // Tag values

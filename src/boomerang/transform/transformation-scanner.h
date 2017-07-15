@@ -66,16 +66,16 @@
 // #line 33 "transformation.l"
 #define YY_TransformationScanner_CONSTRUCTOR_CODE     { *lineBuf = 0; }
 // #line 41 "transformation.l"
-#define YY_TransformationScanner_MEMBERS									\
-public:																		\
-	int           theLine;           /* the current line number */			\
-	char          lineBuf[MAX_LINE]; /* the current line */					\
-	bool          traceLines;        /* echo each lines as it is scanned */	\
-	std::istream& in;														\
-	int           column;													\
-private:																	\
-	void count();															\
-	void comment();
+#define YY_TransformationScanner_MEMBERS                                    \
+public:                                                                        \
+    int           theLine;           /* the current line number */            \
+    char          lineBuf[MAX_LINE]; /* the current line */                    \
+    bool          traceLines;        /* echo each lines as it is scanned */    \
+    std::istream& in;                                                        \
+    int           column;                                                    \
+private:                                                                    \
+    void count();                                                            \
+    void comment();
 // #line 52 "transformation.l"
 #define YY_TransformationScanner_LEX_PARAM    YY_TransformationParser_STYPE & yylval
 // #line 54 "transformation.l"
@@ -320,70 +320,70 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 class TransformationScanner YY_TransformationScanner_INHERIT
 {
 private:    /* data */
-	YY_TransformationScanner_CHAR *yy_c_buf_p;
-	YY_TransformationScanner_CHAR yy_hold_char;
-	int yy_n_chars;
-	int yy_init;
-	int yy_start;
-	int yy_did_buffer_switch_on_eof;
+    YY_TransformationScanner_CHAR *yy_c_buf_p;
+    YY_TransformationScanner_CHAR yy_hold_char;
+    int yy_n_chars;
+    int yy_init;
+    int yy_start;
+    int yy_did_buffer_switch_on_eof;
 
 private:    /* functions */
-	void yy_initialize();
-	int input();
+    void yy_initialize();
+    int input();
 
-	int yyinput() { return input(); }
-	int yy_get_next_buffer();
-	void yyunput(YY_TransformationScanner_CHAR c, YY_TransformationScanner_CHAR *buf_ptr);
+    int yyinput() { return input(); }
+    int yy_get_next_buffer();
+    void yyunput(YY_TransformationScanner_CHAR c, YY_TransformationScanner_CHAR *buf_ptr);
 
-	/* use long instead of yy_state_type because it is undef */
-	long yy_get_previous_state_();
-	long yy_try_NUL_trans_(long current_state_);
+    /* use long instead of yy_state_type because it is undef */
+    long yy_get_previous_state_();
+    long yy_try_NUL_trans_(long current_state_);
 
 protected:    /* non virtual */
-	YY_BUFFER_STATE YY_TransformationScanner_CURRENT_BUFFER;
-	void YY_TransformationScanner_RESTART(YY_TransformationScanner_IFILE *input_file);
-	void YY_TransformationScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer);
-	void YY_TransformationScanner_LOAD_BUFFER_STATE();
-	YY_BUFFER_STATE YY_TransformationScanner_CREATE_BUFFER(YY_TransformationScanner_IFILE *file, int size);
-	void YY_TransformationScanner_DELETE_BUFFER(YY_BUFFER_STATE b);
-	void YY_TransformationScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_TransformationScanner_IFILE *file);
+    YY_BUFFER_STATE YY_TransformationScanner_CURRENT_BUFFER;
+    void YY_TransformationScanner_RESTART(YY_TransformationScanner_IFILE *input_file);
+    void YY_TransformationScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer);
+    void YY_TransformationScanner_LOAD_BUFFER_STATE();
+    YY_BUFFER_STATE YY_TransformationScanner_CREATE_BUFFER(YY_TransformationScanner_IFILE *file, int size);
+    void YY_TransformationScanner_DELETE_BUFFER(YY_BUFFER_STATE b);
+    void YY_TransformationScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_TransformationScanner_IFILE *file);
 
 protected:    /* virtual */
-	virtual void YY_TransformationScanner_ECHO()
+    virtual void YY_TransformationScanner_ECHO()
 #ifdef YY_TransformationScanner_ECHO_PURE
-		= 0
+        = 0
 #endif
-	;
-	virtual int yy_input(char *buf, int& result, int max_size)
+    ;
+    virtual int yy_input(char *buf, int& result, int max_size)
 #ifdef YY_TransformationScanner_INPUT_PURE
-		= 0
+        = 0
 #endif
-	;
-	virtual void YY_TransformationScanner_FATAL_ERROR(char *msg)
+    ;
+    virtual void YY_TransformationScanner_FATAL_ERROR(char *msg)
 #ifdef YY_TransformationScanner_FATAL_ERROR_PURE
-		= 0
+        = 0
 #endif
-	;
-	virtual int YY_TransformationScanner_WRAP()
+    ;
+    virtual int YY_TransformationScanner_WRAP()
 #ifdef YY_TransformationScanner_WRAP_PURE
-		= 0
+        = 0
 #endif
-	;
+    ;
 
 public:
-	YY_TransformationScanner_CHAR *YY_TransformationScanner_TEXT;
-	int yyleng;
-	YY_TransformationScanner_IFILE *YY_TransformationScanner_IN;
-	YY_TransformationScanner_OFILE *YY_TransformationScanner_OUT;
-	YY_TransformationScanner_LEX_RETURN YY_TransformationScanner_LEX(YY_TransformationScanner_LEX_PARAM);
-	TransformationScanner(YY_TransformationScanner_CONSTRUCTOR_PARAM);
-	virtual ~TransformationScanner();
+    YY_TransformationScanner_CHAR *YY_TransformationScanner_TEXT;
+    int yyleng;
+    YY_TransformationScanner_IFILE *YY_TransformationScanner_IN;
+    YY_TransformationScanner_OFILE *YY_TransformationScanner_OUT;
+    YY_TransformationScanner_LEX_RETURN YY_TransformationScanner_LEX(YY_TransformationScanner_LEX_PARAM);
+    TransformationScanner(YY_TransformationScanner_CONSTRUCTOR_PARAM);
+    virtual ~TransformationScanner();
 #if YY_TransformationScanner_DEBUG != 0
-	int YY_TransformationScanner_DEBUG_FLAG;
+    int YY_TransformationScanner_DEBUG_FLAG;
 #endif
 
 public:    /* added members */
-	YY_TransformationScanner_MEMBERS
+    YY_TransformationScanner_MEMBERS
 };
 
 #endif

@@ -48,10 +48,10 @@
 
 typedef struct
 {
-	uarith_t (*hash)(const void *info, const void *data);
-	int (*isEqual)(const void *info, const void *data1, const void *data2);
-	void (*free)(const void *info, void *data);
-	int style; /* reserved for future expansion; currently 0 */
+    uarith_t (*hash)(const void *info, const void *data);
+    int (*isEqual)(const void *info, const void *data1, const void *data2);
+    void (*free)(const void *info, void *data);
+    int style; /* reserved for future expansion; currently 0 */
 } NXHashTablePrototype;
 
 /* the info argument allows a certain generality, such as freeing according to some owner information */
@@ -65,16 +65,16 @@ typedef struct
 
 typedef struct
 {
-	const NXHashTablePrototype *prototype;
-	unsigned                   count;
-	unsigned                   nbBuckets;
-	void                       *buckets;
-	const void                 *info;
+    const NXHashTablePrototype *prototype;
+    unsigned                   count;
+    unsigned                   nbBuckets;
+    void                       *buckets;
+    const void                 *info;
 } NXHashTable;
 /* private data structure; may change */
 
 OBJC_EXPORT NXHashTable *NXCreateHashTableFromZone(NXHashTablePrototype prototype, unsigned capacity, const void *info,
-												   void *z);
+                                                   void *z);
 OBJC_EXPORT NXHashTable *NXCreateHashTable(NXHashTablePrototype prototype, unsigned capacity, const void *info);
 
 /* if hash is 0, pointer hash is assumed */
@@ -153,8 +153,8 @@ OBJC_EXPORT void *NXHashRemove(NXHashTable *table, const void *data);
 
 typedef struct
 {
-	int i;
-	int j;
+    int i;
+    int j;
 } NXHashState;
 /* callers should not rely on actual contents of the struct */
 

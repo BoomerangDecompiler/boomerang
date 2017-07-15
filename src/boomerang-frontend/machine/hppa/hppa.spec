@@ -19,7 +19,7 @@
 # 07 May 01 - Mike: Split [LD|ST]Wlm into lma and lmb depending on sign of im14
 # 08 May 01 - Mike: New constructor for [LD|ST]Wlm (ldispa16m[ab]_addr
 # 08 May 01 - Cristina: Cross-referenced table letters from Appendix C, 
-#				PA-RISC 2.0 Architecture book
+#                PA-RISC 2.0 Architecture book
 # 18 Jun 01 - Mike: Added Floating Point instuctions
 # 26 Jun 01 - Mike: Changed some mnemonics from 2.0 to 1.1 form
 # 27 Jun 01 - Mike: Major rewrite of integer loads and stores, in preparation
@@ -778,7 +778,7 @@ constructors
                     & im4_11 & im1_15 & pos5_22 & clen5_27 & t_06 = t & c_c
 
   ubranch c_null ubr_target!,t_06 {
-  		 ubr_target = offset + 8,
+           ubr_target = offset + 8,
                  offset@[18:31] = w_31!,
                  offset@[13:17] = w5_11,
                  offset@[12] = w_29,

@@ -22,31 +22,31 @@
 // Kinds of SSL specification tables
 enum TABLE_TYPE
 {
-	NAMETABLE,
-	OPTABLE,
-	EXPRTABLE
+    NAMETABLE,
+    OPTABLE,
+    EXPRTABLE
 };
 
 class Table
 {
-	typedef std::deque<QString> StringQueue;
+    typedef std::deque<QString> StringQueue;
 
 public:
-	Table(const std::deque<QString>& recs, TABLE_TYPE t = NAMETABLE);
-	Table(TABLE_TYPE t);
-	virtual ~Table() {}
-	TABLE_TYPE getType() const;
+    Table(const std::deque<QString>& recs, TABLE_TYPE t = NAMETABLE);
+    Table(TABLE_TYPE t);
+    virtual ~Table() {}
+    TABLE_TYPE getType() const;
 
    StringQueue Records;
 
 private:
-	TABLE_TYPE TableType;
+    TABLE_TYPE TableType;
 };
 
 class OpTable : public Table
 {
 public:
-	OpTable(const std::deque<QString>& ops);
+    OpTable(const std::deque<QString>& ops);
 };
 
 class Exp;
@@ -55,7 +55,7 @@ using SharedExp = std::shared_ptr<Exp>;
 class ExprTable : public Table
 {
 public:
-	ExprTable(const std::deque<SharedExp>& exprs);
-	~ExprTable();
-	std::deque<SharedExp> expressions;
+    ExprTable(const std::deque<SharedExp>& exprs);
+    ~ExprTable();
+    std::deque<SharedExp> expressions;
 };

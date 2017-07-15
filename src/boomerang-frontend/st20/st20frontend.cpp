@@ -42,9 +42,9 @@
 
 
 ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *bff)
-	: IFrontEnd(pBF, prog, bff)
+    : IFrontEnd(pBF, prog, bff)
 {
-	m_decoder = new ST20Decoder(prog);
+    m_decoder = new ST20Decoder(prog);
 }
 
 
@@ -55,61 +55,61 @@ ST20FrontEnd::~ST20FrontEnd()
 
 std::vector<SharedExp>& ST20FrontEnd::getDefaultParams()
 {
-	static std::vector<SharedExp> params;
+    static std::vector<SharedExp> params;
 
-	if (params.size() == 0) {
-		params.push_back(Location::memOf(Location::regOf(3)));
-	}
+    if (params.size() == 0) {
+        params.push_back(Location::memOf(Location::regOf(3)));
+    }
 
-	return params;
+    return params;
 }
 
 
 std::vector<SharedExp>& ST20FrontEnd::getDefaultReturns()
 {
-	static std::vector<SharedExp> returns;
+    static std::vector<SharedExp> returns;
 
-	if (returns.size() == 0) {
-		returns.push_back(Location::regOf(0));
-		returns.push_back(Location::regOf(3));
-		//        returns.push_back(Terminal::get(opPC));
-	}
+    if (returns.size() == 0) {
+        returns.push_back(Location::regOf(0));
+        returns.push_back(Location::regOf(3));
+        //        returns.push_back(Terminal::get(opPC));
+    }
 
-	return returns;
+    return returns;
 }
 
 
 Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 {
-	gotMain = true;
-	   Address start = m_fileLoader->getMainEntryPoint();
+    gotMain = true;
+       Address start = m_fileLoader->getMainEntryPoint();
 
-	if (start != Address::INVALID) {
-		return start;
-	}
+    if (start != Address::INVALID) {
+        return start;
+    }
 
-	start   = m_fileLoader->getEntryPoint();
-	gotMain = false;
+    start   = m_fileLoader->getEntryPoint();
+    gotMain = false;
 
-	if (start == Address::INVALID) {
-		return Address::INVALID;
-	}
+    if (start == Address::INVALID) {
+        return Address::INVALID;
+    }
 
-	gotMain = true;
-	return start;
+    gotMain = true;
+    return start;
 }
 
 
 bool ST20FrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
-							   bool spec /* = false */)
+                               bool spec /* = false */)
 {
-	// Call the base class to do most of the work
-	if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
-		return false;
-	}
+    // Call the base class to do most of the work
+    if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+        return false;
+    }
 
-	// This will get done twice; no harm
-	pProc->setEntryBB();
+    // This will get done twice; no harm
+    pProc->setEntryBB();
 
-	return true;
+    return true;
 }

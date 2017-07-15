@@ -193,7 +193,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
         }
         | iloads(c_addr, xd, s, b,t_27)[name] => {
             RTs = instantiate(pc, name, dis_c_addr(c_addr),
-				dis_xd(xd), dis_Sreg(s),
+                dis_xd(xd), dis_Sreg(s),
                 dis_Reg(b), dis_Reg(t_27));
         }
         | istores(c_addr,r_11, xd, s, b)[name] => {
@@ -335,7 +335,7 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
 //      | MFSP(sr,t_27)[name] => {
 //      }
         else {
-		    //RTs = NULL;
+            //RTs = NULL;
             result.valid = false;
 cout << "Undecoded instruction " << hex << *(int*)hostPC << " at " << pc << " (opcode " << ((*(unsigned*)hostPC) >> 26) << ")\n";
         }

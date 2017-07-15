@@ -60,7 +60,7 @@ NOP
                 _ ;
 
 J   dst 
-			*32* %pc := dst;
+            *32* %pc := dst;
 
 JR  dst
-			*32* %pc := 'r[dst];
+            *32* %pc := 'r[dst];

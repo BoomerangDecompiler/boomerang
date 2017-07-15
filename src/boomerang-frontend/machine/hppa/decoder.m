@@ -585,11 +585,11 @@ SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
     SemStr* result = NULL;
     match hostPC to
         | c_s_addr_mb() =>
-		 { result = instantiateNamedParam( "c_s_addr_mb" ); }
+         { result = instantiateNamedParam( "c_s_addr_mb" ); }
         | c_s_addr_ma() =>
-	     { result = instantiateNamedParam( "c_s_addr_ma" ); }
+         { result = instantiateNamedParam( "c_s_addr_ma" ); }
         | c_s_addr_notm() =>
-	     { result = instantiateNamedParam( "c_s_addr_notm" ); }
+         { result = instantiateNamedParam( "c_s_addr_notm" ); }
         | c_x_addr_m() =>
          { result = instantiateNamedParam( "c_x_addr_m" ); }
         | c_x_addr_notm() =>
@@ -603,7 +603,7 @@ SemStr* NJMCDecoder::dis_c_addr(ADDRESS hostPC)
         | c_y_addr_none() =>
          { result = instantiateNamedParam( "c_y_addr_none" ); }
         | c_l_addr_none() =>
-		 { result = instantiateNamedParam( "c_l_addr_none" ); }
+         { result = instantiateNamedParam( "c_l_addr_none" ); }
     endmatch
     return result;
 }

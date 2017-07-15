@@ -5,14 +5,14 @@ class Function;
 class Pass
 {
 public:
-	Pass();
-	virtual ~Pass() {}
+    Pass();
+    virtual ~Pass() {}
 };
 
 
 class FunctionPass : public Pass
 {
 public:
-	virtual ~FunctionPass() {}
-	virtual bool runOnFunction(Function& F) = 0;
+    virtual ~FunctionPass() {}
+    virtual bool runOnFunction(Function& F) = 0;
 };

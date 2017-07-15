@@ -45,7 +45,7 @@ arith is any of [ ADD OR
 [ Eb.Gb Ev.Gv Gb.Eb Gv.Ev AL.Ib eAX.Iv ] is col = {0 to 5}
 [ PUSH.ES POP.ES    PUSH.CS esc2
   PUSH.SS POP.SS    PUSH.DS POP.DS
-  SEG.ES  DAA	    SEG.CS  DAS
+  SEG.ES  DAA        SEG.CS  DAS
   SEG.SS  AAA       SEG.DS  AAS   ] is row = {0 to 3} & page = [0 1] & col = [6 7]
 regops is any of [ INC  DEC 
                    PUSH POP ], which is row = [4 5] & page = [0 1]
@@ -67,7 +67,7 @@ NOP is XCHG & col = 0
 ] is row = 10 & page = [0 1] & col = {0 to 7} 
 MOVib is row = 11 & page = 0
 MOViv is row = 11 & page = 1
-[ B.Eb.Ib B.Ev.Ib RET.Iw  RET     LES LDS MOV.Eb.Ib MOV.Ev.Iv      	
+[ B.Eb.Ib B.Ev.Ib RET.Iw  RET     LES LDS MOV.Eb.Ib MOV.Ev.Iv          
   B.Eb.1  B.Ev.1  B.Eb.CL B.Ev.CL AAM AAD _         XLAT
 ]   is row = [12 13] & page = 0 & col = {0 to 7}
 [ ENTER LEAVE RET.far.Iw RET.far INT3 INT.Ib INTO IRET ]
@@ -98,8 +98,8 @@ is esc2; row = 10 & page = 1 & col = {0 to 7}
 is esc2; page = 1 & row = 11 & col = {2 to 7}
 BSWAP is esc2; row = 12 & page = 1
 patterns
-  arithI    is any of [ ADDi ORi ADCi SBBi ANDi SUBi XORi CMPi ], 	# group 1
-		       which is (Eb.Ib | Ev.Iv | Ev.Ib); reg_opcode = {0 to 7} ...
+  arithI    is any of [ ADDi ORi ADCi SBBi ANDi SUBi XORi CMPi ],     # group 1
+               which is (Eb.Ib | Ev.Iv | Ev.Ib); reg_opcode = {0 to 7} ...
   bshifts   is B.Eb.1  | B.Eb.CL # D0 D2
   vshifts   is B.Ev.1  | B.Ev.CL # D1 D3
   immshifts is B.Eb.Ib | B.Ev.Ib # C0 C1
@@ -108,15 +108,15 @@ patterns
                                                          reg_opcode = {0 to 7} ...
   grp3ops   is any of 
       [ TEST.Ib.Iv _ NOT NEG MUL.AL.eAX IMUL.AL.eAX DIV.AL.eAX IDIV.AL.eAX ],
-		       which is (grp3.Eb | grp3.Ev); reg_opcode = {0 to 7} ...
+               which is (grp3.Eb | grp3.Ev); reg_opcode = {0 to 7} ...
   grp4ops   is any of [ INC.Eb DEC.Eb ], 
                        which is grp4; reg_opcode = [0 1] ...
   grp5ops   is any of [ INC.Ev DEC.Ev CALL.Ev CALL.Ep JMP.Ev JMP.Ep PUSH.Ev _ ], 
-		       which is grp5; reg_opcode = {0 to 7} ...
+               which is grp5; reg_opcode = {0 to 7} ...
   grp6ops   is any of [ SLDT STR LLDT LTR VERR VERW _ _ ], 
-		       which is grp6; reg_opcode = {0 to 7} ...
+               which is grp6; reg_opcode = {0 to 7} ...
   grp7ops   is any of [ SGDT SIDT LGDT LIDT SMSW _ LMSW INVLPG ], 
-		       which is grp7; reg_opcode = {0 to 7} ...
+               which is grp7; reg_opcode = {0 to 7} ...
   bittestI  is any of [ BTi BTSi BTRi BTCi ], 
                        which is grp8; reg_opcode = {4 to 7} ...
   CMPXCHG8B is                  grp9; reg_opcode = 1 ...
@@ -269,7 +269,7 @@ CLTS
 CMC
 # CMP  is in the arith group
 CMPSB
-CMPSv^ov	    is ov; CMPSv
+CMPSv^ov        is ov; CMPSv
 rep^".CMPSB"     is rep ; CMPSB
 rep^".CMPSv"^ov  is rep; ov; CMPSv 
 CMPXCHG.Eb.Gb    Eaddr, reg is     CMPXCHG.Eb.Gb; Eaddr & reg_opcode = reg ...
@@ -311,12 +311,12 @@ FDIV^Fmem      Mem  is  Fmem; Mem & FDIV ...
 FDIV.ST.STi    idx  is  .ST.STi  & ... (FDIV8 & r_m = idx)
 FDIV.STi.ST    idx  is  .STi.ST  & ... (FDIVC & r_m = idx)
 FDIVP.STi.ST   idx  is  P.STi.ST & ... (FDIVC & r_m = idx)
-FIDIV^Fint	   Mem  is  Fint; Mem & FIDIV ...
+FIDIV^Fint       Mem  is  Fint; Mem & FIDIV ...
 FDIVR^Fmem     Mem  is  Fmem; Mem & FDIVR ...
 FDIVR.ST.STi   idx  is  .ST.STi  & ... (FDIVR8 & r_m = idx)
 FDIVR.STi.ST   idx  is  .STi.ST  & ... (FDIVRC & r_m = idx)
 FDIVRP.STi.ST  idx  is  P.STi.ST & ... (FDIVRC & r_m = idx)
-FIDIVR^Fint	   Mem  is  Fint; Mem & FIDIVR ...
+FIDIVR^Fint       Mem  is  Fint; Mem & FIDIVR ...
 FFREE          idx  is  DD; FFREE & r_m = idx
 FICOM^Fint     Mem  is  Fint; Mem & FICOM
 FICOMP^Fint    Mem  is  Fint; Mem & FICOMP
@@ -334,7 +334,7 @@ FLDCW       Mem  is  D9;   Mem & FLDCW
 FLDENV      Mem  is  D9;   Mem & FLDENV
 FMUL^Fmem   Mem  is  Fmem; Mem & FMUL ...
 FMUL^Fstack idx  is  Fstack & ... (FMUL & r_m = idx)
-FIMUL^Fint	Mem  is  Fint; Mem & FIMUL ...
+FIMUL^Fint    Mem  is  Fint; Mem & FIMUL ...
 FNOP
 FPATAN
 FPREM
@@ -359,15 +359,15 @@ FSUB^Fmem     Mem  is  Fmem; Mem & FSUB ...
 FSUB.ST.STi   idx  is  .ST.STi  & ... (FSUB8 & r_m = idx)
 FSUB.STi.ST   idx  is  .STi.ST  & ... (FSUBC & r_m = idx)
 FSUBP.STi.ST  idx  is  P.STi.ST & ... (FSUBC & r_m = idx)
-FISUB^Fint	  Mem  is  Fint; Mem & FISUB ...
+FISUB^Fint      Mem  is  Fint; Mem & FISUB ...
 FSUBR^Fmem    Mem  is  Fmem; Mem & FSUBR ...
 FSUBR.ST.STi  idx  is  .ST.STi  & ... (FSUBR8 & r_m = idx)
 FSUBR.STi.ST  idx  is  .STi.ST  & ... (FSUBRC & r_m = idx)
 FSUBRP.STi.ST idx  is  P.STi.ST & ... (FSUBRC & r_m = idx)
-FISUBR^Fint	  Mem  is  Fint; Mem & FISUBR ...
+FISUBR^Fint      Mem  is  Fint; Mem & FISUBR ...
 FTST
    constructors
-FUCOMs	  	  idx  is  DD; FUCOMs & r_m = idx
+FUCOMs            idx  is  DD; FUCOMs & r_m = idx
 FUCOMPP
 FXAM
 FXCH          idx  is  FXCH & ... r_m = idx
@@ -413,9 +413,9 @@ JMP.Ep^ov Mem      is  ov; (grp5; Mem  ) & JMP.Ep
 LAHF
 LAR^ov  reg, Eaddr  is  ov; LAR; Eaddr & reg_opcode = reg ...
 LEA^ov  reg, Mem    is  ov; LEA; Mem   & reg_opcode = reg ...
-LEAVE	
+LEAVE    
 LODSB
-LODSv^ov	    is ov; LODSv
+LODSv^ov        is ov; LODSv
 rep^.LODSB      is rep ; LODSB
 rep^.LODSv^ov   is rep; ov; LODSv 
     constructors

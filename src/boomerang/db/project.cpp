@@ -7,28 +7,28 @@
 
 Project::~Project()
 {
-	delete m_image;
+    delete m_image;
 }
 
 
 bool Project::serializeTo(QIODevice& /*dev*/)
 {
-	assert(false);
-	return false;
+    assert(false);
+    return false;
 }
 
 
 bool Project::serializeFrom(QIODevice& /*dev*/)
 {
-	return false;
+    return false;
 }
 
 
 IBinaryImage *Project::getOrCreateImage()
 {
-	if (!m_image) {
-		m_image = new BinaryImage;
-	}
+    if (!m_image) {
+        m_image = new BinaryImage;
+    }
 
-	return m_image;
+    return m_image;
 }

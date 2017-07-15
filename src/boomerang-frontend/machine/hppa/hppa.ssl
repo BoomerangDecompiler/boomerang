@@ -490,7 +490,7 @@ OPERAND
         c_x_addr_m      [ a ] *32* 1,
         c_x_addr_notm   [ a ] *32* 0,
 
-		c_y_addr_none   [ a ] *32* 0,
+        c_y_addr_none   [ a ] *32* 0,
         c_y_addr_e      [ a ] *32* 0,
         c_y_addr_m      [ a ] *32* 0,
         c_y_addr_me     [ a ] *32* 0,
@@ -509,74 +509,74 @@ LDO             d, b, t
 
 LDW_ := LDW{ "X", "S", "M", "AX", "AS", "" };
 LDW_[x]         c_addr, c_xd, s, b, t
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
                 *32* r[t] := m[r[tmp1]]{32};
 
 LDB_ := LDB{"X", "S", ""};
 LDB_[x]         c_addr, c_xd, s, b, t
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
                 *8*  r[t] := zfill(8,  32, m[r[tmp1]]);
 
 LDH_ := LDH{"X", "S", ""};
 LDH_[x]         c_addr, c_xd, s, b, t
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
                 *16* r[t] := zfill(16, 32, m[r[tmp1]]);
 
 STW_ := STW{"AS", "M", "S", ""};
 STW_[x]         c_addr, r1, c_xd, s, b
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
                 *32* m[r[tmp1]] := r[r1]
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
 
 STB_ := STB{"S", ""};
 STB_[x]         c_addr, r1, c_xd, s, b
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
                 *8*  m[r[tmp1]] := truncs(32, 8, r[r1])
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
 
 STH_ := STH{"S", ""};
 STH_[x]         c_addr, r1, c_xd, s, b
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
                 *16* m[r[tmp1]] := truncs(32, 16, r[r1])
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
 
 # Floating point loads and stores
 FLDW_ := FLDW{"X", "S"};
 FLDW_[x]        c_addr, c_xd, s, b, ft
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
                 *32* r[ft] := m[r[tmp1]]{32};
 
 FLDD_ := FLDD{"X", "S"};
 FLDD_[x]        c_addr, c_xd, s, b, fdt
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0)
                 *64* r[fdt] := m[r[tmp1]]{64};
 
 FSTW_ := FSTW{"X", "S"};
 FSTW_[x]        c_addr, fr1, c_xd, s, b
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
                 *32* m[r[tmp1]] := r[fr1]
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
 
 FSTD_ := FSTD{"X", "S"};
 FSTD_[x]        c_addr, fr1, c_xd, s, b
-				*32* r[tmp1] := r[b]
-				*32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
+                *32* r[tmp1] := r[b]
+                *32* (c_addr(0) < 1) => r[tmp1] := r[tmp1] + c_xd(0)
                 *64* m[r[tmp1]] := r[fr1]
-				*32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
+                *32* (c_addr(0) ~= 0) => r[b] := r[b] + c_xd(0);
 
 
 OPERAND

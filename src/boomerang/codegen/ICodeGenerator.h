@@ -44,82 +44,82 @@ class ReturnStatement;
 class ICodeGenerator
 {
 public:
-	ICodeGenerator(UserProc *p)
-		: m_proc(p) {}
+    ICodeGenerator(UserProc *p)
+        : m_proc(p) {}
 
-	// destructor
-	virtual ~ICodeGenerator() {}
+    // destructor
+    virtual ~ICodeGenerator() {}
 
-	/// clear the code generator object (derived classes should call the base)
-	virtual void reset() {}
+    /// clear the code generator object (derived classes should call the base)
+    virtual void reset() {}
 
-	// access to proc
-	UserProc *getProc() const { return m_proc; }
+    // access to proc
+    UserProc *getProc() const { return m_proc; }
 
-	/*
-	 * Functions to add new code, pure virtual.
-	 */
+    /*
+     * Functions to add new code, pure virtual.
+     */
 
-	// pretested loops
-	virtual void addPretestedLoopHeader(int indLevel, const SharedExp& cond) = 0;
-	virtual void addPretestedLoopEnd(int indLevel) = 0;
+    // pretested loops
+    virtual void addPretestedLoopHeader(int indLevel, const SharedExp& cond) = 0;
+    virtual void addPretestedLoopEnd(int indLevel) = 0;
 
-	// endless loops
-	virtual void addEndlessLoopHeader(int indLevel) = 0;
-	virtual void addEndlessLoopEnd(int indLevel)    = 0;
+    // endless loops
+    virtual void addEndlessLoopHeader(int indLevel) = 0;
+    virtual void addEndlessLoopEnd(int indLevel)    = 0;
 
-	// post-tested loops
-	virtual void addPostTestedLoopHeader(int indLevel) = 0;
-	virtual void addPostTestedLoopEnd(int indLevel, const SharedExp& cond) = 0;
+    // post-tested loops
+    virtual void addPostTestedLoopHeader(int indLevel) = 0;
+    virtual void addPostTestedLoopEnd(int indLevel, const SharedExp& cond) = 0;
 
-	// case conditionals "nways"
-	virtual void addCaseCondHeader(int indLevel, const SharedExp& cond) = 0;
-	virtual void addCaseCondOption(int indLevel, Exp& opt) = 0;
-	virtual void addCaseCondOptionEnd(int indLevel)        = 0;
-	virtual void addCaseCondElse(int indLevel)             = 0;
-	virtual void addCaseCondEnd(int indLevel) = 0;
+    // case conditionals "nways"
+    virtual void addCaseCondHeader(int indLevel, const SharedExp& cond) = 0;
+    virtual void addCaseCondOption(int indLevel, Exp& opt) = 0;
+    virtual void addCaseCondOptionEnd(int indLevel)        = 0;
+    virtual void addCaseCondElse(int indLevel)             = 0;
+    virtual void addCaseCondEnd(int indLevel) = 0;
 
-	// if conditions
-	virtual void addIfCondHeader(int indLevel, const SharedExp& cond) = 0;
-	virtual void addIfCondEnd(int indLevel) = 0;
+    // if conditions
+    virtual void addIfCondHeader(int indLevel, const SharedExp& cond) = 0;
+    virtual void addIfCondEnd(int indLevel) = 0;
 
-	// if else conditions
-	virtual void addIfElseCondHeader(int indLevel, const SharedExp& cond) = 0;
-	virtual void addIfElseCondOption(int indLevel) = 0;
-	virtual void addIfElseCondEnd(int indLevel)    = 0;
+    // if else conditions
+    virtual void addIfElseCondHeader(int indLevel, const SharedExp& cond) = 0;
+    virtual void addIfElseCondOption(int indLevel) = 0;
+    virtual void addIfElseCondEnd(int indLevel)    = 0;
 
-	// goto, break, continue, etc
-	virtual void addGoto(int indLevel, int ord) = 0;
-	virtual void addBreak(int indLevel)         = 0;
-	virtual void addContinue(int indLevel)      = 0;
+    // goto, break, continue, etc
+    virtual void addGoto(int indLevel, int ord) = 0;
+    virtual void addBreak(int indLevel)         = 0;
+    virtual void addContinue(int indLevel)      = 0;
 
-	// labels
-	virtual void addLabel(int indLevel, int ord) = 0;
-	virtual void removeLabel(int ord)            = 0;
-	virtual void removeUnusedLabels(int maxOrd)  = 0;
+    // labels
+    virtual void addLabel(int indLevel, int ord) = 0;
+    virtual void removeLabel(int ord)            = 0;
+    virtual void removeUnusedLabels(int maxOrd)  = 0;
 
-	// sequential statements
-	virtual void addAssignmentStatement(int indLevel, Assign *s) = 0;
-	virtual void addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
-								  StatementList *results) = 0;
-	virtual void addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results) = 0;
-	virtual void addReturnStatement(int indLevel, StatementList *rets) = 0;
+    // sequential statements
+    virtual void addAssignmentStatement(int indLevel, Assign *s) = 0;
+    virtual void addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
+                                  StatementList *results) = 0;
+    virtual void addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results) = 0;
+    virtual void addReturnStatement(int indLevel, StatementList *rets) = 0;
 
-	// procedure related
-	virtual void addProcStart(UserProc *proc) = 0;
-	virtual void addProcEnd() = 0;
-	virtual void addLocal(const QString& name, SharedType type, bool last = false) = 0;
-	virtual void addGlobal(const QString& name, SharedType type, const SharedExp& init = nullptr) = 0;
-	virtual void addPrototype(UserProc *proc) = 0;
+    // procedure related
+    virtual void addProcStart(UserProc *proc) = 0;
+    virtual void addProcEnd() = 0;
+    virtual void addLocal(const QString& name, SharedType type, bool last = false) = 0;
+    virtual void addGlobal(const QString& name, SharedType type, const SharedExp& init = nullptr) = 0;
+    virtual void addPrototype(UserProc *proc) = 0;
 
-	// comments
-	virtual void addLineComment(const QString& cmt) = 0;
+    // comments
+    virtual void addLineComment(const QString& cmt) = 0;
 
-	/*
-	 * output functions, pure virtual.
-	 */
-	virtual void print(QTextStream& os) = 0;
+    /*
+     * output functions, pure virtual.
+     */
+    virtual void print(QTextStream& os) = 0;
 
 protected:
-	UserProc *m_proc; ///< Pointer to the enclosing UserProc
+    UserProc *m_proc; ///< Pointer to the enclosing UserProc
 };

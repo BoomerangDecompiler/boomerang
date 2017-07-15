@@ -15,6 +15,6 @@
 class RDIExpTransformer : public ExpTransformer
 {
 public:
-	RDIExpTransformer() {}
-	virtual SharedExp applyTo(SharedExp e, bool& bMod) override;
+    RDIExpTransformer() {}
+    virtual SharedExp applyTo(SharedExp e, bool& bMod) override;
 };

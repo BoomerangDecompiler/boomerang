@@ -25,24 +25,24 @@ class IBinaryImage;
 
 class Project : public QObject, public IProject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private:
-	QByteArray m_fileBytes;
-	IBinaryImage *m_image = nullptr; ///< raw memory interface
-	Prog *m_program;                 ///< program interface
-	ITypeRecovery *m_typeRecoveryEngine;
+    QByteArray m_fileBytes;
+    IBinaryImage *m_image = nullptr; ///< raw memory interface
+    Prog *m_program;                 ///< program interface
+    ITypeRecovery *m_typeRecoveryEngine;
 
 public:
-	virtual ~Project();
+    virtual ~Project();
 
-	bool serializeTo(QIODevice& dev);
-	bool serializeFrom(QIODevice& dev);
+    bool serializeTo(QIODevice& dev);
+    bool serializeFrom(QIODevice& dev);
 
-	QByteArray& getFiledata()       override { return m_fileBytes; }
-	const QByteArray& getFiledata() const override { return m_fileBytes; }
+    QByteArray& getFiledata()       override { return m_fileBytes; }
+    const QByteArray& getFiledata() const override { return m_fileBytes; }
 
-	IBinaryImage *getOrCreateImage() override;
+    IBinaryImage *getOrCreateImage() override;
 
-	const ITypeRecovery *getTypeEngine() const override { return m_typeRecoveryEngine; }
+    const ITypeRecovery *getTypeEngine() const override { return m_typeRecoveryEngine; }
 };

@@ -17,7 +17,7 @@
 # 15/02/2000 - Cristina: made it mc68328 specific based on mc68k.pat names
 # 15 Mar 00 - Cristina: fixed GLOBAL ABSTRACTION section
 #             The GLOBALSIZE is not yet defined (I've set it to 100): 
-#	          %a5 -> %agp - GLOBALSIZE
+#              %a5 -> %agp - GLOBALSIZE
 # 14 Apr 00 - Mike: Return locations for INTEGER and FLOAT have .size now
 # 22 Feb 01 - Mike: Finally there is a GLOBALOFFSET (was called GLOBALSIZE)
 # 01 Aug 01 - Mike: Updated GLOBAL ABSTRACTION to new format
@@ -25,7 +25,7 @@
 FRAME ABSTRACTION
     INIT = %a7
 
-	std_link
+    std_link
     link_save
     link_save1
     {
@@ -42,8 +42,8 @@ GLOBAL ABSTRACTION
      %a5 -> %agp + GLOBALOFFSET
 
 LOCALS
-	std_link
-	link_save
+    std_link
+    link_save
     link_save1
     push_lea
     {
@@ -55,27 +55,27 @@ PARAMETERS
 
     CALLER
     {
-        STACK -> BASE = [%afp - 2]		# pushed on the stack
-                 OFFSET = -2			# word (16-bit) aligned
+        STACK -> BASE = [%afp - 2]        # pushed on the stack
+                 OFFSET = -2            # word (16-bit) aligned
     }
 
-	std_link
-	link_save
+    std_link
+    link_save
     link_save1
     push_lea
     {
         STACK -> BASE = [%afp - locals + 8] # parent's frame
-                 OFFSET = 2					# word-aligned
+                 OFFSET = 2                    # word-aligned
     }
 # bare_ret has no parameters
 
 RETURNS
 
-	std_ret
-	rest_ret
-	rest1_ret
+    std_ret
+    rest_ret
+    rest1_ret
     pop_ret
-    CALLER	
+    CALLER    
     {
         INTEGER.32  IN %d0
         INTEGER.16  IN %d0

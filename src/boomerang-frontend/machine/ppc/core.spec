@@ -34,7 +34,7 @@ fields of instruction (32)
  LK    0:0
  BD    2:15
  BO   21:25
- BO4  22:25		# Upper 4 bits of BO
+ BO4  22:25        # Upper 4 bits of BO
  Bo   21:25
  S    21:25
  fS   21:25
@@ -498,7 +498,7 @@ constructors
 
 ## XL-Form
 
-#   XLb_^LK  BO, BI			# bcctr, bclr: prefer bltctr to bcctr 12, 0
+#   XLb_^LK  BO, BI            # bcctr, bclr: prefer bltctr to bcctr 12, 0
    XLc_  crbD, crbA, crbB
    mcrf  crfD, crfS
    isync ()
@@ -621,7 +621,7 @@ constructors
 
 ## branches
 
-fieldinfo BIcc is [ sparse [ lt = 0, gt = 1, eq = 2, so = 3, un = 3 ] ]		# un = unordered?
+fieldinfo BIcc is [ sparse [ lt = 0, gt = 1, eq = 2, so = 3, un = 3 ] ]        # un = unordered?
 
 # BO[4] ( 1) branch prediction
 # BO[3] ( 2) zero/nz
@@ -659,19 +659,19 @@ patterns
 ifcctrue  is BO4 = 6
 ifccfalse is BO4 = 2
 
- blt is ifcctrue  & BIcc = 0		# t, lt
- ble is ifccfalse & BIcc = 1		# f, gt
- beq is ifcctrue  & BIcc = 2		# t, eq
- bge is ifccfalse & BIcc = 0		# f, lt
- bgt is ifcctrue  & BIcc = 1		# t, gt
- bnl is ifccfalse & BIcc = 0		# f, lt
- bne is ifccfalse & BIcc = 2		# f, eq
- bng is ifccfalse & BIcc = 1		# f, gt
- bso is ifcctrue  & BIcc = 3		# t, so
- bns is ifccfalse & BIcc = 3		# f, so
- bun is ifcctrue  & BIcc = 3		# t, un		Note: branch if UNordered (not unconditional)
- bnu is ifcctrue  & BIcc = 3		# f, un		Note: branch if not unordered
- bal is BO = 20     				# always, any (no branch prediction bit here)
+ blt is ifcctrue  & BIcc = 0        # t, lt
+ ble is ifccfalse & BIcc = 1        # f, gt
+ beq is ifcctrue  & BIcc = 2        # t, eq
+ bge is ifccfalse & BIcc = 0        # f, lt
+ bgt is ifcctrue  & BIcc = 1        # t, gt
+ bnl is ifccfalse & BIcc = 0        # f, lt
+ bne is ifccfalse & BIcc = 2        # f, eq
+ bng is ifccfalse & BIcc = 1        # f, gt
+ bso is ifcctrue  & BIcc = 3        # t, so
+ bns is ifccfalse & BIcc = 3        # f, so
+ bun is ifcctrue  & BIcc = 3        # t, un        Note: branch if UNordered (not unconditional)
+ bnu is ifcctrue  & BIcc = 3        # f, un        Note: branch if not unordered
+ bal is BO = 20                     # always, any (no branch prediction bit here)
 
 bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
 
@@ -683,7 +683,7 @@ constructors
 #
 # "b"^Bo^LK^AA   BIcr    is bc & AA & LK & BIcr & Bo
 
-#  "b"^BO^"lr"^LK BIcr    is bclr    & LK & BIcr & BO		# See bcc_^"lr"... below
+#  "b"^BO^"lr"^LK BIcr    is bclr    & LK & BIcr & BO        # See bcc_^"lr"... below
 
 # Table F-8
 

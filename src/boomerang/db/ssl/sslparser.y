@@ -11,9 +11,9 @@
  */
 
 /*==============================================================================
- * FILE:	   sslparser.y
+ * FILE:       sslparser.y
  * OVERVIEW:   Defines a parser class that reads an SSL specification and
- *			   returns the list of SSL instruction and table definitions.
+ *               returns the list of SSL instruction and table definitions.
  *============================================================================*/
 
 /* $Revision$
@@ -25,17 +25,17 @@
  * 08 May 02 - Mike: ParamMap -> ParamSet
  * 15 May 02 - Mike: Fixed strToOper: *f was coming out as /f, << as =
  * 16 Jul 02 - Mike: Fixed code in expandTables processing opOpTables: was
- *				doing replacements on results of searchAll
+ *                doing replacements on results of searchAll
  * 09 Dec 02 - Mike: Added succ() syntax (for SPARC LDD and STD)
  * 29 Sep 03 - Mike: Parse %DF correctly
  * 22 Jun 04 - Mike: TEMP can be a location now (location was var_op)
  * 31 Oct 04 - Mike: srchExpr and srchOp are statics now; saves creating and deleting these expressions for every
- *				opcode. Seems to prevent a lot of memory churn, and may prevent (for now) the mystery
- *				test/sparc/switch_gcc problem (which goes away when you try to gdb it)
+ *                opcode. Seems to prevent a lot of memory churn, and may prevent (for now) the mystery
+ *                test/sparc/switch_gcc problem (which goes away when you try to gdb it)
  * 30 Aug 04 - Mike: added init_sslparser() for garbage collection safety
  */
 
-%name SSLParser		// the parser class name will be SSLParser
+%name SSLParser        // the parser class name will be SSLParser
 
 // stuff to go in sslparser.h
 %header{
@@ -55,7 +55,7 @@
 #include "db/rtl.h"
 #include "table.h"
 #include "insnameelem.h"
-#include "util/Util.h"			// E.g. str()
+#include "util/Util.h"            // E.g. str()
 
 
 #ifdef _WIN32
@@ -71,34 +71,34 @@ class SSLScanner;
 //* to know about this type).
 //*============================================================================
 %union {
-        Exp*			exp;
-        char*			str;
-        int				num;
-        double			dbl;
-        Statement*		regtransfer;
-        Type*			typ;
+        Exp*            exp;
+        char*            str;
+        int                num;
+        double            dbl;
+        Statement*        regtransfer;
+        Type*            typ;
 
-        Table*			tab;
-        InsNameElem*	insel;
-        std::list<std::string>*	  parmlist;
-        std::list<std::string>*	  strlist;
-        std::deque<Exp*>*	 exprlist;
+        Table*            tab;
+        InsNameElem*    insel;
+        std::list<std::string>*      parmlist;
+        std::list<std::string>*      strlist;
+        std::deque<Exp*>*     exprlist;
         std::deque<std::string>*  namelist;
-        std::list<Exp*>*	 explist;
-        RTL*			rtlist;
+        std::list<Exp*>*     explist;
+        RTL*            rtlist;
 }
 
 // Other stuff to go in sslparser.cc
 %{
 #include "sslscanner.h"
-OPER strToTerm(char* s);		// Convert string to a Terminal (if possible)
-Exp* listExpToExp(std::list<Exp*>* le);	 // Convert a STL list of Exp* to opList
+OPER strToTerm(char* s);        // Convert string to a Terminal (if possible)
+Exp* listExpToExp(std::list<Exp*>* le);     // Convert a STL list of Exp* to opList
 Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings to opList
 %}
 
 %define DEBUG 1
 
-// %define INHERIT : public gc	// This is how to force the parser class to be declared as derived from class gc
+// %define INHERIT : public gc    // This is how to force the parser class to be declared as derived from class gc
 
 %define PARSE_PARAM \
         RTLInstDict& Dict
@@ -124,11 +124,11 @@ Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings t
 public: \
                 SSLParser(std::istream &in, bool trace); \
                 virtual ~SSLParser(); \
-OPER	strToOper(const char*s); /* Convert string to an operator */ \
-static	Statement* parseExp(const char *str); /* Parse an expression or assignment from a string */ \
+OPER    strToOper(const char*s); /* Convert string to an operator */ \
+static    Statement* parseExp(const char *str); /* Parse an expression or assignment from a string */ \
 /* The code for expanding tables and saving to the dictionary */ \
-void	expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict); \
-Exp*	makeSuccessor(Exp* e);	/* Get successor (of register expression) */ \
+void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict); \
+Exp*    makeSuccessor(Exp* e);    /* Get successor (of register expression) */ \
 \
         /* \
          * The scanner. \
@@ -179,14 +179,14 @@ protected: \
 %token <str> BIG LITTLE
 %token <str> NAME_CALL NAME_LOOKUP
 
-%token		 ENDIANNESS COVERS INDEX
-%token		 SHARES NOT LNOT FNEG THEN LOOKUP_RDC BOGUS
-%token		 ASSIGN TO COLON S_E AT ADDR REG_IDX EQUATE
-%token		 MEM_IDX TOK_INTEGER TOK_FLOAT FAST OPERAND
-%token		 FETCHEXEC CAST_OP FLAGMACRO SUCCESSOR
+%token         ENDIANNESS COVERS INDEX
+%token         SHARES NOT LNOT FNEG THEN LOOKUP_RDC BOGUS
+%token         ASSIGN TO COLON S_E AT ADDR REG_IDX EQUATE
+%token         MEM_IDX TOK_INTEGER TOK_FLOAT FAST OPERAND
+%token         FETCHEXEC CAST_OP FLAGMACRO SUCCESSOR
 
 %token <num> NUM
-%token <dbl> FLOATNUM		// I'd prefer type double here!
+%token <dbl> FLOATNUM        // I'd prefer type double here!
 
 %token
 
@@ -198,7 +198,7 @@ protected: \
 %right NOT LNOT FCHS
 %left CAST_OP
 %left LOOKUP_RDC
-%left S_E				// Sign extend. Note it effectively has low precedence, because being a post operator,
+%left S_E                // Sign extend. Note it effectively has low precedence, because being a post operator,
                                                 // the whole expression is already parsed, and hence is sign extended.
                                                 // Another reason why ! is deprecated!
 %nonassoc AT
@@ -225,58 +225,58 @@ specorasgn:
                 assign_rt {
                         the_asgn = $1;
                 }
-        |	exp {
+        |    exp {
                         the_asgn = new Assign(
                                 new Terminal(opNil),
                                 $1);
                 }
-        |	specification
+        |    specification
         ;
 
 specification:
                 specification parts ';'
-        |	parts ';'
+        |    parts ';'
         ;
 
 parts:
                 instr
 
-        |	FETCHEXEC rt_list {
+        |    FETCHEXEC rt_list {
                         Dict.fetchExecCycle = $2;
                 }
 
                 // Name := value
-        |	constants
+        |    constants
 
-        |	table_assign
+        |    table_assign
 
                 // Optional one-line section declaring endianness
-        |	endianness
+        |    endianness
 
                 // Optional section describing faster versions of instructions (e.g. that don't inplement the full
                 // specifications, but if they work, will be much faster)
-        |	fastlist
+        |    fastlist
 
                 // Definitions of registers (with overlaps, etc)
-        |	reglist
+        |    reglist
 
                 // Declaration of "flag functions". These describe the detailed flag setting semantics for insructions
-        |	flag_fnc
+        |    flag_fnc
 
                 // Addressing modes (or instruction operands) (optional)
-        |	OPERAND operandlist { Dict.fixupParams(); }
+        |    OPERAND operandlist { Dict.fixupParams(); }
 
         ;
 
 operandlist:
                 operandlist ',' operand
-        |	operand
+        |    operand
         ;
 
 operand:
                 // In the .tex documentation, this is the first, or variant kind
                 // Example: reg_or_imm := { imode, rmode };
-                //$1	$2	 $3		  $4		$5
+                //$1    $2     $3          $4        $5
                 param EQUATE '{' list_parameter '}' {
                         // Note: the below copies the list of strings!
                         Dict.DetParamMap[$1].params = *$4;
@@ -289,9 +289,9 @@ operand:
                 // In terms of DetParamMap[].kind, they are PARAM_EXP unless there
                 // actually are parameters in square brackets, in which case it is
                 // PARAM_LAMBDA
-                // Example: indexA	rs1, rs2 *i32* r[rs1] + r[rs2]
-                //$1	   $2			  $3		   $4	   $5
-        |	param list_parameter func_parameter assigntype exp {
+                // Example: indexA    rs1, rs2 *i32* r[rs1] + r[rs2]
+                //$1       $2              $3           $4       $5
+        |    param list_parameter func_parameter assigntype exp {
                         std::map<std::string, InsNameElem*> m;
                         ParamEntry &param = Dict.DetParamMap[$1];
                         Statement* asgn = new Assign($4, new Terminal(opNil), $5);
@@ -309,20 +309,20 @@ operand:
         ;
 
 func_parameter: '[' list_parameter ']' { $$ = $2; }
-                |	{ $$ = new std::list<std::string>(); }
+                |    { $$ = new std::list<std::string>(); }
                 ;
 
 reglist:
                                 TOK_INTEGER {
                                         bFloat = false;
                                 } a_reglists
-                        |	TOK_FLOAT {
+                        |    TOK_FLOAT {
                                         bFloat = true;
                                 } a_reglists
                         ;
 
-a_reglists:		a_reglists ',' a_reglist
-                        |	a_reglist
+a_reglists:        a_reglists ',' a_reglist
+                        |    a_reglist
                         ;
 
 a_reglist:
@@ -331,12 +331,12 @@ a_reglist:
                                         yyerror("Name reglist decared twice\n");
                                 Dict.RegMap[$1] = $3;
                         }
-                |	REG_ID '[' NUM ']' INDEX NUM {
+                |    REG_ID '[' NUM ']' INDEX NUM {
                                 if (Dict.RegMap.find($1) != Dict.RegMap.end())
                                         yyerror("Name reglist declared twice\n");
                                 Dict.addRegister( $1, $6, $3, bFloat);
                         }
-                |	REG_ID '[' NUM ']' INDEX NUM COVERS REG_ID TO REG_ID {
+                |    REG_ID '[' NUM ']' INDEX NUM COVERS REG_ID TO REG_ID {
                                 if (Dict.RegMap.find($1) != Dict.RegMap.end())
                                         yyerror("Name reglist declared twice\n");
                                 Dict.RegMap[$1] = $6;
@@ -370,7 +370,7 @@ a_reglist:
                                 Dict.DetRegMap[$6].setMappedOffset(0);
                                 Dict.DetRegMap[$6].setFloat(bFloat);
                         }
-                |	REG_ID '[' NUM ']' INDEX NUM SHARES REG_ID AT '[' NUM TO NUM ']' {
+                |    REG_ID '[' NUM ']' INDEX NUM SHARES REG_ID AT '[' NUM TO NUM ']' {
                                 if (Dict.RegMap.find($1) != Dict.RegMap.end())
                                         yyerror("Name reglist declared twice\n");
                                 Dict.RegMap[$1] = $6;
@@ -392,7 +392,7 @@ a_reglist:
                                 Dict.DetRegMap[$6].setMappedOffset($11);
                                 Dict.DetRegMap[$6].setFloat(bFloat);
                         }
-                |	'[' reg_table ']' '[' NUM ']' INDEX NUM TO NUM {
+                |    '[' reg_table ']' '[' NUM ']' INDEX NUM TO NUM {
                                 if ((int)$2->size() != ($10 - $8 + 1)) {
                                         std::cerr << "size of register array does not match mapping to r[" << $8 << ".." << $10 << "]\n";
                                         exit(1);
@@ -406,7 +406,7 @@ a_reglist:
                                         //delete $2;
                                 }
                         }
-                |	'[' reg_table ']' '[' NUM ']' INDEX NUM {
+                |    '[' reg_table ']' '[' NUM ']' INDEX NUM {
                                 std::list<std::string>::iterator loc = $2->begin();
                                 for (; loc != $2->end(); loc++) {
                                         if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
@@ -421,7 +421,7 @@ reg_table:
                         reg_table ',' REG_ID {
                                 $1->push_back($3);
                         }
-                |	REG_ID {
+                |    REG_ID {
                                 $$ = new std::list<std::string>;
                                 $$->push_back($1);
                         }
@@ -429,7 +429,7 @@ reg_table:
 
 // Flag definitions
 flag_fnc:
-                        // $1		   $2		 $3	 $4	   $5	 $6
+                        // $1           $2         $3     $4       $5     $6
                         NAME_CALL list_parameter ')' '{' rt_list '}' {
                                 // Note: $2 is a list of strings
                                 Dict.FlagFuncs[$1] = new FlagDef(listStrToExp($2), $5);
@@ -443,7 +443,7 @@ constants:
                                 ConstTable[std::string($1)] = $3;
                         }
 
-                |	NAME EQUATE NUM ARITH_OP NUM {
+                |    NAME EQUATE NUM ARITH_OP NUM {
                                 if (ConstTable.find($1) != ConstTable.end())
                                         yyerror("Constant declared twice");
                                 else if ($4 == std::string("-"))
@@ -467,12 +467,12 @@ table_expr:
                         $$ = new Table(*$1);
                         //delete $1;
                 }
-                // Example: OP2 := { "<<",	">>",  ">>A" };
-        |	opstr_expr {
+                // Example: OP2 := { "<<",    ">>",  ">>A" };
+        |    opstr_expr {
                         $$ = new OpTable(*$1);
                         //delete $1;
                 }
-        |	exprstr_expr {
+        |    exprstr_expr {
                         $$ = new ExprTable(*$1);
                         //delete $1;
                 }
@@ -489,7 +489,7 @@ str_expr:
                         //delete $1;
                         //delete $2;
                 }
-        |	str_term {
+        |    str_term {
                         $$ = $1;
                 }
         ;
@@ -502,10 +502,10 @@ str_array:
                         //delete $3;
                         $$ = $1;
                 }
-        |	str_array ',' '"' '"' {
+        |    str_array ',' '"' '"' {
                         $1->push_back("");
                 }
-        |	str_expr {
+        |    str_expr {
                         $$ = $1;
                 }
         ;
@@ -514,7 +514,7 @@ str_term:
                 '{' str_array '}' {
                         $$ = $2;
                 }
-        |	name_expand {
+        |    name_expand {
                         $$ = $1;
                 }
         ;
@@ -525,10 +525,10 @@ name_expand:
                         $$->push_back("");
                         $$->push_back($2);
                 }
-        |	'"' NAME '"' {
+        |    '"' NAME '"' {
                         $$ = new std::deque<std::string>(1, $2);
                 }
-        |	'$' NAME {
+        |    '$' NAME {
                         std::ostringstream o;
                         // expand $2 from table of names
                         if (TableDict.find($2) != TableDict.end())
@@ -543,7 +543,7 @@ name_expand:
                                 yyerror(STR(o));
                         }
                 }
-        |	NAME {
+        |    NAME {
                         // try and expand $1 from table of names. if fail, expand using '"' NAME '"' rule
                         if (TableDict.find($1) != TableDict.end())
                                 if (TableDict[$1]->getType() == NAMETABLE)
@@ -565,16 +565,16 @@ bin_oper:
                         $$ = $1;
                 }
 
-        |	ARITH_OP {
+        |    ARITH_OP {
                         $$ = $1;
                 }
 
-        |	FARITH_OP {
+        |    FARITH_OP {
                         $$ = $1;
                 }
         ;
 
-                // Example: OP2 := { "<<",	">>",  ">>A" };
+                // Example: OP2 := { "<<",    ">>",  ">>A" };
 opstr_expr:
                 '{' opstr_array '}' {
                         $$ = $2;
@@ -582,12 +582,12 @@ opstr_expr:
         ;
 
 opstr_array:
-                //	$1		$2	$3	  $4	 $5
+                //    $1        $2    $3      $4     $5
                 opstr_array ',' '"' bin_oper '"' {
                         $$ = $1;
                         $$->push_back($4);
                 }
-        |	'"' bin_oper '"' {
+        |    '"' bin_oper '"' {
                         $$ = new std::deque<std::string>;
                         $$->push_back($2);
                 }
@@ -601,22 +601,22 @@ exprstr_expr:
         ;
 
 exprstr_array:
-                // $1		  $2  $3  $4  $5
+                // $1          $2  $3  $4  $5
                 exprstr_array ',' '"' exp '"' {
                         $$ = $1;
                         $$->push_back($4);
                 }
-        |	'"' exp '"' {
+        |    '"' exp '"' {
                         $$ = new std::deque<Exp*>;
                         $$->push_back($2);
                 }
         ;
 
 instr:
-                //	$1
+                //    $1
                 instr_name {
                         $1->getrefmap(indexrefmap);
-                //	   $3			$4
+                //       $3            $4
                 } list_parameter rt_list {
                         // This function expands the tables and saves the expanded RTLs to the dictionary
                         expandTables($1, $3, $4, Dict);
@@ -627,7 +627,7 @@ instr_name:
                 instr_elem {
                         $$ = $1;
                 }
-        |	instr_name DECOR {
+        |    instr_name DECOR {
                         std::string::size_type i;
                         InsNameElem *temp;
                         std::string nm = $2;
@@ -654,10 +654,10 @@ instr_elem:
                 NAME {
                         $$ = new InsNameElem($1);
                 }
-        |	name_contract {
+        |    name_contract {
                         $$ = $1;
                 }
-        |	instr_elem name_contract {
+        |    instr_elem name_contract {
                         $$ = $1;
                         $$->append($2);
                 }
@@ -667,7 +667,7 @@ name_contract:
                 '\'' NAME '\'' {
                         $$ = new InsOptionElem($2);
                 }
-        |	NAME_LOOKUP NUM ']' {
+        |    NAME_LOOKUP NUM ']' {
                         std::ostringstream o;
                         if (TableDict.find($1) == TableDict.end()) {
                                 o << "Table " << $1 << " has not been declared.\n";
@@ -679,8 +679,8 @@ name_contract:
                                 $$ = new InsNameElem(TableDict[$1]->Records[$2].c_str());
                 }
 
-                // Example: ARITH[IDX]	where ARITH := { "ADD", "SUB", ...};
-        |	NAME_LOOKUP NAME ']' {
+                // Example: ARITH[IDX]    where ARITH := { "ADD", "SUB", ...};
+        |    NAME_LOOKUP NAME ']' {
                         std::ostringstream o;
                         if (TableDict.find($1) == TableDict.end()) {
                                 o << "Table " << $1 << " has not been declared.\n";
@@ -689,7 +689,7 @@ name_contract:
                                 $$ = new InsListElem($1, TableDict[$1], $2);
                 }
 
-        |	'$' NAME_LOOKUP NUM ']' {
+        |    '$' NAME_LOOKUP NUM ']' {
                         std::ostringstream o;
                         if (TableDict.find($2) == TableDict.end()) {
                                 o << "Table " << $2 << " has not been declared.\n";
@@ -700,7 +700,7 @@ name_contract:
                         } else
                                 $$ = new InsNameElem(TableDict[$2]->Records[$3].c_str());
                 }
-        |	'$' NAME_LOOKUP NAME ']' {
+        |    '$' NAME_LOOKUP NAME ']' {
                         std::ostringstream o;
                         if (TableDict.find($2) == TableDict.end()) {
                                 o << "Table " << $2 << " has not been declared.\n";
@@ -709,7 +709,7 @@ name_contract:
                                 $$ = new InsListElem($2, TableDict[$2], $3);
                 }
 
-        |	'"' NAME '"' {
+        |    '"' NAME '"' {
                         $$ = new InsNameElem($2);
                 }
         ;
@@ -724,7 +724,7 @@ rt_list:
                         $$ = $1;
                 }
 
-        |	rt {
+        |    rt {
                         $$ = std::make_shared<RTL>(ADDRESS::g(0L)); // WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
                         if ($1 != NULL)
                                 $$->appendStmt($1);
@@ -737,8 +737,8 @@ rt:
                 }
 
                 // Example: ADDFLAGS(r[tmp], reg_or_imm, r[rd])
-                // $1			  $2		   $3
-        |	NAME_CALL list_actualparameter ')' {
+                // $1              $2           $3
+        |    NAME_CALL list_actualparameter ')' {
                         std::ostringstream o;
                         if (Dict.FlagFuncs.find($1) != Dict.FlagFuncs.end()) {
                                 // Note: SETFFLAGS assigns to the floating point flags. All others to the integer flags
@@ -754,11 +754,11 @@ rt:
                                 yyerror(STR(o));
                         }
                 }
-        |	FLAGMACRO flag_list ')' {
+        |    FLAGMACRO flag_list ')' {
                         $$ = 0;
                 }
                 // E.g. undefineflags() (but we don't handle this yet... flags are changed, but not in a way we support)
-        |	FLAGMACRO ')' {
+        |    FLAGMACRO ')' {
                         $$ = 0;
                 }
         |  '_' {
@@ -769,17 +769,17 @@ rt:
 flag_list:
                 flag_list ',' REG_ID {
                         // Not sure why the below is commented out (MVE)
-/*			Location* pFlag = Location::regOf(Dict.RegMap[$3]);
+/*            Location* pFlag = Location::regOf(Dict.RegMap[$3]);
                         $1->push_back(pFlag);
                         $$ = $1;
-*/			$$ = 0;
+*/            $$ = 0;
                 }
-        |	REG_ID {
-/*			std::list<Exp*>* tmp = new std::list<Exp*>;
+        |    REG_ID {
+/*            std::list<Exp*>* tmp = new std::list<Exp*>;
                         Unary* pFlag = new Unary(opIdRegOf, Dict.RegMap[$1]);
                         tmp->push_back(pFlag);
                         $$ = tmp;
-*/			$$ = 0;
+*/            $$ = 0;
                 }
         ;
 
@@ -791,17 +791,17 @@ list_parameter:
                         $$ = $1;
                 }
 
-        |	param {
+        |    param {
                         $$ = new std::list<std::string>;
                         $$->push_back($1);
                 }
-        |	{
+        |    {
                         $$ = new std::list<std::string>;
                 }
         ;
 
-param:	NAME {
-                        Dict.ParamSet.insert($1);		// MVE: Likely wrong. Likely supposed to be OPERAND params only
+param:    NAME {
+                        Dict.ParamSet.insert($1);        // MVE: Likely wrong. Likely supposed to be OPERAND params only
                         $$ = $1;
                 }
 
@@ -810,45 +810,45 @@ list_actualparameter:
                         $$->push_back($3);
                 }
 
-        |	exp {
+        |    exp {
                         $$ = new std::list<Exp*>;
                         $$->push_back($1);
                 }
 
-        |	{
+        |    {
                         $$ = new std::list<Exp*>;
                 }
         ;
 
 assign_rt:
-                // Size	  guard =>	  lhs	  :=    rhs
-                //	$1	   $2		   $4			$6
+                // Size      guard =>      lhs      :=    rhs
+                //    $1       $2           $4            $6
                 assigntype exp THEN location EQUATE exp {
                         Assign* a = new Assign($1, $4, $6);
                         a->setGuard($2);
                         $$ = a;
                 }
-                // Size		lhs		:=	 rhs
-                // $1		$2		$3	 $4
-        |	assigntype location EQUATE exp {
+                // Size        lhs        :=     rhs
+                // $1        $2        $3     $4
+        |    assigntype location EQUATE exp {
                         // update the size of any generated RT's
                         $$ = new Assign($1, $2, $4);
                 }
 
                 // FPUSH and FPOP are special "transfers" with just a Terminal
-        |	FPUSH {
+        |    FPUSH {
                         $$ = new Assign(
                                 new Terminal(opNil),
                                 new Terminal(opFpush));
                 }
-        |	FPOP {
+        |    FPOP {
                         $$ = new Assign(
                                 new Terminal(opNil),
                                 new Terminal(opFpop));
                 }
                 // Just a RHS? Is this used? Note: flag calls are handled at the rt: level
-                //	$1		$2
-        |	assigntype exp {
+                //    $1        $2
+        |    assigntype exp {
                         $$ = new Assign($1, NULL, $2);
                 }
         ;
@@ -858,58 +858,58 @@ exp_term:
                         $$ = new Const($1);
                 }
 
-        |	FLOATNUM {
+        |    FLOATNUM {
                         $$ = new Const($1);
                 }
 
-        |	'(' exp ')' {
+        |    '(' exp ')' {
                         $$ = $2;
                 }
 
-        |	location {
+        |    location {
                         $$ = $1;
                 }
 
-        |	'[' exp '?' exp COLON exp ']' {
+        |    '[' exp '?' exp COLON exp ']' {
                         $$ = new Ternary(opTern, $2, $4, $6);
                 }
 
         // Address-of, for LEA type instructions
-        |	ADDR exp ')' {
+        |    ADDR exp ')' {
                         $$ = new Unary(opAddrOf, $2);
                 }
 
         // Conversion functions, e.g. fsize(32, 80, modrm). Args are FROMsize, TOsize, EXPression
-        |	CONV_FUNC NUM ',' NUM ',' exp ')' {
+        |    CONV_FUNC NUM ',' NUM ',' exp ')' {
                         $$ = new Ternary(strToOper($1), new Const($2), new Const($4), $6);
                 }
 
         // Truncation function: ftrunc(3.01) == 3.00
-        |	TRUNC_FUNC exp ')' {
+        |    TRUNC_FUNC exp ')' {
                         $$ = new Unary(opFtrunc, $2);
                 }
 
         // fabs function: fabs(-3.01) == 3.01
-        |	FABS_FUNC exp ')' {
+        |    FABS_FUNC exp ')' {
                         $$ = new Unary(opFabs, $2);
                 }
 
         // FPUSH and FPOP
-        |	FPUSH {
+        |    FPUSH {
                         $$ = new Terminal(opFpush);
                 }
-        |	FPOP {
+        |    FPOP {
                         $$ = new Terminal(opFpop);
                 }
 
         // Transcendental functions
-        |	TRANSCEND exp ')' {
+        |    TRANSCEND exp ')' {
                         $$ = new Unary(strToOper($1), $2);
                 }
 
                 // Example: *Use* of COND[idx]
-                //	 $1		 $2
-        |	NAME_LOOKUP NAME ']' {
+                //     $1         $2
+        |    NAME_LOOKUP NAME ']' {
                         std::ostringstream o;
                         if (indexrefmap.find($2) == indexrefmap.end()) {
                                 o << "index " << $2 << " not declared for use.\n";
@@ -932,7 +932,7 @@ exp_term:
                 // This is a "lambda" function-like parameter
                 // $1 is the "function" name, and $2 is a list of Exp* for the actual params.
                 // I believe only PA/RISC uses these so far.
-        |	NAME_CALL list_actualparameter ')' {
+        |    NAME_CALL list_actualparameter ')' {
                 std::ostringstream o;
                 if (Dict.ParamSet.find($1) != Dict.ParamSet.end() ) {
                         if (Dict.DetParamMap.find($1) != Dict.DetParamMap.end()) {
@@ -947,7 +947,7 @@ exp_term:
                                         $$ = new Binary(opFlagDef,
                                                         new Const($1),
                                                         listExpToExp($2));
-                                        //delete $2;			// Delete the list of char*s
+                                        //delete $2;            // Delete the list of char*s
                                 }
                         } else {
                                 o << $1 << " is not defined as a OPERAND function.\n";
@@ -958,7 +958,7 @@ exp_term:
                 }
         }
 
-        |		SUCCESSOR exp ')' {
+        |        SUCCESSOR exp ')' {
                         $$ = makeSuccessor($2);
                 }
         ;
@@ -970,8 +970,8 @@ exp:
 
                 // "%prec CAST_OP" just says that this operator has the precedence of the dummy terminal CAST_OP
                 // It's a "precedence modifier" (see "Context-Dependent Precedence" in the Bison documantation)
-          // $1	 $2
-        |	exp cast %prec CAST_OP {
+          // $1     $2
+        |    exp cast %prec CAST_OP {
                         // size casts and the opSize operator were generally deprecated, but now opSize is used to transmit
                         // the size of operands that could be memOfs from the decoder to type analysis
                         if ($2 == STD_SIZE)
@@ -980,42 +980,42 @@ exp:
                                 $$ = new Binary(opSize, new Const($2), $1);
                 }
 
-        |	NOT exp {
+        |    NOT exp {
                         $$ = new Unary(opNot, $2);
                 }
 
-        |	LNOT exp {
+        |    LNOT exp {
                         $$ = new Unary(opLNot, $2);
                 }
 
-        |	FNEG exp {
+        |    FNEG exp {
                         $$ = new Unary(opFNeg, $2);
                 }
 
-        |	exp FARITH_OP exp {
+        |    exp FARITH_OP exp {
                         $$ = new Binary(strToOper($2), $1, $3);
                 }
 
-        |	exp ARITH_OP exp {
+        |    exp ARITH_OP exp {
                         $$ = new Binary(strToOper($2), $1, $3);
                 }
 
-        |	exp BIT_OP exp {
+        |    exp BIT_OP exp {
                         $$ = new Binary(strToOper($2), $1, $3);
                 }
 
-        |	exp COND_OP exp {
+        |    exp COND_OP exp {
                         $$ = new Binary(strToOper($2), $1, $3);
                 }
 
-        |	exp LOG_OP exp {
+        |    exp LOG_OP exp {
                         $$ = new Binary(strToOper($2), $1, $3);
                 }
 
                 // See comment above re "%prec LOOKUP_RDC"
-                // Example: OP1[IDX] where OP1 := {	 "&",  "|", "^", ...};
-                //$1	 $2		 $3	 $4	   $5
-        |	exp NAME_LOOKUP NAME ']' exp_term %prec LOOKUP_RDC {
+                // Example: OP1[IDX] where OP1 := {     "&",  "|", "^", ...};
+                //$1     $2         $3     $4       $5
+        |    exp NAME_LOOKUP NAME ']' exp_term %prec LOOKUP_RDC {
                         std::ostringstream o;
                         if (indexrefmap.find($3) == indexrefmap.end()) {
                                 o << "index " << $3 << " not declared for use.\n";
@@ -1038,7 +1038,7 @@ exp:
                                                 new Terminal(opNil))));
                 }
 
-        |	exp_term {
+        |    exp_term {
                         $$ = $1;
                 }
         ;
@@ -1060,7 +1060,7 @@ location:
                                 if (op) {
                                         $$ = new Terminal(op);
                                 } else {
-                                        $$ = new Unary(opMachFtr,	 // Machine specific feature
+                                        $$ = new Unary(opMachFtr,     // Machine specific feature
                                                         new Const($1));
                                 }
                         }
@@ -1070,21 +1070,21 @@ location:
                         }
                 }
 
-        |	REG_IDX exp ']' {
+        |    REG_IDX exp ']' {
                         $$ = Location::regOf($2);
                 }
 
-        |	REG_NUM {
+        |    REG_NUM {
                         int regNum;
                         sscanf($1, "r%d", &regNum);
                         $$ = Location::regOf(regNum);
                 }
 
-        |	MEM_IDX exp ']' {
+        |    MEM_IDX exp ']' {
                         $$ = Location::memOf($2);
                 }
 
-        |	NAME {
+        |    NAME {
                 // This is a mixture of the param: PARM {} match and the value_op: NAME {} match
                         Exp* s;
                         std::set<std::string>::iterator it = Dict.ParamSet.find($1);
@@ -1101,19 +1101,19 @@ location:
                         $$ = s;
                 }
 
-        |	   exp AT '[' exp COLON exp ']' {
+        |       exp AT '[' exp COLON exp ']' {
                         $$ = new Ternary(opAt, $1, $4, $6);
                 }
 
-        |	TEMP {
+        |    TEMP {
                         $$ = Location::tempOf(new Const($1));
                 }
 
                 // This indicates a post-instruction marker (var tick)
-        |	   location '\'' {
+        |       location '\'' {
                         $$ = new Unary(opPostVar, $1);
                 }
-        |		SUCCESSOR exp ')' {
+        |        SUCCESSOR exp ')' {
                         $$ = makeSuccessor($2);
                 }
         ;
@@ -1133,7 +1133,7 @@ esize:
                 BIG {
                         $$ = $1;
                 }
-        |	LITTLE {
+        |    LITTLE {
                         $$ = $1;
                 }
         ;
@@ -1174,7 +1174,7 @@ fastlist:
 fastentries:
                 fastentries ',' fastentry
 
-        |	fastentry
+        |    fastentry
 
         ;
 

@@ -15,21 +15,21 @@ class UserProc;
 class RangeAnalysis : public FunctionPass
 {
 public:
-	RangeAnalysis();
-	virtual ~RangeAnalysis() {}
+    RangeAnalysis();
+    virtual ~RangeAnalysis() {}
 
-	/// \brief Range analysis (for procedure).
-	bool runOnFunction(Function& F) override;
+    /// \brief Range analysis (for procedure).
+    bool runOnFunction(Function& F) override;
 
 private:
-	friend class RangeVisitor;
+    friend class RangeVisitor;
 
-	/***************************************************************************/ /**
-	 * \brief Add Junction statements
-	 *******************************************************************************/
-	void addJunctionStatements(Cfg& cfg);
-	void clearRanges();
+    /***************************************************************************/ /**
+     * \brief Add Junction statements
+     *******************************************************************************/
+    void addJunctionStatements(Cfg& cfg);
+    void clearRanges();
 
-	RangePrivateData *RangeData;
-	void logSuspectMemoryDefs(UserProc& UF);
+    RangePrivateData *RangeData;
+    void logSuspectMemoryDefs(UserProc& UF);
 };

@@ -4,13 +4,13 @@
 
 int main(int argc, char* argv[])
 {
-	QCoreApplication  app(argc, argv);
-	CommandlineDriver driver;
+    QCoreApplication  app(argc, argv);
+    CommandlineDriver driver;
 
-	bool decompile = driver.applyCommandline(app.arguments()) == 0;
-	if (!decompile) {
-		return 0;
-	}
+    bool decompile = driver.applyCommandline(app.arguments()) == 0;
+    if (!decompile) {
+        return 0;
+    }
 
-	return driver.decompile();
+    return driver.decompile();
 }

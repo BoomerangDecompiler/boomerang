@@ -15,7 +15,7 @@
 # $Revision$
 #
 # 3 Mar 98 - Cristina
-#	changed branch^a constructor to return the 'a' value as well.
+#    changed branch^a constructor to return the 'a' value as well.
 # 24 Jan 00 - Mike
 #   changes to ensure that double and quad registers get the correct names
 # 11 Feb 01 - Nathan: Fixed operand names for FTOd and FTOq

@@ -29,17 +29,17 @@
 #include "boomerang/include/decoder.h"
 #include "boomerang/mipsdecoder.h"
 #include "boomerang/db/rtl.h"
-#include "boomerang/core/BinaryFileFactory.h"		// For SymbolByAddress()
+#include "boomerang/core/BinaryFileFactory.h"        // For SymbolByAddress()
 #include "boomerang/util/Log.h"
 
 #include <iostream>
 
 
 /********************************************************************************
- * FUNCTION:	   unused
- * OVERVIEW:	   A dummy function to suppress "unused local variable" messages
- * PARAMETERS:	   x: integer variable to be "used"
- * RETURNS:		   Nothing
+ * FUNCTION:       unused
+ * OVERVIEW:       A dummy function to suppress "unused local variable" messages
+ * PARAMETERS:       x: integer variable to be "used"
+ * RETURNS:           Nothing
  ********************************************************************************/
 void MIPSDecoder::unused(int x)
 {}
@@ -61,21 +61,21 @@ int MIPSDecoder::decodeAssemblyInstruction(ADDRESS, int)
 { return 0; }
 
 /********************************************************************************
- * FUNCTION:	   MIPSDecoder::decodeInstruction
- * OVERVIEW:	   Attempt to decode the high level instruction at a given
- *				   address and return the corresponding HL type (e.g. CallStatement,
- *				   GotoStatement etc). If no high level instruction exists at the
- *				   given address, then simply return the RTL for the low level
- *				   instruction at this address. There is an option to also
- *				   include the low level statements for a HL instruction.
- * PARAMETERS:	   pc - the native address of the pc
- *				   delta - the difference between the above address and the
- *					 host address of the pc (i.e. the address that the pc is at
- *					 in the loaded object file)
- *				   proc - the enclosing procedure. This can be NULL for
- *					 those of us who are using this method in an interpreter
- * RETURNS:		   a DecodeResult structure containing all the information
- *					 gathered during decoding
+ * FUNCTION:       MIPSDecoder::decodeInstruction
+ * OVERVIEW:       Attempt to decode the high level instruction at a given
+ *                   address and return the corresponding HL type (e.g. CallStatement,
+ *                   GotoStatement etc). If no high level instruction exists at the
+ *                   given address, then simply return the RTL for the low level
+ *                   instruction at this address. There is an option to also
+ *                   include the low level statements for a HL instruction.
+ * PARAMETERS:       pc - the native address of the pc
+ *                   delta - the difference between the above address and the
+ *                     host address of the pc (i.e. the address that the pc is at
+ *                     in the loaded object file)
+ *                   proc - the enclosing procedure. This can be NULL for
+ *                     those of us who are using this method in an interpreter
+ * RETURNS:           a DecodeResult structure containing all the information
+ *                     gathered during decoding
  *********************************************************************************/
 
 // Stub from PPC...

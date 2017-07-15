@@ -13,136 +13,136 @@
 
 
 FileLogger::FileLogger()
-	: out((Boomerang::get()->getOutputPath() + "log").toStdString())
+    : out((Boomerang::get()->getOutputPath() + "log").toStdString())
 {
 }
 
 
 SeparateLogger::SeparateLogger(const QString& v)
 {
-	static QMap<QString, int> versions;
+    static QMap<QString, int> versions;
 
-	if (!versions.contains(v)) {
-		versions[v] = 0;
-	}
+    if (!versions.contains(v)) {
+        versions[v] = 0;
+    }
 
-	QDir    outDir(Boomerang::get()->getOutputPath());
-	QString full_path = outDir.absoluteFilePath(QString("%1_%2.log").arg(v).arg(versions[v]++, 2, 10, QChar('0')));
-	out = new std::ofstream(full_path.toStdString());
+    QDir    outDir(Boomerang::get()->getOutputPath());
+    QString full_path = outDir.absoluteFilePath(QString("%1_%2.log").arg(v).arg(versions[v]++, 2, 10, QChar('0')));
+    out = new std::ofstream(full_path.toStdString());
 }
 
 
 Log& Log::operator<<(const Instruction *s)
 {
-	QString     tgt;
-	QTextStream st(&tgt);
+    QString     tgt;
+    QTextStream st(&tgt);
 
-	s->print(st);
-	*this << tgt;
-	return *this;
+    s->print(st);
+    *this << tgt;
+    return *this;
 }
 
 
 Log& Log::operator<<(const SharedConstExp& e)
 {
-	QString     tgt;
-	QTextStream st(&tgt);
+    QString     tgt;
+    QTextStream st(&tgt);
 
-	e->print(st);
-	*this << tgt;
-	return *this;
+    e->print(st);
+    *this << tgt;
+    return *this;
 }
 
 
 Log& Log::operator<<(const SharedType& ty)
 {
-	std::ostringstream st;
-	st << ty;
-	*this << st.str().c_str();
-	return *this;
+    std::ostringstream st;
+    st << ty;
+    *this << st.str().c_str();
+    return *this;
 }
 
 
 Log& Log::operator<<(const Printable& p)
 {
-	*this << p.toString();
-	return *this;
+    *this << p.toString();
+    return *this;
 }
 
 
 Log& Log::operator<<(const RTL *r)
 {
-	QString     tgt;
-	QTextStream st(&tgt);
+    QString     tgt;
+    QTextStream st(&tgt);
 
-	r->print(st);
-	*this << tgt;
-	return *this;
+    r->print(st);
+    *this << tgt;
+    return *this;
 }
 
 
 Log& Log::operator<<(const LocationSet *l)
 {
-	QString     tgt;
-	QTextStream st(&tgt);
+    QString     tgt;
+    QTextStream st(&tgt);
 
-	st << l;
-	*this << tgt;
-	return *this;
+    st << l;
+    *this << tgt;
+    return *this;
 }
 
 
 Log& Log::operator<<(int i)
 {
-	*this << QString::number(i);
-	return *this;
+    *this << QString::number(i);
+    return *this;
 }
 
 
 Log& Log::operator<<(size_t i)
 {
-	*this << QString::number(i);
-	return *this;
+    *this << QString::number(i);
+    return *this;
 }
 
 
 Log& Log::operator<<(char c)
 {
-	*this << QString(c);
-	return *this;
+    *this << QString(c);
+    return *this;
 }
 
 
 Log& Log::operator<<(double d)
 {
-	*this << QString::number(d);
-	return *this;
+    *this << QString::number(d);
+    return *this;
 }
 
 
 Log& Log::operator<<(Address a)
 {
-	*this << a.toString();
-	return *this;
+    *this << a.toString();
+    return *this;
 }
 
 
 Log& FileLogger::operator<<(const QString& str)
 {
-	out << str.toStdString() << std::flush;
-	return *this;
+    out << str.toStdString() << std::flush;
+    return *this;
 }
 
 
 Log& SeparateLogger::operator<<(const QString& str)
 {
-	(*out) << str.toStdString() << std::flush;
-	return *this;
+    (*out) << str.toStdString() << std::flush;
+    return *this;
 }
 
 
 SeparateLogger::~SeparateLogger()
 {
-	out->close();
-	out = nullptr;
+    out->close();
+    out = nullptr;
 }
