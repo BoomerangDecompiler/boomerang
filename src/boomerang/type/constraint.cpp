@@ -48,7 +48,6 @@ void ConstraintMap::print(QTextStream& os)
 }
 
 
-extern char debug_buffer[];
 char *ConstraintMap::prints()
 {
     QString     tgt;

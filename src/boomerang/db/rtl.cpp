@@ -190,8 +190,6 @@ void RTL::dump() const
 }
 
 
-extern char debug_buffer[];
-
 char *RTL::prints() const
 {
     QString     tgt;

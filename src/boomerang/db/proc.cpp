@@ -66,7 +66,6 @@ namespace dbghelp
 
 typedef std::map<Instruction *, int> RefCounter;
 
-extern char         debug_buffer[]; // Defined in basicblock.cpp, size DEBUG_BUFSIZE
 extern QTextStream& alignStream(QTextStream& str, int align);
 
 Function::~Function()

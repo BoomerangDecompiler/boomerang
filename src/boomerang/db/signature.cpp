@@ -38,8 +38,6 @@
 #include <cstring>
 #include <sstream>
 
-extern char debug_buffer[]; // For prints()
-
 
 Parameter::Parameter(SharedType type, const QString& name, SharedExp exp, const QString& boundMax)
     : m_type(type)

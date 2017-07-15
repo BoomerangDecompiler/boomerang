@@ -31,8 +31,6 @@
 #include <cstring>
 #include <iomanip>   // For std::setw etc
 
-
-extern char debug_buffer[]; ///< For prints functions
 static int tlstrchr(const QString& str, char ch);
 
 // Derived class constructors

@@ -48,9 +48,6 @@
 #include <inttypes.h>
 
 
-char debug_buffer[DEBUG_BUFSIZE];
-
-
 BasicBlock::BasicBlock(Function *parent)
     : m_targetOutEdges(0)
     , m_inEdgesVisited(0) // From Doug's code

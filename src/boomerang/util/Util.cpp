@@ -9,12 +9,6 @@
  *
  */
 
-/***************************************************************************/ /**
- * \file       util.cc
- * \brief   This file contains miscellaneous functions that don't belong to
- *             any particular subsystem of UQBT.
- ******************************************************************************/
-
 #include "boomerang/util/Util.h"
 #include "boomerang/util/types.h"
 
@@ -24,11 +18,11 @@
 #include <cassert>
 #include <string>
 
+char debug_buffer[DEBUG_BUFSIZE];
+
 namespace Util
 {
 
-// Turn things like newline, return, tab into \n, \r, \t etc
-// Note: assumes a C or C++ back end...
 QString escapeStr(const QString& inp)
 {
     static QMap<char, QString> replacements {

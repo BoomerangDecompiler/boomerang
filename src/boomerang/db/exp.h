@@ -36,8 +36,6 @@
  *               Ternary
  */
 
-
-
 class UseSet;
 class DefSet;
 class RTL; // For class FlagDef
@@ -51,8 +49,6 @@ class ExpModifier;
 class Function;
 class UserProc;
 class Exp;
-
-#define DEBUG_BUFSIZE    5000 // Size of the debug print buffer
 
 typedef std::unique_ptr<Exp>         UniqExp;
 typedef std::shared_ptr<Exp>         SharedExp;

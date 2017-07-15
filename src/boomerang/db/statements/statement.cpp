@@ -42,7 +42,6 @@
 #include <cstddef>
 #include <algorithm>
 
-extern char         debug_buffer[]; // For prints functions
 extern QTextStream& alignStream(QTextStream& str, int align);
 
 

@@ -17,6 +17,8 @@ namespace Util
 
 /**
  * Escape strings properly for code generation.
+ * Turns things like newline, return, tab into \n, \r, \t etc
+ * \note Assumes a C or C++ back end
  */
 QString escapeStr(const QString& str);
 
@@ -81,3 +83,5 @@ void writeQWord(void* dst, DWord value, bool dstBigEndian);
 
 }
 
+#define DEBUG_BUFSIZE    5000 // Size of the debug print buffer
+extern char debug_buffer[DEBUG_BUFSIZE];

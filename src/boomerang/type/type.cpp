@@ -29,7 +29,7 @@
 #include <cassert>
 #include <cstring>
 
-extern char               debug_buffer[]; // For prints functions
+
 QMap<QString, SharedType> Type::namedTypes;
 
 

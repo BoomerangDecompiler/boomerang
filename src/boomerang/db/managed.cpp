@@ -24,8 +24,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/types.h"
 
-extern char debug_buffer[]; // For prints functions
-
 QTextStream& operator<<(QTextStream& os, const InstructionSet *ss)
 {
     ss->print(os);
