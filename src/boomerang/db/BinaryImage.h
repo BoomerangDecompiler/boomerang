@@ -18,10 +18,6 @@ struct SectionHolder
 	operator SectionInfo *() { return val; }
 	operator const SectionInfo *() const { return val; }
 	SectionInfo *val;
-	SectionHolder operator+=(const SectionHolder& /*s*/)
-	{
-		throw std::runtime_error("Cannot aggregate SectionInfos !");
-	}
 };
 
 struct BinaryImage : public IBinaryImage

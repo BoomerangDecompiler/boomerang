@@ -572,10 +572,10 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 
 				if (S->isPhi()) {
 					SharedExp phiLeft = ((PhiAssign *)S)->getLeft();
-					phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(x, def /*, this*/));
+					phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(x, def));
 				}
 				else {
-					S->subscriptVar(x, def /*, this */);
+					S->subscriptVar(x, def);
 				}
 			}
 		}

@@ -1096,7 +1096,7 @@ bool TypeVal::operator*=(const Exp& o) const
 //    Const    //
 //    //    //    //
 
-void Const::print(QTextStream& os, bool /*html*/) const
+void Const::print(QTextStream& os, bool) const
 {
 	setLexBegin(os.pos());
 
@@ -1512,7 +1512,7 @@ void Binary::print(QTextStream& os, bool html) const
 //    //    //    //    //
 //     Terminal    //
 //    //    //    //    //
-void Terminal::print(QTextStream& os, bool /*html*/) const
+void Terminal::print(QTextStream& os, bool) const
 {
 	switch (m_oper)
 	{
@@ -1870,7 +1870,7 @@ void Unary::print(QTextStream& os, bool html) const
 //    //    //    //
 //    Ternary //
 //    //    //    //
-void Ternary::printr(QTextStream& os, bool /*html*/) const
+void Ternary::printr(QTextStream& os, bool) const
 {
 	// The function-like operators don't need parentheses
 	switch (m_oper)
@@ -2113,7 +2113,7 @@ void RefExp::print(QTextStream& os, bool html) const
 //    //    //    //
 // TypeVal    //
 //    //    //    //
-void TypeVal::print(QTextStream& os, bool /*html*/) const
+void TypeVal::print(QTextStream& os, bool) const
 {
 	if (val) {
 		os << "<" << val->getCtype() << ">";
@@ -4019,7 +4019,7 @@ SharedExp Ternary::polySimplify(bool& bMod)
 	}
 
 	if ((m_oper == opFsize) && (subExp3->getOper() == opMemOf) && (subExp3->getSubExp1()->getOper() == opIntConst)) {
-		      Address  u  = subExp3->access<Const, 1>()->getAddr();
+		Address  u  = subExp3->access<Const, 1>()->getAddr();
 		auto     l  = std::dynamic_pointer_cast<Location>(subExp3);
 		UserProc *p = l->getProc();
 
@@ -4218,23 +4218,7 @@ void Exp::printt(QTextStream& os /*= cout*/) const
 	}
 
 	SharedType t = ((TypedExp *)this)->getType();
-	os << "<" << t->getSize();
-
-	/*      switch (t->getType()) {
-	 *          case INTEGER:
-	 *                  if (t->getSigned())
-	 *                                          os << "i";                // Integer
-	 *                  else
-	 *                                          os << "u"; break;        // Unsigned
-	 *          case FLOATP:    os << "f"; break;
-	 *          case DATA_ADDRESS: os << "pd"; break;    // Pointer to Data
-	 *          case FUNC_ADDRESS: os << "pc"; break;    // Pointer to Code
-	 *          case VARARGS:    os << "v"; break;
-	 *          case TBOOLEAN:     os << "b"; break;
-	 *          case UNKNOWN:    os << "?"; break;
-	 *          case TVOID:        break;
-	 *  } */
-	os << ">";
+	os << "<" << t->getSize() << ">";
 }
 
 

@@ -546,7 +546,7 @@ IfThenSyntaxNode::~IfThenSyntaxNode()
 }
 
 
-SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/)
+SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
 	SyntaxNode *n1 = root->findNodeFor(m_pbb->getOutEdge(0));
 
@@ -762,7 +762,7 @@ PretestedLoopSyntaxNode::~PretestedLoopSyntaxNode()
 }
 
 
-SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/)
+SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
 	return root->findNodeFor(m_pbb->getOutEdge(1));
 }
@@ -862,7 +862,7 @@ PostTestedLoopSyntaxNode::~PostTestedLoopSyntaxNode()
 }
 
 
-SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t /*n*/)
+SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
 	return root->findNodeFor(m_pbb->getOutEdge(1));
 }

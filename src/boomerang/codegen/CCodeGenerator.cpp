@@ -690,9 +690,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
 	case opSize:
 
-		/*SharedType ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
-		 *                  str << "*(" << ty->getCtype(true) << " *)";
-		 *                  appendExp(str, new Unary(opAddrOf, b.getSubExp2()), PREC_UNARY);*/
+// 		SharedType ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
+// 		str << "*(" << ty->getCtype(true) << " *)";
+// 		appendExp(str, new Unary(opAddrOf, b.getSubExp2()), PREC_UNARY);
 		appendExp(str, *b.getSubExp2(), PREC_UNARY);
 		break;
 
@@ -1435,7 +1435,7 @@ void CCodeGenerator::addBreak(int indLevel)
 }
 
 
-void CCodeGenerator::addLabel(int /*indLevel*/, int ord)
+void CCodeGenerator::addLabel(int, int ord)
 {
 	QString tgt;
 	QTextStream s(&tgt);
@@ -1455,7 +1455,7 @@ void CCodeGenerator::removeLabel(int ord)
 }
 
 
-bool isBareMemof(const Exp& e, UserProc * /*proc*/)
+bool isBareMemof(const Exp& e, UserProc *)
 {
 	if (!e.isMemOf()) {
 		return false;
