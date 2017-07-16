@@ -18,8 +18,8 @@
 SCRATCH=/tmp/mltk.scratch.$$
 
 usage () {
-	echo "usage: $0 [-o output.cc] spec-files matcher-file";
-	exit;
+    echo "usage: $0 [-o output.cc] spec-files matcher-file";
+    exit;
 }
 
 # Clean up temp files if this script is interupted
@@ -27,7 +27,7 @@ trap 'rm -f ${SCRATCH}; exit' 0 1 2 15
 
 # Check the invocation
 if [ $# -lt 4 ]; then
-	usage;
+    usage;
 fi
 
 # These 3 tools are configured (see configure.in)
@@ -45,9 +45,9 @@ MATCHER_CC="${MATCHER_DIR}/${MATCHER_CC}.cc"
 
 # grab output filename
 if [ "${1}" = "-o" ]; then
-	shift
-	MATCHER_CC="${1}"
-	shift
+    shift
+    MATCHER_CC="${1}"
+    shift
 fi
 
 # Build the command to be fed into the toolkit
@@ -61,21 +61,21 @@ fi
 CMD="val _ = GlobalState.Match.fuse := false; val d = CC.matcher [\""
 while [ $# -ne 2 ]; do
 
-	# Make sure the current file is a .spec file
-	if [ "${1%%.spec}" = "$1" ]; then
-		echo "bad suffix for \`$1': SLED files require the .spec suffix";
-		exit;
-	fi
+    # Make sure the current file is a .spec file
+    if [ "${1%%.spec}" = "$1" ]; then
+        echo "bad suffix for \`$1': SLED files require the .spec suffix";
+        exit;
+    fi
 
-	# Make sure the current file exists
-	if [ ! -f $1 ]; then
-		echo "$1: no such file";
-		exit;
-	fi
+    # Make sure the current file exists
+    if [ ! -f $1 ]; then
+        echo "$1: no such file";
+        exit;
+    fi
 
-	# Add the current spec file to the command
-	CMD="${CMD}${1}\",\"";
-	shift;
+    # Add the current spec file to the command
+    CMD="${CMD}${1}\",\"";
+    shift;
 done
 CMD="${CMD}${1}\"];"
 shift
@@ -83,14 +83,14 @@ CMD="${CMD} d \"${MATCHER}\";"
 
 # Run the toolkit
 eval "${TKML} ${HEAP}" <<EOF
-	${CMD}
+    ${CMD}
 EOF
 
 # Clean up the output from the toolkit and put it into the .cc file
 mv ${MATCHER}.d ${MATCHER_CC}
 ${UNGENERATE} ${MATCHER_CC}
 cat ${MATCHER_CC} | awk '
-	/#line.*decoder\.m"/ { line = $2; print $1 " " (line-1) " " $3; next; }
-	{ print; }
+    /#line.*decoder\.m"/ { line = $2; print $1 " " (line-1) " " $3; next; }
+    { print; }
 ' > ${SCRATCH}
 mv ${SCRATCH} ${MATCHER_CC}

@@ -13,19 +13,19 @@ class Decompiler;
 
 class RTLEditor : public QTextEdit
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	RTLEditor(Decompiler *decompiler, const QString& name);
+    RTLEditor(Decompiler *decompiler, const QString& name);
 
 public slots:
-	void updateContents();
+    void updateContents();
 
 protected:
-	virtual void mouseMoveEvent(QMouseEvent *event) override;
-	virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
+    virtual void mousePressEvent(QMouseEvent *event) override;
 
 private:
-	Decompiler *decompiler;
-	QString name;
+    Decompiler *decompiler;
+    QString name;
 };

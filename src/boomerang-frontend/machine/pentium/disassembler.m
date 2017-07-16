@@ -32,7 +32,7 @@
  *============================================================================*/
 int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
 {
-	ADDRESS hostPC = pc + delta; 
+    ADDRESS hostPC = pc + delta; 
     ADDRESS nextPC; 
 
     sprintf(_assembly, "%X: %08X  ", pc, getDword(hostPC) );
@@ -1785,11 +1785,11 @@ int NJMCDecoder::decodeAssemblyInstruction (ADDRESS pc, int delta)
     | FYL2XP1() =>
         sprintf (str,  "FYL2XP1");
 
-//	| inst = n =>
-//		sprintf (str, "%0x", n);
+//    | inst = n =>
+//        sprintf (str, "%0x", n);
 
     else
-		sprintf (str, "%0x", n);
+        sprintf (str, "%0x", n);
 
     endmatch
 

@@ -55,85 +55,90 @@ using SharedExp = std::shared_ptr<Exp>;
  ******************************************************************************/
 class RTL : public std::list<Instruction *>
 {
-	friend class XMLProgParser;
-	friend class BasicBlock;
+    friend class BasicBlock;
 
 private:
-	   Address m_nativeAddr; ///< RTL's source program instruction address
+       Address m_nativeAddr; ///< RTL's source program instruction address
 
 public:
-	RTL();
-	RTL(Address instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
+    RTL();
 
-	/***************************************************************************/ /**
-	 * \brief        Copy constructor. A deep clone is made of the given object
-	 *                    so that the lists of Exps do not share memory.
-	 * \param        other RTL to copy from
-	 ******************************************************************************/
-	RTL(const RTL& other);
-	~RTL();
+    /***************************************************************************/ /**
+    * \brief   Constructor.
+    * \param   instNativeAddr - the native address of the instruction
+    * \param   listStmt - ptr to existing list of Statement
+    ******************************************************************************/
+    RTL(Address instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
 
-	/***************************************************************************/ /**
-	 * \brief        Deep copy clone; deleting the clone will not affect this
-	 *               RTL object
-	 * \returns      Pointer to a new RTL that is a clone of this one
-	 ******************************************************************************/
-	RTL *clone() const;
+    /***************************************************************************/ /**
+     * \brief        Copy constructor. A deep clone is made of the given object
+     *               so that the lists of Exps do not share memory.
+     * \param        other RTL to copy from
+     ******************************************************************************/
+    RTL(const RTL& other);
+    ~RTL();
 
-	/***************************************************************************/ /**
-	 * \brief        Assignment copy (deep).
-	 * \param        other - RTL to copy
-	 * \returns      a reference to this object
-	 ******************************************************************************/
-	RTL& operator=(const RTL& other);
+    /***************************************************************************/ /**
+     * \brief        Deep copy clone; deleting the clone will not affect this
+     *               RTL object
+     * \returns      Pointer to a new RTL that is a clone of this one
+     ******************************************************************************/
+    RTL *clone() const;
 
-	/// Common enquiry methods
-	   Address getAddress() const { return m_nativeAddr; }    ///< Return RTL's native address
-	void setAddress(Address a) { m_nativeAddr = a; } ///< Set the address
+    /***************************************************************************/ /**
+     * \brief        Assignment copy (deep).
+     * \param        other - RTL to copy
+     * \returns      a reference to this object
+     ******************************************************************************/
+    RTL& operator=(const RTL& other);
 
-	// Statement list editing methods
+    /// Common enquiry methods
+       Address getAddress() const { return m_nativeAddr; }    ///< Return RTL's native address
+    void setAddress(Address a) { m_nativeAddr = a; } ///< Set the address
 
-	/***************************************************************************/ /**
-	 * \brief        Append the given Statement at the end of this RTL
-	 * \note         Exception: Leaves any flag call at the end (so may push exp
-	 *               to second last position, instead of last)
-	 * \note         stmt is NOT copied. This is different to how UQBT was!
-	 * \param        s pointer to Statement to append
-	 ******************************************************************************/
-	void appendStmt(Instruction *s); // Add s to end of RTL.
+    // Statement list editing methods
 
-	/***************************************************************************/ /**
-	 * \brief  Append a given list of Statements to this RTL
-	 * \note   A copy of the Statements in le are appended
-	 * \param  le - list of Statements to insert
-	 ******************************************************************************/
-	void appendListStmt(std::list<Instruction *>& le);
+    /***************************************************************************/ /**
+     * \brief        Append the given Statement at the end of this RTL
+     * \note         Exception: Leaves any flag call at the end (so may push exp
+     *               to second last position, instead of last)
+     * \note         stmt is NOT copied. This is different to how UQBT was!
+     * \param        s pointer to Statement to append
+     ******************************************************************************/
+    void appendStmt(Instruction *s); // Add s to end of RTL.
 
-	/***************************************************************************/ /**
-	 * \brief        Make a copy of this RTLs list of Exp* to the given list
-	 * \param        dest Ref to empty list to copy to
-	 ******************************************************************************/
-	void deepCopyList(std::list<Instruction *>& dest) const;
+    /***************************************************************************/ /**
+     * \brief  Append a given list of Statements to this RTL
+     * \note   A copy of the Statements in le are appended
+     * \param  le - list of Statements to insert
+     ******************************************************************************/
+    void appendListStmt(std::list<Instruction *>& le);
 
-	/***************************************************************************/ /**
-	 * \brief   Prints this object to a stream in text form.
-	 * \param   os - stream to output to (often cout or cerr)
-	 * \param   html - if true output is in html
-	 ******************************************************************************/
-	void print(QTextStream& os, bool html = false) const;
-	void dump() const;
+    /***************************************************************************/ /**
+     * \brief        Make a copy of this RTLs list of Exp* to the given list
+     * \param        dest Ref to empty list to copy to
+     ******************************************************************************/
+    void deepCopyList(std::list<Instruction *>& dest) const;
 
-	/// Is this RTL a call instruction?
-	bool isCall() const;
+    /***************************************************************************/ /**
+     * \brief   Prints this object to a stream in text form.
+     * \param   os - stream to output to (often cout or cerr)
+     * \param   html - if true output is in html
+     ******************************************************************************/
+    void print(QTextStream& os, bool html = false) const;
+    void dump() const;
+
+    /// Is this RTL a call instruction?
+    bool isCall() const;
 
 
-	/// Use this slow function when you can't be sure that the HL Statement is last
-	/// Get the "special" (High Level) Statement this RTL (else nullptr)
-	Instruction *getHlStmt() const;
-	char *prints() const; // Print to a string (mainly for debugging)
+    /// Use this slow function when you can't be sure that the HL Statement is last
+    /// Get the "special" (High Level) Statement this RTL (else nullptr)
+    Instruction *getHlStmt() const;
+    char *prints() const; // Print to a string (mainly for debugging)
 
 protected:
-	void simplify();
+    void simplify();
 };
 
 
@@ -146,31 +151,31 @@ protected:
 class TableEntry
 {
 public:
-	TableEntry();
-	TableEntry(std::list<QString>& p, RTL& rtl);
+    TableEntry();
+    TableEntry(std::list<QString>& p, RTL& rtl);
 
-	TableEntry& operator=(const TableEntry& other);
+    TableEntry& operator=(const TableEntry& other);
 
-	void setParam(std::list<QString>& p);
-	void setRTL(RTL& rtl);
+    void setParam(std::list<QString>& p);
+    void setRTL(RTL& rtl);
 
-	// non-zero return indicates failure
-	int appendRTL(std::list<QString>& p, RTL& rtl);
+    // non-zero return indicates failure
+    int appendRTL(std::list<QString>& p, RTL& rtl);
 
 public:
-	std::list<QString> m_params;
-	RTL m_rtl;
+    std::list<QString> m_params;
+    RTL m_rtl;
 
-	int m_flags; // aka required capabilities. Init. to 0
+    int m_flags; // aka required capabilities. Init. to 0
 };
 
 
 typedef enum
 {
-	PARAM_SIMPLE,
-	PARAM_ASGN,
-	PARAM_LAMBDA,
-	PARAM_VARIANT
+    PARAM_SIMPLE,
+    PARAM_ASGN,
+    PARAM_LAMBDA,
+    PARAM_VARIANT
 } ParamKind;
 
 
@@ -180,17 +185,17 @@ typedef enum
 class ParamEntry
 {
 public:
-	std::list<QString> m_params;          ///< PARAM_VARIANT & PARAM_ASGN only */
-	std::list<QString> m_funcParams;      ///< PARAM_LAMBDA - late bound params */
-	Instruction *m_asgn = nullptr;        ///< PARAM_ASGN only */
-	bool m_lhs          = false;          ///< True if this param ever appears on the LHS of an expression */
-	ParamKind m_kind    = PARAM_SIMPLE;
-	SharedType m_regType;                 ///< Type of r[this], if any (void otherwise)
-	std::set<int> m_regIdx;               ///< Values this param can take as an r[param]
-	int m_mark = 0;                       ///< Traversal mark. (free temporary use, basically)
+    std::list<QString> m_params;          ///< PARAM_VARIANT & PARAM_ASGN only */
+    std::list<QString> m_funcParams;      ///< PARAM_LAMBDA - late bound params */
+    Instruction *m_asgn = nullptr;        ///< PARAM_ASGN only */
+    bool m_lhs          = false;          ///< True if this param ever appears on the LHS of an expression */
+    ParamKind m_kind    = PARAM_SIMPLE;
+    SharedType m_regType;                 ///< Type of r[this], if any (void otherwise)
+    std::set<int> m_regIdx;               ///< Values this param can take as an r[param]
+    int m_mark = 0;                       ///< Traversal mark. (free temporary use, basically)
 
 protected:
-	SharedType m_type;
+    SharedType m_type;
 };
 
 
@@ -204,69 +209,69 @@ protected:
 class RTLInstDict
 {
 public:
-	RTLInstDict();
-	~RTLInstDict();
+    RTLInstDict();
+    ~RTLInstDict();
 
-	bool readSSLFile(const QString& SSLFileName);
-	void reset();
+    bool readSSLFile(const QString& SSLFileName);
+    void reset();
 
-	std::pair<QString, unsigned> getSignature(const char *name);
+    std::pair<QString, unsigned> getSignature(const char *name);
 
-	int appendToDict(const QString& n, std::list<QString>& p, RTL& rtl);
+    int appendToDict(const QString& n, std::list<QString>& p, RTL& rtl);
 
-	std::list<Instruction *> *instantiateRTL(const QString& name, Address natPC, const std::vector<SharedExp>& actuals);
+    std::list<Instruction *> *instantiateRTL(const QString& name, Address natPC, const std::vector<SharedExp>& actuals);
 
-	std::list<Instruction *> *instantiateRTL(RTL & rtls, Address, std::list<QString> &params,
-											 const std::vector<SharedExp> &actuals);
+    std::list<Instruction *> *instantiateRTL(RTL & rtls, Address, std::list<QString> &params,
+                                             const std::vector<SharedExp> &actuals);
 
-	void transformPostVars(std::list<Instruction *>& rts, bool optimise);
-	void print(QTextStream& os);
+    void transformPostVars(std::list<Instruction *>& rts, bool optimise);
+    void print(QTextStream& os);
 
-	/***************************************************************************/ /**
-	* \brief Add a new register definition to the dictionary
-	* \param name register's name
-	* \param size - register size in bits
-	* \param flt  - is float register?
-	******************************************************************************/
-	void addRegister(const QString& name, int id, int size, bool flt);
-	bool partialType(Exp *exp, Type& ty);
-	void fixupParams();
+    /***************************************************************************/ /**
+    * \brief Add a new register definition to the dictionary
+    * \param name register's name
+    * \param size - register size in bits
+    * \param flt  - is float register?
+    ******************************************************************************/
+    void addRegister(const QString& name, int id, int size, bool flt);
+    bool partialType(Exp *exp, Type& ty);
+    void fixupParams();
 
 public:
-	/// An RTL describing the machine's basic fetch-execute cycle
-	SharedRTL fetchExecCycle;
+    /// An RTL describing the machine's basic fetch-execute cycle
+    SharedRTL fetchExecCycle;
 
-	/// A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
-	std::map<QString, int, std::less<QString> > RegMap;
+    /// A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
+    std::map<QString, int, std::less<QString> > RegMap;
 
-	/// Similar to r_map but stores more info about a register such as its size, its addresss etc (see register.h).
-	std::map<int, Register, std::less<int> > DetRegMap;
+    /// Similar to r_map but stores more info about a register such as its size, its addresss etc (see register.h).
+    std::map<int, Register, std::less<int> > DetRegMap;
 
 
-	/// A set of parameter names, to make sure they are declared (?).
-	/// Was map from string to SemTable index
-	std::set<QString> ParamSet;
+    /// A set of parameter names, to make sure they are declared (?).
+    /// Was map from string to SemTable index
+    std::set<QString> ParamSet;
 
-	/// Parameter (instruction operand, more like addressing mode) details (where given)
-	QMap<QString, ParamEntry> DetParamMap;
+    /// Parameter (instruction operand, more like addressing mode) details (where given)
+    QMap<QString, ParamEntry> DetParamMap;
 
-	/// The maps which summarise the semantics (.ssl) file
-	std::map<QString, SharedExp> FlagFuncs;
-	/// Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
-	std::map<QString, QString> fastMap;
+    /// The maps which summarise the semantics (.ssl) file
+    std::map<QString, SharedExp> FlagFuncs;
+    /// Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
+    std::map<QString, QString> fastMap;
 
-	bool m_bigEndian; // True if this source is big endian
+    bool m_bigEndian; // True if this source is big endian
 
 private:
-	void fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark);
+    void fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark);
 
-	/// A map from symbolic representation of a special (non-addressable) register to a Register object
-	std::map<QString, Register, std::less<QString> > SpecialRegMap;
+    /// A map from symbolic representation of a special (non-addressable) register to a Register object
+    std::map<QString, Register, std::less<QString> > SpecialRegMap;
 
-	std::map<QString, std::pair<int, void *> *> DefMap;
+    std::map<QString, std::pair<int, void *> *> DefMap;
 
-	std::map<int, SharedExp> AliasMap;
+    std::map<int, SharedExp> AliasMap;
 
-	/// The actual dictionary.
-	std::map<QString, TableEntry, std::less<QString> > idict;
+    /// The actual dictionary.
+    std::map<QString, TableEntry, std::less<QString> > idict;
 };

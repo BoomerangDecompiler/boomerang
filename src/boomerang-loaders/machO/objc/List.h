@@ -39,10 +39,10 @@
 #import <objc/Object.h>
 
 @interface List : Object {
-	@public
-	id       *dataPtr;    /* data of the List object */
-	unsigned numElements; /* Actual number of elements */
-	unsigned maxElements; /* Total allocated elements */
+    @public
+    id       *dataPtr;    /* data of the List object */
+    unsigned numElements; /* Actual number of elements */
+    unsigned maxElements; /* Total allocated elements */
 }
 
 /* Creating, freeing */
@@ -106,7 +106,7 @@
 
 typedef struct
 {
-	@defs(List)
+    @defs(List)
 } NXListId;
 
 #define NX_ADDRESS(x)    (((NXListId *)(x))->dataPtr)

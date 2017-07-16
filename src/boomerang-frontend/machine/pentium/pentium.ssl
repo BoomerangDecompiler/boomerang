@@ -12,7 +12,7 @@
 #       processors. 
 #
 
-# $Revision$		// 1.28.2.1
+# $Revision$        // 1.28.2.1
 # 16 Oct 98 - Mike: lower case register names to be consistent with sparc
 # 20 Nov 02 - Mike: Fixed MOV.ED.IVOD and MOV.EW.IVOW
 # 20 Jul 04 - Mike: Fixed FISUB, FISUBR
@@ -145,8 +145,8 @@ SUBFLAGS32(op1, op2, result)  {
 };
 
 SUBFLAGSFL(op1, op2) {
-			*1* %CF := op1 < op2
-			*1* %ZF := op1 = op2
+            *1* %CF := op1 < op2
+            *1* %ZF := op1 = op2
 };
 
 LOGICALFLAGS8(result)  {
@@ -817,7 +817,7 @@ IMUL.Ibod   reg32, modrm, i8
             IMULTFLAGS32(reg32);
 
 INT3
-			_ ;			# Not expected to be seen in correct code, but decode anyway
+            _ ;            # Not expected to be seen in correct code, but decode anyway
 
 COND1 := { "~%CF & ~%ZF", "~%CF & ~%ZF", "~%CF", "~%CF", "%CF",
             "%CF", "%CF | %ZF", "%CF | %ZF", "%CF", "~%cx", "%ZF",
@@ -877,7 +877,7 @@ JMP.EVOD   modrm
             *32* %pc := modrm;
 
 LAHF
-			*8*  %ah := %CF + (%ZF << 6) + (%NF << 7);
+            *8*  %ah := %CF + (%ZF << 6) + (%NF << 7);
 
 LEA.OD   reg32, mem 
             *32* reg32 := addr(mem);
@@ -1067,7 +1067,7 @@ PUSH.OD   reg32
 # Just fix up the stack for selector pushes.
 PUSH.CS
             *32* %esp := %esp - 4;
-	    
+        
 PUSH.DS
             *32* %esp := %esp - 4;
 
@@ -1937,9 +1937,9 @@ FUCOM       i
             *f80* tmpD := %st -f i
             SETFFLAGS(%st, i);
 
-FUCOMI.ST.STi	i 
-			*f80* tmpD := %st -f i
-			SUBFLAGSFL(%st, i);
+FUCOMI.ST.STi    i 
+            *f80* tmpD := %st -f i
+            SUBFLAGSFL(%st, i);
 
 FUCOMP      i 
             *f80* tmpD1 := %st
@@ -1948,7 +1948,7 @@ FUCOMP      i
             FPOP
             SETFFLAGS(tmpD1, tmpD2);
 
-FUCOMIP.ST.STi	i 
+FUCOMIP.ST.STi    i 
             *f80* tmpD1 := %st
             *f80* tmpD2 := i
             *f80* tmpD := %st -f i

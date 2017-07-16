@@ -18,14 +18,14 @@ using SharedExp = std::shared_ptr<Exp>;
 class ExpTransformer
 {
 protected:
-	static std::list<ExpTransformer *> transformers;
+    static std::list<ExpTransformer *> transformers;
 
 public:
-	ExpTransformer();
-	virtual ~ExpTransformer() {} // Prevent gcc4 warning
+    ExpTransformer();
+    virtual ~ExpTransformer() {} // Prevent gcc4 warning
 
-	static void loadAll();
+    static void loadAll();
 
-	virtual SharedExp applyTo(SharedExp e, bool& bMod) = 0;
-	static SharedExp applyAllTo(const SharedExp& e, bool& bMod);
+    virtual SharedExp applyTo(SharedExp e, bool& bMod) = 0;
+    static SharedExp applyAllTo(const SharedExp& e, bool& bMod);
 };

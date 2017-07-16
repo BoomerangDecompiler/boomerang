@@ -177,6 +177,16 @@ add_definitions(-DYYMAXDEPTH=10000)
 add_definitions(-DSYMS_IN_BACK_END=0)
 add_definitions(-DDEBUG_SPLIT_FOR_BRANCH=0)
 add_definitions(-DNEW=0)
+add_definitions(-DCHECK_REAL_PHI_LOOPS=0)
+add_definitions(-DPRINT_BBINDEX=0)    # Non zero to print <index>: before <statement number>
+add_definitions(-DPRINT_BACK_EDGES=0) # Non zero to generate green back edges
+add_definitions(-DDEBUG_SIMP=0)       # Set to 1 to print every change
+add_definitions(-DDEBUG_PARAMS=1)     #
+add_definitions(-DRECURSION_WIP=0)
+add_definitions(-DPRINT_UNION=0)      # Set to 1 to debug unions to stderr
+add_definitions(-DV9_ONLY=0)
+add_definitions(-DBRANCH_DS_ERROR=0)  # If set, a branch to the delay slot of a delayed
+			                          # CTI instruction is flagged as an error
 
 ###############################################################################
 # Code section
@@ -196,6 +206,9 @@ if (BOOM_BUILD_TESTS)
     
     add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
 	add_subdirectory(unit-tests)
+	
+	file(COPY "${CMAKE_SOURCE_DIR}/tests/inputs/"
+	    DESTINATION "${BOOMERANG_OUTPUT_DIR}/tests/inputs/") 
 endif (BOOM_BUILD_TESTS)
 
 
@@ -208,20 +221,9 @@ add_custom_target(check "./full_regression.sh"
 # Additional targets section
 ###############################################################################
 
-# copy function signatures and test files to output directory
-add_custom_target(COPY_FILES ALL)
-BOOMERANG_COPY(TARGET COPY_FILES POST_BUILD
-	DIRECTORIES ${CMAKE_SOURCE_DIR}/signatures/
-	DESTINATION ${BOOMERANG_OUTPUT_DIR}/signatures/
-)
-
-if (BOOM_BUILD_TESTS)
-	BOOMERANG_COPY(TARGET COPY_FILES POST_BUILD
-		DIRECTORIES ${CMAKE_SOURCE_DIR}/tests/inputs/
-		DESTINATION ${BOOMERANG_OUTPUT_DIR}/tests/inputs/
-	)
-endif (BOOM_BUILD_TESTS)
-
+# copy function signatures to output directory
+file(COPY "${CMAKE_SOURCE_DIR}/signatures/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/signatures/")
+file(COPY "${CMAKE_SOURCE_DIR}/frontend/"   DESTINATION "${BOOMERANG_OUTPUT_DIR}/frontend/")
 
 # delete all files in the 'out/' directory on make clean
 set(EXTRA_CLEAN_FILES "${BOOMERANG_OUTPUT_DIR}")

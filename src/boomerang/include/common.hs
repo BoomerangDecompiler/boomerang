@@ -17,13 +17,13 @@
 # $Revision$
 # Format: <function name> <return type> <parameter type> ...
 # where the function mame is just the name in ascii. All types are one of these:
-#  v	void (return type only)
-#  i	integer (includes long, time_t etc)
-#  pd	pointer to data (struct*, char*, float*, char*[], int[], etc)
-#  fs	floating point (note: no single precision floats are usually passed)
-#  fd	floating point double (no single precision floats are usually passed)
-#  pf	pointer to a function
-#  ...	var args
+#  v    void (return type only)
+#  i    integer (includes long, time_t etc)
+#  pd    pointer to data (struct*, char*, float*, char*[], int[], etc)
+#  fs    floating point (note: no single precision floats are usually passed)
+#  fd    floating point double (no single precision floats are usually passed)
+#  pf    pointer to a function
+#  ...    var args
 #
 # 22 Feb 00 - Cristina: added common PalmOS system function signatures
 # 14-21 Mar 00 - Mike: Changed short parameters to "s"

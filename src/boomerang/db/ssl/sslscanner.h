@@ -58,22 +58,22 @@
 #define YY_SSLScanner_CONSTRUCTOR_CODE
 // #line 46 "sslscanner.l"
 #define YY_SSLScanner_INPUT_CODE   \
-	if (in.eof()) {				   \
-		result = 0;				   \
-	}							   \
-	else {						   \
-		in.read(buffer, max_size); \
-		result = in.gcount();	   \
-	}							   \
-	return result;
+    if (in.eof()) {                   \
+        result = 0;                   \
+    }                               \
+    else {                           \
+        in.read(buffer, max_size); \
+        result = in.gcount();       \
+    }                               \
+    return result;
 
 // #line 53 "sslscanner.l"
-#define YY_SSLScanner_MEMBERS												\
-public:																		\
-	int           theLine;           /* the current line number */			\
-	char          lineBuf[MAX_LINE]; /* the current line */					\
-	bool          traceLines;        /* echo each lines as it is scanned */	\
-	std::istream& in;
+#define YY_SSLScanner_MEMBERS                                                \
+public:                                                                        \
+    int           theLine;           /* the current line number */            \
+    char          lineBuf[MAX_LINE]; /* the current line */                    \
+    bool          traceLines;        /* echo each lines as it is scanned */    \
+    std::istream& in;
 // #line 60 "sslscanner.l"
 #define YY_SSLScanner_LEX_PARAM    yy_SSLParser_stype & yylval
 // #line 62 "sslscanner.l"
@@ -243,17 +243,17 @@ public:																		\
 #define YY_SSLScanner_INPUT_CODE    return result = fread(buffer, 1, max_size, YY_SSLScanner_IN);
 
 #else
-#define YY_SSLScanner_INPUT_CODE												\
-	if (YY_SSLScanner_IN->eof()) {												\
-		result = 0; }															\
-	else {																		\
-		YY_SSLScanner_IN->read(buffer, max_size);								\
-		result = YY_SSLScanner_IN->gcount();									\
-		YY_SSLScanner_IN->clear(YY_SSLScanner_IN->rdstate() & (~ios::failbit));	\
-		if (YY_SSLScanner_IN->bad()) {											\
-			result = -1; }														\
-	}																			\
-	return result;
+#define YY_SSLScanner_INPUT_CODE                                                \
+    if (YY_SSLScanner_IN->eof()) {                                                \
+        result = 0; }                                                            \
+    else {                                                                        \
+        YY_SSLScanner_IN->read(buffer, max_size);                                \
+        result = YY_SSLScanner_IN->gcount();                                    \
+        YY_SSLScanner_IN->clear(YY_SSLScanner_IN->rdstate() & (~ios::failbit));    \
+        if (YY_SSLScanner_IN->bad()) {                                            \
+            result = -1; }                                                        \
+    }                                                                            \
+    return result;
 
 #endif
 #endif
@@ -268,13 +268,13 @@ public:																		\
 #ifndef YY_SSLScanner_FATAL_ERROR_CODE
 #ifndef YY_SSLScanner_IOSTREAM
 #define YY_SSLScanner_FATAL_ERROR_CODE \
-	fputs(msg, YY_SSLScanner_ERRFILE); \
-	putc('\n', YY_SSLScanner_ERRFILE); \
-	exit(1);
+    fputs(msg, YY_SSLScanner_ERRFILE); \
+    putc('\n', YY_SSLScanner_ERRFILE); \
+    exit(1);
 #else
-#define YY_SSLScanner_FATAL_ERROR_CODE	  \
-	YY_SSLScanner_ERRFILE << msg << endl; \
-	exit(1);
+#define YY_SSLScanner_FATAL_ERROR_CODE      \
+    YY_SSLScanner_ERRFILE << msg << endl; \
+    exit(1);
 #endif
 #endif
 
@@ -303,70 +303,70 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 class SSLScanner
 {
 private:    /* data */
-	YY_SSLScanner_CHAR *yy_c_buf_p;
-	YY_SSLScanner_CHAR yy_hold_char;
-	int yy_n_chars;
-	int yy_init;
-	int yy_start;
-	int yy_did_buffer_switch_on_eof;
+    YY_SSLScanner_CHAR *yy_c_buf_p;
+    YY_SSLScanner_CHAR yy_hold_char;
+    int yy_n_chars;
+    int yy_init;
+    int yy_start;
+    int yy_did_buffer_switch_on_eof;
 
 private:    /* functions */
-	void yy_initialize();
-	int input();
+    void yy_initialize();
+    int input();
 
-	int yyinput() { return input(); }
-	int yy_get_next_buffer();
-	void yyunput(YY_SSLScanner_CHAR c, YY_SSLScanner_CHAR *buf_ptr);
+    int yyinput() { return input(); }
+    int yy_get_next_buffer();
+    void yyunput(YY_SSLScanner_CHAR c, YY_SSLScanner_CHAR *buf_ptr);
 
-	/* use long instead of yy_state_type because it is undef */
-	long yy_get_previous_state_();
-	long yy_try_NUL_trans_(long current_state_);
+    /* use long instead of yy_state_type because it is undef */
+    long yy_get_previous_state_();
+    long yy_try_NUL_trans_(long current_state_);
 
 protected:    /* non virtual */
-	YY_BUFFER_STATE YY_SSLScanner_CURRENT_BUFFER;
-	void YY_SSLScanner_RESTART(YY_SSLScanner_IFILE *input_file);
-	void YY_SSLScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer);
-	void YY_SSLScanner_LOAD_BUFFER_STATE();
-	YY_BUFFER_STATE YY_SSLScanner_CREATE_BUFFER(YY_SSLScanner_IFILE *file, int size);
-	void YY_SSLScanner_DELETE_BUFFER(YY_BUFFER_STATE b);
-	void YY_SSLScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_SSLScanner_IFILE *file);
+    YY_BUFFER_STATE YY_SSLScanner_CURRENT_BUFFER;
+    void YY_SSLScanner_RESTART(YY_SSLScanner_IFILE *input_file);
+    void YY_SSLScanner_SWITCH_TO_BUFFER(YY_BUFFER_STATE new_buffer);
+    void YY_SSLScanner_LOAD_BUFFER_STATE();
+    YY_BUFFER_STATE YY_SSLScanner_CREATE_BUFFER(YY_SSLScanner_IFILE *file, int size);
+    void YY_SSLScanner_DELETE_BUFFER(YY_BUFFER_STATE b);
+    void YY_SSLScanner_INIT_BUFFER(YY_BUFFER_STATE b, YY_SSLScanner_IFILE *file);
 
 protected:    /* virtual */
-	virtual void YY_SSLScanner_ECHO()
+    virtual void YY_SSLScanner_ECHO()
 #ifdef YY_SSLScanner_ECHO_PURE
-		= 0
+        = 0
 #endif
-	;
-	virtual int YY_SSLScanner_INPUT(char *buf, int& result, int max_size)
+    ;
+    virtual int YY_SSLScanner_INPUT(char *buf, int& result, int max_size)
 #ifdef YY_SSLScanner_INPUT_PURE
-		= 0
+        = 0
 #endif
-	;
-	virtual void YY_SSLScanner_FATAL_ERROR(char *msg)
+    ;
+    virtual void YY_SSLScanner_FATAL_ERROR(char *msg)
 #ifdef YY_SSLScanner_FATAL_ERROR_PURE
-		= 0
+        = 0
 #endif
-	;
-	virtual int YY_SSLScanner_WRAP()
+    ;
+    virtual int YY_SSLScanner_WRAP()
 #ifdef YY_SSLScanner_WRAP_PURE
-		= 0
+        = 0
 #endif
-	;
+    ;
 
 public:
-	YY_SSLScanner_CHAR *YY_SSLScanner_TEXT;
-	int YY_SSLScanner_LENG;
-	YY_SSLScanner_IFILE *YY_SSLScanner_IN;
-	YY_SSLScanner_OFILE *YY_SSLScanner_OUT;
-	YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM);
-	SSLScanner(std::istream& ins, bool trace);
-	virtual ~SSLScanner();
+    YY_SSLScanner_CHAR *YY_SSLScanner_TEXT;
+    int YY_SSLScanner_LENG;
+    YY_SSLScanner_IFILE *YY_SSLScanner_IN;
+    YY_SSLScanner_OFILE *YY_SSLScanner_OUT;
+    YY_SSLScanner_LEX_RETURN YY_SSLScanner_LEX(YY_SSLScanner_LEX_PARAM);
+    SSLScanner(std::istream& ins, bool trace);
+    virtual ~SSLScanner();
 #if YY_SSLScanner_DEBUG != 0
-	int YY_SSLScanner_DEBUG_FLAG;
+    int YY_SSLScanner_DEBUG_FLAG;
 #endif
 
 public:    /* added members */
-	YY_SSLScanner_MEMBERS
+    YY_SSLScanner_MEMBERS
 };
 
 #endif

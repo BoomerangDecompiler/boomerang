@@ -36,36 +36,29 @@
 
 
 MIPSDecoder::MIPSDecoder(Prog *_prog)
-	: NJMCDecoder(_prog)
+    : NJMCDecoder(_prog)
 {
-	QDir base_dir = Boomerang::get()->getProgDir();
+    QDir base_dir = Boomerang::get()->getProgDir();
 
-	m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/mips/mips.ssl"));
-}
-
-
-// For now...
-int MIPSDecoder::decodeAssemblyInstruction(Address, ptrdiff_t)
-{
-	return 0;
+    m_rtlDict.readSSLFile(base_dir.absoluteFilePath("frontend/machine/mips/mips.ssl"));
 }
 
 
 DecodeResult& MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
 {
-	Q_UNUSED(pc);
-	Q_UNUSED(delta);
+    Q_UNUSED(pc);
+    Q_UNUSED(delta);
 
-	static DecodeResult result;
-	// ADDRESS hostPC = pc+delta;
+    static DecodeResult result;
+    // ADDRESS hostPC = pc+delta;
 
-	// Clear the result structure;
-	result.reset();
+    // Clear the result structure;
+    result.reset();
 
-	// The actual list of instantiated statements
-	// std::list<Statement*>* stmts = nullptr;
-	// ADDRESS nextPC = Address::INVALID;
-	// Decoding goes here....
+    // The actual list of instantiated statements
+    // std::list<Statement*>* stmts = nullptr;
+    // ADDRESS nextPC = Address::INVALID;
+    // Decoding goes here....
 
-	return result;
+    return result;
 }

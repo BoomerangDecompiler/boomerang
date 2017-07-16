@@ -38,24 +38,24 @@ struct DecodeResult;
 class MIPSFrontEnd : public IFrontEnd
 {
 public:
-	/// @copydoc IFrontEnd::IFrontEnd
-	MIPSFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
-	
-	/// @copydoc IFrontEnd::~IFrontEnd
-	virtual ~MIPSFrontEnd();
+    /// \copydoc IFrontEnd::IFrontEnd
+    MIPSFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
+    
+    /// \copydoc IFrontEnd::~IFrontEnd
+    virtual ~MIPSFrontEnd();
 
-	/// @copydoc IFrontEnd::getFrontEndId
-	virtual Platform getType() const override { return Platform::MIPS; }
+    /// \copydoc IFrontEnd::getFrontEndId
+    virtual Platform getType() const override { return Platform::MIPS; }
 
-	/// @copydoc IFrontEnd::processProc
-	virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
+    /// \copydoc IFrontEnd::processProc
+    virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
 
-	/// @copydoc IFrontEnd::getDefaultParams
-	virtual std::vector<SharedExp>& getDefaultParams() override;
+    /// \copydoc IFrontEnd::getDefaultParams
+    virtual std::vector<SharedExp>& getDefaultParams() override;
 
-	/// @copydoc IFrontEnd::getDefaultReturns
-	virtual std::vector<SharedExp>& getDefaultReturns() override;
+    /// \copydoc IFrontEnd::getDefaultReturns
+    virtual std::vector<SharedExp>& getDefaultReturns() override;
 
-	/// @copydoc IFrontEnd::getMainEntryPoint
-	virtual Address getMainEntryPoint(bool& gotMain) override;
+    /// \copydoc IFrontEnd::getMainEntryPoint
+    virtual Address getMainEntryPoint(bool& gotMain) override;
 };

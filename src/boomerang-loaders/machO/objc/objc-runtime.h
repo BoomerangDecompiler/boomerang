@@ -38,28 +38,28 @@ typedef struct objc_symtab *Symtab;
 
 struct objc_symtab
 {
-	uint32_t       sel_ref_cnt;
-	SEL            *refs;
-	unsigned short cls_def_cnt;
-	unsigned short cat_def_cnt;
-	uint32_t       defs[1]; /* variable size */
+    uint32_t       sel_ref_cnt;
+    SEL            *refs;
+    unsigned short cls_def_cnt;
+    unsigned short cat_def_cnt;
+    uint32_t       defs[1]; /* variable size */
 };
 
 typedef struct objc_module *Module;
 
 struct objc_module
 {
-	uint32_t version;
-	uint32_t size;
-	uint32_t name;
-	uint32_t symtab;
+    uint32_t version;
+    uint32_t size;
+    uint32_t name;
+    uint32_t symtab;
 };
 
 struct objc_super
 {
-	id    receiver;
-	// Class class;
-	Class pclass;
+    id    receiver;
+    // Class class;
+    Class pclass;
 };
 
 /* kernel operations */

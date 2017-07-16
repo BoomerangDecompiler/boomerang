@@ -1,8 +1,8 @@
 #line 370 "mips.nw"
 constructors
-  nop         	is  sll (r0, r0, 0)
+  nop             is  sll (r0, r0, 0)
   mov rd, rs    is  addu(rd, rs, r0)
-  b reloc     	is  beq (r0, r0, reloc)
+  b reloc         is  beq (r0, r0, reloc)
 #line 381 "mips.nw"
 constructors
   bge  rs, rt, reloc  is  slt (r1, rs, rt);  beq(r1, r0, reloc)

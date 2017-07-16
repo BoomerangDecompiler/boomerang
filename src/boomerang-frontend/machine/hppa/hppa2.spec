@@ -15,7 +15,7 @@
 # 07 May 01 - Mike: Split [LD|ST]Wlm into lma and lmb depending on sign of im14
 # 08 May 01 - Mike: New constructor for [LD|ST]Wlm (ldispa16m[ab]_addr
 # 08 May 01 - Cristina: Cross-referenced table letters from Appendix C, 
-#				PA-RISC 2.0 Architecture book
+#                PA-RISC 2.0 Architecture book
 # 16 Jun 01 - Mike: Attempt to use a more "assembly level" style, to reduce
 #               the number of typed constructors
 
@@ -475,7 +475,7 @@ constructors
                 } is LDIL & t_06 & i_31 & im11_20 & im2_16 & im5_11 & im2_18
 
   ubranch c_null ubr_target!,t_06 {
-  		 ubr_target = offset + 8,
+           ubr_target = offset + 8,
                  offset@[18:31] = w_31!,
                  offset@[13:17] = w5_11,
                  offset@[12] = w_29,

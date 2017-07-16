@@ -58,7 +58,6 @@ void *alloca();
 #include <cstdio>
 #define YYBISON 1
 
-#include "boomerang/util/types.h"
 #include "boomerang/util/Util.h" // E.g. str()
 #include "boomerang/include/operator.h"
 
@@ -1756,14 +1755,6 @@ SSLParser::
     goto yyerrhandle;
 
     YYLABEL(yyerrdefault) /* current state does not do anything special for the error token. */
-
-#if 0
-            /* This is wrong; only states that explicitly want error tokens
-                             should shift them.  */
-            yyn = yydefact[yystate];  /* If its default is to accept any token, ok.  Otherwise pop it.*/
-    if (yyn) goto yydefault;
-#endif
-
     YYLABEL(yyerrpop) /* pop the current state because it cannot handle the error token */
 
     if (yyssp == yyss)

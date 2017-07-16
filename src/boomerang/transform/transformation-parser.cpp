@@ -103,12 +103,12 @@ void *alloca ();
 
 #include <list>
 #include <string>
-	
+
 #include "boomerang/db/exp.h"
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/signature.h"
-	
+
 #include "boomerang/include/transformer.h"
 #include "boomerang/transform/generic.h"
 #include "boomerang/type/type.h"
@@ -1431,14 +1431,6 @@ YY_TransformationParser_PARSE_PARAM_DEF
     YYGOTO(yyerrhandle);
 
     YYLABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
-
-        #if 0
-            /* This is wrong; only states that explicitly want error tokens
-             should shift them.  */
-            yyn = yydefact[yystate];  /* If its default is to accept any token, ok.  Otherwise pop it.*/
-    if (yyn) YYGOTO(yydefault);
-#endif
-
     YYLABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
 
             if (yyssp == yyss) YYABORT;

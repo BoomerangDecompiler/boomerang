@@ -5,7 +5,7 @@ include(CMakeParseArguments)
 # Usage: BOOMERANG_ADD_LOADER(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_LOADER)
-	cmake_parse_arguments(LOADER "foo" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+	cmake_parse_arguments(LOADER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
 	option(BOOM_BUILD_LOADER_${LOADER_NAME} "Build the ${LOADER_NAME} loader." ON)
 
@@ -36,7 +36,7 @@ endfunction()
 # in the same directory as the CMakeLists.txt where this function is invoked.
 #
 function(BOOMERANG_ADD_FRONTEND)
-	cmake_parse_arguments(FRONTEND "foo" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+	cmake_parse_arguments(FRONTEND "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
 	# add the frontend as a static library
 	add_library(boomerang-${FRONTEND_NAME}Frontend STATIC
@@ -55,7 +55,7 @@ endfunction(BOOMERANG_ADD_FRONTEND)
 # Usage: BOOMERANG_ADD_CODEGEN(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_CODEGEN)
-	cmake_parse_arguments(CODEGEN "foo" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+	cmake_parse_arguments(CODEGEN "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 	
 	add_library(boomerang-${CODEGEN_NAME}Codegen STATIC
 		${CODEGEN_SOURCES}
@@ -69,7 +69,7 @@ endfunction(BOOMERANG_ADD_CODEGEN)
 # Usage: BOOMERANG_ADD_TEST(NAME <name> SOURCES <souce files> [ LIBRARIES <additional libs ])
 #
 function(BOOMERANG_ADD_TEST)
-	cmake_parse_arguments(TEST "foo" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+	cmake_parse_arguments(TEST "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
 	add_executable(${TEST_NAME} ${TEST_SOURCES})
 	target_link_libraries(${TEST_NAME}
@@ -81,40 +81,3 @@ function(BOOMERANG_ADD_TEST)
 	set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
 endfunction(BOOMERANG_ADD_TEST)
 
-
-#
-# Copy files, but only if the sourc(es) differ from the destination.
-# Usage:
-# BOOMERANG_COPY(
-#     TARGET <tgt>
-#     [PRE_BUILD|POST_BUILD]
-#     [FILES <src_file(s)> | DIRECTORIES <src directories>]
-#     DESTINATION <target dir or file>
-# )
-#
-function(BOOMERANG_COPY)
-	cmake_parse_arguments(CP "PRE_BUILD;POST_BUILD;RECURSIVE" "DESTINATION;TARGET" "FILES;DIRECTORIES" ${ARGN})
-	
-	if (NOT CP_FILES AND NOT CP_DIRECTORIES)
-		message(AUTHOR_WARNING "You need to specify files or directories to copy.")
-		return()
-	endif ()
-	
-	if (CP_PRE_BUILD AND CP_POST_BUILD)
-		message(AUTHOR_WARNING "You must not specify both PRE_BUILD and POST_BUILD options.")
-		return()
-	elseif (CP_PRE_BUILD)
-		set(CP_RUN_TIME PRE_BUILD)
-	elseif (CP_POST_BUILD)
-		set(CP_RUN_TIME POST_BUILD)
-	endif ()
-
-	foreach (f ${CP_FILES})
-		add_custom_command(
-			TARGET ${CP_TARGET}
-			${CP_RUN_TIME}
-			COMMAND ${CMAKE_COMMAND}
-			ARGS -E copy_if_different ${f} ${CP_DESTINATION}
-		)
-	endforeach ()
-endfunction(BOOMERANG_COPY)

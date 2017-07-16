@@ -27,27 +27,27 @@
 
 typedef struct _malloc_zone_t
 {
-	/* Only zone implementors should depend on the layout of this structure;
-	 * Regular callers should use the access functions below */
-	void                          *reserved1;
-	void                          *reserved2;
-	size_t (*size)(struct _malloc_zone_t *zone,
-				   const void            *ptr); /* returns the size of a block or 0 if not in this zone; must be fast, especially
-	                                             * for negative answers */
-	void *(*malloc)(struct _malloc_zone_t *zone, size_t size);
-	void *(*calloc)(struct _malloc_zone_t *zone, size_t num_items,
-					size_t size); /* same as malloc, but block returned is set to zero */
-	void *(*valloc)(
-		struct _malloc_zone_t *zone,
-		size_t size); /* same as malloc, but block returned is set to zero and is guaranteed to be page aligned */
-	void (*free)(struct _malloc_zone_t *zone, void *ptr);
-	void *(*realloc)(struct _malloc_zone_t *zone, void *ptr, size_t size);
-	void (*destroy)(struct _malloc_zone_t *zone); /* zone is destroyed and all memory reclaimed */
-	const char                    *zone_name;
-	void                          *reserved3;
-	void                          *reserved4;
-	struct malloc_introspection_t *introspect;
-	void                          *reserved5;
+    /* Only zone implementors should depend on the layout of this structure;
+     * Regular callers should use the access functions below */
+    void                          *reserved1;
+    void                          *reserved2;
+    size_t (*size)(struct _malloc_zone_t *zone,
+                   const void            *ptr); /* returns the size of a block or 0 if not in this zone; must be fast, especially
+                                                 * for negative answers */
+    void *(*malloc)(struct _malloc_zone_t *zone, size_t size);
+    void *(*calloc)(struct _malloc_zone_t *zone, size_t num_items,
+                    size_t size); /* same as malloc, but block returned is set to zero */
+    void *(*valloc)(
+        struct _malloc_zone_t *zone,
+        size_t size); /* same as malloc, but block returned is set to zero and is guaranteed to be page aligned */
+    void (*free)(struct _malloc_zone_t *zone, void *ptr);
+    void *(*realloc)(struct _malloc_zone_t *zone, void *ptr, size_t size);
+    void (*destroy)(struct _malloc_zone_t *zone); /* zone is destroyed and all memory reclaimed */
+    const char                    *zone_name;
+    void                          *reserved3;
+    void                          *reserved4;
+    struct malloc_introspection_t *introspect;
+    void                          *reserved5;
 } malloc_zone_t;
 
 /*********    Creation and destruction    ************/
@@ -118,12 +118,12 @@ extern const char *malloc_get_zone_name(malloc_zone_t *zone);
 
 typedef struct
 {
-	vm_address_t address;
-	vm_size_t    size;
+    vm_address_t address;
+    vm_size_t    size;
 } vm_range_t;
 
 typedef kern_return_t memory_reader_t (task_t remote_task, vm_address_t remote_address, vm_size_t size,
-									   void **local_memory);
+                                       void **local_memory);
 
 /* given a task, "reads" the memory at the given address and size
  * local_memory: set to a contiguous chunk of memory; validity of local_memory is assumed to be limited (until next call)
@@ -138,15 +138,15 @@ typedef void vm_range_recorder_t (task_t, void *, unsigned type, vm_range_t *, u
 
 typedef struct malloc_introspection_t
 {
-	kern_return_t (*enumerator)(task_t task, void *, unsigned type_mask, vm_address_t zone_address,
-								memory_reader_t reader,
-								vm_range_recorder_t recorder); /* enumerates all the malloc pointers in use */
-	size_t (*good_size)(malloc_zone_t *zone, size_t size);
-	boolean_t (*check)(malloc_zone_t *zone);                   /* Consistency checker */
-	void (*print)(malloc_zone_t *zone, boolean_t verbose);     /* Prints zone  */
-	void (*log)(malloc_zone_t *zone, void *address);           /* Enables logging of activity */
-	void (*force_lock)(malloc_zone_t *zone);                   /* Forces locking zone */
-	void (*force_unlock)(malloc_zone_t *zone);                 /* Forces unlocking zone */
+    kern_return_t (*enumerator)(task_t task, void *, unsigned type_mask, vm_address_t zone_address,
+                                memory_reader_t reader,
+                                vm_range_recorder_t recorder); /* enumerates all the malloc pointers in use */
+    size_t (*good_size)(malloc_zone_t *zone, size_t size);
+    boolean_t (*check)(malloc_zone_t *zone);                   /* Consistency checker */
+    void (*print)(malloc_zone_t *zone, boolean_t verbose);     /* Prints zone  */
+    void (*log)(malloc_zone_t *zone, void *address);           /* Enables logging of activity */
+    void (*force_lock)(malloc_zone_t *zone);                   /* Forces locking zone */
+    void (*force_unlock)(malloc_zone_t *zone);                 /* Forces unlocking zone */
 } malloc_introspection_t;
 
 extern void malloc_printf(const char *format, ...);
@@ -159,7 +159,7 @@ extern void malloc_printf(const char *format, ...);
 /*********    Functions for performance tools    ************/
 
 extern kern_return_t malloc_get_all_zones(task_t task, memory_reader_t reader, vm_address_t **addresses,
-										  unsigned *count);
+                                          unsigned *count);
 
 /* Fills addresses and count with the addresses of the zones in task;
  * Note that the validity of the addresses returned correspond to the validity of the memory returned by reader */

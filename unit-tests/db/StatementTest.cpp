@@ -807,15 +807,7 @@ void StatementTest::testRecursion()
 	pRtls->push_back(rtl);
 	CallStatement *c = new CallStatement;
 	rtl->appendStmt(c);
-#if 0
-	// Vector of 1 arg
-	std::vector<Exp *> args;
-	// m[r[28]+8]
-	Exp *a = Location::memOf(new Binary(opPlus,
-										Location::regOf(28), new Const(8)));
-	args.push_back(a);
-	crtl->setArguments(args);
-#endif
+
 	c->setDestProc(proc); // Just call self
 	PBB callbb = cfg->newBB(pRtls, CALL, 1);
 	first->setOutEdge(0, callbb);
@@ -1035,15 +1027,7 @@ void StatementTest::testAddUsedLocsCall()
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
 // Now with uses in collector
-#if 0 // FIXME: to be completed
-	l.clear();
-	ca->addUsedLocs(l, true);
-	std::ostringstream ost5f;
-	l.print(ost5f);
-	expected = "m[r26],\tm[r27],\tr26,\tr27,\tr28{55}";
-	actual   = ost5f.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-#endif
+
 }
 
 
@@ -1324,18 +1308,6 @@ void StatementTest::testBypass()
 	ost1 << s20;
 	actual = ost1.str();
 // CPPUNIT_ASSERT_EQUAL(expected, actual);
-#if 0 // No longer needed, but could maybe expand the test one day
-	// Fake it to be known that r29 is preserved
-	Exp *r29 = Location::regOf(29);
-	proc->setProven(new Binary(opEquals, r29, r29->clone()));
-	(*it)->bypass();
-	// Now expect r29{30} to be r29{3}
-	expected = "  22 *32* r24 := m[r29{3} + 8]{-}";
-	std::ostringstream ost2;
-	ost2 << *it;
-	actual = ost2.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-#endif
 	delete pFE;
 }
 

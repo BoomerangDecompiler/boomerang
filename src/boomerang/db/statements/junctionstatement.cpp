@@ -6,7 +6,7 @@
 
 JunctionStatement::JunctionStatement()
 {
-	m_kind = STMT_JUNCTION;
+    m_kind = STMT_JUNCTION;
 }
 
 
@@ -17,52 +17,52 @@ JunctionStatement::~JunctionStatement()
 
 bool JunctionStatement::accept(StmtVisitor *visitor)
 {
-	return visitor->visit(this);
+    return visitor->visit(this);
 }
 
 
 bool JunctionStatement::accept(StmtExpVisitor * /*visitor*/)
 {
-	return true;
+    return true;
 }
 
 
 bool JunctionStatement::accept(StmtModifier * /*visitor*/)
 {
-	return true;
+    return true;
 }
 
 
 bool JunctionStatement::accept(StmtPartModifier * /*visitor*/)
 {
-	return true;
+    return true;
 }
 
 
 void JunctionStatement::print(QTextStream& os, bool html) const
 {
-	os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
+    os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
 
-	if (html) {
-		os << "</td><td>";
-		os << "<a name=\"stmt" << m_number << "\">";
-	}
+    if (html) {
+        os << "</td><td>";
+        os << "<a name=\"stmt" << m_number << "\">";
+    }
 
-	os << "JUNCTION ";
+    os << "JUNCTION ";
 
-	for (size_t i = 0; i < m_parent->getNumInEdges(); i++) {
-		os << m_parent->getInEdges()[i]->getHiAddr();
+    for (size_t i = 0; i < m_parent->getNumInEdges(); i++) {
+        os << m_parent->getInEdges()[i]->getHiAddr();
 
-		if (m_parent->isBackEdge(i)) {
-			os << "*";
-		}
+        if (m_parent->isBackEdge(i)) {
+            os << "*";
+        }
 
-		os << " ";
-	}
+        os << " ";
+    }
 
-	if (isLoopJunction()) {
-		os << "LOOP";
-	}
+    if (isLoopJunction()) {
+        os << "LOOP";
+    }
 
 // TODO: PassManager::get("RangeAnalysis",this)->printData(os);
 //    os << "\n\t\t\tranges: ";
@@ -74,11 +74,11 @@ void JunctionStatement::print(QTextStream& os, bool html) const
 
 bool JunctionStatement::isLoopJunction() const
 {
-	for (size_t i = 0; i < m_parent->getNumInEdges(); i++) {
-		if (m_parent->isBackEdge(i)) {
-			return true;
-		}
-	}
+    for (size_t i = 0; i < m_parent->getNumInEdges(); i++) {
+        if (m_parent->isBackEdge(i)) {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }

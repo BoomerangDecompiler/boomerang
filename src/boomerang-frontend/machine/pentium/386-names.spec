@@ -8,13 +8,13 @@
 #
 
 # Jan 98 - Cristina
-#	original file by Norman pentium-names.spec
-#	removed all constructors dealing with floating point as per 386-core.spec.
+#    original file by Norman pentium-names.spec
+#    removed all constructors dealing with floating point as per 386-core.spec.
 # 2 Feb 98 - Cristina
-# 	changed argument of MOVZX and MOVSX from Eaddr to Mem as per 386-core.spec.
-#	toolkit emits warning for LDS, LES, LFS, LGS and LSS (10 combinations) 
-#		as these names are not in this spec.  It doesn't matter as the
-#		generated name for these is the right one (i.e. LDS, LES, etc).
+#     changed argument of MOVZX and MOVSX from Eaddr to Mem as per 386-core.spec.
+#    toolkit emits warning for LDS, LES, LFS, LGS and LSS (10 combinations) 
+#        as these names are not in this spec.  It doesn't matter as the
+#        generated name for these is the right one (i.e. LDS, LES, etc).
 
 
 assembly component 
@@ -93,14 +93,14 @@ assembly component
     TEST.Ed.Id              is TESTl
     SETb                    is SET
 assembly opcode
-  CALL.{Ev}{od}	            is CALL
+  CALL.{Ev}{od}                is CALL
   CALL.{Jv,Ep}{od,ow}       is lCALL
   CALL.aP{od}               is CALL
   CMPSv{od,ow}ad            is CMPSl
   CMPSv{od,ow}aw            is CMPSw
   JMP.Epod                  is lJMP
   MOVSX.Gv.Ebod             is MOVSbl
-  MOVSX.Gv.Ebow		    is MOVSbw
+  MOVSX.Gv.Ebow            is MOVSbw
   {ROL,ROR,RCL,RCR,SHR,SAR}{B.Ev.*}od is $1l
   {ROL,ROR,RCL,RCR,SHR,SAR}{B.Ev.*}ow is $1w
   SHLSAL{B.Ev.*}od          is SHLl
@@ -111,13 +111,13 @@ assembly operand
     [count i8 i16 i32]           is "$%d"
     [r32 sr16 r16 r8 base index] is "%%%s"
 assembly operand
-    [reg reg8 sreg cr dr]      	is "%%%s" using field base
+    [reg reg8 sreg cr dr]          is "%%%s" using field base
 assembly operand
     dx    is "%%dx"
     ax    is "%%ax"
 assembly component 
     {Indir,{Disp*},Abs32,Reg,{*Index*},E,rel{8,16,32}} is ""
-    {*}  is   	$1
+    {*}  is       $1
 assembly syntax
   arith^"iAL"     i8!, "%al"
   arith^"iAX"     i16!, "%ax"

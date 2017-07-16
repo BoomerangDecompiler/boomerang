@@ -90,7 +90,7 @@ translation_unit: transformation translation_unit
         { }
         | /* empty */
         { }
-	;
+    ;
 
 transformation: exp optional_where_clause BECOMES exp
         { new GenericExpTransformer($1, $2, $4); }
@@ -211,9 +211,9 @@ int TransformationParser::yylex()
 
 void TransformationParser::yyerror(char *s)
 {
-	fflush(stdout);
+    fflush(stdout);
         printf("\n%s", theScanner->lineBuf);
-	printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
+    printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
 }
 
 TransformationParser::~TransformationParser()

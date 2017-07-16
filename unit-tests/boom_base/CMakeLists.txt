@@ -1,5 +1,5 @@
 
-include(boomerang-macros)
+include(boomerang-utils)
 
 BOOMERANG_ADD_TEST(
 	NAME g_tests

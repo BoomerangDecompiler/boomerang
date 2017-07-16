@@ -40,9 +40,9 @@
 
 
 MIPSFrontEnd::MIPSFrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
-	: IFrontEnd(pBF, prog, _pbff)
+    : IFrontEnd(pBF, prog, _pbff)
 {
-	m_decoder = new MIPSDecoder(prog);
+    m_decoder = new MIPSDecoder(prog);
 }
 
 
@@ -53,63 +53,63 @@ MIPSFrontEnd::~MIPSFrontEnd()
 
 std::vector<SharedExp>& MIPSFrontEnd::getDefaultParams()
 {
-	static std::vector<SharedExp> params;
+    static std::vector<SharedExp> params;
 
-	if (params.size() == 0) {
-		for (int r = 31; r >= 0; r--) {
-			params.push_back(Location::regOf(r));
-		}
-	}
+    if (params.size() == 0) {
+        for (int r = 31; r >= 0; r--) {
+            params.push_back(Location::regOf(r));
+        }
+    }
 
-	return params;
+    return params;
 }
 
 
 std::vector<SharedExp>& MIPSFrontEnd::getDefaultReturns()
 {
-	static std::vector<SharedExp> returns;
+    static std::vector<SharedExp> returns;
 
-	if (returns.size() == 0) {
-		for (int r = 31; r >= 0; r--) {
-			returns.push_back(Location::regOf(r));
-		}
-	}
+    if (returns.size() == 0) {
+        for (int r = 31; r >= 0; r--) {
+            returns.push_back(Location::regOf(r));
+        }
+    }
 
-	return returns;
+    return returns;
 }
 
 
 Address MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
 {
-	gotMain = true;
-	   Address start = m_fileLoader->getMainEntryPoint();
+    gotMain = true;
+       Address start = m_fileLoader->getMainEntryPoint();
 
-	if (start != Address::INVALID) {
-		return start;
-	}
+    if (start != Address::INVALID) {
+        return start;
+    }
 
-	start   = m_fileLoader->getEntryPoint();
-	gotMain = false;
+    start   = m_fileLoader->getEntryPoint();
+    gotMain = false;
 
-	if (start == Address::INVALID) {
-		return Address::INVALID;
-	}
+    if (start == Address::INVALID) {
+        return Address::INVALID;
+    }
 
-	gotMain = true;
-	return start;
+    gotMain = true;
+    return start;
 }
 
 
 bool MIPSFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
-							   bool spec /* = false */)
+                               bool spec /* = false */)
 {
-	// Call the base class to do most of the work
-	if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
-		return false;
-	}
+    // Call the base class to do most of the work
+    if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+        return false;
+    }
 
-	// This will get done twice; no harm
-	pProc->setEntryBB();
+    // This will get done twice; no harm
+    pProc->setEntryBB();
 
-	return true;
+    return true;
 }

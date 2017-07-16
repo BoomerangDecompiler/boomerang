@@ -285,7 +285,7 @@ LOG_CC  := { "ANDCC","ANDNCC","ORCC","ORNCC","XORCC","XNORCC" };
 LOG_N[IDX]      rs1, reg_or_imm, rd
                     *32* rd := rs1 OP1[IDX] reg_or_imm;
 LOG_NOT[IDX]    rs1, reg_or_imm, rd
-                    *32* rd := rs1 OP1[IDX] (~reg_or_imm);	# ~ has weird precedence
+                    *32* rd := rs1 OP1[IDX] (~reg_or_imm);    # ~ has weird precedence
 LOG_CC[IDX]     rs1, reg_or_imm, rd
                     LOGICALFLAGS(rd);
 

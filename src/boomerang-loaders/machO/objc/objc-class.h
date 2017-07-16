@@ -37,18 +37,18 @@
  */
 struct objc_class
 {
-	struct objc_class *isa;
-	struct objc_class *super_class;
-	uint32_t          name;
-	long              version;
-	long              info;
-	long              instance_size;
-	uint32_t          ivars;       // struct objc_ivar_list *
+    struct objc_class *isa;
+    struct objc_class *super_class;
+    uint32_t          name;
+    long              version;
+    long              info;
+    long              instance_size;
+    uint32_t          ivars;       // struct objc_ivar_list *
 
-	uint32_t          methodLists; // struct objc_method_list **
+    uint32_t          methodLists; // struct objc_method_list **
 
-	uint32_t          cache;       // struct objc_cache *
-	uint32_t          protocols;   // struct objc_protocol_list *
+    uint32_t          cache;       // struct objc_cache *
+    uint32_t          protocols;   // struct objc_protocol_list *
 };
 
 #define CLS_GETINFO(cls, infomask)    ((cls)->info & (infomask))
@@ -117,11 +117,11 @@ typedef struct objc_category *Category;
 
 struct objc_category
 {
-	char     *category_name;
-	char     *class_name;
-	uint32_t instance_methods; // struct objc_method_list *
-	uint32_t class_methods;    // struct objc_method_list *
-	uint32_t protocols;        // struct objc_protocol_list *
+    char     *category_name;
+    char     *class_name;
+    uint32_t instance_methods; // struct objc_method_list *
+    uint32_t class_methods;    // struct objc_method_list *
+    uint32_t protocols;        // struct objc_protocol_list *
 };
 
 /*
@@ -131,21 +131,21 @@ typedef struct objc_ivar *Ivar;
 
 struct objc_ivar
 {
-	uint32_t ivar_name; // char *
-	uint32_t ivar_type; // char *
-	int      ivar_offset;
+    uint32_t ivar_name; // char *
+    uint32_t ivar_type; // char *
+    int      ivar_offset;
 #ifdef __alpha__
-	int      space;
+    int      space;
 #endif
 };
 
 struct objc_ivar_list
 {
-	int              ivar_count;
+    int              ivar_count;
 #ifdef __alpha__
-	int              space;
+    int              space;
 #endif
-	struct objc_ivar ivar_list[1]; /* variable length structure */
+    struct objc_ivar ivar_list[1]; /* variable length structure */
 };
 
 OBJC_EXPORT Ivar object_setInstanceVariable(id, const char *name, void *);
@@ -158,20 +158,20 @@ typedef struct objc_method *Method;
 
 struct objc_method
 {
-	uint32_t method_name;  // SEL
-	uint32_t method_types; // char *
-	uint32_t method_imp;   // IMP
+    uint32_t method_name;  // SEL
+    uint32_t method_types; // char *
+    uint32_t method_imp;   // IMP
 };
 
 struct objc_method_list
 {
-	struct objc_method_list *obsolete;
+    struct objc_method_list *obsolete;
 
-	int                     method_count;
+    int                     method_count;
 #ifdef __alpha__
-	int                     space;
+    int                     space;
 #endif
-	struct objc_method      method_list[1]; /* variable length structure */
+    struct objc_method      method_list[1]; /* variable length structure */
 };
 
 /* Protocol support */
@@ -181,9 +181,9 @@ struct Protocol;
 
 struct objc_protocol_list
 {
-	struct objc_protocol_list *next;
-	int                       count;
-	Protocol                  *list[1];
+    struct objc_protocol_list *next;
+    int                       count;
+    Protocol                  *list[1];
 };
 
 /* Definitions of filer types */
@@ -223,9 +223,9 @@ typedef struct objc_cache *Cache;
 #define CACHE_HASH(sel, mask)    (((uarith_t)(sel) >> 2) & (mask))
 struct objc_cache
 {
-	unsigned int mask; /* total = mask + 1 */
-	unsigned int occupied;
-	Method       buckets[1];
+    unsigned int mask; /* total = mask + 1 */
+    unsigned int occupied;
+    Method       buckets[1];
 };
 
 /* operations */
@@ -265,15 +265,15 @@ typedef void *marg_list;
 #define marg_prearg_size    0
 #endif
 
-#define marg_malloc(margs, method)																		\
-	do {																								\
-		margs = (marg_list *)malloc(marg_prearg_size + ((7 + method_getSizeOfArguments(method)) & ~7));	\
-	} while (0)
+#define marg_malloc(margs, method)                                                                        \
+    do {                                                                                                \
+        margs = (marg_list *)malloc(marg_prearg_size + ((7 + method_getSizeOfArguments(method)) & ~7));    \
+    } while (0)
 
 #define marg_free(margs) \
-	do {				 \
-		free(margs);	 \
-	} while (0)
+    do {                 \
+        free(margs);     \
+    } while (0)
 
 #define marg_adjustedOffset(method, offset)          (marg_prearg_size + offset)
 

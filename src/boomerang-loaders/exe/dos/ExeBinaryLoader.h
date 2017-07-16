@@ -28,41 +28,41 @@ class QFile;
 #pragma pack(push,1)
 struct PSP               /*        PSP structure                 */
 {
-	SWord int20h;        /* interrupt 20h                        */
-	SWord eof;           /* segment, end of allocation block     */
-	Byte  res1;          /* reserved                             */
-	Byte  dosDisp[5];    /* far call to DOS function dispatcher  */
-	Byte  int22h[4];     /* vector for terminate routine         */
-	Byte  int23h[4];     /* vector for ctrl+break routine        */
-	Byte  int24h[4];     /* vector for error routine             */
-	Byte  res2[22];      /* reserved                             */
-	SWord segEnv;        /* segment address of environment block */
-	Byte  res3[34];      /* reserved                             */
-	Byte  int21h[6];     /* opcode for int21h and far return     */
-	Byte  res4[6];       /* reserved                             */
-	Byte  fcb1[16];      /* default file control block 1         */
-	Byte  fcb2[16];      /* default file control block 2         */
-	Byte  res5[4];       /* reserved                             */
-	Byte  cmdTail[0x80]; /* command tail and disk transfer area  */
+    SWord int20h;        /* interrupt 20h                        */
+    SWord eof;           /* segment, end of allocation block     */
+    Byte  res1;          /* reserved                             */
+    Byte  dosDisp[5];    /* far call to DOS function dispatcher  */
+    Byte  int22h[4];     /* vector for terminate routine         */
+    Byte  int23h[4];     /* vector for ctrl+break routine        */
+    Byte  int24h[4];     /* vector for error routine             */
+    Byte  res2[22];      /* reserved                             */
+    SWord segEnv;        /* segment address of environment block */
+    Byte  res3[34];      /* reserved                             */
+    Byte  int21h[6];     /* opcode for int21h and far return     */
+    Byte  res4[6];       /* reserved                             */
+    Byte  fcb1[16];      /* default file control block 1         */
+    Byte  fcb2[16];      /* default file control block 2         */
+    Byte  res5[4];       /* reserved                             */
+    Byte  cmdTail[0x80]; /* command tail and disk transfer area  */
 };
 
 struct ExeHeader          /*      EXE file header          */
 {
-	Byte  sigLo;          /* .EXE signature: 0x4D 0x5A     */
-	Byte  sigHi;
-	SWord lastPageSize;   /* Size of the last page         */
-	SWord numPages;       /* Number of pages in the file   */
-	SWord numReloc;       /* Number of relocation items    */
-	SWord numParaHeader;  /* # of paragraphs in the header */
-	SWord minAlloc;       /* Minimum number of paragraphs  */
-	SWord maxAlloc;       /* Maximum number of paragraphs  */
-	SWord initSS;         /* Segment displacement of stack */
-	SWord initSP;         /* Contents of SP at entry       */
-	SWord checkSum;       /* Complemented checksum         */
-	SWord initIP;         /* Contents of IP at entry       */
-	SWord initCS;         /* Segment displacement of code  */
-	SWord relocTabOffset; /* Relocation table offset       */
-	SWord overlayNum;     /* Overlay number                */
+    Byte  sigLo;          /* .EXE signature: 0x4D 0x5A     */
+    Byte  sigHi;
+    SWord lastPageSize;   /* Size of the last page         */
+    SWord numPages;       /* Number of pages in the file   */
+    SWord numReloc;       /* Number of relocation items    */
+    SWord numParaHeader;  /* # of paragraphs in the header */
+    SWord minAlloc;       /* Minimum number of paragraphs  */
+    SWord maxAlloc;       /* Maximum number of paragraphs  */
+    SWord initSS;         /* Segment displacement of stack */
+    SWord initSP;         /* Contents of SP at entry       */
+    SWord checkSum;       /* Complemented checksum         */
+    SWord initIP;         /* Contents of IP at entry       */
+    SWord initCS;         /* Segment displacement of code  */
+    SWord relocTabOffset; /* Relocation table offset       */
+    SWord overlayNum;     /* Overlay number                */
 };
 
 #pragma pack(pop)
@@ -71,56 +71,56 @@ struct ExeHeader          /*      EXE file header          */
 class ExeBinaryLoader : public IFileLoader
 {
 public:
-	ExeBinaryLoader();
+    ExeBinaryLoader();
 
-	/// @copydoc IFileLoader::initialize
-	void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
+    /// \copydoc IFileLoader::initialize
+    void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 
-	/// @copydoc IFileLoader::canLoad
-	int canLoad(QIODevice& fl) const override;
+    /// \copydoc IFileLoader::canLoad
+    int canLoad(QIODevice& fl) const override;
 
-	/// @copydoc IFileLoader::loadFromMemory
-	bool loadFromMemory(QByteArray& data) override;
+    /// \copydoc IFileLoader::loadFromMemory
+    bool loadFromMemory(QByteArray& data) override;
 
-	/// @copydoc IFileLoader::unload
-	void unload() override;
+    /// \copydoc IFileLoader::unload
+    void unload() override;
 
-	/// @copydoc IFileLoader::close
-	void close() override;
+    /// \copydoc IFileLoader::close
+    void close() override;
 
-	/// @copydoc IFileLoader::getFormat
-	LoadFmt getFormat() const override;
+    /// \copydoc IFileLoader::getFormat
+    LoadFmt getFormat() const override;
 
-	/// @copydoc IFileLoader::getMachine
-	Machine getMachine() const override;
+    /// \copydoc IFileLoader::getMachine
+    Machine getMachine() const override;
 
-	/// @copydoc IFileLoader::getMainEntryPoint
-	   Address getMainEntryPoint() override;
+    /// \copydoc IFileLoader::getMainEntryPoint
+       Address getMainEntryPoint() override;
 
-	/// @copydoc IFileLoader::getEntryPoint
-	   Address getEntryPoint() override;
+    /// \copydoc IFileLoader::getEntryPoint
+       Address getEntryPoint() override;
 
-	/// @copydoc IFileLoader::getImageBase
-	   Address getImageBase() override;
+    /// \copydoc IFileLoader::getImageBase
+       Address getImageBase() override;
 
-	/// @copydoc IFileLoader::getImageSize
-	size_t getImageSize() override;
+    /// \copydoc IFileLoader::getImageSize
+    size_t getImageSize() override;
 
 public:
-	/// @copydoc IFileLoader::displayDetails
-	bool displayDetails(const char *fileName, FILE *f = stdout) override;
+    /// \copydoc IFileLoader::displayDetails
+    bool displayDetails(const char *fileName, FILE *f = stdout) override;
 
-	/// @copydoc IFileLoader::postLoad
-	bool postLoad(void *handle) override;  // For archive files only
+    /// \copydoc IFileLoader::postLoad
+    bool postLoad(void *handle) override;  // For archive files only
 
 private:
-	ExeHeader *m_header;  ///< Pointer to header
-	Byte *m_loadedImage;  ///< Pointer to image buffer
-	int m_imageSize;      ///< Size of image
-	int m_numReloc;       ///< Number of relocation entries
-	DWord *m_relocTable;  ///< The relocation table
-	   Address m_uInitPC;    ///< Initial program counter
-	   Address m_uInitSP;    ///< Initial stack pointer
-	IBinaryImage *m_image;
-	IBinarySymbolTable *m_symbols;
+    ExeHeader *m_header;  ///< Pointer to header
+    Byte *m_loadedImage;  ///< Pointer to image buffer
+    int m_imageSize;      ///< Size of image
+    int m_numReloc;       ///< Number of relocation entries
+    DWord *m_relocTable;  ///< The relocation table
+       Address m_uInitPC;    ///< Initial program counter
+       Address m_uInitSP;    ///< Initial stack pointer
+    IBinaryImage *m_image;
+    IBinarySymbolTable *m_symbols;
 };

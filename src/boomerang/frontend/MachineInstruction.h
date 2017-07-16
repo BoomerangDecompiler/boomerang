@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Address.h"
 
 #include <QString>
 #include <list>
@@ -20,24 +20,24 @@ class MachineOperand
 
 struct MachineInstruction
 {
-	QString                opcode;
-	Address                location;
-	std::vector<SharedExp> actuals;
+    QString                opcode;
+    Address                location;
+    std::vector<SharedExp> actuals;
 
-	MachineInstruction(QString op, Address pc, std::vector<SharedExp>&& acts)
-		: opcode(op)
-		, location(pc)
-		, actuals(acts)
-	{
-	}
+    MachineInstruction(QString op, Address pc, std::vector<SharedExp>&& acts)
+        : opcode(op)
+        , location(pc)
+        , actuals(acts)
+    {
+    }
 };
 
 class MachineSemantics
 {
 public:
-	virtual ~MachineSemantics() {}
+    virtual ~MachineSemantics() {}
 
-	virtual Exp *convertOperand(MachineOperand *Operand) = 0;
+    virtual Exp *convertOperand(MachineOperand *Operand) = 0;
 
-	virtual std::list<Instruction *> *convertInstruction(MachineInstruction *Insn) = 0;
+    virtual std::list<Instruction *> *convertInstruction(MachineInstruction *Insn) = 0;
 };

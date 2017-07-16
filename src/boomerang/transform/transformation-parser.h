@@ -23,12 +23,12 @@
 #define YY_TransformationParser_DEBUG    1
 #define YY_TransformationParser_PARSE_PARAM
 #define YY_TransformationParser_CONSTRUCTOR_PARAM \
-	std::istream& in, bool trace
+    std::istream& in, bool trace
 #define YY_TransformationParser_CONSTRUCTOR_INIT
-#define YY_TransformationParser_CONSTRUCTOR_CODE	   \
-	theScanner = new TransformationScanner(in, trace); \
-	if (trace) { yydebug = 1; }						   \
-	else { yydebug = 0; }
+#define YY_TransformationParser_CONSTRUCTOR_CODE       \
+    theScanner = new TransformationScanner(in, trace); \
+    if (trace) { yydebug = 1; }                           \
+    else { yydebug = 0; }
 
 #include <list>
 #include <string>
@@ -44,10 +44,10 @@ class TransformationScanner;
 
 struct yy_TransformationParser_stype
 {
-	int     ival;
-	QString str;
-	Type    *type;
-	Exp     *exp;
+    int     ival;
+    QString str;
+    Type    *type;
+    Exp     *exp;
 };
 
 #define YY_TransformationParser_STYPE    yy_TransformationParser_stype
@@ -71,14 +71,14 @@ struct yy_TransformationParser_stype
 #ifdef YY_TransformationParser_LSP_NEEDED
 #ifndef YY_TransformationParser_LTYPE
 typedef
-	struct yyltype
+    struct yyltype
 {
-	int  timestamp;
-	int  first_line;
-	int  first_column;
-	int  last_line;
-	int  last_column;
-	char *text;
+    int  timestamp;
+    int  first_line;
+    int  first_column;
+    int  last_line;
+    int  last_column;
+    char *text;
 }
 
 yyltype;
@@ -160,98 +160,98 @@ yyltype;
 class TransformationParser
 {
 public:
-	enum YY_TransformationParser_ENUM_TOKEN
-	{
-		YY_TransformationParser_NULL_TOKEN = 0
+    enum YY_TransformationParser_ENUM_TOKEN
+    {
+        YY_TransformationParser_NULL_TOKEN = 0
 
 /* #line 185 "/usr/local/lib/bison.h" */
 // #line 354 "transformation-parser.h"
-		, SIZEOF                           = 258
-		, KIND                             = 259
-		, POINTER                          = 260
-		, COMPOUND                         = 261
-		, ARRAY                            = 262
-		, TYPE                             = 263
-		, FUNC                             = 264
-		, WHERE                            = 265
-		, BECOMES                          = 266
-		, REGOF                            = 267
-		, MEMOF                            = 268
-		, ADDROF                           = 269
-		, CONSTANT                         = 270
-		, IDENTIFIER                       = 271
-		, STRING_LITERAL                   = 272
-		, PTR_OP                           = 273
-		, INC_OP                           = 274
-		, DEC_OP                           = 275
-		, LEFT_OP                          = 276
-		, RIGHT_OP                         = 277
-		, LE_OP                            = 278
-		, GE_OP                            = 279
-		, EQ_OP                            = 280
-		, NE_OP                            = 281
-		, AND_OP                           = 282
-		, OR_OP                            = 283
-		, MUL_ASSIGN                       = 284
-		, DIV_ASSIGN                       = 285
-		, MOD_ASSIGN                       = 286
-		, ADD_ASSIGN                       = 287
-		, SUB_ASSIGN                       = 288
-		, LEFT_ASSIGN                      = 289
-		, RIGHT_ASSIGN                     = 290
-		, AND_ASSIGN                       = 291
-		, XOR_ASSIGN                       = 292
-		, OR_ASSIGN                        = 293
-		, TYPE_NAME                        = 294
-		, STRUCT                           = 295
-		, UNION                            = 296
-		, ENUM                             = 297
-		, ELLIPSIS                         = 298
-		, BOOL_TRUE                        = 299
-		, BOOL_FALSE                       = 300
+        , SIZEOF                           = 258
+        , KIND                             = 259
+        , POINTER                          = 260
+        , COMPOUND                         = 261
+        , ARRAY                            = 262
+        , TYPE                             = 263
+        , FUNC                             = 264
+        , WHERE                            = 265
+        , BECOMES                          = 266
+        , REGOF                            = 267
+        , MEMOF                            = 268
+        , ADDROF                           = 269
+        , CONSTANT                         = 270
+        , IDENTIFIER                       = 271
+        , STRING_LITERAL                   = 272
+        , PTR_OP                           = 273
+        , INC_OP                           = 274
+        , DEC_OP                           = 275
+        , LEFT_OP                          = 276
+        , RIGHT_OP                         = 277
+        , LE_OP                            = 278
+        , GE_OP                            = 279
+        , EQ_OP                            = 280
+        , NE_OP                            = 281
+        , AND_OP                           = 282
+        , OR_OP                            = 283
+        , MUL_ASSIGN                       = 284
+        , DIV_ASSIGN                       = 285
+        , MOD_ASSIGN                       = 286
+        , ADD_ASSIGN                       = 287
+        , SUB_ASSIGN                       = 288
+        , LEFT_ASSIGN                      = 289
+        , RIGHT_ASSIGN                     = 290
+        , AND_ASSIGN                       = 291
+        , XOR_ASSIGN                       = 292
+        , OR_ASSIGN                        = 293
+        , TYPE_NAME                        = 294
+        , STRUCT                           = 295
+        , UNION                            = 296
+        , ENUM                             = 297
+        , ELLIPSIS                         = 298
+        , BOOL_TRUE                        = 299
+        , BOOL_FALSE                       = 300
 
 
 // #line 185 "/usr/local/lib/bison.h"
-		/* enum token */
-	};  /* end of enum declaration */
+        /* enum token */
+    };  /* end of enum declaration */
 
 public:
-	int YY_TransformationParser_PARSE(YY_TransformationParser_PARSE_PARAM);
-	virtual void YY_TransformationParser_ERROR(char *msg) YY_TransformationParser_ERROR_BODY;
+    int YY_TransformationParser_PARSE(YY_TransformationParser_PARSE_PARAM);
+    virtual void YY_TransformationParser_ERROR(char *msg) YY_TransformationParser_ERROR_BODY;
 
 #ifdef YY_TransformationParser_PURE
 #ifdef YY_TransformationParser_LSP_NEEDED
-	virtual int YY_TransformationParser_LEX(YY_TransformationParser_STYPE *YY_TransformationParser_LVAL, YY_TransformationParser_LTYPE *yylloc) YY_TransformationParser_LEX_BODY;
+    virtual int YY_TransformationParser_LEX(YY_TransformationParser_STYPE *YY_TransformationParser_LVAL, YY_TransformationParser_LTYPE *yylloc) YY_TransformationParser_LEX_BODY;
 
 #else
-	virtual int YY_TransformationParser_LEX(YY_TransformationParser_STYPE *YY_TransformationParser_LVAL) YY_TransformationParser_LEX_BODY;
+    virtual int YY_TransformationParser_LEX(YY_TransformationParser_STYPE *YY_TransformationParser_LVAL) YY_TransformationParser_LEX_BODY;
 #endif
 #else
-	virtual int YY_TransformationParser_LEX() YY_TransformationParser_LEX_BODY;
+    virtual int YY_TransformationParser_LEX() YY_TransformationParser_LEX_BODY;
 
-	YY_TransformationParser_STYPE YY_TransformationParser_LVAL;
+    YY_TransformationParser_STYPE YY_TransformationParser_LVAL;
 #ifdef YY_TransformationParser_LSP_NEEDED
-	YY_TransformationParser_LTYPE yylloc;
+    YY_TransformationParser_LTYPE yylloc;
 #endif
-	int YY_TransformationParser_NERRS;
-	int YY_TransformationParser_CHAR;
+    int YY_TransformationParser_NERRS;
+    int YY_TransformationParser_CHAR;
 #endif
 #if YY_TransformationParser_DEBUG != 0
 
 public:
-	int YY_TransformationParser_DEBUG_FLAG; /*  nonzero means print parse trace    */
+    int YY_TransformationParser_DEBUG_FLAG; /*  nonzero means print parse trace    */
 #endif
 
 public:
-	TransformationParser(YY_TransformationParser_CONSTRUCTOR_PARAM);
+    TransformationParser(YY_TransformationParser_CONSTRUCTOR_PARAM);
 
 public:
 
 private:
-	TransformationScanner *theScanner;
+    TransformationScanner *theScanner;
 
 public:
-	virtual ~TransformationParser();
+    virtual ~TransformationParser();
 };
 
 /* other declare folow */

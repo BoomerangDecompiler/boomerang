@@ -11,7 +11,6 @@
 #include "boomerang/db/statements/statement.h"
 #include "boomerang/db/statements/assign.h"
 
-#include "boomerang/util/types.h"
 #include "boomerang/util/Util.h" // E.g. str()
 
 #include <cassert>
@@ -28,18 +27,18 @@ class SSLScanner;
  *
  ******************************************************************************/
 SSLParser::SSLParser(std::istream& in, bool trace)
-	: sslFile("input")
-	, bFloat(false)
+    : sslFile("input")
+    , bFloat(false)
 {
-	m_fin      = nullptr;
-	theScanner = new SSLScanner(in, trace);
+    m_fin      = nullptr;
+    theScanner = new SSLScanner(in, trace);
 
-	if (trace) {
-		yydebug = 1;
-	}
-	else {
-		yydebug = 0;
-	}
+    if (trace) {
+        yydebug = 1;
+    }
+    else {
+        yydebug = 0;
+    }
 }
 
 
@@ -51,11 +50,11 @@ SSLParser::SSLParser(std::istream& in, bool trace)
  ******************************************************************************/
 Instruction *SSLParser::parseExp(const char *str)
 {
-	std::istringstream ss(str);
-	SSLParser          p(ss, false); // Second arg true for debugging
-	RTLInstDict        d;
-	p.yyparse(d);
-	return p.the_asgn;
+    std::istringstream ss(str);
+    SSLParser          p(ss, false); // Second arg true for debugging
+    RTLInstDict        d;
+    p.yyparse(d);
+    return p.the_asgn;
 }
 
 
@@ -66,14 +65,14 @@ Instruction *SSLParser::parseExp(const char *str)
  ******************************************************************************/
 SSLParser::~SSLParser()
 {
-	std::map<QString, Table *>::iterator loc;
+    std::map<QString, Table *>::iterator loc;
 
-	if (theScanner != nullptr) {
-		delete theScanner;
-	}
+    if (theScanner != nullptr) {
+        delete theScanner;
+    }
 
-	TableDict.clear();
-	delete m_fin;
+    TableDict.clear();
+    delete m_fin;
 }
 
 
@@ -84,7 +83,7 @@ SSLParser::~SSLParser()
  ******************************************************************************/
 void SSLParser::yyerror(const char *msg)
 {
-	LOG_STREAM() << sslFile << ":" << theScanner->theLine << ": " << msg << '\n';
+    LOG_STREAM() << sslFile << ":" << theScanner->theLine << ": " << msg << '\n';
 }
 
 
@@ -94,9 +93,9 @@ void SSLParser::yyerror(const char *msg)
  ******************************************************************************/
 int SSLParser::yylex()
 {
-	int token = theScanner->yylex(yylval);
+    int token = theScanner->yylex(yylval);
 
-	return token;
+    return token;
 }
 
 
@@ -111,266 +110,266 @@ int SSLParser::yylex()
  ******************************************************************************/
 OPER SSLParser::strToOper(const QString& s)
 {
-	static QMap<QString, OPER> opMap {
-		{
-			"*", opMult
-		}, {
-			"*!", opMults
-		}, {
-			"*f", opFMult
-		}, {
-			"*fsd", opFMultsd
-		}, {
-			"*fdq", opFMultdq
-		},
-		{
-			"/", opDiv
-		}, {
-			"/!", opDivs
-		}, {
-			"/f", opFDiv
-		}, {
-			"/fs", opFDiv
-		}, {
-			"/fd", opFDivd
-		}, {
-			"/fq", opFDivq
-		},
-		{
-			"%", opMod
-		}, {
-			"%!", opMods
-		},                         // no FMod ?
-		{
-			"+", opPlus
-		}, {
-			"+f", opFPlus
-		}, {
-			"+fs", opFPlus
-		}, {
-			"+fd", opFPlusd
-		}, {
-			"+fq", opFPlusq
-		},
-		{
-			"-", opMinus
-		}, {
-			"-f", opFMinus
-		}, {
-			"-fs", opFMinus
-		}, {
-			"-fd", opFMinusd
-		}, {
-			"-fq", opFMinusq
-		},
-		{
-			"<", opLess
-		}, {
-			"<u", opLessUns
-		}, {
-			"<=", opLessEq
-		}, {
-			"<=u", opLessEqUns
-		}, {
-			"<<", opShiftL
-		},
-		{
-			">", opGtr
-		}, {
-			">u", opGtrUns
-		}, {
-			">=", opGtrEq
-		}, {
-			">=u", opGtrEqUns
-		},
-		{
-			">>", opShiftR
-		}, {
-			">>A", opShiftRA
-		},
-		{
-			"rlc", opRotateLC
-		}, {
-			"rrc", opRotateRC
-		}, {
-			"rl", opRotateL
-		}, {
-			"rr", opRotateR
-		}
-	};
+    static QMap<QString, OPER> opMap {
+        {
+            "*", opMult
+        }, {
+            "*!", opMults
+        }, {
+            "*f", opFMult
+        }, {
+            "*fsd", opFMultsd
+        }, {
+            "*fdq", opFMultdq
+        },
+        {
+            "/", opDiv
+        }, {
+            "/!", opDivs
+        }, {
+            "/f", opFDiv
+        }, {
+            "/fs", opFDiv
+        }, {
+            "/fd", opFDivd
+        }, {
+            "/fq", opFDivq
+        },
+        {
+            "%", opMod
+        }, {
+            "%!", opMods
+        },                         // no FMod ?
+        {
+            "+", opPlus
+        }, {
+            "+f", opFPlus
+        }, {
+            "+fs", opFPlus
+        }, {
+            "+fd", opFPlusd
+        }, {
+            "+fq", opFPlusq
+        },
+        {
+            "-", opMinus
+        }, {
+            "-f", opFMinus
+        }, {
+            "-fs", opFMinus
+        }, {
+            "-fd", opFMinusd
+        }, {
+            "-fq", opFMinusq
+        },
+        {
+            "<", opLess
+        }, {
+            "<u", opLessUns
+        }, {
+            "<=", opLessEq
+        }, {
+            "<=u", opLessEqUns
+        }, {
+            "<<", opShiftL
+        },
+        {
+            ">", opGtr
+        }, {
+            ">u", opGtrUns
+        }, {
+            ">=", opGtrEq
+        }, {
+            ">=u", opGtrEqUns
+        },
+        {
+            ">>", opShiftR
+        }, {
+            ">>A", opShiftRA
+        },
+        {
+            "rlc", opRotateLC
+        }, {
+            "rrc", opRotateRC
+        }, {
+            "rl", opRotateL
+        }, {
+            "rr", opRotateR
+        }
+    };
 
-	// Could be *, *!, *f, *fsd, *fdq, *f[sdq]
-	if (opMap.contains(s)) {
-		return opMap[s];
-	}
+    // Could be *, *!, *f, *fsd, *fdq, *f[sdq]
+    if (opMap.contains(s)) {
+        return opMap[s];
+    }
 
-	//
-	switch (s[0].toLatin1())
-	{
-	case 'a':
+    //
+    switch (s[0].toLatin1())
+    {
+    case 'a':
 
-		// and, arctan, addr
-		if (s[1].toLatin1() == 'n') {
-			return opAnd;
-		}
+        // and, arctan, addr
+        if (s[1].toLatin1() == 'n') {
+            return opAnd;
+        }
 
-		if (s[1].toLatin1() == 'r') {
-			return opArcTan;
-		}
+        if (s[1].toLatin1() == 'r') {
+            return opArcTan;
+        }
 
-		if (s[1].toLatin1() == 'd') {
-			return opAddrOf;
-		}
+        if (s[1].toLatin1() == 'd') {
+            return opAddrOf;
+        }
 
-		break;
+        break;
 
-	case 'c':
-		// cos
-		return opCos;
+    case 'c':
+        // cos
+        return opCos;
 
-	case 'e':
-		// execute
-		return opExecute;
+    case 'e':
+        // execute
+        return opExecute;
 
-	case 'f':
+    case 'f':
 
-		// fsize, ftoi, fround NOTE: ftrunc handled separately because it is a unary
-		if (s[1].toLatin1() == 's') {
-			return opFsize;
-		}
+        // fsize, ftoi, fround NOTE: ftrunc handled separately because it is a unary
+        if (s[1].toLatin1() == 's') {
+            return opFsize;
+        }
 
-		if (s[1].toLatin1() == 't') {
-			return opFtoi;
-		}
+        if (s[1].toLatin1() == 't') {
+            return opFtoi;
+        }
 
-		if (s[1].toLatin1() == 'r') {
-			return opFround;
-		}
+        if (s[1].toLatin1() == 'r') {
+            return opFround;
+        }
 
-		break;
+        break;
 
-	case 'i':
-		// itof
-		return opItof;
+    case 'i':
+        // itof
+        return opItof;
 
-	case 'l':
+    case 'l':
 
-		// log2, log10, loge
-		if (s[3].toLatin1() == '2') {
-			return opLog2;
-		}
+        // log2, log10, loge
+        if (s[3].toLatin1() == '2') {
+            return opLog2;
+        }
 
-		if (s[3].toLatin1() == '1') {
-			return opLog10;
-		}
+        if (s[3].toLatin1() == '1') {
+            return opLog10;
+        }
 
-		if (s[3].toLatin1() == 'e') {
-			return opLoge;
-		}
+        if (s[3].toLatin1() == 'e') {
+            return opLoge;
+        }
 
-		break;
+        break;
 
-	case 'o':
-		// or
-		return opOr;
+    case 'o':
+        // or
+        return opOr;
 
-	case 'p':
-		// pow
-		return opPow;
+    case 'p':
+        // pow
+        return opPow;
 
-	case 's':
+    case 's':
 
-		// sgnex, sin, sqrt
-		if (s[1].toLatin1() == 'g') {
-			return opSgnEx;
-		}
+        // sgnex, sin, sqrt
+        if (s[1].toLatin1() == 'g') {
+            return opSgnEx;
+        }
 
-		if (s[1].toLatin1() == 'i') {
-			return opSin;
-		}
+        if (s[1].toLatin1() == 'i') {
+            return opSin;
+        }
 
-		if (s[1].toLatin1() == 'q') {
-			return opSqrt;
-		}
+        if (s[1].toLatin1() == 'q') {
+            return opSqrt;
+        }
 
-		break;
+        break;
 
-	case 't':
+    case 't':
 
-		// truncu, truncs, tan
-		// 012345
-		if (s[1].toLatin1() == 'a') {
-			return opTan;
-		}
+        // truncu, truncs, tan
+        // 012345
+        if (s[1].toLatin1() == 'a') {
+            return opTan;
+        }
 
-		if (s[5].toLatin1() == 'u') {
-			return opTruncu;
-		}
+        if (s[5].toLatin1() == 'u') {
+            return opTruncu;
+        }
 
-		if (s[5].toLatin1() == 's') {
-			return opTruncs;
-		}
+        if (s[5].toLatin1() == 's') {
+            return opTruncs;
+        }
 
-		break;
+        break;
 
-	case 'z':
-		// zfill
-		return opZfill;
+    case 'z':
+        // zfill
+        return opZfill;
 
-	case '=':
-		// =
-		return opEquals;
+    case '=':
+        // =
+        return opEquals;
 
-	case '!':
-		// !
-		return opSgnEx;
+    case '!':
+        // !
+        return opSgnEx;
 
-		break;
+        break;
 
-	case '~':
+    case '~':
 
-		// ~=, ~
-		if (s[1].toLatin1() == '=') {
-			return opNotEqual;
-		}
+        // ~=, ~
+        if (s[1].toLatin1() == '=') {
+            return opNotEqual;
+        }
 
-		return opNot; // Bit inversion
+        return opNot; // Bit inversion
 
-	case '@':
-		return opAt;
+    case '@':
+        return opAt;
 
-	case '&':
-		return opBitAnd;
+    case '&':
+        return opBitAnd;
 
-	case '|':
-		return opBitOr;
+    case '|':
+        return opBitOr;
 
-	case '^':
-		return opBitXor;
+    case '^':
+        return opBitXor;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 
-	yyerror(qPrintable(QString("Unknown operator %1\n").arg(s)));
-	return opWild;
+    yyerror(qPrintable(QString("Unknown operator %1\n").arg(s)));
+    return opWild;
 }
 
 
 OPER strToTerm(const QString& s)
 {
-	static QMap<QString, OPER> mapping =
-	{
-		{ "%pc",     opPC     }, { "%afp", opAFP }, { "%agp", opAGP }, { "%CF", opCF },
-		{ "%ZF",     opZF     }, { "%OF",  opOF  }, { "%NF",  opNF  }, { "%DF", opDF },{ "%flags", opFlags },
-		{ "%fflags", opFflags },
-	};
+    static QMap<QString, OPER> mapping =
+    {
+        { "%pc",     opPC     }, { "%afp", opAFP }, { "%agp", opAGP }, { "%CF", opCF },
+        { "%ZF",     opZF     }, { "%OF",  opOF  }, { "%NF",  opNF  }, { "%DF", opDF },{ "%flags", opFlags },
+        { "%fflags", opFflags },
+    };
 
-	if (mapping.contains(s)) {
-		return mapping[s];
-	}
+    if (mapping.contains(s)) {
+        return mapping[s];
+    }
 
-	return (OPER)0;
+    return (OPER)0;
 }
 
 
@@ -383,19 +382,19 @@ OPER strToTerm(const QString& s)
  ******************************************************************************/
 SharedExp listExpToExp(std::list<SharedExp> *le)
 {
-	SharedExp e;
-	SharedExp *cur = &e;
-	SharedExp end  = Terminal::get(opNil); // Terminate the chain
+    SharedExp e;
+    SharedExp *cur = &e;
+    SharedExp end  = Terminal::get(opNil); // Terminate the chain
 
-	for (auto& elem : *le) {
-		*cur = Binary::get(opList, elem, end);
-		// cur becomes the address of the address of the second subexpression
-		// In other words, cur becomes a reference to the second subexp ptr
-		// Note that declaring cur as a reference doesn't work (remains a reference to e)
-		cur = &(*cur)->refSubExp2();
-	}
+    for (auto& elem : *le) {
+        *cur = Binary::get(opList, elem, end);
+        // cur becomes the address of the address of the second subexpression
+        // In other words, cur becomes a reference to the second subexp ptr
+        // Note that declaring cur as a reference doesn't work (remains a reference to e)
+        cur = &(*cur)->refSubExp2();
+    }
 
-	return e;
+    return e;
 }
 
 
@@ -408,17 +407,17 @@ SharedExp listExpToExp(std::list<SharedExp> *le)
  ******************************************************************************/
 SharedExp listStrToExp(std::list<QString> *ls)
 {
-	SharedExp e;
-	SharedExp *cur = &e;
-	SharedExp end  = Terminal::get(opNil); // Terminate the chain
+    SharedExp e;
+    SharedExp *cur = &e;
+    SharedExp end  = Terminal::get(opNil); // Terminate the chain
 
-	for (auto& l : *ls) {
-		*cur = Binary::get(opList, Location::get(opParam, Const::get(l), nullptr), end);
-		cur  = &(*cur)->refSubExp2();
-	}
+    for (auto& l : *ls) {
+        *cur = Binary::get(opList, Location::get(opParam, Const::get(l), nullptr), end);
+        cur  = &(*cur)->refSubExp2();
+    }
 
-	*cur = Terminal::get(opNil); // Terminate the chain
-	return e;
+    *cur = Terminal::get(opNil); // Terminate the chain
+    return e;
 }
 
 
@@ -436,73 +435,73 @@ static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild), T
  ******************************************************************************/
 void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict& Dict)
 {
-	int     i, m;
-	QString nam;
+    int     i, m;
+    QString nam;
 
-	m = iname->getNumInstructions();
+    m = iname->getNumInstructions();
 
-	// Expand the tables (if any) in this instruction
-	for (i = 0, iname->reset(); i < m; i++, iname->increment()) {
-		nam = iname->getInstruction();
-		// Need to make substitutions to a copy of the RTL
-		RTL rtl = *o_rtlist; // deep copy of contents
+    // Expand the tables (if any) in this instruction
+    for (i = 0, iname->reset(); i < m; i++, iname->increment()) {
+        nam = iname->getInstruction();
+        // Need to make substitutions to a copy of the RTL
+        RTL rtl = *o_rtlist; // deep copy of contents
 
-		for (Instruction *s : rtl) {
-			std::list<SharedExp> le;
-			// Expression tables
-			assert(s->getKind() == STMT_ASSIGN);
+        for (Instruction *s : rtl) {
+            std::list<SharedExp> le;
+            // Expression tables
+            assert(s->getKind() == STMT_ASSIGN);
 
-			if (((Assign *)s)->searchAll(srchExpr, le)) {
-				std::list<SharedExp>::iterator it;
+            if (((Assign *)s)->searchAll(srchExpr, le)) {
+                std::list<SharedExp>::iterator it;
 
-				for (it = le.begin(); it != le.end(); it++) {
-					QString   tbl  = (*it)->access<Const, 1>()->getStr();
-					QString   idx  = (*it)->access<Const, 2>()->getStr();
-					SharedExp repl = ((ExprTable *)TableDict[tbl].get())->expressions[indexrefmap[idx]->getValue()];
-					s->searchAndReplace(**it, repl);
-				}
-			}
+                for (it = le.begin(); it != le.end(); it++) {
+                    QString   tbl  = (*it)->access<Const, 1>()->getStr();
+                    QString   idx  = (*it)->access<Const, 2>()->getStr();
+                    SharedExp repl = ((ExprTable *)TableDict[tbl].get())->expressions[indexrefmap[idx]->getValue()];
+                    s->searchAndReplace(**it, repl);
+                }
+            }
 
-			// Operator tables
-			SharedExp res;
+            // Operator tables
+            SharedExp res;
 
-			while (s->search(srchOp, res)) {
-				std::shared_ptr<Ternary> t;
+            while (s->search(srchOp, res)) {
+                std::shared_ptr<Ternary> t;
 
-				if (res->getOper() == opTypedExp) {
-					t = res->access<Ternary, 1>();
-				}
-				else {
-					t = res->access<Ternary>();
-				}
+                if (res->getOper() == opTypedExp) {
+                    t = res->access<Ternary, 1>();
+                }
+                else {
+                    t = res->access<Ternary>();
+                }
 
-				assert(t->getOper() == opOpTable);
-				// The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
-				// (and we want to replace it with e1 OP e2)
-				QString tbl = t->access<Const, 1>()->getStr();
-				QString idx = t->access<Const, 2>()->getStr();
-				// The expressions to operate on are in the list
-				auto b = t->access<Binary, 3>();
-				assert(b->getOper() == opList);
-				SharedExp e1 = b->getSubExp1();
-				SharedExp e2 = b->getSubExp2(); // This should be an opList too
-				assert(b->getOper() == opList);
-				e2 = e2->getSubExp1();
-				QString   ops  = ((OpTable *)TableDict[tbl].get())->Records[indexrefmap[idx]->getValue()];
-				SharedExp repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
-				s->searchAndReplace(*res, repl);
-			}
-		}
+                assert(t->getOper() == opOpTable);
+                // The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
+                // (and we want to replace it with e1 OP e2)
+                QString tbl = t->access<Const, 1>()->getStr();
+                QString idx = t->access<Const, 2>()->getStr();
+                // The expressions to operate on are in the list
+                auto b = t->access<Binary, 3>();
+                assert(b->getOper() == opList);
+                SharedExp e1 = b->getSubExp1();
+                SharedExp e2 = b->getSubExp2(); // This should be an opList too
+                assert(b->getOper() == opList);
+                e2 = e2->getSubExp1();
+                QString   ops  = ((OpTable *)TableDict[tbl].get())->Records[indexrefmap[idx]->getValue()];
+                SharedExp repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
+                s->searchAndReplace(*res, repl);
+            }
+        }
 
-		if (Dict.appendToDict(nam, *params, rtl) != 0) {
-			QString     errmsg;
-			QTextStream o(&errmsg);
-			o << "Pattern " << iname->getInsPattern() << " conflicts with an earlier declaration of " << nam << ".\n";
-			yyerror(qPrintable(errmsg));
-		}
-	}
+        if (Dict.appendToDict(nam, *params, rtl) != 0) {
+            QString     errmsg;
+            QTextStream o(&errmsg);
+            o << "Pattern " << iname->getInsPattern() << " conflicts with an earlier declaration of " << nam << ".\n";
+            yyerror(qPrintable(errmsg));
+        }
+    }
 
-	indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
+    indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
 }
 
 
@@ -518,5 +517,5 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
  ******************************************************************************/
 SharedExp SSLParser::makeSuccessor(SharedExp e)
 {
-	return Unary::get(opSuccessor, e);
+    return Unary::get(opSuccessor, e);
 }

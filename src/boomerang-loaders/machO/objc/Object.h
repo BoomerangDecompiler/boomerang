@@ -40,7 +40,7 @@
 
 @interface Object
 {
-	Class isa; /* A pointer to the instance's class structure */
+    Class isa; /* A pointer to the instance's class structure */
 }
 
 /* Initializing classes and instances */

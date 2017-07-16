@@ -12,7 +12,7 @@
 
 # Created by Cristina - 96 
 # 5 Mar 96 - Norman
-#	added patterns
+#    added patterns
 # 3 Mar 99 - Doug
 #   changed 'fetch' and 'address' specifications so that they conform to the
 #   ones hard-coded into the SML version of the toolkit (which currently doesn't
