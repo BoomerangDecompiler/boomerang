@@ -206,6 +206,9 @@ if (BOOM_BUILD_TESTS)
     
     add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
 	add_subdirectory(unit-tests)
+	
+	file(COPY "${CMAKE_SOURCE_DIR}/tests/inputs/"
+	    DESTINATION "${BOOMERANG_OUTPUT_DIR}/tests/inputs/") 
 endif (BOOM_BUILD_TESTS)
 
 
@@ -218,20 +221,9 @@ add_custom_target(check "./full_regression.sh"
 # Additional targets section
 ###############################################################################
 
-# copy function signatures and test files to output directory
-add_custom_target(COPY_FILES ALL)
-BOOMERANG_COPY(TARGET COPY_FILES POST_BUILD
-	DIRECTORIES ${CMAKE_SOURCE_DIR}/signatures/
-	DESTINATION ${BOOMERANG_OUTPUT_DIR}/signatures/
-)
-
-if (BOOM_BUILD_TESTS)
-	BOOMERANG_COPY(TARGET COPY_FILES POST_BUILD
-		DIRECTORIES ${CMAKE_SOURCE_DIR}/tests/inputs/
-		DESTINATION ${BOOMERANG_OUTPUT_DIR}/tests/inputs/
-	)
-endif (BOOM_BUILD_TESTS)
-
+# copy function signatures to output directory
+file(COPY "${CMAKE_SOURCE_DIR}/signatures/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/signatures/")
+file(COPY "${CMAKE_SOURCE_DIR}/frontend/"   DESTINATION "${BOOMERANG_OUTPUT_DIR}/frontend/")
 
 # delete all files in the 'out/' directory on make clean
 set(EXTRA_CLEAN_FILES "${BOOMERANG_OUTPUT_DIR}")
