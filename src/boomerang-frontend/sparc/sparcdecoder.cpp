@@ -2553,9 +2553,7 @@ bool SparcDecoder::isRestore(HostAddress hostPC)
  ******************************************************************************/
 DWord SparcDecoder::getDword(HostAddress lc)
 {
-    Byte *p = (Byte *)lc.value();
-
-    return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
+    return Util::readDWord((const void*)lc.value(), true);
 }
 
 
