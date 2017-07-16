@@ -13,7 +13,17 @@ protected:
 
 private slots:
 	void initTestCase();
+
+    /***************************************************************************/ /**
+    * \fn        CfgTest::testDominators
+    * OVERVIEW:  Test the dominator frontier code
+    ******************************************************************************/
 	void testDominators();
+
+    /***************************************************************************/ /**
+    * \fn        CfgTest::testSemiDominators
+    * OVERVIEW:        Test a case where semi dominators are different to dominators
+    ******************************************************************************/
 	void testSemiDominators();
 
 	/***************************************************************************/ /**
@@ -27,5 +37,10 @@ private slots:
 	* OVERVIEW:        Test a case where a phi function is not needed
 	******************************************************************************/
 	void testPlacePhi2();
+
+    /***************************************************************************/ /**
+    * \fn        CfgTest::testRenameVars
+    * OVERVIEW:        Test the renaming of variables
+    ******************************************************************************/
 	void testRenameVars();
 };

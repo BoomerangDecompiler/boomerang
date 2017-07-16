@@ -42,10 +42,6 @@ void RtlTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * \fn        RtlTest::testAppend
- * OVERVIEW:        Test appendExp and printing of RTLs
- ******************************************************************************/
 void RtlTest::testAppend()
 {
 	Assign *a = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
@@ -64,10 +60,6 @@ void RtlTest::testAppend()
 }
 
 
-/***************************************************************************/ /**
- * \fn        RtlTest::testClone
- * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
- ******************************************************************************/
 void RtlTest::testClone()
 {
 	Assign *a1 = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
@@ -92,12 +84,6 @@ void RtlTest::testClone()
 	QCOMPARE(act2, expected);
 }
 
-
-/***************************************************************************/ /**
- * \fn        RtlTest::testVisitor
- * OVERVIEW:        Test the accept function for correct visiting behaviour.
- * NOTES:            Stub class to test.
- ******************************************************************************/
 
 class StmtVisitorStub : public StmtVisitor
 {
@@ -220,10 +206,6 @@ void RtlTest::testVisitor()
 }
 
 
-/***************************************************************************/ /**
- * \fn        RtlTest::testIsCompare
- * OVERVIEW:        Test the isCompare function
- ******************************************************************************/
 // void RtlTest::testIsCompare() {
 //    BinaryFileFactory bff;
 //    BinaryFile *pBF = bff.Load(SWITCH_SPARC);

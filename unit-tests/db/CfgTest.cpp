@@ -37,10 +37,6 @@ void CfgTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * \fn        CfgTest::testDominators
- * OVERVIEW:        Test the dominator frontier code
- ******************************************************************************/
 #define FRONTIER_FOUR        Address(0x08048347)
 #define FRONTIER_FIVE        Address(0x08048351)
 #define FRONTIER_TWELVE      Address(0x080483b2)
@@ -98,10 +94,6 @@ void CfgTest::testDominators()
 }
 
 
-/***************************************************************************/ /**
- * \fn        CfgTest::testSemiDominators
- * OVERVIEW:        Test a case where semi dominators are different to dominators
- ******************************************************************************/
 #define SEMI_L    Address(0x80483b0)
 #define SEMI_M    Address(0x80483e2)
 #define SEMI_B    Address(0x8048345)
@@ -300,10 +292,6 @@ void CfgTest::testPlacePhi2()
 }
 
 
-/***************************************************************************/ /**
- * \fn        CfgTest::testRenameVars
- * OVERVIEW:        Test the renaming of variables
- ******************************************************************************/
 void CfgTest::testRenameVars()
 {
 	BinaryFileFactory bff;

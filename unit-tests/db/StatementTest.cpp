@@ -12,17 +12,18 @@
  * 06 Jul 05 - Mike: Split testAddUsedLocs into six separate tests for Assign ... Bool
  */
 
-#include <sstream>
-#include <map>
-#include "boomerang/StatementTest.h"
+#include "StatementTest.h"
 #include "boomerang/db/cfg.h"
-#include "boomerang/db/rtl.h"
-#include "boomerang/pentiumfrontend.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/db/exp.h"
+#include "boomerang/db/rtl.h"
+#include "boomerang/db/signature.h"
+#include "boomerang/util/Log.h"
 #include "boomerang/db/managed.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/signature.h"
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
+
+#include <sstream>
+#include <map>
 
 // class NullLogger : public Log {
 // public:
@@ -40,13 +41,6 @@
 
 static bool    logset = false;
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::initTestCase
- * OVERVIEW:        Set up some expressions for use with all the tests
- * NOTE:            Called before any tests
- * PARAMETERS:        <none>
- *
- *============================================================================*/
 void StatementTest::initTestCase()
 {
 	if (!logset) {
@@ -57,10 +51,6 @@ void StatementTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testEmpty
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testEmpty()
 {
 	// Force "verbose" flag (-v)
@@ -109,10 +99,6 @@ void StatementTest::testEmpty()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testFlow
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testFlow()
 {
 	// create Prog
@@ -180,10 +166,6 @@ void StatementTest::testFlow()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testKill
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testKill()
 {
 	// create Prog
@@ -252,10 +234,6 @@ void StatementTest::testKill()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testUse
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testUse()
 {
 	// create Prog
@@ -324,10 +302,6 @@ void StatementTest::testUse()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testUseOverKill
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testUseOverKill()
 {
 	// create Prog
@@ -400,10 +374,6 @@ void StatementTest::testUseOverKill()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testUseOverBB
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testUseOverBB()
 {
 	// create Prog
@@ -478,10 +448,6 @@ void StatementTest::testUseOverBB()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testUseKill
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testUseKill()
 {
 	// create Prog
@@ -549,10 +515,6 @@ void StatementTest::testUseKill()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testEndlessLoop
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testEndlessLoop()
 {
 	// create Prog
@@ -611,10 +573,6 @@ void StatementTest::testEndlessLoop()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testLocationSet
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testLocationSet()
 {
 	Location    rof(opRegOf, new Const(12), nullptr); // r12
@@ -693,10 +651,6 @@ void StatementTest::testLocationSet()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testWildLocationSet
- * OVERVIEW:
- *============================================================================*/
 void StatementTest::testWildLocationSet()
 {
 	Location rof12(opRegOf, new Const(12), nullptr);
@@ -744,10 +698,6 @@ void StatementTest::testWildLocationSet()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testRecursion
- * OVERVIEW:        Test push of argument (X86 style), then call self
- *============================================================================*/
 void StatementTest::testRecursion()
 {
 	// create Prog
@@ -852,10 +802,6 @@ void StatementTest::testRecursion()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatamentTest::testClone
- * OVERVIEW:        Test cloning of Assigns (and exps)
- *============================================================================*/
 void StatementTest::testClone()
 {
 	Assign *a1 = new Assign(Location::regOf(8), new Binary(opPlus, Location::regOf(9), new Const(99)));
@@ -884,10 +830,6 @@ void StatementTest::testClone()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testIsAssign
- * OVERVIEW:        Test assignment test
- *============================================================================*/
 void StatementTest::testIsAssign()
 {
 	std::ostringstream ost;
@@ -905,10 +847,6 @@ void StatementTest::testIsAssign()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testIsFlagCall
- * OVERVIEW:        Test the isFlagAssgn function, and opFlagCall
- *============================================================================*/
 void StatementTest::testIsFlagAssgn()
 {
 	std::ostringstream ost;
@@ -931,10 +869,6 @@ void StatementTest::testIsFlagAssgn()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testAddUsedLocsAssign .. testAddUsedLocsBool
- * OVERVIEW:        Test the finding of locations used by this statement
- *============================================================================*/
 void StatementTest::testAddUsedLocsAssign()
 {
 	// m[r28-4] := m[r28-8] * r26
@@ -1101,10 +1035,6 @@ void StatementTest::testAddUsedLocsBool()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testSubscriptVars
- * OVERVIEW:        Test the subscripting of locations in Statements
- *============================================================================*/
 void StatementTest::testSubscriptVars()
 {
 	Exp    *srch = Location::regOf(28);
@@ -1251,10 +1181,6 @@ void StatementTest::testSubscriptVars()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testBypass
- * OVERVIEW:        Test the visitor code that fixes references that were to locations defined by calls
- *============================================================================*/
 void StatementTest::testBypass()
 {
 	Prog              *prog = new Prog;
@@ -1311,10 +1237,6 @@ void StatementTest::testBypass()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testStripSizes
- * OVERVIEW:        Test the visitor code that strips out size casts
- *============================================================================*/
 void StatementTest::testStripSizes()
 {
 	// *v* r24 := m[zfill(8,32,local5) + param6]*8**8* / 16
@@ -1340,10 +1262,6 @@ void StatementTest::testStripSizes()
 }
 
 
-/***************************************************************************/ /**
- * FUNCTION:        StatementTest::testFindConstants
- * OVERVIEW:        Test the visitor code that finds constants
- *============================================================================*/
 void StatementTest::testFindConstants()
 {
 	Statement *a = new Assign(Location::regOf(24), new Binary(opPlus, new Const(3), new Const(4)));

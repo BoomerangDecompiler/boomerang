@@ -26,10 +26,6 @@ void DfaTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * \fn        DfaTest::testMeetInt
- * OVERVIEW:        Test meeting IntegerTypes with various other types
- ******************************************************************************/
 void DfaTest::testMeetInt()
 {
 	auto i32  = IntegerType::get(32, 1);
@@ -113,10 +109,6 @@ void DfaTest::testMeetInt()
 }
 
 
-/***************************************************************************/ /**
- * \fn        DfaTest::testMeetSize
- * OVERVIEW:        Test meeting IntegerTypes with various other types
- ******************************************************************************/
 void DfaTest::testMeetSize()
 {
 	QString     actual;
@@ -160,10 +152,6 @@ void DfaTest::testMeetSize()
 }
 
 
-/***************************************************************************/ /**
- * \fn        DfaTest::testMeetPointer
- * OVERVIEW:        Test meeting IntegerTypes with various other types
- ******************************************************************************/
 void DfaTest::testMeetPointer()
 {
 	auto i32  = IntegerType::get(32, 1);
@@ -189,10 +177,6 @@ void DfaTest::testMeetPointer()
 }
 
 
-/***************************************************************************/ /**
- * \fn        DfaTest::testMeetUnion
- * OVERVIEW:        Test meeting IntegerTypes with various other types
- ******************************************************************************/
 void DfaTest::testMeetUnion()
 {
 	auto i32  = IntegerType::get(32, 1);
