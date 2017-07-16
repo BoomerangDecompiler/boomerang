@@ -1,3 +1,4 @@
+#pragma once
 /*
  * Copyright (C) 1996-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -13,8 +14,6 @@
  * \file       decoder.h
  * OVERVIEW:   The interface to the instruction decoder.
  ******************************************************************************/
-
-#pragma once
 
 #include "boomerang/util/Address.h"
 
@@ -94,7 +93,7 @@ public:
      * If non zero, this field represents a new native address to be used as the out-edge for this instruction's BB.
      * At present, only used for the SPARC call/add caller prologue
      */
-       Address forceOutEdge;
+    Address forceOutEdge;
 };
 
 

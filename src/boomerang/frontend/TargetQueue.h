@@ -41,7 +41,7 @@ public:
     * \returns The next address to process, or Address::INVALID if none
     *          (targets is empty)
     ******************************************************************************/
-       Address nextAddress(const Cfg& cfg);
+    Address nextAddress(const Cfg& cfg);
 
     /// Print (for debugging)
     void dump();
