@@ -25,6 +25,14 @@ struct DecodeResult;
 class SparcMachine
 {
 public:
+    /***************************************************************************/ /**
+    * \fn     SparcMachine::dis_RegRhs
+    * \brief   Decode the register on the RHS
+    * \note    Replaces r[0] with const 0
+    * \note    Not used by DIS_RD since don't want 0 on LHS
+    * \param   reg_no - register (0-31)
+    * \returns        the expression representing the register
+    ******************************************************************************/
     SharedExp dis_RegRhs(uint8_t reg_no);
 };
 
@@ -53,6 +61,11 @@ public:
     DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
 
     /// Indicates whether the instruction at the given address is a restore instruction.
+    /***************************************************************************/ /**
+    * \brief      Check to see if the instruction at the given offset is a restore instruction
+    * \param      hostPC - pointer to the code in question (host address)
+    * \returns           True if a match found
+    ******************************************************************************/
     bool isRestore(HostAddress hostPC);
 
 private:
@@ -61,8 +74,32 @@ private:
      * Various functions to decode the operands of an instruction into
      * a SemStr representation.
      */
+
+    /***************************************************************************/ /**
+    * \fn         SparcDecoder::dis_Eaddr
+    * \brief      Converts a dynamic address to a Exp* expression.
+    *             E.g. %o7 --> r[ 15 ]
+    * \param        pc - the instruction stream address of the dynamic address
+    * \param        size - redundant parameter on SPARC
+    * \returns    the Exp* representation of the given address
+    ******************************************************************************/
     SharedExp dis_Eaddr(HostAddress pc, int size = 0);
+
+    /***************************************************************************/ /**
+    * \fn     SparcDecoder::dis_RegImm
+    * \brief        Decode the register or immediate at the given address.
+    * \note         Used via macro DIS_ROI
+    * \param        pc - an address in the instruction stream
+    * \returns      the register or immediate at the given address
+    ******************************************************************************/
     SharedExp dis_RegImm(HostAddress pc);
+
+    /***************************************************************************/ /**
+    * \fn     SparcDecoder::dis_RegLhs
+    * \brief   Decode the register on the LHS
+    * \param   r - register (0-31)
+    * \returns the expression representing the register
+    ******************************************************************************/
     SharedExp dis_RegLhs(unsigned r);
 
     /***************************************************************************/ /**
@@ -74,6 +111,21 @@ private:
      * \returns            Pointer to newly created RTL, or nullptr if invalid
      ******************************************************************************/
     RTL *createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name);
+
+    /***************************************************************************/ /**
+    * \fn      isFuncPrologue()
+    * \brief      Check to see if the instructions at the given offset match any callee prologue, i.e. does it look
+    *                    like this offset is a pointer to a function?
+    * \param      hostPC - pointer to the code in question (host address)
+    * \returns           True if a match found
+    ******************************************************************************/
     bool isFuncPrologue(HostAddress hostPC);
+
+    /***************************************************************************/ /**
+    * \fn        SparcDecoder::getDword
+    * \brief     Returns the double starting at the given address.
+    * \param     lc - address at which to decode the double
+    * \returns   the decoded double
+    ******************************************************************************/
     DWord getDword(HostAddress lc);
 };

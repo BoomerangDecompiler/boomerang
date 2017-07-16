@@ -54,6 +54,7 @@
 #define DIS_FS1Q    (machine->dis_RegRhs((fs1q >> 2) + 80))
 #define DIS_FS2Q    (machine->dis_RegRhs((fs2q >> 2) + 80))
 
+
 void DEBUG_STMTS(DecodeResult& result)
 {
     if (DEBUG_DECODER) {
@@ -2380,31 +2381,12 @@ MATCH_finished_d:
 }
 
 
-/***********************************************************************
- * These are functions used to decode instruction operands into
- * expressions (Exp*s).
- **********************************************************************/
-
-/***************************************************************************/ /**
- * \fn     SparcDecoder::dis_RegLhs
- * \brief   Decode the register on the LHS
- * \param   r - register (0-31)
- * \returns the expression representing the register
- ******************************************************************************/
 SharedExp SparcDecoder::dis_RegLhs(unsigned r)
 {
     return Location::regOf(r);
 }
 
 
-/***************************************************************************/ /**
- * \fn     SparcMachine::dis_RegRhs
- * \brief   Decode the register on the RHS
- * \note    Replaces r[0] with const 0
- * \note    Not used by DIS_RD since don't want 0 on LHS
- * \param   reg_no - register (0-31)
- * \returns        the expression representing the register
- ******************************************************************************/
 SharedExp SparcMachine::dis_RegRhs(uint8_t reg_no)
 {
     if (reg_no == 0) {
@@ -2415,13 +2397,6 @@ SharedExp SparcMachine::dis_RegRhs(uint8_t reg_no)
 }
 
 
-/***************************************************************************/ /**
- * \fn     SparcDecoder::dis_RegImm
- * \brief        Decode the register or immediate at the given address.
- * \note         Used via macro DIS_ROI
- * \param        pc - an address in the instruction stream
- * \returns      the register or immediate at the given address
- ******************************************************************************/
 SharedExp SparcDecoder::dis_RegImm(HostAddress pc)
 {
     HostAddress  MATCH_p      = pc;
@@ -2438,14 +2413,6 @@ SharedExp SparcDecoder::dis_RegImm(HostAddress pc)
 }
 
 
-/***************************************************************************/ /**
- * \fn         SparcDecoder::dis_Eaddr
- * \brief      Converts a dynamic address to a Exp* expression.
- *             E.g. %o7 --> r[ 15 ]
- * \param        pc - the instruction stream address of the dynamic address
- * \param        size - redundant parameter on SPARC
- * \returns    the Exp* representation of the given address
- ******************************************************************************/
 SharedExp SparcDecoder::dis_Eaddr(HostAddress pc, int size)
 {
     Q_UNUSED(size);
@@ -2501,13 +2468,6 @@ MATCH_finished_b:
 }
 
 
-/***************************************************************************/ /**
- * \fn      isFuncPrologue()
- * \brief      Check to see if the instructions at the given offset match any callee prologue, i.e. does it look
- *                    like this offset is a pointer to a function?
- * \param      hostPC - pointer to the code in question (host address)
- * \returns           True if a match found
- ******************************************************************************/
 bool SparcDecoder::isFuncPrologue(HostAddress hostPC)
 {
     Q_UNUSED(hostPC);
@@ -2515,12 +2475,6 @@ bool SparcDecoder::isFuncPrologue(HostAddress hostPC)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief      Check to see if the instruction at the given offset is a restore instruction
- * \param      hostPC - pointer to the code in question (host address)
- * \returns           True if a match found
- ******************************************************************************/
 bool SparcDecoder::isRestore(HostAddress hostPC)
 {
     HostAddress  MATCH_p      = hostPC;
@@ -2541,16 +2495,6 @@ bool SparcDecoder::isRestore(HostAddress hostPC)
 }
 
 
-/**********************************
-* These are the fetch routines.
-**********************************/
-
-/***************************************************************************/ /**
- * \fn        SparcDecoder::getDword
- * \brief     Returns the double starting at the given address.
- * \param     lc - address at which to decode the double
- * \returns   the decoded double
- ******************************************************************************/
 DWord SparcDecoder::getDword(HostAddress lc)
 {
     return Util::readDWord((const void*)lc.value(), true);
