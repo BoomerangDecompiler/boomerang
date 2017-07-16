@@ -36,7 +36,6 @@ static bool    logset = false;
 
 //
 
-#define HELLO_SPARC            (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
 #define HELLO_HPPA             (BOOMERANG_TEST_BASE "/tests/inputs/hppa/hello")
 #define STARTER_PALM           (BOOMERANG_TEST_BASE "/tests/inputs/mc68328/Starter.prc")
 #define SWITCH_BORLAND         (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
@@ -61,27 +60,9 @@ void LoaderTest::initTestCase()
 }
 
 
-void LoaderTest::testSparcLoad()
-{
-	// Load SPARC hello world
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_SPARC);
-
-	QVERIFY(loader != nullptr);
-
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QVERIFY(image != nullptr);
-
-	QCOMPARE(image->getNumSections(), (size_t)28);
-	QCOMPARE(image->getSectionInfo(1)->getName(), QString(".hash"));
-	QCOMPARE(image->getSectionInfo(27)->getName(), QString(".stab.indexstr"));
-}
-
-
-
 void LoaderTest::testHppaLoad()
 {
-	QSKIP("Disabled.");
+    QSKIP("Disabled.");
 
 	// Load HPPA hello world
 	BinaryFileFactory bff;

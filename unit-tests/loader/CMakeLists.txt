@@ -3,6 +3,7 @@ include(boomerang-utils)
 set(TESTS
 	LoaderTest
 	ElfLoaderTest
+	SparcLoaderTest
 )
 
 foreach(t ${TESTS})

@@ -10,9 +10,6 @@ private slots:
 	void initTestCase();
 
 	/// Test loading the sparc hello world program
-	void testSparcLoad();
-
-	/// Test loading the sparc hello world program
 	void testHppaLoad();
 
 	/// Test loading the Palm 68328 Starter.prc program
