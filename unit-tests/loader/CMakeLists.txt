@@ -2,6 +2,7 @@ include(boomerang-utils)
 
 set(TESTS
 	LoaderTest
+	ElfLoaderTest
 )
 
 foreach(t ${TESTS})

@@ -35,20 +35,11 @@
 static bool    logset = false;
 
 //
-#define HELLO_CLANG4           (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-dynamic")
-#define HELLO_CLANG4_STATIC    (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-static")
+
 #define HELLO_SPARC            (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
-#define HELLO_PENTIUM          (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
 #define HELLO_HPPA             (BOOMERANG_TEST_BASE "/tests/inputs/hppa/hello")
 #define STARTER_PALM           (BOOMERANG_TEST_BASE "/tests/inputs/mc68328/Starter.prc")
 #define SWITCH_BORLAND         (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
-
-/// path to the ELF loader plugin
-#ifdef _WIN32
-#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/boomerang/plugins/loader/libboomerang-ElfLoader.dll")
-#else
-#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/boomerang/plugins/loader/libboomerang-ElfLoader.so")
-#endif
 
 #define TEST_PROPRIETARY 0
 
@@ -62,63 +53,11 @@ static bool    logset = false;
 
 void LoaderTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
+    if (!logset) {
+        logset = true;
 		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
-	}
-}
-
-
-void LoaderTest::testElfLoadClang()
-{
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_CLANG4);
-
-	// test the loader
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getFormat(), LoadFmt::ELF);
-	QCOMPARE(loader->getMachine(), Machine::PENTIUM);
-	QCOMPARE(loader->hasDebugInfo(), false);
-	QCOMPARE(loader->getEntryPoint(),     Address(0x080482F0));
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x080483F0));
-
-	// test the loaded image
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QVERIFY(image != nullptr);
-
-	QCOMPARE(image->getNumSections(), (size_t)29);
-	QCOMPARE(image->getSectionInfo(0)->getName(),  QString(".interp"));
-	QCOMPARE(image->getSectionInfo(10)->getName(), QString(".plt"));
-	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
-	QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
-	QCOMPARE(image->getLimitTextHigh(), Address(0x0804A020));
-}
-
-
-void LoaderTest::testElfLoadClangStatic()
-{
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_CLANG4_STATIC);
-
-	// test the loader
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getFormat(), LoadFmt::ELF);
-	QCOMPARE(loader->getMachine(), Machine::PENTIUM);
-	QCOMPARE(loader->hasDebugInfo(), false);
-	QCOMPARE(loader->getEntryPoint(),     Address(0x0804884F));
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x080489A0));
-
-	// test the loaded image
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QVERIFY(image != nullptr);
-
-	QCOMPARE(image->getNumSections(), (size_t)29);
-	QCOMPARE(image->getSectionInfo(0)->getName(), QString(".note.ABI-tag"));
-	QCOMPARE(image->getSectionInfo(13)->getName(), QString(".eh_frame"));
-	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
-	QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
-	QCOMPARE(image->getLimitTextHigh(), Address(0x080ECDA4));
+        Boomerang::get()->setLogger(new NullLogger());
+    }
 }
 
 
@@ -138,22 +77,6 @@ void LoaderTest::testSparcLoad()
 	QCOMPARE(image->getSectionInfo(27)->getName(), QString(".stab.indexstr"));
 }
 
-
-void LoaderTest::testPentiumLoad()
-{
-	// Load Pentium hello world
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_PENTIUM);
-
-	QVERIFY(loader != nullptr);
-
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QVERIFY(image != nullptr);
-
-	QCOMPARE(image->getNumSections(), (size_t)33);
-	QCOMPARE(image->getSectionInfo(1)->getName(), QString(".note.ABI-tag"));
-	QCOMPARE(image->getSectionInfo(32)->getName(), QString(".strtab"));
-}
 
 
 void LoaderTest::testHppaLoad()
@@ -512,25 +435,6 @@ void LoaderTest::testMicroDis2()
 	QCOMPARE(size, 3);
 	size = microX86Dis(movswl);
 	QCOMPARE(size, 3);
-}
-
-
-typedef unsigned (*ElfHashFcn)(const char *);
-void LoaderTest::testElfHash()
-{
-	QLibrary z;
-
-	z.setFileName(ELF_LOADER);
-	bool opened = z.load();
-	QVERIFY(opened);
-
-	// Use the handle to find the "elf_hash" function
-	ElfHashFcn hashFcn = (ElfHashFcn)z.resolve("elf_hash");
-	QVERIFY(hashFcn);
-
-	// Call the function with the string "main
-	unsigned int hashValue = hashFcn("main");
-	QCOMPARE(hashValue, 0x737FEU);
 }
 
 
