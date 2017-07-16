@@ -34,26 +34,25 @@ public:
     BinaryFileFactory();
 
     /// \param pluginsPath Path of the directory where the loader plugins are located.
-    static void setPluginsPath(const std::string& pluginsPath);
+    static void setPluginsPath(const QString& pluginsPath);
 
     /// Load the binary file located at \p filePath.
     /// Automatically returns the appropriate loader for the binary file.
-    IFileLoader *loadFile(const std::string& filePath);
+    IFileLoader *loadFile(const QString& filePath);
 
 private:
-
     /**
      * Test all plugins against the file, select the one with the best match, and then return an
      * instance of the appropriate subclass.
      * \param filePath - name of the file to load
      * \returns Instance of the plugin that can load the file with given \p filePath
      */
-    IFileLoader *getInstanceFor(const std::string& filePath);
+    IFileLoader *getInstanceFor(const QString& filePath);
 
     /// load all suitable plugins from the plugin directory.
     void populatePlugins();
 
 private:
     std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins; /// all loaded loader plugins.
-    static std::string m_pluginsPath;                            ///< Path to the direcory containing the loader plugins.
+    static QString m_pluginsPath;                            ///< Path to the direcory containing the loader plugins.
 };

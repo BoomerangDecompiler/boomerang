@@ -32,7 +32,7 @@
     ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
      ((unsigned)((Byte *)(&x))[3] << 24))
 
-std::string BinaryFileFactory::m_pluginsPath = "";
+QString BinaryFileFactory::m_pluginsPath;
 
 
 BinaryFileFactory::BinaryFileFactory()
@@ -41,13 +41,13 @@ BinaryFileFactory::BinaryFileFactory()
 }
 
 
-void BinaryFileFactory::setPluginsPath(const std::string& pluginsPath)
+void BinaryFileFactory::setPluginsPath(const QString& pluginsPath)
 {
     BinaryFileFactory::m_pluginsPath = pluginsPath;
 }
 
 
-IFileLoader *BinaryFileFactory::loadFile(const std::string& filePath)
+IFileLoader *BinaryFileFactory::loadFile(const QString& filePath)
 {
     IBinaryImage       *image   = Boomerang::get()->getImage();
     IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
@@ -65,10 +65,10 @@ IFileLoader *BinaryFileFactory::loadFile(const std::string& filePath)
 
     loader->initialize(image, symbols);
 
-    QFile srcFile(QString(filePath.c_str()));
+    QFile srcFile(filePath);
 
     if (false == srcFile.open(QFile::ReadOnly)) {
-        qWarning() << "Opening '" << filePath.c_str() << "' failed";
+        qWarning() << "Opening '" << filePath << "' failed";
         return nullptr;
     }
 
@@ -76,7 +76,7 @@ IFileLoader *BinaryFileFactory::loadFile(const std::string& filePath)
     Boomerang::get()->getProject()->getFiledata() = srcFile.readAll();
 
     if (loader->loadFromMemory(Boomerang::get()->getProject()->getFiledata()) == 0) {
-        qWarning() << "Loading '" << filePath.c_str() << "' failed";
+        qWarning() << "Loading '" << filePath << "' failed";
         return nullptr;
     }
 
@@ -85,12 +85,12 @@ IFileLoader *BinaryFileFactory::loadFile(const std::string& filePath)
 }
 
 
-IFileLoader *BinaryFileFactory::getInstanceFor(const std::string& filePath)
+IFileLoader *BinaryFileFactory::getInstanceFor(const QString& filePath)
 {
-    QFile f(filePath.c_str());
+    QFile f(filePath);
 
     if (!f.open(QFile::ReadOnly)) {
-        qWarning() << "Unable to open binary file: " << filePath.c_str();
+        qWarning() << "Unable to open binary file: " << filePath;
         return nullptr;
     }
 
