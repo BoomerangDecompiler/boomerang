@@ -186,7 +186,7 @@ void IFrontEnd::readLibraryCatalog(const QString& sPath)
             continue;
         }
 
-        sig_path = Boomerang::get()->getProgPath() + "signatures/" + sFile;
+        sig_path = Boomerang::get()->getWorkingDirectory() + "signatures/" + sFile;
         CallConv cc = CallConv::C; // Most APIs are C calling convention
 
         if (sFile == "windows.h") {
@@ -206,7 +206,7 @@ void IFrontEnd::readLibraryCatalog()
 {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
        m_librarySignatures.clear();
-    QDir sig_dir(Boomerang::get()->getProgPath());
+    QDir sig_dir(Boomerang::get()->getWorkingDirectory());
 
     if (!sig_dir.cd("signatures")) {
         qWarning("Signatures directory does not exist.");

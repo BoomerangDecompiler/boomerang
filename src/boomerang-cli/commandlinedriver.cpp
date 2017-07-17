@@ -117,7 +117,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
     }
 
     Boomerang& boom(*Boomerang::get());
-    boom.setProgPath(QFileInfo(args[0]).absolutePath());
+    boom.setWorkingDirectory(QFileInfo(args[0]).absolutePath());
     boom.setPluginPath(QFileInfo(args[0]).absolutePath());
 
     for (int i = 1; i < args.size(); ++i) {
@@ -252,7 +252,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             {
                 QString   qstr(args[++i] + "/");
                 QFileInfo qfi(qstr);
-                boom.setProgPath(qfi.path());
+                boom.setWorkingDirectory(qfi.path());
             }
             break;
 

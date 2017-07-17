@@ -109,8 +109,8 @@ private:
     static Boomerang *boomerang; ///< the instance
 
     IBinarySymbolTable *m_symbols = nullptr;
-    QString m_progPath;               ///< String with the path to the boomerang executable.
-    QString m_outputPath;             ///< The path where all output files are created.
+    QString m_workingDirectory;               ///< String with the path to the boomerang executable.
+    QString m_outputDirectory;             ///< The path where all output files are created.
     Log *m_logger = nullptr;          ///< Takes care of the log messages.
     std::set<Watcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 
@@ -185,19 +185,20 @@ public:
     void setPluginPath(const QString& p);
 
     /// Set the path to the %Boomerang executable.
-    void setProgPath(const QString& p);
+    void setWorkingDirectory(const QString& p);
 
     /// Get the path to the %Boomerang executable.
-    const QString& getProgPath() const { return m_progPath; }
+    const QString& getWorkingDirectory() const { return m_workingDirectory; }
 
     /// Get the path to the %Boomerang executable.
-    QDir getProgDir() const { return QDir(m_progPath); }
+    QDir getProgDir() const { return QDir(m_workingDirectory); }
 
     /// Set the path where the output files are saved.
-    void setOutputPath(const QString& p) { m_outputPath = p; }
+    void setOutputPath(const QString& p) {
+        m_outputDirectory = p; }
 
     /// Returns the path to where the output files are saved.
-    const QString& getOutputPath() { return m_outputPath; }
+    const QString& getOutputPath() { return m_outputDirectory; }
 
     /**
      * Loads the executable file and decodes it.

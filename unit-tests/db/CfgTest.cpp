@@ -30,7 +30,7 @@ void CfgTest::initTestCase()
 {
 	if (!logset) {
 		logset = true;
-		Boomerang::get()->setProgPath(BOOMERANG_TEST_BASE);
+		Boomerang::get()->setWorkingDirectory(BOOMERANG_TEST_BASE);
 		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
 		Boomerang::get()->setLogger(new NullLogger());
 	}

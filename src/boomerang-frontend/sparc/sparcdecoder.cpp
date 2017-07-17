@@ -2505,7 +2505,7 @@ SparcDecoder::SparcDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {
     machine = new SparcMachine;
-    QString file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";
+    QString file = Boomerang::get()->getWorkingDirectory() + "frontend/machine/sparc/sparc.ssl";
     m_rtlDict.readSSLFile(file);
 }
 

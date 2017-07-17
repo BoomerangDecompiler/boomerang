@@ -41,8 +41,8 @@ Boomerang *Boomerang::boomerang = nullptr;
 
 Boomerang::Boomerang()
     : m_symbols(new SymTab)
-    , m_progPath("./")
-    , m_outputPath("./output/")
+    , m_workingDirectory("./")
+    , m_outputDirectory("./output/")
     , LogStream(stdout)
     , ErrStream(stderr)
     , m_currentProject(new Project)
@@ -707,10 +707,10 @@ int Boomerang::processCommand(QStringList& args)
 }
 
 
-void Boomerang::setProgPath(const QString& p)
+void Boomerang::setWorkingDirectory(const QString& p)
 {
-    m_progPath   = p + "/";
-    m_outputPath = m_progPath + "/output/";    // Default output path (can be overridden with -o below)
+    m_workingDirectory = p + "/";
+    m_outputDirectory = m_workingDirectory + "/output/";    // Default output path (can be overridden with -o below)
 }
 
 
@@ -722,15 +722,15 @@ void Boomerang::setPluginPath(const QString& p)
 
 bool Boomerang::setOutputDirectory(const QString& path)
 {
-    m_outputPath = path;
+    m_outputDirectory = path;
 
-    if (!m_outputPath.endsWith(QDir::separator())) {
-        m_outputPath += QDir::separator();
+    if (!m_outputDirectory.endsWith(QDir::separator())) {
+        m_outputDirectory += QDir::separator();
     }
 
     // Create the output directory, if needed
     if (!createDirectory(path)) {
-        qWarning() << "Warning! Could not create path " << m_outputPath << "!\n";
+        qWarning() << "Warning! Could not create path " << m_outputDirectory << "!\n";
         return false;
     }
 
@@ -911,7 +911,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     q_cout << "generating code...\n";
     prog->generateCode();
 
-    q_cout << "output written to " << m_outputPath << prog->getRootCluster()->getName() << "\n";
+    q_cout << "output written to " << m_outputDirectory << prog->getRootCluster()->getName() << "\n";
 
     time_t end;
     time(&end);
