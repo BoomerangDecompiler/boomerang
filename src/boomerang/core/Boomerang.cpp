@@ -92,7 +92,7 @@ void Boomerang::setLogger(Log *l)
 }
 
 
-ICodeGenerator *Boomerang::getHLLCode(UserProc *p)
+ICodeGenerator *Boomerang::getCodeGenerator(UserProc *p)
 {
     return new CCodeGenerator(p);
 }
@@ -103,7 +103,7 @@ void Boomerang::helpcmd() const
     QTextStream c_out(stdout);
 
     // Column 98 of this source file is column 80 of output (don't use tabs)
-    //  ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
+    //   ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
     c_out <<
         "Available commands (for use with -k):\n"
         "  decode                             : Loads and decodes the specified binary.\n"

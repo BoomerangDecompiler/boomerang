@@ -147,7 +147,7 @@ public:
      * Returns the ICodeGenerator for the given proc.
      * \return The ICodeGenerator for the specified UserProc.
      */
-    ICodeGenerator *getHLLCode(UserProc *p = nullptr);
+    ICodeGenerator *getCodeGenerator(UserProc *p = nullptr);
 
     /// Set the path where the %Boomerang executable will search for plugins.
     void setPluginPath(const QString& p);

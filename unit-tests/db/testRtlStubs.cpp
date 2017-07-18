@@ -49,7 +49,7 @@ void Analysis::analyse(UserProc *proc)
 }
 
 
-ICodeGenerator *Boomerang::getHLLCode(UserProc *p)
+ICodeGenerator *Boomerang::getCodeGenerator(UserProc *p)
 {
 	return 0;
 }

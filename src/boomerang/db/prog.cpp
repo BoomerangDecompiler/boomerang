@@ -258,7 +258,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
         os = &m_rootCluster->getStream();
 
         if (proc == nullptr) {
-            ICodeGenerator *code  = Boomerang::get()->getHLLCode();
+            ICodeGenerator *code  = Boomerang::get()->getCodeGenerator();
             bool           global = false;
 
             if (Boomerang::get()->noDecompile) {
@@ -313,7 +313,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
 
             proto = true;
             UserProc       *up   = (UserProc *)func;
-            ICodeGenerator *code = Boomerang::get()->getHLLCode(up);
+            ICodeGenerator *code = Boomerang::get()->getCodeGenerator(up);
             code->addPrototype(up); // May be the wrong signature if up has ellipsis
 
             if (generate_all) {
@@ -353,7 +353,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
             up->getCFG()->compressCfg();
             up->getCFG()->removeOrphanBBs();
 
-            ICodeGenerator *code = Boomerang::get()->getHLLCode(up);
+            ICodeGenerator *code = Boomerang::get()->getCodeGenerator(up);
             up->generateCode(code);
             code->print(module->getStream());
             delete code;
@@ -470,7 +470,7 @@ Module *Prog::getDefaultModule(const QString& name)
 
 void Prog::generateCode(QTextStream& os) const
 {
-    ICodeGenerator *code = Boomerang::get()->getHLLCode();
+    ICodeGenerator *code = Boomerang::get()->getCodeGenerator();
 
     for (Global *glob : m_globals) {
         // Check for an initial value
@@ -497,7 +497,7 @@ void Prog::generateCode(QTextStream& os) const
             }
 
             p->getCFG()->compressCfg();
-            code = Boomerang::get()->getHLLCode(p);
+            code = Boomerang::get()->getCodeGenerator(p);
             p->generateCode(code);
             code->print(os);
             delete code;
