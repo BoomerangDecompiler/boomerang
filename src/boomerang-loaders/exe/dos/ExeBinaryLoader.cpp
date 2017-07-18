@@ -181,23 +181,6 @@ void ExeBinaryLoader::unload()
 }
 
 
-// const char *ExeBinaryFile::SymbolByAddress(ADDRESS dwAddr) {
-//    if (dwAddr == GetMainEntryPoint())
-//        return const_cast<char *>("main");
-
-//    // No symbol table handled at present
-//    return nullptr;
-// }
-bool ExeBinaryLoader::displayDetails(const char *fileName, FILE *f
-                                     /* = stdout */)
-{
-    Q_UNUSED(fileName);
-    Q_UNUSED(f);
-
-    return false;
-}
-
-
 LoadFmt ExeBinaryLoader::getFormat() const
 {
     return LoadFmt::EXE;
@@ -213,26 +196,6 @@ Machine ExeBinaryLoader::getMachine() const
 void ExeBinaryLoader::close()
 {
     // Not implemented yet
-}
-
-
-bool ExeBinaryLoader::postLoad(void *handle)
-{
-    Q_UNUSED(handle);
-    // Not needed: for archives only
-    return false;
-}
-
-
-Address ExeBinaryLoader::getImageBase()
-{
-    return Address::ZERO;                                     /* FIXME */
-}
-
-
-size_t ExeBinaryLoader::getImageSize()
-{
-    return 0;                                    /* FIXME */
 }
 
 

@@ -293,7 +293,7 @@ void PalmBinaryLoader::unload()
 Address PalmBinaryLoader::getEntryPoint()
 {
     assert(0); /* FIXME: Need to be implemented */
-    return Address::ZERO;
+    return Address::INVALID;
 }
 
 
@@ -301,14 +301,6 @@ void PalmBinaryLoader::close()
 {
     // Not implemented yet
 }
-
-
-bool PalmBinaryLoader::postLoad(void *)
-{
-    // Not needed: for archives only
-    return false;
-}
-
 
 LoadFmt PalmBinaryLoader::getFormat() const
 {
@@ -325,18 +317,6 @@ Machine PalmBinaryLoader::getMachine() const
 bool PalmBinaryLoader::isLibrary() const
 {
     return(strncmp((char *)(m_pImage + 0x3C), "libr", 4) == 0);
-}
-
-
-Address PalmBinaryLoader::getImageBase()
-{
-    return Address::ZERO;                                      /* FIXME */
-}
-
-
-size_t PalmBinaryLoader::getImageSize()
-{
-    return 0;                                     /* FIXME */
 }
 
 

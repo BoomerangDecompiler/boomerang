@@ -65,35 +65,12 @@ public:
     /// \returns the "real" entry point, ie where execution of the program begins
     virtual Address getEntryPoint() = 0;
 
-    /// \returns the virtual address at which the binary expects to be loaded.
-    /// For position independent / relocatable code this should be NO_ADDDRESS
-    virtual Address getImageBase() = 0;
-
-    /// \returns the total size of the loaded image
-    virtual size_t getImageSize() = 0;
-
 public:
     /// Relocation functions
     virtual bool isRelocationAt(Address /*uNative*/) { return false; }
 
     virtual Address getJumpTarget(Address /*uNative*/) { return Address::INVALID; }
     virtual bool hasDebugInfo() { return false; }
-
-    /// Internal information
-    /// Dump headers, etc
-    /// Should always be overridden
-    /// Should display file header, program
-    /// headers and section headers, as well
-    /// as contents of each of the sections.
-    virtual bool displayDetails(const char * /*fileName*/, FILE * /*f*/ /* = stdout */)
-    {
-        return false;
-    }
-
-protected:
-    /// Special load function for archive members
-    /// Called after loading archive member
-    virtual bool postLoad(void *handle) = 0;
 };
 
 typedef Plugin<IFileLoader> LoaderPlugin;

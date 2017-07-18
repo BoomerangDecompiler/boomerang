@@ -114,19 +114,7 @@ public:
     /// \copydoc IFileLoader::getMachine
     Machine getMachine() const override;
 
-    /// \copydoc IFileLoader::getImageBase
-       Address getImageBase() override;
-
-    /// \copydoc IFileLoader::getImageSize
-    size_t getImageSize() override;
-
     bool isLibrary() const;
-
-protected:
-    // Analysis functions
-    //        bool        IsDynamicLinkedProc(ADDRESS wNative);
-    //        ADDRESS     NativeToHostAddress(ADDRESS uNative);
-    bool postLoad(void *handle) override;  // For archive files only
 
 private:
     /// Specific to BinaryFile objects that implement a "global pointer"

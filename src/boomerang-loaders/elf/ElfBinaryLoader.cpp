@@ -657,19 +657,6 @@ HostAddress ElfBinaryLoader::nativeToHostAddress(Address uNative)
 }
 
 
-bool ElfBinaryLoader::postLoad(void *handle)
-{
-    Q_UNUSED(handle);
-    // This function is called after an archive member has been loaded by ElfArchiveFile
-
-    // Save the elf pointer
-    // m_elf = (Elf*) handle;
-
-    // return ProcessElfFile();
-    return false;
-}
-
-
 void ElfBinaryLoader::close()
 {
     unload();
@@ -763,18 +750,6 @@ QStringList ElfBinaryLoader::getDependencyList()
     }
 
     return result;
-}
-
-
-Address ElfBinaryLoader::getImageBase()
-{
-    return m_baseAddr;
-}
-
-
-size_t ElfBinaryLoader::getImageSize()
-{
-    return m_imageSize;
 }
 
 

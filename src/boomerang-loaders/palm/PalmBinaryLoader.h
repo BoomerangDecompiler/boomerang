@@ -56,19 +56,10 @@ public:
     /// \copydoc IFileLoader::getEntryPoint
     virtual Address getEntryPoint() override;
 
-    /// \copydoc IFileLoader::getImageBase
-       Address getImageBase() override;
-
-    /// \copydoc IFileLoader::getImageSize
-    size_t getImageSize() override;
-
     // Analysis functions
     //    bool        IsDynamicLinkedProc(ADDRESS wNative);
     //    ADDRESS     NativeToHostAddress(ADDRESS uNative);
     bool isLibrary() const;
-
-    /// \copydoc IFileLoader::postLoad
-    bool postLoad(void *handle) override;  // For archive files only
 
 private:
     // Specific to BinaryFile objects that implement a "global pointer"

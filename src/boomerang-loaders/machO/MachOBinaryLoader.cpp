@@ -488,22 +488,6 @@ void MachOBinaryLoader::unload()
 }
 
 
-bool MachOBinaryLoader::postLoad(void *handle)
-{
-    Q_UNUSED(handle);
-    return false;
-}
-
-
-bool MachOBinaryLoader::displayDetails(const char *fileName, FILE *f
-                                       /* = stdout */)
-{
-    Q_UNUSED(fileName);
-    Q_UNUSED(f);
-    return false;
-}
-
-
 int MachOBinaryLoader::machORead2(short *ps) const
 {
     unsigned char *p = (unsigned char *)ps;
@@ -590,18 +574,6 @@ Machine MachOBinaryLoader::getMachine() const
 bool MachOBinaryLoader::isLibrary() const
 {
     return false;
-}
-
-
-Address MachOBinaryLoader::getImageBase()
-{
-    return loaded_addr;
-}
-
-
-size_t MachOBinaryLoader::getImageSize()
-{
-    return loaded_size;
 }
 
 

@@ -379,15 +379,6 @@ void HpSomBinaryLoader::close()
     // Not implemented yet
 }
 
-
-bool HpSomBinaryLoader::postLoad(void *handle)
-{
-    Q_UNUSED(handle);
-    // Not needed: for archives only
-    return false;
-}
-
-
 LoadFmt HpSomBinaryLoader::getFormat() const
 {
     return LoadFmt::PAR;
@@ -405,18 +396,6 @@ bool HpSomBinaryLoader::isLibrary() const
     int type = UINT4(m_loadedImage) & 0xFFFF;
 
     return(type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
-}
-
-
-Address HpSomBinaryLoader::getImageBase()
-{
-    return Address::ZERO;                                       /* FIXME */
-}
-
-
-size_t HpSomBinaryLoader::getImageSize()
-{
-    return UINT4(m_loadedImage + 0x24);
 }
 
 

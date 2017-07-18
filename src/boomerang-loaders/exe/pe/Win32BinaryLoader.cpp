@@ -765,13 +765,6 @@ void Win32BinaryLoader::unload()
 }
 
 
-bool Win32BinaryLoader::postLoad(void *handle)
-{
-    Q_UNUSED(handle);
-    return false;
-}
-
-
 #if defined(_WIN32) && !defined(__MINGW32__)
 
 char *SymTagEnums[] =
@@ -936,14 +929,6 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID Us
 
 
 #endif
-
-
-bool Win32BinaryLoader::displayDetails(const char *fileName, FILE *f /* = stdout */)
-{
-    Q_UNUSED(fileName);
-    Q_UNUSED(f);
-    return false;
-}
 
 
 SWord Win32BinaryLoader::win32Read2(const void* src) const
@@ -1147,19 +1132,7 @@ Machine Win32BinaryLoader::getMachine() const
 
 bool Win32BinaryLoader::isLibrary() const
 {
-    return((m_pPEHeader->Flags & 0x2000) != 0);
-}
-
-
-Address Win32BinaryLoader::getImageBase()
-{
-    return Address(m_pPEHeader->Imagebase);
-}
-
-
-size_t Win32BinaryLoader::getImageSize()
-{
-    return m_pPEHeader->ImageSize;
+    return (m_pPEHeader->Flags & 0x2000) != 0;
 }
 
 

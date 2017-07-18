@@ -186,18 +186,9 @@ public:
     /// \copydoc IFileLoader::getEntryPoint
     Address getEntryPoint() override;
 
-    /// \copydoc IFileLoader::getImageBase
-    Address getImageBase() override;
-
-    /// \copydoc IFileLoader::getImageSize
-    size_t getImageSize() override;
-
 public:
     /// \copydoc IFileLoader::isJumpToAnotherAddr
     Address getJumpTarget(Address uNative) override;
-
-    /// \copydoc IFileLoader::displayDetails
-    bool displayDetails(const char *fileName, FILE *f = stdout) override;
 
     /// \copydoc IFileLoader::hasDebugInfo
     bool hasDebugInfo() override { return m_hasDebugInfo; }
@@ -207,9 +198,6 @@ public:
     DWord getDelta();
 
 protected:
-    /// \copydoc IFileLoader::postLoad
-    bool postLoad(void *handle) override;
-
     SWord win32Read2(const void* src) const; ///< Read 2 bytes from native addr
     DWord win32Read4(const void* src) const; ///< Read 4 bytes from native addr
 

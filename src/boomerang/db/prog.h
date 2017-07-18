@@ -359,8 +359,6 @@ public:
 
     void readSymbolFile(const QString& fname);
 
-    size_t getImageSize()  const { return m_loaderIface->getImageSize(); }
-       Address getImageBase() const { return m_loaderIface->getImageBase(); }
     void printSymbolsToFile() const;
     void printCallGraph() const;
     void printCallGraphXML() const;

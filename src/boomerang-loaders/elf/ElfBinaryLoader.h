@@ -72,12 +72,6 @@ public:
     /// \copydoc IFileLoader::getEntryPoint
     virtual Address getEntryPoint() override;
 
-    /// \copydoc IFileLoader::getImageBase
-       Address getImageBase() override;
-
-    /// \copydoc IFileLoader::getImageSize
-    size_t getImageSize() override;
-
     /// \copydoc IFileLoader::isRelocationAt
     bool isRelocationAt(Address uNative) override;
 
@@ -115,7 +109,6 @@ private:
     /// So currently not called
     void addRelocsAsSyms(uint32_t secIndex);
     void setRelocInfo(SectionInfo *pSect);
-    bool postLoad(void *handle) override; // Called after archive member loaded
 
     /// Search the .rel[a].plt section for an entry with symbol table index i.
     /// If found, return the native address of the associated PLT entry.

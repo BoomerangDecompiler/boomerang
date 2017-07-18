@@ -365,22 +365,6 @@ void DOS4GWBinaryLoader::unload()
 }
 
 
-bool DOS4GWBinaryLoader::postLoad(void *handle)
-{
-    Q_UNUSED(handle);
-    return false;
-}
-
-
-bool DOS4GWBinaryLoader::displayDetails(const char *fileName, FILE *f
-                                        /* = stdout */)
-{
-    Q_UNUSED(fileName);
-    Q_UNUSED(f);
-    return false;
-}
-
-
 SWord DOS4GWBinaryLoader::dos4gwRead2(const void* src) const
 {
     return Util::readWord(src, false);
@@ -402,18 +386,6 @@ LoadFmt DOS4GWBinaryLoader::getFormat() const
 Machine DOS4GWBinaryLoader::getMachine() const
 {
     return Machine::PENTIUM;
-}
-
-
-Address DOS4GWBinaryLoader::getImageBase()
-{
-    return Address(m_pLXObjects[0].RelocBaseAddr);
-}
-
-
-size_t DOS4GWBinaryLoader::getImageSize()
-{
-    return 0; // TODO
 }
 
 

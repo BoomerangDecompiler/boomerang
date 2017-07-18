@@ -95,23 +95,11 @@ public:
     Machine getMachine() const override;
 
     /// \copydoc IFileLoader::getMainEntryPoint
-       Address getMainEntryPoint() override;
+    Address getMainEntryPoint() override;
 
     /// \copydoc IFileLoader::getEntryPoint
-       Address getEntryPoint() override;
+    Address getEntryPoint() override;
 
-    /// \copydoc IFileLoader::getImageBase
-       Address getImageBase() override;
-
-    /// \copydoc IFileLoader::getImageSize
-    size_t getImageSize() override;
-
-public:
-    /// \copydoc IFileLoader::displayDetails
-    bool displayDetails(const char *fileName, FILE *f = stdout) override;
-
-    /// \copydoc IFileLoader::postLoad
-    bool postLoad(void *handle) override;  // For archive files only
 
 private:
     ExeHeader *m_header;  ///< Pointer to header
@@ -119,8 +107,8 @@ private:
     int m_imageSize;      ///< Size of image
     int m_numReloc;       ///< Number of relocation entries
     DWord *m_relocTable;  ///< The relocation table
-       Address m_uInitPC;    ///< Initial program counter
-       Address m_uInitSP;    ///< Initial stack pointer
+    Address m_uInitPC;    ///< Initial program counter
+    Address m_uInitSP;    ///< Initial stack pointer
     IBinaryImage *m_image;
     IBinarySymbolTable *m_symbols;
 };

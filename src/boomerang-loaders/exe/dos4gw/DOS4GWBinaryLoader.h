@@ -159,21 +159,10 @@ public:
     Machine getMachine() const override;
 
     /// \copydoc IFileLoader::getMainEntryPoint
-       Address getMainEntryPoint() override;
+    Address getMainEntryPoint() override;
 
     /// \copydoc IFileLoader::getEntryPoint
-       Address getEntryPoint() override;
-
-    /// \copydoc IFileLoader::getImageBase
-       Address getImageBase() override;
-
-    /// \copydoc IFileLoader::getImageSize
-    size_t getImageSize() override;
-
-    // Internal information
-    // Dump headers, etc
-    virtual bool displayDetails(const char *fileName, FILE *f = stdout) override;
-
+    Address getEntryPoint() override;
 
     DWord getDelta();
 
@@ -182,8 +171,6 @@ protected:
     DWord dos4gwRead4(const void* src) const;   // Read 4 bytes from native addr
 
 private:
-    bool postLoad(void *handle) override; ///< Called after archive member loaded
-
     LXHeader *m_pLXHeader  = nullptr;     ///< Pointer to lx header
     LXObject *m_pLXObjects = nullptr;     ///< Pointer to lx objects
     int m_cbImage;                        ///< Size of image

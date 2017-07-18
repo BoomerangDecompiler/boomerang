@@ -111,24 +111,16 @@ public:
     Machine getMachine() const override;
 
     /// \copydoc IFileLoader::getMainEntryPoint
-       Address getMainEntryPoint() override;
+    Address getMainEntryPoint() override;
 
     /// \copydoc IFileLoader::getEntryPoint
-       Address getEntryPoint() override;
-
-    /// \copydoc IFileLoader::getImageBase
-       Address getImageBase() override;
-
-    /// \copydoc IFileLoader::getImageSize
-    size_t getImageSize() override;
-
+    Address getEntryPoint() override;
 
     DWord getDelta();
 
     bool isLibrary() const;
 
-    /// \copydoc IFileLoader::displayDetails
-    bool displayDetails(const char *fileName, FILE *f = stdout) override;
+    std::map<QString, ObjcModule>& getObjcModules() override  { return modules; }
 
 protected:
     int machORead2(short *ps) const; // Read 2 bytes from native addr
@@ -142,20 +134,14 @@ protected:
     uint32_t BMMH(uint32_t x);
     unsigned short BMMHW(unsigned short x);
 
-public:
-    std::map<QString, ObjcModule>& getObjcModules() override  { return modules; }
-
 private:
-    /// \copydoc IFileLoader::postLoad
-    bool postLoad(void *handle) override;
-
     /// Find names for jumps to IATs
     void findJumps(Address curr);
 
 private:
     char *base;           ///< Beginning of the loaded image
-       Address entrypoint;
-       Address loaded_addr;
+    Address entrypoint;
+    Address loaded_addr;
     unsigned loaded_size;
     Machine machine;
     bool swap_bytes;
