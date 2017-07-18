@@ -1123,7 +1123,7 @@ bool Win32BinaryLoader::isMinGWsMalloc(Address uNative)
 }
 
 
-Address Win32BinaryLoader::isJumpToAnotherAddr(Address uNative)
+Address Win32BinaryLoader::getJumpTarget(Address uNative)
 {
     if ((m_image->readNative1(uNative) & 0xff) != 0xe9) {
         return Address::INVALID;

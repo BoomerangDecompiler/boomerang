@@ -557,7 +557,7 @@ Function *Prog::setNewProc(Address uAddr)
         return pProc; // Yes, we are done
     }
 
-       Address other = m_loaderIface->isJumpToAnotherAddr(uAddr);
+       Address other = m_loaderIface->getJumpTarget(uAddr);
 
     if (other != Address::INVALID) {
         uAddr = other;

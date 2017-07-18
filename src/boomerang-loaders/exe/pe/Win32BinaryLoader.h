@@ -194,7 +194,7 @@ public:
 
 public:
     /// \copydoc IFileLoader::isJumpToAnotherAddr
-    Address isJumpToAnotherAddr(Address uNative) override;
+    Address getJumpTarget(Address uNative) override;
 
     /// \copydoc IFileLoader::displayDetails
     bool displayDetails(const char *fileName, FILE *f = stdout) override;
