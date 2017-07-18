@@ -23,7 +23,6 @@
 #include "boomerang/db/signature.h"
 #endif
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/include/decoder.h"

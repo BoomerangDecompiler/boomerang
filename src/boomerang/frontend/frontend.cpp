@@ -21,7 +21,6 @@
 
 #include "boomerang/c/ansi-c-parser.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/register.h"
@@ -35,6 +34,7 @@
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/SymTab.h"
+#include "boomerang/db/exp/Location.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/types.h"

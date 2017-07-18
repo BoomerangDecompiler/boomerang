@@ -17,12 +17,12 @@
  *                procedure such as parameters and locals.
  ******************************************************************************/
 
-#include "boomerang/db/exp.h" // For lessExpStar
 #include "boomerang/db/cfg.h" // For cfg->simplify()
 
 #include "boomerang/include/memo.h"
 #include "boomerang/db/dataflow.h"       // For class UseCollector
 #include "boomerang/db/statements/returnstatement.h"
+#include "boomerang/db/exp/Binary.h"
 
 #include <list>
 #include <vector>

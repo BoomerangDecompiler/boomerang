@@ -19,7 +19,7 @@
  *                ConnectionGraph
  *==============================================================================================*/
 
-#include "boomerang/db/exphelp.h" // For lessExpStar
+#include "boomerang/db/exp/ExpHelp.h" // For lessExpStar
 
 #include <list>
 #include <set>
@@ -192,6 +192,8 @@ public:
     void erase(iterator it) { svec.erase(it); }
 };
 
+typedef std::set<SharedExp, lessExpStar> ExpSet;
+
 // For various purposes, we need sets of locations (registers or memory)
 class LocationSet
 {
@@ -199,11 +201,11 @@ class LocationSet
     // by expression value. If this is not done, then two expressions with the same value (say r[10])
     // but that happen to have different addresses (because they came from different statements)
     // would both be stored in the set (instead of the required set behaviour, where only one is stored)
-    std::set<SharedExp, lessExpStar> lset;
+    ExpSet lset;
 
 public:
-    typedef std::set<SharedExp, lessExpStar>::iterator         iterator;
-    typedef std::set<SharedExp, lessExpStar>::const_iterator   const_iterator;
+    typedef ExpSet::iterator         iterator;
+    typedef ExpSet::const_iterator   const_iterator;
 
     LocationSet() {}                              ///< Default constructor
     ~LocationSet() {}                             ///< virtual destructor kills warning

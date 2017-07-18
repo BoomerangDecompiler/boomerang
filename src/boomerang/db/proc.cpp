@@ -66,7 +66,6 @@ namespace dbghelp
 
 typedef std::map<Instruction *, int> RefCounter;
 
-extern QTextStream& alignStream(QTextStream& str, int align);
 
 Function::~Function()
 {
@@ -1135,7 +1134,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     */
 
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
-    alignStream(LOG_STREAM(), ++indent) << (m_status >= PROC_VISITED ? "re" : "") << "considering "
+    Util::alignStream(LOG_STREAM(), ++indent) << (m_status >= PROC_VISITED ? "re" : "") << "considering "
                                         << getName() << "\n";
     LOG_VERBOSE(1) << "begin decompile(" << getName() << ")\n";
 
@@ -1274,7 +1273,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     // if child is empty, i.e. no child involved in recursion
     if (child->empty()) {
         Boomerang::get()->alertDecompiling(this);
-        alignStream(LOG_STREAM(1), indent) << "decompiling " << getName() << "\n";
+        Util::alignStream(LOG_STREAM(1), indent) << "decompiling " << getName() << "\n";
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         child = middleDecompile(path, indent);

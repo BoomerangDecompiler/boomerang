@@ -3,7 +3,6 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/signature.h"

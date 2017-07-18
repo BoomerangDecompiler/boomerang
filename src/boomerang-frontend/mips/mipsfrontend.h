@@ -25,7 +25,6 @@
 
 #include <set>
 
-#include "boomerang/db/exp.h"           // Ugh... just for enum OPER
 
 #include "boomerang/frontend/frontend.h"
 

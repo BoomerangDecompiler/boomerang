@@ -16,7 +16,6 @@
 
 #include "table.h"
 
-#include "boomerang/db/exp.h"
 
 
 Table::Table(TABLE_TYPE t)

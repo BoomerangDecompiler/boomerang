@@ -21,7 +21,6 @@
 #include "boomerang/util/Util.h"
 
 #include "boomerang/db/rtl.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/register.h"
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/proc.h"
@@ -29,6 +28,8 @@
 #include "boomerang/db/statements/assignment.h"
 #include "boomerang/db/statements/assign.h"
 #include "boomerang/db/statements/callstatement.h"
+#include "boomerang/db/exp/Exp.h"
+#include "boomerang/db/exp/Location.h"
 
 #include <cassert>
 #include <cstdarg> // For varargs

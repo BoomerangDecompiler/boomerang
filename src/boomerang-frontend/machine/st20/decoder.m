@@ -22,7 +22,6 @@
 #include "boomerang/db/rtl.h"
 #include "boomerang/include/decoder.h"
 #include "boomerang/st20decoder.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/util/Log.h"
 

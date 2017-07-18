@@ -1,6 +1,7 @@
 #pragma once
 
 #include "boomerang/db/statements/statement.h"
+#include "boomerang/db/exp/Const.h"
 
 /*=============================================================================
  * GotoStatement has just one member variable, an expression representing the

@@ -13,6 +13,7 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/basicblock.h"
+#include "boomerang/db/exp/Location.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 

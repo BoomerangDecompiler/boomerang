@@ -5,8 +5,9 @@
  ******************************************************************************/
 #pragma once
 
-// The OPER (and integer representation) of expressions (they can be a fair
-// bit different from operators)
+/// The OPER (and integer representation) of expressions (they can be a fair
+/// bit different from operators)
+/// @sa operToString
 enum OPER
 {
     // Operators
@@ -191,3 +192,6 @@ enum OPER
     // ALWAYS LAST!
     opNumOf ///< Special index: MUST BE LAST!
 };
+
+/// Convert operator to string
+const char* operToString(OPER oper);

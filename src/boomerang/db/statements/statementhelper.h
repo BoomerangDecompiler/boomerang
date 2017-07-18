@@ -1,6 +1,5 @@
 #pragma once
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/statements/statement.h"
 
 // Common to BranchStatement and BoolAssign

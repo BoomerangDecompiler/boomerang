@@ -3,8 +3,8 @@
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/rtl.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/statements/statement.h"
+#include "boomerang/db/exp/Exp.h"
 
 #include "boomerang/include/managed.h"
 

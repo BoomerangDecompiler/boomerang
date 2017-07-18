@@ -12,10 +12,12 @@
 #include "boomerang/include/transformer.h"
 
 #include "boomerang/db/cfg.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/register.h"
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/proc.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/TypeVal.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/types.h"

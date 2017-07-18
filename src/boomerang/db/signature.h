@@ -20,9 +20,9 @@
 
 #include "boomerang/type/type.h"
 #include "boomerang/db/statements/assign.h"
+#include "boomerang/db/exp/Operator.h"
 
 #include "boomerang/include/memo.h"
-#include "boomerang/include/operator.h"
 #include "boomerang/include/sigenum.h"   // For enums platform and cc
 
 // For class Return

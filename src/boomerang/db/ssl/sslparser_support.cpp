@@ -7,9 +7,11 @@
 #include "boomerang/db/insnameelem.h"
 
 #include "boomerang/db/rtl.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/statements/statement.h"
 #include "boomerang/db/statements/assign.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/exp/Location.h"
 
 #include "boomerang/util/Util.h" // E.g. str()
 

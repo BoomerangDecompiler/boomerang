@@ -29,9 +29,6 @@ set(boomerang_SRC
     db/cfg.cpp
     db/dataflow.h
     db/dataflow.cpp
-    db/exp.h
-    db/exp.cpp
-    db/exphelp.h
     db/insnameelem.cpp
     db/managed.cpp
     db/proc.h
@@ -50,6 +47,34 @@ set(boomerang_SRC
     db/signature.h
     db/signature.cpp
     
+    # exp handling
+    db/exp/Exp.cpp
+    db/exp/RefExp.h
+    db/exp/FlagDef.h
+    db/exp/TypeVal.cpp
+    db/exp/Unary.cpp
+    db/exp/Terminal.h
+    db/exp/Location.h
+    db/exp/Binary.h
+    db/exp/ExpHelp.cpp
+    db/exp/Unary.h
+    db/exp/Const.cpp
+    db/exp/Exp.h
+    db/exp/Ternary.h
+    db/exp/Ternary.cpp
+    db/exp/TypeVal.h
+    db/exp/RefExp.cpp
+    db/exp/TypedExp.cpp
+    db/exp/FlagDef.cpp
+    db/exp/Binary.cpp
+    db/exp/ExpHelp.h
+    db/exp/Terminal.cpp
+    db/exp/Location.cpp
+    db/exp/TypedExp.h
+    db/exp/Operator.cpp
+    db/exp/Operator.h
+    db/exp/Const.h
+
     db/ssl/sslinst.cpp
     db/ssl/sslparser.cpp
     db/ssl/sslparser.h

@@ -24,11 +24,13 @@
 #include "boomerang/db/basicblock.h"
 #include "boomerang/db/register.h"
 #include "boomerang/db/cfg.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/signature.h"
 #include "boomerang/db/prog.h"              // For findProc()
 #include "boomerang/db/statements/callstatement.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Ternary.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/types.h"

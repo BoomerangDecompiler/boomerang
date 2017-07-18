@@ -32,7 +32,6 @@
 
 #include <list>
 #include <string>
-#include "boomerang/db/exp.h"
 #include "boomerang/type/type.h"
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/proc.h"

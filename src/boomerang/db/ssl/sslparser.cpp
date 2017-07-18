@@ -59,17 +59,21 @@ void *alloca();
 #define YYBISON 1
 
 #include "boomerang/util/Util.h" // E.g. str()
-#include "boomerang/include/operator.h"
 
 #include "boomerang/db/rtl.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/table.h"
 #include "boomerang/db/insnameelem.h"
 #include "boomerang/db/statements/assign.h"
+#include "boomerang/db/exp/Operator.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/FlagDef.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/ssl/sslscanner.h"
 
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/ssl/sslscanner.h"
 
 #include <cassert>
 #include <sstream>

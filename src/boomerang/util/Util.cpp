@@ -65,6 +65,11 @@ QString escapeStr(const QString& inp)
     return res;
 }
 
+QTextStream& alignStream(QTextStream& str, int align)
+{
+    str << qSetFieldWidth(align) << " " << qSetFieldWidth(0);
+    return str;
+}
 
 SWord normEndian(SWord value, bool srcBigEndian)
 {

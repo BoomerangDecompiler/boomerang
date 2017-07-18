@@ -5,7 +5,7 @@
  ******************************************************************************/
 #include "RtlTest.h"
 
-#include "boomerang/db/exp.h"
+#include "boomerang/db/exp/Exp.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/proc.h"

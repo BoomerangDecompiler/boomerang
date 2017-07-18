@@ -12,7 +12,6 @@
 #include "boomerang/util/types.h"
 
 #include "boomerang/db/cfg.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/register.h"
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/proc.h"

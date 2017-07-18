@@ -1,6 +1,5 @@
 #pragma once
 
-#include "boomerang/db/exp.h"
 
 /* before anything */
 #define YY_USE_CLASS
@@ -10,6 +9,7 @@
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/table.h"
 #include "boomerang/db/insnameelem.h"
+#include "boomerang/db/exp/Operator.h"
 
 #include "boomerang/util/Util.h" // E.g. str()
 

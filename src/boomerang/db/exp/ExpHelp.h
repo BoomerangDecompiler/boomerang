@@ -53,3 +53,5 @@ struct lessAssign : public std::binary_function<Assign *, Assign *, bool>
 {
     bool operator()(const Assign *x, const Assign *y) const;
 };
+
+void child(const SharedExp& e, int ind);

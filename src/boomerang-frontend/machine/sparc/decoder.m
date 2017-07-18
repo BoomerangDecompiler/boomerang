@@ -36,7 +36,6 @@
 #endif
 
 #include "boomerang/include/decoder.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/sparcdecoder.h"

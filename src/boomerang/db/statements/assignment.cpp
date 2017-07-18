@@ -2,11 +2,13 @@
 
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/signature.h"
-
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/type/type.h"
 
 

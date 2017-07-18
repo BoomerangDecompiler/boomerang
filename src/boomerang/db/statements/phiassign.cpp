@@ -2,7 +2,6 @@
 
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/statements/assign.h"
 #include "boomerang/db/visitor.h"
 

@@ -26,12 +26,14 @@
 #include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/statements/assign.h"
 #include "boomerang/db/statements/callstatement.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Ternary.h"
 
 #include <cassert>
 #include <cstring>

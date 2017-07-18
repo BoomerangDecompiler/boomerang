@@ -27,7 +27,6 @@
 
 #include "boomerang/db/basicblock.h"
 #include "boomerang/db/cfg.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/register.h"
@@ -37,6 +36,10 @@
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/statements/callstatement.h"
 #include "boomerang/db/statements/casestatement.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Terminal.h"
+
 
 #include "boomerang-frontend/sparc/sparcdecoder.h"
 

@@ -7,9 +7,8 @@
 
 #include "boomerang/frontend/frontend.h"
 #include "boomerang/frontend/decoder.h"
-
-#include "boomerang/db/exp.h"           // Ugh... just for enum OPER
-
+#include "boomerang/type/type.h"
+#include "boomerang/db/exp/Operator.h"
 
 class IFrontEnd;
 class SparcDecoder;

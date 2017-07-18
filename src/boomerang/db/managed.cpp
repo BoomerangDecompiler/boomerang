@@ -17,9 +17,11 @@
 
 #include "boomerang/include/managed.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/statements/assign.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Location.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/types.h"
@@ -398,7 +400,7 @@ bool AssignSet::operator<(const AssignSet& o) const
 LocationSet& LocationSet::operator=(const LocationSet& o)
 {
     lset.clear();
-    std::set<SharedExp, lessExpStar>::const_iterator it;
+    ExpSet::const_iterator it;
 
     for (it = o.lset.begin(); it != o.lset.end(); it++) {
         lset.insert((*it)->clone());
@@ -410,7 +412,7 @@ LocationSet& LocationSet::operator=(const LocationSet& o)
 
 LocationSet::LocationSet(const LocationSet& o)
 {
-    std::set<SharedExp, lessExpStar>::const_iterator it;
+   ExpSet::const_iterator it;
 
     for (it = o.lset.begin(); it != o.lset.end(); it++) {
         lset.insert((*it)->clone());
@@ -423,7 +425,7 @@ char *LocationSet::prints() const
     QString     tgt;
     QTextStream ost(&tgt);
 
-    std::set<SharedExp, lessExpStar>::iterator it;
+    ExpSet::iterator it;
 
     for (it = lset.begin(); it != lset.end(); it++) {
         if (it != lset.begin()) {
@@ -449,7 +451,7 @@ void LocationSet::dump() const
 
 void LocationSet::print(QTextStream& os) const
 {
-    std::set<SharedExp, lessExpStar>::iterator it;
+    ExpSet::iterator it;
 
     for (it = lset.begin(); it != lset.end(); it++) {
         if (it != lset.begin()) {
@@ -463,7 +465,7 @@ void LocationSet::print(QTextStream& os) const
 
 void LocationSet::remove(SharedExp given)
 {
-    std::set<SharedExp, lessExpStar>::iterator it = lset.find(given);
+    ExpSet::iterator it = lset.find(given);
 
     if (it == lset.end()) {
         return;
@@ -508,7 +510,7 @@ void LocationSet::makeUnion(LocationSet& other)
 
 void LocationSet::makeDiff(LocationSet& other)
 {
-    std::set<SharedExp, lessExpStar>::iterator it;
+    ExpSet::iterator it;
 
     for (it = other.lset.begin(); it != other.lset.end(); it++) {
         lset.erase(*it);
@@ -523,7 +525,7 @@ bool LocationSet::operator==(const LocationSet& o) const
         return false;
     }
 
-    std::set<SharedExp, lessExpStar>::const_iterator it1, it2;
+    ExpSet::const_iterator it1, it2;
 
     for (it1 = lset.begin(), it2 = o.lset.begin(); it1 != lset.end(); it1++, it2++) {
         if (!(**it1 == **it2)) {
@@ -591,7 +593,7 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& 
 {
     assert(e);
     auto search = RefExp::get(e->getSubExp1()->clone(), (Instruction *)-1);
-    std::set<SharedExp, lessExpStar>::iterator pos = lset.find(search);
+    ExpSet::iterator pos = lset.find(search);
 
     if (pos == lset.end()) {
         return false;
@@ -623,7 +625,7 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& 
 
 void LocationSet::addSubscript(Instruction *d /* , Cfg* cfg */)
 {
-    std::set<SharedExp, lessExpStar> newSet;
+    ExpSet newSet;
 
     for (SharedExp it : lset) {
         newSet.insert(it->expSubscriptVar(it, d /* , cfg */));
@@ -648,7 +650,7 @@ void LocationSet::substitute(Assign& a)
         return; // ? Will this ever happen?
     }
 
-    std::set<SharedExp, lessExpStar>::iterator it;
+    ExpSet::iterator it;
     // Note: it's important not to change the pointer in the set of pointers to expressions, without removing and
     // inserting again. Otherwise, the set becomes out of order, and operations such as set comparison fail!
     // To avoid any funny behaviour when iterating the loop, we use the following two sets
@@ -879,7 +881,7 @@ Assignment *StatementList::findOnLeft(SharedExp loc) const
 
 void LocationSet::printDiff(LocationSet *o) const
 {
-    std::set<SharedExp, lessExpStar>::iterator it;
+    ExpSet::iterator it;
     bool printed2not1 = false;
 
     for (it = o->lset.begin(); it != o->lset.end(); it++) {

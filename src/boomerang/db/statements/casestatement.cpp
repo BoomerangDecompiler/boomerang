@@ -1,6 +1,5 @@
 #include "casestatement.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/visitor.h"
 
 

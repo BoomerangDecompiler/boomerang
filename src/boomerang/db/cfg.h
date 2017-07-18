@@ -16,7 +16,7 @@
  * \brief   Interface for a control flow graph, based on basic block nodes.
  ******************************************************************************/
 
-#include "boomerang/db/exphelp.h" // For lessExpStar
+#include "boomerang/db/exp/ExpHelp.h" // For lessExpStar
 #include "boomerang/util/Address.h"
 
 #include <cstdio>                 // For FILE

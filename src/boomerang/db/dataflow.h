@@ -14,7 +14,7 @@
  * \brief Interface for SSA based data flow analysis
  ******************************************************************************/
 
-#include "boomerang/db/exphelp.h"      // For lessExpStar, etc
+#include "boomerang/db/exp/ExpHelp.h"      // For lessExpStar, etc
 #include "boomerang/include/managed.h" // For LocationSet
 
 #include <vector>
@@ -62,7 +62,7 @@ class DataFlow
      * Inserting phi-functions
      */
     /// Array of sets of locations defined in BB n
-    std::vector<std::set<SharedExp, lessExpStar> > m_A_orig;
+    std::vector<ExpSet> m_A_orig;
 
     /// Array of sets of BBs needing phis
     std::map<SharedExp, std::set<int>, lessExpStar> m_A_phi;

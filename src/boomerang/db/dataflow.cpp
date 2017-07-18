@@ -18,7 +18,6 @@
 #include "boomerang/db/basicblock.h"
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/proc.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/statements/callstatement.h"
 #include "boomerang/db/statements/phiassign.h"
 #include "boomerang/db/statements/assign.h"
@@ -334,7 +333,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     m_defsites.clear();
     m_defallsites.clear();
 
-    for (std::set<SharedExp, lessExpStar>& se : m_A_orig) {
+    for (ExpSet& se : m_A_orig) {
         for (auto iter = se.begin(), fin = se.end(); iter != fin; ) {
             if (m_A_phi.find(*iter) == m_A_phi.end()) {
                 iter = se.erase(iter);
@@ -1030,11 +1029,11 @@ void DataFlow::convertImplicits(Cfg *cfg)
         m_defsites[e] = dd.second;       // Copy the set (doesn't have to be deep)
     }
 
-    std::vector<std::set<SharedExp, lessExpStar> > A_orig_copy = m_A_orig;
+    std::vector<ExpSet> A_orig_copy = m_A_orig;
     m_A_orig.clear();
 
-    for (std::set<SharedExp, lessExpStar>& se : A_orig_copy) {
-        std::set<SharedExp, lessExpStar> se_new;
+    for (ExpSet& se : A_orig_copy) {
+       ExpSet se_new;
 
         for (const SharedExp& ee : se) {
             SharedExp e = ee->clone();

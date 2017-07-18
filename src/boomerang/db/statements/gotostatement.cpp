@@ -3,7 +3,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/visitor.h"
 
 

@@ -14,8 +14,7 @@
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/signature.h"
-#include "boomerang/db/exp.h"
-#include "boomerang/db/exphelp.h"
+#include "boomerang/db/exp/ExpHelp.h"
 
 #include "boomerang/db/statements/junctionstatement.h"
 #include "boomerang/db/statements/branchstatement.h"
@@ -67,7 +66,7 @@ public:
     void widenwith(RangeMap& other);
     QString toString() const override;
     void print() const;
-    SharedExp substInto(SharedExp e, std::set<SharedExp, lessExpStar> *only = nullptr) const;
+    SharedExp substInto(SharedExp e, ExpSet *only = nullptr) const;
     void killAllMemOfs();
 
     void clear() { ranges.clear(); }
@@ -1136,7 +1135,7 @@ QString RangeMap::toString() const
 }
 
 
-SharedExp RangeMap::substInto(SharedExp e, std::set<SharedExp, lessExpStar> *only) const
+SharedExp RangeMap::substInto(SharedExp e, ExpSet *only) const
 {
     bool changes;
     int  count = 0;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QString>
+#include <QTextStream>
 
 #include "boomerang/util/types.h"
 
@@ -21,6 +22,8 @@ namespace Util
  * \note Assumes a C or C++ back end
  */
 QString escapeStr(const QString& str);
+
+QTextStream& alignStream(QTextStream& str, int align);
 
 /// return a bit mask with exactly \p bitCount of the lowest bits set to 1.
 /// (example: 16 -> 0xFFFF)

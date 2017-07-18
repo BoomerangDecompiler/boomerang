@@ -23,12 +23,16 @@
 #include "boomerang/util/Util.h"
 
 #include "boomerang/db/cfg.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/signature.h"
 #include "boomerang/db/statements/assign.h"
-
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 

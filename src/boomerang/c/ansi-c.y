@@ -37,7 +37,6 @@ public: \
 %header{
   #include <list>
   #include <string>
-  #include "db/exp.h"
   #include "type/type.h"
   #include "db/cfg.h"
   #include "db/proc.h"

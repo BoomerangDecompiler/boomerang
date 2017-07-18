@@ -1,6 +1,7 @@
 #include "statementhelper.h"
 
 #include "boomerang/util/Log.h"
+#include "boomerang/db/exp/Const.h"
 
 // Common to BranchStatement and BoolAssign
 // Return true if this is now a floating point Branch

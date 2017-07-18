@@ -14,7 +14,6 @@
 
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
@@ -41,8 +40,6 @@
 #include <sstream>
 #include <cstddef>
 #include <algorithm>
-
-extern QTextStream& alignStream(QTextStream& str, int align);
 
 
 void Instruction::setProc(UserProc *p)
@@ -752,18 +749,4 @@ void Instruction::dfaMapLocals()
     if (VERBOSE && dlm.change) {
         LOG << "statement mapped with new local(s): " << m_number << "\n";
     }
-}
-
-
-// A helper class for comparing Assignment*'s sensibly
-bool lessAssignment::operator()(const Assignment *x, const Assignment *y) const
-{
-    return(*x->getLeft() < *y->getLeft());     // Compare the LHS expressions
-}
-
-
-// Repeat the above for Assign's; sometimes the compiler doesn't (yet) understand that Assign's are Assignment's
-bool lessAssign::operator()(const Assign *x, const Assign *y) const
-{
-    return(*x->getLeft() < *y->getLeft());     // Compare the LHS expressions
 }

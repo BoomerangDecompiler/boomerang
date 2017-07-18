@@ -27,13 +27,15 @@
 
 #include "boomerang/db/module.h"
 #include "boomerang/db/cfg.h"
-#include "boomerang/db/exp.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/register.h"
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/signature.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Location.h"
 
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/include/managed.h"

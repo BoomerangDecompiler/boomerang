@@ -34,7 +34,13 @@
  * use public functions of the target classes.
  */
 
-#include "boomerang/db/exp.h" // < Needs to know class hierarchy, e.g. so that can convert Unary* to Exp* in return of
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/exp/FlagDef.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/TypeVal.h"
 
 class Instruction;
 class Assignment;

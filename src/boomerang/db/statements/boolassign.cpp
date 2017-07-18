@@ -1,6 +1,5 @@
 #include "boolassign.h"
 
-#include "boomerang/db/exp.h"
 #include "boomerang/db/statements/assign.h"
 #include "boomerang/db/visitor.h"
 #include "boomerang/codegen/ICodeGenerator.h"
