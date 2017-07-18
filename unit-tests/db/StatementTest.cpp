@@ -20,7 +20,7 @@
 #include "boomerang/pentiumfrontend.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/exp.h"
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/signature.h"
 

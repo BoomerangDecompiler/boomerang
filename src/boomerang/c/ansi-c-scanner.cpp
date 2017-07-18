@@ -29,7 +29,6 @@
 #ifndef YY_USE_CLASS
 #define YY_USE_CLASS
 #endif
-#include "boomerang/include/osfcn.h"
 
 #include <cstdio>
 #include <cstring>

@@ -26,9 +26,7 @@
  * http://boomerang.sourceforge.net.
  */
 
-#include "boomerang/include/msvc_fixes.h"
-
-#include "boomerang/include/IBoomerang.h"
+#include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IProject.h"
 
 #include "boomerang/util/Address.h"

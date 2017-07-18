@@ -36,7 +36,7 @@
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/proc.h"
 #include "boomerang/db/signature.h"
-#include "boomerang/include/transformer.h"
+#include "boomerang/transform/transformer.h"
 #include "generic.h"
 
 class TransformationScanner;

@@ -9,7 +9,7 @@
  * \brief   Provides the definition for the generic exp tranformer.
  ******************************************************************************/
 
-#include "boomerang/include/transformer.h"
+#include "boomerang/transform/transformer.h"
 
 class GenericExpTransformer : public ExpTransformer
 {

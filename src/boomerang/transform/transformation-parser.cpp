@@ -110,7 +110,7 @@ void *alloca ();
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/TypeVal.h"
 
-#include "boomerang/include/transformer.h"
+#include "boomerang/transform/transformer.h"
 #include "boomerang/transform/generic.h"
 #include "boomerang/type/type.h"
 

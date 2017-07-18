@@ -15,21 +15,10 @@
  *  (Was dataflow.h a long time ago)
  ******************************************************************************/
 
-/* Class hierarchy:   Statement@            (@ = abstract)
- *                  __/   |   \________________________
- *                 /      |            \               \
- *     GotoStatement  TypingStatement@  ReturnStatement JunctionStatement
- * BranchStatement_/     /          \
- * CaseStatement__/  Assignment@   ImpRefStatement
- * CallStatement_/  /   /    \ \________
- *       PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
- */
-
 #include "boomerang/db/exp/ExpHelp.h"  // For lessExpStar, lessAssignment etc
 #include "boomerang/db/dataflow.h" // For embedded objects DefCollector and UseCollector#
 
-#include "boomerang/include/memo.h"
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 
 #include "boomerang/util/Address.h"
 
@@ -120,6 +109,14 @@ enum BranchType
 
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
+ * Class hierarchy:   Statement@            (@ = abstract)
+ *                  __/   |   \________________________
+ *                 /      |            \               \
+ *     GotoStatement  TypingStatement@  ReturnStatement JunctionStatement
+ * BranchStatement_/     /          \
+ * CaseStatement__/  Assignment@   ImpRefStatement
+ * CallStatement_/  /   /    \ \________
+ *       PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
  */
 class Instruction
 {

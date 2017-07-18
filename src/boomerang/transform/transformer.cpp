@@ -7,7 +7,7 @@
  * OVERVIEW:    Implementation of the Transformer and related classes.
  ******************************************************************************/
 
-#include "boomerang/include/transformer.h"
+#include "boomerang/transform/transformer.h"
 
 #include "boomerang/util/Log.h"
 

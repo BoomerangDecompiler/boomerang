@@ -2,7 +2,7 @@
 
 #include "boomerang/db/statements/gotostatement.h"
 #include "boomerang/db/statements/assignment.h"
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 
 class ImplicitAssign;
 

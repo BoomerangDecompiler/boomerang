@@ -15,7 +15,7 @@
 #include "boomerang/db/register.h"
 #include "boomerang/db/rtl.h"
 #include "boomerang/db/proc.h"
-#include "boomerang/include/transformer.h"
+#include "boomerang/transform/transformer.h"
 
 #include <cassert>
 #include <numeric>   // For accumulate

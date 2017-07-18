@@ -19,7 +19,7 @@
 #include "boomerang/db/proc.h"
 #include "boomerang/db/prog.h"
 #include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 
 #include "boomerang/type/type.h"
 

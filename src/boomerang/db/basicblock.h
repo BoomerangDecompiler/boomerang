@@ -15,7 +15,7 @@
  ******************************************************************************/
 #pragma once
 
-#include "boomerang/include/managed.h" // For LocationSet etc
+#include "boomerang/db/managed.h" // For LocationSet etc
 #include "boomerang/util/Address.h"
 
 #include <QtCore/QString>

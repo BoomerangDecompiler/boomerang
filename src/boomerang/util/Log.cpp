@@ -6,7 +6,7 @@
 #include "boomerang/db/statements/statement.h"
 #include "boomerang/db/exp/Exp.h"
 
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 
 #include <QTextStream>
 #include <sstream>

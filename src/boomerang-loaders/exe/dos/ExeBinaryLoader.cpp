@@ -17,7 +17,7 @@
 
 #include "ExeBinaryLoader.h"
 
-#include "boomerang/include/IBoomerang.h"
+#include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/db/IBinarySection.h"

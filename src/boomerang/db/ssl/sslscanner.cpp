@@ -46,7 +46,6 @@
 #define YY_USE_CLASS
 #endif
 #ifndef _MSDOS
-#include "boomerang/include/osfcn.h"
 #endif
 #else /* ! __cplusplus */
 #ifdef __STDC__

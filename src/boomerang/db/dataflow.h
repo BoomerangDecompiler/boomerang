@@ -15,7 +15,7 @@
  ******************************************************************************/
 
 #include "boomerang/db/exp/ExpHelp.h"      // For lessExpStar, etc
-#include "boomerang/include/managed.h" // For LocationSet
+#include "boomerang/db/managed.h" // For LocationSet
 
 #include <vector>
 #include <map>

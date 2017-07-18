@@ -9,7 +9,7 @@
 
 #include "generic.h"
 
-#include "boomerang/include/transformer.h"
+#include "boomerang/transform/transformer.h"
 
 #include "boomerang/db/cfg.h"
 #include "boomerang/db/register.h"

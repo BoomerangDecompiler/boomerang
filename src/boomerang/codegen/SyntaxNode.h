@@ -6,7 +6,7 @@
 
 #include "boomerang/util/types.h"
 #include "boomerang/type/type.h"
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 
 class BasicBlock;
 

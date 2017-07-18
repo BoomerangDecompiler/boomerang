@@ -18,7 +18,6 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
-#include "boomerang/include/msvc_fixes.h"
 #include "boomerang/type/type.h"
 #include "boomerang/util/Util.h"
 

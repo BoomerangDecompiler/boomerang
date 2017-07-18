@@ -13,7 +13,7 @@
 #include <cassert>
 #include <memory>
 
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 #include "boomerang/type/type.h"
 #include "boomerang/util/types.h"
 

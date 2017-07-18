@@ -10,7 +10,7 @@
  *              tranformer.
  ******************************************************************************/
 
-#include "boomerang/include/transformer.h"
+#include "boomerang/transform/transformer.h"
 
 class RDIExpTransformer : public ExpTransformer
 {

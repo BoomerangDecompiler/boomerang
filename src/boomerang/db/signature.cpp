@@ -26,7 +26,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
 
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 
 #include "boomerang/type/type.h"
 

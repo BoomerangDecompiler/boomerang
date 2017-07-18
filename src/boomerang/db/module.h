@@ -17,7 +17,6 @@
  * Modules can contain other Modules to form a tree.
  ******************************************************************************/
 
-#include "boomerang/include/memo.h"
 #include "boomerang/type/type.h"
 
 #include <list>

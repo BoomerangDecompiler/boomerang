@@ -16,7 +16,6 @@
  *                recording high level types
  ******************************************************************************/
 
-#include "boomerang/include/memo.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/Util.h"
 

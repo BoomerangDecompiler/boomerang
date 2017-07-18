@@ -19,7 +19,7 @@
 #include "DOS4GWBinaryLoader.h"
 
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/include/IBoomerang.h"
+#include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"

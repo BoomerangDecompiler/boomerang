@@ -38,7 +38,7 @@
 #include "boomerang/db/exp/Location.h"
 
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 
 #include "boomerang/loader/IBinaryFile.h"
 

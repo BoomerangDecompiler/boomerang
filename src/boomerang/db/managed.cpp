@@ -15,7 +15,7 @@
 #include <sstream>
 #include <cstring>
 
-#include "boomerang/include/managed.h"
+#include "boomerang/db/managed.h"
 
 #include "boomerang/db/proc.h"
 #include "boomerang/db/statements/assign.h"
