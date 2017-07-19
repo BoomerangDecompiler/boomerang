@@ -1,14 +1,13 @@
 #pragma once
 
-/***************************************************************************/ /**
- * \file       IBoomerang.h
- *   Interface for the core system, accessible from all plugins
- * TODO: consider the way it's done in qtcreator's plugins system
- ******************************************************************************/
 class IBinaryImage;
 class IBinarySymbolTable;
 class IProject;
 
+/**
+ * Interface for the core system, accessible from all plugins
+ * \todo consider the way it's done in qtcreator's plugins system
+ */
 class IBoomerang
 {
 public:

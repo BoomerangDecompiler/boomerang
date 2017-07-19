@@ -13,19 +13,6 @@
  * \brief Interface for the boomerang singleton object.
  */
 
-/** \mainpage Introduction
- *
- * \section Introduction
- *
- * Welcome to the Doxygen generated documentation for the
- * %Boomerang decompiler. Not all classes and functions have been documented
- * yet, but eventually they will. If you have figured out what a function is doing
- * please update the documentation and submit it as a patch.
- *
- * More information on the %Boomerang decompiler can be found at
- * http://boomerang.sourceforge.net.
- */
-
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IProject.h"
 #include "boomerang/core/Watcher.h"
@@ -77,8 +64,8 @@ private:
     static Boomerang *boomerang; ///< the instance
 
     IBinarySymbolTable *m_symbols = nullptr;
-    QString m_workingDirectory;               ///< String with the path to the boomerang executable.
-    QString m_outputDirectory;             ///< The path where all output files are created.
+    QString m_workingDirectory;       ///< String with the path to the boomerang executable.
+    QString m_outputDirectory;        ///< The path where all output files are created.
     Log *m_logger = nullptr;          ///< Takes care of the log messages.
     std::set<Watcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 

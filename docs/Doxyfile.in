@@ -117,11 +117,13 @@ WARN_LOGFILE           = @CMAKE_CURRENT_BINARY_DIR@/doxy_warn.log
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = @CMAKE_SOURCE_DIR@/src/
+INPUT                  = @CMAKE_SOURCE_DIR@/src/ \
+                         @CMAKE_SOURCE_DIR@/docs/
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.cpp \
                          *.h \
-                         *.m
+                         *.m \
+                         *.dox
 RECURSIVE              = YES
 EXCLUDE                =
 EXCLUDE_SYMLINKS       = NO
