@@ -4,8 +4,7 @@ include_directories(
 	"${CMAKE_BINARY_DIR}/src/"
 )
 
-#add submodlules for testing
-add_subdirectory(boom_base)
+# add submodlules for testing
 add_subdirectory(c)
 add_subdirectory(db)
 add_subdirectory(frontend)
