@@ -1,19 +1,19 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>resources/closetab.png</file>
-        <file>resources/decode.png</file>
-        <file>resources/decompile.png</file>
-        <file>resources/gencode.png</file>
-        <file>resources/ico00001.png</file>
-        <file>resources/ico00002.png</file>
-        <file>resources/icon1.png</file>
-        <file>resources/id_lproc.png</file>
-        <file>resources/load1.png</file>
-        <file>resources/proc1.png</file>
-        <file>resources/rarrow.png</file>
-        <file>resources/resume.png</file>
-        <file>resources/resume1.png</file>
-        <file>resources/suspend.png</file>
-        <file>resources/boomerang_icon.png</file>
+        <file>../../data/icons/closetab.png</file>
+        <file>../../data/icons/decode.png</file>
+        <file>../../data/icons/decompile.png</file>
+        <file>../../data/icons/gencode.png</file>
+        <file>../../data/icons/ico00001.png</file>
+        <file>../../data/icons/ico00002.png</file>
+        <file>../../data/icons/icon1.png</file>
+        <file>../../data/icons/id_lproc.png</file>
+        <file>../../data/icons/load1.png</file>
+        <file>../../data/icons/proc1.png</file>
+        <file>../../data/icons/rarrow.png</file>
+        <file>../../data/icons/resume.png</file>
+        <file>../../data/icons/resume1.png</file>
+        <file>../../data/icons/suspend.png</file>
+        <file>../../data/icons/boomerang_icon.png</file>
     </qresource>
 </RCC>
