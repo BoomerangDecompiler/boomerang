@@ -151,10 +151,10 @@ public:
 
     /***************************************************************************/ /**
     * \brief       Read the library signatures from a file
-    * \param       sPath The file to read from
+    * \param       signatureFile The path to the file containing the signatures
     * \param       cc the calling convention assumed
     ******************************************************************************/
-    void readLibrarySignatures(const char *sPath, CallConv cc); ///< Read library signatures from a file.
+    void readLibrarySignatures(const char *signatureFile, CallConv cc);
     void readLibraryCatalog(const QString& sPath);              ///< read from a catalog
     void readLibraryCatalog();                                  ///< read from default catalog
 

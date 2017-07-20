@@ -1,19 +1,19 @@
-<RCC>
-    <qresource prefix="/icons">
-        <file>../../data/icons/closetab.png</file>
-        <file>../../data/icons/decode.png</file>
-        <file>../../data/icons/decompile.png</file>
-        <file>../../data/icons/gencode.png</file>
-        <file>../../data/icons/ico00001.png</file>
-        <file>../../data/icons/ico00002.png</file>
-        <file>../../data/icons/icon1.png</file>
-        <file>../../data/icons/id_lproc.png</file>
-        <file>../../data/icons/load1.png</file>
-        <file>../../data/icons/proc1.png</file>
-        <file>../../data/icons/rarrow.png</file>
-        <file>../../data/icons/resume.png</file>
-        <file>../../data/icons/resume1.png</file>
-        <file>../../data/icons/suspend.png</file>
-        <file>../../data/icons/boomerang_icon.png</file>
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+        <file alias="boomerang_icon.png">../../data/images/boomerang_icon.png</file>
+        <file alias="closetab.png"      >../../data/images/closetab.png</file>
+        <file alias="decode.png"        >../../data/images/decode.png</file>
+        <file alias="decompile.png"     >../../data/images/decompile.png</file>
+        <file alias="gencode.png"       >../../data/images/gencode.png</file>
+        <file alias="ico00001.png"      >../../data/images/ico00001.png</file>
+        <file alias="ico00002.png"      >../../data/images/ico00002.png</file>
+        <file alias="icon1.png"         >../../data/images/icon1.png</file>
+        <file alias="id_lproc.png"      >../../data/images/id_lproc.png</file>
+        <file alias="load1.png"         >../../data/images/load1.png</file>
+        <file alias="proc1.png"         >../../data/images/proc1.png</file>
+        <file alias="rarrow.png"        >../../data/images/rarrow.png</file>
+        <file alias="resume.png"        >../../data/images/resume.png</file>
+        <file alias="resume1.png"       >../../data/images/resume1.png</file>
+        <file alias="suspend.png"       >../../data/images/suspend.png</file>
     </qresource>
 </RCC>

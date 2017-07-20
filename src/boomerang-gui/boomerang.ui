@@ -123,7 +123,7 @@
               </property>
               <property name="icon">
                <iconset resource="boomerang.qrc">
-                <normaloff>:/icons/resources/rarrow.png</normaloff>:/icons/resources/rarrow.png</iconset>
+                <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -178,7 +178,7 @@
                 </property>
                 <property name="icon">
                  <iconset resource="boomerang.qrc">
-                  <normaloff>:/icons/resources/load1.png</normaloff>:/icons/resources/load1.png</iconset>
+                  <normaloff>:/load1.png</normaloff>:/load1.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -231,7 +231,7 @@
               </property>
               <property name="icon">
                <iconset resource="boomerang.qrc">
-                <normaloff>:/icons/resources/rarrow.png</normaloff>:/icons/resources/rarrow.png</iconset>
+                <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -286,7 +286,7 @@
                 </property>
                 <property name="icon">
                  <iconset resource="boomerang.qrc">
-                  <normaloff>:/icons/resources/decode.png</normaloff>:/icons/resources/decode.png</iconset>
+                  <normaloff>:/decode.png</normaloff>:/decode.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -333,7 +333,7 @@
               </property>
               <property name="icon">
                <iconset resource="boomerang.qrc">
-                <normaloff>:/icons/resources/rarrow.png</normaloff>:/icons/resources/rarrow.png</iconset>
+                <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -388,7 +388,7 @@
                 </property>
                 <property name="icon">
                  <iconset resource="boomerang.qrc">
-                  <normaloff>:/icons/resources/decompile.png</normaloff>:/icons/resources/decompile.png</iconset>
+                  <normaloff>:/decompile.png</normaloff>:/decompile.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -441,7 +441,7 @@
               </property>
               <property name="icon">
                <iconset resource="boomerang.qrc">
-                <normaloff>:/icons/resources/rarrow.png</normaloff>:/icons/resources/rarrow.png</iconset>
+                <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -496,7 +496,7 @@
                 </property>
                 <property name="icon">
                  <iconset resource="boomerang.qrc">
-                  <normaloff>:/icons/resources/gencode.png</normaloff>:/icons/resources/gencode.png</iconset>
+                  <normaloff>:/gencode.png</normaloff>:/gencode.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>

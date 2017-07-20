@@ -45,9 +45,9 @@ static bool    logset = false;
 
 /// path to the ELF loader plugin
 #ifdef _WIN32
-#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/libboomerang-ElfLoader.dll")
+#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/boomerang/plugins/loader/libboomerang-ElfLoader.dll")
 #else
-#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/libboomerang-ElfLoader.so")
+#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/boomerang/plugins/loader/libboomerang-ElfLoader.so")
 #endif
 
 #define TEST_PROPRIETARY 0
@@ -64,8 +64,7 @@ void LoaderTest::initTestCase()
 {
 	if (!logset) {
 		logset = true;
-		Boomerang::get()->setWorkingDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
+		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }

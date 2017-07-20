@@ -21,8 +21,9 @@ class Decompiler : public QObject, public Watcher
 public:
     Decompiler()
         : QObject()
-        , Debugging(false)
-        , Waiting(false) {}
+        , m_debugging(false)
+        , m_waiting(false)
+    {}
 
     virtual void alertDecompileDebugPoint(UserProc *p, const char *description) override;
     virtual void alertConsidering(Function *parent, Function *p) override;
@@ -38,7 +39,7 @@ public:
     void rereadLibSignatures();
     void getCompoundMembers(const QString& name, QTableWidget *tbl);
 
-    void setDebugging(bool d) { Debugging = d; }
+    void setDebugging(bool d) { m_debugging = d; }
     void setUseDFTA(bool d);
     void setNoDecodeChildren(bool d);
 
@@ -80,18 +81,21 @@ signals:
     void debuggingPoint(const QString& name, const QString& description);
 
 protected:
-    bool Debugging, Waiting;
-
-       IFrontEnd *fe;
-    Prog *prog;
-    IBinaryImage *Image;
-    QString filename;
-
-    const char *procStatus(UserProc *p);
     void emitClusterAndChildren(Module *root);
+    const char *getProcStatus(UserProc *p);
 
-    std::vector<Address> user_entrypoints;
+protected:
+    bool m_debugging;
+    bool m_waiting;
+
+    IFrontEnd *m_fe;
+    Prog *m_prog;
+    IBinaryImage *m_image;
+    QString m_filename;
+
+    std::vector<Address> m_userEntrypoints;
 };
+
 
 class DecompilerThread : public QThread
 {
@@ -100,7 +104,7 @@ class DecompilerThread : public QThread
 public:
     DecompilerThread()
         : QThread()
-        , Parent(nullptr)
+        , m_parent(nullptr)
     {}
 
     Decompiler *getDecompiler();
@@ -108,5 +112,5 @@ public:
 protected:
     void run() override;
 
-    Decompiler *Parent;
+    Decompiler *m_parent;
 };

@@ -51,8 +51,7 @@ void StatementTest::initTestCase()
 {
 	if (!logset) {
 		logset = true;
-		Boomerang::get()->setWorkingDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/lib");
+		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }

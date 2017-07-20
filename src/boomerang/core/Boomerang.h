@@ -66,6 +66,8 @@ private:
     IBinarySymbolTable *m_symbols = nullptr;
     QString m_workingDirectory;       ///< String with the path to the boomerang executable.
     QString m_outputDirectory;        ///< The path where all output files are created.
+    QString m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
+
     Log *m_logger = nullptr;          ///< Takes care of the log messages.
     std::set<Watcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 
@@ -121,39 +123,25 @@ public:
     void setLogger(Log *l);
 
     /**
-     * Sets the directory in which Boomerang creates its output files.  The directory will be created if it doesn't exist.
-     *
-     * \param path        the path to the directory
-     *
-     * \retval true Success.
-     * \retval false The directory could not be created.
-     */
-    bool setOutputDirectory(const QString& path);
-
-    /**
      * Returns the ICodeGenerator for the given proc.
      * \return The ICodeGenerator for the specified UserProc.
      */
     ICodeGenerator *getCodeGenerator(UserProc *p = nullptr);
 
-    /// Set the path where the %Boomerang executable will search for plugins.
-    void setPluginPath(const QString& p);
+    /// Get the path where the boomerang executable is run from.
+    QDir getWorkingDirectory() const { return QDir(m_workingDirectory); }
+    void setWorkingDirectory(const QString& directoryPath) { m_workingDirectory = directoryPath; }
 
-    /// Set the path to the %Boomerang executable.
-    void setWorkingDirectory(const QString& p);
+    /// Get the path of the data directory where plugins, ssl files etc. are stored.
+    QDir getDataDirectory() const { return QDir(m_dataDirectory); }
+    void setDataDirectory(const QString& directoryPath) { m_dataDirectory = directoryPath; }
 
-    /// Get the path to the %Boomerang executable.
-    const QString& getWorkingDirectory() const { return m_workingDirectory; }
+    /// Get the path where the decompiled files sould be put
+    QDir getOutputDirectory() { return QDir(m_outputDirectory); }
 
-    /// Get the path to the %Boomerang executable.
-    QDir getProgDir() const { return QDir(m_workingDirectory); }
-
-    /// Set the path where the output files are saved.
-    void setOutputPath(const QString& p) {
-        m_outputDirectory = p; }
-
-    /// Returns the path to where the output files are saved.
-    const QString& getOutputPath() { return m_outputDirectory; }
+    /// Set the output path. the directory will be created if it does not exist
+    /// \returns true if successful, false if the directory could not be created.
+    bool setOutputDirectory(const QString& directoryPath);
 
     /**
      * Loads the executable file and decodes it.

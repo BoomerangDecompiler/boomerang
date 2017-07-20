@@ -13,17 +13,16 @@ function(BOOMERANG_ADD_LOADER)
 		set(target_name "boomerang-${LOADER_NAME}Loader")
 		add_library(${target_name} SHARED ${LOADER_SOURCES})
 
-		set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+		set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
 		if (WIN32)
-			set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+			set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
 		endif (WIN32)
-		
+
 		target_link_libraries(${target_name} Qt5::Core boomerang ${LOADER_LIBRARIES})
 
 		install(TARGETS ${target_name}
-			ARCHIVE DESTINATION lib
-			LIBRARY DESTINATION lib
-			RUNTIME DESTINATION bin
+			ARCHIVE DESTINATION lib/boomerang/plugins/loader/
+			LIBRARY DESTINATION lib/boomerang/plugins/loader/
 		)
 	endif ()
 endfunction()
@@ -46,7 +45,7 @@ function(BOOMERANG_ADD_FRONTEND)
 		${FRONTEND_NAME}frontend.cpp
 		${FRONTEND_SOURCES}
 	)
-	
+
 	target_link_libraries(${FRONTEND_NAME} Qt5::Core ${FRONTEND_LIBRARIES})
 endfunction(BOOMERANG_ADD_FRONTEND)
 
@@ -56,11 +55,11 @@ endfunction(BOOMERANG_ADD_FRONTEND)
 #
 function(BOOMERANG_ADD_CODEGEN)
 	cmake_parse_arguments(CODEGEN "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
-	
+
 	add_library(boomerang-${CODEGEN_NAME}Codegen STATIC
 		${CODEGEN_SOURCES}
 	)
-	
+
 	target_link_libraries(boomerang-${CODEGEN_NAME}Codegen Qt5::Core ${CODEGEN_LIBRARIES})
 endfunction(BOOMERANG_ADD_CODEGEN)
 

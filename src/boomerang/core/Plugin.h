@@ -76,7 +76,7 @@ public:
     /// Get information about the plugin.
     PluginInfo getInfo() const
     {
-        return m_pluginHandle.getFunction<PluginInfoFunction>("getInfo")();
+        return getFunction<PluginInfoFunction>("getInfo")();
     }
 
     /// Get the interface pointer for this plugin.
