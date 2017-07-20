@@ -18,6 +18,7 @@
 #include "boomerang/util/types.h"
 #include "boomerang/core/Plugin.h"
 
+
 /// Given a pointer p, returns the 16 bits (halfword) in the two bytes
 /// starting at p.
 #define LH(p)    ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
@@ -33,11 +34,8 @@ public:
 
     BinaryFileFactory();
 
-    /// \param pluginsPath Path of the directory where the loader plugins are located.
-    static void setPluginsPath(const QString& pluginsPath);
-
     /// Load the binary file located at \p filePath.
-    /// Automatically returns the appropriate loader for the binary file.
+    /// Automatically returns the most appropriate loader for the binary file.
     IFileLoader *loadFile(const QString& filePath);
 
 private:
@@ -54,5 +52,5 @@ private:
 
 private:
     std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins; /// all loaded loader plugins.
-    static QString m_pluginsPath;                            ///< Path to the direcory containing the loader plugins.
+    static QString m_pluginsPath;                                ///< Path to the direcory containing the loader plugins.
 };

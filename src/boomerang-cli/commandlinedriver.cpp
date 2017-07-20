@@ -118,7 +118,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
     Boomerang& boom(*Boomerang::get());
     boom.setWorkingDirectory(QFileInfo(args[0]).absolutePath());
-    boom.setPluginPath(QFileInfo(args[0]).absolutePath());
+    boom.setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
 
     for (int i = 1; i < args.size(); ++i) {
         QString arg = args[i];
@@ -444,7 +444,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         return console();
     }
 
-    if (minsToStopAfter) {
+    if (minsToStopAfter > 0) {
         LOG_STREAM(LL_Error) << "stopping decompile after " << minsToStopAfter << " minutes.\n";
         m_kill_timer.setSingleShot(true);
         m_kill_timer.start(1000 * 60 * minsToStopAfter);

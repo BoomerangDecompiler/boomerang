@@ -40,6 +40,8 @@ foreach (SSLFile ${ssl_file})
     )
 endforeach ()
 
+install(FILES ${SSL_FILES} DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/boomerang/frontend/")
+
 # installation
 install(TARGETS boomerang-frontend
     ARCHIVE DESTINATION lib

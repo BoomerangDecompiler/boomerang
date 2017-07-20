@@ -294,7 +294,7 @@ void Function::printDetailsXML()
         return;
     }
 
-    QFile file(Boomerang::get()->getOutputPath() + getName() + "-details.xml");
+    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-details.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
         qDebug() << "Can't write to file:" << file.fileName();
@@ -347,7 +347,7 @@ void UserProc::printDecodedXML()
         return;
     }
 
-    QFile file(Boomerang::get()->getOutputPath() + getName() + "-decoded.xml");
+    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-decoded.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
         qDebug() << "Can't write to file:" << file.fileName();
@@ -372,7 +372,7 @@ void UserProc::printAnalysedXML()
         return;
     }
 
-    QFile file(Boomerang::get()->getOutputPath() + getName() + "-analysed.xml");
+    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-analysed.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
         qDebug() << "Can't write to file:" << file.fileName();
@@ -397,7 +397,7 @@ void UserProc::printSSAXML()
         return;
     }
 
-    QFile file(Boomerang::get()->getOutputPath() + getName() + "-ssa.xml");
+    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-ssa.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
         qDebug() << "Can't write to file:" << file.fileName();
@@ -431,7 +431,7 @@ void UserProc::printXML()
 
 void UserProc::printUseGraph()
 {
-    QFile file(Boomerang::get()->getOutputPath() + getName() + "-usegraph.dot");
+    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot"));
 
     if (!file.open(QFile::WriteOnly)) {
         qDebug() << "Can't write to file:" << file.fileName();
@@ -850,8 +850,10 @@ void UserProc::dump() const
 
 void UserProc::printDFG() const
 {
-    QString fname =
-        QString("%1%2-%3-dfg.dot").arg(Boomerang::get()->getOutputPath()).arg(getName()).arg(DFGcount);
+    QString fname = QString("%1%2-%3-dfg.dot")
+        .arg(Boomerang::get()->getOutputDirectory().absolutePath())
+        .arg(getName())
+        .arg(DFGcount);
 
     DFGcount++;
     LOG_VERBOSE(1) << "outputing DFG to " << fname << "\n";

@@ -16,17 +16,15 @@
 #include <QtCore/QDebug>
 
 
-#define SPARC_SSL    (BOOMERANG_TEST_BASE "/frontend/machine/sparc/sparc.ssl")
+#define SPARC_SSL    (Boomerang::get()->getDataDirectory().absoluteFilePath("frontend/machine/sparc/sparc.ssl"))
 
 static bool    logset = false;
 
 void ParserTest::initTestCase()
 {
 	if (!logset) {
-
 		logset = true;
-		Boomerang::get()->setWorkingDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setPluginPath(BOOMERANG_TEST_BASE "/out");
+		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 		Boomerang::get()->setLogger(new NullLogger());
 	}
 }

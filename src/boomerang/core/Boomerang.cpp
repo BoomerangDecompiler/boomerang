@@ -138,10 +138,7 @@ void Boomerang::helpcmd() const
  */
 bool createDirectory(const QString& dir)
 {
-    QFileInfo dir_fi(dir);
-    QString   abspath = dir_fi.absolutePath();
-
-    return QDir::root().mkpath(abspath);
+    return QDir::root().mkpath(QFileInfo(dir).absolutePath());
 }
 
 
@@ -704,19 +701,6 @@ int Boomerang::processCommand(QStringList& args)
     }
 
     return 0;
-}
-
-
-void Boomerang::setWorkingDirectory(const QString& p)
-{
-    m_workingDirectory = p + "/";
-    m_outputDirectory = m_workingDirectory + "/output/";    // Default output path (can be overridden with -o below)
-}
-
-
-void Boomerang::setPluginPath(const QString& p)
-{
-    BinaryFileFactory::setPluginsPath(qPrintable(p));
 }
 
 

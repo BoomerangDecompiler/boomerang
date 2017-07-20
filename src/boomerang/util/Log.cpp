@@ -13,7 +13,7 @@
 
 
 FileLogger::FileLogger()
-    : out((Boomerang::get()->getOutputPath() + "log").toStdString())
+    : out((Boomerang::get()->getOutputDirectory().absoluteFilePath("log")).toStdString())
 {
 }
 
@@ -26,7 +26,7 @@ SeparateLogger::SeparateLogger(const QString& v)
         versions[v] = 0;
     }
 
-    QDir    outDir(Boomerang::get()->getOutputPath());
+    QDir    outDir(Boomerang::get()->getOutputDirectory());
     QString full_path = outDir.absoluteFilePath(QString("%1_%2.log").arg(v).arg(versions[v]++, 2, 10, QChar('0')));
     out = new std::ofstream(full_path.toStdString());
 }

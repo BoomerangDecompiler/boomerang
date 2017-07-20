@@ -163,7 +163,7 @@ QString Module::makeDirs()
         path = m_upstream->makeDirs();
     }
     else {
-        path = Boomerang::get()->getOutputPath();
+        path = Boomerang::get()->getOutputDirectory().absolutePath();
     }
 
     QDir dr(path);

@@ -96,13 +96,7 @@ SharedExp ExpTransformer::applyAllTo(const SharedExp& p, bool& bMod)
 
 void ExpTransformer::loadAll()
 {
-    QDir transformations_dir = Boomerang::get()->getProgDir();
-
-    if (!transformations_dir.cd("transformations")) {
-        qDebug() << "Transformations directory does not exist";
-    }
-
-    QString sPath = transformations_dir.absoluteFilePath("exp.ts");
+    QString sPath = Boomerang::get()->getDataDirectory().absoluteFilePath("transformations/exp.ts");
 
     QFile file(sPath);
 
@@ -124,7 +118,7 @@ void ExpTransformer::loadAll()
         }
 
         std::ifstream ifs1;
-        QString       sPath1 = transformations_dir.absoluteFilePath(sFile);
+        QString       sPath1 = Boomerang::get()->getDataDirectory().absoluteFilePath("transformations/" + sFile);
 
         ifs1.open(sPath1.toStdString());
 

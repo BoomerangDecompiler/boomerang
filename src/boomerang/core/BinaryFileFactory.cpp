@@ -32,18 +32,9 @@
     ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
      ((unsigned)((Byte *)(&x))[3] << 24))
 
-QString BinaryFileFactory::m_pluginsPath;
-
-
 BinaryFileFactory::BinaryFileFactory()
 {
     populatePlugins();
-}
-
-
-void BinaryFileFactory::setPluginsPath(const QString& pluginsPath)
-{
-    BinaryFileFactory::m_pluginsPath = pluginsPath;
 }
 
 
@@ -116,16 +107,13 @@ IFileLoader *BinaryFileFactory::getInstanceFor(const QString& filePath)
 
 void BinaryFileFactory::populatePlugins()
 {
-    QDir pluginsDir(qApp->applicationDirPath());
-
-    pluginsDir.cd("../lib");
-
-    if (!qApp->libraryPaths().contains(pluginsDir.absolutePath())) {
-        qApp->addLibraryPath(pluginsDir.absolutePath());
+    QDir pluginsDir = Boomerang::get()->getDataDirectory();
+    if (!pluginsDir.cd("plugins/loader/")) {
+        qCritical() << "Cannot open loader plugin directory!";
     }
 
     for (QString fileName : pluginsDir.entryList(QDir::Files)) {
-        QString sofilename = pluginsDir.absoluteFilePath(fileName);
+        const QString sofilename = pluginsDir.absoluteFilePath(fileName);
 
         try {
             std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));

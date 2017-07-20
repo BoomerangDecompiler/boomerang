@@ -26,28 +26,28 @@ void DecompilerThread::run()
 {
     threadToCollect = QThread::currentThreadId();
 
+    Boomerang::get()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
     Boomerang::get()->setOutputDirectory("output");
     // Boomerang::get()->vFlag = true;
     // Boomerang::get()->traceDecoder = true;
 
-    Parent = new Decompiler();
-    Parent->moveToThread(this);
+    m_parent = new Decompiler();
+    m_parent->moveToThread(this);
 
-    Boomerang::get()->addWatcher(Parent);
+    Boomerang::get()->addWatcher(m_parent);
 
     this->setPriority(QThread::LowPriority);
-
-    exec();
+    this->exec();
 }
 
 
 Decompiler *DecompilerThread::getDecompiler()
 {
-    while (Parent == nullptr) {
+    while (m_parent == nullptr) {
         msleep(10);
     }
 
-    return Parent;
+    return m_parent;
 }
 
 
@@ -65,16 +65,16 @@ void Decompiler::setNoDecodeChildren(bool d)
 
 void Decompiler::addEntryPoint(Address a, const char *nam)
 {
-    user_entrypoints.push_back(a);
-    fe->addSymbol(a, nam);
+    m_userEntrypoints.push_back(a);
+    m_fe->addSymbol(a, nam);
 }
 
 
 void Decompiler::removeEntryPoint(Address a)
 {
-    for (std::vector<Address>::iterator it = user_entrypoints.begin(); it != user_entrypoints.end(); it++) {
+    for (std::vector<Address>::iterator it = m_userEntrypoints.begin(); it != m_userEntrypoints.end(); it++) {
         if (*it == a) {
-            user_entrypoints.erase(it);
+            m_userEntrypoints.erase(it);
             break;
         }
     }
@@ -83,13 +83,13 @@ void Decompiler::removeEntryPoint(Address a)
 
 void Decompiler::changeInputFile(const QString& f)
 {
-    filename = f;
+    m_filename = f;
 }
 
 
 void Decompiler::changeOutputPath(const QString& path)
 {
-    Boomerang::get()->setOutputDirectory(qPrintable(path));
+    Boomerang::get()->setOutputDirectory(path);
 }
 
 
@@ -97,19 +97,19 @@ void Decompiler::load()
 {
     emit loading();
 
-    Image = Boomerang::get()->getImage();
-    prog  = new Prog(filename);
-    fe    = IFrontEnd::create(filename, prog);
+    m_image = Boomerang::get()->getImage();
+    m_prog  = new Prog(m_filename);
+    m_fe    = IFrontEnd::create(m_filename, m_prog);
 
-    if (fe == NULL) {
+    if (m_fe == NULL) {
         emit machineType(QString("Unavailable: Load Failed!"));
         return;
     }
 
-    prog->setFrontEnd(fe);
-    fe->readLibraryCatalog();
+    m_prog->setFrontEnd(m_fe);
+    m_fe->readLibraryCatalog();
 
-    switch (prog->getMachine())
+    switch (m_prog->getMachine())
     {
     case Machine::PENTIUM:
         emit machineType(QString("pentium"));
@@ -149,14 +149,14 @@ void Decompiler::load()
     }
 
     QStringList          entrypointStrings;
-    std::vector<Address> entrypoints = fe->getEntryPoints();
+    std::vector<Address> entrypoints = m_fe->getEntryPoints();
 
-    for (size_t i = 0; i < entrypoints.size(); i++) {
-        user_entrypoints.push_back(entrypoints[i]);
-        emit newEntrypoint(entrypoints[i], prog->getSymbolByAddress(entrypoints[i]));
+    for (Address entryPoint : entrypoints) {
+        m_userEntrypoints.push_back(entryPoint);
+        emit newEntrypoint(entryPoint, m_prog->getSymbolByAddress(entryPoint));
     }
 
-    for (const IBinarySection *section : *Image) {
+    for (const IBinarySection *section : *m_image) {
         emit newSection(section->getName(), section->getSourceAddr(),
                         section->getSourceAddr() + section->getSize());
     }
@@ -170,25 +170,25 @@ void Decompiler::decode()
     emit decoding();
 
     bool    gotMain;
-       Address a = fe->getMainEntryPoint(gotMain);
+    Address a = m_fe->getMainEntryPoint(gotMain);
 
-    for (unsigned int i = 0; i < user_entrypoints.size(); i++) {
-        if (user_entrypoints[i] == a) {
-            fe->decode(prog, true, NULL);
+    for (unsigned int i = 0; i < m_userEntrypoints.size(); i++) {
+        if (m_userEntrypoints[i] == a) {
+            m_fe->decode(m_prog, true, NULL);
             break;
         }
     }
 
-    for (unsigned int i = 0; i < user_entrypoints.size(); i++) {
-        prog->decodeEntryPoint(user_entrypoints[i]);
+    for (unsigned int i = 0; i < m_userEntrypoints.size(); i++) {
+        m_prog->decodeEntryPoint(m_userEntrypoints[i]);
     }
 
     if (!Boomerang::get()->noDecodeChildren) {
         // decode anything undecoded
-        fe->decode(prog, Address::INVALID);
+        m_fe->decode(m_prog, Address::INVALID);
     }
 
-    prog->finishDecode();
+    m_prog->finishDecode();
 
     emit decodeCompleted();
 }
@@ -198,7 +198,7 @@ void Decompiler::decompile()
 {
     emit decompiling();
 
-    prog->decompile();
+    m_prog->decompile();
 
     emit decompileCompleted();
 }
@@ -208,7 +208,7 @@ void Decompiler::emitClusterAndChildren(Module *root)
 {
     emit newCluster(root->getName());
 
-    for (unsigned int i = 0; i < root->getNumChildren(); i++) {
+    for (size_t i = 0; i < root->getNumChildren(); i++) {
         emitClusterAndChildren(root->getChild(i));
     }
 }
@@ -218,9 +218,9 @@ void Decompiler::generateCode()
 {
     emit generatingCode();
 
-    prog->generateCode();
+    m_prog->generateCode();
 
-    Module *root = prog->getRootCluster();
+    Module *root = m_prog->getRootCluster();
 
     if (root) {
         emitClusterAndChildren(root);
@@ -228,7 +228,7 @@ void Decompiler::generateCode()
 
     std::list<Function *>::iterator it;
 
-    for (Module *module : prog->getModuleList()) {
+    for (Module *module : m_prog->getModuleList()) {
         for (Function *p : *module) {
             if (p->isLib()) {
                 continue;
@@ -242,7 +242,7 @@ void Decompiler::generateCode()
 }
 
 
-const char *Decompiler::procStatus(UserProc *p)
+const char *Decompiler::getProcStatus(UserProc *p)
 {
     switch (p->getStatus())
     {
@@ -299,7 +299,7 @@ void Decompiler::alertNew(Function *p)
             params = "<unknown>";
         }
         else {
-            for (unsigned int i = 0; i < p->getSignature()->getNumParams(); i++) {
+            for (size_t i = 0; i < p->getSignature()->getNumParams(); i++) {
                 auto ty = p->getSignature()->getParamType(i);
                 params.append(ty->getCtype());
                 params.append(" ");
@@ -338,7 +338,7 @@ void Decompiler::alertUpdateSignature(Function *p)
 
 bool Decompiler::getRtlForProc(const QString& name, QString& rtl)
 {
-    Function *p = prog->findProc(name);
+    Function *p = m_prog->findProc(name);
 
     if (p->isLib()) {
         return false;
@@ -355,11 +355,11 @@ void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description)
 {
     LOG << p->getName() << ": " << description << "\n";
 
-    if (Debugging) {
-        Waiting = true;
+    if (m_debugging) {
+        m_waiting = true;
         emit debuggingPoint(p->getName(), description);
 
-        while (Waiting) {
+        while (m_waiting) {
             thread()->wait(10);
         }
     }
@@ -368,13 +368,13 @@ void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description)
 
 void Decompiler::stopWaiting()
 {
-    Waiting = false;
+    m_waiting = false;
 }
 
 
 QString Decompiler::getSigFile(const QString& name)
 {
-    Function *p = prog->findProc(name);
+    Function *p = m_prog->findProc(name);
 
     if ((p == nullptr) || !p->isLib() || (p->getSignature() == nullptr)) {
         return "";
@@ -386,7 +386,7 @@ QString Decompiler::getSigFile(const QString& name)
 
 QString Decompiler::getClusterFile(const QString& name)
 {
-    Module *c = prog->findModule(name);
+    Module *c = m_prog->findModule(name);
 
     if (c == NULL) {
         return "";
@@ -398,13 +398,13 @@ QString Decompiler::getClusterFile(const QString& name)
 
 void Decompiler::rereadLibSignatures()
 {
-    prog->rereadLibSignatures();
+    m_prog->rereadLibSignatures();
 }
 
 
 void Decompiler::renameProc(const QString& oldName, const QString& newName)
 {
-    Function *p = prog->findProc(oldName);
+    Function *p = m_prog->findProc(oldName);
 
     if (p) {
         p->setName(newName);
@@ -424,7 +424,7 @@ void Decompiler::getCompoundMembers(const QString& name, QTableWidget *tbl)
 
     std::shared_ptr<CompoundType> c = ty->as<CompoundType>();
 
-    for (unsigned int i = 0; i < c->getNumTypes(); i++) {
+    for (size_t i = 0; i < c->getNumTypes(); i++) {
         tbl->setRowCount(tbl->rowCount() + 1);
         tbl->setItem(tbl->rowCount() - 1, 0, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i))));
         tbl->setItem(tbl->rowCount() - 1, 1, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i) / 8)));
