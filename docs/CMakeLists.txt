@@ -13,6 +13,7 @@ if (Doxygen_FOUND)
 		add_custom_target(docs
 			COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+			VERBATIM
 			SOURCES mainpage.dox)
 
 	endif(BOOM_BUILD_DOCS)
