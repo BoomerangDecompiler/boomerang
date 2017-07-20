@@ -1,59 +1,56 @@
-Welcome to boomerang decompiler
-===============================
+# Boomerang Decompiler
 
-[![Join the chat at https://gitter.im/nemerle/boomerang](https://badges.gitter.im/nemerle/boomerang.svg)](https://gitter.im/nemerle/boomerang?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+This is an experimental fork of the [Boomerang Decompiler](http://boomerang.sourceforge.net/).
+Right now, there are no pre-compiled binaries available, so you'll have to compile from source yourself.
 
-This repository is now connected to continous integration server:
-<http://jenkins.nemerle.eu>
-Generated documentation is available at <http://jenkins.nemerle.eu/job/boomerang/doxygen/>
+## Building
 
-This is an experimental branch of boomerang project, the inital goals are:
+### Building prerequisites
 
-1. Try to fix all warnings from GCC and Clang's `-Wall`
-2. Verify stability of decompilation results: compare 2 run results, they should be exactly the same.
-3. Simplify code base using features available in c++11
+ - A C++11 compatible compiler (GCC \>= 5.0, Clang \>= 4.0, MSVC \>= 2015 are known to work)
+ - [CMake 3.1.0 or newer](https://cmake.org/download/)
+ - [Qt5](https://www.qt.io/download-open-source/)
+ - [Doxygen](http://www.doxygen.nl/) (optional)
 
-Considering part 3, the target compilers are GCC \>=4.6 family (MinGW on windows), Clang and MSVC>=2015.
+### Building on Linux
 
-For full ( and slightly stale :) ) build instructions please see
-
-<http://boomerang.sourceforge.net/making.php>
-----------------------------------------------
-
-Compiling the `next` branch
-===========================
-
-Note that on a debian system you can usually get away with:
+Note that on a Debian-compatible system you can usually get away with:
 
 ```bash
 sudo apt-get install git cmake qt5-default
 cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
-git clone git://github.com/nemerle/boomerang.git
+git clone git://github.com/ceeac/boomerang.git
 cd boomerang
 mkdir build && cd build
 cmake ..
 make
+make install
 ```
 
-To compile on windows, it should be enough to have:
+### Building on Windows
 
--   [CMake 3.1.0 or newer](http://www.CMake.org/CMake/resources/software.html)
--   [Qt5 for MinGW](http://qt-project.org/wiki/MinGW-64-bit)
--   QtCreator (installed with Qt5)
+To compile on windows, it should be enough to run cmake-gui and fill in the paths to missing libraries if CMake des not find them.
 
-Testing
-=======
 
-After building boomerang You can run the test suite, to do that you will need ruby interpeter and a bash compatible shell.
+### Building on macOS
 
-      ./full_regression.sh
+Building on macOS is currently not supported. However, patches or pull requests on this matter are welcome.
 
-After running full\_regression, the tool will report tests on which boomerang crashed.
-You can also check if Your changes to boomerang, produced any changes in the quality of decompiled code by running
+
+## Testing
+
+### Unit tests
+
+Boomerang has a unit test suite, which cah be run by `make test` on Linux or by running the RUN_TESTS target in Visual Studio.
+
+### Regression tests
+
+Additionally, you can run the regression test suite, to do so you will need a Ruby or Python interpeter and a bash compatible shell.
+To run the regression test suite, run `./full_regression.sh`.
+
+After running the test suite, the tool will report tests on which boomerang crashed.
+You can also check if your changes to boomerang produced any changes in the quality of decompiled code by running
  YOUR\_FAVOURITE\_DIFF\_GUI ./tests/outputs ./tests/baseline
 
-Additionally, if You enable the test suite option in ( CMake option ), boomerang unit-test can be run by
 
-    make test
 
-Thanks.
