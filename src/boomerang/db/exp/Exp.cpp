@@ -313,7 +313,7 @@ bool Exp::searchAll(const Exp& search, std::list<SharedExp>& result)
         result.push_back(*it);
     }
 
-    return not li.empty();
+    return !li.empty();
 }
 
 
@@ -393,7 +393,7 @@ SharedExp Exp::accumulate(std::list<SharedExp>& exprs)
     auto res = Binary::get(opPlus, cloned_list.back(), last_val);
     cloned_list.pop_back();
 
-    while (not cloned_list.empty()) {
+    while (!cloned_list.empty()) {
         res = Binary::get(opPlus, cloned_list.back(), res);
         cloned_list.pop_back();
     }

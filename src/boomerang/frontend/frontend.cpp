@@ -342,7 +342,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     decode(m_program, a);
        m_program->setEntryPoint(a);
 
-    if (not gotMain) {
+    if (!gotMain) {
         return;
     }
 
@@ -583,7 +583,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss,
         std::list<Instruction *>::iterator ss1 = ss;
         ss1++;
         assert(ss1 == sl.end());
-        assert(not pRtl->empty());
+        assert(!pRtl->empty());
         pRtl->back() = call;
         *ss          = call;
     }

@@ -792,7 +792,7 @@ void BasicBlock::setCond(SharedExp e) noexcept(false)
     assert(m_listOfRTLs);
     RTL *last = m_listOfRTLs->back();
     // it should contain a BranchStatement
-    assert(not last->empty());
+    assert(!last->empty());
 
     for (auto it = last->rbegin(); it != last->rend(); it++) {
         if ((*it)->getKind() == STMT_BRANCH) {
@@ -811,7 +811,7 @@ bool BasicBlock::isJmpZ(BasicBlock *dest)
     assert(m_listOfRTLs);
     RTL *last = m_listOfRTLs->back();
     // it should contain a BranchStatement
-    assert(not last->empty());
+    assert(!last->empty());
 
     for (auto it = last->rbegin(); it != last->rend(); it++) {
         if ((*it)->getKind() == STMT_BRANCH) {
@@ -2127,7 +2127,7 @@ int BasicBlock::findNumCases()
 
         assert(in->m_listOfRTLs && in->m_listOfRTLs->size());
         RTL *lastRtl = in->m_listOfRTLs->back();
-        assert(not lastRtl->empty());
+        assert(!lastRtl->empty());
         BranchStatement *lastStmt = (BranchStatement *)lastRtl->back();
         SharedExp       pCond     = lastStmt->getCondExpr();
 
@@ -2242,7 +2242,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
             LOG << "decodeIndirectJmp: " << lastRtl->prints();
         }
 
-        assert(not lastRtl->empty());
+        assert(!lastRtl->empty());
         CaseStatement *lastStmt = (CaseStatement *)lastRtl->back();
         // Note: some programs might not have the case expression propagated to, because of the -l switch (?)
         // We used to use ordinary propagation here to get the memory expression, but now it refuses to propagate memofs
@@ -2364,7 +2364,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
             LOG << "decodeIndirectJmp: COMPCALL:\n" << lastRtl->prints() << "\n";
         }
 
-        assert(not lastRtl->empty());
+        assert(!lastRtl->empty());
         CallStatement *lastStmt = (CallStatement *)lastRtl->back();
         SharedExp     e         = lastStmt->getDest();
         // Indirect calls may sometimes not be propagated to, because of limited propagation (-l switch).

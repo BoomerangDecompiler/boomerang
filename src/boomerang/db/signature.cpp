@@ -2081,7 +2081,7 @@ void Signature::print(QTextStream& out, bool /*html*/) const
         out << "*forced* ";
     }
 
-    if (not m_returns.empty()) {
+    if (!m_returns.empty()) {
         out << "{ ";
         unsigned n = 0;
 

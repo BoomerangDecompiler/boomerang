@@ -1618,7 +1618,7 @@ void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QStrin
 
     indent(s, indLevel);
 
-    if (not results->empty()) {
+    if (!results->empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
         SharedExp firstRet = ((Assignment *)*results->begin())->getLeft();
         appendExp(s, *firstRet, PREC_ASSIGN);

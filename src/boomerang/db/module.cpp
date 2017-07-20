@@ -6,6 +6,7 @@
 #include "boomerang/db/prog.h"
 #include "boomerang/db/signature.h"
 #include "boomerang/db/statements/callstatement.h"
+#include "boomerang/db/exp/Location.h"
 
 #include <QDir>
 #include <QString>

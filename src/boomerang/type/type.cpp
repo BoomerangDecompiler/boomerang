@@ -620,7 +620,7 @@ SharedType Type::parseType(const char *)
 
 bool IntegerType::operator==(const Type& other) const
 {
-    if (not other.isInteger()) {
+    if (!other.isInteger()) {
         return false;
     }
 
@@ -724,7 +724,7 @@ bool CompoundType::operator==(const Type& other) const
 
 bool UnionType::operator==(const Type& other) const
 {
-    if (not other.isUnion()) {
+    if (!other.isUnion()) {
         return false;
     }
 

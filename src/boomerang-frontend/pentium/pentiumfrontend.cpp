@@ -522,7 +522,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 
         CallStatement *cs = nullptr;
 
-        if (not inst.rtl->empty()) {
+        if (!inst.rtl->empty()) {
             cs = (CallStatement *)((inst.rtl->back()->getKind() == STMT_CALL) ? inst.rtl->back() : nullptr);
         }
 
@@ -539,7 +539,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
                 if (a && (*a->getRight() == *Location::regOf(24))) {
                     inst = decodeInstruction(addr + oNumBytes + inst.numBytes);
 
-                    if (not inst.rtl->empty()) {
+                    if (!inst.rtl->empty()) {
                         CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
 
                         if (toMain && (toMain->getFixedDest() != Address::INVALID)) {
@@ -663,7 +663,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
             prev = addr;
             addr = rtl->getAddress();
 
-            if (not rtl->empty()) {
+            if (!rtl->empty()) {
                 Instruction *firstStmt = rtl->front();
 
                 if (firstStmt->isAssign()) {
@@ -997,7 +997,7 @@ DecodeResult& PentiumFrontEnd::decodeInstruction(Address pc)
 
 void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls)
 {
-    if (not call->getDestProc()) {
+    if (!call->getDestProc()) {
         return;
     }
 

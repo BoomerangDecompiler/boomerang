@@ -212,7 +212,7 @@ void DFA_TypeRecovery::recoverFunctionTypes(Function *)
 
 void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 {
-    assert(not f->isLib());
+    assert(!f->isLib());
     UserProc *proc = static_cast<UserProc *>(f);
     Cfg      *cfg  = proc->getCFG();
     Boomerang::get()->alertDecompileDebugPoint(proc, "before dfa type analysis");

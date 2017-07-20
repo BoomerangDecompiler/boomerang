@@ -142,7 +142,7 @@ bool UserProc::isNoReturn() const
     if (exitbb->getNumInEdges() == 1) {
         Instruction *s = exitbb->getInEdges()[0]->getLastStmt();
 
-        if (not s->isCall()) {
+        if (!s->isCall()) {
             return false;
         }
 

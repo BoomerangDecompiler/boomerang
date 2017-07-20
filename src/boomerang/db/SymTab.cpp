@@ -109,7 +109,7 @@ bool BinarySymbol::rename(const QString& s)
 
 bool BinarySymbol::isImported() const
 {
-    return attributes.contains("Imported") and attributes["Imported"].toBool();
+    return attributes.contains("Imported") && attributes["Imported"].toBool();
 }
 
 

@@ -1082,13 +1082,13 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
             for (auto& v : *pa) {
                 def = v.second.def();
 
-                if ((def == nullptr)or(!def->isAssign())) {
+                if (!def || !def->isAssign()) {
                     continue;
                 }
 
                 SharedExp rhs = ((Assign *)def)->getRight();
 
-                if ((rhs == nullptr) || !rhs->isStrConst()) {
+                if (!rhs || !rhs->isStrConst()) {
                     continue;
                 }
 
