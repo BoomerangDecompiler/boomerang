@@ -43,7 +43,7 @@ endif ()
 ###############################################################################
 # Options section
 ###############################################################################
-option(BOOM_BUILD_TESTS "Build the testing tree." ON)
+option(BOOMERANG_BUILD_TESTS "Build the testing tree." ON)
 
 # CMake does not fill in CMAKE_BUILD_TYPE automatically.
 if (CMAKE_BUILD_TYPE STREQUAL "")
@@ -205,7 +205,7 @@ add_subdirectory(src)
 # Tests section
 ###############################################################################
 
-if (BOOM_BUILD_TESTS)
+if (BOOMERANG_BUILD_TESTS)
     enable_testing()
     find_package(Qt5Test REQUIRED)
 
@@ -213,7 +213,7 @@ if (BOOM_BUILD_TESTS)
     add_subdirectory(unit-tests)
 
     file(COPY "${CMAKE_SOURCE_DIR}/tests/inputs/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/tests/inputs/")
-endif (BOOM_BUILD_TESTS)
+endif (BOOMERANG_BUILD_TESTS)
 
 
 # run regression suite by 'make check'

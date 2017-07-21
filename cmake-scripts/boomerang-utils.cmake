@@ -7,9 +7,9 @@ include(CMakeParseArguments)
 function(BOOMERANG_ADD_LOADER)
 	cmake_parse_arguments(LOADER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
-	option(BOOM_BUILD_LOADER_${LOADER_NAME} "Build the ${LOADER_NAME} loader." ON)
+	option(BOOMERANG_BUILD_LOADER_${LOADER_NAME} "Build the ${LOADER_NAME} loader." ON)
 
-	if (BOOM_BUILD_LOADER_${LOADER_NAME})
+	if (BOOMERANG_BUILD_LOADER_${LOADER_NAME})
 		set(target_name "boomerang-${LOADER_NAME}Loader")
 		add_library(${target_name} SHARED ${LOADER_SOURCES})
 
@@ -24,7 +24,7 @@ function(BOOMERANG_ADD_LOADER)
 			ARCHIVE DESTINATION lib/boomerang/plugins/loader/
 			LIBRARY DESTINATION lib/boomerang/plugins/loader/
 		)
-	endif ()
+	endif (BOOMERANG_BUILD_LOADER_${LOADER_NAME})
 endfunction()
 
 
