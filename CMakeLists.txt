@@ -10,15 +10,15 @@ set(CMAKE_WARN_DEPRECATED ON)
 find_package(Git)
 if (GIT_FOUND)
     execute_process(
-    	COMMAND "${GIT_EXECUTABLE}" describe --dirty --tags
-    	RESULT_VARIABLE DESCRIBE_FAILED
-    	OUTPUT_VARIABLE VERSION_TEMP
-    	OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND "${GIT_EXECUTABLE}" describe --dirty --tags
+        RESULT_VARIABLE DESCRIBE_FAILED
+        OUTPUT_VARIABLE VERSION_TEMP
+        OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
     if (NOT DESCRIBE_FAILED)
-    	set(PROJECT_VERSION   "${VERSION_TEMP}")
-    	set(BOOMERANG_VERSION "${VERSION_TEMP}")
+        set(PROJECT_VERSION   "${VERSION_TEMP}")
+        set(BOOMERANG_VERSION "${VERSION_TEMP}")
     endif (NOT DESCRIBE_FAILED)
 endif (GIT_FOUND)
 
@@ -52,92 +52,6 @@ endif ()
 
 # help the cmake find 3rd_party compiled/installed packages
 list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party")
-
-
-###############################################################################
-# Compiler specific flags section
-###############################################################################
-
-# Force C++11
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(COMMON_COMPILE_OPTIONS "")
-if (MSVC)
-    add_definitions(
-        -D_CRT_SECURE_NO_WARNINGS
-        -D_CRT_NONSTDC_NO_DEPRECATE
-        -D_SCL_SECURE_NO_WARNINGS
-    )
-    set(DEBUG_LIB Dbghelp.lib)
-
-    set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} /W3")
-
-elseif (CMAKE_CXX_COMPILER MATCHES clang)
-    # Warning options
-    set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
-        -Wall -Wextra -Werror \
-        -Wno-return-type-c-linkage \
-        -Weverything \
-        -Wno-c++98-compat \
-        -Wno-c++98-compat-pedantic \
-        -Wno-old-style-cast \
-        -Wno-documentation-unknown-command \
-        -Wno-reserved-id-macro \
-        -Wno-exit-time-destructors \
-        -Wno-global-constructors \
-        -Wno-padded \
-        -Wno-weak-vtables \
-        -Wno-sign-conversion \
-        -Wno-cast-align \
-        -Wno-shorten-64-to-32 \
-        -Wno-missing-prototypes \
-        -Wno-unreachable-code \
-        -Wno-unreachable-code-return \
-        -Wno-unreachable-code-break \
-        -Wno-documentation-deprecated-sync \
-        -Wno-unused-macros \
-        -Wno-conversion \
-        -Wno-switch-enum \
-        -Wno-missing-variable-declarations \
-        -Wno-covered-switch-default \
-        -Wno-deprecated \
-        -Wno-double-promotion \
-        -Wno-float-equal \
-        -Wno-undefined-reinterpret-cast \
-        -Wno-implicit-fallthrough \
-        -Wno-missing-noreturn \
-        -Wno-gnu-zero-variadic-macro-arguments \
-        -Wno-documentation \
-        -Wno-undef \
-        -Wno-unused-local-typedefs"
-    )
-
-else () # GCC
-    set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic \
-    	-Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs \
-    	-Wstrict-overflow=2 -rdynamic -fPIC"
-    )
-
-    # other warnings:
-    #-fstrict-aliasing  # This will not work with *reinterpret-cast<float*>(&int)
-    #-Wsuggest-attribute=const|pure|etc. -Wcast-qual -Wconversion # TODO
-    #-Wundef -Wzero-as-null-pointer-constant #does not compile with boost
-
-    # Enable additional warnings for GCC6+
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-    	set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
-    		-Wnull-dereference -Wduplicated-cond")
-    		#-Walloc-zero -Walloca -Wduplicated-branches
-    endif ()
-
-    set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -std=c++11 -Wsuggest-override")
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
-    add_definitions(-D__STDC_FORMAT_MACROS)
-endif ()
-
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${COMMON_COMPILE_OPTIONS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS}")
 
 
 ###############################################################################
@@ -191,7 +105,107 @@ add_definitions(-DRECURSION_WIP=0)
 add_definitions(-DPRINT_UNION=0)      # Set to 1 to debug unions to stderr
 add_definitions(-DV9_ONLY=0)
 add_definitions(-DBRANCH_DS_ERROR=0)  # If set, a branch to the delay slot of a delayed
-    		                          # CTI instruction is flagged as an error
+                                      # CTI instruction is flagged as an error
+
+
+###############################################################################
+# Compiler specific flags section
+###############################################################################
+
+# Force C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(COMMON_COMPILE_OPTIONS "")
+if (MSVC)
+    add_definitions(
+        -D_CRT_SECURE_NO_WARNINGS
+        -D_CRT_NONSTDC_NO_DEPRECATE
+        -D_SCL_SECURE_NO_WARNINGS
+    )
+    set(DEBUG_LIB Dbghelp.lib)
+
+    set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} /W3")
+
+elseif (CMAKE_CXX_COMPILER MATCHES clang)
+    # Warning options
+    set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
+        -Wall -Wextra -Werror \
+        -Weverything \
+        -Wno-error=strict-aliasing \
+        -Wno-return-type-c-linkage \
+        -Wno-unused-local-typedefs \
+        -Wno-c++98-compat \
+        -Wno-c++98-compat-pedantic \
+        -Wno-old-style-cast \
+        -Wno-documentation-unknown-command \
+        -Wno-reserved-id-macro \
+        -Wno-exit-time-destructors \
+        -Wno-global-constructors \
+        -Wno-padded \
+        -Wno-weak-vtables \
+        -Wno-sign-conversion \
+        -Wno-cast-align \
+        -Wno-shorten-64-to-32 \
+        -Wno-missing-prototypes \
+        -Wno-unreachable-code \
+        -Wno-unreachable-code-return \
+        -Wno-unreachable-code-break \
+        -Wno-documentation-deprecated-sync \
+        -Wno-unused-macros \
+        -Wno-conversion \
+        -Wno-switch-enum \
+        -Wno-missing-variable-declarations \
+        -Wno-covered-switch-default \
+        -Wno-deprecated \
+        -Wno-double-promotion \
+        -Wno-float-equal \
+        -Wno-undefined-reinterpret-cast \
+        -Wno-implicit-fallthrough \
+        -Wno-missing-noreturn \
+        -Wno-gnu-zero-variadic-macro-arguments \
+        -Wno-documentation \
+        -Wno-undef"
+    )
+
+else () # GCC
+    set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic \
+        -Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs \
+        -Wstrict-overflow=2 -rdynamic -fPIC"
+    )
+
+    # other warnings:
+    #-fstrict-aliasing  # This will not work with *reinterpret-cast<float*>(&int)
+    #-Wsuggest-attribute=const|pure|etc. -Wcast-qual -Wconversion # TODO
+    #-Wundef -Wzero-as-null-pointer-constant #does not compile with boost
+
+    # Enable additional warnings for GCC6+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
+            -Wnull-dereference -Wduplicated-cond")
+            #-Walloc-zero -Walloca -Wduplicated-branches
+    endif ()
+
+    set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -std=c++11 -Wsuggest-override")
+    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
+    add_definitions(-D__STDC_FORMAT_MACROS)
+endif ()
+
+if (NOT MSVC)
+    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -g -O0")
+    elseif (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
+        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -g -O2")
+    elseif (${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
+        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -Os")
+    else () # Release
+        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -O3")
+    endif ()
+endif (NOT MSVC)
+
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${COMMON_COMPILE_OPTIONS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS}")
+
 
 ###############################################################################
 # Code section
