@@ -43,7 +43,6 @@ static int nextUnionNumber = 0;
 static const Binary unscaledArrayPat(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst));
 
 static DFA_TypeRecovery s_type_recovery;
-static int              dfa_progress = 0;
 
 void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
 {
@@ -212,10 +211,13 @@ void DFA_TypeRecovery::recoverFunctionTypes(Function *)
 
 void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 {
-    assert(!f->isLib());
+    if (f->isLib()) {
+        return;
+    }
+
     UserProc *proc = static_cast<UserProc *>(f);
     Cfg      *cfg  = proc->getCFG();
-    Boomerang::get()->alertDecompileDebugPoint(proc, "before dfa type analysis");
+    Boomerang::get()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
 
     // First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
     // int and char* in sparc/switch_gcc)
@@ -223,7 +225,8 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
     StatementList stmts;
     proc->getStatements(stmts);
 
-    int iter;
+    int iter = 0;
+    int dfa_progress = 0;
 
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
@@ -275,8 +278,8 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 
     // Now use the type information gathered
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "before other uses of dfa type analysis");
-    proc->debugPrintAll("before other uses of dfa type analysis");
+    Boomerang::get()->alertDecompileDebugPoint(proc, "Before other uses of DFA type analysis");
+    proc->debugPrintAll("Before other uses of DFA type analysis");
 
     Prog *_prog = proc->getProg();
 
@@ -286,7 +289,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
         s->findConstants(lc);
 
         for (const std::shared_ptr<Const>& con : lc) {
-            if (con->getOper() == opStrConst) {
+            if (!con || con->getOper() == opStrConst) {
                 continue;
             }
 
@@ -309,12 +312,12 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                     }
                 }
                 else if (baseType->resolvesToInteger() || baseType->resolvesToFloat() || baseType->resolvesToSize()) {
-                                   Address addr = Address(con->getInt()); // TODO: use getAddr
+                    Address addr = Address(con->getInt()); // TODO: use getAddr
                     _prog->markGlobalUsed(addr, baseType);
                     QString gloName = _prog->getGlobalName(addr);
 
                     if (!gloName.isEmpty()) {
-                                          Address   r = addr - _prog->getGlobalAddr(gloName);
+                        Address   r = addr - _prog->getGlobalAddr(gloName);
                         SharedExp ne;
 
                         if (!r.isZero()) { // TODO: what if r is NO_ADDR ?
@@ -325,7 +328,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                             SharedType ty     = _prog->getGlobalType(gloName);
                             Assign     *assgn = dynamic_cast<Assign *>(s);
 
-                            if (s->isAssign() && assgn && assgn->getType()) {
+                            if (assgn && s->isAssign() && assgn->getType()) {
                                 size_t bits = assgn->getType()->getSize();
 
                                 if ((ty == nullptr) || (ty->getSize() == 0)) {
@@ -335,7 +338,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 
                             SharedExp g = Location::global(gloName, proc);
 
-                            if (ty && ty->resolvesToArray()) {
+                            if (g && ty && ty->resolvesToArray()) {
                                 ne = Binary::get(opArrayIndex, g, Const::get(0));
                             }
                             else {
@@ -359,7 +362,10 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                     for (auto& elem : result) {
                         // idx + K
                         auto bin_rr = std::dynamic_pointer_cast<Binary>(elem);
-                        assert(bin_rr);
+                        if (!bin_rr) {
+                            assert(false);
+                            return;
+                        }
                         auto constK = bin_rr->access<Const, 2>();
 
                         // Note: keep searching till we find the pattern with this constant, since other constants may
@@ -447,9 +453,12 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                 if (typeExp->resolvesToUnion()) {
                     typeExp = typeExp->as<UnionType>()->dereferenceUnion();
                 }
-                else {
-                    assert(typeExp->resolvesToPointer());
+                else if (typeExp->resolvesToPointer()) {
                     typeExp = typeExp->as<PointerType>()->getPointsTo();
+                }
+                else {
+                    assert(false);
+                    return;
                 }
             }
 

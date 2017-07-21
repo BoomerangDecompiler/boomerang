@@ -2011,7 +2011,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToArray()) {
-        int     nelems  = -1;
+        size_t  nelems  = -1;
         QString nam     = getGlobalName(uaddr);
         int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
 
@@ -2024,7 +2024,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 
         auto n = e = Terminal::get(opNil);
 
-        for (int i = 0; nelems == -1 || i < nelems; i++) {
+        for (size_t i = 0; i < nelems; i++) {
             auto v = readNativeAs(uaddr + i * base_sz, type->as<ArrayType>()->getBaseType());
 
             if (v == nullptr) {
@@ -2042,7 +2042,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
             }
 
             // "null" terminated
-            if ((nelems == -1) && v->isConst() && (v->access<Const>()->getInt() == 0)) {
+            if ((nelems == (size_t)-1) && v->isConst() && (v->access<Const>()->getInt() == 0)) {
                 break;
             }
         }

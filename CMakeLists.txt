@@ -169,9 +169,18 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
     )
 
 else () # GCC
-    set(COMMON_COMPILE_OPTIONS "-Wall -Wextra -Werror -Werror=pedantic \
-        -Wshadow -Wformat=2 -Wformat-signedness -Wmissing-include-dirs \
-        -Wstrict-overflow=2 -rdynamic -fPIC"
+    set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
+        -Wall -Wextra -Werror \
+        -Werror=pedantic \
+        -Wshadow \
+        -Wformat=2 \
+        -Wformat-signedness \
+        -Wmissing-include-dirs \
+        -Wstrict-overflow=2 \
+        -rdynamic \
+        -fPIC \
+        -Wno-unused-local-typedefs \
+        -Wno-strict-aliasing"
     )
 
     # other warnings:

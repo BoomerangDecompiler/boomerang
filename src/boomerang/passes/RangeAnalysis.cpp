@@ -446,15 +446,19 @@ public:
     bool visit(CaseStatement *stmt) override { processRange(stmt); return true; }
     bool visit(CallStatement *stmt) override
     {
+        if (!stmt) {
+            return true;
+        }
+
         RangeMap output = getInputRanges(stmt);
 
         if (stmt->getDestProc() == nullptr) {
             // note this assumes the call is only to one proc.. could be bad.
             auto d = output.substInto(stmt->getDest()->clone());
 
-            if (d->isIntConst() || d->isStrConst()) {
+            if (d && (d->isIntConst() || d->isStrConst())) {
                 if (d->isIntConst()) {
-                                   Address dest = d->access<Const>()->getAddr();
+                    Address dest = d->access<Const>()->getAddr();
                     stmt->setDestProc(stmt->getProc()->getProg()->setNewProc(dest));
                 }
                 else {
@@ -469,9 +473,11 @@ public:
                     for (size_t i = 0; i < sig->getNumParams(); i++) {
                         auto   a   = sig->getParamExp(i);
                         Assign *as = new Assign(VoidType::get(), a->clone(), a->clone());
-                        as->setProc(stmt->getProc());
-                        as->setBB(stmt->getBB());
-                        stmt->getArguments().append(as);
+                        if (as) {
+                            as->setProc(stmt->getProc());
+                            as->setBB(stmt->getBB());
+                            stmt->getArguments().append(as);
+                        }
                     }
 
                     stmt->setSignature(stmt->getDestProc()->getSignature()->clone());
@@ -507,15 +513,23 @@ public:
             }
             else if (!strncmp(qPrintable(stmt->getDestProc()->getName()), "__imp_", 6)) {
                 Instruction *first = ((UserProc *)stmt->getDestProc())->getCFG()->getEntryBB()->getFirstStmt();
-                assert(first && first->isCall());
+                if (!first || !first->isCall()) {
+                    assert(false);
+                    return false;
+                }
+
                 Function *d = ((CallStatement *)first)->getDestProc();
 
-                if (d->getSignature()->getConvention() == CallConv::Pascal) {
+                if (d && d->getSignature()->getConvention() == CallConv::Pascal) {
                     c += d->getSignature()->getNumParams() * 4;
                 }
             }
             else if (!stmt->getDestProc()->isLib()) {
-                UserProc *p = (UserProc *)stmt->getDestProc();
+              UserProc *p = (UserProc *)stmt->getDestProc();
+                if (!p) {
+                    assert(false);
+                    return false;
+                }
                 LOG_VERBOSE(1) << "== checking for number of bytes popped ==\n" << *p << "== end it ==\n";
                 SharedExp eq = p->getProven(Location::regOf(28));
 
@@ -535,9 +549,12 @@ public:
 
                 if (retbb && (eq == nullptr)) {
                     Instruction *last = retbb->getLastStmt();
-                    assert(last);
+                    if (!last) {
+                        assert(false);
+                        return false;
+                    }
 
-                    if (last->isReturn()) {
+                    if (last && last->isReturn()) {
                         last->setBB(retbb);
                         last = last->getPreviousStatementInBB();
                     }
@@ -552,7 +569,7 @@ public:
                             }
                         }
 
-                        if (last->isCall()) {
+                        if (last && last->isCall()) {
                             Function *d = ((CallStatement *)last)->getDestProc();
 
                             if (d && (d->getSignature()->getConvention() == CallConv::Pascal)) {

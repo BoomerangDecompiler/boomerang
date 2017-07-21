@@ -1229,7 +1229,9 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
                         }
                     }
 
-                    assert(f);
+                    if (!f) {
+                        assert(false);
+                    }
 
                     // Insert every proc after f to the end of path into child
                     // There must be at least one element in the list (this proc), so the ++pi should be safe
