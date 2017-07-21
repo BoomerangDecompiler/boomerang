@@ -44,7 +44,7 @@ class Global;
 class Parameter;
 class ConnectionGraph;
 class Instruction;
-enum class BBTYPE;
+enum class BBType;
 
 #define BTHEN    0
 #define BELSE    1
@@ -163,7 +163,7 @@ public:
      * \param iNumOutEdges number of out edges this BB will eventually have
      * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
      ******************************************************************************/
-    BasicBlock *newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges) noexcept(false);
+    BasicBlock *newBB(std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutEdges) noexcept(false);
 
     /***************************************************************************/ /**
      * \brief Allocates space for a new, incomplete BB, and the given address is

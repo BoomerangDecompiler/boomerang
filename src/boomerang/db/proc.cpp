@@ -159,7 +159,7 @@ bool UserProc::isNoReturn() const
 
 bool UserProc::containsAddr(Address uAddr) const
 {
-    BB_IT it;
+    BBIterator it;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
         if (bb->getRTLs() && (bb->getLowAddr() <= uAddr) && (bb->getHiAddr() >= uAddr)) {
@@ -543,7 +543,7 @@ SyntaxNode *UserProc::getAST() const
 {
     int             numBBs = 0;
     BlockSyntaxNode *init  = new BlockSyntaxNode();
-    BB_IT           it;
+    BBIterator           it;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
         BlockSyntaxNode *b = new BlockSyntaxNode();
@@ -917,7 +917,7 @@ void UserProc::printDFG() const
 
 void UserProc::initStatements()
 {
-    BB_IT it;
+    BBIterator it;
 
     BasicBlock::rtlit       rit;
     StatementList::iterator sit;
@@ -947,7 +947,7 @@ void UserProc::initStatements()
 
 void UserProc::numberStatements()
 {
-    BB_IT it;
+    BBIterator it;
 
     BasicBlock::rtlit       rit;
     StatementList::iterator sit;
@@ -965,7 +965,7 @@ void UserProc::numberStatements()
 
 void UserProc::getStatements(StatementList& stmts) const
 {
-    BBC_IT it;
+    BBCIterator it;
 
     for (const BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
         bb->getStatements(stmts);
@@ -1058,7 +1058,7 @@ void UserProc::insertAssignAfter(Instruction *s, SharedExp left, SharedExp right
 
 void UserProc::insertStatementAfter(Instruction *s, Instruction *a)
 {
-    BB_IT bb;
+    BBIterator bb;
 
     for (bb = m_cfg->begin(); bb != m_cfg->end(); bb++) {
         std::list<RTL *> *rtls = (*bb)->getRTLs();
@@ -1166,11 +1166,11 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
     if (!Boomerang::get()->noDecodeChildren) {
         // Recurse to children first, to perform a depth first search
-        BB_IT it;
+        BBIterator it;
 
         // Look at each call, to do the DFS
         for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-            if (bb->getType() != BBTYPE::CALL) {
+            if (bb->getType() != BBType::Call) {
                 continue;
             }
 
@@ -4420,7 +4420,7 @@ void UserProc::castConst(int num, SharedType ty)
 
 bool UserProc::ellipsisProcessing()
 {
-    BB_IT it;
+    BBIterator it;
 
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
@@ -5905,7 +5905,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     std::map<CallStatement *, UseCollector> callLiveness;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
-    BB_IT it;
+    BBIterator it;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
         CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
@@ -5977,7 +5977,7 @@ void UserProc::clearUses()
     }
 
     m_procUseCollector.clear();
-    BB_IT                           it;
+    BBIterator                           it;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
 
@@ -6048,7 +6048,7 @@ RTL *globalRtl = nullptr;
 
 void UserProc::processDecodedICTs()
 {
-    BB_IT it;
+    BBIterator it;
 
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
@@ -6164,7 +6164,7 @@ void UserProc::eliminateDuplicateArgs()
         LOG << "### eliminate duplicate args for " << getName() << " ###\n";
     }
 
-    BB_IT                           it;
+    BBIterator                           it;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
 
@@ -6187,7 +6187,7 @@ void UserProc::removeCallLiveness()
         LOG << "### removing call livenesses for " << getName() << " ###\n";
     }
 
-    BB_IT                           it;
+    BBIterator                           it;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
 

@@ -51,7 +51,7 @@ BasicBlock::BasicBlock(Function *parent)
     : m_targetOutEdges(0)
     , m_inEdgesVisited(0) // From Doug's code
     , m_numForwardInEdges(-1)
-    , m_traversed(UNTRAVERSED)
+    , m_traversed(TravType::Untraversed)
     , m_emitHLLLabel(false)
     , m_indentLevel(0)
     , m_immPDom(nullptr)
@@ -60,8 +60,8 @@ BasicBlock::BasicBlock(Function *parent)
     , m_condFollow(nullptr)
     , m_loopFollow(nullptr)
     , m_latchNode(nullptr)
-    , m_structuringType(Seq)
-    , m_unstructuredType(Structured)
+    , m_structuringType(StructType::Seq)
+    , m_unstructuredType(UnstructType::Structured)
     , m_overlappedRegProcessingDone(false) // others
 {
     m_parent = parent;
@@ -87,12 +87,12 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     : m_nodeType(bb.m_nodeType)
     , m_labelNum(bb.m_labelNum)
     , m_incomplete(bb.m_incomplete) // m_labelNeeded is initialized to false, not copied
-    , m_jumpReqd(bb.m_jumpReqd)
+    , m_jumpRequired(bb.m_jumpRequired)
     , m_inEdges(bb.m_inEdges)
     , m_outEdges(bb.m_outEdges)
     , m_targetOutEdges(bb.m_targetOutEdges)
-    ,// From Doug's code
-    m_ord(bb.m_ord)
+    // From Doug's code
+    , m_ord(bb.m_ord)
     , m_revOrd(bb.m_revOrd)
     , m_inEdgesVisited(bb.m_inEdgesVisited)
     , m_numForwardInEdges(bb.m_numForwardInEdges)
@@ -115,12 +115,12 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 }
 
 
-BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
+BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutEdges)
     : m_nodeType(bbType)
     , m_incomplete(false)
     , m_inEdgesVisited(0) // From Doug's code
     , m_numForwardInEdges(-1)
-    , m_traversed(UNTRAVERSED)
+    , m_traversed(TravType::Untraversed)
     , m_emitHLLLabel(false)
     , m_indentLevel(0)
     , m_immPDom(nullptr)
@@ -129,11 +129,11 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType,
     , m_condFollow(nullptr)
     , m_loopFollow(nullptr)
     , m_latchNode(nullptr)
-    , m_structuringType(Seq)
-    , m_unstructuredType(Structured)
+    , m_structuringType(StructType::Seq)
+    , m_unstructuredType(UnstructType::Structured)
     , m_overlappedRegProcessingDone(false) // Others
 {
-    if (bbType == BBTYPE::TWOWAY) {
+    if (bbType == BBType::Twoway) {
         assert(iNumOutEdges >= 2);
     }
 
@@ -180,13 +180,13 @@ void BasicBlock::setRTLs(std::list<RTL *> *rtls)
 }
 
 
-BBTYPE BasicBlock::getType()
+BBType BasicBlock::getType()
 {
     return m_nodeType;
 }
 
 
-void BasicBlock::updateType(BBTYPE bbType, uint32_t iNumOutEdges)
+void BasicBlock::updateType(BBType bbType, uint32_t iNumOutEdges)
 {
     m_nodeType       = bbType;
     m_targetOutEdges = iNumOutEdges;
@@ -194,15 +194,15 @@ void BasicBlock::updateType(BBTYPE bbType, uint32_t iNumOutEdges)
 }
 
 
-void BasicBlock::setJumpReqd()
+void BasicBlock::setJumpRequired()
 {
-    m_jumpReqd = true;
+    m_jumpRequired = true;
 }
 
 
-bool BasicBlock::isJumpReqd()
+bool BasicBlock::isJumpRequired()
 {
-    return m_jumpReqd;
+    return m_jumpRequired;
 }
 
 
@@ -238,48 +238,22 @@ void BasicBlock::print(QTextStream& os, bool html)
 
     switch (m_nodeType)
     {
-    case BBTYPE::ONEWAY:
-        os << "Oneway BB";
-        break;
-
-    case BBTYPE::TWOWAY:
-        os << "Twoway BB";
-        break;
-
-    case BBTYPE::NWAY:
-        os << "Nway BB";
-        break;
-
-    case BBTYPE::CALL:
-        os << "Call BB";
-        break;
-
-    case BBTYPE::RET:
-        os << "Ret BB";
-        break;
-
-    case BBTYPE::FALL:
-        os << "Fall BB";
-        break;
-
-    case BBTYPE::COMPJUMP:
-        os << "Computed jump BB";
-        break;
-
-    case BBTYPE::COMPCALL:
-        os << "Computed call BB";
-        break;
-
-    case BBTYPE::INVALID:
-        os << "Invalid BB";
-        break;
+    case BBType::Oneway:   os << "Oneway BB"; break;
+    case BBType::Twoway:   os << "Twoway BB"; break;
+    case BBType::Nway:     os << "Nway BB";   break;
+    case BBType::Call:     os << "Call BB";   break;
+    case BBType::Ret:      os << "Ret BB";    break;
+    case BBType::Fall:     os << "Fall BB";   break;
+    case BBType::CompJump: os << "Computed jump BB"; break;
+    case BBType::CompCall: os << "Computed call BB"; break;
+    case BBType::Invalid:  os << "Invalid BB"; break;
     }
 
     os << ":\n";
     os << "in edges: ";
 
     for (BasicBlock *bb : m_inEdges) {
-        os << bb->getHiAddr() << "(" << bb->getLowAddr() << ") ";
+        os << bb->getHiAddr() << " (" << bb->getLowAddr() << ") ";
     }
 
     os << "\n";
@@ -305,7 +279,7 @@ void BasicBlock::print(QTextStream& os, bool html)
         }
     }
 
-    if (m_jumpReqd) {
+    if (m_jumpRequired) {
         if (html) {
             os << "<br>";
         }
@@ -557,7 +531,7 @@ bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2)
 
 Address BasicBlock::getCallDest()
 {
-    if (m_nodeType != BBTYPE::CALL) {
+    if (m_nodeType != BBType::Call) {
         return Address::INVALID;
     }
 
@@ -579,7 +553,7 @@ Address BasicBlock::getCallDest()
 
 Function *BasicBlock::getCallDestProc()
 {
-    if (m_nodeType != BBTYPE::CALL) {
+    if (m_nodeType != BBType::Call) {
         return nullptr;
     }
 
@@ -870,27 +844,27 @@ void BasicBlock::simplify()
         }
     }
 
-    if (m_nodeType == BBTYPE::TWOWAY) {
+    if (m_nodeType == BBType::Twoway) {
         assert(m_outEdges.size() > 1);
 
         if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-            m_nodeType = BBTYPE::FALL;
+            m_nodeType = BBType::Fall;
         }
         else {
             RTL *last = m_listOfRTLs->back();
 
             if (last->size() == 0) {
-                m_nodeType = BBTYPE::FALL;
+                m_nodeType = BBType::Fall;
             }
             else if (last->back()->isGoto()) {
-                m_nodeType = BBTYPE::ONEWAY;
+                m_nodeType = BBType::Oneway;
             }
             else if (!last->back()->isBranch()) {
-                m_nodeType = BBTYPE::FALL;
+                m_nodeType = BBType::Fall;
             }
         }
 
-        if (m_nodeType == BBTYPE::FALL) {
+        if (m_nodeType == BBType::Fall) {
             // set out edges to be the second one
             if (VERBOSE) {
                 LOG << "turning TWOWAY into FALL: " << m_outEdges[0]->getLowAddr() << " " << m_outEdges[1]->getLowAddr()
@@ -921,7 +895,7 @@ void BasicBlock::simplify()
             LOG_VERBOSE(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
         }
 
-        if (m_nodeType == BBTYPE::ONEWAY) {
+        if (m_nodeType == BBType::Oneway) {
             // set out edges to be the first one
             LOG_VERBOSE(1) << "turning TWOWAY into ONEWAY: " << m_outEdges[0]->getLowAddr() << " "
                            << m_outEdges[1]->getLowAddr() << "\n";
@@ -963,7 +937,7 @@ bool BasicBlock::hasBackEdgeTo(BasicBlock *dest)
 bool BasicBlock::allParentsGenerated()
 {
     for (BasicBlock *in : m_inEdges) {
-        if (!in->hasBackEdgeTo(this) && (in->m_traversed != DFS_CODEGEN)) {
+        if (!in->hasBackEdgeTo(this) && (in->m_traversed != TravType::DFS_Codegen)) {
             return false;
         }
     }
@@ -1029,7 +1003,7 @@ void BasicBlock::generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>&
         followSet.push_back(m_loopFollow);
     }
 
-    if (m_loopHeaderType == PreTested) {
+    if (m_loopHeaderType == LoopType::PreTested) {
         assert(m_latchNode->m_outEdges.size() == 1);
 
         // write the body of the block (excluding the predicate)
@@ -1050,8 +1024,8 @@ void BasicBlock::generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>&
         loopBody->generateCode(hll, indLevel + 1, m_latchNode, followSet, gotoSet, proc);
 
         // if code has not been generated for the latch node, generate it now
-        if (m_latchNode->m_traversed != DFS_CODEGEN) {
-            m_latchNode->m_traversed = DFS_CODEGEN;
+        if (m_latchNode->m_traversed != TravType::DFS_Codegen) {
+            m_latchNode->m_traversed = TravType::DFS_Codegen;
             m_latchNode->WriteBB(hll, indLevel + 1);
         }
 
@@ -1065,7 +1039,7 @@ void BasicBlock::generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>&
     }
     else {
         // write the loop header
-        if (m_loopHeaderType == Endless) {
+        if (m_loopHeaderType == LoopType::Endless) {
             hll->addEndlessLoopHeader(indLevel);
         }
         else {
@@ -1074,10 +1048,10 @@ void BasicBlock::generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>&
 
         // if this is also a conditional header, then generate code for the conditional. Otherwise generate code
         // for the loop body.
-        if (m_structuringType == LoopCond) {
+        if (m_structuringType == StructType::LoopCond) {
             // set the necessary flags so that generateCode can successfully be called again on this node
-            m_structuringType = Cond;
-            m_traversed       = UNTRAVERSED;
+            m_structuringType = StructType::Cond;
+            m_traversed       = TravType::Untraversed;
             generateCode(hll, indLevel + 1, m_latchNode, followSet, gotoSet, proc);
         }
         else {
@@ -1087,10 +1061,10 @@ void BasicBlock::generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>&
             m_outEdges[0]->generateCode(hll, indLevel + 1, m_latchNode, followSet, gotoSet, proc);
         }
 
-        if (m_loopHeaderType == PostTested) {
+        if (m_loopHeaderType == LoopType::PostTested) {
             // if code has not been generated for the latch node, generate it now
-            if (m_latchNode->m_traversed != DFS_CODEGEN) {
-                m_latchNode->m_traversed = DFS_CODEGEN;
+            if (m_latchNode->m_traversed != TravType::DFS_Codegen) {
+                m_latchNode->m_traversed = TravType::DFS_Codegen;
                 m_latchNode->WriteBB(hll, indLevel + 1);
             }
 
@@ -1100,11 +1074,11 @@ void BasicBlock::generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>&
             hll->addPostTestedLoopEnd(indLevel, m_latchNode->getCond());
         }
         else {
-            assert(m_loopHeaderType == Endless);
+            assert(m_loopHeaderType == LoopType::Endless);
 
             // if code has not been generated for the latch node, generate it now
-            if (m_latchNode->m_traversed != DFS_CODEGEN) {
-                m_latchNode->m_traversed = DFS_CODEGEN;
+            if (m_latchNode->m_traversed != TravType::DFS_Codegen) {
+                m_latchNode->m_traversed = TravType::DFS_Codegen;
                 m_latchNode->WriteBB(hll, indLevel + 1);
             }
 
@@ -1118,7 +1092,7 @@ void BasicBlock::generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>&
         // remove the follow from the follow set
         followSet.resize(followSet.size() - 1);
 
-        if (m_loopFollow->m_traversed != DFS_CODEGEN) {
+        if (m_loopFollow->m_traversed != TravType::DFS_Codegen) {
             m_loopFollow->generateCode(hll, indLevel, latch, followSet, gotoSet, proc);
         }
         else {
@@ -1151,7 +1125,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
     }
 
     // Has this node already been generated?
-    if (m_traversed == DFS_CODEGEN) {
+    if (m_traversed == TravType::DFS_Codegen) {
         // this should only occur for a loop over a single block
         // FIXME: is this true? Perl_list (0x8068028) in the SPEC 2000 perlbmk seems to have a case with sType = Cond,
         // lType == PreTested, and latchNod == 0
@@ -1159,20 +1133,20 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
         return;
     }
     else {
-        m_traversed = DFS_CODEGEN;
+        m_traversed = TravType::DFS_Codegen;
     }
 
     // if this is a latchNode and the current indentation level is the same as the first node in the loop, then this
     // write out its body and return otherwise generate a goto
     if (isLatchNode()) {
         if (latch && latch->m_loopHead &&
-            (indLevel == latch->m_loopHead->m_indentLevel + ((latch->m_loopHead->m_loopHeaderType == PreTested) ? 1 : 0))) {
+            (indLevel == latch->m_loopHead->m_indentLevel + ((latch->m_loopHead->m_loopHeaderType == LoopType::PreTested) ? 1 : 0))) {
             WriteBB(hll, indLevel);
             return;
         }
         else {
             // unset its traversed flag
-            m_traversed = UNTRAVERSED;
+            m_traversed = TravType::Untraversed;
 
             emitGotoAndLabel(hll, indLevel, this);
             return;
@@ -1183,16 +1157,16 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
 
     switch (m_structuringType)
     {
-    case Loop:
-    case LoopCond:
+    case StructType::Loop:
+    case StructType::LoopCond:
         generateCode_Loop(hll, gotoSet, indLevel, proc, latch, followSet);
         break;
 
-    case Cond:
+    case StructType::Cond:
         {
             // reset this back to LoopCond if it was originally of this type
             if (m_latchNode) {
-                m_structuringType = LoopCond;
+                m_structuringType = StructType::LoopCond;
             }
 
             // for 2 way conditional headers that are effectively jumps into
@@ -1204,15 +1178,15 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             int gotoTotal = 0;
 
             // add the follow to the follow set if this is a case header
-            if (m_conditionHeaderType == Case) {
+            if (m_conditionHeaderType == CondType::Case) {
                 followSet.push_back(m_condFollow);
             }
-            else if ((m_conditionHeaderType != Case) && m_condFollow) {
+            else if ((m_conditionHeaderType != CondType::Case) && m_condFollow) {
                 // For a structured two conditional header, its follow is
                 // added to the follow set
                 // myLoopHead = (sType == LoopCond ? this : loopHead);
 
-                if (m_unstructuredType == Structured) {
+                if (m_unstructuredType == UnstructType::Structured) {
                     followSet.push_back(m_condFollow);
                 }
 
@@ -1220,9 +1194,9 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                 // The temporary follow is set for any unstructured conditional header branch that is within the
                 // same loop and case.
                 else {
-                    if (m_unstructuredType == JumpInOutLoop) {
+                    if (m_unstructuredType == UnstructType::JumpInOutLoop) {
                         // define the loop header to be compared against
-                        BasicBlock *myLoopHead = (m_structuringType == LoopCond ? this : m_loopHead);
+                        BasicBlock *myLoopHead = (m_structuringType == StructType::LoopCond ? this : m_loopHead);
                         gotoSet.push_back(m_condFollow);
                         gotoTotal++;
 
@@ -1238,7 +1212,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                         }
                     }
 
-                    if (m_conditionHeaderType == IfThen) {
+                    if (m_conditionHeaderType == CondType::IfThen) {
                         tmpCondFollow = m_outEdges[BELSE];
                     }
                     else {
@@ -1246,7 +1220,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                     }
 
                     // for a jump into a case, the temp follow is added to the follow set
-                    if (m_unstructuredType == JumpIntoCase) {
+                    if (m_unstructuredType == UnstructType::JumpIntoCase) {
                         followSet.push_back(tmpCondFollow);
                     }
                 }
@@ -1258,7 +1232,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             // write the conditional header
             SWITCH_INFO *psi = nullptr; // Init to nullptr to suppress a warning
 
-            if (m_conditionHeaderType == Case) {
+            if (m_conditionHeaderType == CondType::Case) {
                 // The CaseStatement will be in the last RTL this BB
                 RTL           *last = m_listOfRTLs->back();
                 CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
@@ -1273,12 +1247,12 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                     cond = Const::get(Address(0xfeedface)); // hack, but better than a crash
                 }
 
-                if (m_conditionHeaderType == IfElse) {
+                if (m_conditionHeaderType == CondType::IfElse) {
                     cond = Unary::get(opNot, cond->clone());
                     cond = cond->simplify();
                 }
 
-                if (m_conditionHeaderType == IfThenElse) {
+                if (m_conditionHeaderType == CondType::IfThenElse) {
                     hll->addIfElseCondHeader(indLevel, cond);
                 }
                 else {
@@ -1287,12 +1261,12 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             }
 
             // write code for the body of the conditional
-            if (m_conditionHeaderType != Case) {
-                BasicBlock *succ = (m_conditionHeaderType == IfElse ? m_outEdges[BELSE] : m_outEdges[BTHEN]);
+            if (m_conditionHeaderType != CondType::Case) {
+                BasicBlock *succ = (m_conditionHeaderType == CondType::IfElse ? m_outEdges[BELSE] : m_outEdges[BTHEN]);
 
                 // emit a goto statement if the first clause has already been
                 // generated or it is the follow of this node's enclosing loop
-                if ((succ->m_traversed == DFS_CODEGEN) || (m_loopHead && (succ == m_loopHead->m_loopFollow))) {
+                if ((succ->m_traversed == TravType::DFS_Codegen) || (m_loopHead && (succ == m_loopHead->m_loopFollow))) {
                     emitGotoAndLabel(hll, indLevel + 1, succ);
                 }
                 else {
@@ -1300,7 +1274,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                 }
 
                 // generate the else clause if necessary
-                if (m_conditionHeaderType == IfThenElse) {
+                if (m_conditionHeaderType == CondType::IfThenElse) {
                     // generate the 'else' keyword and matching brackets
                     hll->addIfElseCondOption(indLevel);
 
@@ -1308,7 +1282,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
 
                     // emit a goto statement if the second clause has already
                     // been generated
-                    if (succ->m_traversed == DFS_CODEGEN) {
+                    if (succ->m_traversed == TravType::DFS_Codegen) {
                         emitGotoAndLabel(hll, indLevel + 1, succ);
                     }
                     else {
@@ -1345,7 +1319,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                     BasicBlock *succ = m_outEdges[i];
 
                     // assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
-                    if (succ->m_traversed == DFS_CODEGEN) {
+                    if (succ->m_traversed == TravType::DFS_Codegen) {
                         emitGotoAndLabel(hll, indLevel + 1, succ);
                     }
                     else {
@@ -1361,7 +1335,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             if (m_condFollow) {
                 // remove the original follow from the follow set if it was
                 // added by this header
-                if ((m_unstructuredType == Structured) || (m_unstructuredType == JumpIntoCase)) {
+                if ((m_unstructuredType == UnstructType::Structured) || (m_unstructuredType == UnstructType::JumpIntoCase)) {
                     assert(gotoTotal == 0);
                     followSet.resize(followSet.size() - 1);
                 }
@@ -1377,7 +1351,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                     tmpCondFollow = m_condFollow;
                 }
 
-                if (tmpCondFollow->m_traversed == DFS_CODEGEN) {
+                if (tmpCondFollow->m_traversed == TravType::DFS_Codegen) {
                     emitGotoAndLabel(hll, indLevel, tmpCondFollow);
                 }
                 else {
@@ -1388,12 +1362,12 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             break;
         }
 
-    case Seq:
+    case StructType::Seq:
         // generate code for the body of this block
         WriteBB(hll, indLevel);
 
         // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return' statement
-        if (getType() == BBTYPE::RET) {
+        if (getType() == BBType::Ret) {
             // This should be emited now, like a normal statement
             // hll->AddReturnStatement(indLevel, getReturnVal());
             return;
@@ -1406,7 +1380,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             this->print(q_cerr);
             q_cerr << '\n';
 
-            if (m_nodeType == BBTYPE::COMPJUMP) {
+            if (m_nodeType == BBType::CompJump) {
                 QString     dat;
                 QTextStream ost(&dat);
                 assert(m_listOfRTLs->size());
@@ -1436,7 +1410,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             try {
                 hll->addIfCondHeader(indLevel, getCond());
 
-                if (other->m_traversed == DFS_CODEGEN) {
+                if (other->m_traversed == TravType::DFS_Codegen) {
                     emitGotoAndLabel(hll, indLevel + 1, other);
                 }
                 else {
@@ -1453,7 +1427,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
         // generate code for its successor if it hasn't already been visited and is in the same loop/case and is not
         // the latch for the current most enclosing loop.     The only exception for generating it when it is not in
         // the same loop is when it is only reached from this node
-        if ((child->m_traversed == DFS_CODEGEN) ||
+        if ((child->m_traversed == TravType::DFS_Codegen) ||
             ((child->m_loopHead != m_loopHead) && (!child->allParentsGenerated() || isIn(followSet, child))) ||
             (latch && latch->m_loopHead && (latch->m_loopHead->m_loopFollow == child)) ||
             !((m_caseHead == child->m_caseHead) || (m_caseHead && (child == m_caseHead->m_condFollow)))) {
@@ -1498,7 +1472,7 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 {
     // timestamp the current node with the current time and set its traversed
     // flag
-    m_traversed     = DFS_LNUM;
+    m_traversed     = TravType::DFS_LNum;
     m_loopStamps[0] = time;
 
     // recurse on unvisited children and set inedges for all children
@@ -1508,7 +1482,7 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
         // outEdges[i]->inEdges.Add(this);
 
         // recurse on this child if it hasn't already been visited
-        if (out->m_traversed != DFS_LNUM) {
+        if (out->m_traversed != TravType::DFS_LNum) {
             out->setLoopStamps(++time, order);
         }
     }
@@ -1525,13 +1499,13 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 void BasicBlock::setRevLoopStamps(int& time)
 {
     // timestamp the current node with the current time and set its traversed flag
-    m_traversed        = DFS_RNUM;
+    m_traversed        = TravType::DFS_RNum;
     m_revLoopStamps[0] = time;
 
     // recurse on the unvisited children in reverse order
     for (int i = (int)m_outEdges.size() - 1; i >= 0; i--) {
         // recurse on this child if it hasn't already been visited
-        if (m_outEdges[i]->m_traversed != DFS_RNUM) {
+        if (m_outEdges[i]->m_traversed != TravType::DFS_RNum) {
             m_outEdges[i]->setRevLoopStamps(++time);
         }
     }
@@ -1544,11 +1518,11 @@ void BasicBlock::setRevLoopStamps(int& time)
 void BasicBlock::setRevOrder(std::vector<BasicBlock *>& order)
 {
     // Set this node as having been traversed during the post domimator DFS ordering traversal
-    m_traversed = DFS_PDOM;
+    m_traversed = TravType::DFS_PDom;
 
     // recurse on unvisited children
     for (BasicBlock *in : m_inEdges) {
-        if (in->m_traversed != DFS_PDOM) {
+        if (in->m_traversed != TravType::DFS_PDom) {
             in->setRevOrder(order);
         }
     }
@@ -1564,7 +1538,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
 {
     assert(!m_caseHead);
 
-    m_traversed = DFS_CASE;
+    m_traversed = TravType::DFS_Case;
 
     // don't tag this node if it is the case header under investigation
     if (this != head) {
@@ -1573,8 +1547,8 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
 
     // if this is a nested case header, then it's member nodes will already have been tagged so skip straight to its
     // follow
-    if ((getType() == BBTYPE::NWAY) && (this != head)) {
-        if (m_condFollow && (m_condFollow->m_traversed != DFS_CASE) && (m_condFollow != follow)) {
+    if ((getType() == BBType::Nway) && (this != head)) {
+        if (m_condFollow && (m_condFollow->m_traversed != TravType::DFS_Case) && (m_condFollow != follow)) {
             m_condFollow->setCaseHead(head, follow);
         }
     }
@@ -1584,7 +1558,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
         //  ii) hasn't already been traversed in a case tagging traversal and,
         // iii) isn't the follow node.
         for (BasicBlock *out : m_outEdges) {
-            if (!hasBackEdgeTo(out) && (out->m_traversed != DFS_CASE) && (out != follow)) {
+            if (!hasBackEdgeTo(out) && (out->m_traversed != TravType::DFS_Case) && (out != follow)) {
                 out->setCaseHead(head, follow);
             }
         }
@@ -1592,22 +1566,22 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
 }
 
 
-void BasicBlock::setStructType(structType s)
+void BasicBlock::setStructType(StructType s)
 {
     // if this is a conditional header, determine exactly which type of conditional header it is (i.e. switch, if-then,
     // if-then-else etc.)
-    if (s == Cond) {
-        if (getType() == BBTYPE::NWAY) {
-            m_conditionHeaderType = Case;
+    if (s == StructType::Cond) {
+        if (getType() == BBType::Nway) {
+            m_conditionHeaderType = CondType::Case;
         }
         else if (m_outEdges[BELSE] == m_condFollow) {
-            m_conditionHeaderType = IfThen;
+            m_conditionHeaderType = CondType::IfThen;
         }
         else if (m_outEdges[BTHEN] == m_condFollow) {
-            m_conditionHeaderType = IfElse;
+            m_conditionHeaderType = CondType::IfElse;
         }
         else {
-            m_conditionHeaderType = IfThenElse;
+            m_conditionHeaderType = CondType::IfThenElse;
         }
     }
 
@@ -1615,14 +1589,14 @@ void BasicBlock::setStructType(structType s)
 }
 
 
-void BasicBlock::setUnstructType(unstructType us)
+void BasicBlock::setUnstructType(UnstructType us)
 {
     assert((m_structuringType == Cond || m_structuringType == LoopCond) && m_conditionHeaderType != Case);
     m_unstructuredType = us;
 }
 
 
-unstructType BasicBlock::getUnstructType()
+UnstructType BasicBlock::getUnstructType()
 {
     assert((m_structuringType == Cond || m_structuringType == LoopCond) && m_conditionHeaderType != Case);
     return m_unstructuredType;
@@ -1636,8 +1610,8 @@ void BasicBlock::setLoopType(LoopType l)
 
     // set the structured class (back to) just Loop if the loop type is PreTested OR it's PostTested and is a single
     // block loop
-    if ((m_loopHeaderType == PreTested) || ((m_loopHeaderType == PostTested) && (this == m_latchNode))) {
-        m_structuringType = Loop;
+    if ((m_loopHeaderType == LoopType::PreTested) || ((m_loopHeaderType == LoopType::PostTested) && (this == m_latchNode))) {
+        m_structuringType = StructType::Loop;
     }
 }
 
@@ -2121,7 +2095,7 @@ int BasicBlock::findNumCases()
 {
     // should actually search from the statement to i
     for (BasicBlock *in : m_inEdges) {          // For each in-edge
-        if (in->m_nodeType != BBTYPE::TWOWAY) { // look for a two-way BB
+        if (in->m_nodeType != BBType::Twoway) { // look for a two-way BB
             continue;                           // Ignore all others
         }
 
@@ -2234,7 +2208,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
     }
 #endif
 
-    if (m_nodeType == BBTYPE::COMPJUMP) {
+    if (m_nodeType == BBType::CompJump) {
         assert(m_listOfRTLs->size());
         RTL *lastRtl = m_listOfRTLs->back();
 
@@ -2356,7 +2330,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 
         return false;
     }
-    else if (m_nodeType == BBTYPE::COMPCALL) {
+    else if (m_nodeType == BBType::CompCall) {
         assert(m_listOfRTLs->size());
         RTL *lastRtl = m_listOfRTLs->back();
 
@@ -2605,7 +2579,7 @@ void BasicBlock::processSwitch(UserProc *proc)
     iNumOut = si->iUpper - si->iLower + 1;
     iNum    = iNumOut;
     // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
-    updateType(BBTYPE::NWAY, iNumOut);
+    updateType(BBType::Nway, iNumOut);
 
     Prog *prog(proc->getProg());
     Cfg  *cfg(proc->getCFG());
@@ -2695,7 +2669,7 @@ bool BasicBlock::undoComputedBB(Instruction *stmt)
 
     for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
         if (*rr == stmt) {
-            m_nodeType = BBTYPE::CALL;
+            m_nodeType = BBType::Call;
             LOG << "undoComputedBB for statement " << stmt << "\n";
             return true;
         }

@@ -67,13 +67,13 @@ int SyntaxNode::getScore()
 
 bool SyntaxNode::isGoto() const
 {
-    return m_pbb && m_pbb->getType() == BBTYPE::ONEWAY && !m_notGoto;
+    return m_pbb && m_pbb->getType() == BBType::Oneway && !m_notGoto;
 }
 
 
 bool SyntaxNode::isBranch() const
 {
-    return m_pbb && m_pbb->getType() == BBTYPE::TWOWAY;
+    return m_pbb && m_pbb->getType() == BBType::Twoway;
 }
 
 
@@ -151,7 +151,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
     if (m_pbb) {
         switch (m_pbb->getType())
         {
-        case BBTYPE::ONEWAY:
+        case BBType::Oneway:
             os << "Oneway";
 
             if (m_notGoto) {
@@ -160,35 +160,35 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 
             break;
 
-        case BBTYPE::TWOWAY:
+        case BBType::Twoway:
             os << "Twoway";
             break;
 
-        case BBTYPE::NWAY:
+        case BBType::Nway:
             os << "Nway";
             break;
 
-        case BBTYPE::CALL:
+        case BBType::Call:
             os << "Call";
             break;
 
-        case BBTYPE::RET:
+        case BBType::Ret:
             os << "Ret";
             break;
 
-        case BBTYPE::FALL:
+        case BBType::Fall:
             os << "Fall";
             break;
 
-        case BBTYPE::COMPJUMP:
+        case BBType::CompJump:
             os << "Computed jump";
             break;
 
-        case BBTYPE::COMPCALL:
+        case BBType::CompCall:
             os << "Computed call";
             break;
 
-        case BBTYPE::INVALID:
+        case BBType::Invalid:
             os << "Invalid";
             break;
         }

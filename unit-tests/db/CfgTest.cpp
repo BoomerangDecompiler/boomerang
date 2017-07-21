@@ -72,7 +72,7 @@ void CfgTest::testDominators()
 	df->dominators(cfg);
 
 	// Find BB "5" (as per Appel, Figure 19.5).
-	BB_IT      it;
+	   BBIterator      it;
 	BasicBlock *bb = cfg->getFirstBB(it);
 
 	while (bb && bb->getLowAddr() != FRONTIER_FIVE) {
@@ -135,7 +135,7 @@ void CfgTest::testSemiDominators()
 	df->dominators(cfg);
 
 	// Find BB "L (6)" (as per Appel, Figure 19.8).
-	BB_IT      it;
+	   BBIterator      it;
 	BasicBlock *bb = cfg->getFirstBB(it);
 
 	while (bb && bb->getLowAddr() != SEMI_L) {
@@ -278,8 +278,8 @@ void CfgTest::testPlacePhi2()
 	QCOMPARE(actual_st, QString("4 "));
 
 	if (s.size() > 0) {
-		BBTYPE actualType   = df->nodeToBB(*s.begin())->getType();
-		BBTYPE expectedType = BBTYPE::CALL;
+		      BBType actualType   = df->nodeToBB(*s.begin())->getType();
+		      BBType expectedType = BBType::Call;
 		QCOMPARE(actualType, expectedType);
 	}
 

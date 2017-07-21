@@ -105,7 +105,7 @@ void Cfg::setEntryBB(BasicBlock *bb)
     m_entryBB = bb;
 
     for (BasicBlock *it : m_listBB) {
-        if (it->getType() == BBTYPE::RET) {
+        if (it->getType() == BBType::Ret) {
             m_exitBB = it;
             return;
         }
@@ -139,7 +139,7 @@ bool Cfg::checkEntryBB()
 }
 
 
-BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges)
+BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutEdges)
 {
     MAPBB::iterator mi;
     BasicBlock      *pBB = nullptr;
@@ -362,7 +362,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, Address uNativeAddr, BasicBlock *pNewB
 
     // else pNewBB exists and is complete. We don't want to change the complete
     // BB in any way, except to later add one in-edge
-    pBB->m_nodeType = BBTYPE::FALL; // Update original ("top") basic block's info and make it a fall-through
+    pBB->m_nodeType = BBType::Fall; // Update original ("top") basic block's info and make it a fall-through
 
     // Fix the in-edges of pBB's descendants. They are now pNewBB
     // Note: you can't believe m_iNumOutEdges at the time that this function may
@@ -782,7 +782,7 @@ bool Cfg::compressCfg()
                 *it1 = pSucc->m_outEdges.front();
                 // Now pSucc still points to J; *it1 points to B.  Almost certainly, we will need a jump in the low
                 // level C that may be generated. Also force a label for B
-                bb->m_jumpReqd = true;
+                bb->m_jumpRequired = true;
                 setLabel(*it1);
                 // Find the in-edge from B to J; replace this with an in-edge to A
                 std::vector<BasicBlock *>::iterator it2;
@@ -867,7 +867,7 @@ void Cfg::unTraverse()
 {
     for (BasicBlock *it : m_listBB) {
         it->m_traversedMarker = false;
-        it->m_traversed       = UNTRAVERSED;
+        it->m_traversed       = TravType::Untraversed;
     }
 }
 
@@ -901,10 +901,10 @@ BasicBlock *Cfg::findRetNode()
     BasicBlock *retNode = nullptr;
 
     for (BasicBlock *bb : m_listBB) {
-        if (bb->getType() == BBTYPE::RET) {
+        if (bb->getType() == BBType::Ret) {
             return bb;
         }
-        else if (bb->getType() == BBTYPE::CALL) {
+        else if (bb->getType() == BBType::Call) {
             Function *p = bb->getCallDestProc();
 
             if (p && !p->getName().compare("exit")) { // TODO: move this into check Proc::noReturn();
@@ -1063,7 +1063,7 @@ void Cfg::addNewOutEdge(BasicBlock *pFromBB, BasicBlock *pNewOutEdge)
 {
     pFromBB->m_outEdges.push_back(pNewOutEdge);
     // Since this is a new out-edge, set the "jump required" flag
-    pFromBB->m_jumpReqd = true;
+    pFromBB->m_jumpRequired = true;
     // Make sure that there is a label there
     setLabel(pNewOutEdge);
 }
@@ -1121,7 +1121,7 @@ void Cfg::setTimeStamps()
 {
     // set DFS tag
     for (BasicBlock *it : m_listBB) {
-        it->m_traversed = DFS_TAG;
+        it->m_traversed = TravType::DFS_Tag;
     }
 
     // set the parenthesis for the nodes as well as setting the post-order ordering between the nodes
@@ -1248,8 +1248,8 @@ void Cfg::structConds()
         // does the current node have more than one out edge?
         if (curNode->getOutEdges().size() > 1) {
             // if the current conditional header is a two way node and has a back edge, then it won't have a follow
-            if (curNode->hasBackEdge() && (curNode->getType() == BBTYPE::TWOWAY)) {
-                curNode->setStructType(Cond);
+            if (curNode->hasBackEdge() && (curNode->getType() == BBType::Twoway)) {
+                curNode->setStructType(StructType::Cond);
                 continue;
             }
 
@@ -1257,10 +1257,10 @@ void Cfg::structConds()
             curNode->setCondFollow(curNode->m_immPDom);
 
             // set the structured type of this node
-            curNode->setStructType(Cond);
+            curNode->setStructType(StructType::Cond);
 
             // if this is an nway header, then we have to tag each of the nodes within the body of the nway subgraph
-            if (curNode->getCondType() == Case) {
+            if (curNode->getCondType() == CondType::Case) {
                 curNode->setCaseHead(curNode, curNode->getCondFollow());
             }
         }
@@ -1273,33 +1273,33 @@ void Cfg::determineLoopType(BasicBlock *header, bool *& loopNodes)
     assert(header->getLatchNode());
 
     // if the latch node is a two way node then this must be a post tested loop
-    if (header->getLatchNode()->getType() == BBTYPE::TWOWAY) {
-        header->setLoopType(PostTested);
+    if (header->getLatchNode()->getType() == BBType::Twoway) {
+        header->setLoopType(LoopType::PostTested);
 
         // if the head of the loop is a two way node and the loop spans more than one block  then it must also be a
         // conditional header
-        if ((header->getType() == BBTYPE::TWOWAY) && (header != header->getLatchNode())) {
-            header->setStructType(LoopCond);
+        if ((header->getType() == BBType::Twoway) && (header != header->getLatchNode())) {
+            header->setStructType(StructType::LoopCond);
         }
     }
 
     // otherwise it is either a pretested or endless loop
-    else if (header->getType() == BBTYPE::TWOWAY) {
+    else if (header->getType() == BBType::Twoway) {
         // if the header is a two way node then it must have a conditional follow (since it can't have any backedges
         // leading from it). If this follow is within the loop then this must be an endless loop
         if (header->getCondFollow() && loopNodes[header->getCondFollow()->m_ord]) {
-            header->setLoopType(Endless);
+            header->setLoopType(LoopType::Endless);
 
             // retain the fact that this is also a conditional header
-            header->setStructType(LoopCond);
+            header->setStructType(StructType::LoopCond);
         }
         else {
-            header->setLoopType(PreTested);
+            header->setLoopType(LoopType::PreTested);
         }
     }
     // both the header and latch node are one way nodes so this must be an endless loop
     else {
-        header->setLoopType(Endless);
+        header->setLoopType(LoopType::Endless);
     }
 }
 
@@ -1310,7 +1310,7 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
     LoopType   lType  = header->getLoopType();
     BasicBlock *latch = header->getLatchNode();
 
-    if (lType == PreTested) {
+    if (lType == LoopType::PreTested) {
         // if the 'while' loop's true child is within the loop, then its false child is the loop follow
         if (loopNodes[header->getOutEdges()[0]->m_ord]) {
             header->setLoopFollow(header->getOutEdges()[1]);
@@ -1319,7 +1319,7 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
             header->setLoopFollow(header->getOutEdges()[0]);
         }
     }
-    else if (lType == PostTested) {
+    else if (lType == LoopType::PostTested) {
         // the follow of a post tested ('repeat') loop is the node on the end of the non-back edge from the latch node
         if (latch->getOutEdges()[0] == header) {
             header->setLoopFollow(latch->getOutEdges()[1]);
@@ -1342,7 +1342,7 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
             //    ii) it will be outside the loop according to its loop stamp pair
             // iii) have the highest ordering of all suitable follows (i.e. highest in the graph)
 
-            if ((desc->getStructType() == Cond) && desc->getCondFollow() && (desc->getLoopHead() == header)) {
+            if ((desc->getStructType() == StructType::Cond) && desc->getCondFollow() && (desc->getLoopHead() == header)) {
                 if (loopNodes[desc->getCondFollow()->m_ord]) {
                     // if the conditional's follow is in the same loop AND is lower in the loop, jump to this follow
                     if (desc->m_ord > desc->getCondFollow()->m_ord) {
@@ -1454,12 +1454,12 @@ void Cfg::structLoops()
             // the latching node may already have been structured as a conditional header. If it is not also the loop
             // header (i.e. the loop is over more than one block) then reset it to be a sequential node otherwise it
             // will be correctly set as a loop header only later
-            if ((latch != curNode) && (latch->getStructType() == Cond)) {
-                latch->setStructType(Seq);
+            if ((latch != curNode) && (latch->getStructType() == StructType::Cond)) {
+                latch->setStructType(StructType::Seq);
             }
 
             // set the structured type of this node
-            curNode->setStructType(Loop);
+            curNode->setStructType(StructType::Loop);
 
             // tag the members of this loop
             tagNodesInLoop(curNode, loopNodes);
@@ -1484,10 +1484,10 @@ void Cfg::checkConds()
         const std::vector<BasicBlock *>& oEdges = curNode->getOutEdges();
 
         // consider only conditional headers that have a follow and aren't case headers
-        if (((curNode->getStructType() == Cond) || (curNode->getStructType() == LoopCond)) && curNode->getCondFollow() &&
-            (curNode->getCondType() != Case)) {
+        if (((curNode->getStructType() == StructType::Cond) || (curNode->getStructType() == StructType::LoopCond)) && curNode->getCondFollow() &&
+            (curNode->getCondType() != CondType::Case)) {
             // define convenient aliases for the relevant loop and case heads and the out edges
-            BasicBlock *myLoopHead   = (curNode->getStructType() == LoopCond ? curNode : curNode->getLoopHead());
+            BasicBlock *myLoopHead   = (curNode->getStructType() == StructType::LoopCond ? curNode : curNode->getLoopHead());
             BasicBlock *follLoopHead = curNode->getCondFollow()->getLoopHead();
 
             // analyse whether this is a jump into/outof a loop
@@ -1498,36 +1498,36 @@ void Cfg::checkConds()
 
                     // does the then branch goto the loop latch?
                     if (oEdges[BTHEN]->isAncestorOf(myLoopLatch) || (oEdges[BTHEN] == myLoopLatch)) {
-                        curNode->setUnstructType(JumpInOutLoop);
-                        curNode->setCondType(IfElse);
+                        curNode->setUnstructType(UnstructType::JumpInOutLoop);
+                        curNode->setCondType(CondType::IfElse);
                     }
                     // does the else branch goto the loop latch?
                     else if (oEdges[BELSE]->isAncestorOf(myLoopLatch) || (oEdges[BELSE] == myLoopLatch)) {
-                        curNode->setUnstructType(JumpInOutLoop);
-                        curNode->setCondType(IfThen);
+                        curNode->setUnstructType(UnstructType::JumpInOutLoop);
+                        curNode->setCondType(CondType::IfThen);
                     }
                 }
 
-                if ((curNode->getUnstructType() == Structured) && follLoopHead) {
+                if ((curNode->getUnstructType() == UnstructType::Structured) && follLoopHead) {
                     // find the branch that the loop head is on for a jump into a loop body. If a branch has already
                     // been found, then it will match this one anyway
 
                     // does the else branch goto the loop head?
                     if (oEdges[BTHEN]->isAncestorOf(follLoopHead) || (oEdges[BTHEN] == follLoopHead)) {
-                        curNode->setUnstructType(JumpInOutLoop);
-                        curNode->setCondType(IfElse);
+                        curNode->setUnstructType(UnstructType::JumpInOutLoop);
+                        curNode->setCondType(CondType::IfElse);
                     }
 
                     // does the else branch goto the loop head?
                     else if (oEdges[BELSE]->isAncestorOf(follLoopHead) || (oEdges[BELSE] == follLoopHead)) {
-                        curNode->setUnstructType(JumpInOutLoop);
-                        curNode->setCondType(IfThen);
+                        curNode->setUnstructType(UnstructType::JumpInOutLoop);
+                        curNode->setCondType(CondType::IfThen);
                     }
                 }
             }
 
             // this is a jump into a case body if either of its children don't have the same same case header as itself
-            if ((curNode->getUnstructType() == Structured) &&
+            if ((curNode->getUnstructType() == UnstructType::Structured) &&
                 ((curNode->getCaseHead() != curNode->getOutEdges()[BTHEN]->getCaseHead()) ||
                  (curNode->getCaseHead() != curNode->getOutEdges()[BELSE]->getCaseHead()))) {
                 BasicBlock *myCaseHead   = curNode->getCaseHead();
@@ -1535,28 +1535,28 @@ void Cfg::checkConds()
                 BasicBlock *elseCaseHead = curNode->getOutEdges()[BELSE]->getCaseHead();
 
                 if ((thenCaseHead == myCaseHead) && (!myCaseHead || (elseCaseHead != myCaseHead->getCondFollow()))) {
-                    curNode->setUnstructType(JumpIntoCase);
-                    curNode->setCondType(IfElse);
+                    curNode->setUnstructType(UnstructType::JumpIntoCase);
+                    curNode->setCondType(CondType::IfElse);
                 }
                 else if ((elseCaseHead == myCaseHead) && (!myCaseHead || (thenCaseHead != myCaseHead->getCondFollow()))) {
-                    curNode->setUnstructType(JumpIntoCase);
-                    curNode->setCondType(IfThen);
+                    curNode->setUnstructType(UnstructType::JumpIntoCase);
+                    curNode->setCondType(CondType::IfThen);
                 }
             }
         }
 
         // for 2 way conditional headers that don't have a follow (i.e. are the source of a back edge) and haven't been
         // structured as latching nodes, set their follow to be the non-back edge child.
-        if ((curNode->getStructType() == Cond) && !curNode->getCondFollow() && (curNode->getCondType() != Case) &&
-            (curNode->getUnstructType() == Structured)) {
+        if ((curNode->getStructType() == StructType::Cond) && !curNode->getCondFollow() && (curNode->getCondType() != CondType::Case) &&
+            (curNode->getUnstructType() == UnstructType::Structured)) {
             // latching nodes will already have been reset to Seq structured type
             if (curNode->hasBackEdge()) {
                 if (curNode->hasBackEdgeTo(curNode->getOutEdges()[BTHEN])) {
-                    curNode->setCondType(IfThen);
+                    curNode->setCondType(CondType::IfThen);
                     curNode->setCondFollow(curNode->getOutEdges()[BELSE]);
                 }
                 else {
-                    curNode->setCondType(IfElse);
+                    curNode->setCondType(CondType::IfElse);
                     curNode->setCondFollow(curNode->getOutEdges()[BTHEN]);
                 }
             }
@@ -1629,11 +1629,11 @@ void Cfg::generateDotFile(QTextStream& of)
 
         switch (pbb->getType())
         {
-        case BBTYPE::ONEWAY:
+        case BBType::Oneway:
             of << "oneway";
             break;
 
-        case BBTYPE::TWOWAY:
+        case BBType::Twoway:
 
             if (pbb->getCond()) {
                 of << "\\n";
@@ -1647,7 +1647,7 @@ void Cfg::generateDotFile(QTextStream& of)
 
             break;
 
-        case BBTYPE::NWAY:
+        case BBType::Nway:
             {
                 of << "nway";
                 SharedExp de = pbb->getDest();
@@ -1661,7 +1661,7 @@ void Cfg::generateDotFile(QTextStream& of)
                 continue;
             }
 
-        case BBTYPE::CALL:
+        case BBType::Call:
             {
                 of << "call";
                 Function *dest = pbb->getDestProc();
@@ -1673,25 +1673,25 @@ void Cfg::generateDotFile(QTextStream& of)
                 break;
             }
 
-        case BBTYPE::RET:
+        case BBType::Ret:
             of << "ret\" shape=triangle];\n";
             // Remember the (unbique) return BB's address
             aret = pbb->getLowAddr();
             continue;
 
-        case BBTYPE::FALL:
+        case BBType::Fall:
             of << "fall";
             break;
 
-        case BBTYPE::COMPJUMP:
+        case BBType::CompJump:
             of << "compjump";
             break;
 
-        case BBTYPE::COMPCALL:
+        case BBType::CompCall:
             of << "compcall";
             break;
 
-        case BBTYPE::INVALID:
+        case BBType::Invalid:
             of << "invalid";
             break;
         }
@@ -1716,7 +1716,7 @@ void Cfg::generateDotFile(QTextStream& of)
             of << "       bb" << pbb->getLowAddr() << " -> ";
             of << "bb" << outEdges[j]->getLowAddr();
 
-            if (pbb->getType() == BBTYPE::TWOWAY) {
+            if (pbb->getType() == BBType::Twoway) {
                 if (j == 0) {
                     of << " [label=\"true\"]";
                 }
@@ -1869,7 +1869,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     // creating the rptBB). Or if there is no A, temporarily use 0
        Address    a        = (haveA) ? addr : Address::ZERO;
     RTL        *skipRtl = new RTL(a, new std::list<Instruction *> { br1 }); // list initializer in braces
-    BasicBlock *skipBB  = newBB(new std::list<RTL *> { skipRtl }, BBTYPE::TWOWAY, 2);
+    BasicBlock *skipBB  = newBB(new std::list<RTL *> { skipRtl }, BBType::Twoway, 2);
     rtl->setAddress(addr + 1);
 
     if (!haveA) {
@@ -1900,7 +1900,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     rtl->back() = br2;
 
     // Move the remainder of the string RTL into a new BB
-    BasicBlock *rptBB = newBB(new std::list<RTL *> { *ri }, BBTYPE::TWOWAY, 2);
+    BasicBlock *rptBB = newBB(new std::list<RTL *> { *ri }, BBType::Twoway, 2);
     ri = pBB->m_listOfRTLs->erase(ri);
 
     // Move the remaining RTLs (if any) to a new list of RTLs
@@ -1935,7 +1935,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     }
 
     // Change pBB to a FALL bb
-    pBB->updateType(BBTYPE::FALL, 1);
+    pBB->updateType(BBType::Fall, 1);
     // Set the first out-edge to be skipBB
     pBB->m_outEdges.erase(pBB->m_outEdges.begin(), pBB->m_outEdges.end());
     addOutEdge(pBB, skipBB);

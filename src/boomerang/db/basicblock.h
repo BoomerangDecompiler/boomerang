@@ -28,26 +28,22 @@ class Function;
 class UserProc;
 struct SWITCH_INFO;
 
-/*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *\
-*                                                             *
-*    e n u m s   u s e d   i n   C f g . h   a n d   h e r e     *
-*                                                             *
-\*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    */
 
 /// Depth-first traversal constants.
-enum travType
+enum class TravType
 {
-    UNTRAVERSED, // Initial value
-    DFS_TAG,     // Remove redundant nodes pass
-    DFS_LNUM,    // DFS loop stamping pass
-    DFS_RNUM,    // DFS reverse loop stamping pass
-    DFS_CASE,    // DFS case head tagging traversal
-    DFS_PDOM,    // DFS post dominator ordering
-    DFS_CODEGEN  // Code generating pass
+    Untraversed, ///< Initial value
+    DFS_Tag,     ///< Remove redundant nodes pass
+    DFS_LNum,    ///< DFS loop stamping pass
+    DFS_RNum,    ///< DFS reverse loop stamping pass
+    DFS_Case,    ///< DFS case head tagging traversal
+    DFS_PDom,    ///< DFS post dominator ordering
+    DFS_Codegen  ///< Code generating pass
 };
 
+
 /// an enumerated type for the class of stucture determined for a node
-enum structType
+enum class StructType
 {
     Loop,     // Header of a loop only
     Cond,     // Header of a conditional only (if-then-else or switch)
@@ -55,67 +51,69 @@ enum structType
     Seq       // sequential statement (default)
 };
 
-// an type for the class of unstructured conditional jumps
-enum unstructType
+
+/// an type for the class of unstructured conditional jumps
+enum class UnstructType
 {
-    Structured, JumpInOutLoop, JumpIntoCase
+    Structured,
+    JumpInOutLoop,
+    JumpIntoCase
 };
+
 
 /// an enumerated type for the type of conditional headers
-enum CondType
+enum class CondType
 {
-    IfThen,     // conditional with only a then clause
-    IfThenElse, // conditional with a then and an else clause
-    IfElse,     // conditional with only an else clause
-    Case        // nway conditional header (case statement)
+    IfThen,     ///< conditional with only a then clause
+    IfThenElse, ///< conditional with a then and an else clause
+    IfElse,     ///< conditional with only an else clause
+    Case        ///< nway conditional header (case statement)
 };
 
-// an enumerated type for the type of loop headers
-enum LoopType
+
+/// an enumerated type for the type of loop headers
+enum class LoopType
 {
-    PreTested,  // Header of a while loop
-    PostTested, // Header of a repeat loop
-    Endless     // Header of an endless loop
+    PreTested,  ///< Header of a while loop
+    PostTested, ///< Header of a do..while loop
+    Endless     ///< Header of an endless loop
 };
 
-/*    *    *    *    *    *    *    *    *    *\
-*                                     *
-*    B a s i c B l o c k   e n u m s     *
-*                                     *
-\*    *    *    *    *    *    *    *    *    */
 
 /// Kinds of basic block nodes
 /// reordering these will break the save files - trent
-enum class BBTYPE
+enum class BBType
 {
-    ONEWAY,   // unconditional branch
-    TWOWAY,   // conditional branch
-    NWAY,     // case branch
-    CALL,     // procedure call
-    RET,      // return
-    FALL,     // fall-through node
-    COMPJUMP, // computed jump
-    COMPCALL, // computed call
-    INVALID   // invalid instruction
+    Invalid = -1, ///< invalid instruction
+    Oneway,       ///< unconditional branch
+    Twoway,       ///< conditional branch
+    Nway,         ///< case branch
+    Call,         ///< procedure call
+    Ret,          ///< return
+    Fall,         ///< fall-through node
+    CompJump,     ///< computed jump
+    CompCall,     ///< computed call
 };
 
-enum SBBTYPE
+
+enum class SBBType
 {
-    NONE,        // not structured
-    PRETESTLOOP, // header of a loop
-    POSTTESTLOOP,
-    ENDLESSLOOP,
-    JUMPINOUTLOOP, // an unstructured jump in or out of a loop
-    JUMPINTOCASE,  // an unstructured jump into a case statement
-    IFGOTO,        // unstructured conditional
-    IFTHEN,        // conditional with then clause
-    IFTHENELSE,    // conditional with then and else clauses
-    IFELSE,        // conditional with else clause only
-    CASE           // case statement (switch)
+    None,          ///< not structured
+    PreTestLoop,   ///< header of a loop
+    PostTestLoop,
+    EndlessLoop,
+    JumpInOutLoop, ///< an unstructured jump in or out of a loop
+    JumpIntoCase,  ///< an unstructured jump into a case statement
+    IfGoto,        ///< unstructured conditional
+    IfThen,        ///< conditional with then clause
+    IfThenElse,    ///< conditional with then and else clauses
+    IfElse,        ///< conditional with else clause only
+    Case           ///< case statement (switch)
 };
 
-typedef std::list<BasicBlock *>::iterator         BB_IT;
-typedef std::list<BasicBlock *>::const_iterator   BBC_IT;
+typedef std::list<BasicBlock *>::iterator         BBIterator;
+typedef std::list<BasicBlock *>::const_iterator   BBCIterator;
+
 
 /***************************************************************************/ /**
  * BasicBlock class.
@@ -135,12 +133,12 @@ protected:
     Function *m_parent;
 
     /* general basic block information */
-    BBTYPE m_nodeType = BBTYPE::INVALID;      ///< type of basic block
+    BBType m_nodeType = BBType::Invalid;      ///< type of basic block
     std::list<RTL *> *m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
-    int m_labelNum     = 0;                   ///< Nonzero if start of BB needs label
+    int  m_labelNum     = 0;                  ///< Nonzero if start of BB needs label
     bool m_labelNeeded = false;
     bool m_incomplete  = true;                ///< True if not yet complete
-    bool m_jumpReqd    = false;               ///< True if jump required for "fall through"
+    bool m_jumpRequired    = false;               ///< True if jump required for "fall through"
 
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_inEdges;  ///< Vector of in-edges
@@ -168,14 +166,14 @@ protected:
     int m_inEdgesVisited;                    ///< counts the number of in edges visited during a DFS
     int m_numForwardInEdges;                 ///< inedges to this node that aren't back edges
     int m_loopStamps[2], m_revLoopStamps[2]; ///< used for structuring analysis
-    travType m_traversed;                    ///< traversal flag for the numerous DFS's
+    TravType m_traversed;                    ///< traversal flag for the numerous DFS's
     bool m_emitHLLLabel;                     ///< emit a label for this node when generating HL code?
     QString m_labelStr;                      ///< the high level label for this node (if needed)
     int m_indentLevel;                       ///< the indentation level of this node in the final code
 
     /* high level structuring */
-    SBBTYPE m_loopCondType = NONE; ///< type of conditional to treat this loop header as (if any)
-    SBBTYPE m_structType   = NONE; ///< structured type of this node
+    SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as (if any)
+    SBBType m_structType   = SBBType::None; ///< structured type of this node
 
     // analysis information
     BasicBlock *m_immPDom;         ///< immediate post dominator
@@ -186,8 +184,8 @@ protected:
     BasicBlock *m_latchNode;       ///< latching node of a loop header
 
     // Structured type of the node
-    structType m_structuringType;    ///< the structuring class (Loop, Cond , etc)
-    unstructType m_unstructuredType; ///< the restructured type of a conditional header
+    StructType m_structuringType;    ///< the structuring class (Loop, Cond , etc)
+    UnstructType m_unstructuredType; ///< the restructured type of a conditional header
     LoopType m_loopHeaderType;       ///< the loop type of a loop header
     CondType m_conditionHeaderType;  ///< the conditional type of a conditional header
 
@@ -208,7 +206,7 @@ public:
      * \brief   Return the type of the basic block.
      * \returns the type of the basic block
      ******************************************************************************/
-    BBTYPE getType();
+    BBType getType();
 
     QString& getLabelStr() { return m_labelStr; }
     void setLabelStr(const QString& s) { m_labelStr = s; }
@@ -249,7 +247,7 @@ public:
      * \param bbType - the new type
      * \param iNumOutEdges - new number of inedges
      ******************************************************************************/
-    void updateType(BBTYPE bbType, uint32_t iNumOutEdges);
+    void updateType(BBType bbType, uint32_t iNumOutEdges);
 
     /***************************************************************************/ /**
      * \brief Sets the "jump required" bit. This means that this BB is an orphan
@@ -257,14 +255,14 @@ public:
      * (m_OutEdges[1]) needs to be implemented as a jump. The back end
      * needs to take heed of this bit
      ******************************************************************************/
-    void setJumpReqd();
+    void setJumpRequired();
 
 
     /***************************************************************************/ /**
      * \brief    Returns the "jump required" bit. See \ref setJumpReqd for details
      * \returns True if a jump is required
      ******************************************************************************/
-    bool isJumpReqd();
+    bool isJumpRequired();
 
     /***************************************************************************/ /**
      * \brief Get the lowest real address associated with this BB.
@@ -592,10 +590,10 @@ protected:
     BasicBlock *getCaseHead() { return m_caseHead; }
     void setCaseHead(BasicBlock *head, BasicBlock *follow);
 
-    structType getStructType() { return m_structuringType; }
-    void setStructType(structType s);
-    unstructType getUnstructType();
-    void setUnstructType(unstructType us);
+    StructType getStructType() { return m_structuringType; }
+    void setStructType(StructType s);
+    UnstructType getUnstructType();
+    void setUnstructType(UnstructType us);
     LoopType getLoopType();
     void setLoopType(LoopType l);
     CondType getCondType();
@@ -675,7 +673,7 @@ private:
      * \param bbType - type of BasicBlock
      * \param iNumOutEdges - expected number of out edges from this BasicBlock
      ******************************************************************************/
-    BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBTYPE bbType, uint32_t iNumOutEdges);
+    BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutEdges);
 
     /***************************************************************************/ /**
      * \brief        Sets the RTLs for a basic block. This is the only place that
