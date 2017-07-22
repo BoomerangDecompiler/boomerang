@@ -10,7 +10,7 @@ set(CMAKE_WARN_DEPRECATED ON)
 find_package(Git)
 if (GIT_FOUND)
     execute_process(
-        COMMAND "${GIT_EXECUTABLE}" describe --dirty --tags
+        COMMAND "${GIT_EXECUTABLE}" describe --dirty --tags --always
         RESULT_VARIABLE DESCRIBE_FAILED
         OUTPUT_VARIABLE VERSION_TEMP
         OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -21,6 +21,7 @@ if (GIT_FOUND)
         set(BOOMERANG_VERSION "${VERSION_TEMP}")
     endif (NOT DESCRIBE_FAILED)
 endif (GIT_FOUND)
+
 
 message(STATUS "Configuring " ${PROJECT_NAME} " " ${BOOMERANG_VERSION})
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
@@ -172,11 +173,8 @@ else () # GCC
     set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
         -Wall -Wextra -Werror \
         -Werror=pedantic \
-        -Wshadow \
         -Wformat=2 \
-        -Wformat-signedness \
         -Wmissing-include-dirs \
-        -Wstrict-overflow=2 \
         -rdynamic \
         -fPIC \
         -Wno-unused-local-typedefs \
@@ -188,14 +186,24 @@ else () # GCC
     #-Wsuggest-attribute=const|pure|etc. -Wcast-qual -Wconversion # TODO
     #-Wundef -Wzero-as-null-pointer-constant #does not compile with boost
 
-    # Enable additional warnings for GCC6+
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
-            -Wnull-dereference -Wduplicated-cond")
-            #-Walloc-zero -Walloca -Wduplicated-branches
+    # Enable additional warnings for GCC5+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0)
+        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -Wformat-signedness")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
+            -Wsuggest-override \
+            -Wshadow \
+            -Wstrict-overflow=2
+            -Wno-error=strict-overflow"
+        )
+
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+            set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
+                -Wnull-dereference -Wduplicated-cond")
+                #-Walloc-zero -Walloca -Wduplicated-branches
+        endif ()
     endif ()
 
-    set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -std=c++11 -Wsuggest-override")
+    set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -std=c++11")
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
     add_definitions(-D__STDC_FORMAT_MACROS)
 endif ()

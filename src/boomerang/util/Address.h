@@ -50,11 +50,11 @@ public:
 
     Address operator+=(const Address& other) { m_value += other.value(); return *this; }
 
-    Address operator+=(value_type value) { m_value += value; return *this; }
-    Address operator-=(value_type value) { m_value -= value; return *this; }
+    Address operator+=(value_type offset) { m_value += offset; return *this; }
+    Address operator-=(value_type offset) { m_value -= offset; return *this; }
 
-    Address operator+(value_type value) const { return Address(m_value + value); }
-    Address operator-(value_type value) const { return Address(m_value - value); }
+    Address operator+(value_type offset) const { return Address(m_value + offset); }
+    Address operator-(value_type offset) const { return Address(m_value - offset); }
 
     QString toString() const;
 
