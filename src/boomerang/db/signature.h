@@ -201,7 +201,7 @@ public:
     // accessor for argument expressions
     virtual SharedExp getArgumentExp(int n) const;
 
-    void setHasEllipsis(bool hasEllipsis)  { m_ellipsis = hasEllipsis; }
+    void setHasEllipsis(bool yesno)  { m_ellipsis = yesno; }
     virtual bool hasEllipsis() const { return m_ellipsis; }
 
     void renameParam(const QString& oldName, const char *newName);

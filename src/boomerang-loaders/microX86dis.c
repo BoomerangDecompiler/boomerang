@@ -191,14 +191,14 @@ int microX86Dis(unsigned char* pCode) {
     if (op == 0xF6) {
         /* Group 3, byte */
         if (((modrm & 0x38) >> 3) == 0) {
-            // There is an immediate byte as well
+            /** There is an immediate byte as well */
             size++;
         }
     }
     if (op == 0xF7) {
         /* Group 3, word */
         if (((modrm & 0x38) >> 3) == 0) {
-            // There is an immediate word as well
+            /* There is an immediate word as well */
             size += opsize;
         }
     }

@@ -141,8 +141,8 @@ protected:
     std::shared_ptr<CompoundType> m_type;
 
 public:
-    Class(const QString& name, Prog *parent, IFrontEnd *fe)
-        : Module(name, parent, fe)
+    Class(const QString& name, Prog *_prog, IFrontEnd *fe)
+        : Module(name, _prog, fe)
         , m_type(CompoundType::get())
     {
     }

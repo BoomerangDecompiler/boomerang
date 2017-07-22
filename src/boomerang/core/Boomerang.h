@@ -304,10 +304,10 @@ public:
         }
     }
 
-    void alertConsidering(Function *parent, Function *p)
+    void alertConsidering(Function *_parent, Function *p)
     {
         for (Watcher *it : m_watchers) {
-            it->alertConsidering(parent, p);
+            it->alertConsidering(_parent, p);
         }
     }
 
