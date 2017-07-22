@@ -814,7 +814,7 @@ bool BasicBlock::isJmpZ(BasicBlock *dest)
 
 BasicBlock *BasicBlock::getLoopBody()
 {
-    assert(m_structType == PRETESTLOOP || m_structType == POSTTESTLOOP || m_structType == ENDLESSLOOP);
+    assert(m_structType == SBBType::PreTestLoop || m_structType == SBBType::PostTestLoop || m_structType == SBBType::EndlessLoop);
     assert(m_outEdges.size() == 2);
 
     if (m_outEdges[0] != m_loopFollow) {
@@ -1591,21 +1591,21 @@ void BasicBlock::setStructType(StructType s)
 
 void BasicBlock::setUnstructType(UnstructType us)
 {
-    assert((m_structuringType == Cond || m_structuringType == LoopCond) && m_conditionHeaderType != Case);
+    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond) && m_conditionHeaderType != CondType::Case);
     m_unstructuredType = us;
 }
 
 
 UnstructType BasicBlock::getUnstructType()
 {
-    assert((m_structuringType == Cond || m_structuringType == LoopCond) && m_conditionHeaderType != Case);
+    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond) && m_conditionHeaderType != CondType::Case);
     return m_unstructuredType;
 }
 
 
 void BasicBlock::setLoopType(LoopType l)
 {
-    assert(m_structuringType == Loop || m_structuringType == LoopCond);
+    assert(m_structuringType == StructType::Loop || m_structuringType == StructType::LoopCond);
     m_loopHeaderType = l;
 
     // set the structured class (back to) just Loop if the loop type is PreTested OR it's PostTested and is a single
@@ -1618,21 +1618,21 @@ void BasicBlock::setLoopType(LoopType l)
 
 LoopType BasicBlock::getLoopType()
 {
-    assert(m_structuringType == Loop || m_structuringType == LoopCond);
+    assert(m_structuringType == StructType::Loop || m_structuringType == StructType::LoopCond);
     return m_loopHeaderType;
 }
 
 
 void BasicBlock::setCondType(CondType c)
 {
-    assert(m_structuringType == Cond || m_structuringType == LoopCond);
+    assert(m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond);
     m_conditionHeaderType = c;
 }
 
 
 CondType BasicBlock::getCondType()
 {
-    assert(m_structuringType == Cond || m_structuringType == LoopCond);
+    assert(m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond);
     return m_conditionHeaderType;
 }
 

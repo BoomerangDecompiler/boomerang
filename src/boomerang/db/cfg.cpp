@@ -1306,7 +1306,7 @@ void Cfg::determineLoopType(BasicBlock *header, bool *& loopNodes)
 
 void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
 {
-    assert(header->getStructType() == Loop || header->getStructType() == LoopCond);
+    assert(header->getStructType() == StructType::Loop || header->getStructType() == StructType::LoopCond);
     LoopType   lType  = header->getLoopType();
     BasicBlock *latch = header->getLatchNode();
 
