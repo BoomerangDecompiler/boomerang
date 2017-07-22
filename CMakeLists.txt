@@ -201,11 +201,11 @@ else () # GCC
 endif ()
 
 if (NOT MSVC)
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -g -O0")
-    elseif (${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
+    elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
         set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -g -O2")
-    elseif (${CMAKE_BUILD_TYPE} STREQUAL "MinSizeRel")
+    elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
         set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -Os")
     else () # Release
         set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -O3")
