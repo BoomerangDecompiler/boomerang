@@ -9,9 +9,6 @@ class LoaderTest : public QObject
 private slots:
 	void initTestCase();
 
-	/// Test loading Windows programs
-	void testWinLoad();
-
 	/// Test the micro disassembler
 	void testMicroDis1();
 	void testMicroDis2();
