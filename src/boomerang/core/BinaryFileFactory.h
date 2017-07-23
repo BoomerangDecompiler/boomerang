@@ -31,7 +31,6 @@
 class BinaryFileFactory
 {
 public:
-
     BinaryFileFactory();
 
     /// Load the binary file located at \p filePath.
