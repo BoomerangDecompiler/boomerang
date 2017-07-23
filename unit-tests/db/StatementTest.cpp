@@ -25,14 +25,6 @@
 #include <sstream>
 #include <map>
 
-// class NullLogger : public Log {
-// public:
-//    virtual Log &operator<<(const char *str) {
-//        // std::cerr << str;
-//        return *this;
-//    }
-//    virtual ~NullLogger() {};
-// };
 #include "boomerang/db/prog.h"
 #include "boomerang/db/proc.h"
 
@@ -40,6 +32,7 @@
 #define GLOBAL1_PENTIUM    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/global1")
 
 static bool    logset = false;
+
 
 void StatementTest::initTestCase()
 {
