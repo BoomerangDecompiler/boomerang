@@ -13,10 +13,10 @@ private:
 
 public:
     /// Constructor, subexpressions
-    Assign(SharedExp lhs, SharedExp r, SharedExp guard = nullptr);
+    Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
 
     /// Constructor, type and subexpressions
-    Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard = nullptr);
+    Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
 
     /// Default constructor, for XML parser
     Assign();

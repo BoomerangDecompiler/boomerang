@@ -459,7 +459,7 @@ public:
             if (d && (d->isIntConst() || d->isStrConst())) {
                 if (d->isIntConst()) {
                     Address dest = d->access<Const>()->getAddr();
-                    stmt->setDestProc(stmt->getProc()->getProg()->setNewProc(dest));
+                    stmt->setDestProc(stmt->getProc()->getProg()->createProc(dest));
                 }
                 else {
                     stmt->setDestProc(stmt->getProc()->getProg()->getLibraryProc(d->access<Const>()->getStr()));

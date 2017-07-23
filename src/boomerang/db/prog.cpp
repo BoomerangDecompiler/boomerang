@@ -541,7 +541,7 @@ void Prog::clear()
 }
 
 
-Function *Prog::setNewProc(Address uAddr)
+Function *Prog::createProc(Address uAddr)
 {
     // this test fails when decoding sparc, why?  Please investigate - trent
     // Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section

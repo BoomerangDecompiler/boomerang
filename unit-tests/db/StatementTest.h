@@ -1,9 +1,4 @@
-/***************************************************************************/ /**
- * \file StatementTest.h
- * Provides the interface for the StatementTest class, which
- *  tests the dataflow subsystems
- *============================================================================*/
-
+#pragma once
 /*
  * $Revision: 1.7 $
  *
@@ -11,8 +6,15 @@
  */
 
 #include <QtTest/QtTest>
+
+/***************************************************************************/ /**
+ * Provides the interface for the StatementTest class, which
+ *  tests the dataflow subsystems
+ *============================================================================*/
 class StatementTest : public QObject
 {
+    Q_OBJECT
+
 private slots:
     /***************************************************************************/ /**
     * FUNCTION:        StatementTest::initTestCase

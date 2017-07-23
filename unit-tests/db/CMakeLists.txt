@@ -13,6 +13,7 @@ set(TESTS
     CfgTest
     DfaTest
     ParserTest
+    StatementTest
 )
 
 foreach(t ${TESTS})

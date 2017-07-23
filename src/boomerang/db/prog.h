@@ -120,22 +120,24 @@ public:
 
     /***************************************************************************/ /**
      * \note     Formally Frontend::newProc
-     * \brief    Call this function when a procedure is discovered (usually by
-     *           decoding a call instruction). That way, it is given a name
-     *           that can be displayed in the dot file, etc. If we assign it
-     *           a number now, then it will retain this number always
+     * \brief    Create a new unnamed Proc at address \p addr.
+     *
+     * Call this function when a procedure is discovered (usually by
+     * decoding a call instruction). That way, it is given a name
+     * that can be displayed in the dot file, etc. If we assign it
+     * a number now, then it will retain this number always
      * \param addr    Native address of the procedure entry point
      * \returns       Pointer to the Proc object, or 0 if this is a deleted (not to
      *                be decoded) address
      ******************************************************************************/
-    Function *setNewProc(Address addr);
+    Function *createProc(Address addr);
 
     void removeProc(const QString& name);
 
     QString getName() const { return m_name; } ///< Get the name of this program
 
     QString getPath() const { return m_path; }
-    QString getPathAndName() const { return(m_path + m_name); }
+    QString getPathAndName() const { return m_path + m_name; }
 
     /***************************************************************************/ /**
      *
@@ -334,8 +336,8 @@ public:
     QString getSymbolByAddress(Address dest) const;
 
     const IBinarySection *getSectionInfoByAddr(Address a) const;
-       Address getLimitTextLow() const;
-       Address getLimitTextHigh() const;
+    Address getLimitTextLow() const;
+    Address getLimitTextHigh() const;
 
     bool isReadOnly(Address a) const;
     bool isStringConstant(Address a) const;

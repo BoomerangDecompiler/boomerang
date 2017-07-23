@@ -1158,7 +1158,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             // Don't visit the destination of a register call
             // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
             if (dest != Address::INVALID) {
-                proc->getProg()->setNewProc(dest);
+                proc->getProg()->createProc(dest);
             }
         }
     }
