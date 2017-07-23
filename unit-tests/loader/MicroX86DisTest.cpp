@@ -18,18 +18,14 @@
 
 #include "MicroX86DisTest.h"
 
-#include "boomerang-loaders/microX86dis.c"
+#include <QDebug>
 
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/core/BinaryFileFactory.h"
 
-#include <QLibrary>
-#include <QTextStream>
-#include <QDir>
-#include <QProcessEnvironment>
-#include <QDebug>
-#include <sstream>
+#include "boomerang-loaders/microX86dis.c"
 
 static bool    logset = false;
 
