@@ -139,7 +139,7 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
 }
 
 
-void Prog::setName(const char *name)
+void Prog::setName(const QString& name)
 {
     m_name = name;
     m_rootCluster->setName(name);

@@ -116,7 +116,7 @@ public:
     IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }
 
     /// Assign a name to this program
-    void setName(const char *name);
+    void setName(const QString& name);
 
     /***************************************************************************/ /**
      * \note     Formally Frontend::newProc

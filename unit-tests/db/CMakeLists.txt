@@ -14,6 +14,7 @@ set(TESTS
     DfaTest
     ParserTest
     StatementTest
+    ProgTest
 )
 
 foreach(t ${TESTS})
