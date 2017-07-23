@@ -1,12 +1,12 @@
 include(boomerang-utils)
 
 set(TESTS
-	LoaderTest
-	ElfLoaderTest
-	SparcLoaderTest
+	ElfBinaryLoaderTest
+	SparcBinaryLoaderTest
 	HpSomBinaryLoaderTest
 	PalmBinaryLoaderTest
 	Win32BinaryLoaderTest
+	MicroX86DisTest
 )
 
 foreach(t ${TESTS})

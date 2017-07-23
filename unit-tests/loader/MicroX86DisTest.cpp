@@ -16,7 +16,7 @@
  * 05 Aug 05 - Mike: added borland test; check address of main (not just != Address::INVALID)
  */
 
-#include "LoaderTest.h"
+#include "MicroX86DisTest.h"
 
 #include "boomerang-loaders/microX86dis.c"
 
@@ -33,7 +33,7 @@
 
 static bool    logset = false;
 
-void LoaderTest::initTestCase()
+void MicroX86DisTest::initTestCase()
 {
     if (!logset) {
         logset = true;
@@ -264,7 +264,7 @@ static unsigned char pent_hello_text[] =
 	0xfc,  0xc9, 0xc3
 };
 
-void LoaderTest::testMicroDis1()
+void MicroX86DisTest::testMicroDis1()
 {
 	QString      deb;
 	QTextStream  deb_str(&deb);
@@ -303,7 +303,7 @@ void LoaderTest::testMicroDis1()
 }
 
 
-void LoaderTest::testMicroDis2()
+void MicroX86DisTest::testMicroDis2()
 {
 	// Now a special test:
 	// 8048910:  0f be 00            movsbl (%eax),%eax
@@ -320,4 +320,4 @@ void LoaderTest::testMicroDis2()
 }
 
 
-QTEST_MAIN(LoaderTest)
+QTEST_MAIN(MicroX86DisTest)

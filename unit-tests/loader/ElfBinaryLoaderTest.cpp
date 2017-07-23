@@ -1,4 +1,4 @@
-#include "ElfLoaderTest.h"
+#include "ElfBinaryLoaderTest.h"
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"

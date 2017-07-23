@@ -2,7 +2,7 @@
 
 #include <QtTest/QTest>
 
-class LoaderTest : public QObject
+class MicroX86DisTest : public QObject
 {
 	Q_OBJECT
 
