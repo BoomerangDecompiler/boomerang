@@ -4,6 +4,7 @@ set(TESTS
 	LoaderTest
 	ElfLoaderTest
 	SparcLoaderTest
+	HpSomBinaryLoaderTest
 )
 
 foreach(t ${TESTS})

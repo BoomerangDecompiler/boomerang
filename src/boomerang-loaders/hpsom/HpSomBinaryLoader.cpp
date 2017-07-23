@@ -35,14 +35,16 @@
 
 
 HpSomBinaryLoader::HpSomBinaryLoader()
-    : m_loadedImage(0)
+    : m_loadedImage(nullptr)
+    , m_symbols(nullptr)
+    , m_image(nullptr)
 {
 }
 
 
 HpSomBinaryLoader::~HpSomBinaryLoader()
 {
-    delete [] m_loadedImage;
+    delete[] m_loadedImage;
 }
 
 
@@ -186,7 +188,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // Find the array of aux headers
     unsigned *auxHeaders = (unsigned *)intptr_t(UINT4(m_loadedImage + 0x1c));
 
-    if (auxHeaders == 0) {
+    if (auxHeaders == nullptr) {
         fprintf(stderr, "Error: auxilliary header array is not present\n");
         return false;
     }
@@ -395,7 +397,7 @@ bool HpSomBinaryLoader::isLibrary() const
 {
     int type = UINT4(m_loadedImage) & 0xFFFF;
 
-    return(type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
+    return (type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
 }
 
 
@@ -442,16 +444,6 @@ std::pair<Address, unsigned> HpSomBinaryLoader::getGlobalPointerInfo()
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief  Get a map from ADDRESS to const char*. This map contains the
- *         native addresses and symbolic names of global data items
- *         (if any) which are shared with dynamically linked libraries.
- *         Example: __iob (basis for stdout). The ADDRESS is the native
- *         address of a pointer to the real dynamic data object.
- * \note        The caller should delete the returned map.
- * \returns     Pointer to a new map with the info
- ******************************************************************************/
 std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 {
     // Find the DL Table, if it exists
@@ -490,7 +482,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 
 Address HpSomBinaryLoader::getMainEntryPoint()
 {
-    auto sym = m_symbols->find("main");
+    const IBinarySymbol* sym = m_symbols->find("main");
 
     return sym ? sym->getLocation() : Address::INVALID;
 }

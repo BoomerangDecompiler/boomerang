@@ -822,8 +822,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             LOG_VERBOSE(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
                             // jump to a library function
                             // replace with a call ret
-                            auto *sym = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());
-                            assert(sym == nullptr);
+                            const IBinarySymbol *sym = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());
+                            assert(sym != nullptr);
                             QString       func  = sym->getName();
                             CallStatement *call = new CallStatement;
                             call->setDest(pDest->clone());
