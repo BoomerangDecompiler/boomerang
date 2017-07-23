@@ -15,6 +15,7 @@ set(TESTS
     ParserTest
     StatementTest
     ProgTest
+    ExpTest
 )
 
 foreach(t ${TESTS})

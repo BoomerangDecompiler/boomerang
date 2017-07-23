@@ -58,14 +58,14 @@ void ProcTest::testName()
 	Prog       *prog = new Prog();
 	BinaryFile *pBF  = new BinaryFileStub();
 
-	CPPUNIT_ASSERT(pBF != 0);
+	QVERIFY(pBF != 0);
 	std::string       nm("default name");
 	BinaryFileFactory bff;
 	pBF = bff.Load(HELLO_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
-	CPPUNIT_ASSERT(pFE != 0);
+	QVERIFY(pFE != 0);
 	prog->setFrontEnd(pFE);
-	CPPUNIT_ASSERT(prog);
+	QVERIFY(prog);
 	pFE->readLibraryCatalog();              // Since we are not decoding
 	m_proc = new UserProc(prog, nm, 20000); // Will print in decimal if error
 	std::string actual(m_proc->getName());

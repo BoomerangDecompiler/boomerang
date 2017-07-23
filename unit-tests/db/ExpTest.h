@@ -1,76 +1,27 @@
-#include <cppunit/extensions/HelperMacros.h>
+#pragma once
 
-#include "db/exp.h"
+#include <QtTest/QTest>
+#include <memory>
 
-class ExpTest : public CPPUNIT_NS::TestFixture
+class Const;
+class Location;
+
+
+class ExpTest : public QObject
 {
-	CPPUNIT_TEST_SUITE(ExpTest);
-	CPPUNIT_TEST(test99);
-	CPPUNIT_TEST(testFlt);
-	CPPUNIT_TEST(testRegOf2);
-	CPPUNIT_TEST(testBinaries);
-	CPPUNIT_TEST(testUnaries);
-	CPPUNIT_TEST(testIsAfpTerm);
-	CPPUNIT_TEST(testCompare1);
-	CPPUNIT_TEST(testCompare2);
-	CPPUNIT_TEST(testCompare3);
-	CPPUNIT_TEST(testCompare4);
-	CPPUNIT_TEST(testCompare5);
-	CPPUNIT_TEST(testCompare6);
-	CPPUNIT_TEST(testSearchReplace1);
-	CPPUNIT_TEST(testSearchReplace2);
-	CPPUNIT_TEST(testSearchReplace3);
-	CPPUNIT_TEST(testSearchReplace4);
-	CPPUNIT_TEST(testSearch1);
-	CPPUNIT_TEST(testSearch2);
-	CPPUNIT_TEST(testSearch3);
-	CPPUNIT_TEST(testSearchAll);
-	CPPUNIT_TEST(testPartitionTerms);
-	CPPUNIT_TEST(testAccumulate);
-	CPPUNIT_TEST(testSimplifyArith);
-	CPPUNIT_TEST(testSimplifyUnary);
-	CPPUNIT_TEST(testSimplifyBinary);
-	CPPUNIT_TEST(testSimplifyAddr);
-	CPPUNIT_TEST(testSimpConstr);
-	CPPUNIT_TEST(testLess);
-	CPPUNIT_TEST(testMapOfExp);
-	CPPUNIT_TEST(testList);
-	CPPUNIT_TEST(testParen);
-	CPPUNIT_TEST(testFixSuccessor);
-	CPPUNIT_TEST(testKillFill);
-	CPPUNIT_TEST(testAssociativity);
-	CPPUNIT_TEST(testSubscriptVar);
-	CPPUNIT_TEST(testTypeOf);
-	CPPUNIT_TEST(testSetConscripts);
-	CPPUNIT_TEST(testAddUsedLocs);
-	CPPUNIT_TEST(testSubscriptVars);
-	CPPUNIT_TEST(testVisitors);
-	CPPUNIT_TEST_SUITE_END();
+    Q_OBJECT
 
 protected:
-	Const *m_99;
-	Location *m_rof2;
+	std::shared_ptr<Const> m_99;
+	std::shared_ptr<Location> m_rof2;
 
-public:
+private slots:
     /***************************************************************************/ /**
-    * FUNCTION:        ExpTest::setUp
     * OVERVIEW:        Set up some expressions for use with all the tests
     * NOTE:            Called before any tests
-    * PARAMETERS:        <none>
-    *
     *============================================================================*/
-	void setUp();
+	void initTestCase();
 
-    /***************************************************************************/ /**
-    * FUNCTION:        ExpTest::tearDown
-    * OVERVIEW:        Delete expressions created in setUp
-    * NOTE:            Called after all tests
-    * PARAMETERS:        <none>
-    *
-    *============================================================================*/
-	void tearDown();
-
-protected:
     /***************************************************************************/ /**
     * FUNCTION:        ExpTest::test99
     * OVERVIEW:        Test integer constant

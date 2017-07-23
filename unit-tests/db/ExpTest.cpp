@@ -15,153 +15,147 @@
  * 13 Dec 02 - Mike: Added test for killFill()
  */
 
-#include "boomerang/ExpTest.h"
+#include "ExpTest.h"
+
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Ternary.h"
+
+#include "boomerang/db/statements/assign.h"
 
 #include "boomerang/db/visitor.h"
 #include <map>
-#include <sstream> // Gcc >= 3.0 needed
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ExpTest);
-
-void ExpTest::setUp()
+void ExpTest::initTestCase()
 {
-	m_99   =Const::get(99);
-	m_rof2 = new Location(opRegOf, Const::get(2), nullptr);
-}
-
-
-void ExpTest::tearDown()
-{
-	delete m_99;
-	delete m_rof2;
+	m_99   = Const::get(99);
+	m_rof2.reset(new Location(opRegOf, Const::get(2), nullptr));
 }
 
 
 void ExpTest::test99()
 {
-	std::ostringstream ost;
+    QString actual;
+	QTextStream ost(&actual);
 	m_99->print(ost);
-	CPPUNIT_ASSERT(std::string("99") == std::string(ost.str()));
+	QCOMPARE(actual, QString("99"));
 }
 
 
 void ExpTest::testFlt()
 {
-	std::ostringstream ost;
-	Const              *c =Const::get(3.14);
+	QString actual;
+	QTextStream ost(&actual);
+    std::shared_ptr<Const> c = Const::get(3.14);
 	c->print(ost);
-	CPPUNIT_ASSERT_EQUAL(std::string("3.1400"), std::string(ost.str()));
-	delete c;
+	QCOMPARE(actual, QString("3.1400"));
 }
 
 
 void ExpTest::testRegOf2()
 {
-	std::ostringstream ost;
+	QString actual;
+    QTextStream ost(&actual);
 	ost << m_rof2;
-	CPPUNIT_ASSERT_EQUAL(std::string("r2"), std::string(ost.str()));
+	QCOMPARE(actual, QString("r2"));
 }
 
 
 void ExpTest::testBinaries()
 {
-	std::ostringstream ost1;
-	Binary             *b = new Binary(opPlus, m_99->clone(), m_rof2->clone());
-	b->print(ost1);
-	CPPUNIT_ASSERT_EQUAL(std::string("99 + r2"), std::string(ost1.str()));
-	delete b;
+    QString actual;
+	QTextStream ost(&actual);
 
-	std::ostringstream ost2;
-	b = new Binary(opMinus, m_99->clone(), m_rof2->clone());
-	b->print(ost2);
-	CPPUNIT_ASSERT_EQUAL(std::string("99 - r2"), std::string(ost2.str()));
-	delete b;
+	std::shared_ptr<Binary> b(new Binary(opPlus, m_99->clone(), m_rof2->clone()));
+	b->print(ost);
+	QCOMPARE(actual, QString("99 + r2"));
 
-	std::ostringstream ost3;
-	b = new Binary(opMult, m_99->clone(), m_rof2->clone());
-	b->print(ost3);
-	CPPUNIT_ASSERT_EQUAL(std::string("99 * r2"), std::string(ost3.str()));
-	delete b;
+    actual = "";
+	b.reset(new Binary(opMinus, m_99->clone(), m_rof2->clone()));
+	b->print(ost);
+	QCOMPARE(actual, QString("99 - r2"));
 
-	std::ostringstream ost4;
-	b = new Binary(opDiv, m_99->clone(), m_rof2->clone());
-	b->print(ost4);
-	CPPUNIT_ASSERT_EQUAL(std::string("99 / r2"), std::string(ost4.str()));
-	delete b;
+    actual = "";
+	b.reset(new Binary(opMult, m_99->clone(), m_rof2->clone()));
+	b->print(ost);
+	QCOMPARE(actual, QString("99 * r2"));
 
-	std::ostringstream ost5;
-	b = new Binary(opMults, m_99->clone(), m_rof2->clone());
-	b->print(ost5);
-	CPPUNIT_ASSERT_EQUAL(std::string("99 *! r2"), std::string(ost5.str()));
-	delete b;
+    actual = "";
+	b.reset(new Binary(opDiv, m_99->clone(), m_rof2->clone()));
+	b->print(ost);
+	QCOMPARE(actual, QString("99 / r2"));
 
-	std::ostringstream ost6;
-	b = new Binary(opDivs, m_99->clone(), m_rof2->clone());
-	b->print(ost6);
-	CPPUNIT_ASSERT_EQUAL(std::string("99 /! r2"), std::string(ost6.str()));
-	delete b;
+    actual = "";
+	b.reset(new Binary(opMults, m_99->clone(), m_rof2->clone()));
+	b->print(ost);
+	QCOMPARE(actual, QString("99 *! r2"));
 
-	std::ostringstream ost7;
-	b = new Binary(opMod, m_99->clone(), m_rof2->clone());
-	b->print(ost7);
-	CPPUNIT_ASSERT_EQUAL(std::string("99 % r2"), std::string(ost7.str()));
-	delete b;
+    actual = "";
+	b.reset(new Binary(opDivs, m_99->clone(), m_rof2->clone()));
+	b->print(ost);
+	QCOMPARE(actual, QString("99 /! r2"));
 
-	std::ostringstream ost8;
-	b = new Binary(opMods, m_99->clone(), m_rof2->clone());
-	b->print(ost8);
-	CPPUNIT_ASSERT_EQUAL(std::string("99 %! r2"), std::string(ost8.str()));
-	delete b;
+    actual = "";
+	b.reset(new Binary(opMod, m_99->clone(), m_rof2->clone()));
+	b->print(ost);
+	QCOMPARE(actual, QString("99 % r2"));
+
+    actual = "";
+	b.reset(new Binary(opMods, m_99->clone(), m_rof2->clone()));
+	b->print(ost);
+	QCOMPARE(actual, QString("99 %! r2"));
 }
 
 
 void ExpTest::testUnaries()
 {
-	std::ostringstream ost1;
-	Unary              *u = new Unary(opNot, new Terminal(opZF));
-	u->print(ost1);
-	CPPUNIT_ASSERT_EQUAL(std::string("~%ZF"), std::string(ost1.str()));
-	delete u;
 
-	std::ostringstream ost2;
-	u = new Unary(opLNot, new Terminal(opCF));
-	u->print(ost2);
-	CPPUNIT_ASSERT_EQUAL(std::string("L~%CF"), std::string(ost2.str()));
-	delete u;
+    QString actual;
+    QTextStream ost(&actual);
 
-	std::ostringstream ost3;
-	u = new Unary(opNeg, m_rof2->clone());
-	u->print(ost3);
-	CPPUNIT_ASSERT_EQUAL(std::string("-r2"), std::string(ost3.str()));
-	delete u;
+	SharedExp u = Unary::get(opNot, Terminal::get(opZF));
+	u->print(ost);
+	QCOMPARE(actual, QString("~%ZF"));
+
+    actual = "";
+	u = Unary::get(opLNot, Terminal::get(opCF));
+	u->print(ost);
+	QCOMPARE(actual, QString("L~%CF"));
+
+    actual = "";
+	u = Unary::get(opNeg, m_rof2->clone());
+	u->print(ost);
+	QCOMPARE(actual, QString("-r2"));
 }
 
 
 void ExpTest::testIsAfpTerm()
 {
+    QSKIP("Disabled.");
 	Terminal afp(opAFP);
 	Binary   plus(opPlus, afp.clone(), Const::get(-99));
 	Binary   minus(opMinus, afp.clone(), m_99->clone());
 
-	CPPUNIT_ASSERT(afp.isAfpTerm());
-	CPPUNIT_ASSERT(plus.isAfpTerm());
-	CPPUNIT_ASSERT(minus.isAfpTerm());
-	CPPUNIT_ASSERT(!m_99->isAfpTerm());
-	CPPUNIT_ASSERT(!m_rof2->isAfpTerm());
-	// Now with typed expressions
-	TypedExp tafp(new IntegerType(), afp.clone());
+	QVERIFY(afp.isAfpTerm());
+	QVERIFY(plus.isAfpTerm());
+	QVERIFY(minus.isAfpTerm());
+	QVERIFY(!m_99->isAfpTerm());
+	QVERIFY(!m_rof2->isAfpTerm());
+
+    // Now with typed expressions
+	TypedExp tafp(IntegerType::get(Address::getSourceBits()), afp.clone());
 	// Unary tafp  (opTypedExp, afp.clone());
 	Unary tplus(opTypedExp, plus.clone());
 	Unary tminus(opTypedExp, minus.clone());
-	CPPUNIT_ASSERT(tafp.isAfpTerm());
-	CPPUNIT_ASSERT(tplus.isAfpTerm());
-	CPPUNIT_ASSERT(tminus.isAfpTerm());
+	QVERIFY(tafp.isAfpTerm());
+	QVERIFY(tplus.isAfpTerm());
+	QVERIFY(tminus.isAfpTerm());
 }
 
 
 void ExpTest::testCompare1()
 {
-	CPPUNIT_ASSERT(!(*m_99 == *m_rof2));
+	QVERIFY(!(*m_99 == *m_rof2));
 }
 
 
@@ -169,7 +163,7 @@ void ExpTest::testCompare2()
 {
 	Const nineNine(99);
 
-	CPPUNIT_ASSERT(*m_99 == nineNine);
+	QVERIFY(*m_99 == nineNine);
 }
 
 
@@ -177,7 +171,7 @@ void ExpTest::testCompare3()
 {
 	Const minus(-99);
 
-	CPPUNIT_ASSERT(!(*m_99 == minus));
+	QVERIFY(!(*m_99 == minus));
 }
 
 
@@ -185,7 +179,7 @@ void ExpTest::testCompare4()
 {
 	Location regOf2(opRegOf, Const::get(2), nullptr);
 
-	CPPUNIT_ASSERT(regOf2 == *m_rof2);
+	QVERIFY(regOf2 == *m_rof2);
 }
 
 
@@ -194,7 +188,7 @@ void ExpTest::testCompare5()
 	Binary one(opMult, m_99->clone(), m_rof2->clone());
 	Binary two(opMult, m_rof2->clone(), m_99->clone());
 
-	CPPUNIT_ASSERT(!(one == two));
+	QVERIFY(!(one == two));
 }
 
 
@@ -203,28 +197,29 @@ void ExpTest::testCompare6()
 	Binary one(opMult, m_99->clone(), m_rof2->clone());
 	Binary two(opMult, m_99->clone(), m_rof2->clone());
 
-	CPPUNIT_ASSERT((one == two));
+	QVERIFY((one == two));
 }
 
 
 void ExpTest::testSearchReplace1()
 {
 	// Null test: should not replace. Also tests Ternary class
-	Exp  *p;
 	bool change;
 
-	p = new Ternary(opAt, m_rof2->clone(), Const::get(15), Const::get(8));
-	p = p->searchReplace(m_99, m_rof2, change);
+	SharedExp p = std::make_shared<Ternary>(opAt, m_rof2->clone(), Const::get(15), Const::get(8));
+	p = p->searchReplace(*m_99, m_rof2, change);
+
+    QString actual;
+    QTextStream ost(&actual);
+
 	std::string        expected("r2@15:8");
-	std::ostringstream ost;
 	p->print(ost);
-	std::string actual(ost.str());
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	Ternary t2(*(Ternary *)p);
-	CPPUNIT_ASSERT(*p == t2);
-	p = p->searchReplaceAll(m_99, m_rof2, change);
-	CPPUNIT_ASSERT(*p == t2);
-	delete p;
+    QCOMPARE(actual, QString("r2@15:8"));
+
+    Ternary t2(*std::dynamic_pointer_cast<Ternary>(p));
+	QVERIFY(*p == t2);
+	p = p->searchReplaceAll(*m_99, m_rof2, change);
+    QVERIFY(*p == t2);
 }
 
 
@@ -232,16 +227,15 @@ void ExpTest::testSearchReplace2()
 {
 	// Whole expression replacements
 	bool  change;
-	Exp   *p1 =Const::get(55);
-	Const p2(*(Const *)p1);
-	Const c2(1234);
+	SharedExp p1 = Const::get(55);
+	SharedExp c2 = Const::get(1234);
 
-	p1 = p1->searchReplace(&p2, &c2, change);
-	CPPUNIT_ASSERT(*p1 == c2);
-	CPPUNIT_ASSERT(p1 != &c2); // Pointers should not be same
-	p1 = p1->searchReplace(&c2, m_rof2, change);
-	CPPUNIT_ASSERT(*p1 == *m_rof2);
-	delete p1;
+	p1 = p1->searchReplace(*p1, c2, change);
+	QVERIFY(*p1 == *c2);
+	QVERIFY(p1 != c2); // Pointers should not be same
+
+    p1 = p1->searchReplace(*c2, m_rof2, change);
+	QVERIFY(*p1 == *m_rof2);
 }
 
 
@@ -249,17 +243,16 @@ void ExpTest::testSearchReplace3()
 {
 	// Subexpression replacement
 	bool  change;
-	Const two(2);
-	Const three(3);
-	Exp   *p = m_rof2->clone();
+	SharedExp two = Const::get(2);
+	SharedExp three = Const::get(3);
+	SharedExp p = m_rof2->clone();
 
-	p = p->searchReplaceAll(&two, &three, change);
-	std::string        expected("r3");
-	std::ostringstream ost;
+	p = p->searchReplaceAll(*two, three, change);
+
+    QString actual;
+    QTextStream ost(&actual);
 	p->print(ost);
-	std::string actual(ost.str());
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	delete p;
+	QCOMPARE(actual, QString("r3"));
 }
 
 
@@ -268,53 +261,51 @@ void ExpTest::testSearchReplace4()
 	// Subexpression replacement with different subexpression form
 	bool  change;
 	Const two(2);
-	Exp   *p = m_rof2->clone();
+	SharedExp p = m_rof2->clone();
 
 	// Note recursion. OK to use the all function, since it does the search
 	// first.
-	p = p->searchReplaceAll(&two, m_rof2, change);
-	std::string        expected("r[r2]");
-	std::ostringstream ost;
-	p->print(ost);
-	std::string actual(ost.str());
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	delete p;
+	p = p->searchReplaceAll(two, m_rof2, change);
+
+    QString actual;
+    QTextStream ost(&actual);
+    p->print(ost);
+    QCOMPARE(actual, QString("r[r2]"));
 }
 
 
 void ExpTest::testSearch1()
 {
-	Const two(2);
-	Exp   *result;
+	SharedExp two = Const::get(2);
+	SharedExp result;
 
 	// Search inside r2 for const 2
-	CPPUNIT_ASSERT(m_rof2->search(&two, result));
-	CPPUNIT_ASSERT(*result == two);
+	QVERIFY(m_rof2->search(*two, result));
+	QVERIFY(*result == *two);
 
 	// Test for false positives
-	CPPUNIT_ASSERT(!m_99->search(&two, result));
-	CPPUNIT_ASSERT(!m_rof2->search(m_99, result));
+	QVERIFY(!m_99->search(*two, result));
+	QVERIFY(!m_rof2->search(*m_99, result));
 
 	// Note: opDiv's enum has value 3
-	Binary e(opMult, m_rof2->clone(), m_99->clone()); // r2 / 99
+	SharedExp e = Binary::get(opMult, m_rof2->clone(), m_99->clone()); // r2 / 99
 	Const  three(3);
-	CPPUNIT_ASSERT(!e.search(&three, result));
+	QVERIFY(!e->search(three, result));
 }
 
 
 void ExpTest::testSearch2()
 {
 	// Search using wildcards
-	Binary   e(opDivs, m_rof2->clone(), m_99->clone());      // r2 /! 99
-	Exp      *result;
-	Location search(opRegOf, new Terminal(opWild), nullptr); // r[?]
+	SharedExp e = Binary::get(opDivs, m_rof2->clone(), m_99->clone());      // r2 /! 99
+	SharedExp result;
+	SharedExp search = Location::get(opRegOf, Terminal::get(opWild), nullptr); // r[?]
 
-	CPPUNIT_ASSERT(e.search(&search, result));
-	CPPUNIT_ASSERT(*result == *m_rof2); // Should be r2
+	QVERIFY(e->search(*search, result));
+	QVERIFY(*result == *m_rof2); // Should be r2
 
-	Const three(3);
-	CPPUNIT_ASSERT(!e.search(&three, result));
-	CPPUNIT_ASSERT(e.search(m_99, result));
+	QVERIFY(!e->search(*Const::get(3), result));
+	QVERIFY(e->search(*m_99, result));
 }
 
 
@@ -322,339 +313,309 @@ void ExpTest::testSearch3()
 {
 	// A more complex expression:
 	// (r2 * 99) + (m[1000] * 4)
-	Exp    *result;
-	Binary e(opPlus, new Binary(opMult, m_rof2->clone(), m_99->clone()),
-			 new Binary(opMult, Location::memOf(new Const(1000)), Const::get(4)));
-	Const    four(4);
-	Location mem1000(opMemOf, Const::get(1000), nullptr);
-	Binary   prod(opMult, m_rof2->clone(), m_99->clone());
+	SharedExp result;
+	SharedExp e = Binary::get(opPlus,
+                              Binary::get(opMult, m_rof2->clone(), m_99->clone()),
+                              Binary::get(opMult, Location::memOf(Const::get(1000)), Const::get(4)));
 
-	CPPUNIT_ASSERT(e.search(&four, result));
-	CPPUNIT_ASSERT(e.search(&mem1000, result));
-	CPPUNIT_ASSERT(e.search(&prod, result));
-	CPPUNIT_ASSERT(e.search(m_99, result));
-	Const three(3);
-	CPPUNIT_ASSERT(!e.search(&three, result));
+	SharedExp mem1000 = Location::get(opMemOf, Const::get(1000), nullptr);
+	SharedExp prod = Binary::get(opMult, m_rof2->clone(), m_99->clone());
+
+	QVERIFY(e->search(*Const::get(4), result));
+	QVERIFY(e->search(*mem1000, result));
+	QVERIFY(e->search(*prod, result));
+	QVERIFY(e->search(*m_99, result));
+	QVERIFY(!e->search(*Const::get(3), result));
 }
 
 
 void ExpTest::testSearchAll()
 {
+	SharedExp search = Location::get(opRegOf, Terminal::get(opWild), nullptr); // r[?]
+
 	// A more complex expression:
 	// (r2 * 99) + (r8 * 4)
-	Location search(opRegOf, new Terminal(opWild), nullptr); // r[?]
-
-	std::list<Exp *> result;
-	Binary           e(opPlus, new Binary(opMult, m_rof2->clone(), m_99->clone()),
-					   new Binary(opMult, Location::regOf(8), Const::get(4)));
-	CPPUNIT_ASSERT(e.searchAll(&search, result));
-	CPPUNIT_ASSERT(result.size() == 2);
-	CPPUNIT_ASSERT(*result.front() == *m_rof2);
+	std::list<SharedExp> result;
+	SharedExp e = Binary::get(opPlus,
+                              Binary::get(opMult, m_rof2->clone(), m_99->clone()),
+                              Binary::get(opMult, Location::regOf(8), Const::get(4)));
+	QVERIFY(e->searchAll(*search, result));
+	QVERIFY(result.size() == 2);
+	QVERIFY(*result.front() == *m_rof2);
 	Location rof8(opRegOf, Const::get(8), nullptr);
-	CPPUNIT_ASSERT(*result.back() == rof8);
+	QVERIFY(*result.back() == rof8);
 }
 
 
 void ExpTest::testAccumulate()
 {
-	Location rof2(opRegOf, Const::get(2), nullptr);
-	Const    nineNine(99);
+	SharedExp rof2 = Location::get(opRegOf, Const::get(2), nullptr);
+	SharedExp nineNine = Const::get(99);
 
 	// Zero terms
-	std::list<Exp *> le;
-	Exp              *res = Exp::Accumulate(le);
+	std::list<SharedExp> le;
+	SharedExp res = Exp::accumulate(le);
 	Const            zero(0);
-	CPPUNIT_ASSERT(*res == zero);
-	delete res;
+	QVERIFY(*res == zero);
 
 	// One term
-	le.push_back(&rof2);
-	res = Exp::Accumulate(le);
-	CPPUNIT_ASSERT(*res == rof2);
-	delete res;
+	le.push_back(rof2);
+	res = Exp::accumulate(le);
+	QVERIFY(*res == *rof2);
 
 	// Two terms
-	Exp *nn = nineNine.clone();
+	SharedExp nn = nineNine->clone();
 	le.push_back(nn);
-	res = Exp::Accumulate(le);
-	Binary expected2(opPlus, rof2.clone(), nineNine.clone());
-	CPPUNIT_ASSERT(*res == expected2);
-	delete res;
+	res = Exp::accumulate(le);
+	Binary expected2(opPlus, rof2->clone(), nineNine->clone());
+	QVERIFY(*res == expected2);
 
 	// Three terms, one repeated
-	le.push_back(&nineNine);
-	res = Exp::Accumulate(le);
-	Binary expected3(opPlus, rof2.clone(), new Binary(opPlus, nineNine.clone(), nineNine.clone()));
-	CPPUNIT_ASSERT(*res == expected3);
-	delete res;
+	le.push_back(nineNine);
+	res = Exp::accumulate(le);
+	Binary expected3(opPlus, rof2->clone(), Binary::get(opPlus, nineNine->clone(), nineNine->clone()));
+	QVERIFY(*res == expected3);
 
 	// Four terms, one repeated
-	Terminal afp(opAFP);
-	le.push_back(&afp);
-	res = Exp::Accumulate(le);
-	Binary expected4(opPlus, rof2.clone(),
-					 new Binary(opPlus, nineNine.clone(), new Binary(opPlus, nineNine.clone(), new Terminal(opAFP))));
-	CPPUNIT_ASSERT(*res == expected4);
-	delete res;
-	delete nn;
+	le.push_back(Terminal::get(opAFP));
+	res = Exp::accumulate(le);
+	Binary expected4(opPlus, rof2->clone(),
+					 Binary::get(opPlus, nineNine->clone(), Binary::get(opPlus, nineNine->clone(), Terminal::get(opAFP))));
+	QVERIFY(*res == expected4);
 }
 
 
 void ExpTest::testPartitionTerms()
 {
-	std::ostringstream ost;
 	// afp + 108 + n - (afp + 92)
-	Binary e(opMinus, new Binary(opPlus, new Binary(opPlus, new Terminal(opAFP), Const::get(108)),
-								 new Unary(opVar, Const::get("n"))),
-			 new Binary(opPlus, new Terminal(opAFP), Const::get(92)));
-	std::list<Exp *> positives, negatives;
-	std::vector<int> integers;
-	e.partitionTerms(positives, negatives, integers, false);
-	Exp    *res = Exp::Accumulate(positives);
-	Binary expected1(opPlus, new Terminal(opAFP), new Unary(opVar, Const::get("n")));
-	CPPUNIT_ASSERT(*res == expected1);
-	delete res;
+	Binary e(opMinus, Binary::get(opPlus, Binary::get(opPlus, Terminal::get(opAFP), Const::get(108)),
+								 Unary::get(opVar, Const::get("n"))),
+			 Binary::get(opPlus, Terminal::get(opAFP), Const::get(92)));
 
-	res = Exp::Accumulate(negatives);
+	std::list<SharedExp> positives, negatives;
+	std::vector<int> integers;
+
+    e.partitionTerms(positives, negatives, integers, false);
+	SharedExp res = Exp::accumulate(positives);
+	Binary expected1(opPlus, Terminal::get(opAFP), Unary::get(opVar, Const::get("n")));
+	QVERIFY(*res == expected1);
+
+	res = Exp::accumulate(negatives);
 	Terminal expected2(opAFP);
-	CPPUNIT_ASSERT(*res == expected2);
-	int size = integers.size();
-	CPPUNIT_ASSERT_EQUAL(2, size);
-	CPPUNIT_ASSERT_EQUAL(108, integers.front());
-	CPPUNIT_ASSERT_EQUAL(-92, integers.back());
-	delete res;
+	QVERIFY(*res == expected2);
+
+	QCOMPARE(integers.size(), (size_t)2);
+	QCOMPARE(integers.front(), 108);
+	QCOMPARE(integers.back(), -92);
 }
 
 
 void ExpTest::testSimplifyArith()
 {
-	std::ostringstream ost;
 	// afp + 108 + n - (afp + 92)
-	Exp *e = new Binary(opMinus, new Binary(opPlus, new Binary(opPlus, new Terminal(opAFP), Const::get(108)),
-											new Unary(opVar, Const::get("n"))),
-						new Binary(opPlus, new Terminal(opAFP), Const::get(92)));
+	SharedExp e = Binary::get(opMinus, Binary::get(opPlus, Binary::get(opPlus, Terminal::get(opAFP), Const::get(108)),
+											Unary::get(opVar, Const::get("n"))),
+						Binary::get(opPlus, Terminal::get(opAFP), Const::get(92)));
 	e = e->simplifyArith();
-	e->print(ost);
-	std::string expected("v[n] + 16");
-	CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
-	delete e;
+
+	QString actual;
+    QTextStream ost(&actual);
+    e->print(ost);
+    QCOMPARE(actual, QString("v[n] + 16"));
 
 	// m[(r28 + -4) + 8]
-	Exp *mm = Location::memOf(new Binary(opPlus, new Binary(opPlus, Location::regOf(28), Const::get(-4)), Const::get(8)));
+	SharedExp mm = Location::memOf(Binary::get(opPlus, Binary::get(opPlus, Location::regOf(28), Const::get(-4)), Const::get(8)));
 	mm = mm->simplifyArith();
-	std::ostringstream ost2;
-	mm->print(ost2);
-	expected = "m[r28 + 4]";
-	CPPUNIT_ASSERT_EQUAL(expected, std::string(ost2.str()));
-	delete mm;
+
+
+   	actual = "";
+	mm->print(ost);
+	QCOMPARE(actual, QString("m[r28 + 4]"));
 
 	// r24 + m[(r28 - 4) - 4]
-	mm = new Binary(
+	mm = Binary::get(
 		opPlus, Location::regOf(24),
-		Location::memOf(new Binary(opMinus, new Binary(opMinus, Location::regOf(28), Const::get(4)), Const::get(4))));
+		Location::memOf(Binary::get(opMinus, Binary::get(opMinus, Location::regOf(28), Const::get(4)), Const::get(4))));
 	mm = mm->simplifyArith();
-	std::ostringstream ost3;
-	mm->print(ost3);
-	expected = "r24 + m[r28 - 8]";
-	CPPUNIT_ASSERT_EQUAL(expected, std::string(ost3.str()));
-	delete mm;
+
+
+	actual = "";
+	mm->print(ost);
+    QCOMPARE(actual, QString("r24 + m[r28 - 8]"));
 }
 
 
 void ExpTest::testSimplifyUnary()
 {
 	// Unaries with integer constant argument
-	Exp *u = new Unary(opNeg, Const::get(55));
+	SharedExp u = Unary::get(opNeg, Const::get(55));
 
 	u = u->simplify();
 	Const minus55(-55);
-	CPPUNIT_ASSERT(*u == minus55);
-	delete u;
+	QVERIFY(*u == minus55);
 
-	u = new Unary(opNot, Const::get(0x55AA));
+	u = Unary::get(opNot, Const::get(0x55AA));
 	u = u->simplify();
-	Const exp((int)0xFFFFAA55);
-	CPPUNIT_ASSERT(*u == exp);
-	delete u;
+	Const exp(0xFFFFAA55);
+	QVERIFY(*u == exp);
 
-	u = new Unary(opLNot, Const::get(55));
+	u = Unary::get(opLNot, Const::get(55));
 	u = u->simplify();
 	Const zero(0);
-	CPPUNIT_ASSERT(*u == zero);
-	delete u;
+	QVERIFY(*u == zero);
 
-	u = new Unary(opLNot, zero.clone());
+	u = Unary::get(opLNot, zero.clone());
 	u = u->simplify();
 	Const one(1);
-	CPPUNIT_ASSERT(*u == one);
-	delete u;
+	QVERIFY(*u == one);
 
 	// Null test
-	u = new Unary(opNeg, new Unary(opVar, Const::get("abc")));
-	Unary abc(opNeg, new Unary(opVar, Const::get("abc")));
-	CPPUNIT_ASSERT(*u == abc);
-	delete u;
+	u = Unary::get(opNeg, Unary::get(opVar, Const::get("abc")));
+	Unary abc(opNeg, Unary::get(opVar, Const::get("abc")));
+	QVERIFY(*u == abc);
 }
 
 
 void ExpTest::testSimplifyBinary()
 {
 	// Add integer consts
-	Exp *b = new Binary(opPlus, Const::get(2), Const::get(3));
-
+	SharedExp b = Binary::get(opPlus, Const::get(2), Const::get(3));
 	b = b->simplify();
 	Const five(5);
-	CPPUNIT_ASSERT(*b == five);
-	delete b;
+	QVERIFY(*b == five);
 
 	// Multiply integer consts
-	b = new Binary(opMult, Const::get(2), Const::get(3));
+	b = Binary::get(opMult, Const::get(2), Const::get(3));
 	b = b->simplify();
 	Const six(6);
-	CPPUNIT_ASSERT(*b == six);
-	delete b;
+	QVERIFY(*b == six);
 
 	// Shift left two integer constants
-	b = new Binary(opShiftL, Const::get(2), Const::get(3));
+	b = Binary::get(opShiftL, Const::get(2), Const::get(3));
 	b = b->simplify();
 	Const sixteen(16);
-	CPPUNIT_ASSERT(*b == sixteen);
-	delete b;
+	QVERIFY(*b == sixteen);
 
 	// Shift right arithmetic two integer contants
-	b = new Binary(opShiftRA, Const::get(-144), Const::get(3));
+	b = Binary::get(opShiftRA, Const::get(-144), Const::get(3));
 	b = b->simplify();
 	Const minus18(-18);
-	CPPUNIT_ASSERT(*b == minus18);
-	delete b;
+	QVERIFY(*b == minus18);
 
 	// Bitwise XOR
-	b = new Binary(opBitXor, Const::get(0x55), Const::get(0xF));
+	b = Binary::get(opBitXor, Const::get(0x55), Const::get(0xF));
 	b = b->simplify();
 	Const fiveA(0x5A);
-	CPPUNIT_ASSERT(*b == fiveA);
-	delete b;
+	QVERIFY(*b == fiveA);
 
 	// Xor with self
-	b = new Binary(opBitXor, m_rof2->clone(), m_rof2->clone());
+	b = Binary::get(opBitXor, m_rof2->clone(), m_rof2->clone());
 	b = b->simplify();
 	Const zero(0);
-	CPPUNIT_ASSERT(*b == zero);
-	delete b;
+	QVERIFY(*b == zero);
 
 	// Test commute
 	// 77 * r2
-	b = new Binary(opMults, Const::get(77), m_rof2->clone());
+	b = Binary::get(opMults, Const::get(77), m_rof2->clone());
 	b = b->simplify();
+
 	// r2 * 77
 	Binary exp(opMults, m_rof2->clone(), Const::get(77));
-	CPPUNIT_ASSERT(*b == exp);
+	QVERIFY(*b == exp);
 
 	// x*1
-	((Const *)b->getSubExp2())->setInt(1);
+	(std::dynamic_pointer_cast<Const>(b->getSubExp2()))->setInt(1);
 	b = b->simplify();
-	CPPUNIT_ASSERT(*b == *m_rof2);
-	delete b;
+	QVERIFY(*b == *m_rof2);
 
 	// 0 | r2
-	b = new Binary(opBitOr, Const::get(0), m_rof2->clone());
+	b = Binary::get(opBitOr, Const::get(0), m_rof2->clone());
 	b = b->simplify();
-	CPPUNIT_ASSERT(*b == *m_rof2);
-	delete b;
+	QVERIFY(*b == *m_rof2);
 
 	// Left shift by const
-	b = new Binary(opShiftL, m_rof2->clone(), Const::get(0));
+	b = Binary::get(opShiftL, m_rof2->clone(), Const::get(0));
 	b = b->simplify();
-	CPPUNIT_ASSERT(*b == *m_rof2);
-	delete b;
+	QVERIFY(*b == *m_rof2);
 
-	b = new Binary(opShiftL, m_rof2->clone(), Const::get(2));
+	b = Binary::get(opShiftL, m_rof2->clone(), Const::get(2));
 	b = b->simplify();
 	Binary expb1(opMult, m_rof2->clone(), Const::get(4));
-	CPPUNIT_ASSERT(*b == expb1);
-	delete b;
+	QVERIFY(*b == expb1);
 
 	// Add negative constant
 	// r2 + -99
-	b = new Binary(opPlus, m_rof2->clone(), Const::get(-99));
+	b = Binary::get(opPlus, m_rof2->clone(), Const::get(-99));
 	// r2 - 99
-	Exp *expb2 = new Binary(opMinus, m_rof2->clone(), Const::get(99));
+	SharedExp expb2 = Binary::get(opMinus, m_rof2->clone(), Const::get(99));
+
 // As of June 2003, I've decided to go the old way. esp + -4 is just
 // too ugly, and all the code has to cope with pluses and minuses anyway,
 // just in case
-#define OLD_WAY    1
-#if OLD_WAY
 	b = b->simplify();
-#else
-	expb2 = expb2->simplify();
-#endif
-	CPPUNIT_ASSERT(*b == *expb2);
-	delete b;
-	delete expb2;
+	QVERIFY(*b == *expb2);
 
-	std::string        expected("((0 + v[a]) - 0) | 0");
-	std::ostringstream ost;
-	Exp                *e = new Binary(
-		opBitOr, new Binary(opMinus, new Binary(opPlus, Const::get(0), new Unary(opVar, Const::get("a"))), Const::get(0)),
-		new Const(0));
+    QString actual;
+    QTextStream ost(&actual);
+	SharedExp e = Binary::get(opBitOr,
+                              Binary::get(opMinus,
+                                          Binary::get(opPlus, Const::get(0), Unary::get(opVar, Const::get("a"))),
+                                          Const::get(0)),
+                              Const::get(0));
 	e->print(ost);
-	CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
+    QCOMPARE(actual, QString("((0 + v[a]) - 0) | 0"));
+
 	// The above should simplify to just "v[a]"
 	e = e->simplify();
 	Unary a(opVar, Const::get("a"));
-	expected = "v[a]";
-	std::ostringstream ost2;
-	e->print(ost2);
-	CPPUNIT_ASSERT_EQUAL(expected, ost2.str());
-	delete e;
+	actual = "";
+    e->print(ost);
+    QCOMPARE(actual, QString("v[a]"));
 
 	// r27 := m[r29 + -4]
-	Assign *as =
-		new Assign(Location::regOf(27), Location::memOf(new Binary(opPlus, Location::regOf(29), Const::get(-4))));
+	std::shared_ptr<Assign> as(new Assign(Location::regOf(27), Location::memOf(Binary::get(opPlus, Location::regOf(29), Const::get(-4)))));
 	as->simplify();
-	expected = "   0 *v* r27 := m[r29 - 4]";
-	std::ostringstream ost3;
-	as->print(ost3);
-	CPPUNIT_ASSERT_EQUAL(expected, ost3.str());
-	delete as;
+    actual = "";
+	as->print(ost);
+    QCOMPARE(actual, QString("   0 *v* r27 := m[r29 - 4]"));
 
 	// (false and true) or (Tr24 = <int>)
-	e = new Binary(opOr, new Binary(opAnd, new Terminal(opFalse), new Terminal(opTrue)),
-				   new Binary(opEquals, new Unary(opTypeOf, Location::regOf(24)), new TypeVal(new IntegerType(32, 1))));
-	e        = e->simplify();
-	expected = "T[r24] = <int>";
-	std::ostringstream ost4;
-	e->print(ost4);
-	CPPUNIT_ASSERT_EQUAL(expected, ost4.str());
-	delete e;
+	e = Binary::get(opOr, Binary::get(opAnd, Terminal::get(opFalse), Terminal::get(opTrue)),
+				   Binary::get(opEquals, Unary::get(opTypeOf, Location::regOf(24)), TypeVal::get(IntegerType::get(32, 1))));
+	e = e->simplify();
+
+    actual = "";
+	e->print(ost);
+    QCOMPARE(actual, QString("T[r24] = <int>"));
 }
 
 
 void ExpTest::testSimplifyAddr()
 {
 	// a[m[1000]] - a[m[r2]{64}]@0:15
-	Exp *e = new Binary(
-		opMinus, new Unary(opAddrOf, Location::memOf(new Const(1000))),
-		new Ternary(opAt, new Unary(opAddrOf, new Binary(opSize, Const::get(64), Location::memOf(Location::regOf(2)))),
-					new Const(0), Const::get(15)));
+	SharedExp e = Binary::get(opMinus,
+                              Unary::get(opAddrOf, Location::memOf(Const::get(1000))),
+                              Ternary::get(opAt,
+                                           Unary::get(opAddrOf,
+                                                      Binary::get(opSize,
+                                                                  Const::get(64),
+                                                                  Location::memOf(Location::regOf(2)))),
+                                           Const::get(0),
+                                           Const::get(15)));
 
 	e = e->simplifyAddr();
-	std::ostringstream ost;
-	e->print(ost);
-	std::string actual(ost.str());
-	std::string expected("1000 - (r2@0:15)");
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
+    QString actual;
+    QTextStream ost(&actual);
+    e->print(ost);
+    QCOMPARE(actual, QString("1000 - (r2@0:15)"));
+
+    actual = "";
 	// Now test at top level
-	delete e;
-	e        = new Unary(opAddrOf, Location::memOf(new Const(1000)));
-	expected = "1000";
-	e        = e->simplifyAddr();
-	std::ostringstream ost2;
-	e->print(ost2);
-	actual = ost2.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	delete e;
+	e = Unary::get(opAddrOf, Location::memOf(Const::get(1000)));
+	e = e->simplifyAddr();
+	e->print(ost);
+    QCOMPARE(actual, QString("1000"));
 }
 
 
@@ -666,17 +627,18 @@ void ExpTest::testSimpConstr()
 	//     (<char*> = <int>) or (<char*> = <alpha2*>)
 	// it should simplify to
 	//    <char*> = <alpha2*>
-	Exp *e = new Binary(
-		opOr, new Binary(opEquals, new TypeVal(new PointerType(new CharType())), new TypeVal(new IntegerType())),
-		new Binary(opEquals, new TypeVal(new PointerType(new CharType())), new TypeVal(PointerType::newPtrAlpha())));
-
+	SharedExp e = Binary::get(opOr,
+                              Binary::get(opEquals,
+                                          TypeVal::get(PointerType::get(CharType::get())),
+                                          TypeVal::get(IntegerType::get(Address::getSourceBits()))),
+                              Binary::get(opEquals,
+                                          TypeVal::get(PointerType::get(CharType::get())),
+                                          TypeVal::get(PointerType::newPtrAlpha())));
 	e = e->simplifyConstraint();
-	std::string        expected("<char *> = <alpha0 *>");
-	std::ostringstream ost;
-	e->print(ost);
-	std::string actual = ost.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	delete e;
+    QString actual;
+    QTextStream ost(&actual);
+    e->print(ost);
+    QCOMPARE(actual, QString("<char *> = <alpha0 *>"));
 
 	// Similarly,
 	//     <char*> = <alpha0*>) and (T[134517848\1\] = <alpha0*>
@@ -684,16 +646,18 @@ void ExpTest::testSimpConstr()
 	//     (<char*> = <char*>) and (T[134517848\1\] = <char*>)
 	// which should simplify to
 	//     T[134517848\1\] = <char*>
-	e = new Binary(
-		opAnd, new Binary(opEquals, new TypeVal(new PointerType(new CharType())),
-						  new TypeVal(new PointerType(new CharType()))),
-		new Binary(opEquals, new Unary(opTypeOf, Const::get(0x123456)), new TypeVal(new PointerType(new CharType()))));
-	e        = e->simplifyConstraint();
-	expected = "T[0x123456] = <char *>";
-	std::ostringstream ost2;
-	e->print(ost2);
-	actual = ost2.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	e = Binary::get(opAnd,
+                    Binary::get(opEquals,
+                                TypeVal::get(PointerType::get(CharType::get())),
+						        TypeVal::get(PointerType::get(CharType::get()))),
+                    Binary::get(opEquals,
+                                Unary::get(opTypeOf, Const::get(0x123456)),
+                                TypeVal::get(PointerType::get(CharType::get()))));
+	e = e->simplifyConstraint();
+
+    actual = "";
+	e->print(ost);
+    QCOMPARE(actual, QString("T[0x123456] = <char *>"));
 }
 
 
@@ -703,521 +667,485 @@ void ExpTest::testLess()
 	Const two(2), three(3), mThree(-3), twoPointTwo(2.2), threePointThree(3.3);
 	Const mThreePointThree(-3.3);
 
-	CPPUNIT_ASSERT(two < three);
-	CPPUNIT_ASSERT(mThree < two);
-	CPPUNIT_ASSERT(twoPointTwo < threePointThree);
-	CPPUNIT_ASSERT(mThreePointThree < twoPointTwo);
+	QVERIFY(two < three);
+	QVERIFY(mThree < two);
+	QVERIFY(twoPointTwo < threePointThree);
+	QVERIFY(mThreePointThree < twoPointTwo);
 	// Terminal
 	Terminal afp(opAFP), agp(opAGP);
 
 	if (opAFP < opAGP) {
-		CPPUNIT_ASSERT(afp < agp);
+		QVERIFY(afp < agp);
 	}
 	else {
-		CPPUNIT_ASSERT(agp < afp);
+		QVERIFY(agp < afp);
 	}
 
 	// Unary
 	Unary negTwo(opNeg, Const::get(2)), negThree(opNeg, Const::get(3));
 	// Note that the ordering is not arithmetic!
-	CPPUNIT_ASSERT(negTwo < negThree);
+	QVERIFY(negTwo < negThree);
 	// Binary
 	Binary twoByThr(opMult, Const::get(2), Const::get(3));
 	Binary twoByFou(opMult, Const::get(2), Const::get(4));
 	Binary thrByThr(opMult, Const::get(3), Const::get(3));
-	CPPUNIT_ASSERT(twoByThr < twoByFou);
-	CPPUNIT_ASSERT(twoByThr < thrByThr);
+	QVERIFY(twoByThr < twoByFou);
+	QVERIFY(twoByThr < thrByThr);
 	// Ternary
 	Ternary twoAtThrToFou(opAt, Const::get(2), Const::get(3), Const::get(4));
 	Ternary twoAtThrToFiv(opAt, Const::get(2), Const::get(3), Const::get(5));
-	CPPUNIT_ASSERT(twoAtThrToFou < twoAtThrToFiv);
+	QVERIFY(twoAtThrToFou < twoAtThrToFiv);
 	// TypedExp later
 }
 
 
 void ExpTest::testMapOfExp()
 {
-	std::map<Exp *, int, lessExpStar> m;
+	std::map<SharedExp, int, lessExpStar> m;
 	m[m_rof2] = 200;
 	m[m_99]   = 99;
-	Exp *e = new Binary(opPlus, Const::get(0), new Binary(opMinus, new Binary(opMult, Const::get(2), Const::get(3)),
-														 new Binary(opMult, Const::get(4), Const::get(5))));
+	SharedExp e = Binary::get(opPlus,
+                              Const::get(0),
+                              Binary::get(opMinus,
+                                          Binary::get(opMult, Const::get(2), Const::get(3)),
+                                          Binary::get(opMult, Const::get(4), Const::get(5))));
 	m[e] = -100;
-	Location rof2(opRegOf, Const::get(2), nullptr);
-	m[&rof2] = 2; // Should overwrite
+	SharedExp rof2 = Location::get(opRegOf, Const::get(2), nullptr);
+	m[rof2] = 2; // Should overwrite
 
-	int i = m.size();
-	CPPUNIT_ASSERT_EQUAL(3, i);
-	i = m[m_rof2];
-	CPPUNIT_ASSERT_EQUAL(2, i);
-	i = m[&rof2];
-	CPPUNIT_ASSERT_EQUAL(2, i);
+	QCOMPARE(m.size(), (size_t)3);
+	int i = m[m_rof2];
+	QCOMPARE(i, 2);
+	i = m[rof2];
+	QCOMPARE(i, 2);
 	i = m[m_99];
-	CPPUNIT_ASSERT_EQUAL(99, i);
+	QCOMPARE(i, 99);
 	i = m[e];
-	CPPUNIT_ASSERT_EQUAL(-100, i);
-	// When the map goes out of scope, the expressions pointed to still exist
-	delete e;
+	QCOMPARE(i, -100);
 }
 
 
 void ExpTest::testList()
 {
-	std::ostringstream o0, o1, o2, o3, o4;
-	Exp                *l0, *l1, *l2, *l3, *l4;
+    QString actual;
+    QTextStream ost(&actual);
+
 	// Empty list
-	l0 = new Binary(opList, new Terminal(opNil), new Terminal(opNil));
-	o0 << l0;
-	std::string expected0("");
-	std::string actual0(o0.str());
-	CPPUNIT_ASSERT_EQUAL(expected0, actual0);
-	delete l0;
+	SharedExp e =  Binary::get(opList, Terminal::get(opNil), Terminal::get(opNil));
+	ost << e;
+    QCOMPARE(actual, QString(""));
 
 	// 1 element list
-	l1 = new Binary(opList, new Location(opParam, Const::get("a"), nullptr), new Terminal(opNil));
-	o1 << l1;
-	std::string expected1("a");
-	std::string actual1(o1.str());
-	CPPUNIT_ASSERT_EQUAL(expected1, actual1);
-	delete l1;
+	e = Binary::get(opList, Location::get(opParam, Const::get("a"), nullptr), Terminal::get(opNil));
+    actual = "";
+	ost << e;
+    QCOMPARE(actual, QString("a"));
 
 	// 2 element list
-	l2 = new Binary(opList, new Location(opParam, Const::get("a"), nullptr),
-					new Binary(opList, new Location(opParam, Const::get("b"), nullptr), new Terminal(opNil)));
-	o2 << l2;
-	std::string expected2("a, b");
-	std::string actual2(o2.str());
-	CPPUNIT_ASSERT_EQUAL(expected2, actual2);
-	delete l2;
+	e = Binary::get(opList,
+                    Location::get(opParam, Const::get("a"), nullptr),
+					Binary::get(opList, Location::get(opParam, Const::get("b"), nullptr), Terminal::get(opNil)));
+	actual = "";
+    ost << e;
+    QCOMPARE(actual, QString("a, b"));
 
 	// 3 element list
-	l3 =
-		new Binary(opList, new Location(opParam, Const::get("a"), nullptr),
-				   new Binary(opList, new Location(opParam, Const::get("b"), nullptr),
-							  new Binary(opList, new Location(opParam, Const::get("c"), nullptr), new Terminal(opNil))));
-	o3 << l3;
-	std::string expected3("a, b, c");
-	std::string actual3(o3.str());
-	CPPUNIT_ASSERT_EQUAL(expected3, actual3);
-	delete l3;
+	e = Binary::get(opList,
+                    Location::get(opParam, Const::get("a"), nullptr),
+                    Binary::get(opList,
+                                Location::get(opParam, Const::get("b"), nullptr),
+                                Binary::get(opList, Location::get(opParam, Const::get("c"), nullptr), Terminal::get(opNil))));
+    actual = "";
+    ost << e;
+    QCOMPARE(actual, QString("a, b, c"));
 
 	// 4 element list
-	l4 = new Binary(opList, new Location(opParam, Const::get("a"), nullptr),
-					new Binary(opList, new Location(opParam, Const::get("b"), nullptr),
-							   new Binary(opList, new Location(opParam, Const::get("c"), nullptr),
-										  new Binary(opList, new Location(opParam, Const::get("d"), nullptr),
-													 new Terminal(opNil)))));
-	o4 << l4;
-	std::string expected4("a, b, c, d");
-	std::string actual4(o4.str());
-	CPPUNIT_ASSERT_EQUAL(expected4, actual4);
-	delete l4;
+	e = Binary::get(opList,
+                    Location::get(opParam, Const::get("a"), nullptr),
+					Binary::get(opList,
+                                Location::get(opParam, Const::get("b"), nullptr),
+                                Binary::get(opList,
+                                            Location::get(opParam, Const::get("c"), nullptr),
+										    Binary::get(opList,
+                                                        Location::get(opParam, Const::get("d"), nullptr),
+													    Terminal::get(opNil)))));
+	actual = "";
+    ost << e;
+    QCOMPARE(actual, QString("a, b, c, d"));
 }
 
 
 void ExpTest::testParen()
 {
-	Assign a(Location::regOf(new Location(opParam, Const::get("rd"), nullptr)),
-			 new Binary(opBitAnd, Location::regOf(new Location(opParam, Const::get("rs1"), nullptr)),
-						new Binary(opMinus, new Binary(opMinus, Const::get(0),
-													   new Location(opParam, Const::get("reg_or_imm"), nullptr)),
-								  Const::get(1))));
+	Assign a(Location::regOf(Location::get(opParam, Const::get("rd"), nullptr)),
+                             Binary::get(opBitAnd, Location::regOf(Location::get(opParam, Const::get("rs1"), nullptr)),
+                                         Binary::get(opMinus,
+                                                     Binary::get(opMinus,
+                                                                 Const::get(0),
+                                                                 Location::get(opParam, Const::get("reg_or_imm"), nullptr)),
+                                                     Const::get(1))));
 
-	std::string        expected("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
-	std::ostringstream o;
-	a.print(o);
-	// a.createDotFile("andn.dot");
-	std::string actual(o.str());
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+    QString actual;
+    QTextStream ost(&actual);
+    a.print(ost);
+    QCOMPARE(actual, QString("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)"));
 }
 
 
 void ExpTest::testFixSuccessor()
 {
 	// Trivial test (should not affect)
-	Binary *b = new Binary(opMinus, m_99->clone(), m_rof2->clone());
+	SharedExp  b = Binary::get(opMinus,
+                               m_99->clone(),
+                               m_rof2->clone());
 
-	std::ostringstream o1;
-	Exp                *e = b->fixSuccessor();
-	e->print(o1);
-	std::string expected("99 - r2");
-	std::string actual(o1.str());
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	delete e;
+    QString actual;
+    QTextStream ost(&actual);
 
-	Unary              *u = new Unary(opSuccessor, Location::regOf(2));
-	std::ostringstream o2;
+    SharedExp e = b->fixSuccessor();
+    e->print(ost);
+    QCOMPARE(actual, QString("99 - r2"));
+
+    actual = "";
+	SharedExp u = Unary::get(opSuccessor, Location::regOf(2));
 	e = u->fixSuccessor();
-	e->print(o2);
-	expected = "r3";
-	actual   = o2.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	delete e;
+	e->print(ost);
+    QCOMPARE(actual, QString("r3"));
 }
 
 
 void ExpTest::testKillFill()
 {
 	// r18 + sgnex(16,32,m[r16 + 16])
-	Binary e(opPlus, Location::regOf(18),
-			 new Ternary(opSgnEx, Const::get(16), Const::get(32),
-						 Location::memOf(new Binary(opPlus, Location::regOf(16), Const::get(16)))));
-	Exp *res = e.killFill();
+	SharedExp e = Binary::get(opPlus,
+                              Location::regOf(18),
+                              Ternary::get(opSgnEx, Const::get(16), Const::get(32),
+                                           Location::memOf(Binary::get(opPlus, Location::regOf(16), Const::get(16)))));
+	SharedExp res = e->killFill();
 
-	std::string        expected("r18 + m[r16 + 16]");
-	std::ostringstream ost1;
-	res->print(ost1);
-	std::string actual(ost1.str());
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+    QString actual;
+    QTextStream ost(&actual);
+	res->print(ost);
+    QCOMPARE(actual, QString("r18 + m[r16 + 16]"));
 
 	// Note: e2 has to be a pointer, not a local Ternary, because it
 	// gets changed at the top level (and so would die in its destructor)
-	Ternary *e2 = new Ternary(opZfill, Const::get(16), Const::get(32),
-							  Location::memOf(new Binary(opPlus, Location::regOf(16), Const::get(16))));
-	// Try again but at top level
-	res      = e2->killFill();
-	expected = "m[r16 + 16]";
-	std::ostringstream ost2;
-	res->print(ost2);
-	actual = ost2.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	delete res;
+	SharedExp e2 = Ternary::get(opZfill, Const::get(16), Const::get(32),
+                                Location::memOf(Binary::get(opPlus, Location::regOf(16), Const::get(16))));
+
+    // Try again but at top level
+    actual = "";
+	res = e2->killFill();
+	res->print(ost);
+    QCOMPARE(actual, QString("m[r16 + 16]"));
 }
 
 
 void ExpTest::testAssociativity()
 {
 	// (r8 + m[m[r8 + 12] + -12]) + 12
-	Binary e1(opPlus, new Binary(opPlus, Location::regOf(8),
-								 Location::memOf(new Binary(
-													 opPlus, Location::memOf(new Binary(opPlus, Location::regOf(8), Const::get(12))),
-													Const::get(-12)))),
-			 Const::get(12));
+	SharedExp e1 = Binary::get(opPlus,
+              Binary::get(opPlus,
+                          Location::regOf(8),
+                          Location::memOf(Binary::get(opPlus,
+                                                      Location::memOf(Binary::get(opPlus, Location::regOf(8), Const::get(12))),
+                                                      Const::get(-12)))),
+              Const::get(12));
+
 	// (r8 + 12) + m[m[r8 + 12] + -12]
-	Binary e2(opPlus, new Binary(opPlus, Location::regOf(8), Const::get(12)),
-			  Location::memOf(new Binary(opPlus, Location::memOf(new Binary(opPlus, Location::regOf(8), Const::get(12))),
-										Const::get(-12))));
+	SharedExp e2 = Binary::get(opPlus,
+              Binary::get(opPlus, Location::regOf(8), Const::get(12)),
+			  Location::memOf(Binary::get(opPlus,
+                                          Location::memOf(Binary::get(opPlus, Location::regOf(8), Const::get(12))),
+                                          Const::get(-12))));
+
 	// Note: at one stage, simplifyArith was part of simplify().
 	// Now call implifyArith() explicitly only where needed
-	Exp *p1 = e1.simplify()->simplifyArith();
-	Exp *p2 = e2.simplify()->simplifyArith();
+	SharedExp p1 = e1->simplify()->simplifyArith();
+	SharedExp p2 = e2->simplify()->simplifyArith();
 
-	std::ostringstream os1, os2;
-	p1->print(os1);
-	p2->print(os2);
-	std::string expected(os1.str());
-	std::string actual(os2.str());
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+    QString expected, actual;
+    QTextStream ost(&expected);
+    p1->print(ost);
+    ost.setString(&actual);
+    p2->print(ost);
+    QCOMPARE(actual, expected);
 }
 
 
 void ExpTest::testSubscriptVar()
 {
 	// m[r28 - 4] := r28 + r29
-	Exp    *left = Location::memOf(new Binary(opMinus, Location::regOf(28), Const::get(4)));
-	Assign *ae   = new Assign(left->clone(), new Binary(opPlus, Location::regOf(28), Location::regOf(29)));
+	SharedExp left = Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(4)));
+	Assign *ae   = new Assign(left->clone(), Binary::get(opPlus, Location::regOf(28), Location::regOf(29)));
 
-	Statement *s = dynamic_cast<Statement *>(ae);
-	// Subtest 1: should do nothing
-	Exp       *r28  = Location::regOf(28);
-	Statement *def1 = dynamic_cast<Statement *>(new Assign(r28->clone(), r28->clone()));
+    // Subtest 1: should do nothing
+	SharedExp r28  = Location::regOf(28);
+	Instruction *def1 = new Assign(r28->clone(), r28->clone());
 
 	def1->setNumber(12);
 	def1->subscriptVar(left, def1); // Should do nothing
-	std::string expected1;
-	expected1 = "   0 *v* m[r28 - 4] := r28 + r29";
-	std::ostringstream actual1;
-	actual1 << s;
-	CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
+
+    QString actual;
+    QTextStream ost(&actual);
+    ost << ae;
+    QCOMPARE(actual, QString("   0 *v* m[r28 - 4] := r28 + r29"));
+
 	// m[r28 - 4]
 
 	// Subtest 2: Ordinary substitution, on LHS and RHS
-	s->subscriptVar(r28, def1);
-	std::string        expected2("   0 *v* m[r28{12} - 4] := r28{12} + r29");
-	std::ostringstream actual2;
-	actual2 << s;
-	CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
+	actual = "";
+    ae->subscriptVar(r28, def1);
+    ost << ae;
+    QCOMPARE(actual, QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
+
 
 	// Subtest 3: change to a different definition
 	// 99: r28 := 0
 	// Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
-	Statement *def3 = new Assign(Location::regOf(28), Const::get(0));
+	actual = "";
+    Instruction *def3 = new Assign(Location::regOf(28), Const::get(0));
 	def3->setNumber(99);
-	s->subscriptVar(r28, def3);
-	std::string        expected3("   0 *v* m[r28{12} - 4] := r28{12} + r29");
-	std::ostringstream actual3;
-	actual3 << s;
-	CPPUNIT_ASSERT_EQUAL(expected3, actual3.str());
-
-	delete ae;
-	delete def1;
-	delete def3;
-	delete r28;
-	delete left;
+	ae->subscriptVar(r28, def3);
+    ost << ae;
+    QCOMPARE(actual, QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
 }
 
 
 void ExpTest::testTypeOf()
 {
-	// Tr24{5} = Tr25{9}
-	std::string expected1("T[r24{5}] = T[r25{9}]");
-	Statement   *s5 = new Assign;
-	Statement   *s9 = new Assign;
+	// T[r24{5}] = T[r25{9}]
+	Instruction *s5 = new Assign;
+	Instruction *s9 = new Assign;
 	s5->setNumber(5);
 	s9->setNumber(9);
-	Exp *e = new Binary(opEquals, new Unary(opTypeOf, new RefExp(Location::regOf(24), s5)),
-						new Unary(opTypeOf, new RefExp(Location::regOf(25), s9)));
-	std::ostringstream actual1;
-	actual1 << e;
-	CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
+	SharedExp e = Binary::get(opEquals,
+                              Unary::get(opTypeOf, RefExp::get(Location::regOf(24), s5)),
+                              Unary::get(opTypeOf, RefExp::get(Location::regOf(25), s9)));
 
-	// Tr24{5} = <float>
-	std::string expected2("T[r24{5}] = <float>");
-	delete e;
-	Type *t = new FloatType(32);
-	e = new Binary(opEquals, new Unary(opTypeOf, new RefExp(Location::regOf(24), s5)), new TypeVal(t));
-	std::ostringstream actual2;
-	actual2 << e;
-	CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
+    QString actual;
+    QTextStream ost(&actual);
+    ost << e;
+    QCOMPARE(actual, QString("T[r24{5}] = T[r25{9}]"));
+
+	// T[r24{5}] = <float>
+    actual = "";
+	SharedType t = FloatType::get(32);
+	e = Binary::get(opEquals, Unary::get(opTypeOf, RefExp::get(Location::regOf(24), s5)), TypeVal::get(t));
+    ost << e;
+    QCOMPARE(actual, QString("T[r24{5}] = <float>"));
 }
 
 
 void ExpTest::testSetConscripts()
 {
-	// m[1000] + 1000
-	Exp *e = new Binary(opPlus, Location::memOf(new Const(1000), nullptr), Const::get(1000));
+    QString actual;
+    QTextStream ost(&actual);
 
-	e->setConscripts(0, false);
-	std::string        expected("m[1000\\1\\] + 1000\\2\\");
-	std::ostringstream actual;
-	actual << e;
-	CPPUNIT_ASSERT_EQUAL(expected, actual.str());
+	// m[1000] + 1000
+	SharedExp e = Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000));
+    e->setConscripts(0, false);
+	ost << e;
+    QCOMPARE(actual, QString("m[1000\\1\\] + 1000\\2\\"));
 
 	// Clear them
-	e->setConscripts(0, true);
-	expected = "m[1000] + 1000";
-	std::ostringstream actual1;
-	actual1 << e;
-	CPPUNIT_ASSERT_EQUAL(expected, actual1.str());
+	actual = "";
+    e->setConscripts(0, true);
+	ost << e;
+    QCOMPARE(actual, QString("m[1000] + 1000"));
 
 	// m[r28 + 1000]
-	e = Location::memOf(new Binary(opPlus, Location::regOf(28), Const::get(1000)));
+	actual = "";
+    e = Location::memOf(Binary::get(opPlus, Location::regOf(28), Const::get(1000)));
 	e->setConscripts(0, false);
-	expected = "m[r28 + 1000\\1\\]";
-	std::ostringstream act2;
-	act2 << e;
-	CPPUNIT_ASSERT_EQUAL(expected, act2.str());
+	ost << e;
+    QCOMPARE(actual, QString("m[r28 + 1000\\1\\]"));
 
 	// Clear
-	e->setConscripts(0, true);
-	expected = "m[r28 + 1000]";
-	std::ostringstream act3;
-	act3 << e;
-	CPPUNIT_ASSERT_EQUAL(expected, act3.str());
+	actual = "";
+    e->setConscripts(0, true);
+    ost << e;
+    QCOMPARE(actual, QString("m[r28 + 1000]"));
 }
 
 
 void ExpTest::testAddUsedLocs()
 {
 	// Null case
-	Exp         *e = new Terminal(opNil);
+	SharedExp e = Terminal::get(opNil);
 	LocationSet l;
 
 	e->addUsedLocs(l);
-	CPPUNIT_ASSERT(l.size() == 0);
+	QVERIFY(l.size() == 0);
 
 	// Const: "foo"
-	e =Const::get("foo");
+	e = Const::get("foo");
 	e->addUsedLocs(l);
-	CPPUNIT_ASSERT(l.size() == 0);
+	QVERIFY(l.size() == 0);
 
 	// Simple terminal: %pc
-	e = new Terminal(opPC);
+	e = Terminal::get(opPC);
 	e->addUsedLocs(l);
-	std::string        expected = "%pc";
-	std::ostringstream ost1;
-	l.print(ost1);
-	std::string actual = ost1.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    QString actual;
+    QTextStream ost(&actual);
+    l.print(ost);
+    QCOMPARE(actual, QString("%pc"));
 
 	// Simple location: r28
 	l.clear();
-	e = Location::regOf(28);
+	actual = "";
+    e = Location::regOf(28);
 	e->addUsedLocs(l);
-	expected = "r28";
-	std::ostringstream ost2;
-	l.print(ost2);
-	actual = ost2.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+    l.print(ost);
+    QCOMPARE(actual, QString("r28"));
 
 	// Memory location: m[r28-4]
 	l.clear();
-	e = Location::memOf(new Binary(opMinus, Location::regOf(28), Const::get(4)));
+    actual = "";
+	e = Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(4)));
 	e->addUsedLocs(l);
-	expected = "r28,\tm[r28 - 4]";
-	std::ostringstream ost3;
-	l.print(ost3);
-	actual = ost3.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+    l.print(ost);
+    QCOMPARE(actual, QString("r28,\tm[r28 - 4]"));
 
 	// Unary: a[m[r28-4]]
 	l.clear();
-	e = new Unary(opAddrOf, e);
+    actual = "";
+	e = Unary::get(opAddrOf, e);
 	e->addUsedLocs(l);
-	expected = "r28,\tm[r28 - 4]";
-	std::ostringstream ost4;
-	l.print(ost4);
-	actual = ost4.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	l.print(ost);
+	QCOMPARE(actual, QString("r28,\tm[r28 - 4]"));
 
 	// Binary: r24 + r25
 	l.clear();
-	e = new Binary(opPlus, Location::regOf(24), Location::regOf(25));
+    actual = "";
+	e = Binary::get(opPlus, Location::regOf(24), Location::regOf(25));
 	e->addUsedLocs(l);
-	expected = "r24,\tr25";
-	std::ostringstream ost5;
-	l.print(ost5);
-	actual = ost5.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	l.print(ost);
+    QCOMPARE(actual, QString("r24,\tr25"));
 
 	// Ternary: r24@r25:r26
 	l.clear();
-	e = new Ternary(opAt, Location::regOf(24), Location::regOf(25), Location::regOf(26));
+    actual = "";
+	e = Ternary::get(opAt, Location::regOf(24), Location::regOf(25), Location::regOf(26));
 	e->addUsedLocs(l);
-	expected = "r24,\tr25,\tr26";
-	std::ostringstream ost6;
-	l.print(ost6);
-	actual = ost6.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	l.print(ost);
+	QCOMPARE(actual, QString("r24,\tr25,\tr26"));
 
 	// Simple RefExp: r28{2}
 	l.clear();
+    actual = "";
 	Assign a(e, e);
 	a.setNumber(2);
-	e = new RefExp(Location::regOf(28), &a);
+	e = RefExp::get(Location::regOf(28), &a);
 	e->addUsedLocs(l);
-	expected = "r28{2}";
-	std::ostringstream ost7;
-	l.print(ost7);
-	actual = ost7.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	l.print(ost);
+    QCOMPARE(actual, QString("r28{2}"));
 
 	// RefExp: m[r28{2} - 4]{3}
 	Assign t(e, e);
+    actual = "";
 	t.setNumber(3);
-	e = new RefExp(Location::memOf(new Binary(opMinus, new RefExp(Location::regOf(28), &a), Const::get(4))), &t);
+	e = RefExp::get(Location::memOf(Binary::get(opMinus, RefExp::get(Location::regOf(28), &a), Const::get(4))), &t);
 	e->addUsedLocs(l);
-	expected = "r28{2},\tm[r28{2} - 4]{3}";
-	std::ostringstream ost8;
-	l.print(ost8);
-	actual = ost8.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	l.print(ost);
+    QCOMPARE(actual, QString("r28{2},\tm[r28{2} - 4]{3}"));
 }
 
 
 void ExpTest::testSubscriptVars()
 {
+    QString actual;
+    QTextStream ost(&actual);
+
 	// Null case: %pc
-	Assign s9(new Terminal(opNil), new Terminal(opNil));
+	Assign s9(Terminal::get(opNil), Terminal::get(opNil));
 
 	s9.setNumber(9);
-	Exp *search = Location::regOf(28);
-	Exp *e      = new Terminal(opPC);
+	SharedExp search = Location::regOf(28);
+	SharedExp e      = Terminal::get(opPC);
 	e = e->expSubscriptVar(search, &s9);
-	std::string        expected("%pc");
-	std::ostringstream ost1;
-	ost1 << e;
-	std::string actual = ost1.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	ost << e;
+    QCOMPARE(actual, QString("%pc"));
 
 	// Simple case: r28
-	e        = search->clone();
-	e        = e->expSubscriptVar(search, &s9);
-	expected = "r28{9}";
-	std::ostringstream ost2;
-	ost2 << e;
-	actual = ost2.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	actual = "";
+    e = search->clone();
+	e = e->expSubscriptVar(search, &s9);
+	ost << e;
+    QCOMPARE(actual, QString("r28{9}"));
+
 
 	// A temp
-	e        = Location::tempOf(new Const("tmp1"));
-	e        = e->expSubscriptVar(e->clone(), &s9);
-	expected = "tmp1{9}";
-	std::ostringstream ost3;
-	ost3 << e;
-	actual = ost3.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+    actual = "";
+	e = Location::tempOf(Const::get("tmp1"));
+	e = e->expSubscriptVar(e->clone(), &s9);
+	ost << e;
+    QCOMPARE(actual, QString("tmp1{9}"));
 
 	// m[r28] + r28
-	e        = new Binary(opPlus, Location::memOf(Location::regOf(28)), Location::regOf(28));
-	e        = e->expSubscriptVar(search, &s9);
-	expected = "m[r28{9}] + r28{9}";
-	std::ostringstream ost4;
-	ost4 << e;
-	actual = ost4.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+    actual = "";
+	e = Binary::get(opPlus, Location::memOf(Location::regOf(28)), Location::regOf(28));
+	e = e->expSubscriptVar(search, &s9);
+	ost << e;
+    QCOMPARE(actual, QString("m[r28{9}] + r28{9}"));
 
 	// RefExp: r28{7} -> r28{9}
 	// Again, changed behaviour: don't resubscript any location
-	Assign s7(new Terminal(opNil), new Terminal(opNil));
+	actual = "";
+    Assign s7(Terminal::get(opNil), Terminal::get(opNil));
 	s7.setNumber(7);
-	e        = new RefExp(search->clone(), &s7);
-	e        = e->expSubscriptVar(search, &s9);
-	expected = "r28{7}";
-	std::ostringstream ost5;
-	ost5 << e;
-	actual = ost5.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	e = RefExp::get(search->clone(), &s7);
+	e = e->expSubscriptVar(search, &s9);
+	ost << e;
+    QCOMPARE(actual, QString("r28{7}"));
 
 	// m[r28{7} + 4]{8}
-	Assign s8(new Terminal(opNil), new Terminal(opNil));
+	actual = "";
+    Assign s8(Terminal::get(opNil), Terminal::get(opNil));
 	s8.setNumber(8);
-	e        = new RefExp(Location::memOf(new Binary(opPlus, new RefExp(Location::regOf(28), &s7), Const::get(4))), &s8);
-	e        = e->expSubscriptVar(search, &s9);
-	expected = "m[r28{7} + 4]{8}";
-	std::ostringstream ost6;
-	ost6 << e;
-	actual = ost6.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	e = RefExp::get(Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(28), &s7), Const::get(4))), &s8);
+	e = e->expSubscriptVar(search, &s9);
+	ost << e;
+    QCOMPARE(actual, QString("m[r28{7} + 4]{8}"));
 
 	// r24{7} with r24{7} and 0: should not change: RefExps should not compare
 	// at the top level, only with their base expression (here r24, not r24{7})
-	e        = new RefExp(Location::regOf(24), &s7);
-	e        = e->expSubscriptVar(e->clone(), nullptr);
-	expected = "r24{7}";
-	std::ostringstream ost7;
-	ost7 << e;
-	actual = ost7.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	actual = "";
+    e = RefExp::get(Location::regOf(24), &s7);
+	e = e->expSubscriptVar(e->clone(), nullptr);
+	ost << e;
+	QCOMPARE(actual, QString("r24{7}"));
 }
 
 
 void ExpTest::testVisitors()
 {
-	Assign s7(new Terminal(opNil), new Terminal(opNil));
+	Assign s7(Terminal::get(opNil), Terminal::get(opNil));
 
 	// m[SETTFLAGS(m[1000], r8)]{7}
 	s7.setNumber(7);
 	FlagsFinder ff;
-	Exp         *e1 =
-		new RefExp(Location::memOf(new Binary(opFlagCall, Const::get("SETFFLAGS"),
-											  new Binary(opList,
-														 Location::memOf( // A bare memof
-															Const::get(0x1000)),
-														 new Binary(opList, Location::regOf(8), new Terminal(opNil))))),
-				   &s7);
+	SharedExp e1 = RefExp::get(Location::memOf(Binary::get(opFlagCall,
+                                                           Const::get("SETFFLAGS"),
+                                                           Binary::get(opList,
+                                                                       Location::memOf( // A bare memof
+                                                                       Const::get(0x1000)),
+                                                                       Binary::get(opList, Location::regOf(8), Terminal::get(opNil))))),
+                               &s7);
 
 	// m[0x2000]
-	Exp *e2 = Location::memOf(new Const(0x2000));
+	SharedExp e2 = Location::memOf(Const::get(0x2000));
 
 	// r1+m[1000]{7}*4
-	Exp *e3 = new Binary(opPlus, Location::regOf(1),
-						 new Binary(opMult, new RefExp(Location::memOf(new Const(1000)), &s7), Const::get(4)));
+	SharedExp e3 = Binary::get(opPlus,
+                               Location::regOf(1),
+                               Binary::get(opMult, RefExp::get(Location::memOf(Const::get(1000)), &s7), Const::get(4)));
 
-	int res = e1->containsFlags();
-	CPPUNIT_ASSERT_EQUAL(1, res);
-	res = e2->containsFlags();
-	CPPUNIT_ASSERT_EQUAL(0, res);
-	res = e3->containsFlags();
-	CPPUNIT_ASSERT_EQUAL(0, res);
+    QVERIFY(e1->containsFlags());
+    QVERIFY(!e2->containsFlags());
+    QVERIFY(!e3->containsFlags());
 }
+
+
+QTEST_MAIN(ExpTest)
