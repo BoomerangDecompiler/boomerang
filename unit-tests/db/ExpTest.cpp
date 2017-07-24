@@ -131,25 +131,25 @@ void ExpTest::testUnaries()
 
 void ExpTest::testIsAfpTerm()
 {
-    QSKIP("Disabled.");
-	Terminal afp(opAFP);
-	Binary   plus(opPlus, afp.clone(), Const::get(-99));
-	Binary   minus(opMinus, afp.clone(), m_99->clone());
+	SharedExp afp = Terminal::get(opAFP);
+	SharedExp plus = Binary::get(opPlus, afp->clone(), Const::get(-99));
+	SharedExp minus = Binary::get(opMinus, afp->clone(), m_99->clone());
 
-	QVERIFY(afp.isAfpTerm());
-	QVERIFY(plus.isAfpTerm());
-	QVERIFY(minus.isAfpTerm());
+	QVERIFY(afp->isAfpTerm());
+	QVERIFY(plus->isAfpTerm());
+	QVERIFY(minus->isAfpTerm());
 	QVERIFY(!m_99->isAfpTerm());
 	QVERIFY(!m_rof2->isAfpTerm());
 
     // Now with typed expressions
-	TypedExp tafp(IntegerType::get(Address::getSourceBits()), afp.clone());
+	SharedExp tafp = std::make_shared<TypedExp>(IntegerType::get(Address::getSourceBits()), afp->clone());
 	// Unary tafp  (opTypedExp, afp.clone());
-	Unary tplus(opTypedExp, plus.clone());
-	Unary tminus(opTypedExp, minus.clone());
-	QVERIFY(tafp.isAfpTerm());
-	QVERIFY(tplus.isAfpTerm());
-	QVERIFY(tminus.isAfpTerm());
+	SharedExp tplus  = Unary::get(opTypedExp, plus->clone());
+	SharedExp tminus = Unary::get(opTypedExp, minus->clone());
+
+	QVERIFY(tafp->isAfpTerm());
+	QVERIFY(tplus->isAfpTerm());
+	QVERIFY(tminus->isAfpTerm());
 }
 
 
