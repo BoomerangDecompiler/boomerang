@@ -15,6 +15,7 @@
  ******************************************************************************/
 #include "Type.h"
 
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Proc.h"

@@ -6,8 +6,9 @@
  * \file       visitor.cpp
  * \brief   Provides the implementation for the various visitor and modifier classes.
  ******************************************************************************/
-#include "boomerang/db/Visitor.h"
+#include "Visitor.h"
 
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h" // For VERBOSE

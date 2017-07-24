@@ -1,10 +1,9 @@
 #include "ImplicitAssign.h"
 
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Visitor.h"
-
 #include "boomerang/type/Type.h"
+#include "boomerang/util/Log.h"
 
 
 ImplicitAssign::ImplicitAssign(SharedExp _lhs)

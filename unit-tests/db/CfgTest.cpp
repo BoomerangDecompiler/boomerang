@@ -6,14 +6,15 @@
 
 #include "CfgTest.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/DataFlow.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Location.h"
+
+#include "boomerang/util/Log.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 

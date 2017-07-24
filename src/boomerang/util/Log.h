@@ -4,7 +4,6 @@
 #include <memory>
 #include <fstream>
 
-#include "boomerang/core/Boomerang.h"
 
 class Instruction;
 class Exp;
@@ -18,6 +17,22 @@ class Printable;
 using SharedType     = std::shared_ptr<Type>;
 using SharedConstExp = std::shared_ptr<const Exp>;
 
+/// Log level / verbosity.
+enum class LogLevel
+{
+    Fatal = 0,
+    Error = 1,
+    Warning = 2,
+    Message = 3,
+    Default = 3,
+    Verbose1 = 4,
+    Verbose2 = 5,
+
+    LL_Debug   = 0,
+    LL_Default = 1,
+    LL_Warn    = 2,
+    LL_Error   = 3
+};
 
 class Log
 {
@@ -37,6 +52,14 @@ public:
     virtual Log& operator<<(const LocationSet *l);
 
     virtual ~Log() {}
+
+public:
+
+private:
+    bool canLog(LogLevel level) const { return level <= m_level; }
+
+private:
+    LogLevel m_level = LogLevel::Default;
 };
 
 /// Sets the outputfile to be the file "log" in the default output directory.

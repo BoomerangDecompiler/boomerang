@@ -17,6 +17,7 @@
  ******************************************************************************/
 #include "Frontend.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/c/ansi-c-parser.h"
@@ -60,9 +61,9 @@ IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
     , m_bff(bff)
     , m_program(prog)
 {
-       m_image = Boomerang::get()->getImage();
+    m_image = Boomerang::get()->getImage();
     assert(m_image);
-       m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
+    m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
 }
 
 IFrontEnd::~IFrontEnd()

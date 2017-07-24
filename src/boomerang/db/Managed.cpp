@@ -15,6 +15,7 @@
 #include <sstream>
 #include <cstring>
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Managed.h"
 
 #include "boomerang/db/Proc.h"

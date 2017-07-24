@@ -1,10 +1,7 @@
 #include "RangeAnalysis.h"
 
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Visitor.h"
-#include "boomerang/util/Util.h"
 #include "boomerang/type/Type.h"
 
 #include "boomerang/db/Proc.h"
@@ -15,6 +12,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/ExpHelp.h"
+#include "boomerang/db/Visitor.h"
 
 #include "boomerang/db/statements/JunctionStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
@@ -25,6 +23,10 @@
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 
+#include "boomerang/type/Type.h"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
 
 class Range : public Printable
 {
@@ -653,9 +655,9 @@ public:
 
                 if ((r.getLowerBound() != r.getUpperBound()) && (r.getLowerBound() != Range::MIN)) {
                     if (VERBOSE) {
-                        LOG_STREAM(LL_Debug) << "stack height assumption violated " << r.toString();
-                        LOG_STREAM(LL_Debug) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
-                        stmt->getProc()->print(LOG_STREAM(LL_Debug));
+                        LOG_STREAM(LogLevel::LL_Debug) << "stack height assumption violated " << r.toString();
+                        LOG_STREAM(LogLevel::LL_Debug) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
+                        stmt->getProc()->print(LOG_STREAM(LogLevel::LL_Debug));
                     }
 
                     assert(false);
@@ -889,9 +891,9 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc& UF)
 
         if (rm.hasRange(p)) {
             Range& r = rm.getRange(p);
-            LOG_STREAM(LL_Default) << "got p " << p << " with range ";
-            LOG_STREAM(LL_Default) << r.toString();
-            LOG_STREAM(LL_Default) << "\n";
+            LOG_STREAM(LogLevel::LL_Default) << "got p " << p << " with range ";
+            LOG_STREAM(LogLevel::LL_Default) << r.toString();
+            LOG_STREAM(LogLevel::LL_Default) << "\n";
 
             if ((r.getBase()->getOper() == opInitValueOf) && r.getBase()->getSubExp1()->isRegOfK() &&
                 (r.getBase()->access<Const, 1, 1>()->getInt() == 28)) {
@@ -1046,7 +1048,7 @@ void Range::unionWith(Range& r)
         m_base       = Const::get(0);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG_STREAM(LL_Default) << toString();
+            LOG_STREAM(LogLevel::LL_Default) << toString();
         }
 
         return;
@@ -1065,7 +1067,7 @@ void Range::unionWith(Range& r)
     }
 
     if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG_STREAM(LL_Default) << toString();
+        LOG_STREAM(LogLevel::LL_Default) << toString();
     }
 }
 
@@ -1083,7 +1085,7 @@ void Range::widenWith(Range& r)
         m_base       = Const::get(0);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG_STREAM(LL_Default) << toString();
+            LOG_STREAM(LogLevel::LL_Default) << toString();
         }
 
         return;
@@ -1099,7 +1101,7 @@ void Range::widenWith(Range& r)
     }
 
     if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG_STREAM(LL_Default) << toString();
+        LOG_STREAM(LogLevel::LL_Default) << toString();
     }
 }
 

@@ -66,6 +66,7 @@ int read();
 #define YY_USE_CONST
 #endif
 #include <cstdio>
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Operator.h"
 #include "boomerang/util/Log.h"
 

@@ -1,6 +1,6 @@
 #include "sslparser.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/ssl/sslscanner.h"
 #include "boomerang/db/Table.h"
@@ -13,6 +13,7 @@
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/Location.h"
 
+#include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h" // E.g. str()
 
 #include <cassert>

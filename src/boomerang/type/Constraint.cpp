@@ -14,14 +14,14 @@
 
 #include "Constraint.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/Managed.h"
-
 #include "boomerang/type/Type.h"
+#include "boomerang/util/Log.h"
 
 #include <sstream>
 #include <cstring>

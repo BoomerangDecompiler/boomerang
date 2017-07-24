@@ -16,6 +16,7 @@
 
 #include "pentiumfrontend.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 
 #include "boomerang/db/IBinaryImage.h"
@@ -595,7 +596,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     }
 
     // Not ideal; we must return start
-    LOG_STREAM(2) << "main function not found\n";
+    LOG_STREAM(LogLevel::LL_Warn) << "main function not found\n";
 
     if (symbols->find(start) == nullptr) {
         this->addSymbol(start, "_start");

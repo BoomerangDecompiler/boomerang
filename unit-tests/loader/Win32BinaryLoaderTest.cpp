@@ -1,10 +1,11 @@
 #include "Win32BinaryLoaderTest.h"
 
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/db/IBinarySection.h"
 
+#include "boomerang/util/Log.h"
 
 #define SWITCH_BORLAND         (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
 

@@ -9,8 +9,7 @@
 
 #include "GenericExpTransformer.h"
 
-#include "boomerang/transform/ExpTransformer.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
@@ -18,6 +17,8 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/TypeVal.h"
+
+#include "boomerang/transform/ExpTransformer.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"

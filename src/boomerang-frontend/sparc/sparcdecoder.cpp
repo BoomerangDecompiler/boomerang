@@ -24,6 +24,7 @@
 
 #include "sparcdecoder.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "boomerang/util/Log.h"
 
@@ -124,7 +125,7 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Instruction *> *stmts, 
             break;
 
         default:
-            LOG_STREAM(2) << "unknown float branch " << name << '\n';
+            LOG_STREAM(LogLevel::LL_Warn) << "unknown float branch " << name << '\n';
             delete res;
             res = nullptr;
         }
@@ -185,10 +186,10 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Instruction *> *stmts, 
 
         // BVC, BVS; should never see these now
         if (name[2] == 'C') {
-            LOG_STREAM(2) << "Decoded BVC instruction\n"; // BVC
+            LOG_STREAM(LogLevel::LL_Warn) << "Decoded BVC instruction\n"; // BVC
         }
         else {
-            LOG_STREAM(2) << "Decoded BVS instruction\n"; // BVS
+            LOG_STREAM(LogLevel::LL_Warn) << "Decoded BVS instruction\n"; // BVS
         }
 
         break;
@@ -226,7 +227,7 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Instruction *> *stmts, 
         return createBranchRtl(pc, stmts, temp);
 
     default:
-        LOG_STREAM(2) << "unknown non-float branch " << name << '\n';
+        LOG_STREAM(LogLevel::LL_Warn) << "unknown non-float branch " << name << '\n';
     }
 
     return res;

@@ -1,6 +1,7 @@
 #include "Module.h"
 
 #include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Prog.h"

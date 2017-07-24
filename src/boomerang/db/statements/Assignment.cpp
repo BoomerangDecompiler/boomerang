@@ -1,6 +1,6 @@
 #include "Assignment.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Prog.h"
@@ -10,6 +10,8 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/type/Type.h"
+
+#include "boomerang/util/Log.h"
 
 
 Assignment::Assignment(SharedExp lhs)

@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "Prog.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/c/ansi-c-parser.h"
@@ -46,6 +46,7 @@
 
 #include "boomerang/type/Type.h"
 
+#include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h" // For lockFileWrite etc
 
@@ -1294,7 +1295,7 @@ void Prog::decodeEntryPoint(Address a)
 
     if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
         if ((a < m_image->getLimitTextLow()) || (a >= m_image->getLimitTextHigh())) {
-            LOG_STREAM(LL_Warn) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
+            LOG_STREAM(LogLevel::LL_Warn) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
             return;
         }
 

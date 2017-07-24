@@ -6,6 +6,7 @@
 
 #include "FrontSparcTest.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/db/BasicBlock.h"

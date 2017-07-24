@@ -9,7 +9,7 @@
 
 #include "ExpTransformer.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
@@ -17,9 +17,11 @@
 #include "boomerang/db/Proc.h"
 
 #include "boomerang/util/Types.h"
-
 #include "boomerang/transform/RDIExpTransformer.h"
 #include "boomerang/transform/transformation-parser.h"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Types.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>

@@ -5,6 +5,7 @@
  */
 #include "FrontPentTest.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"

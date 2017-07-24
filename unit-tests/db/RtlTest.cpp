@@ -5,6 +5,8 @@
  */
 #include "RtlTest.h"
 
+#include "boomerang/core/Boomerang.h"
+
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/RTL.h"

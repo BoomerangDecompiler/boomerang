@@ -1,10 +1,9 @@
 #include "ImpRefStatement.h"
 
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Visitor.h"
-
 #include "boomerang/type/Type.h"
+#include "boomerang/util/Log.h"
 
 
 ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)

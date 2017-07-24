@@ -14,8 +14,8 @@
 
 #include "Signature.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/util/Log.h"
 
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
@@ -30,6 +30,7 @@
 
 #include "boomerang/type/Type.h"
 
+#include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
 

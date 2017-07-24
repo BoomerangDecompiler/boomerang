@@ -1,5 +1,6 @@
 #include "ExpHelp.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/util/Log.h"

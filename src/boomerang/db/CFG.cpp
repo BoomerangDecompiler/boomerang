@@ -14,8 +14,9 @@
  * \brief   Implementation of the CFG class.
  ******************************************************************************/
 
-#include "boomerang/db/CFG.h"
+#include "CFG.h"
 
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Register.h"

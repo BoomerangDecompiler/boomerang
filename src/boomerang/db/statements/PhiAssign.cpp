@@ -1,9 +1,9 @@
 #include "PhiAssign.h"
 
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/Visitor.h"
+#include "boomerang/util/Log.h"
 
 
 Instruction *PhiAssign::clone() const

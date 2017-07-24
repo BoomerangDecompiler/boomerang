@@ -18,7 +18,7 @@
 
 #include "boomerang/db/RTL.h"
 
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Operator.h"          // for OPER::opIntConst

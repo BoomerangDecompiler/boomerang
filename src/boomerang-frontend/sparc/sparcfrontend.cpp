@@ -22,6 +22,7 @@
 
 #include "sparcfrontend.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang/util/Log.h"
 
@@ -39,7 +40,6 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
-
 
 #include "boomerang-frontend/sparc/sparcdecoder.h"
 

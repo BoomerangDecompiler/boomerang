@@ -12,9 +12,8 @@
  * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
-#include "boomerang/util/Log.h"
-
-#include "boomerang/db/DataFlow.h"
+#include "DataFlow.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Proc.h"
@@ -22,6 +21,8 @@
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/Visitor.h"
+
+#include "boomerang/util/Log.h"
 
 #include <QtCore/QDebug>
 #include <sstream>

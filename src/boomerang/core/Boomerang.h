@@ -16,6 +16,7 @@
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IProject.h"
 #include "boomerang/core/Watcher.h"
+#include "boomerang/util/Log.h"
 
 #include <QObject>
 #include <QDir>
@@ -38,13 +39,6 @@ class IBinaryImage;
 class IBinarySymbolTable;
 class Project;
 
-enum LogLevel
-{
-    LL_Debug   = 0,
-    LL_Default = 1,
-    LL_Warn    = 2,
-    LL_Error   = 3,
-};
 
 #define LOG                Boomerang::get()->log()
 #define LOG_SEPARATE(x)    Boomerang::get()->separate_log(x)
@@ -322,7 +316,7 @@ public:
 
     /// Return TextStream to which given \a level of messages shoudl be directed
     /// \param level - describes the message level TODO: describe message levels
-    QTextStream& getLogStream(int level = LL_Default); ///< Return overall logging target
+    QTextStream& getLogStream(LogLevel level = LogLevel::Default); ///< Return overall logging target
 
     QString getFilename() const;
 

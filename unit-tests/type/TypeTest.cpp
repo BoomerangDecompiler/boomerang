@@ -13,6 +13,8 @@
  */
 
 #include "TypeTest.h"
+
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h" // Ugh - needed before frontend.h
 #include "boomerang/db/Signature.h"
 #include "boomerang/util/Log.h"

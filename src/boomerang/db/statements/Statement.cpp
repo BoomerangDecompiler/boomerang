@@ -12,7 +12,10 @@
  * \brief   Implementation of the Statement and related classes.
  ******************************************************************************/
 
-#include "boomerang/util/Log.h"
+
+#include "boomerang/core/Boomerang.h"
+
+#include "boomerang/codegen/ICodeGenerator.h"
 
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Proc.h"
@@ -29,11 +32,10 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
-
-#include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/util/Util.h"
 #include "boomerang/db/Visitor.h"
 
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
 
 #include <cassert>
 #include <cstring>

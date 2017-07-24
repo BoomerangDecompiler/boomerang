@@ -58,7 +58,7 @@ void *alloca();
 #include <cstdio>
 #define YYBISON 1
 
-#include "boomerang/util/Util.h" // E.g. str()
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Table.h"
@@ -73,6 +73,7 @@ void *alloca();
 #include "boomerang/db/ssl/sslscanner.h"
 
 #include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h" // E.g. str()
 
 
 #include <cassert>

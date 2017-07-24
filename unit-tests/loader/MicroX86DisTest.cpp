@@ -20,9 +20,10 @@
 
 #include <QDebug>
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/IBinaryImage.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang-loaders/microX86dis.c"
