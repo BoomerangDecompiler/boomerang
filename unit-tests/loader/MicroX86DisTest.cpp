@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       LoaderTest.cc
- * OVERVIEW:   Provides the implementation for the LoaderTest class, which
- *              tests the BinaryFile and derived classes
- ******************************************************************************/
+/**
+ * \file MicroX86DisTest.cpp
+ * Provides the implementation for the LoaderTest class, which
+ * tests the BinaryFile and derived classes
+ */
 
 /*
  * $Revision$
@@ -16,225 +16,26 @@
  * 05 Aug 05 - Mike: added borland test; check address of main (not just != Address::INVALID)
  */
 
-#include "LoaderTest.h"
+#include "MicroX86DisTest.h"
 
-#include "boomerang-loaders/microX86dis.c"
+#include <QDebug>
 
-#include "boomerang/util/Log.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/core/BinaryFileFactory.h"
 
-#include <QLibrary>
-#include <QTextStream>
-#include <QDir>
-#include <QProcessEnvironment>
-#include <QDebug>
-#include <sstream>
+#include "boomerang-loaders/microX86dis.c"
 
 static bool    logset = false;
 
-//
-#define HELLO_CLANG4           (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-dynamic")
-#define HELLO_CLANG4_STATIC    (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-static")
-#define HELLO_SPARC            (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
-#define HELLO_PENTIUM          (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
-#define HELLO_HPPA             (BOOMERANG_TEST_BASE "/tests/inputs/hppa/hello")
-#define STARTER_PALM           (BOOMERANG_TEST_BASE "/tests/inputs/mc68328/Starter.prc")
-#define SWITCH_BORLAND         (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
-
-/// path to the ELF loader plugin
-#ifdef _WIN32
-#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/boomerang/plugins/loader/libboomerang-ElfLoader.dll")
-#else
-#  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/boomerang/plugins/loader/libboomerang-ElfLoader.so")
-#endif
-
-#define TEST_PROPRIETARY 0
-
-#if TEST_PROPRIETARY
-#  define CALC_WINDOWS    (BOOMERANG_TEST_BASE "/tests/inputs/windows/calc.exe")
-#  define CALC_WINXP      (BOOMERANG_TEST_BASE "/tests/inputs/windows/calcXP.exe")
-#  define CALC_WIN2000    (BOOMERANG_TEST_BASE "/tests/inputs/windows/calc2000.exe")
-#  define LPQ_WINDOWS     (BOOMERANG_TEST_BASE "/tests/inputs/windows/lpq.exe")
-#endif
-
-
-void LoaderTest::initTestCase()
+void MicroX86DisTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
+    if (!logset) {
+        logset = true;
 		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
-	}
-}
-
-
-void LoaderTest::testElfLoadClang()
-{
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_CLANG4);
-
-	// test the loader
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getFormat(), LoadFmt::ELF);
-	QCOMPARE(loader->getMachine(), Machine::PENTIUM);
-	QCOMPARE(loader->hasDebugInfo(), false);
-	QCOMPARE(loader->getEntryPoint(),     Address(0x080482F0));
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x080483F0));
-
-	// test the loaded image
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QVERIFY(image != nullptr);
-
-	QCOMPARE(image->getNumSections(), (size_t)29);
-	QCOMPARE(image->getSectionInfo(0)->getName(),  QString(".interp"));
-	QCOMPARE(image->getSectionInfo(10)->getName(), QString(".plt"));
-	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
-	QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
-	QCOMPARE(image->getLimitTextHigh(), Address(0x0804A020));
-}
-
-
-void LoaderTest::testElfLoadClangStatic()
-{
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_CLANG4_STATIC);
-
-	// test the loader
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getFormat(), LoadFmt::ELF);
-	QCOMPARE(loader->getMachine(), Machine::PENTIUM);
-	QCOMPARE(loader->hasDebugInfo(), false);
-	QCOMPARE(loader->getEntryPoint(),     Address(0x0804884F));
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x080489A0));
-
-	// test the loaded image
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QVERIFY(image != nullptr);
-
-	QCOMPARE(image->getNumSections(), (size_t)29);
-	QCOMPARE(image->getSectionInfo(0)->getName(), QString(".note.ABI-tag"));
-	QCOMPARE(image->getSectionInfo(13)->getName(), QString(".eh_frame"));
-	QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
-	QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
-	QCOMPARE(image->getLimitTextHigh(), Address(0x080ECDA4));
-}
-
-
-void LoaderTest::testSparcLoad()
-{
-	// Load SPARC hello world
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_SPARC);
-
-	QVERIFY(loader != nullptr);
-
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QVERIFY(image != nullptr);
-
-	QCOMPARE(image->getNumSections(), (size_t)28);
-	QCOMPARE(image->getSectionInfo(1)->getName(), QString(".hash"));
-	QCOMPARE(image->getSectionInfo(27)->getName(), QString(".stab.indexstr"));
-}
-
-
-void LoaderTest::testPentiumLoad()
-{
-	// Load Pentium hello world
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_PENTIUM);
-
-	QVERIFY(loader != nullptr);
-
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QVERIFY(image != nullptr);
-
-	QCOMPARE(image->getNumSections(), (size_t)33);
-	QCOMPARE(image->getSectionInfo(1)->getName(), QString(".note.ABI-tag"));
-	QCOMPARE(image->getSectionInfo(32)->getName(), QString(".strtab"));
-}
-
-
-void LoaderTest::testHppaLoad()
-{
-	QSKIP("Disabled.");
-
-	// Load HPPA hello world
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_HPPA);
-	QVERIFY(loader != nullptr);
-	IBinaryImage *image = Boomerang::get()->getImage();
-
-	QCOMPARE(image->getNumSections(), (size_t)3);
-	QCOMPARE(image->getSectionInfo(0)->getName(), QString("$TEXT$"));
-	QCOMPARE(image->getSectionInfo(1)->getName(), QString("$DATA$"));
-	QCOMPARE(image->getSectionInfo(2)->getName(), QString("$BSS$"));
-}
-
-
-void LoaderTest::testPalmLoad()
-{
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(STARTER_PALM);
-
-	QVERIFY(loader != nullptr);
-	IBinaryImage *image = Boomerang::get()->getImage();
-
-	QCOMPARE(image->getNumSections(), (size_t)8);
-	QCOMPARE(image->getSectionInfo(0)->getName(), QString("code1"));
-	QCOMPARE(image->getSectionInfo(1)->getName(), QString("MBAR1000"));
-	QCOMPARE(image->getSectionInfo(2)->getName(), QString("tFRM1000"));
-	QCOMPARE(image->getSectionInfo(3)->getName(), QString("Talt1001"));
-	QCOMPARE(image->getSectionInfo(4)->getName(), QString("data0"));
-	QCOMPARE(image->getSectionInfo(5)->getName(), QString("code0"));
-	QCOMPARE(image->getSectionInfo(6)->getName(), QString("tAIN1000"));
-	QCOMPARE(image->getSectionInfo(7)->getName(), QString("tver1000"));
-}
-
-
-void LoaderTest::testWinLoad()
-{
-	QSKIP("Disabled.");
-
-	BinaryFileFactory bff;
-	IFileLoader       *loader = nullptr;
-
-#if TEST_PROPRIETARY
-	// Load Windows program calc.exe
-
-	loader = bff.loadFile(CALC_WINDOWS);
-	QVERIFY(loader != nullptr);
-	QVERIFY(loader->getMainEntryPoint() != Address::INVALID);
-
-	IBinaryImage *image = Boomerang::get()->getImage();
-	QCOMPARE(image->getNumSections(), (size_t)5);
-	QCOMPARE(image->getSectionInfo(0), QString(".text"));
-	QCOMPARE(image->getSectionInfo(1), QString(".rdata"));
-	QCOMPARE(image->getSectionInfo(2), QString(".data"));
-	QCOMPARE(image->getSectionInfo(3), QString(".rsrc"));
-	QCOMPARE(image->getSectionInfo(4), QString(".reloc"));
-
-	// Test loading the "new style" exes, as found in WinXP etc
-	loader = bff.loadFile(CALC_WINXP);
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x01001F51));
-
-	// Test loading the calc.exe found in Windows 2000 (more NT based)
-	loader = bff.loadFile(CALC_WIN2000);
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x01001680));
-
-	// Test loading the lpq.exe program - console mode PE file
-	loader = bff.loadFile(LPQ_WINDOWS);
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x018C1000));
-#endif
-
-	// Borland
-	loader = bff.loadFile(SWITCH_BORLAND);
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x401150));
+        Boomerang::get()->setLogger(new NullLogger());
+    }
 }
 
 
@@ -459,7 +260,7 @@ static unsigned char pent_hello_text[] =
 	0xfc,  0xc9, 0xc3
 };
 
-void LoaderTest::testMicroDis1()
+void MicroX86DisTest::testMicroDis1()
 {
 	QString      deb;
 	QTextStream  deb_str(&deb);
@@ -498,7 +299,7 @@ void LoaderTest::testMicroDis1()
 }
 
 
-void LoaderTest::testMicroDis2()
+void MicroX86DisTest::testMicroDis2()
 {
 	// Now a special test:
 	// 8048910:  0f be 00            movsbl (%eax),%eax
@@ -515,23 +316,4 @@ void LoaderTest::testMicroDis2()
 }
 
 
-typedef unsigned (*ElfHashFcn)(const char *);
-void LoaderTest::testElfHash()
-{
-	QLibrary z;
-
-	z.setFileName(ELF_LOADER);
-	bool opened = z.load();
-	QVERIFY(opened);
-
-	// Use the handle to find the "elf_hash" function
-	ElfHashFcn hashFcn = (ElfHashFcn)z.resolve("elf_hash");
-	QVERIFY(hashFcn);
-
-	// Call the function with the string "main
-	unsigned int hashValue = hashFcn("main");
-	QCOMPARE(hashValue, 0x737FEU);
-}
-
-
-QTEST_MAIN(LoaderTest)
+QTEST_MAIN(MicroX86DisTest)

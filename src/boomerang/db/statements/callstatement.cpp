@@ -774,7 +774,7 @@ bool CallStatement::convertToDirect()
     bool     bNewProc = p == nullptr;
 
     if (bNewProc) {
-        p = prog->setNewProc(dest);
+        p = prog->createProc(dest);
     }
 
     LOG_VERBOSE(1) << (bNewProc ? "new" : "existing") << " procedure for call to global '" << nam << " is "

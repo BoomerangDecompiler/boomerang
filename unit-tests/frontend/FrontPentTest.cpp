@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       FrontPentTest.cpp
- * OVERVIEW:   Provides the implementation for the FrontPentTest class, which
- *                tests the sparc front end
- *============================================================================*/
+/**
+ * \file FrontPentTest.cpp
+ * Provides the implementation for the FrontPentTest class, which
+ * tests the Pentium frontend
+ */
 #include "FrontPentTest.h"
 
 #include "boomerang/core/BinaryFileFactory.h"
@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QProcessEnvironment>
 #include <QDebug>
+
 
 #define HELLO_PENT      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
 #define BRANCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/branch")

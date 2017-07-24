@@ -6,8 +6,6 @@ class FrontendTest : public QObject
 
 private slots:
 
-	/***************************************************************************/ /**
-	 * \brief Test loading the sparc hello world program
-	 *============================================================================*/
+	/// Test loading the sparc hello world program
 	void test1();
 };

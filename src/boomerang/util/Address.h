@@ -27,6 +27,7 @@ public:
 
     /// Set the bit count of the source machine.
     static void setSourceBits(Byte bitCount = STD_SIZE);
+    static Byte getSourceBits() { return m_sourceBits; }
     static value_type getSourceMask();
 
     Address        native() const { return Address(m_value & 0xFFFFFFFF); }

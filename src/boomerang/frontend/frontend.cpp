@@ -232,7 +232,7 @@ void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr,
     SharedType ty = NamedType::getNamedType(type);
 
     assert(ty->isFunc());
-    UserProc *proc = (UserProc *)m_program->setNewProc(addr);
+    UserProc *proc = (UserProc *)m_program->createProc(addr);
     assert(proc);
     auto                sig    = ty->as<FuncType>()->getSignature()->clone();
     const IBinarySymbol *p_sym = m_binarySymbols->find(addr);
@@ -388,7 +388,7 @@ void IFrontEnd::decode(Prog *prg, Address a)
     assert(m_program == prg);
 
     if (a != Address::INVALID) {
-              m_program->setNewProc(a);
+              m_program->createProc(a);
         LOG_VERBOSE(1) << "starting decode at address " << a << "\n";
         UserProc *p = (UserProc *)m_program->findProc(a);
 
@@ -457,7 +457,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address a)
     Q_UNUSED(prg);
     assert(m_program == prg);
 
-    UserProc *p = (UserProc *)m_program->setNewProc(a);
+    UserProc *p = (UserProc *)m_program->createProc(a);
     assert(!p->isLib());
     QTextStream os(stderr); // rtl output target
 
@@ -570,7 +570,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Instruction *>::iterator ss,
         auto symb = m_binarySymbols->find(dest);
 
         if (symb && symb->isImportedFunction()) {
-            proc = m_program->setNewProc(dest);
+            proc = m_program->createProc(dest);
         }
     }
 
@@ -822,8 +822,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             LOG_VERBOSE(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
                             // jump to a library function
                             // replace with a call ret
-                            auto *sym = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());
-                            assert(sym == nullptr);
+                            const IBinarySymbol *sym = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());
+                            assert(sym != nullptr);
                             QString       func  = sym->getName();
                             CallStatement *call = new CallStatement;
                             call->setDest(pDest->clone());
@@ -1180,7 +1180,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             if ((np == nullptr) && (dest != Address::INVALID)) {
                 // np = newProc(pProc->getProg(), dest);
-                np = pProc->getProg()->setNewProc(dest);
+                np = pProc->getProg()->createProc(dest);
             }
 
             if (np != nullptr) {

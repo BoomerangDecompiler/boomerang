@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       ParserTest.cc
- * OVERVIEW:   Provides the implementation for the ParserTest class, which
- *                tests the sslparser.y etc
- ******************************************************************************/
+/**
+ * \file ParserTest.cpp
+ * Provides the implementation for the ParserTest class,
+ * which tests the SSL parser
+ */
 #include "ParserTest.h"
 
 #include "boomerang/db/ssl/sslparser.h"
@@ -30,10 +30,6 @@ void ParserTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * \fn        ParserTest::testRead
- * OVERVIEW:        Test reading the SSL file
- ******************************************************************************/
 void ParserTest::testRead()
 {
 	RTLInstDict d;
@@ -42,10 +38,6 @@ void ParserTest::testRead()
 }
 
 
-/***************************************************************************/ /**
- * \fn        ParserTest::testExp
- * OVERVIEW:        Test parsing an expression
- ******************************************************************************/
 void ParserTest::testExp()
 {
 	QString     s("*i32* r0 := 5 + 6");

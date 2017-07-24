@@ -5,26 +5,26 @@
 #include <QtTest/QTest>
 #include <iostream>
 
-class ErrLogger : public Log
-{
-public:
-	virtual Log& operator<<(const QString& s) override
-	{
-		std::cerr << s.toStdString();
-		return *this;
-	}
 
-	virtual ~ErrLogger() {}
-};
-
+/**
+ * Tests the Dta Flow based type analysis code
+ */
 class DfaTest : public QObject
 {
 	Q_OBJECT
 
 private slots:
+   	void initTestCase();
+
+    /// Test meeting IntegerTypes with various other types
 	void testMeetInt();
+
+    /// Test meeting SizeTypes with various other types
 	void testMeetSize();
+
+    /// Test meeting PointerTypes with various other types
 	void testMeetPointer();
+
+    /// Test meeting Unions with various other types
 	void testMeetUnion();
-	void initTestCase();
 };

@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       ProcTest.cc
- * OVERVIEW:   Provides the implementation for the ProcTest class, which
- *                tests the Proc class
- *============================================================================*/
+/**
+ * \file ProcTest.cpp
+ * Provides the implementation for the ProcTest class, which
+ * tests the Proc class
+ */
 
 /*
  * $Revision$
@@ -11,79 +11,45 @@
  * 10 Mar 03 - Mike: Mods to not use Prog::pBF (no longer public)
  */
 
-#include "boomerang/ProcTest.h"
+#include "ProcTest.h"
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/BinaryFileStub.h"
-#include "boomerang/pentiumfrontend.h"
 
-#include <sstream>
-#include <map>
 #include "boomerang/db/prog.h"
+#include "boomerang/db/proc.h"
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ProcTest);
+#include "boomerang-frontend/pentium/pentiumfrontend.h"
+
+#include <map>
+
 
 #define HELLO_PENTIUM    "test/pentium/hello"
 
-/***************************************************************************/ /**
- * FUNCTION:        ProcTest::setUp
- * OVERVIEW:        Set up some expressions for use with all the tests
- * NOTE:            Called before any tests
- * PARAMETERS:        <none>
- *
- *============================================================================*/
-void ProcTest::setUp()
-{
-}
 
-
-/***************************************************************************/ /**
- * FUNCTION:        ProcTest::tearDown
- * OVERVIEW:        Delete expressions created in setUp
- * NOTE:            Called after all tests
- * PARAMETERS:        <none>
- *
- *============================================================================*/
-void ProcTest::tearDown()
-{
-	delete m_proc;
-}
-
-
-/***************************************************************************/ /**
- * FUNCTION:        ProcTest::testName
- * OVERVIEW:        Test setting and reading name, constructor, native address
- *============================================================================*/
 void ProcTest::testName()
 {
-	Prog       *prog = new Prog();
-	BinaryFile *pBF  = new BinaryFileStub();
+	Prog       *prog = new Prog("testProcName");
+	QVERIFY(prog != nullptr);
 
-	CPPUNIT_ASSERT(pBF != 0);
-	std::string       nm("default name");
+    std::string       nm("default name");
 	BinaryFileFactory bff;
-	pBF = bff.Load(HELLO_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
-	CPPUNIT_ASSERT(pFE != 0);
+	IFileLoader* pBF = bff.loadFile(HELLO_PENTIUM);
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	QVERIFY(pFE != nullptr);
 	prog->setFrontEnd(pFE);
-	CPPUNIT_ASSERT(prog);
+
 	pFE->readLibraryCatalog();              // Since we are not decoding
-	m_proc = new UserProc(prog, nm, 20000); // Will print in decimal if error
-	std::string actual(m_proc->getName());
-	CPPUNIT_ASSERT_EQUAL(std::string("default name"), actual);
 
-	std::string name("printf");
-	LibProc     lp(prog, name, 30000);
-	actual = lp.getName();
-	CPPUNIT_ASSERT_EQUAL(name, actual);
+    Function* f = prog->createProc(Address(0x00020000));
+    QString procName = "default name";
+    f->setName(procName);
+    QCOMPARE(f->getName(), procName);
 
-	ADDRESS a        = lp.getNativeAddress();
-	ADDRESS expected = 30000;
-	CPPUNIT_ASSERT_EQUAL(expected, a);
-	a        = m_proc->getNativeAddress();
-	expected = 20000;
-	CPPUNIT_ASSERT_EQUAL(expected, a);
+    f = prog->findProc("printf");
+    QVERIFY(f != nullptr);
+    QVERIFY(f->isLib());
+    QCOMPARE(f->getName(), QString("printf"));
 
 	delete prog;
-	delete m_proc;
-	// delete pFE;        // No! Deleting the prog deletes the pFE already (which deletes the BinaryFileFactory)
 }
+
+QTEST_MAIN(ProcTest)

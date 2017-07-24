@@ -1,20 +1,20 @@
-#include <cppunit/extensions/HelperMacros.h>
+#pragma once
 
-#include "db/prog.h"
+#include <QtTest/QTest>
 
-class ProgTest : public CPPUNIT_NS::TestFixture
+class Prog;
+
+/**
+ * Test the Prog class.
+ */
+class ProgTest : public QObject
 {
-	CPPUNIT_TEST_SUITE(ProgTest);
-	CPPUNIT_TEST(testName);
-	CPPUNIT_TEST_SUITE_END();
+    Q_OBJECT
 
-protected:
-	Prog *m_prog;
-
-public:
-	void setUp();
-	void tearDown();
-
-protected:
+private slots:
+    /// Test setting and reading name
 	void testName();
+
+private:
+	Prog *m_prog;
 };

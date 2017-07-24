@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       ProgTest.cc
- * OVERVIEW:   Provides the implementation for the ProgTest class, which
- *                tests the Exp and derived classes
- *============================================================================*/
+/**
+ * \file ProgTest.cpp
+ * Provides the implementation for the ProgTest class, which
+ * tests the Prog object
+ */
 
 /*
  * $Revision$
@@ -11,61 +11,23 @@
  * 18 Jul 02 - Mike: Set up prog.pFE before calling readLibParams
  */
 
-#include <map>
-#include <sstream>
-#include "boomerang/ProgTest.h"
-#include "boomerang/pentiumfrontend.h"
-#include "boomerang/core/BinaryFileFactory.h"
+#include "ProgTest.h"
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ProgTest);
+#include "boomerang/db/prog.h"
 
-#define HELLO_PENTIUM    "test/pentium/hello"
-
-/***************************************************************************/ /**
- * FUNCTION:        ProgTest::setUp
- * OVERVIEW:        Set up some expressions for use with all the tests
- * NOTE:            Called before any tests
- * PARAMETERS:        <none>
- *
- *============================================================================*/
-void ProgTest::setUp()
-{
-	// prog.setName("default name");
-}
+#define HELLO_PENTIUM    (BOOMERANG_TEST_BASE "/tests/input/pentium/hello")
 
 
-/***************************************************************************/ /**
- * \brief Delete expressions created in setUp
- * \note Called after all tests
- *============================================================================*/
-void ProgTest::tearDown()
-{
-}
-
-
-/***************************************************************************/ /**
- * FUNCTION:        ProgTest::testName
- * OVERVIEW:        Test setting and reading name
- *============================================================================*/
 void ProgTest::testName()
 {
-	BinaryFileFactory bff;
-	BinaryFile        *pBF  = bff.Load(HELLO_PENTIUM); // Don't actually use it
-	Prog              *prog = new Prog();
-	FrontEnd          *pFE  = new PentiumFrontEnd(pBF, prog, &bff);
+    Prog *prog = new Prog(HELLO_PENTIUM);
 
-	// We need a Prog object with a pBF (for getEarlyParamExp())
-	prog->setFrontEnd(pFE);
-	std::string actual(prog->getName());
-	std::string expected(HELLO_PENTIUM);
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	std::string name("Happy prog");
-	prog->setName(name.c_str());
-	actual = prog->getName();
-	CPPUNIT_ASSERT_EQUAL(name, actual);
-	delete pFE;
+    QString progName = HELLO_PENTIUM;
+    QCOMPARE(prog->getName(), progName);
+
+    progName = "Happy Prog";
+	prog->setName(progName);
+	QCOMPARE(prog->getName(), progName);
 }
 
-
-// Pathetic: the second test we had (for readLibraryParams) is now obsolete;
-// the front end does this now.
+QTEST_MAIN(ProgTest)

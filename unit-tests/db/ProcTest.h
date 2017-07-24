@@ -9,22 +9,18 @@
  * 23 Apr 02 - Mike: Created
  */
 
-#include <cppunit/extensions/HelperMacros.h>
-
 class Proc;
-class ProcTest : public CPPUNIT_NS::TestFixture
+
+#include <QtTest/QTest>
+#include <memory>
+
+class ProcTest : public QObject
 {
-	CPPUNIT_TEST_SUITE(ProcTest);
-	CPPUNIT_TEST(testName);
-	CPPUNIT_TEST_SUITE_END();
-
-protected:
-	Proc *m_proc;
-
-public:
-	void setUp();
-	void tearDown();
-
-protected:
+private slots:
+    /// Test setting and reading name, constructor, native address
 	void testName();
+
+protected:
+	std::shared_ptr<Proc> m_proc;
+
 };

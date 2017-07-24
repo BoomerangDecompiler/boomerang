@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       TypeTest.cpp
- * OVERVIEW:   Provides the implementation for the TypeTest class, which tests the Type class and some utility
- * functions
- ******************************************************************************/
+/**
+ * \file TypeTest.cpp
+ * Provides the implementation for the TypeTest class,
+ * which tests the Type class and some utility functions
+ */
 
 /*
  * $Revision$
@@ -34,9 +34,9 @@ static bool    logset = false;
 void TypeTest::initTestCase()
 {
 	if (!logset) {
-		logset = true;
-        Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setLogger(new NullLogger());
+        logset = true;
+        Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+        Boomerang::get()->setLogger(new NullLogger());
 	}
 }
 
@@ -62,8 +62,6 @@ void TypeTest::testNotEqual()
 
 void TypeTest::testCompound()
 {
-	QSKIP("Disabled");
-
 	BinaryFileFactory bff;
 	IFileLoader       *loader = bff.loadFile(HELLO_WINDOWS);
 	IFrontEnd          *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS), &bff);
@@ -228,7 +226,7 @@ void TypeTest::testDataIntervalOverlaps()
 
 	// Set up three ints
 	dim.deleteItem(Address(0x00001004));
-	dim.addItem(Address(0x00001004), "firstInt", IntegerType::get(32, 1)); // Definately signed
+	dim.addItem(Address(0x00001004), "firstInt", IntegerType::get(32, 1)); // Definitely signed
 	dim.deleteItem(Address(0x00001008));
 	dim.addItem(Address(0x00001008), "firstInt", IntegerType::get(32, 0)); // Unknown signedess
 	// then, add an array over the three integers

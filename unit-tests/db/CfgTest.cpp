@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       CfgTest.cc
- * OVERVIEW:   Provides the implementation for the CfgTest class, which
- *                tests the Exp and derived classes
- ******************************************************************************/
+/**
+ * \file CfgTest.cpp
+ * Provides the implementation for the CfgTest class, which
+ * tests Control Flow Graphs
+ */
 
 #include "CfgTest.h"
 
@@ -37,10 +37,6 @@ void CfgTest::initTestCase()
 }
 
 
-/***************************************************************************/ /**
- * \fn        CfgTest::testDominators
- * OVERVIEW:        Test the dominator frontier code
- ******************************************************************************/
 #define FRONTIER_FOUR        Address(0x08048347)
 #define FRONTIER_FIVE        Address(0x08048351)
 #define FRONTIER_TWELVE      Address(0x080483b2)
@@ -50,7 +46,6 @@ void CfgTest::testDominators()
 {
 	BinaryFileFactory bff;
 	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
-
 	QVERIFY(pBF != nullptr);
 
 	Prog      prog(FRONTIER_PENTIUM);
@@ -80,12 +75,9 @@ void CfgTest::testDominators()
 	}
 
 	QVERIFY(bb);
-	QString     expect_st, actual_st;
-	QTextStream expected(&expect_st), actual(&actual_st);
-	// expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " << FRONTIER_TWELVE << " " <<
-	//    FRONTIER_FOUR << " ";
-	expected << FRONTIER_THIRTEEN << " " << FRONTIER_FOUR << " " << FRONTIER_TWELVE << " " << FRONTIER_FIVE
-			 << " ";
+	QString     actual_st;
+	QTextStream actual(&actual_st);
+
 	int n5 = df->pbbToNode(bb);
 	std::set<int>::iterator ii;
 	std::set<int>&          DFset = df->getDF(n5);
@@ -94,14 +86,15 @@ void CfgTest::testDominators()
 		actual << df->nodeToBB(*ii)->getLowAddr() << " ";
 	}
 
-	QCOMPARE(actual_st, expect_st);
+	QCOMPARE(actual_st,
+             FRONTIER_THIRTEEN.toString() + " " +
+             FRONTIER_FOUR.toString()     + " " +
+             FRONTIER_TWELVE.toString()   + " " +
+             FRONTIER_FIVE.toString()     + " "
+    );
 }
 
 
-/***************************************************************************/ /**
- * \fn        CfgTest::testSemiDominators
- * OVERVIEW:        Test a case where semi dominators are different to dominators
- ******************************************************************************/
 #define SEMI_L    Address(0x80483b0)
 #define SEMI_M    Address(0x80483e2)
 #define SEMI_B    Address(0x8048345)
@@ -112,8 +105,8 @@ void CfgTest::testSemiDominators()
 {
 	BinaryFileFactory bff;
 	IFileLoader       *pBF = bff.loadFile(SEMI_PENTIUM);
+	QVERIFY(pBF != nullptr);
 
-	QVERIFY(pBF != 0);
 	Prog      prog(SEMI_PENTIUM);
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
 	Type::clearNamedTypes();
@@ -121,7 +114,7 @@ void CfgTest::testSemiDominators()
 	pFE->decode(&prog);
 
 	bool    gotMain;
-	   Address addr = pFE->getMainEntryPoint(gotMain);
+    Address addr = pFE->getMainEntryPoint(gotMain);
 	QVERIFY(addr != Address::INVALID);
 
 	Module *m = *prog.begin();
@@ -147,23 +140,25 @@ void CfgTest::testSemiDominators()
 
 	// The dominator for L should be B, where the semi dominator is D
 	// (book says F)
-	   Address actual_dom  = df->nodeToBB(df->getIdom(nL))->getLowAddr();
-	   Address actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
+    Address actual_dom  = df->nodeToBB(df->getIdom(nL))->getLowAddr();
+	Address actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
 	QCOMPARE(actual_dom, SEMI_B);
 	QCOMPARE(actual_semi, SEMI_D);
+
 	// Check the final dominator frontier as well; should be M and B
-	QString     expected_st, actual_st;
-	QTextStream expected(&expected_st), actual(&actual_st);
-	// expected << std::hex << SEMI_M << " " << SEMI_B << " ";
-	expected << SEMI_B << " " << SEMI_M << " ";
-	std::set<int>::iterator ii;
+	QString     actual_st;
+	QTextStream actual(&actual_st);
+
 	std::set<int>&          DFset = df->getDF(nL);
 
-	for (ii = DFset.begin(); ii != DFset.end(); ii++) {
+	for (auto ii = DFset.begin(); ii != DFset.end(); ii++) {
 		actual << df->nodeToBB(*ii)->getLowAddr() << " ";
 	}
 
-	QCOMPARE(actual_st, expected_st);
+	QCOMPARE(actual_st,
+             SEMI_B.toString() + " " +
+             SEMI_M.toString() + " "
+            );
 }
 
 
@@ -300,10 +295,6 @@ void CfgTest::testPlacePhi2()
 }
 
 
-/***************************************************************************/ /**
- * \fn        CfgTest::testRenameVars
- * OVERVIEW:        Test the renaming of variables
- ******************************************************************************/
 void CfgTest::testRenameVars()
 {
 	BinaryFileFactory bff;

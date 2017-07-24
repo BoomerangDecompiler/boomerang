@@ -1087,7 +1087,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         if (paramIsFuncPointer) {
             LOG_VERBOSE(1) << "found a new procedure at address " << a << " from inspecting parameters of call to "
                            << call->getDestProc()->getName() << ".\n";
-            Function *proc = m_program->setNewProc(a);
+            Function *proc = m_program->createProc(a);
             auto     sig   = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
             sig->setName(proc->getName());
             sig->setForced(true);
@@ -1110,7 +1110,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
                         << call->getDestProc()->getName() << ".\n";
                 }
 
-                Function *proc = m_program->setNewProc(d);
+                Function *proc = m_program->createProc(d);
                 auto     sig   = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);

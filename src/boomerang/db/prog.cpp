@@ -139,7 +139,7 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
 }
 
 
-void Prog::setName(const char *name)
+void Prog::setName(const QString& name)
 {
     m_name = name;
     m_rootCluster->setName(name);
@@ -541,11 +541,12 @@ void Prog::clear()
 }
 
 
-Function *Prog::setNewProc(Address uAddr)
+Function *Prog::createProc(Address uAddr)
 {
     // this test fails when decoding sparc, why?  Please investigate - trent
     // Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section
     // assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
+
     // Check if we already have this proc
     Function *pProc = findProc(uAddr);
 

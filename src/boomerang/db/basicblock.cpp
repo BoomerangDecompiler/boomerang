@@ -253,7 +253,7 @@ void BasicBlock::print(QTextStream& os, bool html)
     os << "in edges: ";
 
     for (BasicBlock *bb : m_inEdges) {
-        os << bb->getHiAddr() << " (" << bb->getLowAddr() << ") ";
+        os << bb->getHiAddr() << "(" << bb->getLowAddr() << ") ";
     }
 
     os << "\n";
