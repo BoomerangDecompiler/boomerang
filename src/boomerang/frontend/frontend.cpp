@@ -253,7 +253,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
     std::vector<Address> entrypoints;
     bool                 gotMain = false;
     // AssemblyLayer
-       Address a = getMainEntryPoint(gotMain);
+    Address a = getMainEntryPoint(gotMain);
 
     // TODO: find exported functions and add them too ?
     if (a != Address::INVALID) {
@@ -638,8 +638,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
     // ADDRESS initAddr = uAddr;
     int     nTotalBytes = 0;
-       Address startAddr   = uAddr;
-       Address lastAddr    = uAddr;
+    Address startAddr   = uAddr;
+    Address lastAddr    = uAddr;
 
     while ((uAddr = m_targetQueue.nextAddress(*pCfg)) != Address::INVALID) {
         // The list of RTLs for the current basic block
@@ -734,10 +734,10 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 LOG << tgt;
             }
 
-                     Address uDest;
+            Address uDest;
 
             // For each Statement in the RTL
-            std::list<Instruction *> sl = *(std::list<Instruction *> *)pRtl;
+            std::list<Instruction *> sl = *pRtl;
             // Make a copy (!) of the list. This is needed temporarily to work around the following problem.
             // We are currently iterating an RTL, which could be a return instruction. The RTL is passed to
             // createReturnBlock; if this is not the first return statement, it will get cleared, and this will
@@ -746,9 +746,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             // Statements to mark the start of instructions (and their native address).
             // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL followed by a return
             // if it points to the start of a known procedure
-            std::list<Instruction *>::iterator ss;
-
-            for (ss = sl.begin(); ss != sl.end(); ss++) {
+            for (auto ss = sl.begin(); ss != sl.end(); ss++) {
                 Instruction *s = *ss;
                 s->setProc(pProc); // let's do this really early!
 

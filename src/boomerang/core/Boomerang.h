@@ -324,7 +324,7 @@ public:
     /// \param level - describes the message level TODO: describe message levels
     QTextStream& getLogStream(int level = LL_Default); ///< Return overall logging target
 
-    QString filename() const;
+    QString getFilename() const;
 
 public:
     // Command line flags

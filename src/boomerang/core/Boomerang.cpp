@@ -26,12 +26,6 @@
 // TODO: Move the Objective-C loader code to a more suitable place
 #include "../../boomerang-loaders/machO/MachOBinaryLoader.h" // For Objective-C stuff
 
-
-// For the -nG switch to disable the garbage collector
-#ifdef HAVE_LIBGC
-#include "boomerang/gc.h"
-#endif
-
 #include <QtCore/QDebug>
 #include <ctime>
 
@@ -1031,7 +1025,7 @@ QTextStream& Boomerang::getLogStream(int level)
 }
 
 
-QString Boomerang::filename() const
+QString Boomerang::getFilename() const
 {
     return "";
 }
