@@ -26,19 +26,22 @@ enum class LogLevel
     Message = 3,
     Default = 3,
     Verbose1 = 4,
-    Verbose2 = 5,
-
-    LL_Debug   = 0,
-    LL_Default = 1,
-    LL_Warn    = 2,
-    LL_Error   = 3
+    Verbose2 = 5
 };
+
 
 class Log
 {
 public:
-    Log() {}
+    Log(LogLevel level = LogLevel::Default)
+        : m_level(level)
+    {}
+
+    virtual ~Log() {}
+
+public:
     virtual Log& operator<<(const QString& s) = 0;
+
     virtual Log& operator<<(const Instruction *s);
     virtual Log& operator<<(const SharedConstExp& e);
     virtual Log& operator<<(const SharedType& ty);
@@ -51,9 +54,8 @@ public:
     virtual Log& operator<<(Address a);
     virtual Log& operator<<(const LocationSet *l);
 
-    virtual ~Log() {}
-
-public:
+    void setLogLevel(LogLevel level) { m_level = level; }
+    LogLevel getLogLevel() const { return m_level; }
 
 private:
     bool canLog(LogLevel level) const { return level <= m_level; }

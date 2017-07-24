@@ -655,9 +655,9 @@ public:
 
                 if ((r.getLowerBound() != r.getUpperBound()) && (r.getLowerBound() != Range::MIN)) {
                     if (VERBOSE) {
-                        LOG_STREAM(LogLevel::LL_Debug) << "stack height assumption violated " << r.toString();
-                        LOG_STREAM(LogLevel::LL_Debug) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
-                        stmt->getProc()->print(LOG_STREAM(LogLevel::LL_Debug));
+                        LOG_STREAM(LogLevel::Verbose1) << "stack height assumption violated " << r.toString();
+                        LOG_STREAM(LogLevel::Verbose1) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
+                        stmt->getProc()->print(LOG_STREAM(LogLevel::Verbose1));
                     }
 
                     assert(false);
@@ -891,9 +891,9 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc& UF)
 
         if (rm.hasRange(p)) {
             Range& r = rm.getRange(p);
-            LOG_STREAM(LogLevel::LL_Default) << "got p " << p << " with range ";
-            LOG_STREAM(LogLevel::LL_Default) << r.toString();
-            LOG_STREAM(LogLevel::LL_Default) << "\n";
+            LOG_STREAM(LogLevel::Default) << "got p " << p << " with range ";
+            LOG_STREAM(LogLevel::Default) << r.toString();
+            LOG_STREAM(LogLevel::Default) << "\n";
 
             if ((r.getBase()->getOper() == opInitValueOf) && r.getBase()->getSubExp1()->isRegOfK() &&
                 (r.getBase()->access<Const, 1, 1>()->getInt() == 28)) {
@@ -1048,7 +1048,7 @@ void Range::unionWith(Range& r)
         m_base       = Const::get(0);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG_STREAM(LogLevel::LL_Default) << toString();
+            LOG_STREAM(LogLevel::Default) << toString();
         }
 
         return;
@@ -1067,7 +1067,7 @@ void Range::unionWith(Range& r)
     }
 
     if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG_STREAM(LogLevel::LL_Default) << toString();
+        LOG_STREAM(LogLevel::Default) << toString();
     }
 }
 
@@ -1085,7 +1085,7 @@ void Range::widenWith(Range& r)
         m_base       = Const::get(0);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG_STREAM(LogLevel::LL_Default) << toString();
+            LOG_STREAM(LogLevel::Default) << toString();
         }
 
         return;
@@ -1101,7 +1101,7 @@ void Range::widenWith(Range& r)
     }
 
     if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG_STREAM(LogLevel::LL_Default) << toString();
+        LOG_STREAM(LogLevel::Default) << toString();
     }
 }
 

@@ -1295,7 +1295,7 @@ void Prog::decodeEntryPoint(Address a)
 
     if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
         if ((a < m_image->getLimitTextLow()) || (a >= m_image->getLimitTextHigh())) {
-            LOG_STREAM(LogLevel::LL_Warn) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
+            LOG_STREAM(LogLevel::Warning) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
             return;
         }
 

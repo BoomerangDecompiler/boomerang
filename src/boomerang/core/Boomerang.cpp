@@ -770,7 +770,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
     IFrontEnd *fe   = IFrontEnd::create(fname, prog);
 
     if (fe == nullptr) {
-        LOG_STREAM(LogLevel::LL_Default) << "failed.\n";
+        LOG_STREAM(LogLevel::Default) << "failed.\n";
         return nullptr;
     }
 
@@ -1017,7 +1017,7 @@ void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
 
 QTextStream& Boomerang::getLogStream(LogLevel level)
 {
-    if (level >= LogLevel::LL_Error) {
+    if (level <= LogLevel::Error) {
         return ErrStream;
     }
 

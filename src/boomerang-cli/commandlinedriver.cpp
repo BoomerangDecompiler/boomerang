@@ -176,7 +176,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
         case 'X':
             boom.experimental = true;
-            LOG_STREAM(LogLevel::LL_Warn) << "Warning: experimental code active!\n";
+            LOG_STREAM(LogLevel::Warning) << "Warning: experimental code active!\n";
             break;
 
         case 'r':
@@ -446,7 +446,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
     }
 
     if (minsToStopAfter > 0) {
-        LOG_STREAM(LogLevel::LL_Default) << "stopping decompile after " << minsToStopAfter << " minutes.\n";
+        LOG_STREAM(LogLevel::Default) << "stopping decompile after " << minsToStopAfter << " minutes.\n";
         m_kill_timer.setSingleShot(true);
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
@@ -513,5 +513,5 @@ void DecompilationThread::run()
 
     m_result = boom.decompile(m_decompiled);
     boom.getLogStream().flush();
-    boom.getLogStream(LogLevel::LL_Default).flush();
+    boom.getLogStream(LogLevel::Default).flush();
 }

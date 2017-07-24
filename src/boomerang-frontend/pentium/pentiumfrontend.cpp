@@ -596,7 +596,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     }
 
     // Not ideal; we must return start
-    LOG_STREAM(LogLevel::LL_Warn) << "main function not found\n";
+    LOG_STREAM(LogLevel::Warning) << "main function not found\n";
 
     if (symbols->find(start) == nullptr) {
         this->addSymbol(start, "_start");

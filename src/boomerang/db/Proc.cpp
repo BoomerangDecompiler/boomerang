@@ -1278,7 +1278,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     // if child is empty, i.e. no child involved in recursion
     if (child->empty()) {
         Boomerang::get()->alertDecompiling(this);
-        Util::alignStream(LOG_STREAM(LogLevel::LL_Default), indent) << "decompiling " << getName() << "\n";
+        Util::alignStream(LOG_STREAM(LogLevel::Default), indent) << "decompiling " << getName() << "\n";
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         child = middleDecompile(path, indent);
@@ -5798,7 +5798,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         // Just insert one return for main. Note: at present, the first parameter is still the stack pointer
         if (m_signature->getNumReturns() <= 1) {
             // handle the case of missing main() signature
-            LOG_STREAM(LogLevel::LL_Warn) << "main signature definition is missing assuming void main()";
+            LOG_STREAM(LogLevel::Warning) << "main signature definition is missing assuming void main()";
         }
         else {
             unionOfCallerLiveLocs.insert(m_signature->getReturnExp(1));
