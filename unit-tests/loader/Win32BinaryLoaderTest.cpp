@@ -23,8 +23,6 @@ void Win32BinaryLoaderTest::initTestCase()
 
 void Win32BinaryLoaderTest::testWinLoad()
 {
-	QSKIP("Disabled.");
-
 	BinaryFileFactory bff;
 	IFileLoader       *loader = nullptr;
 
