@@ -15,6 +15,7 @@ set(TESTS
     ParserTest
     StatementTest
     ProgTest
+    ProcTest
     ExpTest
 )
 

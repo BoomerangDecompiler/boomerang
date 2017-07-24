@@ -546,6 +546,7 @@ Function *Prog::createProc(Address uAddr)
     // this test fails when decoding sparc, why?  Please investigate - trent
     // Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section
     // assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
+
     // Check if we already have this proc
     Function *pProc = findProc(uAddr);
 

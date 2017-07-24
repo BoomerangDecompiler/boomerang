@@ -5,7 +5,7 @@
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
-//
+
 #define SWITCH_BORLAND         (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
 
 static bool    logset = false;
