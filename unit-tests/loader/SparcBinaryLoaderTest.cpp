@@ -8,7 +8,7 @@
 
 static bool logset = false;
 
-#define HELLO_SPARC            (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
+#define HELLO_SPARC  (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
 
 
 void SparcBinaryLoaderTest::initTestCase()

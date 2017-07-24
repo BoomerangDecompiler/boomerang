@@ -1,8 +1,7 @@
-/***************************************************************************/ /**
- * \file       CTest.CPPUNIT_TEST_SUITE_END
- * OVERVIEW:   Provides the implementation for the CTest class, which
- *              tests the c parser
- *============================================================================*/
+/**
+ * \file CTest.cpp Provides the implementation for the CTest class, which
+ * tests the c parser
+ */
 
 #include "CTest.h"
 

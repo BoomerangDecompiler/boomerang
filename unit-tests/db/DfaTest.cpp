@@ -1,7 +1,7 @@
-/***************************************************************************/ /**
- * \file       DfaTest.cc
- * OVERVIEW:   Provides the implementation for the DfaTest class, which
- *                tests the data flow based type analysis code
+/**
+ * \file DfaTest.cpp
+ * Provides the implementation for the DfaTest class, which
+ * tests the data flow based type analysis code
  */
 #include "DfaTest.h"
 
@@ -12,6 +12,20 @@
 #include <QtCore/QProcessEnvironment>
 #include <QtCore/QDebug>
 #include <sstream>
+
+
+class ErrLogger : public Log
+{
+public:
+	virtual Log& operator<<(const QString& s) override
+	{
+		std::cerr << s.toStdString();
+		return *this;
+	}
+
+	virtual ~ErrLogger() {}
+};
+
 
 static bool logset = false;
 

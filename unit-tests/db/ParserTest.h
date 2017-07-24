@@ -7,15 +7,9 @@ class ParserTest : public QObject
 private slots:
     void initTestCase();
 
-    /***************************************************************************/ /**
-    * \fn        ParserTest::testRead
-    * OVERVIEW:        Test reading the SSL file
-    ******************************************************************************/
+    /// Test reading the SSL file
 	void testRead();
 
-    /***************************************************************************/ /**
-    * \fn        ParserTest::testExp
-    * OVERVIEW:        Test parsing an expression
-    ******************************************************************************/
+    /// Test parsing an expression
 	void testExp();
 };

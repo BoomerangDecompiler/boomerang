@@ -4,6 +4,9 @@
 
 #include <QtTest/QTest>
 
+/**
+ * Test for Control Flow Graphs
+ */
 class CfgTest : public QObject
 {
 	Q_OBJECT
@@ -14,33 +17,18 @@ protected:
 private slots:
 	void initTestCase();
 
-    /***************************************************************************/ /**
-    * \fn        CfgTest::testDominators
-    * OVERVIEW:  Test the dominator frontier code
-    ******************************************************************************/
+    /// Test the dominator frontier code
 	void testDominators();
 
-    /***************************************************************************/ /**
-    * \fn        CfgTest::testSemiDominators
-    * OVERVIEW:        Test a case where semi dominators are different to dominators
-    ******************************************************************************/
+    /// Test a case where semi dominators are different to dominators
 	void testSemiDominators();
 
-	/***************************************************************************/ /**
-	* \fn        CfgTest::testPlacePhi
-	* OVERVIEW:        Test the placing of phi functions
-	******************************************************************************/
+	/// Test the placing of phi functions
 	void testPlacePhi();
 
-	/***************************************************************************/ /**
-	* \fn        CfgTest::testPlacePhi2
-	* OVERVIEW:        Test a case where a phi function is not needed
-	******************************************************************************/
+	/// Test a case where a phi function is not needed
 	void testPlacePhi2();
 
-    /***************************************************************************/ /**
-    * \fn        CfgTest::testRenameVars
-    * OVERVIEW:        Test the renaming of variables
-    ******************************************************************************/
+    /// Test the renaming of variables
 	void testRenameVars();
 };

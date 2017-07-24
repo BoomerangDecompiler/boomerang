@@ -7,10 +7,9 @@ class FrontSparcTest : public QObject
 private slots:
 	void initTestCase();
 
-	/***************************************************************************/ /**
-	 * FUNCTION:        FrontSparcTest::test1
-	 * OVERVIEW:        Test decoding some sparc instructions
-	 *============================================================================*/
+	/**
+     * Test decoding some sparc instructions
+     */
 	void test1();
 
 	void test2();

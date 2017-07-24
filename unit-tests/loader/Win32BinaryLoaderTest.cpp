@@ -10,6 +10,7 @@
 
 static bool    logset = false;
 
+
 void Win32BinaryLoaderTest::initTestCase()
 {
     if (!logset) {
@@ -30,7 +31,7 @@ void Win32BinaryLoaderTest::testWinLoad()
 	// Borland
 	loader = bff.loadFile(SWITCH_BORLAND);
 	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x401150));
+	QCOMPARE(loader->getMainEntryPoint(), Address(0x00401150));
 }
 
 QTEST_MAIN(Win32BinaryLoaderTest)

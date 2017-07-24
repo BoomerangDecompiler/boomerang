@@ -1,4 +1,10 @@
+#pragma once
+
 #include <QtTest/QtTest>
+
+/**
+ * Tests Register Transfer Lists
+ */
 class RtlTest : public QObject
 {
 public:
@@ -6,29 +12,17 @@ public:
 private slots:
     void initTestCase();
 
-    /***************************************************************************/ /**
-    * \fn        RtlTest::testAppend
-    * OVERVIEW:        Test appendExp and printing of RTLs
-    ******************************************************************************/
-	void testAppend();
+    /// Test appendExp and printing of RTLs
+    void testAppend();
 
-    /***************************************************************************/ /**
-    * \fn        RtlTest::testClone
-    * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
-    ******************************************************************************/
-	void testClone();
+    /// Test constructor from list of expressions; cloning of RTLs
+    void testClone();
 
-    /***************************************************************************/ /**
-    * \fn        RtlTest::testVisitor
-    * OVERVIEW:        Test the accept function for correct visiting behaviour.
-    * NOTES:            Stub class to test.
-    ******************************************************************************/
+    /// Test the accept function for correct visiting behaviour.
+    /// \note Stub class to test.
 	void testVisitor();
 
-    /***************************************************************************/ /**
-    * \fn        RtlTest::testIsCompare
-    * OVERVIEW:        Test the isCompare function
-    ******************************************************************************/
+    /// Test the isCompare function
 //    void testIsCompare();
 
 	void testSetConscripts();

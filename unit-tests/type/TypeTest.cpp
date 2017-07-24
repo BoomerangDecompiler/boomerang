@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       TypeTest.cpp
- * OVERVIEW:   Provides the implementation for the TypeTest class, which tests the Type class and some utility
- * functions
- ******************************************************************************/
+/**
+ * \file TypeTest.cpp
+ * Provides the implementation for the TypeTest class,
+ * which tests the Type class and some utility functions
+ */
 
 /*
  * $Revision$
@@ -228,7 +228,7 @@ void TypeTest::testDataIntervalOverlaps()
 
 	// Set up three ints
 	dim.deleteItem(Address(0x00001004));
-	dim.addItem(Address(0x00001004), "firstInt", IntegerType::get(32, 1)); // Definately signed
+	dim.addItem(Address(0x00001004), "firstInt", IntegerType::get(32, 1)); // Definitely signed
 	dim.deleteItem(Address(0x00001008));
 	dim.addItem(Address(0x00001008), "firstInt", IntegerType::get(32, 0)); // Unknown signedess
 	// then, add an array over the three integers

@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       ProcTest.cc
- * OVERVIEW:   Provides the implementation for the ProcTest class, which
- *                tests the Proc class
- *============================================================================*/
+/**
+ * \file ProcTest.cpp
+ * Provides the implementation for the ProcTest class, which
+ * tests the Proc class
+ */
 
 /*
  * $Revision$

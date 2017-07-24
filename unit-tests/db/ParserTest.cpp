@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       ParserTest.cc
- * OVERVIEW:   Provides the implementation for the ParserTest class, which
- *                tests the sslparser.y etc
- ******************************************************************************/
+/**
+ * \file ParserTest.cpp
+ * Provides the implementation for the ParserTest class,
+ * which tests the SSL parser
+ */
 #include "ParserTest.h"
 
 #include "boomerang/db/ssl/sslparser.h"

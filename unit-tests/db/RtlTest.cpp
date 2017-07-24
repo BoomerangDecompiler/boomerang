@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       RtlTest.cc
- * OVERVIEW:   Provides the implementation for the RtlTest class, which
- *                tests the RTL and derived classes
- ******************************************************************************/
+/**
+ * \file RtlTest.cpp
+ * Provides the implementation for the RtlTest class, which
+ * tests the RTL and derived classes
+ */
 #include "RtlTest.h"
 
 #include "boomerang/db/exp/Exp.h"

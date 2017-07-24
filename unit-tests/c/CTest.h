@@ -1,13 +1,13 @@
+#pragma once
+
 #include <QtTest/QTest>
 
+/// Class for testing the C parser
 class CTest : public QObject
 {
 	Q_OBJECT
 
 private slots:
-    /***************************************************************************/ /**
-    * FUNCTION:        CTest::testSignature
-    * OVERVIEW:        Test
-    *============================================================================*/
+    /// Test parsing C signatures
 	void testSignature();
 };

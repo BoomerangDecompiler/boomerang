@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       LoaderTest.cc
- * OVERVIEW:   Provides the implementation for the LoaderTest class, which
- *              tests the BinaryFile and derived classes
- ******************************************************************************/
+/**
+ * \file MicroX86DisTest.cpp
+ * Provides the implementation for the LoaderTest class, which
+ * tests the BinaryFile and derived classes
+ */
 
 /*
  * $Revision$

@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file    FrontendTest.cpp
+/**
+ * \file FrontendTest.cpp
  * Provides the implementation for the FrontendTest class, which
- *          tests the FrontEnd and related classes
- *============================================================================*/
+ * tests the FrontEnd and related classes
+ */
 
 #include "FrontendTest.h"
 

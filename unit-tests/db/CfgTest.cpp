@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       CfgTest.cc
- * OVERVIEW:   Provides the implementation for the CfgTest class, which
- *                tests the Exp and derived classes
- ******************************************************************************/
+/**
+ * \file CfgTest.cpp
+ * Provides the implementation for the CfgTest class, which
+ * tests Control Flow Graphs
+ */
 
 #include "CfgTest.h"
 

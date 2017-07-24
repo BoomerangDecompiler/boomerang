@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       FrontSparcTest.cpp
- * OVERVIEW:   Provides the implementation for the FrontSparcTest class, which
- *                tests the sparc front end
- *============================================================================*/
+/**
+ * \file FrontSparcTest.cpp
+ * Provides the implementation for the FrontSparcTest class, which
+ * tests the SPARC frontend
+ */
 
 #include "FrontSparcTest.h"
 

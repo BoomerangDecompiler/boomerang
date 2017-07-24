@@ -4,15 +4,15 @@
 
 class Prog;
 
+/**
+ * Test the Prog class.
+ */
 class ProgTest : public QObject
 {
     Q_OBJECT
 
 private slots:
-    /***************************************************************************/ /**
-    * FUNCTION:        ProgTest::testName
-    * OVERVIEW:        Test setting and reading name
-    *============================================================================*/
+    /// Test setting and reading name
 	void testName();
 
 private:

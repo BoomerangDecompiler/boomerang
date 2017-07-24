@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       ExpTest.cc
- * OVERVIEW:   Provides the implementation for the ExpTest class, which
- *                tests the Exp and derived classes
- *============================================================================*/
+/**
+ * \file ExpTest.cpp
+ * Provides the implementation for the ExpTest class, which
+ * tests the Exp and derived classes
+ */
 
 /*
  * $Revision$
@@ -20,11 +20,11 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
-
 #include "boomerang/db/statements/assign.h"
-
 #include "boomerang/db/visitor.h"
+
 #include <map>
+
 
 void ExpTest::initTestCase()
 {

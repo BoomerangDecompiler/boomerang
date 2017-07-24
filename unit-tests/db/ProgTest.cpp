@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       ProgTest.cc
- * OVERVIEW:   Provides the implementation for the ProgTest class, which
- *                tests the Exp and derived classes
- *============================================================================*/
+/**
+ * \file ProgTest.cpp
+ * Provides the implementation for the ProgTest class, which
+ * tests the Prog object
+ */
 
 /*
  * $Revision$

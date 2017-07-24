@@ -1,8 +1,8 @@
-/***************************************************************************/ /**
- * \file       StatementTest.cc
- * OVERVIEW:   Provides the implementation for the StatementTest class, which
- *                tests the dataflow subsystems
- *============================================================================*/
+/**
+ * \file StatementTest.cpp
+ * Provides the implementation for the StatementTest class, which
+ * tests the dataflow subsystems
+ */
 
 /*
  * $Revision$
