@@ -49671,7 +49671,6 @@ SharedExp PentiumDecoder::dis_Eaddr(HostAddress pc, int size)
                 goto MATCH_label_a0; /*opt-block+*/
             }
         }
-        goto MATCH_finished_a;
 MATCH_label_a0:
         (void)0; /*placeholder for label*/
         {
@@ -49679,9 +49678,6 @@ MATCH_label_a0:
             // #line 2232 "frontend/machine/pentium/decoder.m"
             return dis_Mem(Mem);
         }
-        goto MATCH_finished_a;
-MATCH_finished_a:
-        (void)0; /*placeholder for label*/
     }
     // #line 2245 "frontend/machine/pentium/decoder.m"
 }

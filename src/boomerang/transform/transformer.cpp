@@ -101,8 +101,7 @@ void ExpTransformer::loadAll()
     QFile file(sPath);
 
     if (!file.open(QFile::ReadOnly)) {
-        qCritical() << "can't open `" << sPath << "'";
-        exit(1); // TODO: this should inform the caller about problem instead of exiting
+        qCritical() << "Can't open transformation file `" << sPath << "'";
         return;
     }
 
@@ -123,8 +122,7 @@ void ExpTransformer::loadAll()
         ifs1.open(sPath1.toStdString());
 
         if (!ifs1.good()) {
-            LOG << "can't open `" << sPath1 << "'\n";
-            exit(1); // TODO: this should inform the caller about problem instead of exiting
+            LOG << "Can't open transformation file `" << sPath1 << "'\n";
             return;
         }
 

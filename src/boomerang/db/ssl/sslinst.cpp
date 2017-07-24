@@ -408,15 +408,6 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, Addre
     // If -f is in force, use the fast (but not as precise) name instead
     QString lname = name;
 
-    // FIXME: settings
-    //      if (progOptions.fastInstr) {
-    if (0) {
-        auto itf = fastMap.find(name);
-
-        if (itf != fastMap.end()) {
-            lname = itf->second;
-        }
-    }
 
     // Retrieve the dictionary entry for the named instruction
     auto dict_entry = idict.find(lname);

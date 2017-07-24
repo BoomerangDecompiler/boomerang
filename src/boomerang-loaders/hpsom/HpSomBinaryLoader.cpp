@@ -228,7 +228,6 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     char         *DLTable     = (char *)m_loadedImage + first_subspace_fileloc.value();
     char         *pDlStrings  = DLTable + UINT4(DLTable + 0x28);
     unsigned     numImports   = UINT4(DLTable + 0x14); // Number of import strings
-    import_entry *import_list = (import_entry *)(DLTable + UINT4(DLTable + 0x10));
     unsigned     numExports   = UINT4(DLTable + 0x24); // Number of export strings
     export_entry *export_list = (export_entry *)(DLTable + UINT4(DLTable + 0x20));
 
@@ -275,7 +274,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // Work through the imports, and find those for which there are stubs using that import entry.
     // Add the addresses of any such stubs.
     ptrdiff_t deltaText = (text->getHostAddr() - text->getSourceAddr()).value();
-    ptrdiff_t deltaData = (data->getHostAddr() - data->getSourceAddr()).value();
+
     // The "end of data" where r27 points is not necessarily the same as
     // the end of the $DATA$ space. So we have to call getSubSpaceInfo
     std::pair<Address, int> pr = getSubspaceInfo("$GLOBAL$");
@@ -284,7 +283,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     pr = getSubspaceInfo("$PLT$");
     //  int minPLT = pr.first - endData;
     //  int maxPLT = minPLT + pr.second;
-    Address pltStart = pr.first;
+
     // cout << "Offset limits are " << dec << minPLT << " and " << maxPLT << endl;
     // Note: DLT entries come before PLT entries in the import array, but
     // the $DLT$ subsection is not necessarilly just before the $PLT$
@@ -296,16 +295,10 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // There should be a one to one correspondance between (DLT + PLT) entries and import table entries.
     // The DLT entries always come first in the import table
     unsigned   u = (unsigned)numDLT, v = 0;
-    plt_record *PLTs = (plt_record *)(pltStart + deltaData).value();
+//   plt_record *PLTs = (plt_record *)(pltStart + deltaData).value();
 
-    for ( ; u < numImports; u++, v++) {
-        // TODO: this is a mess, needs someone who actually knows how the SOM's PLT contents are structured
-        continue;
-        // TODO: add some type info to the imported symbols
-        // Add it to the set of imports; needed by IsDynamicLinkedProc()
-        m_symbols->create(Address(UINT4(&PLTs[v].value)), pDlStrings + UINT4(&import_list[u].name))
-           .setAttr("Imported", true).setAttr("Function", true);
-    }
+    u += numImports;
+    v += numImports;
 
     // Work through the exports, and find main. This isn't main itself,
     // but in fact a call to main.

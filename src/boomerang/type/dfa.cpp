@@ -665,90 +665,88 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
         return ((PointerType *)this)->shared_from_this();
     }
 
-    if (other->resolvesToPointer()) {
-        auto otherPtr = other->as<PointerType>();
+    if (!other->resolvesToPointer()) {
+        // Would be good to understand class hierarchys, so we know if a* is the same as b* when b is a subclass of a
+        return createUnion(other, ch, bHighestPtr);
+    }
 
-        if (pointsToAlpha() && !otherPtr->pointsToAlpha()) {
-            ch = true;
+    auto otherPtr = other->as<PointerType>();
 
-            // Can't point to self; impossible to compare, print, etc
-            if (otherPtr->getPointsTo() == shared_from_this()) {
-                return VoidType::get(); // TODO: pointer to void at least ?
-            }
+    if (pointsToAlpha() && !otherPtr->pointsToAlpha()) {
+        ch = true;
 
-            points_to = otherPtr->getPointsTo();
-            return ((PointerType *)this)->shared_from_this();
+        // Can't point to self; impossible to compare, print, etc
+        if (otherPtr->getPointsTo() == shared_from_this()) {
+            return VoidType::get(); // TODO: pointer to void at least ?
         }
-        else {
-            // We have a meeting of two pointers.
-            SharedType thisBase  = points_to;
-            SharedType otherBase = otherPtr->points_to;
 
-            if (bHighestPtr) {
-                // We want the greatest type of thisBase and otherBase
-                if (thisBase->isSubTypeOrEqual(otherBase)) {
-                    return other->clone();
-                }
+        points_to = otherPtr->getPointsTo();
+        return ((PointerType *)this)->shared_from_this();
+    }
+    else {
+        // We have a meeting of two pointers.
+        SharedType thisBase  = points_to;
+        SharedType otherBase = otherPtr->points_to;
 
-                if (otherBase->isSubTypeOrEqual(thisBase)) {
-                    return ((PointerType *)this)->shared_from_this();
-                }
-
-                // There may be another type that is a superset of this and other; for now return void*
-                return PointerType::get(VoidType::get());
+        if (bHighestPtr) {
+            // We want the greatest type of thisBase and otherBase
+            if (thisBase->isSubTypeOrEqual(otherBase)) {
+                return other->clone();
             }
 
-            // See if the base types will meet
-            if (otherBase->resolvesToPointer()) {
-                if (thisBase->resolvesToPointer() && (thisBase->as<PointerType>()->getPointsTo() == thisBase)) {
-                    LOG_STREAM() << "HACK! BAD POINTER 1\n";
-                }
-
-                if (otherBase->resolvesToPointer() && (otherBase->as<PointerType>()->getPointsTo() == otherBase)) {
-                    LOG_STREAM() << "HACK! BAD POINTER 2\n";
-                }
-
-                if (thisBase == otherBase) {                          // Note: compare pointers
-                    return ((PointerType *)this)->shared_from_this(); // Crude attempt to prevent stack overflow
-                }
-
-                if (*thisBase == *otherBase) {
-                    return ((PointerType *)this)->shared_from_this();
-                }
-
-                if (pointerDepth() == otherPtr->pointerDepth()) {
-                    SharedType fType = getFinalPointsTo();
-
-                    if (fType->resolvesToVoid()) {
-                        return other->clone();
-                    }
-
-                    SharedType ofType = otherPtr->getFinalPointsTo();
-
-                    if (ofType->resolvesToVoid()) {
-                        return ((PointerType *)this)->shared_from_this();
-                    }
-
-                    if (*fType == *ofType) {
-                        return ((PointerType *)this)->shared_from_this();
-                    }
-                }
-            }
-
-            if (thisBase->isCompatibleWith(*otherBase)) {
-                points_to = points_to->meetWith(otherBase, ch, bHighestPtr);
+            if (otherBase->isSubTypeOrEqual(thisBase)) {
                 return ((PointerType *)this)->shared_from_this();
             }
 
-            // The bases did not meet successfully. Union the pointers.
-            return createUnion(other, ch, bHighestPtr);
+            // There may be another type that is a superset of this and other; for now return void*
+            return PointerType::get(VoidType::get());
         }
 
-        return ((PointerType *)this)->shared_from_this();
-    }
+        // See if the base types will meet
+        if (otherBase->resolvesToPointer()) {
+            if (thisBase->resolvesToPointer() && (thisBase->as<PointerType>()->getPointsTo() == thisBase)) {
+                LOG_STREAM() << "HACK! BAD POINTER 1\n";
+            }
 
-    // Would be good to understand class hierarchys, so we know if a* is the same as b* when b is a subclass of a
-    return createUnion(other, ch, bHighestPtr);
+            if (otherBase->resolvesToPointer() && (otherBase->as<PointerType>()->getPointsTo() == otherBase)) {
+                LOG_STREAM() << "HACK! BAD POINTER 2\n";
+            }
+
+            if (thisBase == otherBase) {                          // Note: compare pointers
+                return ((PointerType *)this)->shared_from_this(); // Crude attempt to prevent stack overflow
+            }
+
+            if (*thisBase == *otherBase) {
+                return ((PointerType *)this)->shared_from_this();
+            }
+
+            if (pointerDepth() == otherPtr->pointerDepth()) {
+                SharedType fType = getFinalPointsTo();
+
+                if (fType->resolvesToVoid()) {
+                    return other->clone();
+                }
+
+                SharedType ofType = otherPtr->getFinalPointsTo();
+
+                if (ofType->resolvesToVoid()) {
+                    return ((PointerType *)this)->shared_from_this();
+                }
+
+                if (*fType == *ofType) {
+                    return ((PointerType *)this)->shared_from_this();
+                }
+            }
+        }
+
+        if (thisBase->isCompatibleWith(*otherBase)) {
+            points_to = points_to->meetWith(otherBase, ch, bHighestPtr);
+            return ((PointerType *)this)->shared_from_this();
+        }
+
+        // The bases did not meet successfully. Union the pointers.
+        return createUnion(other, ch, bHighestPtr);
+    }
 }
 
 
@@ -1277,12 +1275,6 @@ SharedType deltaSubtrahend(SharedType tc, SharedType ta)
         if (ta->resolvesToPointer()) {
             return PointerType::get(VoidType::get());
         }
-    }
-
-    return ta->clone();
-
-    if (ta->resolvesToPointer()) {
-        return tc->clone();
     }
 
     return ta->clone();

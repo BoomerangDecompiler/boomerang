@@ -553,11 +553,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         }
 
         if ((cs && ((dest = (cs->getFixedDest())) != Address::INVALID))) {
-            if ((++conseq == 3) && 0) { // FIXME: this isn't working!
-                // Success. Return the target of the last call
-                gotMain = true;
-                return cs->getFixedDest();
-            }
+            ++conseq;
 
             QString dest_sym = m_program->getSymbolByAddress(dest);
 

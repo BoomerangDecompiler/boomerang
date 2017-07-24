@@ -2065,8 +2065,6 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
         qCritical() << "unknown signature: " << getConventionName(cc) << " " << getPlatformName(plat) << "\n";
         return nullptr;
     }
-
-    return nullptr;
 }
 
 

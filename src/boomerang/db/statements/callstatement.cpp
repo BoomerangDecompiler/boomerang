@@ -1526,48 +1526,18 @@ StatementList *CallStatement::calcResults()
     if (m_procDest) {
         auto sig = m_procDest->getSignature();
 
-        if (m_procDest && m_procDest->isLib() && false) {
-            size_t n = sig->getNumReturns();
+        SharedExp rsp = Location::regOf(m_proc->getSignature()->getStackRegister(m_proc->getProg()));
 
-            for (size_t i = 0; i < n; i++) {     // Ignore first (stack pointer) return
-                auto sigReturn = sig->getReturnExp(i);
+        for (Instruction *dd : m_defines) {
+            SharedExp lhs = ((Assignment *)dd)->getLeft();
 
-                if (sigReturn->isRegN(sig->getStackRegister(m_proc->getProg()))) {
-                    continue;     // ignore stack reg
-                }
-
-#if SYMS_IN_BACK_END
-                // But we have translated out of SSA form, so some registers have had to have been replaced with
-                // locals
-                // So wrap the return register in a ref to this and check the locals
-                RefExp  wrappedRet(sigReturn, this);
-                QString locName = proc->findLocalFromRef(wrappedRet);     // E.g. r24{16}
-
-                if (!locName.isEmpty()) {
-                    sigReturn = Location::local(locName, proc);     // Replace e.g. r24 with local19
-                }
-#endif
-
-                if (m_useCol.exists(sigReturn)) {
-                    ImplicitAssign *as = new ImplicitAssign(getTypeFor(sigReturn), sigReturn);
-                    ret->append(as);
-                }
+            // The stack pointer is allowed as a define, so remove it here as a special case non result
+            if (*lhs == *rsp) {
+                continue;
             }
-        }
-        else {
-            SharedExp rsp = Location::regOf(m_proc->getSignature()->getStackRegister(m_proc->getProg()));
 
-            for (Instruction *dd : m_defines) {
-                SharedExp lhs = ((Assignment *)dd)->getLeft();
-
-                // The stack pointer is allowed as a define, so remove it here as a special case non result
-                if (*lhs == *rsp) {
-                    continue;
-                }
-
-                if (m_useCol.exists(lhs)) {
-                    ret->append(dd);
-                }
+            if (m_useCol.exists(lhs)) {
+                ret->append(dd);
             }
         }
     }

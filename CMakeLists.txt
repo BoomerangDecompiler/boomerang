@@ -133,13 +133,15 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
     set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
         -Wall -Wextra -Werror \
         -Weverything \
+        -Wno-documentation \
+        -Wno-documentation-unknown-command \
+        -Wno-unreachable-code-break \
         -Wno-error=strict-aliasing \
         -Wno-return-type-c-linkage \
         -Wno-unused-local-typedefs \
         -Wno-c++98-compat \
         -Wno-c++98-compat-pedantic \
         -Wno-old-style-cast \
-        -Wno-documentation-unknown-command \
         -Wno-reserved-id-macro \
         -Wno-exit-time-destructors \
         -Wno-global-constructors \
@@ -149,9 +151,6 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
         -Wno-cast-align \
         -Wno-shorten-64-to-32 \
         -Wno-missing-prototypes \
-        -Wno-unreachable-code \
-        -Wno-unreachable-code-return \
-        -Wno-unreachable-code-break \
         -Wno-documentation-deprecated-sync \
         -Wno-unused-macros \
         -Wno-conversion \
@@ -165,7 +164,6 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
         -Wno-implicit-fallthrough \
         -Wno-missing-noreturn \
         -Wno-gnu-zero-variadic-macro-arguments \
-        -Wno-documentation \
         -Wno-undef"
     )
 

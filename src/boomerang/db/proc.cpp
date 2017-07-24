@@ -4898,8 +4898,6 @@ bool UserProc::filterReturns(SharedExp e)
     default:
         return false;
     }
-
-    return false;
 }
 
 

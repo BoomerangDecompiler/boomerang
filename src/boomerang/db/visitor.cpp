@@ -934,13 +934,6 @@ SharedExp Localiser::postVisit(const std::shared_ptr<Location>& e)
     if (r) {
         ret = r->clone();
 
-        if (0 && EXPERIMENTAL) { // FIXME: check if sometimes needed
-            // The trouble with the below is that you can propagate to say a call statement's argument expression and
-            // not to the assignment of the actual argument. Examples: test/pentium/fromssa2, fbranch
-            bool ch;
-            ret = ret->propagateAllRpt(ch); // Propagate into this repeatedly, in case propagation is limited
-        }
-
         ret          = ret->bypass();
         m_unchanged &= ~m_mask;
         m_mod        = true;

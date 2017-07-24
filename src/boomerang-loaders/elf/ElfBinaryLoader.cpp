@@ -436,19 +436,13 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
                 }
 
                 return addrPlt + plt_idx * pltEntrySize;
-
-                qDebug() << "x";
             }
 
-            int plt_offset = elfRead4(pEntry) - siPlt->getSourceAddr().value();
+            const int plt_offset = elfRead4(pEntry) - siPlt->getSourceAddr().value();
             // Found! Now we want the native address of the associated PLT entry.
             // For now, assume a size of 0x10 for each PLT entry, and assume that each entry in the .rel.plt section
             // corresponds exactly to an entry in the .plt (except there is one dummy .plt entry)
             return addrPlt + plt_offset;
-
-            return addrPlt + pltEntrySize * (curr + 1);
-            // return ADDRESS(elfRead4(pEntry));
-            // return addrPlt + 0xC * (curr + 1);
         }
 
         if (--curr < 0) {

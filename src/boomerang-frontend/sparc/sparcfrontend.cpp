@@ -274,7 +274,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
 void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
                             DecodeResult& delay_inst, std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq,
-                            QTextStream& os)
+                            QTextStream&)
 {
     // Aliases for the SD and delay RTLs
     GotoStatement *SD_stmt   = static_cast<GotoStatement *>(inst.rtl->back());
@@ -290,12 +290,6 @@ void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress
             // Move the delay instruction before the SD. Must update the address in case there is a branch to the SD
             delay_rtl->setAddress(address);
             BB_rtls->push_back(delay_rtl);
-
-            // Display RTL representation if asked
-            // if (progOptions.rtl)
-            if (0) { // SETTINGS!
-                delay_rtl->print(os);
-            }
         }
     }
 
@@ -1229,11 +1223,6 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> *l
     if (name.isEmpty()) {
         LOG_STREAM() << "Error: Can't find symbol for PLT address " << dest << '\n';
         return false;
-    }
-
-    // if (progOptions.fastInstr == false)
-    if (0) { // TODO: SETTINGS!, also this has no influence on tests ?
-        return helperFuncLong(dest, addr, lrtl, name);
     }
 
     SharedExp rhs;
