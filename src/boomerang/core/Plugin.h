@@ -47,7 +47,7 @@ private:
  *   - IFC* initPlugin(): to initialize the plugin class and allocate resources etc.
  *     You must ensure the returned pointer is valid until deinitPlugin() is called.
  *   - void deinitPlugin(): to deinitialize the plugin and free resources.
- *   - PluginInfo getInfo(): To get information about the plugin.
+ *   - const PluginInfo* getInfo(): To get information about the plugin.
  *     May be called before initPlugin().
  */
 template<typename IFC, PluginType ty = PluginType::Invalid>
@@ -55,7 +55,7 @@ class Plugin
 {
     using PluginInitFunction = IFC * (*)();
     using PluginDeinitFunction = void(*)();
-    using PluginInfoFunction = const PluginInfo(*)();
+    using PluginInfoFunction = const PluginInfo *(*)();
 
 public:
     /// Create a plugin from a dynamic library file.
@@ -74,7 +74,7 @@ public:
     }
 
     /// Get information about the plugin.
-    PluginInfo getInfo() const
+    const PluginInfo* getInfo() const
     {
         return getFunction<PluginInfoFunction>("getInfo")();
     }
@@ -126,38 +126,40 @@ private:
 };
 
 
-/// Do not use this macro directly. Use the DEFINE_*_PLUGIN macros below instead.
-#define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor)    \
+/// Do not use this macro directly. Use the BOOMERANG_*_PLUGIN macros below instead.
+#define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor)   \
     static Classname * g_pluginInstance = nullptr;                            \
-    extern "C" {                                                            \
-    Interface *initPlugin()                                                    \
-    {                                                                        \
-        if (!g_pluginInstance) {                                            \
-            g_pluginInstance = new Classname();                                \
-        }                                                                    \
-        return g_pluginInstance;                                            \
-    }                                                                        \
-    void deinitPlugin()                                                        \
-    {                                                                        \
-        delete g_pluginInstance;                                            \
-        g_pluginInstance = nullptr;                                            \
-    }                                                                        \
-    PluginInfo getInfo()                                                    \
-    {                                                                        \
-        PluginInfo info;                                                    \
-        info.name    = PName;                                                \
-        info.version = PVersion;                                            \
-        info.author  = PAuthor;                                                \
-        info.type    = Type;                                                \
-        return info;                                                        \
-    }                                                                        \
+    extern "C" {                                                              \
+    Interface *initPlugin()                                                   \
+    {                                                                         \
+        if (!g_pluginInstance) {                                              \
+            g_pluginInstance = new Classname();                               \
+        }                                                                     \
+        return g_pluginInstance;                                              \
+    }                                                                         \
+                                                                              \
+    void deinitPlugin()                                                       \
+    {                                                                         \
+        delete g_pluginInstance;                                              \
+        g_pluginInstance = nullptr;                                           \
+    }                                                                         \
+                                                                              \
+    const PluginInfo *getInfo()                                               \
+    {                                                                         \
+        static PluginInfo info;                                               \
+        info.name    = PName;                                                 \
+        info.version = PVersion;                                              \
+        info.author  = PAuthor;                                               \
+        info.type    = Type;                                                  \
+        return &info;                                                         \
+    }                                                                         \
     }
 
 
 /**
  * Define a plugin.
  * Usage:
- *   DEFINE_LOADER_PLUGIN(TestLoader, "TestLoader Plugin", "3.1.4", "test");
+ *   BOOMERANG_LOADER_PLUGIN(TestLoader, "TestLoader Plugin", "3.1.4", "test");
  */
-#define DEFINE_LOADER_PLUGIN(Classname, PluginName, PluginVersion, PluginAuthor) \
+#define BOOMERANG_LOADER_PLUGIN(Classname, PluginName, PluginVersion, PluginAuthor) \
     DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Classname, PluginName, PluginVersion, PluginAuthor)

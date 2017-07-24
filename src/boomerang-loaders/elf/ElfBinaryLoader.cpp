@@ -1065,5 +1065,5 @@ int ElfBinaryLoader::canLoad(QIODevice& fl) const
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, ElfBinaryLoader,
-              "ELF32 loader plugin", "0.4.0", "Boomerang developers")
+BOOMERANG_LOADER_PLUGIN(ElfBinaryLoader,
+    "ELF32 loader plugin", BOOMERANG_VERSION, "Boomerang developers")

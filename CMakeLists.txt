@@ -137,7 +137,6 @@ elseif (CMAKE_CXX_COMPILER MATCHES clang)
         -Wno-documentation-unknown-command \
         -Wno-unreachable-code-break \
         -Wno-error=strict-aliasing \
-        -Wno-return-type-c-linkage \
         -Wno-unused-local-typedefs \
         -Wno-c++98-compat \
         -Wno-c++98-compat-pedantic \

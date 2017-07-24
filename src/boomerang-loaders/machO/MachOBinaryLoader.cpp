@@ -586,5 +586,5 @@ DWord MachOBinaryLoader::getDelta()
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, MachOBinaryLoader,
-              "DOS4GW loader plugin", "0.4.0", "Boomerang developers")
+BOOMERANG_LOADER_PLUGIN(MachOBinaryLoader,
+    "DOS4GW loader plugin", "0.4.0", "Boomerang developers")

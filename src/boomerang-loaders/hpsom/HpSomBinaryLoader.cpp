@@ -481,5 +481,5 @@ Address HpSomBinaryLoader::getMainEntryPoint()
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, HpSomBinaryLoader,
-              "HpSom binary file loader", "0.4.0", "Boomerang developers")
+BOOMERANG_LOADER_PLUGIN(HpSomBinaryLoader,
+    "HpSom binary file loader", BOOMERANG_VERSION, "Boomerang developers")

@@ -398,5 +398,5 @@ DWord DOS4GWBinaryLoader::getDelta()
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, DOS4GWBinaryLoader,
-              "DOS4GW loader plugin", "0.4.0", "Boomerang developers")
+BOOMERANG_LOADER_PLUGIN(DOS4GWBinaryLoader,
+    "DOS4GW binary loader plugin", BOOMERANG_VERSION, "Boomerang developers")

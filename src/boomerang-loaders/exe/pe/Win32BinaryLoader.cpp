@@ -1145,5 +1145,5 @@ DWord Win32BinaryLoader::getDelta()
 }
 
 
-DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Win32BinaryLoader,
-              "Win32 binary file loader plugin", "0.4.0", "Boomerang developers")
+BOOMERANG_LOADER_PLUGIN(Win32BinaryLoader,
+    "Win32 binary file loader plugin", BOOMERANG_VERSION, "Boomerang developers")
