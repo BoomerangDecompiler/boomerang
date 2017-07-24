@@ -109,7 +109,6 @@ void ExpTest::testBinaries()
 
 void ExpTest::testUnaries()
 {
-
     QString actual;
     QTextStream ost(&actual);
 

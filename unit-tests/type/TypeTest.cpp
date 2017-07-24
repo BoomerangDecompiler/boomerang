@@ -34,9 +34,9 @@ static bool    logset = false;
 void TypeTest::initTestCase()
 {
 	if (!logset) {
-		logset = true;
-        Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setLogger(new NullLogger());
+        logset = true;
+        Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+        Boomerang::get()->setLogger(new NullLogger());
 	}
 }
 
@@ -62,8 +62,6 @@ void TypeTest::testNotEqual()
 
 void TypeTest::testCompound()
 {
-	QSKIP("Disabled");
-
 	BinaryFileFactory bff;
 	IFileLoader       *loader = bff.loadFile(HELLO_WINDOWS);
 	IFrontEnd          *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS), &bff);
