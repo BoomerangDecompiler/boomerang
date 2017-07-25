@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "boomerang/type/type.h"
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/signature.h"
+#include "boomerang/type/Type.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Signature.h"
 #include "boomerang/util/Util.h"
 
 class AnsiCScanner;

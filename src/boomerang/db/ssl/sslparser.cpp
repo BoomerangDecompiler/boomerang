@@ -60,10 +60,10 @@ void *alloca();
 
 #include "boomerang/util/Util.h" // E.g. str()
 
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/table.h"
-#include "boomerang/db/insnameelem.h"
-#include "boomerang/db/statements/assign.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/Table.h"
+#include "boomerang/db/InsNameElem.h"
+#include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Operator.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/Const.h"

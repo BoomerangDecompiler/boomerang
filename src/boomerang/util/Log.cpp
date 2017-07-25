@@ -2,11 +2,11 @@
 
 #include "boomerang/core/Boomerang.h"
 
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/statements/statement.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Exp.h"
 
-#include "boomerang/db/managed.h"
+#include "boomerang/db/Managed.h"
 
 #include <QTextStream>
 #include <sstream>

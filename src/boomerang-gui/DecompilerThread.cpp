@@ -3,13 +3,13 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/prog.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/signature.h"
-#include "boomerang/db/module.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Signature.h"
+#include "boomerang/db/Module.h"
 #include "boomerang/db/IBinarySection.h"
 
-#include "boomerang/frontend/frontend.h"
+#include "boomerang/frontend/Frontend.h"
 
 #include <QtWidgets>
 #include <QtCore>

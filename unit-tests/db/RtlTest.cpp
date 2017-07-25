@@ -7,18 +7,18 @@
 
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/prog.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Prog.h"
 
-#include "boomerang/db/statements/boolassign.h"
-#include "boomerang/db/statements/gotostatement.h"
-#include "boomerang/db/statements/branchstatement.h"
-#include "boomerang/db/statements/assign.h"
-#include "boomerang/db/statements/casestatement.h"
-#include "boomerang/db/statements/callstatement.h"
+#include "boomerang/db/statements/BoolAssign.h"
+#include "boomerang/db/statements/GotoStatement.h"
+#include "boomerang/db/statements/BranchStatement.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/statements/CallStatement.h"
 
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 

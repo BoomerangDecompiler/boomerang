@@ -3,7 +3,7 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 
 
 Unary::Unary(OPER _op)

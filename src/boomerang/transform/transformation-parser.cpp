@@ -104,15 +104,15 @@ void *alloca ();
 #include <list>
 #include <string>
 
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/signature.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/TypeVal.h"
 
-#include "boomerang/transform/transformer.h"
-#include "boomerang/transform/generic.h"
-#include "boomerang/type/type.h"
+#include "boomerang/transform/ExpTransformer.h"
+#include "boomerang/transform/GenericExpTransformer.h"
+#include "boomerang/type/Type.h"
 
 class TransformationScanner;
 

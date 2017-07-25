@@ -1,7 +1,7 @@
 #include "Terminal.h"
 
 #include "boomerang/util/Log.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 
 
 Terminal::Terminal(OPER _op)

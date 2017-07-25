@@ -5,9 +5,9 @@
 
 #include <set>
 
-#include "boomerang/frontend/frontend.h"
-#include "boomerang/frontend/decoder.h"
-#include "boomerang/type/type.h"
+#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/Decoder.h"
+#include "boomerang/type/Type.h"
 #include "boomerang/db/exp/Operator.h"
 
 class IFrontEnd;

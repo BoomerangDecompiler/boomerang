@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "boomerang/util/Address.h"
-#include "boomerang/db/register.h"
-#include "boomerang/db/rtl.h"
+#include "boomerang/db/Register.h"
+#include "boomerang/db/RTL.h"
 
 class Instruction;
 

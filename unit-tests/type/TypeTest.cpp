@@ -14,11 +14,11 @@
 
 #include "TypeTest.h"
 #include "boomerang/core/BinaryFileFactory.h" // Ugh - needed before frontend.h
-#include "boomerang/db/signature.h"
+#include "boomerang/db/Signature.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/prog.h"
-#include "boomerang/db/proc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/Proc.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 

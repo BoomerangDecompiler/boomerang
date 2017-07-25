@@ -5,7 +5,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 
 #include <QRegularExpression>
 

@@ -1,7 +1,7 @@
 #include "ExpHelp.h"
 
 #include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/statements/assign.h"
+#include "boomerang/db/statements/Assign.h"
 #include "boomerang/util/Log.h"
 
 

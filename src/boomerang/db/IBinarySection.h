@@ -4,7 +4,7 @@
  * \file       IBinarySection.h
  *   Interface definition for Sections
  ******************************************************************************/
-#include "boomerang/type/type.h"
+#include "boomerang/type/Type.h"
 
 #include <cstdint>
 

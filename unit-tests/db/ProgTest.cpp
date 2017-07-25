@@ -13,7 +13,7 @@
 
 #include "ProgTest.h"
 
-#include "boomerang/db/prog.h"
+#include "boomerang/db/Prog.h"
 
 #define HELLO_PENTIUM    (BOOMERANG_TEST_BASE "/tests/input/pentium/hello")
 

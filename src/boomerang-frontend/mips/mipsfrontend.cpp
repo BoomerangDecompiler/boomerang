@@ -23,12 +23,12 @@
 #include "boomerang/core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/register.h"
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/prog.h"
-#include "boomerang/db/signature.h"
+#include "boomerang/db/Register.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
 
 #include "boomerang-frontend/mips/mipsdecoder.h"

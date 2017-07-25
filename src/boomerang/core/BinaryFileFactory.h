@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 #include "boomerang/core/Plugin.h"
 
 

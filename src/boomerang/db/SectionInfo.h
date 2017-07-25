@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 #include "boomerang/db/IBinarySection.h"
 
 #include <QString>

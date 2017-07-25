@@ -1,7 +1,7 @@
 #pragma once
 
-#include "boomerang/util/types.h"
-#include "boomerang/db/proc.h"
+#include "boomerang/util/Types.h"
+#include "boomerang/db/Proc.h"
 #include "boomerang/db/exp/Exp.h"
 
 

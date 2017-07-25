@@ -3,7 +3,7 @@
 #include <QString>
 #include <QTextStream>
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 
 class Printable
 {

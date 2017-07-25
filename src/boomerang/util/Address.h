@@ -3,7 +3,7 @@
 #include <QString>
 #include <QTextStream>
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 
 /// Standard pointer size of source machine, in bits
 #define STD_SIZE    32

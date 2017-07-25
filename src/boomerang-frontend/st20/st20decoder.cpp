@@ -20,9 +20,9 @@
 
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/statements/callstatement.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/exp/Location.h"
 
 #include <cassert>

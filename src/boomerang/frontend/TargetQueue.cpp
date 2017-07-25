@@ -1,6 +1,6 @@
 #include "TargetQueue.h"
 
-#include "boomerang/db/cfg.h"
+#include "boomerang/db/CFG.h"
 #include "boomerang/util/Log.h"
 
 

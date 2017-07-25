@@ -1,10 +1,10 @@
 #include "RefExp.h"
 
-#include "boomerang/db/statements/statement.h"
+#include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Const.h"
-#include "boomerang/db/statements/assign.h"
+#include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
 
 RefExp::RefExp(SharedExp e, Instruction *d)

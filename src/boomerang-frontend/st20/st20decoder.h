@@ -14,9 +14,9 @@
  * \brief   The definition of the instruction decoder for ST20.
  ******************************************************************************/
 
-#include "boomerang/frontend/njmcDecoder.h"
+#include "boomerang/frontend/NJMCDecoder.h"
 
-#include "boomerang/db/rtl.h"
+#include "boomerang/db/RTL.h"
 
 #include <cstddef>
 #include <list>

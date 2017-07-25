@@ -1,6 +1,6 @@
 #include "TypedExp.h"
 
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
 
 

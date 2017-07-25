@@ -8,13 +8,13 @@
 
 #include "boomerang/core/BinaryFileFactory.h"
 
-#include "boomerang/db/basicblock.h"
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/prog.h"
-#include "boomerang/db/rtl.h"
+#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/RTL.h"
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 
 #include "boomerang-frontend/sparc/sparcfrontend.h"

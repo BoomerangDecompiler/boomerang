@@ -50,7 +50,7 @@
 #include "boomerang/global.h"
 #include "boomerang/include/decoder.h"
 #include "boomerang/ss.h"
-#include "boomerang/db/rtl.h"
+#include "boomerang/db/RTL.h"
 
 // File scope globals
 static bool IsTrap     = false;

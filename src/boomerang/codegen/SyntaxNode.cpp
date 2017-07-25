@@ -3,9 +3,9 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
 
-#include "boomerang/db/prog.h"
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/basicblock.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Unary.h"
 
 #include <iomanip> // For setfill etc

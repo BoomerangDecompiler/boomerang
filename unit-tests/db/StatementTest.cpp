@@ -13,34 +13,34 @@
  */
 
 #include "StatementTest.h"
-#include "boomerang/db/cfg.h"
+#include "boomerang/db/CFG.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 
-#include "boomerang/db/statements/assign.h"
-#include "boomerang/db/statements/implicitassign.h"
-#include "boomerang/db/statements/callstatement.h"
-#include "boomerang/db/statements/casestatement.h"
-#include "boomerang/db/statements/branchstatement.h"
-#include "boomerang/db/statements/boolassign.h"
-#include "boomerang/db/statements/phiassign.h"
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/signature.h"
-#include "boomerang/db/basicblock.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/ImplicitAssign.h"
+#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/statements/BranchStatement.h"
+#include "boomerang/db/statements/BoolAssign.h"
+#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/Signature.h"
+#include "boomerang/db/BasicBlock.h"
 
 #include "boomerang/util/Log.h"
-#include "boomerang/db/managed.h"
+#include "boomerang/db/Managed.h"
 #include "boomerang/util/Log.h"
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <sstream>
 #include <map>
 
-#include "boomerang/db/prog.h"
-#include "boomerang/db/proc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/Proc.h"
 
 #define HELLO_PENTIUM      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
 #define GLOBAL1_PENTIUM    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/global1")

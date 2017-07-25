@@ -20,7 +20,7 @@
  *
  *****************************************************************/
 
-#include "boomerang/frontend/njmcDecoder.h"
+#include "boomerang/frontend/NJMCDecoder.h"
 
 #include <cstddef>
 

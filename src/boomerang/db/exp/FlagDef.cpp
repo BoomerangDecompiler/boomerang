@@ -1,7 +1,7 @@
 #include "FlagDef.h"
 
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/Visitor.h"
 
 
 FlagDef::FlagDef(SharedExp params, SharedRTL _rtl)

@@ -1,6 +1,6 @@
 #include "MachineInstruction.h"
 
-#include "boomerang/db/rtl.h"
+#include "boomerang/db/RTL.h"
 #include "boomerang/db/ssl/RTLInstDict.h"
 
 class MachineSemanticsSSLBased : public MachineSemantics

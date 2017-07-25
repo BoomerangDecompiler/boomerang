@@ -27,11 +27,11 @@
 #include "boomerang/global.h"
 #include "boomerang/include/frontend.h"
 #include "boomerang/include/decoder.h" // prototype for decodeInstruction()
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/cfg.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/CFG.h"
 #include "boomerang/ss.h"
-#include "boomerang/db/prog.h" // For findProc()
-#include "boomerang/db/proc.h"
+#include "boomerang/db/Prog.h" // For findProc()
+#include "boomerang/db/Proc.h"
 #include "boomerang/options.h"
 #include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "boomerang/csr.h"                    // For class CalleeEpilogue

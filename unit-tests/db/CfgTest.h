@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boomerang/db/cfg.h"
+#include "boomerang/db/CFG.h"
 
 #include <QtTest/QTest>
 

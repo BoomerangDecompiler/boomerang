@@ -16,12 +16,12 @@
 
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/SymTab.h"
-#include "boomerang/db/prog.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/project.h"
-#include "boomerang/db/signature.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Project.h"
+#include "boomerang/db/Signature.h"
 
-#include "boomerang/frontend/frontend.h"
+#include "boomerang/frontend/Frontend.h"
 
 // TODO: Move the Objective-C loader code to a more suitable place
 #include "../../boomerang-loaders/machO/MachOBinaryLoader.h" // For Objective-C stuff

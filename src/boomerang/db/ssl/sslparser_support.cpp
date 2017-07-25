@@ -3,12 +3,12 @@
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/ssl/sslscanner.h"
-#include "boomerang/db/table.h"
-#include "boomerang/db/insnameelem.h"
+#include "boomerang/db/Table.h"
+#include "boomerang/db/InsNameElem.h"
 
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/statements/statement.h"
-#include "boomerang/db/statements/assign.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/statements/Statement.h"
+#include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/Location.h"

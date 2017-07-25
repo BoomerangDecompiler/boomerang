@@ -6,7 +6,7 @@
 #include "DfaTest.h"
 
 #include "boomerang/util/Log.h"
-#include "boomerang/type/type.h"
+#include "boomerang/type/Type.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QProcessEnvironment>

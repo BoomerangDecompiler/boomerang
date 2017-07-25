@@ -32,12 +32,11 @@
 
 #include <list>
 #include <string>
-#include "boomerang/type/type.h"
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/signature.h"
-#include "boomerang/transform/transformer.h"
-#include "generic.h"
+#include "boomerang/type/Type.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Signature.h"
+#include "boomerang/transform/GenericExpTransformer.h"
 
 class TransformationScanner;
 

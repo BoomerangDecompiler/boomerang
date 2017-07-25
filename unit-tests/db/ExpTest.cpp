@@ -20,8 +20,8 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
-#include "boomerang/db/statements/assign.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/Visitor.h"
 
 #include <map>
 

@@ -2,8 +2,8 @@
 
 #include "boomerang/util/Log.h"
 
-#include "boomerang/db/proc.h"
-#include "boomerang/db/prog.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Prog.h"
 
 
 void TypeRecoveryCommon::recoverProgramTypes(Prog *v)

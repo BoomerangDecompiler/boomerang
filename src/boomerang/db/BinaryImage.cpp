@@ -1,6 +1,6 @@
 #include "BinaryImage.h"
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 
 #include <QDebug>
 #include <algorithm>

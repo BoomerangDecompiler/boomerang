@@ -6,7 +6,7 @@
 #include <set>
 
 
-#include "boomerang/frontend/frontend.h"
+#include "boomerang/frontend/Frontend.h"
 
 class IFrontEnd;
 class ST20Decoder;

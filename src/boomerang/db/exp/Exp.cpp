@@ -7,16 +7,16 @@
  * \brief   Implementation of the Exp and related classes.
  ******************************************************************************/
 
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/register.h"
-#include "boomerang/db/rtl.h" // E.g. class ParamEntry in decideType()
-#include "boomerang/db/proc.h"
-#include "boomerang/db/signature.h"
-#include "boomerang/db/prog.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/Register.h"
+#include "boomerang/db/RTL.h" // E.g. class ParamEntry in decideType()
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Signature.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/Visitor.h"
 
 #include "boomerang/util/Log.h"
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 
 #include <QRegularExpression>

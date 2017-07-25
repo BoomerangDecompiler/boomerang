@@ -6,13 +6,13 @@
 #include "FrontPentTest.h"
 
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/prog.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/Prog.h"
 
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 
-#include "boomerang/frontend/decoder.h"
+#include "boomerang/frontend/Decoder.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 

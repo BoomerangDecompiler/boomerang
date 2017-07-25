@@ -6,7 +6,7 @@
 #include "ParserTest.h"
 
 #include "boomerang/db/ssl/sslparser.h"
-#include "boomerang/db/statements/statement.h"
+#include "boomerang/db/statements/Statement.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"

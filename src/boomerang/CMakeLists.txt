@@ -19,35 +19,44 @@ set(boomerang_SRC
     core/Plugin.h
     core/Plugin.cpp
 
-    db/SymTab
-    db/SectionInfo
-    db/IBinarySection.h
+    db/BasicBlock.cpp
+    db/BasicBlock.h
+    db/BinaryImage.cpp
+    db/BinaryImage.h
+    db/CFG.cpp
+    db/CFG.h
+    db/DataFlow.cpp
+    db/DataFlow.h
     db/IBinaryImage.h
-    db/BinaryImage
+    db/IBinarySection.h
     db/IBinarySymbols.h
-    db/basicblock.h
-    db/basicblock.cpp
-    db/cfg.h
-    db/cfg.cpp
-    db/dataflow.h
-    db/dataflow.cpp
-    db/insnameelem.cpp
-    db/managed.cpp
-    db/proc.h
-    db/proc.cpp
-    db/prog.h
-    db/prog.cpp
-    db/module.h
-    db/module.cpp
-    db/project.h
-    db/project.cpp
+    db/InsNameElem.cpp
+    db/InsNameElem.h
     db/IProject.h
-    db/register.h
-    db/register.cpp
-    db/rtl.h
-    db/rtl.cpp
-    db/signature.h
-    db/signature.cpp
+    db/Managed.cpp
+    db/Managed.h
+    db/Module.cpp
+    db/Module.h
+    db/Proc.cpp
+    db/Proc.h
+    db/Prog.cpp
+    db/Prog.h
+    db/Project.cpp
+    db/Project.h
+    db/Register.cpp
+    db/Register.h
+    db/RTL.cpp
+    db/RTL.h
+    db/SectionInfo.cpp
+    db/SectionInfo.h
+    db/Signature.cpp
+    db/Signature.h
+    db/SymTab.cpp
+    db/SymTab.h
+    db/Table.cpp
+    db/Table.h
+    db/Visitor.cpp
+    db/Visitor.h
 
     # exp handling
     db/exp/Exp.cpp
@@ -86,70 +95,68 @@ set(boomerang_SRC
     db/ssl/sslscanner.h
 
     # statement handling
-    db/statements/statement.h
-    db/statements/statement.cpp
-    db/statements/assign.h
-    db/statements/assign.cpp
-    db/statements/assignment.h
-    db/statements/assignment.cpp
-    db/statements/boolassign.h
-    db/statements/boolassign.cpp
-    db/statements/branchstatement.h
-    db/statements/branchstatement.cpp
-    db/statements/callstatement.h
-    db/statements/callstatement.cpp
-    db/statements/casestatement.h
-    db/statements/casestatement.cpp
-    db/statements/gotostatement.h
-    db/statements/gotostatement.cpp
-    db/statements/implicitassign.h
-    db/statements/implicitassign.cpp
-    db/statements/imprefstatement.h
-    db/statements/imprefstatement.cpp
-    db/statements/junctionstatement.h
-    db/statements/junctionstatement.cpp
-    db/statements/phiassign.h
-    db/statements/phiassign.cpp
-    db/statements/returnstatement.h
-    db/statements/returnstatement.cpp
-    db/statements/typingstatement.h
-    db/statements/typingstatement.cpp
-    db/statements/statementhelper.h
-    db/statements/statementhelper.cpp
+    db/statements/Assign.cpp
+    db/statements/Assign.h
+    db/statements/Assignment.cpp
+    db/statements/Assignment.h
+    db/statements/BoolAssign.cpp
+    db/statements/BoolAssign.h
+    db/statements/BranchStatement.cpp
+    db/statements/BranchStatement.h
+    db/statements/CallStatement.cpp
+    db/statements/CallStatement.h
+    db/statements/CaseStatement.cpp
+    db/statements/CaseStatement.h
+    db/statements/GotoStatement.cpp
+    db/statements/GotoStatement.h
+    db/statements/ImplicitAssign.cpp
+    db/statements/ImplicitAssign.h
+    db/statements/ImpRefStatement.cpp
+    db/statements/ImpRefStatement.h
+    db/statements/JunctionStatement.cpp
+    db/statements/JunctionStatement.h
+    db/statements/PhiAssign.cpp
+    db/statements/PhiAssign.h
+    db/statements/ReturnStatement.cpp
+    db/statements/ReturnStatement.h
+    db/statements/Statement.cpp
+    db/statements/Statement.h
+    db/statements/StatementHelper.cpp
+    db/statements/StatementHelper.h
+    db/statements/TypingStatement.cpp
+    db/statements/TypingStatement.h
 
-    db/table.cpp
-    db/visitor.h
-    db/visitor.cpp
-
-    frontend/decoder.h
-    frontend/frontend.h
-    frontend/frontend.cpp
+    frontend/Decoder.h
+    frontend/Frontend.cpp
+    frontend/Frontend.h
     frontend/MachineInstruction.cpp
     frontend/MachineInstruction.h
-    frontend/njmcDecoder.cpp
-    frontend/njmcDecoder.h
+    frontend/NJMCDecoder.cpp
+    frontend/NJMCDecoder.h
+    frontend/SigEnum.h
     frontend/TargetQueue.cpp
     frontend/TargetQueue.h
 
     passes/Pass
     passes/RangeAnalysis
 
-    transform/transformer.cpp
-    transform/rdi.cpp
-    transform/generic.cpp
+    transform/ExpTransformer.cpp
+    transform/ExpTransformer.h
+    transform/GenericExpTransformer.cpp
+    transform/GenericExpTransformer.h
+    transform/RDIExpTransformer.cpp
+    transform/RDIExpTransformer.h
     transform/transformation-parser.cpp
-    transform/transformation-scanner.cpp
-    transform/rdi.h
-    transform/generic.h
     transform/transformation-parser.h
+    transform/transformation-scanner.cpp
     transform/transformation-scanner.h
 
-    type/constraint.cpp
-    type/constraint.h
-    type/dfa.cpp
-    type/dfa.h
-    type/type.h
-    type/type.cpp
+    type/Constraint.cpp
+    type/Constraint.h
+    type/DFATypeRecovery.cpp
+    type/DFATypeRecovery.h
+    type/Type.h
+    type/Type.cpp
     type/TypeRecovery.cpp
     type/TypeRecovery.h
 

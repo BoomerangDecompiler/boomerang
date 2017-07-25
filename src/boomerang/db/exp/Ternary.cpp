@@ -3,9 +3,9 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/prog.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 
 
 Ternary::Ternary(OPER _op)

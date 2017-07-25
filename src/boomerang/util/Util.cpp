@@ -10,7 +10,7 @@
  */
 
 #include "boomerang/util/Util.h"
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 #include <QMap>

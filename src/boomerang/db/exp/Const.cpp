@@ -1,5 +1,5 @@
 #include "Const.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/util/Log.h"

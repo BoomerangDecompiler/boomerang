@@ -3,7 +3,7 @@
 
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/util/Address.h"
-#include "boomerang/util/types.h"
+#include "boomerang/util/Types.h"
 
 #include <QByteArray>
 

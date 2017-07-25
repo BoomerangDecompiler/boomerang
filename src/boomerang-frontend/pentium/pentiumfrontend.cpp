@@ -20,21 +20,21 @@
 
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/basicblock.h"
-#include "boomerang/db/register.h"
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/signature.h"
-#include "boomerang/db/prog.h"              // For findProc()
-#include "boomerang/db/statements/callstatement.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/Register.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/Proc.h"
+#include "boomerang/db/Signature.h"
+#include "boomerang/db/Prog.h"              // For findProc()
+#include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 
 #include "boomerang/util/Log.h"
-#include "boomerang/util/types.h"
-#include "boomerang/type/type.h"
+#include "boomerang/util/Types.h"
+#include "boomerang/type/Type.h"
 
 #include "boomerang-frontend/pentium/pentiumdecoder.h"
 

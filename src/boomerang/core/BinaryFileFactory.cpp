@@ -11,7 +11,7 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
 
-#include "boomerang/db/project.h"
+#include "boomerang/db/Project.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 

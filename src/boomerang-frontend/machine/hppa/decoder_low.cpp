@@ -32,7 +32,7 @@
 #include "boomerang/global.h"
 #include "boomerang/include/decoder.h"
 #include "boomerang/hppa-names.h"
-#include "boomerang/db/rtl.h"
+#include "boomerang/db/RTL.h"
 
 void c_null(ADDRESS hostpc, char **garble);
 unsigned long c_wcr(ADDRESS hostpc, char **garble);

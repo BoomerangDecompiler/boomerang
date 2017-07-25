@@ -3,7 +3,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/visitor.h"
+#include "boomerang/db/Visitor.h"
 
 Location::Location(Location& o)
     : Unary(o.m_oper, o.subExp1->clone())
