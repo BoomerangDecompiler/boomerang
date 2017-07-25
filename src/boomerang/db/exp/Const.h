@@ -11,7 +11,7 @@
 class Const : public Exp
 {
 private:
-    union
+    union Data
     {
         int      i;    ///< Integer
         QWord    ll;   ///< 64 bit integer / address / pointer
@@ -19,7 +19,9 @@ private:
 
         /// Don't store string: function could be renamed
         Function *pp;      ///< Pointer to function
-    } u;
+    };
+
+    Data u;
 
     QString m_string;
     int m_conscript;   ///< like a subscript for constants

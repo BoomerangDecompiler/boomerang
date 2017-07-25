@@ -523,7 +523,9 @@ void ExpTest::testSimplifyBinary()
 	QVERIFY(*b == exp);
 
 	// x*1
-	(std::dynamic_pointer_cast<Const>(b->getSubExp2()))->setInt(1);
+    std::shared_ptr<Const> subExp = std::dynamic_pointer_cast<Const>(b->getSubExp2());
+	QVERIFY(subExp != nullptr);
+    subExp->setInt(1);
 	b = b->simplify();
 	QVERIFY(*b == *m_rof2);
 

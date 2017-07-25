@@ -56,18 +56,6 @@ list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party")
 
 
 ###############################################################################
-# Libraries section
-###############################################################################
-
-# Find Qt
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Xml REQUIRED)
-find_package(Threads)
-
-set(CMAKE_AUTOMOC ON)
-include_directories("${CMAKE_SOURCE_DIR}/3rd_party/")
-
-###############################################################################
 # Defines/configuration section
 ###############################################################################
 
@@ -117,8 +105,12 @@ add_definitions(-DBRANCH_DS_ERROR=0)  # If set, a branch to the delay slot of a 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(COMMON_COMPILE_OPTIONS "")
-if (MSVC)
+set(COMMON_COMPILE_FLAGS "")
+set(C_COMPILE_FLAGS "")
+set(CXX_COMPILE_FLAGS "")
+set(LINKER_FLAGS "")
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
     add_definitions(
         -D_CRT_SECURE_NO_WARNINGS
         -D_CRT_NONSTDC_NO_DEPRECATE
@@ -126,56 +118,62 @@ if (MSVC)
     )
     set(DEBUG_LIB Dbghelp.lib)
 
-    set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} /W3")
+    list(APPEND COMMON_COMPILE_FLAGS /W3)
 
-elseif (CMAKE_CXX_COMPILER MATCHES clang)
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     # Warning options
-    set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
-        -Wall -Wextra -Werror \
-        -Weverything \
-        -Wno-documentation \
-        -Wno-documentation-unknown-command \
-        -Wno-unreachable-code-break \
-        -Wno-error=strict-aliasing \
-        -Wno-unused-local-typedefs \
-        -Wno-c++98-compat \
-        -Wno-c++98-compat-pedantic \
-        -Wno-old-style-cast \
-        -Wno-reserved-id-macro \
-        -Wno-exit-time-destructors \
-        -Wno-global-constructors \
-        -Wno-padded \
-        -Wno-weak-vtables \
-        -Wno-sign-conversion \
-        -Wno-cast-align \
-        -Wno-shorten-64-to-32 \
-        -Wno-missing-prototypes \
-        -Wno-documentation-deprecated-sync \
-        -Wno-unused-macros \
-        -Wno-conversion \
-        -Wno-switch-enum \
-        -Wno-missing-variable-declarations \
-        -Wno-covered-switch-default \
-        -Wno-deprecated \
-        -Wno-double-promotion \
-        -Wno-float-equal \
-        -Wno-undefined-reinterpret-cast \
-        -Wno-implicit-fallthrough \
-        -Wno-missing-noreturn \
-        -Wno-gnu-zero-variadic-macro-arguments \
-        -Wno-undef"
+    list(APPEND COMMON_COMPILE_FLAGS
+        -Wall -Wextra -Werror
+        -Weverything
+        -Wno-documentation
+        -Wno-documentation-unknown-command
+        -Wno-unreachable-code-break
+        -Wno-error=strict-aliasing
+        -Wno-unused-local-typedefs
+        -Wno-c++98-compat
+        -Wno-c++98-compat-pedantic
+        -Wno-old-style-cast
+        -Wno-reserved-id-macro
+        -Wno-exit-time-destructors
+        -Wno-global-constructor
+        -Wno-padded
+        -Wno-weak-vtables
+        -Wno-sign-conversion
+        -Wno-cast-align
+        -Wno-shorten-64-to-32
+        -Wno-missing-prototypes
+        -Wno-documentation-deprecated-sync
+        -Wno-unused-macros
+        -Wno-conversion
+        -Wno-switch-enum
+        -Wno-missing-variable-declarations
+        -Wno-covered-switch-default
+        -Wno-deprecated
+        -Wno-double-promotion
+        -Wno-float-equal
+        -Wno-undefined-reinterpret-cast
+        -Wno-implicit-fallthrough
+        -Wno-missing-noreturn
+        -Wno-gnu-zero-variadic-macro-arguments
+        -Wno-undef
     )
 
-else () # GCC
-    set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
-        -Wall -Wextra -Werror \
-        -Werror=pedantic \
-        -Wformat=2 \
-        -Wmissing-include-dirs \
-        -rdynamic \
-        -fPIC \
-        -Wno-unused-local-typedefs \
-        -Wno-strict-aliasing"
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    # Reject GCC < 4.9
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+        message(FATAL_ERROR "Your GCC version is too old.\n\
+            Please upgrade GCC or select another compiler.")
+    endif ()
+
+    list(APPEND COMMON_COMPILE_FLAGS
+        -Wall -Wextra -Werror
+        -Werror=pedantic
+        -Wformat=2
+        -Wmissing-include-dirs
+        -rdynamic
+        -fPIC
+        -Wno-unused-local-typedefs
+        -Wno-strict-aliasing
     )
 
     # other warnings:
@@ -183,42 +181,59 @@ else () # GCC
     #-Wsuggest-attribute=const|pure|etc. -Wcast-qual -Wconversion # TODO
     #-Wundef -Wzero-as-null-pointer-constant #does not compile with boost
 
-    # Enable additional warnings for GCC5+
+    # Enable additional warnings for higher versions of GCC
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0)
-        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -Wformat-signedness")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-            -Wsuggest-override \
-            -Wshadow \
+        list(APPEND COMMON_COMPILE_FLAGS -Wformat-signedness)
+        list(APPEND CXX_COMPILE_FLAGS
+            -Wsuggest-override
+            -Wshadow
             -Wstrict-overflow=2
-            -Wno-error=strict-overflow"
+            -Wno-error=strict-overflow
         )
 
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-            set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} \
-                -Wnull-dereference -Wduplicated-cond")
+            list(APPEND COMMON_COMPILE_FLAGS
+                -Wnull-dereference -Wduplicated-cond)
                 #-Walloc-zero -Walloca -Wduplicated-branches
         endif ()
     endif ()
 
-    set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -std=c++11")
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
-    add_definitions(-D__STDC_FORMAT_MACROS)
+    list(APPEND LINKER_FLAGS -rdynamic)
 endif ()
+
 
 if (NOT MSVC)
     if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -g -O0")
+        list(APPEND COMMON_COMPILE_FLAGS -g -O0)
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -g -O2")
+        list(APPEND COMMON_COMPILE_FLAGS -g -O2)
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
-        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -Os")
+        list(APPEND COMMON_COMPILE_FLAGS -Os)
     else () # Release
-        set(COMMON_COMPILE_OPTIONS "${COMMON_COMPILE_OPTIONS} -O3")
+        list(APPEND COMMON_COMPILE_FLAGS -O3)
     endif ()
 endif (NOT MSVC)
 
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${COMMON_COMPILE_OPTIONS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_OPTIONS}")
+string(REPLACE ";" " " COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS}")
+string(REPLACE ";" " " C_COMPILE_FLAGS      "${C_COMPILE_FLAGS}")
+string(REPLACE ";" " " CXX_COMPILE_FLAGS    "${CXX_COMPILE_FLAGS}")
+
+set(CMAKE_C_FLAGS          "${COMMON_COMPILE_FLAGS} ${C_COMPILE_FLAGS}")
+set(CMAKE_CXX_FLAGS        "${COMMON_COMPILE_FLAGS} ${CXX_COMPILE_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS}")
+
+
+###############################################################################
+# Libraries section
+###############################################################################
+
+# Find Qt
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Xml REQUIRED)
+find_package(Threads)
+
+set(CMAKE_AUTOMOC ON)
+include_directories("${CMAKE_SOURCE_DIR}/3rd_party/")
 
 
 ###############################################################################
