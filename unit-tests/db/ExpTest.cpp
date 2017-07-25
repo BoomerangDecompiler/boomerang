@@ -48,7 +48,7 @@ void ExpTest::testFlt()
 	QTextStream ost(&actual);
     std::shared_ptr<Const> c = Const::get(3.14);
 	c->print(ost);
-	QCOMPARE(actual, QString("3.1400"));
+	QCOMPARE(actual, QString("%1").arg(3.14));
 }
 
 

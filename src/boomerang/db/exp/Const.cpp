@@ -325,9 +325,7 @@ void Const::print(QTextStream& os, bool) const
         break;
 
     case opFltConst:
-        char buf[64];
-        sprintf(buf, "%.4f", u.d); // FIXME: needs an intelligent printer
-        os << buf;
+        os << QString("%1").arg(u.d); // respects English locale
         break;
 
     case opStrConst:
