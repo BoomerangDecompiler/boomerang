@@ -135,7 +135,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         -Wno-old-style-cast
         -Wno-reserved-id-macro
         -Wno-exit-time-destructors
-        -Wno-global-constructor
+        -Wno-global-constructors
         -Wno-padded
         -Wno-weak-vtables
         -Wno-sign-conversion
