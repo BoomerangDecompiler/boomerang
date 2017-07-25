@@ -4,13 +4,13 @@ set(boomerang_SRC
     c/ansi-c-scanner.cpp
     c/ansi-c-parser.h
     c/ansi-c-scanner.h
-    
+
     codegen/CCodeGenerator.cpp
     codegen/CCodeGenerator.h
     codegen/ICodeGenerator.h
     codegen/SyntaxNode.h
     codegen/SyntaxNode.cpp
-    
+
     core/Boomerang.h
     core/Boomerang.cpp
     core/IBoomerang.h
@@ -18,7 +18,7 @@ set(boomerang_SRC
     core/BinaryFileFactory.cpp
     core/Plugin.h
     core/Plugin.cpp
-    
+
     db/SymTab
     db/SectionInfo
     db/IBinarySection.h
@@ -48,7 +48,7 @@ set(boomerang_SRC
     db/rtl.cpp
     db/signature.h
     db/signature.cpp
-    
+
     # exp handling
     db/exp/Exp.cpp
     db/exp/RefExp.h
@@ -77,13 +77,14 @@ set(boomerang_SRC
     db/exp/Operator.h
     db/exp/Const.h
 
-    db/ssl/sslinst.cpp
+    db/ssl/RTLInstDict.cpp
+    db/ssl/RTLInstDict.h
     db/ssl/sslparser.cpp
     db/ssl/sslparser.h
     db/ssl/sslparser_support.cpp
     db/ssl/sslscanner.cpp
     db/ssl/sslscanner.h
-    
+
     # statement handling
     db/statements/statement.h
     db/statements/statement.cpp
@@ -114,8 +115,8 @@ set(boomerang_SRC
     db/statements/typingstatement.h
     db/statements/typingstatement.cpp
     db/statements/statementhelper.h
-    db/statements/statementhelper.cpp    
-    
+    db/statements/statementhelper.cpp
+
     db/table.cpp
     db/visitor.h
     db/visitor.cpp
@@ -129,10 +130,10 @@ set(boomerang_SRC
     frontend/njmcDecoder.h
     frontend/TargetQueue.cpp
     frontend/TargetQueue.h
-    
+
     passes/Pass
     passes/RangeAnalysis
-    
+
     transform/transformer.cpp
     transform/rdi.cpp
     transform/generic.cpp
@@ -142,7 +143,7 @@ set(boomerang_SRC
     transform/generic.h
     transform/transformation-parser.h
     transform/transformation-scanner.h
-    
+
     type/constraint.cpp
     type/constraint.h
     type/dfa.cpp
@@ -151,7 +152,7 @@ set(boomerang_SRC
     type/type.cpp
     type/TypeRecovery.cpp
     type/TypeRecovery.h
-    
+
     util/Address.h
     util/Address.cpp
     util/Log.h

@@ -1,98 +1,38 @@
-/*
- * Copyright (C) 1997, Shane Sendall
- * Copyright (C) 1998-1999, David Ung
- * Copyright (C) 1998-2001, The University of Queensland
- * Copyright (C) 2001, Sun Microsystems, Inc
- * Copyright (C) 2002, Trent Waddington
- *
- * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL
- * WARRANTIES.
- *
- */
+#include "RTLInstDict.h"
 
-/***************************************************************************/ /**
- * \file       sslinst.cpp
- * \brief   This file defines the classes used to represent the semantic
- *               definitions of instructions and given in a .ssl file.
- ******************************************************************************/
-
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
-
-
-#include "boomerang/db/register.h"
-#include "boomerang/db/rtl.h"
-#include "boomerang/db/cfg.h"
-#include "boomerang/db/proc.h"
-#include "boomerang/db/prog.h"
-#include "boomerang/db/statements/assign.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/ssl/sslparser.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Util.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/exp/Terminal.h"
 
-#include "boomerang/type/type.h"
 
-#include <cassert>
-#include <cstring>
-#include <algorithm> // For remove()
-
-// #define DEBUG_SSLPARSER 1
-
-/***************************************************************************/ /**
- * \brief        Constructor
- ******************************************************************************/
 TableEntry::TableEntry()
+    : m_flags(0)
 {
-    m_flags = 0;
 }
 
 
-/***************************************************************************/ /**
- * \brief Constructor
- * \param p -
- * \param r - reference to a RTL
- *
- ******************************************************************************/
 TableEntry::TableEntry(std::list<QString>& p, RTL& r)
     : m_rtl(r)
+    , m_flags(0)
 {
     std::copy(p.begin(), p.end(), std::back_inserter(m_params));
-    m_flags = 0;
 }
 
 
-/***************************************************************************/ /**
- * \brief        Set the parameter list.
- * \param        p - a list of strings
- ******************************************************************************/
 void TableEntry::setParam(std::list<QString>& p)
 {
     m_params = p;
 }
 
 
-/***************************************************************************/ /**
- * \brief        Set the RTL.
- * \param        r - a RTL
- *
- ******************************************************************************/
 void TableEntry::setRTL(RTL& r)
 {
     m_rtl = r;
 }
 
 
-/***************************************************************************/ /**
- * \brief Sets the contents of this object with a deepcopy from another TableEntry object.  Note that this is
- * different from the semantics of operator= for an RTL which only does a shallow copy!
- * \param other - the object to copy
- * \returns a reference to this object
- ******************************************************************************/
 TableEntry& TableEntry::operator=(const TableEntry& other)
 {
     m_params = other.m_params;
@@ -101,12 +41,6 @@ TableEntry& TableEntry::operator=(const TableEntry& other)
 }
 
 
-/***************************************************************************/ /**
- * \brief        Appends an RTL to an exising TableEntry
- * \param        p reference to list of formal parameters (as strings)
- * \param        r reference to RTL with list of Exps to append
- * \returns             0 for success
- ******************************************************************************/
 int TableEntry::appendRTL(std::list<QString>& p, RTL& r)
 {
     bool match = (p.size() == m_params.size());
@@ -126,18 +60,18 @@ int TableEntry::appendRTL(std::list<QString>& p, RTL& r)
 }
 
 
-// Appends an RTL to an idict entry, or Adds it to idict if an entry does not already exist. A non-zero return
-// indicates failure.
 
-/***************************************************************************/ /**
- * \brief        Appends one RTL to the dictionary,or Adds it to idict if an
- * entry does not already exist.
- * \param n name of the instruction to add to
- * \param p list of formal parameters (as strings) for the RTL to add
- * \param r reference to the RTL to add
- * \returns 0 for success
- ******************************************************************************/
-int RTLInstDict::appendToDict(const QString& n, std::list<QString>& p, RTL& r)
+RTLInstDict::RTLInstDict()
+{
+}
+
+
+RTLInstDict::~RTLInstDict()
+{
+}
+
+
+int RTLInstDict::insert(const QString& n, std::list<QString>& p, RTL& r)
 {
     QString opcode = n.toUpper();
 
@@ -154,22 +88,6 @@ int RTLInstDict::appendToDict(const QString& n, std::list<QString>& p, RTL& r)
 }
 
 
-RTLInstDict::RTLInstDict()
-{
-}
-
-
-RTLInstDict::~RTLInstDict()
-{
-}
-
-
-/***************************************************************************/ /**
- * \brief        Read and parse the SSL file, and initialise the expanded instruction dictionary (this object).
- * This also reads and sets up the register map and flag functions.
- * \param SSLFileName - the name of the file containing the SSL specification.
- * \returns        true if the file was successfully read
- ******************************************************************************/
 bool RTLInstDict::readSSLFile(const QString& SSLFileName)
 {
     // emptying the rtl dictionary
@@ -231,11 +149,6 @@ void RTLInstDict::addRegister(const QString& name, int id, int size, bool flt)
 }
 
 
-/***************************************************************************/ /**
- * \brief        Print a textual representation of the dictionary.
- * \param        os - stream used for printing
- *
- ******************************************************************************/
 void RTLInstDict::print(QTextStream& os /*= std::cout*/)
 {
     for (auto& elem : idict) {
@@ -260,11 +173,6 @@ void RTLInstDict::print(QTextStream& os /*= std::cout*/)
 }
 
 
-/***************************************************************************/ /**
- * \brief         Runs after the ssl file is parsed to fix up variant params
- *                     where the arms are lambdas.
- * Go through the params and fixup any lambda functions
- ******************************************************************************/
 void RTLInstDict::fixupParams()
 {
     for (ParamEntry& param : DetParamMap) {
@@ -344,11 +252,6 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
 }
 
 
-/***************************************************************************/ /**
- * \brief         Returns the signature of the given instruction.
- * \param name - instruction name
- * \returns              the signature (name + number of operands)
- ******************************************************************************/
 std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
 {
     // Take the argument, convert it to upper case and remove any _'s and .'s
@@ -369,14 +272,6 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
 }
 
 
-/***************************************************************************/ /**
- * \brief         Scan the Exp* pointed to by exp; if its top level operator indicates even a partial type, then set
- *                        the expression's type, and return true
- * \note This version only inspects one expression
- * \param  exp - points to a Exp* to be scanned
- * \param  ty - ref to a Type object to put the partial type into
- * \returns true if a partial type is found
- ******************************************************************************/
 bool RTLInstDict::partialType(Exp *exp, Type& ty)
 {
     if (exp->isSizeCast()) {
@@ -393,14 +288,6 @@ bool RTLInstDict::partialType(Exp *exp, Type& ty)
 }
 
 
-/***************************************************************************/ /**
- * \brief         Returns an instance of a register transfer list for the instruction named 'name' with the actuals
- *                     given as the second parameter.
- * \param name - the name of the instruction (must correspond to one defined in the SSL file).
- * \param natPC - address at which the named instruction is located
- * \param actuals - the actual values
- * \returns   the instantiated list of Exps
- ******************************************************************************/
 std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, Address natPC,
                                                       const std::vector<SharedExp>& actuals)
 {
@@ -423,15 +310,6 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, Addre
 }
 
 
-/***************************************************************************/ /**
- * \brief         Returns an instance of a register transfer list for the parameterized rtlist with the given formals
- *      replaced with the actuals given as the third parameter.
- * \param   rtl - a register transfer list
- * \param   natPC - address at which the named instruction is located
- * \param   params - a list of formal parameters
- * \param   actuals - the actual parameter values
- * \returns the instantiated list of Exps
- ******************************************************************************/
 std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std::list<QString>& params,
                                                       const std::vector<SharedExp>& actuals)
 {
@@ -477,9 +355,8 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, s
 
 
 /* Small struct for transformPostVars */
-class transPost
+struct transPost
 {
-public:
     bool used; // If the base expression (e.g. r[0]) is used
     // Important because if not, we don't have to make any
     // substitutions at all
@@ -490,22 +367,7 @@ public:
     SharedType type; // The type of the temporary (needed for the final assign)
 };
 
-/***************************************************************************/ /**
- * \brief Transform an RTL to eliminate any uses of post-variables.
- *
- * Note that the algorithm used expects to deal with simple
- * expressions as post vars, ie r[22], m[r[1]], generally things which aren't parameterized at a higher level. This is
- * ok for the translator (we do substitution first anyway), but may miss some optimizations for the emulator.
- * For the emulator, if parameters are detected within a postvar, we just force the temporary, which is always safe to
- * do.  (The parameter optimise is set to false for the emulator to achieve this).
- * Transform the given list into another list which doesn't have post-variables, by either adding temporaries or
- * just removing them where possible. Modifies the list passed, and also returns a pointer to it. Second
- * parameter indicates whether the routine should attempt to optimize the resulting output, ie to minimize the
- * number of temporaries. This is recommended for fully expanded expressions (ie within uqbt), but unsafe
- * otherwise.
- * \param rts the list of statements
- * \param optimise - try to remove temporary registers
- ******************************************************************************/
+
 void RTLInstDict::transformPostVars(std::list<Instruction *>& rts, bool optimise)
 {
     // Map from var (could be any expression really) to details
@@ -661,10 +523,6 @@ void RTLInstDict::transformPostVars(std::list<Instruction *>& rts, bool optimise
 }
 
 
-/** Reset the object to "undo" a readSSLFile()
- *
- * Called from test code if (e.g.) want to call readSSLFile() twice
- */
 void RTLInstDict::reset()
 {
     RegMap.clear();

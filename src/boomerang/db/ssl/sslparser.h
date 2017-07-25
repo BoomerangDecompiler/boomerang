@@ -10,7 +10,7 @@
 #include "boomerang/db/table.h"
 #include "boomerang/db/insnameelem.h"
 #include "boomerang/db/exp/Operator.h"
-
+#include "boomerang/db/ssl/RTLInstDict.h"
 #include "boomerang/util/Util.h" // E.g. str()
 
 

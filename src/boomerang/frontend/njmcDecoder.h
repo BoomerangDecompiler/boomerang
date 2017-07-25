@@ -12,6 +12,7 @@
 #pragma once
 
 #include "boomerang/db/rtl.h"
+#include "boomerang/db/ssl/RTLInstDict.h"
 #include "boomerang/db/statements/branchstatement.h"
 #include "boomerang/db/statements/boolassign.h"
 
@@ -33,7 +34,7 @@ public:
      ******************************************************************************/
     NJMCDecoder(Prog *prog);
 
-    /// \copydoc IInstructionTranslator::~IInstructionTranslator
+    /// \copydoc IDecoder::~IDecoder
     virtual ~NJMCDecoder() = default;
 
     RTLInstDict& getRTLDict() { return m_rtlDict; }
