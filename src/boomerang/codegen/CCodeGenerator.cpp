@@ -68,8 +68,8 @@ void CCodeGenerator::indent(QTextStream& str, int indLevel)
 void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool uns /* = false */)
 {
     if (++codegen_progress > 500) {
-        LOG_STREAM() << 'g';
-        LOG_STREAM().flush();
+        LOG_STREAM_OLD() << 'g';
+        LOG_STREAM_OLD().flush();
         codegen_progress = 0;
     }
 
@@ -455,7 +455,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opRegOf:
         {
             // MVE: this can likely go
-            LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opRegOf is deprecated\n";
+            LOG_VERBOSE_OLD(1) << "WARNING: CCodeGenerator::appendExp: case opRegOf is deprecated\n";
 
             if (u.getSubExp1()->getOper() == opTemp) {
                 // The great debate: r[tmpb] vs tmpb
@@ -485,7 +485,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opTemp:
         // Should never see this; temps should be mapped to locals now so that they get declared
-        LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opTemp is deprecated\n";
+        LOG_VERBOSE_OLD(1) << "WARNING: CCodeGenerator::appendExp: case opTemp is deprecated\n";
         // Emit the temp name, e.g. "tmp1"
         str << u.access<Const, 1>()->getStr();
         break;
@@ -822,7 +822,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             }
         }
 
-        LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opZfill is deprecated\n";
+        LOG_VERBOSE_OLD(1) << "WARNING: CCodeGenerator::appendExp: case opZfill is deprecated\n";
         str << "(";
         appendExp(str, *t.getSubExp3(), PREC_NONE);
         str << ")";

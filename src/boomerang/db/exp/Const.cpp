@@ -257,36 +257,36 @@ SharedExp Const::accept(ExpModifier *v)
 
 void Const::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
+    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
 
     switch (m_oper)
     {
         case opIntConst:
-            LOG_STREAM() << u.i;
+            LOG_STREAM_OLD() << u.i;
             break;
 
         case opStrConst:
-            LOG_STREAM() << "\"" << m_string << "\"";
+            LOG_STREAM_OLD() << "\"" << m_string << "\"";
             break;
 
         case opFltConst:
-            LOG_STREAM() << u.d;
+            LOG_STREAM_OLD() << u.d;
             break;
 
         case opFuncConst:
-            LOG_STREAM() << qPrintable(u.pp->getName());
+            LOG_STREAM_OLD() << qPrintable(u.pp->getName());
             break;
 
         default:
-            LOG_STREAM() << "?" << (int)m_oper << "?";
+            LOG_STREAM_OLD() << "?" << (int)m_oper << "?";
     }
 
     if (m_conscript) {
-        LOG_STREAM() << " \\" << m_conscript << "\\";
+        LOG_STREAM_OLD() << " \\" << m_conscript << "\\";
     }
 
-    LOG_STREAM() << '\n';
-    LOG_STREAM().flush();
+    LOG_STREAM_OLD() << '\n';
+    LOG_STREAM_OLD().flush();
 }
 
 SharedExp Const::clone() const

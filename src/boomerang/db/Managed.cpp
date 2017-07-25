@@ -891,15 +891,15 @@ void LocationSet::printDiff(LocationSet *o) const
         if (lset.find(oe) == lset.end()) {
             if (!printed2not1) {
                 printed2not1 = true;
-                LOG_STREAM() << "In set 2 but not set 1:\n";
+                LOG_STREAM_OLD() << "In set 2 but not set 1:\n";
             }
 
-            LOG_STREAM() << oe << "\t";
+            LOG_STREAM_OLD() << oe << "\t";
         }
     }
 
     if (printed2not1) {
-        LOG_STREAM() << "\n";
+        LOG_STREAM_OLD() << "\n";
     }
 
     bool printed1not2 = false;
@@ -910,15 +910,15 @@ void LocationSet::printDiff(LocationSet *o) const
         if (o->lset.find(e) == o->lset.end()) {
             if (!printed1not2) {
                 printed1not2 = true;
-                LOG_STREAM() << "In set 1 but not set 2:\n";
+                LOG_STREAM_OLD() << "In set 1 but not set 2:\n";
             }
 
-            LOG_STREAM() << e << "\t";
+            LOG_STREAM_OLD() << e << "\t";
         }
     }
 
     if (printed1not2) {
-        LOG_STREAM() << "\n";
+        LOG_STREAM_OLD() << "\n";
     }
 }
 
@@ -1075,7 +1075,7 @@ ConnectionGraph::iterator ConnectionGraph::remove(iterator aa)
 void ConnectionGraph::dump() const
 {
     for (auto iter : *this) {
-        LOG_STREAM() << iter.first << " <-> " << iter.second << "\n";
+        LOG_STREAM_OLD() << iter.first << " <-> " << iter.second << "\n";
     }
 }
 

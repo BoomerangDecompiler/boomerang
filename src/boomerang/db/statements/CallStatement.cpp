@@ -777,7 +777,7 @@ bool CallStatement::convertToDirect()
         p = prog->createProc(dest);
     }
 
-    LOG_VERBOSE(1) << (bNewProc ? "new" : "existing") << " procedure for call to global '" << nam << " is "
+    LOG_VERBOSE_OLD(1) << (bNewProc ? "new" : "existing") << " procedure for call to global '" << nam << " is "
                    << p->getName() << "\n";
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
@@ -1672,7 +1672,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& ch)
     proven = proven->searchReplaceAll(*base, to, ch);     // e.g. r28{17} + 4
 
     if (ch) {
-        LOG_VERBOSE(1) << "bypassRef() replacing " << r << " with " << proven << "\n";
+        LOG_VERBOSE_OLD(1) << "bypassRef() replacing " << r << " with " << proven << "\n";
     }
 
     return proven;

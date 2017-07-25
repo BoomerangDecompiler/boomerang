@@ -10,12 +10,7 @@
 
 #include <QTextStream>
 #include <sstream>
-
-
-FileLogger::FileLogger()
-    : out((Boomerang::get()->getOutputDirectory().absoluteFilePath("log")).toStdString())
-{
-}
+#include <iostream>
 
 
 SeparateLogger::SeparateLogger(const QString& v)
@@ -127,13 +122,6 @@ Log& Log::operator<<(Address a)
 }
 
 
-Log& FileLogger::operator<<(const QString& str)
-{
-    out << str.toStdString() << std::flush;
-    return *this;
-}
-
-
 Log& SeparateLogger::operator<<(const QString& str)
 {
     (*out) << str.toStdString() << std::flush;
@@ -146,3 +134,30 @@ SeparateLogger::~SeparateLogger()
     out->close();
     out = nullptr;
 }
+
+
+void ConsoleLogSink::write(const QString& s)
+{
+    std::cout << qPrintable(s);
+}
+
+
+FileLogSink::FileLogSink(const QString& filename)
+    : m_logFile(filename)
+{
+    m_logFile.open(QFile::WriteOnly);
+}
+
+
+FileLogSink::~FileLogSink()
+{
+    m_logFile.close();
+}
+
+
+void FileLogSink::write(const QString& s)
+{
+    m_logFile.write(qPrintable(s));
+}
+
+

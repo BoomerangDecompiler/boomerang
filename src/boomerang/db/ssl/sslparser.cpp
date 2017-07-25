@@ -94,7 +94,7 @@ SSLParser::SSLParser(const QString &_sslFile, bool _trace) : sslFile(_sslFile), 
     m_fin = new std::fstream(sslFile.toStdString(), std::ios::in);
     theScanner = nullptr;
     if (!*m_fin) {
-        LOG_STREAM() << "can't open `" << sslFile << "' for reading\n";
+        LOG_STREAM_OLD() << "can't open `" << sslFile << "' for reading\n";
         return;
     }
     theScanner = new SSLScanner(*m_fin, _trace);
@@ -870,7 +870,7 @@ SSLParser::
     }
     case 31: {
         if ((int)yyvsp[-8].strlist->size() != (yyvsp[0].num - yyvsp[-2].num + 1)) {
-            LOG_STREAM() << "size of register array does not match mapping to r[" << yyvsp[-2].num << ".." << yyvsp[0].num
+            LOG_STREAM_OLD() << "size of register array does not match mapping to r[" << yyvsp[-2].num << ".." << yyvsp[0].num
                       << "]\n";
             exit(1);
         } else {
@@ -1647,7 +1647,7 @@ SSLParser::
                 yyval.typ = CharType::get();
                 break;
             default:
-                LOG_STREAM() << "Unexpected char " << c << " in assign type\n";
+                LOG_STREAM_OLD() << "Unexpected char " << c << " in assign type\n";
                 yyval.typ = IntegerType::get(32);
             }
         };

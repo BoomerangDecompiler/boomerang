@@ -197,7 +197,7 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
     ParamEntry& param = DetParamMap[s];
 
     if (param.m_params.size() == 0) {
-        LOG_STREAM() << "Error in SSL File: Variant operand " << s << " has no branches. Well that's really useful...\n";
+        LOG_STREAM_OLD() << "Error in SSL File: Variant operand " << s << " has no branches. Well that's really useful...\n";
         return;
     }
 
@@ -228,7 +228,7 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
         }
 
         if (funcParams.size() != sub.m_funcParams.size()) {
-            LOG_STREAM() << "Error in SSL File: Variant operand " << s
+            LOG_STREAM_OLD() << "Error in SSL File: Variant operand " << s
                          << " does not have a fixed number of functional parameters:\n"
                          << "Expected " << funcParams.size() << ", but branch " << name
                          << " has " << sub.m_funcParams.size() << ".\n";
@@ -262,7 +262,7 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
     std::map<QString, TableEntry>::iterator it = idict.find(hlpr);
 
     if (it == idict.end()) {
-        LOG_STREAM() << "Error: no entry for `" << name << "' in RTL dictionary\n";
+        LOG_STREAM_OLD() << "Error: no entry for `" << name << "' in RTL dictionary\n";
         it = idict.find("NOP"); // At least, don't cause segfault
     }
 

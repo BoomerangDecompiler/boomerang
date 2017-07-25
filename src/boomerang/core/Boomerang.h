@@ -40,10 +40,10 @@ class IBinarySymbolTable;
 class Project;
 
 
-#define LOG                Boomerang::get()->log()
-#define LOG_SEPARATE(x)    Boomerang::get()->separate_log(x)
-#define LOG_VERBOSE(x)     Boomerang::get()->if_verbose_log(x)
-#define LOG_STREAM         Boomerang::get()->getLogStream
+#define LOG                Boomerang::get()->getOrCreateLog()
+#define LOG_SEPARATE_OLD(x)    Boomerang::get()->separate_log(x)
+#define LOG_VERBOSE_OLD(x)     Boomerang::get()->if_verbose_log(x)
+#define LOG_STREAM_OLD         Boomerang::get()->getLogStream
 
 
 /**
@@ -109,12 +109,10 @@ public:
     static const char *getVersionStr();
 
     /// \returns the Log object associated with the object.
-    Log& log();
+    Log& getOrCreateLog();
 
     SeparateLogger separate_log(const QString&);
     Log& if_verbose_log(int verbosity_level);
-
-    void setLogger(Log *l);
 
     /**
      * Returns the ICodeGenerator for the given proc.

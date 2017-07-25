@@ -278,7 +278,7 @@ void Constraints::substIntoEquates(ConstraintMap& in)
 
                     if (ff != fixed.end()) {
                         if (!unify(val, ff->second, extra)) {
-                            LOG_VERBOSE(DEBUG_TA) << "Constraint failure: " << *ll << " constrained to be "
+                            LOG_VERBOSE_OLD(DEBUG_TA) << "Constraint failure: " << *ll << " constrained to be "
                                                   << val->access<TypeVal>()->getType()->getCtype() << " and "
                                                   << ff->second->access<TypeVal>()->getType()->getCtype() << "\n";
                             return;
@@ -440,7 +440,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
         }
 
         if (c->isFalse()) {
-            LOG_VERBOSE(DEBUG_TA) << "Constraint failure: always false constraint\n";
+            LOG_VERBOSE_OLD(DEBUG_TA) << "Constraint failure: always false constraint\n";
             return false;
         }
 

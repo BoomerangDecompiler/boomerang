@@ -154,7 +154,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 addr = Address(args[i].toLongLong(&converted, 0));
 
                 if (!converted) {
-                    LOG_STREAM() << "bad address: " << args[i] << '\n';
+                    LOG_STREAM_OLD() << "bad address: " << args[i] << '\n';
                     exit(1);
                 }
 
@@ -176,7 +176,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
         case 'X':
             boom.experimental = true;
-            LOG_STREAM(LogLevel::Warning) << "Warning: experimental code active!\n";
+            LOG_STREAM_OLD(LogLevel::Warning) << "Warning: experimental code active!\n";
             break;
 
         case 'r':
@@ -315,7 +315,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
             if (arg[2] == 'a') {
                 boom.propOnlyToAll = true;
-                LOG_STREAM() << " * * Warning! -pa is not implemented yet!\n";
+                LOG_STREAM_OLD() << " * * Warning! -pa is not implemented yet!\n";
             }
             else {
                 if (++i == args.size()) {
@@ -347,7 +347,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 addr = Address(args[i].toLongLong(&converted, 0));
 
                 if (!converted) {
-                    LOG_STREAM() << "bad address: " << args[i + 1] << '\n';
+                    LOG_STREAM_OLD() << "bad address: " << args[i + 1] << '\n';
                     exit(1);
                 }
 
@@ -446,7 +446,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
     }
 
     if (minsToStopAfter > 0) {
-        LOG_STREAM(LogLevel::Default) << "stopping decompile after " << minsToStopAfter << " minutes.\n";
+        LOG_STREAM_OLD(LogLevel::Default) << "stopping decompile after " << minsToStopAfter << " minutes.\n";
         m_kill_timer.setSingleShot(true);
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
@@ -502,7 +502,7 @@ int CommandlineDriver::decompile()
 
 void CommandlineDriver::onCompilationTimeout()
 {
-    LOG_STREAM() << "Compilation timed out";
+    LOG_STREAM_OLD() << "Compilation timed out";
     exit(1);
 }
 

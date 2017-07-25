@@ -1442,7 +1442,7 @@ do_action:     /* this label is used only to access EOF actions */
 #line 306 "db/sslscanner.l"
             {   // funky print-next-line-for-debug token
                 if (yyleng > MAX_LINE) {
-                    LOG_STREAM() << theLine + 1 << ": line too long.\n";
+                    LOG_STREAM_OLD() << theLine + 1 << ": line too long.\n";
                     exit(1);
                 }
 
@@ -1455,7 +1455,7 @@ do_action:     /* this label is used only to access EOF actions */
 
                 // echo the line if line tracing is turned on
                 if (traceLines) {
-                    LOG_STREAM() << lineBuf << '\n';
+                    LOG_STREAM_OLD() << lineBuf << '\n';
                 }
 
                 // Quell a warning

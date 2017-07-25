@@ -723,10 +723,10 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
         return false;
     }
 
-    LOG_VERBOSE(1) << "consider promotion to stdc pentium signature for " << p->getName() << "\n";
+    LOG_VERBOSE_OLD(1) << "consider promotion to stdc pentium signature for " << p->getName() << "\n";
 
 #if 1
-    LOG_VERBOSE(1) << "qualified: always true\n";
+    LOG_VERBOSE_OLD(1) << "qualified: always true\n";
     return true; // For now, always pass
 #else
     bool          gotcorrectret1 = false;
@@ -1706,23 +1706,23 @@ void Signature::addParameter(SharedType type, const QString& nam /*= nullptr*/, 
                              const QString& boundMax /*= ""*/)
 {
     if (e == nullptr) {
-        LOG_STREAM() << "No expression for parameter ";
+        LOG_STREAM_OLD() << "No expression for parameter ";
 
         if (type == nullptr) {
-            LOG_STREAM() << "<notype> ";
+            LOG_STREAM_OLD() << "<notype> ";
         }
         else {
-            LOG_STREAM() << type->getCtype() << " ";
+            LOG_STREAM_OLD() << type->getCtype() << " ";
         }
 
         if (nam.isNull()) {
-            LOG_STREAM() << "<noname>";
+            LOG_STREAM_OLD() << "<noname>";
         }
         else {
-            LOG_STREAM() << nam;
+            LOG_STREAM_OLD() << nam;
         }
 
-        LOG_STREAM() << "\n";
+        LOG_STREAM_OLD() << "\n";
         assert(e); // Else get infinite mutual recursion with the below proc
     }
 
@@ -2063,7 +2063,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 
     // insert other conventions here
     default:
-        qCritical() << "unknown signature: " << getConventionName(cc) << " " << getPlatformName(plat) << "\n";
+        LOG_ERROR("Unknown signature: %1 %2", getConventionName(cc), getPlatformName(plat));
         return nullptr;
     }
 }
@@ -2214,7 +2214,7 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
         }
 
     default:
-        LOG_STREAM() << "Signature::getFirstArgLoc: machine not handled\n";
+        LOG_STREAM_OLD() << "Signature::getFirstArgLoc: machine not handled\n";
         assert(0);
     }
 
@@ -2236,7 +2236,7 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
         return Location::regOf(0);
 
     default:
-        LOG_STREAM() << "getReturnExp2: machine not handled\n";
+        LOG_STREAM_OLD() << "getReturnExp2: machine not handled\n";
     }
 
     return nullptr;

@@ -300,8 +300,8 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
                               LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
 {
     if (++propagate_progress > 1000) {
-        LOG_STREAM() << 'p';
-        LOG_STREAM().flush();
+        LOG_STREAM_OLD() << 'p';
+        LOG_STREAM_OLD().flush();
         propagate_progress = 0;
     }
 
@@ -399,7 +399,7 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
                             }
 
                             if (OW) {
-                                LOG_STREAM() << "Ow is " << OW << "\n";
+                                LOG_STREAM_OLD() << "Ow is " << OW << "\n";
                             }
                         }
                     }

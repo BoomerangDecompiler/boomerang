@@ -857,11 +857,11 @@ void UserProc::printDFG() const
         .arg(DFGcount);
 
     DFGcount++;
-    LOG_VERBOSE(1) << "outputing DFG to " << fname << "\n";
+    LOG_VERBOSE_OLD(1) << "outputing DFG to " << fname << "\n";
     QFile file(fname);
 
     if (!file.open(QFile::WriteOnly)) {
-        qWarning() << "can't open `" << fname << "'";
+        LOG_WARN("Can't open DFG `%1'", fname);
         return;
     }
 
@@ -1137,13 +1137,13 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     */
 
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
-    Util::alignStream(LOG_STREAM(), ++indent) << (m_status >= PROC_VISITED ? "re" : "") << "considering "
+    Util::alignStream(LOG_STREAM_OLD(), ++indent) << (m_status >= PROC_VISITED ? "re" : "") << "considering "
                                         << getName() << "\n";
-    LOG_VERBOSE(1) << "begin decompile(" << getName() << ")\n";
+    LOG_VERBOSE("Begin decompile (%1)", getName());
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
-        LOG_STREAM() << "Error: " << getName() << " already has status PROC_FINAL\n";
+        LOG_STREAM_OLD() << "Error: " << getName() << " already has status PROC_FINAL\n";
         return nullptr; // Already decompiled
     }
 
@@ -1260,7 +1260,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
             }
             else {
                 // No new cycle
-                LOG_VERBOSE(1) << "visiting on the way down child " << c->getName() << " from " << getName()
+                LOG_VERBOSE_OLD(1) << "visiting on the way down child " << c->getName() << " from " << getName()
                                << "\n";
                 c->promoteSignature();
                 std::shared_ptr<ProcSet> tmp = c->decompile(path, indent);
@@ -1278,7 +1278,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     // if child is empty, i.e. no child involved in recursion
     if (child->empty()) {
         Boomerang::get()->alertDecompiling(this);
-        Util::alignStream(LOG_STREAM(LogLevel::Default), indent) << "decompiling " << getName() << "\n";
+        Util::alignStream(LOG_STREAM_OLD(LogLevel::Default), indent) << "decompiling " << getName() << "\n";
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         child = middleDecompile(path, indent);
@@ -1334,7 +1334,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     }
 
     --indent;
-    LOG_VERBOSE(1) << "end decompile(" << getName() << ")\n";
+    LOG_VERBOSE_OLD(1) << "end decompile(" << getName() << ")\n";
     return child;
 }
 
@@ -1342,7 +1342,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 void UserProc::debugPrintAll(const char *step_name)
 {
     if (VERBOSE) {
-        LOG_SEPARATE(getName()) << "--- debug print " << step_name << " for " << getName() << " ---\n" << *this
+        LOG_SEPARATE_OLD(getName()) << "--- debug print " << step_name << " for " << getName() << " ---\n" << *this
                                 << "=== end debug print " << step_name << " for " << getName() << " ===\n\n";
     }
 }
@@ -1382,7 +1382,7 @@ void UserProc::initialiseDecompile()
     printXML();
 
     if (Boomerang::get()->noDecompile) {
-        LOG_STREAM() << "not decompiling.\n";
+        LOG_STREAM_OLD() << "not decompiling.\n";
         setStatus(PROC_FINAL); // ??!
         return;
     }
@@ -1399,7 +1399,7 @@ void UserProc::earlyDecompile()
     }
 
     Boomerang::get()->alertDecompileDebugPoint(this, "before early");
-    LOG_VERBOSE(1) << "early decompile for " << getName() << "\n";
+    LOG_VERBOSE_OLD(1) << "early decompile for " << getName() << "\n";
 
     // Update the defines in the calls. Will redo if involved in recursion
     updateCallDefines();
@@ -1414,14 +1414,14 @@ void UserProc::earlyDecompile()
     // TODO: Check if this makes sense. It seems to me that we only want to do one pass of propagation here, since
     // the status == check had been knobbled below. Hopefully, one call to placing phi functions etc will be
     // equivalent to depth 0 in the old scheme
-    LOG_VERBOSE(1) << "placing phi functions 1st pass\n";
+    LOG_VERBOSE_OLD(1) << "placing phi functions 1st pass\n";
     // Place the phi functions
     m_df.placePhiFunctions(this);
 
-    LOG_VERBOSE(1) << "numbering phi statements 1st pass\n";
+    LOG_VERBOSE_OLD(1) << "numbering phi statements 1st pass\n";
     numberStatements(); // Number them
 
-    LOG_VERBOSE(1) << "renaming block variables 1st pass\n";
+    LOG_VERBOSE_OLD(1) << "renaming block variables 1st pass\n";
     // Rename variables
     doRenameBlockVars(1, true);
     debugPrintAll("after rename (1)");
@@ -1529,7 +1529,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
         // Print if requested
         if (VERBOSE) { // was if debugPrintSSA
-            LOG_SEPARATE(getName()) << "--- debug print SSA for " << getName() << " pass " << pass
+            LOG_SEPARATE_OLD(getName()) << "--- debug print SSA for " << getName() << " pass " << pass
                                     << " (no propagations) ---\n" << *this << "=== end debug print SSA for "
                                     << getName() << " pass " << pass << " (no propagations) ===\n\n";
         }
@@ -1563,7 +1563,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
             printXML();
 
             if (VERBOSE) {
-                LOG_SEPARATE(getName()) << "--- debug print SSA for " << getName() << " at pass " << pass
+                LOG_SEPARATE_OLD(getName()) << "--- debug print SSA for " << getName() << " at pass " << pass
                                         << " (after updating returns) ---\n" << *this << "=== end debug print SSA for "
                                         << getName() << " at pass " << pass << " ===\n\n";
             }
@@ -1573,7 +1573,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
         // Print if requested
         if (VERBOSE) { // was if debugPrintSSA
-            LOG_SEPARATE(getName()) << "--- debug print SSA for " << getName() << " at pass " << pass
+            LOG_SEPARATE_OLD(getName()) << "--- debug print SSA for " << getName() << " at pass " << pass
                                     << " (after trimming return set) ---\n" << *this << "=== end debug print SSA for "
                                     << getName() << " at pass " << pass << " ===\n\n";
         }
@@ -1586,7 +1586,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
         do {
             _convert = false;
-            LOG_VERBOSE(1) << "propagating at pass " << pass << "\n";
+            LOG_VERBOSE_OLD(1) << "propagating at pass " << pass << "\n";
             change |= propagateStatements(_convert, pass);
             change |= doRenameBlockVars(pass, true);
 
@@ -1602,7 +1602,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
                 m_df.setRenameLocalsParams(false);
                 change |= doRenameBlockVars(0, true); // Initial dataflow level 0
-                LOG_SEPARATE(getName()) << "\nafter rename (2) of " << getName() << ":\n" << *this
+                LOG_SEPARATE_OLD(getName()) << "\nafter rename (2) of " << getName() << ":\n" << *this
                                         << "\ndone after rename (2) of " << getName() << ":\n\n";
             }
         } while (_convert);
@@ -1610,7 +1610,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         printXML();
 
         if (VERBOSE) {
-            LOG_SEPARATE(getName()) << "--- after propagate for " << getName() << " at pass " << pass << " ---\n"
+            LOG_SEPARATE_OLD(getName()) << "--- after propagate for " << getName() << " at pass " << pass << " ---\n"
                                     << *this << "=== end propagate for " << getName() << " at pass " << pass
                                     << " ===\n\n";
         }
@@ -1741,7 +1741,7 @@ void UserProc::remUnusedStmtEtc()
     Boomerang::get()->alertDecompiling(this);
     Boomerang::get()->alertDecompileDebugPoint(this, "before final");
 
-    LOG_VERBOSE(1) << "--- remove unused statements for " << getName() << " ---\n";
+    LOG_VERBOSE_OLD(1) << "--- remove unused statements for " << getName() << " ---\n";
     // A temporary hack to remove %CF = %CF{7} when 7 isn't a SUBFLAGS
     //    if (theReturnStatement)
     //        theReturnStatement->specialProcessing();
@@ -1982,7 +1982,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
         }
     }
 
-    LOG_VERBOSE(1) << "=== end recursion group analysis ===\n";
+    LOG_VERBOSE_OLD(1) << "=== end recursion group analysis ===\n";
     Boomerang::get()->alertEndDecompile(this);
 }
 
@@ -2118,17 +2118,17 @@ void UserProc::fixUglyBranches()
 
 bool UserProc::doRenameBlockVars(int pass, bool clearStacks)
 {
-    LOG_VERBOSE(1) << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks
+    LOG_VERBOSE_OLD(1) << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks
                    << " ###\n";
     bool b = m_df.renameBlockVars(this, 0, clearStacks);
-    LOG_VERBOSE(1) << "df.renameBlockVars return " << (b ? "true" : "false") << "\n";
+    LOG_VERBOSE_OLD(1) << "df.renameBlockVars return " << (b ? "true" : "false") << "\n";
     return b;
 }
 
 
 void UserProc::findSpPreservation()
 {
-    LOG_VERBOSE(1) << "finding stack pointer preservation for " << getName() << "\n";
+    LOG_VERBOSE_OLD(1) << "finding stack pointer preservation for " << getName() << "\n";
 
     bool stdsp = false; // FIXME: are these really used?
     // Note: need this non-virtual version most of the time, since nothing proved yet
@@ -2165,7 +2165,7 @@ void UserProc::findPreserveds()
 {
     std::set<SharedExp> removes;
 
-    LOG_VERBOSE(1) << "finding preserveds for " << getName() << "\n";
+    LOG_VERBOSE_OLD(1) << "finding preserveds for " << getName() << "\n";
 
     Boomerang::get()->alertDecompileDebugPoint(this, "before finding preserveds");
 
@@ -2323,7 +2323,7 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
     QTextStream str(&res_str);
     str << "before removing matching assigns (" << e << ").";
     Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
-    LOG_VERBOSE(1) << res_str << "\n";
+    LOG_VERBOSE_OLD(1) << res_str << "\n";
 
     for (auto& stmt : stmts) {
         if ((stmt)->isAssign()) {
@@ -2373,7 +2373,7 @@ void UserProc::assignProcsToCalls()
                 Function *p = m_prog->findProc(call->getFixedDest());
 
                 if (p == nullptr) {
-                    LOG_STREAM() << "Cannot find proc for dest " << call->getFixedDest() << " in call at "
+                    LOG_STREAM_OLD() << "Cannot find proc for dest " << call->getFixedDest() << " in call at "
                                  << (rtl)->getAddress() << "\n";
                     assert(p);
                 }
@@ -2458,7 +2458,7 @@ void UserProc::findFinalParameters()
     }
 
     if (DEBUG_PARAMS) {
-        LOG_VERBOSE(1) << "finding final parameters for " << getName() << "\n";
+        LOG_VERBOSE_OLD(1) << "finding final parameters for " << getName() << "\n";
     }
 
     //    int sp = signature->getStackRegister();
@@ -2492,7 +2492,7 @@ void UserProc::findFinalParameters()
             }
 
             if (DEBUG_PARAMS) {
-                LOG_VERBOSE(1) << "found new parameter " << e << "\n";
+                LOG_VERBOSE_OLD(1) << "found new parameter " << e << "\n";
             }
 
             SharedType ty = ((ImplicitAssign *)s)->getType();
@@ -2633,7 +2633,7 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 
                 if ((m > n) && (m < n + (int)(lty->getSize() / 8))) {
                     e = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, elem.second->clone()), Const::get(m - n)));
-                    LOG_VERBOSE(1) << "seems " << le << " is in the middle of " << loc << " returning " << e << "\n";
+                    LOG_VERBOSE_OLD(1) << "seems " << le << " is in the middle of " << loc << " returning " << e << "\n";
                     return e;
                 }
             }
@@ -2744,7 +2744,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
 
                     if (e) {
                         auto ne = Unary::get(opAddrOf, e);
-                        LOG_VERBOSE(1) << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
+                        LOG_VERBOSE_OLD(1) << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
                         call->setArgumentExp(i, ne);
                     }
                 }
@@ -2802,7 +2802,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
             }
 
             // arr->setType(ArrayType::get(base, n / (base->getSize() / 8))); //TODO: why is this commented out ?
-            LOG_VERBOSE(1) << "found a local array using " << n << " bytes\n";
+            LOG_VERBOSE_OLD(1) << "found a local array using " << n << " bytes\n";
             SharedExp replace = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, arr),
                                                             result->access<Exp, 1, 1, 2>()->clone()),
                                                 this);
@@ -2909,7 +2909,7 @@ bool UserProc::removeNullStatements()
 
 bool UserProc::propagateStatements(bool& convert, int pass)
 {
-    LOG_VERBOSE(1) << "--- begin propagating statements pass " << pass << " ---\n";
+    LOG_VERBOSE_OLD(1) << "--- begin propagating statements pass " << pass << " ---\n";
     StatementList stmts;
     getStatements(stmts);
     // propagate any statements that can be
@@ -2960,7 +2960,7 @@ bool UserProc::propagateStatements(bool& convert, int pass)
 
     simplify();
     propagateToCollector();
-    LOG_VERBOSE(1) << "=== end propagating statements at pass " << pass << " ===\n";
+    LOG_VERBOSE_OLD(1) << "=== end propagating statements at pass " << pass << " ===\n";
     return change;
 }
 
@@ -3030,7 +3030,7 @@ SharedExp UserProc::newLocal(SharedType ty, const SharedExp& e, char *nam /* = n
     m_locals[name] = ty;
 
     if (ty == nullptr) {
-        LOG_STREAM() << "null type passed to newLocal\n";
+        LOG_STREAM_OLD() << "null type passed to newLocal\n";
         assert(false);
     }
 
@@ -3067,7 +3067,7 @@ void UserProc::setLocalType(const QString& nam, SharedType ty)
 {
     m_locals[nam] = ty;
 
-    LOG_VERBOSE(1) << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
+    LOG_VERBOSE_OLD(1) << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
 }
 
 
@@ -3397,7 +3397,7 @@ void UserProc::fromSSAform()
     if (m_cfg->getNumBBs() >= 100) { // Only for the larger procs
         // Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
         // little procs that don't get messages. Also, looks better with progress dots
-        LOG_STREAM() << " transforming out of SSA form " << getName() << " with " << m_cfg->getNumBBs() << " BBs";
+        LOG_STREAM_OLD() << " transforming out of SSA form " << getName() << " with " << m_cfg->getNumBBs() << " BBs";
     }
 
     StatementList stmts;
@@ -3425,8 +3425,8 @@ void UserProc::fromSSAform()
 
     for (it = stmts.begin(); it != stmts.end(); it++) {
         if (++progress > 2000) {
-            LOG_STREAM() << ".";
-            LOG_STREAM().flush();
+            LOG_STREAM_OLD() << ".";
+            LOG_STREAM_OLD().flush();
             progress = 0;
         }
 
@@ -3443,7 +3443,7 @@ void UserProc::fromSSAform()
                 ty = VoidType::get();
             }
 
-            LOG_VERBOSE(1) << "got type " << ty->prints() << " for " << base << " from " << s << "\n";
+            LOG_VERBOSE_OLD(1) << "got type " << ty->prints() << " for " << base << " from " << s << "\n";
             ff = firstTypes.find(base);
             SharedExp ref = RefExp::get(base, s);
 
@@ -3715,7 +3715,7 @@ void UserProc::fromSSAform()
     }
 
     if (m_cfg->getNumBBs() >= 100) { // Only for the larger procs
-        LOG_STREAM() << "\n";
+        LOG_STREAM_OLD() << "\n";
     }
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after transforming from SSA form");
@@ -4611,7 +4611,7 @@ void UserProc::dumpSymbolMap() const
 {
     for (auto it = m_symbolMap.begin(); it != m_symbolMap.end(); it++) {
         SharedType ty = getTypeForLocation(it->second);
-        LOG_STREAM() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
+        LOG_STREAM_OLD() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
                      << "\n";
     }
 }
@@ -4621,7 +4621,7 @@ void UserProc::dumpSymbolMapx() const
 {
     for (auto it = m_symbolMap.begin(); it != m_symbolMap.end(); it++) {
         SharedType ty = getTypeForLocation(it->second);
-        LOG_STREAM() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
+        LOG_STREAM_OLD() << "  " << it->first << " maps to " << it->second << " type " << (ty ? qPrintable(ty->getCtype()) : "NULL")
                      << "\n";
         it->first->printx(2);
     }
@@ -4641,7 +4641,7 @@ void UserProc::testSymbolMap() const
         while (it2 != m_symbolMap.end()) {
             if (*it2->first < *it1->first) { // Compare keys
                 OK = false;
-                LOG_STREAM() << "*it2->first < *it1->first: " << it2->first << " < " << it1->first << "!\n";
+                LOG_STREAM_OLD() << "*it2->first < *it1->first: " << it2->first << " < " << it1->first << "!\n";
                 // it2->first->printx(0); it1->first->printx(5);
             }
 
@@ -4650,7 +4650,7 @@ void UserProc::testSymbolMap() const
         }
     }
 
-    LOG_STREAM() << "Symbolmap is " << (OK ? "OK" : "NOT OK!!!!!") << "\n";
+    LOG_STREAM_OLD() << "Symbolmap is " << (OK ? "OK" : "NOT OK!!!!!") << "\n";
 }
 
 
@@ -4665,7 +4665,7 @@ void UserProc::dumpLocals() const
 void UserProc::updateArguments()
 {
     Boomerang::get()->alertDecompiling(this);
-    LOG_VERBOSE(1) << "### update arguments for " << getName() << " ###\n";
+    LOG_VERBOSE_OLD(1) << "### update arguments for " << getName() << " ###\n";
     Boomerang::get()->alertDecompileDebugPoint(this, "before updating arguments");
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
@@ -4680,10 +4680,10 @@ void UserProc::updateArguments()
 
         c->updateArguments();
         // c->bypass();
-        LOG_VERBOSE(1) << c << "\n";
+        LOG_VERBOSE_OLD(1) << c << "\n";
     }
 
-    LOG_VERBOSE(1) << "=== end update arguments for " << getName() << "\n";
+    LOG_VERBOSE_OLD(1) << "=== end update arguments for " << getName() << "\n";
     Boomerang::get()->alertDecompileDebugPoint(this, "after updating arguments");
 }
 
@@ -4712,7 +4712,7 @@ void UserProc::updateCallDefines()
 
 void UserProc::replaceSimpleGlobalConstants()
 {
-    LOG_VERBOSE(1) << "### replace simple global constants for " << getName() << " ###\n";
+    LOG_VERBOSE_OLD(1) << "### replace simple global constants for " << getName() << " ###\n";
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -5231,7 +5231,7 @@ void UserProc::fixCallAndPhiRefs()
             }
 
             ps->convertToAssign(best);
-            LOG_VERBOSE(1) << "redundant phi replaced with copy assign; now " << ps << "\n";
+            LOG_VERBOSE_OLD(1) << "redundant phi replaced with copy assign; now " << ps << "\n";
         }
     }
 
@@ -5321,7 +5321,7 @@ void UserProc::propagateToCollector()
                 continue;
             }
             else {
-                LOG_VERBOSE(1) << "propagating " << r << " to " << as->getRight() << " in collector; result "
+                LOG_VERBOSE_OLD(1) << "propagating " << r << " to " << as->getRight() << " in collector; result "
                                << memOfRes << "\n";
                 (*it)->setSubExp1(res); // Change the child of the memof
             }
@@ -5334,7 +5334,7 @@ void UserProc::propagateToCollector()
 
 void UserProc::initialParameters()
 {
-    LOG_VERBOSE(1) << "### initial parameters for " << getName() << "\n";
+    LOG_VERBOSE_OLD(1) << "### initial parameters for " << getName() << "\n";
     m_parameters.clear();
 
     for (const SharedExp& v : m_procUseCollector) {
@@ -5798,7 +5798,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         // Just insert one return for main. Note: at present, the first parameter is still the stack pointer
         if (m_signature->getNumReturns() <= 1) {
             // handle the case of missing main() signature
-            LOG_STREAM(LogLevel::Warning) << "main signature definition is missing assuming void main()";
+            LOG_STREAM_OLD(LogLevel::Warning) << "main signature definition is missing assuming void main()";
         }
         else {
             unionOfCallerLiveLocs.insert(m_signature->getReturnExp(1));
@@ -6008,7 +6008,7 @@ void UserProc::typeAnalysis()
     // Want to be after all propagation, but before converting expressions to locals etc
     if (DFA_TYPE_ANALYSIS) {
         if (DEBUG_TA) {
-            LOG_VERBOSE(1) << "--- start data flow based type analysis for " << getName() << " ---\n";
+            LOG_VERBOSE_OLD(1) << "--- start data flow based type analysis for " << getName() << " ---\n";
         }
 
         bool first = true;
@@ -6031,7 +6031,7 @@ void UserProc::typeAnalysis()
         simplify(); // In case there are new struct members
 
         if (DEBUG_TA) {
-            LOG_VERBOSE(1) << "=== end type analysis for " << getName() << " ===\n";
+            LOG_VERBOSE_OLD(1) << "=== end type analysis for " << getName() << " ===\n";
         }
     }
     else if (CON_TYPE_ANALYSIS) {
@@ -6225,10 +6225,10 @@ void dumpProcList(ProcList *pc)
     ProcList::iterator pi;
 
     for (pi = pc->begin(); pi != pc->end(); ++pi) {
-        LOG_STREAM() << (*pi)->getName() << ", ";
+        LOG_STREAM_OLD() << (*pi)->getName() << ", ";
     }
 
-    LOG_STREAM() << "\n";
+    LOG_STREAM_OLD() << "\n";
 }
 
 
@@ -6237,10 +6237,10 @@ void dumpProcSet(ProcSet *pc)
     ProcSet::iterator pi;
 
     for (pi = pc->begin(); pi != pc->end(); ++pi) {
-        LOG_STREAM() << (*pi)->getName() << ", ";
+        LOG_STREAM_OLD() << (*pi)->getName() << ", ";
     }
 
-    LOG_STREAM() << "\n";
+    LOG_STREAM_OLD() << "\n";
 }
 
 
@@ -6378,7 +6378,7 @@ QString UserProc::getRegName(SharedExp r)
         return regName;
     }
 
-    LOG_VERBOSE(2) << "warning - UserProc::getRegName(Exp* r) will try to build register name from [tmp+X] !";
+    LOG_VERBOSE_OLD(2) << "warning - UserProc::getRegName(Exp* r) will try to build register name from [tmp+X] !";
     // TODO: how to handle register file lookups ?
     // in some cases the form might be r[tmp+value]
     // just return this expression :(

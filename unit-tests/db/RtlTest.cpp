@@ -39,7 +39,6 @@ void RtlTest::initTestCase()
 	if (!logset) {
 		logset = true;
 		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setLogger(new NullLogger());
 	}
 }
 

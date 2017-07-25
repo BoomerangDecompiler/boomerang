@@ -103,7 +103,7 @@ void ExpTransformer::loadAll()
     QFile file(sPath);
 
     if (!file.open(QFile::ReadOnly)) {
-        qCritical() << "Can't open transformation file `" << sPath << "'";
+        LOG_ERROR("Can't open transformation file `%1'", sPath);
         return;
     }
 

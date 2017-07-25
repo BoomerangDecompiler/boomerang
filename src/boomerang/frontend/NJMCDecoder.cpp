@@ -89,7 +89,7 @@ std::list<Instruction *> *NJMCDecoder::instantiate(Address pc, const char *name,
 SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_list<SharedExp>& args)
 {
     if (m_rtlDict.ParamSet.find(name) == m_rtlDict.ParamSet.end()) {
-        LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
+        LOG_STREAM_OLD() << "No entry for named parameter '" << name << "'\n";
         return nullptr;
     }
 
@@ -97,7 +97,7 @@ SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_
     ParamEntry& ent = m_rtlDict.DetParamMap[name];
 
     if ((ent.m_kind != PARAM_ASGN) && (ent.m_kind != PARAM_LAMBDA)) {
-        LOG_STREAM() << "Attempt to instantiate expressionless parameter '" << name << "'\n";
+        LOG_STREAM_OLD() << "Attempt to instantiate expressionless parameter '" << name << "'\n";
         return nullptr;
     }
 
@@ -120,7 +120,7 @@ SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_
 void NJMCDecoder::substituteCallArgs(char *name, SharedExp *exp, const std::initializer_list<SharedExp>& args)
 {
     if (m_rtlDict.ParamSet.find(name) == m_rtlDict.ParamSet.end()) {
-        LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
+        LOG_STREAM_OLD() << "No entry for named parameter '" << name << "'\n";
         return;
     }
 

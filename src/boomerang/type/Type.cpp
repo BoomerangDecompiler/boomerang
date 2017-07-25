@@ -432,7 +432,7 @@ size_t NamedType::getSize() const
         return ty->getSize();
     }
 
-    LOG_VERBOSE(1) << "WARNING: Unknown size for named type " << name << "\n";
+    LOG_VERBOSE_OLD(1) << "WARNING: Unknown size for named type " << name << "\n";
     return 0; // don't know
 }
 
@@ -683,7 +683,7 @@ bool PointerType::operator==(const Type& other) const
     }
 
     if (++pointerCompareNest >= 20) {
-        LOG_STREAM() << "PointerType operator== nesting depth exceeded!\n";
+        LOG_STREAM_OLD() << "PointerType operator== nesting depth exceeded!\n";
         return true;
     }
 
@@ -1326,7 +1326,7 @@ QString Type::prints()
 
 void Type::dump()
 {
-    LOG_STREAM() << getCtype(false); // For debugging
+    LOG_STREAM_OLD() << getCtype(false); // For debugging
 }
 
 
@@ -1364,11 +1364,7 @@ SharedType Type::getNamedType(const QString& name)
 {
     auto iter = namedTypes.find(name);
 
-    if (iter == namedTypes.end()) {
-        return nullptr;
-    }
-
-    return *iter;
+    return (iter != namedTypes.end()) ? *iter : nullptr;
 }
 
 
@@ -2125,7 +2121,7 @@ void DataIntervalMap::deleteItem(Address addr)
 
 void DataIntervalMap::dump()
 {
-    LOG_STREAM() << prints();
+    LOG_STREAM_OLD() << prints();
 }
 
 
@@ -2201,7 +2197,7 @@ void UnionType::addType(SharedType n, const QString& str)
     else {
         if (n->isPointer() && (n->as<PointerType>()->getPointsTo().get() == this)) { // Note: pointer comparison
             n = PointerType::get(VoidType::get());
-            LOG_VERBOSE(1) << "Warning: attempt to union with pointer to self!\n";
+            LOG_VERBOSE_OLD(1) << "Warning: attempt to union with pointer to self!\n";
         }
 
         UnionElement ue;

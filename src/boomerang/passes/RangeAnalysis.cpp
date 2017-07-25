@@ -384,13 +384,13 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << "added " << a_lhs << " -> " << output.getRange(a_lhs).toString() << "\n";
+            LOG_VERBOSE_OLD(1) << "added " << a_lhs << " -> " << output.getRange(a_lhs).toString() << "\n";
         }
 
         updateRanges(insn, output);
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << insn << "\n";
+            LOG_VERBOSE_OLD(1) << insn << "\n";
         }
 
         return true;
@@ -532,11 +532,11 @@ public:
                     assert(false);
                     return false;
                 }
-                LOG_VERBOSE(1) << "== checking for number of bytes popped ==\n" << *p << "== end it ==\n";
+                LOG_VERBOSE_OLD(1) << "== checking for number of bytes popped ==\n" << *p << "== end it ==\n";
                 SharedExp eq = p->getProven(Location::regOf(28));
 
                 if (eq) {
-                    LOG_VERBOSE(1) << "found proven " << eq << "\n";
+                    LOG_VERBOSE_OLD(1) << "found proven " << eq << "\n";
 
                     if ((eq->getOper() == opPlus) && (*eq->getSubExp1() == *Location::regOf(28)) &&
                         eq->getSubExp2()->isIntConst()) {
@@ -611,14 +611,14 @@ public:
         RangeMap input;
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << "unioning {\n";
+            LOG_VERBOSE_OLD(1) << "unioning {\n";
         }
 
         for (size_t i = 0; i < stmt->getBB()->getNumInEdges(); i++) {
             Instruction *last = stmt->getBB()->getInEdges()[i]->getLastStmt();
 
             if (DEBUG_RANGE_ANALYSIS) {
-                LOG_VERBOSE(1) << "  in BB: " << stmt->getBB()->getInEdges()[i]->getLowAddr() << " " << last << "\n";
+                LOG_VERBOSE_OLD(1) << "  in BB: " << stmt->getBB()->getInEdges()[i]->getLowAddr() << " " << last << "\n";
             }
 
             if (last->isBranch()) {
@@ -630,7 +630,7 @@ public:
 
                     if (d && !d->isLib() && (((UserProc *)d)->getCFG()->findRetNode() == nullptr)) {
                         if (DEBUG_RANGE_ANALYSIS) {
-                            LOG_VERBOSE(1) << "ignoring ranges from call to proc with no ret node\n";
+                            LOG_VERBOSE_OLD(1) << "ignoring ranges from call to proc with no ret node\n";
                         }
                     }
                     else {
@@ -644,7 +644,7 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << "}\n";
+            LOG_VERBOSE_OLD(1) << "}\n";
         }
 
         if (!input.isSubset(tgt->getRanges(stmt))) {
@@ -655,9 +655,9 @@ public:
 
                 if ((r.getLowerBound() != r.getUpperBound()) && (r.getLowerBound() != Range::MIN)) {
                     if (VERBOSE) {
-                        LOG_STREAM(LogLevel::Verbose1) << "stack height assumption violated " << r.toString();
-                        LOG_STREAM(LogLevel::Verbose1) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
-                        stmt->getProc()->print(LOG_STREAM(LogLevel::Verbose1));
+                        LOG_STREAM_OLD(LogLevel::Verbose1) << "stack height assumption violated " << r.toString();
+                        LOG_STREAM_OLD(LogLevel::Verbose1) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
+                        stmt->getProc()->print(LOG_STREAM_OLD(LogLevel::Verbose1));
                     }
 
                     assert(false);
@@ -673,7 +673,7 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << stmt << "\n";
+            LOG_VERBOSE_OLD(1) << stmt << "\n";
         }
 
         return true;
@@ -774,7 +774,7 @@ bool RangeAnalysis::runOnFunction(Function& F)
         return false;
     }
 
-    LOG_STREAM() << "performing range analysis on " << F.getName() << "\n";
+    LOG_STREAM_OLD() << "performing range analysis on " << F.getName() << "\n";
     UserProc& UF((UserProc&)F);
     assert(UF.getCFG());
     // this helps
@@ -837,7 +837,7 @@ bool RangeAnalysis::runOnFunction(Function& F)
 
             if (watchdog > 45) {
                 LOG << (int)execution_paths.size() << " execution paths remaining.\n";
-                LOG_SEPARATE(UF.getName()) << "=== After range analysis watchdog " << watchdog << " for " << UF.getName()
+                LOG_SEPARATE_OLD(UF.getName()) << "=== After range analysis watchdog " << watchdog << " for " << UF.getName()
                                            << " ===\n" << UF << "=== end after range analysis watchdog " << watchdog
                                            << " for " << UF.getName() << " ===\n\n";
             }
@@ -891,9 +891,9 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc& UF)
 
         if (rm.hasRange(p)) {
             Range& r = rm.getRange(p);
-            LOG_STREAM(LogLevel::Default) << "got p " << p << " with range ";
-            LOG_STREAM(LogLevel::Default) << r.toString();
-            LOG_STREAM(LogLevel::Default) << "\n";
+            LOG_STREAM_OLD(LogLevel::Default) << "got p " << p << " with range ";
+            LOG_STREAM_OLD(LogLevel::Default) << r.toString();
+            LOG_STREAM_OLD(LogLevel::Default) << "\n";
 
             if ((r.getBase()->getOper() == opInitValueOf) && r.getBase()->getSubExp1()->isRegOfK() &&
                 (r.getBase()->access<Const, 1, 1>()->getInt() == 28)) {
@@ -1048,7 +1048,7 @@ void Range::unionWith(Range& r)
         m_base       = Const::get(0);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG_STREAM(LogLevel::Default) << toString();
+            LOG_STREAM_OLD(LogLevel::Default) << toString();
         }
 
         return;
@@ -1067,7 +1067,7 @@ void Range::unionWith(Range& r)
     }
 
     if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG_STREAM(LogLevel::Default) << toString();
+        LOG_STREAM_OLD(LogLevel::Default) << toString();
     }
 }
 
@@ -1085,7 +1085,7 @@ void Range::widenWith(Range& r)
         m_base       = Const::get(0);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG_STREAM(LogLevel::Default) << toString();
+            LOG_STREAM_OLD(LogLevel::Default) << toString();
         }
 
         return;
@@ -1101,7 +1101,7 @@ void Range::widenWith(Range& r)
     }
 
     if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG_STREAM(LogLevel::Default) << toString();
+        LOG_STREAM_OLD(LogLevel::Default) << toString();
     }
 }
 

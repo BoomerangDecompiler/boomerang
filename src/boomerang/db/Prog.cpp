@@ -583,7 +583,7 @@ Function *Prog::createProc(Address uAddr)
     if (pName.isEmpty()) {
         // No name. Give it a numbered name
         pName = QString("proc%1").arg(m_iNumberedProc++);
-        LOG_VERBOSE(1) << "assigning name " << pName << " to addr " << uAddr << "\n";
+        LOG_VERBOSE_OLD(1) << "assigning name " << pName << " to addr " << uAddr << "\n";
     }
 
     pProc = m_rootCluster->getOrInsertFunction(pName, uAddr, bLib);
@@ -896,7 +896,7 @@ QString Prog::getGlobalName(Address uaddr) const
 void Prog::dumpGlobals() const
 {
     for (Global *glob : m_globals) {
-        LOG_STREAM() << glob->toString() << "\n";
+        LOG_STREAM_OLD() << glob->toString() << "\n";
     }
 }
 
@@ -942,7 +942,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
     }
 
     if (m_image->getSectionInfoByAddr(uaddr) == nullptr) {
-        LOG_VERBOSE(1) << "refusing to create a global at address that is in no known section of the binary: " << uaddr
+        LOG_VERBOSE_OLD(1) << "refusing to create a global at address that is in no known section of the binary: " << uaddr
                        << "\n";
         return false;
     }
@@ -1071,7 +1071,7 @@ QString Prog::newGlobalName(Address uaddr)
     }
 
     nam = QString("global%1_%2").arg(m_globals.size()).arg(uaddr.value(), 0, 16);
-    LOG_VERBOSE(1) << "naming new global: " << nam << " at address " << uaddr << "\n";
+    LOG_VERBOSE_OLD(1) << "naming new global: " << nam << " at address " << uaddr << "\n";
     return nam;
 }
 
@@ -1295,7 +1295,7 @@ void Prog::decodeEntryPoint(Address a)
 
     if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
         if ((a < m_image->getLimitTextLow()) || (a >= m_image->getLimitTextHigh())) {
-            LOG_STREAM(LogLevel::Warning) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
+            LOG_STREAM_OLD(LogLevel::Warning) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
             return;
         }
 
@@ -1370,12 +1370,12 @@ void Prog::decompile()
 
     assert(!m_moduleList.empty());
     getNumProcs();
-    LOG_VERBOSE(1) << getNumProcs(false) << " procedures\n";
+    LOG_VERBOSE_OLD(1) << getNumProcs(false) << " procedures\n";
 
     // Start decompiling each entry point
     for (UserProc *up : m_entryProcs) {
         ProcList call_path;
-        LOG_VERBOSE(1) << "decompiling entry point " << up->getName() << "\n";
+        LOG_VERBOSE_OLD(1) << "decompiling entry point " << up->getName() << "\n";
         int indent = 0;
         up->decompile(&call_path, indent);
     }
@@ -1410,7 +1410,7 @@ void Prog::decompile()
 
     // Type analysis, if requested
     if (Boomerang::get()->conTypeAnalysis && Boomerang::get()->dfaTypeAnalysis) {
-        LOG_STREAM() << "can't use two types of type analysis at once!\n";
+        LOG_STREAM_OLD() << "can't use two types of type analysis at once!\n";
         Boomerang::get()->conTypeAnalysis = false;
     }
 
@@ -1419,7 +1419,7 @@ void Prog::decompile()
     if (!boom->noDecompile) {
         if (!boom->noRemoveReturns) {
             // A final pass to remove returns not used by any caller
-            LOG_VERBOSE(1) << "prog: global removing unused returns\n";
+            LOG_VERBOSE_OLD(1) << "prog: global removing unused returns\n";
 
             // Repeat until no change. Note 100% sure if needed.
             while (removeUnusedReturns()) {
@@ -1439,7 +1439,7 @@ void Prog::decompile()
         }
     }
 
-    LOG_VERBOSE(1) << "transforming from SSA\n";
+    LOG_VERBOSE_OLD(1) << "transforming from SSA\n";
 
     // Now it is OK to transform out of SSA form
     fromSSAform();
@@ -1451,7 +1451,7 @@ void Prog::decompile()
 
 void Prog::removeUnusedGlobals()
 {
-    LOG_VERBOSE(1) << "removing unused globals\n";
+    LOG_VERBOSE_OLD(1) << "removing unused globals\n";
 
     // seach for used globals
     std::list<SharedExp> usedGlobals;
@@ -1570,7 +1570,7 @@ void Prog::fromSSAform()
             }
 
             proc->fromSSAform();
-            LOG_VERBOSE(1) << "===== after transformation from SSA form for " << proc->getName() << " =====\n" << *proc
+            LOG_VERBOSE_OLD(1) << "===== after transformation from SSA form for " << proc->getName() << " =====\n" << *proc
                            << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
         }
     }
@@ -1619,7 +1619,7 @@ void Prog::globalTypeAnalysis()
 
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
-            LOG_STREAM() << "global type analysis for " << proc->getName() << "\n";
+            LOG_STREAM_OLD() << "global type analysis for " << proc->getName() << "\n";
             proc->typeAnalysis();
         }
     }
@@ -1656,7 +1656,7 @@ void Prog::printCallGraph() const
     QSaveFile file2(fname2);
 
     if (!(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly))) {
-        LOG_STREAM() << "Cannot open output files for callgraph output";
+        LOG_STREAM_OLD() << "Cannot open output files for callgraph output";
         return;
     }
 
@@ -1763,12 +1763,12 @@ Machine Prog::getMachine() const
 
 void Prog::printSymbolsToFile() const
 {
-    LOG_STREAM() << "entering Prog::printSymbolsToFile\n";
+    LOG_STREAM_OLD() << "entering Prog::printSymbolsToFile\n";
     QString   fname = Boomerang::get()->getOutputDirectory().absoluteFilePath("symbols.h");
     QSaveFile tgt(fname);
 
     if (!tgt.open(QFile::WriteOnly)) {
-        LOG_STREAM() << " Cannot open " << fname << " for writing\n";
+        LOG_STREAM_OLD() << " Cannot open " << fname << " for writing\n";
         return;
     }
 
@@ -1794,7 +1794,7 @@ void Prog::printSymbolsToFile() const
 
     f.flush();
     tgt.commit();
-    LOG_STREAM() << "leaving Prog::printSymbolsToFile\n";
+    LOG_STREAM_OLD() << "leaving Prog::printSymbolsToFile\n";
 }
 
 
@@ -2116,7 +2116,7 @@ void Prog::decodeFragment(UserProc *proc, Address a)
         m_defaultFrontend->decodeFragment(proc, a);
     }
     else {
-        LOG_STREAM() << "attempt to decode fragment outside text area, addr=" << a << "\n";
+        LOG_STREAM_OLD() << "attempt to decode fragment outside text area, addr=" << a << "\n";
 
         if (VERBOSE) {
             LOG << "attempt to decode fragment outside text area, addr=" << a << "\n";

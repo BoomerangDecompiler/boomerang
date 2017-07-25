@@ -55,7 +55,6 @@ void StatementTest::initTestCase()
 	if (!logset) {
 		logset = true;
 		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
 	}
 }
 
@@ -67,7 +66,6 @@ void StatementTest::testEmpty()
 
 	boo->vFlag = true;
 	boo->setOutputDirectory("./unit_test/");
-	boo->setLogger(new FileLogger());
 
 	// create Prog
 	Prog              *prog = new Prog("testEmpty");

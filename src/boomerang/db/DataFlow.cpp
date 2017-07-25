@@ -302,21 +302,21 @@ bool DataFlow::canRename(SharedExp e, UserProc *proc)
 void DataFlow::dumpA_phi()
 {
     std::map<SharedExp, std::set<int>, lessExpStar>::iterator zz;
-    LOG_STREAM() << "A_phi:\n";
+    LOG_STREAM_OLD() << "A_phi:\n";
 
     for (zz = m_A_phi.begin(); zz != m_A_phi.end(); ++zz) {
-        LOG_STREAM() << zz->first << " -> ";
+        LOG_STREAM_OLD() << zz->first << " -> ";
         std::set<int>&          si = zz->second;
         std::set<int>::iterator qq;
 
         for (qq = si.begin(); qq != si.end(); ++qq) {
-            LOG_STREAM() << *qq << ", ";
+            LOG_STREAM_OLD() << *qq << ", ";
         }
 
-        LOG_STREAM() << "\n";
+        LOG_STREAM_OLD() << "\n";
     }
 
-    LOG_STREAM() << "end A_phi\n";
+    LOG_STREAM_OLD() << "end A_phi\n";
 }
 
 
@@ -461,8 +461,8 @@ static int dataflow_progress = 0;
 bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = false */)
 {
     if (++dataflow_progress > 200) {
-        LOG_STREAM() << 'r';
-        LOG_STREAM().flush();
+        LOG_STREAM_OLD() << 'r';
+        LOG_STREAM_OLD().flush();
 
         dataflow_progress = 0;
     }
@@ -714,7 +714,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             auto ss = m_Stacks.find(*dd);
 
             if (ss == m_Stacks.end()) {
-                LOG_STREAM() << "Tried to pop " << *dd << " from Stacks; does not exist\n";
+                LOG_STREAM_OLD() << "Tried to pop " << *dd << " from Stacks; does not exist\n";
                 assert(0);
             }
 
@@ -737,18 +737,18 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 
 void DataFlow::dumpStacks()
 {
-    LOG_STREAM() << "Stacks: " << m_Stacks.size() << " entries\n";
+    LOG_STREAM_OLD() << "Stacks: " << m_Stacks.size() << " entries\n";
 
     for (auto zz = m_Stacks.begin(); zz != m_Stacks.end(); zz++) {
-        LOG_STREAM() << "Var " << zz->first << " [ ";
+        LOG_STREAM_OLD() << "Var " << zz->first << " [ ";
         std::deque<Instruction *> tt = zz->second; // Copy the stack!
 
         while (!tt.empty()) {
-            LOG_STREAM() << tt.back()->getNumber() << " ";
+            LOG_STREAM_OLD() << tt.back()->getNumber() << " ";
             tt.pop_back();
         }
 
-        LOG_STREAM() << "]\n";
+        LOG_STREAM_OLD() << "]\n";
     }
 }
 
@@ -758,15 +758,15 @@ void DataFlow::dumpDefsites()
     std::map<SharedExp, std::set<int>, lessExpStar>::iterator dd;
 
     for (dd = m_defsites.begin(); dd != m_defsites.end(); ++dd) {
-        LOG_STREAM() << dd->first;
+        LOG_STREAM_OLD() << dd->first;
         std::set<int>::iterator ii;
         std::set<int>&          si = dd->second;
 
         for (ii = si.begin(); ii != si.end(); ++ii) {
-            LOG_STREAM() << " " << *ii;
+            LOG_STREAM_OLD() << " " << *ii;
         }
 
-        LOG_STREAM() << "\n";
+        LOG_STREAM_OLD() << "\n";
     }
 }
 
@@ -776,13 +776,13 @@ void DataFlow::dumpA_orig()
     int n = m_A_orig.size();
 
     for (int i = 0; i < n; ++i) {
-        LOG_STREAM() << i;
+        LOG_STREAM_OLD() << i;
 
         for (const SharedExp& ee : m_A_orig[i]) {
-            LOG_STREAM() << " " << ee;
+            LOG_STREAM_OLD() << " " << ee;
         }
 
-        LOG_STREAM() << "\n";
+        LOG_STREAM_OLD() << "\n";
     }
 }
 

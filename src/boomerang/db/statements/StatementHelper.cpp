@@ -425,14 +425,14 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                             break;
 
                         default:
-                            LOG_STREAM() << "BranchStatement::simplify: k is " << QString::number(k, 16) << "\n";
+                            LOG_STREAM_OLD() << "BranchStatement::simplify: k is " << QString::number(k, 16) << "\n";
                             assert(0);
                         }
 
                         break;
 
                     default:
-                        LOG_STREAM() << "BranchStatement::simplify: Mask is " << QString::number(mask, 16) << "\n";
+                        LOG_STREAM_OLD() << "BranchStatement::simplify: Mask is " << QString::number(mask, 16) << "\n";
                         assert(0);
                     }
                 }

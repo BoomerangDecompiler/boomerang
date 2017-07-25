@@ -35,7 +35,6 @@ void FrontSparcTest::initTestCase()
 	if (!logset) {
 		logset = true;
 		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
 	}
 }
 

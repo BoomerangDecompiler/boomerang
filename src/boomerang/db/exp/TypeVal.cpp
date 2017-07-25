@@ -94,9 +94,9 @@ SharedExp TypeVal::accept(ExpModifier *v)
 
 void TypeVal::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << " ";
-    LOG_STREAM() << val->getCtype() << "\n";
-    LOG_STREAM().flush();
+    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << " ";
+    LOG_STREAM_OLD() << val->getCtype() << "\n";
+    LOG_STREAM_OLD().flush();
 }
 
 

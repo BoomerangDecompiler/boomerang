@@ -725,7 +725,7 @@ SharedExp BasicBlock::getCond()
         return bs->getCondExpr();
     }
 
-    LOG_VERBOSE(1) << "throwing LastStatementNotABranchError\n";
+    LOG_VERBOSE_OLD(1) << "throwing LastStatementNotABranchError\n";
     throw LastStatementNotABranchError(last->getHlStmt());
 }
 
@@ -755,7 +755,7 @@ SharedExp BasicBlock::getDest() noexcept(false)
         }
     }
 
-    LOG_VERBOSE(1) << "throwing LastStatementNotAGotoError\n";
+    LOG_VERBOSE_OLD(1) << "throwing LastStatementNotAGotoError\n";
     throw LastStatementNotAGotoError(lastStmt);
 }
 
@@ -875,34 +875,34 @@ void BasicBlock::simplify()
             m_outEdges[0] = m_outEdges[1];
             m_outEdges.resize(1);
             m_targetOutEdges = 1;
-            LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            LOG_VERBOSE_OLD(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
             std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
             redundant->m_inEdges.clear();
 
             for (BasicBlock *redundant_edge : rinedges) {
-                LOG_VERBOSE(1) << redundant_edge->getLowAddr() << " ";
+                LOG_VERBOSE_OLD(1) << redundant_edge->getLowAddr() << " ";
 
                 if (redundant_edge != this) {
                     redundant->m_inEdges.push_back(redundant_edge);
                 }
                 else {
-                    LOG_VERBOSE(1) << "(ignored) ";
+                    LOG_VERBOSE_OLD(1) << "(ignored) ";
                 }
             }
 
-            LOG_VERBOSE(1) << "\n";
+            LOG_VERBOSE_OLD(1) << "\n";
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
+            LOG_VERBOSE_OLD(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
         }
 
         if (m_nodeType == BBType::Oneway) {
             // set out edges to be the first one
-            LOG_VERBOSE(1) << "turning TWOWAY into ONEWAY: " << m_outEdges[0]->getLowAddr() << " "
+            LOG_VERBOSE_OLD(1) << "turning TWOWAY into ONEWAY: " << m_outEdges[0]->getLowAddr() << " "
                            << m_outEdges[1]->getLowAddr() << "\n";
             BasicBlock *redundant = m_outEdges[1];
             m_outEdges.resize(1);
             m_targetOutEdges = 1;
-            LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            LOG_VERBOSE_OLD(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
             std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
             redundant->m_inEdges.clear();
 
@@ -915,13 +915,13 @@ void BasicBlock::simplify()
                     redundant->m_inEdges.push_back(redundant_edge);
                 }
                 else {
-                    LOG_VERBOSE(1) << "(ignored) ";
+                    LOG_VERBOSE_OLD(1) << "(ignored) ";
                 }
             }
 
-            LOG_VERBOSE(1) << "\n";
+            LOG_VERBOSE_OLD(1) << "\n";
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
+            LOG_VERBOSE_OLD(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
         }
     }
 }
@@ -1446,7 +1446,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
         break;
 
     default:
-        LOG_STREAM() << "unhandled sType " << (int)m_structuringType << "\n";
+        LOG_STREAM_OLD() << "unhandled sType " << (int)m_structuringType << "\n";
     }
 }
 
@@ -1460,7 +1460,7 @@ Function *BasicBlock::getDestProc()
     Function *proc = call->getDestProc();
 
     if (proc == nullptr) {
-        LOG_STREAM() << "Indirect calls not handled yet\n";
+        LOG_STREAM_OLD() << "Indirect calls not handled yet\n";
         assert(false);
     }
 

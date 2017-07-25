@@ -596,7 +596,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     }
 
     // Not ideal; we must return start
-    LOG_STREAM(LogLevel::Warning) << "main function not found\n";
+    LOG_STREAM_OLD(LogLevel::Warning) << "main function not found\n";
 
     if (symbols->find(start) == nullptr) {
         this->addSymbol(start, "_start");
@@ -1080,7 +1080,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 
         // found one.
         if (paramIsFuncPointer) {
-            LOG_VERBOSE(1) << "found a new procedure at address " << a << " from inspecting parameters of call to "
+            LOG_VERBOSE_OLD(1) << "found a new procedure at address " << a << " from inspecting parameters of call to "
                            << call->getDestProc()->getName() << ".\n";
             Function *proc = m_program->createProc(a);
             auto     sig   = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();

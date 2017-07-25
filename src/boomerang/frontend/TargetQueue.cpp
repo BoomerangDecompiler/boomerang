@@ -54,8 +54,8 @@ void TargetQueue::dump()
     while (!copy.empty()) {
               Address a = copy.front();
         copy.pop();
-        LOG_STREAM() << a << ", ";
+        LOG_STREAM_OLD() << a << ", ";
     }
 
-    LOG_STREAM() << "\n";
+    LOG_STREAM_OLD() << "\n";
 }

@@ -159,7 +159,7 @@ bool isFuncPrologue(Address hostPC);
 #define DEBUG_DECODER    (Boomerang::get()->debugDecoder)
 #define SHOW_ASM(output) \
     if (DEBUG_DECODER) { \
-        LOG_STREAM() << pc << ": " << output << '\n'; }
+        LOG_STREAM_OLD() << pc << ": " << output << '\n'; }
 
 /*
  * addresstoPC returns the raw number as the address.  PC could be an

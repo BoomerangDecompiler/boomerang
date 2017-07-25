@@ -284,7 +284,7 @@ void PhiAssign::simplify()
     }
 
     if (allSame) {
-        LOG_VERBOSE(1) << "all the same in " << this << "\n";
+        LOG_VERBOSE_OLD(1) << "all the same in " << this << "\n";
         convertToAssign(RefExp::get(m_lhs, first));
         return;
     }

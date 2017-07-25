@@ -24,7 +24,7 @@ void TypeRecoveryCommon::recoverProgramTypes(Prog *v)
 
             // FIXME: this just does local TA again. Need to resolve types for all parameter/arguments,
             // and return/results! This will require a "repeat until no change" loop
-            LOG_STREAM() << "global type analysis for " << proc->getName() << "\n";
+            LOG_STREAM_OLD() << "global type analysis for " << proc->getName() << "\n";
             recoverFunctionTypes(pp);
         }
     }

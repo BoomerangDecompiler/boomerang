@@ -298,8 +298,10 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     // Inform Boomerang about new sections
     for (SectionParam par : m_elfSections) {
         if (par.Size == 0) {
-            // this is most probably the NULL section
-            qDebug() << "Not adding 0 sized section " << par.Name;
+            // this is most probably the NULL section; if it is not, warn the user
+            if (par.Name != "") {
+                qWarning() << "Not adding 0 sized section " <<  par.Name;
+            }
             continue;
         }
 

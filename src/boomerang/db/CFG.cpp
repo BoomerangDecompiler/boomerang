@@ -129,11 +129,10 @@ bool Cfg::checkEntryBB()
     }
 
     if (m_myProc) {
-        qWarning() << "No entry BB for " << m_myProc->getName();
+        LOG_WARN("No entry BB for %1", m_myProc->getName());
     }
     else {
-        qWarning() << "No entry BB for "
-                   << "unknown proc";
+        LOG_WARN("No entry BB for unknown proc");
     }
 
     return true;
@@ -325,7 +324,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, Address uNativeAddr, BasicBlock *pNewB
     }
 
     if (ri == pBB->m_listOfRTLs->end()) {
-        LOG_STREAM() << "could not split BB at " << pBB->getLowAddr() << " at split address " << uNativeAddr;
+        LOG_STREAM_OLD() << "could not split BB at " << pBB->getLowAddr() << " at split address " << uNativeAddr;
         return pBB;
     }
 
@@ -1072,7 +1071,7 @@ void Cfg::addNewOutEdge(BasicBlock *pFromBB, BasicBlock *pNewOutEdge)
 
 void Cfg::simplify()
 {
-    LOG_VERBOSE(1) << "simplifying...\n";
+    LOG_VERBOSE_OLD(1) << "simplifying...\n";
 
     for (BasicBlock *bb : m_listBB) {
         bb->simplify();
@@ -1774,8 +1773,8 @@ void Cfg::findInterferences(ConnectionGraph& cg)
         count++; // prevent infinite loop
 
         if (++progress > 20) {
-            LOG_STREAM() << "i";
-            LOG_STREAM().flush();
+            LOG_STREAM_OLD() << "i";
+            LOG_STREAM_OLD().flush();
             progress = 0;
         }
 
@@ -1827,23 +1826,23 @@ void Cfg::appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& w
 
 void dumpBB(BasicBlock *bb)
 {
-    LOG_STREAM() << "For BB at " << bb << ":\nIn edges: ";
+    LOG_STREAM_OLD() << "For BB at " << bb << ":\nIn edges: ";
     std::vector<BasicBlock *> ins = bb->getInEdges();
     std::vector<BasicBlock *> outs = bb->getOutEdges();
     size_t i, n = ins.size();
 
     for (i = 0; i < n; i++) {
-        LOG_STREAM() << ins[i] << " ";
+        LOG_STREAM_OLD() << ins[i] << " ";
     }
 
-    LOG_STREAM() << "\nOut Edges: ";
+    LOG_STREAM_OLD() << "\nOut Edges: ";
     n = outs.size();
 
     for (i = 0; i < n; i++) {
-        LOG_STREAM() << outs[i] << " ";
+        LOG_STREAM_OLD() << outs[i] << " ";
     }
 
-    LOG_STREAM() << "\n";
+    LOG_STREAM_OLD() << "\n";
 }
 
 

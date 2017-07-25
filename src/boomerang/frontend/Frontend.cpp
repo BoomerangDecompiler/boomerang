@@ -92,19 +92,19 @@ IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactor
         return new ST20FrontEnd(pBF, prog, pbff);
 
     case Machine::HPRISC:
-        LOG_STREAM() << "No frontend for Hp Risc\n";
+        LOG_STREAM_OLD() << "No frontend for Hp Risc\n";
         break;
 
     case Machine::PALM:
-        LOG_STREAM() << "No frontend for PALM\n";
+        LOG_STREAM_OLD() << "No frontend for PALM\n";
         break;
 
     case Machine::M68K:
-        LOG_STREAM() << "No frontend for M68K\n";
+        LOG_STREAM_OLD() << "No frontend for M68K\n";
         break;
 
     default:
-        LOG_STREAM() << "Machine architecture not supported!\n";
+        LOG_STREAM_OLD() << "Machine architecture not supported!\n";
     }
 
     return nullptr;
@@ -167,7 +167,7 @@ void IFrontEnd::readLibraryCatalog(const QString& sPath)
     QFile file(sPath);
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        qCritical() << "Cannot open library signature catalog `" << sPath << "'\n";
+        LOG_ERROR("Cannot open library signature catalog `%1'", sPath);
         return;
     }
 
@@ -210,7 +210,7 @@ void IFrontEnd::readLibraryCatalog()
     QDir sig_dir(Boomerang::get()->getDataDirectory());
 
     if (!sig_dir.cd("signatures")) {
-        qWarning("Signatures directory does not exist.");
+        LOG_WARN("Signatures directory does not exist.");
         return;
     }
 
@@ -275,6 +275,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
                 if (p_sym) {
                     Address tmpaddr = p_sym->getLocation();
                     Address setup, teardown;
+
                     /*uint32_t vers = */ m_image->readNative4(tmpaddr); // TODO: find use for vers ?
                     setup    = Address(m_image->readNative4(tmpaddr + 4));
                     teardown = Address(m_image->readNative4(tmpaddr + 8));
@@ -328,7 +329,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 
     bool    gotMain;
     Address a = getMainEntryPoint(gotMain);
-    LOG_VERBOSE(1) << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
+    LOG_VERBOSE_OLD(1) << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
 
     if (a == Address::INVALID) {
         std::vector<Address> entrypoints = getEntryPoints();
@@ -362,7 +363,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
         Function *proc = m_program->findProc(a);
 
         if (proc == nullptr) {
-            LOG_VERBOSE(1) << "no proc found for address " << a << "\n";
+            LOG_VERBOSE_OLD(1) << "no proc found for address " << a << "\n";
             return;
         }
 
@@ -390,11 +391,11 @@ void IFrontEnd::decode(Prog *prg, Address a)
 
     if (a != Address::INVALID) {
               m_program->createProc(a);
-        LOG_VERBOSE(1) << "starting decode at address " << a << "\n";
+        LOG_VERBOSE_OLD(1) << "starting decode at address " << a << "\n";
         UserProc *p = (UserProc *)m_program->findProc(a);
 
         if (p == nullptr) {
-            LOG_VERBOSE(1) << "no proc found at address " << a << "\n";
+            LOG_VERBOSE_OLD(1) << "no proc found at address " << a << "\n";
             return;
         }
 
@@ -502,7 +503,7 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     ifs.open(signatureFile);
 
     if (!ifs.good()) {
-        LOG_STREAM() << "Can't open library signature file `" << signatureFile << "'\n";
+        LOG_STREAM_OLD() << "Can't open library signature file `" << signatureFile << "'\n";
         return;
     }
 
@@ -656,10 +657,10 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             // Decode the inst at uAddr.
             if (!decodeInstruction(uAddr, inst)) {
-                qWarning() << "Invalid instruction at" << uAddr.toString();
+                LOG_ERROR("Invalid instruction at ", uAddr.toString());
             }
             else if (inst.rtl->empty()) {
-                qDebug() << "Valid but undecoded instruction at" << uAddr.toString();
+                LOG_VERBOSE("Valid but undecoded instruction at ", uAddr.toString());
             }
 
             // If invalid and we are speculating, just exit
@@ -682,14 +683,11 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 // An invalid instruction. Most likely because a call did not return (e.g. call _exit()), etc.
                 // Best thing is to emit a INVALID BB, and continue with valid instructions
                 if (VERBOSE) {
-                    LOG << "Warning: invalid instruction at " << uAddr << ": ";
-
-                    // Emit the next 4 bytes for debugging
-                    for (int ii = 0; ii < 4; ii++) {
-                        LOG << Address(m_image->readNative1(uAddr + ii) & 0xFF) << " ";
-                    }
-
-                    LOG << "\n";
+                    LOG_ERROR("Invalid instruction at %1: %2 %3 %4 %5", uAddr,
+                              m_image->readNative1(uAddr + 0),
+                              m_image->readNative1(uAddr + 1),
+                              m_image->readNative1(uAddr + 2),
+                              m_image->readNative1(uAddr + 3));
                 }
 
                 // Emit the RTL anyway, so we have the address and maybe some other clues
@@ -814,7 +812,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                         // Check for indirect calls to library functions, especially in Win32 programs
                         if (refersToImportedFunction(pDest)) {
-                            LOG_VERBOSE(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
+                            LOG_VERBOSE_OLD(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
                             // jump to a library function
                             // replace with a call ret
                             const IBinarySymbol *sym = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());

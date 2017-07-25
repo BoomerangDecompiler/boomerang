@@ -10,7 +10,6 @@
 #include "Boomerang.h"
 
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/util/Log.h"
 
 #include "boomerang/codegen/CCodeGenerator.h"
 
@@ -20,6 +19,7 @@
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Project.h"
 #include "boomerang/db/Signature.h"
+#include "boomerang/util/Log.h"
 
 #include "boomerang/frontend/Frontend.h"
 
@@ -50,8 +50,14 @@ Boomerang::~Boomerang()
 }
 
 
-Log& Boomerang::log()
+Log& Boomerang::getOrCreateLog()
 {
+    if (!m_logger) {
+        m_logger = new Log(LogLevel::Default);
+        m_logger->addLogSink(new ConsoleLogSink());
+        m_logger->addLogSink(new FileLogSink("boomerang.log"));
+    }
+
     return *m_logger;
 }
 
@@ -65,24 +71,14 @@ SeparateLogger Boomerang::separate_log(const QString& v)
 Log& Boomerang::if_verbose_log(int verbosity_level)
 {
     static NullLogger null_log;
+    Log& log = getOrCreateLog();
 
-    if (verbosity_level == 2) {
-        return *m_logger;
-    }
-
-    if ((verbosity_level == 1) && VERBOSE) {
-        return *m_logger;
+    if (verbosity_level == 2 || (verbosity_level == 1 || VERBOSE)) {
+        return log;
     }
     else {
         return null_log;
     }
-}
-
-
-void Boomerang::setLogger(Log *l)
-{
-    delete m_logger;
-    m_logger = l;
 }
 
 
@@ -708,12 +704,8 @@ bool Boomerang::setOutputDirectory(const QString& path)
 
     // Create the output directory, if needed
     if (!createDirectory(path)) {
-        qWarning() << "Warning! Could not create path " << m_outputDirectory << "!\n";
+        LOG_ERROR("Could not create output directory %1", m_outputDirectory);
         return false;
-    }
-
-    if (m_logger == nullptr) {
-        setLogger(new FileLogger());
     }
 
     return true;
@@ -722,21 +714,21 @@ bool Boomerang::setOutputDirectory(const QString& path)
 
 void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
 {
-    LOG_VERBOSE(1) << "Adding Objective-C information to Prog.\n";
+    LOG_VERBOSE_OLD(1) << "Adding Objective-C information to Prog.\n";
     Module *root = prog->getRootCluster();
 
     for (auto& modules_it : modules) {
         const ObjcModule& mod     = (modules_it).second;
         Module            *module = prog->getOrInsertModule(mod.name);
         root->addChild(module);
-        LOG_VERBOSE(1) << "\tModule: " << mod.name << "\n";
+        LOG_VERBOSE_OLD(1) << "\tModule: " << mod.name << "\n";
         ClassModFactory class_fact;
 
         for (auto& elem : mod.classes) {
             const ObjcClass& c   = (elem).second;
             Module           *cl = prog->getOrInsertModule(mod.name, class_fact);
             root->addChild(cl);
-            LOG_VERBOSE(1) << "\t\tClass: " << c.name << "\n";
+            LOG_VERBOSE_OLD(1) << "\t\tClass: " << c.name << "\n";
 
             for (auto& _it2 : c.methods) {
                 const ObjcMethod& m = (_it2).second;
@@ -752,12 +744,12 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *p
                 Function *p = cl->getOrInsertFunction(method_name, m.addr);
                 p->setSignature(Signature::instantiate(prog->getFrontEndId(), CallConv::C, method_name));
                 // TODO: decode types in m.types
-                LOG_VERBOSE(1) << "\t\t\tMethod: " << m.name << "\n";
+                LOG_VERBOSE_OLD(1) << "\t\t\tMethod: " << m.name << "\n";
             }
         }
     }
 
-    LOG_VERBOSE(1) << "\n";
+    LOG_VERBOSE_OLD(1) << "\n";
 }
 
 
@@ -770,7 +762,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
     IFrontEnd *fe   = IFrontEnd::create(fname, prog);
 
     if (fe == nullptr) {
-        LOG_STREAM(LogLevel::Default) << "failed.\n";
+        LOG_STREAM_OLD(LogLevel::Default) << "failed.\n";
         return nullptr;
     }
 
@@ -840,12 +832,10 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 
     time(&start);
 
-    if (m_logger == nullptr) {
-        setLogger(new FileLogger());
-    }
+    Boomerang::get()->getOrCreateLog(); // ensure log exists
 
     if (loadBeforeDecompile) {
-        LOG_STREAM() << "loading persisted state...\n";
+        LOG_STREAM_OLD() << "loading persisted state...\n";
         assert(false);
     }
     else {
@@ -864,7 +854,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
         return 0;
     }
 
-    LOG_STREAM() << "decompiling...\n";
+    LOG_STREAM_OLD() << "decompiling...\n";
     prog->decompile();
 
     if (!dotFile.isEmpty()) {
@@ -872,7 +862,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     }
 
     if (printAST) {
-        LOG_STREAM() << "printing AST...\n";
+        LOG_STREAM_OLD() << "printing AST...\n";
 
         for (const Module *module : *prog) {
             for (Function *func : *module) {

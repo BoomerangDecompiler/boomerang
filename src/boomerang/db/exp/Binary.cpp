@@ -1317,7 +1317,7 @@ SharedExp Binary::polySimplify(bool& bMod)
                                             res = convertFromOffsetToCompound(subExp1, c, n);
 
                                             if (res) {
-                                                LOG_VERBOSE(1) << "(trans1) replacing " << shared_from_this() << " with " << res << "\n";
+                                                LOG_VERBOSE_OLD(1) << "(trans1) replacing " << shared_from_this() << " with " << res << "\n";
                                                 bMod = true;
                                                 return res;
                                             }
@@ -1760,8 +1760,8 @@ SharedExp Binary::accept(ExpModifier *v)
 void Binary::printx(int ind) const
 {
     assert(subExp1 && subExp2);
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM().flush();
+    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
+    LOG_STREAM_OLD().flush();
     child(subExp1, ind);
     child(subExp2, ind);
 }

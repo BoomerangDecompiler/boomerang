@@ -653,8 +653,8 @@ SharedExp Unary::simplifyAddr()
 
 void Unary::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM().flush();
+    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
+    LOG_STREAM_OLD().flush();
     child(subExp1, ind);
 }
 

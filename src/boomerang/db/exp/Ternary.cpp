@@ -678,7 +678,7 @@ SharedExp Ternary::accept(ExpModifier *v)
 
 void Ternary::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
+    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
     child(subExp1, ind);
     child(subExp2, ind);
     child(subExp3, ind);

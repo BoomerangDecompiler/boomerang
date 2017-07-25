@@ -36,7 +36,6 @@ void DfaTest::initTestCase()
 
 		logset = true;
 		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setLogger(new NullLogger());
 	}
 }
 
@@ -146,9 +145,6 @@ void DfaTest::testMeetSize()
 	ch  = false;
 	res = s32->meetWith(s16, ch, false);
 	QVERIFY(ch == false);
-
-	// There is a known failure here; to show the warning, use ErrLogger
-	Boomerang::get()->setLogger(new ErrLogger);
 
 	res = s16->meetWith(flt, ch, false);
 	QVERIFY(ch == true);

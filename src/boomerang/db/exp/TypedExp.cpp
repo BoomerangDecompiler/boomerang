@@ -189,8 +189,8 @@ SharedExp TypedExp::accept(ExpModifier *v)
 
 void TypedExp::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << " ";
-    LOG_STREAM() << type->getCtype() << "\n";
-    LOG_STREAM().flush();
+    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << " ";
+    LOG_STREAM_OLD() << type->getCtype() << "\n";
+    LOG_STREAM_OLD().flush();
     child(subExp1, ind);
 }

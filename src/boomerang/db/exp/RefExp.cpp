@@ -229,18 +229,18 @@ SharedExp RefExp::accept(ExpModifier *v)
 
 void RefExp::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM() << "{";
+    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
+    LOG_STREAM_OLD() << "{";
 
     if (m_def == nullptr) {
-        LOG_STREAM() << "nullptr";
+        LOG_STREAM_OLD() << "nullptr";
     }
     else {
-        LOG_STREAM() << HostAddress(m_def) << "=" << m_def->getNumber();
+        LOG_STREAM_OLD() << HostAddress(m_def) << "=" << m_def->getNumber();
     }
 
-    LOG_STREAM() << "}\n";
-    LOG_STREAM().flush();
+    LOG_STREAM_OLD() << "}\n";
+    LOG_STREAM_OLD().flush();
     child(subExp1, ind);
 }
 

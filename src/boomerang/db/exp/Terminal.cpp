@@ -230,7 +230,7 @@ SharedExp Terminal::accept(ExpModifier *v)
 
 void Terminal::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM().flush();
+    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
+    LOG_STREAM_OLD().flush();
 }
 

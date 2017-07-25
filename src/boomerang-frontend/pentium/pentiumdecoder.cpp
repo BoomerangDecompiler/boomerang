@@ -49788,7 +49788,7 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
     }
 
     if (DEBUG_DECODER) {
-        LOG_STREAM() << pc + BSFRstate << ": "
+        LOG_STREAM_OLD() << pc + BSFRstate << ": "
                      << "BS" << (init == -1 ? "F" : "R") << (size == 32 ? ".od" : ".ow") << BSFRstate + 1 << "\n";
     }
 
