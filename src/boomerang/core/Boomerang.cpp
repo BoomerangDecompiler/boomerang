@@ -1009,7 +1009,7 @@ void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
         miniDebugger(p, description);
     }
 
-    for (Watcher *elem : m_watchers) {
+    for (IWatcher *elem : m_watchers) {
         elem->alertDecompileDebugPoint(p, description);
     }
 }

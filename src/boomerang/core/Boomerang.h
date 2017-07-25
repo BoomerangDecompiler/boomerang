@@ -69,7 +69,7 @@ private:
     QString m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
 
     Log *m_logger = nullptr;          ///< Takes care of the log messages.
-    std::set<Watcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
+    std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 
     /// Prints help for the interactive mode.
     void helpcmd() const;
@@ -165,7 +165,7 @@ public:
     int decompile(const QString& fname, const char *pname = nullptr);
 
     /// Add a Watcher to the set of Watchers for this Boomerang object.
-    void addWatcher(Watcher *watcher) { m_watchers.insert(watcher); }
+    void addWatcher(IWatcher *watcher) { m_watchers.insert(watcher); }
 
     /**
      * Adds information about functions and classes from Objective-C modules to the Prog object.
@@ -178,7 +178,7 @@ public:
     /// Alert the watchers that decompilation has completed.
     void alert_complete()
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alert_complete();
         }
     }
@@ -186,7 +186,7 @@ public:
     /// Alert the watchers we have found a new %Proc.
     void alertNew(Function *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertNew(p);
         }
     }
@@ -194,7 +194,7 @@ public:
     /// Alert the watchers we have removed a %Proc.
     void alertRemove(Function *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertRemove(p);
         }
     }
@@ -202,7 +202,7 @@ public:
     /// Alert the watchers we have updated this Procs signature
     void alertUpdateSignature(Function *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertUpdateSignature(p);
         }
     }
@@ -210,7 +210,7 @@ public:
     /// Alert the watchers we are currently decoding \a nBytes bytes at address \a pc.
     void alertDecode(Address pc, int nBytes)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertDecode(pc, nBytes);
         }
     }
@@ -218,7 +218,7 @@ public:
     /// Alert the watchers of a bad decode of an instruction at \a pc.
     void alertBadDecode(Address pc)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertBadDecode(pc);
         }
     }
@@ -226,7 +226,7 @@ public:
     /// Alert the watchers we have succesfully decoded this function
     void alertDecode(Function *p, Address pc, Address last, int nBytes)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertDecode(p, pc, last, nBytes);
         }
     }
@@ -234,7 +234,7 @@ public:
     /// Alert the watchers we have loaded the Proc.
     void alertLoad(Function *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alert_load(p);
         }
     }
@@ -242,7 +242,7 @@ public:
     /// Alert the watchers we are starting to decode.
     void alertStartDecode(Address start, int nBytes)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertStartDecode(start, nBytes);
         }
     }
@@ -250,70 +250,70 @@ public:
     /// Alert the watchers we finished decoding.
     void alertEndDecode()
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertEndDecode();
         }
     }
 
     void alertStartDecompile(UserProc *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertStartDecompile(p);
         }
     }
 
     void alertProcStatusChange(UserProc *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertProcStatusChange(p);
         }
     }
 
     void alertDecompileSSADepth(UserProc *p, int depth)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertDecompileSSADepth(p, depth);
         }
     }
 
     void alertDecompileBeforePropagate(UserProc *p, int depth)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertDecompileBeforePropagate(p, depth);
         }
     }
 
     void alertDecompileAfterPropagate(UserProc *p, int depth)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertDecompileAfterPropagate(p, depth);
         }
     }
 
     void alertDecompileAfterRemoveStmts(UserProc *p, int depth)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertDecompileAfterRemoveStmts(p, depth);
         }
     }
 
     void alertEndDecompile(UserProc *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertEndDecompile(p);
         }
     }
 
     void alertConsidering(Function *_parent, Function *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertConsidering(_parent, p);
         }
     }
 
     void alertDecompiling(UserProc *p)
     {
-        for (Watcher *it : m_watchers) {
+        for (IWatcher *it : m_watchers) {
             it->alertDecompiling(p);
         }
     }

@@ -260,7 +260,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
         entrypoints.push_back(a);
     }
     else { // try some other tricks
-        QString fname = Boomerang::get()->filename();
+        QString fname = Boomerang::get()->getFilename();
 
         // X11 Module
         if (fname.endsWith("_drv.o")) {
@@ -272,8 +272,8 @@ std::vector<Address> IFrontEnd::getEntryPoints()
                 const IBinarySymbol *p_sym = m_binarySymbols->find(name);
 
                 if (p_sym) {
-                                   Address tmpaddr = p_sym->getLocation();
-                                   Address setup, teardown;
+                    Address tmpaddr = p_sym->getLocation();
+                    Address setup, teardown;
                     /*uint32_t vers = */ m_image->readNative4(tmpaddr); // TODO: find use for vers ?
                     setup    = Address(m_image->readNative4(tmpaddr + 4));
                     teardown = Address(m_image->readNative4(tmpaddr + 8));

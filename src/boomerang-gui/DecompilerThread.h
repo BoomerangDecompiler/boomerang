@@ -14,7 +14,7 @@ class Module;
 class QTableWidget;
 class QObject;
 
-class Decompiler : public QObject, public Watcher
+class Decompiler : public QObject, public IWatcher
 {
     Q_OBJECT
 

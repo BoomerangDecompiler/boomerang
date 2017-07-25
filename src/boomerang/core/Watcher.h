@@ -6,11 +6,11 @@ class Function;
 class UserProc;
 
 /// Virtual class to monitor the decompilation.
-class Watcher
+class IWatcher
 {
 public:
-    Watcher() {}
-    virtual ~Watcher() {}
+    IWatcher() {}
+    virtual ~IWatcher() {}
 
     virtual void alert_complete() {}
     virtual void alertNew(Function *) {}
