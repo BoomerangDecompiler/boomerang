@@ -222,7 +222,7 @@ QTextStream& operator<<(QTextStream& os, const Instruction *s)
 }
 
 
-bool Instruction::isFlagAssgn() const
+bool Instruction::isFlagAssign() const
 {
     if (m_kind != STMT_ASSIGN) {
         return false;
