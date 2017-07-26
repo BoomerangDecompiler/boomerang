@@ -32,8 +32,6 @@
 * ST20Decoder methods.
 **********************************/
 
-static DecodeResult result;
-
 /***************************************************************************/ /**
  * \fn    ST20Decoder::decodeInstruction
  * \brief Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.
@@ -42,7 +40,7 @@ static DecodeResult result;
  *         the pc is at in the loaded object file)
  * \returns            a DecodeResult structure containing all the information gathered during decoding
  ******************************************************************************/
-DecodeResult& ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta)
+bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
     result.reset();                            // Clear the result structure (numBytes = 0 etc)
     HostAddress hostPC = HostAddress(delta) + pc;
@@ -850,7 +848,7 @@ DecodeResult& ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta)
 
                             result.numBytes = 0;
 
-                            return result;
+                            return false;
                         }
                     }
                     break;
@@ -873,7 +871,7 @@ MATCH_finished_a:
         result.rtl = new RTL(pc, stmts);
     }
 
-    return result;
+    return result.valid;
 }
 
 

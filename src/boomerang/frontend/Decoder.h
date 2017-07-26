@@ -28,7 +28,7 @@ class Prog;
 // These are the instruction classes defined in "A Transformational Approach to
 // Binary Translation of Delayed Branches" for SPARC instructions.
 // Extended for HPPA. Ignored by machines with no delay slots
-enum ICLASS
+enum ICLASS : Byte
 {
     NCT,   // Non Control Transfer
     SD,    // Static Delayed
@@ -66,14 +66,7 @@ public:
     }
 
 public:
-    /// The number of bytes decoded in the main instruction
-    int     numBytes;
-
-    /// The RTL constructed (if any).
-    RTL     *rtl;
-
-    /// Indicates whether or not a valid instruction was decoded.
-    bool    valid;
+    bool    valid; ///< Indicates whether or not a valid instruction was decoded.
 
     /**
      * The class of the instruction decoded. Will be one of the classes described in "A Transformational Approach
@@ -88,6 +81,10 @@ public:
      * fall through out edge after the branch)
      */
     bool    reDecode;
+    int     numBytes; ///< The number of bytes decoded in the main instruction
+
+    /// The RTL constructed (if any).
+    RTL     *rtl;
 
     /**
      * If non zero, this field represents a new native address to be used as the out-edge for this instruction's BB.
@@ -105,8 +102,11 @@ class IDecoder
 public:
     virtual ~IDecoder() = default;
 
-    /// Decodes the machine instruction at pc and returns an RTL instance for the instruction.
-    virtual DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) = 0;
+    /// Decodes the machine instruction at \p pc.
+    /// The decode result is stored into \p result, if the decode was successful.
+    /// If the decode was not successful, the content of \p result is undefined.
+    /// \returns true if decoding the instruction was successful.
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) = 0;
 
     /// Returns machine-specific register name given it's index
     virtual QString getRegName(int idx) const = 0;

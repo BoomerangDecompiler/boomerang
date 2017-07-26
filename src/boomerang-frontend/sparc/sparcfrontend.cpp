@@ -697,7 +697,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                 inst.type  = DD; // E.g. decode the delay slot instruction
             }
             else {
-                inst = decodeInstruction(uAddr);
+                decodeInstruction(uAddr, inst);
             }
 
             // If invalid and we are speculating, just exit
@@ -825,7 +825,8 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             case SD:
                 {
                     // This includes "call" and "ba". If a "call", it might be a move_call_move idiom, or a call to .stret4
-                    DecodeResult delay_inst = decodeInstruction(uAddr + 4);
+                    DecodeResult delay_inst;
+                    decodeInstruction(uAddr + 4, delay_inst);
 
                     if (Boomerang::get()->traceDecoder) {
                         LOG << "*" << uAddr + 4 << "\t\n";
@@ -981,7 +982,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
                     if (inst.numBytes == 4) {
                         // Ordinary instruction. Look at the delay slot
-                        delay_inst = decodeInstruction(uAddr + 4);
+                        decodeInstruction(uAddr + 4, delay_inst);
                     }
                     else {
                         // Must be a prologue or epilogue or something.
@@ -1022,7 +1023,8 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     // instruction just before the target; if so, we can branch to that and not need the orphan.  We do
                     // just a binary comparison; that may fail to make this optimisation if the instr has relative fields.
 
-                    DecodeResult delay_inst = decodeInstruction(uAddr + 4);
+                    DecodeResult delay_inst;
+                    decodeInstruction(uAddr + 4, delay_inst);
                     RTL          *delay_rtl = delay_inst.rtl;
 
                     // Display low level RTL representation if asked
@@ -1058,7 +1060,8 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                 {
                     // Execute the delay instruction if the branch is taken; skip (anull) the delay instruction if branch
                     // not taken.
-                    DecodeResult delay_inst = decodeInstruction(uAddr + 4);
+                    DecodeResult delay_inst;
+                    decodeInstruction(uAddr + 4, delay_inst);
                     RTL          *delay_rtl = delay_inst.rtl;
 
                     // Display RTL representation if asked

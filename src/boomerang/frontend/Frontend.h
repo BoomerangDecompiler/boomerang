@@ -144,7 +144,7 @@ public:
     // Function to fetch the smallest machine instruction
     // virtual    int            getInst(int addr);
 
-    virtual DecodeResult& decodeInstruction(Address pc);
+    virtual bool decodeInstruction(Address pc, DecodeResult& result);
 
     virtual void extraProcessCall(CallStatement * /*call*/, std::list<RTL *> * /*BB_rtls*/) {}
 

@@ -96,9 +96,8 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
  * \returns            a DecodeResult structure containing all the information
  *                     gathered during decoding
  ******************************************************************************/
-DecodeResult& PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
+bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
-    static DecodeResult result;
     HostAddress hostPC = HostAddress(delta) + pc;
 
     // Clear the result structure;
@@ -9319,7 +9318,7 @@ MATCH_finished_a:
         result.rtl = new RTL(pc, stmts);
     }
 
-    return result;
+    return result.valid;
 }
 
 

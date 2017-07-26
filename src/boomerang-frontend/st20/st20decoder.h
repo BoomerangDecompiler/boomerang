@@ -34,7 +34,7 @@ public:
     ST20Decoder(Prog *prog);
 
     /// \copydoc NJMCDecoder::decodeInstruction
-    DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 
 private:
 

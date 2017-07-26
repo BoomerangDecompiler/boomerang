@@ -42,7 +42,7 @@ public:
     *              that the pc is at in the loaded object file)
     * \returns a DecodeResult structure containing all the information gathered during decoding
     ******************************************************************************/
-    DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 
 private:
 

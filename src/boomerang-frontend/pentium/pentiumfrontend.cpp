@@ -488,7 +488,7 @@ PentiumFrontEnd::~PentiumFrontEnd()
 
 Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 {
-       Address start = m_fileLoader->getMainEntryPoint();
+    Address start = m_fileLoader->getMainEntryPoint();
 
     if (start != Address::INVALID) {
         gotMain = true;
@@ -513,7 +513,8 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
        Address dest;
 
     do {
-        DecodeResult inst = decodeInstruction(addr);
+        DecodeResult inst;
+        decodeInstruction(addr, inst);
 
         if (inst.rtl == nullptr) {
             // Must have gotten out of step
@@ -531,13 +532,12 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
             int oNumBytes = inst.numBytes;
-            inst = decodeInstruction(addr + oNumBytes);
 
-            if (inst.valid && (inst.rtl->size() == 2)) {
+            if (decodeInstruction(addr + oNumBytes, inst) && (inst.rtl->size() == 2)) {
                 Assign *a = dynamic_cast<Assign *>(inst.rtl->back()); // using back instead of rtl[1], since size()==2
 
                 if (a && (*a->getRight() == *Location::regOf(24))) {
-                    inst = decodeInstruction(addr + oNumBytes + inst.numBytes);
+                    decodeInstruction(addr + oNumBytes + inst.numBytes, inst);
 
                     if (!inst.rtl->empty()) {
                         CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
@@ -561,7 +561,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
                 // Assume it's the 5 byte push immediately preceeding this instruction
                 // Note: the RTL changed recently from esp = esp-4; m[esp] = K tp m[esp-4] = K; esp = esp-4
-                inst = decodeInstruction(addr - 5);
+                decodeInstruction(addr - 5, inst);
                 assert(inst.valid);
                 assert(inst.rtl->size() == 2);
                 Assign    *a  = (Assign *)inst.rtl->front(); // Get m[esp-4] = K
@@ -979,15 +979,13 @@ bool PentiumFrontEnd::decodeSpecial(Address pc, DecodeResult& r)
 }
 
 
-DecodeResult& PentiumFrontEnd::decodeInstruction(Address pc)
+bool PentiumFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 {
-    static DecodeResult r;
-
-    if (decodeSpecial(pc, r)) {
-        return r;
+    if (decodeSpecial(pc, result)) {
+        return true;
     }
 
-    return IFrontEnd::decodeInstruction(pc);
+    return IFrontEnd::decodeInstruction(pc, result);
 }
 
 

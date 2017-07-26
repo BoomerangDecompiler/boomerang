@@ -48,5 +48,5 @@ public:
     * \returns a DecodeResult structure containing all the information
     *              gathered during decoding
     *********************************************************************************/
-    virtual DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 };

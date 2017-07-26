@@ -31,7 +31,7 @@ public:
     PPCDecoder(Prog *prog);
 
     /// \copydoc NJMCDecoder::decodeInstruction
-    DecodeResult& decodeInstruction(Address pc, ptrdiff_t delta) override;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 
 private:
     /// Various functions to decode the operands of an instruction into an Exp* representation.

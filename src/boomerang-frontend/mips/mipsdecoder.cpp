@@ -41,12 +41,11 @@ MIPSDecoder::MIPSDecoder(Prog *_prog)
 }
 
 
-DecodeResult& MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
+bool MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
     Q_UNUSED(pc);
     Q_UNUSED(delta);
 
-    static DecodeResult result;
     // ADDRESS hostPC = pc+delta;
 
     // Clear the result structure;
@@ -57,5 +56,5 @@ DecodeResult& MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
     // ADDRESS nextPC = Address::INVALID;
     // Decoding goes here....
 
-    return result;
+    return result.valid;
 }

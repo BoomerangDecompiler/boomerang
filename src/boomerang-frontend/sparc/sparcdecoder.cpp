@@ -233,9 +233,8 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Instruction *> *stmts, 
 }
 
 
-DecodeResult& SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
+bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
-    static DecodeResult result;
     HostAddress hostPC = HostAddress(delta) + pc;
     HostAddress nextPC = HostAddress::INVALID;
 
@@ -455,7 +454,7 @@ DecodeResult& SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
                                 result.valid    = false;
                                 result.rtl      = new RTL;
                                 result.numBytes = 4;
-                                return result;
+                                return false;
                             }
 
                             GotoStatement *jump = 0;
@@ -1895,7 +1894,7 @@ MATCH_label_d0:
                 result.valid    = false;
                 result.rtl      = new RTL;
                 result.numBytes = 4;
-                return result;
+                return result.valid;
             }
 
             GotoStatement *jump = 0;
@@ -1960,7 +1959,7 @@ MATCH_label_d1:
                 result.valid    = false;
                 result.rtl      = new RTL;
                 result.numBytes = 4;
-                return result;
+                return result.valid;
             }
 
             // Instantiate a GotoStatement for the unconditional branches, BranchStatement for the rest
@@ -2031,7 +2030,7 @@ MATCH_label_d2:
                 result.valid    = false;
                 result.rtl      = new RTL;
                 result.numBytes = 4;
-                return result;
+                return result.valid;
             }
 
             // Instantiate a GotoStatement for the unconditional branches, HLJconds for the rest.
@@ -2377,7 +2376,7 @@ MATCH_finished_d:
         result.rtl = new RTL(pc, stmts);
     }
 
-    return result;
+    return result.valid;
 }
 
 

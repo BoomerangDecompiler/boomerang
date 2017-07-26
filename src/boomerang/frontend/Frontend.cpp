@@ -480,19 +480,17 @@ void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 }
 
 
-DecodeResult& IFrontEnd::decodeInstruction(Address pc)
+bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 {
     if (!m_image || (m_image->getSectionInfoByAddr(pc) == nullptr)) {
         LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
-        static DecodeResult invalid;
-        invalid.reset();
-        invalid.valid = false;
-        return invalid;
+        result.valid = false;
+        return false;
     }
 
     const IBinarySection *pSect           = m_image->getSectionInfoByAddr(pc);
     ptrdiff_t            host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).value();
-    return m_decoder->decodeInstruction(pc, host_native_diff);
+    return m_decoder->decodeInstruction(pc, host_native_diff, result);
 }
 
 
@@ -656,9 +654,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             }
 
             // Decode the inst at uAddr.
-            inst = decodeInstruction(uAddr);
-
-            if (!inst.valid) {
+            if (!decodeInstruction(uAddr, inst)) {
                 qWarning() << "Invalid instruction at" << uAddr.toString();
             }
             else if (inst.rtl->empty()) {
@@ -942,9 +938,9 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             // It should not be in the PLT either, but getLimitTextHigh() takes this into account
                             if (callAddr < m_image->getLimitTextHigh()) {
                                 // Decode it.
-                                DecodeResult decoded = decodeInstruction(callAddr);
+                                DecodeResult decoded;
 
-                                if (decoded.valid && !decoded.rtl->empty()) { // is the instruction decoded succesfully?
+                                if (decodeInstruction(callAddr, decoded) && !decoded.rtl->empty()) { // is the instruction decoded succesfully?
                                     // Yes, it is. Create a Statement from it.
                                     RTL         *rtl             = decoded.rtl;
                                     Instruction *first_statement = rtl->front();

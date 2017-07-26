@@ -59,11 +59,9 @@
 
 // Function to generate statements for the BSF/BSR series (Bit Scan Forward/
 // Reverse)
-void genBSFR(Address pc, SharedExp reg, SharedExp modrm, int init, int size, OPER incdec, int numBytes);
+void genBSFR(Address pc, SharedExp reg, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result);
 
-static DecodeResult result;
-
-DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
+bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
     HostAddress hostPC = HostAddress(delta) + pc;
 
@@ -4718,8 +4716,8 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
                                             // #line 1372 "frontend/machine/pentium/decoder.m"
                                             // stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
                                             genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus,
-                                                    (nextPC.value() - hostPC.value()));
-                                            return result;
+                                                    (nextPC.value() - hostPC.value()), result);
+                                            return result.valid;
                                         } /*opt-block*/ /*opt-block+*/
                                         else {
                                             goto MATCH_label_c968; /*opt-block+*/
@@ -4820,8 +4818,8 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
                                             // stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
                                             // Bit Scan Forward: need helper function
                                             genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus,
-                                                    (nextPC.value() - hostPC.value()));
-                                            return result;
+                                                    (nextPC.value() - hostPC.value()), result);
+                                            return result.valid;
                                         } /*opt-block*/ /*opt-block+*/
                                         else {
                                             goto MATCH_label_c972; /*opt-block+*/
@@ -19312,8 +19310,8 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
                                                         // #line 1377 "frontend/machine/pentium/decoder.m"
                                                         // stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
                                                         genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus,
-                                                                (nextPC.value() - hostPC.value()));
-                                                        return result;
+                                                                (nextPC.value() - hostPC.value()), result);
+                                                        return result.valid;
                                                         // Not "user" instructions:
                                                         //    | BOUNDod(reg, Mem) =>
                                                         //        stmts = instantiate(pc,     "BOUNDod", DIS_REG32,
@@ -19437,8 +19435,8 @@ DecodeResult& PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta)
                                                         nextPC = MATCH_p + 6;
                                                         // stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
                                                         genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus,
-                                                                (nextPC.value() - hostPC.value()));
-                                                        return result;
+                                                                (nextPC.value() - hostPC.value()), result);
+                                                        return result.valid;
                                                     } /*opt-block*/ /*opt-block+*/
                                                     else {
                                                         goto MATCH_label_c150; /*opt-block+*/
@@ -37257,7 +37255,7 @@ MATCH_label_c64:
             result.valid    = false; // Invalid instruction
             result.rtl      = nullptr;
             result.numBytes = 0;
-            return result;
+            return result.valid;
         }
 MATCH_label_c65:
         (void)0; /*placeholder for label*/
@@ -38075,8 +38073,8 @@ MATCH_label_c145:
             nextPC = MATCH_p + 4;
             // #line 1377 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
             //        stmts = instantiate(pc,     "BOUNDod", DIS_REG32, DIS_MEM);
@@ -38102,8 +38100,8 @@ MATCH_label_c146:
             nextPC = MATCH_p + 5;
             // #line 1377 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
             //        stmts = instantiate(pc,     "BOUNDod", DIS_REG32, DIS_MEM);
@@ -38129,8 +38127,8 @@ MATCH_label_c147:
             nextPC = MATCH_p + 9;
             // #line 1377 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
             //        stmts = instantiate(pc,     "BOUNDod", DIS_REG32, DIS_MEM);
@@ -38156,8 +38154,8 @@ MATCH_label_c148:
             nextPC = MATCH_p + 8;
             // #line 1377 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
             //        stmts = instantiate(pc,     "BOUNDod", DIS_REG32, DIS_MEM);
@@ -38183,8 +38181,8 @@ MATCH_label_c149:
             nextPC = MATCH_p + 4;
             // #line 1367 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c150:
         (void)0; /*placeholder for label*/
@@ -38194,8 +38192,8 @@ MATCH_label_c150:
             nextPC = MATCH_p + 5;
             // #line 1367 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c151:
         (void)0; /*placeholder for label*/
@@ -38205,8 +38203,8 @@ MATCH_label_c151:
             nextPC = MATCH_p + 9;
             // #line 1367 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c152:
         (void)0; /*placeholder for label*/
@@ -38215,8 +38213,8 @@ MATCH_label_c152:
             unsigned reg   = (MATCH_w_8_24 >> 3 & 0x7) /* reg_opcode at 24 */;
             nextPC = MATCH_p + 8;
             // stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c153:
         (void)0; /*placeholder for label*/
@@ -46363,8 +46361,8 @@ MATCH_label_c967:
             nextPC = MATCH_p + 3;
             // #line 1372 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c968:
         (void)0; /*placeholder for label*/
@@ -46373,8 +46371,8 @@ MATCH_label_c968:
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 4;
             // stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c969:
         (void)0; /*placeholder for label*/
@@ -46384,16 +46382,16 @@ MATCH_label_c969:
             nextPC = MATCH_p + 8;
             // #line 1372 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c970: {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 7;
             // stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c971: {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
@@ -46401,8 +46399,8 @@ MATCH_label_c971: {
             nextPC = MATCH_p + 3;
             // stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c972: {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
@@ -46410,8 +46408,8 @@ MATCH_label_c972: {
             nextPC = MATCH_p + 4;
             // stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c973:
         (void)0; /*placeholder for label*/
@@ -46421,8 +46419,8 @@ MATCH_label_c973:
             nextPC = MATCH_p + 8;
             // stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c974:
         (void)0; /*placeholder for label*/
@@ -46433,8 +46431,8 @@ MATCH_label_c974:
             // #line 1361 "frontend/machine/pentium/decoder.m"
             // stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()));
-            return result;
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result);
+            return result.valid;
         }
 MATCH_label_c975:
         (void)0; /*placeholder for label*/
@@ -49404,7 +49402,7 @@ MATCH_finished_c:
 
     assert(nextPC >= hostPC);
     result.numBytes = (nextPC.value() - hostPC.value());
-    return result;
+    return result.valid;
 }
 
 
@@ -49718,7 +49716,7 @@ static int BSFRstate = 0;                                                     //
  * \param incdec either opPlus for Forward scans, or opMinus for Reverse scans
  * \param numBytes number of bytes this instruction
  ******************************************************************************/
-void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OPER incdec, int numBytes)
+void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result)
 {
     // Note the horrible hack needed here. We need initialisation code, and an extra branch, so the %SKIP/%RPT won't
     // work. We need to emit 6 statements, but these need to be in 3 RTLs, since the destination of a branch has to be
