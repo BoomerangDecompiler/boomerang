@@ -5,6 +5,8 @@ Right now, there are no pre-compiled binaries available, so you'll have to compi
 
 ## Building
 
+[![Build Status](https://travis-ci.org/ceeac/boomerang.svg?branch=develop)](https://travis-ci.org/ceeac/boomerang)
+
 ### Building prerequisites
 
  - A C++11 compatible compiler (GCC \>= 5.0, Clang \>= 4.0, MSVC \>= 2015 are known to work)
