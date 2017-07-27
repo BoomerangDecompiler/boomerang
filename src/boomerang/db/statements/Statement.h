@@ -194,7 +194,7 @@ public:
 
     bool isPhi() const { return m_kind == STMT_PHIASSIGN; }      ///< true    if this statement is a phi assignment
     bool isImplicit() const { return m_kind == STMT_IMPASSIGN; } ///< true if this statement is an implicit assignment
-    bool isFlagAssgn() const;                                    ///< true if this statment is a flags assignment
+    bool isFlagAssign() const;                                   ///< true if this statment is a flags assignment
 
     bool isImpRef() const { return m_kind == STMT_IMPREF; } ///< true of this statement is an implicit reference
 

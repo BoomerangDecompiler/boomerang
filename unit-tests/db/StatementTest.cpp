@@ -916,10 +916,10 @@ void StatementTest::testIsFlagAssgn()
     fc.print(ost);
 
     QCOMPARE(expected, actual);
-	QVERIFY(fc.isFlagAssgn());
-	QVERIFY(!call->isFlagAssgn());
-	QVERIFY(!br->isFlagAssgn());
-	QVERIFY(!as->isFlagAssgn());
+	QVERIFY(fc.isFlagAssign());
+	QVERIFY(!call->isFlagAssign());
+	QVERIFY(!br->isFlagAssign());
+	QVERIFY(!as->isFlagAssign());
 	delete call;
 	delete br;
 }

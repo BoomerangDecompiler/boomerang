@@ -450,7 +450,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
     }
 
     // If delay_insn decoded to empty list ( NOP) or if it isn't a flag assign => Put delay inst first
-    if (delay_inst.rtl->empty() || !delay_inst.rtl->back()->isFlagAssgn()) {
+    if (delay_inst.rtl->empty() || !delay_inst.rtl->back()->isFlagAssign()) {
         if (delay_inst.type != NOP) {
             // Emit delay instr
             BB_rtls->push_back(delay_inst.rtl);

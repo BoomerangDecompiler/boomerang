@@ -108,7 +108,7 @@ void RTL::appendStmt(Instruction *s)
     assert(s != nullptr);
 
     if (!empty()) {
-        if (back()->isFlagAssgn()) {
+        if (back()->isFlagAssign()) {
             iterator it = end();
             insert(--it, s);
             return;

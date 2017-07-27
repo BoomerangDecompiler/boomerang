@@ -429,7 +429,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *>& rts, bool optimise
             assert(rhs != nullptr);
             ss = Binary::get(opList, lhs->clone(), Binary::get(opList, rhs->clone(), Terminal::get(opNil)));
         }
-        else if (rt->isFlagAssgn()) {
+        else if (rt->isFlagAssign()) {
             Assign *rt_asgn = (Assign *)rt;
             // Exp *lhs = rt_asgn->getLeft();
             auto rhs = rt_asgn->getRight();

@@ -317,7 +317,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
             // Get the current Exp
             st = *iter;
 
-            if (!st->isFlagAssgn()) {
+            if (!st->isFlagAssign()) {
                 // We are interested in either FPUSH/FPOP, or r[32..39] appearing in either the left or right hand
                 // sides, or calls
                 if (st->isFpush()) {
