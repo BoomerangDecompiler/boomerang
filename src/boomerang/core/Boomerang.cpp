@@ -714,21 +714,21 @@ bool Boomerang::setOutputDirectory(const QString& path)
 
 void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
 {
-    LOG_VERBOSE_OLD(1) << "Adding Objective-C information to Prog.\n";
+    LOG_MSG("Adding Objective-C information to Prog.");
     Module *root = prog->getRootCluster();
 
     for (auto& modules_it : modules) {
         const ObjcModule& mod     = (modules_it).second;
         Module            *module = prog->getOrInsertModule(mod.name);
         root->addChild(module);
-        LOG_VERBOSE_OLD(1) << "\tModule: " << mod.name << "\n";
+        LOG_VERBOSE("\tModule: %1", mod.name);
         ClassModFactory class_fact;
 
         for (auto& elem : mod.classes) {
             const ObjcClass& c   = (elem).second;
             Module           *cl = prog->getOrInsertModule(mod.name, class_fact);
             root->addChild(cl);
-            LOG_VERBOSE_OLD(1) << "\t\tClass: " << c.name << "\n";
+            LOG_VERBOSE("\t\tClass: %1", c.name);
 
             for (auto& _it2 : c.methods) {
                 const ObjcMethod& m = (_it2).second;
@@ -744,25 +744,23 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *p
                 Function *p = cl->getOrInsertFunction(method_name, m.addr);
                 p->setSignature(Signature::instantiate(prog->getFrontEndId(), CallConv::C, method_name));
                 // TODO: decode types in m.types
-                LOG_VERBOSE_OLD(1) << "\t\t\tMethod: " << m.name << "\n";
+                LOG_VERBOSE("\t\t\tMethod: ", m.name);
             }
         }
     }
 
-    LOG_VERBOSE_OLD(1) << "\n";
+    LOG_VERBOSE("");
 }
 
 
 Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
-    QTextStream q_cout(stdout);
-
-    q_cout << "loading...\n";
+    LOG_MSG("Loading...");
     Prog      *prog = new Prog(fname);
     IFrontEnd *fe   = IFrontEnd::create(fname, prog);
 
     if (fe == nullptr) {
-        LOG_STREAM_OLD(LogLevel::Default) << "failed.\n";
+        LOG_ERROR("Loading '%1' failed.");
         return nullptr;
     }
 
@@ -776,36 +774,36 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
     fe->readLibraryCatalog(); // Needed before readSymbolFile()
 
     for (auto& elem : m_symbolFiles) {
-        q_cout << "reading symbol file " << elem << "\n";
+        LOG_MSG("Reading symbol file '%1'", elem);
         prog->readSymbolFile(elem);
     }
 
     // Entry points from -e (and -E) switch(es)
     for (auto& elem : m_entryPoints) {
-        q_cout << "decoding specified entrypoint " << elem << "\n";
+        LOG_MSG("Decoding specified entrypoint at address %1", elem);
         prog->decodeEntryPoint(elem);
     }
 
     if (m_entryPoints.size() == 0) { // no -e or -E given
         if (decodeMain) {
-            q_cout << "decoding entry point...\n";
+            LOG_MSG("Decoding entry point...");
         }
 
         fe->decode(prog, decodeMain, pname);
 
         if (!noDecodeChildren) {
             // this causes any undecoded userprocs to be decoded
-            q_cout << "decoding anything undecoded...\n";
+            LOG_MSG("Decoding anything undecoded...");
             fe->decode(prog, Address::INVALID);
         }
     }
 
-    q_cout << "finishing decode...\n";
+    LOG_MSG("Finishing decode...");
     prog->finishDecode();
 
     Boomerang::get()->alertEndDecode();
 
-    q_cout << "found " << prog->getNumProcs() << " procs\n";
+    LOG_MSG("Found %1 procs", prog->getNumProcs());
 
     // GK: The analysis which was performed was not exactly very "analysing", and so it has been moved to
     // prog::finishDecode, UserProc::assignProcsToCalls and UserProc::finalSimplify
@@ -835,8 +833,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     Boomerang::get()->getOrCreateLog(); // ensure log exists
 
     if (loadBeforeDecompile) {
-        LOG_STREAM_OLD() << "loading persisted state...\n";
-        assert(false);
+        LOG_ERROR("Loading persisted state is not implemented.");
     }
     else {
         prog = loadAndDecode(fname, pname);
@@ -847,14 +844,14 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     }
 
     if (saveBeforeDecompile) {
-        assert(false);
+        LOG_ERROR("Saving persisted state is not implemented.");
     }
 
     if (stopBeforeDecompile) {
         return 0;
     }
 
-    LOG_STREAM_OLD() << "decompiling...\n";
+    LOG_MSG("Decompiling...");
     prog->decompile();
 
     if (!dotFile.isEmpty()) {
@@ -862,7 +859,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     }
 
     if (printAST) {
-        LOG_STREAM_OLD() << "printing AST...\n";
+        LOG_MSG("Printing AST...");
 
         for (const Module *module : *prog) {
             for (Function *func : *module) {
@@ -875,28 +872,19 @@ int Boomerang::decompile(const QString& fname, const char *pname)
         }
     }
 
-    QTextStream q_cout(stdout);
-    q_cout << "generating code...\n";
+    LOG_MSG("Generating code...");
     prog->generateCode();
 
-    q_cout << "output written to " << m_outputDirectory << prog->getRootCluster()->getName() << "\n";
+    LOG_VERBOSE("Output written to '%1'", m_outputDirectory + prog->getRootCluster()->getName());
 
     time_t end;
     time(&end);
     int hours = (int)((end - start) / 60 / 60);
     int mins  = (int)((end - start) / 60 - hours * 60);
     int secs  = (int)((end - start) - (hours * 60 * 60) - (mins * 60));
-    q_cout << "completed in ";
 
-    if (hours) {
-        q_cout << hours << " hours ";
-    }
+    LOG_MSG("Completed in %1 hours %2 minutes %3 seconds.", hours, mins, secs);
 
-    if (hours || mins) {
-        q_cout << mins << " mins ";
-    }
-
-    q_cout << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
     delete prog;
     return 0;
 }

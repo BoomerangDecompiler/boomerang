@@ -231,13 +231,13 @@ void RTL::simplify()
 
             if (cond && (cond->getOper() == opIntConst)) {
                 if (cond->access<Const>()->getInt() == 0) {
-                    LOG_VERBOSE_OLD(1) << "removing branch with false condition at " << getAddress() << " " << *it << "\n";
+                    LOG_VERBOSE("Removing branch with false condition at %1 %2", getAddress(), *it);
                     it = this->erase(it);
                     continue;
                 }
 
-                LOG_VERBOSE_OLD(1) << "replacing branch with true condition with goto at " << getAddress() << " " << *it
-                               << "\n";
+                LOG_VERBOSE("Replacing branch with true condition with goto at %1 %2",
+                            getAddress(), *it);
                 *it = new GotoStatement(((BranchStatement *)s)->getFixedDest());
             }
         }
@@ -246,7 +246,7 @@ void RTL::simplify()
 
             if (guard && (guard->isFalse() || (guard->isIntConst() && (guard->access<Const>()->getInt() == 0)))) {
                 // This assignment statement can be deleted
-                LOG_VERBOSE_OLD(1) << "removing assignment with false guard at " << getAddress() << " " << *it << "\n";
+                LOG_VERBOSE("Removing assignment with false guard at %1 %2", getAddress(), *it);
                 it = erase(it);
                 continue;
             }

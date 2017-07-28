@@ -197,7 +197,7 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
     ParamEntry& param = DetParamMap[s];
 
     if (param.m_params.size() == 0) {
-        LOG_STREAM_OLD() << "Error in SSL File: Variant operand " << s << " has no branches. Well that's really useful...\n";
+        LOG_ERROR("Error in SSL File: Variant operand %1 has no branches. Well that's really useful...", s);
         return;
     }
 
@@ -262,7 +262,7 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
     std::map<QString, TableEntry>::iterator it = idict.find(hlpr);
 
     if (it == idict.end()) {
-        LOG_STREAM_OLD() << "Error: no entry for `" << name << "' in RTL dictionary\n";
+        LOG_ERROR("No entry for '%1' in RTL dictionary", name);
         it = idict.find("NOP"); // At least, don't cause segfault
     }
 

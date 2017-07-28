@@ -94,7 +94,7 @@ SSLParser::SSLParser(const QString &_sslFile, bool _trace) : sslFile(_sslFile), 
     m_fin = new std::fstream(sslFile.toStdString(), std::ios::in);
     theScanner = nullptr;
     if (!*m_fin) {
-        LOG_STREAM_OLD() << "can't open `" << sslFile << "' for reading\n";
+        LOG_ERROR("Can't open SSL file '%1' for reading");
         return;
     }
     theScanner = new SSLScanner(*m_fin, _trace);
@@ -1647,7 +1647,7 @@ SSLParser::
                 yyval.typ = CharType::get();
                 break;
             default:
-                LOG_STREAM_OLD() << "Unexpected char " << c << " in assign type\n";
+                LOG_WARN("Unexpected char %1 in assign type", c);
                 yyval.typ = IntegerType::get(32);
             }
         };

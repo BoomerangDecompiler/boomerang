@@ -51,8 +51,8 @@
 
 void SparcFrontEnd::warnDCTcouple(Address uAt, Address uDest)
 {
-    LOG_STREAM_OLD() << "Error: DCTI couple at " << uAt << " points to delayed branch at " << uDest << "...\n";
-    LOG_STREAM_OLD() << "Decompilation will likely be incorrect\n";
+    LOG_ERROR("DCTI couple at '%1' points to delayed branch at '%2'...", uAt, uDest);
+    LOG_ERROR("Decompilation will likely be incorrect");
 }
 
 
@@ -109,7 +109,7 @@ void SparcFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& 
         cfg->addOutEdge(newBB, dest, true);
     }
     else {
-        LOG_STREAM_OLD() << "Error: branch to " << dest << " goes beyond section.\n";
+        LOG_ERROR("Branch to address %1 is beyond section limits", dest);
     }
 }
 
@@ -140,7 +140,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
 
 void SparcFrontEnd::case_unhandled_stub(Address addr)
 {
-    LOG_STREAM_OLD() << "Error: DCTI couple at " << addr << '\n';
+    LOG_ERROR("DCTI couple at address ", addr);
 }
 
 
@@ -445,7 +445,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         address += 4; // Skip the SCD only
         // Start a new list of RTLs for the next BB
         BB_rtls = nullptr;
-        LOG_STREAM_OLD() << "Warning: instruction at " << address << " not copied to true leg of preceeding branch\n";
+        LOG_WARN("Instruction at address %1 not copied to true leg of preceeding branch", address);
         return true;
     }
 
@@ -711,14 +711,17 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                 ptrdiff_t delta = m_image->getTextDelta();
 
                 const Byte* instructionData = (const Byte*)(uAddr + delta).value();
+                QString instructionString;
+                QTextStream ost(&instructionString);
+
                 for (int j = 0; j < inst.numBytes; j++) {
-                    LOG_STREAM_OLD() << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0')) << " ";
+                    ost << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0'));
+                    if (j < inst.numBytes-1) {
+                        ost << " ";
+                    }
                 }
 
-                LOG_STREAM_OLD() << "\n";
-                LOG_STREAM_OLD().flush();
-                assert(false);
-                return false;
+                LOG_FATAL("Invalid instruction at %1: %2", uAddr, instructionString);
             }
 
             // Don't display the RTL here; do it after the switch statement in case the delay slot instruction is moved
@@ -1224,7 +1227,7 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> *l
     QString name = m_program->getSymbolByAddress(dest);
 
     if (name.isEmpty()) {
-        LOG_STREAM_OLD() << "Error: Can't find symbol for PLT address " << dest << '\n';
+        LOG_ERROR("Can't find symbol for PLT address %1", dest);
         return false;
     }
 

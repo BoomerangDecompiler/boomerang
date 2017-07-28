@@ -301,10 +301,9 @@ bool DataFlow::canRename(SharedExp e, UserProc *proc)
 
 void DataFlow::dumpA_phi()
 {
-    std::map<SharedExp, std::set<int>, lessExpStar>::iterator zz;
     LOG_STREAM_OLD() << "A_phi:\n";
 
-    for (zz = m_A_phi.begin(); zz != m_A_phi.end(); ++zz) {
+    for (auto zz = m_A_phi.begin(); zz != m_A_phi.end(); ++zz) {
         LOG_STREAM_OLD() << zz->first << " -> ";
         std::set<int>&          si = zz->second;
         std::set<int>::iterator qq;
@@ -714,8 +713,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             auto ss = m_Stacks.find(*dd);
 
             if (ss == m_Stacks.end()) {
-                LOG_STREAM_OLD() << "Tried to pop " << *dd << " from Stacks; does not exist\n";
-                assert(0);
+                LOG_FATAL("Tried to pop %1 from Stacks; does not exist", (*dd)->toString());
             }
 
             ss->second.pop_back();

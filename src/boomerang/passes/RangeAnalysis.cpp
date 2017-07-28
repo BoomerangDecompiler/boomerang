@@ -384,13 +384,13 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE_OLD(1) << "added " << a_lhs << " -> " << output.getRange(a_lhs).toString() << "\n";
+            LOG_VERBOSE("Added %1 -> %2", a_lhs, output.getRange(a_lhs));
         }
 
         updateRanges(insn, output);
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE_OLD(1) << insn << "\n";
+            LOG_VERBOSE("%1", insn);
         }
 
         return true;
@@ -527,16 +527,19 @@ public:
                 }
             }
             else if (!stmt->getDestProc()->isLib()) {
-              UserProc *p = (UserProc *)stmt->getDestProc();
+                UserProc *p = (UserProc *)stmt->getDestProc();
                 if (!p) {
                     assert(false);
                     return false;
                 }
-                LOG_VERBOSE_OLD(1) << "== checking for number of bytes popped ==\n" << *p << "== end it ==\n";
+
+                LOG_VERBOSE("== checking for number of bytes popped ==");
+                LOG_VERBOSE("%1", p->prints());
+                LOG_VERBOSE("== end it ==");
                 SharedExp eq = p->getProven(Location::regOf(28));
 
                 if (eq) {
-                    LOG_VERBOSE_OLD(1) << "found proven " << eq << "\n";
+                    LOG_VERBOSE("Found proven %1", eq);
 
                     if ((eq->getOper() == opPlus) && (*eq->getSubExp1() == *Location::regOf(28)) &&
                         eq->getSubExp2()->isIntConst()) {
@@ -611,14 +614,14 @@ public:
         RangeMap input;
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE_OLD(1) << "unioning {\n";
+            LOG_VERBOSE("unioning {");
         }
 
         for (size_t i = 0; i < stmt->getBB()->getNumInEdges(); i++) {
             Instruction *last = stmt->getBB()->getInEdges()[i]->getLastStmt();
 
             if (DEBUG_RANGE_ANALYSIS) {
-                LOG_VERBOSE_OLD(1) << "  in BB: " << stmt->getBB()->getInEdges()[i]->getLowAddr() << " " << last << "\n";
+                LOG_VERBOSE("  in BB: address %1 %2", stmt->getBB()->getInEdges()[i]->getLowAddr(), last);
             }
 
             if (last->isBranch()) {
@@ -630,7 +633,7 @@ public:
 
                     if (d && !d->isLib() && (((UserProc *)d)->getCFG()->findRetNode() == nullptr)) {
                         if (DEBUG_RANGE_ANALYSIS) {
-                            LOG_VERBOSE_OLD(1) << "ignoring ranges from call to proc with no ret node\n";
+                            LOG_VERBOSE("Ignoring ranges from call to proc with no ret node");
                         }
                     }
                     else {
@@ -644,7 +647,7 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE_OLD(1) << "}\n";
+            LOG_VERBOSE("}");
         }
 
         if (!input.isSubset(tgt->getRanges(stmt))) {
@@ -655,8 +658,8 @@ public:
 
                 if ((r.getLowerBound() != r.getUpperBound()) && (r.getLowerBound() != Range::MIN)) {
                     if (VERBOSE) {
-                        LOG_STREAM_OLD(LogLevel::Verbose1) << "stack height assumption violated " << r.toString();
-                        LOG_STREAM_OLD(LogLevel::Verbose1) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
+                        LOG_ERROR("Stack height assumption violated %1", r.toString());
+                        LOG_ERROR(" my BB: ", stmt->getBB()->getLowAddr());
                         stmt->getProc()->print(LOG_STREAM_OLD(LogLevel::Verbose1));
                     }
 
@@ -673,7 +676,7 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE_OLD(1) << stmt << "\n";
+            LOG_VERBOSE("%1",stmt);
         }
 
         return true;
@@ -774,9 +777,11 @@ bool RangeAnalysis::runOnFunction(Function& F)
         return false;
     }
 
-    LOG_STREAM_OLD() << "performing range analysis on " << F.getName() << "\n";
+    LOG_VERBOSE("Performing range analysis on %1", F.getName());
+
     UserProc& UF((UserProc&)F);
     assert(UF.getCFG());
+
     // this helps
     UF.getCFG()->sortByAddress();
 
@@ -891,14 +896,12 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc& UF)
 
         if (rm.hasRange(p)) {
             Range& r = rm.getRange(p);
-            LOG_STREAM_OLD(LogLevel::Default) << "got p " << p << " with range ";
-            LOG_STREAM_OLD(LogLevel::Default) << r.toString();
-            LOG_STREAM_OLD(LogLevel::Default) << "\n";
+            LOG_VERBOSE("Got p %1 with range %2", p, r.toString());
 
             if ((r.getBase()->getOper() == opInitValueOf) && r.getBase()->getSubExp1()->isRegOfK() &&
                 (r.getBase()->access<Const, 1, 1>()->getInt() == 28)) {
                 RTL *rtl = a->getBB()->getRTLWithStatement(a);
-                LOG << "interesting stack reference at " << rtl->getAddress() << " " << a << "\n";
+                LOG_VERBOSE("Interesting stack reference at address %1: %2", rtl->getAddress(), a);
             }
         }
     }

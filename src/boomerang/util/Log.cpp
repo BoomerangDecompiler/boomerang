@@ -13,6 +13,64 @@
 #include <iostream>
 
 
+QString Log::collectArg(const QString& msg, const Instruction *s)
+{
+    return msg.arg(s->prints());
+}
+
+QString Log::collectArg(const QString& msg, const SharedConstExp& e)
+{
+    return msg.arg(e->toString());
+}
+
+QString Log::collectArg(const QString& msg, const SharedType& ty)
+{
+    return msg.arg(ty->toString());
+}
+
+QString Log::collectArg(const QString& msg, const Printable& ty)
+{
+    return msg.arg(ty.toString());
+}
+
+QString Log::collectArg(const QString& msg, const RTL *r)
+{
+    return msg.arg(r->prints());
+}
+
+QString Log::collectArg(const QString& msg, int i)
+{
+    return msg.arg(i);
+}
+
+QString Log::collectArg(const QString& msg, size_t i)
+{
+    return msg.arg(i);
+}
+
+QString Log::collectArg(const QString& msg, char c)
+{
+    return msg.arg(c);
+}
+
+QString Log::collectArg(const QString& msg, double d)
+{
+    return msg.arg(d);
+}
+
+QString Log::collectArg(const QString& msg, Address a)
+{
+    return msg.arg(a.toString());
+}
+
+QString Log::collectArg(const QString& msg, const LocationSet *l)
+{
+    return msg.arg(l->prints());
+}
+
+
+
+
 SeparateLogger::SeparateLogger(const QString& v)
 {
     static QMap<QString, int> versions;

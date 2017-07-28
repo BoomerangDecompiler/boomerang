@@ -432,7 +432,7 @@ size_t NamedType::getSize() const
         return ty->getSize();
     }
 
-    LOG_VERBOSE_OLD(1) << "WARNING: Unknown size for named type " << name << "\n";
+    LOG_WARN("Unknown size for named type %1", name);
     return 0; // don't know
 }
 
@@ -683,7 +683,7 @@ bool PointerType::operator==(const Type& other) const
     }
 
     if (++pointerCompareNest >= 20) {
-        LOG_STREAM_OLD() << "PointerType operator== nesting depth exceeded!\n";
+        LOG_WARN("PointerType operator== nesting depth exceeded!");
         return true;
     }
 
@@ -2197,7 +2197,7 @@ void UnionType::addType(SharedType n, const QString& str)
     else {
         if (n->isPointer() && (n->as<PointerType>()->getPointsTo().get() == this)) { // Note: pointer comparison
             n = PointerType::get(VoidType::get());
-            LOG_VERBOSE_OLD(1) << "Warning: attempt to union with pointer to self!\n";
+            LOG_WARN("Attempt to union with pointer to self!");
         }
 
         UnionElement ue;

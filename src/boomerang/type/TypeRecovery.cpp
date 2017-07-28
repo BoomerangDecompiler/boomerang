@@ -8,8 +8,8 @@
 
 void TypeRecoveryCommon::recoverProgramTypes(Prog *v)
 {
-    if (VERBOSE || DEBUG_TA) {
-        LOG << "=== start " << name() << " type analysis ===\n";
+    if (DEBUG_TA) {
+        LOG_VERBOSE("=== start %1 type analysis ===", name());
     }
 
     // FIXME: This needs to be done in bottom-up order of the call-tree first,
@@ -24,12 +24,12 @@ void TypeRecoveryCommon::recoverProgramTypes(Prog *v)
 
             // FIXME: this just does local TA again. Need to resolve types for all parameter/arguments,
             // and return/results! This will require a "repeat until no change" loop
-            LOG_STREAM_OLD() << "global type analysis for " << proc->getName() << "\n";
+            LOG_VERBOSE("Global type analysis for %1", proc->getName());
             recoverFunctionTypes(pp);
         }
     }
 
-    if (VERBOSE || DEBUG_TA) {
-        LOG << "=== end type analysis ===\n";
+    if (DEBUG_TA) {
+        LOG_VERBOSE("=== end type analysis ===");
     }
 }

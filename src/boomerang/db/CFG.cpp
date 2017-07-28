@@ -1071,7 +1071,7 @@ void Cfg::addNewOutEdge(BasicBlock *pFromBB, BasicBlock *pNewOutEdge)
 
 void Cfg::simplify()
 {
-    LOG_VERBOSE_OLD(1) << "simplifying...\n";
+    LOG_VERBOSE("Simplifying CFG ...");
 
     for (BasicBlock *bb : m_listBB) {
         bb->simplify();
@@ -1773,7 +1773,7 @@ void Cfg::findInterferences(ConnectionGraph& cg)
         count++; // prevent infinite loop
 
         if (++progress > 20) {
-            LOG_STREAM_OLD() << "i";
+            LOG_VERBOSE("i");
             LOG_STREAM_OLD().flush();
             progress = 0;
         }

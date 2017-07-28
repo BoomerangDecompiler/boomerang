@@ -40,10 +40,10 @@ class IBinarySymbolTable;
 class Project;
 
 
-#define LOG                Boomerang::get()->getOrCreateLog()
-#define LOG_SEPARATE_OLD(x)    Boomerang::get()->separate_log(x)
-#define LOG_VERBOSE_OLD(x)     Boomerang::get()->if_verbose_log(x)
-#define LOG_STREAM_OLD         Boomerang::get()->getLogStream
+#define LOG                     Boomerang::get()->getOrCreateLog()
+#define LOG_SEPARATE_OLD(x)     Boomerang::get()->separate_log(x)
+#define LOG_VERBOSE_OLD(x)      Boomerang::get()->if_verbose_log(x)
+#define LOG_STREAM_OLD          Boomerang::get()->getLogStream
 
 
 /**

@@ -9187,7 +9187,7 @@ MATCH_label_a12:
 
             default:
 
-                LOG_STREAM_OLD(LogLevel::Warning) << "ERROR: MTSPR instruction with invalid S field: " << uimm << "\n";
+                LOG_ERROR("MTSPR instruction with invalid S field: %1", uimm);
             }
 
             Q_UNUSED(name);

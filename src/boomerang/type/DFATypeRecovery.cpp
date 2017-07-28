@@ -237,7 +237,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
         for (Instruction *it : stmts) {
             if (++dfa_progress >= 2000) {
                 dfa_progress = 0;
-                LOG_STREAM_OLD() << "t";
+                LOG_VERBOSE("t");
                 LOG_STREAM_OLD().flush();
             }
 
@@ -708,11 +708,11 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
         // See if the base types will meet
         if (otherBase->resolvesToPointer()) {
             if (thisBase->resolvesToPointer() && (thisBase->as<PointerType>()->getPointsTo() == thisBase)) {
-                LOG_STREAM_OLD() << "HACK! BAD POINTER 1\n";
+                LOG_VERBOSE("HACK! BAD POINTER 1");
             }
 
             if (otherBase->resolvesToPointer() && (otherBase->as<PointerType>()->getPointsTo() == otherBase)) {
-                LOG_STREAM_OLD() << "HACK! BAD POINTER 2\n";
+                LOG_VERBOSE("HACK! BAD POINTER 2");
             }
 
             if (thisBase == otherBase) {                          // Note: compare pointers
@@ -1387,7 +1387,7 @@ SharedType Binary::ascendType()
 SharedType RefExp::ascendType()
 {
     if (m_def == nullptr) {
-        LOG_STREAM_OLD() << "Warning! Null reference in " << this << "\n";
+        LOG_WARN("Null reference in %1", (const Instruction*)this);
         return VoidType::get();
     }
 
@@ -1448,7 +1448,7 @@ SharedType Terminal::ascendType()
         return IntegerType::get(STD_SIZE, -1);
 
     default:
-        LOG_STREAM_OLD() << "ascendType() for terminal " << this << " not implemented!\n";
+        LOG_WARN("Unknown type %1", this->toString());
         return VoidType::get();
     }
 }

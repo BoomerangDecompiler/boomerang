@@ -92,19 +92,19 @@ IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactor
         return new ST20FrontEnd(pBF, prog, pbff);
 
     case Machine::HPRISC:
-        LOG_STREAM_OLD() << "No frontend for Hp Risc\n";
+        LOG_VERBOSE("No frontend for HP RISC");
         break;
 
     case Machine::PALM:
-        LOG_STREAM_OLD() << "No frontend for PALM\n";
+        LOG_VERBOSE("No frontend for PALM");
         break;
 
     case Machine::M68K:
-        LOG_STREAM_OLD() << "No frontend for M68K\n";
+        LOG_VERBOSE("No frontend for M68K");
         break;
 
     default:
-        LOG_STREAM_OLD() << "Machine architecture not supported!\n";
+        LOG_WARN("Machine architecture not supported!");
     }
 
     return nullptr;
@@ -329,7 +329,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 
     bool    gotMain;
     Address a = getMainEntryPoint(gotMain);
-    LOG_VERBOSE_OLD(1) << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
+    LOG_VERBOSE("start: %1, gotMain: %2", a, (gotMain ? "true" : "false"));
 
     if (a == Address::INVALID) {
         std::vector<Address> entrypoints = getEntryPoints();
@@ -342,7 +342,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     }
 
     decode(m_program, a);
-       m_program->setEntryPoint(a);
+    m_program->setEntryPoint(a);
 
     if (!gotMain) {
         return;
@@ -363,14 +363,14 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
         Function *proc = m_program->findProc(a);
 
         if (proc == nullptr) {
-            LOG_VERBOSE_OLD(1) << "no proc found for address " << a << "\n";
+            LOG_WARN("No proc found for address %1", a);
             return;
         }
 
         auto fty = std::dynamic_pointer_cast<FuncType>(Type::getNamedType(name));
 
         if (!fty) {
-            LOG << "unable to find signature for known entrypoint " << name << "\n";
+            LOG_WARN("Unable to find signature for known entrypoint %1", name);
         }
         else {
             proc->setSignature(fty->getSignature()->clone());
@@ -391,16 +391,16 @@ void IFrontEnd::decode(Prog *prg, Address a)
 
     if (a != Address::INVALID) {
               m_program->createProc(a);
-        LOG_VERBOSE_OLD(1) << "starting decode at address " << a << "\n";
+        LOG_MSG("Starting decode at address %1", a);
         UserProc *p = (UserProc *)m_program->findProc(a);
 
         if (p == nullptr) {
-            LOG_VERBOSE_OLD(1) << "no proc found at address " << a << "\n";
+            LOG_MSG("No proc found at address %1", a);
             return;
         }
 
         if (p->isLib()) {
-            LOG << "NOT decoding library proc at address " << a << "\n";
+            LOG_MSG("NOT decoding library proc at address %1");
             return;
         }
 
@@ -474,7 +474,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address a)
 void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
     if (Boomerang::get()->traceDecoder) {
-        LOG << "decoding fragment at " << a << "\n";
+        LOG_MSG("Decoding fragment at address %1", a);
     }
 
     QTextStream os(stderr); // rtl output target
@@ -485,7 +485,7 @@ void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 {
     if (!m_image || (m_image->getSectionInfoByAddr(pc) == nullptr)) {
-        LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
+        LOG_ERROR("attempted to decode outside any known section at address %1");
         result.valid = false;
         return false;
     }
@@ -503,7 +503,7 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     ifs.open(signatureFile);
 
     if (!ifs.good()) {
-        LOG_STREAM_OLD() << "Can't open library signature file `" << signatureFile << "'\n";
+        LOG_ERROR("Can't open library signature file '%1'", signatureFile);
         return;
     }
 
@@ -812,7 +812,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                         // Check for indirect calls to library functions, especially in Win32 programs
                         if (refersToImportedFunction(pDest)) {
-                            LOG_VERBOSE_OLD(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
+                            LOG_VERBOSE("Jump to a library function: %1, replacing with a call/ret.", stmt_jump);
+
                             // jump to a library function
                             // replace with a call ret
                             const IBinarySymbol *sym = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());
@@ -823,10 +824,9 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             LibProc *lp = pProc->getProg()->getLibraryProc(func);
 
                             if (lp == nullptr) {
-                                LOG << "getLibraryProc returned nullptr, aborting\n";
+                                LOG_FATAL("getLibraryProc() returned nullptr");
                             }
 
-                            assert(lp);
                             call->setDestProc(lp);
                             std::list<Instruction *> *stmt_list = new std::list<Instruction *>;
                             stmt_list->push_back(call);

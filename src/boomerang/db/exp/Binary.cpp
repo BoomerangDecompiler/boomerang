@@ -1313,14 +1313,14 @@ SharedExp Binary::polySimplify(bool& bMod)
                                             if ((m_oper == opPlus) && ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToCompound() &&
                                                 (opSub2 == opIntConst)) {
                                                 unsigned n = (unsigned)std::static_pointer_cast<const Const>(subExp2)->getInt();
-                                            std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
-                                            res = convertFromOffsetToCompound(subExp1, c, n);
+                                                std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
+                                                res = convertFromOffsetToCompound(subExp1, c, n);
 
-                                            if (res) {
-                                                LOG_VERBOSE_OLD(1) << "(trans1) replacing " << shared_from_this() << " with " << res << "\n";
-                                                bMod = true;
-                                                return res;
-                                            }
+                                                if (res) {
+                                                    LOG_VERBOSE("(trans1) replacing %1 with %2", shared_from_this(), res);
+                                                    bMod = true;
+                                                    return res;
+                                                }
                                                 }
 
                                                 if ((m_oper == opFMinus) && (subExp1->getOper() == opFltConst) && (std::static_pointer_cast<const Const>(subExp1)->getFlt() == 0.0)) {

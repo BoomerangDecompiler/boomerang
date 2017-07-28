@@ -86,7 +86,7 @@ SSLParser::~SSLParser()
  ******************************************************************************/
 void SSLParser::yyerror(const char *msg)
 {
-    LOG_STREAM_OLD() << sslFile << ":" << theScanner->theLine << ": " << msg << '\n';
+    LOG_ERROR("%1: %2: %3", sslFile, theScanner->theLine, msg);
 }
 
 
@@ -96,9 +96,7 @@ void SSLParser::yyerror(const char *msg)
  ******************************************************************************/
 int SSLParser::yylex()
 {
-    int token = theScanner->yylex(yylval);
-
-    return token;
+    return theScanner->yylex(yylval);
 }
 
 

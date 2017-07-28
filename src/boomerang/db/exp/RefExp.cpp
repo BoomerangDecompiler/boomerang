@@ -230,10 +230,10 @@ SharedExp RefExp::accept(ExpModifier *v)
 void RefExp::printx(int ind) const
 {
     Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM_OLD() << "{";
+    LOG_VERBOSE("{");
 
     if (m_def == nullptr) {
-        LOG_STREAM_OLD() << "nullptr";
+        LOG_VERBOSE("nullptr");
     }
     else {
         LOG_STREAM_OLD() << HostAddress(m_def) << "=" << m_def->getNumber();

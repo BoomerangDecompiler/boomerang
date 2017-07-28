@@ -857,11 +857,11 @@ void UserProc::printDFG() const
         .arg(DFGcount);
 
     DFGcount++;
-    LOG_VERBOSE_OLD(1) << "outputing DFG to " << fname << "\n";
+    LOG_MSG("Outputing DFG to '%1'", fname);
     QFile file(fname);
 
     if (!file.open(QFile::WriteOnly)) {
-        LOG_WARN("Can't open DFG `%1'", fname);
+        LOG_WARN("Can't open DFG '%1'", fname);
         return;
     }
 
@@ -1143,7 +1143,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
-        LOG_STREAM_OLD() << "Error: " << getName() << " already has status PROC_FINAL\n";
+        LOG_ERROR("Proc %1 already has status PROC_FINAL", getName());
         return nullptr; // Already decompiled
     }
 
@@ -1330,11 +1330,11 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
         path->remove(this);
     }
     else {
-        LOG << "WARNING: UserProc::decompile: empty path when trying to remove last proc\n";
+        LOG_WARN("Empty path when trying to remove last proc");
     }
 
     --indent;
-    LOG_VERBOSE_OLD(1) << "end decompile(" << getName() << ")\n";
+    LOG_VERBOSE("End decompile(%1)", getName());
     return child;
 }
 
@@ -1382,7 +1382,7 @@ void UserProc::initialiseDecompile()
     printXML();
 
     if (Boomerang::get()->noDecompile) {
-        LOG_STREAM_OLD() << "not decompiling.\n";
+        LOG_MSG("Not decompiling.");
         setStatus(PROC_FINAL); // ??!
         return;
     }
@@ -1398,8 +1398,8 @@ void UserProc::earlyDecompile()
         return;
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "before early");
-    LOG_VERBOSE_OLD(1) << "early decompile for " << getName() << "\n";
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before Early");
+    LOG_VERBOSE("Early decompile for %1", getName());
 
     // Update the defines in the calls. Will redo if involved in recursion
     updateCallDefines();
@@ -1414,30 +1414,31 @@ void UserProc::earlyDecompile()
     // TODO: Check if this makes sense. It seems to me that we only want to do one pass of propagation here, since
     // the status == check had been knobbled below. Hopefully, one call to placing phi functions etc will be
     // equivalent to depth 0 in the old scheme
-    LOG_VERBOSE_OLD(1) << "placing phi functions 1st pass\n";
+    LOG_VERBOSE("Placing phi functions 1st pass");
+
     // Place the phi functions
     m_df.placePhiFunctions(this);
 
-    LOG_VERBOSE_OLD(1) << "numbering phi statements 1st pass\n";
+    LOG_VERBOSE("Numbering phi statements 1st pass");
     numberStatements(); // Number them
 
-    LOG_VERBOSE_OLD(1) << "renaming block variables 1st pass\n";
     // Rename variables
+    LOG_VERBOSE("Renaming block variables 1st pass");
     doRenameBlockVars(1, true);
     debugPrintAll("after rename (1)");
 
     bool convert;
     propagateStatements(convert, 1);
 
-    debugPrintAll("after propagation (1)");
+    debugPrintAll("After propagation (1)");
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "after early");
+    Boomerang::get()->alertDecompileDebugPoint(this, "After Early");
 }
 
 
 std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 {
-    Boomerang::get()->alertDecompileDebugPoint(this, "before middle");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before Middle");
 
     // The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
     // The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
@@ -1450,7 +1451,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         propagateStatements(convert, 2);
     }
 
-    debugPrintAll("after call and phi bypass (1)");
+    debugPrintAll("After call and phi bypass (1)");
 
     // This part used to be calle middleDecompile():
 
@@ -1461,7 +1462,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
     findPreserveds();
     fixCallAndPhiRefs(); // Propagate and bypass sp
 
-    debugPrintAll("after preservation, bypass and propagation");
+    debugPrintAll("After preservation, bypass and propagation");
 
     // Oh, no, we keep doing preservations till almost the end...
     // setStatus(PROC_PRESERVEDS);        // Preservation done
@@ -1586,7 +1587,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
         do {
             _convert = false;
-            LOG_VERBOSE_OLD(1) << "propagating at pass " << pass << "\n";
+            LOG_VERBOSE("Propagating at pass %1", pass);
             change |= propagateStatements(_convert, pass);
             change |= doRenameBlockVars(pass, true);
 
@@ -1741,7 +1742,7 @@ void UserProc::remUnusedStmtEtc()
     Boomerang::get()->alertDecompiling(this);
     Boomerang::get()->alertDecompileDebugPoint(this, "before final");
 
-    LOG_VERBOSE_OLD(1) << "--- remove unused statements for " << getName() << " ---\n";
+    LOG_VERBOSE("--- Remove unused statements for %1 ---", getName());
     // A temporary hack to remove %CF = %CF{7} when 7 isn't a SUBFLAGS
     //    if (theReturnStatement)
     //        theReturnStatement->specialProcessing();
@@ -1982,7 +1983,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
         }
     }
 
-    LOG_VERBOSE_OLD(1) << "=== end recursion group analysis ===\n";
+    LOG_VERBOSE("=== End recursion group analysis ===");
     Boomerang::get()->alertEndDecompile(this);
 }
 
@@ -2001,7 +2002,7 @@ void UserProc::updateCalls()
 
 bool UserProc::branchAnalysis()
 {
-    Boomerang::get()->alertDecompileDebugPoint(this, "before branch analysis.");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before branch analysis.");
     bool          removedBBs = false;
     StatementList stmts;
     getStatements(stmts);
@@ -2028,6 +2029,7 @@ bool UserProc::branchAnalysis()
                 //   branch to B if !cond1 && cond2
                 // A: something
                 // B:
+                //
                 if ((fallto->getFallBB() == branch->getTakenBB()) && (fallto->getBB()->getNumInEdges() == 1)) {
                     branch->setFallBB(fallto->getFallBB());
                     branch->setTakenBB(fallto->getTakenBB());
@@ -2065,7 +2067,7 @@ bool UserProc::branchAnalysis()
         }
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "after branch analysis.");
+    Boomerang::get()->alertDecompileDebugPoint(this, "After branch analysis.");
     return removedBBs;
 }
 
@@ -2118,17 +2120,16 @@ void UserProc::fixUglyBranches()
 
 bool UserProc::doRenameBlockVars(int pass, bool clearStacks)
 {
-    LOG_VERBOSE_OLD(1) << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks
-                   << " ###\n";
+    LOG_VERBOSE("### Rename block vars for %1 pass %2, clear = %3 ###", getName(), pass, clearStacks);
     bool b = m_df.renameBlockVars(this, 0, clearStacks);
-    LOG_VERBOSE_OLD(1) << "df.renameBlockVars return " << (b ? "true" : "false") << "\n";
+    LOG_VERBOSE("df.renameBlockVars return %1", (b ? "true" : "false"));
     return b;
 }
 
 
 void UserProc::findSpPreservation()
 {
-    LOG_VERBOSE_OLD(1) << "finding stack pointer preservation for " << getName() << "\n";
+    LOG_VERBOSE("Finding stack pointer preservation for %1", getName());
 
     bool stdsp = false; // FIXME: are these really used?
     // Note: need this non-virtual version most of the time, since nothing proved yet
@@ -2165,7 +2166,7 @@ void UserProc::findPreserveds()
 {
     std::set<SharedExp> removes;
 
-    LOG_VERBOSE_OLD(1) << "finding preserveds for " << getName() << "\n";
+    LOG_VERBOSE("Finding preserveds for %1", getName());
 
     Boomerang::get()->alertDecompileDebugPoint(this, "before finding preserveds");
 
@@ -2321,9 +2322,9 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
 
     QString     res_str;
     QTextStream str(&res_str);
-    str << "before removing matching assigns (" << e << ").";
+    str << "Before removing matching assigns (" << e << ").";
     Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
-    LOG_VERBOSE_OLD(1) << res_str << "\n";
+    LOG_VERBOSE(res_str);
 
     for (auto& stmt : stmts) {
         if ((stmt)->isAssign()) {
@@ -2458,7 +2459,7 @@ void UserProc::findFinalParameters()
     }
 
     if (DEBUG_PARAMS) {
-        LOG_VERBOSE_OLD(1) << "finding final parameters for " << getName() << "\n";
+        LOG_VERBOSE("Finding final parameters for %1", getName());
     }
 
     //    int sp = signature->getStackRegister();
@@ -2492,7 +2493,7 @@ void UserProc::findFinalParameters()
             }
 
             if (DEBUG_PARAMS) {
-                LOG_VERBOSE_OLD(1) << "found new parameter " << e << "\n";
+                LOG_VERBOSE("Found new parameter %1", e);
             }
 
             SharedType ty = ((ImplicitAssign *)s)->getType();
@@ -2633,7 +2634,7 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 
                 if ((m > n) && (m < n + (int)(lty->getSize() / 8))) {
                     e = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, elem.second->clone()), Const::get(m - n)));
-                    LOG_VERBOSE_OLD(1) << "seems " << le << " is in the middle of " << loc << " returning " << e << "\n";
+                    LOG_VERBOSE("Seems %1 is in the middle of %2 returning %3", le, loc, e);
                     return e;
                 }
             }
@@ -2744,7 +2745,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
 
                     if (e) {
                         auto ne = Unary::get(opAddrOf, e);
-                        LOG_VERBOSE_OLD(1) << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
+                        LOG_VERBOSE("Replacing argument %1 with %2 in %3", olde, ne, (const CallStatement*)call);
                         call->setArgumentExp(i, ne);
                     }
                 }
@@ -2802,7 +2803,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
             }
 
             // arr->setType(ArrayType::get(base, n / (base->getSize() / 8))); //TODO: why is this commented out ?
-            LOG_VERBOSE_OLD(1) << "found a local array using " << n << " bytes\n";
+            LOG_VERBOSE("Found a local array using %1 bytes", n);
             SharedExp replace = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, arr),
                                                             result->access<Exp, 1, 1, 2>()->clone()),
                                                 this);
@@ -2909,7 +2910,7 @@ bool UserProc::removeNullStatements()
 
 bool UserProc::propagateStatements(bool& convert, int pass)
 {
-    LOG_VERBOSE_OLD(1) << "--- begin propagating statements pass " << pass << " ---\n";
+    LOG_VERBOSE("--- Begin propagating statements pass %1 ---", pass);
     StatementList stmts;
     getStatements(stmts);
     // propagate any statements that can be
@@ -2960,7 +2961,7 @@ bool UserProc::propagateStatements(bool& convert, int pass)
 
     simplify();
     propagateToCollector();
-    LOG_VERBOSE_OLD(1) << "=== end propagating statements at pass " << pass << " ===\n";
+    LOG_VERBOSE("=== End propagating statements at pass %1 ===", pass);
     return change;
 }
 
@@ -3030,13 +3031,10 @@ SharedExp UserProc::newLocal(SharedType ty, const SharedExp& e, char *nam /* = n
     m_locals[name] = ty;
 
     if (ty == nullptr) {
-        LOG_STREAM_OLD() << "null type passed to newLocal\n";
-        assert(false);
+        LOG_FATAL("Null type passed to newLocal");
     }
 
-    if (VERBOSE) {
-        LOG << "assigning type " << ty->getCtype() << " to new " << name << "\n";
-    }
+    LOG_VERBOSE("Assigning type %1 to new %2", ty->getCtype(), name);
 
     return Location::local(name, this);
 }
@@ -3067,7 +3065,7 @@ void UserProc::setLocalType(const QString& nam, SharedType ty)
 {
     m_locals[nam] = ty;
 
-    LOG_VERBOSE_OLD(1) << "setLocalType: updating type of " << nam << " to " << ty->getCtype() << "\n";
+    LOG_VERBOSE("Updating type of %1 to %2", nam, ty->getCtype());
 }
 
 
@@ -3425,7 +3423,7 @@ void UserProc::fromSSAform()
 
     for (it = stmts.begin(); it != stmts.end(); it++) {
         if (++progress > 2000) {
-            LOG_STREAM_OLD() << ".";
+            LOG_VERBOSE(".");
             LOG_STREAM_OLD().flush();
             progress = 0;
         }
@@ -3443,7 +3441,7 @@ void UserProc::fromSSAform()
                 ty = VoidType::get();
             }
 
-            LOG_VERBOSE_OLD(1) << "got type " << ty->prints() << " for " << base << " from " << s << "\n";
+            LOG_VERBOSE("Got type %1 for %2 from %3", ty->prints(), base, s);
             ff = firstTypes.find(base);
             SharedExp ref = RefExp::get(base, s);
 
@@ -4665,8 +4663,8 @@ void UserProc::dumpLocals() const
 void UserProc::updateArguments()
 {
     Boomerang::get()->alertDecompiling(this);
-    LOG_VERBOSE_OLD(1) << "### update arguments for " << getName() << " ###\n";
-    Boomerang::get()->alertDecompileDebugPoint(this, "before updating arguments");
+    LOG_VERBOSE("### Update arguments for %1 ###", getName());
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before updating arguments");
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
 
@@ -4680,19 +4678,17 @@ void UserProc::updateArguments()
 
         c->updateArguments();
         // c->bypass();
-        LOG_VERBOSE_OLD(1) << c << "\n";
+        LOG_VERBOSE("%1", c);
     }
 
-    LOG_VERBOSE_OLD(1) << "=== end update arguments for " << getName() << "\n";
-    Boomerang::get()->alertDecompileDebugPoint(this, "after updating arguments");
+    LOG_VERBOSE("=== End update arguments for %1", getName());
+    Boomerang::get()->alertDecompileDebugPoint(this, "After updating arguments");
 }
 
 
 void UserProc::updateCallDefines()
 {
-    if (VERBOSE) {
-        LOG << "### update call defines for " << getName() << " ###\n";
-    }
+    LOG_VERBOSE("### Update call defines for % ###", getName());
 
     StatementList stmts;
     getStatements(stmts);
@@ -4712,7 +4708,8 @@ void UserProc::updateCallDefines()
 
 void UserProc::replaceSimpleGlobalConstants()
 {
-    LOG_VERBOSE_OLD(1) << "### replace simple global constants for " << getName() << " ###\n";
+    LOG_VERBOSE("### Replace simple global constants for %1 ###", getName());
+
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -4732,11 +4729,11 @@ void UserProc::replaceSimpleGlobalConstants()
             continue;
         }
 
-              Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
-        LOG << "assgn " << assgn << "\n";
+        Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
+        LOG_VERBOSE("Assign %1");
 
         if (m_prog->isReadOnly(addr)) {
-            LOG << "is readonly\n";
+            LOG_VERBOSE("is readonly");
             int val = 0;
 
             switch (assgn->getType()->getSize())
@@ -4765,7 +4762,7 @@ void UserProc::replaceSimpleGlobalConstants()
 
 void UserProc::reverseStrengthReduction()
 {
-    Boomerang::get()->alertDecompileDebugPoint(this, "before reversing strength reduction");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before reversing strength reduction");
 
     StatementList stmts;
     getStatements(stmts);
@@ -4818,7 +4815,7 @@ void UserProc::reverseStrengthReduction()
         }
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "after reversing strength reduction");
+    Boomerang::get()->alertDecompileDebugPoint(this, "After reversing strength reduction");
 }
 
 
@@ -5231,7 +5228,7 @@ void UserProc::fixCallAndPhiRefs()
             }
 
             ps->convertToAssign(best);
-            LOG_VERBOSE_OLD(1) << "redundant phi replaced with copy assign; now " << ps << "\n";
+            LOG_VERBOSE("Redundant phi replaced with copy assign; now %1", ps);
         }
     }
 
@@ -5334,7 +5331,7 @@ void UserProc::propagateToCollector()
 
 void UserProc::initialParameters()
 {
-    LOG_VERBOSE_OLD(1) << "### initial parameters for " << getName() << "\n";
+    LOG_VERBOSE("### Initial parameters for %1", getName());
     m_parameters.clear();
 
     for (const SharedExp& v : m_procUseCollector) {
@@ -5995,9 +5992,7 @@ void UserProc::clearUses()
 
 void UserProc::typeAnalysis()
 {
-    if (VERBOSE) {
-        LOG << "### type analysis for " << getName() << " ###\n";
-    }
+    LOG_VERBOSE("### Type analysis for %1 ###", getName());
 
     // Now we need to add the implicit assignments. Doing this earlier is extremely problematic, because
     // of all the m[...] that change their sorting order as their arguments get subscripted or propagated into
@@ -6008,7 +6003,7 @@ void UserProc::typeAnalysis()
     // Want to be after all propagation, but before converting expressions to locals etc
     if (DFA_TYPE_ANALYSIS) {
         if (DEBUG_TA) {
-            LOG_VERBOSE_OLD(1) << "--- start data flow based type analysis for " << getName() << " ---\n";
+            LOG_VERBOSE("--- start data flow based type analysis for %1 ---", getName());
         }
 
         bool first = true;
@@ -6031,7 +6026,7 @@ void UserProc::typeAnalysis()
         simplify(); // In case there are new struct members
 
         if (DEBUG_TA) {
-            LOG_VERBOSE_OLD(1) << "=== end type analysis for " << getName() << " ===\n";
+            LOG_VERBOSE("=== End type analysis for %1 ===", getName());
         }
     }
     else if (CON_TYPE_ANALYSIS) {
@@ -6066,7 +6061,7 @@ void UserProc::processDecodedICTs()
         RTL *rtl = bb->getLastRtl();
 
         if (DEBUG_SWITCH) {
-            LOG << "Saving high level switch statement " << rtl << "\n";
+            LOG_MSG("Saving high level switch statement %1", rtl);
         }
 
         m_prog->addDecodedRtl(bb->getHiAddr(), rtl);
@@ -6159,9 +6154,7 @@ void UserProc::setImplicitRef(Instruction *s, SharedExp a, SharedType ty)
 
 void UserProc::eliminateDuplicateArgs()
 {
-    if (VERBOSE) {
-        LOG << "### eliminate duplicate args for " << getName() << " ###\n";
-    }
+    LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
 
     BBIterator                           it;
     BasicBlock::rtlrit              rrit;
@@ -6182,9 +6175,7 @@ void UserProc::eliminateDuplicateArgs()
 
 void UserProc::removeCallLiveness()
 {
-    if (VERBOSE) {
-        LOG << "### removing call livenesses for " << getName() << " ###\n";
-    }
+    LOG_VERBOSE("### Removing call livenesses for %1 ###", getName());
 
     BBIterator                           it;
     BasicBlock::rtlrit              rrit;
@@ -6222,9 +6213,7 @@ void UserProc::mapTempsToLocals()
 // For debugging:
 void dumpProcList(ProcList *pc)
 {
-    ProcList::iterator pi;
-
-    for (pi = pc->begin(); pi != pc->end(); ++pi) {
+    for (ProcList::iterator pi = pc->begin(); pi != pc->end(); ++pi) {
         LOG_STREAM_OLD() << (*pi)->getName() << ", ";
     }
 
@@ -6255,10 +6244,10 @@ void Function::setProvenTrue(SharedExp fact)
 
 void UserProc::mapLocalsAndParams()
 {
-    Boomerang::get()->alertDecompileDebugPoint(this, "before mapping locals from dfa type analysis");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
 
     if (DEBUG_TA) {
-        LOG << " ### mapping expressions to local variables for " << getName() << " ###\n";
+        LOG_MSG(" ### mapping expressions to local variables for %1 ###", getName());
     }
 
     StatementList stmts;
@@ -6271,7 +6260,7 @@ void UserProc::mapLocalsAndParams()
     }
 
     if (DEBUG_TA) {
-        LOG << " ### end mapping expressions to local variables for " << getName() << " ###\n";
+        LOG_MSG(" ### End mapping expressions to local variables for %1 ###", getName());
     }
 }
 

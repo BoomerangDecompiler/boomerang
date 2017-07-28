@@ -154,8 +154,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 addr = Address(args[i].toLongLong(&converted, 0));
 
                 if (!converted) {
-                    LOG_STREAM_OLD() << "bad address: " << args[i] << '\n';
-                    exit(1);
+                    LOG_FATAL("Bad address: %1", args[i]);
                 }
 
                 boom.m_entryPoints.push_back(addr);
@@ -176,7 +175,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
         case 'X':
             boom.experimental = true;
-            LOG_STREAM_OLD(LogLevel::Warning) << "Warning: experimental code active!\n";
+            LOG_WARN("Activating experimental code!");
             break;
 
         case 'r':
@@ -315,7 +314,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
             if (arg[2] == 'a') {
                 boom.propOnlyToAll = true;
-                LOG_STREAM_OLD() << " * * Warning! -pa is not implemented yet!\n";
+                LOG_WARN(" * * Warning! -pa is not implemented yet!");
             }
             else {
                 if (++i == args.size()) {
@@ -347,8 +346,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 addr = Address(args[i].toLongLong(&converted, 0));
 
                 if (!converted) {
-                    LOG_STREAM_OLD() << "bad address: " << args[i + 1] << '\n';
-                    exit(1);
+                    LOG_FATAL("Bad address: %1", args[i + 1]);
                 }
 
                 boom.symbols[addr] = args[++i];
@@ -446,7 +444,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
     }
 
     if (minsToStopAfter > 0) {
-        LOG_STREAM_OLD(LogLevel::Default) << "stopping decompile after " << minsToStopAfter << " minutes.\n";
+        LOG_MSG("Stopping decompile after %1 minutes", minsToStopAfter);
         m_kill_timer.setSingleShot(true);
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
@@ -502,7 +500,7 @@ int CommandlineDriver::decompile()
 
 void CommandlineDriver::onCompilationTimeout()
 {
-    LOG_STREAM_OLD() << "Compilation timed out";
+    LOG_MSG("Compilation timed out.");
     exit(1);
 }
 

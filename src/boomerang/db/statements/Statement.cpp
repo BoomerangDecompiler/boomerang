@@ -376,10 +376,10 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
                             SharedExp   lhsOWdef = ((Assign *)OWdef)->getLeft();
                             LocationSet OWcomps;
                             def->addUsedLocs(OWcomps);
-                            LocationSet::iterator cc;
+
                             bool isOverwrite = false;
 
-                            for (cc = OWcomps.begin(); cc != OWcomps.end(); ++cc) {
+                            for (LocationSet::iterator cc = OWcomps.begin(); cc != OWcomps.end(); ++cc) {
                                 if (**cc *= *lhsOWdef) {
                                     isOverwrite = true;
                                     break;
@@ -398,18 +398,16 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
                                 break;
                             }
 
-                            if (OW) {
-                                LOG_STREAM_OLD() << "Ow is " << OW << "\n";
+                            if (OW != nullptr) {
+                                LOG_MSG("OW is %1", OW);
                             }
                         }
                     }
 
                     if (doNotPropagate) {
-                        if (VERBOSE) {
-                            LOG << "% propagation of " << def->getNumber() << " into " << m_number
-                                << " prevented by the "
-                                "propagate past overwriting statement in loop heuristic\n";
-                        }
+                        LOG_VERBOSE("% propagation of %1 into %2 prevented by "
+                            "the propagate past overwriting statement in loop heuristic",
+                            def->getNumber(), m_number);
 
                         continue;
                     }

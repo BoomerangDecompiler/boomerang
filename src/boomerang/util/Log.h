@@ -6,17 +6,17 @@
 #include <memory>
 #include <fstream>
 #include <vector>
+#include <cassert>
 
-#include "Address.h"
+#include "boomerang/util/Address.h"
+#include "boomerang/util/Util.h"
+
 
 class Instruction;
 class Exp;
 class LocationSet;
 class RTL;
 class Type;
-class Address;
-
-class Printable;
 
 using SharedType     = std::shared_ptr<Type>;
 using SharedConstExp = std::shared_ptr<const Exp>;
@@ -45,7 +45,6 @@ public:
 
 class ConsoleLogSink : public ILogSink
 {
-
 public:
     virtual ~ConsoleLogSink() {}
     virtual void write(const QString& s);
@@ -72,35 +71,40 @@ public:
         : m_level(level)
     {}
 
-    virtual ~Log() {}
-
-public:
-    void log(LogLevel level, QString file, int line, const QString& msg)
+    virtual ~Log()
     {
-        if (!canLog(level)) {
-            return;
+        for (ILogSink*& sink : m_sinks) {
+            delete sink;
         }
-
-        file.truncate(40);
-        QString header = "%1 | %2 | %3 | %4";
-        QString logLine = header.arg(levelToString(level)).arg(file).arg(line).arg(msg);
-        this->write(logLine);
     }
 
-    template<typename Arg, typename... Args>
-    void log(LogLevel level, const char* file, int line, const QString& msg, Arg arg, Args... args)
+public:
+    void log(LogLevel level, const char* file, int line, const QString& msg)
     {
         if (!canLog(level)) {
             return;
         }
 
-        log(level, file, line, msg.arg(arg), args...);
+        char truncFile[40]; // truncated file name
+        strncpy(truncFile, file, 40);
+
+        QString header = "%1 | %2 | %3 | %4";
+        QString logLine = header.arg(levelToString(level)).arg(truncFile).arg(line).arg(msg);
+        this->write(logLine);
+
+        if (level == LogLevel::Fatal) {
+            abort();
+        }
     }
 
     template<typename... Args>
-    void log(LogLevel level, const char* file, int line, const QString& msg, Address arg, Args... args)
+    void log(LogLevel level, const char* file, int line, const QString& msg, Args... args)
     {
-        log(level, file, line, msg, arg.toString(), args...);
+        if (!canLog(level)) {
+            return;
+        }
+
+        log(level, file, line, collectArgs(msg, args...));
     }
 
     virtual Log& operator<<(const QString&)
@@ -123,6 +127,7 @@ public:
     /// Add a log sink / target. Takes ownership of the pointer.
     Log& addLogSink(ILogSink* s)
     {
+        assert(s != nullptr);
         if (std::find(m_sinks.begin(), m_sinks.end(), s) == m_sinks.end()) {
             m_sinks.push_back(s);
         }
@@ -131,6 +136,7 @@ public:
 
     Log& removeLogSink(ILogSink* s)
     {
+        assert(s != nullptr);
         auto it = std::find(m_sinks.begin(), m_sinks.end(), s);
         if (it != m_sinks.end()) {
             m_sinks.erase(it);
@@ -145,12 +151,45 @@ public:
 private:
     bool canLog(LogLevel level) const { return level <= m_level; }
 
+    template<typename T>
+    QString collectArg(const QString& msg, const std::shared_ptr<T>& arg) { return msg.arg(arg->toString()); }
+    QString collectArg(const QString& msg, const char* arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, const QString& arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, const Instruction *s);
+    QString collectArg(const QString& msg, const SharedConstExp& e);
+    QString collectArg(const QString& msg, const SharedType& ty);
+    QString collectArg(const QString& msg, const Printable& ty);
+    QString collectArg(const QString& msg, const RTL *r);
+    QString collectArg(const QString& msg, int i);
+    QString collectArg(const QString& msg, unsigned int arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, size_t i);
+    QString collectArg(const QString& msg, char c);
+    QString collectArg(const QString& msg, double d);
+    QString collectArg(const QString& msg, Address a);
+    QString collectArg(const QString& msg, const LocationSet *l);
+
+
+    template<typename Arg>
+    QString collectArgs(const QString& msg, Arg arg)
+    {
+        return collectArg(msg, arg);
+    }
+
+
+    template<typename Arg, typename... Args>
+    QString collectArgs(QString msg, Arg arg, Args... args)
+    {
+        return collectArgs(collectArg(msg, arg), args...);
+    }
+
+
     void write(const QString& msg)
     {
         for (ILogSink* s : m_sinks) {
             s->write(msg);
         }
     }
+
 
     QString levelToString(LogLevel level)
     {
@@ -167,8 +206,9 @@ private:
     std::vector<ILogSink *> m_sinks;
 };
 
+
 /// Usage: LOG_ERROR("%1, we have a problem", "Houston");
-#define LOG_FATAL(...)    LOG.log(LogLevel::Fatal,    __FILE__, __LINE__, __VA_ARGS__); abort()
+#define LOG_FATAL(...)    LOG.log(LogLevel::Fatal,    __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_ERROR(...)    LOG.log(LogLevel::Error,    __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_WARN(...)     LOG.log(LogLevel::Warning,  __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_MSG(...)      LOG.log(LogLevel::Default,  __FILE__, __LINE__, __VA_ARGS__)

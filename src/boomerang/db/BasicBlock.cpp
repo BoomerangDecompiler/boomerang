@@ -725,7 +725,6 @@ SharedExp BasicBlock::getCond()
         return bs->getCondExpr();
     }
 
-    LOG_VERBOSE_OLD(1) << "throwing LastStatementNotABranchError\n";
     throw LastStatementNotABranchError(last->getHlStmt());
 }
 
@@ -755,7 +754,6 @@ SharedExp BasicBlock::getDest() noexcept(false)
         }
     }
 
-    LOG_VERBOSE_OLD(1) << "throwing LastStatementNotAGotoError\n";
     throw LastStatementNotAGotoError(lastStmt);
 }
 
@@ -1446,7 +1444,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
         break;
 
     default:
-        LOG_STREAM_OLD() << "unhandled sType " << (int)m_structuringType << "\n";
+        LOG_ERROR("Unhandled sType %1", (int)m_structuringType);
     }
 }
 
@@ -1460,7 +1458,7 @@ Function *BasicBlock::getDestProc()
     Function *proc = call->getDestProc();
 
     if (proc == nullptr) {
-        LOG_STREAM_OLD() << "Indirect calls not handled yet\n";
+        LOG_FATAL("Indirect calls not handled yet.");
         assert(false);
     }
 

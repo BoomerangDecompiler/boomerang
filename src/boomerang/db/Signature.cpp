@@ -1706,17 +1706,17 @@ void Signature::addParameter(SharedType type, const QString& nam /*= nullptr*/, 
                              const QString& boundMax /*= ""*/)
 {
     if (e == nullptr) {
-        LOG_STREAM_OLD() << "No expression for parameter ";
+        LOG_VERBOSE("No expression for parameter ");
 
         if (type == nullptr) {
-            LOG_STREAM_OLD() << "<notype> ";
+            LOG_VERBOSE("<notype> ");
         }
         else {
             LOG_STREAM_OLD() << type->getCtype() << " ";
         }
 
         if (nam.isNull()) {
-            LOG_STREAM_OLD() << "<noname>";
+            LOG_VERBOSE("<noname>");
         }
         else {
             LOG_STREAM_OLD() << nam;
@@ -2214,8 +2214,7 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
         }
 
     default:
-        LOG_STREAM_OLD() << "Signature::getFirstArgLoc: machine not handled\n";
-        assert(0);
+        LOG_FATAL("Machine %1 not handled", (int)mach);
     }
 
     return nullptr;
@@ -2236,7 +2235,7 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
         return Location::regOf(0);
 
     default:
-        LOG_STREAM_OLD() << "getReturnExp2: machine not handled\n";
+        LOG_WARN("Machine not handled");
     }
 
     return nullptr;

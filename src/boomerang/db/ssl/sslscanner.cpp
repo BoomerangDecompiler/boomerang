@@ -1442,8 +1442,7 @@ do_action:     /* this label is used only to access EOF actions */
 #line 306 "db/sslscanner.l"
             {   // funky print-next-line-for-debug token
                 if (yyleng > MAX_LINE) {
-                    LOG_STREAM_OLD() << theLine + 1 << ": line too long.\n";
-                    exit(1);
+                    LOG_FATAL("%1: line too long.", theLine+1);
                 }
 
                 // saves the next line

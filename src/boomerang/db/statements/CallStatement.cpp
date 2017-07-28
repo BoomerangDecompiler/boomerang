@@ -1672,7 +1672,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& ch)
     proven = proven->searchReplaceAll(*base, to, ch);     // e.g. r28{17} + 4
 
     if (ch) {
-        LOG_VERBOSE_OLD(1) << "bypassRef() replacing " << r << " with " << proven << "\n";
+        LOG_VERBOSE("Replacing %1 with %2", r, proven);
     }
 
     return proven;

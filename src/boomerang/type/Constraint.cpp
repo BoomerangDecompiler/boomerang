@@ -440,7 +440,9 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
         }
 
         if (c->isFalse()) {
-            LOG_VERBOSE_OLD(DEBUG_TA) << "Constraint failure: always false constraint\n";
+            if (DEBUG_TA) {
+                LOG_WARN("Constraint failure: always false constraint");
+            }
             return false;
         }
 
