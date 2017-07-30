@@ -107,10 +107,7 @@ void PointerType::setPointsTo(SharedType p)
 {
     if (p.get() == this) {           // Note: comparing pointers
         points_to = VoidType::get(); // Can't point to self; impossible to compare, print, etc
-
-        if (VERBOSE) {
-            LOG << "Warning: attempted to create pointer to self: " << HostAddress(this).toString() << "\n";
-        }
+        LOG_WARN("Attempted to create pointer to self: %1", HostAddress(this).toString());
     }
     else {
         points_to = p;
@@ -961,8 +958,9 @@ bool LowerType::operator<(const Type& other) const
 SharedExp Type::match(SharedType pattern)
 {
     if (pattern->isNamed()) {
-        LOG << "type match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
-        return Binary::get(opList, Binary::get(opEquals, Unary::get(opVar, Const::get(pattern->as<NamedType>()->getName())),
+        LOG_VERBOSE("type match: %1 to %2", this->getCtype(), pattern->getCtype());
+        return Binary::get(opList, Binary::get(opEquals,
+                                               Unary::get(opVar, Const::get(pattern->as<NamedType>()->getName())),
                                                std::make_shared<TypeVal>(this->clone())),
                            Terminal::get(opNil));
     }
@@ -1010,7 +1008,7 @@ SharedExp FuncType::match(SharedType pattern)
 SharedExp PointerType::match(SharedType pattern)
 {
     if (pattern->isPointer()) {
-        LOG << "got pointer match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
+        LOG_VERBOSE("Got pointer match: %1 to %2", this->getCtype(), pattern->getCtype());
         return points_to->match(pattern->as<PointerType>()->getPointsTo());
     }
 
@@ -1335,12 +1333,9 @@ void Type::addNamedType(const QString& name, SharedType type)
 {
     if (namedTypes.find(name) != namedTypes.end()) {
         if (!(*type == *namedTypes[name])) {
-            // LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
-            //    namedTypes[name]->getCtype() << "\n";// << std::flush;
-            // LOGTAIL;
-            qWarning() << "Warning: Type::addNamedType: Redefinition of type " << name << "\n";
-            qWarning() << " type     = " << type->prints() << "\n";
-            qWarning() << " previous = " << namedTypes[name]->prints() << "\n";
+            LOG_WARN("Redefinition of type %1", name);
+            LOG_WARN(" type     = %1", type->prints());
+            LOG_WARN(" previous = %1", namedTypes[name]->prints());
             namedTypes[name] = type; // WARN: was *type==*namedTypes[name], verify !
         }
     }
@@ -1880,7 +1875,7 @@ bool DataIntervalMap::isClear(Address addr, unsigned size)
 
     if (it->second.type->isArray() && it->second.type->as<ArrayType>()->isUnbounded()) {
         it->second.size = (addr - it->first).value();
-        LOG << "shrinking size of unbound array to " << it->second.size << " bytes\n";
+        LOG_VERBOSE("Shrinking size of unbound array to %1 bytes", it->second.size);
         return true;
     }
 
@@ -1906,9 +1901,8 @@ void DataIntervalMap::addItem(Address addr, QString name, SharedType ty, bool fo
     if (pdie->first < addr) {
         // The existing entry comes first. Make sure it ends last (possibly equal last)
         if (pdie->first + pdie->second.size < addr + ty->getSize() / 8) {
-            LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " << ty->getCtype()
-                << " which weaves after " << pdie->second.name << " at " << pdie->first << " of type "
-                << pdie->second.type->getCtype() << "\n";
+            LOG_ERROR("TYPE ERROR: attempt to insert item %1 at address %2 of type %3 which weaves after %4 at %5 of type %6",
+                name, addr, ty->getCtype(), pdie->second.name, pdie->first, pdie->second.type->getCtype());
             return;
         }
 
@@ -1932,9 +1926,8 @@ void DataIntervalMap::addItem(Address addr, QString name, SharedType ty, bool fo
     else {
         // Old starts after new; check it also ends first
         if (pdie->first + pdie->second.size > addr + ty->getSize() / 8) {
-            LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " << ty->getCtype()
-                << " which weaves before " << pdie->second.name << " at " << pdie->first << " of type "
-                << pdie->second.type->getCtype() << "\n";
+            LOG_ERROR("TYPE ERROR: attempt to insert item %1 at %2 of type %3 which weaves before %4 at %5 of type %6",
+                name, addr, ty->getCtype(), pdie->second.name, pdie->first, pdie->second.type->getCtype());
             return;
         }
 
@@ -1956,9 +1949,8 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, Address addr, cons
             pdie->second.type->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
         }
         else {
-            LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype()
-                << " is not compatible with existing structure member type "
-                << memberType->getCtype() << "\n";
+            LOG_ERROR("TYPE ERROR: At address %1 type %2 is not compatible with existing structure member type %3",
+                      addr, ty->getCtype(), memberType->getCtype());
         }
     }
     else if (pdie->second.type->resolvesToArray()) {
@@ -1970,13 +1962,13 @@ void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, Address addr, cons
             pdie->second.type->as<ArrayType>()->setBaseType(memberType);
         }
         else {
-            LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype()
-                << " is not compatible with existing array member type "
-                << memberType->getCtype() << "\n";
+            LOG_ERROR("TYPE ERROR: At address %1 type %2 is not compatible with existing array member type %3",
+                      addr, ty->getCtype(), memberType->getCtype());
         }
     }
     else {
-        LOG << "TYPE ERROR: Existing type at address " << pdie->first << " is not structure or array type\n";
+        LOG_ERROR("TYPE ERROR: Existing type at address %1 is not structure or array type",
+                  pdie->first);
     }
 }
 
@@ -2005,8 +1997,8 @@ void DataIntervalMap::replaceComponents(Address addr, const QString& name, Share
                 ty->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
             }
             else {
-                LOG << "TYPE ERROR: At address " << addr << " struct type " << ty->getCtype() <<
-                    " is not compatible with existing type " << it->second.type->getCtype() << "\n";
+                LOG_ERROR("TYPE ERROR: At address %1 struct type %2 is not compatible with existing type ",
+                          addr, ty->getCtype(), it->second.type->getCtype());
                 return;
             }
         }
@@ -2023,8 +2015,8 @@ void DataIntervalMap::replaceComponents(Address addr, const QString& name, Share
                 ty->as<ArrayType>()->setBaseType(memberType);
             }
             else {
-                LOG << "TYPE ERROR: At address " << addr << " array type " << ty->getCtype() <<
-                    " is not compatible with existing type " << it->second.type->getCtype() << "\n";
+                LOG_ERROR("TYPE ERROR: At address %1 array type %2 is not compatible with existing type %3",
+                          addr, ty->getCtype(), it->second.type->getCtype());
                 return;
             }
         }
@@ -2032,8 +2024,8 @@ void DataIntervalMap::replaceComponents(Address addr, const QString& name, Share
     else {
         // Just make sure it doesn't overlap anything
         if (!isClear(addr, (ty->getSize() + 7) / 8)) {
-            LOG << "TYPE ERROR: at address " << addr << ", overlapping type " << ty->getCtype()
-                << " does not resolve to compound or array\n";
+            LOG_ERROR("TYPE ERROR: at address %1, overlapping type %2 "
+                "does not resolve to compound or array", addr, ty->getCtype());
             return;
         }
     }
@@ -2102,8 +2094,8 @@ void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, Address addr, const
         return;
     }
 
-    LOG << "TYPE DIFFERENCE (could be OK): At address " << addr << " existing type " << pdie->second.type->getCtype()
-        << " but added type " << ty->getCtype() << "\n";
+    LOG_MSG("TYPE DIFFERENCE (could be OK): At address %1 existing type %2 but added type %3",
+            addr, pdie->second.type->getCtype(), ty->getCtype());
 }
 
 
@@ -2178,7 +2170,7 @@ ComplexTypeCompList& Type::compForAddress(Address addr, DataIntervalMap& dim)
             res->push_back(ctc);
         }
         else {
-            LOG << "TYPE ERROR: no struct or array at byte address " << addr << "\n";
+            LOG_ERROR("TYPE ERROR: no struct or array at byte address %1", addr);
             return *res;
         }
     }

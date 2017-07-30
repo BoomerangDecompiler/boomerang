@@ -722,7 +722,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opAFP:
     case opAGP:
         // not implemented
-        LOG << "WARNING: CCodeGenerator::appendExp: case " << exp.getOperName() << " not implemented\n";
+        LOG_WARN("Case %1 not implemented", exp.getOperName());
         // assert(false);
         break;
 
@@ -1044,13 +1044,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opSubscript:
         appendExp(str, *u.getSubExp1(), curPrec);
-
-        if (VERBOSE) {
-            LOG << "ERROR: CCodeGenerator::appendExp: subscript in code generation of proc " << m_proc->getName()
-                << " exp (without subscript): " << str.readAll() << "\n";
-        }
-
-        // assert(false);
+        LOG_ERROR("Subscript in code generation of proc %1, exp (without subscript): %2", m_proc->getName(), str.readAll());
         break;
 
     case opMemberAccess:
@@ -1058,7 +1052,8 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             SharedType ty = nullptr;
 
             if (ty == nullptr) {
-                LOG << "type failure: no type for subexp1 of " << b.shared_from_this() << "\n";
+                LOG_MSG("Type failure: no type for subexp1 of %1", b.shared_from_this());
+
                 // ty = b.getSubExp1()->getType();
                 // No idea why this is hitting! - trentw
                 // str << "/* type failure */ ";
@@ -1108,11 +1103,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opDefineAll:
         str << "<all>";
-
-        if (VERBOSE) {
-            LOG << "ERROR: should not see opDefineAll in codegen\n";
-        }
-
+        LOG_ERROR("Should not see opDefineAll in codegen");
         break;
 
     default:
@@ -1126,8 +1117,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             break;
         }
 
-        LOG << "ERROR: CCodeGenerator::appendExp: case " << exp.getOperName() << " not implemented\n";
-        // assert(false);
+        LOG_ERROR("case %1 not implemented", exp.getOperName());
     }
 }
 
@@ -1181,7 +1171,7 @@ void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString i
             ident = "unknownVoidType";
         }
 
-        LOG << "WARNING: CCodeGenerator::appendTypeIdent: declaring type void as int for " << ident << "\n";
+        LOG_WARN("Declaring type void as int for %1", ident);
         str << "int " << ident;
     }
     else {
@@ -1843,8 +1833,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
     StatementList::iterator pp;
 
     if ((parameters.size() > 10) && open) {
-        LOG << "Warning: CCodeGenerator::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size()
-            << " parameters\n";
+        LOG_WARN("Proc %1 has %2 parameters", proc->getName(), parameters.size());
     }
 
     bool first = true;
@@ -1863,7 +1852,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 
         if (ty == nullptr) {
             if (VERBOSE) {
-                LOG << "ERROR in CCodeGenerator::AddProcDec: no type for parameter " << left << "!\n";
+                LOG_ERROR("No type for parameter %1!", left);
             }
 
             ty = IntegerType::get(STD_SIZE, 0);
@@ -1875,7 +1864,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
             name = left->access<Const, 1>()->getStr();
         }
         else {
-            LOG << "ERROR: parameter " << left << " is not opParam!\n";
+            LOG_ERROR("Parameter %1 is not opParam!", left);
             name = "??";
         }
 

@@ -270,13 +270,13 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
     }
 
     if (ch) {
-        LOG << "### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure " << proc->getName() << " ###\n";
+        LOG_WARN("### Iteration limit exceeded for dfaTypeAnalysis of procedure %1 ###", proc->getName());
     }
 
     if (DEBUG_TA) {
-        LOG << "\n ### results for data flow based type analysis for " << proc->getName() << " ###\n";
+        LOG_MSG("### Results for data flow based type analysis for %1 ###", proc->getName());
         dumpResults(stmts, iter);
-        LOG << "\n ### end results for Data flow based Type Analysis for " << proc->getName() << " ###\n\n";
+        LOG_MSG("### End results for Data flow based Type Analysis for %1 ###", proc->getName());
     }
 
     // Now use the type information gathered
@@ -480,17 +480,17 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                     }
                 }
 
-                SharedType ty = ((TypingStatement *)s)->getType();
-                LOG << "in proc " << proc->getName() << " adding addrExp " << addrExp << "with type " << *ty << " to local table\n";
+                const SharedType& ty = ((TypingStatement *)s)->getType();
+                LOG_MSG("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
                 SharedExp loc_mem = Location::memOf(addrExp);
                 proc->localsMap().addItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
             }
         }
     }
 
-    proc->debugPrintAll("after application of dfa type analysis");
+    proc->debugPrintAll("After application of DFA type analysis");
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "after dfa type analysis");
+    Boomerang::get()->alertDecompileDebugPoint(proc, "After DFA type analysis");
 }
 
 
@@ -592,7 +592,9 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
             return ((IntegerType *)this)->shared_from_this();
         }
 
-        LOG << "integer size " << size << " meet with SizeType size " << other->as<SizeType>()->getSize() << "!\n";
+        LOG_MSG("Integer size %1 meet with SizeType size %2!",
+                size, other->as<SizeType>()->getSize());
+
         unsigned oldSize = size;
         size = std::max(size, other_sz->getSize());
         ch   = size != oldSize;
@@ -920,7 +922,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
     // Other is a non union type
     if (other->resolvesToPointer() && (other->as<PointerType>()->getPointsTo().get() == this)) {
-        LOG << "WARNING! attempt to union " << getCtype() << " with pointer to self!\n";
+        LOG_WARN("attempt to union %1 with pointer to self!", this->getCtype());
         return ((UnionType *)this)->shared_from_this();
     }
 
@@ -1008,7 +1010,7 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
 
     if (other->resolvesToSize()) {
         if (other->as<SizeType>()->size != size) {
-            LOG << "size " << size << " meet with size " << other->as<SizeType>()->size << "!\n";
+            LOG_WARN("Size %1 meet with size %2!", size, other->as<SizeType>()->size);
             unsigned oldSize = size;
             size = std::max(size, other->as<SizeType>()->size);
             ch   = size != oldSize;
@@ -1026,7 +1028,8 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
         }
 
         if (other->getSize() != size) {
-            LOG << "WARNING: size " << size << " meet with " << other->getCtype() << "; allowing temporarily\n";
+            LOG_WARN("Size %1 meet with %2; allowing temporarily",
+                     size, other->getCtype());
         }
 
         return other->clone();
@@ -1726,9 +1729,8 @@ void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
                 size_t stride = leftOfPlus->access<Const, 2>()->getInt();
 
                 if (DEBUG_TA && (stride * 8 != parentType->getSize())) {
-                    LOG << "type WARNING: apparent array reference at " << shared_from_this() << " has stride " << stride * 8
-                        << " bits, but parent type " << parentType->getCtype() << " has size " << parentType->getSize()
-                        << "\n";
+                    LOG_WARN("Type WARNING: apparent array reference at %1 has stride %2 bits, but parent type %3 has size %4",
+                             shared_from_this(), stride * 8, parentType->getCtype(), parentType->getSize());
                 }
 
                 // The index is integer type
@@ -1864,7 +1866,7 @@ bool Signature::dfaTypeAnalysis(Cfg *cfg)
                 ch = true;
 
                 if (DEBUG_TA) {
-                    LOG << "  sig caused change: " << it->getType()->getCtype() << " " << it->getName() << "\n";
+                    LOG_MSG("  sig caused change: %1 %2", it->getType()->getCtype(), it->getName());
                 }
             }
         }
