@@ -104,14 +104,10 @@ bool Const::operator<(const Exp& o) const
 
     switch (m_oper)
     {
-    case opIntConst:
-        return u.i < ((Const&)o).u.i;
-
-    case opFltConst:
-        return u.d < ((Const&)o).u.d;
-
-    case opStrConst:
-        return m_string < ((Const&)o).m_string;
+    case opIntConst:  return u.i      < ((Const&)o).u.i;
+    case opLongConst: return u.ll     < ((Const&)o).u.ll;
+    case opFltConst:  return u.d      < ((Const&)o).u.d;
+    case opStrConst:  return m_string < ((Const&)o).m_string;
 
     default:
         LOG_FATAL("Invalid operator %1", operToString(m_oper));
@@ -430,6 +426,7 @@ bool Const::operator==(const Exp& o) const
     switch (m_oper)
     {
     case opIntConst:  return u.i      == ((Const&)o).u.i;
+    case opLongConst: return u.ll     == ((Const&)o).u.ll;
     case opFltConst:  return u.d      == ((Const&)o).u.d;
     case opStrConst:  return m_string == ((Const&)o).m_string;
 
