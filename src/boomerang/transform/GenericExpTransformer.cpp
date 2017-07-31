@@ -226,7 +226,7 @@ SharedExp GenericExpTransformer::applyTo(SharedExp e, bool& bMod)
     SharedExp r;
 
     if (e->search(Unary(opVar, Terminal::get(opWild)), r)) {
-        LOG << "error: variable " << r << " in result!\n";
+        LOG_FATAL("Variable %1 in result!", r);
         assert(false);
     }
 

@@ -1098,12 +1098,10 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
             if (compound->getType(n)->resolvesToPointer() &&
                 compound->getType(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
-                            Address d = Address(m_image->readNative4(a));
 
-                if (VERBOSE) {
-                    LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "
-                        << call->getDestProc()->getName() << ".\n";
-                }
+                Address d = Address(m_image->readNative4(a));
+                LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to %2",
+                            d, call->getDestProc()->getName());
 
                 Function *proc = m_program->createProc(d);
                 auto     sig   = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();

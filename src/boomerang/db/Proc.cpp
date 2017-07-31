@@ -1137,9 +1137,8 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     */
 
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
-    Util::alignStream(LOG_STREAM_OLD(), ++indent) << (m_status >= PROC_VISITED ? "re" : "") << "considering "
-                                        << getName() << "\n";
-    LOG_MSG("Begin decompile (%1)", getName());
+
+    LOG_MSG("%1 '%2'", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
@@ -1179,7 +1178,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
             CallStatement *call = (CallStatement *)bb->getRTLs()->back()->getHlStmt();
 
             if (!call->isCall()) {
-                LOG << "bb at " << bb->getLowAddr() << " is a CALL but last stmt is not a call: " << call << "\n";
+                LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2", bb->getLowAddr(), call);
             }
 
             assert(call->isCall());
@@ -1278,7 +1277,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     // if child is empty, i.e. no child involved in recursion
     if (child->empty()) {
         Boomerang::get()->alertDecompiling(this);
-        Util::alignStream(LOG_STREAM_OLD(LogLevel::Default), indent) << "decompiling " << getName() << "\n";
+        LOG_MSG("Decompiling %1", getName());
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         child = middleDecompile(path, indent);
@@ -1324,7 +1323,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
         assert(std::find(path->begin(), path->end(), this) != path->end());
 
         if (path->back() != this) {
-            qDebug() << "Last UserProc in UserProc::decompile/path is not this!";
+            LOG_WARN("Last UserProc in UserProc::decompile/path is not this!");
         }
 
         path->remove(this);

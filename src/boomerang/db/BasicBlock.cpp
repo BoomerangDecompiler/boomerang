@@ -904,10 +904,6 @@ void BasicBlock::simplify()
             redundant->m_inEdges.clear();
 
             for (BasicBlock *redundant_edge : rinedges) {
-                if (VERBOSE) {
-                    LOG << redundant_edge->getLowAddr() << " ";
-                }
-
                 if (redundant_edge != this) {
                     LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
                     redundant->m_inEdges.push_back(redundant_edge);
@@ -926,7 +922,6 @@ void BasicBlock::simplify()
 
 bool BasicBlock::hasBackEdgeTo(BasicBlock *dest)
 {
-    //    assert(HasEdgeTo(dest) || dest == this);
     return dest == this || dest->isAncestorOf(this);
 }
 
@@ -1380,7 +1375,8 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             if (m_nodeType == BBType::CompJump) {
                 QString     dat;
                 QTextStream ost(&dat);
-                assert(m_listOfRTLs->size());
+
+                assert(!m_listOfRTLs->empty());
                 RTL *lastRTL = m_listOfRTLs->back();
                 assert(!lastRTL->empty());
                 GotoStatement *gs = (GotoStatement *)lastRTL->back();
@@ -1395,13 +1391,13 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
 
         if (m_outEdges.size() != 1) {
             BasicBlock *other = m_outEdges[1];
-            LOG << "found seq with more than one outedge!\n";
+            LOG_MSG("Found seq with more than one outedge!");
             auto const_dest = std::static_pointer_cast<Const>(getDest());
 
             if (const_dest->isIntConst() && (const_dest->getAddr() == child->getLowAddr())) {
                 other = child;
                 child = m_outEdges[1];
-                LOG << "taken branch is first out edge\n";
+                LOG_MSG("Taken branch is first out edge");
             }
 
             try {
@@ -1417,7 +1413,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                 hll->addIfCondEnd(indLevel);
             }
             catch (LastStatementNotABranchError&) {
-                LOG << "last statement is not a cond, don't know what to do with this.\n";
+                LOG_ERROR("last statement is not a cond, don't know what to do with this.");
             }
         }
 
@@ -1428,7 +1424,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             ((child->m_loopHead != m_loopHead) && (!child->allParentsGenerated() || isIn(followSet, child))) ||
             (latch && latch->m_loopHead && (latch->m_loopHead->m_loopFollow == child)) ||
             !((m_caseHead == child->m_caseHead) || (m_caseHead && (child == m_caseHead->m_condFollow)))) {
-            emitGotoAndLabel(hll, indLevel, child);
+                emitGotoAndLabel(hll, indLevel, child);
         }
         else {
             if (m_caseHead && (child == m_caseHead->m_condFollow)) {

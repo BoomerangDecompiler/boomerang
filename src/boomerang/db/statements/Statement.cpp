@@ -294,17 +294,9 @@ bool Instruction::canPropagateToExp(Exp& e)
 }
 
 
-static int propagate_progress = 0;
-
 bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
                               LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
 {
-    if (++propagate_progress > 1000) {
-        LOG_STREAM_OLD() << 'p';
-        LOG_STREAM_OLD().flush();
-        propagate_progress = 0;
-    }
-
     bool change;
     int  changes = 0;
     // int sp = proc->getSignature()->getStackRegister(proc->getProg());

@@ -456,16 +456,8 @@ static SharedExp defineAll = Terminal::get(opDefineAll); // An expression repres
 #define STACKS_EMPTY(q)    (m_Stacks.find(q) == m_Stacks.end() || m_Stacks[q].empty())
 
 // Subscript dataflow variables
-static int dataflow_progress = 0;
 bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = false */)
 {
-    if (++dataflow_progress > 200) {
-        LOG_STREAM_OLD() << 'r';
-        LOG_STREAM_OLD().flush();
-
-        dataflow_progress = 0;
-    }
-
     bool changed = false;
 
     // Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare

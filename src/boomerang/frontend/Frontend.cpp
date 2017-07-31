@@ -541,7 +541,7 @@ std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
     auto it = m_librarySignatures.find(name);
 
     if (it == m_librarySignatures.end()) {
-        LOG_WARN("Unknown library function '%1'", name);
+        LOG_WARN("Unknown library function '%1', please update signatures!", name);
         signature = getDefaultSignature(name);
     }
     else {
