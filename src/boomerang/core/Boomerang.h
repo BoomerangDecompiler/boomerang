@@ -40,7 +40,6 @@ class IBinarySymbolTable;
 class Project;
 
 
-#define LOG                     Boomerang::get()->getOrCreateLog()
 #define LOG_SEPARATE_OLD(x)     Boomerang::get()->separate_log(x)
 #define LOG_VERBOSE_OLD(x)      Boomerang::get()->if_verbose_log(x)
 #define LOG_STREAM_OLD          Boomerang::get()->getLogStream
@@ -62,7 +61,6 @@ private:
     QString m_outputDirectory;        ///< The path where all output files are created.
     QString m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
 
-    Log *m_logger = nullptr;          ///< Takes care of the log messages.
     std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 
     /// Prints help for the interactive mode.
@@ -108,10 +106,7 @@ public:
     int processCommand(QStringList& args);
     static const char *getVersionStr();
 
-    /// \returns the Log object associated with the object.
-    Log& getOrCreateLog();
-
-    SeparateLogger separate_log(const QString&);
+    SeparateLogger separate_log(const QString& fileName);
 
     /**
      * Returns the ICodeGenerator for the given proc.

@@ -67,44 +67,32 @@ private:
 class Log
 {
 public:
-    Log(LogLevel level = LogLevel::Default)
-        : m_level(level)
-    {
-        const char* lastSrc = __FILE__;
-        const char* p = lastSrc;
+    Log(LogLevel level = LogLevel::Default);
 
-        while ((p = strstr(lastSrc+1, "src/")) != nullptr) {
-            m_fileNameOffset = (p-lastSrc);
-            lastSrc = p;
-        }
-    }
-
-    virtual ~Log()
-    {
-        for (ILogSink*& sink : m_sinks) {
-            delete sink;
-        }
-    }
+    virtual ~Log();
 
 public:
-    void log(LogLevel level, const char* file, int line, const QString& msg)
-    {
-        if (!canLog(level)) {
-            return;
-        }
+    static Log& getOrCreateLog();
 
-        char prettyFile[40]; // truncated file name
-        truncateFileName(prettyFile, 40, file);
+    /**
+     * Log a message to all log sinks.
+     *
+     * \param level Log level, see \ref LogLevel
+     * \param file  Source file from which this function was called, usually __FILE__
+     * \param line  Source line frim which this function was called, usually __LINE__
+     * \param msg   Log message.
+     */
+    void log(LogLevel level, const char* file, int line, const QString& msg);
 
-        QString header = "%1 | %2 | %3 | %4\n";
-        QString logLine = header.arg(levelToString(level)).arg(prettyFile).arg(line, 4).arg(msg);
-        this->write(logLine);
-
-        if (level == LogLevel::Fatal) {
-            abort();
-        }
-    }
-
+    /**
+     * Log a message to all log sinks, replacing %1, %2, ... etc by \p args
+     *
+     * \param level Log level, see \ref LogLevel
+     * \param file  Source file from which this function was called, usually __FILE__
+     * \param line  Source line frim which this function was called, usually __LINE__
+     * \param msg   Log message.
+     * \param args  Arguments to replace in \p msg
+     */
     template<typename... Args>
     void log(LogLevel level, const char* file, int line, const QString& msg, Args... args)
     {
@@ -115,11 +103,8 @@ public:
         log(level, file, line, collectArgs(msg, args...));
     }
 
-    virtual Log& operator<<(const QString&)
-    {
-        return *this;
-    }
-
+    /// \deprecated These functions are about to be removed
+    virtual Log& operator<<(const QString& msg) { write(msg); return *this; }
     virtual Log& operator<<(const Instruction *s);
     virtual Log& operator<<(const SharedConstExp& e);
     virtual Log& operator<<(const SharedType& ty);
@@ -133,47 +118,28 @@ public:
     virtual Log& operator<<(const LocationSet *l);
 
     /// Add a log sink / target. Takes ownership of the pointer.
-    Log& addLogSink(ILogSink* s)
-    {
-        assert(s != nullptr);
-        if (std::find(m_sinks.begin(), m_sinks.end(), s) == m_sinks.end()) {
-            m_sinks.push_back(s);
-        }
-        return *this;
-    }
+    Log& addLogSink(ILogSink* s);
 
-    Log& removeLogSink(ILogSink* s)
-    {
-        assert(s != nullptr);
-        auto it = std::find(m_sinks.begin(), m_sinks.end(), s);
-        if (it != m_sinks.end()) {
-            m_sinks.erase(it);
-            delete s;
-        }
-        return *this;
-    }
+    Log& removeLogSink(ILogSink* s);
 
-    Log& setLogLevel(LogLevel level) { m_level = level; return *this; }
-    LogLevel getLogLevel() const { return m_level; }
+    Log& setLogLevel(LogLevel level);
+    LogLevel getLogLevel() const;
 
 private:
-    bool canLog(LogLevel level) const { return level <= m_level; }
+    /// Check if logging is allowed with level \p level
+    bool canLog(LogLevel level) const;
 
-    void truncateFileName(char* dstBuffer, size_t dstCharacters, const char* fileName)
-    {
-        assert(dstBuffer);
-        assert(fileName);
-        assert(strlen(fileName) > m_fileNameOffset);
+    /// Write a header with column captions
+    void writeLogHeader();
 
-        fileName += m_fileNameOffset;
-        size_t len = strlen(fileName);
-        strncpy(dstBuffer, fileName, dstCharacters);
-
-        if (len < dstCharacters) {
-            memset(dstBuffer + len, ' ', dstCharacters - len -1);
-        }
-        dstBuffer[dstCharacters -1] = 0;
-    }
+    /**
+     * Pretty-print \p fileName to \p dstBuffer, filling up remaining space in \p dstBuffer with whitespace characters.
+     *
+     * \param dstBuffer Destination buffer to write to
+     * \param dstCharacters Size (in characters) of the destination buffer
+     * \param fileName file name to truncate
+     */
+    void truncateFileName(char* dstBuffer, size_t dstCharacters, const char* fileName);
 
     template<typename T>
     QString collectArg(const QString& msg, const std::shared_ptr<T>& arg) { return msg.arg(arg->toString()); }
@@ -206,24 +172,15 @@ private:
         return collectArgs(collectArg(msg, arg), args...);
     }
 
+    /**
+     * Write the raw string \p msg to all log sinks.
+     */
+    void write(const QString& msg);
 
-    void write(const QString& msg)
-    {
-        for (ILogSink* s : m_sinks) {
-            s->write(msg);
-        }
-    }
-
-
-    QString levelToString(LogLevel level)
-    {
-        switch (level) {
-            case LogLevel::Fatal:   return QString("Fatal");
-            case LogLevel::Error:   return QString("Error");
-            case LogLevel::Warning: return QString("Warn ");
-            default:                return QString("Msg  ");
-        }
-    }
+    /**
+     * Given a log level, get the
+     */
+    QString levelToString(LogLevel level);
 
 private:
     LogLevel m_level = LogLevel::Default;
@@ -231,6 +188,7 @@ private:
     size_t m_fileNameOffset; ///< number of characters to chop off from __FILE__ to have a sensible file name
 };
 
+#define LOG Log::getOrCreateLog()
 
 /// Usage: LOG_ERROR("%1, we have a problem", "Houston");
 #define LOG_FATAL(...)    LOG.log(LogLevel::Fatal,    __FILE__, __LINE__, __VA_ARGS__)

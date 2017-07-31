@@ -391,8 +391,7 @@ void Unary::print(QTextStream& os, bool html) const
         return;
 
     default:
-        LOG << "Unary::print invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 }
 

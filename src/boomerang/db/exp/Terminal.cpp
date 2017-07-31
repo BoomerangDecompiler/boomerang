@@ -164,8 +164,7 @@ void Terminal::print(QTextStream& os, bool) const
         break;
 
     default:
-        LOG << "Terminal::print invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 }
 

@@ -341,8 +341,7 @@ void Ternary::print(QTextStream& os, bool html) const
         }
     }
     else {
-        LOG << "Ternary::print invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 }
 

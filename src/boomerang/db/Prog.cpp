@@ -942,7 +942,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
     }
 
     if (m_image->getSectionInfoByAddr(uaddr) == nullptr) {
-        LOG_WARN("Refusing to create a global at address %1 "
+        LOG_VERBOSE("Refusing to create a global at address %1 "
             "that is in no known section of the binary", uaddr);
         return false;
     }

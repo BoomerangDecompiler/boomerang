@@ -317,7 +317,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     assert(m_program == prg);
 
     if (pname) {
-              m_program->setName(pname);
+        m_program->setName(pname);
     }
 
     if (!decodeMain) {
@@ -384,32 +384,33 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 }
 
 
-void IFrontEnd::decode(Prog *prg, Address a)
+void IFrontEnd::decode(Prog *prg, Address addr)
 {
     Q_UNUSED(prg);
     assert(m_program == prg);
 
-    if (a != Address::INVALID) {
-              m_program->createProc(a);
-        LOG_MSG("Starting decode at address %1", a);
-        UserProc *p = (UserProc *)m_program->findProc(a);
+    if (addr != Address::INVALID) {
+        m_program->createProc(addr);
+        LOG_MSG("Starting decode at address %1", addr);
+        UserProc *p = (UserProc *)m_program->findProc(addr);
 
         if (p == nullptr) {
-            LOG_MSG("No proc found at address %1", a);
+            LOG_MSG("No proc found at address %1", addr);
             return;
         }
 
         if (p->isLib()) {
-            LOG_MSG("NOT decoding library proc at address %1");
+            LOG_MSG("NOT decoding library proc at address %1", addr);
             return;
         }
 
         QTextStream os(stderr); // rtl output target
-        processProc(a, p, os);
+        processProc(addr, p, os);
         p->setDecoded();
     }
     else {   // a == Address::INVALID
         bool change = true;
+        LOG_MSG("Looking for undecoded procedures to decode...");
 
         while (change) {
             change = false;
@@ -454,12 +455,12 @@ void IFrontEnd::decode(Prog *prg, Address a)
 }
 
 
-void IFrontEnd::decodeOnly(Prog *prg, Address a)
+void IFrontEnd::decodeOnly(Prog *prg, Address addr)
 {
     Q_UNUSED(prg);
     assert(m_program == prg);
 
-    UserProc *p = (UserProc *)m_program->createProc(a);
+    UserProc *p = (UserProc *)m_program->createProc(addr);
     assert(!p->isLib());
     QTextStream os(stderr); // rtl output target
 
@@ -540,7 +541,7 @@ std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
     auto it = m_librarySignatures.find(name);
 
     if (it == m_librarySignatures.end()) {
-        LOG << "Unknown library function " << name << "\n";
+        LOG_WARN("Unknown library function '%1'", name);
         signature = getDefaultSignature(name);
     }
     else {
@@ -789,8 +790,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
-                            LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to " << uDest
-                                << "\n";
+                            LOG_WARN("Goto instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
                         }
                     }
 
@@ -854,18 +854,18 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         BB_rtls->push_back(pRtl);
                         // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out to be a switch stmt
                         pBB = pCfg->newBB(BB_rtls, BBType::CompJump, 0);
-                        LOG << "COMPUTED JUMP at " << uAddr << ", pDest = " << pDest << "\n";
+                        LOG_VERBOSE("COMPUTED JUMP at address %1, pDest = %2", uAddr, pDest);
 
                         if (Boomerang::get()->noDecompile) {
                             // try some hacks
                             if (pDest->isMemOf() && (pDest->getSubExp1()->getOper() == opPlus) &&
                                 pDest->getSubExp1()->getSubExp2()->isIntConst()) {
                                 // assume subExp2 is a jump table
-                                                    Address      jmptbl = pDest->access<Const, 1, 2>()->getAddr();
+                                Address      jmptbl = pDest->access<Const, 1, 2>()->getAddr();
                                 unsigned int i;
 
                                 for (i = 0; ; i++) {
-                                                           Address destAddr = Address(m_image->readNative4(jmptbl + i * 4));
+                                    Address destAddr = Address(m_image->readNative4(jmptbl + i * 4));
 
                                     if ((m_image->getLimitTextLow() <= destAddr) && (destAddr < m_image->getLimitTextHigh())) {
                                         LOG << "  guessed uDest " << destAddr << "\n";
@@ -902,8 +902,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
-                            LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to " << uDest
-                                << "\n";
+                            LOG_WARN("Branch instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
                         }
 
                         // Add the fall-through outedge

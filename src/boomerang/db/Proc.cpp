@@ -1139,11 +1139,11 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
     Util::alignStream(LOG_STREAM_OLD(), ++indent) << (m_status >= PROC_VISITED ? "re" : "") << "considering "
                                         << getName() << "\n";
-    LOG_VERBOSE("Begin decompile (%1)", getName());
+    LOG_MSG("Begin decompile (%1)", getName());
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
-        LOG_ERROR("Proc %1 already has status PROC_FINAL", getName());
+        LOG_WARN("Proc %1 already has status PROC_FINAL", getName());
         return nullptr; // Already decompiled
     }
 
@@ -2344,9 +2344,9 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
     }
 
     res_str.clear();
-    str << "after removing matching assigns (" << e << ").";
+    str << "After removing matching assigns (" << e << ").";
     Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
-    LOG << res_str << "\n";
+    LOG_VERBOSE(res_str);
 }
 
 
@@ -2482,8 +2482,8 @@ void UserProc::findFinalParameters()
         SharedExp e = ((ImplicitAssign *)s)->getLeft();
 
         if (m_signature->findParam(e) == -1) {
-            if (VERBOSE || DEBUG_PARAMS) {
-                LOG << "potential param " << e << "\n";
+            if (DEBUG_PARAMS) {
+                LOG_VERBOSE("Potential param %1", e);
             }
 
             // I believe that the only true parameters will be registers or memofs that look like locals (stack

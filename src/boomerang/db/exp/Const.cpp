@@ -114,8 +114,7 @@ bool Const::operator<(const Exp& o) const
         return m_string < ((Const&)o).m_string;
 
     default:
-        LOG << "Operator< invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     return false;
@@ -333,8 +332,7 @@ void Const::print(QTextStream& os, bool) const
         break;
 
     default:
-        LOG << "Const::print invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     if (m_conscript) {
@@ -431,18 +429,12 @@ bool Const::operator==(const Exp& o) const
 
     switch (m_oper)
     {
-    case opIntConst:
-        return u.i == ((Const&)o).u.i;
-
-    case opFltConst:
-        return u.d == ((Const&)o).u.d;
-
-    case opStrConst:
-        return m_string == ((Const&)o).m_string;
+    case opIntConst:  return u.i      == ((Const&)o).u.i;
+    case opFltConst:  return u.d      == ((Const&)o).u.d;
+    case opStrConst:  return m_string == ((Const&)o).m_string;
 
     default:
-        LOG << "Operator== invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     return false;

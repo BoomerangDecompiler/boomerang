@@ -49,25 +49,9 @@ Boomerang::~Boomerang()
     delete m_currentProject;
 }
 
-
-Log& Boomerang::getOrCreateLog()
+SeparateLogger Boomerang::separate_log(const QString& fileName)
 {
-    if (!m_logger) {
-        m_logger = new Log(LogLevel::Default);
-        m_logger->addLogSink(new ConsoleLogSink());
-        m_logger->addLogSink(new FileLogSink("boomerang.log"));
-
-        LOG_MSG("This is Boomerang " BOOMERANG_VERSION);
-        LOG_MSG("Log initialized.");
-    }
-
-    return *m_logger;
-}
-
-
-SeparateLogger Boomerang::separate_log(const QString& v)
-{
-    return SeparateLogger(v);
+    return SeparateLogger(fileName);
 }
 
 
@@ -818,8 +802,6 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     time_t start;
 
     time(&start);
-
-    Boomerang::get()->getOrCreateLog(); // ensure log exists
 
     if (loadBeforeDecompile) {
         LOG_ERROR("Loading persisted state is not implemented.");
