@@ -353,7 +353,7 @@ bool Decompiler::getRtlForProc(const QString& name, QString& rtl)
 
 void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description)
 {
-    LOG_MSG("%1: %2", p->getName(), description);
+    LOG_VERBOSE("%1: %2", p->getName(), description);
 
     if (m_debugging) {
         m_waiting = true;

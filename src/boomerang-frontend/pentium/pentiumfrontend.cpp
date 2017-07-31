@@ -460,7 +460,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         return true;
     }
     else if ((name == "__mingw_frame_init") || (name == "__mingw_cleanup_setup") || (name == "__mingw_frame_end")) {
-        LOG << "found removable call to static lib proc " << name << " at " << addr << "\n";
+        LOG_MSG("Found removable call to static lib proc %1 at address %2", name, addr);
         m_program->removeProc(name);
         return true;
     }
@@ -678,7 +678,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
                             break;
                         }
                         else {
-                            LOG << "Unhandled machine feature " << str << "\n";
+                            LOG_VERBOSE("Unhandled machine feature %1", str);
                         }
                     }
                 }

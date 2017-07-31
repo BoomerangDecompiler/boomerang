@@ -56,6 +56,9 @@ Log& Boomerang::getOrCreateLog()
         m_logger = new Log(LogLevel::Default);
         m_logger->addLogSink(new ConsoleLogSink());
         m_logger->addLogSink(new FileLogSink("boomerang.log"));
+
+        LOG_MSG("This is Boomerang " BOOMERANG_VERSION);
+        LOG_MSG("Log initialized.");
     }
 
     return *m_logger;
@@ -65,20 +68,6 @@ Log& Boomerang::getOrCreateLog()
 SeparateLogger Boomerang::separate_log(const QString& v)
 {
     return SeparateLogger(v);
-}
-
-
-Log& Boomerang::if_verbose_log(int verbosity_level)
-{
-    static NullLogger null_log;
-    Log& log = getOrCreateLog();
-
-    if (verbosity_level == 2 || (verbosity_level == 1 || VERBOSE)) {
-        return log;
-    }
-    else {
-        return null_log;
-    }
 }
 
 

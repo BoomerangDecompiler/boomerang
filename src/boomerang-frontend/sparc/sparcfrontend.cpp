@@ -832,7 +832,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     decodeInstruction(uAddr + 4, delay_inst);
 
                     if (Boomerang::get()->traceDecoder) {
-                        LOG << "*" << uAddr + 4 << "\t\n";
+                        LOG_MSG("*%1", uAddr + 4);
                     }
 
                     if (last->getKind() == STMT_CALL) {

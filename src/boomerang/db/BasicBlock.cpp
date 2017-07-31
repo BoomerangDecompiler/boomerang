@@ -304,7 +304,7 @@ void BasicBlock::printToLog()
     QTextStream ost(&tgt);
 
     print(ost);
-    LOG << tgt;
+    LOG_MSG(tgt);
 }
 
 
@@ -864,43 +864,42 @@ void BasicBlock::simplify()
 
         if (m_nodeType == BBType::Fall) {
             // set out edges to be the second one
-            if (VERBOSE) {
-                LOG << "turning TWOWAY into FALL: " << m_outEdges[0]->getLowAddr() << " " << m_outEdges[1]->getLowAddr()
-                    << "\n";
-            }
+            LOG_VERBOSE("Turning TWOWAY into FALL: %1 %2", m_outEdges[0]->getLowAddr(), m_outEdges[1]->getLowAddr());
 
             BasicBlock *redundant = m_outEdges[0];
             m_outEdges[0] = m_outEdges[1];
             m_outEdges.resize(1);
             m_targetOutEdges = 1;
-            LOG_VERBOSE_OLD(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            LOG_VERBOSE("Redundant edge to address %1", redundant->getLowAddr());
+            LOG_VERBOSE("  inedges:");
+
             std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
             redundant->m_inEdges.clear();
 
             for (BasicBlock *redundant_edge : rinedges) {
-                LOG_VERBOSE_OLD(1) << redundant_edge->getLowAddr() << " ";
-
                 if (redundant_edge != this) {
+                    LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
                     redundant->m_inEdges.push_back(redundant_edge);
                 }
                 else {
-                    LOG_VERBOSE_OLD(1) << "(ignored) ";
+                    LOG_VERBOSE("    %1 (ignored)", redundant_edge->getLowAddr());
                 }
             }
 
-            LOG_VERBOSE_OLD(1) << "\n";
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE_OLD(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
+            LOG_VERBOSE("  after: %1", m_outEdges[0]->getLowAddr());
         }
 
         if (m_nodeType == BBType::Oneway) {
             // set out edges to be the first one
-            LOG_VERBOSE_OLD(1) << "turning TWOWAY into ONEWAY: " << m_outEdges[0]->getLowAddr() << " "
-                           << m_outEdges[1]->getLowAddr() << "\n";
+            LOG_VERBOSE("Turning TWOWAY into ONEWAY: %1 %2", m_outEdges[0]->getLowAddr(), m_outEdges[1]->getLowAddr());
+
             BasicBlock *redundant = m_outEdges[1];
             m_outEdges.resize(1);
             m_targetOutEdges = 1;
-            LOG_VERBOSE_OLD(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            LOG_VERBOSE("redundant edge to address %1", redundant->getLowAddr());
+            LOG_VERBOSE("  inedges:");
+
             std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
             redundant->m_inEdges.clear();
 
@@ -910,16 +909,16 @@ void BasicBlock::simplify()
                 }
 
                 if (redundant_edge != this) {
+                    LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
                     redundant->m_inEdges.push_back(redundant_edge);
                 }
                 else {
-                    LOG_VERBOSE_OLD(1) << "(ignored) ";
+                    LOG_VERBOSE("    %1 (ignored)", redundant_edge->getLowAddr());
                 }
             }
 
-            LOG_VERBOSE_OLD(1) << "\n";
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE_OLD(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
+            LOG_VERBOSE("  after: %1", m_outEdges[0]->getLowAddr());
         }
     }
 }
@@ -964,7 +963,7 @@ void BasicBlock::emitGotoAndLabel(ICodeGenerator *hll, int indLevel, BasicBlock 
 void BasicBlock::WriteBB(ICodeGenerator *hll, int indLevel)
 {
     if (DEBUG_GEN) {
-        LOG << "Generating code for BB at " << getLowAddr() << "\n";
+        LOG_MSG("Generating code for BB at address %1", getLowAddr());
     }
 
     // Allocate space for a label to be generated for this node and add this to the generated code. The actual label can

@@ -278,9 +278,10 @@ void Constraints::substIntoEquates(ConstraintMap& in)
 
                     if (ff != fixed.end()) {
                         if (!unify(val, ff->second, extra)) {
-                            LOG_VERBOSE_OLD(DEBUG_TA) << "Constraint failure: " << *ll << " constrained to be "
-                                                  << val->access<TypeVal>()->getType()->getCtype() << " and "
-                                                  << ff->second->access<TypeVal>()->getType()->getCtype() << "\n";
+                            if (DEBUG_TA)
+                                LOG_WARN("Constraint failure: %1 constrained to be %2 and %3", *ll,
+                                    val->access<TypeVal>()->getType()->getCtype(),
+                                    ff->second->access<TypeVal>()->getType()->getCtype());
                             return;
                         }
                     }

@@ -112,7 +112,6 @@ public:
     Log& getOrCreateLog();
 
     SeparateLogger separate_log(const QString&);
-    Log& if_verbose_log(int verbosity_level);
 
     /**
      * Returns the ICodeGenerator for the given proc.

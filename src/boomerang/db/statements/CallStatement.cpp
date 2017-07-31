@@ -777,8 +777,9 @@ bool CallStatement::convertToDirect()
         p = prog->createProc(dest);
     }
 
-    LOG_VERBOSE_OLD(1) << (bNewProc ? "new" : "existing") << " procedure for call to global '" << nam << " is "
-                   << p->getName() << "\n";
+    LOG_VERBOSE("%1 procedure for call to global '%2' is %3",
+                (bNewProc ? "new" : "existing"), nam, p->getName());
+
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
     // 2) call fixCallBypass (now fixCallAndPhiRefs) on the enclosing procedure

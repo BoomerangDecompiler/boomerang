@@ -69,7 +69,15 @@ class Log
 public:
     Log(LogLevel level = LogLevel::Default)
         : m_level(level)
-    {}
+    {
+        const char* lastSrc = __FILE__;
+        const char* p = lastSrc;
+
+        while ((p = strstr(lastSrc+1, "src/")) != nullptr) {
+            m_fileNameOffset = (p-lastSrc);
+            lastSrc = p;
+        }
+    }
 
     virtual ~Log()
     {
@@ -85,11 +93,11 @@ public:
             return;
         }
 
-        char truncFile[40]; // truncated file name
-        strncpy(truncFile, file, 40);
+        char prettyFile[40]; // truncated file name
+        truncateFileName(prettyFile, 40, file);
 
-        QString header = "%1 | %2 | %3 | %4";
-        QString logLine = header.arg(levelToString(level)).arg(truncFile).arg(line).arg(msg);
+        QString header = "%1 | %2 | %3 | %4\n";
+        QString logLine = header.arg(levelToString(level)).arg(prettyFile).arg(line, 4).arg(msg);
         this->write(logLine);
 
         if (level == LogLevel::Fatal) {
@@ -151,6 +159,19 @@ public:
 private:
     bool canLog(LogLevel level) const { return level <= m_level; }
 
+    void truncateFileName(char* dstBuffer, size_t dstCharacters, const char* fileName)
+    {
+        assert(dstBuffer);
+        assert(fileName);
+        assert(strlen(fileName) > m_fileNameOffset);
+
+        fileName += m_fileNameOffset;
+        size_t len = strlen(fileName);
+        strncpy(dstBuffer, fileName, dstCharacters);
+        memset(dstBuffer + len, ' ', dstCharacters - len -1);
+        dstBuffer[dstCharacters -1] = 0;
+    }
+
     template<typename T>
     QString collectArg(const QString& msg, const std::shared_ptr<T>& arg) { return msg.arg(arg->toString()); }
     QString collectArg(const QString& msg, const char* arg) { return msg.arg(arg); }
@@ -204,6 +225,7 @@ private:
 private:
     LogLevel m_level = LogLevel::Default;
     std::vector<ILogSink *> m_sinks;
+    size_t m_fileNameOffset; ///< number of characters to chop off from __FILE__ to have a sensible file name
 };
 
 

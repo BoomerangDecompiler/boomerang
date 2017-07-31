@@ -1260,8 +1260,8 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
             }
             else {
                 // No new cycle
-                LOG_VERBOSE_OLD(1) << "visiting on the way down child " << c->getName() << " from " << getName()
-                               << "\n";
+                LOG_VERBOSE("Visiting on the way down child %1 from %2", c->getName(), getName());
+
                 c->promoteSignature();
                 std::shared_ptr<ProcSet> tmp = c->decompile(path, indent);
                 child->insert(tmp->begin(), tmp->end());
@@ -3386,11 +3386,9 @@ void UserProc::fromSSAform()
 {
     Boomerang::get()->alertDecompiling(this);
 
-    if (VERBOSE) {
-        LOG << "transforming " << getName() << " from SSA\n";
-    }
+    LOG_VERBOSE("Transforming %1 from SSA form");
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "before transforming from SSA form");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before transforming from SSA form");
 
     if (m_cfg->getNumBBs() >= 100) { // Only for the larger procs
         // Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
@@ -4472,7 +4470,7 @@ QString UserProc::lookupParam(SharedExp e)
     Instruction *def = m_cfg->findTheImplicitAssign(e);
 
     if (def == nullptr) {
-        LOG << "ERROR: no implicit definition for parameter " << e << " !\n";
+        LOG_ERROR("No implicit definition for parameter %1!", e);
         return QString::null;
     }
 
@@ -5037,11 +5035,9 @@ void UserProc::fixCallAndPhiRefs()
     *      else (ordinary statement)
     *        do bypass and propagation for s
     */
-    if (VERBOSE) {
-        LOG << "### start fix call and phi bypass analysis for " << getName() << " ###\n";
-    }
+    LOG_VERBOSE("### Start fix call and phi bypass analysis for %1 ###", getName());
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "before fixing call and phi refs");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before fixing call and phi refs");
 
     std::map<SharedExp, int, lessExpStar> destCounts;
     StatementList::iterator               it;
@@ -5247,9 +5243,7 @@ void UserProc::fixCallAndPhiRefs()
         }
     }
 
-    if (VERBOSE) {
-        LOG << "### end fix call and phi bypass analysis for " << getName() << " ###\n";
-    }
+    LOG_VERBOSE("### End fix call and phi bypass analysis for %1 ###", getName());
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after fixing call and phi refs");
 }
@@ -5318,8 +5312,8 @@ void UserProc::propagateToCollector()
                 continue;
             }
             else {
-                LOG_VERBOSE_OLD(1) << "propagating " << r << " to " << as->getRight() << " in collector; result "
-                               << memOfRes << "\n";
+                LOG_VERBOSE("Propagating %1 to %2 in collector; result %3",
+                            r, as->getRight(), memOfRes);
                 (*it)->setSubExp1(res); // Change the child of the memof
             }
         }
@@ -5675,7 +5669,7 @@ bool UserProc::removeRedundantParameters()
     bool          ret = false;
     StatementList newParameters;
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "before removing redundant parameters");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before removing redundant parameters");
 
     if (DEBUG_UNUSED) {
         LOG << "%%% removing unused parameters for " << getName() << "\n";
@@ -6367,7 +6361,8 @@ QString UserProc::getRegName(SharedExp r)
         return regName;
     }
 
-    LOG_VERBOSE_OLD(2) << "warning - UserProc::getRegName(Exp* r) will try to build register name from [tmp+X] !";
+    LOG_WARN("Will try to build register name from [tmp+X]!");
+
     // TODO: how to handle register file lookups ?
     // in some cases the form might be r[tmp+value]
     // just return this expression :(

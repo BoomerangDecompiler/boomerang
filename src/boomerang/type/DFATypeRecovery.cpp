@@ -49,7 +49,7 @@ static DFA_TypeRecovery s_type_recovery;
 
 void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
 {
-    LOG << iter << " iterations\n";
+    LOG_MSG("%1 iterations", iter);
 
     for (Instruction *s : stmts) {
         LOG << s << "\n"; // Print the statement; has dest type
@@ -254,7 +254,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                 ch = true;
 
                 if (DEBUG_TA) {
-                    LOG << " caused change: FROM: " << before << "TO: \n" << it << "\n";
+                    LOG_MSG(" caused change: FROM: %1 TO: %2", before, it);
                 }
             }
 
@@ -481,7 +481,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                 }
 
                 const SharedType& ty = ((TypingStatement *)s)->getType();
-                LOG_MSG("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
+                LOG_VERBOSE("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
                 SharedExp loc_mem = Location::memOf(addrExp);
                 proc->localsMap().addItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
             }

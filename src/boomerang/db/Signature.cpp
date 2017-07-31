@@ -723,10 +723,10 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
         return false;
     }
 
-    LOG_VERBOSE_OLD(1) << "consider promotion to stdc pentium signature for " << p->getName() << "\n";
+    LOG_VERBOSE("Consider promotion to stdc pentium signature for %1", p->getName());
 
 #if 1
-    LOG_VERBOSE_OLD(1) << "qualified: always true\n";
+    LOG_VERBOSE("Promotion qualified: always true");
     return true; // For now, always pass
 #else
     bool          gotcorrectret1 = false;
