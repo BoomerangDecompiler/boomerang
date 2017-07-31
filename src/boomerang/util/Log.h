@@ -168,7 +168,10 @@ private:
         fileName += m_fileNameOffset;
         size_t len = strlen(fileName);
         strncpy(dstBuffer, fileName, dstCharacters);
-        memset(dstBuffer + len, ' ', dstCharacters - len -1);
+
+        if (len < dstCharacters) {
+            memset(dstBuffer + len, ' ', dstCharacters - len -1);
+        }
         dstBuffer[dstCharacters -1] = 0;
     }
 

@@ -500,7 +500,7 @@ int CommandlineDriver::decompile()
 
 void CommandlineDriver::onCompilationTimeout()
 {
-    LOG_MSG("Compilation timed out.");
+    LOG_WARN("Compilation timed out.");
     exit(1);
 }
 

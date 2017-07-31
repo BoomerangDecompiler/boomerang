@@ -40,6 +40,8 @@ BinaryFileFactory::BinaryFileFactory()
 
 IFileLoader *BinaryFileFactory::loadFile(const QString& filePath)
 {
+    LOG_MSG("Loading binary file '%1'", filePath);
+
     IBinaryImage       *image   = Boomerang::get()->getImage();
     IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
 
