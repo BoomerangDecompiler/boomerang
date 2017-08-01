@@ -43,8 +43,6 @@
 void delete_lrtls(std::list<RTL *>& pLrtl);
 void erase_lrtls(std::list<RTL *>& pLrtl, std::list<RTL *>::iterator begin, std::list<RTL *>::iterator end);
 
-static int progress = 0;
-
 
 /**********************************
 * Cfg methods.
@@ -176,9 +174,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutE
                 // This list of RTLs is not needed now
                 delete_lrtls(*pRtls);
 
-                if (VERBOSE) {
-                    LOG << "throwing BBAlreadyExistsError\n";
-                }
+                LOG_VERBOSE("throwing BBAlreadyExistsError");
 
                 throw BBAlreadyExistsError(pBB);
             }
@@ -324,7 +320,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, Address uNativeAddr, BasicBlock *pNewB
     }
 
     if (ri == pBB->m_listOfRTLs->end()) {
-        LOG_STREAM_OLD() << "could not split BB at " << pBB->getLowAddr() << " at split address " << uNativeAddr;
+        LOG_WARN("Could not split BB at address %1 at split address %2", pBB->getLowAddr(), uNativeAddr);
         return pBB;
     }
 
@@ -1113,7 +1109,7 @@ void Cfg::printToLog()
     QTextStream ost(&tgt);
 
     print(ost);
-    LOG << tgt;
+    LOG_MSG(tgt);
 }
 
 
@@ -1172,10 +1168,8 @@ BasicBlock *Cfg::commonPDom(BasicBlock *curImmPDom, BasicBlock *succImmPDom)
     }
 
     if (giveup >= GIVEUP) {
-        if (VERBOSE) {
-            LOG << "failed to find commonPDom for " << oldCurImmPDom->getLowAddr() << " and "
-                << oldSuccImmPDom->getLowAddr() << "\n";
-        }
+        LOG_VERBOSE("Failed to find commonPDom for %1 and %2",
+                    oldCurImmPDom->getLowAddr(), oldSuccImmPDom->getLowAddr());
 
         return oldCurImmPDom; // no change
     }
@@ -1772,12 +1766,6 @@ void Cfg::findInterferences(ConnectionGraph& cg)
     while (workList.size() && count < 100000) {
         count++; // prevent infinite loop
 
-        if (++progress > 20) {
-            LOG_VERBOSE("i");
-            LOG_STREAM_OLD().flush();
-            progress = 0;
-        }
-
         BasicBlock *currBB = workList.back();
         workList.erase(--workList.end());
         workSet.erase(currBB);
@@ -1789,7 +1777,6 @@ void Cfg::findInterferences(ConnectionGraph& cg)
         }
 
         if (DEBUG_LIVENESS) {
-            LOG << "Revisiting BB ending with stmt ";
             Instruction *last = nullptr;
 
             if (!currBB->m_listOfRTLs->empty()) {
@@ -1800,14 +1787,8 @@ void Cfg::findInterferences(ConnectionGraph& cg)
                 }
             }
 
-            if (last) {
-                LOG << last->getNumber();
-            }
-            else {
-                LOG << "<none>";
-            }
-
-            LOG << " due to change\n";
+            LOG_MSG("Revisiting BB ending with stmt %1 due to change",
+                    last ? QString::number(last->getNumber(), 10) : "<none>");
         }
 
         updateWorkListRev(currBB, workList, workSet);
@@ -1826,23 +1807,23 @@ void Cfg::appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& w
 
 void dumpBB(BasicBlock *bb)
 {
-    LOG_STREAM_OLD() << "For BB at " << bb << ":\nIn edges: ";
+    LOG_MSG("For BB at %1:", HostAddress(bb).toString());
+    LOG_MSG("  In edges:");
+
     std::vector<BasicBlock *> ins = bb->getInEdges();
     std::vector<BasicBlock *> outs = bb->getOutEdges();
     size_t i, n = ins.size();
 
     for (i = 0; i < n; i++) {
-        LOG_STREAM_OLD() << ins[i] << " ";
+        LOG_MSG("    %1", HostAddress(ins[i]).toString());
     }
 
-    LOG_STREAM_OLD() << "\nOut Edges: ";
+    LOG_MSG("  Out edges:");
     n = outs.size();
 
     for (i = 0; i < n; i++) {
-        LOG_STREAM_OLD() << outs[i] << " ";
+        LOG_MSG("    %1", HostAddress(outs[i]).toString());
     }
-
-    LOG_STREAM_OLD() << "\n";
 }
 
 
@@ -1987,7 +1968,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
         }
 
 #if DEBUG_SPLIT_FOR_BRANCH
-        LOG_STREAM() << "About to delete pBB: " << std::hex << pBB << "\n";
+        LOG_VERBOSE("About to delete pBB: %1", pBB);
         dumpBB(pBB);
         dumpBB(skipBB);
         dumpBB(rptBB);

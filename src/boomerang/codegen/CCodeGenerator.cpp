@@ -41,7 +41,7 @@
 #include <cstdlib>
 #include <memory>
 
-static int codegen_progress = 0;
+
 static bool isBareMemof(const Exp& e, UserProc *proc);
 
 
@@ -67,12 +67,6 @@ void CCodeGenerator::indent(QTextStream& str, int indLevel)
 
 void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool uns /* = false */)
 {
-    if (++codegen_progress > 500) {
-        LOG_STREAM_OLD() << 'g';
-        LOG_STREAM_OLD().flush();
-        codegen_progress = 0;
-    }
-
     OPER op = exp.getOper();
 
 #if SYMS_IN_BACK_END                 // Should no longer be any unmapped symbols by the back end

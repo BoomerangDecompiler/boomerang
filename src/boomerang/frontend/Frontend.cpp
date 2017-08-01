@@ -653,7 +653,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
         while (sequentialDecode) {
             // Decode and classify the current source instruction
             if (Boomerang::get()->traceDecoder) {
-                LOG << "*" << uAddr << "\t";
+                LOG_MSG("*%1", uAddr);
             }
 
             // Decode the inst at uAddr.
@@ -661,7 +661,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 LOG_ERROR("Invalid instruction at ", uAddr.toString());
             }
             else if (inst.rtl->empty()) {
-                LOG_VERBOSE("Valid but undecoded instruction at ", uAddr.toString());
+                LOG_VERBOSE("Instruction at address %1 is a no-op!", uAddr);
             }
 
             // If invalid and we are speculating, just exit
@@ -727,7 +727,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 QString     tgt;
                 QTextStream st(&tgt);
                 pRtl->print(st);
-                LOG << tgt;
+                LOG_MSG(tgt);
             }
 
             Address uDest;
@@ -868,8 +868,9 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     Address destAddr = Address(m_image->readNative4(jmptbl + i * 4));
 
                                     if ((m_image->getLimitTextLow() <= destAddr) && (destAddr < m_image->getLimitTextHigh())) {
-                                        LOG << "  guessed uDest " << destAddr << "\n";
-                                                                  m_targetQueue.visit(pCfg, destAddr, pBB);
+                                        LOG_MSG("  guessed uDest %1", destAddr);
+
+                                        m_targetQueue.visit(pCfg, destAddr, pBB);
                                         pCfg->addOutEdge(pBB, destAddr, true);
                                     }
                                     else {
@@ -1021,7 +1022,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                 // newProc(pProc->getProg(), uNewAddr);
                                 if (Boomerang::get()->traceDecoder) {
-                                    LOG << "p" << uNewAddr << "\t";
+                                    LOG_MSG("p%1", uNewAddr);
                                 }
                             }
 
@@ -1184,9 +1185,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
     Boomerang::get()->alertDecode(pProc, startAddr, lastAddr, nTotalBytes);
 
-    if (VERBOSE) {
-        LOG << "finished processing proc " << pProc->getName() << " at address " << pProc->getNativeAddress() << "\n";
-    }
+    LOG_VERBOSE("Finished processing proc %1 at address %2", pProc->getName(), pProc->getNativeAddress());
 
     return true;
 }
@@ -1248,9 +1247,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
                      m_targetQueue.visit(pCfg, retAddr, pBB);
         }
         catch (Cfg::BBAlreadyExistsError&) {
-            if (VERBOSE) {
-                LOG << "not visiting " << retAddr << " due to exception\n";
-            }
+            LOG_VERBOSE("Not visiting address %1 due to exception", retAddr);
         }
     }
 

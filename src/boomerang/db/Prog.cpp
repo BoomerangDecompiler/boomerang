@@ -456,7 +456,7 @@ Module *Prog::getDefaultModule(const QString& name)
         return m_rootCluster;
     }
 
-    LOG << "got filename " << cfname << " for " << name << "\n";
+    LOG_VERBOSE("Got filename %1 for %2", cfname, name);
     cfname.chop(2); // remove .c
     Module *c = findModule(cfname);
 
@@ -707,15 +707,13 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase)
             return BooleanType::get();
 
         default:
-            LOG_STREAM() << "unhandled base type " << d << "\n";
-            assert(false);
+            LOG_FATAL("Unhandled base type %1", d);
         }
 
         break;
 
     default:
-        LOG_STREAM() << "unhandled symtag " << d << "\n";
-        assert(false);
+        LOG_FATAL("Unhandled symtag %1", d);
     }
 
     return nullptr;
@@ -977,16 +975,8 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
     Global *global = new Global(ty, uaddr, nam, this);
     m_globals.insert(global);
 
-    if (VERBOSE) {
-        LOG << "globalUsed: name " << nam << ", address " << uaddr;
-
-        if (knownType) {
-            LOG << ", known type " << ty->getCtype() << "\n";
-        }
-        else {
-            LOG << ", guessed type " << ty->getCtype() << "\n";
-        }
-    }
+    LOG_VERBOSE("globalUsed: name %1, address %2, %3 type %4",
+                nam, uaddr, knownType ? "known" : "guessed", ty->getCtype());
 
     return true;
 }
@@ -1479,7 +1469,7 @@ void Prog::removeUnusedGlobals()
                 bool found = s->searchAll(search, usedGlobals);
 
                 if (found && DEBUG_UNUSED) {
-                    LOG << " a global is used by stmt " << s->getNumber() << "\n";
+                    LOG_VERBOSE("A global is used by stmt %1", s->getNumber());
                 }
             }
         }
@@ -1499,7 +1489,7 @@ void Prog::removeUnusedGlobals()
 
     for (const SharedExp& e : usedGlobals) {
         if (DEBUG_UNUSED) {
-            LOG << " " << e << " is used\n";
+            LOG_MSG(" %1 is used", e);
         }
 
         QString name(e->access<Const, 1>()->getStr());
@@ -1509,7 +1499,7 @@ void Prog::removeUnusedGlobals()
             m_globals.insert(usedGlobal);
         }
         else {
-            LOG << "warning: an expression refers to a nonexistent global\n";
+            LOG_WARN("An expression refers to a nonexistent global");
         }
     }
 }
@@ -1623,12 +1613,12 @@ void Prog::globalTypeAnalysis()
 
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
-            LOG_STREAM_OLD() << "global type analysis for " << proc->getName() << "\n";
+            LOG_VERBOSE("Global type analysis for %1", proc->getName());
             proc->typeAnalysis();
         }
     }
 
-    if (VERBOSE || DEBUG_TA) {
+    if (DEBUG_TA) {
         LOG_VERBOSE("### End type analysis ###");
     }
 }
@@ -1858,8 +1848,8 @@ void Prog::readSymbolFile(const QString& fname)
     ifs.open(fname.toStdString());
 
     if (!ifs.good()) {
-        LOG << "can't open `" << fname << "'\n";
-        exit(1);
+        LOG_ERROR("Cannot read symbol file '%1'", fname);
+        return;
     }
 
     AnsiCParser *par = new AnsiCParser(ifs, false);
@@ -1989,7 +1979,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
             auto       v    = readNativeAs(addr, t);
 
             if (v == nullptr) {
-                LOG << "unable to read native address " << addr << " as type " << t->getCtype() << "\n";
+                LOG_MSG("Unable to read native address %1 as type %2", addr, t->getCtype());
                 v = Const::get(-1);
             }
 

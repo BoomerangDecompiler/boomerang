@@ -87,7 +87,7 @@ void Exp::createDotFile(const char *name)
     QFile fl(name);
 
     if (!fl.open(QFile::WriteOnly)) {
-        LOG << "Could not open " << name << " to write dotty file\n";
+        LOG_ERROR("Could not open %1 to write dotty file", name);
         return;
     }
 

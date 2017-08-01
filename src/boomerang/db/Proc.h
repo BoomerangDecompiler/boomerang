@@ -201,11 +201,6 @@ public:
     virtual bool isLib() const { return false; } ///< Return true if this is a library proc
     virtual bool isNoReturn() const = 0;         ///< Return true if this procedure doesn't return
 
-    /**
-     * OutPut operator for a Proc object.
-     */
-    friend QTextStream& operator<<(QTextStream& os, const Function& proc);
-
     /// Get the RHS that is proven for left
     virtual SharedExp getProven(SharedExp left)   = 0; ///< Get the RHS, if any, that is proven for left
     virtual SharedExp getPremised(SharedExp left) = 0; ///< Get the RHS, if any, that is premised for left
@@ -1075,5 +1070,3 @@ protected:
     UserProc();
     void setCFG(Cfg *c) { m_cfg = c; }
 }; // class UserProc
-
-Log& operator<<(Log& out, const UserProc& c);

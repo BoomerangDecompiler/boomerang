@@ -40,9 +40,7 @@ class IBinarySymbolTable;
 class Project;
 
 
-#define LOG_SEPARATE_OLD(x)     Boomerang::get()->separate_log(x)
-#define LOG_VERBOSE_OLD(x)      Boomerang::get()->if_verbose_log(x)
-#define LOG_STREAM_OLD          Boomerang::get()->getLogStream
+#define LOG_SEPARATE(fileName, ...)   Boomerang::get()->separate_log(fileName).log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)
 
 
 /**
@@ -305,10 +303,6 @@ public:
     }
 
     void alertDecompileDebugPoint(UserProc *p, const char *description);
-
-    /// Return TextStream to which given \a level of messages shoudl be directed
-    /// \param level - describes the message level TODO: describe message levels
-    QTextStream& getLogStream(LogLevel level = LogLevel::Default); ///< Return overall logging target
 
     QString getFilename() const;
 

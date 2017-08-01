@@ -17,6 +17,8 @@ class Exp;
 class LocationSet;
 class RTL;
 class Type;
+class UserProc;
+
 
 using SharedType     = std::shared_ptr<Type>;
 using SharedConstExp = std::shared_ptr<const Exp>;
@@ -54,7 +56,7 @@ public:
 class FileLogSink : public ILogSink
 {
 public:
-    FileLogSink(const QString& filename);
+    FileLogSink(const QString& filename, bool append = false);
     virtual ~FileLogSink();
 
     virtual void write(const QString& s);
@@ -103,20 +105,6 @@ public:
         log(level, file, line, collectArgs(msg, args...));
     }
 
-    /// \deprecated These functions are about to be removed
-    virtual Log& operator<<(const QString& msg) { write(msg); return *this; }
-    virtual Log& operator<<(const Instruction *s);
-    virtual Log& operator<<(const SharedConstExp& e);
-    virtual Log& operator<<(const SharedType& ty);
-    virtual Log& operator<<(const Printable& ty);
-    virtual Log& operator<<(const RTL *r);
-    virtual Log& operator<<(int i);
-    virtual Log& operator<<(size_t i);
-    virtual Log& operator<<(char c);
-    virtual Log& operator<<(double d);
-    virtual Log& operator<<(Address a);
-    virtual Log& operator<<(const LocationSet *l);
-
     /// Add a log sink / target. Takes ownership of the pointer.
     Log& addLogSink(ILogSink* s);
 
@@ -157,7 +145,7 @@ private:
     QString collectArg(const QString& msg, double d);
     QString collectArg(const QString& msg, Address a);
     QString collectArg(const QString& msg, const LocationSet *l);
-
+    QString collectArg(const QString& msg, const UserProc& proc);
 
     template<typename Arg>
     QString collectArgs(const QString& msg, Arg arg)
@@ -201,23 +189,10 @@ private:
 
 class SeparateLogger : public Log
 {
-protected:
-    std::ofstream *out;
-
 public:
-    SeparateLogger(const QString& filePath);
-    SeparateLogger(const SeparateLogger&) {}
+    SeparateLogger(const QString filePath);
+    ~SeparateLogger() = default;
 
-    virtual ~SeparateLogger();
-
-    Log& operator<<(const QString& str) override;
-};
-
-class NullLogger : public Log
-{
-public:
-    virtual Log& operator<<(const QString& /*str*/) override
-    {
-        return *this;
-    }
+private:
+    SeparateLogger& operator=(SeparateLogger&) = delete;
 };

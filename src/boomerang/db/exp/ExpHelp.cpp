@@ -36,8 +36,7 @@ bool lessAssign::operator()(const Assign *x, const Assign *y) const
 void child(const SharedExp& e, int ind)
 {
     if (e == nullptr) {
-        Util::alignStream(LOG_STREAM_OLD(), ind + 4) << "<nullptr>\n";
-        LOG_STREAM_OLD().flush();
+        LOG_MSG("%1<nullptr>", QString(ind+4, ' '));
         return;
     }
 

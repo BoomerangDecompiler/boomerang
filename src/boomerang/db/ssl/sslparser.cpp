@@ -870,9 +870,7 @@ SSLParser::
     }
     case 31: {
         if ((int)yyvsp[-8].strlist->size() != (yyvsp[0].num - yyvsp[-2].num + 1)) {
-            LOG_STREAM_OLD() << "size of register array does not match mapping to r[" << yyvsp[-2].num << ".." << yyvsp[0].num
-                      << "]\n";
-            exit(1);
+            LOG_FATAL("Size of register array does not match mapping to r[%1..%2]", yyvsp[-2].num, yyvsp[0].num);
         } else {
             std::list<QString>::iterator loc = yyvsp[-8].strlist->begin();
             for (int x = yyvsp[-2].num; x <= yyvsp[0].num; x++, loc++) {

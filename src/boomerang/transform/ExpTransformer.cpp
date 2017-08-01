@@ -124,7 +124,7 @@ void ExpTransformer::loadAll()
         ifs1.open(sPath1.toStdString());
 
         if (!ifs1.good()) {
-            LOG << "Can't open transformation file `" << sPath1 << "'\n";
+            LOG_ERROR("Can't open transformation file '%1'", sPath);
             return;
         }
 

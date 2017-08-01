@@ -42,6 +42,8 @@ namespace dbghelp
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
+
 
 #include <cstring>
 #include <cstdlib>
@@ -546,7 +548,8 @@ void Win32BinaryLoader::readDebugData(QString exename)
         return;
     }
 #else
-    qWarning() << "Cannot retrieve debugging information for" << exename;
+    Q_UNUSED(exename);
+    LOG_WARN("Loading PE debug information is only available on Windows!");
 #endif
 }
 
@@ -575,7 +578,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
     m_base = (char *)malloc(LMMH(tmphdr->ImageSize));
 
     if (!m_base) {
-        fprintf(stderr, "Cannot allocate memory for copy of image\n");
+        LOG_ERROR("Cannot allocate memory for copy of image");
         return false;
     }
 
@@ -587,18 +590,16 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
     m_pHeader = (Header *)m_base;
 
     if ((m_pHeader->sigLo != 'M') || (m_pHeader->sigHi != 'Z')) {
-        fprintf(stderr, "error loading file - bad magic\n");
+        LOG_ERROR("Error loading file - bad magic");
         return false;
     }
 
     m_pPEHeader = (PEHeader *)(m_base + peoff);
 
     if ((m_pPEHeader->sigLo != 'P') || (m_pPEHeader->sigHi != 'E')) {
-        fprintf(stderr, "error loading file bad PE magic\n");
+        LOG_ERROR("Error loading file: bad PE magic");
         return false;
     }
-
-    // printf("Image Base %08X, real base %p\n", LMMH(m_pPEHeader->Imagebase), base);
 
     const PEObject *o = (PEObject *)(((char *)m_pPEHeader) + LH(&m_pPEHeader->NtHdrSize) + 24);
 
@@ -833,7 +834,7 @@ void printType(DWORD index, DWORD64 ImageBase)
     if (got) {
         char nameA[1024];
         WideCharToMultiByte(CP_ACP, 0, name, -1, nameA, sizeof(nameA), 0, nullptr);
-        qDebug() << nameA;
+        LOG_VERBOSE("Found type info: %1", nameA);
         return;
     }
 
@@ -847,18 +848,17 @@ void printType(DWORD index, DWORD64 ImageBase)
         got = dbghelp::SymGetTypeInfo(hProcess, ImageBase, index, dbghelp::TI_GET_TYPE, &d);
         assert(got);
         printType(d, ImageBase);
-        qDebug() << "*";
+        LOG_VERBOSE("*");
         break;
 
     case SymTagBaseType:
         got = dbghelp::SymGetTypeInfo(hProcess, ImageBase, index, dbghelp::TI_GET_BASETYPE, &d);
         assert(got);
-        qDebug() << basicTypes[d];
+        LOG_VERBOSE("%1", basicTypes[d]);
         break;
 
     default:
-        qWarning() << "unhandled symtag " << SymTagEnums[d] << "\n";
-        assert(false);
+        LOG_FATAL("unhandled symtag %1", SymTagEnums[d]);
     }
 }
 
@@ -868,62 +868,66 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID Us
     HANDLE hProcess = GetCurrentProcess();
 
     printType(pSymInfo->TypeIndex, pSymInfo->ModBase);
-    qDebug() << " " << pSymInfo->Name << " flags: ";
+
+    QString flagsStr;
+    QTextStream ost(&flagsStr);
+
+    ost << " " << pSymInfo->Name << " flags: ";
 
     if (pSymInfo->Flags & SYMFLAG_VALUEPRESENT) {
-        qDebug() << "value present, ";
+        ost << "value present, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_REGISTER) {
-        qDebug() << "register, ";
+        ost << "register, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_REGREL) {
-        qDebug() << "regrel, ";
+        ost << "regrel, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_FRAMEREL) {
-        qDebug() << "framerel, ";
+        ost << "framerel, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_PARAMETER) {
-        qDebug() << "parameter, ";
+        ost << "parameter, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_LOCAL) {
-        qDebug() << "local, ";
+        ost << "local, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_CONSTANT) {
-        qDebug() << "constant, ";
+        ost << "constant, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_EXPORT) {
-        qDebug() << "export, ";
+        ost << "export, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_FORWARDER) {
-        qDebug() << "forwarder, ";
+        ost << "forwarder, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_FUNCTION) {
-        qDebug() << "function, ";
+        ost << "function, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_VIRTUAL) {
-        qDebug() << "virtual, ";
+        ost << "virtual, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_THUNK) {
-        qDebug() << "thunk, ";
+        ost << "thunk, ";
     }
 
     if (pSymInfo->Flags & SYMFLAG_TLSREL) {
-        qDebug() << "tlsrel, ";
+        ost << "tlsrel, ";
     }
 
-    qDebug() << "\n";
-    qDebug() << "register: " << pSymInfo->Register << " address: " << (int)pSymInfo->Address << "\n";
+    LOG_VERBOSE(flagsStr);
+    LOG_VERBOSE("register: %1, address: %2", pSymInfo->Register, Address(pSymInfo->Address));
     return TRUE;
 }
 

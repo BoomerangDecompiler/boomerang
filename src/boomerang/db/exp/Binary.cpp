@@ -612,7 +612,7 @@ bool Binary::match(const QString& pattern, std::map<QString, SharedConstExp>& bi
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "binary::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
 
     if ((m_oper == opMemberAccess) && (-1 != tlstrchr(pattern, '.'))) {
@@ -1759,8 +1759,7 @@ SharedExp Binary::accept(ExpModifier *v)
 void Binary::printx(int ind) const
 {
     assert(subExp1 && subExp2);
-    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM_OLD().flush();
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
     child(subExp1, ind);
     child(subExp2, ind);
 }

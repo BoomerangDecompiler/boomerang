@@ -432,7 +432,7 @@ bool Unary::match(const QString& pattern, std::map<QString, SharedConstExp>& bin
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "Unary::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
 
     if ((m_oper == opAddrOf) && pattern.startsWith("a[") && pattern.endsWith(']')) {
@@ -652,8 +652,7 @@ SharedExp Unary::simplifyAddr()
 
 void Unary::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM_OLD().flush();
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
     child(subExp1, ind);
 }
 

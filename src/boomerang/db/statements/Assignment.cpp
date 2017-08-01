@@ -55,7 +55,7 @@ void Assignment::setTypeFor(SharedExp /*e*/, SharedType ty)
     m_type = ty;
 
     if (DEBUG_TA && (oldType != ty)) {
-        LOG << "    changed type of " << this << "  (type was " << oldType->getCtype() << ")\n";
+        LOG_MSG("    changed type of %1 (type was %2)", this, oldType->getCtype());
     }
 }
 

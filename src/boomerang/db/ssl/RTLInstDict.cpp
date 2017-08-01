@@ -228,10 +228,8 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
         }
 
         if (funcParams.size() != sub.m_funcParams.size()) {
-            LOG_STREAM_OLD() << "Error in SSL File: Variant operand " << s
-                         << " does not have a fixed number of functional parameters:\n"
-                         << "Expected " << funcParams.size() << ", but branch " << name
-                         << " has " << sub.m_funcParams.size() << ".\n";
+            LOG_ERROR("Error in SSL File: Variant operand %1 does not have a fixed number of functional parameters:", s);
+            LOG_ERROR("Expected %1 parameters, but branch %2 has %3 parameters.", funcParams.size(), name, sub.m_funcParams.size());
         }
         else if ((funcParams != sub.m_funcParams) && (sub.m_asgn != nullptr)) {
             /* Rename so all the parameter names match */

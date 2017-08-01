@@ -127,7 +127,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that failed. Instead, we
         // use the set of CallStatements (not in this procedure) that is needed by CSR
         if (Boomerang::get()->traceDecoder) {
-            LOG_STREAM_OLD() << "p" << dest << "\t";
+            LOG_VERBOSE("p%1", dest);
         }
     }
 
@@ -684,7 +684,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
         while (sequentialDecode) {
             // Decode and classify the current source instruction
             if (Boomerang::get()->traceDecoder) {
-                LOG << "*" << uAddr << "\t";
+                LOG_MSG("*%1", uAddr);
             }
 
             // Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
@@ -707,7 +707,6 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
             // Check for invalid instructions
             if (!inst.valid) {
-                LOG_STREAM_OLD() << "Invalid instruction at " << uAddr << ": ";
                 ptrdiff_t delta = m_image->getTextDelta();
 
                 const Byte* instructionData = (const Byte*)(uAddr + delta).value();

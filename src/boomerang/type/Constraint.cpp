@@ -61,10 +61,10 @@ char *ConstraintMap::prints()
 
 void ConstraintMap::makeUnion(ConstraintMap& o)
 {
-    std::map<SharedExp, SharedExp, lessExpStar>::iterator it;
+
     std::pair<std::map<SharedExp, SharedExp, lessExpStar>::iterator, bool> ret;
 
-    for (it = o.cmap.begin(); it != o.cmap.end(); it++) {
+    for (std::map<SharedExp, SharedExp, lessExpStar>::iterator it = o.cmap.begin(); it != o.cmap.end(); it++) {
         // Note: *it is a std::pair<Exp*, Exp*>
         ret = cmap.insert(*it);
 
@@ -371,11 +371,11 @@ SharedExp nextConjunct(SharedExp& remainder)
 
 bool Constraints::solve(std::list<ConstraintMap>& solns)
 {
-    LOG << conSet.size() << " constraints:";
     QString     tgt_s;
     QTextStream os(&tgt_s);
     conSet.print(os);
-    LOG << tgt_s;
+    LOG_MSG("%1 constraints: %2", conSet.size(), tgt_s);
+
     // Replace Ta[loc] = ptr(alpha) with
     //           Tloc = alpha
     LocationSet::iterator cc;
@@ -475,17 +475,15 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
     }
 
     {
-        LOG << "\n" << disjunctions.size() << " disjunctions: ";
-        std::list<SharedExp>::iterator dd;
-
-        for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) {
-            LOG << *dd << ",\n";
+        LOG_MSG("  %1 disjunctions:", disjunctions.size());
+        for (std::list<SharedExp>::iterator dd = disjunctions.begin(); dd != disjunctions.end(); dd++) {
+            LOG_MSG("    %1,", *dd);
         }
 
-        LOG << "\n";
     }
-    LOG << fixed.size() << " fixed: " << fixed.prints();
-    LOG << equates.size() << " equates: " << equates.prints();
+
+    LOG_MSG("  %1 fixed:   %2", fixed.size(), fixed.prints());
+    LOG_MSG("  %1 equates: %2", equates.size(), equates.prints());
 
     // Substitute the fixed types into the disjunctions
     substIntoDisjuncts(fixed);
@@ -494,36 +492,35 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
     // fixed types
     substIntoEquates(fixed);
 
-    LOG << "\nAfter substitute fixed into equates:\n";
+    LOG_MSG("After substitute fixed into equates:");
     {
-        LOG << "\n" << disjunctions.size() << " disjunctions: ";
+        LOG_MSG("  %1 disjunctions:", disjunctions.size());
         std::list<SharedExp>::iterator dd;
 
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) {
-            LOG << *dd << ",\n";
+            LOG_MSG("    %1,", *dd);
         }
-
-        LOG << "\n";
     }
-    LOG << fixed.size() << " fixed: " << fixed.prints();
-    LOG << equates.size() << " equates: " << equates.prints();
+
+    LOG_MSG("  %1 fixed:   %2", fixed.size(), fixed.prints());
+    LOG_MSG("  %1 equates: %2", equates.size(), equates.prints());
+
     // Substitute again the fixed types into the disjunctions
     // (since there may be more fixed types from the above)
     substIntoDisjuncts(fixed);
 
-    LOG << "\nAfter second substitute fixed into disjunctions:\n";
+    LOG_MSG("After second substitute fixed into disjunctions:");
     {
-        LOG << "\n" << disjunctions.size() << " disjunctions: ";
+        LOG_MSG("  %1 disjunction:", disjunctions.size());
         std::list<SharedExp>::iterator dd;
 
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) {
-            LOG << *dd << ",\n";
+            LOG_MSG("    %1,", *dd);
         }
-
-        LOG << "\n";
     }
-    LOG << fixed.size() << " fixed: " << fixed.prints();
-    LOG << equates.size() << " equates: " << equates.prints();
+
+    LOG_MSG("  %1 fixed:   %2", fixed.size(), fixed.prints());
+    LOG_MSG("  %1 equates: %2", equates.size(), equates.prints());
 
     ConstraintMap soln;
     bool          ret = doSolve(disjunctions.begin(), soln, solns);
@@ -533,10 +530,9 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
         // <alphaN> = <type>      or
         // <type>    = <alphaN>
         // and substitute these into each part of the solution
-        std::list<ConstraintMap>::iterator it;
 
-        for (it = solns.begin(); it != solns.end(); it++) {
-            it->substAlpha();
+        for (auto& sol : solns) {
+            sol.substAlpha();
         }
     }
 
@@ -548,8 +544,8 @@ static int level = 0;
 
 bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln, std::list<ConstraintMap>& solns)
 {
-    LOG << "Begin doSolve at level " << ++level << "\n";
-    LOG << "Soln now: " << soln.prints() << "\n";
+    LOG_MSG("Begin doSolve at level %1", ++level);
+    LOG_MSG("Soln now: %1", soln.prints());
 
     if (it == disjunctions.end()) {
         // We have gotten to the end with no unification failures
@@ -561,7 +557,7 @@ bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln
         // Copy the fixed constraints
         soln.makeUnion(fixed);
         solns.push_back(soln);
-        LOG << "Exiting doSolve at level " << level-- << " returning true\n";
+        LOG_MSG("Exiting doSolve at level %1 returning true", level--);
         return true;
     }
 
@@ -572,7 +568,8 @@ bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln
     SharedExp d;
 
     while ((d = nextDisjunct(rem1)) != nullptr) {
-        LOG << " $$ d is " << d << ", rem1 is " << ((rem1 == nullptr) ? "NULL" : rem1->prints()) << " $$\n";
+        LOG_MSG(" $$ d is %1, rem1 is %2 $$", d, ((rem1 == nullptr) ? "NULL" : rem1->prints()));
+
         // Match disjunct d against the fixed types; it could be compatible,
         // compatible and generate an additional constraint, or be
         // incompatible
@@ -582,7 +579,7 @@ bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln
         bool          unified = true;
 
         while ((c = nextConjunct(rem2)) != nullptr) {
-            LOG << "   $$ c is " << c << ", rem2 is " << ((rem2 == nullptr) ? "NULL" : rem2->prints()) << " $$\n";
+            LOG_MSG("   $$ c is %1, rem2 is %2 $$", d, ((rem2 == nullptr) ? "NULL" : rem2->prints()));
 
             if (c->isFalse()) {
                 unified = false;
@@ -598,7 +595,7 @@ bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln
 
             if (kk != fixed.end()) {
                 unified &= unify(rhs, kk->second, extra);
-                LOG << "Unified now " << unified << "; extra now " << extra.prints() << "\n";
+                LOG_MSG("Unified now %1; extra now %2", unified, extra.prints());
 
                 if (!unified) {
                     break;
@@ -622,11 +619,13 @@ bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln
         ConstraintMap oldSoln = soln;
         soln.makeUnion(extra);
         doSolve(++it, soln, solns);
+
         // Revert to the previous soln (whether doSolve returned true or not)
         // If this recursion did any good, it will have gotten to the end and
         // added the resultant soln to solns
         soln = oldSoln;
-        LOG << "After doSolve returned: soln back to: " << soln.prints() << "\n";
+        LOG_MSG("After doSolve returned: soln back to: %1", soln.prints());
+
         // Back to the current disjunction
         it--;
         // Continue for more disjuncts this disjunction
@@ -634,18 +633,21 @@ bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln
 
     // We have run out of disjuncts. Return true if any disjuncts had no
     // unification failures
-    LOG << "Exiting doSolve at level " << level-- << " returning " << anyUnified << "\n";
+    LOG_MSG("Exiting doSolve at level %1 returning %2", level--, anyUnified);
     return anyUnified;
 }
 
 
 bool Constraints::unify(SharedExp x, SharedExp y, ConstraintMap& extra)
 {
-    LOG << "Unifying " << x << " with " << y << " result ";
     assert(x->isTypeVal());
     assert(y->isTypeVal());
+
+
     SharedType xtype = x->access<TypeVal>()->getType();
     SharedType ytype = y->access<TypeVal>()->getType();
+
+    bool unified = false;
 
     if (xtype->isPointer() && ytype->isPointer()) {
         auto xPointsTo = xtype->as<PointerType>()->getPointsTo();
@@ -661,37 +663,24 @@ bool Constraints::unify(SharedExp x, SharedExp y, ConstraintMap& extra)
                 extra.constrain(yPointsTo, xPointsTo);
             }
 
-            LOG << "true\n";
-            return true;
-        }
-
-        LOG << (*xPointsTo == *yPointsTo) << "\n";
-        return *xPointsTo == *yPointsTo;
-    }
-    else if (xtype->isSize()) {
-        if (ytype->getSize() == 0) { // Assume size=0 means unknown
-            LOG << "true\n";
-            return true;
+            unified = true;
         }
         else {
-            LOG << (xtype->getSize() == ytype->getSize()) << "\n";
-            return xtype->getSize() == ytype->getSize();
+            unified = (*xPointsTo == *yPointsTo);
         }
     }
-    else if (ytype->isSize()) {
-        if (xtype->getSize() == 0) { // Assume size=0 means unknown
-            LOG << "true\n";
-            return true;
-        }
-        else {
-            LOG << (xtype->getSize() == ytype->getSize()) << "\n";
-            return xtype->getSize() == ytype->getSize();
-        }
+    else if (xtype->getSize() || ytype->isSize()) {
+        // Assume size=0 means unknown
+        unified = xtype->getSize() == 0 || ytype->getSize() == 0
+            || xtype->getSize() == ytype->getSize();
+    }
+    else {
+        // Otherwise, just compare the sizes
+        unified = (*xtype == *ytype);
     }
 
-    // Otherwise, just compare the sizes
-    LOG << (*xtype == *ytype) << "\n";
-    return *xtype == *ytype;
+    LOG_MSG("Unifying %1 and %2, result: %3", x, y, unified);
+    return unified;
 }
 
 

@@ -14,20 +14,6 @@
 #include <QtCore/QDebug>
 #include <sstream>
 
-
-class ErrLogger : public Log
-{
-public:
-	virtual Log& operator<<(const QString& s) override
-	{
-		std::cerr << s.toStdString();
-		return *this;
-	}
-
-	virtual ~ErrLogger() {}
-};
-
-
 static bool logset = false;
 
 void DfaTest::initTestCase()

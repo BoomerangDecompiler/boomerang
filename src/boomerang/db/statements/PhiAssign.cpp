@@ -215,8 +215,8 @@ bool PhiAssign::accept(StmtModifier *v)
         m_lhs = m_lhs->accept(v->m_mod);
     }
 
-    if (VERBOSE && v->m_mod->isMod()) {
-        LOG << "PhiAssign changed: now " << this << "\n";
+    if (v->m_mod->isMod()) {
+        LOG_VERBOSE("PhiAssign changed: now %1", this);
     }
 
     return true;
@@ -234,8 +234,8 @@ bool PhiAssign::accept(StmtPartModifier *v)
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
     }
 
-    if (VERBOSE && v->mod->isMod()) {
-        LOG << "PhiAssign changed: now " << this << "\n";
+    if (v->mod->isMod()) {
+        LOG_VERBOSE("PhiAssign changed: now %1", this);
     }
 
     return true;
@@ -306,9 +306,7 @@ void PhiAssign::simplify()
     }
 
     if (onlyOneNotThis && (notthis != (Instruction *)-1)) {
-        if (VERBOSE) {
-            LOG << "all but one not this in " << this << "\n";
-        }
+        LOG_VERBOSE("All but one not this in %1", this);
 
         convertToAssign(RefExp::get(m_lhs, notthis));
         return;

@@ -1454,7 +1454,7 @@ do_action:     /* this label is used only to access EOF actions */
 
                 // echo the line if line tracing is turned on
                 if (traceLines) {
-                    LOG_STREAM_OLD() << lineBuf << '\n';
+                    LOG_VERBOSE("%1", lineBuf);
                 }
 
                 // Quell a warning

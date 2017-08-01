@@ -236,7 +236,7 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
 {
 #if DEBUG_EVAL
     if (this == root) {
-        LOG_STREAM() << "begin eval =============" << '\n';
+        LOG_MSG("begin eval =============");
     }
 #endif
 
@@ -251,13 +251,13 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
 
         if ((out->getBB() != nullptr) && (out->getBB()->getNumInEdges() > 1)) {
 #if DEBUG_EVAL
-            LOG_STREAM() << "add 15" << '\n';
+            LOG_MSG("Add 15");
 #endif
             n += 15;
         }
         else {
 #if DEBUG_EVAL
-            LOG_STREAM() << "add 30" << '\n';
+            LOG_MSG("Add 30");
 #endif
             n += 30;
         }
@@ -269,13 +269,13 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
         if (statements[i]->isGoto()) {
             if (i != statements.size() - 1) {
 #if DEBUG_EVAL
-                LOG_STREAM() << "add 100" << '\n';
+                LOG_MSG("Add 100");
 #endif
                 n += 100;
             }
             else {
 #if DEBUG_EVAL
-                LOG_STREAM() << "add 50" << '\n';
+                LOG_MSG("Add 50");
 #endif
                 n += 50;
             }
@@ -301,16 +301,18 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
             }
             else {
 #if DEBUG_EVAL
-                LOG_STREAM() << "add 50" << '\n';
+                LOG_MSG("add 50");
 #endif
                 n += 50;
             }
         }
         else if ((i < statements.size() - 1) && (statements[i]->getOutEdge(root, 0) != statements[i + 1])) {
 #if DEBUG_EVAL
-            LOG_STREAM() << "add 25" << '\n';
-            LOG_STREAM() << statements[i]->getNumber() << " -> " << statements[i]->getOutEdge(root, 0)->getNumber()
-                         << " not " << statements[i + 1]->getNumber() << '\n';
+            LOG_MSG("Add 25");
+            LOG_MSG("%1 -> %2 not %3",
+                    statements[i]->getNumber(),
+                    statements[i]->getOutEdge(root, 0)->getNumber()
+                    statements[i + 1]->getNumber());
 #endif
             n += 25;
         }
@@ -318,7 +320,7 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
 
 #if DEBUG_EVAL
     if (this == root) {
-        LOG_STREAM() << "end eval = " << n << " =============" << '\n';
+        LOG_MSG("End eval = %1 =============", n);
     }
 #endif
     return n;
@@ -783,9 +785,9 @@ void PretestedLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<Syntax
 {
     // we can always ignore gotos at the end of the body.
     if ((pBody->getNumOutEdges() == 1) && pBody->endsWithGoto()) {
-        LOG_STREAM_OLD() << "successor: ignoring goto at end of body of pretested "
-                     << "loop" << '\n';
+        LOG_VERBOSE("successor: ignoring goto at end of body of pretested loop");
         assert(pBody->getOutEdge(root, 0)->startsWith(this));
+
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
         SyntaxNode *nBody = pBody->clone();
@@ -883,9 +885,9 @@ void PostTestedLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<Synta
 {
     // we can always ignore gotos at the end of the body.
     if ((pBody->getNumOutEdges() == 1) && pBody->endsWithGoto()) {
-        LOG_STREAM_OLD() << "successor: ignoring goto at end of body of posttested "
-                     << "loop" << '\n';
+        LOG_VERBOSE("successor: ignoring goto at end of body of posttested loop");
         assert(pBody->getOutEdge(root, 0) == this);
+
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
         SyntaxNode *nBody = pBody->clone();
@@ -982,9 +984,9 @@ void InfiniteLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxN
 {
     // we can always ignore gotos at the end of the body.
     if ((pBody->getNumOutEdges() == 1) && pBody->endsWithGoto()) {
-        LOG_STREAM_OLD() << "successor: ignoring goto at end of body of infinite "
-                     << "loop" << '\n';
+        LOG_VERBOSE("Successor: ignoring goto at end of body of infinite loop");
         assert(pBody->getOutEdge(root, 0) == this);
+
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
         SyntaxNode *nBody = pBody->clone();

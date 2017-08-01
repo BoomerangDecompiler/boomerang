@@ -194,7 +194,7 @@ bool Terminal::match(const QString& pattern, std::map<QString, SharedConstExp>& 
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "terminal::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
     return false;
 }
@@ -229,7 +229,6 @@ SharedExp Terminal::accept(ExpModifier *v)
 
 void Terminal::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM_OLD().flush();
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 }
 

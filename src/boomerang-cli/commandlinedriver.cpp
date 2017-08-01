@@ -97,8 +97,9 @@ static void usage()
 {
     QTextStream q_cout(stdout);
 
-    q_cout << "Usage: boomerang [ switches ] <program>" << '\n';
-    q_cout << "boomerang -h for switch help" << '\n';
+    q_cout <<
+        "Usage: boomerang [ switches ] <program>\n"
+        "boomerang -h for switch help\n";
 }
 
 
@@ -500,7 +501,7 @@ int CommandlineDriver::decompile()
 
 void CommandlineDriver::onCompilationTimeout()
 {
-    LOG_WARN("Compilation timed out.");
+    LOG_WARN("Compilation timed out, Boomerang will now exit");
     exit(1);
 }
 
@@ -510,6 +511,4 @@ void DecompilationThread::run()
     Boomerang& boom(*Boomerang::get());
 
     m_result = boom.decompile(m_decompiled);
-    boom.getLogStream().flush();
-    boom.getLogStream(LogLevel::Default).flush();
 }

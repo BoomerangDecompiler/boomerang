@@ -73,7 +73,7 @@ bool Instruction::mayAlias(SharedExp e1, SharedExp e2, int size) const
     bool b = (calcMayAlias(e1, e2, size) && calcMayAlias(e2, e1, size));
 
     if (b && VERBOSE) {
-        LOG << "May alias: " << e1 << " and " << e2 << " size " << size << "\n";
+        LOG_VERBOSE("Instruction may alias: %1 and %2 size %3", e1, e2, size);
     }
 
     return b;
@@ -479,16 +479,11 @@ bool Instruction::doPropagateTo(SharedExp e, Assignment *def, bool& convert)
         Boomerang::get()->numToPropagate--;
     }
 
-    if (VERBOSE) {
-        LOG << "propagating " << def << "\n"
-            << "       into " << this << "\n";
-    }
+    LOG_VERBOSE("Propagating %1 into %2", def, this);
 
     bool change = replaceRef(e, def, convert);
 
-    if (VERBOSE) {
-        LOG << "     result " << this << "\n\n";
-    }
+    LOG_VERBOSE("    result %1", this);
 
     return change;
 }
@@ -738,7 +733,7 @@ void Instruction::dfaMapLocals()
 
     accept(&sm);
 
-    if (VERBOSE && dlm.change) {
-        LOG << "statement mapped with new local(s): " << m_number << "\n";
+    if (dlm.change) {
+        LOG_VERBOSE("Statement mapped with new local(s): %1", m_number);
     }
 }

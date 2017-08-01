@@ -23,6 +23,7 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -122,8 +123,6 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
         op1 = *(unsigned char *)(p + base);
         op2 = *(unsigned char *)(p + base + 1);
 
-        // std::cerr << std::hex << "At " << p << ", ops " << (unsigned)op1 << ", " << (unsigned)op2 << std::dec <<
-        // "\n";
         switch (op1)
         {
         case 0xE8:
@@ -132,7 +131,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             if (gotSubEbp) {
                 // This is the call we want. Get the offset from the call instruction
                 addr = nativeOrigin + p + 5 + LMMH(*(p + base + 1));
-                // std::cerr << "__CMain at " << std::hex << addr << "\n";
+                LOG_VERBOSE("Found __CMain at address %1", addr);
                 return addr;
             }
 
@@ -205,7 +204,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     if ((m_pLXHeader->sigLo != 'L') || ((m_pLXHeader->sigHi != 'X') && (m_pLXHeader->sigHi != 'E'))) {
-        qWarning() << "error loading file bad LE/LX magic";
+        LOG_ERROR("Error loading file: bad LE/LX magic");
         return false;
     }
 
@@ -295,8 +294,10 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         buf.read((char *)&fixup, sizeof(fixup));
 
         if ((fixup.src != 7) || (fixup.flags & ~0x50)) {
-            qWarning() << QString("unknown fixup type %1 %2").arg(fixup.src, 2, 16, QChar('0'))
-                .arg(fixup.flags, 2, 16, QChar('0'));
+            LOG_WARN("Unknown fixup type %1 %2",
+                QString("%1").arg(fixup.src,   2, 16, QChar('0')),
+                QString("%1").arg(fixup.flags, 2, 16, QChar('0')));
+
             return false;
         }
 

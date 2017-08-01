@@ -252,37 +252,22 @@ SharedExp Const::accept(ExpModifier *v)
 
 void Const::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM_OLD(), ind) << operToString(m_oper) << "\n";
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 
     switch (m_oper)
     {
-        case opIntConst:
-            LOG_STREAM_OLD() << u.i;
-            break;
-
-        case opStrConst:
-            LOG_STREAM_OLD() << "\"" << m_string << "\"";
-            break;
-
-        case opFltConst:
-            LOG_STREAM_OLD() << u.d;
-            break;
-
-        case opFuncConst:
-            LOG_STREAM_OLD() << qPrintable(u.pp->getName());
-            break;
-
-        default:
-            LOG_STREAM_OLD() << "?" << (int)m_oper << "?";
+        case opIntConst:  LOG_MSG("%1", u.i);           break;
+        case opStrConst:  LOG_MSG("\"%1\"", m_string);  break;
+        case opFltConst:  LOG_MSG("%1", u.d);           break;
+        case opFuncConst: LOG_MSG(u.pp->getName());     break;
+        default:          LOG_MSG("?%1?", (int)m_oper); break;
     }
 
     if (m_conscript) {
-        LOG_STREAM_OLD() << " \\" << m_conscript << "\\";
+        LOG_MSG("\"%1\"", m_conscript);
     }
-
-    LOG_STREAM_OLD() << '\n';
-    LOG_STREAM_OLD().flush();
 }
+
 
 SharedExp Const::clone() const
 {
@@ -394,7 +379,7 @@ bool Const::match(const QString& pattern, std::map<QString, SharedConstExp>& bin
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "const::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
     return false;
 }

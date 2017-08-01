@@ -1324,7 +1324,7 @@ QString Type::prints()
 
 void Type::dump()
 {
-    LOG_STREAM_OLD() << getCtype(false); // For debugging
+    LOG_MSG("%1", getCtype(false)); // For debugging
 }
 
 
@@ -2113,7 +2113,7 @@ void DataIntervalMap::deleteItem(Address addr)
 
 void DataIntervalMap::dump()
 {
-    LOG_STREAM_OLD() << prints();
+    LOG_MSG(prints());
 }
 
 

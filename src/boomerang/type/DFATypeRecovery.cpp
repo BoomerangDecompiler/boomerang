@@ -49,23 +49,20 @@ static DFA_TypeRecovery s_type_recovery;
 
 void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
 {
-    LOG_MSG("%1 iterations", iter);
+    LOG_VERBOSE("%1 iterations", iter);
 
     for (Instruction *s : stmts) {
-        LOG << s << "\n"; // Print the statement; has dest type
+        LOG_VERBOSE("%1", s); // Print the statement; has dest type
+
         // Now print type for each constant in this Statement
         std::list<std::shared_ptr<Const> >           lc;
         std::list<std::shared_ptr<Const> >::iterator cc;
         s->findConstants(lc);
 
         if (lc.size()) {
-            LOG << "       ";
-
             for (cc = lc.begin(); cc != lc.end(); ++cc) {
-                LOG << (*cc)->getType()->getCtype() << " " << *cc << "  ";
+                LOG_MSG("    %1, %2", (*cc)->getType()->getCtype(), *cc);
             }
-
-            LOG << "\n";
         }
 
         // If s is a call, also display its return types
@@ -78,11 +75,10 @@ void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
                 continue;
             }
 
-            UseCollector              *uc = call->getUseCollector();
-            ReturnStatement::iterator rr;
-            bool first = true;
+            UseCollector *uc = call->getUseCollector();
 
-            for (rr = rs->begin(); rr != rs->end(); ++rr) {
+            LOG_VERBOSE("  returns:");
+            for (ReturnStatement::iterator rr = rs->begin(); rr != rs->end(); ++rr) {
                 // Intersect the callee's returns with the live locations at the call, i.e. make sure that they
                 // exist in *uc
                 Assignment *assgn = dynamic_cast<Assignment *>(*rr);
@@ -92,17 +88,8 @@ void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
                     continue; // Intersection fails
                 }
 
-                if (first) {
-                    LOG << "       returns: ";
-                }
-                else {
-                    LOG << ", ";
-                }
-
-                LOG << assgn->getType()->getCtype() << " " << assgn->getLeft();
+                LOG_VERBOSE("    %1 %2", assgn->getType()->getCtype(), assgn->getLeft());
             }
-
-            LOG << "\n";
         }
     }
 }
@@ -229,18 +216,11 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
     proc->getStatements(stmts);
 
     int iter = 0;
-    int dfa_progress = 0;
 
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
 
         for (Instruction *it : stmts) {
-            if (++dfa_progress >= 2000) {
-                dfa_progress = 0;
-                LOG_VERBOSE("t");
-                LOG_STREAM_OLD().flush();
-            }
-
             bool        thisCh  = false;
             Instruction *before = nullptr;
 
@@ -989,13 +969,13 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     // Other is not compatible with any of my component types. Add a new type
 #if PRINT_UNION                                      // Set above
     if (unionCount == 999) {                         // Adjust the count to catch the one you want
-        LOG_STREAM() << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in Type::createUnion)
+        LOG_MSG("createUnion breakpokint"); // Note: you need two breakpoints (also in Type::createUnion)
     }
-    LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype();
+    LOG_MSG("  %1 Created union from %1 and %2", ++unionCount, this->getCtype(), other->getCtype();
 #endif
     ((UnionType *)this)->addType(other->clone(), QString("x%1").arg(++nextUnionNumber));
 #if PRINT_UNION
-    LOG_STREAM() << ", result is " << getCtype() << "\n";
+    LOG_MSG("  Result is %1", getCtype());
 #endif
     ch = true;
     return ((UnionType *)this)->shared_from_this();
@@ -1135,7 +1115,7 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
     char name[20];
 #if PRINT_UNION
     if (unionCount == 999) {                         // Adjust the count to catch the one you want
-        LOG_STREAM() << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in UnionType::meetWith)
+        LOG_MSG("createUnion breakpokint"); // Note: you need two breakpoints (also in UnionType::meetWith)
     }
 #endif
     sprintf(name, "x%d", ++nextUnionNumber);
@@ -1145,8 +1125,8 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
     u->addType(other->clone(), name);
     ch = true;
 #if PRINT_UNION
-    LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype()
-                 << ", result is " << u->getCtype() << "\n";
+    LOG_MSG("  %1 Created union from %2 and %3, result is %4",
+            ++unionCount, getCtype(), other->getCtype(), u->getCtype());
 #endif
     return u;
 }

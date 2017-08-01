@@ -29,6 +29,7 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 
 #include <cstdarg>
 #include <cassert>
@@ -152,7 +153,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     // fp.read((char *)header, sizeof(mach_header));
 
     if ((header->magic != MH_MAGIC) && (_BMMH(header->magic) != MH_MAGIC)) {
-        qWarning() << "error loading file, bad Mach-O magic";
+        LOG_ERROR("Error loading file, bad Mach-O magic");
         return false;
     }
 
@@ -309,7 +310,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     base = (char *)malloc(loaded_size);
 
     if (!base) {
-        qWarning() << "Cannot allocate memory for copy of image";
+        LOG_ERROR("Cannot allocate memory for copy of image");
         return false;
     }
 

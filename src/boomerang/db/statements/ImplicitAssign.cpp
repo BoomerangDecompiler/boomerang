@@ -107,8 +107,8 @@ bool ImplicitAssign::accept(StmtModifier *v)
         m_lhs = m_lhs->accept(v->m_mod);
     }
 
-    if (VERBOSE && v->m_mod->isMod()) {
-        LOG << "ImplicitAssign changed: now " << this << "\n";
+    if (v->m_mod->isMod()) {
+        LOG_VERBOSE("ImplicitAssign changed: now %1", this);
     }
 
     return true;
@@ -126,8 +126,8 @@ bool ImplicitAssign::accept(StmtPartModifier *v)
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
     }
 
-    if (VERBOSE && v->mod->isMod()) {
-        LOG << "ImplicitAssign changed: now " << this << "\n";
+    if (v->mod->isMod()) {
+        LOG_VERBOSE("ImplicitAssign changed: now %1", this);
     }
 
     return true;

@@ -299,9 +299,8 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
             dbghelp::SymSetContext(hProcess, &stack, 0);
             dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
 
-            LOG << "final signature: ";
+            LOG_MSG("Final signature:");
             pProc->getSignature()->printToLog();
-            LOG << "\n";
         }
     }
 #endif

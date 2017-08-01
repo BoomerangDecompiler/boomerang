@@ -128,15 +128,12 @@ bool GenericExpTransformer::checkCond(SharedExp cond, SharedExp bindings)
                 SharedType ty = nullptr;
 
                 if (ty == nullptr) {
-                    if (VERBOSE) {
-                        LOG << "no type for typeof " << lhs << "\n";
-                    }
-
+                    LOG_VERBOSE("No type for typeof %1", lhs);
                     return false;
                 }
 
                 lhs = TypeVal::get(ty);
-                LOG << "got typeval: " << lhs << "\n";
+                LOG_MSG("Got typeval: %1", lhs);
             }
 
             if (lhs->getOper() == opKindOf) {
@@ -180,7 +177,7 @@ bool GenericExpTransformer::checkCond(SharedExp cond, SharedExp bindings)
         }
 
     default:
-        LOG << "don't know how to handle oper " << operStrings[cond->getOper()] << " in cond.\n";
+        LOG_MSG("Don't know how to handle oper %1 in cond.", operStrings[cond->getOper()]);
     }
 
     return false;
@@ -204,15 +201,15 @@ SharedExp GenericExpTransformer::applyTo(SharedExp e, bool& bMod)
         }
     }
 
-    LOG << "applying generic exp transformer match: " << match;
+    LOG_MSG("Applying generic exp transformer match: %1", match);
 
     if (where) {
-        LOG << " where: " << where;
+        LOG_MSG("  where: %1", where);
     }
 
-    LOG << " become: " << become;
-    LOG << " to: " << e;
-    LOG << " bindings: " << bindings << "\n";
+    LOG_MSG("  become: %1", become);
+    LOG_MSG("  to:     %1", e);
+    LOG_MSG("  bindings: %1", bindings);
 
     e = become->clone();
 
@@ -220,7 +217,7 @@ SharedExp GenericExpTransformer::applyTo(SharedExp e, bool& bMod)
         e = e->searchReplaceAll(*l->getSubExp1()->getSubExp1(), l->getSubExp1()->getSubExp2(), change);
     }
 
-    LOG << "calculated result: " << e << "\n";
+    LOG_MSG("Calculated result: %1", e);
     bMod = true;
 
     SharedExp r;

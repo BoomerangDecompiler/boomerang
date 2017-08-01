@@ -964,16 +964,6 @@ void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
 }
 
 
-QTextStream& Boomerang::getLogStream(LogLevel level)
-{
-    if (level <= LogLevel::Error) {
-        return ErrStream;
-    }
-
-    return LogStream;
-}
-
-
 QString Boomerang::getFilename() const
 {
     return "";

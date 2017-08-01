@@ -18,9 +18,11 @@
 #include "ExeBinaryLoader.h"
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/IBinaryImage.h"
 #include "boomerang/loader/IFileLoader.h"
+#include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
+
 
 #include <QBuffer>
 #include <QFile>
@@ -56,7 +58,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 
     /* Read in first 2 bytes to check EXE signature */
     if (fp.read((char *)m_header, 2) != 2) {
-        qWarning() << "Cannot read file ";
+        LOG_ERROR("Cannot read exe file");
         return false;
     }
 
@@ -66,13 +68,13 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
         fp.seek(0);
 
         if (fp.read((char *)m_header, sizeof(ExeHeader)) != sizeof(ExeHeader)) {
-            qWarning() << "Cannot read file ";
+            LOG_ERROR("Cannot read Exe file");
             return false;
         }
 
         /* This is a typical DOS kludge! */
         if (LH(&m_header->relocTabOffset) == 0x40) {
-            qWarning() << "Error - NE format executable";
+            LOG_ERROR("File is NE format executable");
             return false;
         }
 
@@ -139,7 +141,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     m_loadedImage = new uint8_t[m_imageSize];
 
     if (cb != fp.read((char *)m_loadedImage, (size_t)cb)) {
-        qWarning() << "Cannot read file ";
+        LOG_ERROR("Cannot read exe file!");
         return false;
     }
 

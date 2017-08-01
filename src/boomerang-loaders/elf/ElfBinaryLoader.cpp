@@ -19,6 +19,7 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 
 #include <QtCore/QDebug>
 #include <sys/types.h> // Next three for open()
@@ -164,7 +165,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         break;
 
     default:
-        qWarning() << QString("Unknown endianness ").arg(m_elfHeader->endianness, 2, 16, QChar('0'));
+        LOG_WARN("Unknown ELF Endianness %1, file may be corrupted.", m_elfHeader->endianness);
         return 0;
     }
 
@@ -300,7 +301,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         if (par.Size == 0) {
             // this is most probably the NULL section; if it is not, warn the user
             if (par.Name != "") {
-                qWarning() << "Not adding 0 sized section " <<  par.Name;
+                LOG_WARN("Not adding 0 sized section %1", par.Name);
             }
             continue;
         }
@@ -503,7 +504,7 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
     }
 
     if (sym.Value.isZero()) {
-        qDebug() << "Skipping symbol " << sym.Name << "with unknown location!";
+        LOG_WARN("Skipping symbol %1 with unknown location", sym.Name);
         return;
     }
 
@@ -836,14 +837,14 @@ void ElfBinaryLoader::applyRelocations()
                     case R_SPARC_HI22:
                     case R_SPARC_LO10:
                     case R_SPARC_GLOB_DAT:
-                        qWarning() << "Unhandled sparc relocation";
+                        LOG_WARN("Unhandled SPARC relocation");
                         break;
                     }
                 }
             }
         }
 
-        qDebug() << "Unhandled relocation!";
+        LOG_WARN("Unhandled relocation!");
         break; // Not implemented yet
 
     case EM_386:
@@ -1049,7 +1050,7 @@ bool ElfBinaryLoader::isRelocationAt(Address uNative)
 
     case EM_SPARC:
     default:
-        qDebug() << "Unhandled relocation !";
+        LOG_WARN("Unhandled relocation!");
         break; // Not implemented yet
     }
 

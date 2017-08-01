@@ -235,7 +235,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                 switch (mask)
                 {
                 case 0:
-                    LOG << "WARNING: unhandled pentium branch if parity with pCond = " << pCond << "\n";
+                    LOG_WARN("Unhandled pentium branch if parity with pCond = %1", pCond);
                     return false;
 
                 case 1:

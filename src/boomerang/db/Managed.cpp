@@ -472,13 +472,10 @@ void LocationSet::remove(SharedExp given)
         return;
     }
 
-    // LOG_STREAM() << "LocationSet::remove at " << std::hex << (unsigned)this << " of " << *it << "\n";
-    // LOG_STREAM() << "before: "; print();
     // NOTE: if the below uncommented, things go crazy. Valgrind says that
     // the deleted value gets used next in LocationSet::operator== ?!
     // delete *it;          // These expressions were cloned when created
     lset.erase(it);
-    // LOG_STREAM() << "after : "; print();
 }
 
 
@@ -891,15 +888,11 @@ void LocationSet::printDiff(LocationSet *o) const
         if (lset.find(oe) == lset.end()) {
             if (!printed2not1) {
                 printed2not1 = true;
-                LOG_STREAM_OLD() << "In set 2 but not set 1:\n";
+                LOG_MSG("In set 2 but not set 1:");
             }
 
-            LOG_STREAM_OLD() << oe << "\t";
+            LOG_MSG("  %1", oe);
         }
-    }
-
-    if (printed2not1) {
-        LOG_STREAM_OLD() << "\n";
     }
 
     bool printed1not2 = false;
@@ -910,15 +903,11 @@ void LocationSet::printDiff(LocationSet *o) const
         if (o->lset.find(e) == o->lset.end()) {
             if (!printed1not2) {
                 printed1not2 = true;
-                LOG_STREAM_OLD() << "In set 1 but not set 2:\n";
+                LOG_MSG("In set 1 but not set 2:");
             }
 
-            LOG_STREAM_OLD() << e << "\t";
+            LOG_MSG("  %1", e);
         }
-    }
-
-    if (printed1not2) {
-        LOG_STREAM_OLD() << "\n";
     }
 }
 
@@ -1075,7 +1064,7 @@ ConnectionGraph::iterator ConnectionGraph::remove(iterator aa)
 void ConnectionGraph::dump() const
 {
     for (auto iter : *this) {
-        LOG_STREAM_OLD() << iter.first << " <-> " << iter.second << "\n";
+        LOG_MSG("%1 <-> %2", iter.first, iter.second);
     }
 }
 

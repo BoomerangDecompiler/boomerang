@@ -460,30 +460,24 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature& /*cand
         return false;
     }
 
-    if (VERBOSE) {
-        LOG << "consider promotion to stdc win32 signature for " << p->getName() << "\n";
-    }
+    LOG_VERBOSE("Consider promotion to stdc win32 signature for %1", p->getName());
 
     bool      gotcorrectret1, gotcorrectret2 = false;
     SharedExp provenPC = p->getProven(Terminal::get(opPC));
     gotcorrectret1 = provenPC && (*provenPC == *savedReturnLocation);
 
     if (gotcorrectret1) {
-        if (VERBOSE) {
-            LOG << "got pc = m[r[28]]\n";
-        }
+        LOG_VERBOSE("got pc = m[r[28]]");
 
         SharedExp provenSP = p->getProven(Location::regOf(28));
         gotcorrectret2 = provenSP && *provenSP == *stackPlusFour;
 
-        if (gotcorrectret2 && VERBOSE) {
-            LOG << "got r[28] = r[28] + 4\n";
+        if (gotcorrectret2) {
+            LOG_VERBOSE("Got r[28] = r[28] + 4");
         }
     }
 
-    if (VERBOSE) {
-        LOG << "qualified: " << (gotcorrectret1 && gotcorrectret2) << "\n";
-    }
+    LOG_VERBOSE("Qualified: %1", (gotcorrectret1 && gotcorrectret2));
 
     return gotcorrectret1 && gotcorrectret2;
 }
@@ -745,28 +739,20 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
 
         if (e->getLeft()->getOper() == opPC) {
             if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegOfN(28)) {
-                if (VERBOSE) {
-                    LOG_STREAM() << "got pc = m[r[28]]" << '\n';
-                }
-
+                LOG_VERBOSE("Got pc = m[r[28]]");
                 gotcorrectret1 = true;
             }
         }
         else if (e->getLeft()->isRegOfK() && (((Const *)e->getLeft()->getSubExp1())->getInt() == 28)) {
             if ((e->getRight()->getOper() == opPlus) && e->getRight()->getSubExp1()->isRegOfN(28) &&
                 e->getRight()->getSubExp2()->isIntConst() && (((Const *)e->getRight()->getSubExp2())->getInt() == 4)) {
-                if (VERBOSE) {
-                    LOG_STREAM() << "got r[28] = r[28] + 4" << '\n';
-                }
-
+                LOG_VERBOSE("Got r[28] = r[28] + 4");
                 gotcorrectret2 = true;
             }
         }
     }
 
-    if (VERBOSE) {
-        LOG << "promotion: " << gotcorrectret1 && gotcorrectret2 << "\n";
-    }
+    LOG_VERBOSE("Promotion: %1", gotcorrectret1 && gotcorrectret2);
     return gotcorrectret1 && gotcorrectret2;
 #endif
 }
@@ -1150,9 +1136,7 @@ bool CallingConvention::StdC::ST20Signature::qualified(UserProc *p, Signature& /
         return false;
     }
 
-    if (VERBOSE) {
-        LOG << "consider promotion to stdc st20 signature for " << p->getName() << "\n";
-    }
+    LOG_VERBOSE("Consider promotion to stdc st20 signature for %1", p->getName());
 
     return true;
 }
@@ -1228,9 +1212,7 @@ bool CallingConvention::StdC::SparcSignature::operator==(const Signature& other)
 
 bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-    if (VERBOSE) {
-        LOG << "consider promotion to stdc sparc signature for " << p->getName() << "\n";
-    }
+    LOG_VERBOSE("Consider promotion to stdc sparc signature for %1", p->getName());
 
     Platform plat = p->getProg()->getFrontEndId();
 
@@ -1238,9 +1220,7 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature& 
         return false;
     }
 
-    if (VERBOSE) {
-        LOG << "Promoted to StdC::SparcSignature\n";
-    }
+    LOG_VERBOSE("Promoted to StdC::SparcSignature");
 
     return true;
 }
@@ -1248,9 +1228,7 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature& 
 
 bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-    if (VERBOSE) {
-        LOG << "consider promotion to stdc PPC signature for " << p->getName() << "\n";
-    }
+    LOG_VERBOSE("Consider promotion to stdc PPC signature for %1", p->getName());
 
     Platform plat = p->getProg()->getFrontEndId();
 
@@ -1258,9 +1236,7 @@ bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature& /*
         return false;
     }
 
-    if (VERBOSE) {
-        LOG << "Promoted to StdC::PPCSignature (always qualifies)\n";
-    }
+    LOG_VERBOSE("Promoted to StdC::PPCSignature (always qualifies)");
 
     return true;
 }
@@ -1299,9 +1275,7 @@ std::shared_ptr<Signature> CallingConvention::StdC::MIPSSignature::clone() const
 
 bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-    if (VERBOSE) {
-        LOG << "consider promotion to stdc MIPS signature for " << p->getName() << "\n";
-    }
+    LOG_VERBOSE("Consider promotion to stdc MIPS signature for %1", p->getName());
 
     Platform plat = p->getProg()->getFrontEndId();
 
@@ -1309,9 +1283,7 @@ bool CallingConvention::StdC::MIPSSignature::qualified(UserProc *p, Signature& /
         return false;
     }
 
-    if (VERBOSE) {
-        LOG << "Promoted to StdC::MIPSSignature (always qualifies)\n";
-    }
+    LOG_VERBOSE("Promoted to StdC::MIPSSignature (always qualifies)");
 
     return true;
 }
@@ -1706,24 +1678,10 @@ void Signature::addParameter(SharedType type, const QString& nam /*= nullptr*/, 
                              const QString& boundMax /*= ""*/)
 {
     if (e == nullptr) {
-        LOG_VERBOSE("No expression for parameter ");
-
-        if (type == nullptr) {
-            LOG_VERBOSE("<notype> ");
-        }
-        else {
-            LOG_STREAM_OLD() << type->getCtype() << " ";
-        }
-
-        if (nam.isNull()) {
-            LOG_VERBOSE("<noname>");
-        }
-        else {
-            LOG_STREAM_OLD() << nam;
-        }
-
-        LOG_STREAM_OLD() << "\n";
-        assert(e); // Else get infinite mutual recursion with the below proc
+        // Else get infinite mutual recursion with the below proc
+        LOG_FATAL("No expression for parameter %1 %2",
+                  type ? type->getCtype() : "<notype>",
+                  !nam.isNull() ? qPrintable(nam) : "<noname>");
     }
 
     QString s;
@@ -1861,7 +1819,7 @@ void Signature::setParamType(const char *nam, SharedType ty)
     int idx = findParam(nam);
 
     if (idx == -1) {
-        LOG << "could not set type for unknown parameter " << nam << "\n";
+        LOG_WARN("Could not set type for unknown parameter %1", nam);
         return;
     }
 
@@ -1874,7 +1832,7 @@ void Signature::setParamType(const SharedExp& e, SharedType ty)
     int idx = findParam(e);
 
     if (idx == -1) {
-        LOG << "could not set type for unknown parameter expression " << e << "\n";
+        LOG_WARN("Could not set type for unknown parameter expression %1", e);
         return;
     }
 
@@ -2135,7 +2093,7 @@ void Signature::printToLog() const
     QTextStream os(&tgt);
 
     print(os);
-    LOG << tgt << "\n";
+    LOG_MSG(tgt);
 }
 
 
@@ -2357,9 +2315,7 @@ StatementList& Signature::getStdRetStmt(Prog *prog)
 
 int Signature::getStackRegister() const noexcept(false)
 {
-    if (VERBOSE) {
-        LOG << "thowing StackRegisterNotDefinedException\n";
-    }
+    LOG_VERBOSE("thowing StackRegisterNotDefinedException");
 
     throw StackRegisterNotDefinedException();
 }
