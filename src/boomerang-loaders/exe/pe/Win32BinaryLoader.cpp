@@ -728,7 +728,7 @@ void Win32BinaryLoader::findJumps(Address curr)
             break; // stepped out of section
         }
 
-        if (LH((curr + delta).value()) != 0xFF + (0x25 << 8)) {
+        if (LH(HostAddress(curr, delta).value()) != 0xFF + (0x25 << 8)) {
             continue;
         }
 

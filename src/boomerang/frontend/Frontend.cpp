@@ -499,16 +499,14 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 
 void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
 {
-    std::ifstream ifs;
-
-    ifs.open(signatureFile);
-
-    if (!ifs.good()) {
-        LOG_ERROR("Can't open library signature file '%1'", signatureFile);
+    AnsiCParser *p;
+    try {
+        p = new AnsiCParser(signatureFile, false);
+    }
+    catch (const char*) {
+        LOG_ERROR("Cannot read library signature file '%1'", signatureFile);
         return;
     }
-
-    AnsiCParser *p = new AnsiCParser(ifs, false);
 
     Platform plat = getType();
     p->yyparse(plat, cc);
@@ -519,7 +517,6 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     }
 
     delete p;
-    ifs.close();
 }
 
 

@@ -126,7 +126,7 @@ void CfgTest::testSemiDominators()
 	df->dominators(cfg);
 
 	// Find BB "L (6)" (as per Appel, Figure 19.8).
-	   BBIterator      it;
+    BBIterator      it;
 	BasicBlock *bb = cfg->getFirstBB(it);
 
 	while (bb && bb->getLowAddr() != SEMI_L) {

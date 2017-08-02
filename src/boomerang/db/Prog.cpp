@@ -1842,16 +1842,15 @@ Module *Prog::findModule(const QString& name) const
 
 void Prog::readSymbolFile(const QString& fname)
 {
-    std::ifstream ifs;
-
-    ifs.open(fname.toStdString());
-
-    if (!ifs.good()) {
+    AnsiCParser *par = nullptr;
+    try {
+        par = new AnsiCParser(qPrintable(fname), false);
+    }
+    catch (const char*) {
         LOG_ERROR("Cannot read symbol file '%1'", fname);
         return;
     }
 
-    AnsiCParser *par = new AnsiCParser(ifs, false);
     Platform    plat = getFrontEndId();
     CallConv    cc   = CallConv::C;
 
@@ -1900,7 +1899,6 @@ void Prog::readSymbolFile(const QString& fname)
     }
 
     delete par;
-    ifs.close();
 }
 
 

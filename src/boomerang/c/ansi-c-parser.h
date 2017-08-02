@@ -2,7 +2,8 @@
 
 #define YY_USE_CLASS
 #include <cstdio>
-#define YY_AnsiCParser_DEBUG    1
+#define YY_AnsiCParser_DEBUG 1
+#define YY_AnsiCParser_ERROR_VERBOSE 1
 
 #include <list>
 #include <memory>
@@ -210,7 +211,8 @@ public:
 #endif
 
 public:
-    AnsiCParser(std::istream& in, bool trace);
+    AnsiCParser(const char* file, bool trace);
+    AnsiCParser(std::istream& is, bool trace);
 
 public:
 
@@ -221,5 +223,8 @@ public:
     std::list<std::shared_ptr<Signature> > signatures;
     std::list<Symbol *> symbols;
     std::list<SymbolRef *> refs;
+    std::istream* in;
+    const char* fileName;
+
     virtual ~AnsiCParser();
 };
