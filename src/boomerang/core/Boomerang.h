@@ -40,9 +40,6 @@ class IBinarySymbolTable;
 class Project;
 
 
-#define LOG_SEPARATE(fileName, ...)   Boomerang::get()->separate_log(fileName).log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)
-
-
 /**
  * Controls the loading, decoding, decompilation and code generation for a program.
  * This is the main class of the decompiler.
@@ -103,8 +100,6 @@ public:
      */
     int processCommand(QStringList& args);
     static const char *getVersionStr();
-
-    SeparateLogger separate_log(const QString& fileName);
 
     /**
      * Returns the ICodeGenerator for the given proc.

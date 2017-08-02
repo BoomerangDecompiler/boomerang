@@ -48,11 +48,6 @@ Boomerang::~Boomerang()
     delete m_currentProject;
 }
 
-SeparateLogger Boomerang::separate_log(const QString& fileName)
-{
-    return SeparateLogger(fileName);
-}
-
 
 ICodeGenerator *Boomerang::getCodeGenerator(UserProc *p)
 {
