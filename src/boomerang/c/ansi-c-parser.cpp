@@ -51,6 +51,7 @@
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/util/Log.h"
 
 class AnsiCScanner;
 class SymbolMods;
@@ -1323,9 +1324,9 @@ int AnsiCParser::yylex()
 
 void AnsiCParser::yyerror(const char *s)
 {
-    fflush(stdout);
-    printf("\n%s", theScanner->lineBuf);
-    printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
+    LOG_ERROR("%1", theScanner->lineBuf);
+    LOG_ERROR("%1, theScanner->column");
+    LOG_ERROR("%1 on line %2", "^", s, theScanner->theLine);
 }
 
 

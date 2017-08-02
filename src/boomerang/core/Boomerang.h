@@ -352,9 +352,6 @@ public:
     bool assumeABI           = false; ///< Assume ABI compliance
     bool experimental        = false; ///< Activate experimental code. Caution!
 
-    QTextStream LogStream;
-    QTextStream ErrStream;
-
     std::vector<Address> m_entryPoints; ///< A vector which contains all know entrypoints for the Prog.
     std::vector<QString> m_symbolFiles; ///< A vector containing the names off all symbolfiles to load.
     std::map<Address, QString> symbols; ///< A map to find a name by a given address.

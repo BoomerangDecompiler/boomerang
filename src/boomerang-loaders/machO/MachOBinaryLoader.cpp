@@ -426,7 +426,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
             char   *name  = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.value());
             Symtab symtab = (Symtab)(HostAddress(base) + BMMH(module->symtab) - loaded_addr).value();
 #ifdef DEBUG_MACHO_LOADER_OBJC
-            fprintf(stdout, "module %s (%i classes)\n", name, BMMHW(symtab->cls_def_cnt));
+            LOG_MSG("module %1 (%2 classes)", name, BMMHW(symtab->cls_def_cnt));
 #endif
             ObjcModule *m = &modules[name];
             m->name = name;
@@ -435,7 +435,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 struct objc_class *def   = (struct objc_class *)(base + BMMH(symtab->defs[j]) - loaded_addr.value());
                 char              *_name = (char *)(Address::value_type(base) + BMMH(def->name) - loaded_addr.value());
 #ifdef DEBUG_MACHO_LOADER_OBJC
-                fprintf(stdout, "  class %s\n", name);
+                LOG_MSG("  class %1", name);
 #endif
                 ObjcClass *cl = &m->classes[_name];
                 cl->name = _name;
@@ -446,7 +446,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                     char             *name2 = (char *)(Address::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.value());
                     char             *types = (char *)(Address::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.value());
 #ifdef DEBUG_MACHO_LOADER_OBJC
-                    fprintf(stdout, "    ivar %s %s %x\n", name, types, BMMH(ivar->ivar_offset));
+                    LOG_MSG("    ivar %1 %2 %3", name, types, BMMH(ivar->ivar_offset));
 #endif
                     ObjcIvar *iv = &cl->ivars[name2];
                     iv->name   = name2;
@@ -463,7 +463,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                     char               *name3  = (char *)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.value());
                     char               *types  = (char *)(intptr_t(base) + BMMH(method->method_types) - loaded_addr.value());
 #ifdef DEBUG_MACHO_LOADER_OBJC
-                    fprintf(stdout, "    method %s %s %x\n", name, types, BMMH((void *)method->method_imp));
+                    LOG_MSG("    method %1 %2 %3", name, types, BMMH((void *)method->method_imp));
 #endif
                     ObjcMethod *me = &cl->methods[name3];
                     me->name  = name3;

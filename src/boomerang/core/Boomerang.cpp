@@ -36,8 +36,6 @@ Boomerang::Boomerang()
     : m_symbols(new SymTab)
     , m_workingDirectory("./")
     , m_outputDirectory("./output/")
-    , LogStream(stdout)
-    , ErrStream(stderr)
     , m_currentProject(new Project)
 {
 }
