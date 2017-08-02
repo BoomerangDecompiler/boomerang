@@ -9,8 +9,6 @@
 #include "boomerang/type/Type.h"
 #include "boomerang/util/Log.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QProcessEnvironment>
 #include <QtCore/QDebug>
 #include <sstream>
 

@@ -1,4 +1,3 @@
-#include <QDebug>
 #include "boomerang/db/ssl/sslparser.h"
 /*  A Bison++ parser, made from sslparser.y  */
 /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr

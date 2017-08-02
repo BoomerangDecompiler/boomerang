@@ -428,7 +428,7 @@ SharedExp Exp::simplify()
 
 #if DEBUG_SIMP
     if (!(*res == *save)) {
-        std::cout << "simplified " << save << "  to  " << res << "\n";
+        LOG_MSG("Simplified %1 to %2", save, res);
     }
 #endif
     return res;
@@ -502,7 +502,7 @@ QString Exp::toString() const
 }
 
 
-void Exp::printt(QTextStream& os /*= cout*/) const
+void Exp::printt(QTextStream& os) const
 {
     print(os);
 
@@ -515,7 +515,7 @@ void Exp::printt(QTextStream& os /*= cout*/) const
 }
 
 
-void Exp::printAsHL(QTextStream& os /*= cout*/)
+void Exp::printAsHL(QTextStream& os)
 {
     QString     tgt;
     QTextStream ost(&tgt);

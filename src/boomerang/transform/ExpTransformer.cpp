@@ -25,7 +25,6 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
-#include <QtCore/QDebug>
 
 #include <cassert>
 #include <numeric>   // For accumulate

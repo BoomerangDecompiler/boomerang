@@ -37,15 +37,14 @@
 #include <cstdlib>
 #include <QFile>
 #include <QBuffer>
-#include <QDebug>
-
 
 #define DEBUG_MACHO_LOADER    0
 
 #if DEBUG_MACHO_LOADER
-#  define DEBUG_PRINT(...)                                           \
-    do { if (DEBUG_MACHO_LOADER) { fprintf(stderr, __VA_ARGS__); } \
-    } while (0)
+#  define DEBUG_PRINT(...)            \
+    do {                              \
+        LOG_VERBOSE(__VA_ARGS__);     \
+    } while (false)
 #else
 #  define DEBUG_PRINT(...)
 #endif
@@ -55,9 +54,9 @@ namespace
 struct SectionParam
 {
     QString Name;
-       Address from;
+    Address from;
     size_t  Size;
-       Address ImageAddress;
+    Address ImageAddress;
     bool    Bss, Code, Data, ReadOnly;
 };
 }
@@ -131,17 +130,17 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
     if ((magic[0] == 0xca) && (magic[1] == 0xfe) && (magic[2] == 0xba) && (magic[3] == 0xbe)) {
         int nimages = BE4(4);
-        DEBUG_PRINT("binary is universal with %d images\n", nimages);
+        DEBUG_PRINT("Binary is universal with %1 images", nimages);
 
         for (int i = 0; i < nimages; i++) {
             int          fbh     = 8 + i * 5 * 4;
             unsigned int cputype = BE4(fbh);
             unsigned int offset  = BE4(fbh + 8);
-            DEBUG_PRINT("cputype: %08x\n", cputype);
-            DEBUG_PRINT("cpusubtype: %08x\n", BE4(fbh + 4));
-            DEBUG_PRINT("offset: %08x\n", BE4(fbh + 8));
-            DEBUG_PRINT("size: %08x\n", BE4(fbh + 12));
-            DEBUG_PRINT("pad: %08x\n", BE4(fbh + 16));
+            DEBUG_PRINT("cputype:    %1", cputype);
+            DEBUG_PRINT("cpusubtype: %1", BE4(fbh + 4));
+            DEBUG_PRINT("offset:     %1", BE4(fbh + 8));
+            DEBUG_PRINT("size:       %1", BE4(fbh + 12));
+            DEBUG_PRINT("pad:        %1", BE4(fbh + 16));
 
             if (cputype == 0x7) { // i386
                 imgoffs = offset;
@@ -195,20 +194,29 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 segment_command seg;
                 fp.read((char *)&seg, sizeof(seg));
                 segments.push_back(seg);
-                DEBUG_PRINT("seg addr %x size %i fileoff %x filesize %i flags %x\n", BMMH(seg.vmaddr), BMMH(seg.vmsize),
-                            BMMH(seg.fileoff), BMMH(seg.filesize), BMMH(seg.flags));
+                DEBUG_PRINT("seg addr %1 size %2 fileoff %3 filesize %4 flags %5",
+                            BMMH(seg.vmaddr),
+                            BMMH(seg.vmsize),
+                            BMMH(seg.fileoff),
+                            BMMH(seg.filesize),
+                            BMMH(seg.flags));
 
-                for (unsigned n = 0; n < BMMH(seg.nsects); n++) {
+                for (DWord n = 0; n < BMMH(seg.nsects); n++) {
                     section sect;
                     fp.read((char *)&sect, sizeof(sect));
                     sections.push_back(sect);
-                    DEBUG_PRINT("    sectname %s segname %s addr %x size %i flags %x\n", sect.sectname, sect.segname,
-                                BMMH(sect.addr), BMMH(sect.size), BMMH(sect.flags));
+                    DEBUG_PRINT("    sectname %1 segname %2 addr %3 size %4 flags %5",
+                                sect.sectname,
+                                sect.segname,
+                                BMMH(sect.addr),
+                                BMMH(sect.size),
+                                BMMH(sect.flags));
 
                     if ((BMMH(sect.flags) & SECTION_TYPE) == S_SYMBOL_STUBS) {
                         stubs_sects.push_back(sect);
-                        DEBUG_PRINT("        symbol stubs section, start index %i, stub size %i\n",
-                                    BMMH(sect.reserved1), BMMH(sect.reserved2));
+                        DEBUG_PRINT("        symbol stubs section, start index %1, stub size %2",
+                                    BMMH(sect.reserved1),
+                                    BMMH(sect.reserved2));
                     }
 
                     if (!strcmp(sect.sectname, SECT_OBJC_SYMBOLS)) {
@@ -251,7 +259,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                     // DEBUG_PRINT(stdout, "got sym %s flags %x value %x\n", strtbl + BMMH(sym.n_un.n_strx), sym.n_type, BMMH(sym.n_value));
                 }
 
-                DEBUG_PRINT("symtab contains %i symbols\n", BMMH(syms.nsyms));
+                DEBUG_PRINT("symtab contains %1 symbols", BMMH(syms.nsyms));
             }
             break;
 
@@ -259,9 +267,14 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
             {
                 struct dysymtab_command syms;
                 fp.read((char *)&syms, sizeof(syms));
-                DEBUG_PRINT("dysymtab local %i %i defext %i %i undef %i %i\n", BMMH(syms.ilocalsym),
-                            BMMH(syms.nlocalsym), BMMH(syms.iextdefsym), BMMH(syms.nextdefsym), BMMH(syms.iundefsym),
+                DEBUG_PRINT("dysymtab local %1 %2 defext %3 %4 undef %5 %6",
+                            BMMH(syms.ilocalsym),
+                            BMMH(syms.nlocalsym),
+                            BMMH(syms.iextdefsym),
+                            BMMH(syms.nextdefsym),
+                            BMMH(syms.iundefsym),
                             BMMH(syms.nundefsym));
+
                 // TODO: find uses for values below
                 // startlocal = BMMH(syms.ilocalsym);
                 // nlocal = BMMH(syms.nlocalsym);
@@ -270,21 +283,19 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 // startundef = BMMH(syms.iundefsym);
                 // nundef = BMMH(syms.nundefsym);
 
-                DEBUG_PRINT("dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));
+                DEBUG_PRINT("dysymtab has %1 indirect symbols: ", BMMH(syms.nindirectsyms));
                 indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
                 fp.seek(imgoffs + BMMH(syms.indirectsymoff));
                 fp.read((char *)indirectsymtbl, BMMH(syms.nindirectsyms) * sizeof(unsigned));
 
                 for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
-                    DEBUG_PRINT("%i ", BMMH(indirectsymtbl[j]));
+                    DEBUG_PRINT("  %1 ", BMMH(indirectsymtbl[j]));
                 }
-
-                DEBUG_PRINT("\n");
             }
             break;
 
         default:
-            DEBUG_PRINT("not handled load command %x\n", BMMH(cmd.cmd));
+            DEBUG_PRINT("Not handled load command %1", BMMH(cmd.cmd));
             // yep, there's lots of em
             break;
         }
@@ -321,10 +332,11 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
         unsigned fsz = BMMH(segments[i].filesize);
         memset(base + a.value() - loaded_addr.value(), 0, sz);
         fp.read(base + a.value() - loaded_addr.value(), fsz);
-        DEBUG_PRINT("loaded segment %tx %i in mem %i in file\n", a.value(), sz, fsz);
+        DEBUG_PRINT("loaded segment %1 %2 in mem %3 in file", a.value(), sz, fsz);
+
         QString        name  = QByteArray(segments[i].segname, 17);
         IBinarySection *sect = Image->createSection(name, Address(BMMH(segments[i].vmaddr)),
-                                                                      Address(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
+                                                    Address(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
         assert(sect);
         sect->setHostAddr(HostAddress(base) + BMMH(segments[i].vmaddr) - loaded_addr);
         assert(sect->getHostAddr() + sect->getSize() <= HostAddress(base) + loaded_size);
@@ -355,8 +367,13 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                                         Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size)));
         }
 
-        DEBUG_PRINT("loaded segment %tx %i in mem %i in file code=%i data=%i readonly=%i\n", a.value(), sz, fsz,
-                    sect->isCode(), sect->isData(), sect->isReadOnly());
+        DEBUG_PRINT("loaded segment %1 %2 in mem %3 in file code=%4 data=%5 readonly=%6",
+                    a.value(),
+                    sz,
+                    fsz,
+                    sect->isCode(),
+                    sect->isData(),
+                    sect->isReadOnly());
     }
 
     // process stubs_sects
@@ -365,7 +382,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
             unsigned startidx = BMMH(stubs_sects[j].reserved1);
             unsigned symbol   = BMMH(indirectsymtbl[startidx + i]);
             Address  addr     = Address(BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2));
-            DEBUG_PRINT("stub for %s at %tx\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr.value());
+
+            DEBUG_PRINT("stub for %1 at %2", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr.value());
             char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
 
             if (*name == '_') { // we want printf not _printf
@@ -400,7 +418,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
     // process objective-c section
     if (objc_modules != Address::INVALID) {
-        DEBUG_PRINT("processing objective-c section\n");
+        DEBUG_PRINT("Processing objective-c section");
 
         for (unsigned i = 0; i < objc_modules_size; ) {
             struct objc_module *module =
@@ -522,10 +540,6 @@ int MachOBinaryLoader::machORead4(int *pi) const
     return n;
 }
 
-
-// unsigned int MachOBinaryFile::BMMH(long int & x) {
-//    if (swap_bytes) return _BMMH(x); else return x;
-// }
 
 int32_t MachOBinaryLoader::BMMH(int32_t x)
 {

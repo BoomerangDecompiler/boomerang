@@ -8,10 +8,9 @@
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/util/Log.h"
 
 #include "boomerang/frontend/Frontend.h"
-
-#include <QDebug>
 
 ReturnStatement::ReturnStatement()
     : retAddr(Address::INVALID)
@@ -593,7 +592,7 @@ void ReturnStatement::dfaTypeAnalysis(bool& ch)
 {
     for (Instruction *mm : modifieds) {
         if (!mm->isAssignment()) {
-            qDebug() << "non assignment in modifieds of ReturnStatement";
+            LOG_WARN("Non assignment in modifieds of ReturnStatement");
         }
 
         mm->dfaTypeAnalysis(ch);
@@ -601,7 +600,7 @@ void ReturnStatement::dfaTypeAnalysis(bool& ch)
 
     for (Instruction *rr : returns) {
         if (!rr->isAssignment()) {
-            qDebug() << "non assignment in returns of ReturnStatement";
+            LOG_WARN("Non assignment in returns of ReturnStatement");
         }
 
         rr->dfaTypeAnalysis(ch);

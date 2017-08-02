@@ -17,8 +17,6 @@
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
-#include <QDir>
-#include <QProcessEnvironment>
 #include <QDebug>
 
 

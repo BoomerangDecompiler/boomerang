@@ -33,9 +33,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
-
-#include <QtCore/QDebug>
-
 #include <cassert>
 #include <string>
 #include <cstring>
@@ -1557,10 +1554,6 @@ Signature::Signature(const QString& nam)
     }
     else {
         m_name = nam;
-
-        if (m_name == "__glutWarning") {
-            qDebug() << m_name;
-        }
     }
 }
 

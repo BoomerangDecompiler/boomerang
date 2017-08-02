@@ -140,6 +140,7 @@ private:
     QString collectArg(const QString& msg, const RTL *r);
     QString collectArg(const QString& msg, int i);
     QString collectArg(const QString& msg, unsigned int arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, long arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, size_t i);
     QString collectArg(const QString& msg, char c);
     QString collectArg(const QString& msg, double d);

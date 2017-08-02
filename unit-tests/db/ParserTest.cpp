@@ -13,8 +13,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QProcessEnvironment>
 #include <QtCore/QDebug>
 
 

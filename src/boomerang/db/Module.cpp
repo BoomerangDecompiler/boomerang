@@ -278,7 +278,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
                 dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
 
             if (got) {
-                std::cout << "calling convention: " << d << "\n";
+                LOG_VERBOSE("calling convention: %1", d);
                 // TODO: use it
             }
             else {

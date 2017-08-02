@@ -127,7 +127,7 @@ void RTL::appendListStmt(std::list<Instruction *>& le)
 }
 
 
-void RTL::print(QTextStream& os /*= cout*/, bool html /*=false*/) const
+void RTL::print(QTextStream& os, bool html) const
 {
     if (html) {
         os << "<tr><td>";

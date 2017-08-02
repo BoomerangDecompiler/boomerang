@@ -1,8 +1,8 @@
 #include "BinaryImage.h"
 
 #include "boomerang/util/Types.h"
+#include "boomerang/util/Log.h"
 
-#include <QDebug>
 #include <algorithm>
 
 
@@ -33,7 +33,7 @@ Byte BinaryImage::readNative1(Address nat)
     const IBinarySection *si = getSectionInfoByAddr(nat);
 
     if (si == nullptr) {
-        qDebug() << "Target Memory access in unmapped section " << nat.toString();
+        LOG_WARN("Target Memory access in unmapped section at address %1", nat.toString());
         return -1;
     }
 
@@ -55,28 +55,28 @@ SWord BinaryImage::readNative2(Address nat)
 }
 
 
-DWord BinaryImage::readNative4(Address nat)
+DWord BinaryImage::readNative4(Address addr)
 {
-    const IBinarySection *si = getSectionInfoByAddr(nat);
+    const IBinarySection *si = getSectionInfoByAddr(addr);
 
     if (si == nullptr) {
         return 0;
     }
 
-    HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
+    HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
     return Util::readDWord((const void*)host.value(), si->getEndian());
 }
 
 
-QWord BinaryImage::readNative8(Address nat)
+QWord BinaryImage::readNative8(Address addr)
 {
-    const IBinarySection *si = getSectionInfoByAddr(nat);
+    const IBinarySection *si = getSectionInfoByAddr(addr);
 
     if (si == nullptr) {
         return 0;
     }
 
-    HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
+    HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
     return Util::readQWord((const void*)host.value(), si->getEndian());
 }
 
@@ -101,18 +101,18 @@ double BinaryImage::readNativeFloat8(Address nat)
 }
 
 
-void BinaryImage::writeNative4(Address nat, uint32_t n)
+void BinaryImage::writeNative4(Address addr, uint32_t value)
 {
-    const IBinarySection *si = getSectionInfoByAddr(nat);
+    const IBinarySection *si = getSectionInfoByAddr(addr);
 
     if (si == nullptr) {
-        qDebug() << "Write outside section";
+        LOG_WARN("Ignoring write at address %1: Address is outside any known section");
         return;
     }
 
-    HostAddress host  = si->getHostAddr() - si->getSourceAddr() + nat;
+    HostAddress host  = si->getHostAddr() - si->getSourceAddr() + addr;
 
-    Util::writeDWord((void*)host.value(), n, si->getEndian());
+    Util::writeDWord((void*)host.value(), value, si->getEndian());
 }
 
 
@@ -139,7 +139,7 @@ void BinaryImage::calculateTextLimits()
             m_limitTextLow = pSect->getSourceAddr();
         }
 
-              Address hiAddress = pSect->getSourceAddr() + pSect->getSize();
+        Address hiAddress = pSect->getSourceAddr() + pSect->getSize();
 
         if (hiAddress > m_limitTextHigh) {
             m_limitTextHigh = hiAddress;
@@ -241,7 +241,7 @@ SectionInfo *BinaryImage::createSection(const QString& name, Address from, Addre
         auto clash_with = m_sectionMap.find(boost::icl::interval<ADDRESS>::right_open(from, to));
 
         if ((clash_with != m_sectionMap.end()) && ((*clash_with->second).getName() != ".tbss")) {
-            qDebug() << "Segment" << name << "would intersect existing one" << (*clash_with->second).getName();
+            LOG_WARN("Segment %1 would intersect existing segment %2", name, (*clash_with->second).getName());
             return nullptr;
         }
     }

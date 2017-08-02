@@ -54,7 +54,6 @@
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>
-#include <QtCore/QDebug>
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/QDir>
 #include <QtCore/QString>

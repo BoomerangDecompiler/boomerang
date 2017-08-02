@@ -24,7 +24,6 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 
-#include <QtCore/QDebug>
 #include <sstream>
 
 // FixProcVisitor class
@@ -1313,7 +1312,7 @@ SharedExp ExpCastInserter::postVisit(const std::shared_ptr<RefExp>& e)
         Instruction *def = e->getDef();
 
         if (!def) {
-            qDebug() << "ExpCastInserter::postVisit RefExp def is null";
+            LOG_WARN("RefExp def is null");
             return e;
         }
 

@@ -272,7 +272,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
         int size = microX86Dis(p + m_base);
 
         if (size == 0x40) {
-            fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", p);
             size = 1;
         }
 
@@ -352,7 +352,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
         int size = microX86Dis(p + m_base);
 
         if (size == 0x40) {
-            fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", p);
             size = 1;
         }
 
@@ -407,7 +407,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
         int size = microX86Dis(p + m_base);
 
         if (size == 0x40) {
-            fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", p);
             size = 1;
         }
 
@@ -448,7 +448,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
         int size = microX86Dis(p + m_base);
 
         if (size == 0x40) {
-            fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", p);
             size = 1;
         }
 

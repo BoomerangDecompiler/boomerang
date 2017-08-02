@@ -36,8 +36,6 @@
 #include <cstring>
 #include <utility>
 
-#include <QDebug>
-
 static int nextUnionNumber = 0;
 
 #define DFA_ITER_LIMIT    20
@@ -902,7 +900,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
     // Other is a non union type
     if (other->resolvesToPointer() && (other->as<PointerType>()->getPointsTo().get() == this)) {
-        LOG_WARN("attempt to union %1 with pointer to self!", this->getCtype());
+        LOG_WARN("Attempt to union '%1' with pointer to self!", this->getCtype());
         return ((UnionType *)this)->shared_from_this();
     }
 

@@ -25,8 +25,6 @@
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QTextStream>
-#include <QDir>
-#include <QProcessEnvironment>
 #include <QDebug>
 
 #define HELLO_WINDOWS    (BOOMERANG_TEST_BASE "/tests/inputs/windows/hello.exe")

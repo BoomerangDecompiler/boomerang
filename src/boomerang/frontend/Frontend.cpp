@@ -46,8 +46,8 @@
 #include "boomerang-frontend/st20/st20frontend.h"
 #include "boomerang-frontend/mips/mipsfrontend.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QDebug>
+#include <QDir>
+
 #include <cassert>
 #include <cstring>
 #include <cstdlib>

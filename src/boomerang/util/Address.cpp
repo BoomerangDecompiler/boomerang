@@ -3,8 +3,6 @@
 #include "boomerang/util/Util.h"
 
 #include <cassert>
-#include <QDebug>
-
 
 const Address Address::ZERO    = Address(0);
 const Address Address::INVALID = Address(-1);

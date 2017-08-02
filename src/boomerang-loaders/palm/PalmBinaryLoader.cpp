@@ -20,11 +20,11 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
-#include <QDebug>
 
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
@@ -74,7 +74,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     // Check type at offset 0x3C; should be "appl" (or "palm"; ugh!)
     if ((strncmp((char *)(m_pImage + 0x3C), "appl", 4) != 0) && (strncmp((char *)(m_pImage + 0x3C), "panl", 4) != 0) &&
         (strncmp((char *)(m_pImage + 0x3C), "libr", 4) != 0)) {
-        qWarning() << "This is not a standard .prc file";
+        LOG_ERROR("This is not a standard .prc file");
         return false;
     }
 

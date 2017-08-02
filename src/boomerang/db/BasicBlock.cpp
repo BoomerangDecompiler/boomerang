@@ -40,7 +40,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
-#include <QtCore/QDebug>
 #include <cassert>
 #include <algorithm>
 #include <cstring>
@@ -1804,7 +1803,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 
             for (std::pair<const BasicBlock *, PhiInfo> v : pa->getDefs()) {
                 if (-1 != cfg->pbbToIndex(v.first)) {
-                    qDebug() << "Someone removed BB that defined the PHI! Need to update PhiAssign defs";
+                    LOG_WARN("Someone removed BB that defined the PHI! Need to update PhiAssign defs");
                 }
             }
 

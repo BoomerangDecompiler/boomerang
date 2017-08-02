@@ -30,7 +30,6 @@
 #include <cstdlib>
 #include <QBuffer>
 #include <QFile>
-#include <QDebug>
 
 
 namespace
@@ -96,7 +95,8 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     unsigned      p = LMMH(m_pLXHeader->eip);
     unsigned      lim = p + 0x300;
     unsigned char op1, op2;
-       Address       addr;
+    Address       addr;
+
     // unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
     bool gotSubEbp   = false;                                   // True if see sub ebp, ebp
     bool lastWasCall = false;                                   // True if the last instruction was a call
@@ -112,7 +112,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     }
 
     assert(si);
-       Address  nativeOrigin = si->getSourceAddr();
+    Address  nativeOrigin = si->getSourceAddr();
     unsigned textSize     = si->getSize();
 
     if (textSize < 0x300) {
@@ -167,7 +167,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
         int size = microX86Dis(p + base);
 
         if (size == 0x40) {
-            fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", p);
             size = 1;
         }
 

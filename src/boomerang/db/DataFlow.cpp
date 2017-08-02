@@ -24,7 +24,6 @@
 
 #include "boomerang/util/Log.h"
 
-#include <QtCore/QDebug>
 #include <sstream>
 #include <cstring>
 

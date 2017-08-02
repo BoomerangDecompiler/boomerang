@@ -25,7 +25,6 @@
 #include <QPluginLoader>
 #include <QCoreApplication>
 #include <QString>
-#include <QDebug>
 
 
 #define LMMH(x)                                                                                                  \
@@ -83,7 +82,7 @@ IFileLoader *BinaryFileFactory::getInstanceFor(const QString& filePath)
     QFile f(filePath);
 
     if (!f.open(QFile::ReadOnly)) {
-        qWarning() << "Unable to open binary file: " << filePath;
+        LOG_ERROR("Unable to open binary file: %1", filePath);
         return nullptr;
     }
 

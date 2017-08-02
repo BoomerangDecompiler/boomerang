@@ -46,9 +46,9 @@
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QFile>
-#include <QtCore/QTextStream>
+#include <QFile>
+#include <QTextStream>
+#include <QSet>
 
 #include <sstream>
 #include <algorithm> // For find()
@@ -298,7 +298,7 @@ void Function::printDetailsXML()
     QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-details.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
-        qDebug() << "Can't write to file:" << file.fileName();
+        LOG_ERROR("Can't write to file %1", file.fileName());
         return;
     }
 
@@ -351,7 +351,7 @@ void UserProc::printDecodedXML()
     QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-decoded.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
-        qDebug() << "Can't write to file:" << file.fileName();
+        LOG_ERROR("Can't write to file %1", file.fileName());
         return;
     }
 
@@ -376,7 +376,7 @@ void UserProc::printAnalysedXML()
     QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-analysed.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
-        qDebug() << "Can't write to file:" << file.fileName();
+        LOG_ERROR("Can't write to file %1", file.fileName());
         return;
     }
 
@@ -401,7 +401,7 @@ void UserProc::printSSAXML()
     QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-ssa.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
-        qDebug() << "Can't write to file:" << file.fileName();
+        LOG_ERROR("Can't write to file %1", file.fileName());
         return;
     }
 
@@ -435,7 +435,7 @@ void UserProc::printUseGraph()
     QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot"));
 
     if (!file.open(QFile::WriteOnly)) {
-        qDebug() << "Can't write to file:" << file.fileName();
+        LOG_ERROR("Can't write to file %1", file.fileName());
         return;
     }
 
@@ -1136,7 +1136,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
 
-    LOG_MSG("%1 '%2'", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
+    LOG_MSG("%1 %2", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
@@ -4408,7 +4408,7 @@ QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
     Instruction *def = r->getDef();
 
     if (!def) {
-        qDebug() << "UserProc::lookupSymFromRefAny null def";
+        LOG_WARN("Unknown def for RefExp %1", r->toString());
         return QString::null;
     }
 
@@ -4423,7 +4423,7 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
     Instruction *def = r->getDef();
 
     if (!def) {
-        qDebug() << "UserProc::lookupSymFromRefAny null def";
+        LOG_WARN("Unknown def for RefExp %1", r->toString());
         return QString::null;
     }
 

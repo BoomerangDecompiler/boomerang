@@ -30,7 +30,6 @@
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 
-#include <QtCore/QDebug>
 #include <cassert>
 #include <cstring>
 
@@ -1366,7 +1365,7 @@ SharedType Type::getNamedType(const QString& name)
 void Type::dumpNames()
 {
     for (auto it = namedTypes.begin(); it != namedTypes.end(); ++it) {
-        qDebug() << it.key() << " -> " << it.value()->getCtype() << "\n";
+        LOG_VERBOSE("%1 -> %2", it.key(), it.value()->getCtype());
     }
 }
 
@@ -1990,9 +1989,10 @@ void DataIntervalMap::replaceComponents(Address addr, const QString& name, Share
             SharedType memberType = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
 
             if (memberType->isCompatibleWith(*it->second.type, true)) {
+                LOG_VERBOSE("%1", this->prints());
+                LOG_VERBOSE("%1 %2", memberType->getCtype(), it->second.type->getCtype());
+
                 bool ch;
-                qDebug() << prints();
-                qDebug() << memberType->getCtype() << " " << it->second.type->getCtype();
                 memberType = it->second.type->meetWith(memberType, ch);
                 ty->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
             }

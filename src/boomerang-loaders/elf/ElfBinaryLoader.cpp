@@ -21,7 +21,6 @@
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
 
-#include <QtCore/QDebug>
 #include <sys/types.h> // Next three for open()
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -146,12 +145,12 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         (m_elfHeader->e_ident[1] != 'E') ||
         (m_elfHeader->e_ident[2] != 'L') ||
         (m_elfHeader->e_ident[3] != 'F')) {
-        fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n",
-                m_elfHeader->e_ident[0],
-                m_elfHeader->e_ident[1],
-                m_elfHeader->e_ident[2],
-                m_elfHeader->e_ident[3]);
-        return 0;
+        LOG_ERROR("Cannot load ELF file: Bad magic %1 %2 %3 %4",
+                  m_elfHeader->e_ident[0],
+                  m_elfHeader->e_ident[1],
+                  m_elfHeader->e_ident[2],
+                  m_elfHeader->e_ident[3]);
+        return false;
     }
 
     switch (m_elfHeader->endianness)
@@ -166,7 +165,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
     default:
         LOG_WARN("Unknown ELF Endianness %1, file may be corrupted.", m_elfHeader->endianness);
-        return 0;
+        return false;
     }
 
     // Set up program header pointer (in case needed)
@@ -207,14 +206,14 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         Elf32_Shdr *pShdr = m_sectionhdrs + i;
 
         if ((Byte *)pShdr > m_loadedImage + m_loadedImageSize) {
-            fprintf(stderr, "section %u header is outside the image size\n", i);
+            LOG_ERROR("Section %1 header is outside the image size", i);
             return false;
         }
 
         const char *sectionName = m_strings + elfRead4(&pShdr->sh_name);
 
         if ((Byte *)sectionName > m_loadedImage + m_loadedImageSize) {
-            fprintf(stderr, "name for section %u is outside the image size\n", i);
+            LOG_ERROR("Name for section %1 is outside the image size", i);
             return false;
         }
 
@@ -376,8 +375,8 @@ const char *ElfBinaryLoader::getStrPtr(int idx, int offset)
 {
     if (idx < 0) {
         // Most commonly, this will be an index of -1, because a call to GetSectionIndexByName() failed
-        fprintf(stderr, "Error! GetStrPtr passed index of %d\n", idx);
-        return (char *)"Error!";
+        LOG_ERROR("Invalid index %1", idx);
+        return nullptr;
     }
 
     // Get a pointer to the start of the string table
@@ -692,13 +691,12 @@ Machine ElfBinaryLoader::getMachine() const
         return Machine::MIPS;
     }
     else if (elfMachine == EM_X86_64) {
-        fprintf(stderr, "Error: ElfBinaryFile::GetMachine: The AMD x86-64 architecture is not supported yet\n");
+        LOG_ERROR("The AMD x86-64 architecture is not supported yet.");
         return (Machine) - 1;
     }
 
     // An unknown machine type
-    fprintf(stderr, "Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n", elfMachine, (unsigned int)elfMachine);
-    fprintf(stderr, "(Please add a description for this type, thanks!)\n");
+    LOG_ERROR("Unsupported machine type %1", elfMachine);
     return (Machine) - 1;
 }
 
@@ -965,7 +963,7 @@ void ElfBinaryLoader::applyRelocations()
                         break; // No need to do anything with these, if a shared object
 
                     default:
-                        // std::cout << "Relocation type " << (int)relType << " not handled yet\n";
+                        LOG_WARN("Relocation type %1 not handled yet", (int)relType);
                         ;
                     }
                 }

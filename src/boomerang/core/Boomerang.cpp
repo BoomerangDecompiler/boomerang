@@ -26,7 +26,6 @@
 // TODO: Move the Objective-C loader code to a more suitable place
 #include "../../boomerang-loaders/machO/MachOBinaryLoader.h" // For Objective-C stuff
 
-#include <QtCore/QDebug>
 #include <ctime>
 
 

@@ -34,7 +34,6 @@
 
 #include "boomerang/util/Util.h"
 
-#include <QtCore/QDebug>
 #include <cassert>
 #include <algorithm> // For find()
 #include <cstring>

@@ -18,8 +18,6 @@
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
-#include <QDir>
-#include <QProcessEnvironment>
 #include <QDebug>
 
 #define FRONTIER_PENTIUM    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/frontier")

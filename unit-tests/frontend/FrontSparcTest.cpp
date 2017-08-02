@@ -20,8 +20,6 @@
 
 #include "boomerang-frontend/sparc/sparcfrontend.h"
 
-#include <QDir>
-#include <QProcessEnvironment>
 #include <QDebug>
 
 
