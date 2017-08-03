@@ -49,8 +49,6 @@ class Boomerang : public QObject, public IBoomerang
     Q_OBJECT
 
 private:
-    static Boomerang *boomerang; ///< the instance
-
     IBinarySymbolTable *m_symbols = nullptr;
     QString m_workingDirectory;       ///< String with the path to the boomerang executable.
     QString m_outputDirectory;        ///< The path where all output files are created.

@@ -29,8 +29,7 @@
 #include <ctime>
 
 
-Boomerang *Boomerang::boomerang = nullptr;
-
+static Boomerang* boomerang = nullptr;
 
 Boomerang::Boomerang()
     : m_symbols(new SymTab)

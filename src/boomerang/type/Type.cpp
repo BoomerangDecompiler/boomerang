@@ -33,8 +33,9 @@
 #include <cassert>
 #include <cstring>
 
-
-QMap<QString, SharedType> Type::namedTypes;
+/// For NamedType
+static QMap<QString, SharedType> namedTypes;
+static int nextAlpha = 0;
 
 
 bool Type::isCString() const
@@ -1474,7 +1475,6 @@ void Type::clearNamedTypes()
 }
 
 
-int NamedType::nextAlpha = 0;
 std::shared_ptr<NamedType> NamedType::getAlpha()
 {
     return NamedType::get(QString("alpha%1").arg(nextAlpha++));

@@ -51,5 +51,4 @@ private:
 
 private:
     std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins; /// all loaded loader plugins.
-    static QString m_pluginsPath;                                ///< Path to the direcory containing the loader plugins.
 };
