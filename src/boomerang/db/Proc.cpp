@@ -191,6 +191,14 @@ std::list<Type> *Function::getParamTypeList(const std::list<SharedExp>& /*actual
 }
 
 
+QString UserProc::toString() const
+{
+    QString     tgt;
+    QTextStream ost(&tgt);
+    this->print(ost);
+    return tgt;
+}
+
 void UserProc::renameParam(const char *oldName, const char *newName)
 {
     Function::renameParam(oldName, newName);
@@ -702,7 +710,7 @@ void UserProc::generateCode(ICodeGenerator *hll)
     // RefExps, which are all gone now (transformed out of SSA form)!
 
     if (Boomerang::get()->printRtl) {
-        LOG_VERBOSE("%1", *this);
+        LOG_VERBOSE("%1", this->toString());
     }
 
     hll->addProcStart(this);
@@ -1340,7 +1348,7 @@ void UserProc::debugPrintAll(const char *step_name)
 {
     if (VERBOSE) {
         LOG_SEPARATE(getName(), "--- debug print %1 for %2 ---", step_name, getName());
-        LOG_SEPARATE(getName(), "%1", *this);
+        LOG_SEPARATE(getName(), "%1", this->toString());
         LOG_SEPARATE(getName(), "=== end debug print %1 for %2 ===", step_name, getName());
     }
 }
@@ -1365,7 +1373,7 @@ void UserProc::initialiseDecompile()
     // Initialise statements
     initStatements();
 
-    debugPrintAll("before SSA");
+    debugPrintAll("Before SSA");
 
     // Compute dominance frontier
     m_df.dominators(m_cfg);
@@ -1524,7 +1532,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         // Print if requested
         if (VERBOSE) { // was if debugPrintSSA
             LOG_SEPARATE(getName(), "--- Debug print SSA for %1 pass %2 (no propagations) ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", *this);
+            LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== End debug print SSA for %1 pass %2 (no propagations) ===", getName(), pass);
         }
 
@@ -1556,7 +1564,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
             if (VERBOSE) {
                 LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after updating returns) ---", getName(), pass);
-                LOG_SEPARATE(getName(), "%1", *this);
+                LOG_SEPARATE(getName(), "%1", this->toString());
                 LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
             }
         }
@@ -1566,7 +1574,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         // Print if requested
         if (VERBOSE) { // was if debugPrintSSA
             LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after trimming return set) ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", *this);
+            LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
         }
 
@@ -1592,7 +1600,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
                 m_df.setRenameLocalsParams(false);
                 change |= doRenameBlockVars(0, true); // Initial dataflow level 0
                 LOG_SEPARATE(getName(), "After rename (2) of %1:", getName());
-                LOG_SEPARATE(getName(), "%1", *this);
+                LOG_SEPARATE(getName(), "%1", this->toString());
                 LOG_SEPARATE(getName(), "Done after rename (2) of %1:", getName());
             }
         } while (_convert);
@@ -1601,7 +1609,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
         if (VERBOSE) {
             LOG_SEPARATE(getName(), "--- after propagate for %1 at pass %2 ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", *this);
+            LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== End propagate for %1 at pass %2 ===", getName(), pass);
         }
 
@@ -6417,3 +6425,7 @@ void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
     addLocal(ty, locName, base);
 }
 
+QString LibProc::toString() const
+{
+    return QString("[LibProc '%1' @%2]").arg(getName(), this->getNativeAddress().toString());
+}

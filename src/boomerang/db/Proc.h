@@ -81,7 +81,7 @@ class Log;
  * \var Function::cluster
  * Cluster this procedure is contained within.
  ******************************************************************************/
-class Function
+class Function : public Printable
 {
     typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 
@@ -281,6 +281,8 @@ public:
     virtual SharedExp getPremised(SharedExp /*left*/) override { return nullptr; } ///< Get the RHS that is premised for left
     virtual bool isPreserved(SharedExp e) override;                            ///< Return whether e is preserved by this proc
     void getInternalStatements(StatementList& internal);
+
+    QString toString() const override;
 };
 
 enum ProcStatus
@@ -399,6 +401,8 @@ public:
      ******************************************************************************/
     UserProc(Module *mod, const QString& name, Address address);
     virtual ~UserProc();
+
+    QString toString() const override;
 
     /// Returns a pointer to the CFG object.
     Cfg *getCFG()       { return m_cfg; }

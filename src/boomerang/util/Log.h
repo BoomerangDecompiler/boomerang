@@ -189,7 +189,6 @@ private:
     QString collectArg(const QString& msg, double d);
     QString collectArg(const QString& msg, Address a);
     QString collectArg(const QString& msg, const LocationSet *l);
-    QString collectArg(const QString& msg, const UserProc& proc);
 
     template<typename Arg>
     QString collectArgs(const QString& msg, Arg arg)

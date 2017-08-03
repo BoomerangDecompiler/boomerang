@@ -234,14 +234,6 @@ QString Log::collectArg(const QString& msg, const LocationSet *l)
     return msg.arg(l->prints());
 }
 
-QString Log::collectArg(const QString& msg, const UserProc& proc)
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-    proc.print(ost);
-    return msg.arg(tgt);
-}
-
 
 void Log::write(const QString& msg)
 {
