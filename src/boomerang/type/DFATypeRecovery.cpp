@@ -17,7 +17,7 @@
 
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/GotoStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"

@@ -8,7 +8,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/BasicBlock.h"

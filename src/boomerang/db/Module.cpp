@@ -3,7 +3,9 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
 
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/LibProc.h"
+#include "boomerang/db/proc/UserProc.h"
+
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"

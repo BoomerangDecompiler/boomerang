@@ -20,7 +20,7 @@
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"

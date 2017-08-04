@@ -16,7 +16,7 @@
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Project.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/util/Log.h"

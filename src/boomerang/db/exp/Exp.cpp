@@ -13,7 +13,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h" // E.g. class ParamEntry in decideType()
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Visitor.h"

@@ -10,7 +10,7 @@
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 
 #include "boomerang/db/statements/BoolAssign.h"

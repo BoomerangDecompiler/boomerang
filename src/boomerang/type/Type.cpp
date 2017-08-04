@@ -18,7 +18,7 @@
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Binary.h"

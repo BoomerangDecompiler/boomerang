@@ -6,7 +6,9 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/Visitor.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/Log.h"
+
 
 
 Ternary::Ternary(OPER _op)

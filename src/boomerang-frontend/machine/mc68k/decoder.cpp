@@ -33,7 +33,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/ss.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/csr.h"
 #include "boomerang/mc68k.pat.h"
 

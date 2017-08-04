@@ -31,7 +31,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/ss.h"
 #include "boomerang/db/Prog.h" // For findProc()
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/options.h"
 #include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "boomerang/csr.h"                    // For class CalleeEpilogue

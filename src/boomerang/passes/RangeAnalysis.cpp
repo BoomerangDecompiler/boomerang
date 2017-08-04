@@ -4,7 +4,8 @@
 #include "boomerang/db/Visitor.h"
 #include "boomerang/type/Type.h"
 
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/BasicBlock.h"

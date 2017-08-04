@@ -27,7 +27,7 @@
 
 #include "boomerang/db/Module.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/SymTab.h"

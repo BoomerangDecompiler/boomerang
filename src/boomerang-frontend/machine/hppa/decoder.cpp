@@ -37,7 +37,7 @@
  */
 
 #include "boomerang/global.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/include/decoder.h"
 #include "boomerang/ss.h"

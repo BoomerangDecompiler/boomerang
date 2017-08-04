@@ -1,24 +1,4 @@
-/*
- * Copyright (C) 1997-2001, The University of Queensland
- * Copyright (C) 2000-2001, Sun Microsystems, Inc
- * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
- *
- * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- */
-
-/***************************************************************************/ /**
- * \file    proc.cpp
- * \brief   Implementation of the Proc hierachy (Proc, UserProc, LibProc).
- *               All aspects of a procedure, apart from the actual code in the
- *               Cfg, are stored here
- *
- * Copyright (C) 1997-2001, The University of Queensland, BT group
- * Copyright (C) 2000-2001, Sun Microsystems, Inc
- ******************************************************************************/
-
-#include "Proc.h"
+#include "UserProc.h"
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
@@ -53,78 +33,6 @@
 #include <sstream>
 #include <algorithm> // For find()
 #include <cstring>
-
-
-#ifdef _WIN32
-#  include <windows.h>
-#  ifndef __MINGW32__
-namespace dbghelp
-{
-#    include <dbghelp.h>
-}
-#  endif
-#endif
-
-typedef std::map<Instruction *, int> RefCounter;
-
-
-Function::~Function()
-{
-}
-
-
-void Function::eraseFromParent()
-{
-    // Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
-    m_parent->setLocationMap(getNativeAddress(), (Function *)-1);
-    // Delete the cfg etc.
-    m_parent->getFunctionList().remove(this);
-    this->deleteCFG();
-    delete this;  // Delete ourselves
-}
-
-
-Function::Function(Address uNative, Signature *sig, Module *mod)
-    : m_signature(sig)
-    , m_address(uNative)
-    , m_firstCaller(nullptr)
-    , m_parent(mod)
-{
-    assert(mod);
-    m_prog = mod->getParent();
-}
-
-
-QString Function::getName() const
-{
-    assert(m_signature);
-    return m_signature->getName();
-}
-
-
-void Function::setName(const QString& nam)
-{
-    assert(m_signature);
-    m_signature->setName(nam);
-}
-
-
-Address Function::getNativeAddress() const
-{
-    return m_address;
-}
-
-
-void Function::setNativeAddress(Address a)
-{
-    m_address = a;
-}
-
-
-bool LibProc::isNoReturn() const
-{
-    return IFrontEnd::isNoReturnCallDest(getName()) || m_signature->isNoReturn();
-}
 
 
 bool UserProc::isNoReturn() const
@@ -172,23 +80,6 @@ bool UserProc::containsAddr(Address uAddr) const
 }
 
 
-void Function::renameParam(const char *oldName, const char *newName)
-{
-    m_signature->renameParam(oldName, newName);
-}
-
-
-void Function::matchParams(std::list<SharedExp>& /*actuals*/, UserProc& /*caller*/)
-{
-    // TODO: not implemented, not used, but large amount of docs :)
-}
-
-
-std::list<Type> *Function::getParamTypeList(const std::list<SharedExp>& /*actuals*/)
-{
-    // TODO: not implemented, not used
-    return nullptr;
-}
 
 
 QString UserProc::toString() const
@@ -251,22 +142,6 @@ bool UserProc::searchAll(const Exp& search, std::list<SharedExp>& result)
 }
 
 
-void Function::printCallGraphXML(QTextStream& os, int depth, bool /*recurse*/)
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    m_visited = true;
-
-    for (int i = 0; i < depth; i++) {
-        os << "      ";
-    }
-
-    os << "<proc name=\"" << getName() << "\"/>\n";
-}
-
-
 void UserProc::printCallGraphXML(QTextStream& os, int depth, bool recurse)
 {
     if (!DUMP_XML) {
@@ -294,59 +169,6 @@ void UserProc::printCallGraphXML(QTextStream& os, int depth, bool recurse)
     }
 
     os << "</proc>\n";
-}
-
-
-void Function::printDetailsXML()
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-details.xml"));
-
-    if (!file.open(QFile::WriteOnly)) {
-        LOG_ERROR("Can't write to file %1", file.fileName());
-        return;
-    }
-
-    QTextStream out(&file);
-    out << "<proc name=\"" << getName() << "\">\n";
-    unsigned i;
-
-    for (i = 0; i < m_signature->getNumParams(); i++) {
-        out << "   <param name=\"" << m_signature->getParamName(i) << "\" "
-            << "exp=\"" << m_signature->getParamExp(i) << "\" "
-            << "type=\"" << m_signature->getParamType(i)->getCtype() << "\"\n";
-    }
-
-    for (i = 0; i < m_signature->getNumReturns(); i++) {
-        out << "   <return exp=\"" << m_signature->getReturnExp(i) << "\" "
-            << "type=\"" << m_signature->getReturnType(i)->getCtype() << "\"/>\n";
-    }
-
-    out << "</proc>\n";
-}
-
-
-void Function::removeFromParent()
-{
-    assert(m_parent);
-    m_parent->getFunctionList().remove(this);
-    m_parent->setLocationMap(m_address, nullptr);
-}
-
-
-void Function::setParent(Module *c)
-{
-    if (c == m_parent) {
-        return;
-    }
-
-    removeFromParent();
-    m_parent = c;
-    c->getFunctionList().push_back(this);
-    c->setLocationMap(m_address, this);
 }
 
 
@@ -478,36 +300,6 @@ void UserProc::printUseGraph()
     out << "}\n";
 }
 
-
-Function *Function::getFirstCaller()
-{
-    if ((m_firstCaller == nullptr) && (m_firstCallerAddr != Address::INVALID)) {
-        m_firstCaller     = m_prog->findProc(m_firstCallerAddr);
-        m_firstCallerAddr = Address::INVALID;
-    }
-
-    return m_firstCaller;
-}
-
-
-LibProc::LibProc(Module *mod, const QString& name, Address uNative)
-    : Function(uNative, nullptr, mod)
-{
-    m_signature = mod->getLibSignature(name);
-}
-
-
-SharedExp LibProc::getProven(SharedExp left)
-{
-    // Just use the signature information (all we have, after all)
-    return m_signature->getProven(left);
-}
-
-
-bool LibProc::isPreserved(SharedExp e)
-{
-    return m_signature->isPreserved(e);
-}
 
 
 UserProc::UserProc(Module *mod, const QString& name, Address uNative)
@@ -2493,29 +2285,6 @@ void UserProc::removeReturn(SharedExp e)
 }
 
 
-void Function::removeParameter(SharedExp e)
-{
-    int n = m_signature->findParam(e);
-
-    if (n != -1) {
-        m_signature->removeParameter(n);
-
-        for (auto const& elem : m_callerSet) {
-            if (DEBUG_UNUSED) {
-                LOG_MSG("Removing argument %1 in pos %2 from %3", e, n, elem);
-            }
-
-            (elem)->removeArgument(n);
-        }
-    }
-}
-
-
-void Function::removeReturn(SharedExp e)
-{
-    m_signature->removeReturn(e);
-}
-
 
 void UserProc::addParameter(SharedExp e, SharedType ty)
 {
@@ -4131,17 +3900,6 @@ void UserProc::getDefinitions(LocationSet& ls)
 
     for (int j = 0; j < n; j++) {
         ls.insert(m_signature->getReturnExp(j));
-    }
-}
-
-
-void Function::addCallers(std::set<UserProc *>& callers)
-{
-    std::set<CallStatement *>::iterator it;
-
-    for (it = m_callerSet.begin(); it != m_callerSet.end(); it++) {
-        UserProc *callerProc = (*it)->getProc();
-        callers.insert(callerProc);
     }
 }
 
@@ -6146,15 +5904,6 @@ void dumpProcSet(ProcSet *pc)
 }
 
 
-void Function::setProvenTrue(SharedExp fact)
-{
-    assert(fact->isEquality());
-    SharedExp lhs = fact->getSubExp1();
-    SharedExp rhs = fact->getSubExp2();
-    m_provenTrue[lhs] = rhs;
-}
-
-
 void UserProc::mapLocalsAndParams()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
@@ -6423,9 +6172,4 @@ void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
     }
 
     addLocal(ty, locName, base);
-}
-
-QString LibProc::toString() const
-{
-    return QString("[LibProc '%1' @%2]").arg(getName(), this->getNativeAddress().toString());
 }

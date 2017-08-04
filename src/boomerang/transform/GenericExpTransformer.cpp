@@ -13,7 +13,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/TypeVal.h"

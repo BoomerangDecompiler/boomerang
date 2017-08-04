@@ -37,8 +37,6 @@ set(boomerang_SRC
     db/Managed.h
     db/Module.cpp
     db/Module.h
-    db/Proc.cpp
-    db/Proc.h
     db/Prog.cpp
     db/Prog.h
     db/Project.cpp
@@ -85,6 +83,13 @@ set(boomerang_SRC
     db/exp/Operator.cpp
     db/exp/Operator.h
     db/exp/Const.h
+
+    db/proc/LibProc.cpp
+    db/proc/LibProc.h
+    db/proc/Proc.cpp
+    db/proc/Proc.h
+    db/proc/UserProc.cpp
+    db/proc/UserProc.h
 
     db/ssl/RTLInstDict.cpp
     db/ssl/RTLInstDict.h

@@ -25,7 +25,8 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"              // For findProc()
 #include "boomerang/db/statements/CallStatement.h"

@@ -105,7 +105,7 @@ void *alloca ();
 #include <string>
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/TypeVal.h"

@@ -29,7 +29,7 @@
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"

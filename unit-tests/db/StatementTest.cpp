@@ -42,7 +42,8 @@
 #include <map>
 
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
+
 
 #define HELLO_PENTIUM      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
 #define GLOBAL1_PENTIUM    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/global1")

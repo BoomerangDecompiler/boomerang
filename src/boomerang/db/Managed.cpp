@@ -18,7 +18,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Managed.h"
 
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"

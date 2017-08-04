@@ -16,7 +16,7 @@
 
 #include "boomerang/core/Boomerang.h"
 
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/Managed.h"

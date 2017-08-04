@@ -22,7 +22,7 @@
 #include "boomerang/db/Register.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/Proc.h" // For Proc::setTailCaller()
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h" // For findProc()
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"

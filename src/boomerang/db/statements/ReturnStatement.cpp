@@ -4,7 +4,7 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/Visitor.h"
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/statements/CallStatement.h"

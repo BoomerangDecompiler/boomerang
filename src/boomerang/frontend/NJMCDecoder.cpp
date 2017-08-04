@@ -24,7 +24,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/Assignment.h"
 #include "boomerang/db/statements/Assign.h"

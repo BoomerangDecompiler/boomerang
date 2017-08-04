@@ -18,7 +18,7 @@
 #include "boomerang/codegen/ICodeGenerator.h"
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h" // For debugging code

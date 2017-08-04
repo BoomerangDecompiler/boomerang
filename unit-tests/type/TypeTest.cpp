@@ -20,7 +20,7 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 

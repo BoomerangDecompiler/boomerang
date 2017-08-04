@@ -48,7 +48,7 @@
 
 #include "boomerang/type/Type.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/util/Log.h"

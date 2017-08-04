@@ -15,7 +15,7 @@
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Proc.h"
+#include "boomerang/db/proc/Proc.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
