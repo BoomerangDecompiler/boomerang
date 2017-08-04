@@ -431,7 +431,7 @@ void IFrontEnd::decode(Prog *prg, Address addr)
                     // undecoded userproc.. decode it
                     change = true;
                     QTextStream os(stderr); // rtl output target
-                    int         res = processProc(p->getNativeAddress(), p, os);
+                    int         res = processProc(p->getEntryAddress(), p, os);
 
                     if (res != 1) {
                         break;
@@ -465,7 +465,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address addr)
     assert(!p->isLib());
     QTextStream os(stderr); // rtl output target
 
-    if (processProc(p->getNativeAddress(), p, os)) {
+    if (processProc(p->getEntryAddress(), p, os)) {
         p->setDecoded();
     }
 
@@ -834,7 +834,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             sequentialDecode = false;
                             BB_rtls          = nullptr;
 
-                            if (pRtl->getAddress() == pProc->getNativeAddress()) {
+                            if (pRtl->getAddress() == pProc->getEntryAddress()) {
                                 // it's a thunk
                                 // Proc *lp = prog->findProc(func.c_str());
                                 func = "__imp_" + func;
@@ -1183,7 +1183,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
     Boomerang::get()->alertDecode(pProc, startAddr, lastAddr, nTotalBytes);
 
-    LOG_VERBOSE("Finished processing proc %1 at address %2", pProc->getName(), pProc->getNativeAddress());
+    LOG_VERBOSE("Finished processing proc %1 at address %2", pProc->getName(), pProc->getEntryAddress());
 
     return true;
 }

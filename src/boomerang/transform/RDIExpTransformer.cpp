@@ -16,6 +16,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/transform/ExpTransformer.h"
+#include "boomerang/db/exp/Exp.h"
 
 #include <cassert>
 #include <numeric>   // For accumulate

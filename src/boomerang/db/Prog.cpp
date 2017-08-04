@@ -1212,7 +1212,7 @@ Function *Prog::findContainingProc(Address uAddr) const
 {
     for (Module *module : m_moduleList) {
         for (Function *p : *module) {
-            if (p->getNativeAddress() == uAddr) {
+            if (p->getEntryAddress() == uAddr) {
                 return p;
             }
 
@@ -1345,7 +1345,7 @@ void Prog::decodeEverythingUndecoded()
                 continue;
             }
 
-            m_defaultFrontend->decode(this, pp->getNativeAddress());
+            m_defaultFrontend->decode(this, pp->getEntryAddress());
         }
     }
 
@@ -1683,7 +1683,7 @@ void Prog::printCallGraph() const
             f1 << "     ";
         }
 
-        f1 << p->getName() << " @ " << p->getNativeAddress();
+        f1 << p->getName() << " @ " << p->getEntryAddress();
 
         if (parent.find(p) != parent.end()) {
             f1 << " [parent=" << parent[p]->getName() << "]";
@@ -1727,7 +1727,7 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
     }
 
     if (!proc->isLib() && fisttime) { // seen lib proc
-        f << proc->getNativeAddress();
+        f << proc->getEntryAddress();
         f << " __nodecode __incomplete void " << proc->getName() << "();\n";
 
         UserProc *u = (UserProc *)proc;
@@ -2097,7 +2097,7 @@ void Prog::reDecode(UserProc *proc)
 {
     QTextStream os(stderr); // rtl output target
 
-    m_defaultFrontend->processProc(proc->getNativeAddress(), proc, os);
+    m_defaultFrontend->processProc(proc->getEntryAddress(), proc, os);
 }
 
 

@@ -5,6 +5,7 @@
 #include "boomerang/db/ssl/sslparser.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Binary.h"
 
 
 TableEntry::TableEntry()

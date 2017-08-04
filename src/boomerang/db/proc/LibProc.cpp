@@ -5,22 +5,22 @@
 #include "boomerang/frontend/Frontend.h"
 
 
+LibProc::LibProc(Address addr, const QString& name, Module* module)
+    : Function(addr, nullptr, module)
+{
+    m_signature = module->getLibSignature(name);
+}
+
+
 bool LibProc::isNoReturn() const
 {
     return IFrontEnd::isNoReturnCallDest(getName()) || m_signature->isNoReturn();
 }
 
 
-LibProc::LibProc(Module *mod, const QString& name, Address uNative)
-    : Function(uNative, nullptr, mod)
-{
-    m_signature = mod->getLibSignature(name);
-}
-
-
 QString LibProc::toString() const
 {
-    return QString("[LibProc %1@%2]").arg(this->getName(), this->getNativeAddress().toString());
+    return QString("[LibProc %1@%2]").arg(this->getName(), this->getEntryAddress().toString());
 }
 
 

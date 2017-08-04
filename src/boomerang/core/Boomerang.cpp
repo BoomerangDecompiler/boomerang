@@ -586,7 +586,7 @@ int Boomerang::processCommand(QStringList& args)
 
             out_stream << "proc " << proc->getName() << ":\n";
             out_stream << "\tbelongs to cluster " << proc->getParent()->getName() << "\n";
-            out_stream << "\tnative address " << proc->getNativeAddress() << "\n";
+            out_stream << "\tnative address " << proc->getEntryAddress() << "\n";
 
             if (proc->isLib()) {
                 out_stream << "\tis a library proc.\n";

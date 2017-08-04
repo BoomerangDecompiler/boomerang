@@ -283,7 +283,7 @@ void FrontSparcTest::testDelaySlot()
 	QTextStream strm(&actual);
 	Module      *m = prog->getOrInsertModule("test");
 
-	UserProc    *pProc = new UserProc(m, "testDelaySlot", addr);
+	UserProc    *pProc = new UserProc(addr, "testDelaySlot", m);
 	QString     dum;
 	QTextStream dummy(&dum);
 	bool        res = pFE->processProc(addr, pProc, dummy, false);

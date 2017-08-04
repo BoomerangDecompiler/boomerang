@@ -1761,7 +1761,7 @@ void CCodeGenerator::addProcStart(UserProc *proc)
     QString tgt;
     QTextStream s(&tgt);
 
-    s << "/** address: " << proc->getNativeAddress() << " */";
+    s << "/** address: " << proc->getEntryAddress() << " */";
     appendLine(tgt);
     addProcDec(proc, true);
 }

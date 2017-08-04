@@ -17,111 +17,42 @@
  *                procedure such as parameters and locals.
  ******************************************************************************/
 
-#include "boomerang/db/CFG.h" // For cfg->simplify()
+#include "boomerang/util/Address.h"
+#include "boomerang/db/Signature.h"
 
-#include "boomerang/db/DataFlow.h"       // For class UseCollector
-#include "boomerang/db/statements/ReturnStatement.h"
-#include "boomerang/db/exp/Binary.h"
+#include <QString>
 
-#include <list>
-#include <vector>
-#include <map>
-#include <set>
-#include <string>
-#include <cassert>
-
-
-class Prog;
-class UserProc;
-class Cfg;
-class BasicBlock;
-class Exp;
-class TypedExp;
-struct lessTI;
-
-class Type;
-class RTL;
-class ICodeGenerator;
-class SyntaxNode;
-class Parameter;
-class Argument;
-class Signature;
 class Module;
-class QTextStream;
-class Log;
+class CallStatement;
+class Prog;
 
-
-/***************************************************************************/ /**
- * Procedure class.
- ******************************************************************************/
 /// Interface for the procedure classes, which are used to store information about variables in the
 /// procedure such as parameters and locals.
-
-/***************************************************************************/ /**
- * \var Function::Visited For printCallGraphXML
- * \var Function::prog Program containing this procedure.
- * \var Function::signature The formal signature of this procedure.
- *      This information is determined either by the common.hs file (for a library function) or by analysis.
- *      \note This belongs in the CALL, because the same procedure can have different
- *      signatures if it happens to have varargs. Temporarily here till it can be permanently
- *      moved.
- * \var Function::address Procedure's address.
- * \var Function::m_firstCaller first procedure to call this procedure.
- * \var Function::m_firstCallerAddr can only be used once.
- * \var Function::provenTrue
- * All the expressions that have been proven true.
- * (Could perhaps do with a list of some that are proven false)
- * Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
- * \var Function::recurPremises
- * Premises for recursion group analysis. This is a preservation
- * that is assumed true only for definitions by calls reached in the proof. It also
- * prevents infinite looping of this proof logic.
- * \var Function::callerSet
- * Set of callers (CallStatements that call this procedure).
- * \var Function::cluster
- * Cluster this procedure is contained within.
- ******************************************************************************/
 class Function : public Printable
 {
     typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 
 public:
     /***************************************************************************/ /**
-    *
-    * \brief        Constructor with name, native address.
-    * \param        uNative - Native address of entry point of procedure
-    * \param        sig - the Signature for this Proc
-    * \param        mod - the Module this procedure belongs to
-    *
-    ******************************************************************************/
-    Function(Address uNative, Signature *sig, Module *mod);
+     * \brief        Constructor with name and native address.
+     * \param        address - Native address of entry point of procedure
+     * \param        signature - the Signature for this Proc
+     * \param        module - the Module this procedure belongs to
+     ******************************************************************************/
+    Function(Address address, Signature *signature, Module *module);
     virtual ~Function();
 
-    void eraseFromParent();
-
-    /***************************************************************************/ /**
-    * \brief        Returns the name of this procedure
-    * \returns            the name of this procedure
-    ******************************************************************************/
+    /// Get the name of this procedure.
     QString getName() const;
 
-    /***************************************************************************/ /**
-    * \brief        Sets the name of this procedure
-    * \param        nam - new name
-    ******************************************************************************/
+    /// Rename this procedure.
     void setName(const QString& nam);
 
-    /***************************************************************************/ /**
-    * \brief        Get the native address (entry point).
-    * \returns            the native address of this procedure (entry point)
-    ******************************************************************************/
-    Address getNativeAddress() const;
+    /// Get the address of the entry point of this procedure.
+    Address getEntryAddress() const;
 
-    /***************************************************************************/ /**
-    * \brief        Set the native address
-    * \param a native address of the procedure
-    ******************************************************************************/
-    void setNativeAddress(Address a);
+    /// Set the entry address of this procedure
+    void setEntryAddress(Address addr);
 
     /// Get the program this procedure belongs to.
     Prog *getProg() const { return m_prog; }
@@ -140,6 +71,8 @@ public:
 
     std::shared_ptr<Signature> getSignature() const { return m_signature; } ///< Returns a pointer to the Signature
     void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; }
+
+    void eraseFromParent();
 
     virtual void renameParam(const char *oldName, const char *newName);
 
@@ -202,7 +135,7 @@ public:
     virtual bool isNoReturn() const = 0;         ///< Return true if this procedure doesn't return
 
     /**
-     * OutPut operator for a Proc object.
+     * Output operator for a Proc object.
      */
     friend QTextStream& operator<<(QTextStream& os, const Function& proc);
 
@@ -237,29 +170,47 @@ public:
     void setParent(Module *c);
     void removeFromParent();
 
-private:
+protected:
+    /// Delete the CFG from this function.
     virtual void deleteCFG() {}
 
 protected:
-    bool m_visited;
-    Prog *m_prog;
+    bool m_visited; ///< For printCallGraphXML
+    Prog *m_prog;   ///< Program containing this procedure.
+
+    /**
+     * The formal signature of this procedure.
+     * This information is determined either by the common.hs file (for a library function) or by analysis.
+     * \note This belongs in the CALL, because the same procedure can have different
+     * signatures if it happens to have varargs. Temporarily here till it can be permanently
+     * moved.
+     */
     std::shared_ptr<Signature> m_signature;
 
     ///////////////////////////////////////////////////
     // Persistent state
     ///////////////////////////////////////////////////
-       Address m_address;
-    Function *m_firstCaller;
-       Address m_firstCallerAddr;
+    Address m_address; ///< Entry address of this procedure.
+    Function *m_firstCaller; ///< first procedure to call this procedure.
+    Address m_firstCallerAddr; ///< can only be used once.
 
-    // FIXME: shouldn't provenTrue be in UserProc, with logic associated with the signature doing the equivalent thing
-    // for LibProcs?
+    /**
+     * All the expressions that have been proven true.
+     * (Could perhaps do with a list of some that are proven false)
+     * Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
+     * FIXME: shouldn't provenTrue be in UserProc, with logic associated with the signature doing the equivalent thing
+     * for LibProcs?
+     */
     ExpExpMap m_provenTrue;
     // Cache of queries proven false (to save time)
     // mExpExp provenFalse;
+
+    /**
+     * Premises for recursion group analysis. This is a preservation
+     * that is assumed true only for definitions by calls reached in the proof. It also
+     * prevents infinite looping of this proof logic.
+     */
     ExpExpMap m_recurPremises;
-    std::set<CallStatement *> m_callerSet;
+    std::set<CallStatement *> m_callerSet; ///< Set of callers (CallStatements that call this procedure).
     Module *m_parent;
 };
-
-

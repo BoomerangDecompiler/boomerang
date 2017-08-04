@@ -15,6 +15,7 @@
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/exp/Binary.h"
 
 #include "boomerang/util/Types.h"
 #include "boomerang/transform/RDIExpTransformer.h"

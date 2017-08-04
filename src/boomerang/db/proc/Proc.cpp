@@ -87,7 +87,7 @@ Function::~Function()
 void Function::eraseFromParent()
 {
     // Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
-    m_parent->setLocationMap(getNativeAddress(), (Function *)-1);
+    m_parent->setLocationMap(getEntryAddress(), (Function *)-1);
     // Delete the cfg etc.
     m_parent->getFunctionList().remove(this);
     this->deleteCFG();
@@ -109,13 +109,13 @@ void Function::setName(const QString& nam)
 }
 
 
-Address Function::getNativeAddress() const
+Address Function::getEntryAddress() const
 {
     return m_address;
 }
 
 
-void Function::setNativeAddress(Address a)
+void Function::setEntryAddress(Address a)
 {
     m_address = a;
 }

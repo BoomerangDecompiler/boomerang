@@ -51,7 +51,9 @@
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/util/Log.h"
+
 
 class AnsiCScanner;
 class SymbolMods;

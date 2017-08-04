@@ -35,6 +35,136 @@
 #include <cstring>
 
 
+class lessEvaluate : public std::binary_function<SyntaxNode *, SyntaxNode *, bool>
+{
+public:
+    bool operator()(const SyntaxNode *x, const SyntaxNode *y) const
+    {
+        return ((SyntaxNode *)x)->getScore() > ((SyntaxNode *)y)->getScore();
+    }
+};
+
+
+UserProc::UserProc(Address address, const QString& name, Module* module)
+    : Function(address, new Signature(name), module)
+    , m_cycleGroup(nullptr)
+    , theReturnStatement(nullptr)
+    , DFGcount(0)
+    , m_cfg(new Cfg())
+    , m_status(PROC_UNDECODED)
+{
+    m_cfg->setProc(this); // Initialise cfg.myProc
+    m_localTable.setProc(this);
+}
+
+
+UserProc::~UserProc()
+{
+    deleteCFG();
+}
+
+
+SyntaxNode *UserProc::getAST() const
+{
+    int             numBBs = 0;
+    BlockSyntaxNode *init  = new BlockSyntaxNode();
+    BBIterator           it;
+
+    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+        BlockSyntaxNode *b = new BlockSyntaxNode();
+        b->setBB(bb);
+        init->addStatement(b);
+        numBBs++;
+    }
+
+    // perform a best first search for the nicest AST
+    std::priority_queue<SyntaxNode *, std::vector<SyntaxNode *>, lessEvaluate> ASTs;
+    ASTs.push(init);
+
+    SyntaxNode *best      = init;
+    int        best_score = init->getScore();
+    int        count      = 0;
+
+    while (!ASTs.empty()) {
+        if (best_score < numBBs * 2) {
+            LOG_VERBOSE("Exit early: %1", best_score);
+            break;
+        }
+
+        SyntaxNode *top = ASTs.top();
+        ASTs.pop();
+        int score = top->evaluate(top);
+
+        printAST(top); // debug
+
+        if (score < best_score) {
+            if (best && (top != best)) {
+                delete best;
+            }
+
+            best       = top;
+            best_score = score;
+        }
+
+        count++;
+
+        if (count > 100) {
+            break;
+        }
+
+        // add successors
+        std::vector<SyntaxNode *> successors;
+        top->addSuccessors(top, successors);
+
+        for (auto& successor : successors) {
+            // successors[i]->addToScore(top->getScore());    // uncomment for A*
+            successor->addToScore(successor->getDepth()); // or this
+            ASTs.push(successor);
+        }
+
+        if (top != best) {
+            delete top;
+        }
+    }
+
+    // clean up memory
+    while (!ASTs.empty()) {
+        SyntaxNode *top = ASTs.top();
+        ASTs.pop();
+
+        if (top != best) {
+            delete top;
+        }
+    }
+
+    return best;
+}
+
+
+void UserProc::printAST(SyntaxNode *a) const
+{
+    static int count = 1;
+    char       s[1024];
+
+    if (a == nullptr) {
+        a = getAST();
+    }
+
+    sprintf(s, "ast%i-%s.dot", count++, qPrintable(getName()));
+    QFile tgt(s);
+
+    if (!tgt.open(QFile::WriteOnly)) {
+        return; // TODO: report error ?
+    }
+
+    QTextStream of(&tgt);
+    of << "digraph " << getName() << " {" << '\n';
+    of << "     label=\"score: " << a->evaluate(a) << "\";" << '\n';
+    a->printAST(a, of);
+    of << "}" << '\n';
+}
+
+
 bool UserProc::isNoReturn() const
 {
     // undecoded procs are assumed to always return (and define everything)
@@ -63,6 +193,13 @@ bool UserProc::isNoReturn() const
     }
 
     return false;
+}
+
+
+void UserProc::setStatus(ProcStatus s)
+{
+    m_status = s;
+    Boomerang::get()->alertProcStatusChange(this);
 }
 
 
@@ -301,143 +438,10 @@ void UserProc::printUseGraph()
 }
 
 
-
-UserProc::UserProc(Module *mod, const QString& name, Address uNative)
-    : // Not quite ready for the below fix:
-      // Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
-    Function(uNative, new Signature(name), mod)
-    , m_cfg(new Cfg())
-    , m_status(PROC_UNDECODED)
-    , m_cycleGroup(nullptr)
-    , theReturnStatement(nullptr)
-    , DFGcount(0)
-{
-    m_cfg->setProc(this); // Initialise cfg.myProc
-    m_localTable.setProc(this);
-}
-
-
-UserProc::~UserProc()
-{
-    deleteCFG();
-}
-
-
 void UserProc::deleteCFG()
 {
     delete m_cfg;
     m_cfg = nullptr;
-}
-
-
-class lessEvaluate : public std::binary_function<SyntaxNode *, SyntaxNode *, bool>
-{
-public:
-    bool operator()(const SyntaxNode *x, const SyntaxNode *y) const
-    {
-        return ((SyntaxNode *)x)->getScore() > ((SyntaxNode *)y)->getScore();
-    }
-};
-
-
-SyntaxNode *UserProc::getAST() const
-{
-    int             numBBs = 0;
-    BlockSyntaxNode *init  = new BlockSyntaxNode();
-    BBIterator           it;
-
-    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-        BlockSyntaxNode *b = new BlockSyntaxNode();
-        b->setBB(bb);
-        init->addStatement(b);
-        numBBs++;
-    }
-
-    // perform a best first search for the nicest AST
-    std::priority_queue<SyntaxNode *, std::vector<SyntaxNode *>, lessEvaluate> ASTs;
-    ASTs.push(init);
-
-    SyntaxNode *best      = init;
-    int        best_score = init->getScore();
-    int        count      = 0;
-
-    while (!ASTs.empty()) {
-        if (best_score < numBBs * 2) {
-            LOG_MSG("Exit early: %1", best_score);
-            break;
-        }
-
-        SyntaxNode *top = ASTs.top();
-        ASTs.pop();
-        int score = top->evaluate(top);
-
-        printAST(top); // debug
-
-        if (score < best_score) {
-            if (best && (top != best)) {
-                delete best;
-            }
-
-            best       = top;
-            best_score = score;
-        }
-
-        count++;
-
-        if (count > 100) {
-            break;
-        }
-
-        // add successors
-        std::vector<SyntaxNode *> successors;
-        top->addSuccessors(top, successors);
-
-        for (auto& successor : successors) {
-            // successors[i]->addToScore(top->getScore());    // uncomment for A*
-            successor->addToScore(successor->getDepth()); // or this
-            ASTs.push(successor);
-        }
-
-        if (top != best) {
-            delete top;
-        }
-    }
-
-    // clean up memory
-    while (!ASTs.empty()) {
-        SyntaxNode *top = ASTs.top();
-        ASTs.pop();
-
-        if (top != best) {
-            delete top;
-        }
-    }
-
-    return best;
-}
-
-
-void UserProc::printAST(SyntaxNode *a) const
-{
-    static int count = 1;
-    char       s[1024];
-
-    if (a == nullptr) {
-        a = getAST();
-    }
-
-    sprintf(s, "ast%i-%s.dot", count++, qPrintable(getName()));
-    QFile tgt(s);
-
-    if (!tgt.open(QFile::WriteOnly)) {
-        return; // TODO: report error ?
-    }
-
-    QTextStream of(&tgt);
-    of << "digraph " << getName() << " {" << '\n';
-    of << "     label=\"score: " << a->evaluate(a) << "\";" << '\n';
-    a->printAST(a, of);
-    of << "}" << '\n';
 }
 
 
@@ -589,13 +593,6 @@ void UserProc::print(QTextStream& out, bool html) const
     }
 
     out << "end live variables\n" << tgt3 << "\n";
-}
-
-
-void UserProc::setStatus(ProcStatus s)
-{
-    m_status = s;
-    Boomerang::get()->alertProcStatusChange(this);
 }
 
 

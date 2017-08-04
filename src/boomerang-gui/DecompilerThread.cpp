@@ -322,7 +322,7 @@ void Decompiler::alertNew(Function *p)
         emit newLibProc(p->getName(), params);
     }
     else {
-        emit newUserProc(p->getName(), p->getNativeAddress());
+        emit newUserProc(p->getName(), p->getEntryAddress());
     }
 }
 
@@ -333,7 +333,7 @@ void Decompiler::alertRemove(Function *p)
         emit removeLibProc(p->getName());
     }
     else {
-        emit removeUserProc(p->getName(), p->getNativeAddress());
+        emit removeUserProc(p->getName(), p->getEntryAddress());
     }
 }
 

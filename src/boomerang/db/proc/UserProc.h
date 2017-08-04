@@ -3,6 +3,40 @@
 #include "Proc.h"
 
 
+#include "boomerang/db/CFG.h" // For cfg->simplify()
+
+#include "boomerang/db/DataFlow.h"       // For class UseCollector
+#include "boomerang/db/statements/ReturnStatement.h"
+#include "boomerang/db/exp/Binary.h"
+
+#include <list>
+#include <vector>
+#include <map>
+#include <set>
+#include <string>
+#include <cassert>
+
+
+class Prog;
+class UserProc;
+class Cfg;
+class BasicBlock;
+class Exp;
+class TypedExp;
+struct lessTI;
+
+class Type;
+class RTL;
+class ICodeGenerator;
+class SyntaxNode;
+class Parameter;
+class Argument;
+class Signature;
+class Module;
+class QTextStream;
+class Log;
+
+
 enum ProcStatus
 {
     PROC_UNDECODED,     ///< Has not even been decoded
@@ -24,55 +58,8 @@ typedef std::list<UserProc *> ProcList;
 /***************************************************************************/ /**
  * UserProc class.
  ******************************************************************************/
-
-/**
- * \var UserProc::cycleGrp
- * Pointer to a set of procedures involved in a recursion group.
- * \note Each procedure in the cycle points to the same set! However, there can be several separate cycles.
- * E.g. in test/source/recursion.c, there is a cycle with f and g, while another is being built up (it only
- * has c, d, and e at the point where the f-g cycle is found).
- * \var UserProc::stmtNumber
- * Current statement number. Makes it easier to split decompile() into smaller pieces.
- * \var UserProc::theReturnStatement
- * We ensure that there is only one return statement now. See code in frontend/frontend.cpp handling case
- * STMT_RET. If no return statement, this will be nullptr.
- * \var  UserProc::parameters
- * The list of parameters, ordered and filtered.
- * Note that a LocationList could be used, but then there would be nowhere to store the types (for DFA based TA)
- * The RHS is just ignored; the list is of ImplicitAssigns.
- * DESIGN ISSUE: it would be nice for the parameters' implicit assignments to be the sole definitions, i.e. not
- * need other implicit assignments for these. But the targets of RefExp's are not expected to change address,
- * so they are not suitable at present (since the addresses regularly get changed as the parameters get
- * recreated).
- * \var UserProc::col
- * A collector for initial parameters (locations used before being defined).  Note that final parameters don't
- * use this; it's only of use during group decompilation analysis (sorting out recursion)
- */
 class UserProc : public Function
 {
-private:
-    Cfg *m_cfg; ///< The control flow graph.
-
-    /**
-     * The status of this user procedure.
-     * Status: undecoded .. final decompiled
-     */
-    ProcStatus m_status;
-
-    /*
-     * Somewhat DEPRECATED now. Eventually use the localTable.
-     * This map records the names and types for local variables. It should be a subset of the symbolMap, which also
-     * stores parameters.
-     * It is a convenient place to store the types of locals after conversion from SSA form,
-     * since it is then difficult to access the definitions of locations.
-     * This map could be combined with symbolMap below, but beware of parameters
-     * (in symbols but not locals)
-     */
-    std::map<QString, SharedType> m_locals;
-
-    int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
-    int m_nextParam = 0; ///< Number for param1, param2, etc
-
 public:
 
     /**
@@ -85,40 +72,17 @@ public:
      */
     typedef std::multimap<SharedConstExp, SharedExp, lessExpStar> SymbolMap;
 
-private:
-    SymbolMap m_symbolMap;
-
-    /**
-     * The local "symbol table", which is aware of overlaps
-     */
-    DataIntervalMap m_localTable;
-
-    /**
-     * Set of callees (Procedures that this procedure calls). Used for call graph, among other things
-     */
-    std::list<Function *> m_calleeList;
-    UseCollector m_procUseCollector;
-    StatementList m_parameters;
-
-    /// The set of address-escaped locals and parameters. If in this list, they should not be propagated
-    LocationSet m_addressEscapedVars;
-
-    // The modifieds for the procedure are now stored in the return statement
-
-    /// DataFlow object. Holds information relevant to transforming to and from SSA form.
-    DataFlow m_df;
-    int m_stmtNumber;
-    std::shared_ptr<ProcSet> m_cycleGroup;
+    typedef std::map<Instruction *, int> RefCounter;
 
 public:
 
     /***************************************************************************/ /**
      * \brief        Constructor with name, native address.
-     * \param mod - Module that contains this Function
-     * \param name - Name of procedure
      * \param address - Native address of entry point of procedure
+     * \param name - Name of procedure
+     * \param mod - Module that contains this Function
      ******************************************************************************/
-    UserProc(Module *mod, const QString& name, Address address);
+    UserProc(Address address, const QString& name, Module *mod);
     virtual ~UserProc();
 
     QString toString() const override;
@@ -139,10 +103,12 @@ public:
     SyntaxNode *getAST() const;
 
 
-    virtual bool isNoReturn() const override;
+    /// Print AST to a file.
+    /// if \p node is null, print the AST of the whole procedure.
+    void printAST(SyntaxNode *node = nullptr) const;
 
-    /// Print ast to a file
-    void printAST(SyntaxNode *a = nullptr) const;
+    /// \copydoc Function::isNoReturn
+    virtual bool isNoReturn() const override;
 
     DataIntervalMap& localsMap() { return m_localTable; }
 
@@ -157,9 +123,6 @@ public:
 
     ProcStatus getStatus() const { return m_status; }
     void setStatus(ProcStatus s);
-
-    /// code generation
-    void generateCode(ICodeGenerator *hll);
 
     /// print this proc, mainly for debugging
     void print(QTextStream& out, bool html = false) const;
@@ -237,10 +200,6 @@ public:
      * \brief Global type analysis (for this procedure).
      ******************************************************************************/
     void typeAnalysis();
-
-    // Split the set of cycle-associated procs into individual subcycles.
-    // void        findSubCycles(CycleList& path, CycleSet& cs, CycleSetSet& sset);
-
 
     /***************************************************************************/ /**
      * \brief The inductive preservation analysis.
@@ -356,8 +315,6 @@ public:
     void trimParameters(int depth = -1);
     void processFloatConstants();
 
-    // void mapExpressionsToParameters();   ///< must be in SSA form
-
     /// Not used with DFA Type Analysis; the equivalent thing happens in mapLocalsAndParams() now
     void mapExpressionsToLocals(bool lastPass = false);
     void addParameterSymbols();
@@ -396,9 +353,11 @@ public:
     /// eliminate duplicate arguments
     void eliminateDuplicateArgs();
 
+    /// code generation
+    void generateCode(ICodeGenerator *generator);
+
 private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
-
 
     /// Return a string for a new local suitable for \a e
     QString newLocalName(const SharedExp& e);
@@ -406,8 +365,6 @@ private:
 public:
     bool removeNullStatements();
     bool removeDeadStatements();
-
-    typedef std::map<Instruction *, int> RefCounter;
 
     /// Count references to the things that are under SSA control.
     /// For each SSA subscripting, increment a counter for that definition
@@ -480,9 +437,6 @@ public:
      * \returns true if any signature types so added.
      ******************************************************************************/
     bool ellipsisProcessing();
-
-    // For the final pass of removing returns that are never used
-    // typedef    std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
 
     /***************************************************************************/ /**
      * \brief Used for checking for unused parameters
@@ -698,8 +652,6 @@ public:
      ******************************************************************************/
     void addCallee(Function *callee);
 
-    // void                addCallees(std::list<UserProc*>& callees);
-
     /***************************************************************************/ /**
      * \brief Return true if this procedure contains the given address
      * \param uAddr address to search for
@@ -709,7 +661,11 @@ public:
 
     /// Change BB containing this statement from a COMPCALL to a CALL.
     void undoComputedBB(Instruction *stmt) const { m_cfg->undoComputedBB(stmt); }
+
+    /// \copydoc Function::getProven
     virtual SharedExp getProven(SharedExp left) override;
+
+    /// \copydoc Function::getPremised
     virtual SharedExp getPremised(SharedExp left) override;
 
     /// Set a location as a new premise, i.e. assume e=e
@@ -721,10 +677,12 @@ public:
 
     void killPremise(const SharedExp& e) { m_recurPremises.erase(e); }
 
-    /// Return whether e is preserved by this proc
+    /// \copydoc Function::isPreserved
     virtual bool isPreserved(SharedExp e) override;
 
+    /// \copydoc Function::printCallGraphXML
     virtual void printCallGraphXML(QTextStream& os, int depth, bool recurse = true) override;
+
     void printDecodedXML();
     void printAnalysedXML();
     void printSSAXML();
@@ -751,12 +709,8 @@ public:
      ******************************************************************************/
     void processDecodedICTs();
 
-private:
-    ReturnStatement *theReturnStatement;
-    mutable int DFGcount; ///< used in dotty output
-
 public:
-       Address getTheReturnAddr() { return theReturnStatement == nullptr ? Address::INVALID : theReturnStatement->getRetAddr(); }
+    Address getTheReturnAddr() { return theReturnStatement == nullptr ? Address::INVALID : theReturnStatement->getRetAddr(); }
     void setTheReturnAddr(ReturnStatement *s, Address r)
     {
         assert(theReturnStatement == nullptr);
@@ -792,4 +746,80 @@ public:
 protected:
     UserProc();
     void setCFG(Cfg *c) { m_cfg = c; }
-}; // class UserProc
+
+private:
+    SymbolMap m_symbolMap;
+
+    /// The local "symbol table", which is aware of overlaps
+    DataIntervalMap m_localTable;
+
+    /// Set of callees (Procedures that this procedure calls). Used for call graph, among other things
+    std::list<Function *> m_calleeList;
+
+    /**
+     * A collector for initial parameters (locations used before being defined).
+     * Note that final parameters don't use this;
+     * it's only of use during group decompilation analysis (sorting out recursion)
+     */
+    UseCollector m_procUseCollector;
+
+    /**
+     * The list of parameters, ordered and filtered.
+     * Note that a LocationList could be used, but then there would be nowhere to store the types (for DFA based TA)
+     * The RHS is just ignored; the list is of ImplicitAssigns.
+     * DESIGN ISSUE: it would be nice for the parameters' implicit assignments to be the sole definitions, i.e. not
+     * need other implicit assignments for these. But the targets of RefExp's are not expected to change address,
+     * so they are not suitable at present (since the addresses regularly get changed as the parameters get
+     * recreated).
+     */
+    StatementList m_parameters;
+
+    /// The set of address-escaped locals and parameters. If in this list, they should not be propagated
+    LocationSet m_addressEscapedVars;
+
+    // The modifieds for the procedure are now stored in the return statement
+
+    /// DataFlow object. Holds information relevant to transforming to and from SSA form.
+    DataFlow m_df;
+    int m_stmtNumber; ///< Current statement number. Makes it easier to split decompile() into smaller pieces.
+
+    /**
+     * Pointer to a set of procedures involved in a recursion group.
+     * \note Each procedure in the cycle points to the same set! However, there can be several separate cycles.
+     * E.g. in test/source/recursion.c, there is a cycle with f and g, while another is being built up (it only
+     * has c, d, and e at the point where the f-g cycle is found).
+     */
+    std::shared_ptr<ProcSet> m_cycleGroup;
+
+private:
+    /**
+     * We ensure that there is only one return statement now.
+     * See code in frontend/frontend.cpp handling case STMT_RET.
+     * If no return statement, this will be nullptr.
+     */
+    ReturnStatement *theReturnStatement;
+    mutable int DFGcount; ///< used in dotty output
+
+private:
+    Cfg *m_cfg; ///< The control flow graph.
+
+    /**
+     * The status of this user procedure.
+     * Status: undecoded .. final decompiled
+     */
+    ProcStatus m_status;
+
+    /*
+     * Somewhat DEPRECATED now. Eventually use the localTable.
+     * This map records the names and types for local variables. It should be a subset of the symbolMap, which also
+     * stores parameters.
+     * It is a convenient place to store the types of locals after conversion from SSA form,
+     * since it is then difficult to access the definitions of locations.
+     * This map could be combined with symbolMap below, but beware of parameters
+     * (in symbols but not locals)
+     */
+    std::map<QString, SharedType> m_locals;
+
+    int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
+    int m_nextParam = 0; ///< Number for param1, param2, etc
+};

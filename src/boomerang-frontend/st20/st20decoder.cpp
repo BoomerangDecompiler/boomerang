@@ -24,7 +24,9 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Binary.h"
 
 #include <cassert>
 

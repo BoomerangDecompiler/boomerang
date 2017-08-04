@@ -243,10 +243,10 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
     Function *pProc;
 
     if (bLib) {
-        pProc = new LibProc(this, name, uNative);
+        pProc = new LibProc(uNative, name, this);
     }
     else {
-        pProc = new UserProc(this, name, uNative);
+        pProc = new UserProc(uNative, name, this);
     }
 
     if (Address::INVALID != uNative) {

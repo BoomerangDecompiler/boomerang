@@ -267,7 +267,7 @@ void RtlTest::testSetConscripts()
 	CallStatement *s2   = new CallStatement();
 	Prog          *p    = new Prog("fake_prog");
 	Module        *m    = p->getOrInsertModule("test");
-	Function      *proc = new UserProc(m, "printf", Address(0x2000)); // Making a true LibProc is problematic
+	Function      *proc = new UserProc(Address(0x00002000), "printf", m); // Making a true LibProc is problematic
 
 	s2->setDestProc(proc);
 	s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call

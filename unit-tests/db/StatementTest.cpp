@@ -750,7 +750,7 @@ void StatementTest::testRecursion()
 
 	// create UserProc;
 
-	UserProc    *proc = new UserProc(prog->getOrInsertModule("test"), "test", Address::ZERO);
+	UserProc    *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
 
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
@@ -1185,7 +1185,7 @@ void StatementTest::testSubscriptVars()
 	ca->addDefine(new ImplicitAssign(Location::regOf(28)));
 	ca->addDefine(new ImplicitAssign(Location::memOf(Location::regOf(28))));
 
-	ca->setDestProc(new UserProc(mod, "dest", Address(0x2000))); // Must have a dest to be non-childless
+	ca->setDestProc(new UserProc(Address(0x00002000), "dest", mod)); // Must have a dest to be non-childless
 	ca->setCalleeReturn(new ReturnStatement);                // So it's not a childless call, and we can see the defs and params
 	ca->subscriptVar(srch, &s9);
 
@@ -1208,7 +1208,7 @@ void StatementTest::testSubscriptVars()
 	ca->setArguments(argl);
 	ca->addDefine(new ImplicitAssign(Location::regOf(31)));
 	ca->addDefine(new ImplicitAssign(Location::memOf(Location::regOf(31))));
-	ca->setDestProc(new UserProc(mod, "dest", Address(0x00002000))); // Must have a dest to be non-childless
+	ca->setDestProc(new UserProc(Address(0x00002000), "dest", mod)); // Must have a dest to be non-childless
 	ca->setCalleeReturn(new ReturnStatement);                // So it's not a childless call, and we can see the defs and params
 	ca->subscriptVar(srch, &s9);
 

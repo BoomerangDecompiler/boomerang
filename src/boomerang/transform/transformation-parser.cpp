@@ -109,6 +109,7 @@ void *alloca ();
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/TypeVal.h"
+#include "boomerang/db/exp/Binary.h"
 
 #include "boomerang/transform/ExpTransformer.h"
 #include "boomerang/transform/GenericExpTransformer.h"

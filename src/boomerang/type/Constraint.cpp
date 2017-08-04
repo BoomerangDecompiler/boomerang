@@ -20,6 +20,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/Managed.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/type/Type.h"
 #include "boomerang/util/Log.h"
 
