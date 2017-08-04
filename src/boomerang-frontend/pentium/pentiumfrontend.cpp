@@ -16,6 +16,7 @@
 
 #include "pentiumfrontend.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 
 #include "boomerang/db/IBinaryImage.h"
@@ -459,7 +460,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         return true;
     }
     else if ((name == "__mingw_frame_init") || (name == "__mingw_cleanup_setup") || (name == "__mingw_frame_end")) {
-        LOG << "found removable call to static lib proc " << name << " at " << addr << "\n";
+        LOG_MSG("Found removable call to static lib proc %1 at address %2", name, addr);
         m_program->removeProc(name);
         return true;
     }
@@ -504,13 +505,13 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 
     int     instCount = 100;
     int     conseq    = 0;
-       Address addr      = start;
+    Address addr      = start;
 
     IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
     // Look for 3 calls in a row in the first 100 instructions, with no other instructions between them.
     // This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA followed by
     // a push of eax and then the call to main.  Or a call to __libc_start_main
-       Address dest;
+    Address dest;
 
     do {
         DecodeResult inst;
@@ -595,7 +596,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     }
 
     // Not ideal; we must return start
-    LOG_STREAM(2) << "main function not found\n";
+    LOG_WARN("main function not found, falling back to entry point");
 
     if (symbols->find(start) == nullptr) {
         this->addSymbol(start, "_start");
@@ -677,7 +678,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
                             break;
                         }
                         else {
-                            LOG << "Unhandled machine feature " << str << "\n";
+                            LOG_VERBOSE("Unhandled machine feature %1", str);
                         }
                     }
                 }
@@ -1079,8 +1080,8 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 
         // found one.
         if (paramIsFuncPointer) {
-            LOG_VERBOSE(1) << "found a new procedure at address " << a << " from inspecting parameters of call to "
-                           << call->getDestProc()->getName() << ".\n";
+            LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to '%2'.",
+                        a, call->getDestProc()->getName());
             Function *proc = m_program->createProc(a);
             auto     sig   = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
             sig->setName(proc->getName());
@@ -1097,12 +1098,10 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
             if (compound->getType(n)->resolvesToPointer() &&
                 compound->getType(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
-                            Address d = Address(m_image->readNative4(a));
 
-                if (VERBOSE) {
-                    LOG << "found a new procedure at address " << d << " from inspecting parameters of call to "
-                        << call->getDestProc()->getName() << ".\n";
-                }
+                Address d = Address(m_image->readNative4(a));
+                LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to %2",
+                            d, call->getDestProc()->getName());
 
                 Function *proc = m_program->createProc(d);
                 auto     sig   = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();

@@ -71,10 +71,10 @@ void GotoStatement::adjustFixedDest(int delta)
 {
     // Ensure that the destination is fixed.
     if ((m_dest == nullptr) || (m_dest->getOper() != opIntConst)) {
-        LOG << "Can't adjust destination of non-static CTI\n";
+        LOG_MSG("Can't adjust destination of non-static CTI");
     }
 
-       Address dest = constDest()->getAddr();
+    Address dest = constDest()->getAddr();
     constDest()->setAddr(dest + delta);
 }
 

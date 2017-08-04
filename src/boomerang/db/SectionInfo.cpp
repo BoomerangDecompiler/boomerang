@@ -3,7 +3,6 @@
 #include "boomerang/db/IBinaryImage.h"
 
 #include <QVariantMap>
-#include <QDebug>
 
 #include <boost/icl/interval_set.hpp>
 #include <boost/icl/interval_map.hpp>
@@ -160,8 +159,9 @@ bool SectionInfo::anyDefinedValues() const
 
 void SectionInfo::resize(uint32_t sz)
 {
-    qDebug() << "SectionInfo::resize not fully implemented yet";
+    LOG_VERBOSE("Function not fully implemented yet");
     m_sectionSize = sz;
+
 //    assert(false && "This function is not implmented yet");
 //    if(sz!=uSectionSize) {
 //        const IBinarySection *sect = Boomerang::get()->getImage()->getSectionInfoByAddr(uNativeAddr+sz);

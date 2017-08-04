@@ -17,7 +17,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
 
-#include <QDebug>
 #include <cassert>
 
 
@@ -96,7 +95,7 @@ bool BinarySymbol::rename(const QString& s)
     SymTab *sym_tab = (SymTab *)Boomerang::get()->getSymbols();
 
     if (sym_tab->smap.find(s) != sym_tab->smap.end()) {
-        qDebug() << "Renaming symbol " << Name << " to " << s << " failed - new name clashes with another symbol";
+        LOG_ERROR("Renaming symbol %1 to %2 failed - new name clashes with another symbol", Name, s);
         return false; // symbol name clash
     }
 

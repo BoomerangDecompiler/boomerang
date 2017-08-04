@@ -169,6 +169,9 @@ void Decompiler::decode()
 {
     emit decoding();
 
+
+    LOG_MSG("Decoding program %1...", m_prog->getName());
+
     bool    gotMain;
     Address a = m_fe->getMainEntryPoint(gotMain);
 
@@ -188,6 +191,7 @@ void Decompiler::decode()
         m_fe->decode(m_prog, Address::INVALID);
     }
 
+    LOG_MSG("Decoding finished!");
     m_prog->finishDecode();
 
     emit decodeCompleted();
@@ -198,7 +202,9 @@ void Decompiler::decompile()
 {
     emit decompiling();
 
+    LOG_MSG("Starting decompile...");
     m_prog->decompile();
+    LOG_MSG("Decompile finished!");
 
     emit decompileCompleted();
 }
@@ -218,6 +224,7 @@ void Decompiler::generateCode()
 {
     emit generatingCode();
 
+    LOG_MSG("Generating code...");
     m_prog->generateCode();
 
     Module *root = m_prog->getRootCluster();
@@ -238,6 +245,7 @@ void Decompiler::generateCode()
         }
     }
 
+    LOG_MSG("Generating code completed!");
     emit generateCodeCompleted();
 }
 
@@ -353,7 +361,7 @@ bool Decompiler::getRtlForProc(const QString& name, QString& rtl)
 
 void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description)
 {
-    LOG << p->getName() << ": " << description << "\n";
+    LOG_VERBOSE("%1: %2", p->getName(), description);
 
     if (m_debugging) {
         m_waiting = true;

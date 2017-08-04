@@ -13,6 +13,8 @@
  */
 
 #include "TypeTest.h"
+
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h" // Ugh - needed before frontend.h
 #include "boomerang/db/Signature.h"
 #include "boomerang/util/Log.h"
@@ -23,21 +25,14 @@
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <QTextStream>
-#include <QDir>
-#include <QProcessEnvironment>
 #include <QDebug>
 
 #define HELLO_WINDOWS    (BOOMERANG_TEST_BASE "/tests/inputs/windows/hello.exe")
 
-static bool    logset = false;
 
 void TypeTest::initTestCase()
 {
-	if (!logset) {
-        logset = true;
-        Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-        Boomerang::get()->setLogger(new NullLogger());
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

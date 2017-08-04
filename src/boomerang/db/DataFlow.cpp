@@ -12,9 +12,8 @@
  * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
-#include "boomerang/util/Log.h"
-
-#include "boomerang/db/DataFlow.h"
+#include "DataFlow.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Proc.h"
@@ -23,7 +22,8 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/Visitor.h"
 
-#include <QtCore/QDebug>
+#include "boomerang/util/Log.h"
+
 #include <sstream>
 #include <cstring>
 
@@ -300,22 +300,18 @@ bool DataFlow::canRename(SharedExp e, UserProc *proc)
 
 void DataFlow::dumpA_phi()
 {
-    std::map<SharedExp, std::set<int>, lessExpStar>::iterator zz;
-    LOG_STREAM() << "A_phi:\n";
+    LOG_MSG("A_phi:");
 
-    for (zz = m_A_phi.begin(); zz != m_A_phi.end(); ++zz) {
-        LOG_STREAM() << zz->first << " -> ";
+    for (auto zz = m_A_phi.begin(); zz != m_A_phi.end(); ++zz) {
         std::set<int>&          si = zz->second;
-        std::set<int>::iterator qq;
 
-        for (qq = si.begin(); qq != si.end(); ++qq) {
-            LOG_STREAM() << *qq << ", ";
+        LOG_MSG("  %1 ->", zz->first);
+        for (std::set<int>::iterator qq = si.begin(); qq != si.end(); ++qq) {
+            LOG_MSG("    %2", *qq);
         }
-
-        LOG_STREAM() << "\n";
     }
 
-    LOG_STREAM() << "end A_phi\n";
+    LOG_MSG("end A_phi");
 }
 
 
@@ -456,16 +452,8 @@ static SharedExp defineAll = Terminal::get(opDefineAll); // An expression repres
 #define STACKS_EMPTY(q)    (m_Stacks.find(q) == m_Stacks.end() || m_Stacks[q].empty())
 
 // Subscript dataflow variables
-static int dataflow_progress = 0;
 bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = false */)
 {
-    if (++dataflow_progress > 200) {
-        LOG_STREAM() << 'r';
-        LOG_STREAM().flush();
-
-        dataflow_progress = 0;
-    }
-
     bool changed = false;
 
     // Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare
@@ -713,8 +701,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             auto ss = m_Stacks.find(*dd);
 
             if (ss == m_Stacks.end()) {
-                LOG_STREAM() << "Tried to pop " << *dd << " from Stacks; does not exist\n";
-                assert(0);
+                LOG_FATAL("Tried to pop %1 from Stacks; does not exist", (*dd)->toString());
             }
 
             ss->second.pop_back();
@@ -736,18 +723,18 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 
 void DataFlow::dumpStacks()
 {
-    LOG_STREAM() << "Stacks: " << m_Stacks.size() << " entries\n";
+    LOG_MSG("Stacks: %1 entries", m_Stacks.size());
 
     for (auto zz = m_Stacks.begin(); zz != m_Stacks.end(); zz++) {
-        LOG_STREAM() << "Var " << zz->first << " [ ";
         std::deque<Instruction *> tt = zz->second; // Copy the stack!
 
+        LOG_MSG("  Var %1 [", zz->first);
         while (!tt.empty()) {
-            LOG_STREAM() << tt.back()->getNumber() << " ";
+            LOG_MSG("    %1", tt.back()->getNumber());
             tt.pop_back();
         }
 
-        LOG_STREAM() << "]\n";
+        LOG_MSG("  ]");
     }
 }
 
@@ -757,15 +744,13 @@ void DataFlow::dumpDefsites()
     std::map<SharedExp, std::set<int>, lessExpStar>::iterator dd;
 
     for (dd = m_defsites.begin(); dd != m_defsites.end(); ++dd) {
-        LOG_STREAM() << dd->first;
-        std::set<int>::iterator ii;
+
         std::set<int>&          si = dd->second;
 
-        for (ii = si.begin(); ii != si.end(); ++ii) {
-            LOG_STREAM() << " " << *ii;
+        LOG_MSG("%1", dd->first);
+        for (std::set<int>::iterator ii = si.begin(); ii != si.end(); ++ii) {
+            LOG_MSG("  ", *ii);
         }
-
-        LOG_STREAM() << "\n";
     }
 }
 
@@ -775,13 +760,10 @@ void DataFlow::dumpA_orig()
     int n = m_A_orig.size();
 
     for (int i = 0; i < n; ++i) {
-        LOG_STREAM() << i;
-
+        LOG_MSG("%1", i);
         for (const SharedExp& ee : m_A_orig[i]) {
-            LOG_STREAM() << " " << ee;
+            LOG_MSG("  %1 ", ee);
         }
-
-        LOG_STREAM() << "\n";
     }
 }
 

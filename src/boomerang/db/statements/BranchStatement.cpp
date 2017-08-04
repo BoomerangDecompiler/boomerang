@@ -421,10 +421,7 @@ void BranchStatement::simplify()
 void BranchStatement::genConstraints(LocationSet& cons)
 {
     if (m_cond == nullptr) {
-        if (VERBOSE) {
-            LOG << "Warning: BranchStatment " << m_number << " has no condition expression!\n";
-        }
-
+        LOG_VERBOSE("Warning: BranchStatment %1 has no condition expression!", m_number);
         return;
     }
 

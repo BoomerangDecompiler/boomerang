@@ -41,7 +41,7 @@
 #include <cstdlib>
 #include <memory>
 
-static int codegen_progress = 0;
+
 static bool isBareMemof(const Exp& e, UserProc *proc);
 
 
@@ -67,12 +67,6 @@ void CCodeGenerator::indent(QTextStream& str, int indLevel)
 
 void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool uns /* = false */)
 {
-    if (++codegen_progress > 500) {
-        LOG_STREAM() << 'g';
-        LOG_STREAM().flush();
-        codegen_progress = 0;
-    }
-
     OPER op = exp.getOper();
 
 #if SYMS_IN_BACK_END                 // Should no longer be any unmapped symbols by the back end
@@ -455,7 +449,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opRegOf:
         {
             // MVE: this can likely go
-            LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opRegOf is deprecated\n";
+            LOG_VERBOSE("Case opRegOf is deprecated");
 
             if (u.getSubExp1()->getOper() == opTemp) {
                 // The great debate: r[tmpb] vs tmpb
@@ -485,7 +479,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opTemp:
         // Should never see this; temps should be mapped to locals now so that they get declared
-        LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opTemp is deprecated\n";
+        LOG_VERBOSE("Case opTemp is deprecated");
         // Emit the temp name, e.g. "tmp1"
         str << u.access<Const, 1>()->getStr();
         break;
@@ -722,7 +716,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opAFP:
     case opAGP:
         // not implemented
-        LOG << "WARNING: CCodeGenerator::appendExp: case " << exp.getOperName() << " not implemented\n";
+        LOG_WARN("Case %1 not implemented", exp.getOperName());
         // assert(false);
         break;
 
@@ -822,7 +816,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             }
         }
 
-        LOG_VERBOSE(1) << "WARNING: CCodeGenerator::appendExp: case opZfill is deprecated\n";
+        LOG_VERBOSE("Case opZfill is deprecated");
         str << "(";
         appendExp(str, *t.getSubExp3(), PREC_NONE);
         str << ")";
@@ -1044,13 +1038,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opSubscript:
         appendExp(str, *u.getSubExp1(), curPrec);
-
-        if (VERBOSE) {
-            LOG << "ERROR: CCodeGenerator::appendExp: subscript in code generation of proc " << m_proc->getName()
-                << " exp (without subscript): " << str.readAll() << "\n";
-        }
-
-        // assert(false);
+        LOG_ERROR("Subscript in code generation of proc %1, exp (without subscript): %2", m_proc->getName(), str.readAll());
         break;
 
     case opMemberAccess:
@@ -1058,7 +1046,8 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             SharedType ty = nullptr;
 
             if (ty == nullptr) {
-                LOG << "type failure: no type for subexp1 of " << b.shared_from_this() << "\n";
+                LOG_MSG("Type failure: no type for subexp1 of %1", b.shared_from_this());
+
                 // ty = b.getSubExp1()->getType();
                 // No idea why this is hitting! - trentw
                 // str << "/* type failure */ ";
@@ -1108,11 +1097,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opDefineAll:
         str << "<all>";
-
-        if (VERBOSE) {
-            LOG << "ERROR: should not see opDefineAll in codegen\n";
-        }
-
+        LOG_ERROR("Should not see opDefineAll in codegen");
         break;
 
     default:
@@ -1126,8 +1111,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             break;
         }
 
-        LOG << "ERROR: CCodeGenerator::appendExp: case " << exp.getOperName() << " not implemented\n";
-        // assert(false);
+        LOG_ERROR("case %1 not implemented", exp.getOperName());
     }
 }
 
@@ -1181,7 +1165,7 @@ void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString i
             ident = "unknownVoidType";
         }
 
-        LOG << "WARNING: CCodeGenerator::appendTypeIdent: declaring type void as int for " << ident << "\n";
+        LOG_WARN("Declaring type void as int for %1", ident);
         str << "int " << ident;
     }
     else {
@@ -1843,8 +1827,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
     StatementList::iterator pp;
 
     if ((parameters.size() > 10) && open) {
-        LOG << "Warning: CCodeGenerator::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size()
-            << " parameters\n";
+        LOG_WARN("Proc %1 has %2 parameters", proc->getName(), parameters.size());
     }
 
     bool first = true;
@@ -1863,7 +1846,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 
         if (ty == nullptr) {
             if (VERBOSE) {
-                LOG << "ERROR in CCodeGenerator::AddProcDec: no type for parameter " << left << "!\n";
+                LOG_ERROR("No type for parameter %1!", left);
             }
 
             ty = IntegerType::get(STD_SIZE, 0);
@@ -1875,7 +1858,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
             name = left->access<Const, 1>()->getStr();
         }
         else {
-            LOG << "ERROR: parameter " << left << " is not opParam!\n";
+            LOG_ERROR("Parameter %1 is not opParam!", left);
             name = "??";
         }
 

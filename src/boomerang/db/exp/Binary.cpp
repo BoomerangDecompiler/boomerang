@@ -1,5 +1,6 @@
 #include "Binary.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Terminal.h"
@@ -524,8 +525,7 @@ void Binary::print(QTextStream& os, bool html) const
             break;
 
         default:
-            LOG << "Binary::print invalid operator " << operToString(m_oper) << "\n";
-            assert(false);
+            LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     if (p2 == nullptr) {
@@ -612,7 +612,7 @@ bool Binary::match(const QString& pattern, std::map<QString, SharedConstExp>& bi
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "binary::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
 
     if ((m_oper == opMemberAccess) && (-1 != tlstrchr(pattern, '.'))) {
@@ -1312,14 +1312,14 @@ SharedExp Binary::polySimplify(bool& bMod)
                                             if ((m_oper == opPlus) && ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToCompound() &&
                                                 (opSub2 == opIntConst)) {
                                                 unsigned n = (unsigned)std::static_pointer_cast<const Const>(subExp2)->getInt();
-                                            std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
-                                            res = convertFromOffsetToCompound(subExp1, c, n);
+                                                std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
+                                                res = convertFromOffsetToCompound(subExp1, c, n);
 
-                                            if (res) {
-                                                LOG_VERBOSE(1) << "(trans1) replacing " << shared_from_this() << " with " << res << "\n";
-                                                bMod = true;
-                                                return res;
-                                            }
+                                                if (res) {
+                                                    LOG_VERBOSE("(trans1) replacing %1 with %2", shared_from_this(), res);
+                                                    bMod = true;
+                                                    return res;
+                                                }
                                                 }
 
                                                 if ((m_oper == opFMinus) && (subExp1->getOper() == opFltConst) && (std::static_pointer_cast<const Const>(subExp1)->getFlt() == 0.0)) {
@@ -1759,8 +1759,7 @@ SharedExp Binary::accept(ExpModifier *v)
 void Binary::printx(int ind) const
 {
     assert(subExp1 && subExp2);
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM().flush();
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
     child(subExp1, ind);
     child(subExp2, ind);
 }

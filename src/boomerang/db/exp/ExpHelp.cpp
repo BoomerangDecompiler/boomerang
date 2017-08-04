@@ -1,5 +1,6 @@
 #include "ExpHelp.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/util/Log.h"
@@ -35,8 +36,7 @@ bool lessAssign::operator()(const Assign *x, const Assign *y) const
 void child(const SharedExp& e, int ind)
 {
     if (e == nullptr) {
-        Util::alignStream(LOG_STREAM(), ind + 4) << "<nullptr>\n";
-        LOG_STREAM().flush();
+        LOG_MSG("%1<nullptr>", QString(ind+4, ' '));
         return;
     }
 

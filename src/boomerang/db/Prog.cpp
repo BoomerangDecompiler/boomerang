@@ -20,7 +20,7 @@
  ******************************************************************************/
 #include "Prog.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/c/ansi-c-parser.h"
@@ -46,6 +46,7 @@
 
 #include "boomerang/type/Type.h"
 
+#include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h" // For lockFileWrite etc
 
@@ -53,7 +54,6 @@
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>
-#include <QtCore/QDebug>
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/QDir>
 #include <QtCore/QString>
@@ -455,7 +455,7 @@ Module *Prog::getDefaultModule(const QString& name)
         return m_rootCluster;
     }
 
-    LOG << "got filename " << cfname << " for " << name << "\n";
+    LOG_VERBOSE("Got filename %1 for %2", cfname, name);
     cfname.chop(2); // remove .c
     Module *c = findModule(cfname);
 
@@ -582,7 +582,7 @@ Function *Prog::createProc(Address uAddr)
     if (pName.isEmpty()) {
         // No name. Give it a numbered name
         pName = QString("proc%1").arg(m_iNumberedProc++);
-        LOG_VERBOSE(1) << "assigning name " << pName << " to addr " << uAddr << "\n";
+        LOG_VERBOSE("Assigning name %1 to address %2", pName, uAddr);
     }
 
     pProc = m_rootCluster->getOrInsertFunction(pName, uAddr, bLib);
@@ -706,15 +706,13 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase)
             return BooleanType::get();
 
         default:
-            LOG_STREAM() << "unhandled base type " << d << "\n";
-            assert(false);
+            LOG_FATAL("Unhandled base type %1", d);
         }
 
         break;
 
     default:
-        LOG_STREAM() << "unhandled symtag " << d << "\n";
-        assert(false);
+        LOG_FATAL("Unhandled symtag %1", d);
     }
 
     return nullptr;
@@ -895,7 +893,7 @@ QString Prog::getGlobalName(Address uaddr) const
 void Prog::dumpGlobals() const
 {
     for (Global *glob : m_globals) {
-        LOG_STREAM() << glob->toString() << "\n";
+        LOG_VERBOSE(glob->toString());
     }
 }
 
@@ -941,8 +939,8 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
     }
 
     if (m_image->getSectionInfoByAddr(uaddr) == nullptr) {
-        LOG_VERBOSE(1) << "refusing to create a global at address that is in no known section of the binary: " << uaddr
-                       << "\n";
+        LOG_VERBOSE("Refusing to create a global at address %1 "
+            "that is in no known section of the binary", uaddr);
         return false;
     }
 
@@ -976,16 +974,8 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
     Global *global = new Global(ty, uaddr, nam, this);
     m_globals.insert(global);
 
-    if (VERBOSE) {
-        LOG << "globalUsed: name " << nam << ", address " << uaddr;
-
-        if (knownType) {
-            LOG << ", known type " << ty->getCtype() << "\n";
-        }
-        else {
-            LOG << ", guessed type " << ty->getCtype() << "\n";
-        }
-    }
+    LOG_VERBOSE("globalUsed: name %1, address %2, %3 type %4",
+                nam, uaddr, knownType ? "known" : "guessed", ty->getCtype());
 
     return true;
 }
@@ -1070,7 +1060,7 @@ QString Prog::newGlobalName(Address uaddr)
     }
 
     nam = QString("global%1_%2").arg(m_globals.size()).arg(uaddr.value(), 0, 16);
-    LOG_VERBOSE(1) << "naming new global: " << nam << " at address " << uaddr << "\n";
+    LOG_VERBOSE("Naming new global '%1' at address %2", nam, uaddr);
     return nam;
 }
 
@@ -1294,7 +1284,7 @@ void Prog::decodeEntryPoint(Address a)
 
     if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
         if ((a < m_image->getLimitTextLow()) || (a >= m_image->getLimitTextHigh())) {
-            LOG_STREAM(LL_Warn) << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
+            LOG_WARN("Attempt to decode entrypoint at address %1 outside text area", a);
             return;
         }
 
@@ -1369,12 +1359,12 @@ void Prog::decompile()
 
     assert(!m_moduleList.empty());
     getNumProcs();
-    LOG_VERBOSE(1) << getNumProcs(false) << " procedures\n";
+    LOG_VERBOSE("%1 procedures", getNumProcs(false));
 
     // Start decompiling each entry point
     for (UserProc *up : m_entryProcs) {
         ProcList call_path;
-        LOG_VERBOSE(1) << "decompiling entry point " << up->getName() << "\n";
+        LOG_VERBOSE("Decompiling entry point %1", up->getName());
         int indent = 0;
         up->decompile(&call_path, indent);
     }
@@ -1409,7 +1399,8 @@ void Prog::decompile()
 
     // Type analysis, if requested
     if (Boomerang::get()->conTypeAnalysis && Boomerang::get()->dfaTypeAnalysis) {
-        LOG_STREAM() << "can't use two types of type analysis at once!\n";
+        LOG_ERROR("Enabling constraint-based type analysis and DFA type analysis is not supported, "
+            "falling back to DFA type analysis");
         Boomerang::get()->conTypeAnalysis = false;
     }
 
@@ -1418,7 +1409,7 @@ void Prog::decompile()
     if (!boom->noDecompile) {
         if (!boom->noRemoveReturns) {
             // A final pass to remove returns not used by any caller
-            LOG_VERBOSE(1) << "prog: global removing unused returns\n";
+            LOG_VERBOSE("Prog: global removing unused returns");
 
             // Repeat until no change. Note 100% sure if needed.
             while (removeUnusedReturns()) {
@@ -1438,7 +1429,7 @@ void Prog::decompile()
         }
     }
 
-    LOG_VERBOSE(1) << "transforming from SSA\n";
+    LOG_VERBOSE("Transforming from SSA");
 
     // Now it is OK to transform out of SSA form
     fromSSAform();
@@ -1450,7 +1441,7 @@ void Prog::decompile()
 
 void Prog::removeUnusedGlobals()
 {
-    LOG_VERBOSE(1) << "removing unused globals\n";
+    LOG_VERBOSE("Removing unused globals");
 
     // seach for used globals
     std::list<SharedExp> usedGlobals;
@@ -1477,7 +1468,7 @@ void Prog::removeUnusedGlobals()
                 bool found = s->searchAll(search, usedGlobals);
 
                 if (found && DEBUG_UNUSED) {
-                    LOG << " a global is used by stmt " << s->getNumber() << "\n";
+                    LOG_VERBOSE("A global is used by stmt %1", s->getNumber());
                 }
             }
         }
@@ -1497,7 +1488,7 @@ void Prog::removeUnusedGlobals()
 
     for (const SharedExp& e : usedGlobals) {
         if (DEBUG_UNUSED) {
-            LOG << " " << e << " is used\n";
+            LOG_MSG(" %1 is used", e);
         }
 
         QString name(e->access<Const, 1>()->getStr());
@@ -1507,7 +1498,7 @@ void Prog::removeUnusedGlobals()
             m_globals.insert(usedGlobal);
         }
         else {
-            LOG << "warning: an expression refers to a nonexistent global\n";
+            LOG_WARN("An expression refers to a nonexistent global");
         }
     }
 }
@@ -1559,9 +1550,10 @@ void Prog::fromSSAform()
 
             UserProc *proc = (UserProc *)pp;
 
+            LOG_VERBOSE("===== Before transformation from SSA form for %1 ====", proc->getName());
+            LOG_VERBOSE("===== End before transformation from SSA form for %1 ====", proc->getName());
+
             if (VERBOSE) {
-                LOG << "===== before transformation from SSA form for " << proc->getName() << " =====\n" << *proc
-                    << "===== end before transformation from SSA for " << proc->getName() << " =====\n\n";
 
                 if (!Boomerang::get()->dotFile.isEmpty()) {
                     proc->printDFG();
@@ -1569,8 +1561,10 @@ void Prog::fromSSAform()
             }
 
             proc->fromSSAform();
-            LOG_VERBOSE(1) << "===== after transformation from SSA form for " << proc->getName() << " =====\n" << *proc
-                           << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
+
+            LOG_VERBOSE("===== After transformation from SSA form for %1 ====", proc->getName());
+            LOG_VERBOSE("%1", proc->prints());
+            LOG_VERBOSE("===== End after transformation from SSA form for %1 ====", proc->getName());
         }
     }
 }
@@ -1578,8 +1572,8 @@ void Prog::fromSSAform()
 
 void Prog::conTypeAnalysis()
 {
-    if (VERBOSE || DEBUG_TA) {
-        LOG << "=== start constraint-based type analysis ===\n";
+    if (DEBUG_TA) {
+        LOG_VERBOSE("=== Start constraint-based type analysis ===");
     }
 
     // FIXME: This needs to be done bottom of the call-tree first, with repeat until no change for cycles
@@ -1596,16 +1590,16 @@ void Prog::conTypeAnalysis()
         }
     }
 
-    if (VERBOSE || DEBUG_TA) {
-        LOG << "=== end type analysis ===\n";
+    if (DEBUG_TA) {
+        LOG_VERBOSE("=== End type analysis ===");
     }
 }
 
 
 void Prog::globalTypeAnalysis()
 {
-    if (VERBOSE || DEBUG_TA) {
-        LOG << "### start global data-flow-based type analysis ###\n";
+    if (DEBUG_TA) {
+        LOG_VERBOSE("### Start global data-flow-based type analysis ###");
     }
 
     for (Module *module : m_moduleList) {
@@ -1618,13 +1612,13 @@ void Prog::globalTypeAnalysis()
 
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
-            LOG_STREAM() << "global type analysis for " << proc->getName() << "\n";
+            LOG_VERBOSE("Global type analysis for %1", proc->getName());
             proc->typeAnalysis();
         }
     }
 
-    if (VERBOSE || DEBUG_TA) {
-        LOG << "### end type analysis ###\n";
+    if (DEBUG_TA) {
+        LOG_VERBOSE("### End type analysis ###");
     }
 }
 
@@ -1655,7 +1649,7 @@ void Prog::printCallGraph() const
     QSaveFile file2(fname2);
 
     if (!(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly))) {
-        LOG_STREAM() << "Cannot open output files for callgraph output";
+        LOG_VERBOSE("Cannot open output files for callgraph output");
         return;
     }
 
@@ -1762,12 +1756,12 @@ Machine Prog::getMachine() const
 
 void Prog::printSymbolsToFile() const
 {
-    LOG_STREAM() << "entering Prog::printSymbolsToFile\n";
+    LOG_VERBOSE("Entering Prog::printSymbolsToFile");
     QString   fname = Boomerang::get()->getOutputDirectory().absoluteFilePath("symbols.h");
     QSaveFile tgt(fname);
 
     if (!tgt.open(QFile::WriteOnly)) {
-        LOG_STREAM() << " Cannot open " << fname << " for writing\n";
+        LOG_ERROR("Cannot open %1 for writing", fname);
         return;
     }
 
@@ -1793,7 +1787,7 @@ void Prog::printSymbolsToFile() const
 
     f.flush();
     tgt.commit();
-    LOG_STREAM() << "leaving Prog::printSymbolsToFile\n";
+    LOG_VERBOSE("Leaving Prog::printSymbolsToFile");
 }
 
 
@@ -1848,16 +1842,15 @@ Module *Prog::findModule(const QString& name) const
 
 void Prog::readSymbolFile(const QString& fname)
 {
-    std::ifstream ifs;
-
-    ifs.open(fname.toStdString());
-
-    if (!ifs.good()) {
-        LOG << "can't open `" << fname << "'\n";
-        exit(1);
+    AnsiCParser *par = nullptr;
+    try {
+        par = new AnsiCParser(qPrintable(fname), false);
+    }
+    catch (const char*) {
+        LOG_ERROR("Cannot read symbol file '%1'", fname);
+        return;
     }
 
-    AnsiCParser *par = new AnsiCParser(ifs, false);
     Platform    plat = getFrontEndId();
     CallConv    cc   = CallConv::C;
 
@@ -1906,7 +1899,6 @@ void Prog::readSymbolFile(const QString& fname)
     }
 
     delete par;
-    ifs.close();
 }
 
 
@@ -1984,7 +1976,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
             auto       v    = readNativeAs(addr, t);
 
             if (v == nullptr) {
-                LOG << "unable to read native address " << addr << " as type " << t->getCtype() << "\n";
+                LOG_MSG("Unable to read native address %1 as type %2", addr, t->getCtype());
                 v = Const::get(-1);
             }
 
@@ -2115,11 +2107,7 @@ void Prog::decodeFragment(UserProc *proc, Address a)
         m_defaultFrontend->decodeFragment(proc, a);
     }
     else {
-        LOG_STREAM() << "attempt to decode fragment outside text area, addr=" << a << "\n";
-
-        if (VERBOSE) {
-            LOG << "attempt to decode fragment outside text area, addr=" << a << "\n";
-        }
+        LOG_ERROR("Attempt to decode fragment at address %1 outside text area", a);
     }
 }
 

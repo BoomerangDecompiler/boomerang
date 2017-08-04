@@ -1,10 +1,9 @@
 #include "ImpRefStatement.h"
 
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Visitor.h"
-
 #include "boomerang/type/Type.h"
+#include "boomerang/util/Log.h"
 
 
 ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)
@@ -78,8 +77,8 @@ bool ImpRefStatement::accept(StmtModifier *v)
         m_addressExp = m_addressExp->accept(v->m_mod);
     }
 
-    if (VERBOSE && v->m_mod->isMod()) {
-        LOG << "ImplicitRef changed: now " << this << "\n";
+    if (v->m_mod->isMod()) {
+        LOG_VERBOSE("ImplicitRef changed: now %1", this);
     }
 
     return true;
@@ -97,8 +96,8 @@ bool ImpRefStatement::accept(StmtPartModifier *v)
         m_addressExp = m_addressExp->accept(v->mod);
     }
 
-    if (VERBOSE && v->mod->isMod()) {
-        LOG << "ImplicitRef changed: now " << this << "\n";
+    if (v->mod->isMod()) {
+        LOG_VERBOSE("ImplicitRef changed: now %1", this);
     }
 
     return true;

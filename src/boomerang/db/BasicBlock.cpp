@@ -19,6 +19,7 @@
  ******************************************************************************/
 #include "BasicBlock.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
@@ -39,7 +40,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
-#include <QtCore/QDebug>
 #include <cassert>
 #include <algorithm>
 #include <cstring>
@@ -303,7 +303,7 @@ void BasicBlock::printToLog()
     QTextStream ost(&tgt);
 
     print(ost);
-    LOG << tgt;
+    LOG_MSG(tgt);
 }
 
 
@@ -724,7 +724,6 @@ SharedExp BasicBlock::getCond()
         return bs->getCondExpr();
     }
 
-    LOG_VERBOSE(1) << "throwing LastStatementNotABranchError\n";
     throw LastStatementNotABranchError(last->getHlStmt());
 }
 
@@ -754,7 +753,6 @@ SharedExp BasicBlock::getDest() noexcept(false)
         }
     }
 
-    LOG_VERBOSE(1) << "throwing LastStatementNotAGotoError\n";
     throw LastStatementNotAGotoError(lastStmt);
 }
 
@@ -865,62 +863,57 @@ void BasicBlock::simplify()
 
         if (m_nodeType == BBType::Fall) {
             // set out edges to be the second one
-            if (VERBOSE) {
-                LOG << "turning TWOWAY into FALL: " << m_outEdges[0]->getLowAddr() << " " << m_outEdges[1]->getLowAddr()
-                    << "\n";
-            }
+            LOG_VERBOSE("Turning TWOWAY into FALL: %1 %2", m_outEdges[0]->getLowAddr(), m_outEdges[1]->getLowAddr());
 
             BasicBlock *redundant = m_outEdges[0];
             m_outEdges[0] = m_outEdges[1];
             m_outEdges.resize(1);
             m_targetOutEdges = 1;
-            LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            LOG_VERBOSE("Redundant edge to address %1", redundant->getLowAddr());
+            LOG_VERBOSE("  inedges:");
+
             std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
             redundant->m_inEdges.clear();
 
             for (BasicBlock *redundant_edge : rinedges) {
-                LOG_VERBOSE(1) << redundant_edge->getLowAddr() << " ";
-
                 if (redundant_edge != this) {
+                    LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
                     redundant->m_inEdges.push_back(redundant_edge);
                 }
                 else {
-                    LOG_VERBOSE(1) << "(ignored) ";
+                    LOG_VERBOSE("    %1 (ignored)", redundant_edge->getLowAddr());
                 }
             }
 
-            LOG_VERBOSE(1) << "\n";
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
+            LOG_VERBOSE("  after: %1", m_outEdges[0]->getLowAddr());
         }
 
         if (m_nodeType == BBType::Oneway) {
             // set out edges to be the first one
-            LOG_VERBOSE(1) << "turning TWOWAY into ONEWAY: " << m_outEdges[0]->getLowAddr() << " "
-                           << m_outEdges[1]->getLowAddr() << "\n";
+            LOG_VERBOSE("Turning TWOWAY into ONEWAY: %1 %2", m_outEdges[0]->getLowAddr(), m_outEdges[1]->getLowAddr());
+
             BasicBlock *redundant = m_outEdges[1];
             m_outEdges.resize(1);
             m_targetOutEdges = 1;
-            LOG_VERBOSE(1) << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            LOG_VERBOSE("redundant edge to address %1", redundant->getLowAddr());
+            LOG_VERBOSE("  inedges:");
+
             std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
             redundant->m_inEdges.clear();
 
             for (BasicBlock *redundant_edge : rinedges) {
-                if (VERBOSE) {
-                    LOG << redundant_edge->getLowAddr() << " ";
-                }
-
                 if (redundant_edge != this) {
+                    LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
                     redundant->m_inEdges.push_back(redundant_edge);
                 }
                 else {
-                    LOG_VERBOSE(1) << "(ignored) ";
+                    LOG_VERBOSE("    %1 (ignored)", redundant_edge->getLowAddr());
                 }
             }
 
-            LOG_VERBOSE(1) << "\n";
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE(1) << "   after: " << m_outEdges[0]->getLowAddr() << "\n";
+            LOG_VERBOSE("  after: %1", m_outEdges[0]->getLowAddr());
         }
     }
 }
@@ -928,7 +921,6 @@ void BasicBlock::simplify()
 
 bool BasicBlock::hasBackEdgeTo(BasicBlock *dest)
 {
-    //    assert(HasEdgeTo(dest) || dest == this);
     return dest == this || dest->isAncestorOf(this);
 }
 
@@ -965,7 +957,7 @@ void BasicBlock::emitGotoAndLabel(ICodeGenerator *hll, int indLevel, BasicBlock 
 void BasicBlock::WriteBB(ICodeGenerator *hll, int indLevel)
 {
     if (DEBUG_GEN) {
-        LOG << "Generating code for BB at " << getLowAddr() << "\n";
+        LOG_MSG("Generating code for BB at address %1", getLowAddr());
     }
 
     // Allocate space for a label to be generated for this node and add this to the generated code. The actual label can
@@ -975,16 +967,12 @@ void BasicBlock::WriteBB(ICodeGenerator *hll, int indLevel)
     if (m_listOfRTLs) {
         for (RTL *rtl : *m_listOfRTLs) {
             if (DEBUG_GEN) {
-                LOG << rtl->getAddress() << "\t";
+                LOG_MSG("%1", rtl->getAddress());
             }
 
             for (Instruction *st : *rtl) {
                 st->generateCode(hll, this, indLevel);
             }
-        }
-
-        if (DEBUG_GEN) {
-            LOG << "\n";
         }
     }
 
@@ -1382,7 +1370,8 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             if (m_nodeType == BBType::CompJump) {
                 QString     dat;
                 QTextStream ost(&dat);
-                assert(m_listOfRTLs->size());
+
+                assert(!m_listOfRTLs->empty());
                 RTL *lastRTL = m_listOfRTLs->back();
                 assert(!lastRTL->empty());
                 GotoStatement *gs = (GotoStatement *)lastRTL->back();
@@ -1397,13 +1386,13 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
 
         if (m_outEdges.size() != 1) {
             BasicBlock *other = m_outEdges[1];
-            LOG << "found seq with more than one outedge!\n";
+            LOG_MSG("Found seq with more than one outedge!");
             auto const_dest = std::static_pointer_cast<Const>(getDest());
 
             if (const_dest->isIntConst() && (const_dest->getAddr() == child->getLowAddr())) {
                 other = child;
                 child = m_outEdges[1];
-                LOG << "taken branch is first out edge\n";
+                LOG_MSG("Taken branch is first out edge");
             }
 
             try {
@@ -1419,7 +1408,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
                 hll->addIfCondEnd(indLevel);
             }
             catch (LastStatementNotABranchError&) {
-                LOG << "last statement is not a cond, don't know what to do with this.\n";
+                LOG_ERROR("last statement is not a cond, don't know what to do with this.");
             }
         }
 
@@ -1430,7 +1419,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
             ((child->m_loopHead != m_loopHead) && (!child->allParentsGenerated() || isIn(followSet, child))) ||
             (latch && latch->m_loopHead && (latch->m_loopHead->m_loopFollow == child)) ||
             !((m_caseHead == child->m_caseHead) || (m_caseHead && (child == m_caseHead->m_condFollow)))) {
-            emitGotoAndLabel(hll, indLevel, child);
+                emitGotoAndLabel(hll, indLevel, child);
         }
         else {
             if (m_caseHead && (child == m_caseHead->m_condFollow)) {
@@ -1445,7 +1434,7 @@ void BasicBlock::generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *lat
         break;
 
     default:
-        LOG_STREAM() << "unhandled sType " << (int)m_structuringType << "\n";
+        LOG_ERROR("Unhandled sType %1", (int)m_structuringType);
     }
 }
 
@@ -1459,7 +1448,7 @@ Function *BasicBlock::getDestProc()
     Function *proc = call->getDestProc();
 
     if (proc == nullptr) {
-        LOG_STREAM() << "Indirect calls not handled yet\n";
+        LOG_FATAL("Indirect calls not handled yet.");
         assert(false);
     }
 
@@ -1716,8 +1705,8 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig
             // We have an interference between r and dr. Record it
             ig.connect(r, dr);
 
-            if (VERBOSE || DEBUG_LIVENESS) {
-                LOG << "interference of " << dr << " with " << r << "\n";
+            if (DEBUG_LIVENESS) {
+                LOG_VERBOSE("Interference of %1 with %2", dr, r);
             }
         }
 
@@ -1769,7 +1758,7 @@ bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc *myProc)
                 checkForOverlap(liveLocs, uses, ig, myProc);
 
                 if (DEBUG_LIVENESS) {
-                    LOG << " ## liveness: at top of " << s << ", liveLocs is " << liveLocs.prints() << "\n";
+                    LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.prints());
                 }
             }
         }
@@ -1814,7 +1803,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 
             for (std::pair<const BasicBlock *, PhiInfo> v : pa->getDefs()) {
                 if (-1 != cfg->pbbToIndex(v.first)) {
-                    qDebug() << "Someone removed BB that defined the PHI! Need to update PhiAssign defs";
+                    LOG_WARN("Someone removed BB that defined the PHI! Need to update PhiAssign defs");
                 }
             }
 
@@ -1866,8 +1855,8 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
             phiLocs.insert(r);
 
             if (DEBUG_LIVENESS) {
-                LOG << " ## Liveness: adding " << r << " due to ref to phi " << st << " in BB at " << getLowAddr()
-                    << "\n";
+                LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3",
+                        r, st, getLowAddr());
             }
         }
     }
@@ -1901,41 +1890,63 @@ int BasicBlock::whichPred(BasicBlock *pred)
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // TODO: use initializer lists
 static SharedExp forma =
-    RefExp::get(Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), (Instruction *)-1), Terminal::get(opWild)),
+    RefExp::get(Binary::get(opArrayIndex,
+                            RefExp::get(Terminal::get(opWild), (Instruction *)-1),
+                            Terminal::get(opWild)),
                 (Instruction *)-1);
 
 // Pattern: m[<expr> * 4 + T ]
 static SharedExp formA = Location::memOf(
-    Binary::get(opPlus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)), Terminal::get(opWildIntConst)));
+    Binary::get(opPlus,
+                Binary::get(opMult,
+                            Terminal::get(opWild),
+                            Const::get(4)),
+                Terminal::get(opWildIntConst)));
 
 // With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
 static SharedExp formo =
-    RefExp::get(Binary::get(opArrayIndex, RefExp::get(Terminal::get(opWild), (Instruction *)-1), Terminal::get(opWild)),
+    RefExp::get(Binary::get(opArrayIndex,
+                            RefExp::get(Terminal::get(opWild), (Instruction *)-1),
+                            Terminal::get(opWild)),
                 (Instruction *)-1);
 
 // Pattern: m[<expr> * 4 + T ] + T
 static SharedExp formO =
-    Binary::get(opPlus, Location::memOf(Binary::get(opPlus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)),
-                                                    Terminal::get(opWildIntConst))),
+    Binary::get(opPlus,
+                Location::memOf(Binary::get(opPlus,
+                                            Binary::get(opMult,
+                                                        Terminal::get(opWild),
+                                                        Const::get(4)),
+                                            Terminal::get(opWildIntConst))),
                 Terminal::get(opWildIntConst));
 
 // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
 // where k is a small constant, typically 28 or 20
-static SharedExp formR = Binary::get(
-    opPlus, Terminal::get(opPC),
-    Location::memOf(Binary::get(
-                        opPlus, Terminal::get(opPC),
-                        Binary::get(opPlus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)), Const::get(opWildIntConst)))));
+static SharedExp formR =
+    Binary::get(opPlus,
+                Terminal::get(opPC),
+                Location::memOf(Binary::get(opPlus,
+                                            Terminal::get(opPC),
+                                            Binary::get(opPlus,
+                                                        Binary::get(opMult,
+                                                                    Terminal::get(opWild),
+                                                                    Const::get(4)),
+                                                        Const::get(opWildIntConst)))));
 
 // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
 // where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static SharedExp formr = Binary::get(
-    opPlus, Terminal::get(opPC),
-    Location::memOf(Binary::get(opPlus, Terminal::get(opPC),
-                                Binary::get(opMinus, Binary::get(opMult, Terminal::get(opWild), Const::get(4)),
-                                            Terminal::get(opWildIntConst)))));
+static SharedExp formr =
+    Binary::get(opPlus,
+                Terminal::get(opPC),
+                Location::memOf(Binary::get(opPlus,
+                                            Terminal::get(opPC),
+                                            Binary::get(opMinus,
+                                                        Binary::get(opMult,
+                                                                    Terminal::get(opWild), Const::get(4)),
+                                                        Terminal::get(opWildIntConst)))));
+
 
 struct SwitchForm
 {
@@ -1952,24 +1963,34 @@ SwitchForm hlForms[] =
     { formR, 'R' },
     { formr, 'r' }
 };
+
 // Vcall high level patterns
 // Pattern 0: global<wild>[0]
 static SharedExp vfc_funcptr =
-    Binary::get(opArrayIndex, Location::get(opGlobal, Terminal::get(opWildStrConst), nullptr), Const::get(0));
+    Binary::get(opArrayIndex,
+                Location::get(opGlobal, Terminal::get(opWildStrConst), nullptr),
+                Const::get(0));
 
 // Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
 // K1 is vtable offset, K2 is virtual function offset (could come from m[A2], if A2 is in read-only memory
 static SharedExp vfc_both = Location::memOf(
-    Binary::get(opPlus, Location::memOf(Binary::get(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst))),
+    Binary::get(opPlus,
+                Location::memOf(Binary::get(opPlus,
+                                            Terminal::get(opWild),
+                                            Terminal::get(opWildIntConst))),
                 Terminal::get(opWildIntConst)));
 
 // Pattern 2: m[ m[ <expr> ] + K2]
 static SharedExp vfc_vto =
-    Location::memOf(Binary::get(opPlus, Location::memOf(Terminal::get(opWild)), Terminal::get(opWildIntConst)));
+    Location::memOf(Binary::get(opPlus,
+                                Location::memOf(Terminal::get(opWild)),
+                                Terminal::get(opWildIntConst)));
 
 // Pattern 3: m[ m[ <expr> + K1] ]
 static SharedExp vfc_vfo =
-    Location::memOf(Location::memOf(Binary::get(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst))));
+    Location::memOf(Location::memOf(Binary::get(opPlus,
+                                                Terminal::get(opWild),
+                                                Terminal::get(opWildIntConst))));
 
 // Pattern 4: m[ m[ <expr> ] ]
 static SharedExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
@@ -2134,7 +2155,7 @@ int BasicBlock::findNumCases()
         }
     }
 
-    LOG << "Could not find number of cases for n-way at address " << getLowAddr() << "\n";
+    LOG_WARN("Could not find number of cases for n-way at address %1", getLowAddr());
     return 3; // Bald faced guess if all else fails
 }
 
@@ -2194,8 +2215,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                 }
 
                 if (seenSet.exists(it->def)) {
-                    LOG_STREAM() << "Real phi loop involving statements " << originalPhi->getNumber() << " and "
-                                 << pi->getNumber() << "\n";
+                    LOG_VERBOSE("Real phi loop involving statements %1 and %2",
+                                originalPhi->getNumber(), pi->getNumber());
                     break;
                 }
                 else {
@@ -2212,7 +2233,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         RTL *lastRtl = m_listOfRTLs->back();
 
         if (DEBUG_SWITCH) {
-            LOG << "decodeIndirectJmp: " << lastRtl->prints();
+            LOG_MSG("decodeIndirectJmp: %1", lastRtl->prints());
         }
 
         assert(!lastRtl->empty());
@@ -2232,7 +2253,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                 form = val.type;
 
                 if (DEBUG_SWITCH) {
-                    LOG << "indirect jump matches form " << form << "\n";
+                    LOG_MSG("Indirect jump matches form %1", form);
                 }
 
                 break;
@@ -2260,11 +2281,9 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 
                         if ((uSwitch >= prog->getLimitTextHigh()) || (uSwitch < prog->getLimitTextLow())) {
                             if (DEBUG_SWITCH) {
-                                LOG << "Truncating type A indirect jump array to " << iPtr
-                                    << " entries "
-                                    "due to finding an array entry pointing outside valid code " << uSwitch
-                                    << " isn't in " << prog->getLimitTextLow() << " .. " << prog->getLimitTextHigh()
-                                    << "\n";
+                                LOG_MSG("Truncating type A indirect jump array to %1 entries "
+                                    "due to finding an array entry pointing outside valid code; %2 isn't in %3..%4",
+                                    iPtr, uSwitch, prog->getLimitTextLow(), prog->getLimitTextHigh());
                             }
 
                             // Found an array that isn't a pointer-to-code. Assume array has ended.
@@ -2275,7 +2294,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                 }
 
                 if (swi->iNumTable <= 0) {
-                    LOG << "Switch analysis failure at: " << this->getLowAddr();
+                    LOG_MSG("Switch analysis failure at address %1", this->getLowAddr());
                     return false;
                 }
 
@@ -2334,7 +2353,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         RTL *lastRtl = m_listOfRTLs->back();
 
         if (DEBUG_SWITCH) {
-            LOG << "decodeIndirectJmp: COMPCALL:\n" << lastRtl->prints() << "\n";
+            LOG_MSG("decodeIndirectJmp: COMPCALL:");
+            LOG_MSG("%1", lastRtl->prints());
         }
 
         assert(!lastRtl->empty());
@@ -2354,7 +2374,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         e = e->simplify();
 
         if (DEBUG_SWITCH) {
-            LOG << "decodeIndirect: propagated and const global converted call expression is " << e << "\n";
+            LOG_MSG("decodeIndirect: propagated and const global converted call expression is %1", e);
         }
 
         int  n          = sizeof(hlVfc) / sizeof(SharedExp);
@@ -2366,7 +2386,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                 recognised = true;
 
                 if (DEBUG_SWITCH) {
-                    LOG << "indirect call matches form " << i << "\n";
+                    LOG_MSG("Indirect call matches form %1", i);
                 }
 
                 break;
@@ -2517,8 +2537,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         }
 
         if (DEBUG_SWITCH) {
-            LOG << "form " << i << ": from statement " << lastStmt->getNumber() << " get e = " << lastStmt->getDest()
-                << ", K1 = " << K1 << ", K2 = " << K2 << ", vtExp = " << vtExp << "\n";
+            LOG_MSG("Form %1: from statement %2 get e = %3, K1 = %4, K2 = %5, vtExp = %6",
+                    i, lastStmt->getNumber(), lastStmt->getDest(), K1, K2, vtExp);
         }
 
         // The vt expression might not be a constant yet, because of expressions not fully propagated, or because of
@@ -2527,15 +2547,15 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         vtExp = lastStmt->findDefFor(vtExp);
 
         if (vtExp && DEBUG_SWITCH) {
-            LOG << "VT expression boils down to this: " << vtExp << "\n";
+            LOG_MSG("VT expression boils down to this: %1", vtExp);
         }
 
         // Danger. For now, only do if -ic given
         bool decodeThru = Boomerang::get()->decodeThruIndCall;
 
         if (decodeThru && vtExp && vtExp->isIntConst()) {
-                     Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
-                     Address pfunc = Address(prog->readNative4(addr));
+            Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
+            Address pfunc = Address(prog->readNative4(addr));
 
             if (prog->findProc(pfunc) == nullptr) {
                 // A new, undecoded procedure
@@ -2564,13 +2584,8 @@ void BasicBlock::processSwitch(UserProc *proc)
     Boomerang::get()->debugSwitch = true;
 
     if (Boomerang::get()->debugSwitch) {
-        LOG << "processing switch statement type " << si->chForm << " with table at " << si->uTable << ", ";
-
-        if (si->iNumTable) {
-            LOG << si->iNumTable << " entries, ";
-        }
-
-        LOG << "lo= " << si->iLower << ", hi= " << si->iUpper << "\n";
+        LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
+                si->chForm, si->uTable, si->iNumTable, si->iLower, si->iUpper);
     }
 
     Address uSwitch;
@@ -2632,18 +2647,19 @@ void BasicBlock::processSwitch(UserProc *proc)
             dests.push_back(uSwitch);
         }
         else {
-            LOG << "switch table entry branches to past end of text section " << uSwitch << "\n";
+            LOG_MSG("Switch table entry branches to past end of text section %1", uSwitch);
+
             // TMN: If we reached an array entry pointing outside the program text, we can be quite confident the array
             // has ended. Don't try to pull any more data from it.
-            LOG << "Assuming the end of the pointer-array has been reached at index " << i << "\n";
+            LOG_MSG("Assuming the end of the pointer-array has been reached at index %1", i);
             // TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
             // Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
-            //            assert(iNumOut        >= (iNum - i));
+            // assert(iNumOut        >= (iNum - i));
             assert(int(m_outEdges.size()) >= (iNum - i));
             size_t remove_from_this = m_outEdges.size() - (iNum - i);
             // remove last (iNum - i) out edges
             m_outEdges.erase(m_outEdges.begin() + remove_from_this, m_outEdges.end());
-            //            iNumOut        -= (iNum - i);
+            // iNumOut        -= (iNum - i);
             m_targetOutEdges -= (iNum - i);
             break;
         }
@@ -2669,7 +2685,7 @@ bool BasicBlock::undoComputedBB(Instruction *stmt)
     for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
         if (*rr == stmt) {
             m_nodeType = BBType::Call;
-            LOG << "undoComputedBB for statement " << stmt << "\n";
+            LOG_MSG("undoComputedBB for statement %1", stmt);
             return true;
         }
     }

@@ -6,8 +6,9 @@
  * \file       visitor.cpp
  * \brief   Provides the implementation for the various visitor and modifier classes.
  ******************************************************************************/
-#include "boomerang/db/Visitor.h"
+#include "Visitor.h"
 
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h" // For VERBOSE
@@ -23,7 +24,6 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 
-#include <QtCore/QDebug>
 #include <sstream>
 
 // FixProcVisitor class
@@ -1312,7 +1312,7 @@ SharedExp ExpCastInserter::postVisit(const std::shared_ptr<RefExp>& e)
         Instruction *def = e->getDef();
 
         if (!def) {
-            qDebug() << "ExpCastInserter::postVisit RefExp def is null";
+            LOG_WARN("RefExp def is null");
             return e;
         }
 
@@ -1458,7 +1458,7 @@ SharedExp ExpSsaXformer::postVisit(const std::shared_ptr<RefExp>& e)
     }
 
     // We should not get here: all locations should be replaced with Locals or Parameters
-    // LOG << "ERROR! Could not find local or parameter for " << e << " !!\n";
+    LOG_ERROR("Could not find local or parameter for %1!!", e);
     return e->getSubExp1(); // At least strip off the subscript
 }
 
@@ -1557,8 +1557,8 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
             SharedType ty     = as->getType();
 
             if (ty && lty && (*ty != *lty)) {
-                LOG << "local " << e << " has type " << lty->getCtype() << " that doesn't agree with type of define "
-                    << ty->getCtype() << " of a library, why?\n";
+                LOG_MSG("Local %1 has type %2 that doesn't agree with type of define %3 of a library, why?",
+                        e, lty->getCtype(), ty->getCtype());
                 _proc->setLocalType(e->access<Const, 1>()->getStr(), ty);
             }
         }

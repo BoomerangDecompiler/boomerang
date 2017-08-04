@@ -104,18 +104,13 @@ bool Const::operator<(const Exp& o) const
 
     switch (m_oper)
     {
-    case opIntConst:
-        return u.i < ((Const&)o).u.i;
-
-    case opFltConst:
-        return u.d < ((Const&)o).u.d;
-
-    case opStrConst:
-        return m_string < ((Const&)o).m_string;
+    case opIntConst:  return u.i      < ((Const&)o).u.i;
+    case opLongConst: return u.ll     < ((Const&)o).u.ll;
+    case opFltConst:  return u.d      < ((Const&)o).u.d;
+    case opStrConst:  return m_string < ((Const&)o).m_string;
 
     default:
-        LOG << "Operator< invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     return false;
@@ -257,37 +252,22 @@ SharedExp Const::accept(ExpModifier *v)
 
 void Const::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 
     switch (m_oper)
     {
-        case opIntConst:
-            LOG_STREAM() << u.i;
-            break;
-
-        case opStrConst:
-            LOG_STREAM() << "\"" << m_string << "\"";
-            break;
-
-        case opFltConst:
-            LOG_STREAM() << u.d;
-            break;
-
-        case opFuncConst:
-            LOG_STREAM() << qPrintable(u.pp->getName());
-            break;
-
-        default:
-            LOG_STREAM() << "?" << (int)m_oper << "?";
+        case opIntConst:  LOG_MSG("%1", u.i);           break;
+        case opStrConst:  LOG_MSG("\"%1\"", m_string);  break;
+        case opFltConst:  LOG_MSG("%1", u.d);           break;
+        case opFuncConst: LOG_MSG(u.pp->getName());     break;
+        default:          LOG_MSG("?%1?", (int)m_oper); break;
     }
 
     if (m_conscript) {
-        LOG_STREAM() << " \\" << m_conscript << "\\";
+        LOG_MSG("\"%1\"", m_conscript);
     }
-
-    LOG_STREAM() << '\n';
-    LOG_STREAM().flush();
 }
+
 
 SharedExp Const::clone() const
 {
@@ -333,8 +313,7 @@ void Const::print(QTextStream& os, bool) const
         break;
 
     default:
-        LOG << "Const::print invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     if (m_conscript) {
@@ -400,7 +379,7 @@ bool Const::match(const QString& pattern, std::map<QString, SharedConstExp>& bin
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "const::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
     return false;
 }
@@ -431,18 +410,13 @@ bool Const::operator==(const Exp& o) const
 
     switch (m_oper)
     {
-    case opIntConst:
-        return u.i == ((Const&)o).u.i;
-
-    case opFltConst:
-        return u.d == ((Const&)o).u.d;
-
-    case opStrConst:
-        return m_string == ((Const&)o).m_string;
+    case opIntConst:  return u.i      == ((Const&)o).u.i;
+    case opLongConst: return u.ll     == ((Const&)o).u.ll;
+    case opFltConst:  return u.d      == ((Const&)o).u.d;
+    case opStrConst:  return m_string == ((Const&)o).m_string;
 
     default:
-        LOG << "Operator== invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     return false;

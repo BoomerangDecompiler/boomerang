@@ -1,5 +1,6 @@
 #include "Unary.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/util/Log.h"
@@ -390,8 +391,7 @@ void Unary::print(QTextStream& os, bool html) const
         return;
 
     default:
-        LOG << "Unary::print invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 }
 
@@ -432,7 +432,7 @@ bool Unary::match(const QString& pattern, std::map<QString, SharedConstExp>& bin
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "Unary::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
 
     if ((m_oper == opAddrOf) && pattern.startsWith("a[") && pattern.endsWith(']')) {
@@ -652,8 +652,7 @@ SharedExp Unary::simplifyAddr()
 
 void Unary::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM().flush();
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
     child(subExp1, ind);
 }
 

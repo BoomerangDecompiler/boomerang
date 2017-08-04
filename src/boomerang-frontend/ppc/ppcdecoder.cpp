@@ -23,6 +23,7 @@
 
 #include "ppcdecoder.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "boomerang/util/Log.h"
 
@@ -9186,7 +9187,7 @@ MATCH_label_a12:
 
             default:
 
-                LOG_STREAM(2) << "ERROR: MTSPR instruction with invalid S field: " << uimm << "\n";
+                LOG_ERROR("MTSPR instruction with invalid S field: %1", uimm);
             }
 
             Q_UNUSED(name);

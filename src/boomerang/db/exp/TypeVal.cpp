@@ -94,9 +94,7 @@ SharedExp TypeVal::accept(ExpModifier *v)
 
 void TypeVal::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << " ";
-    LOG_STREAM() << val->getCtype() << "\n";
-    LOG_STREAM().flush();
+    LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), val->getCtype());
 }
 
 

@@ -5,38 +5,17 @@
  */
 #include "DfaTest.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/type/Type.h"
+#include "boomerang/util/Log.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QProcessEnvironment>
 #include <QtCore/QDebug>
 #include <sstream>
 
 
-class ErrLogger : public Log
-{
-public:
-	virtual Log& operator<<(const QString& s) override
-	{
-		std::cerr << s.toStdString();
-		return *this;
-	}
-
-	virtual ~ErrLogger() {}
-};
-
-
-static bool logset = false;
-
 void DfaTest::initTestCase()
 {
-	if (!logset) {
-
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setLogger(new NullLogger());
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
 }
 
 
@@ -145,9 +124,6 @@ void DfaTest::testMeetSize()
 	ch  = false;
 	res = s32->meetWith(s16, ch, false);
 	QVERIFY(ch == false);
-
-	// There is a known failure here; to show the warning, use ErrLogger
-	Boomerang::get()->setLogger(new ErrLogger);
 
 	res = s16->meetWith(flt, ch, false);
 	QVERIFY(ch == true);

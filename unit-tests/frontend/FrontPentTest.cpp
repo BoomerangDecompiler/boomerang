@@ -5,6 +5,7 @@
  */
 #include "FrontPentTest.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
@@ -16,8 +17,6 @@
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
-#include <QDir>
-#include <QProcessEnvironment>
 #include <QDebug>
 
 
@@ -27,15 +26,10 @@
 #define FEDORA3_TRUE    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/fedora3_true")
 #define SUSE_TRUE       (BOOMERANG_TEST_BASE "/tests/inputs/pentium/suse_true")
 
-static bool    logset = false;
 
 void FrontPentTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

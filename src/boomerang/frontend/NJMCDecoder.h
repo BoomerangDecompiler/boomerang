@@ -159,7 +159,11 @@ bool isFuncPrologue(Address hostPC);
 #define DEBUG_DECODER    (Boomerang::get()->debugDecoder)
 #define SHOW_ASM(output) \
     if (DEBUG_DECODER) { \
-        LOG_STREAM() << pc << ": " << output << '\n'; }
+        QString asmStr;  \
+        QTextStream ost(&asmStr); \
+        ost << output; \
+        LOG_MSG("%1: %2", pc, asmStr); \
+    }
 
 /*
  * addresstoPC returns the raw number as the address.  PC could be an

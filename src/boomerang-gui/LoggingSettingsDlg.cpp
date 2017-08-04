@@ -1,7 +1,10 @@
 #include "LoggingSettingsDlg.h"
+
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/util/Log.h"
+
 #include "boomerang-gui/ui_LoggingSettingsDlg.h"
 
-#include "boomerang/util/Log.h"
 
 LoggingSettingsDlg::LoggingSettingsDlg(QWidget *parent)
     : QDialog(parent)

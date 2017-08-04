@@ -3,6 +3,7 @@
 
 #include "commandlinedriver.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
 
@@ -96,8 +97,9 @@ static void usage()
 {
     QTextStream q_cout(stdout);
 
-    q_cout << "Usage: boomerang [ switches ] <program>" << '\n';
-    q_cout << "boomerang -h for switch help" << '\n';
+    q_cout <<
+        "Usage: boomerang [ switches ] <program>\n"
+        "boomerang -h for switch help\n";
 }
 
 
@@ -153,8 +155,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 addr = Address(args[i].toLongLong(&converted, 0));
 
                 if (!converted) {
-                    LOG_STREAM() << "bad address: " << args[i] << '\n';
-                    exit(1);
+                    LOG_FATAL("Bad address: %1", args[i]);
                 }
 
                 boom.m_entryPoints.push_back(addr);
@@ -175,7 +176,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
         case 'X':
             boom.experimental = true;
-            LOG_STREAM(LL_Warn) << "Warning: experimental code active!\n";
+            LOG_WARN("Activating experimental code!");
             break;
 
         case 'r':
@@ -314,7 +315,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
             if (arg[2] == 'a') {
                 boom.propOnlyToAll = true;
-                LOG_STREAM() << " * * Warning! -pa is not implemented yet!\n";
+                LOG_WARN(" * * Warning! -pa is not implemented yet!");
             }
             else {
                 if (++i == args.size()) {
@@ -346,8 +347,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 addr = Address(args[i].toLongLong(&converted, 0));
 
                 if (!converted) {
-                    LOG_STREAM() << "bad address: " << args[i + 1] << '\n';
-                    exit(1);
+                    LOG_FATAL("Bad address: %1", args[i + 1]);
                 }
 
                 boom.symbols[addr] = args[++i];
@@ -445,7 +445,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
     }
 
     if (minsToStopAfter > 0) {
-        LOG_STREAM(LL_Error) << "stopping decompile after " << minsToStopAfter << " minutes.\n";
+        LOG_MSG("Stopping decompile after %1 minutes", minsToStopAfter);
         m_kill_timer.setSingleShot(true);
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
@@ -501,7 +501,7 @@ int CommandlineDriver::decompile()
 
 void CommandlineDriver::onCompilationTimeout()
 {
-    LOG_STREAM() << "Compilation timed out";
+    LOG_WARN("Compilation timed out, Boomerang will now exit");
     exit(1);
 }
 
@@ -510,7 +510,5 @@ void DecompilationThread::run()
 {
     Boomerang& boom(*Boomerang::get());
 
-       m_result = boom.decompile(m_decompiled);
-    boom.getLogStream().flush();
-    boom.getLogStream(LL_Error).flush();
+    m_result = boom.decompile(m_decompiled);
 }

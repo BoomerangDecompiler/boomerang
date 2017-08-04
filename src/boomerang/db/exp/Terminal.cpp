@@ -1,5 +1,6 @@
 #include "Terminal.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/Visitor.h"
 
@@ -163,8 +164,7 @@ void Terminal::print(QTextStream& os, bool) const
         break;
 
     default:
-        LOG << "Terminal::print invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 }
 
@@ -194,7 +194,7 @@ bool Terminal::match(const QString& pattern, std::map<QString, SharedConstExp>& 
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "terminal::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
     return false;
 }
@@ -229,7 +229,6 @@ SharedExp Terminal::accept(ExpModifier *v)
 
 void Terminal::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM().flush();
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 }
 

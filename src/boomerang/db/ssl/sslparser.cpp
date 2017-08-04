@@ -1,4 +1,3 @@
-#include <QDebug>
 #include "boomerang/db/ssl/sslparser.h"
 /*  A Bison++ parser, made from sslparser.y  */
 /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr
@@ -58,7 +57,7 @@ void *alloca();
 #include <cstdio>
 #define YYBISON 1
 
-#include "boomerang/util/Util.h" // E.g. str()
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Table.h"
@@ -73,6 +72,7 @@ void *alloca();
 #include "boomerang/db/ssl/sslscanner.h"
 
 #include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h" // E.g. str()
 
 
 #include <cassert>
@@ -93,7 +93,7 @@ SSLParser::SSLParser(const QString &_sslFile, bool _trace) : sslFile(_sslFile), 
     m_fin = new std::fstream(sslFile.toStdString(), std::ios::in);
     theScanner = nullptr;
     if (!*m_fin) {
-        LOG_STREAM() << "can't open `" << sslFile << "' for reading\n";
+        LOG_ERROR("Can't open SSL file '%1' for reading");
         return;
     }
     theScanner = new SSLScanner(*m_fin, _trace);
@@ -869,9 +869,7 @@ SSLParser::
     }
     case 31: {
         if ((int)yyvsp[-8].strlist->size() != (yyvsp[0].num - yyvsp[-2].num + 1)) {
-            LOG_STREAM() << "size of register array does not match mapping to r[" << yyvsp[-2].num << ".." << yyvsp[0].num
-                      << "]\n";
-            exit(1);
+            LOG_FATAL("Size of register array does not match mapping to r[%1..%2]", yyvsp[-2].num, yyvsp[0].num);
         } else {
             std::list<QString>::iterator loc = yyvsp[-8].strlist->begin();
             for (int x = yyvsp[-2].num; x <= yyvsp[0].num; x++, loc++) {
@@ -1646,7 +1644,7 @@ SSLParser::
                 yyval.typ = CharType::get();
                 break;
             default:
-                LOG_STREAM() << "Unexpected char " << c << " in assign type\n";
+                LOG_WARN("Unexpected char %1 in assign type", c);
                 yyval.typ = IntegerType::get(32);
             }
         };

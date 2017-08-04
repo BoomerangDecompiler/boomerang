@@ -93,7 +93,8 @@ private:
     void applyRelocations();
 
     /// Not meant to be used externally, but sometimes you just have to have it.
-    /// Like a replacement for elf_strptr()
+    /// Like a replacement for elf_strptr().
+    /// If the string pointer could not be found, this function returns nullptr.
     const char *getStrPtr(int idx, int offset); // Calc string pointer
 
 

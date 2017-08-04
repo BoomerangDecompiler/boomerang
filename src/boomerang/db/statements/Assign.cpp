@@ -250,8 +250,8 @@ bool Assign::accept(StmtModifier *v)
         m_rhs = m_rhs->accept(v->m_mod);
     }
 
-    if (VERBOSE && v->m_mod->isMod()) {
-        LOG << "Assignment changed: now " << this << "\n";
+    if (v->m_mod->isMod()) {
+        LOG_VERBOSE("Assignment changed: now %1", this);
     }
 
     return true;
@@ -273,8 +273,8 @@ bool Assign::accept(StmtPartModifier *v)
         m_rhs = m_rhs->accept(v->mod);
     }
 
-    if (VERBOSE && v->mod->isMod()) {
-        LOG << "Assignment changed: now " << this << "\n";
+    if (v->mod->isMod()) {
+        LOG_VERBOSE("Assignment changed: now %1", this);
     }
 
     return true;

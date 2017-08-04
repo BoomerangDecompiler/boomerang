@@ -51,6 +51,7 @@
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/util/Log.h"
 
 class AnsiCScanner;
 class SymbolMods;
@@ -59,12 +60,18 @@ class SymbolMods;
 /* section apres lecture def, avant lecture grammaire S2 */
 
 /* prefix */
-AnsiCParser::AnsiCParser(std::istream& in, bool trace)
+AnsiCParser::AnsiCParser(const char* file, bool trace)
+    : in(new std::ifstream(file))
+    , fileName(file)
 {
+    if (!in->good()) {
+        throw "Error";
+    }
+
 #if YY_AnsiCParser_DEBUG != 0
     yydebug = 0;
 #endif
-    theScanner = new AnsiCScanner(in, trace);
+    theScanner = new AnsiCScanner(*in, trace);
 
     if (trace) {
         yydebug = 1;
@@ -74,6 +81,27 @@ AnsiCParser::AnsiCParser(std::istream& in, bool trace)
     }
 }
 
+
+AnsiCParser::AnsiCParser(std::istream& is, bool trace)
+    : in(&is)
+    , fileName(nullptr)
+{
+    if (!in->good()) {
+        throw "Error";
+    }
+
+#if YY_AnsiCParser_DEBUG != 0
+    yydebug = 0;
+#endif
+    theScanner = new AnsiCScanner(*in, trace);
+
+    if (trace) {
+        yydebug = 1;
+    }
+    else {
+        yydebug = 0;
+    }
+}
 
 #define YYFINAL     154
 #define YYFLAG      -32768
@@ -1174,14 +1202,15 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
         if ((yyn > YYFLAG) && (yyn < YYLAST)) {
             int  size = 0;
             char *msg;
-            int  x, count;
+            unsigned int  x, count;
 
             count = 0;
 
             /* Start X at -yyn if nec to avoid negative indexes in yycheck.  */
             for (x = (yyn < 0 ? -yyn : 0); x < (sizeof(yytname) / sizeof(char *)); x++) {
-                if (yycheck[x + yyn] == x) {
-                    size += strlen(yytname[x]) + 15, count++;
+                if (yycheck[x + yyn] == (int)x) {
+                    size += strlen(yytname[x]) + 15;
+                    count++;
                 }
             }
 
@@ -1194,7 +1223,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
                     count = 0;
 
                     for (x = (yyn < 0 ? -yyn : 0); x < (sizeof(yytname) / sizeof(char *)); x++) {
-                        if (yycheck[x + yyn] == x) {
+                        if (yycheck[x + yyn] == (int)x) {
                             strcat(msg, count == 0 ? ", expecting `" : " or `");
                             strcat(msg, yytname[x]);
                             strcat(msg, "'");
@@ -1323,9 +1352,12 @@ int AnsiCParser::yylex()
 
 void AnsiCParser::yyerror(const char *s)
 {
-    fflush(stdout);
-    printf("\n%s", theScanner->lineBuf);
-    printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
+    if (fileName) {
+        LOG_ERROR("Error when parsing file '%1:", fileName);
+    }
+
+    LOG_ERROR("Error on line %1 column %2: %3", theScanner->theLine, theScanner->column, s);
+    LOG_ERROR("When parsing expression '%1'", theScanner->lineBuf);
 }
 
 

@@ -16,6 +16,7 @@
 
 #include "NJMCDecoder.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -88,7 +89,7 @@ std::list<Instruction *> *NJMCDecoder::instantiate(Address pc, const char *name,
 SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_list<SharedExp>& args)
 {
     if (m_rtlDict.ParamSet.find(name) == m_rtlDict.ParamSet.end()) {
-        LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
+        LOG_MSG("No entry for named parameter '%1'", name);
         return nullptr;
     }
 
@@ -96,7 +97,7 @@ SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_
     ParamEntry& ent = m_rtlDict.DetParamMap[name];
 
     if ((ent.m_kind != PARAM_ASGN) && (ent.m_kind != PARAM_LAMBDA)) {
-        LOG_STREAM() << "Attempt to instantiate expressionless parameter '" << name << "'\n";
+        LOG_MSG("Attempt to instantiate expressionless parameter '%1'", name);
         return nullptr;
     }
 
@@ -119,16 +120,11 @@ SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_
 void NJMCDecoder::substituteCallArgs(char *name, SharedExp *exp, const std::initializer_list<SharedExp>& args)
 {
     if (m_rtlDict.ParamSet.find(name) == m_rtlDict.ParamSet.end()) {
-        LOG_STREAM() << "No entry for named parameter '" << name << "'\n";
+        LOG_VERBOSE("No entry for named parameter '%1'", name);
         return;
     }
 
     ParamEntry& ent = m_rtlDict.DetParamMap[name];
-
-    /*if (ent.kind != PARAM_ASGN && ent.kind != PARAM_LAMBDA) {
-     *          LOG_STREAM() << "Attempt to instantiate expressionless parameter '" << name << "'\n";
-     *          return;
-     *  }*/
     auto arg_iter = args.begin();
 
     for (auto& elem : ent.m_funcParams) {

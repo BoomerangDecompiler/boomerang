@@ -6,6 +6,7 @@
 
 #include "FrontSparcTest.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/db/BasicBlock.h"
@@ -19,23 +20,16 @@
 
 #include "boomerang-frontend/sparc/sparcfrontend.h"
 
-#include <QDir>
-#include <QProcessEnvironment>
 #include <QDebug>
 
 
 #define HELLO_SPARC     (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
 #define BRANCH_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/branch")
 
-static bool    logset = false;
 
 void FrontSparcTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

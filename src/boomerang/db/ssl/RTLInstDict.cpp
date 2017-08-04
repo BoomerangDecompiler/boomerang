@@ -1,5 +1,5 @@
 #include "RTLInstDict.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/ssl/sslparser.h"
@@ -197,7 +197,7 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
     ParamEntry& param = DetParamMap[s];
 
     if (param.m_params.size() == 0) {
-        LOG_STREAM() << "Error in SSL File: Variant operand " << s << " has no branches. Well that's really useful...\n";
+        LOG_ERROR("Error in SSL File: Variant operand %1 has no branches. Well that's really useful...", s);
         return;
     }
 
@@ -228,10 +228,8 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
         }
 
         if (funcParams.size() != sub.m_funcParams.size()) {
-            LOG_STREAM() << "Error in SSL File: Variant operand " << s
-                         << " does not have a fixed number of functional parameters:\n"
-                         << "Expected " << funcParams.size() << ", but branch " << name
-                         << " has " << sub.m_funcParams.size() << ".\n";
+            LOG_ERROR("Error in SSL File: Variant operand %1 does not have a fixed number of functional parameters:", s);
+            LOG_ERROR("Expected %1 parameters, but branch %2 has %3 parameters.", funcParams.size(), name, sub.m_funcParams.size());
         }
         else if ((funcParams != sub.m_funcParams) && (sub.m_asgn != nullptr)) {
             /* Rename so all the parameter names match */
@@ -262,7 +260,7 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
     std::map<QString, TableEntry>::iterator it = idict.find(hlpr);
 
     if (it == idict.end()) {
-        LOG_STREAM() << "Error: no entry for `" << name << "' in RTL dictionary\n";
+        LOG_ERROR("No entry for '%1' in RTL dictionary", name);
         it = idict.find("NOP"); // At least, don't cause segfault
     }
 

@@ -1,10 +1,7 @@
 #include "RangeAnalysis.h"
 
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Visitor.h"
-#include "boomerang/util/Util.h"
 #include "boomerang/type/Type.h"
 
 #include "boomerang/db/Proc.h"
@@ -15,6 +12,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/ExpHelp.h"
+#include "boomerang/db/Visitor.h"
 
 #include "boomerang/db/statements/JunctionStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
@@ -25,6 +23,10 @@
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 
+#include "boomerang/type/Type.h"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
 
 class Range : public Printable
 {
@@ -297,12 +299,12 @@ public:
                 a_rhs = Unary::get(opInitValueOf, Terminal::get(opPC)); // nice hack
             }
 
-            if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-                LOG << "a_rhs is " << a_rhs << "\n";
+            if (DEBUG_RANGE_ANALYSIS) {
+                LOG_VERBOSE("a_rhs is %1", a_rhs);
             }
 
             if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
-                            Address c = a_rhs->access<Const, 1>()->getAddr();
+                Address c = a_rhs->access<Const, 1>()->getAddr();
 
                 if (insn->getProc()->getProg()->isDynamicLinkedProcPointer(c)) {
                     const QString& nam(insn->getProc()->getProg()->getDynamicProcName(c));
@@ -310,8 +312,8 @@ public:
                     if (!nam.isEmpty()) {
                         a_rhs = Const::get(nam);
 
-                        if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-                            LOG << "a_rhs is a dynamic proc pointer to " << nam << "\n";
+                        if (DEBUG_RANGE_ANALYSIS) {
+                            LOG_VERBOSE("a_rhs is a dynamic proc pointer to %1", nam);
                         }
                     }
                 }
@@ -331,11 +333,11 @@ public:
                         break;
 
                     default:
-                        LOG << "error: unhandled type size " << (int)insn->getType()->getSize() << " for reading native address\n";
+                        LOG_ERROR("Unhandled type size %1 for reading native address", insn->getType()->getSize());
                     }
                 }
-                else if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-                    LOG << c << " is not dynamically linked proc pointer or in read only memory\n";
+                else if (DEBUG_RANGE_ANALYSIS) {
+                    LOG_VERBOSE("Address %1 is not dynamically linked proc pointer or in read only memory", c);
                 }
             }
 
@@ -382,13 +384,13 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << "added " << a_lhs << " -> " << output.getRange(a_lhs).toString() << "\n";
+            LOG_VERBOSE("Added %1 -> %2", a_lhs, output.getRange(a_lhs));
         }
 
         updateRanges(insn, output);
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << insn << "\n";
+            LOG_VERBOSE("%1", insn);
         }
 
         return true;
@@ -416,8 +418,8 @@ public:
                     e = Binary::get(op, r.getBase()->getSubExp2()->getSubExp1()->clone(),
                                     r.getBase()->getSubExp2()->getSubExp2()->getSubExp1()->clone());
 
-                    if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-                        LOG << "calculated condition " << e << "\n";
+                    if (DEBUG_RANGE_ANALYSIS) {
+                        LOG_VERBOSE("Calculated condition %1", e);
                     }
                 }
             }
@@ -436,8 +438,8 @@ public:
 
         updateRanges(stmt, output, true);
 
-        if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG << stmt << "\n";
+        if (DEBUG_RANGE_ANALYSIS) {
+            LOG_VERBOSE("%1", stmt);
         }
 
         return true;
@@ -484,7 +486,8 @@ public:
                     stmt->setIsComputed(false);
                     stmt->getProc()->undoComputedBB(stmt);
                     stmt->getProc()->addCallee(stmt->getDestProc());
-                    LOG << "replaced indirect call with call to " << stmt->getProc()->getName() << "\n";
+
+                    LOG_MSG("Replaced indirect call with call to %1", stmt->getProc()->getName());
                 }
             }
         }
@@ -494,7 +497,7 @@ public:
             int    c = 4;
 
             if (stmt->getDestProc() == nullptr) {
-                LOG << "using push count hack to guess number of params\n";
+                LOG_MSG("Using push count hack to guess number of params");
                 Instruction *prev = stmt->getPreviousStatementInBB();
 
                 while (prev) {
@@ -525,16 +528,20 @@ public:
                 }
             }
             else if (!stmt->getDestProc()->isLib()) {
-              UserProc *p = (UserProc *)stmt->getDestProc();
+                UserProc *p = (UserProc *)stmt->getDestProc();
                 if (!p) {
                     assert(false);
                     return false;
                 }
-                LOG_VERBOSE(1) << "== checking for number of bytes popped ==\n" << *p << "== end it ==\n";
+
+                LOG_VERBOSE("== checking for number of bytes popped ==");
+                LOG_VERBOSE("%1", p->prints());
+                LOG_VERBOSE("== end it ==");
+
                 SharedExp eq = p->getProven(Location::regOf(28));
 
                 if (eq) {
-                    LOG_VERBOSE(1) << "found proven " << eq << "\n";
+                    LOG_VERBOSE("Found proven %1", eq);
 
                     if ((eq->getOper() == opPlus) && (*eq->getSubExp1() == *Location::regOf(28)) &&
                         eq->getSubExp2()->isIntConst()) {
@@ -609,14 +616,14 @@ public:
         RangeMap input;
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << "unioning {\n";
+            LOG_VERBOSE("unioning {");
         }
 
         for (size_t i = 0; i < stmt->getBB()->getNumInEdges(); i++) {
             Instruction *last = stmt->getBB()->getInEdges()[i]->getLastStmt();
 
             if (DEBUG_RANGE_ANALYSIS) {
-                LOG_VERBOSE(1) << "  in BB: " << stmt->getBB()->getInEdges()[i]->getLowAddr() << " " << last << "\n";
+                LOG_VERBOSE("  in BB: address %1 %2", stmt->getBB()->getInEdges()[i]->getLowAddr(), last);
             }
 
             if (last->isBranch()) {
@@ -628,7 +635,7 @@ public:
 
                     if (d && !d->isLib() && (((UserProc *)d)->getCFG()->findRetNode() == nullptr)) {
                         if (DEBUG_RANGE_ANALYSIS) {
-                            LOG_VERBOSE(1) << "ignoring ranges from call to proc with no ret node\n";
+                            LOG_VERBOSE("Ignoring ranges from call to proc with no ret node");
                         }
                     }
                     else {
@@ -642,7 +649,7 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << "}\n";
+            LOG_VERBOSE("}");
         }
 
         if (!input.isSubset(tgt->getRanges(stmt))) {
@@ -653,9 +660,13 @@ public:
 
                 if ((r.getLowerBound() != r.getUpperBound()) && (r.getLowerBound() != Range::MIN)) {
                     if (VERBOSE) {
-                        LOG_STREAM(LL_Debug) << "stack height assumption violated " << r.toString();
-                        LOG_STREAM(LL_Debug) << " my bb: " << stmt->getBB()->getLowAddr() << "\n";
-                        stmt->getProc()->print(LOG_STREAM(LL_Debug));
+                        LOG_ERROR("Stack height assumption violated %1", r.toString());
+                        LOG_ERROR(" my BB: ", stmt->getBB()->getLowAddr());
+
+                        QString procStr;
+                        QTextStream ost(&procStr);
+                        stmt->getProc()->print(ost);
+                        LOG_VERBOSE(procStr);
                     }
 
                     assert(false);
@@ -671,7 +682,7 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE(1) << stmt << "\n";
+            LOG_VERBOSE("%1",stmt);
         }
 
         return true;
@@ -772,9 +783,11 @@ bool RangeAnalysis::runOnFunction(Function& F)
         return false;
     }
 
-    LOG_STREAM() << "performing range analysis on " << F.getName() << "\n";
+    LOG_VERBOSE("Performing range analysis on %1", F.getName());
+
     UserProc& UF((UserProc&)F);
     assert(UF.getCFG());
+
     // this helps
     UF.getCFG()->sortByAddress();
 
@@ -813,7 +826,7 @@ bool RangeAnalysis::runOnFunction(Function& F)
         }
 
         if (watchdog > 45) {
-            LOG << "processing execution paths resulted in " << (int)junctions.size() << " junctions to process\n";
+            LOG_MSG("Processing execution paths resulted in %1 junctions to process", junctions.size());
         }
 
         while (!junctions.empty()) {
@@ -821,7 +834,7 @@ bool RangeAnalysis::runOnFunction(Function& F)
             junctions.pop_front();
 
             if (watchdog > 45) {
-                LOG << "processing junction " << junction << "\n";
+                LOG_MSG("Processing junction %1", junction);
             }
 
             assert(junction->isJunction());
@@ -831,18 +844,18 @@ bool RangeAnalysis::runOnFunction(Function& F)
         watchdog++;
 
         if (watchdog > 10) {
-            LOG << "  watchdog " << watchdog << "\n";
+            LOG_MSG("  watchdog %1", watchdog);
 
             if (watchdog > 45) {
-                LOG << (int)execution_paths.size() << " execution paths remaining.\n";
-                LOG_SEPARATE(UF.getName()) << "=== After range analysis watchdog " << watchdog << " for " << UF.getName()
-                                           << " ===\n" << UF << "=== end after range analysis watchdog " << watchdog
-                                           << " for " << UF.getName() << " ===\n\n";
+                LOG_MSG("%1 execution paths remaining.", execution_paths.size());
+                LOG_SEPARATE(UF.getName(), "=== After range analysis watchdog %1 ===", watchdog, UF.getName());
+                LOG_SEPARATE(UF.getName(), "%1", UF);
+                LOG_SEPARATE(UF.getName(), "=== End after range analysis watchdog %1 for %2 ===", watchdog, UF.getName());
             }
         }
 
         if (watchdog > 50) {
-            LOG << "  watchdog expired\n";
+            LOG_MSG("  watchdog expired");
             break;
         }
     }
@@ -889,14 +902,12 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc& UF)
 
         if (rm.hasRange(p)) {
             Range& r = rm.getRange(p);
-            LOG_STREAM(LL_Default) << "got p " << p << " with range ";
-            LOG_STREAM(LL_Default) << r.toString();
-            LOG_STREAM(LL_Default) << "\n";
+            LOG_VERBOSE("Got p %1 with range %2", p, r.toString());
 
             if ((r.getBase()->getOper() == opInitValueOf) && r.getBase()->getSubExp1()->isRegOfK() &&
                 (r.getBase()->access<Const, 1, 1>()->getInt() == 28)) {
                 RTL *rtl = a->getBB()->getRTLWithStatement(a);
-                LOG << "interesting stack reference at " << rtl->getAddress() << " " << a << "\n";
+                LOG_VERBOSE("Interesting stack reference at address %1: %2", rtl->getAddress(), a);
             }
         }
     }
@@ -1013,8 +1024,8 @@ QString Range::toString() const
 
 void Range::unionWith(Range& r)
 {
-    if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG << "unioning " << toString() << " with " << r << " got ";
+    if (DEBUG_RANGE_ANALYSIS) {
+        LOG_VERBOSE("unioning %1 with %2 got...", toString(), r);
     }
 
     assert(m_base && r.m_base);
@@ -1030,8 +1041,8 @@ void Range::unionWith(Range& r)
                 m_upperBound = std::max(-c1, -c2);
                 m_base       = m_base->getSubExp1();
 
-                if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-                    LOG << toString() << "\n";
+                if (DEBUG_RANGE_ANALYSIS) {
+                    LOG_VERBOSE("%1", toString());
                 }
 
                 return;
@@ -1045,8 +1056,8 @@ void Range::unionWith(Range& r)
         m_upperBound = MAX;
         m_base       = Const::get(0);
 
-        if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG_STREAM(LL_Default) << toString();
+        if (DEBUG_RANGE_ANALYSIS) {
+            LOG_VERBOSE("%1", toString());
         }
 
         return;
@@ -1065,7 +1076,7 @@ void Range::unionWith(Range& r)
     }
 
     if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG_STREAM(LL_Default) << toString();
+        LOG_VERBOSE("%1", toString());
     }
 }
 
@@ -1073,7 +1084,7 @@ void Range::unionWith(Range& r)
 void Range::widenWith(Range& r)
 {
     if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG << "widening " << toString() << " with " << r << " got ";
+        LOG_VERBOSE("Widening %1 with %2 got...", toString(), r);
     }
 
     if (!(*m_base == *r.m_base)) {
@@ -1083,7 +1094,7 @@ void Range::widenWith(Range& r)
         m_base       = Const::get(0);
 
         if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-            LOG_STREAM(LL_Default) << toString();
+            LOG_VERBOSE("%1", toString());
         }
 
         return;
@@ -1098,8 +1109,8 @@ void Range::widenWith(Range& r)
         m_upperBound = MAX;
     }
 
-    if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-        LOG_STREAM(LL_Default) << toString();
+    if (DEBUG_RANGE_ANALYSIS) {
+        LOG_MSG(this->toString());
     }
 }
 
@@ -1184,8 +1195,8 @@ SharedExp RangeMap::substInto(SharedExp e, ExpSet *only) const
             if (change) {
                 e = e->simplify()->simplifyArith();
 
-                if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-                    LOG << "applied " << elem.first << " to " << eold << " to get " << e << "\n";
+                if (DEBUG_RANGE_ANALYSIS) {
+                    LOG_VERBOSE("Applied %1 to %2 to get %3", elem.first, eold, e);
                 }
 
                 changes = true;
@@ -1222,8 +1233,8 @@ bool RangeMap::isSubset(RangeMap& other) const
 {
     for (std::pair<SharedExp, Range> it : ranges) {
         if (other.ranges.find(it.first) == other.ranges.end()) {
-            if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-                LOG << "did not find " << it.first << " in other, not a subset\n";
+            if (DEBUG_RANGE_ANALYSIS) {
+                LOG_VERBOSE("Could not find %1 in other, not a subset", it.first);
             }
 
             return false;
@@ -1232,9 +1243,9 @@ bool RangeMap::isSubset(RangeMap& other) const
         Range& r = other.ranges[it.first];
 
         if (!(it.second == r)) {
-            if (VERBOSE && DEBUG_RANGE_ANALYSIS) {
-                LOG << "range for " << it.first << " in other " << r << " is not equal to range in this " << it.second
-                    << ", not a subset\n";
+            if (DEBUG_RANGE_ANALYSIS) {
+                LOG_VERBOSE("Range for %1 in other %2 is not equal to range in this %3, not a subset",
+                            it.first, r, it.second);
             }
 
             return false;

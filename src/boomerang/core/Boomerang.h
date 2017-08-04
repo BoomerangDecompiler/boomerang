@@ -16,6 +16,7 @@
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IProject.h"
 #include "boomerang/core/Watcher.h"
+#include "boomerang/util/Log.h"
 
 #include <QObject>
 #include <QDir>
@@ -38,19 +39,6 @@ class IBinaryImage;
 class IBinarySymbolTable;
 class Project;
 
-enum LogLevel
-{
-    LL_Debug   = 0,
-    LL_Default = 1,
-    LL_Warn    = 2,
-    LL_Error   = 3,
-};
-
-#define LOG                Boomerang::get()->log()
-#define LOG_SEPARATE(x)    Boomerang::get()->separate_log(x)
-#define LOG_VERBOSE(x)     Boomerang::get()->if_verbose_log(x)
-#define LOG_STREAM         Boomerang::get()->getLogStream
-
 
 /**
  * Controls the loading, decoding, decompilation and code generation for a program.
@@ -61,14 +49,11 @@ class Boomerang : public QObject, public IBoomerang
     Q_OBJECT
 
 private:
-    static Boomerang *boomerang; ///< the instance
-
     IBinarySymbolTable *m_symbols = nullptr;
     QString m_workingDirectory;       ///< String with the path to the boomerang executable.
     QString m_outputDirectory;        ///< The path where all output files are created.
     QString m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
 
-    Log *m_logger = nullptr;          ///< Takes care of the log messages.
     std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 
     /// Prints help for the interactive mode.
@@ -113,14 +98,6 @@ public:
      */
     int processCommand(QStringList& args);
     static const char *getVersionStr();
-
-    /// \returns the Log object associated with the object.
-    Log& log();
-
-    SeparateLogger separate_log(const QString&);
-    Log& if_verbose_log(int verbosity_level);
-
-    void setLogger(Log *l);
 
     /**
      * Returns the ICodeGenerator for the given proc.
@@ -320,10 +297,6 @@ public:
 
     void alertDecompileDebugPoint(UserProc *p, const char *description);
 
-    /// Return TextStream to which given \a level of messages shoudl be directed
-    /// \param level - describes the message level TODO: describe message levels
-    QTextStream& getLogStream(int level = LL_Default); ///< Return overall logging target
-
     QString getFilename() const;
 
 public:
@@ -376,9 +349,6 @@ public:
     bool noGlobals           = false;
     bool assumeABI           = false; ///< Assume ABI compliance
     bool experimental        = false; ///< Activate experimental code. Caution!
-
-    QTextStream LogStream;
-    QTextStream ErrStream;
 
     std::vector<Address> m_entryPoints; ///< A vector which contains all know entrypoints for the Prog.
     std::vector<QString> m_symbolFiles; ///< A vector containing the names off all symbolfiles to load.

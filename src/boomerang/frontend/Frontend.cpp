@@ -17,6 +17,7 @@
  ******************************************************************************/
 #include "Frontend.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/c/ansi-c-parser.h"
@@ -45,8 +46,8 @@
 #include "boomerang-frontend/st20/st20frontend.h"
 #include "boomerang-frontend/mips/mipsfrontend.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QDebug>
+#include <QDir>
+
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
@@ -60,9 +61,9 @@ IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
     , m_bff(bff)
     , m_program(prog)
 {
-       m_image = Boomerang::get()->getImage();
+    m_image = Boomerang::get()->getImage();
     assert(m_image);
-       m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
+    m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
 }
 
 IFrontEnd::~IFrontEnd()
@@ -91,19 +92,19 @@ IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactor
         return new ST20FrontEnd(pBF, prog, pbff);
 
     case Machine::HPRISC:
-        LOG_STREAM() << "No frontend for Hp Risc\n";
+        LOG_VERBOSE("No frontend for HP RISC");
         break;
 
     case Machine::PALM:
-        LOG_STREAM() << "No frontend for PALM\n";
+        LOG_VERBOSE("No frontend for PALM");
         break;
 
     case Machine::M68K:
-        LOG_STREAM() << "No frontend for M68K\n";
+        LOG_VERBOSE("No frontend for M68K");
         break;
 
     default:
-        LOG_STREAM() << "Machine architecture not supported!\n";
+        LOG_WARN("Machine architecture not supported!");
     }
 
     return nullptr;
@@ -166,7 +167,7 @@ void IFrontEnd::readLibraryCatalog(const QString& sPath)
     QFile file(sPath);
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        qCritical() << "Cannot open library signature catalog `" << sPath << "'\n";
+        LOG_ERROR("Cannot open library signature catalog `%1'", sPath);
         return;
     }
 
@@ -209,7 +210,7 @@ void IFrontEnd::readLibraryCatalog()
     QDir sig_dir(Boomerang::get()->getDataDirectory());
 
     if (!sig_dir.cd("signatures")) {
-        qWarning("Signatures directory does not exist.");
+        LOG_WARN("Signatures directory does not exist.");
         return;
     }
 
@@ -274,6 +275,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
                 if (p_sym) {
                     Address tmpaddr = p_sym->getLocation();
                     Address setup, teardown;
+
                     /*uint32_t vers = */ m_image->readNative4(tmpaddr); // TODO: find use for vers ?
                     setup    = Address(m_image->readNative4(tmpaddr + 4));
                     teardown = Address(m_image->readNative4(tmpaddr + 8));
@@ -315,7 +317,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     assert(m_program == prg);
 
     if (pname) {
-              m_program->setName(pname);
+        m_program->setName(pname);
     }
 
     if (!decodeMain) {
@@ -327,7 +329,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 
     bool    gotMain;
     Address a = getMainEntryPoint(gotMain);
-    LOG_VERBOSE(1) << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
+    LOG_VERBOSE("start: %1, gotMain: %2", a, (gotMain ? "true" : "false"));
 
     if (a == Address::INVALID) {
         std::vector<Address> entrypoints = getEntryPoints();
@@ -340,7 +342,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     }
 
     decode(m_program, a);
-       m_program->setEntryPoint(a);
+    m_program->setEntryPoint(a);
 
     if (!gotMain) {
         return;
@@ -361,14 +363,14 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
         Function *proc = m_program->findProc(a);
 
         if (proc == nullptr) {
-            LOG_VERBOSE(1) << "no proc found for address " << a << "\n";
+            LOG_WARN("No proc found for address %1", a);
             return;
         }
 
         auto fty = std::dynamic_pointer_cast<FuncType>(Type::getNamedType(name));
 
         if (!fty) {
-            LOG << "unable to find signature for known entrypoint " << name << "\n";
+            LOG_WARN("Unable to find signature for known entrypoint %1", name);
         }
         else {
             proc->setSignature(fty->getSignature()->clone());
@@ -382,32 +384,33 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 }
 
 
-void IFrontEnd::decode(Prog *prg, Address a)
+void IFrontEnd::decode(Prog *prg, Address addr)
 {
     Q_UNUSED(prg);
     assert(m_program == prg);
 
-    if (a != Address::INVALID) {
-              m_program->createProc(a);
-        LOG_VERBOSE(1) << "starting decode at address " << a << "\n";
-        UserProc *p = (UserProc *)m_program->findProc(a);
+    if (addr != Address::INVALID) {
+        m_program->createProc(addr);
+        LOG_MSG("Starting decode at address %1", addr);
+        UserProc *p = (UserProc *)m_program->findProc(addr);
 
         if (p == nullptr) {
-            LOG_VERBOSE(1) << "no proc found at address " << a << "\n";
+            LOG_MSG("No proc found at address %1", addr);
             return;
         }
 
         if (p->isLib()) {
-            LOG << "NOT decoding library proc at address " << a << "\n";
+            LOG_MSG("NOT decoding library proc at address %1", addr);
             return;
         }
 
         QTextStream os(stderr); // rtl output target
-        processProc(a, p, os);
+        processProc(addr, p, os);
         p->setDecoded();
     }
     else {   // a == Address::INVALID
         bool change = true;
+        LOG_MSG("Looking for undecoded procedures to decode...");
 
         while (change) {
             change = false;
@@ -452,12 +455,12 @@ void IFrontEnd::decode(Prog *prg, Address a)
 }
 
 
-void IFrontEnd::decodeOnly(Prog *prg, Address a)
+void IFrontEnd::decodeOnly(Prog *prg, Address addr)
 {
     Q_UNUSED(prg);
     assert(m_program == prg);
 
-    UserProc *p = (UserProc *)m_program->createProc(a);
+    UserProc *p = (UserProc *)m_program->createProc(addr);
     assert(!p->isLib());
     QTextStream os(stderr); // rtl output target
 
@@ -472,7 +475,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address a)
 void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
     if (Boomerang::get()->traceDecoder) {
-        LOG << "decoding fragment at " << a << "\n";
+        LOG_MSG("Decoding fragment at address %1", a);
     }
 
     QTextStream os(stderr); // rtl output target
@@ -483,7 +486,7 @@ void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 {
     if (!m_image || (m_image->getSectionInfoByAddr(pc) == nullptr)) {
-        LOG << "ERROR: attempted to decode outside any known section " << pc << "\n";
+        LOG_ERROR("attempted to decode outside any known section at address %1");
         result.valid = false;
         return false;
     }
@@ -496,16 +499,14 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 
 void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
 {
-    std::ifstream ifs;
-
-    ifs.open(signatureFile);
-
-    if (!ifs.good()) {
-        LOG_STREAM() << "Can't open library signature file `" << signatureFile << "'\n";
+    AnsiCParser *p;
+    try {
+        p = new AnsiCParser(signatureFile, false);
+    }
+    catch (const char*) {
+        LOG_ERROR("Cannot read library signature file '%1'", signatureFile);
         return;
     }
-
-    AnsiCParser *p = new AnsiCParser(ifs, false);
 
     Platform plat = getType();
     p->yyparse(plat, cc);
@@ -516,7 +517,6 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     }
 
     delete p;
-    ifs.close();
 }
 
 
@@ -538,7 +538,7 @@ std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
     auto it = m_librarySignatures.find(name);
 
     if (it == m_librarySignatures.end()) {
-        LOG << "Unknown library function " << name << "\n";
+        LOG_WARN("Unknown library function '%1', please update signatures!", name);
         signature = getDefaultSignature(name);
     }
     else {
@@ -650,15 +650,15 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
         while (sequentialDecode) {
             // Decode and classify the current source instruction
             if (Boomerang::get()->traceDecoder) {
-                LOG << "*" << uAddr << "\t";
+                LOG_MSG("*%1", uAddr);
             }
 
             // Decode the inst at uAddr.
             if (!decodeInstruction(uAddr, inst)) {
-                qWarning() << "Invalid instruction at" << uAddr.toString();
+                LOG_ERROR("Invalid instruction at ", uAddr.toString());
             }
             else if (inst.rtl->empty()) {
-                qDebug() << "Valid but undecoded instruction at" << uAddr.toString();
+                LOG_VERBOSE("Instruction at address %1 is a no-op!", uAddr);
             }
 
             // If invalid and we are speculating, just exit
@@ -681,14 +681,11 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 // An invalid instruction. Most likely because a call did not return (e.g. call _exit()), etc.
                 // Best thing is to emit a INVALID BB, and continue with valid instructions
                 if (VERBOSE) {
-                    LOG << "Warning: invalid instruction at " << uAddr << ": ";
-
-                    // Emit the next 4 bytes for debugging
-                    for (int ii = 0; ii < 4; ii++) {
-                        LOG << Address(m_image->readNative1(uAddr + ii) & 0xFF) << " ";
-                    }
-
-                    LOG << "\n";
+                    LOG_ERROR("Invalid instruction at %1: %2 %3 %4 %5", uAddr,
+                              m_image->readNative1(uAddr + 0),
+                              m_image->readNative1(uAddr + 1),
+                              m_image->readNative1(uAddr + 2),
+                              m_image->readNative1(uAddr + 3));
                 }
 
                 // Emit the RTL anyway, so we have the address and maybe some other clues
@@ -727,7 +724,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 QString     tgt;
                 QTextStream st(&tgt);
                 pRtl->print(st);
-                LOG << tgt;
+                LOG_MSG(tgt);
             }
 
             Address uDest;
@@ -790,8 +787,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
-                            LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to " << uDest
-                                << "\n";
+                            LOG_WARN("Goto instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
                         }
                     }
 
@@ -813,7 +809,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                         // Check for indirect calls to library functions, especially in Win32 programs
                         if (refersToImportedFunction(pDest)) {
-                            LOG_VERBOSE(1) << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
+                            LOG_VERBOSE("Jump to a library function: %1, replacing with a call/ret.", stmt_jump);
+
                             // jump to a library function
                             // replace with a call ret
                             const IBinarySymbol *sym = m_binarySymbols->find(pDest->access<Const, 1>()->getAddr());
@@ -824,10 +821,9 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             LibProc *lp = pProc->getProg()->getLibraryProc(func);
 
                             if (lp == nullptr) {
-                                LOG << "getLibraryProc returned nullptr, aborting\n";
+                                LOG_FATAL("getLibraryProc() returned nullptr");
                             }
 
-                            assert(lp);
                             call->setDestProc(lp);
                             std::list<Instruction *> *stmt_list = new std::list<Instruction *>;
                             stmt_list->push_back(call);
@@ -855,22 +851,23 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         BB_rtls->push_back(pRtl);
                         // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out to be a switch stmt
                         pBB = pCfg->newBB(BB_rtls, BBType::CompJump, 0);
-                        LOG << "COMPUTED JUMP at " << uAddr << ", pDest = " << pDest << "\n";
+                        LOG_VERBOSE("COMPUTED JUMP at address %1, pDest = %2", uAddr, pDest);
 
                         if (Boomerang::get()->noDecompile) {
                             // try some hacks
                             if (pDest->isMemOf() && (pDest->getSubExp1()->getOper() == opPlus) &&
                                 pDest->getSubExp1()->getSubExp2()->isIntConst()) {
                                 // assume subExp2 is a jump table
-                                                    Address      jmptbl = pDest->access<Const, 1, 2>()->getAddr();
+                                Address      jmptbl = pDest->access<Const, 1, 2>()->getAddr();
                                 unsigned int i;
 
                                 for (i = 0; ; i++) {
-                                                           Address destAddr = Address(m_image->readNative4(jmptbl + i * 4));
+                                    Address destAddr = Address(m_image->readNative4(jmptbl + i * 4));
 
                                     if ((m_image->getLimitTextLow() <= destAddr) && (destAddr < m_image->getLimitTextHigh())) {
-                                        LOG << "  guessed uDest " << destAddr << "\n";
-                                                                  m_targetQueue.visit(pCfg, destAddr, pBB);
+                                        LOG_MSG("  guessed uDest %1", destAddr);
+
+                                        m_targetQueue.visit(pCfg, destAddr, pBB);
                                         pCfg->addOutEdge(pBB, destAddr, true);
                                     }
                                     else {
@@ -903,8 +900,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
-                            LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to " << uDest
-                                << "\n";
+                            LOG_WARN("Branch instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
                         }
 
                         // Add the fall-through outedge
@@ -1023,7 +1019,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                 // newProc(pProc->getProg(), uNewAddr);
                                 if (Boomerang::get()->traceDecoder) {
-                                    LOG << "p" << uNewAddr << "\t";
+                                    LOG_MSG("p%1", uNewAddr);
                                 }
                             }
 
@@ -1186,9 +1182,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
     Boomerang::get()->alertDecode(pProc, startAddr, lastAddr, nTotalBytes);
 
-    if (VERBOSE) {
-        LOG << "finished processing proc " << pProc->getName() << " at address " << pProc->getNativeAddress() << "\n";
-    }
+    LOG_VERBOSE("Finished processing proc %1 at address %2", pProc->getName(), pProc->getNativeAddress());
 
     return true;
 }
@@ -1250,9 +1244,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
                      m_targetQueue.visit(pCfg, retAddr, pBB);
         }
         catch (Cfg::BBAlreadyExistsError&) {
-            if (VERBOSE) {
-                LOG << "not visiting " << retAddr << " due to exception\n";
-            }
+            LOG_VERBOSE("Not visiting address %1 due to exception", retAddr);
         }
     }
 

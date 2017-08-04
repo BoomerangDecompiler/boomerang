@@ -777,8 +777,9 @@ bool CallStatement::convertToDirect()
         p = prog->createProc(dest);
     }
 
-    LOG_VERBOSE(1) << (bNewProc ? "new" : "existing") << " procedure for call to global '" << nam << " is "
-                   << p->getName() << "\n";
+    LOG_VERBOSE("%1 procedure for call to global '%2' is %3",
+                (bNewProc ? "new" : "existing"), nam, p->getName());
+
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
     // 2) call fixCallBypass (now fixCallAndPhiRefs) on the enclosing procedure
@@ -826,9 +827,7 @@ bool CallStatement::convertToDirect()
     m_procDest->printDetailsXML();
     convertIndirect = true;
 
-    if (VERBOSE) {
-        LOG << "Result of convertToDirect: " << this << "\n";
-    }
+    LOG_VERBOSE("Result of convertToDirect: %1", this);
 
     return convertIndirect;
 }
@@ -976,25 +975,25 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
         }
         else {
             bool change = false;
-            LOG << this << "\n";
+            LOG_MSG("%1", this);
 
             for (int i = 0; i < getNumArguments(); i++) {
                 SharedExp  e  = getArgumentExp(i);
                 SharedType ty = getArgumentType(i);
-                LOG << "arg " << i << " e: " << e << " ty: " << ty << "\n";
+                LOG_MSG("arg %1 e: %2 ty: %3", i, e, ty);
 
                 if (!(ty->isPointer() && (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) && e->isIntConst())) {
-                                   Address addr = Address(e->access<Const>()->getInt());
-                    LOG << "addr: " << addr << "\n";
+                    Address addr = Address(e->access<Const>()->getInt());
+                    LOG_MSG("Addr: %1", addr);
 
                     if (_proc->getProg()->isStringConstant(addr)) {
-                        LOG << "making arg " << i << " of call c*\n";
+                        LOG_MSG("Making arg %1 of call c*", i);
                         setArgumentType(i, PointerType::get(CharType::get()));
                         change = true;
                     }
                     else if (_proc->getProg()->isCFStringConstant(addr)) {
-                                          Address addr2 = Address(_proc->getProg()->readNative4(addr + 8));
-                        LOG << "arg " << i << " of call is a cfstring\n";
+                        Address addr2 = Address(_proc->getProg()->readNative4(addr + 8));
+                        LOG_MSG("Arg %1 of call is a cfstring", i);
                         setArgumentType(i, PointerType::get(CharType::get()));
                         // TODO: we'd really like to change this to CFSTR(addr)
                         setArgumentExp(i, Const::get(addr2));
@@ -1037,9 +1036,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         return false;
     }
 
-    if (VERBOSE) {
-        LOG << "ellipsis processing for " << name << "\n";
-    }
+    LOG_VERBOSE("Ellipsis processing for %1", name);
 
     QString   formatStr = QString::null;
     SharedExp formatExp = getArgumentExp(format);
@@ -1225,7 +1222,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
             break;     // Ignore %% (emits 1 percent char)
 
         default:
-            LOG << "Unhandled format character " << ch << " in format string for call " << this << "\n";
+            LOG_WARN("Unhandled format character %1 in format string for call %2", ch, this);
         }
     }
 
@@ -1266,11 +1263,9 @@ void CallStatement::addSigParam(SharedType ty, bool isScanf)
     m_signature->addParameter(ty);
     SharedExp paramExp = m_signature->getParamExp(m_signature->getNumParams() - 1);
 
-    if (VERBOSE) {
-        LOG << "  ellipsisProcessing: adding parameter " << paramExp << " of type " << ty->getCtype() << "\n";
-    }
+    LOG_VERBOSE("EllipsisProcessing: adding parameter %1 of type %2", paramExp, ty->getCtype());
 
-    if (m_arguments.size() < (unsigned)m_signature->getNumParams()) {
+    if (m_arguments.size() < m_signature->getNumParams()) {
         Assign *as = makeArgAssign(ty, paramExp);
         m_arguments.append(as);
     }
@@ -1595,7 +1590,7 @@ void CallStatement::removeDefine(SharedExp e)
         }
     }
 
-    LOG << "WARNING: could not remove define " << e << " from call " << this << "\n";
+    LOG_WARN("Could not remove define %1 from call %2", e, this);
 }
 
 
@@ -1651,11 +1646,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& ch)
             SharedExp ret = localiseExp(base->clone());     // Assume that it is proved as preserved
             ch = true;
 
-            if (VERBOSE) {
-                LOG << base << " allowed to bypass call statement " << m_number << " ignoring aliasing; result "
-                    << ret << "\n";
-            }
-
+            LOG_VERBOSE("%1 allowed to bypass call statement %2 ignoring aliasing; result %3", base, m_number, ret);
             return ret;
         }
 
@@ -1672,7 +1663,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& ch)
     proven = proven->searchReplaceAll(*base, to, ch);     // e.g. r28{17} + 4
 
     if (ch) {
-        LOG_VERBOSE(1) << "bypassRef() replacing " << r << " with " << proven << "\n";
+        LOG_VERBOSE("Replacing %1 with %2", r, proven);
     }
 
     return proven;
@@ -1687,10 +1678,9 @@ void CallStatement::addDefine(ImplicitAssign *as)
 
 void CallStatement::eliminateDuplicateArgs()
 {
-    StatementList::iterator it;
     LocationSet             ls;
 
-    for (it = m_arguments.begin(); it != m_arguments.end(); ) {
+    for (StatementList::iterator it = m_arguments.begin(); it != m_arguments.end(); ) {
         SharedExp lhs = ((Assignment *)*it)->getLeft();
 
         if (ls.exists(lhs)) {
@@ -1711,9 +1701,8 @@ void CallStatement::setNumber(int num)
     // Also number any existing arguments. Important for library procedures, since these have arguments set by the
     // front
     // end based in their signature
-    StatementList::iterator aa;
 
-    for (aa = m_arguments.begin(); aa != m_arguments.end(); ++aa) {
+    for (StatementList::iterator aa = m_arguments.begin(); aa != m_arguments.end(); ++aa) {
         (*aa)->setNumber(num);
     }
 }

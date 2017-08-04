@@ -5,28 +5,23 @@
  */
 #include "ParserTest.h"
 
+#include "boomerang/core/Boomerang.h"
+
 #include "boomerang/db/ssl/sslparser.h"
 #include "boomerang/db/statements/Statement.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QProcessEnvironment>
 #include <QtCore/QDebug>
 
 
 #define SPARC_SSL    (Boomerang::get()->getDataDirectory().absoluteFilePath("frontend/machine/sparc/sparc.ssl"))
 
-static bool    logset = false;
 
 void ParserTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
 		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
-	}
 }
 
 

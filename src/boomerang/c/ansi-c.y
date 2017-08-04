@@ -64,10 +64,10 @@ public: \
       Signature *sig;
       SymbolMods *mods;
 
-      Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL), 
+      Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL),
                           mods(NULL) { }
   };
-    
+
   class SymbolMods {
   public:
       bool noDecode;
@@ -91,19 +91,19 @@ public: \
 
       SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
   };
-  
+
   class Bound {
   public:
       int kind;
       std::string nam;
-      
+
       Bound(int kind, const char *nam) : kind(kind), nam(nam) { }
   };
 
 %}
 %token PREINCLUDE PREDEFINE PREIF PREIFDEF PREENDIF PRELINE
 %token<str> IDENTIFIER STRING_LITERAL
-%token<ival> CONSTANT 
+%token<ival> CONSTANT
 %token SIZEOF
 %token NODECODE
 %token INCOMPLETE
@@ -164,7 +164,7 @@ public: \
 %start translation_unit
 %%
 
-translation_unit: decls 
+translation_unit: decls
         { }
     ;
 
@@ -193,7 +193,7 @@ convention:
         { $$ = CONV_THISCALL; }
         ;
 
-num_list: CONSTANT ',' num_list 
+num_list: CONSTANT ',' num_list
         { $$ = $3;
           $$->push_front($1);
         }
@@ -206,12 +206,12 @@ num_list: CONSTANT ',' num_list
         }
         ;
 
-param_list: param_exp ',' param_list 
+param_list: param_exp ',' param_list
           { $$ = $3;
             $$->push_front($1);
           }
           | param_exp
-          { $$ = new std::list<Parameter*>(); 
+          { $$ = new std::list<Parameter*>();
             $$->push_back($1);
           }
           | VOID
@@ -245,7 +245,7 @@ exp: REGOF CONSTANT ']'
     { $$ = new Const($1);
     }
     ;
-    
+
 optional_bound: MAXBOUND IDENTIFIER ')'
     { $$ = new Bound(0, $2); }
     | /* */
@@ -253,11 +253,11 @@ optional_bound: MAXBOUND IDENTIFIER ')'
     ;
 
 param: type_ident optional_bound
-     {    if ($1->ty->isArray() || 
-            ($1->ty->isNamed() && 
+     {    if ($1->ty->isArray() ||
+            ($1->ty->isNamed() &&
              ((NamedType*)$1->ty)->resolvesTo() &&
              ((NamedType*)$1->ty)->resolvesTo()->isArray())) {
-            /* C has complex semantics for passing arrays.. seeing as 
+            /* C has complex semantics for passing arrays.. seeing as
              * we're supposedly parsing C, then we should deal with this.
              * When you pass an array in C it is understood that you are
              * passing that array "by reference".  As all parameters in
@@ -285,7 +285,7 @@ param: type_ident optional_bound
                delete *it;
            }
        delete $7;
-       $$ = new Parameter(new PointerType(new FuncType(sig)), $4); 
+       $$ = new Parameter(new PointerType(new FuncType(sig)), $4);
      }
      | ELLIPSIS
      { $$ = new Parameter(new VoidType, "..."); }
@@ -305,7 +305,7 @@ type_decl: TYPEDEF type_ident ';'
                    delete *it;
                }
            delete $8;
-           Type::addNamedType($5, new PointerType(new FuncType(sig))); 
+           Type::addNamedType($5, new PointerType(new FuncType(sig)));
          }
          | TYPEDEF type_ident '(' param_list ')' ';'
          { Signature *sig = Signature::instantiate(plat, cc, $2->nam.c_str());
@@ -319,17 +319,17 @@ type_decl: TYPEDEF type_ident ';'
                    delete *it;
                }
            delete $4;
-           Type::addNamedType($2->nam.c_str(), new FuncType(sig)); 
-         } 
+           Type::addNamedType($2->nam.c_str(), new FuncType(sig));
+         }
          | STRUCT IDENTIFIER '{' type_ident_list '}' ';'
-         { CompoundType *t = new CompoundType(); 
+         { CompoundType *t = new CompoundType();
            for (std::list<TypeIdent*>::iterator it = $4->begin();
                    it != $4->end(); it++) {
               t->addType((*it)->ty, (*it)->nam.c_str());
            }
            char tmp[1024];
            sprintf(tmp, "struct %s", $2);
-           Type::addNamedType(tmp, t); 
+           Type::addNamedType(tmp, t);
          }
          ;
 
@@ -350,9 +350,9 @@ func_decl: signature ';'
          ;
 
 signature: type_ident '(' param_list ')'
-         { 
+         {
            /* Use the passed calling convention (cc) */
-           Signature *sig = Signature::instantiate(plat, cc, $1->nam.c_str()); 
+           Signature *sig = Signature::instantiate(plat, cc, $1->nam.c_str());
            sig->addReturn($1->ty);
            for (std::list<Parameter*>::iterator it = $3->begin();
                 it != $3->end(); it++)
@@ -367,7 +367,7 @@ signature: type_ident '(' param_list ')'
          }
          | convention type_ident '(' param_list ')'
          { Signature *sig = Signature::instantiate(plat, $1,
-              $2->nam.c_str()); 
+              $2->nam.c_str());
            sig->addReturn($2->ty);
            for (std::list<Parameter*>::iterator it = $4->begin();
                 it != $4->end(); it++)
@@ -381,7 +381,7 @@ signature: type_ident '(' param_list ')'
            $$ = sig;
          }
          | CUSTOM custom_options type_ident '(' param_list ')'
-         { CustomSignature *sig = new CustomSignature($3->nam.c_str()); 
+         { CustomSignature *sig = new CustomSignature($3->nam.c_str());
            if ($2->exp)
                sig->addReturn($3->ty, $2->exp);
            if ($2->sp)
@@ -422,7 +422,7 @@ symbol_decl: CONSTANT type_ident ';'
              sym->mods = $2;
              symbols.push_back(sym);
            }
-           ; 
+           ;
 
 symbol_mods: NODECODE symbol_mods
            { $$ = $2;
@@ -431,7 +431,7 @@ symbol_mods: NODECODE symbol_mods
            | INCOMPLETE symbol_mods
            { $$ = $2;
              $$->incomplete = true;
-           } 
+           }
            | /* empty */
            { $$ = new SymbolMods(); }
            ;
@@ -451,7 +451,7 @@ array_modifier: '[' CONSTANT ']'
           }
           | '[' ']'
           { $$ = new ArrayType(NULL);
-          } 
+          }
           | array_modifier '[' CONSTANT ']'
           { $$ = new ArrayType($1, $3);
           }
@@ -473,41 +473,41 @@ type_ident: type IDENTIFIER
           }
           ;
 
-type_ident_list: type_ident ';' type_ident_list 
+type_ident_list: type_ident ';' type_ident_list
           { $$ = $3;
             $$->push_front($1);
           }
           | type_ident ';'
-          { $$ = new std::list<TypeIdent*>(); 
+          { $$ = new std::list<TypeIdent*>();
             $$->push_back($1);
           }
           ;
 
-type: CHAR 
+type: CHAR
     { $$ = new CharType(); }
-    | SHORT 
+    | SHORT
     { $$ = new IntegerType(16, 1); }
-    | INT 
+    | INT
     { $$ = new IntegerType(32, 1); }
     | UNSIGNED CHAR
     { $$ = new IntegerType(8, 0); }
     | UNSIGNED SHORT
     { $$ = new IntegerType(16, 0); }
-    | UNSIGNED INT 
+    | UNSIGNED INT
     { $$ = new IntegerType(32, 0); }
-    | UNSIGNED LONG 
+    | UNSIGNED LONG
     { $$ = new IntegerType(32, 0); }
-    | UNSIGNED 
+    | UNSIGNED
     { $$ = new IntegerType(32, 0); }
-    | LONG 
+    | LONG
     { $$ = new IntegerType(32, 1); }
     | LONG LONG
     { $$ = new IntegerType(64, 1); }
     | UNSIGNED LONG LONG
     { $$ = new IntegerType(64, 0); }
-    | FLOAT 
+    | FLOAT
     { $$ = new FloatType(32); }
-    | DOUBLE 
+    | DOUBLE
     { $$ = new FloatType(64); }
     | VOID
     { $$ = new VoidType(); }
@@ -515,27 +515,27 @@ type: CHAR
     { $$ = new PointerType($1); }
     | type '[' CONSTANT ']'
     { // This isn't C, but it makes defining pointers to arrays easier
-      $$ = new ArrayType($1, $3); 
+      $$ = new ArrayType($1, $3);
     }
     | type '[' ']'
     { // This isn't C, but it makes defining pointers to arrays easier
-      $$ = new ArrayType($1); 
+      $$ = new ArrayType($1);
     }
     | IDENTIFIER
-    { //$$ = Type::getNamedType($1); 
+    { //$$ = Type::getNamedType($1);
       //if ($$ == NULL)
       $$ = new NamedType($1);
     }
     | CONST type
     { $$ = $2; }
-    | STRUCT IDENTIFIER 
+    | STRUCT IDENTIFIER
     {
       char tmp[1024];
       sprintf(tmp, "struct %s", $2);
       $$ = new NamedType(tmp);
     }
     | STRUCT '{' type_ident_list '}'
-    { CompoundType *t = new CompoundType(); 
+    { CompoundType *t = new CompoundType();
       for (std::list<TypeIdent*>::iterator it = $3->begin();
            it != $3->end(); it++) {
           t->addType((*it)->ty, (*it)->nam.c_str());
@@ -555,9 +555,9 @@ int AnsiCParser::yylex()
 
 void AnsiCParser::yyerror(char *s)
 {
-    fflush(stdout);
-        printf("\n%s", theScanner->lineBuf);
-    printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
+    LOG_ERROR("%1", theScanner->lineBuf);
+    LOG_ERROR("%1, theScanner->column");
+    LOG_ERROR("%1 on line %2", "^", s, theScanner->theLine);
 }
 
 AnsiCParser::~AnsiCParser()

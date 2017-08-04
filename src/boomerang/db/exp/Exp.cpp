@@ -7,6 +7,9 @@
  * \brief   Implementation of the Exp and related classes.
  ******************************************************************************/
 
+#include "Exp.h"
+
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h" // E.g. class ParamEntry in decideType()
@@ -84,7 +87,7 @@ void Exp::createDotFile(const char *name)
     QFile fl(name);
 
     if (!fl.open(QFile::WriteOnly)) {
-        LOG << "Could not open " << name << " to write dotty file\n";
+        LOG_ERROR("Could not open %1 to write dotty file", name);
         return;
     }
 
@@ -425,7 +428,7 @@ SharedExp Exp::simplify()
 
 #if DEBUG_SIMP
     if (!(*res == *save)) {
-        std::cout << "simplified " << save << "  to  " << res << "\n";
+        LOG_MSG("Simplified %1 to %2", save, res);
     }
 #endif
     return res;
@@ -499,7 +502,7 @@ QString Exp::toString() const
 }
 
 
-void Exp::printt(QTextStream& os /*= cout*/) const
+void Exp::printt(QTextStream& os) const
 {
     print(os);
 
@@ -512,7 +515,7 @@ void Exp::printt(QTextStream& os /*= cout*/) const
 }
 
 
-void Exp::printAsHL(QTextStream& os /*= cout*/)
+void Exp::printAsHL(QTextStream& os)
 {
     QString     tgt;
     QTextStream ost(&tgt);

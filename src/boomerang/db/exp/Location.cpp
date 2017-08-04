@@ -65,7 +65,7 @@ bool Location::match(const QString& pattern, std::map<QString, SharedConstExp>& 
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "location::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
 
     if ((m_oper == opMemOf) || (m_oper == opRegOf)) {
@@ -94,9 +94,7 @@ SharedExp Location::polySimplify(bool& bMod)
     SharedExp res = Unary::polySimplify(bMod);
 
     if ((res->getOper() == opMemOf) && (res->getSubExp1()->getOper() == opAddrOf)) {
-        if (VERBOSE) {
-            LOG << "polySimplify " << res << "\n";
-        }
+        LOG_VERBOSE("polySimplify %1", res);
 
         res  = res->getSubExp1()->getSubExp1();
         bMod = true;

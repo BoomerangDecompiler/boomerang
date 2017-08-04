@@ -23,13 +23,13 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
 #include <QBuffer>
 #include <QFile>
-#include <QDebug>
 
 
 namespace
@@ -95,7 +95,8 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     unsigned      p = LMMH(m_pLXHeader->eip);
     unsigned      lim = p + 0x300;
     unsigned char op1, op2;
-       Address       addr;
+    Address       addr;
+
     // unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
     bool gotSubEbp   = false;                                   // True if see sub ebp, ebp
     bool lastWasCall = false;                                   // True if the last instruction was a call
@@ -111,7 +112,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     }
 
     assert(si);
-       Address  nativeOrigin = si->getSourceAddr();
+    Address  nativeOrigin = si->getSourceAddr();
     unsigned textSize     = si->getSize();
 
     if (textSize < 0x300) {
@@ -122,8 +123,6 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
         op1 = *(unsigned char *)(p + base);
         op2 = *(unsigned char *)(p + base + 1);
 
-        // std::cerr << std::hex << "At " << p << ", ops " << (unsigned)op1 << ", " << (unsigned)op2 << std::dec <<
-        // "\n";
         switch (op1)
         {
         case 0xE8:
@@ -132,7 +131,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             if (gotSubEbp) {
                 // This is the call we want. Get the offset from the call instruction
                 addr = nativeOrigin + p + 5 + LMMH(*(p + base + 1));
-                // std::cerr << "__CMain at " << std::hex << addr << "\n";
+                LOG_VERBOSE("Found __CMain at address %1", addr);
                 return addr;
             }
 
@@ -168,7 +167,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
         int size = microX86Dis(p + base);
 
         if (size == 0x40) {
-            fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", p);
             size = 1;
         }
 
@@ -205,7 +204,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     if ((m_pLXHeader->sigLo != 'L') || ((m_pLXHeader->sigHi != 'X') && (m_pLXHeader->sigHi != 'E'))) {
-        qWarning() << "error loading file bad LE/LX magic";
+        LOG_ERROR("Error loading file: bad LE/LX magic");
         return false;
     }
 
@@ -295,8 +294,10 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         buf.read((char *)&fixup, sizeof(fixup));
 
         if ((fixup.src != 7) || (fixup.flags & ~0x50)) {
-            qWarning() << QString("unknown fixup type %1 %2").arg(fixup.src, 2, 16, QChar('0'))
-                .arg(fixup.flags, 2, 16, QChar('0'));
+            LOG_WARN("Unknown fixup type %1 %2",
+                QString("%1").arg(fixup.src,   2, 16, QChar('0')),
+                QString("%1").arg(fixup.flags, 2, 16, QChar('0')));
+
             return false;
         }
 

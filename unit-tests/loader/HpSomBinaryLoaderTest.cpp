@@ -1,21 +1,17 @@
 #include "HpSomBinaryLoaderTest.h"
 
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/IBinaryImage.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 
 #define HELLO_HPPA             (BOOMERANG_TEST_BASE "/tests/inputs/hppa/hello")
 
-static bool logset = false;
 
 void HpSomBinaryLoaderTest::initTestCase()
 {
-    if (!logset) {
-        logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-        Boomerang::get()->setLogger(new NullLogger());
-    }
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

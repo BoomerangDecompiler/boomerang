@@ -19,6 +19,7 @@
 #include "st20decoder.h"
 
 #include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Proc.h"

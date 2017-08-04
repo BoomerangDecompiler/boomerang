@@ -79,6 +79,8 @@ public:
     HostAddress() { m_value = 0; }
     explicit HostAddress(value_type value);
     explicit HostAddress(const void* ptr);
+    /// Initializes this HostAddress to \p srcAddr + \p hostDiff
+    explicit HostAddress(Address srcAddr, ptrdiff_t hostDiff);
 
     HostAddress(const HostAddress& other) = default;
     HostAddress& operator=(const HostAddress& other) = default;

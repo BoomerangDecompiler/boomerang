@@ -1,11 +1,12 @@
 #include "Ternary.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/Visitor.h"
+#include "boomerang/util/Log.h"
 
 
 Ternary::Ternary(OPER _op)
@@ -340,8 +341,7 @@ void Ternary::print(QTextStream& os, bool html) const
         }
     }
     else {
-        LOG << "Ternary::print invalid operator " << operToString(m_oper) << "\n";
-        assert(false);
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 }
 
@@ -370,7 +370,7 @@ bool Ternary::match(const QString& pattern, std::map<QString, SharedConstExp>& b
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "ternary::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
     return false;
 }
@@ -475,9 +475,7 @@ SharedExp Ternary::polySimplify(bool& bMod)
             double d = prog->getFloatConstant(u, ok, std::static_pointer_cast<const Const>(subExp1)->getInt());
 
             if (ok) {
-                if (VERBOSE) {
-                    LOG << "replacing " << subExp3 << " with " << d << " in " << shared_from_this() << "\n";
-                }
+                LOG_VERBOSE("Replacing %1 with %2 in %3", subExp3, d, shared_from_this());
 
                 subExp3 = Const::get(d);
                 bMod    = true;
@@ -677,7 +675,8 @@ SharedExp Ternary::accept(ExpModifier *v)
 
 void Ternary::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
+    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
+
     child(subExp1, ind);
     child(subExp2, ind);
     child(subExp3, ind);

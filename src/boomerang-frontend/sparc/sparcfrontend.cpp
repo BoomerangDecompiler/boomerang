@@ -22,6 +22,7 @@
 
 #include "sparcfrontend.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang/util/Log.h"
 
@@ -40,7 +41,6 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 
-
 #include "boomerang-frontend/sparc/sparcdecoder.h"
 
 #include <cassert>
@@ -51,8 +51,8 @@
 
 void SparcFrontEnd::warnDCTcouple(Address uAt, Address uDest)
 {
-    LOG_STREAM() << "Error: DCTI couple at " << uAt << " points to delayed branch at " << uDest << "...\n";
-    LOG_STREAM() << "Decompilation will likely be incorrect\n";
+    LOG_ERROR("DCTI couple at '%1' points to delayed branch at '%2'...", uAt, uDest);
+    LOG_ERROR("Decompilation will likely be incorrect");
 }
 
 
@@ -109,7 +109,7 @@ void SparcFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& 
         cfg->addOutEdge(newBB, dest, true);
     }
     else {
-        LOG_STREAM() << "Error: branch to " << dest << " goes beyond section.\n";
+        LOG_ERROR("Branch to address %1 is beyond section limits", dest);
     }
 }
 
@@ -127,7 +127,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that failed. Instead, we
         // use the set of CallStatements (not in this procedure) that is needed by CSR
         if (Boomerang::get()->traceDecoder) {
-            LOG_STREAM() << "p" << dest << "\t";
+            LOG_VERBOSE("p%1", dest);
         }
     }
 
@@ -140,7 +140,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
 
 void SparcFrontEnd::case_unhandled_stub(Address addr)
 {
-    LOG_STREAM() << "Error: DCTI couple at " << addr << '\n';
+    LOG_ERROR("DCTI couple at address ", addr);
 }
 
 
@@ -445,7 +445,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         address += 4; // Skip the SCD only
         // Start a new list of RTLs for the next BB
         BB_rtls = nullptr;
-        LOG_STREAM() << "Warning: instruction at " << address << " not copied to true leg of preceeding branch\n";
+        LOG_WARN("Instruction at address %1 not copied to true leg of preceeding branch", address);
         return true;
     }
 
@@ -684,7 +684,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
         while (sequentialDecode) {
             // Decode and classify the current source instruction
             if (Boomerang::get()->traceDecoder) {
-                LOG << "*" << uAddr << "\t";
+                LOG_MSG("*%1", uAddr);
             }
 
             // Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
@@ -707,18 +707,20 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
             // Check for invalid instructions
             if (!inst.valid) {
-                LOG_STREAM() << "Invalid instruction at " << uAddr << ": ";
                 ptrdiff_t delta = m_image->getTextDelta();
 
                 const Byte* instructionData = (const Byte*)(uAddr + delta).value();
+                QString instructionString;
+                QTextStream ost(&instructionString);
+
                 for (int j = 0; j < inst.numBytes; j++) {
-                    LOG_STREAM() << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0')) << " ";
+                    ost << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0'));
+                    if (j < inst.numBytes-1) {
+                        ost << " ";
+                    }
                 }
 
-                LOG_STREAM() << "\n";
-                LOG_STREAM().flush();
-                assert(false);
-                return false;
+                LOG_FATAL("Invalid instruction at %1: %2", uAddr, instructionString);
             }
 
             // Don't display the RTL here; do it after the switch statement in case the delay slot instruction is moved
@@ -829,7 +831,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     decodeInstruction(uAddr + 4, delay_inst);
 
                     if (Boomerang::get()->traceDecoder) {
-                        LOG << "*" << uAddr + 4 << "\t\n";
+                        LOG_MSG("*%1", uAddr + 4);
                     }
 
                     if (last->getKind() == STMT_CALL) {
@@ -1224,7 +1226,7 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> *l
     QString name = m_program->getSymbolByAddress(dest);
 
     if (name.isEmpty()) {
-        LOG_STREAM() << "Error: Can't find symbol for PLT address " << dest << '\n';
+        LOG_ERROR("Can't find symbol for PLT address %1", dest);
         return false;
     }
 

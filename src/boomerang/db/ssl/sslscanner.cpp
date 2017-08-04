@@ -66,6 +66,7 @@ int read();
 #define YY_USE_CONST
 #endif
 #include <cstdio>
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Operator.h"
 #include "boomerang/util/Log.h"
 
@@ -1441,8 +1442,7 @@ do_action:     /* this label is used only to access EOF actions */
 #line 306 "db/sslscanner.l"
             {   // funky print-next-line-for-debug token
                 if (yyleng > MAX_LINE) {
-                    LOG_STREAM() << theLine + 1 << ": line too long.\n";
-                    exit(1);
+                    LOG_FATAL("%1: line too long.", theLine+1);
                 }
 
                 // saves the next line
@@ -1454,7 +1454,7 @@ do_action:     /* this label is used only to access EOF actions */
 
                 // echo the line if line tracing is turned on
                 if (traceLines) {
-                    LOG_STREAM() << lineBuf << '\n';
+                    LOG_VERBOSE("%1", lineBuf);
                 }
 
                 // Quell a warning

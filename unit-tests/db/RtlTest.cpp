@@ -5,6 +5,8 @@
  */
 #include "RtlTest.h"
 
+#include "boomerang/core/Boomerang.h"
+
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/RTL.h"
@@ -30,15 +32,10 @@
 #define SWITCH_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/switch_cc")
 #define SWITCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/switch_cc")
 
-static bool logset = false;
 
 void RtlTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
-		Boomerang::get()->setLogger(new NullLogger());
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
 }
 
 

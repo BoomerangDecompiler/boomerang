@@ -1,9 +1,9 @@
 #include "PhiAssign.h"
 
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/Visitor.h"
+#include "boomerang/util/Log.h"
 
 
 Instruction *PhiAssign::clone() const
@@ -215,8 +215,8 @@ bool PhiAssign::accept(StmtModifier *v)
         m_lhs = m_lhs->accept(v->m_mod);
     }
 
-    if (VERBOSE && v->m_mod->isMod()) {
-        LOG << "PhiAssign changed: now " << this << "\n";
+    if (v->m_mod->isMod()) {
+        LOG_VERBOSE("PhiAssign changed: now %1", this);
     }
 
     return true;
@@ -234,8 +234,8 @@ bool PhiAssign::accept(StmtPartModifier *v)
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
     }
 
-    if (VERBOSE && v->mod->isMod()) {
-        LOG << "PhiAssign changed: now " << this << "\n";
+    if (v->mod->isMod()) {
+        LOG_VERBOSE("PhiAssign changed: now %1", this);
     }
 
     return true;
@@ -284,7 +284,7 @@ void PhiAssign::simplify()
     }
 
     if (allSame) {
-        LOG_VERBOSE(1) << "all the same in " << this << "\n";
+        LOG_VERBOSE("all the same in %1", this);
         convertToAssign(RefExp::get(m_lhs, first));
         return;
     }
@@ -306,9 +306,7 @@ void PhiAssign::simplify()
     }
 
     if (onlyOneNotThis && (notthis != (Instruction *)-1)) {
-        if (VERBOSE) {
-            LOG << "all but one not this in " << this << "\n";
-        }
+        LOG_VERBOSE("All but one not this in %1", this);
 
         convertToAssign(RefExp::get(m_lhs, notthis));
         return;

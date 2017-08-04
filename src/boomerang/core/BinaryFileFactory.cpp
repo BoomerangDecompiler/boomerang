@@ -25,7 +25,6 @@
 #include <QPluginLoader>
 #include <QCoreApplication>
 #include <QString>
-#include <QDebug>
 
 
 #define LMMH(x)                                                                                                  \
@@ -40,6 +39,8 @@ BinaryFileFactory::BinaryFileFactory()
 
 IFileLoader *BinaryFileFactory::loadFile(const QString& filePath)
 {
+    LOG_MSG("Loading binary file '%1'", filePath);
+
     IBinaryImage       *image   = Boomerang::get()->getImage();
     IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
 
@@ -50,7 +51,7 @@ IFileLoader *BinaryFileFactory::loadFile(const QString& filePath)
     IFileLoader *loader = getInstanceFor(filePath);
 
     if (loader == nullptr) {
-        qWarning() << "Unrecognised binary file format.";
+        LOG_WARN("Cannot load %1: Unrecognised binary file format.", filePath);
         return nullptr;
     }
 
@@ -59,7 +60,7 @@ IFileLoader *BinaryFileFactory::loadFile(const QString& filePath)
     QFile srcFile(filePath);
 
     if (false == srcFile.open(QFile::ReadOnly)) {
-        qWarning() << "Opening '" << filePath << "' failed";
+        LOG_WARN("Opening '%1' failed");
         return nullptr;
     }
 
@@ -67,7 +68,7 @@ IFileLoader *BinaryFileFactory::loadFile(const QString& filePath)
     Boomerang::get()->getProject()->getFiledata() = srcFile.readAll();
 
     if (loader->loadFromMemory(Boomerang::get()->getProject()->getFiledata()) == 0) {
-        qWarning() << "Loading '" << filePath << "' failed";
+        LOG_WARN("Loading '%1 failed", filePath);
         return nullptr;
     }
 
@@ -81,7 +82,7 @@ IFileLoader *BinaryFileFactory::getInstanceFor(const QString& filePath)
     QFile f(filePath);
 
     if (!f.open(QFile::ReadOnly)) {
-        qWarning() << "Unable to open binary file: " << filePath;
+        LOG_ERROR("Unable to open binary file: %1", filePath);
         return nullptr;
     }
 
@@ -109,7 +110,7 @@ void BinaryFileFactory::populatePlugins()
 {
     QDir pluginsDir = Boomerang::get()->getDataDirectory();
     if (!pluginsDir.cd("plugins/loader/")) {
-        qCritical() << "Cannot open loader plugin directory!";
+        LOG_ERROR("Cannot open loader plugin directory!");
     }
 
     for (QString fileName : pluginsDir.entryList(QDir::Files)) {
@@ -120,11 +121,11 @@ void BinaryFileFactory::populatePlugins()
             m_loaderPlugins.push_back(loaderPlugin);
         }
         catch (const char *errmsg) {
-            qCritical() << "Unable to load plugin: " << errmsg;
+            LOG_WARN("Unable to load plugin: %1", errmsg);
         }
     }
 
     if (m_loaderPlugins.empty()) {
-        qCritical() << "No loader plugins found!";
+        LOG_ERROR("No loader plugins found, unable to load any binaries.");
     }
 }

@@ -1,75 +1,253 @@
 #pragma once
 
 #include <QString>
+#include <QFile>
+
 #include <memory>
 #include <fstream>
+#include <vector>
+#include <cassert>
 
-#include "boomerang/core/Boomerang.h"
+#include "boomerang/util/Address.h"
+#include "boomerang/util/Util.h"
+
 
 class Instruction;
 class Exp;
 class LocationSet;
 class RTL;
 class Type;
-class Address;
+class UserProc;
 
-class Printable;
 
 using SharedType     = std::shared_ptr<Type>;
 using SharedConstExp = std::shared_ptr<const Exp>;
 
+/// Log level / verbosity.
+enum class LogLevel
+{
+    Fatal = 0,
+    Error = 1,
+    Warning = 2,
+    Message = 3,
+    Default = 3,
+    Verbose1 = 4,
+    Verbose2 = 5
+};
 
+
+/**
+ * Abstract base class for log sinks.
+ */
+class ILogSink
+{
+public:
+    virtual ~ILogSink() = default;
+
+    /// Write a string to the log.
+    virtual void write(const QString& s) = 0;
+
+    /// If the log sink is buffered, flush the underlying buffer
+    /// to the target device. If the device is unbuffered, do nothing.
+    virtual void flush() = 0;
+};
+
+
+/**
+ * Log sink for logging to stdout.
+ */
+class ConsoleLogSink : public ILogSink
+{
+public:
+    virtual ~ConsoleLogSink() = default;
+
+    /// \copydoc ILogSink::write
+    virtual void write(const QString& s) override;
+
+    /// \copydoc ILogSink::flush
+    virtual void flush() override;
+};
+
+
+/**
+ * Log sink for logging to a file.
+ */
+class FileLogSink : public ILogSink
+{
+public:
+    FileLogSink(const QString& filename, bool append = false);
+    virtual ~FileLogSink();
+
+    /// \copydoc ILogSink::write
+    virtual void write(const QString& s) override;
+
+    /// \copydoc ILogSink::flush
+    virtual void flush() override;
+
+private:
+    QFile m_logFile;
+};
+
+
+/**
+ * Class for logging messages, warnings and errors.
+ * Logs can have multiple LogSinks to enable writing to multiple targets simultaneously.
+ *
+ * Log messages have different levels (see \ref LogLevel).
+ * The default behavior is to omit verbose log messages from being logged;
+ * this behavior can be overridden by calling \ref setLogLevel.
+ */
 class Log
 {
 public:
-    Log() {}
-    virtual Log& operator<<(const QString& s) = 0;
-    virtual Log& operator<<(const Instruction *s);
-    virtual Log& operator<<(const SharedConstExp& e);
-    virtual Log& operator<<(const SharedType& ty);
-    virtual Log& operator<<(const Printable& ty);
-    virtual Log& operator<<(const RTL *r);
-    virtual Log& operator<<(int i);
-    virtual Log& operator<<(size_t i);
-    virtual Log& operator<<(char c);
-    virtual Log& operator<<(double d);
-    virtual Log& operator<<(Address a);
-    virtual Log& operator<<(const LocationSet *l);
+    /// Create a log.
+    /// \param level Default logging level.
+    Log(LogLevel level = LogLevel::Default);
 
-    virtual ~Log() {}
-};
-
-/// Sets the outputfile to be the file "log" in the default output directory.
-class FileLogger : public Log
-{
-protected:
-    std::ofstream out;
+    virtual ~Log();
 
 public:
-    FileLogger();
-    virtual ~FileLogger() {}
-    Log& operator<<(const QString& str)  override;
+    /**
+     * Get or create the default log.
+     * The default behavior is to log to stdout
+     * and to the default log file "boomerang.log".
+     */
+    static Log& getOrCreateLog();
+
+    /**
+     * Log a message to all log sinks.
+     *
+     * \param level Log level, see \ref LogLevel
+     * \param file  Source file from which this function was called, usually __FILE__
+     * \param line  Source line frim which this function was called, usually __LINE__
+     * \param msg   Log message.
+     */
+    void log(LogLevel level, const char* file, int line, const QString& msg);
+
+    /**
+     * Log a message to all log sinks, replacing %1, %2, ... etc by \p args
+     *
+     * \param level Log level, see \ref LogLevel
+     * \param file  Source file from which this function was called, usually __FILE__
+     * \param line  Source line frim which this function was called, usually __LINE__
+     * \param msg   Log message.
+     * \param args  Arguments to replace in \p msg
+     */
+    template<typename... Args>
+    void log(LogLevel level, const char* file, int line, const QString& msg, Args... args)
+    {
+        if (!canLog(level)) {
+            return;
+        }
+
+        log(level, file, line, collectArgs(msg, args...));
+    }
+
+    /// Add a log sink / target. Takes ownership of the pointer.
+    void addLogSink(ILogSink* s);
+
+    /// Removes and deletes a log sink.
+    void removeLogSink(ILogSink* s);
+
+    Log& setLogLevel(LogLevel level);
+    LogLevel getLogLevel() const;
+
+private:
+    /// Check if logging is allowed with level \p level
+    bool canLog(LogLevel level) const;
+
+    /// Write a header with column captions
+    void writeLogHeader();
+
+    /**
+     * Pretty-print \p fileName to \p dstBuffer, filling up remaining space in \p dstBuffer with whitespace characters.
+     *
+     * \param dstBuffer Destination buffer to write to
+     * \param dstCharacters Size (in characters) of the destination buffer
+     * \param fileName file name to truncate
+     */
+    void truncateFileName(char* dstBuffer, size_t dstCharacters, const char* fileName);
+
+    /**
+     * Replace format arguments in \p msg.
+     * \sa QString::arg
+     */
+    template<typename T>
+    QString collectArg(const QString& msg, const std::shared_ptr<T>& arg) { return msg.arg(arg->toString()); }
+    QString collectArg(const QString& msg, const char* arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, const QString& arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, const Instruction *s);
+    QString collectArg(const QString& msg, const SharedConstExp& e);
+    QString collectArg(const QString& msg, const SharedType& ty);
+    QString collectArg(const QString& msg, const Printable& ty);
+    QString collectArg(const QString& msg, const RTL *r);
+    QString collectArg(const QString& msg, int i);
+    QString collectArg(const QString& msg, unsigned int arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, long arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, size_t i);
+    QString collectArg(const QString& msg, char c);
+    QString collectArg(const QString& msg, double d);
+    QString collectArg(const QString& msg, Address a);
+    QString collectArg(const QString& msg, const LocationSet *l);
+
+    template<typename Arg>
+    QString collectArgs(const QString& msg, Arg arg)
+    {
+        return collectArg(msg, arg);
+    }
+
+
+    template<typename Arg, typename... Args>
+    QString collectArgs(QString msg, Arg arg, Args... args)
+    {
+        return collectArgs(collectArg(msg, arg), args...);
+    }
+
+    /**
+     * Write the raw string \p msg to all log sinks.
+     */
+    void write(const QString& msg);
+
+    /**
+     * Given a log level, get the name of the log level as a string.
+     */
+    QString levelToString(LogLevel level);
+
+private:
+    /**
+     * number of characters to chop off from the beginning of__FILE__
+     * to have a sensible file name
+     */
+    size_t m_fileNameOffset;
+    LogLevel m_level = LogLevel::Default;
+    std::vector<ILogSink *> m_sinks;
 };
 
+
+
+/**
+ * Class for logging to a separate file different from the default log.
+ */
 class SeparateLogger : public Log
 {
-protected:
-    std::ofstream *out;
+public:
+    SeparateLogger(const QString filePath);
+    ~SeparateLogger() = default;
 
 public:
-    SeparateLogger(const QString& filePath);
-    SeparateLogger(const SeparateLogger&) {}
+    static SeparateLogger& getOrCreateLog(const QString& name);
 
-    virtual ~SeparateLogger();
-
-    Log& operator<<(const QString& str) override;
+private:
+    SeparateLogger& operator=(SeparateLogger&) = delete;
 };
 
-class NullLogger : public Log
-{
-public:
-    virtual Log& operator<<(const QString& /*str*/) override
-    {
-        return *this;
-    }
-};
+
+/// Usage: LOG_ERROR("%1, we have a problem", "Houston");
+#define LOG_FATAL(...)    Log::getOrCreateLog().log(LogLevel::Fatal,    __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_ERROR(...)    Log::getOrCreateLog().log(LogLevel::Error,    __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_WARN(...)     Log::getOrCreateLog().log(LogLevel::Warning,  __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_MSG(...)      Log::getOrCreateLog().log(LogLevel::Default,  __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_VERBOSE(...)  Log::getOrCreateLog().log(LogLevel::Verbose1, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_VERBOSE2(...) Log::getOrCreateLog().log(LogLevel::Verbose2, __FILE__, __LINE__, __VA_ARGS__)
+
+#define LOG_SEPARATE(name, ...) SeparateLogger::getOrCreateLog(name).log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)

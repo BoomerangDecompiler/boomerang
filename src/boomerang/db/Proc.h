@@ -81,7 +81,7 @@ class Log;
  * \var Function::cluster
  * Cluster this procedure is contained within.
  ******************************************************************************/
-class Function
+class Function : public Printable
 {
     typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 
@@ -201,11 +201,6 @@ public:
     virtual bool isLib() const { return false; } ///< Return true if this is a library proc
     virtual bool isNoReturn() const = 0;         ///< Return true if this procedure doesn't return
 
-    /**
-     * OutPut operator for a Proc object.
-     */
-    friend QTextStream& operator<<(QTextStream& os, const Function& proc);
-
     /// Get the RHS that is proven for left
     virtual SharedExp getProven(SharedExp left)   = 0; ///< Get the RHS, if any, that is proven for left
     virtual SharedExp getPremised(SharedExp left) = 0; ///< Get the RHS, if any, that is premised for left
@@ -286,6 +281,8 @@ public:
     virtual SharedExp getPremised(SharedExp /*left*/) override { return nullptr; } ///< Get the RHS that is premised for left
     virtual bool isPreserved(SharedExp e) override;                            ///< Return whether e is preserved by this proc
     void getInternalStatements(StatementList& internal);
+
+    QString toString() const override;
 };
 
 enum ProcStatus
@@ -404,6 +401,8 @@ public:
      ******************************************************************************/
     UserProc(Module *mod, const QString& name, Address address);
     virtual ~UserProc();
+
+    QString toString() const override;
 
     /// Returns a pointer to the CFG object.
     Cfg *getCFG()       { return m_cfg; }
@@ -1075,5 +1074,3 @@ protected:
     UserProc();
     void setCFG(Cfg *c) { m_cfg = c; }
 }; // class UserProc
-
-Log& operator<<(Log& out, const UserProc& c);

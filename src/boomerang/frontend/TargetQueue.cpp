@@ -1,6 +1,7 @@
 #include "TargetQueue.h"
 
 #include "boomerang/db/CFG.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
 
@@ -15,7 +16,7 @@ void TargetQueue::visit(Cfg *pCfg, Address uNewAddr, BasicBlock *& pNewBB)
         targets.push(uNewAddr);
 
         if (Boomerang::get()->traceDecoder) {
-            LOG << ">" << uNewAddr << "\t";
+            LOG_MSG(">%1", uNewAddr);
         }
     }
 }
@@ -33,7 +34,7 @@ Address TargetQueue::nextAddress(const Cfg& cfg)
         targets.pop();
 
         if (Boomerang::get()->traceDecoder) {
-            LOG << "<" << address << "\t";
+            LOG_MSG("<%1", address);
         }
 
         // If no label there at all, or if there is a BB, it's incomplete, then we can parse this address next
@@ -51,10 +52,8 @@ void TargetQueue::dump()
     std::queue<Address> copy(targets);
 
     while (!copy.empty()) {
-              Address a = copy.front();
+        Address a = copy.front();
         copy.pop();
-        LOG_STREAM() << a << ", ";
+        LOG_MSG("  %1,",a);
     }
-
-    LOG_STREAM() << "\n";
 }

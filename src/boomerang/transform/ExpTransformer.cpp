@@ -9,7 +9,7 @@
 
 #include "ExpTransformer.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
@@ -17,13 +17,14 @@
 #include "boomerang/db/Proc.h"
 
 #include "boomerang/util/Types.h"
-
 #include "boomerang/transform/RDIExpTransformer.h"
 #include "boomerang/transform/transformation-parser.h"
 
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Types.h"
+
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
-#include <QtCore/QDebug>
 
 #include <cassert>
 #include <numeric>   // For accumulate
@@ -101,7 +102,7 @@ void ExpTransformer::loadAll()
     QFile file(sPath);
 
     if (!file.open(QFile::ReadOnly)) {
-        qCritical() << "Can't open transformation file `" << sPath << "'";
+        LOG_ERROR("Can't open transformation file `%1'", sPath);
         return;
     }
 
@@ -122,7 +123,7 @@ void ExpTransformer::loadAll()
         ifs1.open(sPath1.toStdString());
 
         if (!ifs1.good()) {
-            LOG << "Can't open transformation file `" << sPath1 << "'\n";
+            LOG_ERROR("Can't open transformation file '%1'", sPath);
             return;
         }
 

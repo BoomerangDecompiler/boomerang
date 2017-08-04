@@ -19,8 +19,8 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 
-#include <QtCore/QDebug>
 #include <sys/types.h> // Next three for open()
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -145,12 +145,12 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         (m_elfHeader->e_ident[1] != 'E') ||
         (m_elfHeader->e_ident[2] != 'L') ||
         (m_elfHeader->e_ident[3] != 'F')) {
-        fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n",
-                m_elfHeader->e_ident[0],
-                m_elfHeader->e_ident[1],
-                m_elfHeader->e_ident[2],
-                m_elfHeader->e_ident[3]);
-        return 0;
+        LOG_ERROR("Cannot load ELF file: Bad magic %1 %2 %3 %4",
+                  m_elfHeader->e_ident[0],
+                  m_elfHeader->e_ident[1],
+                  m_elfHeader->e_ident[2],
+                  m_elfHeader->e_ident[3]);
+        return false;
     }
 
     switch (m_elfHeader->endianness)
@@ -164,8 +164,8 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         break;
 
     default:
-        qWarning() << QString("Unknown endianness ").arg(m_elfHeader->endianness, 2, 16, QChar('0'));
-        return 0;
+        LOG_WARN("Unknown ELF Endianness %1, file may be corrupted.", m_elfHeader->endianness);
+        return false;
     }
 
     // Set up program header pointer (in case needed)
@@ -206,14 +206,14 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         Elf32_Shdr *pShdr = m_sectionhdrs + i;
 
         if ((Byte *)pShdr > m_loadedImage + m_loadedImageSize) {
-            fprintf(stderr, "section %u header is outside the image size\n", i);
+            LOG_ERROR("Section %1 header is outside the image size", i);
             return false;
         }
 
         const char *sectionName = m_strings + elfRead4(&pShdr->sh_name);
 
         if ((Byte *)sectionName > m_loadedImage + m_loadedImageSize) {
-            fprintf(stderr, "name for section %u is outside the image size\n", i);
+            LOG_ERROR("Name for section %1 is outside the image size", i);
             return false;
         }
 
@@ -298,8 +298,10 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     // Inform Boomerang about new sections
     for (SectionParam par : m_elfSections) {
         if (par.Size == 0) {
-            // this is most probably the NULL section
-            qDebug() << "Not adding 0 sized section " << par.Name;
+            // this is most probably the NULL section; if it is not, warn the user
+            if (par.Name != "") {
+                LOG_WARN("Not adding 0 sized section %1", par.Name);
+            }
             continue;
         }
 
@@ -373,8 +375,8 @@ const char *ElfBinaryLoader::getStrPtr(int idx, int offset)
 {
     if (idx < 0) {
         // Most commonly, this will be an index of -1, because a call to GetSectionIndexByName() failed
-        fprintf(stderr, "Error! GetStrPtr passed index of %d\n", idx);
-        return (char *)"Error!";
+        LOG_ERROR("Invalid index %1", idx);
+        return nullptr;
     }
 
     // Get a pointer to the start of the string table
@@ -501,7 +503,7 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
     }
 
     if (sym.Value.isZero()) {
-        qDebug() << "Skipping symbol " << sym.Name << "with unknown location!";
+        LOG_WARN("Skipping symbol %1 with unknown location", sym.Name);
         return;
     }
 
@@ -689,13 +691,12 @@ Machine ElfBinaryLoader::getMachine() const
         return Machine::MIPS;
     }
     else if (elfMachine == EM_X86_64) {
-        fprintf(stderr, "Error: ElfBinaryFile::GetMachine: The AMD x86-64 architecture is not supported yet\n");
+        LOG_ERROR("The AMD x86-64 architecture is not supported yet.");
         return (Machine) - 1;
     }
 
     // An unknown machine type
-    fprintf(stderr, "Error: ElfBinaryFile::GetMachine: Unsupported machine type: %d (0x%x)\n", elfMachine, (unsigned int)elfMachine);
-    fprintf(stderr, "(Please add a description for this type, thanks!)\n");
+    LOG_ERROR("Unsupported machine type %1", elfMachine);
     return (Machine) - 1;
 }
 
@@ -834,14 +835,14 @@ void ElfBinaryLoader::applyRelocations()
                     case R_SPARC_HI22:
                     case R_SPARC_LO10:
                     case R_SPARC_GLOB_DAT:
-                        qWarning() << "Unhandled sparc relocation";
+                        LOG_WARN("Unhandled SPARC relocation");
                         break;
                     }
                 }
             }
         }
 
-        qDebug() << "Unhandled relocation!";
+        LOG_WARN("Unhandled relocation!");
         break; // Not implemented yet
 
     case EM_386:
@@ -962,7 +963,7 @@ void ElfBinaryLoader::applyRelocations()
                         break; // No need to do anything with these, if a shared object
 
                     default:
-                        // std::cout << "Relocation type " << (int)relType << " not handled yet\n";
+                        LOG_WARN("Relocation type %1 not handled yet", (int)relType);
                         ;
                     }
                 }
@@ -1047,7 +1048,7 @@ bool ElfBinaryLoader::isRelocationAt(Address uNative)
 
     case EM_SPARC:
     default:
-        qDebug() << "Unhandled relocation !";
+        LOG_WARN("Unhandled relocation!");
         break; // Not implemented yet
     }
 

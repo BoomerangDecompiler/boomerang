@@ -12,7 +12,10 @@
  * \brief   Implementation of the Statement and related classes.
  ******************************************************************************/
 
-#include "boomerang/util/Log.h"
+
+#include "boomerang/core/Boomerang.h"
+
+#include "boomerang/codegen/ICodeGenerator.h"
 
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Proc.h"
@@ -29,11 +32,10 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
-
-#include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/util/Util.h"
 #include "boomerang/db/Visitor.h"
 
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
 
 #include <cassert>
 #include <cstring>
@@ -71,7 +73,7 @@ bool Instruction::mayAlias(SharedExp e1, SharedExp e2, int size) const
     bool b = (calcMayAlias(e1, e2, size) && calcMayAlias(e2, e1, size));
 
     if (b && VERBOSE) {
-        LOG << "May alias: " << e1 << " and " << e2 << " size " << size << "\n";
+        LOG_VERBOSE("Instruction may alias: %1 and %2 size %3", e1, e2, size);
     }
 
     return b;
@@ -292,17 +294,9 @@ bool Instruction::canPropagateToExp(Exp& e)
 }
 
 
-static int propagate_progress = 0;
-
 bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
                               LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
 {
-    if (++propagate_progress > 1000) {
-        LOG_STREAM() << 'p';
-        LOG_STREAM().flush();
-        propagate_progress = 0;
-    }
-
     bool change;
     int  changes = 0;
     // int sp = proc->getSignature()->getStackRegister(proc->getProg());
@@ -374,10 +368,10 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
                             SharedExp   lhsOWdef = ((Assign *)OWdef)->getLeft();
                             LocationSet OWcomps;
                             def->addUsedLocs(OWcomps);
-                            LocationSet::iterator cc;
+
                             bool isOverwrite = false;
 
-                            for (cc = OWcomps.begin(); cc != OWcomps.end(); ++cc) {
+                            for (LocationSet::iterator cc = OWcomps.begin(); cc != OWcomps.end(); ++cc) {
                                 if (**cc *= *lhsOWdef) {
                                     isOverwrite = true;
                                     break;
@@ -396,18 +390,16 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
                                 break;
                             }
 
-                            if (OW) {
-                                LOG_STREAM() << "Ow is " << OW << "\n";
+                            if (OW != nullptr) {
+                                LOG_MSG("OW is %1", OW);
                             }
                         }
                     }
 
                     if (doNotPropagate) {
-                        if (VERBOSE) {
-                            LOG << "% propagation of " << def->getNumber() << " into " << m_number
-                                << " prevented by the "
-                                "propagate past overwriting statement in loop heuristic\n";
-                        }
+                        LOG_VERBOSE("% propagation of %1 into %2 prevented by "
+                            "the propagate past overwriting statement in loop heuristic",
+                            def->getNumber(), m_number);
 
                         continue;
                     }
@@ -487,16 +479,11 @@ bool Instruction::doPropagateTo(SharedExp e, Assignment *def, bool& convert)
         Boomerang::get()->numToPropagate--;
     }
 
-    if (VERBOSE) {
-        LOG << "propagating " << def << "\n"
-            << "       into " << this << "\n";
-    }
+    LOG_VERBOSE("Propagating %1 into %2", def, this);
 
     bool change = replaceRef(e, def, convert);
 
-    if (VERBOSE) {
-        LOG << "     result " << this << "\n\n";
-    }
+    LOG_VERBOSE("    result %1", this);
 
     return change;
 }
@@ -746,7 +733,7 @@ void Instruction::dfaMapLocals()
 
     accept(&sm);
 
-    if (VERBOSE && dlm.change) {
-        LOG << "statement mapped with new local(s): " << m_number << "\n";
+    if (dlm.change) {
+        LOG_VERBOSE("Statement mapped with new local(s): %1", m_number);
     }
 }

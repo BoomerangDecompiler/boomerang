@@ -13,6 +13,8 @@
  ******************************************************************************/
 #include "DFATypeRecovery.h"
 
+#include "boomerang/core/Boomerang.h"
+
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Proc.h"
@@ -29,11 +31,10 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
+
 #include <sstream>
 #include <cstring>
 #include <utility>
-
-#include <QDebug>
 
 static int nextUnionNumber = 0;
 
@@ -46,23 +47,20 @@ static DFA_TypeRecovery s_type_recovery;
 
 void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
 {
-    LOG << iter << " iterations\n";
+    LOG_VERBOSE("%1 iterations", iter);
 
     for (Instruction *s : stmts) {
-        LOG << s << "\n"; // Print the statement; has dest type
+        LOG_VERBOSE("%1", s); // Print the statement; has dest type
+
         // Now print type for each constant in this Statement
         std::list<std::shared_ptr<Const> >           lc;
         std::list<std::shared_ptr<Const> >::iterator cc;
         s->findConstants(lc);
 
         if (lc.size()) {
-            LOG << "       ";
-
             for (cc = lc.begin(); cc != lc.end(); ++cc) {
-                LOG << (*cc)->getType()->getCtype() << " " << *cc << "  ";
+                LOG_MSG("    %1, %2", (*cc)->getType()->getCtype(), *cc);
             }
-
-            LOG << "\n";
         }
 
         // If s is a call, also display its return types
@@ -75,11 +73,10 @@ void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
                 continue;
             }
 
-            UseCollector              *uc = call->getUseCollector();
-            ReturnStatement::iterator rr;
-            bool first = true;
+            UseCollector *uc = call->getUseCollector();
 
-            for (rr = rs->begin(); rr != rs->end(); ++rr) {
+            LOG_VERBOSE("  returns:");
+            for (ReturnStatement::iterator rr = rs->begin(); rr != rs->end(); ++rr) {
                 // Intersect the callee's returns with the live locations at the call, i.e. make sure that they
                 // exist in *uc
                 Assignment *assgn = dynamic_cast<Assignment *>(*rr);
@@ -89,17 +86,8 @@ void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
                     continue; // Intersection fails
                 }
 
-                if (first) {
-                    LOG << "       returns: ";
-                }
-                else {
-                    LOG << ", ";
-                }
-
-                LOG << assgn->getType()->getCtype() << " " << assgn->getLeft();
+                LOG_VERBOSE("    %1 %2", assgn->getType()->getCtype(), assgn->getLeft());
             }
-
-            LOG << "\n";
         }
     }
 }
@@ -226,18 +214,11 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
     proc->getStatements(stmts);
 
     int iter = 0;
-    int dfa_progress = 0;
 
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
 
         for (Instruction *it : stmts) {
-            if (++dfa_progress >= 2000) {
-                dfa_progress = 0;
-                LOG_STREAM() << "t";
-                LOG_STREAM().flush();
-            }
-
             bool        thisCh  = false;
             Instruction *before = nullptr;
 
@@ -251,7 +232,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                 ch = true;
 
                 if (DEBUG_TA) {
-                    LOG << " caused change: FROM: " << before << "TO: \n" << it << "\n";
+                    LOG_MSG(" caused change: FROM: %1 TO: %2", before, it);
                 }
             }
 
@@ -267,13 +248,13 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
     }
 
     if (ch) {
-        LOG << "### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure " << proc->getName() << " ###\n";
+        LOG_WARN("### Iteration limit exceeded for dfaTypeAnalysis of procedure %1 ###", proc->getName());
     }
 
     if (DEBUG_TA) {
-        LOG << "\n ### results for data flow based type analysis for " << proc->getName() << " ###\n";
+        LOG_MSG("### Results for data flow based type analysis for %1 ###", proc->getName());
         dumpResults(stmts, iter);
-        LOG << "\n ### end results for Data flow based Type Analysis for " << proc->getName() << " ###\n\n";
+        LOG_MSG("### End results for Data flow based Type Analysis for %1 ###", proc->getName());
     }
 
     // Now use the type information gathered
@@ -477,17 +458,17 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
                     }
                 }
 
-                SharedType ty = ((TypingStatement *)s)->getType();
-                LOG << "in proc " << proc->getName() << " adding addrExp " << addrExp << "with type " << *ty << " to local table\n";
+                const SharedType& ty = ((TypingStatement *)s)->getType();
+                LOG_VERBOSE("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
                 SharedExp loc_mem = Location::memOf(addrExp);
                 proc->localsMap().addItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
             }
         }
     }
 
-    proc->debugPrintAll("after application of dfa type analysis");
+    proc->debugPrintAll("After application of DFA type analysis");
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "after dfa type analysis");
+    Boomerang::get()->alertDecompileDebugPoint(proc, "After DFA type analysis");
 }
 
 
@@ -589,7 +570,9 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
             return ((IntegerType *)this)->shared_from_this();
         }
 
-        LOG << "integer size " << size << " meet with SizeType size " << other->as<SizeType>()->getSize() << "!\n";
+        LOG_MSG("Integer size %1 meet with SizeType size %2!",
+                size, other->as<SizeType>()->getSize());
+
         unsigned oldSize = size;
         size = std::max(size, other_sz->getSize());
         ch   = size != oldSize;
@@ -705,11 +688,11 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
         // See if the base types will meet
         if (otherBase->resolvesToPointer()) {
             if (thisBase->resolvesToPointer() && (thisBase->as<PointerType>()->getPointsTo() == thisBase)) {
-                LOG_STREAM() << "HACK! BAD POINTER 1\n";
+                LOG_VERBOSE("HACK! BAD POINTER 1");
             }
 
             if (otherBase->resolvesToPointer() && (otherBase->as<PointerType>()->getPointsTo() == otherBase)) {
-                LOG_STREAM() << "HACK! BAD POINTER 2\n";
+                LOG_VERBOSE("HACK! BAD POINTER 2");
             }
 
             if (thisBase == otherBase) {                          // Note: compare pointers
@@ -917,7 +900,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
     // Other is a non union type
     if (other->resolvesToPointer() && (other->as<PointerType>()->getPointsTo().get() == this)) {
-        LOG << "WARNING! attempt to union " << getCtype() << " with pointer to self!\n";
+        LOG_WARN("Attempt to union '%1' with pointer to self!", this->getCtype());
         return ((UnionType *)this)->shared_from_this();
     }
 
@@ -984,13 +967,13 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     // Other is not compatible with any of my component types. Add a new type
 #if PRINT_UNION                                      // Set above
     if (unionCount == 999) {                         // Adjust the count to catch the one you want
-        LOG_STREAM() << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in Type::createUnion)
+        LOG_MSG("createUnion breakpokint"); // Note: you need two breakpoints (also in Type::createUnion)
     }
-    LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype();
+    LOG_MSG("  %1 Created union from %1 and %2", ++unionCount, this->getCtype(), other->getCtype();
 #endif
     ((UnionType *)this)->addType(other->clone(), QString("x%1").arg(++nextUnionNumber));
 #if PRINT_UNION
-    LOG_STREAM() << ", result is " << getCtype() << "\n";
+    LOG_MSG("  Result is %1", getCtype());
 #endif
     ch = true;
     return ((UnionType *)this)->shared_from_this();
@@ -1005,7 +988,7 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
 
     if (other->resolvesToSize()) {
         if (other->as<SizeType>()->size != size) {
-            LOG << "size " << size << " meet with size " << other->as<SizeType>()->size << "!\n";
+            LOG_WARN("Size %1 meet with size %2!", size, other->as<SizeType>()->size);
             unsigned oldSize = size;
             size = std::max(size, other->as<SizeType>()->size);
             ch   = size != oldSize;
@@ -1023,7 +1006,8 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
         }
 
         if (other->getSize() != size) {
-            LOG << "WARNING: size " << size << " meet with " << other->getCtype() << "; allowing temporarily\n";
+            LOG_WARN("Size %1 meet with %2; allowing temporarily",
+                     size, other->getCtype());
         }
 
         return other->clone();
@@ -1129,7 +1113,7 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
     char name[20];
 #if PRINT_UNION
     if (unionCount == 999) {                         // Adjust the count to catch the one you want
-        LOG_STREAM() << "createUnion breakpokint\n"; // Note: you need two breakpoints (also in UnionType::meetWith)
+        LOG_MSG("createUnion breakpokint"); // Note: you need two breakpoints (also in UnionType::meetWith)
     }
 #endif
     sprintf(name, "x%d", ++nextUnionNumber);
@@ -1139,8 +1123,8 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
     u->addType(other->clone(), name);
     ch = true;
 #if PRINT_UNION
-    LOG_STREAM() << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype()
-                 << ", result is " << u->getCtype() << "\n";
+    LOG_MSG("  %1 Created union from %2 and %3, result is %4",
+            ++unionCount, getCtype(), other->getCtype(), u->getCtype());
 #endif
     return u;
 }
@@ -1384,7 +1368,7 @@ SharedType Binary::ascendType()
 SharedType RefExp::ascendType()
 {
     if (m_def == nullptr) {
-        LOG_STREAM() << "Warning! Null reference in " << this << "\n";
+        LOG_WARN("Null reference in %1", (const Instruction*)this);
         return VoidType::get();
     }
 
@@ -1445,7 +1429,7 @@ SharedType Terminal::ascendType()
         return IntegerType::get(STD_SIZE, -1);
 
     default:
-        LOG_STREAM() << "ascendType() for terminal " << this << " not implemented!\n";
+        LOG_WARN("Unknown type %1", this->toString());
         return VoidType::get();
     }
 }
@@ -1723,9 +1707,8 @@ void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
                 size_t stride = leftOfPlus->access<Const, 2>()->getInt();
 
                 if (DEBUG_TA && (stride * 8 != parentType->getSize())) {
-                    LOG << "type WARNING: apparent array reference at " << shared_from_this() << " has stride " << stride * 8
-                        << " bits, but parent type " << parentType->getCtype() << " has size " << parentType->getSize()
-                        << "\n";
+                    LOG_WARN("Type WARNING: apparent array reference at %1 has stride %2 bits, but parent type %3 has size %4",
+                             shared_from_this(), stride * 8, parentType->getCtype(), parentType->getSize());
                 }
 
                 // The index is integer type
@@ -1861,7 +1844,7 @@ bool Signature::dfaTypeAnalysis(Cfg *cfg)
                 ch = true;
 
                 if (DEBUG_TA) {
-                    LOG << "  sig caused change: " << it->getType()->getCtype() << " " << it->getName() << "\n";
+                    LOG_MSG("  sig caused change: %1 %2", it->getType()->getCtype(), it->getName());
                 }
             }
         }

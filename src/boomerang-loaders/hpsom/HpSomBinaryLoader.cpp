@@ -20,6 +20,7 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/util/Log.h"
 
 #include <QString>
 #include <cstddef>
@@ -150,7 +151,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     fp.open(QBuffer::ReadOnly);
 
     if (!fp.open(QFile::ReadOnly)) {
-        fprintf(stderr, "Could not open binary file \n");
+        LOG_ERROR("Could not load binary file");
         return false;
     }
 
@@ -160,7 +161,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     m_loadedImage = new unsigned char[size];
 
     if (m_loadedImage == 0) {
-        fprintf(stderr, "Could not allocate %ld bytes for image\n", size);
+        LOG_ERROR("Could not allocate %1 bytes for image", size);
         return false;
     }
 
@@ -168,7 +169,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 
 
     if (fp.read((char *)m_loadedImage, size) != (unsigned)size) {
-        fprintf(stderr, "Error reading binary file\n");
+        LOG_ERROR("Error reading binary file", size);
         return false;
     }
 
@@ -180,7 +181,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 
     if (((system_id != 0x210) && (system_id != 0x20B)) ||
         ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
-        fprintf(stderr, "File is not a standard PA/RISC executable file, with system ID %X and magic number %X\n",
+        LOG_ERROR("File is not a standard PA/RISC executable file, with system ID %1 and magic number %2",
                 system_id, a_magic);
         return false;
     }
@@ -189,7 +190,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     unsigned *auxHeaders = (unsigned *)intptr_t(UINT4(m_loadedImage + 0x1c));
 
     if (auxHeaders == nullptr) {
-        fprintf(stderr, "Error: auxilliary header array is not present\n");
+        LOG_ERROR("Auxilliary header array is not present");
         return false;
     }
 
@@ -212,7 +213,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     }
 
     if (!found) {
-        fprintf(stderr, "Error: Exec auxilliary header not found\n");
+        LOG_ERROR("Exec auxilliary header not found");
         return false;
     }
 

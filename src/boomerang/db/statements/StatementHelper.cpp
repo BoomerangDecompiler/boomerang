@@ -1,5 +1,6 @@
 #include "StatementHelper.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Const.h"
 
@@ -234,7 +235,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                 switch (mask)
                 {
                 case 0:
-                    LOG << "WARNING: unhandled pentium branch if parity with pCond = " << pCond << "\n";
+                    LOG_WARN("Unhandled pentium branch if parity with pCond = %1", pCond);
                     return false;
 
                 case 1:
@@ -424,15 +425,13 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                             break;
 
                         default:
-                            LOG_STREAM() << "BranchStatement::simplify: k is " << QString::number(k, 16) << "\n";
-                            assert(0);
+                            LOG_FATAL("k is %1", QString::number(k, 16));
                         }
 
                         break;
 
                     default:
-                        LOG_STREAM() << "BranchStatement::simplify: Mask is " << QString::number(mask, 16) << "\n";
-                        assert(0);
+                        LOG_FATAL("Mask is %1", QString::number(mask, 16));
                     }
                 }
 

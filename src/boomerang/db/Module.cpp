@@ -1,6 +1,7 @@
 #include "Module.h"
 
 #include "boomerang/util/Log.h"
+#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Prog.h"
@@ -277,7 +278,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
                 dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
 
             if (got) {
-                std::cout << "calling convention: " << d << "\n";
+                LOG_VERBOSE("calling convention: %1", d);
                 // TODO: use it
             }
             else {
@@ -298,9 +299,8 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
             dbghelp::SymSetContext(hProcess, &stack, 0);
             dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
 
-            LOG << "final signature: ";
+            LOG_MSG("Final signature:");
             pProc->getSignature()->printToLog();
-            LOG << "\n";
         }
     }
 #endif

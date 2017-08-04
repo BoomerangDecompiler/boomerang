@@ -6,34 +6,27 @@
 
 #include "CfgTest.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/DataFlow.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Location.h"
 
+#include "boomerang/util/Log.h"
+
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
-#include <QDir>
-#include <QProcessEnvironment>
 #include <QDebug>
 
 #define FRONTIER_PENTIUM    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/frontier")
 #define SEMI_PENTIUM        (BOOMERANG_TEST_BASE "/tests/inputs/pentium/semi")
 #define IFTHEN_PENTIUM      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/ifthen")
 
-static bool    logset = false;
-
 void CfgTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 
@@ -128,7 +121,7 @@ void CfgTest::testSemiDominators()
 	df->dominators(cfg);
 
 	// Find BB "L (6)" (as per Appel, Figure 19.8).
-	   BBIterator      it;
+    BBIterator      it;
 	BasicBlock *bb = cfg->getFirstBB(it);
 
 	while (bb && bb->getLowAddr() != SEMI_L) {

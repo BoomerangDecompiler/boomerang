@@ -14,6 +14,8 @@
 
 #include "StatementTest.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/core/Boomerang.h"
+
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
@@ -45,16 +47,10 @@
 #define HELLO_PENTIUM      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
 #define GLOBAL1_PENTIUM    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/global1")
 
-static bool    logset = false;
-
 
 void StatementTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-		Boomerang::get()->setLogger(new NullLogger());
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 
@@ -65,7 +61,6 @@ void StatementTest::testEmpty()
 
 	boo->vFlag = true;
 	boo->setOutputDirectory("./unit_test/");
-	boo->setLogger(new FileLogger());
 
 	// create Prog
 	Prog              *prog = new Prog("testEmpty");

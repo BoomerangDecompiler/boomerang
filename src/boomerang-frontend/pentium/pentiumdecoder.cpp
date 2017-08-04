@@ -17,6 +17,7 @@
  ******************************************************************************/
 #include "pentiumdecoder.h"
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/RTL.h"
@@ -49787,8 +49788,11 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
     }
 
     if (DEBUG_DECODER) {
-        LOG_STREAM() << pc + BSFRstate << ": "
-                     << "BS" << (init == -1 ? "F" : "R") << (size == 32 ? ".od" : ".ow") << BSFRstate + 1 << "\n";
+        LOG_MSG("%1: BS%2%3%4",
+                pc + BSFRstate,
+                (init == -1 ? "F" : "R"),
+                (size == 32 ? ".od" : ".ow"),
+                BSFRstate + 1);
     }
 
     if (++BSFRstate == 3) {

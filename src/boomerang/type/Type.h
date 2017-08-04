@@ -97,9 +97,6 @@ class Type : public std::enable_shared_from_this<Type>, public Printable
 protected:
     eType id;
 
-private:
-    static QMap<QString, SharedType> namedTypes;
-
 public:
     // Constructors
     Type(eType id);
@@ -588,7 +585,6 @@ class NamedType : public Type
 {
 private:
     QString name;
-    static int nextAlpha;
 
 public:
     NamedType(const QString& _name);

@@ -131,7 +131,7 @@ bool RefExp::match(const QString& pattern, std::map<QString, SharedConstExp>& bi
     }
 
 #ifdef DEBUG_MATCH
-    LOG << "refexp::match " << this << " to " << pattern << ".\n";
+    LOG_MSG("Matching %1 to %2.", this, pattern);
 #endif
 
     if (pattern.endsWith('}')) {
@@ -229,18 +229,17 @@ SharedExp RefExp::accept(ExpModifier *v)
 
 void RefExp::printx(int ind) const
 {
-    Util::alignStream(LOG_STREAM(), ind) << operToString(m_oper) << "\n";
-    LOG_STREAM() << "{";
+    LOG_VERBOSE("%1%2", QString(ind, ' '), operToString(m_oper));
+    LOG_VERBOSE("{");
 
     if (m_def == nullptr) {
-        LOG_STREAM() << "nullptr";
+        LOG_VERBOSE("nullptr");
     }
     else {
-        LOG_STREAM() << HostAddress(m_def) << "=" << m_def->getNumber();
+        LOG_VERBOSE("%1=%2", HostAddress(m_def).toString(), m_def->getNumber());
     }
 
-    LOG_STREAM() << "}\n";
-    LOG_STREAM().flush();
+    LOG_VERBOSE("}");
     child(subExp1, ind);
 }
 
