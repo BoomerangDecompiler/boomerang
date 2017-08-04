@@ -55,32 +55,6 @@ enum class BBType;
  * Control Flow Graph class. Contains all the BasicBlock objects for a procedure.
  * These BBs contain all the RTLs for the procedure, so by traversing the Cfg,
  * one traverses the whole procedure.
- *
- * \var Cfg::myProc
- * Pointer to the UserProc object that contains this CFG object
- * \var Cfg::m_listBB
- * BasicBlock s contained in this CFG
- * \var Cfg::m_ordering
- * Ordering of BBs for control flow structuring
- * \var Cfg::m_revOrdering
- * Ordering of BBs for control flow structuring
- * \var Cfg::m_mapBB
- * The ADDRESS to PBB map.
- * \var Cfg::m_entryBB
- * The CFG entry BasicBlock.
- * \var Cfg::m_exitBB
- * The CFG exit BasicBlock.
- * \var Cfg::m_wellFormed
- * \var Cfg::m_structured
- * \var Cfg::m_callSites
- * Set of the call instructions in this procedure.
- * \var Cfg::m_lastLabel
- * Last label (positive integer) used by any BB this Cfg
- * \var Cfg::m_implicitMap
- * Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments
- * for the same location.
- * \var Cfg::m_implicitsDone
- * True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
  ******************************************************************************/
 class Cfg
 {
@@ -91,22 +65,7 @@ class Cfg
     typedef std::map<Address, BasicBlock *, std::less<Address> >   MAPBB;
     typedef std::list<BasicBlock *>::iterator                      BB_IT;
     typedef std::list<BasicBlock *>::const_iterator                BBC_IT;
-
-private:
-    mutable bool m_wellFormed;
-    bool m_structured;
-    bool m_implicitsDone;
-    int m_lastLabel;
-    UserProc *m_myProc;
-    std::list<BasicBlock *> m_listBB;
-    std::vector<BasicBlock *> m_ordering;
-    std::vector<BasicBlock *> m_revOrdering;
-
-    MAPBB m_mapBB;
-    BasicBlock *m_entryBB;
-    BasicBlock *m_exitBB;
-    CallStatementSet m_callSites;
-    ExpStatementMap m_implicitMap;
+    typedef BB_IT iterator;
 
 public:
     class BBAlreadyExistsError : public std::exception
@@ -117,6 +76,9 @@ public:
             : pBB(_pBB) {}
     };
 
+    /**
+     * Creates an empty CFG.
+     */
     Cfg();
 
     /***************************************************************************/ /**
@@ -141,7 +103,7 @@ public:
      * \brief assignment operator for Cfg's, the BB's are shallow copied
      * \param other - rhs
      ******************************************************************************/
-    Cfg& operator=(const Cfg& other);        /* Copy constructor */
+    Cfg& operator=(const Cfg& other);
 
     /***************************************************************************/ /**
      * \brief        Add a new basic block to this cfg
@@ -242,7 +204,6 @@ public:
     /*
      * An alternative to the above is to use begin() and end():
      */
-    typedef BB_IT iterator;
     iterator begin() { return m_listBB.begin(); }
     iterator end() { return m_listBB.end(); }
 
@@ -510,7 +471,6 @@ private:
     bool checkEntryBB();
 
 public:
-
     /**
      * Split the given BB at the RTL given, and turn it into the BranchStatement given. Sort out all the in and out
      * edges.
@@ -627,8 +587,8 @@ public:
     /////////////////////////////////////////////////////////////////////////
     void print(QTextStream& out, bool html = false);
     void printToLog();
-    void dump();            // Dump to LOG_STREAM()
-    void dumpImplicitMap(); // Dump the implicit map to LOG_STREAM()
+    void dump();            ///< Dump to LOG_STREAM()
+    void dumpImplicitMap(); ///< Dump the implicit map to LOG_STREAM()
 
     /**
      * \brief Check for indirect jumps and calls. If any found, decode the extra code and return true
@@ -662,4 +622,20 @@ public:
 
 protected:
     void addBB(BasicBlock *bb) { m_listBB.push_back(bb); }
+
+private:
+    mutable bool m_wellFormed;
+    bool m_structured;
+    bool m_implicitsDone; ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
+    int m_lastLabel; ///< Last label (positive integer) used by any BB this Cfg
+    UserProc *m_myProc; ///< Pointer to the UserProc object that contains this CFG object
+    std::list<BasicBlock *> m_listBB; ///< BasicBlock s contained in this CFG
+    std::vector<BasicBlock *> m_ordering; ///< Ordering of BBs for control flow structuring
+    std::vector<BasicBlock *> m_revOrdering; ///< Ordering of BBs for control flow structuring
+
+    MAPBB m_mapBB; ///< The Address to BB map
+    BasicBlock *m_entryBB; ///< The CFG entry BasicBlock.
+    BasicBlock *m_exitBB;  ///< The CFG exit BasicBlock.
+    CallStatementSet m_callSites; ///< Set of the call instructions in this procedure.
+    ExpStatementMap m_implicitMap; ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
 };
