@@ -43,9 +43,9 @@ static int nextUnionNumber = 0;
 // idx + K; leave idx wild
 static const Binary unscaledArrayPat(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst));
 
-static DFA_TypeRecovery s_type_recovery;
+static DFATypeRecovery s_type_recovery;
 
-void DFA_TypeRecovery::dumpResults(StatementList& stmts, int iter)
+void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
 {
     LOG_VERBOSE("%1 iterations", iter);
 
@@ -105,7 +105,7 @@ static Location
                                ),
                    nullptr);
 
-void DFA_TypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
+void DFATypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
 {
     UserProc  *pr   = s->getProc();
     Prog      *prog = pr->getProg();
@@ -147,7 +147,7 @@ void DFA_TypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
 }
 
 
-void DFA_TypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
+void DFATypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
 {
     bool       allZero;
     SharedExp  lhs;
@@ -191,13 +191,13 @@ void DFA_TypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
 }
 
 
-void DFA_TypeRecovery::recoverFunctionTypes(Function *)
+void DFATypeRecovery::recoverFunctionTypes(Function *)
 {
     assert(false);
 }
 
 
-void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
+void DFATypeRecovery::dfaTypeAnalysis(Function *f)
 {
     if (f->isLib()) {
         return;
@@ -472,7 +472,7 @@ void DFA_TypeRecovery::dfaTypeAnalysis(Function *f)
 }
 
 
-bool DFA_TypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
+bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
 {
     Q_UNUSED(sig);
     Q_UNUSED(cfg);
@@ -481,7 +481,7 @@ bool DFA_TypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
 }
 
 
-bool DFA_TypeRecovery::dfaTypeAnalysis(Instruction *i)
+bool DFATypeRecovery::dfaTypeAnalysis(Instruction *i)
 {
     Q_UNUSED(i);
     assert(false);

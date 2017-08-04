@@ -1,12 +1,15 @@
 #pragma once
+
 #include "TypeRecovery.h"
+
+
 class Signature;
 class Cfg;
 class StatementList;
 class Instruction;
 
 
-struct DFA_TypeRecovery : public TypeRecoveryCommon
+class DFATypeRecovery : public TypeRecoveryCommon
 {
 public:
     void recoverFunctionTypes(Function *) override;
