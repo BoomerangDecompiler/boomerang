@@ -32,14 +32,10 @@
 #define SWITCH_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/switch_cc")
 #define SWITCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/switch_cc")
 
-static bool logset = false;
 
 void RtlTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
 }
 
 

@@ -8,14 +8,10 @@
 
 #define HELLO_HPPA             (BOOMERANG_TEST_BASE "/tests/inputs/hppa/hello")
 
-static bool logset = false;
 
 void HpSomBinaryLoaderTest::initTestCase()
 {
-    if (!logset) {
-        logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-    }
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

@@ -26,14 +26,10 @@
 #define HELLO_SPARC     (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
 #define BRANCH_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/branch")
 
-static bool    logset = false;
 
 void FrontSparcTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

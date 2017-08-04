@@ -29,14 +29,10 @@
 
 #define HELLO_WINDOWS    (BOOMERANG_TEST_BASE "/tests/inputs/windows/hello.exe")
 
-static bool    logset = false;
 
 void TypeTest::initTestCase()
 {
-	if (!logset) {
-        logset = true;
-        Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

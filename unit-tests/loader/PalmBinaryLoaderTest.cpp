@@ -9,14 +9,10 @@
 
 #define STARTER_PALM           (BOOMERANG_TEST_BASE "/tests/inputs/mc68328/Starter.prc")
 
-static bool logset = false;
 
 void PalmBinaryLoaderTest::initTestCase()
 {
-    if (!logset) {
-        logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-    }
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

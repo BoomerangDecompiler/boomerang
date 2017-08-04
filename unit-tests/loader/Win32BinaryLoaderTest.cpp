@@ -9,15 +9,9 @@
 
 #define SWITCH_BORLAND         (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
 
-static bool    logset = false;
-
-
 void Win32BinaryLoaderTest::initTestCase()
 {
-    if (!logset) {
-        logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-    }
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

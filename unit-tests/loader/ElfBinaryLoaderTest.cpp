@@ -21,14 +21,10 @@
 #  define ELF_LOADER    (BOOMERANG_TEST_BASE "/lib/libboomerang-ElfLoader.so")
 #endif
 
-static bool    logset = false;
 
 void ElfBinaryLoaderTest::initTestCase()
 {
-    if (!logset) {
-        logset = true;
-        Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-    }
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

@@ -6,17 +6,13 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
 
-static bool logset = false;
 
 #define HELLO_SPARC  (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
 
 
 void SparcBinaryLoaderTest::initTestCase()
 {
-    if (!logset) {
-        logset = true;
-        Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-    }
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

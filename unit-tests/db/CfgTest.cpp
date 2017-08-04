@@ -24,14 +24,9 @@
 #define SEMI_PENTIUM        (BOOMERANG_TEST_BASE "/tests/inputs/pentium/semi")
 #define IFTHEN_PENTIUM      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/ifthen")
 
-static bool    logset = false;
-
 void CfgTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

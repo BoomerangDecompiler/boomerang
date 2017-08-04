@@ -18,14 +18,10 @@
 
 #define SPARC_SSL    (Boomerang::get()->getDataDirectory().absoluteFilePath("frontend/machine/sparc/sparc.ssl"))
 
-static bool    logset = false;
 
 void ParserTest::initTestCase()
 {
-	if (!logset) {
-		logset = true;
 		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
-	}
 }
 
 

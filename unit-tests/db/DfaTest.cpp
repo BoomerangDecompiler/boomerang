@@ -12,15 +12,10 @@
 #include <QtCore/QDebug>
 #include <sstream>
 
-static bool logset = false;
 
 void DfaTest::initTestCase()
 {
-	if (!logset) {
-
-		logset = true;
-		Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
-	}
+    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
 }
 
 
