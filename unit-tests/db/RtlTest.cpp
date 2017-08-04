@@ -63,7 +63,7 @@ void RtlTest::testClone()
 	Assign *a2 = new Assign(IntegerType::get(16), Location::get(opParam, Const::get("x"), nullptr),
 							Location::get(opParam, Const::get("y"), nullptr));
 
-	std::list<Instruction *> ls;
+	std::list<Statement *> ls;
 	ls.push_back(a1);
 	ls.push_back(a2);
 	RTL         *r = new RTL(Address(0x1234), &ls);
@@ -193,7 +193,7 @@ void RtlTest::testVisitor()
 	delete as;
 
 	/* polymorphic */
-	Instruction *s = new CallStatement;
+	   Statement *s = new CallStatement;
 	s->accept(visitor);
 	QVERIFY(visitor->e);
 	delete s;
@@ -260,7 +260,7 @@ void RtlTest::testVisitor()
 void RtlTest::testSetConscripts()
 {
 	// m[1000] = m[1000] + 1000
-	Instruction *s1 = new Assign(Location::memOf(Const::get(1000), 0),
+	   Statement *s1 = new Assign(Location::memOf(Const::get(1000), 0),
 								 Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000)));
 
 	// "printf("max is %d", (local0 > 0) ? local0 : global1)
@@ -279,13 +279,13 @@ void RtlTest::testSetConscripts()
 	args.append(new Assign(Location::regOf(9), e2));
 	s2->setArguments(args);
 
-	std::list<Instruction *> list;
+	std::list<Statement *> list;
 	list.push_back(s1);
 	list.push_back(s2);
 	RTL                 *rtl = new RTL(Address(0x1000), &list);
 	StmtConscriptSetter sc(0, false);
 
-	for (Instruction *s : *rtl) {
+	for (Statement *s : *rtl) {
 		s->accept(&sc);
 	}
 

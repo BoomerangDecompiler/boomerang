@@ -26,7 +26,7 @@ struct yy_SSLParser_stype
     QString                      str;
     int32_t                      num;
     double                       dbl;
-    Instruction                  *regtransfer;
+    Statement                    *regtransfer;
     SharedType                   typ;
 
     std::shared_ptr<Table>       tab;
@@ -148,7 +148,7 @@ public:
     SSLParser(std::istream& in, bool trace);
     virtual ~SSLParser();
     OPER strToOper(const QString& s);              /* Convert string to an operator */
-    static Instruction *parseExp(const char *str); /* Parse an expression or assignment from a string */
+    static Statement *parseExp(const char *str); /* Parse an expression or assignment from a string */
 
     /* The code for expanding tables and saving to the dictionary */
     void expandTables(const std::shared_ptr<InsNameElem>& iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict& Dict);
@@ -170,7 +170,7 @@ protected:
     /*
      * Result for parsing an assignment.
      */
-    Instruction *the_asgn;
+    Statement *the_asgn;
 
     /*
      * Maps SSL constants to their values.

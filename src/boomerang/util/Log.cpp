@@ -179,7 +179,7 @@ void Log::truncateFileName(char* dstBuffer, size_t dstCharacters, const char* fi
 }
 
 
-QString Log::collectArg(const QString& msg, const Instruction *s)
+QString Log::collectArg(const QString& msg, const Statement *s)
 {
     return msg.arg(s->prints());
 }

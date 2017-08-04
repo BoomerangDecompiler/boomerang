@@ -222,7 +222,7 @@ SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp>& r)
 
     m_mask >>= 1;
     // Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and avoids a cast
-    Instruction   *def  = r->getDef();
+    Statement   *def  = r->getDef();
     CallStatement *call = dynamic_cast<CallStatement *>(def);
 
     if (call) {
@@ -584,7 +584,7 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool& override)
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
         assert(v.second.e);
-        auto temp = RefExp::get(v.second.e, (Instruction *)v.second.def());
+        auto temp = RefExp::get(v.second.e, (Statement *)v.second.def());
         temp->accept(ev);
     }
 
@@ -1026,11 +1026,11 @@ SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& e)
 {
     // No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
     // have been renamed, and we never would get here
-    if (!Instruction::canPropagateToExp(*e)) { // Check of the definition statement is suitable for propagating
+    if (!Statement::canPropagateToExp(*e)) { // Check of the definition statement is suitable for propagating
         return e;
     }
 
-    Instruction *def = e->getDef();
+    Statement *def = e->getDef();
     SharedExp   res  = e;
 
     if (def && def->isAssign()) {
@@ -1064,7 +1064,7 @@ bool PrimitiveTester::visit(const std::shared_ptr<Location>& /*e*/, bool& overri
 
 bool PrimitiveTester::visit(const std::shared_ptr<RefExp>& e, bool& override)
 {
-    Instruction *def = e->getDef();
+    Statement *def = e->getDef();
 
     // If defined by a call, e had better not be a memory location (crude approximation for now)
     if ((def == nullptr) || (def->getNumber() == 0) || (def->isCall() && !e->getSubExp1()->isMemOf())) {
@@ -1167,7 +1167,7 @@ bool StmtRegMapper::visit(BoolAssign *stmt, bool& override)
 
 SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool& recur)
 {
-    Instruction *def = e->getDef();
+    Statement *def = e->getDef();
 
     if (!def || def->isImplicit()) {
         SharedExp base = e->getSubExp1();
@@ -1214,7 +1214,7 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool&
 
 bool ExpDestCounter::visit(const std::shared_ptr<RefExp>& e, bool& override)
 {
-    if (Instruction::canPropagateToExp(*e)) {
+    if (Statement::canPropagateToExp(*e)) {
         m_destCounts[e->clone()]++;
     }
 
@@ -1309,7 +1309,7 @@ SharedExp ExpCastInserter::postVisit(const std::shared_ptr<RefExp>& e)
 
     if (base->isMemOf()) {
         // Check to see if the address expression needs type annotation
-        Instruction *def = e->getDef();
+        Statement *def = e->getDef();
 
         if (!def) {
             LOG_WARN("RefExp def is null");

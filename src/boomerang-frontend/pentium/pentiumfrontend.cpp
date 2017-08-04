@@ -48,7 +48,7 @@
 #define FSW    40 // Numeric registers
 #define AH     12
 
-bool PentiumFrontEnd::isStoreFsw(Instruction *s)
+bool PentiumFrontEnd::isStoreFsw(Statement *s)
 {
     if (!s->isAssign()) {
         return false;
@@ -69,7 +69,7 @@ bool PentiumFrontEnd::isDecAh(RTL *r)
     }
 
     auto        iter = r->begin();
-    Instruction *mid = *(++iter);
+    Statement *mid = *(++iter);
 
     if (!mid->isAssign()) {
         return false;
@@ -82,7 +82,7 @@ bool PentiumFrontEnd::isDecAh(RTL *r)
 }
 
 
-bool PentiumFrontEnd::isSetX(Instruction *s)
+bool PentiumFrontEnd::isSetX(Statement *s)
 {
     // Check for SETX, i.e. <exp> ? 1 : 0
     // i.e. ?: <exp> Const 1 Const 0
@@ -115,7 +115,7 @@ bool PentiumFrontEnd::isSetX(Instruction *s)
 }
 
 
-bool PentiumFrontEnd::isAssignFromTern(Instruction *s)
+bool PentiumFrontEnd::isAssignFromTern(Statement *s)
 {
     if (!s->isAssign()) {
         return false;
@@ -231,7 +231,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *pCfg)
     BBIterator it;
 
     for (BasicBlock *pBB = pCfg->getFirstBB(it); pBB; pBB = pCfg->getNextBB(it)) {
-        Instruction *st;
+        Statement *st;
 
         // Loop through each RTL this BB
         std::list<RTL *> *BB_rtls = pBB->getRTLs();
@@ -291,7 +291,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *pCfg)
 void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
 {
     std::list<RTL *>::iterator rit;
-    Instruction                *st;
+    Statement                *st;
 
     // Loop through each RTL this BB
     std::list<RTL *> *BB_rtls = pBB->getRTLs();
@@ -408,7 +408,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
 void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::iterator& rit, Address uAddr, SharedExp lhs,
                               SharedExp cond)
 {
-    Instruction *asgn = new Assign(lhs, std::make_shared<Ternary>(opTern, cond, Const::get(1), Const::get(0)));
+    Statement *asgn = new Assign(lhs, std::make_shared<Ternary>(opTern, cond, Const::get(1), Const::get(0)));
     RTL         *pRtl = new RTL(uAddr);
 
     pRtl->appendStmt(asgn);
@@ -437,7 +437,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         // r[tmpl] = ftoi(80, 64, r[32])
         // r[24] = trunc(64, 32, r[tmpl])
         // r[26] = r[tmpl] >> 32
-        Instruction *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
+        Statement *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                     std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
         RTL *pRtl = new RTL(addr);
         pRtl->appendStmt(a);
@@ -454,7 +454,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
     }
     else if (name == "__mingw_allocstack") {
         RTL         *pRtl = new RTL(addr);
-        Instruction *a    = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
+        Statement *a    = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
         pRtl->appendStmt(a);
         lrtl->push_back(pRtl);
         m_program->removeProc(name);
@@ -612,8 +612,8 @@ void toBranches(Address a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb,
     BranchStatement *br1 = new BranchStatement;
 
     assert(rtl->size() >= 4); // They vary; at least 5 or 6
-    Instruction *s1 = *rtl->begin();
-    Instruction *s6 = *(--rtl->end());
+    Statement *s1 = *rtl->begin();
+    Statement *s6 = *(--rtl->end());
 
     if (s1->isAssign()) {
         br1->setCondExpr(((Assign *)s1)->getRight());
@@ -662,7 +662,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
             addr = rtl->getAddress();
 
             if (!rtl->empty()) {
-                Instruction *firstStmt = rtl->front();
+                Statement *firstStmt = rtl->front();
 
                 if (firstStmt->isAssign()) {
                     SharedExp lhs = ((Assign *)firstStmt)->getLeft();
@@ -704,7 +704,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     StatementList::iterator it;
 
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Instruction *s = *it;
+        Statement *s = *it;
         LocationSet locs;
         s->addUsedLocs(locs);
 
@@ -737,7 +737,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     // esi (30)  si (6)
     // edi (31)  di (7)
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Instruction *s = *it;
+        Statement *s = *it;
 
         if (s->getBB()->isOverlappedRegProcessingDone()) { // never redo processing
             continue;
@@ -1038,7 +1038,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
             RTL *rtl = *itr;
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
-                Instruction *stmt = *rtl_iter;
+                Statement *stmt = *rtl_iter;
 
                 if (stmt->isAssign()) {
                     Assign *asgn = (Assign *)stmt;
@@ -1126,7 +1126,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
             RTL *rtl = *itr;
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
-                Instruction *stmt = *rtl_iter;
+                Statement *stmt = *rtl_iter;
 
                 if (stmt->isAssign()) {
                     Assign *asgn = (Assign *)stmt;

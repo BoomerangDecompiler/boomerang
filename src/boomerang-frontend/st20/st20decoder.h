@@ -23,7 +23,7 @@
 
 class Prog;
 class NJMCDecoder;
-class Instruction;
+class Statement;
 struct DecodeResult;
 
 
@@ -47,7 +47,7 @@ private:
     // Exp*    dis_Reg(unsigned r);
     // Exp*    dis_RAmbz(unsigned r);        // Special for rA of certain instructions
 
-    RTL *createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name);
+    RTL *createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name);
     bool isFuncPrologue(Address hostPC);
 
     DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects

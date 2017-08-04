@@ -6,7 +6,7 @@
 /*===========================================================
 * ReturnStatement: represents an ordinary high level return.
 *==========================================================*/
-class ReturnStatement : public Instruction
+class ReturnStatement : public Statement
 {
 public:
     typedef StatementList::iterator         iterator;
@@ -77,7 +77,7 @@ public:
      * \brief        Deep copy clone
      * \returns             Pointer to a new Statement, a clone of this ReturnStatement
      ******************************************************************************/
-    virtual Instruction *clone() const override;
+    virtual Statement *clone() const override;
 
     // Accept a visitor to this Statement
     // visit this stmt

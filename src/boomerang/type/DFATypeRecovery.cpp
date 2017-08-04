@@ -49,7 +49,7 @@ void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
 {
     LOG_VERBOSE("%1 iterations", iter);
 
-    for (Instruction *s : stmts) {
+    for (Statement *s : stmts) {
         LOG_VERBOSE("%1", s); // Print the statement; has dest type
 
         // Now print type for each constant in this Statement
@@ -105,7 +105,7 @@ static Location
                                ),
                    nullptr);
 
-void DFATypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
+void DFATypeRecovery::dfa_analyze_scaled_array_ref(Statement *s)
 {
     UserProc  *pr   = s->getProc();
     Prog      *prog = pr->getProg();
@@ -147,7 +147,7 @@ void DFATypeRecovery::dfa_analyze_scaled_array_ref(Instruction *s)
 }
 
 
-void DFATypeRecovery::dfa_analyze_implict_assigns(Instruction *s)
+void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
 {
     bool       allZero;
     SharedExp  lhs;
@@ -218,9 +218,9 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
 
-        for (Instruction *it : stmts) {
+        for (Statement *it : stmts) {
             bool        thisCh  = false;
-            Instruction *before = nullptr;
+            Statement *before = nullptr;
 
             if (DEBUG_TA) {
                 before = it->clone();
@@ -264,7 +264,7 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
 
     Prog *_prog = proc->getProg();
 
-    for (Instruction *s : stmts) {
+    for (Statement *s : stmts) {
         // 1) constants
         std::list<std::shared_ptr<Const> > lc;
         s->findConstants(lc);
@@ -481,7 +481,7 @@ bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
 }
 
 
-bool DFATypeRecovery::dfaTypeAnalysis(Instruction *i)
+bool DFATypeRecovery::dfaTypeAnalysis(Statement *i)
 {
     Q_UNUSED(i);
     assert(false);
@@ -1063,7 +1063,7 @@ SharedType LowerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 }
 
 
-SharedType Instruction::meetWithFor(SharedType ty, SharedExp e, bool& ch)
+SharedType Statement::meetWithFor(SharedType ty, SharedExp e, bool& ch)
 {
     bool       thisCh  = false;
     SharedType typeFor = getTypeFor(e);
@@ -1368,7 +1368,7 @@ SharedType Binary::ascendType()
 SharedType RefExp::ascendType()
 {
     if (m_def == nullptr) {
-        LOG_WARN("Null reference in %1", (const Instruction*)this);
+        LOG_WARN("Null reference in %1", (const Statement*)this);
         return VoidType::get();
     }
 
@@ -1500,7 +1500,7 @@ SharedType TypedExp::ascendType()
 //                                        //
 //    //    //    //    //    //    //    //    //    //    //
 
-void Binary::descendType(SharedType parentType, bool& ch, Instruction *s)
+void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
 {
     if (m_oper == opFlagCall) {
         return;
@@ -1613,7 +1613,7 @@ void Binary::descendType(SharedType parentType, bool& ch, Instruction *s)
 }
 
 
-void RefExp::descendType(SharedType parentType, bool& ch, Instruction *s)
+void RefExp::descendType(SharedType parentType, bool& ch, Statement *s)
 {
     assert(m_def != nullptr);
     SharedType newType = m_def->meetWithFor(parentType, subExp1, ch);
@@ -1622,7 +1622,7 @@ void RefExp::descendType(SharedType parentType, bool& ch, Instruction *s)
 }
 
 
-void Const::descendType(SharedType parentType, bool& ch, Instruction *)
+void Const::descendType(SharedType parentType, bool& ch, Statement *)
 {
     bool thisCh = false;
 
@@ -1684,7 +1684,7 @@ static bool match_l1_K(SharedExp in, std::vector<SharedExp>& matches)
 }
 
 
-void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
+void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
 {
     UserProc *owner_proc = s->getProc();
     auto     sig         = owner_proc != nullptr ? owner_proc->getSignature() : nullptr;
@@ -1791,7 +1791,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Instruction *s)
 }
 
 
-void Ternary::descendType(SharedType /*parentType*/, bool& ch, Instruction *s)
+void Ternary::descendType(SharedType /*parentType*/, bool& ch, Statement *s)
 {
     switch (m_oper)
     {
@@ -1815,12 +1815,12 @@ void Ternary::descendType(SharedType /*parentType*/, bool& ch, Instruction *s)
 }
 
 
-void TypedExp::descendType(SharedType, bool &, Instruction *)
+void TypedExp::descendType(SharedType, bool &, Statement *)
 {
 }
 
 
-void Terminal::descendType(SharedType, bool &, Instruction *)
+void Terminal::descendType(SharedType, bool &, Statement *)
 {
 }
 
@@ -1834,7 +1834,7 @@ bool Signature::dfaTypeAnalysis(Cfg *cfg)
 
     for (std::shared_ptr<Parameter>& it : m_params) {
         // Parameters should be defined in an implicit assignment
-        Instruction *def = cfg->findImplicitParamAssign(it.get());
+        Statement *def = cfg->findImplicitParamAssign(it.get());
 
         if (def) { // But sometimes they are not used, and hence have no implicit definition
             bool thisCh = false;

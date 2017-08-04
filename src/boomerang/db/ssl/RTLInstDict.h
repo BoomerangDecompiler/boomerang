@@ -12,7 +12,7 @@
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 
-class Instruction;
+class Statement;
 
 class Exp;
 class Type;
@@ -85,7 +85,7 @@ struct ParamEntry
 public:
     std::list<QString> m_params;          ///< PARAM_VARIANT & PARAM_ASGN only */
     std::list<QString> m_funcParams;      ///< PARAM_LAMBDA - late bound params */
-    Instruction *m_asgn = nullptr;        ///< PARAM_ASGN only */
+    Statement *m_asgn = nullptr;        ///< PARAM_ASGN only */
     bool m_lhs          = false;          ///< True if this param ever appears on the LHS of an expression */
     ParamKind m_kind    = PARAM_SIMPLE;
     SharedType m_regType;                 ///< Type of r[this], if any (void otherwise)
@@ -149,7 +149,7 @@ public:
     * \param actuals - the actual values
     * \returns   the instantiated list of Exps
     ******************************************************************************/
-    std::list<Instruction *> *instantiateRTL(const QString& name, Address pc, const std::vector<SharedExp>& actuals);
+    std::list<Statement *> *instantiateRTL(const QString& name, Address pc, const std::vector<SharedExp>& actuals);
 
     /***************************************************************************/ /**
     * \brief         Returns an instance of a register transfer list for the parameterized rtlist with the given formals
@@ -160,7 +160,7 @@ public:
     * \param   actuals - the actual parameter values
     * \returns the instantiated list of Exps
     ******************************************************************************/
-    std::list<Instruction *> *instantiateRTL(RTL & rtls, Address pc, std::list<QString> &params,
+    std::list<Statement *> *instantiateRTL(RTL & rtls, Address pc, std::list<QString> &params,
                                              const std::vector<SharedExp> &actuals);
 
     /***************************************************************************/ /**
@@ -179,7 +179,7 @@ public:
     * \param rts the list of statements
     * \param optimise - try to remove temporary registers
     ******************************************************************************/
-    void transformPostVars(std::list<Instruction *>& rts, bool optimise);
+    void transformPostVars(std::list<Statement *>& rts, bool optimise);
 
     /***************************************************************************/ /**
     * \brief        Print a textual representation of the dictionary.

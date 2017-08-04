@@ -21,7 +21,7 @@
 #include <sstream>
 
 class Exp;
-class Instruction;
+class Statement;
 
 // This class represents fixed constraints (e.g. Ta = <int>, Tb = <alpha2*>),
 // but also "tentative" constraints resulting from disjunctions of constraints

@@ -87,12 +87,12 @@ public:
 
 struct RangePrivateData
 {
-    RangeMap& getRanges(Instruction *insn)
+    RangeMap& getRanges(Statement *insn)
     {
         return m_ranges[insn];
     }
 
-    void setRanges(Instruction *insn, RangeMap r)
+    void setRanges(Statement *insn, RangeMap r)
     {
         m_ranges[insn] = r;
     }
@@ -112,12 +112,12 @@ struct RangePrivateData
         m_branchRanges[s] = rm;
     }
 
-    void setSavedRanges(Instruction *insn, RangeMap map);
-    RangeMap getSavedRanges(Instruction *insn);
+    void setSavedRanges(Statement *insn, RangeMap map);
+    RangeMap getSavedRanges(Statement *insn);
 
 public:
-    std::map<Instruction *, RangeMap>     m_savedInputRanges; ///< overestimation of ranges of locations
-    std::map<Instruction *, RangeMap>     m_ranges;           ///< saved overestimation of ranges of locations
+    std::map<Statement *, RangeMap>     m_savedInputRanges; ///< overestimation of ranges of locations
+    std::map<Statement *, RangeMap>     m_ranges;           ///< saved overestimation of ranges of locations
     std::map<BranchStatement *, RangeMap> m_branchRanges;
 };
 
@@ -151,21 +151,21 @@ class RangeVisitor : public StmtVisitor
 {
 public:
     RangePrivateData          *tgt;
-    std::list<Instruction *>& execution_paths;
-    RangeVisitor(RangePrivateData *t, std::list<Instruction *>& ex_paths)
+    std::list<Statement *>& execution_paths;
+    RangeVisitor(RangePrivateData *t, std::list<Statement *>& ex_paths)
         : tgt(t)
         , execution_paths(ex_paths)
     {
     }
 
-    void processRange(Instruction *i)
+    void processRange(Statement *i)
     {
         RangeMap output = getInputRanges(i);
 
         updateRanges(i, output);
     }
 
-    RangeMap getInputRanges(Instruction *insn)
+    RangeMap getInputRanges(Statement *insn)
     {
         if (!insn->isFirstStatementInBB()) {
             RangeMap SavedInputRanges = tgt->getRanges(insn->getPreviousStatementInBB());
@@ -199,7 +199,7 @@ public:
         }
         else {
             BasicBlock  *pred = insn->getBB()->getInEdges()[0];
-            Instruction *last = pred->getLastStmt();
+            Statement *last = pred->getLastStmt();
             assert(last);
 
             if (pred->getNumOutEdges() != 2) {
@@ -216,7 +216,7 @@ public:
         return input;
     }
 
-    void updateRanges(Instruction *insn, RangeMap& output, bool notTaken = false)
+    void updateRanges(Statement *insn, RangeMap& output, bool notTaken = false)
     {
         if (insn->isBranch()) {
             BranchStatement *self_branch = (BranchStatement *)insn;
@@ -503,7 +503,7 @@ public:
 
             if (stmt->getDestProc() == nullptr) {
                 LOG_MSG("Using push count hack to guess number of params");
-                Instruction *prev = stmt->getPreviousStatementInBB();
+                Statement *prev = stmt->getPreviousStatementInBB();
 
                 while (prev) {
                     if (prev->isAssign() && ((Assign *)prev)->getLeft()->isMemOf() &&
@@ -520,7 +520,7 @@ public:
                 c += stmt->getDestProc()->getSignature()->getNumParams() * 4;
             }
             else if (!strncmp(qPrintable(stmt->getDestProc()->getName()), "__imp_", 6)) {
-                Instruction *first = ((UserProc *)stmt->getDestProc())->getCFG()->getEntryBB()->getFirstStmt();
+                Statement *first = ((UserProc *)stmt->getDestProc())->getCFG()->getEntryBB()->getFirstStmt();
                 if (!first || !first->isCall()) {
                     assert(false);
                     return false;
@@ -560,7 +560,7 @@ public:
                 BasicBlock *retbb = p->getCFG()->findRetNode();
 
                 if (retbb && (eq == nullptr)) {
-                    Instruction *last = retbb->getLastStmt();
+                    Statement *last = retbb->getLastStmt();
                     if (!last) {
                         assert(false);
                         return false;
@@ -625,7 +625,7 @@ public:
         }
 
         for (size_t i = 0; i < stmt->getBB()->getNumInEdges(); i++) {
-            Instruction *last = stmt->getBB()->getInEdges()[i]->getLastStmt();
+            Statement *last = stmt->getBB()->getInEdges()[i]->getLastStmt();
 
             if (DEBUG_RANGE_ANALYSIS) {
                 LOG_VERBOSE("  in BB: address %1 %2", stmt->getBB()->getInEdges()[i]->getLowAddr(), last);
@@ -803,8 +803,8 @@ bool RangeAnalysis::runOnFunction(Function& F)
 
     UF.debugPrintAll("Before performing range analysis");
 
-    std::list<Instruction *> execution_paths;
-    std::list<Instruction *> junctions;
+    std::list<Statement *> execution_paths;
+    std::list<Statement *> junctions;
 
     assert(UF.getCFG()->getEntryBB());
     assert(UF.getCFG()->getEntryBB()->getFirstStmt());
@@ -815,7 +815,7 @@ bool RangeAnalysis::runOnFunction(Function& F)
 
     while (!execution_paths.empty()) {
         while (!execution_paths.empty()) {
-            Instruction *stmt = execution_paths.front();
+            Statement *stmt = execution_paths.front();
             execution_paths.pop_front();
 
             if (stmt == nullptr) {
@@ -835,7 +835,7 @@ bool RangeAnalysis::runOnFunction(Function& F)
         }
 
         while (!junctions.empty()) {
-            Instruction *junction = junctions.front();
+            Statement *junction = junctions.front();
             junctions.pop_front();
 
             if (watchdog > 45) {
@@ -873,13 +873,13 @@ bool RangeAnalysis::runOnFunction(Function& F)
 }
 
 
-RangeMap RangePrivateData::getSavedRanges(Instruction *insn)
+RangeMap RangePrivateData::getSavedRanges(Statement *insn)
 {
     return m_savedInputRanges[insn];
 }
 
 
-void RangePrivateData::setSavedRanges(Instruction *insn, RangeMap map)
+void RangePrivateData::setSavedRanges(Statement *insn, RangeMap map)
 {
     m_savedInputRanges[insn] = map;
 }
@@ -891,7 +891,7 @@ void RangeAnalysis::logSuspectMemoryDefs(UserProc& UF)
 
     UF.getStatements(stmts);
 
-    for (Instruction *st : stmts) {
+    for (Statement *st : stmts) {
         if (!st->isAssign()) {
             continue;
         }

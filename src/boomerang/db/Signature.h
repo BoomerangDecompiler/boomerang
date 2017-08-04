@@ -29,7 +29,7 @@
 #include <vector>
 #include <QString>
 
-class Instruction;
+class Statement;
 class StatementList;
 class IFileLoader;
 class Exp;
@@ -111,7 +111,7 @@ protected:
     // bool        bFullSig;            // True if have a full signature from a signature file etc
     // True if the signature is forced with a -sf entry, or is otherwise known, e.g. WinMain
     //        void        updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
-    bool usesNewParam(UserProc *, Instruction *stmt, bool checkreach, int& n) const;
+    bool usesNewParam(UserProc *, Statement *stmt, bool checkreach, int& n) const;
 
     // void        addImplicitParametersFor(Parameter *p);
     // void        addImplicitParameter(SharedType type, const char *name, Exp *e, Parameter *parent);

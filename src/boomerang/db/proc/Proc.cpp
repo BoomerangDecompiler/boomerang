@@ -65,7 +65,7 @@ namespace dbghelp
 #  endif
 #endif
 
-typedef std::map<Instruction *, int> RefCounter;
+typedef std::map<Statement *, int> RefCounter;
 
 
 Function::Function(Address uNative, Signature *sig, Module *mod)

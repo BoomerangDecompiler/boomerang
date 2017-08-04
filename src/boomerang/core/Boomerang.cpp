@@ -859,7 +859,7 @@ void Boomerang::miniDebugger(UserProc *p, const char *description)
 
     q_cout << "decompiling " << p->getName() << ": " << description << "\n";
     QString stopAt;
-    static std::set<Instruction *> watches;
+    static std::set<Statement *> watches;
 
     if (stopAt.isEmpty() || !p->getName().compare(stopAt)) {
         // This is a mini command line debugger.  Feel free to expand it.

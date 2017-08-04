@@ -51,7 +51,7 @@ SSLParser::SSLParser(std::istream& in, bool trace)
  * \param  str - the string
  * \returns an Assignment or nullptr.
  ******************************************************************************/
-Instruction *SSLParser::parseExp(const char *str)
+Statement *SSLParser::parseExp(const char *str)
 {
     std::istringstream ss(str);
     SSLParser          p(ss, false); // Second arg true for debugging
@@ -447,7 +447,7 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
         // Need to make substitutions to a copy of the RTL
         RTL rtl = *o_rtlist; // deep copy of contents
 
-        for (Instruction *s : rtl) {
+        for (Statement *s : rtl) {
             std::list<SharedExp> le;
             // Expression tables
             assert(s->getKind() == STMT_ASSIGN);

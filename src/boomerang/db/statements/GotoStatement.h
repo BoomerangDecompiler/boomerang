@@ -12,7 +12,7 @@
  * This class also represents unconditional jumps with a fixed offset
  * (e.g BN, Ba on SPARC).
  *===========================================================================*/
-class GotoStatement : public Instruction
+class GotoStatement : public Statement
 {
 public:
     GotoStatement();
@@ -34,7 +34,7 @@ public:
      * \brief     Deep copy clone
      * \returns   Pointer to a new Statement, a clone of this GotoStatement
      ******************************************************************************/
-    virtual Instruction *clone() const override;  ///< Make a deep copy, and make the copy a derived object if needed.
+    virtual Statement *clone() const override;  ///< Make a deep copy, and make the copy a derived object if needed.
 
     // Accept a visitor to this Statement
     // visit this Statement in the RTL

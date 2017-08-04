@@ -1302,7 +1302,7 @@ SharedExp Binary::polySimplify(bool& bMod)
                                             SharedType ty = nullptr; // Type of subExp1
 
                                             if (subExp1->isSubscript()) {
-                                                const Instruction *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();
+                                                const Statement *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();
 
                                                 if (def) {
                                                     ty = def->getTypeFor(subExp1->getSubExp1());

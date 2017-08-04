@@ -48,7 +48,7 @@ public:
      * \param   result ref to decoder result object
      ******************************************************************************/
     void processComputedJump(const char *name, int size, SharedExp dest, Address pc,
-                             std::list<Instruction *> *stmts, DecodeResult& result);
+                             std::list<Statement *> *stmts, DecodeResult& result);
 
     /***************************************************************************/ /**
      * \brief   Process an indirect call instruction
@@ -60,7 +60,7 @@ public:
      * \param   result ref to decoder result object
      ******************************************************************************/
     void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
-                             std::list<Instruction *> *stmts, DecodeResult& result);
+                             std::list<Statement *> *stmts, DecodeResult& result);
 
     /// \copydoc IInstructionTranslator::getRegName
     QString getRegName(int idx) const override;
@@ -84,7 +84,7 @@ protected:
      * \param   args Semantic String ptrs representing actual operands
      * \returns an instantiated list of Exps
      ******************************************************************************/
-    std::list<Instruction *> *instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args = {});
+    std::list<Statement *> *instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args = {});
 
     /***************************************************************************/ /**
      * \brief   Similarly to NJMCDecoder::instantiate, given a parameter name and a list of Exp*'s representing
@@ -120,7 +120,7 @@ protected:
      * \param   result ref to decoder result object
      ******************************************************************************/
     void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta, Address pc,
-                                  std::list<Instruction *> *stmts, DecodeResult& result);
+                                  std::list<Statement *> *stmts, DecodeResult& result);
 
 
     /***************************************************************************/ /**

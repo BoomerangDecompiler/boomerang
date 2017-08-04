@@ -6,7 +6,7 @@
 #include <list>
 #include <memory>
 
-class Instruction;
+class Statement;
 class RTLInstDict;
 class Exp;
 
@@ -39,5 +39,5 @@ public:
 
     virtual Exp *convertOperand(MachineOperand *Operand) = 0;
 
-    virtual std::list<Instruction *> *convertInstruction(MachineInstruction *Insn) = 0;
+    virtual std::list<Statement *> *convertInstruction(MachineInstruction *Insn) = 0;
 };

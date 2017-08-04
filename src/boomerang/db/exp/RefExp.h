@@ -12,13 +12,13 @@ class RefExp : public Unary
 {
 public:
     // Constructor with expression (e) and statement defining it (def)
-    RefExp(SharedExp e, Instruction *def);
+    RefExp(SharedExp e, Statement *def);
     virtual ~RefExp()
     {
         m_def = nullptr;
     }
 
-    static std::shared_ptr<RefExp> get(SharedExp e, Instruction *def);
+    static std::shared_ptr<RefExp> get(SharedExp e, Statement *def);
     SharedExp clone() const override;
     bool operator==(const Exp& o) const override;
     bool operator<(const Exp& o) const override;
@@ -27,21 +27,21 @@ public:
     virtual void print(QTextStream& os, bool html = false) const override;
     virtual void printx(int ind) const override;
 
-    Instruction *getDef() const { return m_def; } // Ugh was called getRef()
-    SharedExp addSubscript(Instruction *_def)
+    Statement *getDef() const { return m_def; } // Ugh was called getRef()
+    SharedExp addSubscript(Statement *_def)
     {
         m_def = _def;
         return shared_from_this();
     }
 
-    void setDef(Instruction *_def)   /*assert(_def);*/
+    void setDef(Statement *_def)   /*assert(_def);*/
     {
         m_def = _def;
     }
 
     SharedExp genConstraints(SharedExp restrictTo) override;
 
-    bool references(const Instruction *s) const { return m_def == s; }
+    bool references(const Statement *s) const { return m_def == s; }
     virtual SharedExp polySimplify(bool& bMod) override;
     virtual SharedExp match(const SharedConstExp& pattern) override;
     virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
@@ -55,7 +55,7 @@ public:
     virtual SharedExp accept(ExpModifier *v) override;
 
     virtual SharedType ascendType() override;
-    virtual void descendType(SharedType parentType, bool& ch, Instruction *s) override;
+    virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
 
 protected:
     RefExp()
@@ -63,5 +63,5 @@ protected:
         , m_def(nullptr) {}
 
 private:
-    Instruction *m_def; // The defining statement
+    Statement *m_def; // The defining statement
 };

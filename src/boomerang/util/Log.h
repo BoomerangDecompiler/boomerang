@@ -12,7 +12,7 @@
 #include "boomerang/util/Util.h"
 
 
-class Instruction;
+class Statement;
 class Exp;
 class LocationSet;
 class RTL;
@@ -176,7 +176,7 @@ private:
     QString collectArg(const QString& msg, const std::shared_ptr<T>& arg) { return msg.arg(arg->toString()); }
     QString collectArg(const QString& msg, const char* arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, const QString& arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, const Instruction *s);
+    QString collectArg(const QString& msg, const Statement *s);
     QString collectArg(const QString& msg, const SharedConstExp& e);
     QString collectArg(const QString& msg, const SharedType& ty);
     QString collectArg(const QString& msg, const Printable& ty);

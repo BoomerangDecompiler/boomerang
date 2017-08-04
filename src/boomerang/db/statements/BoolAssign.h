@@ -25,7 +25,7 @@ public:
      * \brief     Deep copy clone
      * \returns   Pointer to a new Statement, a clone of this BoolAssign
      ******************************************************************************/
-    virtual Instruction *clone() const override;
+    virtual Statement *clone() const override;
 
     // Accept a visitor to this Statement
     /// visit this Statement
@@ -103,7 +103,7 @@ public:
 
     /// a hack for the SETS macro
     /// This is for setting up SETcc instructions; see include/decoder.h macro SETS
-    void setLeftFromList(std::list<Instruction *> *stmts);
+    void setLeftFromList(std::list<Statement *> *stmts);
 
     virtual void dfaTypeAnalysis(bool& ch) override;
 

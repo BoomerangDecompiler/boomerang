@@ -119,7 +119,7 @@ void Cfg::setExitBB(BasicBlock *bb)
 }
 
 
-bool Cfg::checkEntryBB()
+bool Cfg::hasNoEntryBB()
 {
     if (m_entryBB != nullptr) {
         return false;
@@ -881,7 +881,7 @@ bool Cfg::establishDFTOrder()
     int      last  = 0;
     unsigned numTraversed;
 
-    if (checkEntryBB()) {
+    if (hasNoEntryBB()) {
         return false;
     }
 
@@ -1776,7 +1776,7 @@ void Cfg::findInterferences(ConnectionGraph& cg)
         }
 
         if (DEBUG_LIVENESS) {
-            Instruction *last = nullptr;
+            Statement *last = nullptr;
 
             if (!currBB->m_listOfRTLs->empty()) {
                 RTL *lastRtl = currBB->m_listOfRTLs->back();
@@ -1848,7 +1848,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     // Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
     // creating the rptBB). Or if there is no A, temporarily use 0
        Address    a        = (haveA) ? addr : Address::ZERO;
-    RTL        *skipRtl = new RTL(a, new std::list<Instruction *> { br1 }); // list initializer in braces
+    RTL        *skipRtl = new RTL(a, new std::list<Statement *> { br1 }); // list initializer in braces
     BasicBlock *skipBB  = newBB(new std::list<RTL *> { skipRtl }, BBType::Twoway, 2);
     rtl->setAddress(addr + 1);
 
@@ -1998,7 +1998,7 @@ bool Cfg::decodeIndirectJmp(UserProc *proc)
 }
 
 
-void Cfg::undoComputedBB(Instruction *stmt)
+void Cfg::undoComputedBB(Statement *stmt)
 {
     for (BasicBlock *bb : m_listBB) {
         if (bb->undoComputedBB(stmt)) {
@@ -2008,11 +2008,11 @@ void Cfg::undoComputedBB(Instruction *stmt)
 }
 
 
-Instruction *Cfg::findImplicitAssign(SharedExp x)
+Statement *Cfg::findImplicitAssign(SharedExp x)
 {
-    Instruction *def;
+    Statement *def;
 
-    std::map<SharedExp, Instruction *, lessExpStar>::iterator it = m_implicitMap.find(x);
+    std::map<SharedExp, Statement *, lessExpStar>::iterator it = m_implicitMap.find(x);
 
     if (it == m_implicitMap.end()) {
         // A use with no explicit definition. Create a new implicit assignment
@@ -2033,7 +2033,7 @@ Instruction *Cfg::findImplicitAssign(SharedExp x)
 }
 
 
-Instruction *Cfg::findTheImplicitAssign(const SharedExp& x)
+Statement *Cfg::findTheImplicitAssign(const SharedExp& x)
 {
     // As per the above, but don't create an implicit if it doesn't already exist
     auto it = m_implicitMap.find(x);
@@ -2046,7 +2046,7 @@ Instruction *Cfg::findTheImplicitAssign(const SharedExp& x)
 }
 
 
-Instruction *Cfg::findImplicitParamAssign(Parameter *param)
+Statement *Cfg::findImplicitParamAssign(Parameter *param)
 {
     // As per the above, but for parameters (signatures don't get updated with opParams)
     SharedExp n = param->getExp();
@@ -2082,7 +2082,7 @@ void Cfg::removeImplicitAssign(SharedExp x)
     auto it = m_implicitMap.find(x);
 
     assert(it != m_implicitMap.end());
-    Instruction *ia = it->second;
+    Statement *ia = it->second;
     m_implicitMap.erase(it);          // Delete the mapping
     m_myProc->removeStatement(ia);    // Remove the actual implicit assignment statement as well
 }

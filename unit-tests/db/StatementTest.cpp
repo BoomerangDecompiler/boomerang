@@ -80,7 +80,7 @@ void StatementTest::testEmpty()
 	// create CFG
 	Cfg                      *cfg   = proc->getCFG();
 	std::list<RTL *>         *pRtls = new std::list<RTL *>();
-	std::list<Instruction *> *ls    = new std::list<Instruction *>;
+	std::list<Statement *> *ls    = new std::list<Statement *>;
 	ls->push_back(new ReturnStatement);
 	pRtls->push_back(new RTL(Address(0x00000123)));
 	BasicBlock* bb = cfg->newBB(pRtls, BBType::Ret, 0);
@@ -709,11 +709,11 @@ void StatementTest::testWildLocationSet()
 	ls.insert(r13_10);
 	ls.insert(r13_20);
 	ls.insert(r13_0);
-	std::shared_ptr<RefExp> wildr12(new RefExp(rof12.clone(), (Instruction *)-1));
+	std::shared_ptr<RefExp> wildr12(new RefExp(rof12.clone(), (Statement *)-1));
 	QVERIFY(ls.exists(wildr12));
-	std::shared_ptr<RefExp> wildr13(new RefExp(rof13.clone(), (Instruction *)-1));
+	std::shared_ptr<RefExp> wildr13(new RefExp(rof13.clone(), (Statement *)-1));
 	QVERIFY(ls.exists(wildr13));
-	std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(10), (Instruction *)-1));
+	std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(10), (Statement *)-1));
 	QVERIFY(!ls.exists(wildr10));
 
 	// Test findDifferentRef
@@ -855,9 +855,9 @@ void StatementTest::testClone()
 	Assign *a3 = new Assign(IntegerType::get(16, -1), Location::get(opParam, Const::get("z"), nullptr),
 							Location::get(opParam, Const::get("q"), nullptr));
 
-	Instruction* c1 = a1->clone();
-	Instruction* c2 = a2->clone();
-	Instruction* c3 = a3->clone();
+	   Statement* c1 = a1->clone();
+	   Statement* c2 = a2->clone();
+	   Statement* c3 = a3->clone();
 
     QString original, clone;
     QTextStream original_st(&original);
@@ -1056,7 +1056,7 @@ void StatementTest::testAddUsedLocsBool()
 	BoolAssign  *bs = new BoolAssign(8);
 
 	bs->setCondExpr(Binary::get(opEquals, Location::memOf(Location::regOf(24)), Location::regOf(25)));
-	std::list<Instruction *> stmts;
+	std::list<Statement *> stmts;
 	Assign                 *a = new Assign(Location::memOf(Location::regOf(26)), Terminal::get(opNil));
 	stmts.push_back(a);
 	bs->setLeftFromList(&stmts);
@@ -1305,7 +1305,7 @@ void StatementTest::testBypass()
 	// std::cerr << "Call is "; call->dump();
 	advance(it, 2);
 
-	Instruction *s20 = *it; // Statement 20
+	   Statement *s20 = *it; // Statement 20
 	// FIXME: Ugh. Somehow, statement 20 has already bypassed the call, and incorrectly from what I can see - MVE
 	s20->bypass();        // r28 should bypass the call
 
@@ -1337,7 +1337,7 @@ void StatementTest::testStripSizes()
 														  Location::local("param6", nullptr))))),
 		Const::get(16));
 
-    Instruction *s = new Assign(lhs, rhs);
+    Statement *s = new Assign(lhs, rhs);
 
 	s->stripSizes();
 	QString expected("   0 *v* r24 := m[zfill(8,32,local5) + param6] / 16");
@@ -1350,7 +1350,7 @@ void StatementTest::testStripSizes()
 
 void StatementTest::testFindConstants()
 {
-	Instruction *a = new Assign(Location::regOf(24), Binary::get(opPlus, Const::get(3), Const::get(4)));
+	   Statement *a = new Assign(Location::regOf(24), Binary::get(opPlus, Const::get(3), Const::get(4)));
 
 	std::list<std::shared_ptr<Const>> lc;
 	a->findConstants(lc);

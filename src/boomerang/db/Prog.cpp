@@ -403,7 +403,7 @@ void Prog::generateRTL(Module *cluster, UserProc *proc) const
 }
 
 
-Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) const
+Statement *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) const
 {
     bool search_all = cluster == nullptr;
 
@@ -423,7 +423,7 @@ Instruction *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned in
                 continue;
             }
 
-            Instruction *s = p->getStmtAtLex(begin, end);
+            Statement *s = p->getStmtAtLex(begin, end);
 
             if (s) {
                 return s;
@@ -1460,7 +1460,7 @@ void Prog::removeUnusedGlobals()
             StatementList::iterator ss;
             u->getStatements(stmts);
 
-            for (Instruction *s : stmts) {
+            for (Statement *s : stmts) {
                 if (s->isImplicit()) {
                     continue; // Ignore the uses in ImplicitAssigns
                 }

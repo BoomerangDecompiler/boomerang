@@ -82,7 +82,7 @@ public:
     virtual SharedExp accept(ExpModifier *v) override;
 
     virtual SharedType ascendType() override;
-    virtual void descendType(SharedType parentType, bool& ch, Instruction *s) override;
+    virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
 
 protected:
     SharedExp subExp1; ///< One subexpression pointer

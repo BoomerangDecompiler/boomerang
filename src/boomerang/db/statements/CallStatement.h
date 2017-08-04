@@ -34,7 +34,7 @@ public:
      * \brief     Deep copy clone
      * \returns   Pointer to a new Statement, a clone of this CallStatement
      ******************************************************************************/
-    virtual Instruction *clone() const override;
+    virtual Statement *clone() const override;
 
     // Accept a visitor to this stmt
     // visit this stmt
@@ -248,7 +248,7 @@ public:
     bool convertToDirect(); // Internal function: attempt to convert an indirect to a
 
     // direct call
-    void useColFromSsaForm(Instruction *s) { m_useCol.fromSSAform(m_proc, s); }
+    void useColFromSsaForm(Statement *s) { m_useCol.fromSSAform(m_proc, s); }
 
     bool isCallToMemOffset() const;
 

@@ -37,7 +37,7 @@ void ImpRefStatement::meetWith(SharedType ty, bool& ch)
 }
 
 
-Instruction *ImpRefStatement::clone() const
+Statement *ImpRefStatement::clone() const
 {
     return new ImpRefStatement(m_type->clone(), m_addressExp->clone());
 }

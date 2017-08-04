@@ -33,7 +33,7 @@ public:
     SharedExp accept(ExpModifier *v) override;
 
     SharedType ascendType() override;
-    void descendType(SharedType parentType, bool& ch, Instruction *s) override;
+    void descendType(SharedType parentType, bool& ch, Statement *s) override;
 
     bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 };

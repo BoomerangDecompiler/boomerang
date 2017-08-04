@@ -7,7 +7,7 @@
 #include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
 
-RefExp::RefExp(SharedExp e, Instruction *d)
+RefExp::RefExp(SharedExp e, Statement *d)
     : Unary(opSubscript, e)
     , m_def(d)
 {
@@ -15,7 +15,7 @@ RefExp::RefExp(SharedExp e, Instruction *d)
 }
 
 
-std::shared_ptr<RefExp> RefExp::get(SharedExp e, Instruction *def)
+std::shared_ptr<RefExp> RefExp::get(SharedExp e, Statement *def)
 {
     return std::make_shared<RefExp>(e, def);
 }
@@ -41,14 +41,14 @@ bool RefExp::operator==(const Exp& o) const
     }
 
     // Allow a def of (Statement*)-1 as a wild card
-    if (m_def == (Instruction *)-1) {
+    if (m_def == (Statement *)-1) {
         return true;
     }
 
     assert(dynamic_cast<const RefExp *>(&o) != nullptr);
 
     // Allow a def of nullptr to match a def of an implicit assignment
-    if (((RefExp&)o).m_def == (Instruction *)-1) {
+    if (((RefExp&)o).m_def == (Statement *)-1) {
         return true;
     }
 
@@ -83,11 +83,11 @@ bool RefExp::operator<(const Exp& o) const
     }
 
     // Allow a wildcard def to match any
-    if (m_def == (Instruction *)-1) {
+    if (m_def == (Statement *)-1) {
         return false; // Not less (equal)
     }
 
-    if (((RefExp&)o).m_def == (Instruction *)-1) {
+    if (((RefExp&)o).m_def == (Statement *)-1) {
         return false;
     }
 
@@ -266,7 +266,7 @@ void RefExp::print(QTextStream& os, bool html) const
         os << "{";
     }
 
-    if (m_def == (Instruction *)-1) {
+    if (m_def == (Statement *)-1) {
         os << "WILD";
     }
     else if (m_def) {

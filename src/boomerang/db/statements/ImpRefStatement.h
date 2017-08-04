@@ -16,7 +16,7 @@ public:
     void meetWith(SharedType ty, bool& ch); // Meet the internal type with ty. Set ch if a change
 
     // Virtuals
-    virtual Instruction *clone() const override;
+    virtual Statement *clone() const override;
     virtual bool accept(StmtVisitor *) override;
     virtual bool accept(StmtExpVisitor *) override;
     virtual bool accept(StmtModifier *) override;

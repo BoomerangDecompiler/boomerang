@@ -513,7 +513,7 @@ void CallStatement::print(QTextStream& os, bool html) const
     else {
         os << "(\n";
 
-        for (const Instruction *aa : m_arguments) {
+        for (const Statement *aa : m_arguments) {
             os << "                ";
             ((const Assignment *)aa)->printCompact(os, html);
             os << "\n";
@@ -561,7 +561,7 @@ bool CallStatement::isReturnAfterCall() const
 }
 
 
-Instruction *CallStatement::clone() const
+Statement *CallStatement::clone() const
 {
     CallStatement *ret = new CallStatement();
 
@@ -717,7 +717,7 @@ bool CallStatement::convertToDirect()
     SharedExp e = m_dest;
 
     if (m_dest->isSubscript()) {
-        Instruction *def = e->access<RefExp>()->getDef();
+        Statement *def = e->access<RefExp>()->getDef();
 
         if (def && !def->isImplicit()) {
             return false;     // If an already defined global, don't convert
@@ -937,7 +937,7 @@ void CallStatement::setTypeFor(SharedExp e, SharedType ty)
         return;
     }
 
-    Instruction *def = ref->access<RefExp>()->getDef();
+    Statement *def = ref->access<RefExp>()->getDef();
 
     if (def == nullptr) {
         return;
@@ -1056,7 +1056,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
     if (formatExp->isSubscript()) {
         // Maybe it's defined to be a Const string
-        Instruction *def = formatExp->access<RefExp>()->getDef();
+        Statement *def = formatExp->access<RefExp>()->getDef();
 
         if (def == nullptr) {
             return false;     // Not all nullptr refs get converted to implicits
@@ -1326,7 +1326,7 @@ void CallStatement::updateDefines()
     if (m_procDest && m_calleeReturn) {
         StatementList& modifieds = ((UserProc *)m_procDest)->getModifieds();
 
-        for (Instruction *mm : modifieds) {
+        for (Statement *mm : modifieds) {
             Assignment *as = (Assignment *)mm;
             SharedExp  loc = as->getLeft();
 
@@ -1523,7 +1523,7 @@ StatementList *CallStatement::calcResults()
 
         SharedExp rsp = Location::regOf(m_proc->getSignature()->getStackRegister(m_proc->getProg()));
 
-        for (Instruction *dd : m_defines) {
+        for (Statement *dd : m_defines) {
             SharedExp lhs = ((Assignment *)dd)->getLeft();
 
             // The stack pointer is allowed as a define, so remove it here as a special case non result
@@ -1966,7 +1966,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch)
     // Iterate through the arguments
     int n = 0;
 
-    for (Instruction *aa : m_arguments) {
+    for (Statement *aa : m_arguments) {
         Assign *param = dynamic_cast<Assign *>(aa);
         assert(param);
 

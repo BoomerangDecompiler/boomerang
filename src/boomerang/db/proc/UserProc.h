@@ -71,7 +71,7 @@ public:
      */
     typedef std::multimap<SharedConstExp, SharedExp, lessExpStar> SymbolMap;
 
-    typedef std::map<Instruction *, int> RefCounter;
+    typedef std::map<Statement *, int> RefCounter;
 
 public:
     /***************************************************************************/ /**
@@ -236,7 +236,7 @@ public:
 
     bool canRename(SharedExp e) { return m_df.canRename(e, this); }
 
-    Instruction *getStmtAtLex(unsigned int begin, unsigned int end);
+    Statement *getStmtAtLex(unsigned int begin, unsigned int end);
 
     /***************************************************************************/ /**
      * \brief Initialise the statements, e.g. proc, bb pointers
@@ -404,14 +404,14 @@ public:
 
     /// Find the locations united by Phi-functions
     void findPhiUnites(ConnectionGraph& pu);
-    void insertAssignAfter(Instruction *s, SharedExp left, SharedExp right);
+    void insertAssignAfter(Statement *s, SharedExp left, SharedExp right);
     void removeSubscriptsFromSymbols();
     void removeSubscriptsFromParameters();
 
     /// Insert statement \a a after statement \a s.
     /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
     /// So this is an inefficient linear search!
-    void insertStatementAfter(Instruction *s, Instruction *a);
+    void insertStatementAfter(Statement *s, Statement *a);
 
     /***************************************************************************/ /**
      * \brief Add a mapping for the destinations of phi functions that have one
@@ -523,7 +523,7 @@ public:
     /// get all the statements
     void getStatements(StatementList& stmts) const;
     virtual void removeReturn(SharedExp e) override;
-    void removeStatement(Instruction *stmt);
+    void removeStatement(Statement *stmt);
     bool searchAll(const Exp& search, std::list<SharedExp>& result);
 
     // Get the set of locations defined by this proc.
@@ -658,7 +658,7 @@ public:
     bool containsAddr(Address uAddr) const;
 
     /// Change BB containing this statement from a COMPCALL to a CALL.
-    void undoComputedBB(Instruction *stmt) const { m_cfg->undoComputedBB(stmt); }
+    void undoComputedBB(Statement *stmt) const { m_cfg->undoComputedBB(stmt); }
 
     /// \copydoc Function::getProven
     virtual SharedExp getProven(SharedExp left) override;
@@ -736,7 +736,7 @@ public:
     /// Find or insert a new implicit reference just before statement s, for address expression a with type t.
     /// Meet types if necessary
     /// Find and if necessary insert an implicit reference before s whose address expression is a and type is t.
-    void setImplicitRef(Instruction *s, SharedExp a, SharedType ty);
+    void setImplicitRef(Statement *s, SharedExp a, SharedType ty);
 
     void verifyPHIs();
     void debugPrintAll(const char *c);

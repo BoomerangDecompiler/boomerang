@@ -17,7 +17,7 @@ public:
     // The first virtual function (here the destructor) can't be in statement.h file for gcc
     virtual ~ImplicitAssign();
 
-    virtual Instruction *clone() const override;
+    virtual Statement *clone() const override;
 
     /// Data flow based type analysis
     void dfaTypeAnalysis(bool& ch) override;

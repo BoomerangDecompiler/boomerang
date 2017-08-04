@@ -71,7 +71,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
     // Clear the result structure;
     result.reset();
     // The actual list of instantiated Statements
-    std::list<Instruction *> *stmts = nullptr;
+    std::list<Statement *> *stmts = nullptr;
     HostAddress nextPC = HostAddress::INVALID;
     // #line 112 "frontend/machine/pentium/decoder.m"
     {
@@ -49736,8 +49736,8 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
     //    pc+2: dest := dest op 1
     //    pc+2: branch pc+2 condition modrm@[dest:dest]=0
     // exit:
-    std::list<Instruction *> *stmts = new std::list<Instruction *>;
-    Instruction              *s;
+    std::list<Statement *> *stmts = new std::list<Statement *>;
+    Statement              *s;
     BranchStatement          *b;
 
     switch (BSFRstate)

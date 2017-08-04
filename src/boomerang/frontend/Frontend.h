@@ -44,7 +44,7 @@ class Prog;
 struct DecodeResult;
 
 class Signature;
-class Instruction;
+class Statement;
 class CallStatement;
 class SymTab;
 class IBinaryImage;
@@ -240,8 +240,8 @@ public:
      * incomplete in these cases, and needs to be restarted from scratch
      */
     void addDecodedRtl(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
-    void preprocessProcGoto(std::list<Instruction *>::iterator ss, Address dest,
-                            const std::list<Instruction *>& sl, RTL *pRtl);
+    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest,
+                            const std::list<Statement *>& sl, RTL *pRtl);
     void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
 
 private:

@@ -358,7 +358,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
         StatementList::iterator sit;
         BasicBlock              *bb = m_BBs[n];
 
-        for (Instruction *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+        for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
             LocationSet ls;
             s->getDefinitions(ls);
 
@@ -420,7 +420,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 
                 // Insert trivial phi function for a at top of block y: a := phi()
                 change = true;
-                Instruction *as  = new PhiAssign(SharedExp(a->clone()));
+                Statement *as  = new PhiAssign(SharedExp(a->clone()));
                 BasicBlock  *Ybb = m_BBs[y];
 
                 Ybb->prependStmt(as, proc);
@@ -466,7 +466,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     BasicBlock::rtlit       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
-    Instruction             *S;
+    Statement             *S;
 
     for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         // if S is not a phi function (per Appel)
@@ -486,7 +486,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 // A phi statement may use a location defined in a childless call, in which case its use collector
                 // needs updating
                 for (auto& pp : *pa) {
-                    Instruction *def = pp.second.def();
+                    Statement *def = pp.second.def();
 
                     if (def && def->isCall()) {
                         ((CallStatement *)def)->useBeforeDefine(phiLeft->clone());
@@ -507,7 +507,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                     continue;
                 }
 
-                Instruction *def = nullptr;
+                Statement *def = nullptr;
 
                 if (x->isSubscript()) { // Already subscripted?
                     // No renaming required, but redo the usage analysis, in case this is a new return, and also because
@@ -639,7 +639,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
         BasicBlock *Ybb = outEdges[succ];
 
         // For each phi-function in Y
-        for (Instruction *St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
+        for (Statement *St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
             PhiAssign *pa = dynamic_cast<PhiAssign *>(St);
 
             // if S is not a phi function, then quit the loop (no more phi's)
@@ -658,7 +658,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 continue;
             }
 
-            Instruction *def = nullptr; // assume No reaching definition
+            Statement *def = nullptr; // assume No reaching definition
 
             if (!STACKS_EMPTY(a)) {
                 def = m_Stacks[a].back();
@@ -726,7 +726,7 @@ void DataFlow::dumpStacks()
     LOG_MSG("Stacks: %1 entries", m_Stacks.size());
 
     for (auto zz = m_Stacks.begin(); zz != m_Stacks.end(); zz++) {
-        std::deque<Instruction *> tt = zz->second; // Copy the stack!
+        std::deque<Statement *> tt = zz->second; // Copy the stack!
 
         LOG_MSG("  Var %1 [", zz->first);
         while (!tt.empty()) {
@@ -768,7 +768,7 @@ void DataFlow::dumpA_orig()
 }
 
 
-void DefCollector::updateDefs(std::map<SharedExp, std::deque<Instruction *>, lessExpStar>& Stacks, UserProc *proc)
+void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar>& Stacks, UserProc *proc)
 {
     for (auto it = Stacks.begin(); it != Stacks.end(); it++) {
         if (it->second.empty()) {
@@ -927,7 +927,7 @@ void DefCollector::searchReplaceAll(const Exp& from, SharedExp to, bool& change)
 }
 
 
-void UseCollector::fromSSAform(UserProc *proc, Instruction *def)
+void UseCollector::fromSSAform(UserProc *proc, Statement *def)
 {
     LocationSet   removes, inserts;
     iterator      it;
@@ -1035,7 +1035,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
     BasicBlock::rtlit       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
-    Instruction             *S;
+    Statement             *S;
 
     for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         if (S->isPhi()) {

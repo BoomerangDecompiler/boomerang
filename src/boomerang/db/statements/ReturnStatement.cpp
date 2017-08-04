@@ -24,7 +24,7 @@ ReturnStatement::~ReturnStatement()
 }
 
 
-Instruction *ReturnStatement::clone() const
+Statement *ReturnStatement::clone() const
 {
     ReturnStatement *ret = new ReturnStatement();
 
@@ -590,7 +590,7 @@ void ReturnStatement::removeModified(SharedExp loc)
 
 void ReturnStatement::dfaTypeAnalysis(bool& ch)
 {
-    for (Instruction *mm : modifieds) {
+    for (Statement *mm : modifieds) {
         if (!mm->isAssignment()) {
             LOG_WARN("Non assignment in modifieds of ReturnStatement");
         }
@@ -598,7 +598,7 @@ void ReturnStatement::dfaTypeAnalysis(bool& ch)
         mm->dfaTypeAnalysis(ch);
     }
 
-    for (Instruction *rr : returns) {
+    for (Statement *rr : returns) {
         if (!rr->isAssignment()) {
             LOG_WARN("Non assignment in returns of ReturnStatement");
         }

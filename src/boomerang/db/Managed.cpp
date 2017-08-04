@@ -50,7 +50,7 @@ QTextStream& operator<<(QTextStream& os, const LocationSet *ls)
 
 void InstructionSet::makeUnion(InstructionSet& other)
 {
-    std::set<Instruction *>::iterator it;
+    std::set<Statement *>::iterator it;
 
     for (it = other.begin(); it != other.end(); it++) {
         insert(*it);
@@ -60,7 +60,7 @@ void InstructionSet::makeUnion(InstructionSet& other)
 
 void InstructionSet::makeDiff(InstructionSet& other)
 {
-    std::set<Instruction *>::iterator it;
+    std::set<Statement *>::iterator it;
 
     for (it = other.begin(); it != other.end(); it++) {
         erase(*it);
@@ -70,7 +70,7 @@ void InstructionSet::makeDiff(InstructionSet& other)
 
 void InstructionSet::makeIsect(InstructionSet& other)
 {
-    std::set<Instruction *>::iterator it, ff;
+    std::set<Statement *>::iterator it, ff;
 
     for (it = begin(); it != end(); it++) {
         ff = other.find(*it);
@@ -85,7 +85,7 @@ void InstructionSet::makeIsect(InstructionSet& other)
 
 bool InstructionSet::isSubSetOf(InstructionSet& other)
 {
-    std::set<Instruction *>::iterator it, ff;
+    std::set<Statement *>::iterator it, ff;
 
     for (it = begin(); it != end(); it++) {
         ff = other.find(*it);
@@ -99,7 +99,7 @@ bool InstructionSet::isSubSetOf(InstructionSet& other)
 }
 
 
-bool InstructionSet::remove(Instruction *s)
+bool InstructionSet::remove(Statement *s)
 {
     if (find(s) != end()) {
         erase(s);
@@ -110,7 +110,7 @@ bool InstructionSet::remove(Instruction *s)
 }
 
 
-bool InstructionSet::exists(Instruction *s)
+bool InstructionSet::exists(Statement *s)
 {
     iterator it = find(s);
 
@@ -135,7 +135,7 @@ const char *InstructionSet::prints()
     QString     tgt;
     QTextStream ost(&tgt);
 
-    std::set<Instruction *>::iterator it;
+    std::set<Statement *>::iterator it;
 
     for (it = begin(); it != end(); it++) {
         if (it != begin()) {
@@ -162,7 +162,7 @@ void InstructionSet::dump()
 
 void InstructionSet::print(QTextStream& os) const
 {
-    std::set<Instruction *>::iterator it;
+    std::set<Statement *>::iterator it;
 
     for (it = begin(); it != end(); it++) {
         if (it != begin()) {
@@ -484,7 +484,7 @@ void LocationSet::removeIfDefines(InstructionSet& given)
     InstructionSet::iterator it;
 
     for (it = given.begin(); it != given.end(); ++it) {
-        Instruction *s = (Instruction *)*it;
+        Statement *s = (Statement *)*it;
         LocationSet defs;
         s->getDefinitions(defs);
         LocationSet::iterator dd;
@@ -590,7 +590,7 @@ bool LocationSet::existsImplicit(SharedExp e) const
 bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr)
 {
     assert(e);
-    auto search = RefExp::get(e->getSubExp1()->clone(), (Instruction *)-1);
+    auto search = RefExp::get(e->getSubExp1()->clone(), (Statement *)-1);
     ExpSet::iterator pos = lset.find(search);
 
     if (pos == lset.end()) {
@@ -621,7 +621,7 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& 
 }
 
 
-void LocationSet::addSubscript(Instruction *d /* , Cfg* cfg */)
+void LocationSet::addSubscript(Statement *d /* , Cfg* cfg */)
 {
     ExpSet newSet;
 
@@ -705,7 +705,7 @@ void LocationSet::substitute(Assign& a)
 }
 
 
-bool StatementList::remove(Instruction *s)
+bool StatementList::remove(Statement *s)
 {
     iterator it;
 
@@ -747,7 +747,7 @@ char *StatementList::prints()
 }
 
 
-void StatementVec::putAt(int idx, Instruction *s)
+void StatementVec::putAt(int idx, Statement *s)
 {
     if (idx >= (int)svec.size()) {
         svec.resize(idx + 1, nullptr);
@@ -776,7 +776,7 @@ char *StatementVec::prints()
     QString     tgt;
     QTextStream ost(&tgt);
 
-    for (Instruction *it : svec) {
+    for (Statement *it : svec) {
         ost << it << ",\t";
     }
 

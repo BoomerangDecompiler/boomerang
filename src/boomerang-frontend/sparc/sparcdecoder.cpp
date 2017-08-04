@@ -63,7 +63,7 @@ void DEBUG_STMTS(DecodeResult& result)
 {
     if (DEBUG_DECODER) {
         QTextStream q_cout(stdout);
-        std::list<Instruction *>::iterator ii;
+        std::list<Statement *>::iterator ii;
 
         for (ii = result.rtl->begin(); ii != result.rtl->end(); ii++) {
             q_cout << "            " << *ii << "\n";
@@ -72,7 +72,7 @@ void DEBUG_STMTS(DecodeResult& result)
 }
 
 
-RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name)
+RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name)
 {
     RTL             *res = new RTL(pc, stmts);
     BranchStatement *br  = new BranchStatement();
@@ -245,7 +245,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
     // Clear the result structure;
     result.reset();
     // The actual list of instantiated statements
-    std::list<Instruction *> *stmts = nullptr;
+    std::list<Statement *> *stmts = nullptr;
     // #line 212 "frontend/machine/sparc/decoder.m"
     {
         HostAddress MATCH_p =

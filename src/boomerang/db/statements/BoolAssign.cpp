@@ -168,7 +168,7 @@ void BoolAssign::printCompact(QTextStream& os, bool html) const
 }
 
 
-Instruction *BoolAssign::clone() const
+Statement *BoolAssign::clone() const
 {
     BoolAssign *ret = new BoolAssign(m_size);
 
@@ -262,7 +262,7 @@ bool BoolAssign::searchAndReplace(const Exp& search, SharedExp replace, bool cc)
 }
 
 
-void BoolAssign::setLeftFromList(std::list<Instruction *> *stmts)
+void BoolAssign::setLeftFromList(std::list<Statement *> *stmts)
 {
     assert(stmts->size() == 1);
     Assign *first = (Assign *)stmts->front();

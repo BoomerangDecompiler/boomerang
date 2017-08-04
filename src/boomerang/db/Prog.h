@@ -33,7 +33,7 @@ class Function;
 class UserProc;
 class LibProc;
 class Signature;
-class Instruction;
+class Statement;
 class InstructionSet;
 class Module;
 class IBinarySection;
@@ -273,7 +273,7 @@ public:
     /// lookup a library procedure by name; create if does not exist
     LibProc *getLibraryProc(const QString& nam) const;
     Signature *getLibSignature(const QString& name) const;
-    Instruction *getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) const;
+    Statement *getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) const;
 
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;

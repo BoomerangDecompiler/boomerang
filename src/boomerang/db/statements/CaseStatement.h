@@ -26,7 +26,7 @@ public:
      * \brief   Deep copy clone
      * \returns Pointer to a new Instruction that is a clone of this one
      ******************************************************************************/
-    virtual Instruction *clone() const override;
+    virtual Statement *clone() const override;
 
     // Accept a visitor to this Statememt
     // visit this stmt

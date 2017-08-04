@@ -42,7 +42,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/TypeVal.h"
 
-class Instruction;
+class Statement;
 class Assignment;
 class Assign;
 class ImplicitAssign;
@@ -583,13 +583,13 @@ protected:
 class CallBypasser : public SimpExpModifier
 {
 public:
-    CallBypasser(Instruction *enclosing)
+    CallBypasser(Statement *enclosing)
         : m_enclosingStmt(enclosing) {}
     virtual SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
     virtual SharedExp postVisit(const std::shared_ptr<Location>& e) override;
 
 private:
-    Instruction *m_enclosingStmt; // Statement that is being modified at present, for debugging only
+    Statement *m_enclosingStmt; // Statement that is being modified at present, for debugging only
 };
 
 
@@ -680,7 +680,7 @@ private:
 class ExpSubscripter : public ExpModifier
 {
 public:
-    ExpSubscripter(const SharedExp& s, Instruction *d)
+    ExpSubscripter(const SharedExp& s, Statement *d)
         : m_search(s)
         , m_def(d) {}
 
@@ -691,7 +691,7 @@ public:
 
 private:
     SharedExp m_search;
-    Instruction *m_def;
+    Statement *m_def;
 };
 
 

@@ -32,7 +32,7 @@ ImplicitAssign::~ImplicitAssign()
 }
 
 
-Instruction *ImplicitAssign::clone() const
+Statement *ImplicitAssign::clone() const
 {
     ImplicitAssign *ia = new ImplicitAssign(m_type, m_lhs);
 

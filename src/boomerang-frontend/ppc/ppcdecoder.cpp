@@ -106,7 +106,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
     result.reset();
 
     // The actual list of instantiated statements
-    std::list<Instruction *> *stmts = nullptr;
+    std::list<Statement *> *stmts = nullptr;
 
     HostAddress nextPC = HostAddress::INVALID;
 
@@ -720,7 +720,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                 Assign *as = new Assign(IntegerType::get(STD_SIZE, 0),
                                                         Unary::get(opMachFtr, Const::get("%LR")), Const::get(pc + 4));
 
-                                stmts = new std::list<Instruction *>;
+                                stmts = new std::list<Statement *>;
 
                                 stmts->push_back(as);
 

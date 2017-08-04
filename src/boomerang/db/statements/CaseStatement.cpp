@@ -81,7 +81,7 @@ void CaseStatement::print(QTextStream& os, bool html) const
 }
 
 
-Instruction *CaseStatement::clone() const
+Statement *CaseStatement::clone() const
 {
     CaseStatement *ret = new CaseStatement();
 

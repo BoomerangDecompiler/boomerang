@@ -615,7 +615,7 @@ SharedExp Exp::removeSubscripts(bool& allZero)
     for (xx = locs.begin(); xx != locs.end(); xx++) {
         if ((*xx)->getOper() == opSubscript) {
             auto              r1   = std::static_pointer_cast<RefExp>(*xx);
-            const Instruction *def = r1->getDef();
+            const Statement *def = r1->getDef();
 
             if (!((def == nullptr) || (def->getNumber() == 0))) {
                 allZero = false;
@@ -631,7 +631,7 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 }
 
 
-SharedExp Exp::fromSSAleft(UserProc *proc, Instruction *d)
+SharedExp Exp::fromSSAleft(UserProc *proc, Statement *d)
 {
     auto r = RefExp::get(shared_from_this(), d); // "Wrap" in a ref
 
@@ -736,7 +736,7 @@ void Exp::addUsedLocs(LocationSet& used, bool memOnly)
 }
 
 
-SharedExp Exp::expSubscriptVar(const SharedExp& e, Instruction *def)
+SharedExp Exp::expSubscriptVar(const SharedExp& e, Statement *def)
 {
     ExpSubscripter es(e, def);
 

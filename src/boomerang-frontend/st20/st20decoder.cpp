@@ -47,7 +47,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 {
     result.reset();                            // Clear the result structure (numBytes = 0 etc)
     HostAddress hostPC = HostAddress(delta) + pc;
-    std::list<Instruction *> *stmts = nullptr; // The actual list of instantiated Statements
+    std::list<Statement *> *stmts = nullptr; // The actual list of instantiated Statements
     int total = 0;                             // Total value from all prefixes
 
     while (1) {

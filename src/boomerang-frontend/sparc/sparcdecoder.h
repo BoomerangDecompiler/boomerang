@@ -110,7 +110,7 @@ private:
      * \param name - instruction name (e.g. "BNE,a", or "BPNE")
      * \returns            Pointer to newly created RTL, or nullptr if invalid
      ******************************************************************************/
-    RTL *createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name);
+    RTL *createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name);
 
     /***************************************************************************/ /**
     * \fn      isFuncPrologue()

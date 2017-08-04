@@ -16,7 +16,7 @@ public:
     virtual ~Assignment();
 
     /// Clone
-    virtual Instruction *clone() const override = 0;
+    virtual Statement *clone() const override = 0;
 
     /// We also want operator< for assignments. For example, we want ReturnStatement
     /// to contain a set of (pointers to) Assignments, so we can automatically

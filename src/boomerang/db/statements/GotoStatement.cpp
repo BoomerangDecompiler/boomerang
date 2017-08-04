@@ -152,7 +152,7 @@ bool GotoStatement::isComputed() const
 }
 
 
-Instruction *GotoStatement::clone() const
+Statement *GotoStatement::clone() const
 {
     GotoStatement *ret = new GotoStatement();
 

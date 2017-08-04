@@ -7,11 +7,11 @@
 struct PhiInfo
 {
     SharedExp         e; // The expression for the thing being defined (never subscripted)
-    void              def(Instruction *def) { m_def = def; /*assert(def);*/ }
-    Instruction       *def() { return m_def; }
-    const Instruction *def() const { return m_def; }
+    void              def(Statement *def) { m_def = def; /*assert(def);*/ }
+    Statement       *def() { return m_def; }
+    const Statement *def() const { return m_def; }
 
-    Instruction       *m_def; // The defining statement
+    Statement       *m_def; // The defining statement
 };
 
 
@@ -43,7 +43,7 @@ public:
     virtual ~PhiAssign() {}
 
     // Clone
-    virtual Instruction *clone() const override;
+    virtual Statement *clone() const override;
 
     // get how to replace this statement in a use
     virtual SharedExp getRight() const override { return nullptr; }
@@ -87,7 +87,7 @@ public:
     //
 
     // Get or put the statement at index idx
-    Instruction *getStmtAt(BasicBlock *idx)
+    Statement *getStmtAt(BasicBlock *idx)
     {
         if (DefVec.find(idx) == DefVec.end()) {
             return nullptr;
@@ -97,7 +97,7 @@ public:
     }
 
     PhiInfo& getAt(BasicBlock *idx);
-    void putAt(BasicBlock *idx, Instruction *d, SharedExp e);
+    void putAt(BasicBlock *idx, Statement *d, SharedExp e);
     void simplifyRefs();
 
     virtual size_t getNumDefs() const { return DefVec.size(); }

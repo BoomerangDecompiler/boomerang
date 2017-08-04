@@ -40,7 +40,7 @@ class Const;
 class RefExp;
 class Cfg;
 class Type;
-class Instruction;
+class Statement;
 class Signature;
 class StmtVisitor;
 class StmtExpVisitor;
@@ -54,7 +54,7 @@ class ReturnStatement;
 
 typedef std::set<UserProc *>           CycleSet;
 typedef std::shared_ptr<Exp>           SharedExp;
-typedef std::unique_ptr<Instruction>   UniqInstruction;
+typedef std::unique_ptr<Statement>   UniqInstruction;
 typedef std::shared_ptr<Type>          SharedType;
 
 /***************************************************************************/ /**
@@ -118,17 +118,17 @@ enum BranchType
  * CallStatement_/  /   /    \ \________
  *       PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
  */
-class Instruction
+class Statement
 {
     typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
 public:
-    Instruction()
+    Statement()
         : m_parent(nullptr)
         , m_proc(nullptr)
         , m_number(0) {}
 
-    virtual ~Instruction() {}
+    virtual ~Statement() {}
 
     /// get/set the enclosing BB, etc
     BasicBlock *getBB() { return m_parent; }
@@ -147,7 +147,7 @@ public:
     StmtType getKind() const { return m_kind; }
     void setKind(StmtType k) { m_kind = k; }
 
-    virtual Instruction *clone() const = 0;  ///< Make copy of self
+    virtual Statement *clone() const = 0;  ///< Make copy of self
 
     // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
     virtual bool accept(StmtVisitor *visitor)      = 0;
@@ -290,8 +290,8 @@ public:
     // helper functions
     bool isFirstStatementInBB() const;
     bool isLastStatementInBB() const;
-    Instruction *getNextStatementInBB() const;
-    Instruction *getPreviousStatementInBB() const;
+    Statement *getNextStatementInBB() const;
+    Statement *getPreviousStatementInBB() const;
 
     //    //    //    //    //    //    //    //    //    //
     //                                                    //
@@ -333,7 +333,7 @@ public:
     void stripSizes();
 
     /// For all expressions in this Statement, replace any e with e{def}
-    void subscriptVar(SharedExp e, Instruction *def /*, Cfg* cfg */);
+    void subscriptVar(SharedExp e, Statement *def /*, Cfg* cfg */);
 
     // Cast the constant num to type ty. If a change was made, return true
     // Cast the constant num to be of type ty. Return true if a change made
@@ -382,7 +382,7 @@ protected:
 
 
 /// Print the Statement (etc) pointed to by p
-QTextStream& operator<<(QTextStream& os, const Instruction *p);
+QTextStream& operator<<(QTextStream& os, const Statement *p);
 QTextStream& operator<<(QTextStream& os, const InstructionSet *p);
 QTextStream& operator<<(QTextStream& os, const LocationSet *p);
 

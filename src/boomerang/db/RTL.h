@@ -38,7 +38,7 @@
 
 
 class Exp;         // lines 38-38
-class Instruction; // lines 47-47
+class Statement; // lines 47-47
 class QTextStream;
 class QString;
 
@@ -53,7 +53,7 @@ using SharedExp = std::shared_ptr<Exp>;
  * \note when time permits, this class could be removed,
  * replaced with new Statements that mark the current native address
  ******************************************************************************/
-class RTL : public std::list<Instruction *>
+class RTL : public std::list<Statement *>
 {
     friend class BasicBlock;
 
@@ -65,7 +65,7 @@ public:
     * \param   instNativeAddr - the native address of the instruction
     * \param   listStmt - ptr to existing list of Statement
     ******************************************************************************/
-    RTL(Address instNativeAddr, const std::list<Instruction *> *listStmt = nullptr);
+    RTL(Address instNativeAddr, const std::list<Statement *> *listStmt = nullptr);
 
     /***************************************************************************/ /**
      * \brief        Copy constructor. A deep clone is made of the given object
@@ -102,20 +102,20 @@ public:
      * \note         stmt is NOT copied. This is different to how UQBT was!
      * \param        s pointer to Statement to append
      ******************************************************************************/
-    void appendStmt(Instruction *s); // Add s to end of RTL.
+    void appendStmt(Statement *s); // Add s to end of RTL.
 
     /***************************************************************************/ /**
      * \brief  Append a given list of Statements to this RTL
      * \note   A copy of the Statements in le are appended
      * \param  le - list of Statements to insert
      ******************************************************************************/
-    void appendListStmt(std::list<Instruction *>& le);
+    void appendListStmt(std::list<Statement *>& le);
 
     /***************************************************************************/ /**
      * \brief        Make a copy of this RTLs list of Exp* to the given list
      * \param        dest Ref to empty list to copy to
      ******************************************************************************/
-    void deepCopyList(std::list<Instruction *>& dest) const;
+    void deepCopyList(std::list<Statement *>& dest) const;
 
     /***************************************************************************/ /**
      * \brief   Prints this object to a stream in text form.
@@ -131,7 +131,7 @@ public:
 
     /// Use this slow function when you can't be sure that the HL Statement is last
     /// Get the "special" (High Level) Statement this RTL (else nullptr)
-    Instruction *getHlStmt() const;
+    Statement *getHlStmt() const;
     char *prints() const; // Print to a string (mainly for debugging)
 
 protected:

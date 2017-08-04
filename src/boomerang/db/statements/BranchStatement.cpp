@@ -371,7 +371,7 @@ void BranchStatement::print(QTextStream& os, bool html) const
 }
 
 
-Instruction *BranchStatement::clone() const
+Statement *BranchStatement::clone() const
 {
     BranchStatement *ret = new BranchStatement();
 

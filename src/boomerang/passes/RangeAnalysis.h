@@ -4,7 +4,7 @@
 #include <map>
 class Cfg;
 class Function;
-class Instruction;
+class Statement;
 struct RangePrivateData;
 
 class UserProc;

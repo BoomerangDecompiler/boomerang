@@ -44,7 +44,7 @@
 #include <algorithm>
 
 
-void Instruction::setProc(UserProc *p)
+void Statement::setProc(UserProc *p)
 {
     m_proc = p;
     LocationSet exps, defs;
@@ -62,7 +62,7 @@ void Instruction::setProc(UserProc *p)
 }
 
 
-bool Instruction::mayAlias(SharedExp e1, SharedExp e2, int size) const
+bool Statement::mayAlias(SharedExp e1, SharedExp e2, int size) const
 {
     if (*e1 == *e2) {
         return true;
@@ -80,7 +80,7 @@ bool Instruction::mayAlias(SharedExp e1, SharedExp e2, int size) const
 }
 
 
-bool Instruction::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
+bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
 {
     // currently only considers memory aliasing..
     if (!e1->isMemOf() || !e2->isMemOf()) {
@@ -143,7 +143,7 @@ bool Instruction::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
 }
 
 
-bool Instruction::isFirstStatementInBB() const
+bool Statement::isFirstStatementInBB() const
 {
     assert(m_parent);
     assert(m_parent->getRTLs());
@@ -154,22 +154,22 @@ bool Instruction::isFirstStatementInBB() const
 }
 
 
-bool Instruction::isLastStatementInBB() const
+bool Statement::isLastStatementInBB() const
 {
     assert(m_parent);
     return this == m_parent->getLastStmt();
 }
 
 
-Instruction *Instruction::getPreviousStatementInBB() const
+Statement *Statement::getPreviousStatementInBB() const
 {
     assert(m_parent);
     std::list<RTL *> *rtls = m_parent->getRTLs();
     assert(rtls);
-    Instruction *previous = nullptr;
+    Statement *previous = nullptr;
 
     for (auto rtl : *rtls) {
-        for (Instruction *it : *rtl) {
+        for (Statement *it : *rtl) {
             if (it == this) {
                 return previous;
             }
@@ -182,7 +182,7 @@ Instruction *Instruction::getPreviousStatementInBB() const
 }
 
 
-Instruction *Instruction::getNextStatementInBB() const
+Statement *Statement::getNextStatementInBB() const
 {
     assert(m_parent);
     std::list<RTL *> *rtls = m_parent->getRTLs();
@@ -190,7 +190,7 @@ Instruction *Instruction::getNextStatementInBB() const
     bool wantNext = false;
 
     for (auto rtl : *rtls) {
-        for (Instruction *it : *rtl) {
+        for (Statement *it : *rtl) {
             if (wantNext) {
                 return it;
             }
@@ -212,7 +212,7 @@ Instruction *Instruction::getNextStatementInBB() const
  * \param s  ptr to Statement to print to the stream
  * \returns copy of os (for concatenation)
  ******************************************************************************/
-QTextStream& operator<<(QTextStream& os, const Instruction *s)
+QTextStream& operator<<(QTextStream& os, const Statement *s)
 {
     if (s == nullptr) {
         os << "nullptr ";
@@ -224,7 +224,7 @@ QTextStream& operator<<(QTextStream& os, const Instruction *s)
 }
 
 
-bool Instruction::isFlagAssign() const
+bool Statement::isFlagAssign() const
 {
     if (m_kind != STMT_ASSIGN) {
         return false;
@@ -235,7 +235,7 @@ bool Instruction::isFlagAssign() const
 }
 
 
-char *Instruction::prints() const
+char *Statement::prints() const
 {
     QString     tgt;
     QTextStream ost(&tgt);
@@ -247,7 +247,7 @@ char *Instruction::prints() const
 }
 
 
-void Instruction::dump() const
+void Statement::dump() const
 {
     QTextStream q_cerr(stderr);
 
@@ -256,7 +256,7 @@ void Instruction::dump() const
 }
 
 
-bool Instruction::canPropagateToExp(Exp& e)
+bool Statement::canPropagateToExp(Exp& e)
 {
     if (!e.isSubscript()) {
         return false;
@@ -269,7 +269,7 @@ bool Instruction::canPropagateToExp(Exp& e)
         return false;
     }
 
-    Instruction *def = re.getDef();
+    Statement *def = re.getDef();
 
     //    if (def == this)
     // Don't propagate to self! Can happen with %pc's (?!)
@@ -294,7 +294,7 @@ bool Instruction::canPropagateToExp(Exp& e)
 }
 
 
-bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
+bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
                               LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
 {
     bool change;
@@ -359,7 +359,7 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
                         SharedExp OW = usedByDomPhi->findNS(rhsBase);
 
                         if (OW) {
-                            Instruction *OWdef = OW->access<RefExp>()->getDef();
+                            Statement *OWdef = OW->access<RefExp>()->getDef();
 
                             if (!OWdef->isAssign()) {
                                 continue;
@@ -430,7 +430,7 @@ bool Instruction::propagateTo(bool& convert, std::map<SharedExp, int, lessExpSta
 }
 
 
-bool Instruction::propagateFlagsTo()
+bool Statement::propagateFlagsTo()
 {
     // FIXME: convert is uninitialized ?
     bool change  = false;
@@ -468,7 +468,7 @@ bool Instruction::propagateFlagsTo()
 }
 
 
-bool Instruction::doPropagateTo(SharedExp e, Assignment *def, bool& convert)
+bool Statement::doPropagateTo(SharedExp e, Assignment *def, bool& convert)
 {
     // Respect the -p N switch
     if (Boomerang::get()->numToPropagate >= 0) {
@@ -489,7 +489,7 @@ bool Instruction::doPropagateTo(SharedExp e, Assignment *def, bool& convert)
 }
 
 
-bool Instruction::replaceRef(SharedExp e, Assignment *def, bool& convert)
+bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
 {
     SharedExp rhs = def->getRight();
 
@@ -570,7 +570,7 @@ bool Instruction::replaceRef(SharedExp e, Assignment *def, bool& convert)
 }
 
 
-bool Instruction::isNullStatement() const
+bool Statement::isNullStatement() const
 {
     if (m_kind != STMT_ASSIGN) {
         return false;
@@ -589,7 +589,7 @@ bool Instruction::isNullStatement() const
 }
 
 
-bool Instruction::isFpush() const
+bool Statement::isFpush() const
 {
     if (m_kind != STMT_ASSIGN) {
         return false;
@@ -599,7 +599,7 @@ bool Instruction::isFpush() const
 }
 
 
-bool Instruction::isFpop() const
+bool Statement::isFpop() const
 {
     if (m_kind != STMT_ASSIGN) {
         return false;
@@ -609,7 +609,7 @@ bool Instruction::isFpop() const
 }
 
 
-int Instruction::setConscripts(int n)
+int Statement::setConscripts(int n)
 {
     StmtConscriptSetter scs(n, false);
 
@@ -618,7 +618,7 @@ int Instruction::setConscripts(int n)
 }
 
 
-void Instruction::clearConscripts()
+void Statement::clearConscripts()
 {
     StmtConscriptSetter scs(0, true);
 
@@ -626,7 +626,7 @@ void Instruction::clearConscripts()
 }
 
 
-bool Instruction::castConst(int num, SharedType ty)
+bool Statement::castConst(int num, SharedType ty)
 {
     ExpConstCaster ecc(num, ty);
     StmtModifier   scc(&ecc);
@@ -636,7 +636,7 @@ bool Instruction::castConst(int num, SharedType ty)
 }
 
 
-void Instruction::stripSizes()
+void Statement::stripSizes()
 {
     SizeStripper ss;
     StmtModifier sm(&ss);
@@ -645,7 +645,7 @@ void Instruction::stripSizes()
 }
 
 
-void Instruction::bypass()
+void Statement::bypass()
 {
     CallBypasser     cb(this);
     StmtPartModifier sm(&cb);     // Use the Part modifier so we don't change the top level of LHS of assigns etc
@@ -658,7 +658,7 @@ void Instruction::bypass()
 }
 
 
-void Instruction::addUsedLocs(LocationSet& used, bool cc /* = false */, bool memOnly /*= false */)
+void Statement::addUsedLocs(LocationSet& used, bool cc /* = false */, bool memOnly /*= false */)
 {
     UsedLocsFinder  ulf(used, memOnly);
     UsedLocsVisitor ulv(&ulf, cc);
@@ -667,7 +667,7 @@ void Instruction::addUsedLocs(LocationSet& used, bool cc /* = false */, bool mem
 }
 
 
-bool Instruction::addUsedLocals(LocationSet& used)
+bool Statement::addUsedLocals(LocationSet& used)
 {
     UsedLocalFinder ulf(used, m_proc);
     UsedLocsVisitor ulv(&ulf, false);
@@ -677,7 +677,7 @@ bool Instruction::addUsedLocals(LocationSet& used)
 }
 
 
-void Instruction::subscriptVar(SharedExp e, Instruction *def /*, Cfg* cfg */)
+void Statement::subscriptVar(SharedExp e, Statement *def /*, Cfg* cfg */)
 {
     ExpSubscripter  es(e, def /*, cfg*/);
     StmtSubscripter ss(&es);
@@ -686,7 +686,7 @@ void Instruction::subscriptVar(SharedExp e, Instruction *def /*, Cfg* cfg */)
 }
 
 
-void Instruction::findConstants(std::list<std::shared_ptr<Const> >& lc)
+void Statement::findConstants(std::list<std::shared_ptr<Const> >& lc)
 {
     ConstFinder     cf(lc);
     StmtConstFinder scf(&cf);
@@ -695,7 +695,7 @@ void Instruction::findConstants(std::list<std::shared_ptr<Const> >& lc)
 }
 
 
-void Instruction::mapRegistersToLocals()
+void Statement::mapRegistersToLocals()
 {
     ExpRegMapper  erm(m_proc);
     StmtRegMapper srm(&erm);
@@ -704,7 +704,7 @@ void Instruction::mapRegistersToLocals()
 }
 
 
-void Instruction::insertCasts()
+void Statement::insertCasts()
 {
     // First we postvisit expressions using a StmtModifier and an ExpCastInserter
     ExpCastInserter eci(m_proc);
@@ -717,7 +717,7 @@ void Instruction::insertCasts()
 }
 
 
-void Instruction::replaceSubscriptsWithLocals()
+void Statement::replaceSubscriptsWithLocals()
 {
     ExpSsaXformer  esx(m_proc);
     StmtSsaXformer ssx(&esx, m_proc);
@@ -726,7 +726,7 @@ void Instruction::replaceSubscriptsWithLocals()
 }
 
 
-void Instruction::dfaMapLocals()
+void Statement::dfaMapLocals()
 {
     DfaLocalMapper dlm(m_proc);
     StmtModifier   sm(&dlm, true);     // True to ignore def collector in return statement

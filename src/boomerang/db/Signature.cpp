@@ -2090,7 +2090,7 @@ void Signature::printToLog() const
 }
 
 
-bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreach, int& n) const
+bool Signature::usesNewParam(UserProc * /*p*/, Statement *stmt, bool checkreach, int& n) const
 {
     QTextStream q_cerr(stderr);
 
@@ -2112,7 +2112,7 @@ bool Signature::usesNewParam(UserProc * /*p*/, Instruction *stmt, bool checkreac
             if (checkreach) {
                 bool hasDef = false;
 
-                for (Instruction *ins : reachin) {
+                for (Statement *ins : reachin) {
                     Assignment *as = (Assignment *)ins;
 
                     if (as->isAssignment() && (*as->getLeft() == *getParamExp(i))) {
@@ -2285,16 +2285,16 @@ StatementList& Signature::getStdRetStmt(Prog *prog)
     case Machine::PENTIUM:
         {
             StatementList *sl = new StatementList;
-            sl->append((Instruction *)&pent1ret);
-            sl->append((Instruction *)&pent2ret);
+            sl->append((Statement *)&pent1ret);
+            sl->append((Statement *)&pent2ret);
             return *sl;
         }
 
     case Machine::ST20:
         {
             StatementList *sl = new StatementList;
-            sl->append((Instruction *)&st20_1ret);
-            sl->append((Instruction *)&st20_2ret);
+            sl->append((Statement *)&st20_1ret);
+            sl->append((Statement *)&st20_2ret);
             return *sl;
         }
 

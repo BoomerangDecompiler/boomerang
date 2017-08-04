@@ -6,7 +6,7 @@
 #include "boomerang/util/Log.h"
 
 
-Instruction *PhiAssign::clone() const
+Statement *PhiAssign::clone() const
 {
     PhiAssign *pa = new PhiAssign(m_type, m_lhs);
 
@@ -14,7 +14,7 @@ Instruction *PhiAssign::clone() const
 
     for (dd = DefVec.begin(); dd != DefVec.end(); dd++) {
         PhiInfo pi;
-        pi.def((Instruction *)dd->second.def());     // Don't clone the Statement pointer (never moves)
+        pi.def((Statement *)dd->second.def());     // Don't clone the Statement pointer (never moves)
         pi.e = dd->second.e->clone();                // Do clone the expression pointer
         assert(pi.e);
         pa->DefVec.insert(std::make_pair(dd->first, pi));
@@ -121,7 +121,7 @@ bool PhiAssign::search(const Exp& search, SharedExp& result) const
     for (auto& v : DefVec) {
         assert(v.second.e != nullptr);
         // Note: can't match foo{-} because of this
-        RefExp re(v.second.e, const_cast<Instruction *>(v.second.def())); ///< \todo remove const_cast
+        RefExp re(v.second.e, const_cast<Statement *>(v.second.def())); ///< \todo remove const_cast
 
         if (re.search(search, result)) {
             return true;
@@ -273,7 +273,7 @@ void PhiAssign::simplify()
 
     bool allSame                 = true;
     Definitions::iterator uu     = DefVec.begin();
-    Instruction           *first = DefVec.begin()->second.def();
+    Statement           *first = DefVec.begin()->second.def();
     ++uu;
 
     for ( ; uu != DefVec.end(); uu++) {
@@ -290,12 +290,12 @@ void PhiAssign::simplify()
     }
 
     bool        onlyOneNotThis = true;
-    Instruction *notthis       = (Instruction *)-1;
+    Statement *notthis       = (Statement *)-1;
 
     for (auto& v : DefVec) {
         if ((v.second.def() == nullptr) || v.second.def()->isImplicit() || !v.second.def()->isPhi() ||
             (v.second.def() != this)) {
-            if (notthis != (Instruction *)-1) {
+            if (notthis != (Statement *)-1) {
                 onlyOneNotThis = false;
                 break;
             }
@@ -305,7 +305,7 @@ void PhiAssign::simplify()
         }
     }
 
-    if (onlyOneNotThis && (notthis != (Instruction *)-1)) {
+    if (onlyOneNotThis && (notthis != (Statement *)-1)) {
         LOG_VERBOSE("All but one not this in %1", this);
 
         convertToAssign(RefExp::get(m_lhs, notthis));
@@ -314,7 +314,7 @@ void PhiAssign::simplify()
 }
 
 
-void PhiAssign::putAt(BasicBlock *i, Instruction *def, SharedExp e)
+void PhiAssign::putAt(BasicBlock *i, Statement *def, SharedExp e)
 {
     assert(e);     // should be something surely
     // assert(defVec.end()==defVec.find(i));

@@ -2,13 +2,13 @@
 
 #include "boomerang/db/statements/Statement.h"
 
-class JunctionStatement : public Instruction
+class JunctionStatement : public Statement
 {
 public:
     JunctionStatement();
     virtual ~JunctionStatement();
 
-    virtual Instruction *clone() const override { return new JunctionStatement(); }
+    virtual Statement *clone() const override { return new JunctionStatement(); }
 
     // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
     bool accept(StmtVisitor *visitor) override;

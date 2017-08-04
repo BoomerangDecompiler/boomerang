@@ -2,7 +2,7 @@
 
 #include "boomerang/frontend/Frontend.h"
 
-class Instruction;
+class Statement;
 class PentiumDecoder;
 
 // Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
@@ -117,7 +117,7 @@ private:
     * \param      s - Ptr to the given Statement
     * \returns    True if it is
     ******************************************************************************/
-    bool isStoreFsw(Instruction *s);
+    bool isStoreFsw(Statement *s);
 
     /***************************************************************************/ /**
     * \brief      Return true if the given RTL is a decrement of register AH
@@ -132,7 +132,7 @@ private:
     * \param      s - Ptr to the given Statement
     * \returns           True if it is
     ******************************************************************************/
-    bool isSetX(Instruction *s);
+    bool isSetX(Statement *s);
 
     /***************************************************************************/ /**
     * \fn      isAssignFromTern
@@ -140,7 +140,7 @@ private:
     * \param      s - Ptr to the given Statement
     * \returns           True if it is
     ******************************************************************************/
-    bool isAssignFromTern(Instruction *s);
+    bool isAssignFromTern(Statement *s);
 
     /***************************************************************************/ /**
     * \fn        PentiumFrontEnd::bumpRegisterAll

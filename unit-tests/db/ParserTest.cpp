@@ -36,7 +36,7 @@ void ParserTest::testRead()
 void ParserTest::testExp()
 {
 	QString     s("*i32* r0 := 5 + 6");
-	Instruction *a = SSLParser::parseExp(qPrintable(s));
+	   Statement *a = SSLParser::parseExp(qPrintable(s));
 
 	QVERIFY(a);
 	QString     res;

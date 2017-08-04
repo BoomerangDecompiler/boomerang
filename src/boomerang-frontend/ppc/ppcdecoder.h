@@ -52,7 +52,7 @@ private:
     ******************************************************************************/
     SharedExp dis_RAmbz(unsigned r); // Special for rA of certain instructions
 
-    RTL *createBranchRtl(Address pc, std::list<Instruction *> *stmts, const char *name);
+    RTL *createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name);
 
     /***************************************************************************/ /**
     * \brief      Check to see if the instructions at the given offset match

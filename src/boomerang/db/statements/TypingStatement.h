@@ -6,7 +6,7 @@
  * TypingStatement is an abstract subclass of Statement. It has a type, representing the type of a reference or an
  * assignment
  ****************************************************************************/
-class TypingStatement : public Instruction
+class TypingStatement : public Statement
 {
 public:
     TypingStatement(SharedType ty); ///< Constructor

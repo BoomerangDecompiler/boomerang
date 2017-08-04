@@ -24,7 +24,7 @@ public:
     ~Assign() {}
 
     /// Clone
-    virtual Instruction *clone() const override;
+    virtual Statement *clone() const override;
 
     /// Get how to replace this statement in a use
     virtual SharedExp getRight() const override { return m_rhs; }

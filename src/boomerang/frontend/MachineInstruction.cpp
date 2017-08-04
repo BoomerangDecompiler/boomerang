@@ -11,7 +11,7 @@ public:
     virtual ~MachineSemanticsSSLBased() {}
     Exp *convertOperand(MachineOperand *Operand) override;
 
-    std::list<Instruction *> *convertInstruction(MachineInstruction *Insn) override;
+    std::list<Statement *> *convertInstruction(MachineInstruction *Insn) override;
 };
 
 Exp *MachineSemanticsSSLBased::convertOperand(MachineOperand *Operand)
@@ -21,7 +21,7 @@ Exp *MachineSemanticsSSLBased::convertOperand(MachineOperand *Operand)
 }
 
 
-std::list<Instruction *> *MachineSemanticsSSLBased::convertInstruction(MachineInstruction *Insn)
+std::list<Statement *> *MachineSemanticsSSLBased::convertInstruction(MachineInstruction *Insn)
 {
     return RTLDict.instantiateRTL(Insn->opcode, Insn->location, Insn->actuals);
 }

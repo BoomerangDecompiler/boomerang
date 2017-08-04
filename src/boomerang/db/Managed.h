@@ -26,7 +26,7 @@
 #include <vector>
 #include <memory>
 
-class Instruction;
+class Statement;
 class Assign;
 class Exp;
 using SharedExp = std::shared_ptr<Exp>;
@@ -36,7 +36,7 @@ class LocationSet;
 class QTextStream;
 
 /// A class to implement sets of statements
-class InstructionSet : public std::set<Instruction *>
+class InstructionSet : public std::set<Statement *>
 {
 public:
     ~InstructionSet() {}
@@ -51,12 +51,12 @@ public:
     bool isSubSetOf(InstructionSet& other);      ///< Subset relation
 
     // Remove this Statement. Return false if it was not found
-    bool remove(Instruction *s);                 ///< Removal; rets false if not found
+    bool remove(Statement *s);                 ///< Removal; rets false if not found
     bool removeIfDefines(SharedExp given);       ///< Remove if given exp is defined
     bool removeIfDefines(InstructionSet& given); ///< Remove if any given is def'd
 
     // Search for s in this Statement set. Return true if found
-    bool exists(Instruction *s);                 ///< Search; returns false if !found
+    bool exists(Statement *s);                 ///< Search; returns false if !found
     // Find a definition for loc in this Statement set. Return true if found
     bool definesLoc(SharedExp loc);              ///< Search; returns true if any
 
@@ -119,7 +119,7 @@ public:
 };                                            ///< class AssignSet
 
 
-class StatementList : public std::list<Instruction *>
+class StatementList : public std::list<Statement *>
 {
 public:
     ~StatementList() {}
@@ -130,11 +130,11 @@ public:
     // Special intersection method: this := a intersect b
     void makeIsect(StatementList& a, LocationSet& b);
 
-    void append(Instruction *s) { push_back(s); } ///< Insert at end
+    void append(Statement *s) { push_back(s); } ///< Insert at end
     void append(StatementList& sl);               ///< Append whole StatementList
     void append(InstructionSet& sl);              ///< Append whole InstructionSet
 
-    bool remove(Instruction *s);                  ///< Removal; rets false if not found
+    bool remove(Statement *s);                  ///< Removal; rets false if not found
 
     /// Remove the first definition where loc appears on the left
     /// \note statements in this list are assumed to be assignments
@@ -142,7 +142,7 @@ public:
 
     // This one is needed where you remove in the middle of a loop
     // Use like this: it = mystatementlist.erase(it);
-    bool exists(Instruction *s);            ///< Search; returns false if not found
+    bool exists(Statement *s);            ///< Search; returns false if not found
     char *prints();                         ///< Print to string (for debugging)
     void dump();                            ///< Print to standard error for debugging
     void makeCloneOf(StatementList& o);     ///< Make this a clone of o
@@ -158,11 +158,11 @@ public:
 
 class StatementVec
 {
-    std::vector<Instruction *> svec; // For now, use use standard vector
+    std::vector<Statement *> svec; // For now, use use standard vector
 
 public:
-    typedef std::vector<Instruction *>::iterator           iterator;
-    typedef std::vector<Instruction *>::reverse_iterator   reverse_iterator;
+    typedef std::vector<Statement *>::iterator           iterator;
+    typedef std::vector<Statement *>::reverse_iterator   reverse_iterator;
 
     size_t size() const { return svec.size(); } ///< Number of elements
     iterator begin() { return svec.begin(); }
@@ -171,8 +171,8 @@ public:
     reverse_iterator rend() { return svec.rend(); }
 
     // Get/put at position idx (0 based)
-    Instruction *operator[](size_t idx) { return svec[idx]; }
-    void putAt(int idx, Instruction *s);
+    Statement *operator[](size_t idx) { return svec[idx]; }
+    void putAt(int idx, Statement *s);
     iterator remove(iterator it);
     char *prints(); ///< Print to string (for debugging)
     void dump();    ///< Print to standard error for debugging
@@ -191,7 +191,7 @@ public:
         return svec < o.svec;
     }
 
-    void append(Instruction *s) { svec.push_back(s); }
+    void append(Statement *s) { svec.push_back(s); }
     void erase(iterator it) { svec.erase(it); }
 };
 
@@ -269,7 +269,7 @@ public:
     bool findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr);
 
     /// Add a subscript (to definition d) to each element
-    void addSubscript(Instruction *def /* , Cfg* cfg */); ///< Add a subscript to all elements
+    void addSubscript(Statement *def /* , Cfg* cfg */); ///< Add a subscript to all elements
 };
 
 

@@ -28,7 +28,7 @@
 class UseSet;
 class DefSet;
 class RTL; // For class FlagDef
-class Instruction;
+class Statement;
 class BasicBlock;
 class LocationSet;
 class InstructionSet;
@@ -571,7 +571,7 @@ public:
     /// Needs the UserProc for the symbol map
     // FIXME: if the wrapped expression does not convert to a location, the result is subscripted, which is probably not
     // what is wanted!
-    SharedExp fromSSAleft(UserProc *proc, Instruction *d);
+    SharedExp fromSSAleft(UserProc *proc, Statement *d);
 
     /// Generate constraints for this Exp.
     ///
@@ -604,7 +604,7 @@ public:
 
     /// Subscript all e in this Exp with statement def
     /// Subscript any occurrences of e with e{def} in this expression
-    SharedExp expSubscriptVar(const SharedExp& e, Instruction *def /*, Cfg* cfg */);
+    SharedExp expSubscriptVar(const SharedExp& e, Statement *def /*, Cfg* cfg */);
 
     /// Subscript all e in this Exp with 0 (implicit assignments)
     /// Subscript any occurrences of e with e{-} in this expression
@@ -636,7 +636,7 @@ public:
     }
 
     /// Push type information down the expression tree
-    virtual void descendType(SharedType /*parentType*/, bool& /*ch*/, Instruction * /*s*/) { assert(0); }
+    virtual void descendType(SharedType /*parentType*/, bool& /*ch*/, Statement * /*s*/) { assert(0); }
 
 
     static SharedExp convertFromOffsetToCompound(SharedExp parent, std::shared_ptr<CompoundType>& c, unsigned n);

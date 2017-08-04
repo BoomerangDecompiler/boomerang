@@ -1692,7 +1692,7 @@ void CCodeGenerator::addIndCallStatement(int indLevel, const SharedExp& exp, Sta
     QStringList arg_strings;
     QString arg_tgt;
 
-    for (Instruction *ss : args) {
+    for (Statement *ss : args) {
         QTextStream arg_str(&arg_tgt);
         SharedExp arg = ((Assign *)ss)->getRight();
         appendExp(arg_str, *arg, PREC_COMMA);

@@ -26,7 +26,9 @@
 #include <map>
 #include <string>
 
+
 #define DEBUG_LIVENESS    (Boomerang::get()->debugLiveness)
+
 
 class Function;
 class Prog;
@@ -39,11 +41,10 @@ class ICodeGenerator;
 class CallStatement;
 class BranchStatement;
 class RTL;
-struct DOM;
 class Global;
 class Parameter;
 class ConnectionGraph;
-class Instruction;
+class Statement;
 enum class BBType;
 
 #define BTHEN    0
@@ -58,8 +59,8 @@ enum class BBType;
  ******************************************************************************/
 class Cfg
 {
-    typedef std::set<CallStatement *>                              CallStatementSet;
-    typedef std::map<SharedExp, Instruction *, lessExpStar>        ExpStatementMap;
+    typedef std::set<CallStatement *>                            CallStatementSet;
+    typedef std::map<SharedExp, Statement *, lessExpStar>        ExpStatementMap;
 
     // A type for the ADDRESS to BB map
     typedef std::map<Address, BasicBlock *, std::less<Address> >   MAPBB;
@@ -146,11 +147,11 @@ public:
      * \note  a pointer to a BB is given here.
      *
      * \note    Overloaded with address as 2nd argument (calls this proc in the end)
-     * \param   pBB source BB (to have the out edge added to)
+     * \param   bb source BB (to have the out edge added to)
      * \param   addr Start address of the BB reached by the out edge
      * \param   bSetLabel - indicates that label is required in \a pDestBB
      ******************************************************************************/
-    void addOutEdge(BasicBlock *pBB, Address addr, bool bSetLabel = false);
+    void addOutEdge(BasicBlock *bb, Address addr, bool bSetLabel = false);
 
     /***************************************************************************/ /**
      * \brief        Add an out edge to this BB (and the in-edge to the dest BB)
@@ -161,28 +162,25 @@ public:
      * required. If bSetLabel is true, the destination BB will have its "label required" bit set.
      *
      * \note            Calls the above
-     * \param pBB source BB (to have the out edge added to)
+     * \param bb source BB (to have the out edge added to)
      * \param pDestBB   Destination BB of the out edge
      * \param bSetLabel if true, set a label at the destination address.  Set true on "true" branches of labels
      ******************************************************************************/
-    void addOutEdge(BasicBlock *pBB, BasicBlock *pDestBB, bool bSetLabel = false);
+    void addOutEdge(BasicBlock *bb, BasicBlock *pDestBB, bool bSetLabel = false);
 
     /***************************************************************************/ /**
-     *
      * \brief Adds a label for the given basicblock. The label number will be a non-zero integer
-     *
      *        Sets a flag indicating that this BB has a label, in the sense that a label is required in the
-     * translated source code
+     *        translated source code
      * \note         The label is only set if it was not set previously
-     * \param        pBB Pointer to the BB whose label will be set
+     * \param        bb Pointer to the BB whose label will be set
      ******************************************************************************/
-    void setLabel(BasicBlock *pBB);
+    void setLabel(BasicBlock *bb);
 
     /***************************************************************************/ /**
      * \brief Get the first BB of this cfg
-     *
      * Gets a pointer to the first BB this cfg. Also initialises `it' so that calling GetNextBB will return the
-     * second BB, etc.  Also, *it is the first BB.  Returns 0 if there are no BBs this CFG.
+     * second BB, etc.  Also, *it is the first BB.  Returns null if there are no BBs this CFG.
      *
      * \param       it set to an value that must be passed to getNextBB
      * \returns     Pointer to the first BB this cfg, or nullptr if none
@@ -206,7 +204,7 @@ public:
      * An alternative to the above is to use begin() and end():
      */
     iterator begin() { return m_listBB.begin(); }
-    iterator end() { return m_listBB.end(); }
+    iterator end()   { return m_listBB.end(); }
 
     /* Checks whether the given native address is a label (explicit or non explicit) or not.  Explicit labels are
      * addresses that have already been tagged as being labels due to transfers of control to that address.
@@ -223,20 +221,22 @@ public:
      *  So it returns true iff the address has already been decoded in some BB. If it was not
      *  already a label (i.e. the first instruction of some BB), the BB is split so that it becomes a label.
      *  Explicit labels are addresses that have already been tagged as being labels due to transfers of control
-     *  to that address, and are therefore the start of some BB.     Non explicit labels are those that belong
-     *  to basic blocks that have already been constructed (i.e. have previously been parsed) and now need to
-     *  be made explicit labels. In the case of non explicit labels, the basic block is split into two and types
-     *  and edges are adjusted accordingly. If \a pCurBB is the BB that gets split, it is changed to point to the
+     *  to that address, and are therefore the start of some BB.
+     *  Non explicit labels are those that belong to basic blocks that have already been constructed
+     *  (i.e. have previously been parsed) and now need to be made explicit labels.
+     *  In the case of non explicit labels, the basic block is split into two and types and edges
+     *  are adjusted accordingly.
+     *  If \ref pNewBB is the BB that gets split, it is changed to point to the
      *  address of the new (lower) part of the split BB.
      *  If there is an incomplete entry in the table for this address which overlaps with a completed address,
      *  the completed BB is split and the BB for this address is completed.
      *
-     * \param         uNativeAddr - native (source) address to check
+     * \param         addr - native (source) address to check
      * \param         pNewBB - See above
-     * \returns       True if \a uNativeAddr is a label, i.e. (now) the start of a BB
-     *                Note: pCurBB may be modified (as above)
+     * \returns       True if \p addr is a label, i.e. (now) the start of a BB
+     *                Note: \p pNewBB may be modified (as above)
      ******************************************************************************/
-    bool label(Address uNativeAddr, BasicBlock *& pNewBB);
+    bool label(Address addr, BasicBlock *& pNewBB);
 
     /***************************************************************************/ /**
      * \brief        Return true if given address is the start of an incomplete basic block
@@ -254,13 +254,13 @@ public:
      *
      * Just checks to see if there exists a BB starting with this native address. If not, the address is NOT added
      * to the map of labels to BBs.
-     * \note must ignore entries with a null pBB, since these are caused by
+     * \note must ignore entries with a null BB, since these are caused by
      * calls to Label that failed, i.e. the instruction is not decoded yet.
      *
-     * \param        uNativeAddr native address to look up
+     * \param        addr native address to look up
      * \returns      True if uNativeAddr starts a BB
      ******************************************************************************/
-    bool existsBB(Address uNativeAddr) const;
+    bool existsBB(Address addr) const;
 
     /***************************************************************************/ /**
      * \brief   Sorts the BBs in a cfg by first address. Just makes it more convenient to read when BBs are
@@ -300,7 +300,7 @@ public:
      *
      * \returns            true if the blocks are merged.
      ******************************************************************************/
-    bool mergeBBs(BasicBlock *pb1, BasicBlock *pb2);
+    bool mergeBBs(BasicBlock *bb1, BasicBlock *bb2);
 
     /***************************************************************************/ /**
      * \brief   Compress the CFG. For now, it only removes BBs that are just branches
@@ -315,14 +315,14 @@ public:
     bool compressCfg();
 
     /***************************************************************************/ /**
-     * \brief        Given a well-formed cfg graph, a partial ordering is established between the nodes.
+     * \brief Given a well-formed cfg graph, a partial ordering is established between the nodes.
      *
      *   The ordering is based on the final visit to each node during a depth first traversal such that if node n1 was
-     * visited for the last time before node n2 was visited for the last time, n1 will be less than n2.
-     * The return value indicates if all nodes where ordered. This will not be the case for incomplete CFGs
-     * (e.g. switch table not completely recognised) or where there are nodes unreachable from the entry
-     * node.
-     * \returns            all nodes where ordered
+     *   visited for the last time before node n2 was visited for the last time, n1 will be less than n2.
+     *   The return value indicates if all nodes where ordered. This will not be the case for incomplete CFGs
+     *   (e.g. switch table not completely recognised) or where there are nodes unreachable from the entry
+     *   node.
+     * \returns all nodes where ordered
      ******************************************************************************/
     bool establishDFTOrder();
 
@@ -367,7 +367,7 @@ public:
     bool isOrphan(Address uAddr);
 
     /***************************************************************************/ /**
-     * \brief Amalgamate the RTLs for pb1 and pb2, and place the result into pb2
+     * \brief Amalgamate the RTLs for \p bb1 and  \p bb2, and place the result into \p bb2
      *
      * This is called where a two-way branch is deleted, thereby joining a two-way BB with it's successor.
      * This happens for example when transforming Intel floating point branches, and a branch on parity is deleted.
@@ -375,11 +375,11 @@ public:
      *
      * \note Assumes that fallthrough of *pb1 is *pb2
      *
-     * \param   pb1 pointers to the BBs to join
-     * \param   pb2 pointers to the BBs to join
+     * \param   bb1 pointers to the BBs to join
+     * \param   bb2 pointers to the BBs to join
      * \returns True if successful
      ******************************************************************************/
-    bool joinBB(BasicBlock *pb1, BasicBlock *pb2);
+    bool joinBB(BasicBlock *bb1, BasicBlock *bb2);
 
     /***************************************************************************/ /**
      * \brief Completely remove a BB from the CFG.
@@ -431,45 +431,45 @@ public:
     /**
      * \brief Change the BB enclosing stmt to be CALL, not COMPCALL
      */
-    void undoComputedBB(Instruction *stmt);
+    void undoComputedBB(Statement *stmt);
 
 private:
-
     /***************************************************************************/ /**
-     * Split the given basic block at the RTL associated with uNativeAddr. The first node's type becomes
-     * fall-through and ends at the RTL prior to that associated with uNativeAddr.  The second node's type becomes
-     * the type of the original basic block (pBB), and its out-edges are those of the original basic block.
+     * Split the given basic block at the RTL associated with \p splitAddr. The first node's type becomes
+     * fall-through and ends at the RTL prior to that associated with \p splitAddr.
+     * The second node's type becomes the type of the original basic block (\p bb),
+     * and its out-edges are those of the original basic block.
      * In edges of the new BB's descendants are changed.
-     * \pre assumes uNativeAddr is an address within the boundaries of the given basic block.
-     * \param   pBB -  pointer to the BB to be split
-     * \param   uNativeAddr - address of RTL to become the start of the new BB
-     * \param   pNewBB -  if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part
-     * to not overlap.
-     * \param   bDelRtls - if true, deletes the RTLs removed from the existing BB after the split point. Only used if
-     *                there is an overlap with existing instructions
+     *
+     * \pre assumes \p splitAddr is an address within the boundaries of the given basic block.
+     *
+     * \param   bb            - pointer to the BB to be split
+     * \param   splitAddr     - address of RTL to become the start of the new BB
+     * \param   newBB         - if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part
+     *                          to not overlap.
+     * \param   deleteRTLs    - if true, deletes the RTLs removed from the existing BB after the split point. Only used if
+     *                          there is an overlap with existing instructions
      * \returns Returns a pointer to the "bottom" (new) part of the split BB.
      ******************************************************************************/
-    BasicBlock *splitBB(BasicBlock *pBB, Address uNativeAddr, BasicBlock *pNewBB = nullptr, bool bDelRtls = false);
+    BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr, bool deleteRTLs = false);
 
     /***************************************************************************/ /**
-     * \brief Complete the merge of two BBs by adjusting in and out edges.  If bDelete is true, delete pb1
+     * \brief Complete the merge of two BBs by adjusting in and out edges. If \p deleteBB is true, delete \p bb1
      *
      * Completes the merge of pb1 and pb2 by adjusting out edges. No checks are made that the merge is valid
      * (hence this is a private function) Deletes pb1 if bDelete is true
      *
-     * \param pb1 pointers to the two BBs to merge
-     * \param pb2 pointers to the two BBs to merge
-     * \param bDelete if true, pb1 is deleted as well
+     * \param bb1, bb2 pointers to the two BBs to merge
+     * \param deleteBB if true, \p bb1 is deleted as well
      *
      ******************************************************************************/
-    void completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete = false);
+    void completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool deleteBB = false);
 
     /***************************************************************************/ /**
-     * \brief        Check the entry BB pointer; if zero, emit error message
-     *                      and return true
-     * \returns            true if was null
+     * Check if the procedure associated with the BB has an entry BB.
+     * \returns false if the procedure has an entry bb, true otherwise
      ******************************************************************************/
-    bool checkEntryBB();
+    bool hasNoEntryBB();
 
 public:
     /**
@@ -499,7 +499,6 @@ public:
      * S is an RTL with 6 statements representing one string instruction (so this function is highly specialised for the job
      * of replacing the %SKIP and %RPT parts of string instructions)
      */
-
     BasicBlock *splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2, BB_IT& it);
 
     /////////////////////////////////////////////////////////////////////////
@@ -601,13 +600,13 @@ public:
     /////////////////////////////////////////////////////////////////////////
 
     /// Find or create an implicit assign for x
-    Instruction *findImplicitAssign(SharedExp x);
+    Statement *findImplicitAssign(SharedExp x);
 
     /// Find the existing implicit assign for x (if any)
-    Instruction *findTheImplicitAssign(const SharedExp& x);
+    Statement *findTheImplicitAssign(const SharedExp& x);
 
     /// Find exiting implicit assign for parameter p
-    Instruction *findImplicitParamAssign(Parameter *p);
+    Statement *findImplicitParamAssign(Parameter *p);
 
     /// Remove an existing implicit assignment for x
     void removeImplicitAssign(SharedExp x);

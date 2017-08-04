@@ -360,14 +360,14 @@ const std::list<RTL *> *BasicBlock::getRTLs() const
 }
 
 
-RTL *BasicBlock::getRTLWithStatement(Instruction *stmt)
+RTL *BasicBlock::getRTLWithStatement(Statement *stmt)
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
     }
 
     for (RTL *rtl : *m_listOfRTLs) {
-        for (Instruction *it1 : *rtl) {
+        for (Statement *it1 : *rtl) {
             if (it1 == stmt) {
                 return rtl;
             }
@@ -572,7 +572,7 @@ Function *BasicBlock::getCallDestProc()
 }
 
 
-Instruction *BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit)
+Statement *BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit)
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
         return nullptr;
@@ -595,7 +595,7 @@ Instruction *BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit)
 }
 
 
-Instruction *BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit)
+Statement *BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit)
 {
     if (++sit != (*rit)->end()) {
         return *sit; // End of current RTL not reached, so return next
@@ -613,7 +613,7 @@ Instruction *BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit)
 }
 
 
-Instruction *BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit)
+Statement *BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit)
 {
     if (++sit != (*rit)->rend()) {
         return *sit; // Beginning of current RTL not reached, so return next
@@ -631,7 +631,7 @@ Instruction *BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterato
 }
 
 
-Instruction *BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit)
+Statement *BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit)
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -654,7 +654,7 @@ Instruction *BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterato
 }
 
 
-Instruction *BasicBlock::getFirstStmt()
+Statement *BasicBlock::getFirstStmt()
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -670,7 +670,7 @@ Instruction *BasicBlock::getFirstStmt()
 }
 
 
-Instruction *BasicBlock::getLastStmt()
+Statement *BasicBlock::getLastStmt()
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -701,7 +701,7 @@ void BasicBlock::getStatements(StatementList& stmts) const
     }
 
     for (const RTL *rtl : *rtls) {
-        for (Instruction *st : *rtl) {
+        for (Statement *st : *rtl) {
             if (st->getBB() == nullptr) { // TODO: why statement would have nullptr BB here ?
                 st->setBB(const_cast<BasicBlock *>(this));
             }
@@ -734,7 +734,7 @@ SharedExp BasicBlock::getDest() noexcept(false)
     assert(m_listOfRTLs);
     RTL *lastRtl = m_listOfRTLs->back();
     // It should contain a GotoStatement or derived class
-    Instruction   *lastStmt = lastRtl->getHlStmt();
+    Statement   *lastStmt = lastRtl->getHlStmt();
     CaseStatement *cs       = dynamic_cast<CaseStatement *>(lastStmt);
 
     if (cs) {
@@ -970,7 +970,7 @@ void BasicBlock::WriteBB(ICodeGenerator *hll, int indLevel)
                 LOG_MSG("%1", rtl->getAddress());
             }
 
-            for (Instruction *st : *rtl) {
+            for (Statement *st : *rtl) {
                 st->generateCode(hll, this, indLevel);
             }
         }
@@ -1644,7 +1644,7 @@ bool BasicBlock::inLoop(BasicBlock *header, BasicBlock *latch)
 char *BasicBlock::getStmtNumber()
 {
     static char ret[12];
-    Instruction *first = getFirstStmt();
+    Statement *first = getFirstStmt();
 
     if (first) {
         sprintf(ret, "%d", first->getNumber());
@@ -1657,7 +1657,7 @@ char *BasicBlock::getStmtNumber()
 }
 
 
-void BasicBlock::prependStmt(Instruction *s, UserProc *proc)
+void BasicBlock::prependStmt(Statement *s, UserProc *proc)
 {
     assert(m_parent == proc);
     // Check the first RTL (if any)
@@ -1676,7 +1676,7 @@ void BasicBlock::prependStmt(Instruction *s, UserProc *proc)
     }
 
     // Otherwise, prepend a new RTL
-    std::list<Instruction *> listStmt = { s };
+    std::list<Statement *> listStmt = { s };
     RTL *rtl = new RTL(Address::ZERO, &listStmt);
     m_listOfRTLs->push_front(rtl);
 }
@@ -1731,11 +1731,11 @@ bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc *myProc)
 
     if (m_listOfRTLs) { // this can be nullptr
         for (rit = m_listOfRTLs->rbegin(); rit != m_listOfRTLs->rend(); ++rit) {
-            std::list<Instruction *>::reverse_iterator sit;
+            std::list<Statement *>::reverse_iterator sit;
 
             // For each statement this RTL
             for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
-                Instruction *s = *sit;
+                Statement *s = *sit;
                 LocationSet defs;
                 s->getDefinitions(defs);
                 // The definitions don't have refs yet
@@ -1792,7 +1792,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 
         RTL *phiRtl = currBB->m_listOfRTLs->front();
 
-        for (Instruction *st : *phiRtl) {
+        for (Statement *st : *phiRtl) {
             // Only interested in phi assignments. Note that it is possible that some phi assignments have been
             // converted to ordinary assignments. So the below is a continue, not a break.
             if (!st->isPhi()) {
@@ -1809,7 +1809,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 
             // Get the jth operand to the phi function; it has a use from BB *this
             // assert(j>=0);
-            Instruction *def = pa->getStmtAt(this);
+            Statement *def = pa->getStmtAt(this);
 
             if (!def) {
                 std::deque<BasicBlock *> to_visit(m_inEdges.begin(), m_inEdges.end());
@@ -1891,9 +1891,9 @@ int BasicBlock::whichPred(BasicBlock *pred)
 // TODO: use initializer lists
 static SharedExp forma =
     RefExp::get(Binary::get(opArrayIndex,
-                            RefExp::get(Terminal::get(opWild), (Instruction *)-1),
+                            RefExp::get(Terminal::get(opWild), (Statement *)-1),
                             Terminal::get(opWild)),
-                (Instruction *)-1);
+                (Statement *)-1);
 
 // Pattern: m[<expr> * 4 + T ]
 static SharedExp formA = Location::memOf(
@@ -1908,9 +1908,9 @@ static SharedExp formA = Location::memOf(
 // NOT COMPLETED YET!
 static SharedExp formo =
     RefExp::get(Binary::get(opArrayIndex,
-                            RefExp::get(Terminal::get(opWild), (Instruction *)-1),
+                            RefExp::get(Terminal::get(opWild), (Statement *)-1),
                             Terminal::get(opWild)),
-                (Instruction *)-1);
+                (Statement *)-1);
 
 // Pattern: m[<expr> * 4 + T ] + T
 static SharedExp formO =
@@ -2161,7 +2161,7 @@ int BasicBlock::findNumCases()
 
 
 /// Find all the possible constant values that the location defined by s could be assigned with
-static void findConstantValues(const Instruction *s, std::list<int>& dests)
+static void findConstantValues(const Statement *s, std::list<int>& dests)
 {
     if (s == nullptr) {
         return;
@@ -2678,7 +2678,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 }
 
 
-bool BasicBlock::undoComputedBB(Instruction *stmt)
+bool BasicBlock::undoComputedBB(Statement *stmt)
 {
     RTL *last = m_listOfRTLs->back();
 
@@ -2699,7 +2699,7 @@ bool BasicBlock::searchAll(const Exp& search_for, std::list<SharedExp>& results)
     bool ch = false;
 
     for (RTL *rtl_it : *m_listOfRTLs) {
-        for (Instruction *e : *rtl_it) {
+        for (Statement *e : *rtl_it) {
             SharedExp res; // searchAll can be used here too, would it change anything ?
 
             if (e->search(search_for, res)) {

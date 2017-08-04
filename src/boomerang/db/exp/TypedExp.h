@@ -48,7 +48,7 @@ public:
 
     virtual SharedType ascendType() override;
 
-    virtual void descendType(SharedType, bool&, Instruction *) override;
+    virtual void descendType(SharedType, bool&, Statement *) override;
 
 private:
     SharedType type;

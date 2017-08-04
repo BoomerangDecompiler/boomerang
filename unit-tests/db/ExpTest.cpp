@@ -882,7 +882,7 @@ void ExpTest::testSubscriptVar()
 
     // Subtest 1: should do nothing
 	SharedExp r28  = Location::regOf(28);
-	Instruction *def1 = new Assign(r28->clone(), r28->clone());
+	   Statement *def1 = new Assign(r28->clone(), r28->clone());
 
 	def1->setNumber(12);
 	def1->subscriptVar(left, def1); // Should do nothing
@@ -905,7 +905,7 @@ void ExpTest::testSubscriptVar()
 	// 99: r28 := 0
 	// Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
 	actual = "";
-    Instruction *def3 = new Assign(Location::regOf(28), Const::get(0));
+    Statement *def3 = new Assign(Location::regOf(28), Const::get(0));
 	def3->setNumber(99);
 	ae->subscriptVar(r28, def3);
     ost << ae;
@@ -916,8 +916,8 @@ void ExpTest::testSubscriptVar()
 void ExpTest::testTypeOf()
 {
 	// T[r24{5}] = T[r25{9}]
-	Instruction *s5 = new Assign;
-	Instruction *s9 = new Assign;
+	   Statement *s5 = new Assign;
+	   Statement *s9 = new Assign;
 	s5->setNumber(5);
 	s9->setNumber(9);
 	SharedExp e = Binary::get(opEquals,

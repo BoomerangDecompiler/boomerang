@@ -39,17 +39,17 @@ RTL::RTL()
 }
 
 
-RTL::RTL(Address instNativeAddr, const std::list<Instruction *> *listStmt /*= nullptr*/)
+RTL::RTL(Address instNativeAddr, const std::list<Statement *> *listStmt /*= nullptr*/)
     : m_nativeAddr(instNativeAddr)
 {
     if (listStmt) {
-        *(std::list<Instruction *> *) this = *listStmt;
+        *(std::list<Statement *> *) this = *listStmt;
     }
 }
 
 
 RTL::RTL(const RTL& other)
-    : std::list<Instruction *>()
+    : std::list<Statement *>()
     , m_nativeAddr(other.m_nativeAddr)
 {
     for (auto const& elem : other) {
@@ -85,7 +85,7 @@ RTL& RTL::operator=(const RTL& other)
 
 RTL *RTL::clone() const
 {
-    std::list<Instruction *> le;
+    std::list<Statement *> le;
 
     for (auto const& elem : *this) {
         le.push_back((elem)->clone());
@@ -95,15 +95,15 @@ RTL *RTL::clone() const
 }
 
 
-void RTL::deepCopyList(std::list<Instruction *>& dest) const
+void RTL::deepCopyList(std::list<Statement *>& dest) const
 {
-    for (Instruction *it : *this) {
+    for (Statement *it : *this) {
         dest.push_back(it->clone());
     }
 }
 
 
-void RTL::appendStmt(Instruction *s)
+void RTL::appendStmt(Statement *s)
 {
     assert(s != nullptr);
 
@@ -119,9 +119,9 @@ void RTL::appendStmt(Instruction *s)
 }
 
 
-void RTL::appendListStmt(std::list<Instruction *>& le)
+void RTL::appendListStmt(std::list<Statement *>& le)
 {
-    for (Instruction *it : le) {
+    for (Statement *it : le) {
         push_back(it->clone());
     }
 }
@@ -144,7 +144,7 @@ void RTL::print(QTextStream& os, bool html) const
     // First line has 8 extra chars as above
     bool bFirst = true;
 
-    for (Instruction *stmt : *this) {
+    for (Statement *stmt : *this) {
         if (html) {
             if (!bFirst) {
                 os << "<tr><td></td>";
@@ -223,7 +223,7 @@ QTextStream& operator<<(QTextStream& os, const RTL *r)
 void RTL::simplify()
 {
     for (iterator it = begin(); it != end(); ) {
-        Instruction *s = *it;
+        Statement *s = *it;
         s->simplify();
 
         if (s->isBranch()) {
@@ -263,12 +263,12 @@ bool RTL::isCall() const
         return false;
     }
 
-    Instruction *last = this->back();
+    Statement *last = this->back();
     return last->getKind() == STMT_CALL;
 }
 
 
-Instruction *RTL::getHlStmt() const
+Statement *RTL::getHlStmt() const
 {
     for (auto rit = this->rbegin(); rit != this->rend(); rit++) {
         if ((*rit)->getKind() != STMT_ASSIGN) {

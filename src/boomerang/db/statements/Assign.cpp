@@ -44,7 +44,7 @@ Assign::Assign(Assign& o)
 }
 
 
-Instruction *Assign::clone() const
+Statement *Assign::clone() const
 {
     Assign *a = new Assign(m_type == nullptr ? nullptr : m_type->clone(),
                            m_lhs->clone(), m_rhs->clone(),

@@ -228,7 +228,7 @@ public:
 
     const std::list<RTL *> *getRTLs() const;
 
-    RTL *getRTLWithStatement(Instruction *stmt);
+    RTL *getRTLWithStatement(Statement *stmt);
 
     /***************************************************************************/ /**
      * \brief Get a constant reference to the vector of in edges.
@@ -359,16 +359,16 @@ public:
     class LastStatementNotABranchError : public std::exception
     {
     public:
-        Instruction *stmt;
-        LastStatementNotABranchError(Instruction *_stmt)
+        Statement *stmt;
+        LastStatementNotABranchError(Statement *_stmt)
             : stmt(_stmt) {}
     };
 
     class LastStatementNotAGotoError : public std::exception
     {
     public:
-        Instruction *stmt;
-        LastStatementNotAGotoError(Instruction *_stmt)
+        Statement *stmt;
+        LastStatementNotAGotoError(Statement *_stmt)
             : stmt(_stmt) {}
     };
 
@@ -421,12 +421,12 @@ public:
      * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated, easily-bugged
      * code
      */
-    Instruction *getFirstStmt(rtlit& rit, StatementList::iterator& sit);
-    Instruction *getNextStmt(rtlit& rit, StatementList::iterator& sit);
-    Instruction *getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
-    Instruction *getFirstStmt();
-    Instruction *getLastStmt();
-    Instruction *getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
+    Statement *getFirstStmt(rtlit& rit, StatementList::iterator& sit);
+    Statement *getNextStmt(rtlit& rit, StatementList::iterator& sit);
+    Statement *getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
+    Statement *getFirstStmt();
+    Statement *getLastStmt();
+    Statement *getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
 
     RTL *getLastRtl() { return m_listOfRTLs->back(); }
     void getStatements(StatementList& stmts) const;
@@ -451,7 +451,7 @@ public:
 
     /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
     /// \a proc is the enclosing Proc
-    void prependStmt(Instruction *s, UserProc *proc);
+    void prependStmt(Statement *s, UserProc *proc);
 
     // Liveness
     bool calcLiveness(ConnectionGraph& ig, UserProc *proc);
@@ -488,7 +488,7 @@ public:
     int findNumCases();
 
     /// Change the BB enclosing stmt to be CALL, not COMPCALL
-    bool undoComputedBB(Instruction *stmt);
+    bool undoComputedBB(Statement *stmt);
 
     /***************************************************************************/ /**
      * \brief        Searches for all instances of "search" and adds them to "result"

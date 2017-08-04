@@ -287,7 +287,7 @@ bool RTLInstDict::partialType(Exp *exp, Type& ty)
 }
 
 
-std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, Address natPC,
+std::list<Statement *> *RTLInstDict::instantiateRTL(const QString& name, Address natPC,
                                                       const std::vector<SharedExp>& actuals)
 {
     QTextStream q_cerr(stderr);
@@ -309,18 +309,18 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(const QString& name, Addre
 }
 
 
-std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std::list<QString>& params,
+std::list<Statement *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std::list<QString>& params,
                                                       const std::vector<SharedExp>& actuals)
 {
     Q_UNUSED(natPC);
     assert(params.size() == actuals.size());
 
     // Get a deep copy of the template RTL
-    std::list<Instruction *> *newList = new std::list<Instruction *>();
+    std::list<Statement *> *newList = new std::list<Statement *>();
     rtl.deepCopyList(*newList);
 
     // Iterate through each Statement of the new list of stmts
-    for (Instruction *ss : *newList) {
+    for (Statement *ss : *newList) {
         // Search for the formals and replace them with the actuals
         auto param = params.begin();
         std::vector<SharedExp>::const_iterator actual = actuals.begin();
@@ -343,7 +343,7 @@ std::list<Instruction *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, s
     transformPostVars(*newList, true);
 
     // Perform simplifications, e.g. *1 in Pentium addressing modes
-    std::list<Instruction *>::iterator iter;
+    std::list<Statement *>::iterator iter;
 
     for (iter = newList->begin(); iter != newList->end(); iter++) {
         (*iter)->simplify();
@@ -367,7 +367,7 @@ struct transPost
 };
 
 
-void RTLInstDict::transformPostVars(std::list<Instruction *>& rts, bool optimise)
+void RTLInstDict::transformPostVars(std::list<Statement *>& rts, bool optimise)
 {
     // Map from var (could be any expression really) to details
     std::map<SharedExp, transPost, lessExpStar> vars;
@@ -385,7 +385,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *>& rts, bool optimise
 #endif
 
     // First pass: Scan for post-variables and usages of their referents
-    for (Instruction *rt : rts) {
+    for (Statement *rt : rts) {
         // ss appears to be a list of expressions to be searched
         // It is either the LHS and RHS of an assignment, or it's the parameters of a flag call
         SharedExp ss;
@@ -482,7 +482,7 @@ void RTLInstDict::transformPostVars(std::list<Instruction *>& rts, bool optimise
     }
 
     // Second pass: Replace post-variables with temporaries where needed
-    for (Instruction *rt : rts) {
+    for (Statement *rt : rts) {
         for (auto& var : vars) {
             if (var.second.used) {
                 rt->searchAndReplace(*var.first, var.second.tmp);

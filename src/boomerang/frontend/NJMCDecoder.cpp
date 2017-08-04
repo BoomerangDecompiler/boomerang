@@ -44,7 +44,7 @@ NJMCDecoder::NJMCDecoder(Prog *prg)
 }
 
 
-std::list<Instruction *> *NJMCDecoder::instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args)
+std::list<Statement *> *NJMCDecoder::instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args)
 {
     // Get the signature of the instruction and extract its parts
     std::pair<QString, unsigned> sig = m_rtlDict.getSignature(name);
@@ -80,7 +80,7 @@ std::list<Instruction *> *NJMCDecoder::instantiate(Address pc, const char *name,
         q_cout << '\n';
     }
 
-    std::list<Instruction *> *instance = m_rtlDict.instantiateRTL(opcode, pc, actuals);
+    std::list<Statement *> *instance = m_rtlDict.instantiateRTL(opcode, pc, actuals);
 
     return instance;
 }
@@ -149,7 +149,7 @@ SharedExp NJMCDecoder::dis_Num(unsigned num)
 
 
 void NJMCDecoder::processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta, Address pc,
-                                           std::list<Instruction *> *stmts, DecodeResult& result)
+                                           std::list<Statement *> *stmts, DecodeResult& result)
 {
     result.rtl      = new RTL(pc, stmts);
     result.numBytes = size;
@@ -160,7 +160,7 @@ void NJMCDecoder::processUnconditionalJump(const char *name, int size, HostAddre
 }
 
 
-void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc, std::list<Instruction *> *stmts,
+void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc, std::list<Statement *> *stmts,
                                       DecodeResult& result)
 {
     result.rtl      = new RTL(pc, stmts);
@@ -173,7 +173,7 @@ void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest
 }
 
 
-void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc, std::list<Instruction *> *stmts,
+void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc, std::list<Statement *> *stmts,
                                       DecodeResult& result)
 {
     result.rtl      = new RTL(pc, stmts);
