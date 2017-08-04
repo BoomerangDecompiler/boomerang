@@ -46,20 +46,6 @@ public:
     typedef FunctionList::iterator          iterator;
     typedef FunctionList::const_iterator    const_iterator;
 
-private:
-    FunctionList m_functionList; ///< The Functions in the module
-    IFrontEnd *m_currentFrontend;
-    FunctionMap m_labelsToProcs;
-
-protected:
-    QString m_name;
-    std::vector<Module *> m_children;
-    Prog *m_parent     = nullptr;
-    Module *m_upstream = nullptr;
-    QFile m_out;
-    QTextStream m_strm;
-    QString m_stream_ext;
-
 public slots:
     void onLibrarySignaturesChanged();
 
@@ -118,6 +104,7 @@ public:
     size_t size()  const { return m_functionList.size(); }
     bool empty() const { return m_functionList.empty(); }
 
+
     /***************************************************************************/ /**
      * \brief    Creates a new Function object, adds it to the list of procs in this Module,
      * and adds the address to the list
@@ -132,6 +119,20 @@ public:
 
     /// Get a library signature for a given name (used when creating a new library proc).
     std::shared_ptr<Signature> getLibSignature(const QString& name);
+
+private:
+    FunctionList m_functionList; ///< The Functions in the module
+    IFrontEnd *m_currentFrontend;
+    FunctionMap m_labelsToProcs;
+
+protected:
+    QString m_name;
+    std::vector<Module *> m_children;
+    Prog *m_parent     = nullptr;
+    Module *m_upstream = nullptr;
+    QFile m_out;
+    QTextStream m_strm;
+    QString m_stream_ext;
 };
 
 

@@ -76,10 +76,10 @@ enum PREC
 class CCodeGenerator : public ICodeGenerator
 {
 public:
-    // constructor
+    /// constructor
     CCodeGenerator(UserProc *p);
 
-    // destructor
+    /// destructor
     virtual ~CCodeGenerator();
 
     /// Remove all generated code.

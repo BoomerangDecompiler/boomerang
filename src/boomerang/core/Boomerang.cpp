@@ -32,10 +32,10 @@
 static Boomerang* boomerang = nullptr;
 
 Boomerang::Boomerang()
-    : m_symbols(new SymTab)
+    : m_currentProject(new Project)
+    , m_symbols(new SymTab)
     , m_workingDirectory("./")
     , m_outputDirectory("./output/")
-    , m_currentProject(new Project)
 {
 }
 

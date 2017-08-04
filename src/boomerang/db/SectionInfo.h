@@ -15,18 +15,6 @@ struct SectionInfo : public IBinarySection
 private:
     SectionInfo& operator=(const SectionInfo& other);
 
-    QString         m_sectionName;          ///< Name of section
-    Address         m_nativeAddr;           ///< Logical or native load address
-    HostAddress     m_hostAddr;             ///< Host or actual address of data
-    uint32_t        m_sectionSize;          ///< Size of section in bytes
-    uint32_t        m_sectionEntrySize;     ///< Size of one section entry (if applicable)
-    unsigned        m_type;                 ///< Type of section (format dependent)
-    unsigned        m_code     : 1;         ///< Set if section contains instructions
-    unsigned        m_data     : 1;         ///< Set if section contains data
-    unsigned        m_bss      : 1;         ///< Set if section is BSS (allocated only)
-    unsigned        m_readOnly : 1;         ///< Set if this is a read only section
-    uint8_t         m_endianness;           ///< 0 Little endian, 1 Big endian
-
 public:
     SectionInfo(Address sourceAddr, uint32_t size, const QString& name = ""); // Constructor
     SectionInfo(const SectionInfo& other);
@@ -67,4 +55,17 @@ public:
 
 private:
     SectionInfoImpl *m_impl;
+
+    QString         m_sectionName;          ///< Name of section
+    Address         m_nativeAddr;           ///< Logical or native load address
+    HostAddress     m_hostAddr;             ///< Host or actual address of data
+    uint32_t        m_sectionSize;          ///< Size of section in bytes
+    uint32_t        m_sectionEntrySize;     ///< Size of one section entry (if applicable)
+    unsigned        m_type;                 ///< Type of section (format dependent)
+    unsigned        m_code     : 1;         ///< Set if section contains instructions
+    unsigned        m_data     : 1;         ///< Set if section contains data
+    unsigned        m_bss      : 1;         ///< Set if section is BSS (allocated only)
+    unsigned        m_readOnly : 1;         ///< Set if this is a read only section
+    uint8_t         m_endianness;           ///< 0 Little endian, 1 Big endian
+
 };

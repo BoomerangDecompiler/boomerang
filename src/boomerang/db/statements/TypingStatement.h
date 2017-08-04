@@ -8,9 +8,6 @@
  ****************************************************************************/
 class TypingStatement : public Instruction
 {
-protected:
-    SharedType m_type; ///< The type for this assignment or reference
-
 public:
     TypingStatement(SharedType ty); ///< Constructor
 
@@ -20,4 +17,7 @@ public:
     void setType(SharedType ty) { m_type = ty; }
 
     virtual bool isTyping() const override { return true; }
+
+protected:
+    SharedType m_type; ///< The type for this assignment or reference
 };

@@ -47,7 +47,7 @@ public:
 
     /***************************************************************************/ /**
     * \brief        Set the RTL.
-    * \param        r - a RTL
+    * \param        rtl - a RTL
     ******************************************************************************/
     void setRTL(RTL& rtl);
 
@@ -78,9 +78,9 @@ typedef enum
 
 
 /***************************************************************************/ /**
- * The ParamEntry class represents the details of a single parameter.
+ * The ParamEntry struct represents the details of a single parameter.
  ******************************************************************************/
-class ParamEntry
+struct ParamEntry
 {
 public:
     std::list<QString> m_params;          ///< PARAM_VARIANT & PARAM_ASGN only */
@@ -95,6 +95,7 @@ public:
 protected:
     SharedType m_type;
 };
+
 
 /***************************************************************************/ /**
  * The RTLInstDict represents a dictionary that maps instruction names to the
@@ -118,9 +119,9 @@ public:
     bool readSSLFile(const QString& SSLFileName);
 
     /**
-    * Reset the object to "undo" a readSSLFile()
-    * Called from test code if (e.g.) want to call readSSLFile() twice
-    */
+     * Reset the object to "undo" a readSSLFile()
+     * Called from test code if (e.g.) want to call readSSLFile() twice
+     */
     void reset();
 
     /***************************************************************************/ /**

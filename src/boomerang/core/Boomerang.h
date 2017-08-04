@@ -49,13 +49,6 @@ class Boomerang : public QObject, public IBoomerang
     Q_OBJECT
 
 private:
-    IBinarySymbolTable *m_symbols = nullptr;
-    QString m_workingDirectory;       ///< String with the path to the boomerang executable.
-    QString m_outputDirectory;        ///< The path where all output files are created.
-    QString m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
-
-    std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
-
     /// Prints help for the interactive mode.
     void helpcmd() const;
 
@@ -354,6 +347,13 @@ public:
     std::vector<QString> m_symbolFiles; ///< A vector containing the names off all symbolfiles to load.
     std::map<Address, QString> symbols; ///< A map to find a name by a given address.
     IProject *m_currentProject;
+
+    IBinarySymbolTable *m_symbols = nullptr;
+    QString m_workingDirectory;       ///< String with the path to the boomerang executable.
+    QString m_outputDirectory;        ///< The path where all output files are created.
+    QString m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
+
+    std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 };
 
 #define VERBOSE                 (Boomerang::get()->vFlag)

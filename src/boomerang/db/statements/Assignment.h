@@ -7,9 +7,6 @@
  ****************************************************************************/
 class Assignment : public TypingStatement
 {
-protected:
-    SharedExp m_lhs; // The left hand side
-
 public:
     /// Constructor, subexpression
     Assignment(SharedExp lhs);
@@ -78,4 +75,7 @@ public:
 
     /// Data flow based type analysis
     void dfaTypeAnalysis(bool& ch) override;
+
+protected:
+    SharedExp m_lhs; ///< The left hand side
 };

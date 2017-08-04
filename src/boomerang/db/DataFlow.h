@@ -35,59 +35,6 @@ class QTextStream;
 /// Dominator frontier code largely as per Appel 2002 ("Modern Compiler Implementation in Java")
 class DataFlow
 {
-    /******************** Dominance Frontier Data *******************/
-
-    /* These first two are not from Appel; they map PBBs to indices */
-    std::vector<BasicBlock *> m_BBs;       ///< Pointers to BBs from indices
-    std::map<BasicBlock *, int> m_indices; ///< Indices from pointers to BBs
-
-    /*
-     * Calculating the dominance frontier
-     */
-    // If there is a path from a to b in the cfg, then a is an ancestor of b
-    // if dfnum[a] < denum[b]
-    std::vector<int> m_dfnum;             ///< Number set in depth first search
-    std::vector<int> m_semi;              ///< Semi dominators
-    std::vector<int> m_ancestor;          ///< Defines the forest that becomes the spanning tree
-    std::vector<int> m_idom;              ///< Immediate dominator
-    std::vector<int> m_samedom;           ///< ? To do with deferring
-    std::vector<int> m_vertex;            ///< ?
-    std::vector<int> m_parent;            ///< Parent in the dominator tree?
-    std::vector<int> m_best;              ///< Improves ancestorWithLowestSemi
-    std::vector<std::set<int> > m_bucket; ///< Deferred calculation?
-    int N;                                ///< Current node number in algorithm
-    std::vector<std::set<int> > m_DF;     ///< The dominance frontiers
-
-    /*
-     * Inserting phi-functions
-     */
-    /// Array of sets of locations defined in BB n
-    std::vector<ExpSet> m_A_orig;
-
-    /// Array of sets of BBs needing phis
-    std::map<SharedExp, std::set<int>, lessExpStar> m_A_phi;
-
-    /// Map from expression to set of block numbers
-    std::map<SharedExp, std::set<int>, lessExpStar> m_defsites;
-
-    /// Set of block numbers defining all variables
-    std::set<int> m_defallsites;
-
-    /// A Boomerang requirement: Statements defining particular subscripted locations
-    std::map<SharedExp, Instruction *, lessExpStar> m_defStmts;
-
-    /*
-     * Renaming variables
-     */
-    /// The stack which remembers the last definition of an expression.
-    /// A map from expression (Exp*) to a stack of (pointers to) Statements
-    std::map<SharedExp, std::deque<Instruction *>, lessExpStar> m_Stacks;
-
-    // Initially false, meaning that locals and parameters are not renamed and hence not propagated.
-    // When true, locals and parameters can be renamed if their address does not escape the local procedure.
-    // See Mike's thesis for details.
-    bool renameLocalsAndParams;
-
 public:
     DataFlow();
 
@@ -160,6 +107,60 @@ public:
 
     // For debugging
     void dumpA_phi();
+
+private:
+    /******************** Dominance Frontier Data *******************/
+
+    /* These first two are not from Appel; they map PBBs to indices */
+    std::vector<BasicBlock *> m_BBs;       ///< Pointers to BBs from indices
+    std::map<BasicBlock *, int> m_indices; ///< Indices from pointers to BBs
+
+    /*
+     * Calculating the dominance frontier
+     */
+    // If there is a path from a to b in the cfg, then a is an ancestor of b
+    // if dfnum[a] < denum[b]
+    std::vector<int> m_dfnum;             ///< Number set in depth first search
+    std::vector<int> m_semi;              ///< Semi dominators
+    std::vector<int> m_ancestor;          ///< Defines the forest that becomes the spanning tree
+    std::vector<int> m_idom;              ///< Immediate dominator
+    std::vector<int> m_samedom;           ///< ? To do with deferring
+    std::vector<int> m_vertex;            ///< ?
+    std::vector<int> m_parent;            ///< Parent in the dominator tree?
+    std::vector<int> m_best;              ///< Improves ancestorWithLowestSemi
+    std::vector<std::set<int> > m_bucket; ///< Deferred calculation?
+    int N;                                ///< Current node number in algorithm
+    std::vector<std::set<int> > m_DF;     ///< The dominance frontiers
+
+    /*
+     * Inserting phi-functions
+     */
+    /// Array of sets of locations defined in BB n
+    std::vector<ExpSet> m_A_orig;
+
+    /// Array of sets of BBs needing phis
+    std::map<SharedExp, std::set<int>, lessExpStar> m_A_phi;
+
+    /// Map from expression to set of block numbers
+    std::map<SharedExp, std::set<int>, lessExpStar> m_defsites;
+
+    /// Set of block numbers defining all variables
+    std::set<int> m_defallsites;
+
+    /// A Boomerang requirement: Statements defining particular subscripted locations
+    std::map<SharedExp, Instruction *, lessExpStar> m_defStmts;
+
+    /*
+     * Renaming variables
+     */
+    /// The stack which remembers the last definition of an expression.
+    /// A map from expression (Exp*) to a stack of (pointers to) Statements
+    std::map<SharedExp, std::deque<Instruction *>, lessExpStar> m_Stacks;
+
+    // Initially false, meaning that locals and parameters are not renamed and hence not propagated.
+    // When true, locals and parameters can be renamed if their address does not escape the local procedure.
+    // See Mike's thesis for details.
+    bool renameLocalsAndParams;
 };
 
 /*    *    *    *    *    *    *\

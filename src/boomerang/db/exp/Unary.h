@@ -8,8 +8,6 @@
 class Unary : public Exp
 {
 protected:
-    SharedExp subExp1; ///< One subexpression pointer
-
     /// Constructor, with just ID
     Unary(OPER op);
 
@@ -85,4 +83,7 @@ public:
 
     virtual SharedType ascendType() override;
     virtual void descendType(SharedType parentType, bool& ch, Instruction *s) override;
+
+protected:
+    SharedExp subExp1; ///< One subexpression pointer
 };

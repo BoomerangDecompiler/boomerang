@@ -61,7 +61,6 @@ typedef std::list<UserProc *> ProcList;
 class UserProc : public Function
 {
 public:
-
     /**
      * A map between machine dependent locations and their corresponding symbolic, machine independent
      * representations.  Example: m[r28{0} - 8] -> local5; this means that *after* transforming out of SSA
@@ -75,7 +74,6 @@ public:
     typedef std::map<Instruction *, int> RefCounter;
 
 public:
-
     /***************************************************************************/ /**
      * \brief        Constructor with name, native address.
      * \param address - Native address of entry point of procedure

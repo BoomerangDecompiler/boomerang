@@ -37,15 +37,11 @@ class Exp;
 
 class Parameter
 {
-private:
-    SharedType m_type;
-    QString m_name  = "";
-    SharedExp m_exp = nullptr;
-    QString m_boundMax;
-
 public:
+    Parameter() = delete;
     Parameter(SharedType _type, const QString& _name, SharedExp _exp = nullptr, const QString& _boundMax = "");
     virtual ~Parameter() = default;
+
     bool operator==(Parameter& other) const;
 
     std::shared_ptr<Parameter> clone() const;
@@ -64,16 +60,16 @@ public:
     void setBoundMax(const QString& nam);
 
 private:
-    Parameter() {}
+    SharedType m_type;
+    QString m_name  = "";
+    SharedExp m_exp = nullptr;
+    QString m_boundMax;
 };
 
 
 class Return
 {
 public:
-    SharedType m_type;
-    SharedExp m_exp;
-
     Return(SharedType _type, SharedExp _exp)
         : m_type(_type)
         , m_exp(_exp)
@@ -86,6 +82,10 @@ public:
 
     Return()
         : m_exp(nullptr) {}
+
+public:
+    SharedType m_type;
+    SharedExp m_exp;
 };
 
 typedef std::vector<std::shared_ptr<Return> > Returns;
@@ -320,9 +320,6 @@ protected:
 
 class CustomSignature : public Signature
 {
-protected:
-    int sp;
-
 public:
     CustomSignature(const QString& nam);
     virtual ~CustomSignature() {}
@@ -333,4 +330,7 @@ public:
     void setSP(int nsp);
 
     virtual int getStackRegister() const noexcept(false) override { return sp; }
+
+protected:
+    int sp;
 };

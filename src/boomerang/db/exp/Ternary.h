@@ -8,12 +8,6 @@
 ******************************************************************************/
 class Ternary : public Binary
 {
-private:
-    SharedExp subExp3; // Third subexpression pointer
-
-    // Constructor, with operator
-    Ternary(OPER op);
-
 public:
     // Constructor, with operator and subexpressions
     Ternary(OPER op, SharedExp e1, SharedExp e2, SharedExp e3);
@@ -79,4 +73,11 @@ public:
     virtual SharedType ascendType() override;
 
     virtual void descendType(SharedType /*parentType*/, bool& ch, Instruction *s) override;
+
+private:
+    // Constructor, with operator
+    Ternary(OPER op);
+
+private:
+    SharedExp subExp3; ///< Third subexpression pointer
 };

@@ -65,9 +65,6 @@ typedef std::shared_ptr<RTL>         SharedRTL;
 class Exp : public Printable, public std::enable_shared_from_this<Exp>
 {
 protected:
-    OPER m_oper; ///< The operator (e.g. opPlus)
-    mutable unsigned int m_lexBegin = 0, m_lexEnd = 0;
-
     // Constructor, with ID
     Exp(OPER op)
         : m_oper(op) {}
@@ -650,6 +647,11 @@ protected:
     {
         return std::static_pointer_cast<CHILD>(shared_from_this());
     }
+
+protected:
+    OPER m_oper; ///< The operator (e.g. opPlus)
+    mutable unsigned int m_lexBegin = 0, m_lexEnd = 0;
+
 };
 
 // Not part of the Exp class, but logically belongs with it:

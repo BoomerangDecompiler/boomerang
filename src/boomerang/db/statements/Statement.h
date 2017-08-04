@@ -122,24 +122,6 @@ class Instruction
 {
     typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
-protected:
-    BasicBlock *m_parent; // contains a pointer to the enclosing BB
-    UserProc *m_proc;     // procedure containing this statement
-    int m_number;         // Statement number for printing
-
-#if USE_DOMINANCE_NUMS
-    int m_dominanceNum;   // Like a statement number, but has dominance properties
-
-public:
-    int getDomNumber() const { return m_dominanceNum; }
-    void setDomNumber(int dn) { m_dominanceNum = dn; }
-
-protected:
-#endif
-
-    StmtType m_kind; // Statement kind (e.g. STMT_BRANCH)
-    unsigned int m_lexBegin, m_lexEnd;
-
 public:
     Instruction()
         : m_parent(nullptr)
@@ -378,6 +360,24 @@ public:
     /// returns true if e1 may alias e2
     bool calcMayAlias(SharedExp e1, SharedExp e2, int size) const;
     bool mayAlias(SharedExp e1, SharedExp e2, int size) const;
+
+protected:
+    BasicBlock *m_parent; // contains a pointer to the enclosing BB
+    UserProc *m_proc;     // procedure containing this statement
+    int m_number;         // Statement number for printing
+
+#if USE_DOMINANCE_NUMS
+    int m_dominanceNum;   // Like a statement number, but has dominance properties
+
+public:
+    int getDomNumber() const { return m_dominanceNum; }
+    void setDomNumber(int dn) { m_dominanceNum = dn; }
+
+protected:
+#endif
+
+    StmtType m_kind; // Statement kind (e.g. STMT_BRANCH)
+    unsigned int m_lexBegin, m_lexEnd;
 };
 
 
@@ -394,12 +394,11 @@ QTextStream& operator<<(QTextStream& os, const LocationSet *p);
  ******************************************************************************/
 struct SWITCH_INFO
 {
-    SharedExp pSwitchVar;  // Ptr to Exp repres switch var, e.g. v[7]
-    char      chForm;      // Switch form: 'A', 'O', 'R', 'H', or 'F' etc
-    int       iLower;      // Lower bound of the switch variable
-    int       iUpper;      // Upper bound for the switch variable
-    Address   uTable;      // Native address of the table, or ptr to array of values for form F
-    int       iNumTable;   // Number of entries in the table (form H only)
-    int       iOffset = 0; // Distance from jump to table (form R only)
-    // int        delta;            // Host address - Native address
+    SharedExp pSwitchVar;  ///< Ptr to Exp repres switch var, e.g. v[7]
+    char      chForm;      ///< Switch form: 'A', 'O', 'R', 'H', or 'F' etc
+    int       iLower;      ///< Lower bound of the switch variable
+    int       iUpper;      ///< Upper bound for the switch variable
+    Address   uTable;      ///< Native address of the table, or ptr to array of values for form F
+    int       iNumTable;   ///< Number of entries in the table (form H only)
+    int       iOffset = 0; ///< Distance from jump to table (form R only)
 };

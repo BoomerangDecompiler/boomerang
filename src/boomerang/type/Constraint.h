@@ -34,14 +34,19 @@ public:
 
     /// Return true if the given expression is in the map
     bool isFound(SharedExp e) { return cmap.find(e) != cmap.end(); }
+
     /// Return an iterator to the given left hand side Exp
     iterator find(SharedExp e) { return cmap.find(e); }
+
     /// Lookup a given left hand side Exp (e.g. given Tlocal1, return <char*>)
     SharedExp& operator[](SharedExp e) { return cmap[e]; }
+
     /// Return the number of constraints in the map
     size_t size() { return cmap.size(); }
+
     /// Empty the map
     void clear() { cmap.clear(); }
+
     /// Return iterators for the begin() and end() of the map
     iterator begin() { return cmap.begin(); }
     iterator end() { return cmap.end(); }
@@ -75,27 +80,29 @@ public:
     /// For this solution, we need to find disjunctions of the form
     /// \code
     /// <alphaN> = <type>      or
-    /// <type>    = <alphaN>
+    /// <type>   = <alphaN>
     /// \endcode
     /// and substitute these into each part of the solution
     void substAlpha();
 };
 
-/// A class used for fast location of a constraint
-///
-/// An equation like Ta = Tb is inserted into this class twice (i.e. as
-/// Ta = Tb and also as Tb = Ta. So to find out if Ta is involved in an
-/// equate, only have to look up Ta in the map (on the LHS, which is fast)
+
+/**
+ * A class used for fast location of a constraint
+ *
+ * An equation like Ta = Tb is inserted into this class twice (i.e. as
+ * Ta = Tb and also as Tb = Ta. So to find out if Ta is involved in an
+ * equate, only have to look up Ta in the map (on the LHS, which is fast)
+ */
 class EquateMap
 {
-    std::map<SharedExp, LocationSet, lessExpStar> emap;
-
 public:
     typedef std::map<SharedExp, LocationSet, lessExpStar>::iterator iterator;
     iterator begin() { return emap.begin(); }
     iterator end() { return emap.end(); }
     void erase(iterator it) { emap.erase(it); }
     size_t size() { return emap.size(); }
+
     // Add an equate (both ways)
     void addEquate(SharedExp a, SharedExp b)
     {
@@ -106,17 +113,14 @@ public:
     iterator find(SharedExp e) { return emap.find(e); }
     void print(QTextStream& os);
     char *prints();
-}; // class EquateMap
+
+private:
+    std::map<SharedExp, LocationSet, lessExpStar> emap;
+};
+
 
 class Constraints
 {
-    LocationSet conSet;
-    std::list<SharedExp> disjunctions;
-    /// Map from location to a fixed type (could be a pointer to a variable type, i.e. an alpha).
-    ConstraintMap fixed;
-    /// EquateMap of locations that are equal
-    EquateMap equates;
-
 public:
     Constraints() {}
     ~Constraints();
@@ -154,4 +158,13 @@ private:
     /// with an extra constraint (e.g. alpha3* is compatible with alpha4* with
     /// the extra constraint that alpha3 == alpha4)
     bool unify(SharedExp x, SharedExp y, ConstraintMap& extra);
+
+    LocationSet conSet;
+    std::list<SharedExp> disjunctions;
+
+    /// Map from location to a fixed type (could be a pointer to a variable type, i.e. an alpha).
+    ConstraintMap fixed;
+
+    /// EquateMap of locations that are equal
+    EquateMap equates;
 };

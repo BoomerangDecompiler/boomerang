@@ -10,11 +10,8 @@
 ******************************************************************************/
 class RefExp : public Unary
 {
-private:
-    Instruction *m_def; // The defining statement
-    // Constructor with expression (e) and statement defining it (def)
-
 public:
+    // Constructor with expression (e) and statement defining it (def)
     RefExp(SharedExp e, Instruction *def);
     virtual ~RefExp()
     {
@@ -62,6 +59,9 @@ public:
 
 protected:
     RefExp()
-    : Unary(opSubscript)
-    , m_def(nullptr) {}
+        : Unary(opSubscript)
+        , m_def(nullptr) {}
+
+private:
+    Instruction *m_def; // The defining statement
 };

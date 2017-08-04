@@ -19,8 +19,8 @@ public:
     virtual ~LibProc() = default;
 
     QString toString() const override;
-    /// \copydoc Function::isLib
 
+    /// \copydoc Function::isLib
     bool isLib() const override { return true; }
 
     /// \copydoc Function::isNoReturn

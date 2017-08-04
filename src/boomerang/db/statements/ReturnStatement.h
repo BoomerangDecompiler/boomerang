@@ -12,37 +12,6 @@ public:
     typedef StatementList::iterator         iterator;
     typedef StatementList::const_iterator   const_iterator;
 
-protected:
-    /// Native address of the (only) return instruction.
-    /// Needed for branching to this only return statement
-       Address retAddr;
-
-    /**
-     * The progression of return information is as follows:
-     * First, reaching definitions are collected in the DefCollector col. These are not sorted or filtered.
-     * Second, some of those definitions make it to the modifieds list, which is sorted and filtered. These are
-     * the locations that are modified by the enclosing procedure. As locations are proved to be preserved (with NO
-     * modification, not even sp = sp+4), they are removed from this list. Defines in calls to the enclosing
-     * procedure are based on this list.
-     * Third, the modifications are initially copied to the returns list (also sorted and filtered, but the returns
-     * have RHS where the modifieds don't). Locations not live at any caller are removed from the returns, but not
-     * from the modifieds.
-     */
-    /// A DefCollector object to collect the reaching definitions
-    DefCollector col;
-
-    /// A list of assignments that represents the locations modified by the enclosing procedure. These assignments
-    /// have no RHS?
-    /// These transmit type information to callers
-    /// Note that these include preserved locations early on (?)
-    StatementList modifieds;
-
-    /// A list of assignments of locations to expressions.
-    /// Initially definitions reaching the exit less preserveds; later has locations unused by any callers removed.
-    /// A list is used to facilitate ordering. (A set would be ideal, but the ordering depends at runtime on the
-    /// signature)
-    StatementList returns;
-
 public:
     ReturnStatement();
     virtual ~ReturnStatement();
@@ -138,4 +107,35 @@ public:
 
     // Remove the stack pointer and return a statement list
     StatementList *getCleanReturns();
+
+protected:
+    /// Native address of the (only) return instruction.
+    /// Needed for branching to this only return statement
+    Address retAddr;
+
+    /**
+     * The progression of return information is as follows:
+     * First, reaching definitions are collected in the DefCollector col. These are not sorted or filtered.
+     * Second, some of those definitions make it to the modifieds list, which is sorted and filtered. These are
+     * the locations that are modified by the enclosing procedure. As locations are proved to be preserved (with NO
+     * modification, not even sp = sp+4), they are removed from this list. Defines in calls to the enclosing
+     * procedure are based on this list.
+     * Third, the modifications are initially copied to the returns list (also sorted and filtered, but the returns
+     * have RHS where the modifieds don't). Locations not live at any caller are removed from the returns, but not
+     * from the modifieds.
+     */
+    /// A DefCollector object to collect the reaching definitions
+    DefCollector col;
+
+    /// A list of assignments that represents the locations modified by the enclosing procedure. These assignments
+    /// have no RHS?
+    /// These transmit type information to callers
+    /// Note that these include preserved locations early on (?)
+    StatementList modifieds;
+
+    /// A list of assignments of locations to expressions.
+    /// Initially definitions reaching the exit less preserveds; later has locations unused by any callers removed.
+    /// A list is used to facilitate ordering. (A set would be ideal, but the ordering depends at runtime on the
+    /// signature)
+    StatementList returns;
 };

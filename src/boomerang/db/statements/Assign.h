@@ -7,10 +7,6 @@
  */
 class Assign : public Assignment
 {
-private:
-    SharedExp m_rhs;
-    SharedExp m_guard;
-
 public:
     /// Constructor, subexpressions
     Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
@@ -90,4 +86,8 @@ public:
 
     /// FIXME: I suspect that this was only used by adhoc TA, and can be deleted
     bool match(const char *pattern, std::map<QString, SharedExp>& bindings);
+
+private:
+    SharedExp m_rhs;
+    SharedExp m_guard;
 };

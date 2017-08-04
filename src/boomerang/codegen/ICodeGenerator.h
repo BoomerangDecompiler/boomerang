@@ -44,10 +44,7 @@ class ReturnStatement;
 class ICodeGenerator
 {
 public:
-    ICodeGenerator(UserProc *p)
-        : m_proc(p) {}
-
-    // destructor
+    ICodeGenerator(UserProc *p) : m_proc(p) {}
     virtual ~ICodeGenerator() {}
 
     /// clear the code generator object (derived classes should call the base)

@@ -5,11 +5,7 @@
 
 class Location : public Unary
 {
-protected:
-    UserProc *proc;
-
 public:
-
     /**
      * Constructor with ID, subexpression, and UserProc*
      * Create a new Location expression.
@@ -50,6 +46,9 @@ public:
 
 protected:
     Location(OPER _op)
-    : Unary(_op)
-    , proc(nullptr) {}
+        : Unary(_op)
+        , proc(nullptr) {}
+
+private:
+    UserProc *proc;
 };

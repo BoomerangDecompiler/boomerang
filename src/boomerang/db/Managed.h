@@ -35,7 +35,7 @@ class Cfg;
 class LocationSet;
 class QTextStream;
 
-// A class to implement sets of statements
+/// A class to implement sets of statements
 class InstructionSet : public std::set<Instruction *>
 {
 public:
@@ -71,6 +71,7 @@ public:
     const char *prints();                          ///< Print to string (for debug)
     void dump();                                   ///< Print to standard error for debugging
 };
+
 
 // As above, but the Statements are known to be Assigns, and are sorted sensibly
 class AssignSet : public std::set<Assign *, lessAssign>
@@ -117,6 +118,7 @@ public:
     void dump();                              ///< Print to standard error for debugging
 };                                            ///< class AssignSet
 
+
 class StatementList : public std::list<Instruction *>
 {
 public:
@@ -152,6 +154,7 @@ public:
     /// Find the first Assignment with loc on the LHS
     Assignment *findOnLeft(SharedExp loc) const;   ///< Return the first stmt with loc on the LHS
 };
+
 
 class StatementVec
 {
@@ -192,7 +195,9 @@ public:
     void erase(iterator it) { svec.erase(it); }
 };
 
+
 typedef std::set<SharedExp, lessExpStar> ExpSet;
+
 
 // For various purposes, we need sets of locations (registers or memory)
 class LocationSet
@@ -310,6 +315,7 @@ public:
 private:
     std::vector<SharedExp> allConnected(SharedExp a);
 };
+
 
 QTextStream& operator<<(QTextStream& os, const AssignSet *as);
 QTextStream& operator<<(QTextStream& os, const InstructionSet *ss);

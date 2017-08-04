@@ -5,11 +5,7 @@
 
 class CaseStatement : public GotoStatement
 {
-private:
-    SWITCH_INFO *pSwitchInfo; // Ptr to struct with info about the switch
-
 public:
-
     /***************************************************************************/ /**
      * \fn        CaseStatement::CaseStatement
      * \brief        Constructor.
@@ -98,4 +94,7 @@ public:
 public:
     /// simplify all the uses/defs in this Statement
     virtual void simplify() override;
+
+private:
+    SWITCH_INFO *pSwitchInfo; // Ptr to struct with info about the switch
 };

@@ -42,11 +42,9 @@ public:
     virtual void            setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to) = 0;
     virtual QVariantMap     getAttributesForRange(Address from, Address to) = 0;
 
-    ///////////////////
-    // utility methods
-    ///////////////////
-    bool                    inSection(Address uAddr) const
+    /// Check if \p address is contained within this section
+    bool isInSection(Address address) const
     {
-        return (uAddr >= getSourceAddr()) || (uAddr < getSourceAddr() + getSize());
+        return (address >= getSourceAddr()) || (address < getSourceAddr() + getSize());
     }
 };

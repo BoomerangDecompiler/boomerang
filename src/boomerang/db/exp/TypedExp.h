@@ -7,9 +7,6 @@
 ******************************************************************************/
 class TypedExp : public Unary
 {
-private:
-    SharedType type;
-
 public:
     // Constructor
     TypedExp();
@@ -52,5 +49,8 @@ public:
     virtual SharedType ascendType() override;
 
     virtual void descendType(SharedType, bool&, Instruction *) override;
+
+private:
+    SharedType type;
 };
 

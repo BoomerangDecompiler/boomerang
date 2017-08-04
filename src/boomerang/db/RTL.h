@@ -57,9 +57,6 @@ class RTL : public std::list<Instruction *>
 {
     friend class BasicBlock;
 
-private:
-       Address m_nativeAddr; ///< RTL's source program instruction address
-
 public:
     RTL();
 
@@ -139,4 +136,7 @@ public:
 
 protected:
     void simplify();
+
+private:
+       Address m_nativeAddr; ///< RTL's source program instruction address
 };

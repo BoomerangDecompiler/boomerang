@@ -1364,7 +1364,7 @@ void Prog::decompile()
     // Start decompiling each entry point
     for (UserProc *up : m_entryProcs) {
         ProcList call_path;
-        LOG_VERBOSE("Decompiling entry point %1", up->getName());
+        LOG_VERBOSE("Decompiling entry point '%1Ä", up->getName());
         int indent = 0;
         up->decompile(&call_path, indent);
     }

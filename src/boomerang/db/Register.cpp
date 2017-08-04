@@ -25,20 +25,20 @@
 
 
 Register::Register()
-    : m_address(nullptr)
+    : m_fltRegister(false)
+    , m_address(nullptr)
     , m_mappedIndex(-1)
     , m_mappedOffset(-1)
-    , m_fltRegister(false)
 {
 }
 
 
 Register::Register(const Register& r)
     : m_size(r.m_size)
+    , m_fltRegister(r.m_fltRegister)
     , m_address(r.m_address)
     , m_mappedIndex(r.m_mappedIndex)
     , m_mappedOffset(r.m_mappedOffset)
-    , m_fltRegister(r.m_fltRegister)
 {
     if (!r.m_name.isEmpty()) {
         m_name = r.m_name;

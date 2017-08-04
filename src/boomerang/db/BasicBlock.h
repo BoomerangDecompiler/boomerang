@@ -129,74 +129,10 @@ public:
     typedef std::list<RTL *>::reverse_iterator    rtlrit;
     typedef std::list<SharedExp>::iterator        elit;
 
-protected:
-    Function *m_parent;
-
-    /* general basic block information */
-    BBType m_nodeType = BBType::Invalid;      ///< type of basic block
-    std::list<RTL *> *m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
-    int  m_labelNum     = 0;                  ///< Nonzero if start of BB needs label
-    bool m_labelNeeded = false;
-    bool m_incomplete  = true;                ///< True if not yet complete
-    bool m_jumpRequired    = false;               ///< True if jump required for "fall through"
-
-    /* in-edges and out-edges */
-    std::vector<BasicBlock *> m_inEdges;  ///< Vector of in-edges
-    std::vector<BasicBlock *> m_outEdges; ///< Vector of out-edges
-    size_t m_targetOutEdges;              ///< support resize() of vectors!
-
-    /* for traversal */
-    bool m_traversedMarker = false; ///< traversal marker
-
-    /* Liveness */
-    LocationSet m_liveIn;                  ///< Set of locations live at BB start
-
-    /*
-     * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
-     * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
-     */
-    int m_DFTfirst = 0; ///< depth-first traversal first visit
-    int m_DFTlast  = 0; ///< depth-first traversal last visit
-    int m_DFTrevfirst;  ///< reverse depth-first traversal first visit
-    int m_DFTrevlast;   ///< reverse depth-first traversal last visit
-
-    /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
-    int m_ord;                               ///< node's position within the ordering structure
-    int m_revOrd;                            ///< position within ordering structure for the reverse graph
-    int m_inEdgesVisited;                    ///< counts the number of in edges visited during a DFS
-    int m_numForwardInEdges;                 ///< inedges to this node that aren't back edges
-    int m_loopStamps[2], m_revLoopStamps[2]; ///< used for structuring analysis
-    TravType m_traversed;                    ///< traversal flag for the numerous DFS's
-    bool m_emitHLLLabel;                     ///< emit a label for this node when generating HL code?
-    QString m_labelStr;                      ///< the high level label for this node (if needed)
-    int m_indentLevel;                       ///< the indentation level of this node in the final code
-
-    /* high level structuring */
-    SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as (if any)
-    SBBType m_structType   = SBBType::None; ///< structured type of this node
-
-    // analysis information
-    BasicBlock *m_immPDom;         ///< immediate post dominator
-    BasicBlock *m_loopHead;        ///< head of the most nested enclosing loop
-    BasicBlock *m_caseHead;        ///< head of the most nested enclosing case
-    BasicBlock *m_condFollow;      ///< follow of a conditional header
-    BasicBlock *m_loopFollow;      ///< follow of a loop header
-    BasicBlock *m_latchNode;       ///< latching node of a loop header
-
-    // Structured type of the node
-    StructType m_structuringType;    ///< the structuring class (Loop, Cond , etc)
-    UnstructType m_unstructuredType; ///< the restructured type of a conditional header
-    LoopType m_loopHeaderType;       ///< the loop type of a loop header
-    CondType m_conditionHeaderType;  ///< the conditional type of a conditional header
-
-    // true if processing for overlapped registers on statements in this BB
-    // has been completed.
-    bool m_overlappedRegProcessingDone = false;
-
 public:
     BasicBlock(Function *parent);
-    ~BasicBlock();
     BasicBlock(const BasicBlock& bb);
+    ~BasicBlock();
 
     /// \brief return enclosing function, null if none
     const Function *getParent() const { return m_parent; }
@@ -368,7 +304,7 @@ public:
      *  a fixed dest. Otherwise, return -1
      * \returns     Native destination of the call, or -1
      ******************************************************************************/
-       Address getCallDest();
+    Address getCallDest();
     Function *getCallDestProc();
 
     /***************************************************************************/ /**
@@ -649,7 +585,7 @@ protected:
     void emitGotoAndLabel(ICodeGenerator *hll, int indLevel, BasicBlock *dest);
 
     /// Generates code for each non CTI (except procedure calls) statement within the block.
-    void WriteBB(ICodeGenerator *hll, int indLevel);
+    void WriteBB(ICodeGenerator *generator, int indLevel);
 
     void addOutEdge(BasicBlock *bb) { m_outEdges.push_back(bb); }
 
@@ -683,4 +619,68 @@ private:
      *
      ******************************************************************************/
     void setRTLs(std::list<RTL *> *rtls);
+
+protected:
+    Function *m_parent;
+
+    /* general basic block information */
+    BBType m_nodeType = BBType::Invalid;      ///< type of basic block
+    std::list<RTL *> *m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
+    int  m_labelNum     = 0;                  ///< Nonzero if start of BB needs label
+    bool m_labelNeeded = false;
+    bool m_incomplete  = true;                ///< True if not yet complete
+    bool m_jumpRequired    = false;               ///< True if jump required for "fall through"
+
+    /* in-edges and out-edges */
+    std::vector<BasicBlock *> m_inEdges;  ///< Vector of in-edges
+    std::vector<BasicBlock *> m_outEdges; ///< Vector of out-edges
+    size_t m_targetOutEdges;              ///< support resize() of vectors!
+
+    /* for traversal */
+    bool m_traversedMarker = false; ///< traversal marker
+
+    /* Liveness */
+    LocationSet m_liveIn;                  ///< Set of locations live at BB start
+
+    /*
+     * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
+     * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
+     */
+    int m_DFTfirst = 0; ///< depth-first traversal first visit
+    int m_DFTlast  = 0; ///< depth-first traversal last visit
+    int m_DFTrevfirst;  ///< reverse depth-first traversal first visit
+    int m_DFTrevlast;   ///< reverse depth-first traversal last visit
+
+    /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
+    int m_ord;                               ///< node's position within the ordering structure
+    int m_revOrd;                            ///< position within ordering structure for the reverse graph
+    int m_inEdgesVisited;                    ///< counts the number of in edges visited during a DFS
+    int m_numForwardInEdges;                 ///< inedges to this node that aren't back edges
+    int m_loopStamps[2], m_revLoopStamps[2]; ///< used for structuring analysis
+    TravType m_traversed;                    ///< traversal flag for the numerous DFS's
+    bool m_emitHLLLabel;                     ///< emit a label for this node when generating HL code?
+    QString m_labelStr;                      ///< the high level label for this node (if needed)
+    int m_indentLevel;                       ///< the indentation level of this node in the final code
+
+    /* high level structuring */
+    SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as (if any)
+    SBBType m_structType   = SBBType::None; ///< structured type of this node
+
+    // analysis information
+    BasicBlock *m_immPDom;         ///< immediate post dominator
+    BasicBlock *m_loopHead;        ///< head of the most nested enclosing loop
+    BasicBlock *m_caseHead;        ///< head of the most nested enclosing case
+    BasicBlock *m_condFollow;      ///< follow of a conditional header
+    BasicBlock *m_loopFollow;      ///< follow of a loop header
+    BasicBlock *m_latchNode;       ///< latching node of a loop header
+
+    // Structured type of the node
+    StructType m_structuringType;    ///< the structuring class (Loop, Cond , etc)
+    UnstructType m_unstructuredType; ///< the restructured type of a conditional header
+    LoopType m_loopHeaderType;       ///< the loop type of a loop header
+    CondType m_conditionHeaderType;  ///< the conditional type of a conditional header
+
+    // true if processing for overlapped registers on statements in this BB
+    // has been completed.
+    bool m_overlappedRegProcessingDone = false;
 };

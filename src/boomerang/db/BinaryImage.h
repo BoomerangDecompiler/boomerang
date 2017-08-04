@@ -20,7 +20,7 @@ struct SectionHolder
     SectionInfo *val;
 };
 
-struct BinaryImage : public IBinaryImage
+class BinaryImage : public IBinaryImage
 {
 protected:
     BinaryImage(const BinaryImage&);            // prevent copy-construction
@@ -65,8 +65,8 @@ public:
 
     const IBinarySection *getSectionInfo(int idx) const override { return m_sections[idx]; }
     bool isReadOnly(Address uEntry) override;
-       Address getLimitTextLow() override;
-       Address getLimitTextHigh() override;
+    Address getLimitTextLow() override;
+    Address getLimitTextHigh() override;
 
     ptrdiff_t getTextDelta() override { return m_textDelta; }
 

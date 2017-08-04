@@ -8,15 +8,14 @@
 class Binary : public Unary
 {
 protected:
-    SharedExp subExp2; ///< Second subexpression pointer
-
-    // Constructor, with ID
+    /// Constructor, with ID
     Binary(OPER op);
 
 public:
-    // Constructor, with ID and subexpressions
+    /// Constructor, with ID and subexpressions
     Binary(OPER op, SharedExp e1, SharedExp e2);
-    // Copy constructor
+
+    /// Copy constructor
     Binary(const Binary& o);
 
     static std::shared_ptr<Binary> get(OPER op, SharedExp e1, SharedExp e2)
@@ -30,10 +29,10 @@ public:
     bool operator<(const Exp& o) const override;
     bool operator*=(const Exp& o) const override;
 
-    // Destructor
+    /// Destructor
     virtual ~Binary();
 
-    // Arity
+    /// Arity
     int getArity() const override { return 2; }
 
     // Print
@@ -80,4 +79,7 @@ public:
 private:
     /// Return a constraint that my subexpressions have to be of type typeval1 and typeval2 respectively
     SharedExp constrainSub(const std::shared_ptr<TypeVal>& typeVal1, const std::shared_ptr<TypeVal>& typeVal2);
+
+protected:
+    SharedExp subExp2; ///< Second subexpression pointer
 };

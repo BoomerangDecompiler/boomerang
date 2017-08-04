@@ -13,14 +13,6 @@ class BasicBlock;
 
 class SyntaxNode
 {
-protected:
-    BasicBlock *m_pbb;
-    int m_nodenum;
-    int m_score;
-    SyntaxNode *m_correspond; // corresponding node in previous state
-    bool m_notGoto;
-    int m_depth;
-
 public:
     SyntaxNode();
     virtual ~SyntaxNode();
@@ -61,14 +53,19 @@ public:
 
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors)
     { Q_UNUSED(root); Q_UNUSED(successors); }
+
+protected:
+    BasicBlock *m_pbb;
+    int m_nodenum;
+    int m_score;
+    SyntaxNode *m_correspond; // corresponding node in previous state
+    bool m_notGoto;
+    int m_depth;
 };
 
 
 class BlockSyntaxNode : public SyntaxNode
 {
-private:
-    std::vector<SyntaxNode *> statements;
-
 public:
     BlockSyntaxNode();
     virtual ~BlockSyntaxNode();
@@ -164,15 +161,14 @@ public:
     virtual void printAST(SyntaxNode *root, QTextStream& os) override;
     virtual int evaluate(SyntaxNode *root) override;
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors) override;
+
+private:
+    std::vector<SyntaxNode *> statements;
 };
 
 
 class IfThenSyntaxNode : public SyntaxNode
 {
-protected:
-    SyntaxNode *pThen;
-    SharedExp cond;
-
 public:
     IfThenSyntaxNode();
     virtual ~IfThenSyntaxNode();
@@ -204,16 +200,15 @@ public:
     virtual void printAST(SyntaxNode *root, QTextStream& os) override;
     virtual int evaluate(SyntaxNode *root) override;
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors) override;
+
+protected:
+    SyntaxNode *pThen;
+    SharedExp cond;
 };
 
 
 class IfThenElseSyntaxNode : public SyntaxNode
 {
-protected:
-    SyntaxNode *pThen;
-    SyntaxNode *pElse;
-    SharedExp cond;
-
 public:
     IfThenElseSyntaxNode();
     virtual ~IfThenElseSyntaxNode();
@@ -259,15 +254,16 @@ public:
     virtual void printAST(SyntaxNode *root, QTextStream& os) override;
     virtual int evaluate(SyntaxNode *root) override;
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors) override;
+
+protected:
+    SyntaxNode *pThen;
+    SyntaxNode *pElse;
+    SharedExp cond;
 };
 
 
 class PretestedLoopSyntaxNode : public SyntaxNode
 {
-protected:
-    SyntaxNode *pBody;
-    SharedExp cond;
-
 public:
     PretestedLoopSyntaxNode();
     virtual ~PretestedLoopSyntaxNode();
@@ -297,15 +293,15 @@ public:
     virtual void printAST(SyntaxNode *root, QTextStream& os) override;
     virtual int evaluate(SyntaxNode *root) override;
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors) override;
+
+protected:
+    SyntaxNode *pBody;
+    SharedExp cond;
 };
 
 
 class PostTestedLoopSyntaxNode : public SyntaxNode
 {
-protected:
-    SyntaxNode *pBody;
-    SharedExp cond;
-
 public:
     PostTestedLoopSyntaxNode();
     virtual ~PostTestedLoopSyntaxNode();
@@ -334,14 +330,15 @@ public:
     virtual void printAST(SyntaxNode *root, QTextStream& os) override;
     virtual int evaluate(SyntaxNode *root) override;
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors) override;
+
+protected:
+    SyntaxNode *pBody;
+    SharedExp cond;
 };
 
 
 class InfiniteLoopSyntaxNode : public SyntaxNode
 {
-protected:
-    SyntaxNode *pBody;
-
 public:
     InfiniteLoopSyntaxNode();
     virtual ~InfiniteLoopSyntaxNode();
@@ -369,4 +366,7 @@ public:
     virtual void printAST(SyntaxNode *root, QTextStream& os) override;
     virtual int evaluate(SyntaxNode *root) override;
     virtual void addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors) override;
+
+protected:
+    SyntaxNode *pBody;
 };

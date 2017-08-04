@@ -94,9 +94,6 @@ typedef std::shared_ptr<const Type>   SharedConstType;
 
 class Type : public std::enable_shared_from_this<Type>, public Printable
 {
-protected:
-    eType id;
-
 public:
     // Constructors
     Type(eType id);
@@ -275,7 +272,9 @@ public:
     SharedType dereference();
 
 protected:
+    eType id;
 };
+
 
 class VoidType : public Type
 {
@@ -307,11 +306,9 @@ public:
     virtual bool isCompatible(const Type& other, bool all) const override;
 };
 
+
 class FuncType : public Type
 {
-private:
-    std::shared_ptr<Signature> signature;
-
 public:
     static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature>& sig = nullptr) { return std::make_shared<FuncType>(sig); }
     FuncType(const std::shared_ptr<Signature>& sig = nullptr);
@@ -338,6 +335,9 @@ public:
 
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool all) const override;
+
+private:
+    std::shared_ptr<Signature> signature;
 };
 
 
@@ -347,10 +347,6 @@ public:
  ******************************************************************************/
 class IntegerType : public Type
 {
-private:
-    mutable size_t size;    ///< Size in bits, e.g. 16
-    mutable int signedness; ///< pos=signed, neg=unsigned, 0=unknown or evenly matched
-
 public:
     explicit IntegerType(unsigned NumBits, int sign = 0)
         : Type(eInteger)
@@ -402,14 +398,15 @@ public:
 
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool all) const override;
+
+private:
+    mutable size_t size;    ///< Size in bits, e.g. 16
+    mutable int signedness; ///< pos=signed, neg=unsigned, 0=unknown or evenly matched
 };
 
 
 class FloatType : public Type
 {
-private:
-    mutable size_t size; // Size in bits, e.g. 64
-
 public:
     explicit FloatType(int sz = 64);
     static std::shared_ptr<FloatType> get(int sz = 64);
@@ -435,7 +432,10 @@ public:
 
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool all) const override;
-}; // class FloatType
+
+private:
+    mutable size_t size; // Size in bits, e.g. 64
+};
 
 
 class BooleanType : public Type
@@ -443,8 +443,10 @@ class BooleanType : public Type
 public:
     BooleanType();
     virtual ~BooleanType();
+
     virtual bool isBoolean() const override { return true; }
     static std::shared_ptr<BooleanType> get() { return std::make_shared<BooleanType>(); }
+
     virtual SharedType clone() const override;
 
     virtual bool operator==(const Type& other) const override;
@@ -485,11 +487,9 @@ public:
     virtual bool isCompatible(const Type& other, bool all) const override;
 };
 
+
 class PointerType : public Type
 {
-private:
-    mutable SharedType points_to;
-
 public:
     PointerType(SharedType p);
     virtual ~PointerType();
@@ -526,6 +526,9 @@ public:
 
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool all) const override;
+
+private:
+    mutable SharedType points_to;
 };
 
 // we actually want unbounded arrays to still work correctly when
@@ -535,10 +538,6 @@ public:
 
 class ArrayType : public Type
 {
-private:
-    mutable SharedType BaseType;
-    mutable size_t Length;
-
 public:
     ArrayType(SharedType p, unsigned _length);
     ArrayType(SharedType p);
@@ -579,6 +578,10 @@ protected:
         : Type(eArray)
         , BaseType(nullptr)
         , Length(0) {}
+
+private:
+    mutable SharedType BaseType;
+    mutable size_t Length;
 };
 
 class NamedType : public Type
@@ -589,8 +592,10 @@ private:
 public:
     NamedType(const QString& _name);
     virtual ~NamedType();
+
     virtual bool isNamed() const override { return true; }
     QString getName() const { return name; }
+
     SharedType resolvesTo() const;
 
     // Get a new type variable, e.g. alpha0, alpha55
@@ -613,15 +618,10 @@ public:
     virtual bool isCompatible(const Type& other, bool all) const override;
 };
 
+
 // The compound type represents structures, not unions
 class CompoundType : public Type
 {
-private:
-    std::vector<SharedType> types;
-    std::vector<QString> names;
-    int nextGenericMemberNum;
-    bool generic;
-
 public:
     CompoundType(bool generic = false);
     virtual ~CompoundType();
@@ -695,7 +695,14 @@ public:
 
     virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
     virtual bool isCompatible(const Type& other, bool all) const override;
+
+private:
+    std::vector<SharedType> types;
+    std::vector<QString> names;
+    int nextGenericMemberNum;
+    bool generic;
 };
+
 
 // The union type represents the union of any number of any other types
 struct UnionElement
@@ -708,7 +715,8 @@ struct UnionElement
     }
 };
 
-struct  hashUnionElem
+
+struct hashUnionElem
 {
     size_t operator()(const UnionElement& e) const
     {
@@ -716,18 +724,19 @@ struct  hashUnionElem
     }
 };
 
-typedef std::unordered_set<UnionElement, hashUnionElem> UnionEntrySet;
+
+
+
 class UnionType : public Type
 {
-private:
-    // Note: list, not vector, as it is occasionally desirable to insert elements without affecting iterators
-    // (e.g. meetWith(another Union))
-    mutable UnionEntrySet li;
+public:
+    typedef std::unordered_set<UnionElement, hashUnionElem> UnionEntrySet;
+    typedef UnionEntrySet::iterator ilUnionElement;
 
 public:
-    typedef UnionEntrySet::iterator ilUnionElement;
     UnionType();
     virtual ~UnionType();
+
     virtual bool isUnion() const override { return true; }
     static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
     void addType(SharedType n, const QString& str);
@@ -761,15 +770,18 @@ public:
 
     // if this is a union of pointer types, get the union of things they point to. In dfa.cpp
     SharedType dereferenceUnion();
+
+private:
+    // Note: list, not vector, as it is occasionally desirable to insert elements without affecting iterators
+    // (e.g. meetWith(another Union))
+    mutable UnionEntrySet li;
 };
+
 
 // This class is for before type analysis. Typically, you have no info at all, or only know the size (e.g.
 // width of a register or memory transfer)
 class SizeType : public Type
 {
-private:
-    mutable size_t size; // Size in bits, e.g. 16
-
 public:
     SizeType()
         : Type(eSize) {}
@@ -797,6 +809,9 @@ public:
     virtual QString getCtype(bool final = false) const override;
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool) const override;
+
+private:
+    mutable size_t size; // Size in bits, e.g. 16
 };
 
 
@@ -804,8 +819,6 @@ public:
 // Mainly needed to represent the upper and lower half for type double
 class UpperType : public Type
 {
-    mutable SharedType base_type;
-
 public:
     UpperType(SharedType base)
         : Type(eUpper)
@@ -830,13 +843,13 @@ public:
     virtual QString getCtype(bool final = false) const override;
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool all) const override;
-}; // class UpperType
+
+    mutable SharedType base_type;
+};
 
 // As above, but stores the lower half
 class LowerType : public Type
 {
-    mutable SharedType base_type;
-
 public:
     LowerType(SharedType base)
         : Type(eUpper)
@@ -861,7 +874,11 @@ public:
     virtual QString getCtype(bool final = false) const override;
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool all) const override;
-}; // class LowerType
+
+private:
+    mutable SharedType base_type;
+};
+
 
 /**
  * \class DataInterval.
@@ -882,12 +899,11 @@ struct DataInterval
     SharedType type; ///< The type of the variable
 };
 
-typedef std::pair<const Address, DataInterval> DataIntervalEntry; // For result of find() below
 
 class DataIntervalMap
 {
-    std::map<Address, DataInterval> dimap;
-    UserProc *proc; // If used for locals, has ptr to UserProc, else nullptr
+public:
+    typedef std::pair<const Address, DataInterval> DataIntervalEntry; // For result of find() below
 
 public:
     DataIntervalMap() {}
@@ -919,6 +935,10 @@ private:
     // components out of the way, meeting if necessary
     void replaceComponents(Address addr, const QString& name, SharedType ty, bool);
     void checkMatching(DataIntervalEntry *pdie, Address addr, const QString&, SharedType ty, bool);
+
+private:
+    std::map<Address, DataInterval> dimap;
+    UserProc *proc; // If used for locals, has ptr to UserProc, else nullptr
 };
 
 // Not part of the Type class, but logically belongs with it:

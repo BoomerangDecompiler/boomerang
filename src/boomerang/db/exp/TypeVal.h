@@ -8,9 +8,6 @@
 * ==============================================================================*/
 class TypeVal : public Terminal
 {
-private:
-    SharedType val;
-
 public:
     TypeVal(SharedType ty);
     ~TypeVal();
@@ -37,4 +34,7 @@ public:
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
     virtual SharedExp accept(ExpModifier *v) override;
+
+private:
+    SharedType val;
 };

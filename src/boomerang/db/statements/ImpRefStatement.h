@@ -7,8 +7,6 @@
 // if there is more than one local variable sharing the same memory address (separated then by type).
 class ImpRefStatement : public TypingStatement
 {
-    SharedExp m_addressExp; // The expression representing the address of the location referenced
-
 public:
     // Constructor, subexpression
     ImpRefStatement(SharedType ty, SharedExp a);
@@ -35,4 +33,7 @@ public:
 
     // NOTE: ImpRefStatement not yet used
     virtual void print(QTextStream& os, bool html = false) const override;
+
+private:
+    SharedExp m_addressExp; // The expression representing the address of the location referenced
 };

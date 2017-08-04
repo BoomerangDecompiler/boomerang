@@ -44,12 +44,6 @@ struct BinarySymbol;
 
 class Global : public Printable
 {
-private:
-    SharedType m_type;
-       Address m_addr;
-    QString m_name;
-    Prog *m_parent;
-
 public:
     Global(SharedType type, Address addr, const QString& name, Prog *p)
         : m_type(type)
@@ -85,6 +79,12 @@ protected:
     Global()
         : m_type(nullptr)
         , m_addr(Address::ZERO) {}
+
+private:
+    SharedType m_type;
+    Address m_addr;
+    QString m_name;
+    Prog *m_parent;
 };
 
 
@@ -92,22 +92,16 @@ class Prog : public QObject
 {
     Q_OBJECT
 
-private:
-    class IBinaryImage *m_image;
-    SymTab *m_binarySymbols;
-
 public:
     /// The type for the list of functions.
     typedef std::list<Module *>          ModuleList;
     typedef ModuleList::iterator         iterator;
     typedef ModuleList::const_iterator   const_iterator;
 
-private:
-    ModuleList m_moduleList;  ///< The Modules that make up this program
-
 public:
     typedef std::map<Address, BinarySymbol *> AddressToSymbolMap;
 
+public:
     Prog(const QString& name);
     virtual ~Prog();
 
@@ -425,4 +419,10 @@ protected:
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
     int m_iNumberedProc;          ///< Next numbered proc will use this
     Module *m_rootCluster;        ///< Root of the cluster tree
+
+    class IBinaryImage *m_image;
+    SymTab *m_binarySymbols;
+
+private:
+    ModuleList m_moduleList;  ///< The Modules that make up this program
 };

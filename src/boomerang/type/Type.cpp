@@ -1837,7 +1837,7 @@ DataIntervalMap::iterator DataIntervalMap::find_it(Address addr)
 }
 
 
-DataIntervalEntry *DataIntervalMap::find(Address addr)
+DataIntervalMap::DataIntervalEntry *DataIntervalMap::find(Address addr)
 {
     iterator it = find_it(addr);
 
@@ -2136,7 +2136,7 @@ char *DataIntervalMap::prints()
 
 ComplexTypeCompList& Type::compForAddress(Address addr, DataIntervalMap& dim)
 {
-    DataIntervalEntry   *pdie = dim.find(addr);
+    DataIntervalMap::DataIntervalEntry *pdie = dim.find(addr);
     ComplexTypeCompList *res  = new ComplexTypeCompList;
 
     if (pdie == nullptr) {

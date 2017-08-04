@@ -933,7 +933,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
 
-    LOG_MSG("%1 %2", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
+    LOG_MSG("%1 procedure '%2'", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
@@ -1072,7 +1072,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     // if child is empty, i.e. no child involved in recursion
     if (child->empty()) {
         Boomerang::get()->alertDecompiling(this);
-        LOG_MSG("Decompiling %1", getName());
+        LOG_MSG("Decompiling procedure '%1'", getName());
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         child = middleDecompile(path, indent);

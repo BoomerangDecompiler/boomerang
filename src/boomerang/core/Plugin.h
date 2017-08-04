@@ -19,6 +19,7 @@ struct PluginInfo
     std::string author;  ///< Plugin creator (copyright information)
 };
 
+
 class PluginHandle
 {
 public:
@@ -33,6 +34,7 @@ public:
 private:
     void* m_handle;
 };
+
 
 /**
  * Class for managing an interface plugin.

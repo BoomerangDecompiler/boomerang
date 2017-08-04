@@ -14,5 +14,5 @@ class FunctionPass : public Pass
 {
 public:
     virtual ~FunctionPass() {}
-    virtual bool runOnFunction(Function& F) = 0;
+    virtual bool runOnFunction(Function& function) = 0;
 };

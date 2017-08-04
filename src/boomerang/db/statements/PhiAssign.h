@@ -2,20 +2,15 @@
 
 #include "boomerang/db/statements/Assignment.h"
 
-// The below could almost be a RefExp. But we could not at one stage #include exp.h as part of statement,h; that's since
-// changed so it is now possible, and arguably desirable.  However, it's convenient to have these members public
+/// The below could almost be a RefExp. But we could not at one stage #include exp.h as part of statement,h; that's since
+/// changed so it is now possible, and arguably desirable.  However, it's convenient to have these members public
 struct PhiInfo
 {
-    // A default constructor is required because CFG changes (?) can cause access to elements of the vector that
-    // are beyond the current end, creating gaps which have to be initialised to zeroes so that they can be skipped
-    PhiInfo() {} // : def(0), e(0) not initializing to help valgrind find locations of unset vals
-
     SharedExp         e; // The expression for the thing being defined (never subscripted)
     void              def(Instruction *def) { m_def = def; /*assert(def);*/ }
     Instruction       *def() { return m_def; }
     const Instruction *def() const { return m_def; }
 
-protected:
     Instruction       *m_def; // The defining statement
 };
 
@@ -37,9 +32,6 @@ public:
     typedef std::map<BasicBlock *, PhiInfo>   Definitions;
     typedef Definitions::iterator             iterator;
     typedef Definitions::const_iterator       const_iterator;
-
-private:
-    Definitions DefVec; // A vector of information about definitions
 
 public:
     PhiAssign(SharedExp _lhs)
@@ -132,4 +124,7 @@ public:
 
     // Generate a list of references for the parameters
     void enumerateParams(std::list<SharedExp>& le);
+
+private:
+    Definitions DefVec; // A vector of information about definitions
 };

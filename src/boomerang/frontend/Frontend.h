@@ -78,7 +78,6 @@ public:
 
     virtual ~IFrontEnd();
 
-
     /***************************************************************************/ /**
     * \brief Create from a binary file
     * Static function to instantiate an appropriate concrete front end
@@ -96,14 +95,6 @@ public:
     * \returns Binary-specific frontend.
     ******************************************************************************/
     static IFrontEnd *create(const QString& fname, Prog *prog);
-
-//    /**
-//     * Get an instance of a class derived from FrontEnd, returning a pointer to the object of
-//     * that class. Do this by guessing the machine for the binary file whose name is sName, loading the
-//     * appropriate library using dlopen/dlsym, running the "construct" function in that library, and returning
-//     * the result.
-//     */
-//    static FrontEnd *getInstanceFor(const char *sName, void *&dlHandle, QObject *pLoader, IInstructionTranslator *&decoder);
 
     /// Is this a win32 frontend?
     bool isWin32() const;

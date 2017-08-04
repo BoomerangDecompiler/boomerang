@@ -21,12 +21,6 @@ private:
         Function *pp;      ///< Pointer to function
     };
 
-    Data u;
-
-    QString m_string;
-    int m_conscript;   ///< like a subscript for constants
-    SharedType m_type; ///< Constants need types during type analysis
-
 public:
     // Special constructors overloaded for the various constants
     Const(uint32_t i);
@@ -127,4 +121,11 @@ public:
 
     virtual SharedType ascendType() override;
     virtual void descendType(SharedType parentType, bool& ch, Instruction *s) override;
+
+private:
+    Data u;
+
+    QString m_string;
+    int m_conscript;   ///< like a subscript for constants
+    SharedType m_type; ///< Constants need types during type analysis
 };

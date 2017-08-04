@@ -7,47 +7,12 @@
 class ImplicitAssign;
 
 /***************************************************************************/ /**
- * CallStatement: represents a high level call. Information about parameters and the like are stored here.
+ * CallStatement: represents a high level call.
+ * Information about parameters and the like are stored here.
  ******************************************************************************/
 class CallStatement : public GotoStatement
 {
-private:
-    bool m_returnAfterCall; // True if call is effectively followed by a return.
-
-    /// The list of arguments passed by this call, actually a list of Assign statements (location := expr)
-    StatementList m_arguments;
-
-    /// The list of defines for this call, a list of ImplicitAssigns (used to be called returns).
-    /// Essentially a localised copy of the modifies of the callee, so the callee could be deleted. Stores types and
-    /// locations.  Note that not necessarily all of the defines end up being declared as results.
-    StatementList m_defines;
-
-    /// Destination of call. In the case of an analysed indirect call, this will be ONE target's return statement.
-    /// For an unanalysed indirect call, or a call whose callee is not yet sufficiently decompiled due to recursion,
-    /// this will be nullptr
-    Function *m_procDest;
-
-    /// The signature for this call. NOTE: this used to be stored in the Proc, but this does not make sense when
-    /// the proc happens to have varargs
-    std::shared_ptr<Signature> m_signature;
-
-    /// A UseCollector object to collect the live variables at this call.
-    /// Used as part of the calculation of results
-    UseCollector m_useCol;
-
-    /// A DefCollector object to collect the reaching definitions;
-    /// used for bypassAndPropagate/localiseExp etc; also
-    /// the basis for arguments if this is an unanlysed indirect call
-    DefCollector m_defCol;
-
-    /// Pointer to the callee ReturnStatement. If the callee is unanlysed,
-    /// this will be a special ReturnStatement with ImplicitAssigns.
-    /// Callee could be unanalysed because of an unanalysed indirect call,
-    /// or a "recursion break".
-    ReturnStatement *m_calleeReturn;
-
 public:
-
     /***************************************************************************/ /**
      * \fn         CallStatement::CallStatement
      * \brief      Constructor for a call
@@ -300,4 +265,40 @@ protected:
     void updateDefineWithType(int n);
 
     void appendArgument(Assignment *as) { m_arguments.append(as); }
+
+private:
+    bool m_returnAfterCall; // True if call is effectively followed by a return.
+
+    /// The list of arguments passed by this call, actually a list of Assign statements (location := expr)
+    StatementList m_arguments;
+
+    /// The list of defines for this call, a list of ImplicitAssigns (used to be called returns).
+    /// Essentially a localised copy of the modifies of the callee, so the callee could be deleted. Stores types and
+    /// locations.  Note that not necessarily all of the defines end up being declared as results.
+    StatementList m_defines;
+
+    /// Destination of call. In the case of an analysed indirect call, this will be ONE target's return statement.
+    /// For an unanalysed indirect call, or a call whose callee is not yet sufficiently decompiled due to recursion,
+    /// this will be nullptr
+    Function *m_procDest;
+
+    /// The signature for this call. NOTE: this used to be stored in the Proc, but this does not make sense when
+    /// the proc happens to have varargs
+    std::shared_ptr<Signature> m_signature;
+
+    /// A UseCollector object to collect the live variables at this call.
+    /// Used as part of the calculation of results
+    UseCollector m_useCol;
+
+    /// A DefCollector object to collect the reaching definitions;
+    /// used for bypassAndPropagate/localiseExp etc; also
+    /// the basis for arguments if this is an unanlysed indirect call
+    DefCollector m_defCol;
+
+    /// Pointer to the callee ReturnStatement. If the callee is unanlysed,
+    /// this will be a special ReturnStatement with ImplicitAssigns.
+    /// Callee could be unanalysed because of an unanalysed indirect call,
+    /// or a "recursion break".
+    ReturnStatement *m_calleeReturn;
+
 };

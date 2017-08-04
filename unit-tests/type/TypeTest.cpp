@@ -117,7 +117,7 @@ void TypeTest::testDataInterval()
 					 "0x00001004-0x0000100c second double\n");
 	QCOMPARE(actual, expected);
 
-	DataIntervalEntry *pdie = dim.find(Address(0x00001000));
+	DataIntervalMap::DataIntervalEntry *pdie = dim.find(Address(0x00001000));
 	QVERIFY(pdie);
 	QCOMPARE(pdie->second.name, QString("first"));
 
@@ -198,7 +198,7 @@ void TypeTest::testDataIntervalOverlaps()
 	ctu->addType(FloatType::get(32), "newFloat");
 	dim.addItem(Address(0x00001008), "replacementStruct", ctu);
 
-	DataIntervalEntry *pdie  = dim.find(Address(0x1008));
+	DataIntervalMap::DataIntervalEntry *pdie  = dim.find(Address(0x1008));
 	QString           actual = pdie->second.type->getCtype();
 	QCOMPARE(actual, QString("struct { int newInt; float newFloat; }"));
 

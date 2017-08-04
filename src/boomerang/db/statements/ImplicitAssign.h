@@ -7,9 +7,9 @@
 class ImplicitAssign : public Assignment
 {
 public:
-    // Implicit Assignment
     /// Constructor and subexpression
     ImplicitAssign(SharedExp lhs);
+
     /// Constructor, type, and subexpression
     ImplicitAssign(SharedType ty, SharedExp lhs);
     ImplicitAssign(ImplicitAssign& o);
@@ -41,4 +41,4 @@ public:
     virtual bool accept(StmtExpVisitor *visitor) override;
     virtual bool accept(StmtModifier *visitor) override;
     virtual bool accept(StmtPartModifier *visitor) override;
-}; // class ImplicitAssign
+};

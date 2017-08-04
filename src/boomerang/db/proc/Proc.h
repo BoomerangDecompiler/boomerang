@@ -26,8 +26,10 @@ class Module;
 class CallStatement;
 class Prog;
 
-/// Interface for the procedure classes, which are used to store information about variables in the
-/// procedure such as parameters and locals.
+/**
+ * Interface for the procedure classes, which are used to store information about variables in the
+ * procedure such as parameters and locals.
+ */
 class Function : public Printable
 {
     typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;

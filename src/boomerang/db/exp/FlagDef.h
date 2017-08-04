@@ -7,9 +7,6 @@
 ******************************************************************************/
 class FlagDef : public Unary
 {
-private:
-    SharedRTL rtl;
-
 public:
     FlagDef(SharedExp params, SharedRTL rtl);
     virtual ~FlagDef();
@@ -19,5 +16,8 @@ public:
     // Visitation
     virtual bool accept(ExpVisitor *v) override;
     virtual SharedExp accept(ExpModifier *v) override;
+
+private:
+    SharedRTL rtl;
 };
 

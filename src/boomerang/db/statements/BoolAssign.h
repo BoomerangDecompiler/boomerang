@@ -9,14 +9,7 @@
  ******************************************************************************/
 class BoolAssign : public Assignment
 {
-    BranchType m_jumpType; ///< the condition for setting true
-    SharedExp m_cond;      ///< Exp representation of the high level
-    // condition: e.g. r[8] == 5
-    bool m_isFloat;        ///< True if condition uses floating point CC
-    int m_size;            ///< The size of the dest
-
 public:
-
     /***************************************************************************/ /**
      * \fn         BoolAssign::BoolAssign
      * \brief         Constructor.
@@ -113,4 +106,11 @@ public:
     void setLeftFromList(std::list<Instruction *> *stmts);
 
     virtual void dfaTypeAnalysis(bool& ch) override;
+
+private:
+    BranchType m_jumpType; ///< the condition for setting true
+    SharedExp m_cond;      ///< Exp representation of the high level
+    // condition: e.g. r[8] == 5
+    bool m_isFloat;        ///< True if condition uses floating point CC
+    int m_size;            ///< The size of the dest
 };

@@ -28,7 +28,6 @@ class IBinaryImage;
 class NJMCDecoder : public IDecoder
 {
 public:
-
     /***************************************************************************/ /**
      * \param       prog Pointer to the Prog object
      ******************************************************************************/
@@ -146,6 +145,7 @@ protected:
     IBinaryImage *m_image;
 };
 
+
 /**
  * Function used to guess whether a given pc-relative address is the start of a function
  * Does the instruction at the given offset correspond to a caller prologue?
@@ -157,11 +157,11 @@ bool isFuncPrologue(Address hostPC);
  * These are the macros that each of the .m files depend upon.
  ******************************************************************************/
 #define DEBUG_DECODER    (Boomerang::get()->debugDecoder)
-#define SHOW_ASM(output) \
-    if (DEBUG_DECODER) { \
-        QString asmStr;  \
-        QTextStream ost(&asmStr); \
-        ost << output; \
+#define SHOW_ASM(output)               \
+    if (DEBUG_DECODER) {               \
+        QString asmStr;                \
+        QTextStream ost(&asmStr);      \
+        ost << output;                 \
         LOG_MSG("%1: %2", pc, asmStr); \
     }
 
@@ -174,22 +174,22 @@ bool isFuncPrologue(Address hostPC);
 // Macros for branches. Note: don't put inside a "match" statement, since
 // the ordering is changed and multiple copies may be made
 
-#define COND_JUMP(name, size, relocd, cond)                  \
-    result.rtl = new RTL(pc, stmts);                      \
-    BranchStatement *jump = new BranchStatement;          \
-    result.rtl->appendStmt(jump);                          \
-    result.numBytes = size;                                  \
-    jump->setDest(Address(relocd.value() - delta)); \
-    jump->setCondType(cond);                              \
+#define COND_JUMP(name, size, relocd, cond)          \
+    result.rtl = new RTL(pc, stmts);                 \
+    BranchStatement *jump = new BranchStatement;     \
+    result.rtl->appendStmt(jump);                    \
+    result.numBytes = size;                          \
+    jump->setDest(Address(relocd.value() - delta));  \
+    jump->setCondType(cond);                         \
     SHOW_ASM(name << " " << relocd)
 
 // This one is X86 specific
-#define SETS(name, dest, cond)             \
-    BoolAssign * bs = new BoolAssign(8); \
-    bs->setLeftFromList(stmts);             \
-    stmts->clear();                         \
-    result.rtl = new RTL(pc, stmts);     \
-    result.rtl->appendStmt(bs);             \
-    bs->setCondType(cond);                 \
-    result.numBytes = 3;                 \
+#define SETS(name, dest, cond)               \
+    BoolAssign * bs = new BoolAssign(8);     \
+    bs->setLeftFromList(stmts);              \
+    stmts->clear();                          \
+    result.rtl = new RTL(pc, stmts);         \
+    result.rtl->appendStmt(bs);              \
+    bs->setCondType(cond);                   \
+    result.numBytes = 3;                     \
     SHOW_ASM(name << " " << dest)

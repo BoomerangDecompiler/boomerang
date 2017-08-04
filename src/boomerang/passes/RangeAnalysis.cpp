@@ -29,12 +29,16 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
+
 class Range : public Printable
 {
+public:
+    typedef int value_type;
+
 protected:
-    int m_stride;
-    int m_lowerBound;
-    int m_upperBound;
+    value_type m_stride;
+    value_type m_lowerBound;
+    value_type m_upperBound;
     SharedExp m_base;
 
 public:
@@ -83,38 +87,38 @@ public:
 
 struct RangePrivateData
 {
-    RangeMap&                             getRanges(Instruction *insn)
+    RangeMap& getRanges(Instruction *insn)
     {
-        return Ranges[insn];
+        return m_ranges[insn];
     }
 
-    void                                  setRanges(Instruction *insn, RangeMap r)
+    void setRanges(Instruction *insn, RangeMap r)
     {
-        Ranges[insn] = r;
+        m_ranges[insn] = r;
     }
 
-    void                                  clearRanges()
+    void clearRanges()
     {
-        SavedInputRanges.clear();
+        m_savedInputRanges.clear();
     }
 
-    RangeMap&                             getBranchRange(BranchStatement *s)
+    RangeMap& getBranchRange(BranchStatement *s)
     {
-        return BranchRanges[s];
+        return m_branchRanges[s];
     }
 
-    void                                  setBranchRange(BranchStatement *s, RangeMap& rm)
+    void setBranchRange(BranchStatement *s, RangeMap& rm)
     {
-        BranchRanges[s] = rm;
+        m_branchRanges[s] = rm;
     }
 
     void setSavedRanges(Instruction *insn, RangeMap map);
-    RangeMap                              getSavedRanges(Instruction *insn);
+    RangeMap getSavedRanges(Instruction *insn);
 
 public:
-    std::map<Instruction *, RangeMap>     SavedInputRanges; ///< overestimation of ranges of locations
-    std::map<Instruction *, RangeMap>     Ranges;           ///< saved overestimation of ranges of locations
-    std::map<BranchStatement *, RangeMap> BranchRanges;
+    std::map<Instruction *, RangeMap>     m_savedInputRanges; ///< overestimation of ranges of locations
+    std::map<Instruction *, RangeMap>     m_ranges;           ///< saved overestimation of ranges of locations
+    std::map<BranchStatement *, RangeMap> m_branchRanges;
 };
 
 
@@ -871,13 +875,13 @@ bool RangeAnalysis::runOnFunction(Function& F)
 
 RangeMap RangePrivateData::getSavedRanges(Instruction *insn)
 {
-    return SavedInputRanges[insn];
+    return m_savedInputRanges[insn];
 }
 
 
 void RangePrivateData::setSavedRanges(Instruction *insn, RangeMap map)
 {
-    SavedInputRanges[insn] = map;
+    m_savedInputRanges[insn] = map;
 }
 
 

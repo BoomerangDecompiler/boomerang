@@ -44,7 +44,7 @@ class InsOptionElem : public InsNameElem
 {
 public:
     InsOptionElem(const QString& name);
-    virtual size_t getNumTokens()   const override;
+    virtual size_t getNumTokens()    const override;
     virtual QString getInstruction() const override;
     virtual QString getInsPattern()  const override;
 };

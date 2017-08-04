@@ -101,7 +101,8 @@ public:
 
 
 SectionInfo::SectionInfo(Address sourceAddr, uint32_t size, const QString& name)
-    : m_sectionName(name)
+    : m_impl(new SectionInfoImpl)
+    , m_sectionName(name)
     , m_nativeAddr(sourceAddr)
     , m_hostAddr(HostAddress::ZERO)
     , m_sectionSize(size)
@@ -111,7 +112,6 @@ SectionInfo::SectionInfo(Address sourceAddr, uint32_t size, const QString& name)
     , m_data(false)
     , m_bss(0)
     , m_readOnly(0)
-    , m_impl(new SectionInfoImpl)
 {
 }
 

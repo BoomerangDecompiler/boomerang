@@ -23,15 +23,10 @@
 class Prog;
 class IBinaryImage;
 
+
 class Project : public QObject, public IProject
 {
     Q_OBJECT
-
-private:
-    QByteArray m_fileBytes;
-    IBinaryImage *m_image = nullptr; ///< raw memory interface
-    Prog *m_program;                 ///< program interface
-    ITypeRecovery *m_typeRecoveryEngine;
 
 public:
     virtual ~Project();
@@ -45,4 +40,10 @@ public:
     IBinaryImage *getOrCreateImage() override;
 
     const ITypeRecovery *getTypeEngine() const override { return m_typeRecoveryEngine; }
+
+private:
+    QByteArray m_fileBytes;
+    IBinaryImage *m_image = nullptr; ///< raw memory interface
+    Prog *m_program;                 ///< program interface
+    ITypeRecovery *m_typeRecoveryEngine;
 };

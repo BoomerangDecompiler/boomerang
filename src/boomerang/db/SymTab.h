@@ -32,13 +32,6 @@ typedef std::shared_ptr<class Type> SharedType;
 
 struct BinarySymbol : public IBinarySymbol
 {
-    QString              Name;
-    Address              Location;
-    SharedType           type;
-    size_t               Size;
-    /// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
-    mutable QVariantMap  attributes;
-
     const QString&       getName() const override { return Name; }
     size_t getSize() const override { return Size; }
     void setSize(size_t v) override { Size = v; }
@@ -57,18 +50,20 @@ struct BinarySymbol : public IBinarySymbol
     bool isFunction() const override;
     bool isImported() const override;
     QString belongsToSourceFile() const override;
+
+public:
+    QString              Name;
+    Address              Location;
+    SharedType           type;
+    size_t               Size;
+    /// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
+    mutable QVariantMap  attributes;
 };
+
 
 class SymTab : public IBinarySymbolTable
 {
     friend struct BinarySymbol;
-
-private:
-    // The map indexed by address.
-    std::map<Address, BinarySymbol *> amap;
-    // The map indexed by string. Note that the strings are stored twice.
-    std::map<QString, BinarySymbol *> smap;
-    std::vector<IBinarySymbol *> SymbolList;
 
 public:
     SymTab();                     // Constructor
@@ -87,4 +82,11 @@ public:
     size_t size()  const { return SymbolList.size(); }
     bool empty() const { return SymbolList.empty(); }
     void clear() override;
+
+private:
+    // The map indexed by address.
+    std::map<Address, BinarySymbol *> amap;
+    // The map indexed by string. Note that the strings are stored twice.
+    std::map<QString, BinarySymbol *> smap;
+    std::vector<IBinarySymbol *> SymbolList;
 };

@@ -17,9 +17,6 @@ using SharedExp = std::shared_ptr<Exp>;
 
 class ExpTransformer
 {
-protected:
-    static std::list<ExpTransformer *> transformers;
-
 public:
     ExpTransformer();
     virtual ~ExpTransformer() {}
@@ -28,4 +25,7 @@ public:
 
     virtual SharedExp applyTo(SharedExp e, bool& bMod) = 0;
     static SharedExp applyAllTo(const SharedExp& e, bool& bMod);
+
+protected:
+    static std::list<ExpTransformer *> transformers;
 };

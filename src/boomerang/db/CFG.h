@@ -65,9 +65,10 @@ class Cfg
     typedef std::map<Address, BasicBlock *, std::less<Address> >   MAPBB;
     typedef std::list<BasicBlock *>::iterator                      BB_IT;
     typedef std::list<BasicBlock *>::const_iterator                BBC_IT;
-    typedef BB_IT iterator;
 
 public:
+    typedef BB_IT iterator;
+
     class BBAlreadyExistsError : public std::exception
     {
     public:

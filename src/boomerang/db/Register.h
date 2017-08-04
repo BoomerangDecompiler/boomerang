@@ -116,8 +116,8 @@ public:
 private:
     QString m_name;
     uint16_t m_size;
+    bool m_fltRegister; ///< True if this is a floating point register
     void *m_address;
     int m_mappedIndex;
     int m_mappedOffset;
-    bool m_fltRegister; ///< True if this is a floating point register
 };

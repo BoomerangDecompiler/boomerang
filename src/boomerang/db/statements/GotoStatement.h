@@ -14,17 +14,6 @@
  *===========================================================================*/
 class GotoStatement : public Instruction
 {
-protected:
-    /// Destination of a jump or call. This is the absolute destinatio
-    /// for both static and dynamic CTIs.
-    SharedExp m_dest;
-    bool m_isComputed; ///< True if this is a CTI with a computed destination address.
-
-    /// NOTE: This should be removed, once CaseStatement and HLNwayCall are implemented
-    /// properly.
-    std::shared_ptr<Const> constDest() { return std::static_pointer_cast<Const>(m_dest); }
-    const std::shared_ptr<const Const> constDest() const { return std::static_pointer_cast<const Const>(m_dest); }
-
 public:
     GotoStatement();
 
@@ -79,7 +68,7 @@ public:
      * \returns Fixed dest or Address::INVALID if there isn't one, For dynamic CTIs,
      *          returns Address::INVALID.
      ******************************************************************************/
-       Address getFixedDest() const;
+    Address getFixedDest() const;
 
     /***************************************************************************/ /**
      * \brief        Adjust the destination of this CTI by a given amount. Causes
@@ -155,4 +144,15 @@ public:
     // Statement virtual functions
     virtual bool isDefinition() const override { return false; }
     virtual bool usesExp(const Exp&) const override;
+
+protected:
+    /// Destination of a jump or call. This is the absolute destinatio
+    /// for both static and dynamic CTIs.
+    SharedExp m_dest;
+    bool m_isComputed; ///< True if this is a CTI with a computed destination address.
+
+    /// NOTE: This should be removed, once CaseStatement and HLNwayCall are implemented
+    /// properly.
+    std::shared_ptr<Const> constDest() { return std::static_pointer_cast<Const>(m_dest); }
+    const std::shared_ptr<const Const> constDest() const { return std::static_pointer_cast<const Const>(m_dest); }
 };
