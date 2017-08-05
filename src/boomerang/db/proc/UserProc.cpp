@@ -399,9 +399,10 @@ void UserProc::printXML()
 
 void UserProc::printUseGraph()
 {
-    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot"));
+    QString filePath = Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
+    QFile file(filePath);
 
-    if (!file.open(QFile::WriteOnly)) {
+    if (!file.open(QFile::Text | QFile::WriteOnly)) {
         LOG_ERROR("Can't write to file %1", file.fileName());
         return;
     }
@@ -421,9 +422,8 @@ void UserProc::printUseGraph()
 
         LocationSet refs;
         s->addUsedLocs(refs);
-        LocationSet::iterator rr;
 
-        for (rr = refs.begin(); rr != refs.end(); rr++) {
+        for (LocationSet::iterator rr = refs.begin(); rr != refs.end(); rr++) {
             if (((SharedExp) * rr)->isSubscript()) {
                 auto r = (*rr)->access<RefExp>();
 
@@ -854,9 +854,7 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
 
 void UserProc::insertStatementAfter(Statement *s, Statement *a)
 {
-    BBIterator bb;
-
-    for (bb = m_cfg->begin(); bb != m_cfg->end(); bb++) {
+    for (BBIterator bb = m_cfg->begin(); bb != m_cfg->end(); bb++) {
         std::list<RTL *> *rtls = (*bb)->getRTLs();
 
         if (rtls == nullptr) {
@@ -864,9 +862,8 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
         }
 
         for (RTL *rr : *rtls) {
-            std::list<Statement *>::iterator ss;
 
-            for (ss = rr->begin(); ss != rr->end(); ss++) {
+            for (std::list<Statement *>::iterator ss = rr->begin(); ss != rr->end(); ss++) {
                 if (*ss == s) {
                     ss++; // This is the point to insert before
                     rr->insert(ss, a);

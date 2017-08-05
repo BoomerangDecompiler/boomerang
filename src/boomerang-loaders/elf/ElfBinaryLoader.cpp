@@ -897,11 +897,11 @@ void ElfBinaryLoader::applyRelocations()
 
                     switch (relType)
                     {
-                    case 0: // R_386_NONE: just ignore (common)
+                    case R_386_NONE:
                         break;
 
-                    case 1: // R_386_32: S + A
-                        S = Address(elfRead4((DWord *)&symOrigin[symTabIndex].st_value));
+                    case R_386_32: // S + A
+                        S = Address(elfRead4(&symOrigin[symTabIndex].st_value));
 
                         if (e_type == E_REL) {
                             nsec = elfRead2(&symOrigin[symTabIndex].st_shndx);
@@ -915,7 +915,7 @@ void ElfBinaryLoader::applyRelocations()
                         elfWrite4(pRelWord, (S + A).value());
                         break;
 
-                    case 2: // R_386_PC32: S + A - P
+                    case R_386_PC32: // S + A - P
 
                         if (ELF32_ST_TYPE(symOrigin[symTabIndex].st_info) == STT_SECTION) {
                             nsec = elfRead2(&symOrigin[symTabIndex].st_shndx);
@@ -958,13 +958,14 @@ void ElfBinaryLoader::applyRelocations()
                         elfWrite4(pRelWord, (S + A - P).value());
                         break;
 
-                    case 7:
-                    case 8:    // R_386_RELATIVE
-                        break; // No need to do anything with these, if a shared object
+                    case R_386_GLOB_DAT:
+                    case R_386_JMP_SLOT:
+                    case R_386_RELATIVE:
+                        // No need to do anything with these, if a shared object
+                        break;
 
                     default:
-                        LOG_WARN("Relocation type %1 not handled yet", (int)relType);
-                        ;
+                        LOG_WARN("Unknown x86 relocation type %1", (int)relType);
                     }
                 }
             }

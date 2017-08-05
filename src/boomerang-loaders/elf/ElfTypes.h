@@ -55,7 +55,21 @@ enum ElfRelocKind
     R_386_GOTPC     = 10
 };
 
+// Relocation types for x86
+#define R_386_NONE          0   ///< None
+#define R_386_32            1   ///< S + A
+#define R_386_PC32          2   ///< S + A - P
+#define R_386_GOT32         3   ///< G + A - P
+#define R_386_PLT32         4   ///< L + A - P
+#define R_386_COPY          5   ///< None
+#define R_386_GLOB_DAT      6   ///< S
+#define R_386_JMP_SLOT      7   ///< S
+#define R_386_RELATIVE      8   ///< B + A
+#define R_386_GOTOFF        9   ///< S + A - GOT
+#define R_386_GOTPC        10   ///< GOT + A - P
 
+
+/// Sparc relocation types
 #define R_SPARC_NONE        0
 #define R_SPARC_8           1
 #define R_SPARC_16          2
