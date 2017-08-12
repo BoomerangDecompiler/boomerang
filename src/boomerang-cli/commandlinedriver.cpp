@@ -119,8 +119,8 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
     }
 
     Boomerang& boom(*Boomerang::get());
-    boom.setWorkingDirectory(QFileInfo(args[0]).absolutePath());
-    boom.setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
+    boom.getSettings()->setWorkingDirectory(QFileInfo(args[0]).absolutePath());
+    boom.getSettings()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
 
     for (int i = 1; i < args.size(); ++i) {
         QString arg = args[i];
@@ -222,7 +222,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     o_path += '/'; // Maintain the convention of a trailing slash
                 }
 
-                boom.setOutputDirectory(o_path);
+                boom.getSettings()->setOutputDirectory(o_path);
                 break;
             }
 
@@ -253,7 +253,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             {
                 QString   qstr(args[++i] + "/");
                 QFileInfo qfi(qstr);
-                boom.setWorkingDirectory(qfi.path());
+                boom.getSettings()->setWorkingDirectory(qfi.path());
             }
             break;
 

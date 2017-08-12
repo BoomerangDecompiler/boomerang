@@ -162,7 +162,7 @@ void Function::printDetailsXML()
         return;
     }
 
-    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-details.xml"));
+    QFile file(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-details.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
         qDebug() << "Can't write to file:" << file.fileName();

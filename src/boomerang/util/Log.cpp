@@ -266,7 +266,7 @@ SeparateLogger::SeparateLogger(const QString filePath)
         versions[filePath] = 0;
     }
 
-    QString full_path = Boomerang::get()->getOutputDirectory().absoluteFilePath(
+    QString full_path = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(
         QString("%1_%2.log").arg(filePath).arg(versions[filePath]++, 2, 10, QChar('0')));
     addLogSink(new FileLogSink(full_path, true));
 }

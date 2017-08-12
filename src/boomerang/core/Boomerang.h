@@ -90,20 +90,6 @@ public:
      */
     ICodeGenerator *getCodeGenerator(UserProc *p = nullptr);
 
-    /// Get the path where the boomerang executable is run from.
-    QDir getWorkingDirectory() const { return QDir(m_workingDirectory); }
-    void setWorkingDirectory(const QString& directoryPath) { m_workingDirectory = directoryPath; }
-
-    /// Get the path of the data directory where plugins, ssl files etc. are stored.
-    QDir getDataDirectory() const { return QDir(m_dataDirectory); }
-    void setDataDirectory(const QString& directoryPath) { m_dataDirectory = directoryPath; }
-
-    /// Get the path where the decompiled files sould be put
-    QDir getOutputDirectory() { return QDir(m_outputDirectory); }
-
-    /// Set the output path. the directory will be created if it does not exist
-    /// \returns true if successful, false if the directory could not be created.
-    bool setOutputDirectory(const QString& directoryPath);
 
     Settings* getSettings() { return m_settings.get(); }
     const Settings* getSettings() const { return m_settings.get(); }
@@ -285,8 +271,6 @@ public:
 
     void alertDecompileDebugPoint(UserProc *p, const char *description);
 
-    QString getFilename() const;
-
 public:
     std::shared_ptr<Settings> m_settings;
 
@@ -296,9 +280,6 @@ public:
     IProject *m_currentProject;
 
     IBinarySymbolTable *m_symbols = nullptr;
-    QString m_workingDirectory;       ///< String with the path to the boomerang executable.
-    QString m_outputDirectory;        ///< The path where all output files are created.
-    QString m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
 
     std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
 

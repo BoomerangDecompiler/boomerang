@@ -108,7 +108,7 @@ IFileLoader *BinaryFileFactory::getInstanceFor(const QString& filePath)
 
 void BinaryFileFactory::populatePlugins()
 {
-    QDir pluginsDir = Boomerang::get()->getDataDirectory();
+    QDir pluginsDir = Boomerang::get()->getSettings()->getDataDirectory();
     if (!pluginsDir.cd("plugins/loader/")) {
         LOG_ERROR("Cannot open loader plugin directory!");
     }

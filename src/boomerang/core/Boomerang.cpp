@@ -32,10 +32,9 @@
 static Boomerang* boomerang = nullptr;
 
 Boomerang::Boomerang()
-    : m_currentProject(new Project)
+    : m_settings(new Settings)
+    , m_currentProject(new Project)
     , m_symbols(new SymTab)
-    , m_workingDirectory("./")
-    , m_outputDirectory("./output/")
 {
 }
 
@@ -79,20 +78,6 @@ void Boomerang::helpcmd() const
         "  print <proc>                       : Print the RTL for a proc.\n"
         "  help                               : This help.\n"
         "  exit                               : Quit the shell.\n";
-}
-
-
-/**
- * Creates a directory and tests it.
- *
- * \param dir The name of the directory.
- *
- * \retval true The directory is valid.
- * \retval false The directory is invalid.
- */
-bool createDirectory(const QString& dir)
-{
-    return QDir::root().mkpath(QFileInfo(dir).absolutePath());
 }
 
 
@@ -658,24 +643,6 @@ int Boomerang::processCommand(QStringList& args)
 }
 
 
-bool Boomerang::setOutputDirectory(const QString& path)
-{
-    m_outputDirectory = path;
-
-    if (!m_outputDirectory.endsWith(QDir::separator())) {
-        m_outputDirectory += QDir::separator();
-    }
-
-    // Create the output directory, if needed
-    if (!createDirectory(path)) {
-        LOG_ERROR("Could not create output directory %1", m_outputDirectory);
-        return false;
-    }
-
-    return true;
-}
-
-
 void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
 {
     LOG_MSG("Adding Objective-C information to Prog.");
@@ -837,7 +804,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     LOG_MSG("Generating code...");
     prog->generateCode();
 
-    LOG_VERBOSE("Output written to '%1'", m_outputDirectory + prog->getRootCluster()->getName());
+    LOG_VERBOSE("Output written to '%1'", Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(prog->getRootCluster()->getName()));
 
     time_t end;
     time(&end);
@@ -952,12 +919,6 @@ void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
     for (IWatcher *elem : m_watchers) {
         elem->alertDecompileDebugPoint(p, description);
     }
-}
-
-
-QString Boomerang::getFilename() const
-{
-    return "";
 }
 
 

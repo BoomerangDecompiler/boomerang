@@ -51,7 +51,7 @@
 
 void StatementTest::initTestCase()
 {
-    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 
@@ -61,7 +61,7 @@ void StatementTest::testEmpty()
 	SETTING(vFlag) = true;
 
   	Boomerang *boo = Boomerang::get();
-	boo->setOutputDirectory("./unit_test/");
+	boo->getSettings()->setOutputDirectory("./unit_test/");
 
 	// create Prog
 	Prog              *prog = new Prog("testEmpty");

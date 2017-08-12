@@ -26,7 +26,7 @@
 
 void CfgTest::initTestCase()
 {
-    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 

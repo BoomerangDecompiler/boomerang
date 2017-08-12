@@ -35,7 +35,7 @@
 
 void RtlTest::initTestCase()
 {
-    Boomerang::get()->setDataDirectory(BOOMERANG_TEST_BASE);
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE);
 }
 
 

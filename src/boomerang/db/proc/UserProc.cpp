@@ -315,7 +315,7 @@ void UserProc::printDecodedXML()
         return;
     }
 
-    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-decoded.xml"));
+    QFile file(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-decoded.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
         LOG_ERROR("Can't write to file %1", file.fileName());
@@ -340,7 +340,7 @@ void UserProc::printAnalysedXML()
         return;
     }
 
-    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-analysed.xml"));
+    QFile file(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-analysed.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
         LOG_ERROR("Can't write to file %1", file.fileName());
@@ -365,7 +365,7 @@ void UserProc::printSSAXML()
         return;
     }
 
-    QFile file(Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-ssa.xml"));
+    QFile file(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-ssa.xml"));
 
     if (!file.open(QFile::WriteOnly)) {
         LOG_ERROR("Can't write to file %1", file.fileName());
@@ -399,7 +399,7 @@ void UserProc::printXML()
 
 void UserProc::printUseGraph()
 {
-    QString filePath = Boomerang::get()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
+    QString filePath = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
     QFile file(filePath);
 
     if (!file.open(QFile::Text | QFile::WriteOnly)) {
@@ -649,7 +649,7 @@ void UserProc::dump() const
 void UserProc::printDFG() const
 {
     QString fname = QString("%1%2-%3-dfg.dot")
-        .arg(Boomerang::get()->getOutputDirectory().absolutePath())
+        .arg(Boomerang::get()->getSettings()->getOutputDirectory().absolutePath())
         .arg(getName())
         .arg(DFGcount);
 

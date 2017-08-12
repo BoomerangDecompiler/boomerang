@@ -1639,8 +1639,8 @@ void Prog::rangeAnalysis()
 
 void Prog::printCallGraph() const
 {
-    QString   fname1 = Boomerang::get()->getOutputDirectory().absoluteFilePath("callgraph.out");
-    QString   fname2 = Boomerang::get()->getOutputDirectory().absoluteFilePath("callgraph.dot");
+    QString   fname1 = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("callgraph.out");
+    QString   fname2 = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("callgraph.dot");
     QSaveFile file1(fname1);
     QSaveFile file2(fname2);
 
@@ -1753,7 +1753,7 @@ Machine Prog::getMachine() const
 void Prog::printSymbolsToFile() const
 {
     LOG_VERBOSE("Entering Prog::printSymbolsToFile");
-    QString   fname = Boomerang::get()->getOutputDirectory().absoluteFilePath("symbols.h");
+    QString   fname = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("symbols.h");
     QSaveFile tgt(fname);
 
     if (!tgt.open(QFile::WriteOnly)) {
@@ -1799,7 +1799,7 @@ void Prog::printCallGraphXML() const
         }
     }
 
-    QString     fname = Boomerang::get()->getOutputDirectory().absoluteFilePath("callgraph.xml");
+    QString     fname = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("callgraph.xml");
     QSaveFile   CallGraphFile(fname);
     QTextStream f(&CallGraphFile);
     f << "<prog name=\"" << getName() << "\">\n";

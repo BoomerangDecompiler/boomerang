@@ -26,8 +26,8 @@ void DecompilerThread::run()
 {
     threadToCollect = QThread::currentThreadId();
 
-    Boomerang::get()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
-    Boomerang::get()->setOutputDirectory("output");
+    Boomerang::get()->getSettings()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
+    Boomerang::get()->getSettings()->setOutputDirectory("output");
     // Boomerang::get()->vFlag = true;
     // SETTING(traceDecoder) = true;
 
@@ -89,7 +89,7 @@ void Decompiler::changeInputFile(const QString& f)
 
 void Decompiler::changeOutputPath(const QString& path)
 {
-    Boomerang::get()->setOutputDirectory(path);
+    Boomerang::get()->getSettings()->setOutputDirectory(path);
 }
 
 
