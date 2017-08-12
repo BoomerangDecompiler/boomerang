@@ -494,65 +494,6 @@ void UserProc::addCallee(Function *callee)
 }
 
 
-void UserProc::generateCode(ICodeGenerator *hll)
-{
-    assert(m_cfg);
-    assert(getEntryBB());
-
-    m_cfg->structure();
-    removeUnusedLocals();
-
-    // Note: don't try to remove unused statements here; that requires the
-    // RefExps, which are all gone now (transformed out of SSA form)!
-
-    if (SETTING(printRtl)) {
-        LOG_VERBOSE("%1", this->toString());
-    }
-
-    // Start generating code for this procedure.
-    hll->addProcStart(this);
-
-    // Local variables; print everything in the locals map
-    std::map<QString, SharedType>::iterator last = m_locals.end();
-
-    if (!m_locals.empty()) {
-        last--;
-    }
-
-    for (std::map<QString, SharedType>::iterator it = m_locals.begin(); it != m_locals.end(); it++) {
-        SharedType locType = it->second;
-
-        if ((locType == nullptr) || locType->isVoid()) {
-            locType = IntegerType::get(STD_SIZE);
-        }
-
-        hll->addLocal(it->first, locType, it == last);
-    }
-
-    if (SETTING(noDecompile) && (getName() == "main")) {
-        StatementList args, results;
-
-        if (m_prog->getFrontEndId() == Platform::PENTIUM) {
-            hll->addCallStatement(nullptr, "PENTIUMSETUP", args, &results);
-        }
-        else if (m_prog->getFrontEndId() == Platform::SPARC) {
-            hll->addCallStatement(nullptr, "SPARCSETUP", args, &results);
-        }
-    }
-
-    std::list<BasicBlock *> followSet, gotoSet;
-    getEntryBB()->generateCode(hll, nullptr, followSet, gotoSet, this);
-
-    hll->addProcEnd();
-
-    if (!SETTING(noRemoveLabels)) {
-        m_cfg->removeUnneededLabels(hll);
-    }
-
-    setStatus(PROC_CODE_GENERATED);
-}
-
-
 void UserProc::print(QTextStream& out, bool html) const
 {
     QString     tgt1;

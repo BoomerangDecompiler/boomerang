@@ -32,6 +32,8 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/BasicBlock.h"
+
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 
@@ -70,7 +72,60 @@ void CCodeGenerator::generateCode(UserProc* proc)
     m_lines.clear();
     m_proc = proc;
 
-    proc->generateCode(this);
+    assert(proc->getCFG());
+    assert(proc->getEntryBB());
+
+    proc->getCFG()->structure();
+    proc->removeUnusedLocals();
+
+    // Note: don't try to remove unused statements here; that requires the
+    // RefExps, which are all gone now (transformed out of SSA form)!
+
+    if (SETTING(printRtl)) {
+        LOG_VERBOSE("%1", proc->toString());
+    }
+
+    // Start generating code for this procedure.
+    this->addProcStart(proc);
+
+    // Local variables; print everything in the locals map
+    std::map<QString, SharedType>::const_iterator last = proc->getLocals().end();
+
+    if (!proc->getLocals().empty()) {
+        last = std::prev(last);
+    }
+
+    for (auto it = proc->getLocals().begin(); it != proc->getLocals().end(); it++) {
+        SharedType locType = it->second;
+
+        if ((locType == nullptr) || locType->isVoid()) {
+            locType = IntegerType::get(STD_SIZE);
+        }
+
+        addLocal(it->first, locType, it == last);
+    }
+
+    if (SETTING(noDecompile) && (proc->getName() == "main")) {
+        StatementList args, results;
+
+        if (proc->getProg()->getFrontEndId() == Platform::PENTIUM) {
+            addCallStatement(nullptr, "PENTIUMSETUP", args, &results);
+        }
+        else if (proc->getProg()->getFrontEndId() == Platform::SPARC) {
+            addCallStatement(nullptr, "SPARCSETUP", args, &results);
+        }
+    }
+
+    std::list<BasicBlock *> followSet, gotoSet;
+    proc->getEntryBB()->generateCode(this, nullptr, followSet, gotoSet, proc);
+
+    addProcEnd();
+
+    if (!SETTING(noRemoveLabels)) {
+        proc->getCFG()->removeUnneededLabels(this);
+    }
+
+    proc->setStatus(PROC_CODE_GENERATED);
 }
 
 
