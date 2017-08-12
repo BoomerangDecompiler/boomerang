@@ -138,13 +138,13 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         switch (arg[1].toLatin1())
         {
         case 'E':
-            boom.noDecodeChildren = true;
+            SETTING(noDecodeChildren) = true;
             // Fall through
 
         case 'e':
             {
                 Address addr;
-                boom.decodeMain = false;
+                SETTING(decodeMain) = false;
 
                 if (++i == args.size()) {
                     usage();
@@ -167,34 +167,34 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'v':
-            boom.vFlag = true;
+            SETTING(vFlag) = true;
             break;
 
         case 'x':
-            boom.dumpXML = true;
+            SETTING(dumpXML) = true;
             break;
 
         case 'X':
-            boom.experimental = true;
+            SETTING(experimental) = true;
             LOG_WARN("Activating experimental code!");
             break;
 
         case 'r':
-            boom.printRtl = true;
+            SETTING(printRtl) = true;
             break;
 
         case 't':
-            boom.traceDecoder = true;
+            SETTING(traceDecoder) = true;
             break;
 
         case 'T':
 
             if (arg[2] == 'c') {
-                boom.conTypeAnalysis = true; // -Tc: use old constraint-based type analysis
-                boom.dfaTypeAnalysis = false;
+                SETTING(conTypeAnalysis) = true; // -Tc: use old constraint-based type analysis
+                SETTING(dfaTypeAnalysis) = false;
             }
             else if (arg[2] == 'd') {
-                boom.dfaTypeAnalysis = true; // -Td: use data-flow-based type analysis (now default)
+                SETTING(dfaTypeAnalysis) = true; // -Td: use data-flow-based type analysis (now default)
             }
 
             break;
@@ -202,14 +202,14 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 'g':
 
             if (arg[2] == 'd') {
-                boom.dotFile = args[++i];
+                SETTING(dotFile) = args[++i];
             }
             else if (arg[2] == 'c') {
-                boom.generateCallGraph = true;
+                SETTING(generateCallGraph) = true;
             }
             else if (arg[2] == 's') {
-                boom.generateSymbols     = true;
-                boom.stopBeforeDecompile = true;
+                SETTING(generateSymbols)     = true;
+                SETTING(stopBeforeDecompile) = true;
             }
 
             break;
@@ -229,7 +229,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 'i':
 
             if (arg[2] == 'c') {
-                boom.decodeThruIndCall = true; // -ic;
+                SETTING(decodeThruIndCall) = true; // -ic;
             }
 
             break;
@@ -240,7 +240,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 'L':
 
             if (arg[2] == 'D') {
-                boom.loadBeforeDecompile = true;
+                SETTING(loadBeforeDecompile) = true;
             }
 
             break;
@@ -262,47 +262,47 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             switch (arg[2].toLatin1())
             {
             case 'b':
-                boom.noBranchSimplify = true;
+                SETTING(noBranchSimplify) = true;
                 break;
 
             case 'c':
-                boom.noDecodeChildren = true;
+                SETTING(noDecodeChildren) = true;
                 break;
 
             case 'd':
-                boom.noDataflow = true;
+                SETTING(noDataflow) = true;
                 break;
 
             case 'D':
-                boom.noDecompile = true;
+                SETTING(noDecompile) = true;
                 break;
 
             case 'l':
-                boom.noLocals = true;
+                SETTING(noLocals) = true;
                 break;
 
             case 'n':
-                boom.noRemoveNull = true;
+                SETTING(noRemoveNull) = true;
                 break;
 
             case 'P':
-                boom.noPromote = true;
+                SETTING(noPromote) = true;
                 break;
 
             case 'p':
-                boom.noParameterNames = true;
+                SETTING(noParameterNames) = true;
                 break;
 
             case 'r':
-                boom.noRemoveLabels = true;
+                SETTING(noRemoveLabels) = true;
                 break;
 
             case 'R':
-                boom.noRemoveReturns = true;
+                SETTING(noRemoveReturns) = true;
                 break;
 
             case 'g':
-                boom.noGlobals = true;
+                SETTING(noGlobals) = true;
                 break;
 
             default:
@@ -314,7 +314,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 'p':
 
             if (arg[2] == 'a') {
-                boom.propOnlyToAll = true;
+                SETTING(propOnlyToAll) = true;
                 LOG_WARN(" * * Warning! -pa is not implemented yet!");
             }
             else {
@@ -323,7 +323,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     return 1;
                 }
 
-                boom.numToPropagate = args[i].toInt();
+                SETTING(numToPropagate) = args[i].toInt();
             }
 
             break;
@@ -359,39 +359,39 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             switch (arg[2].toLatin1())
             {
             case 'a':
-                boom.printAST = true;
+                SETTING(printAST) = true;
                 break;
 
             case 'c':
-                boom.debugSwitch = true;
+                SETTING(debugSwitch) = true;
                 break;
 
             case 'd':
-                boom.debugDecoder = true;
+                SETTING(debugDecoder) = true;
                 break;
 
             case 'g':
-                boom.debugGen = true;
+                SETTING(debugGen) = true;
                 break;
 
             case 'l':
-                boom.debugLiveness = true;
+                SETTING(debugLiveness) = true;
                 break;
 
             case 'p':
-                boom.debugProof = true;
+                SETTING(debugProof) = true;
                 break;
 
             case 's':
-                boom.stopAtDebugPoints = true;
+                SETTING(stopAtDebugPoints) = true;
                 break;
 
             case 't': // debug type analysis
-                boom.debugTA = true;
+                SETTING(debugTA) = true;
                 break;
 
             case 'u': // debug unused locations (including returns and parameters now)
-                boom.debugUnused = true;
+                SETTING(debugUnused) = true;
                 break;
 
             default:
@@ -407,11 +407,11 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 return 1;
             }
 
-            boom.maxMemDepth = args[i].toInt();
+            SETTING(maxMemDepth) = args[i].toInt();
             break;
 
         case 'a':
-            boom.assumeABI = true;
+            SETTING(assumeABI) = true;
             break;
 
         case 'l':
@@ -421,13 +421,13 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 return 1;
             }
 
-            boom.propMaxDepth = args[i].toInt();
+            SETTING(propMaxDepth) = args[i].toInt();
             break;
 
         case 'S':
 
             if (arg[2] == 'D') {
-                boom.saveBeforeDecompile = true;
+                SETTING(saveBeforeDecompile) = true;
             }
             else {
                 minsToStopAfter = args[++i].toInt();

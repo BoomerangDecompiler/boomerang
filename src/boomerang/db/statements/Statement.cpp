@@ -301,7 +301,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
     int  changes = 0;
     // int sp = proc->getSignature()->getStackRegister(proc->getProg());
     // Exp* regSp = Location::regOf(sp);
-    int propMaxDepth = Boomerang::get()->propMaxDepth;
+    int propMaxDepth = SETTING(propMaxDepth);
 
     do {
         LocationSet exps;
@@ -471,12 +471,12 @@ bool Statement::propagateFlagsTo()
 bool Statement::doPropagateTo(SharedExp e, Assignment *def, bool& convert)
 {
     // Respect the -p N switch
-    if (Boomerang::get()->numToPropagate >= 0) {
-        if (Boomerang::get()->numToPropagate == 0) {
+    if (SETTING(numToPropagate) >= 0) {
+        if (SETTING(numToPropagate) == 0) {
             return false;
         }
 
-        Boomerang::get()->numToPropagate--;
+        SETTING(numToPropagate--);
     }
 
     LOG_VERBOSE("Propagating %1 into %2", def, this);

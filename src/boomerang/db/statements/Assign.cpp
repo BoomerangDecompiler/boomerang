@@ -69,7 +69,7 @@ void Assign::simplify()
     // simplify arithmetic of assignment
     OPER leftop = m_lhs->getOper();
 
-    if (Boomerang::get()->noBranchSimplify) {
+    if (SETTING(noBranchSimplify)) {
         if ((leftop == opZF) || (leftop == opCF) || (leftop == opOF) || (leftop == opNF)) {
             return;
         }

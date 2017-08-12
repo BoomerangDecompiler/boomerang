@@ -11,13 +11,13 @@ LoggingSettingsDlg::LoggingSettingsDlg(QWidget *parent)
     , ui(new Ui::LoggingSettingsDlg)
 {
     ui->setupUi(this);
-    ui->chkVerbose->setChecked(Boomerang::get()->vFlag);
-    ui->chkLiveness->setChecked(Boomerang::get()->debugLiveness);
-    ui->chkUnused->setChecked(Boomerang::get()->debugUnused);
-    ui->chkTypeAnalysis->setChecked(Boomerang::get()->debugTA);
-    ui->chkDecoder->setChecked(Boomerang::get()->debugDecoder);
-    ui->chkCodegen->setChecked(Boomerang::get()->debugGen);
-    ui->chkSwitch->setChecked(Boomerang::get()->debugSwitch);
+    ui->chkVerbose->setChecked(SETTING(vFlag));
+    ui->chkLiveness->setChecked(SETTING(debugLiveness));
+    ui->chkUnused->setChecked(SETTING(debugUnused));
+    ui->chkTypeAnalysis->setChecked(SETTING(debugTA));
+    ui->chkDecoder->setChecked(SETTING(debugDecoder));
+    ui->chkCodegen->setChecked(SETTING(debugGen));
+    ui->chkSwitch->setChecked(SETTING(debugSwitch));
 }
 
 
@@ -45,13 +45,13 @@ void LoggingSettingsDlg::changeEvent(QEvent *e)
 
 void LoggingSettingsDlg::on_btnApply_clicked()
 {
-    Boomerang::get()->vFlag         = ui->chkVerbose->isChecked();
-    Boomerang::get()->debugTA       = ui->chkTypeAnalysis->isChecked();
-    Boomerang::get()->debugLiveness = ui->chkLiveness->isChecked();
-    Boomerang::get()->debugUnused   = ui->chkUnused->isChecked();
-    Boomerang::get()->debugDecoder  = ui->chkDecoder->isChecked();
-    Boomerang::get()->debugGen      = ui->chkCodegen->isChecked();
-    Boomerang::get()->debugSwitch   = ui->chkSwitch->isChecked();
+    SETTING(vFlag)         = ui->chkVerbose->isChecked();
+    SETTING(debugTA)       = ui->chkTypeAnalysis->isChecked();
+    SETTING(debugLiveness) = ui->chkLiveness->isChecked();
+    SETTING(debugUnused)   = ui->chkUnused->isChecked();
+    SETTING(debugDecoder)  = ui->chkDecoder->isChecked();
+    SETTING(debugGen)      = ui->chkCodegen->isChecked();
+    SETTING(debugSwitch)   = ui->chkSwitch->isChecked();
 }
 
 

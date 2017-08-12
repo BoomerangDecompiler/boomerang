@@ -440,13 +440,13 @@ void IFrontEnd::decode(Prog *prg, Address addr)
                     p->setDecoded();
 
                     // Break out of the loops if not decoding children
-                    if (Boomerang::get()->noDecodeChildren) {
+                    if (SETTING(noDecodeChildren)) {
                         break;
                     }
                 }
             }
 
-            if (Boomerang::get()->noDecodeChildren) {
+            if (SETTING(noDecodeChildren)) {
                 break;
             }
         }
@@ -475,7 +475,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address addr)
 
 void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
-    if (Boomerang::get()->traceDecoder) {
+    if (SETTING(traceDecoder)) {
         LOG_MSG("Decoding fragment at address %1", a);
     }
 
@@ -650,7 +650,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
         while (sequentialDecode) {
             // Decode and classify the current source instruction
-            if (Boomerang::get()->traceDecoder) {
+            if (SETTING(traceDecoder)) {
                 LOG_MSG("*%1", uAddr);
             }
 
@@ -721,7 +721,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             }
 
             // Display RTL representation if asked
-            if (Boomerang::get()->printRtl) {
+            if (SETTING(printRtl)) {
                 QString     tgt;
                 QTextStream st(&tgt);
                 pRtl->print(st);
@@ -854,7 +854,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         pBB = pCfg->newBB(BB_rtls, BBType::CompJump, 0);
                         LOG_VERBOSE("COMPUTED JUMP at address %1, pDest = %2", uAddr, pDest);
 
-                        if (Boomerang::get()->noDecompile) {
+                        if (SETTING(noDecompile)) {
                             // try some hacks
                             if (pDest->isMemOf() && (pDest->getSubExp1()->getOper() == opPlus) &&
                                 pDest->getSubExp1()->getSubExp2()->isIntConst()) {
@@ -1019,7 +1019,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 callList.push_back(call);
 
                                 // newProc(pProc->getProg(), uNewAddr);
-                                if (Boomerang::get()->traceDecoder) {
+                                if (SETTING(traceDecoder)) {
                                     LOG_MSG("p%1", uNewAddr);
                                 }
                             }

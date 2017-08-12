@@ -15,7 +15,7 @@ void TargetQueue::visit(Cfg *pCfg, Address uNewAddr, BasicBlock *& pNewBB)
     if (!alreadyParsed) {
         targets.push(uNewAddr);
 
-        if (Boomerang::get()->traceDecoder) {
+        if (SETTING(traceDecoder)) {
             LOG_MSG(">%1", uNewAddr);
         }
     }
@@ -30,10 +30,10 @@ void TargetQueue::initial(Address uAddr)
 Address TargetQueue::nextAddress(const Cfg& cfg)
 {
     while (!targets.empty()) {
-              Address address = targets.front();
+        Address address = targets.front();
         targets.pop();
 
-        if (Boomerang::get()->traceDecoder) {
+        if (SETTING(traceDecoder)) {
             LOG_MSG("<%1", address);
         }
 

@@ -187,8 +187,8 @@ void Prog::finishDecode()
 
 void Prog::generateDotFile() const
 {
-    assert(!Boomerang::get()->dotFile.isEmpty());
-    QFile tgt(Boomerang::get()->dotFile);
+    assert(!SETTING(dotFile).isEmpty());
+    QFile tgt(SETTING(dotFile));
 
     if (!tgt.open(QFile::WriteOnly | QFile::Text)) {
         return;
@@ -262,7 +262,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
             ICodeGenerator *code  = Boomerang::get()->getCodeGenerator();
             bool           global = false;
 
-            if (Boomerang::get()->noDecompile) {
+            if (SETTING(noDecompile)) {
                 const char *sections[] = { "rodata", "data", "data1", nullptr };
 
                 for (int j = 0; sections[j]; j++) {
@@ -1354,8 +1354,6 @@ void Prog::decodeEverythingUndecoded()
 
 void Prog::decompile()
 {
-    Boomerang *boom = Boomerang::get();
-
     assert(!m_moduleList.empty());
     getNumProcs();
     LOG_VERBOSE("%1 procedures", getNumProcs(false));
@@ -1370,7 +1368,7 @@ void Prog::decompile()
 
     // Just in case there are any Procs not in the call graph.
 
-    if (boom->decodeMain && !boom->noDecodeChildren) {
+    if (SETTING(decodeMain) && !SETTING(noDecodeChildren)) {
         bool foundone = true;
 
         while (foundone) {
@@ -1397,22 +1395,21 @@ void Prog::decompile()
     }
 
     // Type analysis, if requested
-    if (Boomerang::get()->conTypeAnalysis && Boomerang::get()->dfaTypeAnalysis) {
-        LOG_ERROR("Enabling constraint-based type analysis and DFA type analysis is not supported, "
+    if (SETTING(conTypeAnalysis) && SETTING(dfaTypeAnalysis)) {
+        LOG_ERROR("Enabling both constraint-based type analysis and DFA type analysis is not supported, "
             "falling back to DFA type analysis");
-        Boomerang::get()->conTypeAnalysis = false;
+        SETTING(conTypeAnalysis) = false;
     }
 
     globalTypeAnalysis();
 
-    if (!boom->noDecompile) {
-        if (!boom->noRemoveReturns) {
+    if (!SETTING(noDecompile)) {
+        if (!SETTING(noRemoveReturns)) {
             // A final pass to remove returns not used by any caller
             LOG_VERBOSE("Prog: global removing unused returns");
 
             // Repeat until no change. Note 100% sure if needed.
-            while (removeUnusedReturns()) {
-            }
+            while (removeUnusedReturns()) {}
         }
 
         // print XML after removing returns
@@ -1554,7 +1551,7 @@ void Prog::fromSSAform()
 
             if (VERBOSE) {
 
-                if (!Boomerang::get()->dotFile.isEmpty()) {
+                if (!SETTING(dotFile).isEmpty()) {
                     proc->printDFG();
                 }
             }
@@ -1792,7 +1789,7 @@ void Prog::printSymbolsToFile() const
 
 void Prog::printCallGraphXML() const
 {
-    if (!Boomerang::get()->dumpXML) {
+    if (!SETTING(dumpXML)) {
         return;
     }
 

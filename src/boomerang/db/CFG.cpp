@@ -1572,7 +1572,7 @@ void Cfg::structure()
     setTimeStamps();
     findImmedPDom();
 
-    if (!Boomerang::get()->noDecompile) {
+    if (!SETTING(noDecompile)) {
         structConds();
         structLoops();
         checkConds();

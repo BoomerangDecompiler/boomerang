@@ -505,7 +505,7 @@ void UserProc::generateCode(ICodeGenerator *hll)
     // Note: don't try to remove unused statements here; that requires the
     // RefExps, which are all gone now (transformed out of SSA form)!
 
-    if (Boomerang::get()->printRtl) {
+    if (SETTING(printRtl)) {
         LOG_VERBOSE("%1", this->toString());
     }
 
@@ -528,7 +528,7 @@ void UserProc::generateCode(ICodeGenerator *hll)
         hll->addLocal(it->first, locType, it == last);
     }
 
-    if (Boomerang::get()->noDecompile && (getName() == "main")) {
+    if (SETTING(noDecompile) && (getName() == "main")) {
         StatementList args, results;
 
         if (m_prog->getFrontEndId() == Platform::PENTIUM) {
@@ -544,7 +544,7 @@ void UserProc::generateCode(ICodeGenerator *hll)
 
     hll->addProcEnd();
 
-    if (!Boomerang::get()->noRemoveLabels) {
+    if (!SETTING(noRemoveLabels)) {
         m_cfg->removeUnneededLabels(hll);
     }
 
@@ -956,7 +956,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     *                                            *
     *    *    *    *    *    *    *    *    *    *    *    */
 
-    if (!Boomerang::get()->noDecodeChildren) {
+    if (!SETTING(noDecodeChildren)) {
         // Recurse to children first, to perform a depth first search
         BBIterator it;
 
@@ -1170,7 +1170,7 @@ void UserProc::initialiseDecompile()
 
     printXML();
 
-    if (Boomerang::get()->noDecompile) {
+    if (SETTING(noDecompile)) {
         LOG_MSG("Not decompiling.");
         setStatus(PROC_FINAL); // ??!
         return;
@@ -1256,7 +1256,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
     // Oh, no, we keep doing preservations till almost the end...
     // setStatus(PROC_PRESERVEDS);        // Preservation done
 
-    if (!Boomerang::get()->noPromote) {
+    if (!SETTING(noPromote)) {
         // We want functions other than main to be promoted. Needed before mapExpressionsToLocals
         promoteSignature();
     }
@@ -1322,7 +1322,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
             LOG_SEPARATE(getName(), "=== End debug print SSA for %1 pass %2 (no propagations) ===", getName(), pass);
         }
 
-        if (!Boomerang::get()->dotFile.isEmpty()) { // Require -gd now (though doesn't listen to file name)
+        if (!SETTING(dotFile).isEmpty()) { // Require -gd now (though doesn't listen to file name)
             printDFG();
         }
 
@@ -1331,7 +1331,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 // (* Was: mapping expressions to Parameters as we go *)
 
         // FIXME: Check if this is needed any more. At least fib seems to need it at present.
-        if (!Boomerang::get()->noChangeSignatures) {
+        if (!SETTING(noChangeSignatures)) {
             // addNewReturns(depth);
             for (int i = 0; i < 3; i++) { // FIXME: should be iterate until no change
                 LOG_VERBOSE("### update returns loop iteration %1 ###", i);
@@ -1446,7 +1446,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
     // Now that memofs are renamed, the bypassing for memofs can work
     fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
 
-    if (!Boomerang::get()->noParameterNames) {
+    if (!SETTING(noParameterNames)) {
         // ? Crazy time to do this... haven't even done "final" parameters as yet
         // mapExpressionsToParameters();
     }
@@ -1482,7 +1482,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
     findPreserveds();
 
     // Used to be later...
-    if (!Boomerang::get()->noParameterNames) {
+    if (!SETTING(noParameterNames)) {
         // findPreserveds();        // FIXME: is this necessary here?
         // fixCallBypass();    // FIXME: surely this is not necessary now?
         // trimParameters();    // FIXME: surely there aren't any parameters to trim yet?
@@ -1551,18 +1551,18 @@ void UserProc::remUnusedStmtEtc()
     countRefs(refCounts);
 
     // Now remove any that have no used
-    if (!Boomerang::get()->noRemoveNull) {
+    if (!SETTING(noRemoveNull)) {
         remUnusedStmtEtc(refCounts);
     }
 
     // Remove null statements
-    if (!Boomerang::get()->noRemoveNull) {
+    if (!SETTING(noRemoveNull)) {
         removeNullStatements();
     }
 
     printXML();
 
-    if (!Boomerang::get()->noRemoveNull) {
+    if (!SETTING(noRemoveNull)) {
         debugPrintAll("after removing unused and null statements pass 1");
     }
 
@@ -1570,7 +1570,7 @@ void UserProc::remUnusedStmtEtc()
 
     findFinalParameters();
 
-    if (!Boomerang::get()->noParameterNames) {
+    if (!SETTING(noParameterNames)) {
         // Replace the existing temporary parameters with the final ones:
         // mapExpressionsToParameters();
         addParameterSymbols();
@@ -3504,7 +3504,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
         return true;
     }
 
-    if (Boomerang::get()->noProve) {
+    if (SETTING(noProve)) {
         return false;
     }
 

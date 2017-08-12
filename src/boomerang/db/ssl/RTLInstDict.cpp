@@ -116,7 +116,7 @@ bool RTLInstDict::readSSLFile(const QString& SSLFileName)
 
     fixupParams();
 
-    if (Boomerang::get()->debugDecoder) {
+    if (SETTING(debugDecoder)) {
         QTextStream q_cout(stdout);
         q_cout << "\n=======Expanded RTL template dictionary=======\n";
         print(q_cout);
@@ -334,7 +334,7 @@ std::list<Statement *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std
 
         ss->fixSuccessor();
 
-        if (Boomerang::get()->debugDecoder) {
+        if (SETTING(debugDecoder)) {
             QTextStream q_cout(stdout);
             q_cout << "            " << ss << "\n";
         }

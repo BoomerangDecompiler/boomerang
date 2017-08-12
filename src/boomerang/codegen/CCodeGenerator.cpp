@@ -431,8 +431,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
         break;
 
     case opMemOf:
-
-        if (Boomerang::get()->noDecompile) {
+        if (SETTING(noDecompile)) {
             str << "MEMOF(";
             appendExp(str, *u.getSubExp1(), PREC_NONE);
             str << ")";
@@ -499,7 +498,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             assert(t.getSubExp1()->isIntConst());
             int float_bits = t.access<Const, 1>()->getInt();
 
-            if (Boomerang::get()->noDecompile) {
+            if (SETTING(noDecompile)) {
                 assert(t.getSubExp1()->isIntConst());
 
                 if (float_bits == 32) {
@@ -853,7 +852,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                     str << "*";
                 }
                 else {
-                    if (Boomerang::get()->noDecompile) {
+                    if (SETTING(noDecompile)) {
                         if (tt && tt->isFloat()) {
                             if (tt->as<FloatType>()->getSize() == 32) {
                                 str << "FLOAT_MEMOF";
@@ -1492,7 +1491,7 @@ void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
         return; // never want to see a = a;
     }
 
-    if (Boomerang::get()->noDecompile && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
+    if (SETTING(noDecompile) && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
         (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
         int wdth = lhs->access<Const, 1>()->getInt();
 
@@ -1505,7 +1504,7 @@ void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
         }
     }
 
-    if (Boomerang::get()->noDecompile && isBareMemof(*lhs, proc)) {
+    if (SETTING(noDecompile) && isBareMemof(*lhs, proc)) {
         if (asgnType && asgnType->isFloat()) {
             if (asgnType->as<FloatType>()->getSize() == 32) {
                 s << "FLOAT_";
@@ -1641,7 +1640,7 @@ void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QStrin
         if (ok) {
             bool needclose = false;
 
-            if (Boomerang::get()->noDecompile && proc->getSignature()->getParamType(n) &&
+            if (SETTING(noDecompile) && proc->getSignature()->getParamType(n) &&
                 proc->getSignature()->getParamType(n)->isPointer()) {
                 s << "ADDR(";
                 needclose = true;
@@ -1716,7 +1715,7 @@ void CCodeGenerator::addReturnStatement(int indLevel, StatementList *rets)
     s << "return";
     size_t n = rets->size();
 
-    if ((n == 0) && Boomerang::get()->noDecompile && (m_proc->getSignature()->getNumReturns() > 0)) {
+    if ((n == 0) && SETTING(noDecompile) && (m_proc->getSignature()->getNumReturns() > 0)) {
         s << " eax";
     }
 

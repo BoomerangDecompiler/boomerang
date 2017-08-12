@@ -2552,7 +2552,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         }
 
         // Danger. For now, only do if -ic given
-        bool decodeThru = Boomerang::get()->decodeThruIndCall;
+        bool decodeThru = SETTING(decodeThruIndCall);
 
         if (decodeThru && vtExp && vtExp->isIntConst()) {
             Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
@@ -2560,7 +2560,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 
             if (prog->findProc(pfunc) == nullptr) {
                 // A new, undecoded procedure
-                if (Boomerang::get()->noDecodeChildren) {
+                if (SETTING(noDecodeChildren)) {
                     return false;
                 }
 
@@ -2582,9 +2582,9 @@ void BasicBlock::processSwitch(UserProc *proc)
     CaseStatement *lastStmt((CaseStatement *)last->getHlStmt());
     SWITCH_INFO   *si(lastStmt->getSwitchInfo());
 
-    Boomerang::get()->debugSwitch = true;
+   SETTING(debugSwitch) = true;
 
-    if (Boomerang::get()->debugSwitch) {
+    if (SETTING(debugSwitch)) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
                 si->chForm, si->uTable, si->iNumTable, si->iLower, si->iUpper);
     }

@@ -126,7 +126,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
     if ((dest != address) && (proc->getProg()->findProc(dest) == 0)) {
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that failed. Instead, we
         // use the set of CallStatements (not in this procedure) that is needed by CSR
-        if (Boomerang::get()->traceDecoder) {
+        if (SETTING(traceDecoder)) {
             LOG_VERBOSE("p%1", dest);
         }
     }
@@ -158,7 +158,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
         delay_rtl->setAddress(address);
         BB_rtls->push_back(delay_rtl);
 
-        if (Boomerang::get()->printRtl) {
+        if (SETTING(printRtl)) {
             delay_rtl->print(os);
         }
     }
@@ -683,7 +683,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
         while (sequentialDecode) {
             // Decode and classify the current source instruction
-            if (Boomerang::get()->traceDecoder) {
+            if (SETTING(traceDecoder)) {
                 LOG_MSG("*%1", uAddr);
             }
 
@@ -830,7 +830,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     DecodeResult delay_inst;
                     decodeInstruction(uAddr + 4, delay_inst);
 
-                    if (Boomerang::get()->traceDecoder) {
+                    if (SETTING(traceDecoder)) {
                         LOG_MSG("*%1", uAddr + 4);
                     }
 
@@ -995,7 +995,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     RTL *delay_rtl = delay_inst.rtl;
 
                     // Display RTL representation if asked
-                    if (Boomerang::get()->printRtl && (delay_rtl != nullptr)) {
+                    if (SETTING(printRtl) && (delay_rtl != nullptr)) {
                         delay_rtl->print(os);
                     }
 
@@ -1030,7 +1030,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     RTL          *delay_rtl = delay_inst.rtl;
 
                     // Display low level RTL representation if asked
-                    if (Boomerang::get()->printRtl && (delay_rtl != nullptr)) {
+                    if (SETTING(printRtl) && (delay_rtl != nullptr)) {
                         delay_rtl->print(os);
                     }
 
@@ -1067,7 +1067,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     RTL          *delay_rtl = delay_inst.rtl;
 
                     // Display RTL representation if asked
-                    if (Boomerang::get()->printRtl && (delay_rtl != nullptr)) {
+                    if (SETTING(printRtl) && (delay_rtl != nullptr)) {
                         delay_rtl->print(os);
                     }
 

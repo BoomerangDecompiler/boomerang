@@ -617,7 +617,7 @@ void CallStatement::generateCode(ICodeGenerator *hll, BasicBlock *pbb, int indLe
     StatementList *results = calcResults();
     assert(p);
 
-    if (Boomerang::get()->noDecompile) {
+    if (SETTING(noDecompile)) {
         if (m_procDest->getSignature()->getNumReturns() > 0) {
             Assign *as = new Assign(IntegerType::get(STD_SIZE), Unary::get(opRegOf, Const::get(24)),
                                     Unary::get(opRegOf, Const::get(24)));
@@ -698,10 +698,10 @@ void CallStatement::getDefinitions(LocationSet& defs) const
         defs.insert(((Assignment *)*dd)->getLeft());
     }
 
-    // Childless calls are supposed to define everything. In practice they don't really define things like %pc, so
-    // we
-    // need some extra logic in getTypeFor()
-    if (isChildless() && !Boomerang::get()->assumeABI) {
+    // Childless calls are supposed to define everything.
+    // In practice they don't really define things like %pc,
+    // so we need some extra logic in getTypeFor()
+    if (isChildless() && !SETTING(assumeABI)) {
         defs.insert(Terminal::get(opDefineAll));
     }
 }
@@ -1312,7 +1312,7 @@ void CallStatement::updateDefines()
         sig->setLibraryDefines(&m_defines);     // Set the locations defined
         return;
     }
-    else if (Boomerang::get()->assumeABI) {
+    else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
         Signature::setABIdefines(m_proc->getProg(), &m_defines);
         return;

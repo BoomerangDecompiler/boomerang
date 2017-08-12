@@ -620,7 +620,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 
         // Special processing for define-alls (presently, only childless calls).
         // But note that only 'everythings' at the current memory level are defined!
-        if (S->isCall() && ((CallStatement *)S)->isChildless() && !Boomerang::get()->assumeABI) {
+        if (S->isCall() && ((CallStatement *)S)->isChildless() && !SETTING(assumeABI)) {
             // S is a childless call (and we're not assuming ABI compliance)
             m_Stacks[defineAll];          // Ensure that there is an entry for defineAll
 

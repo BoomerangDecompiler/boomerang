@@ -58,9 +58,9 @@ void StatementTest::initTestCase()
 void StatementTest::testEmpty()
 {
 	// Force "verbose" flag (-v)
-	Boomerang *boo = Boomerang::get();
+	SETTING(vFlag) = true;
 
-	boo->vFlag = true;
+  	Boomerang *boo = Boomerang::get();
 	boo->setOutputDirectory("./unit_test/");
 
 	// create Prog

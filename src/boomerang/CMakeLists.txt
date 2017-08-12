@@ -18,6 +18,8 @@ set(boomerang_SRC
     core/BinaryFileFactory.cpp
     core/Plugin.h
     core/Plugin.cpp
+    core/Settings.h
+    core/Settings.cpp
 
     db/BasicBlock.cpp
     db/BasicBlock.h

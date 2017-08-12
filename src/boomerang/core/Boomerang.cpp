@@ -749,13 +749,13 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
     }
 
     if (m_entryPoints.size() == 0) { // no -e or -E given
-        if (decodeMain) {
+        if (SETTING(decodeMain)) {
             LOG_MSG("Decoding entry point...");
         }
 
-        fe->decode(prog, decodeMain, pname);
+        fe->decode(prog, SETTING(decodeMain), pname);
 
-        if (!noDecodeChildren) {
+        if (!SETTING(noDecodeChildren)) {
             // this causes any undecoded userprocs to be decoded
             LOG_MSG("Decoding anything undecoded...");
             fe->decode(prog, Address::INVALID);
@@ -774,11 +774,11 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
     // std::cout << "analysing...\n";
     // prog->analyse();
 
-    if (generateSymbols) {
+    if (SETTING(generateSymbols)) {
         prog->printSymbolsToFile();
     }
 
-    if (generateCallGraph) {
+    if (SETTING(generateCallGraph)) {
         prog->printCallGraph();
         prog->printCallGraphXML();
     }
@@ -794,7 +794,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 
     time(&start);
 
-    if (loadBeforeDecompile) {
+    if (SETTING(loadBeforeDecompile)) {
         LOG_ERROR("Loading persisted state is not implemented.");
     }
     else {
@@ -805,22 +805,22 @@ int Boomerang::decompile(const QString& fname, const char *pname)
         }
     }
 
-    if (saveBeforeDecompile) {
+    if (SETTING(saveBeforeDecompile)) {
         LOG_ERROR("Saving persisted state is not implemented.");
     }
 
-    if (stopBeforeDecompile) {
+    if (SETTING(stopBeforeDecompile)) {
         return 0;
     }
 
     LOG_MSG("Decompiling...");
     prog->decompile();
 
-    if (!dotFile.isEmpty()) {
+    if (!SETTING(dotFile).isEmpty()) {
         prog->generateDotFile();
     }
 
-    if (printAST) {
+    if (SETTING(printAST)) {
         LOG_MSG("Printing AST...");
 
         for (const Module *module : *prog) {
@@ -945,7 +945,7 @@ IBinarySymbolTable *Boomerang::getSymbols()
 
 void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
 {
-    if (stopAtDebugPoints) {
+    if (SETTING(stopAtDebugPoints)) {
         miniDebugger(p, description);
     }
 

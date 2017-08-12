@@ -156,7 +156,7 @@ bool isFuncPrologue(Address hostPC);
 /***************************************************************************/ /**
  * These are the macros that each of the .m files depend upon.
  ******************************************************************************/
-#define DEBUG_DECODER    (Boomerang::get()->debugDecoder)
+
 #define SHOW_ASM(output)               \
     if (DEBUG_DECODER) {               \
         QString asmStr;                \

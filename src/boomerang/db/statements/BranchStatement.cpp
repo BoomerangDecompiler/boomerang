@@ -98,7 +98,7 @@ void BranchStatement::setCondType(BranchType cond, bool usesFloat /*= false*/)
 
     // this is such a hack.. preferably we should actually recognise SUBFLAGS32(..,..,..) > 0 instead of just
     // SUBFLAGS32(..,..,..) but I'll leave this in here for the moment as it actually works.
-    if (!Boomerang::get()->noDecompile) {
+    if (!SETTING(noDecompile)) {
         p = Terminal::get(usesFloat ? opFflags : opFlags);
     }
 

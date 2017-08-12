@@ -17,6 +17,7 @@
 #include "boomerang/db/IProject.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/core/Settings.h"
 
 #include <QObject>
 #include <QDir>
@@ -44,14 +45,9 @@ class Project;
  * Controls the loading, decoding, decompilation and code generation for a program.
  * This is the main class of the decompiler.
  */
-class Boomerang : public QObject, public IBoomerang
+class Boomerang : public IBoomerang
 {
-    Q_OBJECT
-
 private:
-    /// Prints help for the interactive mode.
-    void helpcmd() const;
-
     /**
      * Initializes the Boomerang object.
      * The default settings are:
@@ -65,11 +61,7 @@ private:
     Boomerang();
     virtual ~Boomerang();
 
-    /// This is a mini command line debugger.  Feel free to expand it.
-    void miniDebugger(UserProc *p, const char *description);
-
 public:
-
     /// \returns The global boomerang object. It will be created if it does not already exist.
     static Boomerang *get();
 
@@ -112,6 +104,9 @@ public:
     /// Set the output path. the directory will be created if it does not exist
     /// \returns true if successful, false if the directory could not be created.
     bool setOutputDirectory(const QString& directoryPath);
+
+    Settings* getSettings() { return m_settings.get(); }
+    const Settings* getSettings() const { return m_settings.get(); }
 
     /**
      * Loads the executable file and decodes it.
@@ -293,55 +288,7 @@ public:
     QString getFilename() const;
 
 public:
-    // Command line flags
-    bool vFlag               = false;
-    bool debugSwitch         = false;
-    bool debugLiveness       = false;
-    bool debugTA             = false;
-    bool debugDecoder        = false;
-    bool debugProof          = false;
-    bool debugUnused         = false;
-    bool debugRangeAnalysis  = false;
-    bool printRtl            = false;
-    bool noBranchSimplify    = false;
-    bool noRemoveNull        = false;
-    bool noLocals            = false;
-    bool noRemoveLabels      = false;
-    bool noDataflow          = false;
-    bool noDecompile         = false;
-    bool stopBeforeDecompile = false;
-    bool traceDecoder        = false;
-
-    /// The file in which the dotty graph is saved
-    QString dotFile;
-    int numToPropagate     = -1;
-    bool noPromote         = false;
-    bool propOnlyToAll     = false;
-    bool debugGen          = false;
-    int maxMemDepth        = 99;
-    bool noParameterNames  = false;
-    bool stopAtDebugPoints = false;
-
-    /// When true, attempt to decode main, all children, and all procs.
-    /// \a decodeMain is set when there are no -e or -E switches given
-    bool decodeMain          = true;
-    bool printAST            = false;
-    bool dumpXML             = false;
-    bool noRemoveReturns     = false;
-    bool decodeThruIndCall   = false;
-    bool noDecodeChildren    = false;
-    bool loadBeforeDecompile = false;
-    bool saveBeforeDecompile = false;
-    bool noProve             = false;
-    bool noChangeSignatures  = false;
-    bool conTypeAnalysis     = false;
-    bool dfaTypeAnalysis     = true;
-    int propMaxDepth         = 3; ///< Max depth of expression that'll be propagated to more than one dest
-    bool generateCallGraph   = false;
-    bool generateSymbols     = false;
-    bool noGlobals           = false;
-    bool assumeABI           = false; ///< Assume ABI compliance
-    bool experimental        = false; ///< Activate experimental code. Caution!
+    std::shared_ptr<Settings> m_settings;
 
     std::vector<Address> m_entryPoints; ///< A vector which contains all know entrypoints for the Prog.
     std::vector<QString> m_symbolFiles; ///< A vector containing the names off all symbolfiles to load.
@@ -354,19 +301,33 @@ public:
     QString m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
 
     std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
+
+private:
+    /// Prints help for the interactive mode.
+    void helpcmd() const;
+
+    /// This is a mini command line debugger.  Feel free to expand it.
+    void miniDebugger(UserProc *p, const char *description);
 };
 
-#define VERBOSE                 (Boomerang::get()->vFlag)
-#define DEBUG_TA                (Boomerang::get()->debugTA)
-#define DEBUG_PROOF             (Boomerang::get()->debugProof)
-#define DEBUG_UNUSED            (Boomerang::get()->debugUnused)
-#define DEBUG_LIVENESS          (Boomerang::get()->debugLiveness)
-#define DEBUG_RANGE_ANALYSIS    (Boomerang::get()->debugRangeAnalysis)
-#define DEBUG_SWITCH            (Boomerang::get()->debugSwitch)
-#define DEBUG_GEN               (Boomerang::get()->debugGen)
+/**
+ * Global settings
+ */
 
-#define DFA_TYPE_ANALYSIS       (Boomerang::get()->dfaTypeAnalysis)
-#define CON_TYPE_ANALYSIS       (Boomerang::get()->conTypeAnalysis)
-#define ADHOC_TYPE_ANALYSIS     (!Boomerang::get()->dfaTypeAnalysis && !Boomerang::get()->conTypeAnalysis)
-#define DUMP_XML                (Boomerang::get()->dumpXML)
-#define EXPERIMENTAL            (Boomerang::get()->experimental)
+#define SETTING(var) (Boomerang::get()->getSettings()->var)
+
+#define VERBOSE                 (Boomerang::get()->getSettings()->vFlag)
+#define DEBUG_TA                (Boomerang::get()->getSettings()->debugTA)
+#define DEBUG_PROOF             (Boomerang::get()->getSettings()->debugProof)
+#define DEBUG_UNUSED            (Boomerang::get()->getSettings()->debugUnused)
+#define DEBUG_LIVENESS          (Boomerang::get()->getSettings()->debugLiveness)
+#define DEBUG_RANGE_ANALYSIS    (Boomerang::get()->getSettings()->debugRangeAnalysis)
+#define DEBUG_SWITCH            (Boomerang::get()->getSettings()->debugSwitch)
+#define DEBUG_GEN               (Boomerang::get()->getSettings()->debugGen)
+#define DEBUG_DECODER           (Boomerang::get()->getSettings()->debugDecoder)
+#define DEBUG_LIVENESS          (Boomerang::get()->getSettings()->debugLiveness)
+#define DFA_TYPE_ANALYSIS       (Boomerang::get()->getSettings()->dfaTypeAnalysis)
+#define CON_TYPE_ANALYSIS       (Boomerang::get()->getSettings()->conTypeAnalysis)
+#define ADHOC_TYPE_ANALYSIS     (!Boomerang::get()->getSettings()->dfaTypeAnalysis && !Boomerang::get()->getSettings()->conTypeAnalysis)
+#define DUMP_XML                (Boomerang::get()->getSettings()->dumpXML)
+#define EXPERIMENTAL            (Boomerang::get()->getSettings()->experimental)

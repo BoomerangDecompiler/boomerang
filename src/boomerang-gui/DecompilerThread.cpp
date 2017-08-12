@@ -29,7 +29,7 @@ void DecompilerThread::run()
     Boomerang::get()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
     Boomerang::get()->setOutputDirectory("output");
     // Boomerang::get()->vFlag = true;
-    // Boomerang::get()->traceDecoder = true;
+    // SETTING(traceDecoder) = true;
 
     m_parent = new Decompiler();
     m_parent->moveToThread(this);
@@ -53,13 +53,13 @@ Decompiler *DecompilerThread::getDecompiler()
 
 void Decompiler::setUseDFTA(bool d)
 {
-    Boomerang::get()->dfaTypeAnalysis = d;
+    SETTING(dfaTypeAnalysis) = d;
 }
 
 
 void Decompiler::setNoDecodeChildren(bool d)
 {
-    Boomerang::get()->noDecodeChildren = d;
+    SETTING(noDecodeChildren) = d;
 }
 
 
@@ -186,7 +186,7 @@ void Decompiler::decode()
         m_prog->decodeEntryPoint(m_userEntrypoints[i]);
     }
 
-    if (!Boomerang::get()->noDecodeChildren) {
+    if (!SETTING(noDecodeChildren)) {
         // decode anything undecoded
         m_fe->decode(m_prog, Address::INVALID);
     }
