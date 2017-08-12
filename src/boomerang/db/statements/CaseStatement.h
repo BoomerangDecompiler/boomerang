@@ -86,7 +86,7 @@ public:
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
     /// code generation
-    virtual void generateCode(ICodeGenerator *, BasicBlock *, int) override;
+    virtual void generateCode(ICodeGenerator *, BasicBlock *) override;
 
     /// dataflow analysis
     virtual bool usesExp(const Exp& e) const override;

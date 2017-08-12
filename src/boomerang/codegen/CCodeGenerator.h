@@ -77,13 +77,17 @@ class CCodeGenerator : public ICodeGenerator
 {
 public:
     /// constructor
-    CCodeGenerator(UserProc *p);
+    CCodeGenerator();
 
     /// destructor
     virtual ~CCodeGenerator();
 
-    /// Remove all generated code.
-    virtual void reset() override;
+    virtual void generateCode(UserProc* proc) override;
+
+    /// Add a prototype (for forward declaration)
+    virtual void addPrototype(UserProc *proc) override;
+
+    int getIndent() const override { return m_indent; }
 
     /*
      * Functions to add new code
@@ -91,59 +95,60 @@ public:
 
     // pretested loops (cond is optional because it is in the bb [somewhere])
     /// Adds: while (\p cond) {
-    virtual void addPretestedLoopHeader(int indLevel, const SharedExp& cond) override;
+    virtual void addPretestedLoopHeader(const SharedExp& cond) override;
     /// Adds: }
-    virtual void addPretestedLoopEnd(int indLevel) override;
+    virtual void addPretestedLoopEnd() override;
 
     // endless loops
     /// Adds: for(;;) {
-    virtual void addEndlessLoopHeader(int indLevel) override;
+    virtual void addEndlessLoopHeader() override;
     /// Adds: }
-    virtual void addEndlessLoopEnd(int indLevel) override;
+    virtual void addEndlessLoopEnd() override;
 
     // posttested loops
     /// Adds: do {
-    virtual void addPostTestedLoopHeader(int indLevel) override;
+    virtual void addPostTestedLoopHeader() override;
     /// Adds: } while (\a cond);
-    virtual void addPostTestedLoopEnd(int indLevel, const SharedExp& cond) override;
+    virtual void addPostTestedLoopEnd(const SharedExp& cond) override;
 
     // case conditionals "nways"
     /// Adds: switch(\a cond) {
-    virtual void addCaseCondHeader(int indLevel, const SharedExp& cond) override;
+    virtual void addCaseCondHeader(const SharedExp& cond) override;
     /// Adds: case \a opt :
-    virtual void addCaseCondOption(int indLevel, Exp& opt) override;
+    virtual void addCaseCondOption(Exp& opt) override;
     /// Adds: break;
-    virtual void addCaseCondOptionEnd(int indLevel) override;
+    virtual void addCaseCondOptionEnd() override;
     /// Adds: default:
-    virtual void addCaseCondElse(int indLevel) override;
+    virtual void addCaseCondElse() override;
     /// Adds: }
-    virtual void addCaseCondEnd(int indLevel) override;
+    virtual void addCaseCondEnd() override;
 
     // if conditions
     /// Adds: if(\a cond) {
-    virtual void addIfCondHeader(int indLevel, const SharedExp& cond) override;
+    virtual void addIfCondHeader(const SharedExp& cond) override;
     /// Adds: }
-    virtual void addIfCondEnd(int indLevel) override;
+    virtual void addIfCondEnd() override;
 
     // if else conditions
     /// Adds: if(\a cond) {
-    virtual void addIfElseCondHeader(int indLevel, const SharedExp& cond) override;
+    virtual void addIfElseCondHeader(const SharedExp& cond) override;
     /// Adds: } else {
-    virtual void addIfElseCondOption(int indLevel) override;
+    virtual void addIfElseCondOption() override;
     /// Adds: }
-    virtual void addIfElseCondEnd(int indLevel) override;
+    virtual void addIfElseCondEnd() override;
 
     // goto, break, continue, etc
     /// Adds: goto L \em ord
-    virtual void addGoto(int indLevel, int ord) override;
+    virtual void addGoto(int ord) override;
     /// Adds: continue;
-    virtual void addContinue(int indLevel) override;
+    virtual void addContinue() override;
     /// Adds: break;
-    virtual void addBreak(int indLevel) override;
+    virtual void addBreak() override;
 
     // labels
     /// Adds: L \a ord :
-    virtual void addLabel(int indLevel, int ord) override;
+    virtual void addLabel(int ord) override;
+
     /// Search for the label L \a ord and remove it from the generated code.
     virtual void removeLabel(int ord) override;
 
@@ -155,7 +160,7 @@ public:
 
     // sequential statements
     /// Prints an assignment expression.
-    virtual void addAssignmentStatement(int indLevel, Assign *asgn) override;
+    virtual void addAssignmentStatement(Assign* asgn) override;
 
     /**
     * Adds a call to \a proc.
@@ -169,7 +174,7 @@ public:
     * \todo                Remove the \a name parameter and use Proc::getName()
     * \todo                Add assingment for when the function returns a struct.
     */
-    virtual void addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
+    virtual void addCallStatement(Function *proc, const QString& name, StatementList& args,
                                   StatementList *results) override;
 
     /**
@@ -178,13 +183,13 @@ public:
     * \param results UNUSED
     * \todo Add the use of \a results like AddCallStatement.
     */
-    virtual void addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results) override;
+    virtual void addIndCallStatement(const SharedExp& exp, StatementList& args, StatementList *results) override;
 
     /**
     * Adds a return statement and returns the first expression in \a rets.
     * \todo This should be returning a struct if more than one real return value.
     */
-    virtual void addReturnStatement(int indLevel, StatementList *rets) override;
+    virtual void addReturnStatement(StatementList *rets) override;
 
     // proc related
     /**
@@ -210,8 +215,6 @@ public:
     * \param init The initial value of the global.
     */
     virtual void addGlobal(const QString& name, SharedType type, const SharedExp& init = nullptr) override;
-    /// Add a prototype (for forward declaration)
-    virtual void addPrototype(UserProc *proc) override;
 
 public:
     /// Adds one line of comment to the code.
@@ -247,8 +250,8 @@ private:
     void appendType(QTextStream& str, SharedType typ);
 
     /**
-    * Print the indented type to \a str.
-    */
+     * Print the indented type to \a str.
+     */
     void appendTypeIdent(QTextStream& str, SharedType typ, QString ident);
 
     /// Adds: (
@@ -261,13 +264,17 @@ private:
     /// have a single place to put a breakpoint on.
     void appendLine(const QString& s);
 
+private:
+    int m_indent;
+
     /// All locals in a Proc
     std::map<QString, SharedType> locals;
 
     /// All used goto labels.
     std::set<int> usedLabels;
 
-private:
     /// The generated code.
     QStringList m_lines;
+
+    UserProc* m_proc;
 };

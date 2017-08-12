@@ -35,19 +35,21 @@ Boomerang::Boomerang()
     : m_settings(new Settings)
     , m_currentProject(new Project)
     , m_symbols(new SymTab)
+    , m_codeGenerator(new CCodeGenerator)
 {
 }
 
 
 Boomerang::~Boomerang()
 {
+    delete m_codeGenerator;
     delete m_currentProject;
 }
 
 
-ICodeGenerator *Boomerang::getCodeGenerator(UserProc *p)
+ICodeGenerator *Boomerang::getCodeGenerator()
 {
-    return new CCodeGenerator(p);
+    return m_codeGenerator;
 }
 
 

@@ -45,8 +45,8 @@
 static bool isBareMemof(const Exp& e, UserProc *proc);
 
 
-CCodeGenerator::CCodeGenerator(UserProc *p)
-    : ICodeGenerator(p)
+CCodeGenerator::CCodeGenerator()
+    : ICodeGenerator()
 {
 }
 
@@ -62,6 +62,15 @@ void CCodeGenerator::indent(QTextStream& str, int indLevel)
     for (int i = 0; i < indLevel; i++) {
         str << "    ";
     }
+}
+
+
+void CCodeGenerator::generateCode(UserProc* proc)
+{
+    m_lines.clear();
+    m_proc = proc;
+
+    proc->generateCode(this);
 }
 
 
@@ -1174,75 +1183,79 @@ void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString i
 }
 
 
-void CCodeGenerator::reset()
-{
-    m_lines.clear();
-}
-
-
-void CCodeGenerator::addPretestedLoopHeader(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addPretestedLoopHeader(const SharedExp& cond)
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "while (";
     appendExp(s, *cond, PREC_NONE);
     s << ") {";
     appendLine(tgt);
+
+    m_indent++;
 }
 
 
-void CCodeGenerator::addPretestedLoopEnd(int indLevel)
+void CCodeGenerator::addPretestedLoopEnd()
 {
+    m_indent--;
+
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "}";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addEndlessLoopHeader(int indLevel)
+void CCodeGenerator::addEndlessLoopHeader()
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "for(;;) {";
     appendLine(tgt);
+
+    m_indent++;
 }
 
 
-void CCodeGenerator::addEndlessLoopEnd(int indLevel)
+void CCodeGenerator::addEndlessLoopEnd()
 {
+    m_indent--;
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "}";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addPostTestedLoopHeader(int indLevel)
+void CCodeGenerator::addPostTestedLoopHeader()
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "do {";
     appendLine(tgt);
+    m_indent++;
 }
 
 
-void CCodeGenerator::addPostTestedLoopEnd(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addPostTestedLoopEnd(const SharedExp& cond)
 {
+    m_indent--;
+
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "} while (";
     appendExp(s, *cond, PREC_NONE);
     s << ");";
@@ -1250,131 +1263,154 @@ void CCodeGenerator::addPostTestedLoopEnd(int indLevel, const SharedExp& cond)
 }
 
 
-void CCodeGenerator::addCaseCondHeader(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addCaseCondHeader(const SharedExp& cond)
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "switch(";
     appendExp(s, *cond, PREC_NONE);
     s << ") {";
     appendLine(tgt);
+
+    m_indent++;
 }
 
 
-void CCodeGenerator::addCaseCondOption(int indLevel, Exp& opt)
+void CCodeGenerator::addCaseCondOption(Exp& opt)
 {
+    m_indent--;
+
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "case ";
     appendExp(s, opt, PREC_NONE);
     s << ":";
     appendLine(tgt);
+
+    m_indent++;
 }
 
 
-void CCodeGenerator::addCaseCondOptionEnd(int indLevel)
+void CCodeGenerator::addCaseCondOptionEnd()
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "break;";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addCaseCondElse(int indLevel)
+void CCodeGenerator::addCaseCondElse()
 {
+    m_indent--;
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "default:";
     appendLine(tgt);
+
+    m_indent++;
 }
 
 
-void CCodeGenerator::addCaseCondEnd(int indLevel)
+void CCodeGenerator::addCaseCondEnd()
 {
+    m_indent--;
+
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "}";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addIfCondHeader(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addIfCondHeader(const SharedExp& cond)
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "if (";
     appendExp(s, *cond, PREC_NONE);
     s << ") {";
     appendLine(tgt);
+
+    m_indent++;
 }
 
 
-void CCodeGenerator::addIfCondEnd(int indLevel)
+void CCodeGenerator::addIfCondEnd()
 {
+    m_indent--;
+
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "}";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addIfElseCondHeader(int indLevel, const SharedExp& cond)
+void CCodeGenerator::addIfElseCondHeader(const SharedExp& cond)
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "if (";
     appendExp(s, *cond, PREC_NONE);
     s << ") {";
     appendLine(tgt);
+
+    m_indent++;
 }
 
 
-void CCodeGenerator::addIfElseCondOption(int indLevel)
+void CCodeGenerator::addIfElseCondOption()
 {
-    QString tgt;
+    m_indent--;
 
+    QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
-    s << "} else {";
+    indent(s, m_indent);
+    s << "}";
     appendLine(tgt);
+    appendLine("else {");
+
+    m_indent++;
 }
 
 
-void CCodeGenerator::addIfElseCondEnd(int indLevel)
+void CCodeGenerator::addIfElseCondEnd()
 {
+    m_indent--;
+
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "}";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addGoto(int indLevel, int ord)
+void CCodeGenerator::addGoto(int ord)
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "goto L" << ord << ";";
     appendLine(tgt);
     usedLabels.insert(ord);
@@ -1399,29 +1435,29 @@ void CCodeGenerator::removeUnusedLabels(int)
 }
 
 
-void CCodeGenerator::addContinue(int indLevel)
+void CCodeGenerator::addContinue()
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "continue;";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addBreak(int indLevel)
+void CCodeGenerator::addBreak()
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "break;";
     appendLine(tgt);
 }
 
 
-void CCodeGenerator::addLabel(int, int ord)
+void CCodeGenerator::addLabel(int ord)
 {
     QString tgt;
     QTextStream s(&tgt);
@@ -1462,7 +1498,7 @@ bool isBareMemof(const Exp& e, UserProc *)
 }
 
 
-void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
+void CCodeGenerator::addAssignmentStatement(Assign* asgn)
 {
     // Gerard: shouldn't these  3 types of statements be removed earlier?
     if (asgn->getLeft()->getOper() == opPC) {
@@ -1481,7 +1517,8 @@ void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
 
     QString tgt;
     QTextStream s(&tgt);
-    indent(s, indLevel);
+    indent(s, m_indent);
+
     SharedType asgnType = asgn->getType();
     SharedExp lhs       = asgn->getLeft();
     SharedExp rhs       = asgn->getRight();
@@ -1593,13 +1630,13 @@ void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
 }
 
 
-void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
+void CCodeGenerator::addCallStatement(Function *proc, const QString& name, StatementList& args,
                                       StatementList *results)
 {
     QString tgt;
     QTextStream s(&tgt);
 
-    indent(s, indLevel);
+    indent(s, m_indent);
 
     if (!results->empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
@@ -1678,13 +1715,13 @@ void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QStrin
 }
 
 
-void CCodeGenerator::addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results)
+void CCodeGenerator::addIndCallStatement(const SharedExp& exp, StatementList& args, StatementList *results)
 {
     Q_UNUSED(results);
     //    FIXME: Need to use 'results', since we can infer some defines...
     QString tgt;
     QTextStream s(&tgt);
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "(*";
     appendExp(s, *exp, PREC_NONE);
     s << ")(";
@@ -1704,14 +1741,14 @@ void CCodeGenerator::addIndCallStatement(int indLevel, const SharedExp& exp, Sta
 }
 
 
-void CCodeGenerator::addReturnStatement(int indLevel, StatementList *rets)
+void CCodeGenerator::addReturnStatement(StatementList *rets)
 {
     // FIXME: should be returning a struct of more than one real return */
     // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
     StatementList::iterator rr;
     QString tgt;
     QTextStream s(&tgt);
-    indent(s, indLevel);
+    indent(s, m_indent);
     s << "return";
     size_t n = rets->size();
 
@@ -1768,6 +1805,7 @@ void CCodeGenerator::addProcStart(UserProc *proc)
 
 void CCodeGenerator::addPrototype(UserProc *proc)
 {
+    m_proc = proc;
     addProcDec(proc, false);
 }
 
@@ -1865,6 +1903,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
             // C does this by default when you pass an array, i.e. you pass &array meaning array
             // Replace all m[param] with foo, param with foo, then foo with param
             ty = std::static_pointer_cast<PointerType>(ty)->getPointsTo();
+
             SharedExp foo = Const::get("foo123412341234");
             m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
             m_proc->searchAndReplace(*left, foo);
@@ -1878,6 +1917,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 
     if (open) {
         s << " {";
+        m_indent++;
     }
     else {
         s << ";\n";
@@ -1889,6 +1929,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 
 void CCodeGenerator::addProcEnd()
 {
+    m_indent--;
     appendLine("}");
     appendLine("");
 }
@@ -1985,7 +2026,7 @@ void CCodeGenerator::print(QTextStream& os)
 
 void CCodeGenerator::addLineComment(const QString& cmt)
 {
-    appendLine(QString("/* %1*/").arg(cmt));
+    appendLine(QString("/* %1 */").arg(cmt));
 }
 
 

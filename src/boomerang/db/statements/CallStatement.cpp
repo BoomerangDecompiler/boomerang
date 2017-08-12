@@ -605,12 +605,12 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(ICodeGenerator *hll, BasicBlock *pbb, int indLevel)
+void CallStatement::generateCode(ICodeGenerator *hll, BasicBlock *pbb)
 {
     Function *p = getDestProc();
 
     if ((p == nullptr) && isComputed()) {
-        hll->addIndCallStatement(indLevel, m_dest, m_arguments, calcResults());
+        hll->addIndCallStatement(m_dest, m_arguments, calcResults());
         return;
     }
 
@@ -647,10 +647,10 @@ void CallStatement::generateCode(ICodeGenerator *hll, BasicBlock *pbb, int indLe
     }
 
     if (p->isLib() && !p->getSignature()->getPreferredName().isEmpty()) {
-        hll->addCallStatement(indLevel, p, p->getSignature()->getPreferredName(), m_arguments, results);
+        hll->addCallStatement(p, p->getSignature()->getPreferredName(), m_arguments, results);
     }
     else {
-        hll->addCallStatement(indLevel, p, qPrintable(p->getName()), m_arguments, results);
+        hll->addCallStatement(p, qPrintable(p->getName()), m_arguments, results);
     }
 }
 

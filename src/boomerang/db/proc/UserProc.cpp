@@ -509,6 +509,7 @@ void UserProc::generateCode(ICodeGenerator *hll)
         LOG_VERBOSE("%1", this->toString());
     }
 
+    // Start generating code for this procedure.
     hll->addProcStart(this);
 
     // Local variables; print everything in the locals map
@@ -532,15 +533,15 @@ void UserProc::generateCode(ICodeGenerator *hll)
         StatementList args, results;
 
         if (m_prog->getFrontEndId() == Platform::PENTIUM) {
-            hll->addCallStatement(1, nullptr, "PENTIUMSETUP", args, &results);
+            hll->addCallStatement(nullptr, "PENTIUMSETUP", args, &results);
         }
         else if (m_prog->getFrontEndId() == Platform::SPARC) {
-            hll->addCallStatement(1, nullptr, "SPARCSETUP", args, &results);
+            hll->addCallStatement(nullptr, "SPARCSETUP", args, &results);
         }
     }
 
     std::list<BasicBlock *> followSet, gotoSet;
-    getEntryBB()->generateCode(hll, 1, nullptr, followSet, gotoSet, this);
+    getEntryBB()->generateCode(hll, nullptr, followSet, gotoSet, this);
 
     hll->addProcEnd();
 

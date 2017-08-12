@@ -298,8 +298,8 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
         }
     }
 
-    // First declare prototypes for all but the first proc
-    bool first = true, proto = false;
+    // First declare prototypes
+    ICodeGenerator *code = Boomerang::get()->getCodeGenerator();
 
     for (Module *module : m_moduleList) {
         for (Function *func : *module) {
@@ -307,25 +307,16 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
                 continue;
             }
 
-            if (first) {
-                first = false;
-                continue;
-            }
-
-            proto = true;
-            UserProc       *up   = (UserProc *)func;
-            ICodeGenerator *code = Boomerang::get()->getCodeGenerator(up);
+            UserProc *up   = (UserProc *)func;
             code->addPrototype(up); // May be the wrong signature if up has ellipsis
 
             if (generate_all) {
                 code->print(*os);
             }
-
-            delete code;
         }
     }
 
-    if (proto && generate_all) {
+    if (generate_all) {
         *os << "\n"; // Separate prototype(s) from first proc
     }
 
@@ -354,10 +345,8 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
             up->getCFG()->compressCfg();
             up->getCFG()->removeOrphanBBs();
 
-            ICodeGenerator *code = Boomerang::get()->getCodeGenerator(up);
-            up->generateCode(code);
+            code->generateCode(up);
             code->print(module->getStream());
-            delete code;
         }
     }
 
@@ -483,7 +472,6 @@ void Prog::generateCode(QTextStream& os) const
     }
 
     code->print(os);
-    delete code;
 
     for (Module *module : m_moduleList) {
         for (Function *pProc : *module) {
@@ -498,10 +486,9 @@ void Prog::generateCode(QTextStream& os) const
             }
 
             p->getCFG()->compressCfg();
-            code = Boomerang::get()->getCodeGenerator(p);
-            p->generateCode(code);
+
+            code->generateCode(p);
             code->print(os);
-            delete code;
         }
     }
 }
