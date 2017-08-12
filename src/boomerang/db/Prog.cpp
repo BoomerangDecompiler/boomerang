@@ -27,6 +27,7 @@
 
 #include "boomerang/db/Module.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/Global.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
@@ -1077,16 +1078,14 @@ SharedType Prog::getGlobalType(const QString& nam) const
 }
 
 
-void Prog::setGlobalType(const QString& nam, SharedType ty)
+void Prog::setGlobalType(const QString& name, SharedType ty)
 {
     // FIXME: inefficient
     for (Global *gl : m_globals) {
-        if (gl->getName() != nam) {
-            continue;
+        if (gl->getName() == name) {
+            gl->setType(ty);
+            return;
         }
-
-        gl->setType(ty);
-        return;
     }
 }
 
@@ -1923,7 +1922,7 @@ SharedExp Global::getInitialValue(const Prog *prog) const
 
 QString Global::toString() const
 {
-    auto    init = getInitialValue(m_parent);
+    auto    init = getInitialValue(m_program);
     QString res  = QString("%1 %2 at %3 initial value %4")
                       .arg(m_type->toString())
                       .arg(m_name)

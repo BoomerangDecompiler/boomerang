@@ -23,6 +23,7 @@
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
+#include "boomerang/db/Global.h"
 
 #include <sstream>
 

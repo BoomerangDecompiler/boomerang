@@ -21,10 +21,11 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Register.h"
+#include "boomerang/db/Global.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/Register.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
@@ -2428,16 +2429,16 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                 }
 
                 std::shared_ptr<Const> con  = std::static_pointer_cast<Const>(e->getSubExp1()); // e is <name>
-                Global                 *glo = prog->getGlobal(con->getStr());
-                assert(glo);
+                Global                 *global = prog->getGlobal(con->getStr());
+                assert(global);
                 // Set the type to pointer to function, if not already
-                SharedType ty = glo->getType();
+                SharedType ty = global->getType();
 
                 if (!ty->isPointer() && !std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isFunc()) {
-                    glo->setType(PointerType::get(FuncType::get()));
+                    global->setType(PointerType::get(FuncType::get()));
                 }
 
-                        Address addr = glo->getAddress();
+                Address addr = global->getAddress();
                 // FIXME: not sure how to find K1 from here. I think we need to find the earliest(?) entry in the data
                 // map that overlaps with addr
                 // For now, let K1 = 0:

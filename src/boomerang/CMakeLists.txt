@@ -27,6 +27,8 @@ set(boomerang_SRC
     db/CFG.h
     db/DataFlow.cpp
     db/DataFlow.h
+    db/Global.h
+    db/Global.cpp
     db/IBinaryImage.h
     db/IBinarySection.h
     db/IBinarySymbols.h

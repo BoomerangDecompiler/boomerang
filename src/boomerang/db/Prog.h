@@ -38,54 +38,8 @@ class InstructionSet;
 class Module;
 class IBinarySection;
 class ICodeGenerator;
-
+class Global;
 struct BinarySymbol;
-
-
-class Global : public Printable
-{
-public:
-    Global(SharedType type, Address addr, const QString& name, Prog *p)
-        : m_type(type)
-        , m_addr(addr)
-        , m_name(name)
-        , m_parent(p) {}
-
-    virtual ~Global() {}
-
-    SharedType getType() const { return m_type; }
-    void setType(SharedType ty) { m_type = ty; }
-    void meetType(SharedType ty);
-
-       Address getAddress()     const { return m_addr; }
-    const QString& getName() const { return m_name; }
-
-    /// return true if \p address is contained within this global.
-    bool containsAddress(Address addr) const
-    {
-        // TODO: use getType()->getBytes()
-        if (addr == m_addr) {
-            return true;
-        }
-
-        return (addr > m_addr) && (addr <= (m_addr + getType()->getBytes()));
-    }
-
-    /// Get the initial value as an expression (or nullptr if not initialised)
-    SharedExp getInitialValue(const Prog *prog) const;
-    QString toString() const override;
-
-protected:
-    Global()
-        : m_type(nullptr)
-        , m_addr(Address::ZERO) {}
-
-private:
-    SharedType m_type;
-    Address m_addr;
-    QString m_name;
-    Prog *m_parent;
-};
 
 
 class Prog : public QObject
@@ -291,7 +245,7 @@ public:
     QString getGlobalName(Address uaddr) const;
 
     /// Get a named global variable if possible, looking up the loader's symbol table if necessary
-       Address getGlobalAddr(const QString& nam) const;
+    Address getGlobalAddr(const QString& nam) const;
     Global *getGlobal(const QString& nam) const;
 
     /// Make up a name for a new global at address \a uaddr
