@@ -19,6 +19,8 @@ class Exp;
 class Function;
 class Assign;
 class LocationSet;
+class IBinaryImage;
+
 
 // Operator precedence
 
@@ -83,6 +85,11 @@ public:
     virtual ~CCodeGenerator();
 
     virtual void generateCode(UserProc* proc) override;
+
+    virtual void generateCode(const Prog* prog, QTextStream& os) override;
+    virtual void generateCode(const Prog* prog, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) override;
+
+    void generateDataSectionCode(IBinaryImage* image, QString section_name, Address section_start, uint32_t size);
 
     /// Add a prototype (for forward declaration)
     virtual void addPrototype(UserProc *proc) override;

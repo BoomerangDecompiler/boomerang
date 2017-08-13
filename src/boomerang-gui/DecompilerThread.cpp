@@ -1,15 +1,14 @@
 #include "DecompilerThread.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/IBinaryImage.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/db/IBinarySection.h"
-
 #include "boomerang/frontend/Frontend.h"
+#include "boomerang/util/Log.h"
 
 #include <QtWidgets>
 #include <QtCore>
@@ -19,7 +18,7 @@
 #include <sstream>
 
 
-Qt::HANDLE threadToCollect = 0;
+Qt::HANDLE threadToCollect = nullptr;
 
 
 void DecompilerThread::run()
@@ -225,7 +224,7 @@ void Decompiler::generateCode()
     emit generatingCode();
 
     LOG_MSG("Generating code...");
-    m_prog->generateCode();
+    Boomerang::get()->getCodeGenerator()->generateCode(m_prog);
 
     Module *root = m_prog->getRootCluster();
 

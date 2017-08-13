@@ -31,6 +31,8 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/BinaryImage.h"
+#include "boomerang/db/Global.h"
 
 #include "boomerang/type/Type.h"
 
@@ -2597,6 +2599,168 @@ void CCodeGenerator::writeBB(BasicBlock* bb)
     }
 }
 
+
+void CCodeGenerator::generateCode(const Prog* prog, Module *cluster, UserProc *proc, bool /*intermixRTL*/)
+{
+    // QString basedir = m_rootCluster->makeDirs();
+    QTextStream *os = nullptr;
+
+    if (cluster) {
+        cluster->openStream("c");
+        cluster->closeStreams();
+    }
+
+    const bool generate_all   = cluster == nullptr || cluster == prog->getRootCluster();
+    bool all_procedures = (proc == nullptr);
+
+    if (generate_all) {
+        prog->getRootCluster()->openStream("c");
+        os = &prog->getRootCluster()->getStream();
+
+        if (proc == nullptr) {
+            ICodeGenerator *gen  = Boomerang::get()->getCodeGenerator();
+            bool           global = false;
+
+            if (SETTING(noDecompile)) {
+                const char *sections[] = { "rodata", "data", "data1", nullptr };
+
+                for (int j = 0; sections[j]; j++) {
+                    QString str = ".";
+                    str += sections[j];
+                    IBinarySection *info = Boomerang::get()->getImage()->getSectionInfoByName(str);
+
+                    if (info) {
+                        generateDataSectionCode(Boomerang::get()->getImage(), sections[j], info->getSourceAddr(), info->getSize());
+                    }
+                    else {
+                        generateDataSectionCode(Boomerang::get()->getImage(), sections[j], Address::INVALID, 0);
+                    }
+                }
+
+                gen->addGlobal("source_endianness", IntegerType::get(STD_SIZE),
+                                Const::get(prog->getFrontEndId() != Platform::PENTIUM));
+                (*os) << "#include \"boomerang.h\"\n\n";
+                global = true;
+            }
+
+            for (Global *elem : prog->getGlobals()) {
+                // Check for an initial value
+                SharedExp e = elem->getInitialValue(prog);
+                // if (e) {
+                gen->addGlobal(elem->getName(), elem->getType(), e);
+                global = true;
+            }
+
+            if (global) {
+                gen->print(*os); // Avoid blank line if no globals
+            }
+        }
+    }
+
+    // First declare prototypes
+    for (Module *module : prog->getModuleList()) {
+        for (Function *func : *module) {
+            if (func->isLib()) {
+                continue;
+            }
+
+            UserProc *_proc   = (UserProc *)func;
+            addPrototype(_proc); // May be the wrong signature if up has ellipsis
+
+            if (generate_all) {
+                print(*os);
+            }
+        }
+    }
+
+    if (generate_all) {
+        *os << "\n"; // Separate prototype(s) from first proc
+    }
+
+    for (Module *module : prog->getModuleList()) {
+        if (!generate_all && (cluster != module)) {
+            continue;
+        }
+
+        module->openStream("c");
+
+        for (Function *func : *module) {
+            if (func->isLib()) {
+                continue;
+            }
+
+            UserProc *_proc = (UserProc *)func;
+
+            if (!_proc->isDecoded()) {
+                continue;
+            }
+
+            if (!all_procedures && (proc != _proc)) {
+                continue;
+            }
+
+            _proc->getCFG()->compressCfg();
+            _proc->getCFG()->removeOrphanBBs();
+
+            generateCode(_proc);
+            print(module->getStream());
+        }
+    }
+
+    for (Module *module : prog->getModuleList()) {
+        module->closeStreams();
+    }
+}
+
+
+void CCodeGenerator::generateDataSectionCode(IBinaryImage* image, QString section_name, Address section_start, uint32_t size)
+{
+    addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
+    addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
+    auto l = Terminal::get(opNil);
+
+    for (unsigned int i = 0; i < size; i++) {
+        int n = image->readNative1(section_start + size - 1 - i);
+
+        l = Binary::get(opList, Const::get(n & 0xFF), l);
+    }
+
+    addGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
+}
+
+
+void CCodeGenerator::generateCode(const Prog* prog, QTextStream& os)
+{
+    for (Global *glob : prog->getGlobals()) {
+        // Check for an initial value
+        auto e = glob->getInitialValue(prog);
+
+        if (e) {
+            addGlobal(glob->getName(), glob->getType(), e);
+        }
+    }
+
+    print(os);
+
+    for (Module *module : prog->getModuleList()) {
+        for (Function *pProc : *module) {
+            if (pProc->isLib()) {
+                continue;
+            }
+
+            UserProc *p = (UserProc *)pProc;
+
+            if (!p->isDecoded()) {
+                continue;
+            }
+
+            p->getCFG()->compressCfg();
+
+            generateCode(p);
+            print(os);
+        }
+    }
+}
 
 
 void CCodeGenerator::openParen(QTextStream& str, PREC outer, PREC inner)

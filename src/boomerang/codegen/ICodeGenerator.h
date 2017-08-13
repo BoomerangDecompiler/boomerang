@@ -30,7 +30,8 @@ class CallStatement;
 class QTextStream;
 class QString;
 class ReturnStatement;
-
+class Module;
+class Prog;
 
 /**
  * Base class for generating high-level code from statements.
@@ -50,6 +51,9 @@ public:
     /// Generate code for a procedure.
     virtual void generateCode(UserProc* proc) = 0;
     virtual void addPrototype(UserProc *proc) = 0;
+
+    virtual void generateCode(const Prog* prog, QTextStream& os) = 0;
+    virtual void generateCode(const Prog* prog, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) = 0;
 
     virtual int getIndent() const = 0;
 
