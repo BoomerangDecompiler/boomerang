@@ -52,10 +52,9 @@ bool ReturnStatement::accept(StmtVisitor *visitor)
 }
 
 
-void ReturnStatement::generateCode(ICodeGenerator *hll, BasicBlock *pbb)
+void ReturnStatement::generateCode(ICodeGenerator *gen, BasicBlock *)
 {
-    Q_UNUSED(pbb);
-    hll->addReturnStatement(&getReturns());
+    gen->addReturnStatement(&getReturns());
 }
 
 

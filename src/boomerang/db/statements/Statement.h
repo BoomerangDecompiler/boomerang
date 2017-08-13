@@ -259,7 +259,7 @@ public:
     bool propagateFlagsTo();
 
     // code generation
-    virtual void generateCode(ICodeGenerator *hll, BasicBlock *Parent) = 0;
+    virtual void generateCode(ICodeGenerator *gen, BasicBlock *Parent) = 0;
     virtual void simplify() = 0; ///< simpify internal expressions
 
     /// simplify internal address expressions (a[m[x]] -> x) etc

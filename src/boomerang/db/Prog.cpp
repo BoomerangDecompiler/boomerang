@@ -221,10 +221,10 @@ void Prog::generateDotFile() const
 }
 
 
-void Prog::generateDataSectionCode(QString section_name, Address section_start, uint32_t size, ICodeGenerator *code) const
+void Prog::generateDataSectionCode(QString section_name, Address section_start, uint32_t size, ICodeGenerator *gen) const
 {
-    code->addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
-    code->addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
+    gen->addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
+    gen->addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
     auto l = Terminal::get(opNil);
 
     for (unsigned int i = 0; i < size; i++) {
@@ -237,7 +237,7 @@ void Prog::generateDataSectionCode(QString section_name, Address section_start, 
         l = Binary::get(opList, Const::get(n), l);
     }
 
-    code->addGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
+    gen->addGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
 }
 
 
@@ -259,7 +259,7 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
         os = &m_rootCluster->getStream();
 
         if (proc == nullptr) {
-            ICodeGenerator *code  = Boomerang::get()->getCodeGenerator();
+            ICodeGenerator *gen  = Boomerang::get()->getCodeGenerator();
             bool           global = false;
 
             if (SETTING(noDecompile)) {
@@ -271,14 +271,14 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
                     IBinarySection *info = m_image->getSectionInfoByName(str);
 
                     if (info) {
-                        generateDataSectionCode(sections[j], info->getSourceAddr(), info->getSize(), code);
+                        generateDataSectionCode(sections[j], info->getSourceAddr(), info->getSize(), gen);
                     }
                     else {
-                        generateDataSectionCode(sections[j], Address::INVALID, 0, code);
+                        generateDataSectionCode(sections[j], Address::INVALID, 0, gen);
                     }
                 }
 
-                code->addGlobal("source_endianness", IntegerType::get(STD_SIZE),
+                gen->addGlobal("source_endianness", IntegerType::get(STD_SIZE),
                                 Const::get(getFrontEndId() != Platform::PENTIUM));
                 (*os) << "#include \"boomerang.h\"\n\n";
                 global = true;
@@ -288,18 +288,18 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
                 // Check for an initial value
                 SharedExp e = elem->getInitialValue(this);
                 // if (e) {
-                code->addGlobal(elem->getName(), elem->getType(), e);
+                gen->addGlobal(elem->getName(), elem->getType(), e);
                 global = true;
             }
 
             if (global) {
-                code->print(*os); // Avoid blank line if no globals
+                gen->print(*os); // Avoid blank line if no globals
             }
         }
     }
 
     // First declare prototypes
-    ICodeGenerator *code = Boomerang::get()->getCodeGenerator();
+    ICodeGenerator *gen = Boomerang::get()->getCodeGenerator();
 
     for (Module *module : m_moduleList) {
         for (Function *func : *module) {
@@ -308,10 +308,10 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
             }
 
             UserProc *up   = (UserProc *)func;
-            code->addPrototype(up); // May be the wrong signature if up has ellipsis
+            gen->addPrototype(up); // May be the wrong signature if up has ellipsis
 
             if (generate_all) {
-                code->print(*os);
+                gen->print(*os);
             }
         }
     }
@@ -345,8 +345,8 @@ void Prog::generateCode(Module *cluster, UserProc *proc, bool /*intermixRTL*/) c
             up->getCFG()->compressCfg();
             up->getCFG()->removeOrphanBBs();
 
-            code->generateCode(up);
-            code->print(module->getStream());
+            gen->generateCode(up);
+            gen->print(module->getStream());
         }
     }
 
@@ -460,18 +460,18 @@ Module *Prog::getDefaultModule(const QString& name)
 
 void Prog::generateCode(QTextStream& os) const
 {
-    ICodeGenerator *code = Boomerang::get()->getCodeGenerator();
+    ICodeGenerator *gen = Boomerang::get()->getCodeGenerator();
 
     for (Global *glob : m_globals) {
         // Check for an initial value
         auto e = glob->getInitialValue(this);
 
         if (e) {
-            code->addGlobal(glob->getName(), glob->getType(), e);
+            gen->addGlobal(glob->getName(), glob->getType(), e);
         }
     }
 
-    code->print(os);
+    gen->print(os);
 
     for (Module *module : m_moduleList) {
         for (Function *pProc : *module) {
@@ -487,8 +487,8 @@ void Prog::generateCode(QTextStream& os) const
 
             p->getCFG()->compressCfg();
 
-            code->generateCode(p);
-            code->print(os);
+            gen->generateCode(p);
+            gen->print(os);
         }
     }
 }

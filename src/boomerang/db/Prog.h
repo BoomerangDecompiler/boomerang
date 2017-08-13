@@ -347,7 +347,7 @@ public:
     size_t size()  const { return m_moduleList.size(); }
     bool empty() const { return m_moduleList.empty(); }
 
-    void generateDataSectionCode(QString section_name, Address section_start, uint32_t size, ICodeGenerator *code) const;
+    void generateDataSectionCode(QString section_name, Address section_start, uint32_t size, ICodeGenerator *gen) const;
 
 signals:
     void rereadLibSignatures();

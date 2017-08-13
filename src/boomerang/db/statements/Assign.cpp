@@ -178,10 +178,10 @@ bool Assign::searchAndReplace(const Exp& search, SharedExp replace, bool /*cc*/)
 }
 
 
-void Assign::generateCode(ICodeGenerator *hll, BasicBlock *pbb)
+void Assign::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
 {
     Q_UNUSED(pbb);
-    hll->addAssignmentStatement(this);
+    gen->addAssignmentStatement(this);
 }
 
 

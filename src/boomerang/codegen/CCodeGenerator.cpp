@@ -51,7 +51,6 @@ static bool isBareMemof(const Exp& e, UserProc *proc);
 
 
 CCodeGenerator::CCodeGenerator()
-    : ICodeGenerator()
 {
 }
 
@@ -2371,7 +2370,7 @@ void CCodeGenerator::generateCode(BasicBlock* bb, BasicBlock *latch, std::list<B
         // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return' statement
         if (bb->getType() == BBType::Ret) {
             // This should be emitted now, like a normal statement
-            // hll->AddReturnStatement(indLevel, getReturnVal());
+            // addReturnStatement(getReturnVal());
             return;
         }
 
@@ -2524,7 +2523,7 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
                 writeBB(bb->getLatchNode());
             }
 
-            // hll->AddPosttestedLoopEnd(indLevel, getCond());
+            // addPosttestedLoopEnd(getCond());
             // MVE: the above seems to fail when there is a call in the middle of the loop (so loop is 2 BBs)
             // Just a wild stab:
             addPostTestedLoopEnd(bb->getLatchNode()->getCond());
