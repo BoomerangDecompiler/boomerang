@@ -39,6 +39,13 @@ bool inRange(const T& value, const U& rangeStart, const U& rangeEnd)
     return (value >= rangeStart) && (value < rangeEnd);
 }
 
+/// Check if a value is in a container
+template<typename Cont, typename T>
+bool isIn(const Cont& cont, const T& value)
+{
+    return std::find(cont.begin(), cont.end(), value) != cont.end();
+}
+
 inline SWord swapEndian(SWord value)
 {
     value = ((value << 8) & 0xFF00) | ((value >> 8) & 0x00FF);

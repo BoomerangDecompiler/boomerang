@@ -225,10 +225,10 @@ public:
 
 private:
     /**
-    * Print the declaration of a function.
-    * \param proc to print
-    * \param open False if this is just a prototype and ";" should be printed instead of "{"
-    */
+     * Print the declaration of a function.
+     * \param proc to print
+     * \param open False if this is just a prototype and ";" should be printed instead of "{"
+     */
     void addProcDec(UserProc *proc, bool open); // Implement AddProcStart and AddPrototype
 
     /// Output 4 * \a indLevel spaces to \a str
@@ -264,8 +264,22 @@ private:
     /// have a single place to put a breakpoint on.
     void appendLine(const QString& s);
 
+    void generateCode(BasicBlock* bb, BasicBlock* latch, std::list<BasicBlock *>& followSet, std::list<BasicBlock *>& gotoSet, UserProc *proc);
+    void generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& gotoSet, UserProc *proc, BasicBlock *latch, std::list<BasicBlock *>& followSet);
+
+    /// Emits a goto statement (at the correct indentation level) with the destination label for dest. Also places the label
+    /// just before the destination code if it isn't already there.    If the goto is to the return block, it would be nice
+    /// to
+    /// emit a 'return' instead (but would have to duplicate the other code in that return BB).    Also, 'continue' and
+    /// 'break'
+    /// statements are used instead if possible
+    void emitGotoAndLabel(BasicBlock* bb, BasicBlock *dest);
+
+    /// Generates code for each non-CTI (except procedure calls) statement within the block.
+    void writeBB(BasicBlock* bb);
+
 private:
-    int m_indent;
+    int m_indent; ///< Current indentation depth
 
     /// All locals in a Proc
     std::map<QString, SharedType> locals;
