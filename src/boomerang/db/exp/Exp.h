@@ -9,41 +9,33 @@
 
 #pragma once
 
-#include <QtCore/QString>
+#include <QString>
 
-#include <cstdio>  // For sprintf
 #include <list>
 #include <vector>
 #include <set>
 #include <cassert>
 #include <memory>
 
-#include "boomerang/db/exp/Operator.h" // Declares the OPER enum
-#include "boomerang/util/Types.h"
-#include "boomerang/type/Type.h"
-#include "boomerang/util/Util.h"
+#include "boomerang/db/exp/Operator.h"
 #include "boomerang/db/exp/ExpHelp.h"
+#include "boomerang/util/Util.h"
 
-
-class UseSet;
-class DefSet;
-class RTL; // For class FlagDef
-class Statement;
-class BasicBlock;
-class LocationSet;
-class InstructionSet;
-class TypeVal;
+class Exp;
+class Type;
 class ExpVisitor;
 class ExpModifier;
-class Function;
 class UserProc;
-class Exp;
+class LocationSet;
+class Statement;
+class CompoundType;
+
 
 typedef std::unique_ptr<Exp>         UniqExp;
 typedef std::shared_ptr<Exp>         SharedExp;
 typedef std::shared_ptr<const Exp>   SharedConstExp;
+typedef std::shared_ptr<Type>        SharedType;
 
-typedef std::shared_ptr<RTL>         SharedRTL;
 
 /**
  * \class Exp
