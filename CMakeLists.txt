@@ -271,10 +271,10 @@ add_custom_target(check "./full_regression.sh"
 
 # copy function signatures to output directory
 file(COPY "${CMAKE_SOURCE_DIR}/data/signatures/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/signatures/")
-file(COPY "${CMAKE_SOURCE_DIR}/frontend/"        DESTINATION "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/frontend/")
+file(COPY "${CMAKE_SOURCE_DIR}/data/frontend/"   DESTINATION "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/frontend/")
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/signatures" DESTINATION "lib/boomerang")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/frontend"        DESTINATION "lib/boomerang")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/frontend"   DESTINATION "lib/boomerang")
 
 # delete all files in the 'out/' directory on make clean
 set(EXTRA_CLEAN_FILES "${BOOMERANG_OUTPUT_DIR}")
