@@ -731,7 +731,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
     s << ")";
 
     if (open) {
-        s << " {";
+        s << "\n{";
         m_indent++;
     }
     else {
