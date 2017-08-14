@@ -1654,11 +1654,9 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
     LOG_VERBOSE("# # #");
 
     // First, do the initial decompile, and call earlyDecompile
-    ProcSet::iterator curp;
-
     for (UserProc* proc : *m_cycleGroup) {
         proc->setStatus(PROC_INCYCLE); // So the calls are treated as childless
-        Boomerang::get()->alertDecompiling(*curp);
+        Boomerang::get()->alertDecompiling(proc);
         proc->initialiseDecompile();   // Sort the CFG, number statements, etc
         proc->earlyDecompile();
     }
@@ -1672,8 +1670,6 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 
     // FIXME: why exactly do we do this?
     // Mark all the relevant calls as non childless (will harmlessly get done again later)
-    ProcSet::iterator it;
-
     for (UserProc* proc : *m_cycleGroup) {
         proc->markAsNonChildless(m_cycleGroup);
     }
