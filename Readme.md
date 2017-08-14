@@ -9,7 +9,7 @@ Right now, there are no pre-compiled binaries available, so you'll have to compi
 
 ### Building prerequisites
 
- - A C++11 compatible compiler (GCC \>= 5.0, Clang \>= 4.0, MSVC \>= 2015 are known to work)
+ - A C++11 compatible compiler (GCC \>= 4.9, Clang \>= 3.9, MSVC \>= 2015 are known to work)
  - [CMake 3.1.0 or newer](https://cmake.org/download/)
  - [Qt5](https://www.qt.io/download-open-source/)
  - [Doxygen](http://www.doxygen.nl/) (optional)
@@ -31,7 +31,7 @@ make install
 
 ### Building on Windows
 
-To compile on windows, it should be enough to run cmake-gui and fill in the paths to missing libraries if CMake des not find them.
+To compile on windows, it should be enough to run cmake-gui and fill in the paths to missing libraries if CMake does not find them.
 
 
 ### Building on macOS
