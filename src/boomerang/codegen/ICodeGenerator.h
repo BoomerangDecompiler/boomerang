@@ -9,34 +9,21 @@
  *
  */
 
-#include <vector>
-#include <cassert>
-#include <memory>
+#include <QTextStream>
 
+#include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/Managed.h"
-#include "boomerang/type/Type.h"
-#include "boomerang/util/Types.h"
 
-class BasicBlock;
-class Exp;
-using SharedExp = std::shared_ptr<Exp>;
+class Prog;
+class Module;
 class UserProc;
 class Function;
-class Type;
-class Signature;
-class Assign;
-class LocationSet;
-class CallStatement;
-class QTextStream;
-class QString;
-class ReturnStatement;
-
 
 /**
  * Base class for generating high-level code from statements.
  *
  * This class is provides methods which are generic of procedural
- * languages like C, Pascal, Fortran, etc. Included in the base class
+ * languages like C, Pascal, Fortranmake, etc. Included in the base class
  * is the follow and goto sets which are used during code generation.
  * Concrete implementations of this class provide specific language
  * bindings for a single procedure in the program.
@@ -44,79 +31,60 @@ class ReturnStatement;
 class ICodeGenerator
 {
 public:
-    ICodeGenerator(UserProc *p) : m_proc(p) {}
+    ICodeGenerator() {}
     virtual ~ICodeGenerator() {}
 
-    /// clear the code generator object (derived classes should call the base)
-    virtual void reset() {}
+    /// Generate code for \p program to \p os.
+    virtual void generateCode(const Prog* program, QTextStream& os) = 0;
 
-    // access to proc
-    UserProc *getProc() const { return m_proc; }
+    /**
+     * Generate code for a module or function, or all modules.
+     * \param program The program to generate code for.
+     * \param cluster The cluster to generate code for, or nullptr to generate code for all clusters.
+     * \param proc The function to generate code for, or nullptr to generate code for all procedures in a module.
+     * \param intermixRTL Set this to true to intermix code with underlying intermediate representation.
+     *                    Currently not implemented.
+     */
+    virtual void generateCode(const Prog* program, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) = 0;
 
+public:
     /*
      * Functions to add new code, pure virtual.
+     * DEPRECATED
      */
-
-    // pretested loops
-    virtual void addPretestedLoopHeader(int indLevel, const SharedExp& cond) = 0;
-    virtual void addPretestedLoopEnd(int indLevel) = 0;
-
-    // endless loops
-    virtual void addEndlessLoopHeader(int indLevel) = 0;
-    virtual void addEndlessLoopEnd(int indLevel)    = 0;
-
-    // post-tested loops
-    virtual void addPostTestedLoopHeader(int indLevel) = 0;
-    virtual void addPostTestedLoopEnd(int indLevel, const SharedExp& cond) = 0;
-
-    // case conditionals "nways"
-    virtual void addCaseCondHeader(int indLevel, const SharedExp& cond) = 0;
-    virtual void addCaseCondOption(int indLevel, Exp& opt) = 0;
-    virtual void addCaseCondOptionEnd(int indLevel)        = 0;
-    virtual void addCaseCondElse(int indLevel)             = 0;
-    virtual void addCaseCondEnd(int indLevel) = 0;
-
-    // if conditions
-    virtual void addIfCondHeader(int indLevel, const SharedExp& cond) = 0;
-    virtual void addIfCondEnd(int indLevel) = 0;
-
-    // if else conditions
-    virtual void addIfElseCondHeader(int indLevel, const SharedExp& cond) = 0;
-    virtual void addIfElseCondOption(int indLevel) = 0;
-    virtual void addIfElseCondEnd(int indLevel)    = 0;
-
-    // goto, break, continue, etc
-    virtual void addGoto(int indLevel, int ord) = 0;
-    virtual void addBreak(int indLevel)         = 0;
-    virtual void addContinue(int indLevel)      = 0;
-
-    // labels
-    virtual void addLabel(int indLevel, int ord) = 0;
-    virtual void removeLabel(int ord)            = 0;
-    virtual void removeUnusedLabels(int maxOrd)  = 0;
-
     // sequential statements
-    virtual void addAssignmentStatement(int indLevel, Assign *s) = 0;
-    virtual void addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
-                                  StatementList *results) = 0;
-    virtual void addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results) = 0;
-    virtual void addReturnStatement(int indLevel, StatementList *rets) = 0;
 
-    // procedure related
-    virtual void addProcStart(UserProc *proc) = 0;
-    virtual void addProcEnd() = 0;
-    virtual void addLocal(const QString& name, SharedType type, bool last = false) = 0;
-    virtual void addGlobal(const QString& name, SharedType type, const SharedExp& init = nullptr) = 0;
-    virtual void addPrototype(UserProc *proc) = 0;
+    /// Add an assignment statement at the current position.
+    virtual void addAssignmentStatement(Assign *s) = 0;
 
-    // comments
-    virtual void addLineComment(const QString& cmt) = 0;
-
-    /*
-     * output functions, pure virtual.
+    /**
+     * Adds a call to the function \p proc.
+     *
+     * \param proc            The Proc the call is to.
+     * \param name            The name the Proc has.
+     * \param args            The arguments to the call.
+     * \param results        The variable that will receive the return value of the function.
+     *
+     * \todo                Remove the \p name parameter and use Proc::getName()
+     * \todo                Add assingment for when the function returns a struct.
      */
-    virtual void print(QTextStream& os) = 0;
+    virtual void addCallStatement(Function *proc, const QString& name, StatementList& args,
+                                  StatementList *results) = 0;
 
-protected:
-    UserProc *m_proc; ///< Pointer to the enclosing UserProc
+    /**
+     * Adds an indirect call to \a exp.
+     * \see AddCallStatement
+     * \param results UNUSED
+     * \todo Add the use of \a results like AddCallStatement.
+     */
+    virtual void addIndCallStatement(const SharedExp& exp, StatementList& args, StatementList *results) = 0;
+
+    /**
+     * Adds a return statement and returns the first expression in \a rets.
+     * \todo This should be returning a struct if more than one real return value.
+     */
+    virtual void addReturnStatement(StatementList *rets) = 0;
+
+    /// Removes unused labels from the code.
+    virtual void removeUnusedLabels(int maxOrd)  = 0;
 };

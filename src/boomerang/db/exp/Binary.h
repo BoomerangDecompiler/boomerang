@@ -2,6 +2,8 @@
 
 #include "boomerang/db/exp/Unary.h"
 
+class TypeVal;
+
 /**
  * Binary is a subclass of Unary, holding two subexpressions
  */

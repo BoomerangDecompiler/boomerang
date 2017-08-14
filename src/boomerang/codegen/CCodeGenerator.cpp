@@ -16,22 +16,29 @@
 #include "CCodeGenerator.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
 
-#include "boomerang/type/Type.h"
-#include "boomerang/util/Util.h"
-
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/RTL.h"
 #include "boomerang/db/Signature.h"
-#include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/TypedExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/BinaryImage.h"
+#include "boomerang/db/Global.h"
+
+#include "boomerang/type/Type.h"
+
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
+
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 
@@ -42,11 +49,28 @@
 #include <memory>
 
 
-static bool isBareMemof(const Exp& e, UserProc *proc);
+
+static bool isBareMemof(const Exp& e, UserProc *)
+{
+#if SYMS_IN_BACK_END
+    if (!e.isMemOf()) { return false; }
+
+    // Check if it maps to a symbol
+    const char *sym = proc->lookupSym(e);
+
+    if (sym == nullptr) {
+        sym = proc->lookupSym(e->getSubExp1());
+    }
+
+    return sym == nullptr; // Only a bare memof if it is not a symbol
+
+#else
+    return e.isMemOf();
+#endif
+}
 
 
-CCodeGenerator::CCodeGenerator(UserProc *p)
-    : ICodeGenerator(p)
+CCodeGenerator::CCodeGenerator()
 {
 }
 
@@ -56,12 +80,1046 @@ CCodeGenerator::~CCodeGenerator()
 }
 
 
-void CCodeGenerator::indent(QTextStream& str, int indLevel)
+void CCodeGenerator::generateCode(const Prog* prog, QTextStream& os)
 {
-    // Can probably do more efficiently
-    for (int i = 0; i < indLevel; i++) {
-        str << "    ";
+    for (Global *glob : prog->getGlobals()) {
+        // Check for an initial value
+        auto e = glob->getInitialValue(prog);
+
+        if (e) {
+            addGlobal(glob->getName(), glob->getType(), e);
+        }
     }
+
+    print(os);
+
+    for (Module *module : prog->getModuleList()) {
+        for (Function *pProc : *module) {
+            if (pProc->isLib()) {
+                continue;
+            }
+
+            UserProc *p = (UserProc *)pProc;
+
+            if (!p->isDecoded()) {
+                continue;
+            }
+
+            p->getCFG()->compressCfg();
+
+            generateCode(p);
+            print(os);
+        }
+    }
+}
+
+
+void CCodeGenerator::generateCode(const Prog* prog, Module *cluster, UserProc *proc, bool /*intermixRTL*/)
+{
+    // QString basedir = m_rootCluster->makeDirs();
+    QTextStream *os = nullptr;
+
+    if (cluster) {
+        cluster->openStream("c");
+        cluster->closeStreams();
+    }
+
+    const bool generate_all   = cluster == nullptr || cluster == prog->getRootCluster();
+    bool all_procedures = (proc == nullptr);
+
+    if (generate_all) {
+        prog->getRootCluster()->openStream("c");
+        os = &prog->getRootCluster()->getStream();
+
+        if (proc == nullptr) {
+            bool           global = false;
+
+            if (SETTING(noDecompile)) {
+                const char *sections[] = { "rodata", "data", "data1", nullptr };
+
+                for (int j = 0; sections[j]; j++) {
+                    QString str = ".";
+                    str += sections[j];
+                    IBinarySection *info = Boomerang::get()->getImage()->getSectionInfoByName(str);
+
+                    if (info) {
+                        generateDataSectionCode(Boomerang::get()->getImage(), sections[j], info->getSourceAddr(), info->getSize());
+                    }
+                    else {
+                        generateDataSectionCode(Boomerang::get()->getImage(), sections[j], Address::INVALID, 0);
+                    }
+                }
+
+                addGlobal("source_endianness", IntegerType::get(STD_SIZE),
+                                Const::get(prog->getFrontEndId() != Platform::PENTIUM));
+                (*os) << "#include \"boomerang.h\"\n\n";
+                global = true;
+            }
+
+            for (Global *elem : prog->getGlobals()) {
+                // Check for an initial value
+                SharedExp e = elem->getInitialValue(prog);
+                // if (e) {
+                addGlobal(elem->getName(), elem->getType(), e);
+                global = true;
+            }
+
+            if (global) {
+                print(*os); // Avoid blank line if no globals
+            }
+        }
+    }
+
+    // First declare prototypes
+    for (Module *module : prog->getModuleList()) {
+        for (Function *func : *module) {
+            if (func->isLib()) {
+                continue;
+            }
+
+            UserProc *_proc   = (UserProc *)func;
+            addPrototype(_proc); // May be the wrong signature if up has ellipsis
+
+            if (generate_all) {
+                print(*os);
+            }
+        }
+    }
+
+    if (generate_all) {
+        *os << "\n"; // Separate prototype(s) from first proc
+    }
+
+    for (Module *module : prog->getModuleList()) {
+        if (!generate_all && (cluster != module)) {
+            continue;
+        }
+
+        module->openStream("c");
+
+        for (Function *func : *module) {
+            if (func->isLib()) {
+                continue;
+            }
+
+            UserProc *_proc = (UserProc *)func;
+
+            if (!_proc->isDecoded()) {
+                continue;
+            }
+
+            if (!all_procedures && (proc != _proc)) {
+                continue;
+            }
+
+            _proc->getCFG()->compressCfg();
+            _proc->getCFG()->removeOrphanBBs();
+
+            generateCode(_proc);
+            print(module->getStream());
+        }
+    }
+
+    for (Module *module : prog->getModuleList()) {
+        module->closeStreams();
+    }
+}
+
+
+
+void CCodeGenerator::addAssignmentStatement(Assign* asgn)
+{
+    // Gerard: shouldn't these  3 types of statements be removed earlier?
+    if (asgn->getLeft()->getOper() == opPC) {
+        return; // Never want to see assignments to %PC
+    }
+
+    SharedExp result;
+
+    if (asgn->getRight()->search(Terminal(opPC), result)) { // Gerard: what's this?
+        return;
+    }
+
+    // ok I want this now
+    // if (asgn->getLeft()->isFlags())
+    //    return;
+
+    QString tgt;
+    QTextStream s(&tgt);
+    indent(s, m_indent);
+
+    SharedType asgnType = asgn->getType();
+    SharedExp lhs       = asgn->getLeft();
+    SharedExp rhs       = asgn->getRight();
+    UserProc *proc      = asgn->getProc();
+
+    if (*lhs == *rhs) {
+        return; // never want to see a = a;
+    }
+
+    if (SETTING(noDecompile) && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
+        (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
+        int wdth = lhs->access<Const, 1>()->getInt();
+
+        // add some fsize hints to rhs
+        if ((wdth >= 32) && (wdth <= 63)) {
+            rhs = std::make_shared<Ternary>(opFsize, Const::get(32), Const::get(32), rhs);
+        }
+        else if ((wdth >= 64) && (wdth <= 87)) {
+            rhs = std::make_shared<Ternary>(opFsize, Const::get(64), Const::get(64), rhs);
+        }
+    }
+
+    if (SETTING(noDecompile) && isBareMemof(*lhs, proc)) {
+        if (asgnType && asgnType->isFloat()) {
+            if (asgnType->as<FloatType>()->getSize() == 32) {
+                s << "FLOAT_";
+            }
+            else {
+                s << "DOUBLE_";
+            }
+        }
+        else if (rhs->getOper() == opFsize) {
+            if (rhs->access<Const, 2>()->getInt() == 32) {
+                s << "FLOAT_";
+            }
+            else {
+                s << "DOUBLE_";
+            }
+        }
+        else if ((rhs->getOper() == opRegOf) && (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
+            // yes, this is a hack
+            int wdth = rhs->access<Const, 2>()->getInt();
+
+            if ((wdth >= 32) && (wdth <= 63)) {
+                s << "FLOAT_";
+            }
+            else if ((wdth >= 64) && (wdth <= 87)) {
+                s << "DOUBLE_";
+            }
+        }
+
+        s << "MEMASSIGN(";
+        appendExp(s, *lhs->getSubExp1(), PREC_UNARY);
+        s << ", ";
+        appendExp(s, *rhs, PREC_UNARY);
+        s << ");";
+        appendLine(tgt);
+        return;
+    }
+
+    if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid()) {
+        appendExp(s, TypedExp(asgnType, lhs), PREC_ASSIGN);
+    }
+    else if ((lhs->getOper() == opGlobal) && asgn->getType()->isArray()) {
+        appendExp(s, Binary(opArrayIndex, lhs, Const::get(0)), PREC_ASSIGN);
+    }
+    else if ((lhs->getOper() == opAt) && lhs->getSubExp2()->isIntConst() &&
+             lhs->getSubExp3()->isIntConst()) {
+        // exp1@[n:m] := rhs -> exp1 = exp1 & mask | rhs << m  where mask = ~((1 << m-n+1)-1)
+        SharedExp exp1 = lhs->getSubExp1();
+        int n          = lhs->access<Const, 2>()->getInt();
+        int m          = lhs->access<Const, 3>()->getInt();
+        appendExp(s, *exp1, PREC_ASSIGN);
+        s << " = ";
+        int mask = ~(((1 << (m - n + 1)) - 1) << m); // MSVC winges without most of these parentheses
+        rhs = Binary::get(opBitAnd, exp1,
+                          Binary::get(opBitOr, Const::get(mask), Binary::get(opShiftL, rhs, Const::get(m))));
+        rhs = rhs->simplify();
+        appendExp(s, *rhs, PREC_ASSIGN);
+        s << ";";
+        appendLine(tgt);
+        return;
+    }
+    else {
+        appendExp(s, *lhs, PREC_ASSIGN); // Ordinary LHS
+    }
+
+    if ((rhs->getOper() == opPlus) && (*rhs->getSubExp1() == *lhs)) {
+        // C has special syntax for this, eg += and ++
+        // however it's not always acceptable for assigns to m[] (?)
+        if (rhs->getSubExp2()->isIntConst() &&
+            ((rhs->access<Const, 2>()->getInt() == 1) || (asgn->getType()->isPointer() &&
+                                                          (asgn->getType()->as<PointerType>()->getPointsTo()->getSize() ==
+                                                           (unsigned)rhs->access<Const, 2>()->getInt() * 8)))) {
+            s << "++";
+        }
+        else {
+            s << " += ";
+            appendExp(s, *rhs->getSubExp2(), PREC_ASSIGN);
+        }
+    }
+    else {
+        s << " = ";
+        appendExp(s, *rhs, PREC_ASSIGN);
+    }
+
+    s << ";";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addCallStatement(Function *proc, const QString& name, StatementList& args,
+                                      StatementList *results)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+
+    if (!results->empty()) {
+        // FIXME: Needs changing if more than one real result (return a struct)
+        SharedExp firstRet = ((Assignment *)*results->begin())->getLeft();
+        appendExp(s, *firstRet, PREC_ASSIGN);
+        s << " = ";
+    }
+
+    s << name << "(";
+    StatementList::iterator ss;
+    bool first = true;
+    int n      = 0;
+
+    for (ss = args.begin(); ss != args.end(); ++ss, ++n) {
+        if (first) {
+            first = false;
+        }
+        else {
+            s << ", ";
+        }
+
+        Assignment *arg_assign = dynamic_cast<Assignment *>(*ss);
+        assert(arg_assign != nullptr);
+        SharedType t   = arg_assign->getType();
+        auto as_arg    = arg_assign->getRight();
+        auto const_arg = std::dynamic_pointer_cast<const Const>(as_arg);
+        bool ok        = true;
+
+        if (t && t->isPointer() && std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
+            Function *p = proc->getProg()->findProc(const_arg->getAddr());
+
+            if (p) {
+                s << p->getName();
+                ok = false;
+            }
+        }
+
+        if (ok) {
+            bool needclose = false;
+
+            if (SETTING(noDecompile) && proc->getSignature()->getParamType(n) &&
+                proc->getSignature()->getParamType(n)->isPointer()) {
+                s << "ADDR(";
+                needclose = true;
+            }
+
+            appendExp(s, *as_arg, PREC_COMMA);
+
+            if (needclose) {
+                s << ")";
+            }
+        }
+    }
+
+    s << ");";
+
+    if (results->size() > 1) {
+        first = true;
+        s << " /* Warning: also results in ";
+
+        for (ss = ++results->begin(); ss != results->end(); ++ss) {
+            if (first) {
+                first = false;
+            }
+            else {
+                s << ", ";
+            }
+
+            appendExp(s, *((Assignment *)*ss)->getLeft(), PREC_COMMA);
+        }
+
+        s << " */";
+    }
+
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addIndCallStatement(const SharedExp& exp, StatementList& args, StatementList *results)
+{
+    Q_UNUSED(results);
+    //    FIXME: Need to use 'results', since we can infer some defines...
+    QString tgt;
+    QTextStream s(&tgt);
+    indent(s, m_indent);
+    s << "(*";
+    appendExp(s, *exp, PREC_NONE);
+    s << ")(";
+    QStringList arg_strings;
+    QString arg_tgt;
+
+    for (Statement *ss : args) {
+        QTextStream arg_str(&arg_tgt);
+        SharedExp arg = ((Assign *)ss)->getRight();
+        appendExp(arg_str, *arg, PREC_COMMA);
+        arg_strings << arg_tgt;
+        arg_tgt.clear();
+    }
+
+    s << arg_strings.join(", ") << ");";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addReturnStatement(StatementList *rets)
+{
+    // FIXME: should be returning a struct of more than one real return */
+    // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
+    StatementList::iterator rr;
+    QString tgt;
+    QTextStream s(&tgt);
+    indent(s, m_indent);
+    s << "return";
+    size_t n = rets->size();
+
+    if ((n == 0) && SETTING(noDecompile) && (m_proc->getSignature()->getNumReturns() > 0)) {
+        s << " eax";
+    }
+
+    if (n >= 1) {
+        s << " ";
+        appendExp(s, *((Assign *)*rets->begin())->getRight(), PREC_NONE);
+    }
+
+    s << ";";
+
+    if (n > 0) {
+        if (n > 1) {
+            s << " /* WARNING: Also returning: ";
+        }
+
+        bool first = true;
+
+        for (rr = ++rets->begin(); rr != rets->end(); ++rr) {
+            if (first) {
+                first = false;
+            }
+            else {
+                s << ", ";
+            }
+
+            appendExp(s, *((Assign *)*rr)->getLeft(), PREC_NONE);
+            s << " := ";
+            appendExp(s, *((Assign *)*rr)->getRight(), PREC_NONE);
+        }
+
+        if (n > 1) {
+            s << " */";
+        }
+    }
+
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::removeUnusedLabels(int)
+{
+    for (QStringList::iterator it = m_lines.begin(); it != m_lines.end(); ) {
+        if (it->startsWith('L') && it->contains(':')) {
+            QStringRef sxr = it->midRef(1, it->indexOf(':') - 1);
+            int n          = sxr.toInt();
+
+            if (m_usedLabels.find(n) == m_usedLabels.end()) {
+                it = m_lines.erase(it);
+                continue;
+            }
+        }
+
+        it++;
+    }
+}
+
+
+void CCodeGenerator::addPrototype(UserProc *proc)
+{
+    m_proc = proc;
+    addProcDec(proc, false);
+}
+
+
+void CCodeGenerator::generateCode(UserProc* proc)
+{
+    m_lines.clear();
+    m_proc = proc;
+
+    assert(proc->getCFG());
+    assert(proc->getEntryBB());
+
+    proc->getCFG()->structure();
+    proc->removeUnusedLocals();
+
+    // Note: don't try to remove unused statements here; that requires the
+    // RefExps, which are all gone now (transformed out of SSA form)!
+
+    if (SETTING(printRtl)) {
+        LOG_VERBOSE("%1", proc->toString());
+    }
+
+    // Start generating code for this procedure.
+    this->addProcStart(proc);
+
+    // Local variables; print everything in the locals map
+    std::map<QString, SharedType>::const_iterator last = proc->getLocals().end();
+
+    if (!proc->getLocals().empty()) {
+        last = std::prev(last);
+    }
+
+    for (auto it = proc->getLocals().begin(); it != proc->getLocals().end(); it++) {
+        SharedType locType = it->second;
+
+        if ((locType == nullptr) || locType->isVoid()) {
+            locType = IntegerType::get(STD_SIZE);
+        }
+
+        addLocal(it->first, locType, it == last);
+    }
+
+    if (SETTING(noDecompile) && (proc->getName() == "main")) {
+        StatementList args, results;
+
+        if (proc->getProg()->getFrontEndId() == Platform::PENTIUM) {
+            addCallStatement(nullptr, "PENTIUMSETUP", args, &results);
+        }
+        else if (proc->getProg()->getFrontEndId() == Platform::SPARC) {
+            addCallStatement(nullptr, "SPARCSETUP", args, &results);
+        }
+    }
+
+    // Start generating "real" code
+    std::list<BasicBlock *> followSet, gotoSet;
+    generateCode(proc->getEntryBB(), nullptr, followSet, gotoSet, proc);
+
+    addProcEnd();
+
+    if (!SETTING(noRemoveLabels)) {
+        proc->getCFG()->removeUnneededLabels(this);
+    }
+
+    proc->setStatus(PROC_CODE_GENERATED);
+}
+
+
+void CCodeGenerator::generateDataSectionCode(IBinaryImage* image, QString section_name, Address section_start, uint32_t size)
+{
+    addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
+    addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
+    auto l = Terminal::get(opNil);
+
+    for (unsigned int i = 0; i < size; i++) {
+        int n = image->readNative1(section_start + size - 1 - i);
+
+        l = Binary::get(opList, Const::get(n & 0xFF), l);
+    }
+
+    addGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
+}
+
+
+void CCodeGenerator::addProcDec(UserProc *proc, bool open)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+    ReturnStatement *returns = proc->getTheReturnStatement();
+    SharedType retType;
+
+    if (proc->getSignature()->isForced()) {
+        if (proc->getSignature()->getNumReturns() == 0) {
+            s << "void ";
+        }
+        else {
+            unsigned int n = 0;
+            SharedExp e    = proc->getSignature()->getReturnExp(0);
+
+            if (e->isRegN(Signature::getStackRegister(proc->getProg()))) {
+                n = 1;
+            }
+
+            if (n < proc->getSignature()->getNumReturns()) {
+                retType = proc->getSignature()->getReturnType(n);
+            }
+
+            if (retType == nullptr) {
+                s << "void ";
+            }
+        }
+    }
+    else if ((returns == nullptr) || (returns->getNumReturns() == 0)) {
+        s << "void ";
+    }
+    else {
+        Assign *firstRet = (Assign *)*returns->begin();
+        retType = firstRet->getType();
+
+        if ((retType == nullptr) || retType->isVoid()) {
+            // There is a real return; make it integer (Remove with AD HOC type analysis)
+            retType = IntegerType::get(STD_SIZE, 0);
+        }
+    }
+
+    if (retType) {
+        appendType(s, retType);
+
+        if (!retType->isPointer()) { // NOTE: assumes type *proc( style
+            s << " ";
+        }
+    }
+
+    s << proc->getName() << "(";
+    StatementList& parameters = proc->getParameters();
+    StatementList::iterator pp;
+
+    if ((parameters.size() > 10) && open) {
+        LOG_WARN("Proc %1 has %2 parameters", proc->getName(), parameters.size());
+    }
+
+    bool first = true;
+
+    for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
+        if (first) {
+            first = false;
+        }
+        else {
+            s << ", ";
+        }
+
+        Assignment *as = (Assignment *)*pp;
+        SharedExp left = as->getLeft();
+        SharedType ty  = as->getType();
+
+        if (ty == nullptr) {
+            if (VERBOSE) {
+                LOG_ERROR("No type for parameter %1!", left);
+            }
+
+            ty = IntegerType::get(STD_SIZE, 0);
+        }
+
+        QString name;
+
+        if (left->isParam()) {
+            name = left->access<Const, 1>()->getStr();
+        }
+        else {
+            LOG_ERROR("Parameter %1 is not opParam!", left);
+            name = "??";
+        }
+
+        if (ty->isPointer() && std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isArray()) {
+            // C does this by default when you pass an array, i.e. you pass &array meaning array
+            // Replace all m[param] with foo, param with foo, then foo with param
+            ty = std::static_pointer_cast<PointerType>(ty)->getPointsTo();
+
+            SharedExp foo = Const::get("foo123412341234");
+            m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
+            m_proc->searchAndReplace(*left, foo);
+            m_proc->searchAndReplace(*foo, left);
+        }
+
+        appendTypeIdent(s, ty, name);
+    }
+
+    s << ")";
+
+    if (open) {
+        s << "\n{";
+        m_indent++;
+    }
+    else {
+        s << ";\n";
+    }
+
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addPretestedLoopHeader(const SharedExp& cond)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "while (";
+    appendExp(s, *cond, PREC_NONE);
+    s << ") {";
+    appendLine(tgt);
+
+    m_indent++;
+}
+
+
+void CCodeGenerator::addPretestedLoopEnd()
+{
+    m_indent--;
+
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "}";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addEndlessLoopHeader()
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "for(;;) {";
+    appendLine(tgt);
+
+    m_indent++;
+}
+
+
+void CCodeGenerator::addEndlessLoopEnd()
+{
+    m_indent--;
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "}";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addPostTestedLoopHeader()
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "do {";
+    appendLine(tgt);
+    m_indent++;
+}
+
+
+void CCodeGenerator::addPostTestedLoopEnd(const SharedExp& cond)
+{
+    m_indent--;
+
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "} while (";
+    appendExp(s, *cond, PREC_NONE);
+    s << ");";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addCaseCondHeader(const SharedExp& cond)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "switch(";
+    appendExp(s, *cond, PREC_NONE);
+    s << ") {";
+    appendLine(tgt);
+
+    m_indent++;
+}
+
+
+void CCodeGenerator::addCaseCondOption(Exp& opt)
+{
+    m_indent--;
+
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "case ";
+    appendExp(s, opt, PREC_NONE);
+    s << ":";
+    appendLine(tgt);
+
+    m_indent++;
+}
+
+
+void CCodeGenerator::addCaseCondOptionEnd()
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "break;";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addCaseCondElse()
+{
+    m_indent--;
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "default:";
+    appendLine(tgt);
+
+    m_indent++;
+}
+
+
+void CCodeGenerator::addCaseCondEnd()
+{
+    m_indent--;
+
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "}";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addIfCondHeader(const SharedExp& cond)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "if (";
+    appendExp(s, *cond, PREC_NONE);
+    s << ") {";
+    appendLine(tgt);
+
+    m_indent++;
+}
+
+
+void CCodeGenerator::addIfCondEnd()
+{
+    m_indent--;
+
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "}";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addIfElseCondHeader(const SharedExp& cond)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "if (";
+    appendExp(s, *cond, PREC_NONE);
+    s << ") {";
+    appendLine(tgt);
+
+    m_indent++;
+}
+
+
+void CCodeGenerator::addIfElseCondOption()
+{
+    m_indent--;
+
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "}";
+    appendLine(tgt);
+    appendLine("else {");
+
+    m_indent++;
+}
+
+
+void CCodeGenerator::addIfElseCondEnd()
+{
+    m_indent--;
+
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "}";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addGoto(int ord)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "goto L" << ord << ";";
+    appendLine(tgt);
+    m_usedLabels.insert(ord);
+}
+
+
+void CCodeGenerator::addContinue()
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "continue;";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addBreak()
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, m_indent);
+    s << "break;";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addLabel(int ord)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    s << "L" << ord << ":";
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::removeLabel(int ord)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    s << "L" << ord << ":";
+    m_lines.removeAll(tgt);
+}
+
+
+
+void CCodeGenerator::addProcStart(UserProc *proc)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    s << "/** address: " << proc->getEntryAddress() << " */";
+    appendLine(tgt);
+    addProcDec(proc, true);
+}
+
+
+void CCodeGenerator::addProcEnd()
+{
+    m_indent--;
+    appendLine("}");
+    appendLine("");
+}
+
+
+void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    indent(s, 1);
+    appendTypeIdent(s, type, name);
+    SharedConstExp e = m_proc->expFromSymbol(name);
+
+    if (e) {
+        // ? Should never see subscripts in the back end!
+        if ((e->getOper() == opSubscript) && ((const RefExp *)e.get())->isImplicitDef() &&
+            ((e->getSubExp1()->getOper() == opParam) || (e->getSubExp1()->getOper() == opGlobal))) {
+            s << " = ";
+            appendExp(s, *e->getSubExp1(), PREC_NONE);
+            s << ";";
+        }
+        else {
+            s << "; \t\t// ";
+            e->print(s);
+        }
+    }
+    else {
+        s << ";";
+    }
+
+    appendLine(tgt);
+    m_locals[name] = type->clone();
+
+    if (last) {
+        appendLine("");
+    }
+}
+
+
+void CCodeGenerator::addGlobal(const QString& name, SharedType type, const SharedExp& init)
+{
+    QString tgt;
+    QTextStream s(&tgt);
+
+    // Check for array types. These are declared differently in C than
+    // they are printed
+    if (type->isArray()) {
+        // Get the component type
+        SharedType base = std::static_pointer_cast<ArrayType>(type)->getBaseType();
+        appendType(s, base);
+        s << " " << name << "[" << std::static_pointer_cast<ArrayType>(type)->getLength() << "]";
+    }
+    else if (type->isPointer() && std::static_pointer_cast<PointerType>(type)->getPointsTo()->resolvesToFunc()) {
+        // These are even more different to declare than to print. Example:
+        // void (void)* global0 = foo__1B;     ->
+        // void (*global0)(void) = foo__1B;
+        auto pt = std::static_pointer_cast<PointerType>(type);
+        std::shared_ptr<FuncType> ft = std::static_pointer_cast<FuncType>(pt->getPointsTo());
+        QString ret, param;
+        ft->getReturnAndParam(ret, param);
+        s << ret << "(*" << name << ")" << param;
+    }
+    else {
+        appendType(s, type);
+        s << " " << name;
+    }
+
+    if (init && !init->isNil()) {
+        s << " = ";
+        SharedType base_type = type->isArray() ? type->as<ArrayType>()->getBaseType() : type;
+        appendExp(s, *init, PREC_ASSIGN, base_type->isInteger() ? !base_type->as<IntegerType>()->isSigned() : false);
+    }
+
+    s << ";";
+
+    if (type->isSize()) {
+        s << "// " << type->getSize() / 8 << " bytes";
+    }
+
+    appendLine(tgt);
+}
+
+
+void CCodeGenerator::addLineComment(const QString& cmt)
+{
+    appendLine(QString("/* %1 */").arg(cmt));
 }
 
 
@@ -1174,827 +2232,6 @@ void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString i
 }
 
 
-void CCodeGenerator::reset()
-{
-    m_lines.clear();
-}
-
-
-void CCodeGenerator::addPretestedLoopHeader(int indLevel, const SharedExp& cond)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "while (";
-    appendExp(s, *cond, PREC_NONE);
-    s << ") {";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addPretestedLoopEnd(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "}";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addEndlessLoopHeader(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "for(;;) {";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addEndlessLoopEnd(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "}";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addPostTestedLoopHeader(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "do {";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addPostTestedLoopEnd(int indLevel, const SharedExp& cond)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "} while (";
-    appendExp(s, *cond, PREC_NONE);
-    s << ");";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addCaseCondHeader(int indLevel, const SharedExp& cond)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "switch(";
-    appendExp(s, *cond, PREC_NONE);
-    s << ") {";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addCaseCondOption(int indLevel, Exp& opt)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "case ";
-    appendExp(s, opt, PREC_NONE);
-    s << ":";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addCaseCondOptionEnd(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "break;";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addCaseCondElse(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "default:";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addCaseCondEnd(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "}";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addIfCondHeader(int indLevel, const SharedExp& cond)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "if (";
-    appendExp(s, *cond, PREC_NONE);
-    s << ") {";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addIfCondEnd(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "}";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addIfElseCondHeader(int indLevel, const SharedExp& cond)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "if (";
-    appendExp(s, *cond, PREC_NONE);
-    s << ") {";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addIfElseCondOption(int indLevel)
-{
-    QString tgt;
-
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "} else {";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addIfElseCondEnd(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "}";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addGoto(int indLevel, int ord)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "goto L" << ord << ";";
-    appendLine(tgt);
-    usedLabels.insert(ord);
-}
-
-
-void CCodeGenerator::removeUnusedLabels(int)
-{
-    for (QStringList::iterator it = m_lines.begin(); it != m_lines.end(); ) {
-        if (it->startsWith('L') && it->contains(':')) {
-            QStringRef sxr = it->midRef(1, it->indexOf(':') - 1);
-            int n          = sxr.toInt();
-
-            if (usedLabels.find(n) == usedLabels.end()) {
-                it = m_lines.erase(it);
-                continue;
-            }
-        }
-
-        it++;
-    }
-}
-
-
-void CCodeGenerator::addContinue(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "continue;";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addBreak(int indLevel)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-    s << "break;";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addLabel(int, int ord)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    s << "L" << ord << ":";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::removeLabel(int ord)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    s << "L" << ord << ":";
-    m_lines.removeAll(tgt);
-}
-
-
-bool isBareMemof(const Exp& e, UserProc *)
-{
-    if (!e.isMemOf()) {
-        return false;
-    }
-
-#if SYMS_IN_BACK_END
-    // Check if it maps to a symbol
-    const char *sym = proc->lookupSym(e);
-
-    if (sym == nullptr) {
-        sym = proc->lookupSym(e->getSubExp1());
-    }
-
-    return sym == nullptr; // Only a bare memof if it is not a symbol
-#else
-    return true;
-#endif
-}
-
-
-void CCodeGenerator::addAssignmentStatement(int indLevel, Assign *asgn)
-{
-    // Gerard: shouldn't these  3 types of statements be removed earlier?
-    if (asgn->getLeft()->getOper() == opPC) {
-        return; // Never want to see assignments to %PC
-    }
-
-    SharedExp result;
-
-    if (asgn->getRight()->search(Terminal(opPC), result)) { // Gerard: what's this?
-        return;
-    }
-
-    // ok I want this now
-    // if (asgn->getLeft()->isFlags())
-    //    return;
-
-    QString tgt;
-    QTextStream s(&tgt);
-    indent(s, indLevel);
-    SharedType asgnType = asgn->getType();
-    SharedExp lhs       = asgn->getLeft();
-    SharedExp rhs       = asgn->getRight();
-    UserProc *proc      = asgn->getProc();
-
-    if (*lhs == *rhs) {
-        return; // never want to see a = a;
-    }
-
-    if (SETTING(noDecompile) && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
-        (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
-        int wdth = lhs->access<Const, 1>()->getInt();
-
-        // add some fsize hints to rhs
-        if ((wdth >= 32) && (wdth <= 63)) {
-            rhs = std::make_shared<Ternary>(opFsize, Const::get(32), Const::get(32), rhs);
-        }
-        else if ((wdth >= 64) && (wdth <= 87)) {
-            rhs = std::make_shared<Ternary>(opFsize, Const::get(64), Const::get(64), rhs);
-        }
-    }
-
-    if (SETTING(noDecompile) && isBareMemof(*lhs, proc)) {
-        if (asgnType && asgnType->isFloat()) {
-            if (asgnType->as<FloatType>()->getSize() == 32) {
-                s << "FLOAT_";
-            }
-            else {
-                s << "DOUBLE_";
-            }
-        }
-        else if (rhs->getOper() == opFsize) {
-            if (rhs->access<Const, 2>()->getInt() == 32) {
-                s << "FLOAT_";
-            }
-            else {
-                s << "DOUBLE_";
-            }
-        }
-        else if ((rhs->getOper() == opRegOf) && (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
-            // yes, this is a hack
-            int wdth = rhs->access<Const, 2>()->getInt();
-
-            if ((wdth >= 32) && (wdth <= 63)) {
-                s << "FLOAT_";
-            }
-            else if ((wdth >= 64) && (wdth <= 87)) {
-                s << "DOUBLE_";
-            }
-        }
-
-        s << "MEMASSIGN(";
-        appendExp(s, *lhs->getSubExp1(), PREC_UNARY);
-        s << ", ";
-        appendExp(s, *rhs, PREC_UNARY);
-        s << ");";
-        appendLine(tgt);
-        return;
-    }
-
-    if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid()) {
-        appendExp(s, TypedExp(asgnType, lhs), PREC_ASSIGN);
-    }
-    else if ((lhs->getOper() == opGlobal) && asgn->getType()->isArray()) {
-        appendExp(s, Binary(opArrayIndex, lhs, Const::get(0)), PREC_ASSIGN);
-    }
-    else if ((lhs->getOper() == opAt) && lhs->getSubExp2()->isIntConst() &&
-             lhs->getSubExp3()->isIntConst()) {
-        // exp1@[n:m] := rhs -> exp1 = exp1 & mask | rhs << m  where mask = ~((1 << m-n+1)-1)
-        SharedExp exp1 = lhs->getSubExp1();
-        int n          = lhs->access<Const, 2>()->getInt();
-        int m          = lhs->access<Const, 3>()->getInt();
-        appendExp(s, *exp1, PREC_ASSIGN);
-        s << " = ";
-        int mask = ~(((1 << (m - n + 1)) - 1) << m); // MSVC winges without most of these parentheses
-        rhs = Binary::get(opBitAnd, exp1,
-                          Binary::get(opBitOr, Const::get(mask), Binary::get(opShiftL, rhs, Const::get(m))));
-        rhs = rhs->simplify();
-        appendExp(s, *rhs, PREC_ASSIGN);
-        s << ";";
-        appendLine(tgt);
-        return;
-    }
-    else {
-        appendExp(s, *lhs, PREC_ASSIGN); // Ordinary LHS
-    }
-
-    if ((rhs->getOper() == opPlus) && (*rhs->getSubExp1() == *lhs)) {
-        // C has special syntax for this, eg += and ++
-        // however it's not always acceptable for assigns to m[] (?)
-        if (rhs->getSubExp2()->isIntConst() &&
-            ((rhs->access<Const, 2>()->getInt() == 1) || (asgn->getType()->isPointer() &&
-                                                          (asgn->getType()->as<PointerType>()->getPointsTo()->getSize() ==
-                                                           (unsigned)rhs->access<Const, 2>()->getInt() * 8)))) {
-            s << "++";
-        }
-        else {
-            s << " += ";
-            appendExp(s, *rhs->getSubExp2(), PREC_ASSIGN);
-        }
-    }
-    else {
-        s << " = ";
-        appendExp(s, *rhs, PREC_ASSIGN);
-    }
-
-    s << ";";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addCallStatement(int indLevel, Function *proc, const QString& name, StatementList& args,
-                                      StatementList *results)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, indLevel);
-
-    if (!results->empty()) {
-        // FIXME: Needs changing if more than one real result (return a struct)
-        SharedExp firstRet = ((Assignment *)*results->begin())->getLeft();
-        appendExp(s, *firstRet, PREC_ASSIGN);
-        s << " = ";
-    }
-
-    s << name << "(";
-    StatementList::iterator ss;
-    bool first = true;
-    int n      = 0;
-
-    for (ss = args.begin(); ss != args.end(); ++ss, ++n) {
-        if (first) {
-            first = false;
-        }
-        else {
-            s << ", ";
-        }
-
-        Assignment *arg_assign = dynamic_cast<Assignment *>(*ss);
-        assert(arg_assign != nullptr);
-        SharedType t   = arg_assign->getType();
-        auto as_arg    = arg_assign->getRight();
-        auto const_arg = std::dynamic_pointer_cast<const Const>(as_arg);
-        bool ok        = true;
-
-        if (t && t->isPointer() && std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
-            Function *p = proc->getProg()->findProc(const_arg->getAddr());
-
-            if (p) {
-                s << p->getName();
-                ok = false;
-            }
-        }
-
-        if (ok) {
-            bool needclose = false;
-
-            if (SETTING(noDecompile) && proc->getSignature()->getParamType(n) &&
-                proc->getSignature()->getParamType(n)->isPointer()) {
-                s << "ADDR(";
-                needclose = true;
-            }
-
-            appendExp(s, *as_arg, PREC_COMMA);
-
-            if (needclose) {
-                s << ")";
-            }
-        }
-    }
-
-    s << ");";
-
-    if (results->size() > 1) {
-        first = true;
-        s << " /* Warning: also results in ";
-
-        for (ss = ++results->begin(); ss != results->end(); ++ss) {
-            if (first) {
-                first = false;
-            }
-            else {
-                s << ", ";
-            }
-
-            appendExp(s, *((Assignment *)*ss)->getLeft(), PREC_COMMA);
-        }
-
-        s << " */";
-    }
-
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addIndCallStatement(int indLevel, const SharedExp& exp, StatementList& args, StatementList *results)
-{
-    Q_UNUSED(results);
-    //    FIXME: Need to use 'results', since we can infer some defines...
-    QString tgt;
-    QTextStream s(&tgt);
-    indent(s, indLevel);
-    s << "(*";
-    appendExp(s, *exp, PREC_NONE);
-    s << ")(";
-    QStringList arg_strings;
-    QString arg_tgt;
-
-    for (Statement *ss : args) {
-        QTextStream arg_str(&arg_tgt);
-        SharedExp arg = ((Assign *)ss)->getRight();
-        appendExp(arg_str, *arg, PREC_COMMA);
-        arg_strings << arg_tgt;
-        arg_tgt.clear();
-    }
-
-    s << arg_strings.join(", ") << ");";
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addReturnStatement(int indLevel, StatementList *rets)
-{
-    // FIXME: should be returning a struct of more than one real return */
-    // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
-    StatementList::iterator rr;
-    QString tgt;
-    QTextStream s(&tgt);
-    indent(s, indLevel);
-    s << "return";
-    size_t n = rets->size();
-
-    if ((n == 0) && SETTING(noDecompile) && (m_proc->getSignature()->getNumReturns() > 0)) {
-        s << " eax";
-    }
-
-    if (n >= 1) {
-        s << " ";
-        appendExp(s, *((Assign *)*rets->begin())->getRight(), PREC_NONE);
-    }
-
-    s << ";";
-
-    if (n > 0) {
-        if (n > 1) {
-            s << " /* WARNING: Also returning: ";
-        }
-
-        bool first = true;
-
-        for (rr = ++rets->begin(); rr != rets->end(); ++rr) {
-            if (first) {
-                first = false;
-            }
-            else {
-                s << ", ";
-            }
-
-            appendExp(s, *((Assign *)*rr)->getLeft(), PREC_NONE);
-            s << " := ";
-            appendExp(s, *((Assign *)*rr)->getRight(), PREC_NONE);
-        }
-
-        if (n > 1) {
-            s << " */";
-        }
-    }
-
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addProcStart(UserProc *proc)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    s << "/** address: " << proc->getEntryAddress() << " */";
-    appendLine(tgt);
-    addProcDec(proc, true);
-}
-
-
-void CCodeGenerator::addPrototype(UserProc *proc)
-{
-    addProcDec(proc, false);
-}
-
-
-void CCodeGenerator::addProcDec(UserProc *proc, bool open)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-    ReturnStatement *returns = proc->getTheReturnStatement();
-    SharedType retType;
-
-    if (proc->getSignature()->isForced()) {
-        if (proc->getSignature()->getNumReturns() == 0) {
-            s << "void ";
-        }
-        else {
-            unsigned int n = 0;
-            SharedExp e    = proc->getSignature()->getReturnExp(0);
-
-            if (e->isRegN(Signature::getStackRegister(proc->getProg()))) {
-                n = 1;
-            }
-
-            if (n < proc->getSignature()->getNumReturns()) {
-                retType = proc->getSignature()->getReturnType(n);
-            }
-
-            if (retType == nullptr) {
-                s << "void ";
-            }
-        }
-    }
-    else if ((returns == nullptr) || (returns->getNumReturns() == 0)) {
-        s << "void ";
-    }
-    else {
-        Assign *firstRet = (Assign *)*returns->begin();
-        retType = firstRet->getType();
-
-        if ((retType == nullptr) || retType->isVoid()) {
-            // There is a real return; make it integer (Remove with AD HOC type analysis)
-            retType = IntegerType::get(STD_SIZE, 0);
-        }
-    }
-
-    if (retType) {
-        appendType(s, retType);
-
-        if (!retType->isPointer()) { // NOTE: assumes type *proc( style
-            s << " ";
-        }
-    }
-
-    s << proc->getName() << "(";
-    StatementList& parameters = proc->getParameters();
-    StatementList::iterator pp;
-
-    if ((parameters.size() > 10) && open) {
-        LOG_WARN("Proc %1 has %2 parameters", proc->getName(), parameters.size());
-    }
-
-    bool first = true;
-
-    for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
-        if (first) {
-            first = false;
-        }
-        else {
-            s << ", ";
-        }
-
-        Assignment *as = (Assignment *)*pp;
-        SharedExp left = as->getLeft();
-        SharedType ty  = as->getType();
-
-        if (ty == nullptr) {
-            if (VERBOSE) {
-                LOG_ERROR("No type for parameter %1!", left);
-            }
-
-            ty = IntegerType::get(STD_SIZE, 0);
-        }
-
-        QString name;
-
-        if (left->isParam()) {
-            name = left->access<Const, 1>()->getStr();
-        }
-        else {
-            LOG_ERROR("Parameter %1 is not opParam!", left);
-            name = "??";
-        }
-
-        if (ty->isPointer() && std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isArray()) {
-            // C does this by default when you pass an array, i.e. you pass &array meaning array
-            // Replace all m[param] with foo, param with foo, then foo with param
-            ty = std::static_pointer_cast<PointerType>(ty)->getPointsTo();
-            SharedExp foo = Const::get("foo123412341234");
-            m_proc->searchAndReplace(*Location::memOf(left, nullptr), foo);
-            m_proc->searchAndReplace(*left, foo);
-            m_proc->searchAndReplace(*foo, left);
-        }
-
-        appendTypeIdent(s, ty, name);
-    }
-
-    s << ")";
-
-    if (open) {
-        s << " {";
-    }
-    else {
-        s << ";\n";
-    }
-
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::addProcEnd()
-{
-    appendLine("}");
-    appendLine("");
-}
-
-
-void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    indent(s, 1);
-    appendTypeIdent(s, type, name);
-    SharedConstExp e = m_proc->expFromSymbol(name);
-
-    if (e) {
-        // ? Should never see subscripts in the back end!
-        if ((e->getOper() == opSubscript) && ((const RefExp *)e.get())->isImplicitDef() &&
-            ((e->getSubExp1()->getOper() == opParam) || (e->getSubExp1()->getOper() == opGlobal))) {
-            s << " = ";
-            appendExp(s, *e->getSubExp1(), PREC_NONE);
-            s << ";";
-        }
-        else {
-            s << "; \t\t// ";
-            e->print(s);
-        }
-    }
-    else {
-        s << ";";
-    }
-
-    appendLine(tgt);
-    locals[name] = type->clone();
-
-    if (last) {
-        appendLine("");
-    }
-}
-
-
-void CCodeGenerator::addGlobal(const QString& name, SharedType type, const SharedExp& init)
-{
-    QString tgt;
-    QTextStream s(&tgt);
-
-    // Check for array types. These are declared differently in C than
-    // they are printed
-    if (type->isArray()) {
-        // Get the component type
-        SharedType base = std::static_pointer_cast<ArrayType>(type)->getBaseType();
-        appendType(s, base);
-        s << " " << name << "[" << std::static_pointer_cast<ArrayType>(type)->getLength() << "]";
-    }
-    else if (type->isPointer() && std::static_pointer_cast<PointerType>(type)->getPointsTo()->resolvesToFunc()) {
-        // These are even more different to declare than to print. Example:
-        // void (void)* global0 = foo__1B;     ->
-        // void (*global0)(void) = foo__1B;
-        auto pt = std::static_pointer_cast<PointerType>(type);
-        std::shared_ptr<FuncType> ft = std::static_pointer_cast<FuncType>(pt->getPointsTo());
-        QString ret, param;
-        ft->getReturnAndParam(ret, param);
-        s << ret << "(*" << name << ")" << param;
-    }
-    else {
-        appendType(s, type);
-        s << " " << name;
-    }
-
-    if (init && !init->isNil()) {
-        s << " = ";
-        SharedType base_type = type->isArray() ? type->as<ArrayType>()->getBaseType() : type;
-        appendExp(s, *init, PREC_ASSIGN, base_type->isInteger() ? !base_type->as<IntegerType>()->isSigned() : false);
-    }
-
-    s << ";";
-
-    if (type->isSize()) {
-        s << "// " << type->getSize() / 8 << " bytes";
-    }
-
-    appendLine(tgt);
-}
-
-
-void CCodeGenerator::print(QTextStream& os)
-{
-    os << m_lines.join('\n');
-
-    if (m_proc == nullptr) {
-        os << '\n';
-    }
-}
-
-
-void CCodeGenerator::addLineComment(const QString& cmt)
-{
-    appendLine(QString("/* %1*/").arg(cmt));
-}
-
-
-void CCodeGenerator::appendLine(const QString& s)
-{
-    m_lines.push_back(s);
-}
-
-
 void CCodeGenerator::openParen(QTextStream& str, PREC outer, PREC inner)
 {
     if (inner < outer) {
@@ -2008,4 +2245,532 @@ void CCodeGenerator::closeParen(QTextStream& str, PREC outer, PREC inner)
     if (inner < outer) {
         str << ")";
     }
+}
+
+
+void CCodeGenerator::generateCode(BasicBlock* bb, BasicBlock *latch, std::list<BasicBlock *>& followSet,
+                              std::list<BasicBlock *>& gotoSet, UserProc *proc)
+{
+    // If this is the follow for the most nested enclosing conditional, then don't generate anything. Otherwise if it is
+    // in the follow set generate a goto to the follow
+    BasicBlock *enclFollow = followSet.empty() ? nullptr : followSet.back();
+
+    if (Util::isIn(gotoSet, bb) && !bb->isLatchNode() &&
+        ((latch && latch->getLoopHead() && (bb == latch->getLoopHead()->getLoopFollow())) || !bb->allParentsGenerated())) {
+        emitGotoAndLabel(bb, bb);
+        return;
+    }
+    else if (Util::isIn(followSet, bb)) {
+        if (bb != enclFollow) {
+            emitGotoAndLabel(bb, bb);
+        }
+        return;
+    }
+
+    // Has this node already been generated?
+    if (bb->getTravType() == TravType::DFS_Codegen) {
+        // this should only occur for a loop over a single block
+        // FIXME: is this true? Perl_list (0x8068028) in the SPEC 2000 perlbmk seems to have a case with sType = Cond,
+        // lType == PreTested, and latchNod == 0
+        // assert(bb->sType == Loop && bb->lType == PostTested && latchNode == bb);
+        return;
+    }
+    else {
+        bb->setTravType(TravType::DFS_Codegen);
+    }
+
+    //
+    // if this is a latchNode, there are 2 possibilities:
+    // 1) The current indentation level is the same as the indentation of the first node of a loop.
+    //    Just write out the BB.
+    // 2) The indentation level is different.
+    //    Can happen (?) when processing a "parent continue" of a double for loop, e.g.
+    //    \code
+    //        for (...) {
+    //            for (...) {
+    //               if (condition) {
+    //                   goto label;
+    //               }
+    //               /* code ... */
+    //            }
+    //            /* code ... */
+    //        label:
+    //        }
+    //    \endcode
+    //
+    if (bb->isLatchNode()) {
+        // FIXME
+//         if (latch && latch->getLoopHead() &&
+//             (m_indent == latch->getLoopHead()->m_indentLevel + ((latch->m_loopHead->m_loopHeaderType == LoopType::PreTested) ? 1 : 0))) {
+//             bb->WriteBB(this);
+//         }
+//         else {
+//             // unset its traversed flag
+//             bb->m_traversed = TravType::Untraversed;
+//             emitGotoAndLabel(this, bb);
+//         }
+        writeBB(bb);
+        return;
+    }
+
+    BasicBlock *child = nullptr;
+
+    switch (bb->getStructType())
+    {
+    case StructType::Loop:
+    case StructType::LoopCond:
+        generateCode_Loop(bb, gotoSet, proc, latch, followSet);
+        break;
+
+    case StructType::Cond:
+        {
+            // reset this back to LoopCond if it was originally of this type
+            if (bb->getLatchNode()) {
+                bb->setStructType(StructType::LoopCond);
+            }
+
+            // for 2 way conditional headers that are effectively jumps into
+            // or out of a loop or case body, we will need a new follow node
+            BasicBlock *tmpCondFollow = nullptr;
+
+            // keep track of how many nodes were added to the goto set so that
+            // the correct number are removed
+            int gotoTotal = 0;
+
+            // add the follow to the follow set if this is a case header
+            if (bb->getCondType() == CondType::Case) {
+                followSet.push_back(bb->getCondFollow());
+            }
+            else if ((bb->getCondType() != CondType::Case) && bb->getCondFollow()) {
+                // For a structured two conditional header,
+                // its follow is added to the follow set
+                // myLoopHead = (sType == LoopCond ? this : loopHead);
+
+                if (bb->getUnstructType() == UnstructType::Structured) {
+                    followSet.push_back(bb->getCondFollow());
+                }
+
+                // Otherwise, for a jump into/outof a loop body, the follow is added to the goto set.
+                // The temporary follow is set for any unstructured conditional header branch that is within the
+                // same loop and case.
+                else {
+                    if (bb->getUnstructType() == UnstructType::JumpInOutLoop) {
+                        // define the loop header to be compared against
+                        BasicBlock *myLoopHead = (bb->getStructType() == StructType::LoopCond ? bb : bb->getLoopHead());
+                        gotoSet.push_back(bb->getCondFollow());
+                        gotoTotal++;
+
+                        // also add the current latch node, and the loop header of the follow if they exist
+                        if (latch) {
+                            gotoSet.push_back(latch);
+                            gotoTotal++;
+                        }
+
+                        if (bb->getCondFollow()->getLoopHead() && (bb->getCondFollow()->getLoopHead() != myLoopHead)) {
+                            gotoSet.push_back(bb->getCondFollow()->getLoopHead());
+                            gotoTotal++;
+                        }
+                    }
+
+                    tmpCondFollow = bb->getOutEdge((bb->getCondType() == CondType::IfThen) ? BELSE : BTHEN);
+
+                    // for a jump into a case, the temp follow is added to the follow set
+                    if (bb->getUnstructType() == UnstructType::JumpIntoCase) {
+                        followSet.push_back(tmpCondFollow);
+                    }
+                }
+            }
+
+            // write the body of the block (excluding the predicate)
+            writeBB(bb);
+
+            // write the conditional header
+            SWITCH_INFO *psi = nullptr; // Init to nullptr to suppress a warning
+
+            if (bb->getCondType() == CondType::Case) {
+                // The CaseStatement will be in the last RTL this BB
+                RTL           *last = bb->getRTLList()->back();
+                CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
+                psi = cs->getSwitchInfo();
+
+                // Write the switch header (i.e. "switch(var) {")
+                addCaseCondHeader(psi->pSwitchVar);
+            }
+            else {
+                SharedExp cond = bb->getCond();
+
+                if (!cond) {
+                    cond = Const::get(Address(0xfeedface)); // hack, but better than a crash
+                }
+
+                if (bb->getCondType() == CondType::IfElse) {
+                    cond = Unary::get(opNot, cond->clone());
+                    cond = cond->simplify();
+                }
+
+                if (bb->getCondType() == CondType::IfThenElse) {
+                    addIfElseCondHeader(cond);
+                }
+                else {
+                    addIfCondHeader(cond);
+                }
+            }
+
+            // write code for the body of the conditional
+            if (bb->getCondType() != CondType::Case) {
+                BasicBlock *succ = bb->getOutEdge((bb->getCondType() == CondType::IfElse) ? BELSE : BTHEN);
+
+                // emit a goto statement if the first clause has already been
+                // generated or it is the follow of this node's enclosing loop
+                if ((succ->getTravType() == TravType::DFS_Codegen) || (bb->getLoopHead() && (succ == bb->getLoopHead()->getLoopFollow()))) {
+                    emitGotoAndLabel(bb, succ);
+                }
+                else {
+                    generateCode(succ, latch, followSet, gotoSet, proc);
+                }
+
+                // generate the else clause if necessary
+                if (bb->getCondType() == CondType::IfThenElse) {
+                    // generate the 'else' keyword and matching brackets
+                    addIfElseCondOption();
+
+                    succ = bb->getOutEdge(BELSE);
+
+                    // emit a goto statement if the second clause has already
+                    // been generated
+                    if (succ->getTravType() == TravType::DFS_Codegen) {
+                        emitGotoAndLabel(bb, succ);
+                    }
+                    else {
+                        generateCode(succ, latch, followSet, gotoSet, proc);
+                    }
+
+                    // generate the closing bracket
+                    addIfElseCondEnd();
+                }
+                else {
+                    // generate the closing bracket
+                    addIfCondEnd();
+                }
+            }
+            else { // case header
+                // TODO: linearly emitting each branch of the switch does not result in optimal fall-through.
+                // generate code for each out branch
+                for (unsigned int i = 0; i < bb->getOutEdges().size(); i++) {
+                    // emit a case label
+                    // FIXME: Not valid for all switch types
+                    Const caseVal(0);
+
+                    if (psi->chForm == 'F') {                            // "Fortran" style?
+                        caseVal.setInt(((int *)psi->uTable.value())[i]); // Yes, use the table value itself
+                    }
+                    // Note that uTable has the address of an int array
+                    else {
+                        caseVal.setInt((int)(psi->iLower + i));
+                    }
+
+                    addCaseCondOption(caseVal);
+
+                    // generate code for the current out-edge
+                    BasicBlock *succ = bb->getOutEdge(i);
+
+                    // assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
+                    if (succ->getTravType() == TravType::DFS_Codegen) {
+                        emitGotoAndLabel(bb, succ);
+                    }
+                    else {
+                        generateCode(succ, latch, followSet, gotoSet, proc);
+                    }
+                }
+
+                // generate the closing bracket
+                addCaseCondEnd();
+            }
+
+            // do all the follow stuff if this conditional had one
+            if (bb->getCondFollow()) {
+                // remove the original follow from the follow set if it was
+                // added by this header
+                if ((bb->getUnstructType() == UnstructType::Structured) || (bb->getUnstructType() == UnstructType::JumpIntoCase)) {
+                    assert(gotoTotal == 0);
+                    followSet.resize(followSet.size() - 1);
+                }
+                else { // remove all the nodes added to the goto set
+                    gotoSet.resize(std::max((int)gotoSet.size() - gotoTotal, 0));
+                }
+
+                // do the code generation (or goto emitting) for the new conditional follow if it exists, otherwise do
+                // it for the original follow
+                if (!tmpCondFollow) {
+                    tmpCondFollow = bb->getCondFollow();
+                }
+
+                if (tmpCondFollow->getTravType() == TravType::DFS_Codegen) {
+                    emitGotoAndLabel(bb, tmpCondFollow);
+                }
+                else {
+                    generateCode(tmpCondFollow, latch, followSet, gotoSet, proc);
+                }
+            }
+
+            break;
+        }
+
+    case StructType::Seq:
+        // generate code for the body of this block
+        writeBB(bb);
+
+        // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return' statement
+        if (bb->getType() == BBType::Ret) {
+            // This should be emitted now, like a normal statement
+            // addReturnStatement(getReturnVal());
+            return;
+        }
+
+        // return if this doesn't have any out edges (emit a warning)
+        if (bb->getOutEdges().empty()) {
+            LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
+
+            if (bb->getType() == BBType::CompJump) {
+                assert(!bb->getRTLList()->empty());
+                RTL *lastRTL = bb->getRTLList()->back();
+                assert(!lastRTL->empty());
+                GotoStatement *gs = (GotoStatement *)lastRTL->back();
+
+                QString     dat;
+                QTextStream ost(&dat);
+
+                ost << "goto " << gs->getDest();
+                addLineComment(dat);
+            }
+
+            return;
+        }
+
+        child = bb->getOutEdge(0);
+
+        if (bb->getOutEdges().size() > 1) {
+            BasicBlock *other = bb->getOutEdge(1);
+            LOG_MSG("Found seq with more than one outedge!");
+            auto const_dest = std::static_pointer_cast<Const>(bb->getDest());
+
+            if (const_dest->isIntConst() && (const_dest->getAddr() == child->getLowAddr())) {
+                other = child;
+                child = bb->getOutEdge(1);
+                LOG_MSG("Taken branch is first out edge");
+            }
+
+            try {
+                addIfCondHeader(bb->getCond());
+
+                if (other->getTravType() == TravType::DFS_Codegen) {
+                    emitGotoAndLabel(bb, other);
+                }
+                else {
+                    generateCode(other, latch, followSet, gotoSet, proc);
+                }
+
+                addIfCondEnd();
+            }
+            catch (BasicBlock::LastStatementNotABranchError&) {
+                LOG_ERROR("Last statement is not a cond, don't know what to do with this.");
+            }
+        }
+
+        // generate code for its successor if it hasn't already been visited and is in the same loop/case and is not
+        // the latch for the current most enclosing loop.     The only exception for generating it when it is not in
+        // the same loop is when it is only reached from this node
+        if ((child->getTravType() == TravType::DFS_Codegen) ||
+            ((child->getLoopHead() != bb->getLoopHead()) && (!child->allParentsGenerated() ||
+            Util::isIn(followSet, child))) ||
+            (latch && latch->getLoopHead() && (latch->getLoopHead()->getLoopFollow() == child)) ||
+            !((bb->getCaseHead() == child->getCaseHead()) || (bb->getCaseHead() && (child == bb->getCaseHead()->getCondFollow())))) {
+                emitGotoAndLabel(bb, child);
+        }
+        else {
+            if (bb->getCaseHead() && (child == bb->getCaseHead()->getCondFollow())) {
+                // generate the 'break' statement
+                addCaseCondOptionEnd();
+            }
+            else if ((bb->getCaseHead() == nullptr) || (bb->getCaseHead() != child->getCaseHead()) || !child->isCaseOption()) {
+                generateCode(child, latch, followSet, gotoSet, proc);
+            }
+        }
+
+        break;
+
+    default:
+        LOG_ERROR("Unhandled structuring type %1", (int)bb->getStructType());
+    }
+}
+
+void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& gotoSet, UserProc *proc,
+                                   BasicBlock *latch, std::list<BasicBlock *>& followSet)
+{
+    // add the follow of the loop (if it exists) to the follow set
+    if (bb->getLoopFollow()) {
+        followSet.push_back(bb->getLoopFollow());
+    }
+
+    if (bb->getLoopType() == LoopType::PreTested) {
+        assert(bb->getLatchNode()->getOutEdges().size() == 1);
+
+        // write the body of the block (excluding the predicate)
+        writeBB(bb);
+
+        // write the 'while' predicate
+        SharedExp cond = bb->getCond();
+
+        if (bb->getOutEdge(BTHEN) == bb->getLoopFollow()) {
+            cond = Unary::get(opNot, cond);
+            cond = cond->simplify();
+        }
+
+        addPretestedLoopHeader(cond);
+
+        // write the code for the body of the loop
+        BasicBlock *loopBody = (bb->getOutEdge(BELSE) == bb->getLoopFollow()) ? bb->getOutEdge(BTHEN) : bb->getOutEdge(BELSE);
+        generateCode(loopBody, bb->getLatchNode(), followSet, gotoSet, proc);
+
+        // if code has not been generated for the latch node, generate it now
+        if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
+            bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
+            writeBB(bb->getLatchNode());
+        }
+
+        // rewrite the body of the block (excluding the predicate) at the next nesting level after making sure
+        // another label won't be generated
+        writeBB(bb);
+
+        // write the loop tail
+        addPretestedLoopEnd();
+    }
+    else {
+        // write the loop header
+        if (bb->getLoopType() == LoopType::Endless) {
+            addEndlessLoopHeader();
+        }
+        else {
+            addPostTestedLoopHeader();
+        }
+
+        // if this is also a conditional header, then generate code for the conditional. Otherwise generate code
+        // for the loop body.
+        if (bb->getStructType() == StructType::LoopCond) {
+            // set the necessary flags so that generateCode can successfully be called again on this node
+            bb->setStructType(StructType::Cond);
+            bb->setTravType(TravType::Untraversed);
+            generateCode(bb, bb->getLatchNode(), followSet, gotoSet, proc);
+        }
+        else {
+            writeBB(bb);
+
+            // write the code for the body of the loop
+            generateCode(bb->getOutEdge(0), bb->getLatchNode(), followSet, gotoSet, proc);
+        }
+
+        if (bb->getLoopType() == LoopType::PostTested) {
+            // if code has not been generated for the latch node, generate it now
+            if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
+                bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
+                writeBB(bb->getLatchNode());
+            }
+
+            // addPosttestedLoopEnd(getCond());
+            // MVE: the above seems to fail when there is a call in the middle of the loop (so loop is 2 BBs)
+            // Just a wild stab:
+            addPostTestedLoopEnd(bb->getLatchNode()->getCond());
+        }
+        else {
+            assert(bb->getLoopType() == LoopType::Endless);
+
+            // if code has not been generated for the latch node, generate it now
+            if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
+                bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
+                writeBB(bb->getLatchNode());
+            }
+
+            // write the closing bracket for an endless loop
+            addEndlessLoopEnd();
+        }
+    }
+
+    // write the code for the follow of the loop (if it exists)
+    if (bb->getLoopFollow()) {
+        // remove the follow from the follow set
+        followSet.pop_back();
+
+        if (bb->getLoopFollow()->getTravType() != TravType::DFS_Codegen) {
+            generateCode(bb->getLoopFollow(), latch, followSet, gotoSet, proc);
+        }
+        else {
+            emitGotoAndLabel(bb, bb->getLoopFollow());
+        }
+    }
+}
+
+
+
+void CCodeGenerator::emitGotoAndLabel(BasicBlock* bb, BasicBlock *dest)
+{
+    if (bb->getLoopHead() && ((bb->getLoopHead() == dest) || (bb->getLoopHead()->getLoopFollow() == dest))) {
+        if (bb->getLoopHead() == dest) {
+            addContinue();
+        }
+        else {
+            addBreak();
+        }
+    }
+    else {
+        addGoto(dest->getOrdering());
+    }
+}
+
+
+void CCodeGenerator::writeBB(BasicBlock* bb)
+{
+    if (DEBUG_GEN) {
+        LOG_MSG("Generating code for BB at address %1", bb->getLowAddr());
+    }
+
+    // Allocate space for a label to be generated for this node and add this to the generated code. The actual label can
+    // then be generated now or back patched later
+    addLabel(bb->getOrdering());
+
+    if (bb->getRTLList()) {
+        for (RTL *rtl : *(bb->getRTLList())) {
+            if (DEBUG_GEN) {
+                LOG_MSG("%1", rtl->getAddress());
+            }
+
+            for (Statement *st : *rtl) {
+                st->generateCode(this, bb);
+            }
+        }
+    }
+}
+
+
+void CCodeGenerator::print(QTextStream& os)
+{
+    os << m_lines.join('\n');
+
+    if (m_proc == nullptr) {
+        os << '\n';
+    }
+}
+
+
+void CCodeGenerator::indent(QTextStream& str, int indLevel)
+{
+    // Can probably do more efficiently
+    for (int i = 0; i < indLevel; i++) {
+        str << "    ";
+    }
+}
+
+
+void CCodeGenerator::appendLine(const QString& s)
+{
+    m_lines.push_back(s);
 }

@@ -89,7 +89,7 @@ public:
     virtual bool definesLoc(SharedExp loc) const override; // True if this Statement defines loc
 
     // code generation
-    virtual void generateCode(ICodeGenerator *hll, BasicBlock *parent, int indLevel) override;
+    virtual void generateCode(ICodeGenerator *gen, BasicBlock *parent) override;
 
     // Exp        *getReturnExp(int n) { return returns[n]; }
     // void        setReturnExp(int n, SharedExp e) { returns[n] = e; }

@@ -35,19 +35,21 @@ Boomerang::Boomerang()
     : m_settings(new Settings)
     , m_currentProject(new Project)
     , m_symbols(new SymTab)
+    , m_codeGenerator(new CCodeGenerator)
 {
 }
 
 
 Boomerang::~Boomerang()
 {
+    delete m_codeGenerator;
     delete m_currentProject;
 }
 
 
-ICodeGenerator *Boomerang::getCodeGenerator(UserProc *p)
+ICodeGenerator *Boomerang::getCodeGenerator()
 {
-    return new CCodeGenerator(p);
+    return m_codeGenerator;
 }
 
 
@@ -257,10 +259,10 @@ int Boomerang::processCommand(QStringList& args)
                 return 1;
             }
 
-            prog->generateCode(cluster);
+            m_codeGenerator->generateCode(prog, cluster);
         }
         else {
-            prog->generateCode();
+            m_codeGenerator->generateCode(prog);
         }
 
         break;
@@ -802,7 +804,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     }
 
     LOG_MSG("Generating code...");
-    prog->generateCode();
+    Boomerang::get()->getCodeGenerator()->generateCode(prog);
 
     LOG_VERBOSE("Output written to '%1'", Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(prog->getRootCluster()->getName()));
 

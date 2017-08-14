@@ -351,9 +351,6 @@ public:
     /// eliminate duplicate arguments
     void eliminateDuplicateArgs();
 
-    /// code generation
-    void generateCode(ICodeGenerator *generator);
-
 private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
 
@@ -376,6 +373,8 @@ public:
     /// FIXME: this can be done before transforming out of SSA form now, surely...
     void removeUnusedLocals();
     void mapTempsToLocals();
+
+    const std::map<QString, SharedType>& getLocals() const { return m_locals; }
 
     /// Remove all liveness info in UseCollectors in calls
     void removeCallLiveness();

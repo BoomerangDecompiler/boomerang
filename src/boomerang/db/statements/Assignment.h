@@ -62,7 +62,7 @@ public:
     /// general search and replace
     virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override = 0;
 
-    void generateCode(ICodeGenerator *, BasicBlock *, int /*indLevel*/) override {}
+    void generateCode(ICodeGenerator *, BasicBlock *) override {}
 
     /// simpify internal expressions
     virtual void simplify() override = 0;

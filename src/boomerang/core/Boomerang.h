@@ -88,7 +88,7 @@ public:
      * Returns the ICodeGenerator for the given proc.
      * \return The ICodeGenerator for the specified UserProc.
      */
-    ICodeGenerator *getCodeGenerator(UserProc *p = nullptr);
+    ICodeGenerator *getCodeGenerator();
 
 
     Settings* getSettings() { return m_settings.get(); }
@@ -282,6 +282,7 @@ public:
     IBinarySymbolTable *m_symbols = nullptr;
 
     std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
+    ICodeGenerator* m_codeGenerator;
 
 private:
     /// Prints help for the interactive mode.

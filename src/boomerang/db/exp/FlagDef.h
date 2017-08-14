@@ -2,6 +2,9 @@
 
 #include "boomerang/db/exp/Unary.h"
 
+class RTL;
+typedef std::shared_ptr<RTL> SharedRTL;
+
 /***************************************************************************/ /**
 * FlagDef is a subclass of Unary, and holds a list of parameters (in the subexpression), and a pointer to an RTL
 ******************************************************************************/

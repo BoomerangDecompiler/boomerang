@@ -541,7 +541,7 @@ public:
     /// \post the nodes within the loop have been tagged
     void tagNodesInLoop(BasicBlock *header, bool *& loopNodes);
 
-    void removeUnneededLabels(ICodeGenerator *hll);
+    void removeUnneededLabels(ICodeGenerator *gen);
     void generateDotFile(QTextStream& of);
 
     /////////////////////////////////////////////////////////////////////////

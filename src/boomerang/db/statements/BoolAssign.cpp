@@ -190,13 +190,13 @@ bool BoolAssign::accept(StmtVisitor *visitor)
 }
 
 
-void BoolAssign::generateCode(ICodeGenerator *hll, BasicBlock * /*pbb*/, int indLevel)
+void BoolAssign::generateCode(ICodeGenerator *gen, BasicBlock * /*pbb*/)
 {
     assert(m_lhs);
     assert(m_cond);
     // lhs := (pCond) ? 1 : 0
     Assign as(m_lhs->clone(), std::make_shared<Ternary>(opTern, m_cond->clone(), Const::get(1), Const::get(0)));
-    hll->addAssignmentStatement(indLevel, &as);
+    gen->addAssignmentStatement(&as);
 }
 
 

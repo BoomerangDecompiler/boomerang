@@ -156,6 +156,8 @@ public:
      ******************************************************************************/
     const void *getCodeInfo(Address uAddr, const char *& last, int& delta) const;
 
+    const std::set<Global*>& getGlobals() const { return m_globals; }
+
     QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
     int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
 
@@ -217,8 +219,6 @@ public:
 
     /// Generate dotty file
     void generateDotFile() const;
-    void generateCode(QTextStream& os) const;
-    void generateCode(Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) const;
     void generateRTL(Module *cluster = nullptr, UserProc *proc = nullptr) const;
 
     /// Print this program (primarily for debugging)
@@ -346,8 +346,6 @@ public:
 
     size_t size()  const { return m_moduleList.size(); }
     bool empty() const { return m_moduleList.empty(); }
-
-    void generateDataSectionCode(QString section_name, Address section_start, uint32_t size, ICodeGenerator *code) const;
 
 signals:
     void rereadLibSignatures();

@@ -1593,9 +1593,9 @@ void Cfg::removeJunctionStatements()
 }
 
 
-void Cfg::removeUnneededLabels(ICodeGenerator *hll)
+void Cfg::removeUnneededLabels(ICodeGenerator *gen)
 {
-    hll->removeUnusedLabels(m_ordering.size());
+    gen->removeUnusedLabels(m_ordering.size());
 }
 
 

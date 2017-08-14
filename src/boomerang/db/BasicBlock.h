@@ -135,8 +135,8 @@ public:
     ~BasicBlock();
 
     /// \brief return enclosing function, null if none
-    const Function *getParent() const { return m_parent; }
-    Function *getParent()       { return m_parent; }
+    const Function* getParent() const { return m_parent; }
+    Function* getParent()             { return m_parent; }
 
     /***************************************************************************/ /**
      * \brief   Return the type of the basic block.
@@ -144,10 +144,6 @@ public:
      ******************************************************************************/
     BBType getType();
 
-    QString& getLabelStr() { return m_labelStr; }
-    void setLabelStr(const QString& s) { m_labelStr = s; }
-    bool isLabelNeeded() { return m_labelNeeded; }
-    void setLabelNeeded(bool b) { m_labelNeeded = b; }
     bool isCaseOption();
 
     /***************************************************************************/ /**
@@ -272,7 +268,6 @@ public:
 
     size_t getNumOutEdges() { return m_outEdges.size(); }
 
-
     /// \brief Get the index of my in-edges is BB pred
     /// Basically the "whichPred" function as per Briggs, Cooper, et al (and presumably "Cryton, Ferante, Rosen, Wegman, and
     /// Zadek").  Return -1 if not found
@@ -387,7 +382,7 @@ public:
     /** set the condition */
     void setCond(SharedExp e) noexcept(false);
 
-    /** Get the destiantion, if any */
+    /** Get the destination, if any */
     SharedExp getDest() noexcept(false);
 
     /** Check for branch if equal relation */
@@ -444,10 +439,6 @@ public:
 
 public:
     bool isBackEdge(size_t inEdge) const;
-
-    void generateCode(ICodeGenerator *hll, int indLevel, BasicBlock *latch, std::list<BasicBlock *>& followSet,
-                      std::list<BasicBlock *>& gotoSet, UserProc *proc);
-
 
     /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
     /// \a proc is the enclosing Proc
@@ -510,8 +501,29 @@ public:
      ******************************************************************************/
     bool searchAndReplace(const Exp& search, SharedExp replace);
 
-    void generateCode_Loop(ICodeGenerator *hll, std::list<BasicBlock *>& gotoSet, int indLevel, UserProc *proc,
-                           BasicBlock *latch, std::list<BasicBlock *>& followSet);
+    bool isLatchNode() { return m_loopHead && m_loopHead->m_latchNode == this; }
+    BasicBlock* getLatchNode()  const { return m_latchNode; }
+    BasicBlock* getLoopHead()   const { return m_loopHead; }
+    BasicBlock* getLoopFollow() const { return m_loopFollow; }
+    BasicBlock* getCondFollow() const { return m_condFollow; }
+    BasicBlock* getCaseHead()   const { return m_caseHead; }
+
+    TravType getTravType() const     { return m_traversed; }
+    StructType getStructType() const { return m_structuringType; }
+    CondType getCondType() const;
+    UnstructType getUnstructType() const;
+    LoopType getLoopType() const;
+
+    void setTravType(TravType type) { m_traversed = type; }
+    void setStructType(StructType s);
+
+    int getOrdering() const { return m_ord; }
+
+    /// Return true if every parent (i.e. forward in edge source) of this node has
+    /// had its code generated
+    bool allParentsGenerated();
+
+    const std::list<RTL*>* getRTLList() const { return m_listOfRTLs; }
 
 protected:
     void setLoopStamps(int& time, std::vector<BasicBlock *>& order);
@@ -519,26 +531,15 @@ protected:
     void setRevOrder(std::vector<BasicBlock *>& order);
 
     void setLoopHead(BasicBlock *head) { m_loopHead = head; }
-    BasicBlock *getLoopHead() { return m_loopHead; }
     void setLatchNode(BasicBlock *latch) { m_latchNode = latch; }
-    bool isLatchNode() { return m_loopHead && m_loopHead->m_latchNode == this; }
-    BasicBlock *getLatchNode() { return m_latchNode; }
-    BasicBlock *getCaseHead() { return m_caseHead; }
     void setCaseHead(BasicBlock *head, BasicBlock *follow);
 
-    StructType getStructType() { return m_structuringType; }
-    void setStructType(StructType s);
-    UnstructType getUnstructType();
     void setUnstructType(UnstructType us);
-    LoopType getLoopType();
     void setLoopType(LoopType l);
-    CondType getCondType();
     void setCondType(CondType l);
-
     void setLoopFollow(BasicBlock *other) { m_loopFollow = other; }
-    BasicBlock *getLoopFollow() { return m_loopFollow; }
     void setCondFollow(BasicBlock *other) { m_condFollow = other; }
-    BasicBlock *getCondFollow() { return m_condFollow; }
+
 
     /// establish if this bb has a back edge to the given destination
     bool hasBackEdgeTo(BasicBlock *dest);
@@ -559,33 +560,7 @@ protected:
     bool isAncestorOf(BasicBlock *other);
     bool inLoop(BasicBlock *header, BasicBlock *latch);
 
-    bool isIn(const std::list<BasicBlock *>& set, BasicBlock *bb)
-    {
-        for (BasicBlock *it : set) {
-            if (it == bb) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     char *indent(int indLevel, int extra = 0);
-
-    /// Return true if every parent (i.e. forward in edge source) of this node has
-    /// had its code generated
-    bool allParentsGenerated();
-
-    /// Emits a goto statement (at the correct indentation level) with the destination label for dest. Also places the label
-    /// just before the destination code if it isn't already there.    If the goto is to the return block, it would be nice
-    /// to
-    /// emit a 'return' instead (but would have to duplicate the other code in that return BB).    Also, 'continue' and
-    /// 'break'
-    /// statements are used instead if possible
-    void emitGotoAndLabel(ICodeGenerator *hll, int indLevel, BasicBlock *dest);
-
-    /// Generates code for each non CTI (except procedure calls) statement within the block.
-    void WriteBB(ICodeGenerator *generator, int indLevel);
 
     void addOutEdge(BasicBlock *bb) { m_outEdges.push_back(bb); }
 
@@ -658,9 +633,7 @@ protected:
     int m_numForwardInEdges;                 ///< inedges to this node that aren't back edges
     int m_loopStamps[2], m_revLoopStamps[2]; ///< used for structuring analysis
     TravType m_traversed;                    ///< traversal flag for the numerous DFS's
-    bool m_emitHLLLabel;                     ///< emit a label for this node when generating HL code?
     QString m_labelStr;                      ///< the high level label for this node (if needed)
-    int m_indentLevel;                       ///< the indentation level of this node in the final code
 
     /* high level structuring */
     SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as (if any)
