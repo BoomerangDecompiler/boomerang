@@ -508,7 +508,7 @@ CommandStatus Console::handleDecompile(const QStringList& args)
         return CommandStatus::Failure;
     }
 
-    if (args.empty() == 0) {
+    if (args.empty()) {
         prog->decompile();
         return CommandStatus::Success;
     }
