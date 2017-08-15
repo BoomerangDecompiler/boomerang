@@ -1,11 +1,11 @@
-#include <QtCore>
+#include "CommandlineDriver.h"
+
 #include <cstdio>
+#include <QCoreApplication>
 
-#include "commandlinedriver.h"
-
+#include "boomerang-cli/Console.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
-
 
 CommandlineDriver::CommandlineDriver(QObject *parent)
     : QObject(parent)
@@ -13,9 +13,7 @@ CommandlineDriver::CommandlineDriver(QObject *parent)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
     QCoreApplication::instance()->connect(&m_thread, &DecompilationThread::finished,
-                                          []() {
-        QCoreApplication::instance()->quit();
-    });
+        []() { QCoreApplication::instance()->quit(); });
 }
 
 
@@ -55,7 +53,8 @@ static void help()
         "  -gs              : Generate a symbol file (symbols.h)\n"
         "  -iw              : Write indirect call report to output/indirect.txt\n"
         "Misc.\n"
-        "  -k               : Command mode, for available commands see -h cmd\n"
+        "  -i               : Interactive mode, for available commands see -h cmd\n"
+        "  -k               : Same as -i, deprecated\n"
         "  -P <path>        : Path to Boomerang files, defaults to where you run\n"
         "                     Boomerang from\n"
         "  -X               : activate eXperimental code; errors likely\n"
@@ -106,7 +105,7 @@ static void usage()
 int CommandlineDriver::applyCommandline(const QStringList& args)
 {
     printf("Boomerang %s\n", BOOMERANG_VERSION); // Display a version and date (mainly for release versions)
-    int kmd = 0;
+    bool interactiveMode = false;
 
     if (args.size() < 2) {
         usage();
@@ -226,14 +225,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 break;
             }
 
-        case 'i':
-
-            if (arg[2] == 'c') {
-                SETTING(decodeThruIndCall) = true; // -ic;
-            }
-
-            break;
-
         case '-':
             break; // No effect: ignored
 
@@ -245,8 +236,19 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
             break;
 
+        case 'i':
+            if (arg[2] == 'c') {
+                SETTING(decodeThruIndCall) = true; // -ic;
+                break;
+            }
+            else if (arg.size() > 2) {
+                // unknown command
+                break;
+            }
+            /* fallthrough */
+
         case 'k':
-            kmd = 1;
+            interactiveMode = true;
             break;
 
         case 'P':
@@ -440,8 +442,8 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         }
     }
 
-    if (kmd) {
-        return console();
+    if (interactiveMode) {
+        return interactiveMain();
     }
 
     if (minsToStopAfter > 0) {
@@ -455,39 +457,27 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 }
 
 
-/**
- * Displays a command line and processes the commands entered.
- *
- * \retval 0 stdin was closed.
- * \retval 2 The user typed exit or quit.
- */
-int CommandlineDriver::console()
+int CommandlineDriver::interactiveMain()
 {
-    Boomerang&  boom(*Boomerang::get());
-    QTextStream strm(stdin);
+    Console console;
 
-    printf("boomerang: ");
-    fflush(stdout);
+    QTextStream strm(stdin);
     QString line;
 
-    do {
-        line = strm.readLine();
-
-        if (line.isNull()) {
-            break;
-        }
-
-        QStringList sl = line.split(" \r\n");
-
-        if (boom.processCommand(sl) == 2) {
-            return 2;
-        }
-
+    while (true) {
         printf("boomerang: ");
         fflush(stdout);
-    } while (!line.isNull());
 
-    return 0;
+        if (!strm.readLineInto(&line) || line.isNull()) {
+            return 0;
+        }
+
+        CommandStatus status = console.handleCommand(line);
+
+        if (status == CommandStatus::ExitProgram) {
+            return 2;
+        }
+    }
 }
 
 

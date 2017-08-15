@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 #include <QStringList>
 
-#include "commandlinedriver.h"
+#include "CommandlineDriver.h"
 
 int main(int argc, char* argv[])
 {

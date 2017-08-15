@@ -70,18 +70,6 @@ public:
 
     IProject *getProject() override { return m_currentProject; }
 
-    /**
-     * Parse and execute a command supplied in interactive mode.
-     *
-     * \param args        The array of argument strings.
-     *
-     * \return A value indicating what happened.
-     *
-     * \retval 0 Success
-     * \retval 1 Failure
-     * \retval 2 The user exited with \a quit or \a exit
-     */
-    int processCommand(QStringList& args);
     static const char *getVersionStr();
 
     /**
