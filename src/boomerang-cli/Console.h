@@ -59,9 +59,9 @@ private:
 
 private:
     CommandStatus handleDecode(const QStringList& args);
+    CommandStatus handleDecompile(const QStringList& args);
     CommandStatus handleExit(const QStringList& args);
     CommandStatus handleHelp(const QStringList& args);
-
 private:
     QMap<QString, CommandType> m_commandTypes;
 };

@@ -7,13 +7,14 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
+
+static Prog* prog;
 
 
 Console::Console()
 {
     m_commandTypes["decode"]    = CT_decode;
-    m_commandTypes["load"]      = CT_load;
-    m_commandTypes["save"]      = CT_save;
     m_commandTypes["decompile"] = CT_decompile;
     m_commandTypes["codegen"]   = CT_codegen;
     m_commandTypes["move"]      = CT_move;
@@ -93,58 +94,8 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
     switch (commandNameToType(command))
     {
     case CT_decode: return handleDecode(args);
+    case CT_decompile: return handleDecompile(args);
 /*
-    case CT_load:
-        {
-            if (args.size() != 1) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            QString fname = args[1];
-            err_stream << "Cannot load " << fname << ": Operation not implemented.\n";
-            break;
-        }
-
-    case CT_save:
-
-        if (prog == nullptr) {
-            err_stream << "need to load or decode before save!\n";
-            return 1;
-        }
-
-        err_stream << "Cannot save: Operation not implemented.\n";
-        break;
-
-    case CT_decompile:
-
-        if (prog == nullptr) {
-            err_stream << "no valid Prog object !\n";
-            return 1;
-        }
-
-        if (args.size() > 1) {
-            Function *proc = prog->findProc(args[1]);
-
-            if (proc == nullptr) {
-                err_stream << "cannot find proc " << args[1] << "\n";
-                return 1;
-            }
-
-            if (proc->isLib()) {
-                err_stream << "cannot decompile a lib proc\n";
-                return 1;
-            }
-
-            int indent = 0;
-            assert(dynamic_cast<UserProc *>(proc) != nullptr);
-            ((UserProc *)proc)->decompile(new ProcList, indent);
-        }
-        else {
-            prog->decompile();
-        }
-
-        break;
 
     case CT_codegen:
 
@@ -559,6 +510,7 @@ CommandStatus Console::handleDecode(const QStringList& args)
 
     if (p) {
         std::cout << "Loaded '" << args[0].toStdString() << "'." << std::endl;
+        prog = p;
         return CommandStatus::Success;
     }
     else {
@@ -566,6 +518,50 @@ CommandStatus Console::handleDecode(const QStringList& args)
         return CommandStatus::Failure;
     }
 }
+
+
+CommandStatus Console::handleDecompile(const QStringList& args)
+{
+    if (prog == nullptr) {
+        std::cerr << "Cannot decompile: Need to 'decode' a program first.\n";
+        return CommandStatus::Failure;
+    }
+
+    if (args.empty() == 0) {
+        prog->decompile();
+        return CommandStatus::Success;
+    }
+    else {
+        // decompile all specified procedures
+        ProcSet procSet;
+
+        for (const QString& procName : args) {
+            Function *proc = prog->findProc(procName);
+
+            if (proc == nullptr) {
+                std::cerr << "Cannot find function '" << procName.toStdString() << "'\n";
+                return CommandStatus::Failure;
+            }
+            else if (proc->isLib()) {
+                std::cerr << "Cannot decompile library function '" << procName.toStdString() << "'\n";
+                return CommandStatus::Failure;
+            }
+
+            UserProc* userProc = dynamic_cast<UserProc*>(proc);
+            assert(userProc != nullptr);
+
+            procSet.insert(userProc);
+        }
+
+        for (UserProc* userProc : procSet) {
+            int indent = 0;
+            userProc->decompile(new ProcList, indent);
+        }
+
+        return CommandStatus::Success;
+    }
+}
+
 
 CommandStatus Console::handleExit(const QStringList& args)
 {
@@ -576,6 +572,7 @@ CommandStatus Console::handleExit(const QStringList& args)
 
     return CommandStatus::ExitProgram;
 }
+
 
 CommandStatus Console::handleHelp(const QStringList& args)
 {
@@ -589,7 +586,7 @@ CommandStatus Console::handleHelp(const QStringList& args)
     std::cout <<
         "Available commands:\n"
         "  decode <file>                      : Loads and decodes the specified binary.\n"
-//        "  decompile [proc]                   : Decompiles the program or specified proc.\n"
+        "  decompile [proc1 [proc2 [...]]]    : Decompiles the program or specified function(s).\n"
 //        "  codegen [cluster]                  : Generates code for the program or a\n"
 //        "                                       specified cluster.\n"
 //        "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n"
