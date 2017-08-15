@@ -1601,24 +1601,14 @@ void Cfg::removeUnneededLabels(ICodeGenerator *gen)
 
 void Cfg::generateDotFile(QTextStream& of)
 {
-       Address aret = Address::INVALID;
+    Address returnAddress = Address::INVALID;
 
     // The nodes
     // std::list<PBB>::iterator it;
     for (BasicBlock *pbb : m_listBB) {
         of << "       "
            << "bb" << pbb->getLowAddr() << " ["
-           << "label=\"";
-        char *p = pbb->getStmtNumber();
-#if PRINT_BBINDEX
-        of << std::dec << indices[*it];
-
-        if (p[0] != 'b') {
-            // If starts with 'b', no statements (something like bb8101c3c).
-            of << ":";
-        }
-#endif
-        of << p << " ";
+           << "label=\"" << pbb->getLowAddr() << "\n";
 
         switch (pbb->getType())
         {
@@ -1668,8 +1658,8 @@ void Cfg::generateDotFile(QTextStream& of)
 
         case BBType::Ret:
             of << "ret\" shape=triangle];\n";
-            // Remember the (unbique) return BB's address
-            aret = pbb->getLowAddr();
+            // Remember the (unique) return BB's address
+            returnAddress = pbb->getLowAddr();
             continue;
 
         case BBType::Fall:
@@ -1694,8 +1684,8 @@ void Cfg::generateDotFile(QTextStream& of)
 
     // Force the one return node to be at the bottom (max rank). Otherwise, with all its in-edges, it will end up in the
     // middle
-    if (!aret.isZero()) {
-        of << "{rank=max; bb" << aret << "}\n";
+    if (!returnAddress.isZero()) {
+        of << "{rank=max; bb" << returnAddress << "}\n";
     }
 
     // Close the subgraph

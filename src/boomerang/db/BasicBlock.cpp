@@ -1134,22 +1134,6 @@ bool BasicBlock::inLoop(BasicBlock *header, BasicBlock *latch)
 }
 
 
-char *BasicBlock::getStmtNumber()
-{
-    static char ret[12];
-    Statement *first = getFirstStmt();
-
-    if (first) {
-        sprintf(ret, "%d", first->getNumber());
-    }
-    else {
-        sprintf(ret, "bb%" PRIxPTR, Address::value_type(this));
-    }
-
-    return ret;
-}
-
-
 void BasicBlock::prependStmt(Statement *s, UserProc *proc)
 {
     assert(m_parent == proc);

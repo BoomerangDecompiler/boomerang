@@ -187,9 +187,12 @@ void Prog::finishDecode()
 
 void Prog::generateDotFile() const
 {
-    assert(!SETTING(dotFile).isEmpty());
-    QFile tgt(SETTING(dotFile));
+    QString filename = SETTING(dotFile);
+    if (filename.isEmpty()) {
+        filename = "cfg.dot";
+    }
 
+    QFile tgt(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
     if (!tgt.open(QFile::WriteOnly | QFile::Text)) {
         return;
     }

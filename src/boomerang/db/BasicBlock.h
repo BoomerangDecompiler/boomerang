@@ -426,17 +426,6 @@ public:
     RTL *getLastRtl() { return m_listOfRTLs->back(); }
     void getStatements(StatementList& stmts) const;
 
-    // Return the first statement number as a string.
-
-
-    /**
-     * Get the statement number for the first BB as a character array.
-     * If not possible (e.g. because the BB has no statements), return
-     * a unique string (e.g. bb8048c10)
-     * \note Used in dotty file generation
-     */
-    char *getStmtNumber();
-
 public:
     bool isBackEdge(size_t inEdge) const;
 
