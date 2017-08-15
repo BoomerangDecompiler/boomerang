@@ -505,12 +505,15 @@ CommandStatus Console::handleDecode(const QStringList& args)
         std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "." << std::endl;
         return CommandStatus::ParseError;
     }
+    else if (prog) {
+        std::cerr << "Cannot decode program: A program is already loaded." << std::endl;
+        return CommandStatus::Failure;
+    }
 
-    Prog *p = Boomerang::get()->loadAndDecode(args[0]);
+    prog = Boomerang::get()->loadAndDecode(args[0]);
 
-    if (p) {
+    if (prog) {
         std::cout << "Loaded '" << args[0].toStdString() << "'." << std::endl;
-        prog = p;
         return CommandStatus::Success;
     }
     else {
