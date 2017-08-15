@@ -8,6 +8,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/codegen/ICodeGenerator.h"
 
 static Prog* prog;
 
@@ -95,31 +96,8 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
     {
     case CT_decode: return handleDecode(args);
     case CT_decompile: return handleDecompile(args);
+    case CT_codegen: return handleCodegen(args);
 /*
-
-    case CT_codegen:
-
-        if (prog == nullptr) {
-            err_stream << "no valid Prog object !\n";
-            return 1;
-        }
-
-        if (args.size() > 1) {
-            Module *cluster = prog->findModule(args[1]);
-
-            if (cluster == nullptr) {
-                err_stream << "cannot find cluster " << args[1] << "\n";
-                return 1;
-            }
-
-            m_codeGenerator->generateCode(prog, cluster);
-        }
-        else {
-            m_codeGenerator->generateCode(prog);
-        }
-
-        break;
-
     case CT_move:
 
         if (prog == nullptr) {
@@ -566,6 +544,39 @@ CommandStatus Console::handleDecompile(const QStringList& args)
 }
 
 
+CommandStatus Console::handleCodegen(const QStringList& args)
+{
+    if (prog == nullptr) {
+        std::cerr << "Cannot generate code: need to 'decompile' first.\n";
+        return CommandStatus::Failure;
+    }
+
+    if (args.empty()) {
+        Boomerang::get()->getCodeGenerator()->generateCode(prog);
+    }
+    else {
+        std::set<Module*> modules;
+
+        for (QString name : args) {
+            Module* module = prog->findModule(name);
+            if (!module) {
+                std::cerr << "Cannot find module '" << name.toStdString() << "'\n";
+                return CommandStatus::Failure;
+            }
+
+            modules.insert(module);
+        }
+
+        for (Module* mod : modules) {
+            Boomerang::get()->getCodeGenerator()->generateCode(prog, mod);
+        }
+    }
+
+    std::cout << "Code generated." << std::endl;
+    return CommandStatus::Success;
+}
+
+
 CommandStatus Console::handleExit(const QStringList& args)
 {
     if (args.size() != 0) {
@@ -590,8 +601,8 @@ CommandStatus Console::handleHelp(const QStringList& args)
         "Available commands:\n"
         "  decode <file>                      : Loads and decodes the specified binary.\n"
         "  decompile [proc1 [proc2 [...]]]    : Decompiles the program or specified function(s).\n"
-//        "  codegen [cluster]                  : Generates code for the program or a\n"
-//        "                                       specified cluster.\n"
+        "  codegen [module1 [module2 [...]]]  : Generates code for the program or a\n"
+        "                                       specified module.\n"
 //        "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n"
 //        "                                       cluster.\n"
 //        "  move cluster <cluster> <parent>    : Moves the specified cluster to the\n"
