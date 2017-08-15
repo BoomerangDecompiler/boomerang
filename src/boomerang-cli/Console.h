@@ -27,7 +27,8 @@ enum CommandType
     CT_info      = 10,
     CT_print     = 11,
     CT_exit      = 12,
-    CT_help      = 13
+    CT_help      = 13,
+    CT_callgraph = 14
 };
 
 /**
@@ -61,6 +62,7 @@ private:
     CommandStatus handleDecode(const QStringList& args);
     CommandStatus handleDecompile(const QStringList& args);
     CommandStatus handleCodegen(const QStringList& args);
+    CommandStatus handleCallgraph(const QStringList& args);
 
     CommandStatus handleExit(const QStringList& args);
     CommandStatus handleHelp(const QStringList& args);

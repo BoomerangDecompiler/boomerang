@@ -358,14 +358,14 @@ void Prog::clear()
 }
 
 
-Function *Prog::createProc(Address uAddr)
+Function *Prog::createProc(Address startAddress)
 {
     // this test fails when decoding sparc, why?  Please investigate - trent
     // Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section
     // assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
 
     // Check if we already have this proc
-    Function *pProc = findProc(uAddr);
+    Function *pProc = findProc(startAddress);
 
     if (pProc == (Function *)-1) { // Already decoded and deleted?
         return nullptr;            // Yes, exit with 0
@@ -375,34 +375,34 @@ Function *Prog::createProc(Address uAddr)
         return pProc; // Yes, we are done
     }
 
-       Address other = m_loaderIface->getJumpTarget(uAddr);
+    Address other = m_loaderIface->getJumpTarget(startAddress);
 
     if (other != Address::INVALID) {
-        uAddr = other;
+        startAddress = other;
     }
 
-    pProc = findProc(uAddr);
+    pProc = findProc(startAddress);
 
     if (pProc) {      // Exists already ?
         return pProc; // Yes, we are done
     }
 
-    QString             pName;
-    const IBinarySymbol *sym = m_binarySymbols->find(uAddr);
+    QString             procName;
+    const IBinarySymbol *sym = m_binarySymbols->find(startAddress);
     bool                bLib = false;
 
     if (sym) {
-        bLib  = sym->isImportedFunction() || sym->isStaticFunction();
-        pName = sym->getName();
+        bLib     = sym->isImportedFunction() || sym->isStaticFunction();
+        procName = sym->getName();
     }
 
-    if (pName.isEmpty()) {
-        // No name. Give it a numbered name
-        pName = QString("proc%1").arg(m_iNumberedProc++);
-        LOG_VERBOSE("Assigning name %1 to address %2", pName, uAddr);
+    if (procName.isEmpty()) {
+        // No name. Give it the name of the start address.
+        procName = QString("proc_%1").arg(startAddress.toString());
+        LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
     }
 
-    pProc = m_rootCluster->getOrInsertFunction(pName, uAddr, bLib);
+    pProc = m_rootCluster->getOrInsertFunction(procName, startAddress, bLib);
     return pProc;
 }
 
@@ -1476,9 +1476,9 @@ void Prog::printCallGraph() const
 
     spaces[procList.front()] = 0;
 
-    while (procList.size()) {
+    while (!procList.empty()) {
         Function *p = procList.front();
-        procList.erase(procList.begin());
+        procList.pop_front();
 
         if (HostAddress(p) == HostAddress::INVALID) {
             continue;

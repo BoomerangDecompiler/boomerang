@@ -18,6 +18,7 @@ Console::Console()
     m_commandTypes["decode"]    = CT_decode;
     m_commandTypes["decompile"] = CT_decompile;
     m_commandTypes["codegen"]   = CT_codegen;
+    m_commandTypes["print-callgraph"] = CT_callgraph;
     m_commandTypes["move"]      = CT_move;
     m_commandTypes["add"]       = CT_add;
     m_commandTypes["delete"]    = CT_delete;
@@ -97,6 +98,8 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
     case CT_decode: return handleDecode(args);
     case CT_decompile: return handleDecompile(args);
     case CT_codegen: return handleCodegen(args);
+    case CT_callgraph : return handleCallgraph(args);
+
 /*
     case CT_move:
 
@@ -577,6 +580,23 @@ CommandStatus Console::handleCodegen(const QStringList& args)
 }
 
 
+CommandStatus Console::handleCallgraph(const QStringList& args)
+{
+    if (!args.empty()) {
+        std::cerr << "Wrong number of arguments for command; Expected 0, got " << args.size() << "." << std::endl;
+        return CommandStatus::ParseError;
+    }
+    else if (prog == nullptr) {
+        std::cerr << "Cannot print call graph: No program loaded.\n";
+        return CommandStatus::Failure;
+    }
+
+
+    prog->printCallGraph();
+    return CommandStatus::Success;
+}
+
+
 CommandStatus Console::handleExit(const QStringList& args)
 {
     if (args.size() != 0) {
@@ -603,6 +623,7 @@ CommandStatus Console::handleHelp(const QStringList& args)
         "  decompile [proc1 [proc2 [...]]]    : Decompiles the program or specified function(s).\n"
         "  codegen [module1 [module2 [...]]]  : Generates code for the program or a\n"
         "                                       specified module.\n"
+        "  print-callgraph                    : prints the call graph of the program.\n"
 //        "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n"
 //        "                                       cluster.\n"
 //        "  move cluster <cluster> <parent>    : Moves the specified cluster to the\n"
