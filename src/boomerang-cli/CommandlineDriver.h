@@ -4,6 +4,8 @@
 #include <QTimer>
 #include <QThread>
 
+#include "boomerang-cli/Console.h"
+
 
 class DecompilationThread : public QThread
 {
@@ -42,6 +44,7 @@ public slots:
     void onCompilationTimeout();
 
 private:
+    Console m_console;
     DecompilationThread m_thread;
     QTimer m_kill_timer;
     int minsToStopAfter = 0;

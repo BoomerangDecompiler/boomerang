@@ -1,5 +1,7 @@
 #include "Console.h"
 
+#include <QFile>
+#include <QString>
 #include <QStringRef>
 #include <QTextStream>
 #include <iostream>
@@ -43,6 +45,40 @@ CommandStatus Console::handleCommand(const QString& commandWithArgs)
     }
 
     return processCommand(command, args);
+}
+
+
+CommandStatus Console::replayFile(const QString& commandFile)
+{
+    if (commandFile == QString::null) {
+        // nothing to execute
+        return CommandStatus::Success;
+    }
+
+    // replay commands in file
+    QFile file(SETTING(replayFile));
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        std::cerr << "Cannot open command file!\n";
+        return CommandStatus::Failure;
+    }
+
+    // execute commands until the first failure
+    QString line;
+    QTextStream ist(&file);
+    CommandStatus lastResult = CommandStatus::Success;
+
+    while (ist.readLineInto(&line)) {
+        lastResult = this->handleCommand(line);
+
+        if (!commandSucceeded(lastResult)) {
+            if (lastResult != CommandStatus::ExitProgram) {
+                std::cerr << "Stopping replay due to command failure." << std::endl;
+            }
+            break;
+        }
+    }
+
+    return lastResult;
 }
 
 

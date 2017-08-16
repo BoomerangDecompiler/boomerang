@@ -81,6 +81,8 @@ public:
     bool assumeABI           = false; ///< Assume ABI compliance
     bool experimental        = false; ///< Activate experimental code. Caution!
 
+    QString replayFile; ///< file with commands to execute in interactive mode
+
 private:
     QDir m_workingDirectory;       ///< Directory where Boomerang is run from
     QDir m_outputDirectory;        ///< The path where all output files are created.

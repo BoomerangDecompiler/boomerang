@@ -43,11 +43,13 @@ public:
 
     CommandStatus handleCommand(const QString& command);
 
+    /// Execute the commands in \p file line by line
+    CommandStatus replayFile(const QString& file);
+
     bool commandSucceeded(CommandStatus status)
     {
         return status == CommandStatus::Success || status == CommandStatus::AsyncSuccess;
     }
-
 private:
     /**
      * Split \p commandWithArgs into \p command and \p args.
