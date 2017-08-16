@@ -70,6 +70,7 @@ private:
     CommandStatus handleCallgraph(const QStringList& args);
     CommandStatus handleDot(const QStringList& args);
     CommandStatus handleReplay(const QStringList& args);
+    CommandStatus handlePrint(const QStringList& args);
 
     CommandStatus handleExit(const QStringList& args);
     CommandStatus handleHelp(const QStringList& args);

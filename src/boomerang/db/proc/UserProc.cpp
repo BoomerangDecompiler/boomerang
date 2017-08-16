@@ -498,15 +498,14 @@ void UserProc::print(QTextStream& out, bool html) const
 {
     QString     tgt1;
     QString     tgt2;
-    QString     tgt3;
+
     QTextStream ost1(&tgt1);
     QTextStream ost2(&tgt2);
-    QTextStream ost3(&tgt3);
+
 
     printParams(ost1, html);
     dumpLocals(ost1, html);
     m_procUseCollector.print(ost2, html);
-    m_cfg->print(ost3, html);
 
     m_signature->print(out, html);
     out << "\n";
@@ -528,13 +527,23 @@ void UserProc::print(QTextStream& out, bool html) const
         out << "<br>";
     }
 
-    out << "live variables: " << tgt2 << "\n";
+    out << "live variables:\n";
+
+    if (tgt2 == QString::null) {
+        out << "  <None>\n";
+    }
+    else {
+        out << "  " << tgt2 << "\n";
+    }
 
     if (html) {
         out << "<br>";
     }
 
-    out << "end live variables\n" << tgt3 << "\n";
+    QString     tgt3;
+    QTextStream ost3(&tgt3);
+    m_cfg->print(ost3, html);
+    out << tgt3 << "\n";
 }
 
 
@@ -545,17 +554,23 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
     }
 
     out << "parameters: ";
-    bool first = true;
 
-    for (auto const& elem : m_parameters) {
-        if (first) {
-            first = false;
-        }
-        else {
-            out << ", ";
-        }
+    if (!m_parameters.empty()) {
+        bool first = true;
 
-        out << ((Assignment *)elem)->getType() << " " << ((Assignment *)elem)->getLeft();
+        for (auto const& elem : m_parameters) {
+            if (first) {
+                first = false;
+            }
+            else {
+                out << ", ";
+            }
+
+            out << ((Assignment *)elem)->getType() << " " << ((Assignment *)elem)->getLeft();
+        }
+    }
+    else {
+        out << "<None>";
     }
 
     out << "\n";
@@ -563,8 +578,6 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
     if (html) {
         out << "<br>";
     }
-
-    out << "end parameters\n";
 }
 
 
@@ -4178,20 +4191,23 @@ void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
 
     out << "symbols:\n";
 
-    for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
-        const SharedType ty = getTypeForLocation(it.second);
-        out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "nullptr") << "\n";
+    if (m_symbolMap.empty()) {
+        out << "  <None>\n";
+    }
+    else {
+        for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
+            const SharedType ty = getTypeForLocation(it.second);
+            out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "nullptr") << "\n";
 
-        if (html) {
-            out << "<br>";
+            if (html) {
+                out << "<br>";
+            }
         }
     }
 
     if (html) {
         out << "<br>";
     }
-
-    out << "end symbols\n";
 }
 
 
@@ -4203,24 +4219,27 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 
     os << "locals:\n";
 
-    for (const std::pair<QString, SharedType>& local_entry : m_locals) {
-        os << local_entry.second->getCtype() << " " << local_entry.first << " ";
-        SharedConstExp e = expFromSymbol(local_entry.first);
+    if (m_locals.empty()) {
+        os << "  <None>\n";
+    }
+    else {
+        for (const std::pair<QString, SharedType>& local_entry : m_locals) {
+            os << local_entry.second->getCtype() << " " << local_entry.first << " ";
+            SharedConstExp e = expFromSymbol(local_entry.first);
 
-        // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
-        if (e) {
-            os << e << "\n";
-        }
-        else {
-            os << "-\n";
+            // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
+            if (e) {
+                os << "  " << e << "\n";
+            }
+            else {
+                os << "  -\n";
+            }
         }
     }
 
     if (html) {
         os << "<br>";
     }
-
-    os << "end locals\n";
 }
 
 

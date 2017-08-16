@@ -25,7 +25,6 @@ Console::Console()
     m_commandTypes["delete"]    = CT_delete;
     m_commandTypes["rename"]    = CT_rename;
     m_commandTypes["info"]      = CT_info;
-    m_commandTypes["print"]     = CT_print;
     m_commandTypes["exit"]      = CT_exit;
     m_commandTypes["quit"]      = CT_exit;
     m_commandTypes["help"]      = CT_help;
@@ -33,6 +32,7 @@ Console::Console()
 
     m_commandTypes["print-callgraph"] = CT_callgraph;
     m_commandTypes["print-cfg"] = CT_printCFG;
+    m_commandTypes["print-rtl"] = CT_print;
 }
 
 
@@ -478,33 +478,10 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
     // no break needed all branches return
     case CT_print:
         {
-            if (prog == nullptr) {
-                err_stream << "no valid Prog object !\n";
-                return 1;
-            }
 
-            if (args.size() < 2) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Function *proc = prog->findProc(args[1]);
-
-            if (proc == nullptr) {
-                err_stream << "cannot find proc " << args[1] << "\n";
-                return 1;
-            }
-
-            if (proc->isLib()) {
-                err_stream << "cannot print a libproc.\n";
-                return 1;
-            }
-
-            ((UserProc *)proc)->print(out_stream);
-            out_stream << "\n";
-            return 0;
         }
 */
+    case CT_print: return handlePrint(args);
     case CT_exit: return handleExit(args);
     case CT_help: return handleHelp(args);
 
@@ -666,6 +643,42 @@ CommandStatus Console::handleReplay(const QStringList& args)
 }
 
 
+CommandStatus Console::handlePrint(const QStringList& args)
+{
+    if (args.empty()) {
+        std::cerr << "not enough arguments for cmd" << std::endl;
+        return CommandStatus::ParseError;
+    }
+    else if (prog == nullptr) {
+        std::cerr << "No valid Prog object!" << std::endl;
+        return CommandStatus::Failure;
+    }
+
+    for (QString procName : args) {
+        Function *proc = prog->findProc(procName);
+
+        if (proc == nullptr) {
+            std::cerr << "Cannot find procedure " << procName.toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+        else if (proc->isLib()) {
+            std::cerr << "Cannot print a library procedure." << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        UserProc* userProc = dynamic_cast<UserProc*>(proc);
+        assert(userProc != nullptr);
+
+        QTextStream outStream(stdout);
+        userProc->print(outStream);
+        outStream << "\n";
+        outStream.flush();
+    }
+
+    return CommandStatus::Success;
+}
+
+
 CommandStatus Console::handleExit(const QStringList& args)
 {
     if (args.size() != 0) {
@@ -694,6 +707,7 @@ CommandStatus Console::handleHelp(const QStringList& args)
         "                                       specified module.\n"
         "  print-callgraph                    : prints the call graph of the program.\n"
         "  print-cfg                          : prints the cfg of the program.\n"
+        "  print-rtl <proc>                   : Print the RTL for a proc.\n"
         "  replay <file>                      : Reads file and executes commands line by line.\n"
 //        "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n"
 //        "                                       cluster.\n"
@@ -707,7 +721,6 @@ CommandStatus Console::handleHelp(const QStringList& args)
 //         "  info prog                          : Print info about the program.\n"
 //         "  info cluster <cluster>             : Print info about a cluster.\n"
 //         "  info proc <proc>                   : Print info about a proc.\n"
-//         "  print <proc>                       : Print the RTL for a proc.\n"
         "  help                               : This help.\n"
         "  exit                               : Quit Boomerang.\n";
     std::cout.flush();

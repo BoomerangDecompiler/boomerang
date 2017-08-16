@@ -1076,6 +1076,8 @@ void Cfg::simplify()
 
 void Cfg::print(QTextStream& out, bool html)
 {
+    out << "Control Flow Graph:\n";
+
     for (BasicBlock *bb : m_listBB) {
         bb->print(out, html);
     }

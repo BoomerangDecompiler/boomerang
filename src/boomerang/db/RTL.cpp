@@ -157,7 +157,7 @@ void RTL::print(QTextStream& os, bool html) const
                 os << " ";
             }
             else {
-                os << qSetFieldWidth(9) << " " << qSetFieldWidth(0);
+                os << qSetFieldWidth(11) << " " << qSetFieldWidth(0);
             }
         }
 
