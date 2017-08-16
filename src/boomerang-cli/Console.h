@@ -29,8 +29,10 @@ enum CommandType
     CT_exit      = 12,
     CT_help      = 13,
     CT_callgraph = 14,
-    CT_printCFG       = 15
+    CT_printCFG  = 15,
+    CT_replay    = 16
 };
+
 
 /**
  * Console for interactive mode.
@@ -67,9 +69,11 @@ private:
     CommandStatus handleCodegen(const QStringList& args);
     CommandStatus handleCallgraph(const QStringList& args);
     CommandStatus handleDot(const QStringList& args);
+    CommandStatus handleReplay(const QStringList& args);
 
     CommandStatus handleExit(const QStringList& args);
     CommandStatus handleHelp(const QStringList& args);
+
 private:
     QMap<QString, CommandType> m_commandTypes;
 };

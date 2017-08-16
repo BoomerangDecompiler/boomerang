@@ -29,6 +29,7 @@ Console::Console()
     m_commandTypes["exit"]      = CT_exit;
     m_commandTypes["quit"]      = CT_exit;
     m_commandTypes["help"]      = CT_help;
+    m_commandTypes["replay"]    = CT_replay;
 
     m_commandTypes["print-callgraph"] = CT_callgraph;
     m_commandTypes["print-cfg"] = CT_printCFG;
@@ -48,17 +49,17 @@ CommandStatus Console::handleCommand(const QString& commandWithArgs)
 }
 
 
-CommandStatus Console::replayFile(const QString& commandFile)
+CommandStatus Console::replayFile(const QString& replayFile)
 {
-    if (commandFile == QString::null) {
+    if (replayFile == QString::null) {
         // nothing to execute
         return CommandStatus::Success;
     }
 
     // replay commands in file
-    QFile file(SETTING(replayFile));
+    QFile file(replayFile);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        std::cerr << "Cannot open command file!\n";
+        std::cerr << "Cannot open replay file!\n";
         return CommandStatus::Failure;
     }
 
@@ -68,6 +69,7 @@ CommandStatus Console::replayFile(const QString& commandFile)
     CommandStatus lastResult = CommandStatus::Success;
 
     while (ist.readLineInto(&line)) {
+        std::cout << "boomerang: " << line.toStdString() << std::endl;
         lastResult = this->handleCommand(line);
 
         if (!commandSucceeded(lastResult)) {
@@ -133,11 +135,12 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
 {
     switch (commandNameToType(command))
     {
-    case CT_decode: return handleDecode(args);
+    case CT_decode:    return handleDecode(args);
     case CT_decompile: return handleDecompile(args);
-    case CT_codegen: return handleCodegen(args);
+    case CT_codegen:   return handleCodegen(args);
     case CT_callgraph: return handleCallgraph(args);
-    case CT_printCFG:       return handleDot(args);
+    case CT_printCFG:  return handleDot(args);
+    case CT_replay:    return handleReplay(args);
 
 /*
     case CT_move:
@@ -652,6 +655,17 @@ CommandStatus Console::handleDot(const QStringList& args)
 }
 
 
+CommandStatus Console::handleReplay(const QStringList& args)
+{
+    if (args.size() != 1) {
+        std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "." << std::endl;
+        return CommandStatus::ParseError;
+    }
+
+    return replayFile(args[0]);
+}
+
+
 CommandStatus Console::handleExit(const QStringList& args)
 {
     if (args.size() != 0) {
@@ -680,6 +694,7 @@ CommandStatus Console::handleHelp(const QStringList& args)
         "                                       specified module.\n"
         "  print-callgraph                    : prints the call graph of the program.\n"
         "  print-cfg                          : prints the cfg of the program.\n"
+        "  replay <file>                      : Reads file and executes commands line by line.\n"
 //        "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n"
 //        "                                       cluster.\n"
 //        "  move cluster <cluster> <parent>    : Moves the specified cluster to the\n"
@@ -694,7 +709,7 @@ CommandStatus Console::handleHelp(const QStringList& args)
 //         "  info proc <proc>                   : Print info about a proc.\n"
 //         "  print <proc>                       : Print the RTL for a proc.\n"
         "  help                               : This help.\n"
-        "  exit                               : Quit the shell.\n";
+        "  exit                               : Quit Boomerang.\n";
     std::cout.flush();
     return CommandStatus::Success;
 }
