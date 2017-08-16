@@ -32,7 +32,7 @@ Console::Console()
 
     m_commandTypes["print-callgraph"] = CT_callgraph;
     m_commandTypes["print-cfg"] = CT_printCFG;
-    m_commandTypes["print-rtl"] = CT_print;
+    m_commandTypes["print-rtl"] = CT_printRTL;
 }
 
 
@@ -139,7 +139,7 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
     case CT_decompile: return handleDecompile(args);
     case CT_codegen:   return handleCodegen(args);
     case CT_callgraph: return handleCallgraph(args);
-    case CT_printCFG:  return handleDot(args);
+    case CT_printCFG:  return handlePrintCfg(args);
     case CT_replay:    return handleReplay(args);
 
 /*
@@ -481,7 +481,7 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
 
         }
 */
-    case CT_print: return handlePrint(args);
+    case CT_printRTL: return handlePrintRTL(args);
     case CT_exit: return handleExit(args);
     case CT_help: return handleHelp(args);
 
@@ -616,19 +616,47 @@ CommandStatus Console::handleCallgraph(const QStringList& args)
 }
 
 
-CommandStatus Console::handleDot(const QStringList& args)
+CommandStatus Console::handlePrintCfg(const QStringList& args)
 {
-    if (!args.empty()) {
-        std::cerr << "Wrong number of arguments for command; Expected 0, got " << args.size() << "." << std::endl;
-        return CommandStatus::ParseError;
-    }
-    else if (prog == nullptr) {
-        std::cerr << "Cannot print call graph: No program loaded.\n";
+    if (prog == nullptr) {
+        std::cerr << "Cannot print Control Flow Graph: No program loaded.\n";
         return CommandStatus::Failure;
     }
 
-    prog->generateDotFile();
-    return CommandStatus::Success;
+    if (args.empty()) {
+        prog->generateDotFile();
+        return CommandStatus::Success;
+    }
+    else {
+        ProcSet procs;
+        for (QString procName : args) {
+            Function* proc = prog->findProc(procName);
+            if (!proc) {
+                std::cerr << "Procedure '" << procName.toStdString() << "' not found.";
+                return CommandStatus::Failure;
+            }
+            else if (proc->isLib()) {
+                std::cerr << "Cannot print library procedure '" << procName.toStdString() << "'.";
+                return CommandStatus::Failure;
+            }
+
+            UserProc* userProc = dynamic_cast<UserProc*>(proc);
+            assert(userProc);
+            procs.insert(userProc);
+        }
+
+        QFile outFile(QString("cfg.dot"));
+        outFile.open(QFile::WriteOnly | QFile::Text);
+        QTextStream textStream(&outFile);
+        textStream << "digraph cfg {\n";
+        for (UserProc* userProc : procs) {
+            textStream << "subgraph " << userProc->getName() << " {\n";
+            userProc->getCFG()->generateDotFile(textStream);
+        }
+        textStream << "}";
+
+        return CommandStatus::Success;
+    }
 }
 
 
@@ -643,7 +671,7 @@ CommandStatus Console::handleReplay(const QStringList& args)
 }
 
 
-CommandStatus Console::handlePrint(const QStringList& args)
+CommandStatus Console::handlePrintRTL(const QStringList& args)
 {
     if (args.empty()) {
         std::cerr << "not enough arguments for cmd" << std::endl;
@@ -706,8 +734,9 @@ CommandStatus Console::handleHelp(const QStringList& args)
         "  codegen [module1 [module2 [...]]]  : Generates code for the program or a\n"
         "                                       specified module.\n"
         "  print-callgraph                    : prints the call graph of the program.\n"
-        "  print-cfg                          : prints the cfg of the program.\n"
-        "  print-rtl <proc>                   : Print the RTL for a proc.\n"
+        "  print-cfg [<proc1> [proc2 [...]]]  : prints the Control Flow Graph of the program\n"
+        "                                       or a set of procedures.\n"
+        "  print-rtl [<proc1> [proc2 [...]]]  : Print the RTL for a proc.\n"
         "  replay <file>                      : Reads file and executes commands line by line.\n"
 //        "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n"
 //        "                                       cluster.\n"

@@ -1606,11 +1606,10 @@ void Cfg::generateDotFile(QTextStream& of)
     Address returnAddress = Address::INVALID;
 
     // The nodes
-    // std::list<PBB>::iterator it;
     for (BasicBlock *pbb : m_listBB) {
         of << "       "
            << "bb" << pbb->getLowAddr() << " ["
-           << "label=\"" << pbb->getLowAddr() << "\n";
+           << "label=\"" << pbb->getLowAddr() << " ";
 
         switch (pbb->getType())
         {
@@ -1694,23 +1693,25 @@ void Cfg::generateDotFile(QTextStream& of)
     of << "}\n";
 
     // Now the edges
-    for (BasicBlock *pbb : m_listBB) {
-        const std::vector<BasicBlock *>& outEdges = pbb->getOutEdges();
+    for (BasicBlock *srcBB : m_listBB) {
+        const std::vector<BasicBlock *>& outEdges = srcBB->getOutEdges();
 
         for (unsigned int j = 0; j < outEdges.size(); j++) {
-            of << "       bb" << pbb->getLowAddr() << " -> ";
-            of << "bb" << outEdges[j]->getLowAddr();
+            BasicBlock* dstBB = outEdges[j];
+            of << "       bb" << srcBB->getLowAddr() << " -> ";
+            of << "bb"        << dstBB->getLowAddr();
 
-            if (pbb->getType() == BBType::Twoway) {
+            if (srcBB->getType() == BBType::Twoway) {
                 if (j == 0) {
-                    of << " [label=\"true\"]";
+                    of << " [color=\"green\"]"; // cond == true
                 }
                 else {
-                    of << " [label=\"false\"]";
+                    of << " [color=\"red\"]"; // cond == false
                 }
             }
-
-            of << " [color = \"blue\"];\n";
+            else {
+                of << " [color=\"black\"];\n"; // normal connection
+            }
         }
     }
 

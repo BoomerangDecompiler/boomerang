@@ -593,7 +593,7 @@ protected:
     int  m_labelNum     = 0;                  ///< Nonzero if start of BB needs label
     bool m_labelNeeded = false;
     bool m_incomplete  = true;                ///< True if not yet complete
-    bool m_jumpRequired    = false;               ///< True if jump required for "fall through"
+    bool m_jumpRequired    = false;           ///< True if jump required for "fall through"
 
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_inEdges;  ///< Vector of in-edges
