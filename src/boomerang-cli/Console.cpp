@@ -68,7 +68,8 @@ CommandStatus Console::replayFile(const QString& replayFile)
     QTextStream ist(&file);
     CommandStatus lastResult = CommandStatus::Success;
 
-    while (ist.readLineInto(&line)) {
+    while (!ist.atEnd()) {
+        line = ist.readLine();
         std::cout << "boomerang: " << line.toStdString() << std::endl;
         lastResult = this->handleCommand(line);
 

@@ -473,10 +473,11 @@ int CommandlineDriver::interactiveMain()
         std::cout << "boomerang: ";
         std::cout.flush();
 
-        if (!strm.readLineInto(&line) || line.isNull()) {
+        if (strm.atEnd()) {
             return 0;
         }
 
+        line = strm.readLine();
         status = m_console.handleCommand(line);
 
         if (status == CommandStatus::ExitProgram) {
