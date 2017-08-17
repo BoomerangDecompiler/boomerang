@@ -124,12 +124,12 @@ void CCodeGenerator::generateCode(const Prog* prog, Module *cluster, UserProc *p
         cluster->closeStreams();
     }
 
-    const bool generate_all   = cluster == nullptr || cluster == prog->getRootCluster();
+    const bool generate_all   = cluster == nullptr || cluster == prog->getRootModule();
     bool all_procedures = (proc == nullptr);
 
     if (generate_all) {
-        prog->getRootCluster()->openStream("c");
-        os = &prog->getRootCluster()->getStream();
+        prog->getRootModule()->openStream("c");
+        os = &prog->getRootModule()->getStream();
 
         if (proc == nullptr) {
             bool           global = false;

@@ -226,7 +226,7 @@ void Decompiler::generateCode()
     LOG_MSG("Generating code...");
     Boomerang::get()->getCodeGenerator()->generateCode(m_prog);
 
-    Module *root = m_prog->getRootCluster();
+    Module *root = m_prog->getRootModule();
 
     if (root) {
         emitClusterAndChildren(root);

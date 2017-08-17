@@ -101,7 +101,7 @@ CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mai
     mainCommand = QStringRef(&command, 0, i).toString();
 
     /// extract arguments
-    int lastSeparator = i; // position of last ' ' not within quotation marks
+    int lastSeparator = i; // position of last space ' ' not within quotation marks
     bool isInQuotation = false;
 
     while (i < command.size()) {
@@ -118,11 +118,11 @@ CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mai
 
         if (isInQuotation) { return CommandStatus::ParseError; } // missing closing "
 
-        bool argIsQuoted  = (command[lastSeparator+1] == '\"'); // Were we in a quotation before?
+        const bool argIsQuoted  = (command[lastSeparator+1] == '\"'); // Were we in a quotation before?
+        const int posBegin = lastSeparator + (argIsQuoted ? 2 : 1);
+        const int posEnd   = i             - (argIsQuoted ? 2 : 1);
+        const QString arg = command.mid(posBegin, posEnd - posBegin +1);
 
-        QString arg = command.mid(
-            lastSeparator + (argIsQuoted ? 2 : 1),
-            i             - (argIsQuoted ? 2 : 1));
         args.push_back(arg);
         lastSeparator = i;
     }
@@ -141,352 +141,17 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
     case CT_callgraph: return handleCallgraph(args);
     case CT_printCFG:  return handlePrintCfg(args);
     case CT_replay:    return handleReplay(args);
-
-/*
-    case CT_move:
-
-        if (prog == nullptr) {
-            err_stream << "no valid Prog object !\n";
-            return 1;
-        }
-
-        if (args.size() <= 1) {
-            err_stream << "not enough arguments for cmd\n";
-            return 1;
-        }
-
-        if (args[1] == "proc") {
-            if (args.size() < 4) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Function *proc = prog->findProc(args[2]);
-
-            if (proc == nullptr) {
-                err_stream << "cannot find proc " << args[2] << "\n";
-                return 1;
-            }
-
-            Module *cluster = prog->findModule(args[3]);
-
-            if (cluster == nullptr) {
-                err_stream << "cannot find cluster " << args[3] << "\n";
-                return 1;
-            }
-
-            proc->setParent(cluster);
-        }
-        else if (!args[1].compare("cluster")) {
-            if (args.size() <= 3) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Module *cluster = prog->findModule(args[2]);
-
-            if (cluster == nullptr) {
-                err_stream << "cannot find cluster " << args[2] << "\n";
-                return 1;
-            }
-
-            Module *parent = prog->findModule(args[3]);
-
-            if (parent == nullptr) {
-                err_stream << "cannot find cluster " << args[3] << "\n";
-                return 1;
-            }
-
-            parent->addChild(cluster);
-        }
-        else {
-            err_stream << "don't know how to move a " << args[1] << "\n";
-            return 1;
-        }
-
-        break;
-
-    case CT_add:
-
-        if (prog == nullptr) {
-            err_stream << "no valid Prog object !\n";
-            return 1;
-        }
-
-        if (args.size() <= 1) {
-            err_stream << "not enough arguments for cmd\n";
-            return 1;
-        }
-
-        if (args[1] == "cluster") {
-            if (args.size() <= 2) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Module *cluster = new Module(args[2], prog, prog->getFrontEnd());
-
-            if (cluster == nullptr) {
-                err_stream << "cannot create cluster " << args[2] << "\n";
-                return 1;
-            }
-
-            Module *parent = prog->getRootCluster();
-
-            if (args.size() > 3) {
-                parent = prog->findModule(args[3]);
-
-                if (cluster == nullptr) {
-                    err_stream << "cannot find cluster " << args[3] << "\n";
-                    return 1;
-                }
-            }
-
-            parent->addChild(cluster);
-        }
-        else {
-            err_stream << "don't know how to add a " << args[1] << "\n";
-            return 1;
-        }
-
-        break;
-
-    case CT_delete:
-
-        if (prog == nullptr) {
-            err_stream << "no valid Prog object !\n";
-            return 1;
-        }
-
-        if (args.size() <= 1) {
-            err_stream << "not enough arguments for cmd\n";
-            return 1;
-        }
-
-        if (!args[1].compare("cluster")) {
-            if (args.size() <= 2) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Module *cluster = prog->findModule(args[2]);
-
-            if (cluster == nullptr) {
-                err_stream << "cannot find cluster " << args[2] << "\n";
-                return 1;
-            }
-
-            if (cluster->hasChildren() || (cluster == prog->getRootCluster())) {
-                err_stream << "cluster " << args[2] << " is not empty\n";
-                return 1;
-            }
-
-            if (prog->isModuleUsed(cluster)) {
-                err_stream << "cluster " << args[2] << " is not empty\n";
-                return 1;
-            }
-
-            QFile::remove(cluster->getOutPath("xml"));
-            QFile::remove(cluster->getOutPath("c"));
-            assert(cluster->getUpstream());
-            cluster->getUpstream()->removeChild(cluster);
-        }
-        else {
-            err_stream << "don't know how to delete a " << args[1] << "\n";
-            return 1;
-        }
-
-        break;
-
-    case CT_rename:
-
-        if (prog == nullptr) {
-            err_stream << "no valid Prog object !\n";
-            return 1;
-        }
-
-        if (args.size() <= 1) {
-            err_stream << "not enough arguments for cmd\n";
-            return 1;
-        }
-
-        if (args[1] == "proc") {
-            if (args.size() <= 3) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Function *proc = prog->findProc(args[2]);
-
-            if (proc == nullptr) {
-                err_stream << "cannot find proc " << args[2] << "\n";
-                return 1;
-            }
-
-            Function *nproc = prog->findProc(args[3]);
-
-            if (nproc != nullptr) {
-                err_stream << "proc " << args[3] << " already exists\n";
-                return 1;
-            }
-
-            proc->setName(args[3]);
-        }
-        else if (args[1] == "cluster") {
-            if (args.size() <= 3) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Module *cluster = prog->findModule(args[2]);
-
-            if (cluster == nullptr) {
-                err_stream << "cannot find cluster " << args[2] << "\n";
-                return 1;
-            }
-
-            Module *ncluster = prog->findModule(args[3]);
-
-            if (ncluster == nullptr) {
-                err_stream << "cluster " << args[3] << " already exists\n";
-                return 1;
-            }
-
-            cluster->setName(args[3]);
-        }
-        else {
-            err_stream << "don't know how to rename a " << args[1] << "\n";
-            return 1;
-        }
-
-        break;
-
-    case CT_info:
-
-        if (prog == nullptr) {
-            err_stream << "no valid Prog object !\n";
-            return 1;
-        }
-
-        if (args.size() <= 1) {
-            err_stream << "not enough arguments for cmd\n";
-            return 1;
-        }
-
-        if (args[1] == "prog") {
-            out_stream << "prog " << prog->getName() << ":\n";
-            out_stream << "\tclusters:\n";
-            prog->getRootCluster()->printTree(out_stream);
-            out_stream << "\n\tlibprocs:\n";
-
-            // TODO: print module name before function's ?
-            for (const Module *module : *prog) {
-                for (Function *func : *module) {
-                    if (func->isLib()) {
-                        out_stream << "\t\t" << func->getName() << "\n";
-                    }
-                }
-            }
-
-            out_stream << "\n\tuserprocs:\n";
-
-            for (const Module *module : *prog) {
-                for (Function *func : *module) {
-                    if (!func->isLib()) {
-                        out_stream << "\t\t" << func->getName() << "\n";
-                    }
-                }
-            }
-
-            out_stream << "\n";
-
-            return 0;
-        }
-        else if (args[1] == "cluster") {
-            if (args.size() <= 2) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Module *cluster = prog->findModule(args[2]);
-
-            if (cluster == nullptr) {
-                err_stream << "cannot find cluster " << args[2] << "\n";
-                return 1;
-            }
-
-            out_stream << "cluster " << cluster->getName() << ":\n";
-
-            if (cluster->getUpstream()) {
-                out_stream << "\tparent = " << cluster->getUpstream()->getName() << "\n";
-            }
-            else {
-                out_stream << "\troot cluster.\n";
-            }
-
-            out_stream << "\tprocs:\n";
-
-            for (Function *f : *cluster) {
-                out_stream << "\t\t" << f->getName() << "\n";
-            }
-
-            out_stream << "\n";
-
-            return 0;
-        }
-        else if (args[1] == "proc") {
-            if (args.size() <= 2) {
-                err_stream << "not enough arguments for cmd\n";
-                return 1;
-            }
-
-            Function *proc = prog->findProc(args[2]);
-
-            if (proc == nullptr) {
-                err_stream << "cannot find proc " << args[2] << "\n";
-                return 1;
-            }
-
-            out_stream << "proc " << proc->getName() << ":\n";
-            out_stream << "\tbelongs to cluster " << proc->getParent()->getName() << "\n";
-            out_stream << "\tnative address " << proc->getEntryAddress() << "\n";
-
-            if (proc->isLib()) {
-                out_stream << "\tis a library proc.\n";
-            }
-            else {
-                out_stream << "\tis a user proc.\n";
-                UserProc *p = (UserProc *)proc;
-
-                if (p->isDecoded()) {
-                    out_stream << "\thas been decoded.\n";
-                }
-
-                // if (p->isAnalysed())
-                //    out_stream << "\thas been analysed.\n";
-            }
-
-            out_stream << "\n";
-
-            return 0;
-        }
-        else {
-            err_stream << "don't know how to print info about a " << args[1] << "\n";
-            return 1;
-        }
-
-    // no break needed all branches return
-    case CT_print:
-        {
-
-        }
-*/
-    case CT_printRTL: return handlePrintRTL(args);
-    case CT_exit: return handleExit(args);
-    case CT_help: return handleHelp(args);
+    case CT_move:      return handleMove(args);
+    case CT_add:       return handleAdd(args);
+    case CT_delete:    return handleDelete(args);
+    case CT_rename:    return handleRename(args);
+    case CT_info:      return handleInfo(args);
+    case CT_printRTL:  return handlePrintRTL(args);
+    case CT_exit:      return handleExit(args);
+    case CT_help:      return handleHelp(args);
 
     default:
-        std::cout << "Unrecognized command '" << command.toStdString() << "', try 'help'" << std::endl;
+        std::cerr << "Unrecognized command '" << command.toStdString() << "', try 'help'" << std::endl;
         return CommandStatus::ParseError;
     }
 }
@@ -674,7 +339,7 @@ CommandStatus Console::handleReplay(const QStringList& args)
 CommandStatus Console::handlePrintRTL(const QStringList& args)
 {
     if (args.empty()) {
-        std::cerr << "not enough arguments for cmd" << std::endl;
+        std::cerr << "Not enough arguments for cmd" << std::endl;
         return CommandStatus::ParseError;
     }
     else if (prog == nullptr) {
@@ -707,6 +372,336 @@ CommandStatus Console::handlePrintRTL(const QStringList& args)
 }
 
 
+CommandStatus Console::handleMove(const QStringList& args)
+{
+    if (args.size() <= 1) {
+        std::cerr << "Not eough arguments for cmd." << std::endl;
+        return CommandStatus::ParseError;
+    }
+    else if (prog == nullptr) {
+        std::cerr << "No valid Prog object!\n";
+        return CommandStatus::Failure;
+    }
+
+    if (args[0] == "proc") {
+        if (args.size() < 3) {
+            std::cerr << "Not enough arguments for cmd" << std::endl;
+            return CommandStatus::ParseError;
+        }
+
+        Function *proc = prog->findProc(args[1]);
+
+        if (proc == nullptr) {
+            std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        Module *module = prog->findModule(args[2]);
+
+        if (module == nullptr) {
+            std::cerr << "Cannot find module " << args[2].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        proc->setParent(module);
+    }
+    else if (!args[0].compare("module")) {
+        if (args.size() < 3) {
+            std::cerr << "Not enough arguments for cmd" << std::endl;
+            return CommandStatus::ParseError;
+        }
+
+        Module *module = prog->findModule(args[1]);
+
+        if (module == nullptr) {
+            std::cerr << "Cannot find module " << args[1].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        Module *parentModule = prog->findModule(args[2]);
+
+        if (parentModule == nullptr) {
+            std::cerr << "Cannot find module " << args[2].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        parentModule->addChild(module);
+    }
+    else {
+        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'move'." << std::endl;
+        return CommandStatus::ParseError;
+    }
+
+    return CommandStatus::Success;
+}
+
+
+CommandStatus Console::handleAdd(const QStringList& args)
+{
+    if (args.empty()) {
+        std::cerr << "Not enough arguments for command." << std::endl;
+        return CommandStatus::ParseError;
+    }
+    else if (prog == nullptr) {
+        std::cerr << "No valid Prog object!" << std::endl;
+        return CommandStatus::Failure;
+    }
+
+    if (args[0] == "module") {
+        if (args.size() < 2) {
+            std::cerr << "Not enough arguments for command." << std::endl;
+            return CommandStatus::ParseError;
+        }
+
+        Module *module = new Module(args[1], prog, prog->getFrontEnd());
+
+        if (module == nullptr) {
+            std::cerr << "Cannot create module " << args[1].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        Module* parent = (args.size() > 2 ? prog->findModule(args[2]) : prog->getRootModule());
+
+        if (!parent) {
+            std::cerr << "Cannot find parent module " <<
+                (args.size() > 2 ? args[2].toStdString() : "") << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        parent->addChild(module);
+        return CommandStatus::Success;
+    }
+    else {
+        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'add'" << std::endl;
+        return CommandStatus::ParseError;
+    }
+}
+
+
+CommandStatus Console::handleDelete(const QStringList& args)
+{
+    if (args.empty()) {
+        std::cerr << "Not enough arguments for cmd\n";
+        return CommandStatus::ParseError;
+    }
+    else if (prog == nullptr) {
+        std::cerr << "no valid Prog object!" << std::endl;
+    }
+
+    if (args[0] == "module") {
+        if (args.size() < 2) {
+            std::cerr << "Not enough arguments for cmd" << std::endl;
+            return CommandStatus::ParseError;
+        }
+
+        for (int i = 1; i < args.size(); i++) {
+            Module *module = prog->findModule(args[i]);
+
+            if (module == nullptr) {
+                std::cerr << "Cannot find module " << args[i].toStdString() << std::endl;
+                return CommandStatus::Failure;
+            }
+            else if (module == prog->getRootModule()) {
+                std::cerr << "Cannot remove root module." << std::endl;
+                return CommandStatus::Failure;
+            }
+            else if (module->hasChildren() || prog->isModuleUsed(module)) {
+                std::cerr << "Cannot remove module: Module is not empty." << std::endl;
+                return CommandStatus::Failure;
+            }
+
+            QFile::remove(module->getOutPath("xml"));
+            QFile::remove(module->getOutPath("c"));
+            assert(module->getUpstream());
+            module->getUpstream()->removeChild(module);
+        }
+        return CommandStatus::Success;
+    }
+    else {
+        std::cerr << "Unknown argument for command 'delete'" << std::endl;
+        return CommandStatus::ParseError;
+    }
+}
+
+
+CommandStatus Console::handleRename(const QStringList& args)
+{
+    if (args.empty()) {
+        std::cerr << "Not enough arguments for cmd" << std::endl;
+        return CommandStatus::ParseError;
+    }
+    else if (prog == nullptr) {
+        std::cerr << "No valid Prog object!" << std::endl;
+        return CommandStatus::Failure;
+    }
+
+    if (args[0] == "proc") {
+        if (args.size() < 3) {
+            std::cerr  << "Not enough arguments for cmd" << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        Function *proc = prog->findProc(args[1]);
+
+        if (proc == nullptr) {
+            std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        Function *nproc = prog->findProc(args[2]);
+
+        if (nproc != nullptr) {
+            std::cerr << "Proc " << args[2].toStdString() << " already exists" << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        proc->setName(args[2]);
+        return CommandStatus::Success;
+    }
+    else if (args[0] == "module") {
+        if (args.size() < 3) {
+            std::cerr << "Not enough arguments for cmd" << std::endl;
+            return CommandStatus::ParseError;
+        }
+
+        Module *module = prog->findModule(args[1]);
+
+        if (module == nullptr) {
+            std::cerr << "Cannot find module " << args[1].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        Module *newModule = prog->findModule(args[2]);
+
+        if (newModule != nullptr) {
+            std::cerr << "Module " << args[2].toStdString() << "already exists" << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        module->setName(args[2]);
+        return CommandStatus::Success;
+    }
+    else {
+        std::cerr << "Unknown argument '" << args[0].toStdString() << "' for command 'rename'" << std::endl;
+        return CommandStatus::ParseError;
+    }
+}
+
+
+CommandStatus Console::handleInfo(const QStringList& args)
+{
+    if (args.empty()) {
+        std::cerr << "Not enough arguments for cmd!" << std::endl;
+        return CommandStatus::ParseError;
+    }
+    else if (prog == nullptr) {
+        std::cerr << "No valid Prog object!" << std::endl;
+        return CommandStatus::Failure;
+    }
+
+    if (args[0] == "prog") {
+        QTextStream ost(stdout);
+        ost << "Program " << prog->getName() << ":\n";
+        ost << "\tModules:\n";
+        prog->getRootModule()->printTree(ost);
+
+        ost << "\n\tLibrary functions:\n";
+        for (const Module *module : *prog) {
+            for (Function *func : *module) {
+                if (func->isLib()) {
+                    ost << "\t\t" << module->getName() << "::" << func->getName() << "\n";
+                }
+            }
+        }
+
+        ost << "\n\tUser functions:\n";
+        for (const Module *module : *prog) {
+            for (Function *func : *module) {
+                if (!func->isLib()) {
+                    ost << "\t\t" << module->getName() << "::" << func->getName() << "\n";
+                }
+            }
+        }
+
+        ost << "\n";
+        ost.flush();
+        return CommandStatus::Success;
+    }
+    else if (args[0] == "module") {
+        if (args.size() < 2) {
+            std::cerr << "Not enough arguments for cmd";
+            return CommandStatus::Failure;
+        }
+
+        Module *module = prog->findModule(args[1]);
+        if (module == nullptr) {
+            std::cerr << "Cannot find module " << args[1].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        QTextStream outStream(stdout);
+        outStream << "module " << module->getName() << ":\n";
+
+        if (module->getUpstream()) {
+            outStream << "\tparent = " << module->getUpstream()->getName() << "\n";
+        }
+        else {
+            outStream << "\troot module.\n";
+        }
+
+        outStream << "\tprocs:\n";
+
+        for (Function *f : *module) {
+            outStream << "\t\t" << f->getName() << "\n";
+        }
+
+        outStream << "\n";
+
+        return CommandStatus::Success;
+    }
+    else if (args[0] == "proc") {
+        if (args.size() < 2) {
+            std::cerr << "Not enough arguments for cmd" << std::endl;
+            return CommandStatus::ParseError;
+        }
+
+        Function *proc = prog->findProc(args[1]);
+        if (proc == nullptr) {
+            std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        QTextStream outStream(stdout);
+        outStream << "proc " << proc->getName() << ":\n";
+        outStream << "\tbelongs to module " << proc->getParent()->getName() << "\n";
+        outStream << "\tnative address " << proc->getEntryAddress() << "\n";
+
+        if (proc->isLib()) {
+            outStream << "\tis a library proc.\n";
+        }
+        else {
+            outStream << "\tis a user proc.\n";
+            UserProc *p = (UserProc *)proc;
+
+            if (p->isDecoded()) {
+                outStream << "\thas been decoded.\n";
+            }
+
+            // if (p->isAnalysed())
+            //    out_stream << "\thas been analysed.\n";
+        }
+
+        outStream << "\n";
+
+        return CommandStatus::Success;
+    }
+    else {
+        std::cerr << "Unknown argument " << args[1].toStdString() << " for command 'info'" << std::endl;
+        return CommandStatus::Failure;
+    }
+}
+
+
 CommandStatus Console::handleExit(const QStringList& args)
 {
     if (args.size() != 0) {
@@ -733,23 +728,24 @@ CommandStatus Console::handleHelp(const QStringList& args)
         "  decompile [proc1 [proc2 [...]]]    : Decompiles the program or specified function(s).\n"
         "  codegen [module1 [module2 [...]]]  : Generates code for the program or a\n"
         "                                       specified module.\n"
+        "  info prog                          : Print info about the program.\n"
+        "  info module <module>               : Print info about a module.\n"
+        "  info proc <proc>                   : Print info about a proc.\n"
+        "  move proc <proc> <module>          : Moves the specified proc to the specified\n"
+        "                                       module.\n"
+        "  move module <module> <parent>      : Moves the specified module to the\n"
+        "                                       specified parent module.\n"
+        "  add module <module> [<parent>]     : Adds a new module to the root/specified\n"
+        "                                       module.\n"
+        "  delete module <module> [...]       : Deletes empty modules.\n"
+        "  rename proc <proc> <newname>       : Renames the specified proc.\n"
+        "  rename module <module> <newname>   : Renames the specified module.\n"
         "  print-callgraph                    : prints the call graph of the program.\n"
         "  print-cfg [<proc1> [proc2 [...]]]  : prints the Control Flow Graph of the program\n"
         "                                       or a set of procedures.\n"
         "  print-rtl [<proc1> [proc2 [...]]]  : Print the RTL for a proc.\n"
         "  replay <file>                      : Reads file and executes commands line by line.\n"
-//        "  move proc <proc> <cluster>         : Moves the specified proc to the specified\n"
-//        "                                       cluster.\n"
-//        "  move cluster <cluster> <parent>    : Moves the specified cluster to the\n"
-//        "                                       specified parent cluster.\n"
-//         "  add cluster <cluster> [parent]     : Adds a new cluster to the root/specified\n"
-//         "                                       cluster.\n"
-//         "  delete cluster <cluster>           : Deletes an empty cluster.\n"
-//         "  rename proc <proc> <newname>       : Renames the specified proc.\n"
-//         "  rename cluster <cluster> <newname> : Renames the specified cluster.\n"
-//         "  info prog                          : Print info about the program.\n"
-//         "  info cluster <cluster>             : Print info about a cluster.\n"
-//         "  info proc <proc>                   : Print info about a proc.\n"
+
         "  help                               : This help.\n"
         "  exit                               : Quit Boomerang.\n";
     std::cout.flush();

@@ -313,7 +313,7 @@ public:
     void printCallGraph() const;
     void printCallGraphXML() const;
 
-    Module *getRootCluster() const { return m_rootCluster; }
+    Module *getRootModule() const { return m_rootCluster; }
     Module *findModule(const QString& name) const;
     Module *getDefaultModule(const QString& name);
     bool isModuleUsed(Module *c) const;

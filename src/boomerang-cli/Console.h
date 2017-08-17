@@ -71,6 +71,11 @@ private:
     CommandStatus handlePrintCfg(const QStringList& args);
     CommandStatus handleReplay(const QStringList& args);
     CommandStatus handlePrintRTL(const QStringList& args);
+    CommandStatus handleMove(const QStringList& args);
+    CommandStatus handleAdd(const QStringList& args);
+    CommandStatus handleDelete(const QStringList& args);
+    CommandStatus handleRename(const QStringList& args);
+    CommandStatus handleInfo(const QStringList& args);
 
     CommandStatus handleExit(const QStringList& args);
     CommandStatus handleHelp(const QStringList& args);

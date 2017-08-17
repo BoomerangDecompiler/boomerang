@@ -57,7 +57,7 @@ ICodeGenerator *Boomerang::getCodeGenerator()
 void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
 {
     LOG_MSG("Adding Objective-C information to Prog.");
-    Module *root = prog->getRootCluster();
+    Module *root = prog->getRootModule();
 
     for (auto& modules_it : modules) {
         const ObjcModule& mod     = (modules_it).second;
@@ -215,7 +215,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     LOG_MSG("Generating code...");
     Boomerang::get()->getCodeGenerator()->generateCode(prog);
 
-    LOG_VERBOSE("Output written to '%1'", Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(prog->getRootCluster()->getName()));
+    LOG_VERBOSE("Output written to '%1'", Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(prog->getRootModule()->getName()));
 
     time_t end;
     time(&end);

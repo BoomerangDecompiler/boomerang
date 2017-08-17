@@ -1674,7 +1674,7 @@ void Prog::readSymbolFile(const QString& fname)
     }
 
     par->yyparse(plat, cc);
-    Module *tgt_mod = getRootCluster();
+    Module *tgt_mod = getRootModule();
 
     for (Symbol *sym : par->symbols) {
         if (sym->sig) {

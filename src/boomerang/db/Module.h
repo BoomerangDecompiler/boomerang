@@ -86,7 +86,7 @@ public:
      */
     void printTree(QTextStream& out) const;
 
-    /// Record the \a fnc location in the ADDRESS->Function map
+    /// Record the \a fnc location in the Address -> Function map
     /// If \a fnc is nullptr - remove given function from the map.
     void setLocationMap(Address loc, Function *fnc);
 
