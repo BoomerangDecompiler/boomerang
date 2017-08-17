@@ -1464,7 +1464,7 @@ void Prog::printCallGraph() const
     QSaveFile file2(fname2);
 
     if (!(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly))) {
-        LOG_VERBOSE("Cannot open output files for callgraph output");
+        LOG_ERROR("Cannot open output files for callgraph output");
         return;
     }
 

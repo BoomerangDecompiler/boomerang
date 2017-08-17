@@ -24,13 +24,11 @@ enum CommandType
     CT_add       = 7,
     CT_delete    = 8,
     CT_rename    = 9,
-    CT_info      = 10,
-    CT_printRTL  = 11,
+    CT_print     = 10,
+    CT_info      = 11,
     CT_exit      = 12,
     CT_help      = 13,
-    CT_callgraph = 14,
-    CT_printCFG  = 15,
-    CT_replay    = 16
+    CT_replay    = 14
 };
 
 
@@ -67,15 +65,13 @@ private:
     CommandStatus handleDecode(const QStringList& args);
     CommandStatus handleDecompile(const QStringList& args);
     CommandStatus handleCodegen(const QStringList& args);
-    CommandStatus handleCallgraph(const QStringList& args);
-    CommandStatus handlePrintCfg(const QStringList& args);
     CommandStatus handleReplay(const QStringList& args);
-    CommandStatus handlePrintRTL(const QStringList& args);
     CommandStatus handleMove(const QStringList& args);
     CommandStatus handleAdd(const QStringList& args);
     CommandStatus handleDelete(const QStringList& args);
     CommandStatus handleRename(const QStringList& args);
     CommandStatus handleInfo(const QStringList& args);
+    CommandStatus handlePrint(const QStringList& args);
 
     CommandStatus handleExit(const QStringList& args);
     CommandStatus handleHelp(const QStringList& args);
