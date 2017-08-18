@@ -1645,13 +1645,7 @@ void Prog::printCallGraphXML() const
 
 Module *Prog::findModule(const QString& name) const
 {
-    for (Module *m : m_moduleList) {
-        if (m->getName() == name) {
-            return m;
-        }
-    }
-
-    return nullptr;
+    return m_rootCluster->find(name);
 }
 
 

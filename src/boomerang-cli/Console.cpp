@@ -273,12 +273,12 @@ CommandStatus Console::handleReplay(const QStringList& args)
 
 CommandStatus Console::handleMove(const QStringList& args)
 {
-    if (args.size() <= 1) {
-        std::cerr << "Not eough arguments for cmd." << std::endl;
+    if (args.size() < 2) {
+        std::cerr << "Not enough arguments for cmd." << std::endl;
         return CommandStatus::ParseError;
     }
     else if (prog == nullptr) {
-        std::cerr << "No valid Prog object!\n";
+        std::cerr << "No valid Prog object!" << std::endl;
         return CommandStatus::Failure;
     }
 
@@ -304,7 +304,7 @@ CommandStatus Console::handleMove(const QStringList& args)
 
         proc->setParent(module);
     }
-    else if (!args[0].compare("module")) {
+    else if (args[0] == "module") {
         if (args.size() < 3) {
             std::cerr << "Not enough arguments for cmd" << std::endl;
             return CommandStatus::ParseError;
@@ -359,11 +359,11 @@ CommandStatus Console::handleAdd(const QStringList& args)
             return CommandStatus::Failure;
         }
 
-        Module* parent = (args.size() > 2 ? prog->findModule(args[2]) : prog->getRootModule());
+        Module* parent = (args.size() > 2) ? prog->findModule(args[2]) : prog->getRootModule();
 
         if (!parent) {
             std::cerr << "Cannot find parent module " <<
-                (args.size() > 2 ? args[2].toStdString() : "") << std::endl;
+                ((args.size() > 2) ? args[2].toStdString() : "") << std::endl;
             return CommandStatus::Failure;
         }
 
@@ -595,7 +595,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
         return CommandStatus::Success;
     }
     else {
-        std::cerr << "Unknown argument " << args[1].toStdString() << " for command 'info'" << std::endl;
+        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'info'" << std::endl;
         return CommandStatus::Failure;
     }
 }
