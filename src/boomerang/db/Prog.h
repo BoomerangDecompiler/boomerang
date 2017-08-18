@@ -80,6 +80,8 @@ public:
 
     void removeProc(const QString& name);
 
+    Module* createModule(const QString& name, Module* parent = nullptr, const ModuleFactory& modFactory = DefaultModFactory());
+
     QString getName() const { return m_name; } ///< Get the name of this program
 
     QString getPath() const { return m_path; }

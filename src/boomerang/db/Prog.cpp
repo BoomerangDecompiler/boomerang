@@ -599,6 +599,24 @@ void Prog::removeProc(const QString& name)
     }
 }
 
+Module* Prog::createModule(const QString& name, Module* parent, const ModuleFactory& factory)
+{
+    if (parent == nullptr) {
+        parent = m_rootModule;
+    }
+
+    Module* module = m_rootModule->find(name);
+    if (module && module->getUpstream() == parent) {
+        // a module already exists
+        return nullptr;
+    }
+
+    module = factory.create(name, this, this->getFrontEnd());
+    parent->addChild(module);
+    m_moduleList.push_back(module);
+    return module;
+}
+
 
 int Prog::getNumProcs(bool user_only) const
 {
@@ -1470,11 +1488,12 @@ void Prog::printCallGraph() const
     std::map<Function *, int>        spaces;
     std::map<Function *, Function *> parent;
     std::list<Function *>            procList;
-    f2 << "digraph callgraph {\n";
+
     std::copy(m_entryProcs.begin(), m_entryProcs.end(), std::back_inserter(procList));
 
     spaces[procList.front()] = 0;
 
+    f2 << "digraph callgraph {\n";
     while (!procList.empty()) {
         Function *p = procList.front();
         procList.pop_front();

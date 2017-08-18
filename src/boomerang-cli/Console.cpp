@@ -370,14 +370,13 @@ CommandStatus Console::handleAdd(const QStringList& args)
             }
         }
 
-        Module *module = new Module(args[1], prog, prog->getFrontEnd());
+        Module* module = prog->createModule(args[1], parent);
 
         if (module == nullptr) {
             std::cerr << "Cannot create module " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
         }
 
-        parent->addChild(module);
         return CommandStatus::Success;
     }
     else {
@@ -514,22 +513,30 @@ CommandStatus Console::handleInfo(const QStringList& args)
         ost << "\tModules:\n";
         prog->getRootModule()->printTree(ost);
 
-        ost << "\n\tLibrary functions:\n";
-        for (const Module *module : prog->getModuleList()) {
-            for (Function *func : *module) {
-                if (func->isLib()) {
-                    ost << "\t\t" << module->getName() << "::" << func->getName() << "\n";
+
+        std::list<const Function*> libFunctions;
+        std::list<const Function*> userFunctions;
+
+        const Prog::ModuleList& modules = prog->getModuleList();
+        for (const Module* module : modules) {
+            for (const Function* function : *module) {
+                if (function->isLib()) {
+                    libFunctions.push_back(function);
+                }
+                else {
+                    userFunctions.push_back(function);
                 }
             }
         }
 
+        ost << "\n\tLibrary functions:\n";
+        for (const Function* function : libFunctions) {
+            ost << "\t\t" << function->getParent()->getName() << "::" << function->getName() << "\n";
+        }
+
         ost << "\n\tUser functions:\n";
-        for (const Module *module : prog->getModuleList()) {
-            for (Function *func : *module) {
-                if (!func->isLib()) {
-                    ost << "\t\t" << module->getName() << "::" << func->getName() << "\n";
-                }
-            }
+        for (const Function* function : userFunctions) {
+            ost <<  "\t\t" << function->getParent()->getName() << "::" << function->getName() << "\n";
         }
 
         ost << "\n";
