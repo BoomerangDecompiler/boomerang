@@ -72,7 +72,7 @@ void StatementTest::testEmpty()
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
-	Module *m = *prog->begin();
+	Module *m = *prog->getModuleList().begin();
 	QVERIFY(m != nullptr);
 
 	// create UserProc

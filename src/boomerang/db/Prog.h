@@ -49,8 +49,6 @@ class Prog : public QObject
 public:
     /// The type for the list of functions.
     typedef std::list<Module *>          ModuleList;
-    typedef ModuleList::iterator         iterator;
-    typedef ModuleList::const_iterator   const_iterator;
 
 public:
     typedef std::map<Address, BinarySymbol *> AddressToSymbolMap;
@@ -313,7 +311,7 @@ public:
     void printCallGraph() const;
     void printCallGraphXML() const;
 
-    Module *getRootModule() const { return m_rootCluster; }
+    Module *getRootModule() const { return m_rootModule; }
     Module *findModule(const QString& name) const;
     Module *getDefaultModule(const QString& name);
     bool isModuleUsed(Module *c) const;
@@ -337,15 +335,6 @@ public:
     Module *getOrInsertModule(const QString& name, const ModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
 
     const ModuleList& getModuleList() const { return m_moduleList; }
-    ModuleList& getModuleList()       { return m_moduleList; }
-
-    iterator begin()       { return m_moduleList.begin(); }
-    const_iterator begin() const { return m_moduleList.begin(); }
-    iterator end()         { return m_moduleList.end(); }
-    const_iterator end()   const { return m_moduleList.end(); }
-
-    size_t size()  const { return m_moduleList.size(); }
-    bool empty() const { return m_moduleList.empty(); }
 
 signals:
     void rereadLibSignatures();
@@ -360,7 +349,7 @@ protected:
     // list of UserProcs for entry point(s)
     std::list<UserProc *> m_entryProcs;
 
-    IFileLoader *m_loaderIface = nullptr;
+    IFileLoader *m_fileLoader = nullptr;
     IFrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
 
     /* Persistent state */
@@ -370,7 +359,7 @@ protected:
     std::set<Global *> m_globals; ///< globals to print at code generation time
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
     int m_iNumberedProc;          ///< Next numbered proc will use this
-    Module *m_rootCluster;        ///< Root of the cluster tree
+    Module *m_rootModule;        ///< Root of the cluster tree
 
     class IBinaryImage *m_image;
     SymTab *m_binarySymbols;

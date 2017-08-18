@@ -201,7 +201,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     if (SETTING(printAST)) {
         LOG_MSG("Printing AST...");
 
-        for (const Module *module : *prog) {
+        for (const Module *module : prog->getModuleList()) {
             for (Function *func : *module) {
                 if (!func->isLib()) {
                     UserProc *u = (UserProc *)func;

@@ -416,28 +416,28 @@ void IFrontEnd::decode(Prog *prg, Address addr)
         while (change) {
             change = false;
 
-            for (Module *m : *m_program) {
-                for (Function *pProc : *m) {
-                    if (pProc->isLib()) {
+            for (Module *m : m_program->getModuleList()) {
+                for (Function *function : *m) {
+                    if (function->isLib()) {
                         continue;
                     }
 
-                    UserProc *p = (UserProc *)pProc;
+                    UserProc *userProc = (UserProc *)function;
 
-                    if (p->isDecoded()) {
+                    if (userProc->isDecoded()) {
                         continue;
                     }
 
                     // undecoded userproc.. decode it
                     change = true;
                     QTextStream os(stderr); // rtl output target
-                    int         res = processProc(p->getEntryAddress(), p, os);
+                    int         res = processProc(userProc->getEntryAddress(), userProc, os);
 
                     if (res != 1) {
                         break;
                     }
 
-                    p->setDecoded();
+                    userProc->setDecoded();
 
                     // Break out of the loops if not decoding children
                     if (SETTING(noDecodeChildren)) {

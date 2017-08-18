@@ -87,7 +87,7 @@ Prog::Prog(const QString& name)
     , m_iNumberedProc(1)
 {
     m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
-    m_rootCluster   = getOrInsertModule(getNameNoPathNoExt());
+    m_rootModule   = getOrInsertModule(getNameNoPathNoExt());
     m_path          = m_name;
     m_image         = Boomerang::get()->getImage();
 }
@@ -120,7 +120,7 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
 
 void Prog::setFrontEnd(IFrontEnd *frontEnd)
 {
-    m_loaderIface     = frontEnd->getLoader();
+    m_fileLoader      = frontEnd->getLoader();
     m_defaultFrontend = frontEnd;
 
     for (Module *m : m_moduleList) {
@@ -128,14 +128,10 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
     }
 
     m_moduleList.clear();
-    m_rootCluster = nullptr;
+    m_rootModule = nullptr;
 
-    if (m_loaderIface && !m_name.isEmpty()) {
-        if (m_rootCluster) {
-            m_rootCluster->eraseFromParent();
-        }
-
-        m_rootCluster = this->getOrInsertModule(getNameNoPathNoExt());
+    if (m_fileLoader && !m_name.isEmpty()) {
+        m_rootModule = getOrInsertModule(this->getNameNoPathNoExt());
     }
 }
 
@@ -143,7 +139,7 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
 void Prog::setName(const QString& name)
 {
     m_name = name;
-    m_rootCluster->setName(name);
+    m_rootModule->setName(name);
 }
 
 
@@ -310,7 +306,7 @@ Module *Prog::getDefaultModule(const QString& name)
     }
 
     if (cfname.isEmpty() || !cfname.endsWith(".c")) {
-        return m_rootCluster;
+        return m_rootModule;
     }
 
     LOG_VERBOSE("Got filename %1 for %2", cfname, name);
@@ -319,7 +315,7 @@ Module *Prog::getDefaultModule(const QString& name)
 
     if (c == nullptr) {
         c = getOrInsertModule(cfname);
-        m_rootCluster->addChild(c);
+        m_rootModule->addChild(c);
     }
 
     return c;
@@ -378,7 +374,7 @@ Function *Prog::createProc(Address startAddress)
         return pProc; // Yes, we are done
     }
 
-    Address other = m_loaderIface->getJumpTarget(startAddress);
+    Address other = m_fileLoader->getJumpTarget(startAddress);
 
     if (other != Address::INVALID) {
         startAddress = other;
@@ -405,7 +401,7 @@ Function *Prog::createProc(Address startAddress)
         LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
     }
 
-    pProc = m_rootCluster->getOrInsertFunction(procName, startAddress, bLib);
+    pProc = m_rootModule->getOrInsertFunction(procName, startAddress, bLib);
     return pProc;
 }
 
@@ -663,7 +659,7 @@ LibProc *Prog::getLibraryProc(const QString& nam) const
         return (LibProc *)p;
     }
 
-    return (LibProc *)m_rootCluster->getOrInsertFunction(nam, Address::INVALID, true);
+    return (LibProc *)m_rootModule->getOrInsertFunction(nam, Address::INVALID, true);
 }
 
 
@@ -805,7 +801,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address u, SharedType t)
 {
     QString nam = newGlobalName(u);
 
-    assert(m_loaderIface);
+    assert(m_fileLoader);
     // TODO: fix the case of missing symbol table interface
     auto symbol = m_binarySymbols->find(nam);
 
@@ -1565,7 +1561,7 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
 
 Machine Prog::getMachine() const
 {
-    return m_loaderIface->getMachine();
+    return m_fileLoader->getMachine();
 }
 
 
@@ -1645,7 +1641,7 @@ void Prog::printCallGraphXML() const
 
 Module *Prog::findModule(const QString& name) const
 {
-    return m_rootCluster->find(name);
+    return m_rootModule->find(name);
 }
 
 
@@ -1925,7 +1921,7 @@ SharedExp Prog::addReloc(SharedExp e, Address lc)
 {
     assert(e->isConst());
 
-    if (!m_loaderIface->isRelocationAt(lc)) {
+    if (!m_fileLoader->isRelocationAt(lc)) {
         return e;
     }
 

@@ -50,7 +50,8 @@ void CfgTest::testDominators()
 	bool    gotMain;
     Address addr = pFE->getMainEntryPoint(gotMain);
 	QVERIFY(addr != Address::INVALID);
-	Module *m = *prog.begin();
+
+	Module *m = *(prog.getModuleList().begin());
 	QVERIFY(m != nullptr);
 	QVERIFY(m->size() > 0);
 
@@ -110,7 +111,7 @@ void CfgTest::testSemiDominators()
     Address addr = pFE->getMainEntryPoint(gotMain);
 	QVERIFY(addr != Address::INVALID);
 
-	Module *m = *prog.begin();
+	Module *m = *prog.getModuleList().begin();
 	QVERIFY(m != nullptr);
 	QVERIFY(m->size() > 0);
 
@@ -169,7 +170,7 @@ void CfgTest::testPlacePhi()
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
 
-	Module *m = *prog.begin();
+	Module *m = *prog.getModuleList().begin();
 	QVERIFY(m != nullptr);
 	QVERIFY(m->size() > 0);
 
@@ -215,7 +216,7 @@ void CfgTest::testPlacePhi2()
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
 
-	Module *m = *prog.begin();
+	Module *m = *prog.getModuleList().begin();
 	QVERIFY(m != nullptr);
 	QVERIFY(m->size() > 0);
 
@@ -300,7 +301,7 @@ void CfgTest::testRenameVars()
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
 
-	Module *m = *prog->begin();
+	Module *m = *prog->getModuleList().begin();
 	QVERIFY(m != nullptr);
 	QVERIFY(m->size() > 0);
 

@@ -60,7 +60,7 @@ Module::Module()
 Module::Module(const QString& name, Prog *parent, IFrontEnd *fe)
     : m_currentFrontend(fe)
     , m_name(name)
-    , m_parent(parent)
+    , m_prog(parent)
 {
     m_strm.setDevice(&m_out);
 }
@@ -231,27 +231,20 @@ void Module::setLocationMap(Address loc, Function *fnc)
 }
 
 
-void Module::eraseFromParent()
-{
-    m_parent->getModuleList().remove(this);
-    delete this;
-}
-
-
-Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool bLib)
+Function *Module::getOrInsertFunction(const QString& name, Address entryAddress, bool bLib)
 {
     Function *pProc;
 
     if (bLib) {
-        pProc = new LibProc(uNative, name, this);
+        pProc = new LibProc(entryAddress, name, this);
     }
     else {
-        pProc = new UserProc(uNative, name, this);
+        pProc = new UserProc(entryAddress, name, this);
     }
 
-    if (Address::INVALID != uNative) {
-        assert(m_labelsToProcs.find(uNative) == m_labelsToProcs.end());
-        m_labelsToProcs[uNative] = pProc;
+    if (Address::INVALID != entryAddress) {
+        assert(m_labelsToProcs.find(entryAddress) == m_labelsToProcs.end());
+        m_labelsToProcs[entryAddress] = pProc;
     }
 
     m_functionList.push_back(pProc); // Append this to list of procs

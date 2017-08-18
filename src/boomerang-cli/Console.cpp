@@ -352,18 +352,28 @@ CommandStatus Console::handleAdd(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
+        Module* parent = (args.size() > 2) ? prog->findModule(args[2]) : prog->getRootModule();
+        if (!parent) {
+            std::cerr << "Cannot find parent module." << std::endl;
+            return CommandStatus::Failure;
+        }
+        else {
+            for (size_t i = 0; i < parent->getNumChildren(); i++) {
+                Module* existingChild = parent->getChild(i);
+                assert(existingChild);
+
+                if (existingChild->getName() == args[1]) {
+                    // new module would be a sibling of an existing module with the same name
+                    std::cerr << "Cannot create module: A module of the same name already exists." << std::endl;
+                    return CommandStatus::Failure;
+                }
+            }
+        }
+
         Module *module = new Module(args[1], prog, prog->getFrontEnd());
 
         if (module == nullptr) {
             std::cerr << "Cannot create module " << args[1].toStdString() << std::endl;
-            return CommandStatus::Failure;
-        }
-
-        Module* parent = (args.size() > 2) ? prog->findModule(args[2]) : prog->getRootModule();
-
-        if (!parent) {
-            std::cerr << "Cannot find parent module " <<
-                ((args.size() > 2) ? args[2].toStdString() : "") << std::endl;
             return CommandStatus::Failure;
         }
 
@@ -505,7 +515,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
         prog->getRootModule()->printTree(ost);
 
         ost << "\n\tLibrary functions:\n";
-        for (const Module *module : *prog) {
+        for (const Module *module : prog->getModuleList()) {
             for (Function *func : *module) {
                 if (func->isLib()) {
                     ost << "\t\t" << module->getName() << "::" << func->getName() << "\n";
@@ -514,7 +524,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
         }
 
         ost << "\n\tUser functions:\n";
-        for (const Module *module : *prog) {
+        for (const Module *module : prog->getModuleList()) {
             for (Function *func : *module) {
                 if (!func->isLib()) {
                     ost << "\t\t" << module->getName() << "::" << func->getName() << "\n";
