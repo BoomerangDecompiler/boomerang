@@ -118,7 +118,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
     )
     set(DEBUG_LIB Dbghelp.lib)
 
-    list(APPEND COMMON_COMPILE_FLAGS /W3)
+    list(APPEND COMMON_COMPILE_FLAGS /W3 /EHsc)
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     # Warning options
