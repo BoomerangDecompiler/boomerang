@@ -262,7 +262,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address entryAddress,
         sym->SizeOfStruct = sizeof(*sym);
         sym->MaxNameLen   = 1000;
         sym->Name[0]      = 0;
-        BOOL  got = dbghelp::SymFromAddr(hProcess, uNative.value(), 0, sym);
+        BOOL  got = dbghelp::SymFromAddr(hProcess, entryAddress.value(), 0, sym);
         DWORD retType;
 
         if (got && *sym->Name &&
@@ -273,7 +273,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address entryAddress,
                 dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
 
             if (got) {
-                LOG_VERBOSE("calling convention: %1", d);
+                LOG_VERBOSE("calling convention: %1", (int)d);
                 // TODO: use it
             }
             else {
@@ -290,7 +290,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address entryAddress,
 
             // find params and locals
             dbghelp::IMAGEHLP_STACK_FRAME stack;
-            stack.InstructionOffset = uNative.value();
+            stack.InstructionOffset = entryAddress.value();
             dbghelp::SymSetContext(hProcess, &stack, 0);
             dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
 

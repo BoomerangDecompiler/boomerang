@@ -522,13 +522,13 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase)
             return BooleanType::get();
 
         default:
-            LOG_FATAL("Unhandled base type %1", d);
+            LOG_FATAL("Unhandled base type %1", (int)d);
         }
 
         break;
 
     default:
-        LOG_FATAL("Unhandled symtag %1", d);
+        LOG_FATAL("Unhandled symtag %1", (int)d);
     }
 
     return nullptr;
