@@ -4,6 +4,8 @@
 #include <QTimer>
 #include <QThread>
 
+#include "boomerang-cli/Console.h"
+
 
 class DecompilationThread : public QThread
 {
@@ -29,12 +31,20 @@ public:
     explicit CommandlineDriver(QObject *parent = nullptr);
     int applyCommandline(const QStringList& args);
     int decompile();
-    int console();
+
+    /**
+     * Displays a command line and processes the commands entered.
+     *
+     * \retval 0 stdin was closed.
+     * \retval 2 The user typed exit or quit.
+     */
+    int interactiveMain();
 
 public slots:
     void onCompilationTimeout();
 
 private:
+    Console m_console;
     DecompilationThread m_thread;
     QTimer m_kill_timer;
     int minsToStopAfter = 0;

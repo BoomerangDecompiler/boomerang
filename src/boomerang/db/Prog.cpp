@@ -87,7 +87,7 @@ Prog::Prog(const QString& name)
     , m_iNumberedProc(1)
 {
     m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
-    m_rootCluster   = getOrInsertModule(getNameNoPathNoExt());
+    m_rootModule   = getOrInsertModule(getNameNoPathNoExt());
     m_path          = m_name;
     m_image         = Boomerang::get()->getImage();
 }
@@ -120,7 +120,7 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
 
 void Prog::setFrontEnd(IFrontEnd *frontEnd)
 {
-    m_loaderIface     = frontEnd->getLoader();
+    m_fileLoader      = frontEnd->getLoader();
     m_defaultFrontend = frontEnd;
 
     for (Module *m : m_moduleList) {
@@ -128,14 +128,10 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
     }
 
     m_moduleList.clear();
-    m_rootCluster = nullptr;
+    m_rootModule = nullptr;
 
-    if (m_loaderIface && !m_name.isEmpty()) {
-        if (m_rootCluster) {
-            m_rootCluster->eraseFromParent();
-        }
-
-        m_rootCluster = this->getOrInsertModule(getNameNoPathNoExt());
+    if (m_fileLoader && !m_name.isEmpty()) {
+        m_rootModule = getOrInsertModule(this->getNameNoPathNoExt());
     }
 }
 
@@ -143,7 +139,7 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
 void Prog::setName(const QString& name)
 {
     m_name = name;
-    m_rootCluster->setName(name);
+    m_rootModule->setName(name);
 }
 
 
@@ -187,9 +183,12 @@ void Prog::finishDecode()
 
 void Prog::generateDotFile() const
 {
-    assert(!SETTING(dotFile).isEmpty());
-    QFile tgt(SETTING(dotFile));
+    QString filename = SETTING(dotFile);
+    if (filename.isEmpty()) {
+        filename = "cfg.dot";
+    }
 
+    QFile tgt(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
     if (!tgt.open(QFile::WriteOnly | QFile::Text)) {
         return;
     }
@@ -307,7 +306,7 @@ Module *Prog::getDefaultModule(const QString& name)
     }
 
     if (cfname.isEmpty() || !cfname.endsWith(".c")) {
-        return m_rootCluster;
+        return m_rootModule;
     }
 
     LOG_VERBOSE("Got filename %1 for %2", cfname, name);
@@ -316,7 +315,7 @@ Module *Prog::getDefaultModule(const QString& name)
 
     if (c == nullptr) {
         c = getOrInsertModule(cfname);
-        m_rootCluster->addChild(c);
+        m_rootModule->addChild(c);
     }
 
     return c;
@@ -358,14 +357,14 @@ void Prog::clear()
 }
 
 
-Function *Prog::createProc(Address uAddr)
+Function *Prog::createProc(Address startAddress)
 {
     // this test fails when decoding sparc, why?  Please investigate - trent
     // Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section
     // assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
 
     // Check if we already have this proc
-    Function *pProc = findProc(uAddr);
+    Function *pProc = findProc(startAddress);
 
     if (pProc == (Function *)-1) { // Already decoded and deleted?
         return nullptr;            // Yes, exit with 0
@@ -375,34 +374,34 @@ Function *Prog::createProc(Address uAddr)
         return pProc; // Yes, we are done
     }
 
-       Address other = m_loaderIface->getJumpTarget(uAddr);
+    Address other = m_fileLoader->getJumpTarget(startAddress);
 
     if (other != Address::INVALID) {
-        uAddr = other;
+        startAddress = other;
     }
 
-    pProc = findProc(uAddr);
+    pProc = findProc(startAddress);
 
     if (pProc) {      // Exists already ?
         return pProc; // Yes, we are done
     }
 
-    QString             pName;
-    const IBinarySymbol *sym = m_binarySymbols->find(uAddr);
+    QString             procName;
+    const IBinarySymbol *sym = m_binarySymbols->find(startAddress);
     bool                bLib = false;
 
     if (sym) {
-        bLib  = sym->isImportedFunction() || sym->isStaticFunction();
-        pName = sym->getName();
+        bLib     = sym->isImportedFunction() || sym->isStaticFunction();
+        procName = sym->getName();
     }
 
-    if (pName.isEmpty()) {
-        // No name. Give it a numbered name
-        pName = QString("proc%1").arg(m_iNumberedProc++);
-        LOG_VERBOSE("Assigning name %1 to address %2", pName, uAddr);
+    if (procName.isEmpty()) {
+        // No name. Give it the name of the start address.
+        procName = QString("proc_%1").arg(startAddress.toString());
+        LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
     }
 
-    pProc = m_rootCluster->getOrInsertFunction(pName, uAddr, bLib);
+    pProc = m_rootModule->getOrInsertFunction(procName, startAddress, bLib);
     return pProc;
 }
 
@@ -523,13 +522,13 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase)
             return BooleanType::get();
 
         default:
-            LOG_FATAL("Unhandled base type %1", d);
+            LOG_FATAL("Unhandled base type %1", (int)d);
         }
 
         break;
 
     default:
-        LOG_FATAL("Unhandled symtag %1", d);
+        LOG_FATAL("Unhandled symtag %1", (int)d);
     }
 
     return nullptr;
@@ -600,6 +599,24 @@ void Prog::removeProc(const QString& name)
     }
 }
 
+Module* Prog::createModule(const QString& name, Module* parent, const ModuleFactory& factory)
+{
+    if (parent == nullptr) {
+        parent = m_rootModule;
+    }
+
+    Module* module = m_rootModule->find(name);
+    if (module && module->getUpstream() == parent) {
+        // a module already exists
+        return nullptr;
+    }
+
+    module = factory.create(name, this, this->getFrontEnd());
+    parent->addChild(module);
+    m_moduleList.push_back(module);
+    return module;
+}
+
 
 int Prog::getNumProcs(bool user_only) const
 {
@@ -660,7 +677,7 @@ LibProc *Prog::getLibraryProc(const QString& nam) const
         return (LibProc *)p;
     }
 
-    return (LibProc *)m_rootCluster->getOrInsertFunction(nam, Address::INVALID, true);
+    return (LibProc *)m_rootModule->getOrInsertFunction(nam, Address::INVALID, true);
 }
 
 
@@ -802,7 +819,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address u, SharedType t)
 {
     QString nam = newGlobalName(u);
 
-    assert(m_loaderIface);
+    assert(m_fileLoader);
     // TODO: fix the case of missing symbol table interface
     auto symbol = m_binarySymbols->find(nam);
 
@@ -1461,7 +1478,7 @@ void Prog::printCallGraph() const
     QSaveFile file2(fname2);
 
     if (!(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly))) {
-        LOG_VERBOSE("Cannot open output files for callgraph output");
+        LOG_ERROR("Cannot open output files for callgraph output");
         return;
     }
 
@@ -1471,14 +1488,15 @@ void Prog::printCallGraph() const
     std::map<Function *, int>        spaces;
     std::map<Function *, Function *> parent;
     std::list<Function *>            procList;
-    f2 << "digraph callgraph {\n";
+
     std::copy(m_entryProcs.begin(), m_entryProcs.end(), std::back_inserter(procList));
 
     spaces[procList.front()] = 0;
 
-    while (procList.size()) {
+    f2 << "digraph callgraph {\n";
+    while (!procList.empty()) {
         Function *p = procList.front();
-        procList.erase(procList.begin());
+        procList.pop_front();
 
         if (HostAddress(p) == HostAddress::INVALID) {
             continue;
@@ -1562,7 +1580,7 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
 
 Machine Prog::getMachine() const
 {
-    return m_loaderIface->getMachine();
+    return m_fileLoader->getMachine();
 }
 
 
@@ -1642,13 +1660,7 @@ void Prog::printCallGraphXML() const
 
 Module *Prog::findModule(const QString& name) const
 {
-    for (Module *m : m_moduleList) {
-        if (m->getName() == name) {
-            return m;
-        }
-    }
-
-    return nullptr;
+    return m_rootModule->find(name);
 }
 
 
@@ -1671,7 +1683,7 @@ void Prog::readSymbolFile(const QString& fname)
     }
 
     par->yyparse(plat, cc);
-    Module *tgt_mod = getRootCluster();
+    Module *tgt_mod = getRootModule();
 
     for (Symbol *sym : par->symbols) {
         if (sym->sig) {
@@ -1928,7 +1940,7 @@ SharedExp Prog::addReloc(SharedExp e, Address lc)
 {
     assert(e->isConst());
 
-    if (!m_loaderIface->isRelocationAt(lc)) {
+    if (!m_fileLoader->isRelocationAt(lc)) {
         return e;
     }
 

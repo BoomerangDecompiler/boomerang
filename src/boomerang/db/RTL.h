@@ -90,7 +90,7 @@ public:
     RTL& operator=(const RTL& other);
 
     /// Common enquiry methods
-       Address getAddress() const { return m_nativeAddr; }    ///< Return RTL's native address
+    Address getAddress() const { return m_nativeAddr; }    ///< Return RTL's native address
     void setAddress(Address a) { m_nativeAddr = a; } ///< Set the address
 
     // Statement list editing methods
@@ -138,5 +138,5 @@ protected:
     void simplify();
 
 private:
-       Address m_nativeAddr; ///< RTL's source program instruction address
+    Address m_nativeAddr; ///< RTL's source program instruction address
 };

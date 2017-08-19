@@ -72,7 +72,7 @@ void StatementTest::testEmpty()
 	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
-	Module *m = *prog->begin();
+	Module *m = *prog->getModuleList().begin();
 	QVERIFY(m != nullptr);
 
 	// create UserProc
@@ -87,6 +87,7 @@ void StatementTest::testEmpty()
 
     cfg->setEntryBB(bb);
 	proc->setDecoded(); // We manually "decoded"
+
 	// compute dataflow
 	int indent = 0;
 	proc->decompile(new ProcList, indent);
@@ -98,9 +99,10 @@ void StatementTest::testEmpty()
 	QCOMPARE(
         actual,
         QString(
+            "Control Flow Graph:\n"
             "Ret BB:\n"
-            "in edges: \n"
-			"out edges: \n"
+            "  in edges: \n"
+			"  out edges: \n"
 			"0x00000123\n\n"
         )
     );
@@ -162,13 +164,14 @@ void StatementTest::testFlow()
 
 	// The assignment to 5 gets propagated into the return, and the assignment
 	// to r24 is removed
-	QString expected = "Fall BB:\n"
-                       "in edges: \n"
-			           "out edges: 0x00000123 \n"
+	QString expected = "Control Flow Graph:\n"
+                       "Fall BB:\n"
+                       "  in edges: \n"
+			           "  out edges: 0x00000123 \n"
 			           "0x00000000\n"
 			           "Ret BB:\n"
-			           "in edges: 0x00000000(0x00000000) \n"
-			           "out edges: \n"
+			           "  in edges: 0x00000000(0x00000000) \n"
+			           "  out edges: \n"
                        "0x00000123    2 RET *v* r24 := 5\n"
 			           "              Modifieds: \n"
 			           "              Reaching definitions: r24=5\n\n";
@@ -234,13 +237,15 @@ void StatementTest::testKill()
     QTextStream st(&actual);
 
 	cfg->print(st);
-	QString expected = "Fall BB:\n"
-			   "in edges: \n"
-			   "out edges: 0x00000123 \n"
+	QString expected =
+               "Control Flow Graph:\n"
+               "Fall BB:\n"
+               "  in edges: \n"
+			   "  out edges: 0x00000123 \n"
 			   "0x00000000\n"
 			   "Ret BB:\n"
-			   "in edges: 0x00000000(0x00000000) \n"
-			   "out edges: \n"
+			   "  in edges: 0x00000000(0x00000000) \n"
+			   "  out edges: \n"
 			   "0x00000123    3 RET *v* r24 := 0\n"
 			   "              Modifieds: \n"
 			   "              Reaching definitions: r24=6\n\n";
@@ -305,13 +310,15 @@ void StatementTest::testUse()
 	QTextStream st(&actual);
 	cfg->print(st);
 
-	QString expected = "Fall BB:\n"
-			   "in edges: \n"
-			   "out edges: 0x00000123 \n"
+	QString expected =
+               "Control Flow Graph:\n"
+               "Fall BB:\n"
+			   "  in edges: \n"
+			   "  out edges: 0x00000123 \n"
 			   "0x00000000\n"
 			   "Ret BB:\n"
-			   "in edges: 0x00000000(0x00000000) \n"
-			   "out edges: \n"
+			   "  in edges: 0x00000000(0x00000000) \n"
+			   "  out edges: \n"
 			   "0x00000123    3 RET *v* r28 := 1000\n"
 			   "              Modifieds: \n"
 			   "              Reaching definitions: r24=5,   r28=5\n\n";
@@ -380,13 +387,15 @@ void StatementTest::testUseOverKill()
 	cfg->print(st);
 
 	// compare it to expected
-	QString expected = "Fall BB:\n"
-			   "in edges: \n"
-			   "out edges: 0x00000123 \n"
+	QString expected =
+               "Control Flow Graph:\n"
+               "Fall BB:\n"
+			   "  in edges: \n"
+			   "  out edges: 0x00000123 \n"
 			   "0x00000000\n"
 			   "Ret BB:\n"
-			   "in edges: 0x00000000(0x00000000) \n"
-			   "out edges: \n"
+			   "  in edges: 0x00000000(0x00000000) \n"
+			   "  out edges: \n"
 			   "0x00000123    4 RET *v* r24 := 0\n"
 			   "              Modifieds: \n"
 			   "              Reaching definitions: r24=6,   r28=6\n\n";
@@ -454,13 +463,15 @@ void StatementTest::testUseOverBB()
 	QTextStream st(&actual);
 	cfg->print(st);
 
-	QString expected = "Fall BB:\n"
-			   "in edges: \n"
-			   "out edges: 0x00000123 \n"
+	QString expected =
+               "Control Flow Graph:\n"
+               "Fall BB:\n"
+			   "  in edges: \n"
+			   "  out edges: 0x00000123 \n"
 			   "0x00000000\n"
 			   "Ret BB:\n"
-			   "in edges: 0x00000000(0x00000000) \n"
-			   "out edges: \n"
+			   "  in edges: 0x00000000(0x00000000) \n"
+			   "  out edges: \n"
 			   "0x00000000\n"
 			   "0x00000123    4 RET *v* r24 := 0\n"
 			   "              Modifieds: \n"
@@ -524,13 +535,15 @@ void StatementTest::testUseKill()
 	cfg->print(st);
 
 	// compare it to expected
-	QString expected = "Fall BB:\n"
-			   "in edges: \n"
-			   "out edges: 0x00000123 \n"
+	QString expected =
+               "Control Flow Graph:\n"
+               "Fall BB:\n"
+			   "  in edges: \n"
+			   "  out edges: 0x00000123 \n"
 			   "0x00000000\n"
 			   "Ret BB:\n"
-			   "in edges: 0x00000000(0x00000000) \n"
-			   "out edges: \n"
+			   "  in edges: 0x00000000(0x00000000) \n"
+			   "  out edges: \n"
 			   "0x00000123    3 RET *v* r24 := 0\n"
 			   "              Modifieds: \n"
 			   "              Reaching definitions: r24=6\n\n";

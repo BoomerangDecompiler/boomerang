@@ -60,7 +60,7 @@ Module::Module()
 Module::Module(const QString& name, Prog *parent, IFrontEnd *fe)
     : m_currentFrontend(fe)
     , m_name(name)
-    , m_parent(parent)
+    , m_prog(parent)
 {
     m_strm.setDevice(&m_out);
 }
@@ -231,27 +231,20 @@ void Module::setLocationMap(Address loc, Function *fnc)
 }
 
 
-void Module::eraseFromParent()
-{
-    m_parent->getModuleList().remove(this);
-    delete this;
-}
-
-
-Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool bLib)
+Function *Module::getOrInsertFunction(const QString& name, Address entryAddress, bool bLib)
 {
     Function *pProc;
 
     if (bLib) {
-        pProc = new LibProc(uNative, name, this);
+        pProc = new LibProc(entryAddress, name, this);
     }
     else {
-        pProc = new UserProc(uNative, name, this);
+        pProc = new UserProc(entryAddress, name, this);
     }
 
-    if (Address::INVALID != uNative) {
-        assert(m_labelsToProcs.find(uNative) == m_labelsToProcs.end());
-        m_labelsToProcs[uNative] = pProc;
+    if (Address::INVALID != entryAddress) {
+        assert(m_labelsToProcs.find(entryAddress) == m_labelsToProcs.end());
+        m_labelsToProcs[entryAddress] = pProc;
     }
 
     m_functionList.push_back(pProc); // Append this to list of procs
@@ -269,7 +262,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
         sym->SizeOfStruct = sizeof(*sym);
         sym->MaxNameLen   = 1000;
         sym->Name[0]      = 0;
-        BOOL  got = dbghelp::SymFromAddr(hProcess, uNative.value(), 0, sym);
+        BOOL  got = dbghelp::SymFromAddr(hProcess, entryAddress.value(), 0, sym);
         DWORD retType;
 
         if (got && *sym->Name &&
@@ -280,7 +273,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
                 dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
 
             if (got) {
-                LOG_VERBOSE("calling convention: %1", d);
+                LOG_VERBOSE("calling convention: %1", (int)d);
                 // TODO: use it
             }
             else {
@@ -297,7 +290,7 @@ Function *Module::getOrInsertFunction(const QString& name, Address uNative, bool
 
             // find params and locals
             dbghelp::IMAGEHLP_STACK_FRAME stack;
-            stack.InstructionOffset = uNative.value();
+            stack.InstructionOffset = entryAddress.value();
             dbghelp::SymSetContext(hProcess, &stack, 0);
             dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
 

@@ -927,7 +927,7 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID Us
     }
 
     LOG_VERBOSE(flagsStr);
-    LOG_VERBOSE("register: %1, address: %2", pSymInfo->Register, Address(pSymInfo->Address));
+    LOG_VERBOSE("register: %1, address: %2", (int)pSymInfo->Register, Address(pSymInfo->Address));
     return TRUE;
 }
 

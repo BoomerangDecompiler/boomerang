@@ -244,14 +244,14 @@ void BasicBlock::print(QTextStream& os, bool html)
     }
 
     os << ":\n";
-    os << "in edges: ";
+    os << "  in edges: ";
 
     for (BasicBlock *bb : m_inEdges) {
         os << bb->getHiAddr() << "(" << bb->getLowAddr() << ") ";
     }
 
     os << "\n";
-    os << "out edges: ";
+    os << "  out edges: ";
 
     for (BasicBlock *bb : m_outEdges) {
         os << bb->getLowAddr() << " ";
@@ -1131,22 +1131,6 @@ bool BasicBlock::inLoop(BasicBlock *header, BasicBlock *latch)
                              m_loopStamps[0] < latch->m_loopStamps[0] && latch->m_loopStamps[1] < m_loopStamps[1]) ||
            (header->m_revLoopStamps[0] < m_revLoopStamps[0] && m_revLoopStamps[1] < header->m_revLoopStamps[1] &&
             m_revLoopStamps[0] < latch->m_revLoopStamps[0] && latch->m_revLoopStamps[1] < m_revLoopStamps[1]);
-}
-
-
-char *BasicBlock::getStmtNumber()
-{
-    static char ret[12];
-    Statement *first = getFirstStmt();
-
-    if (first) {
-        sprintf(ret, "%d", first->getNumber());
-    }
-    else {
-        sprintf(ret, "bb%" PRIxPTR, Address::value_type(this));
-    }
-
-    return ret;
 }
 
 

@@ -4,9 +4,10 @@
 #include "boomerang/util/Util.h"
 
 Settings::Settings()
-    : m_workingDirectory("./")
-    , m_outputDirectory("./output/")
-{}
+{
+    m_workingDirectory = QDir("./").absolutePath();
+    setOutputDirectory(m_workingDirectory.absoluteFilePath("output/"));
+}
 
 
 

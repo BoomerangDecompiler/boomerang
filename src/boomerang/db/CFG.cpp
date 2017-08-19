@@ -1076,6 +1076,8 @@ void Cfg::simplify()
 
 void Cfg::print(QTextStream& out, bool html)
 {
+    out << "Control Flow Graph:\n";
+
     for (BasicBlock *bb : m_listBB) {
         bb->print(out, html);
     }
@@ -1601,24 +1603,13 @@ void Cfg::removeUnneededLabels(ICodeGenerator *gen)
 
 void Cfg::generateDotFile(QTextStream& of)
 {
-       Address aret = Address::INVALID;
+    Address returnAddress = Address::INVALID;
 
     // The nodes
-    // std::list<PBB>::iterator it;
     for (BasicBlock *pbb : m_listBB) {
         of << "       "
            << "bb" << pbb->getLowAddr() << " ["
-           << "label=\"";
-        char *p = pbb->getStmtNumber();
-#if PRINT_BBINDEX
-        of << std::dec << indices[*it];
-
-        if (p[0] != 'b') {
-            // If starts with 'b', no statements (something like bb8101c3c).
-            of << ":";
-        }
-#endif
-        of << p << " ";
+           << "label=\"" << pbb->getLowAddr() << " ";
 
         switch (pbb->getType())
         {
@@ -1668,8 +1659,8 @@ void Cfg::generateDotFile(QTextStream& of)
 
         case BBType::Ret:
             of << "ret\" shape=triangle];\n";
-            // Remember the (unbique) return BB's address
-            aret = pbb->getLowAddr();
+            // Remember the (unique) return BB's address
+            returnAddress = pbb->getLowAddr();
             continue;
 
         case BBType::Fall:
@@ -1694,31 +1685,33 @@ void Cfg::generateDotFile(QTextStream& of)
 
     // Force the one return node to be at the bottom (max rank). Otherwise, with all its in-edges, it will end up in the
     // middle
-    if (!aret.isZero()) {
-        of << "{rank=max; bb" << aret << "}\n";
+    if (!returnAddress.isZero()) {
+        of << "{rank=max; bb" << returnAddress << "}\n";
     }
 
     // Close the subgraph
     of << "}\n";
 
     // Now the edges
-    for (BasicBlock *pbb : m_listBB) {
-        const std::vector<BasicBlock *>& outEdges = pbb->getOutEdges();
+    for (BasicBlock *srcBB : m_listBB) {
+        const std::vector<BasicBlock *>& outEdges = srcBB->getOutEdges();
 
         for (unsigned int j = 0; j < outEdges.size(); j++) {
-            of << "       bb" << pbb->getLowAddr() << " -> ";
-            of << "bb" << outEdges[j]->getLowAddr();
+            BasicBlock* dstBB = outEdges[j];
+            of << "       bb" << srcBB->getLowAddr() << " -> ";
+            of << "bb"        << dstBB->getLowAddr();
 
-            if (pbb->getType() == BBType::Twoway) {
+            if (srcBB->getType() == BBType::Twoway) {
                 if (j == 0) {
-                    of << " [label=\"true\"]";
+                    of << " [color=\"green\"]"; // cond == true
                 }
                 else {
-                    of << " [label=\"false\"]";
+                    of << " [color=\"red\"]"; // cond == false
                 }
             }
-
-            of << " [color = \"blue\"];\n";
+            else {
+                of << " [color=\"black\"];\n"; // normal connection
+            }
         }
     }
 

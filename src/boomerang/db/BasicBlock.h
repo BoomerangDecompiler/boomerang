@@ -426,17 +426,6 @@ public:
     RTL *getLastRtl() { return m_listOfRTLs->back(); }
     void getStatements(StatementList& stmts) const;
 
-    // Return the first statement number as a string.
-
-
-    /**
-     * Get the statement number for the first BB as a character array.
-     * If not possible (e.g. because the BB has no statements), return
-     * a unique string (e.g. bb8048c10)
-     * \note Used in dotty file generation
-     */
-    char *getStmtNumber();
-
 public:
     bool isBackEdge(size_t inEdge) const;
 
@@ -604,7 +593,7 @@ protected:
     int  m_labelNum     = 0;                  ///< Nonzero if start of BB needs label
     bool m_labelNeeded = false;
     bool m_incomplete  = true;                ///< True if not yet complete
-    bool m_jumpRequired    = false;               ///< True if jump required for "fall through"
+    bool m_jumpRequired    = false;           ///< True if jump required for "fall through"
 
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_inEdges;  ///< Vector of in-edges

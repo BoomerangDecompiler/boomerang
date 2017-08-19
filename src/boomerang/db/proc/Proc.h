@@ -169,6 +169,8 @@ public:
     bool isVisited() const { return m_visited; }
 
     Module *getParent() { return m_parent; }
+    const Module* getParent() const { return m_parent; }
+
     void setParent(Module *c);
     void removeFromParent();
 

@@ -59,7 +59,7 @@ void FrontPentTest::test1()
 	inst.rtl->print(strm);
 
 	expected = "0x08048328    0 *32* m[r28 - 4] := r29\n"
-			   "            0 *32* r28 := r28 - 4\n";
+			   "              0 *32* r28 := r28 - 4\n";
 	QCOMPARE(actual, expected);
 	actual.clear();
 
@@ -74,7 +74,7 @@ void FrontPentTest::test1()
 	pFE->decodeInstruction(addr, inst);
 	inst.rtl->print(strm);
 	expected = QString("0x0804833b    0 *32* m[r28 - 4] := 0x80483fc\n"
-					   "            0 *32* r28 := r28 - 4\n");
+					   "              0 *32* r28 := r28 - 4\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
@@ -102,8 +102,8 @@ void FrontPentTest::test2()
 	pFE->decodeInstruction(Address(0x08048345), inst);
 	inst.rtl->print(strm);
 	expected = QString("0x08048345    0 *32* tmp1 := r28\n"
-					   "            0 *32* r28 := r28 + 16\n"
-					   "            0 *v* %flags := ADDFLAGS32( tmp1, 16, r28 )\n");
+					   "              0 *32* r28 := r28 + 16\n"
+					   "              0 *v* %flags := ADDFLAGS32( tmp1, 16, r28 )\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
@@ -142,16 +142,16 @@ void FrontPentTest::test3()
 	pFE->decodeInstruction(Address(0x804834d), inst);
 	inst.rtl->print(strm);
 	expected = QString("0x0804834d    0 *32* r28 := r29\n"
-					   "            0 *32* r29 := m[r28]\n"
-					   "            0 *32* r28 := r28 + 4\n");
+					   "              0 *32* r29 := m[r28]\n"
+					   "              0 *32* r28 := r28 + 4\n");
 	QCOMPARE(actual, expected);
 	actual.clear();
 
 	pFE->decodeInstruction(Address(0x804834e), inst);
 	inst.rtl->print(strm);
 	expected = QString("0x0804834e    0 *32* %pc := m[r28]\n"
-					   "            0 *32* r28 := r28 + 4\n"
-					   "            0 RET\n"
+					   "              0 *32* r28 := r28 + 4\n"
+					   "              0 RET\n"
 					   "              Modifieds: \n"
 					   "              Reaching definitions: \n");
 

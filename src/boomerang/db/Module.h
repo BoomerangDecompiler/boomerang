@@ -54,7 +54,7 @@ signals:
 
 public:
     Module();
-    Module(const QString& name, Prog *parent, IFrontEnd *fe);
+    Module(const QString& name, Prog *prog, IFrontEnd *fe);
     virtual ~Module();
 
     QString getName() const { return m_name; }
@@ -86,12 +86,11 @@ public:
      */
     void printTree(QTextStream& out) const;
 
-    /// Record the \a fnc location in the ADDRESS->Function map
+    /// Record the \a fnc location in the Address -> Function map
     /// If \a fnc is nullptr - remove given function from the map.
     void setLocationMap(Address loc, Function *fnc);
 
-    Prog *getParent() { return m_parent; }
-    void eraseFromParent();
+    Prog *getProg() { return m_prog; }
 
     // Function list management
     const FunctionList& getFunctionList() const { return m_functionList; }
@@ -128,7 +127,7 @@ private:
 protected:
     QString m_name;
     std::vector<Module *> m_children;
-    Prog *m_parent     = nullptr;
+    Prog *m_prog     = nullptr;
     Module *m_upstream = nullptr;
     QFile m_out;
     QTextStream m_strm;

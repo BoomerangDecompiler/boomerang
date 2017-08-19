@@ -75,7 +75,7 @@ Function::Function(Address uNative, Signature *sig, Module *mod)
     , m_parent(mod)
 {
     assert(mod);
-    m_prog = mod->getParent();
+    m_prog = mod->getProg();
 }
 
 

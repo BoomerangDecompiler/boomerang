@@ -1,12 +1,14 @@
 
-set(boomerang-cli_SRC
+set(boomerang-cli-sources
+    Console.h
+    Console.cpp
+    CommandlineDriver.h
+    CommandlineDriver.cpp
     main.cpp
-    commandlinedriver.cpp
-    commandlinedriver.h
 )
 
 add_executable(boomerang-cli
-    ${boomerang-cli_SRC}
+    ${boomerang-cli-sources}
 )
 
 target_link_libraries(boomerang-cli
