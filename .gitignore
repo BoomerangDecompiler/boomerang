@@ -8,5 +8,5 @@ output/log
 tests/outputs_prev
 output/*.log
 Win32
+x64
 *.orig
-
