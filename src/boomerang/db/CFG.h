@@ -124,7 +124,7 @@ public:
      * \param iNumOutEdges number of out edges this BB will eventually have
      * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
      ******************************************************************************/
-    BasicBlock *newBB(std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutEdges) noexcept(false);
+    BasicBlock *newBB(std::list<RTL *> *pRtls, BBType bbType) noexcept(false);
 
     /***************************************************************************/ /**
      * \brief Allocates space for a new, incomplete BB, and the given address is
@@ -572,7 +572,6 @@ public:
      *
      * \note        Use BasicBlock::setOutEdge() for the common case where an existing out edge is merely changed
      * \note        Use Cfg::addOutEdge for ordinary BB creation; this is for unusual cfg manipulation
-     * \note        side effect : Increments m_iNumOutEdges
      *
      * \param fromBB pointer to the BB getting the new out edge
      * \param newOutEdge pointer to BB that will be the new successor

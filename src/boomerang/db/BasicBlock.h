@@ -84,15 +84,15 @@ enum class LoopType
 /// reordering these will break the save files - trent
 enum class BBType
 {
-    Invalid = -1, ///< invalid instruction
-    Oneway,       ///< unconditional branch
-    Twoway,       ///< conditional branch
-    Nway,         ///< case branch
-    Call,         ///< procedure call
-    Ret,          ///< return
-    Fall,         ///< fall-through node
-    CompJump,     ///< computed jump
-    CompCall,     ///< computed call
+    Invalid  = -1, ///< invalid instruction
+    Fall     = 0,  ///< fall-through node
+    Oneway   = 1,  ///< unconditional branch (jmp)
+    Twoway   = 2,  ///< conditional branch   (jXX)
+    Nway     = 3,  ///< case branch          (jmp [off + 4*eax])
+    Call     = 4,  ///< procedure call       (call)
+    Ret      = 5,  ///< return               (ret)
+    CompJump = 6,  ///< computed jump
+    CompCall = 7,  ///< computed call        (call [eax + 0x14])
 };
 
 
@@ -179,7 +179,7 @@ public:
      * \param bbType - the new type
      * \param iNumOutEdges - new number of inedges
      ******************************************************************************/
-    void updateType(BBType bbType, uint32_t iNumOutEdges);
+    void updateType(BBType bbType);
 
     /***************************************************************************/ /**
      * \brief Sets the "jump required" bit. This means that this BB is an orphan
@@ -571,9 +571,8 @@ private:
      * \param parent - Function this BasicBlock belongs to.
      * \param pRtls - rtl statements that will be contained in this BasicBlock
      * \param bbType - type of BasicBlock
-     * \param iNumOutEdges - expected number of out edges from this BasicBlock
      ******************************************************************************/
-    BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutEdges);
+    BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType);
 
     /***************************************************************************/ /**
      * \brief        Sets the RTLs for a basic block. This is the only place that
@@ -598,7 +597,6 @@ protected:
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_inEdges;  ///< Vector of in-edges
     std::vector<BasicBlock *> m_outEdges; ///< Vector of out-edges
-    size_t m_targetOutEdges;              ///< support resize() of vectors!
 
     /* for traversal */
     bool m_traversedMarker = false; ///< traversal marker

@@ -48,8 +48,7 @@
 
 
 BasicBlock::BasicBlock(Function *parent)
-    : m_targetOutEdges(0)
-    , m_inEdgesVisited(0) // From Doug's code
+    : m_inEdgesVisited(0) // From Doug's code
     , m_numForwardInEdges(-1)
     , m_traversed(TravType::Untraversed)
     , m_immPDom(nullptr)
@@ -88,7 +87,6 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     , m_jumpRequired(bb.m_jumpRequired)
     , m_inEdges(bb.m_inEdges)
     , m_outEdges(bb.m_outEdges)
-    , m_targetOutEdges(bb.m_targetOutEdges)
     // From Doug's code
     , m_ord(bb.m_ord)
     , m_revOrd(bb.m_revOrd)
@@ -111,7 +109,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 }
 
 
-BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutEdges)
+BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType)
     : m_nodeType(bbType)
     , m_incomplete(false)
     , m_inEdgesVisited(0) // From Doug's code
@@ -127,13 +125,8 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType,
     , m_unstructuredType(UnstructType::Structured)
     , m_overlappedRegProcessingDone(false) // Others
 {
-    if (bbType == BBType::Twoway) {
-        assert(iNumOutEdges >= 2);
-    }
+    m_parent = parent;
 
-    m_outEdges.reserve(iNumOutEdges);    // Reserve the space; values added with AddOutEdge()
-    m_parent         = parent;
-    m_targetOutEdges = iNumOutEdges;
     // Set the RTLs
     setRTLs(pRtls);
 }
@@ -180,11 +173,9 @@ BBType BasicBlock::getType()
 }
 
 
-void BasicBlock::updateType(BBType bbType, uint32_t iNumOutEdges)
+void BasicBlock::updateType(BBType bbType)
 {
     m_nodeType       = bbType;
-    m_targetOutEdges = iNumOutEdges;
-    // m_OutEdges.resize(iNumOutEdges);
 }
 
 
@@ -787,19 +778,10 @@ bool BasicBlock::isJmpZ(BasicBlock *dest)
                 return false;
             }
 
-            BasicBlock *trueEdge = m_outEdges[0];
-
-            if (jt == BRANCH_JE) {
-                return dest == trueEdge;
-            }
-            else {
-                BasicBlock *falseEdge = m_outEdges[1];
-                return dest == falseEdge;
-            }
+            return (jt == BRANCH_JE) ? dest == m_outEdges[BTHEN] : dest == m_outEdges[BELSE];
         }
     }
 
-    assert(0);
     return false;
 }
 
@@ -863,7 +845,6 @@ void BasicBlock::simplify()
             BasicBlock *redundant = m_outEdges[0];
             m_outEdges[0] = m_outEdges[1];
             m_outEdges.resize(1);
-            m_targetOutEdges = 1;
             LOG_VERBOSE("Redundant edge to address %1", redundant->getLowAddr());
             LOG_VERBOSE("  inedges:");
 
@@ -890,7 +871,6 @@ void BasicBlock::simplify()
 
             BasicBlock *redundant = m_outEdges[1];
             m_outEdges.resize(1);
-            m_targetOutEdges = 1;
             LOG_VERBOSE("redundant edge to address %1", redundant->getLowAddr());
             LOG_VERBOSE("  inedges:");
 
@@ -2058,19 +2038,20 @@ void BasicBlock::processSwitch(UserProc *proc)
     CaseStatement *lastStmt((CaseStatement *)last->getHlStmt());
     SWITCH_INFO   *si(lastStmt->getSwitchInfo());
 
-   SETTING(debugSwitch) = true;
+    SETTING(debugSwitch) = true;
 
     if (SETTING(debugSwitch)) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
                 si->chForm, si->uTable, si->iNumTable, si->iLower, si->iUpper);
     }
 
-    Address uSwitch;
+    Address switchDestination;
     int     iNumOut, iNum;
     iNumOut = si->iUpper - si->iLower + 1;
     iNum    = iNumOut;
+
     // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
-    updateType(BBType::Nway, iNumOut);
+    updateType(BBType::Nway);
 
     Prog *prog(proc->getProg());
     Cfg  *cfg(proc->getCFG());
@@ -2096,13 +2077,13 @@ void BasicBlock::processSwitch(UserProc *proc)
                 continue;
             }
 
-            uSwitch = Address(prog->readNative4(si->uTable + i * 8 + 4));
+            switchDestination = Address(prog->readNative4(si->uTable + i * 8 + 4));
         }
         else if (si->chForm == 'F') {
-            uSwitch = Address(((int *)si->uTable.value())[i]);
+            switchDestination = Address(((int *)si->uTable.value())[i]);
         }
         else {
-            uSwitch = Address(prog->readNative4(si->uTable + i * 4));
+            switchDestination = Address(prog->readNative4(si->uTable + i * 4));
         }
 
         if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r')) {
@@ -2112,23 +2093,24 @@ void BasicBlock::processSwitch(UserProc *proc)
                 assert(si->iOffset == 0);
             }
 
-            uSwitch += si->uTable - si->iOffset;
+            switchDestination += si->uTable - si->iOffset;
         }
 
-        if (uSwitch < prog->getLimitTextHigh()) {
+        if (switchDestination < prog->getLimitTextHigh()) {
             // tq.visit(cfg, uSwitch, this);
-            cfg->addOutEdge(this, uSwitch, true);
+            cfg->addOutEdge(this, switchDestination, true);
             // Remember to decode the newly discovered switch code arms, if necessary
             // Don't do it right now, in case there are recursive switch statements (e.g. app7win.exe from
             // hackthissite.org)
-            dests.push_back(uSwitch);
+            dests.push_back(switchDestination);
         }
         else {
-            LOG_MSG("Switch table entry branches to past end of text section %1", uSwitch);
+            LOG_MSG("Switch table entry branches to past end of text section %1", switchDestination);
 
             // TMN: If we reached an array entry pointing outside the program text, we can be quite confident the array
             // has ended. Don't try to pull any more data from it.
             LOG_MSG("Assuming the end of the pointer-array has been reached at index %1", i);
+
             // TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
             // Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
             // assert(iNumOut        >= (iNum - i));
@@ -2136,8 +2118,6 @@ void BasicBlock::processSwitch(UserProc *proc)
             size_t remove_from_this = m_outEdges.size() - (iNum - i);
             // remove last (iNum - i) out edges
             m_outEdges.erase(m_outEdges.begin() + remove_from_this, m_outEdges.end());
-            // iNumOut        -= (iNum - i);
-            m_targetOutEdges -= (iNum - i);
             break;
         }
     }

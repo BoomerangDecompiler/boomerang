@@ -136,7 +136,7 @@ bool Cfg::hasNoEntryBB()
 }
 
 
-BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutEdges)
+BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
 {
     MAPBB::iterator mi;
     BasicBlock      *pBB = nullptr;
@@ -181,7 +181,6 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutE
                 // Fill in the details, and return it
                 pBB->setRTLs(pRtls);
                 pBB->m_nodeType       = bbType;
-                pBB->m_targetOutEdges = iNumOutEdges;
                 pBB->m_incomplete     = false;
             }
 
@@ -191,7 +190,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType, uint32_t iNumOutE
 
     if (!bDone) {
         // Else add a new BB to the back of the current list.
-        pBB = new BasicBlock(m_myProc, pRtls, bbType, iNumOutEdges);
+        pBB = new BasicBlock(m_myProc, pRtls, bbType);
         m_listBB.push_back(pBB);
 
         // Also add the address to the map from native (source) address to
@@ -392,7 +391,6 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, Address uNativeAddr, BasicBlock *pNewB
     // Erase any existing out edges
     pBB->m_outEdges.erase(pBB->m_outEdges.begin(), pBB->m_outEdges.end());
     addOutEdge(pBB, uNativeAddr);
-    pBB->m_targetOutEdges = 1;
     return pNewBB;
 }
 
@@ -663,22 +661,20 @@ bool Cfg::mergeBBs(BasicBlock *pb1, BasicBlock *pb2)
 }
 
 
-void Cfg::completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete)
+void Cfg::completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool bDelete)
 {
     // First we replace all of pb1's predecessors' out edges that used to point to pb1 (usually only one of these) with
     // pb2
-    for (BasicBlock *pPred : pb1->m_inEdges) {
-        assert(pPred->m_targetOutEdges == pPred->m_outEdges.size());
-
+    for (BasicBlock *pPred : bb1->m_inEdges) {
         for (BasicBlock *& pred_out : pPred->m_outEdges) {
-            if (pred_out == pb1) {
-                pred_out = pb2;
+            if (pred_out == bb1) {
+                pred_out = bb2;
             }
         }
     }
 
     // Now we replace pb2's in edges by pb1's inedges
-    pb2->m_inEdges = pb1->m_inEdges;
+    bb2->m_inEdges = bb1->m_inEdges;
 
     if (!bDelete) {
         return;
@@ -688,7 +684,7 @@ void Cfg::completeMerge(BasicBlock *pb1, BasicBlock *pb2, bool bDelete)
     // comparison (not implemented), and also would attempt to remove ALL elements of the list with this value (so
     // it has to search the whole list, instead of an average of half the list as we have here).
     for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        if (*it != pb1) {
+        if (*it != bb1) {
             continue;
         }
 
@@ -1842,7 +1838,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     // creating the rptBB). Or if there is no A, temporarily use 0
        Address    a        = (haveA) ? addr : Address::ZERO;
     RTL        *skipRtl = new RTL(a, new std::list<Statement *> { br1 }); // list initializer in braces
-    BasicBlock *skipBB  = newBB(new std::list<RTL *> { skipRtl }, BBType::Twoway, 2);
+    BasicBlock *skipBB  = newBB(new std::list<RTL *> { skipRtl }, BBType::Twoway);
     rtl->setAddress(addr + 1);
 
     if (!haveA) {
@@ -1873,11 +1869,11 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     rtl->back() = br2;
 
     // Move the remainder of the string RTL into a new BB
-    BasicBlock *rptBB = newBB(new std::list<RTL *> { *ri }, BBType::Twoway, 2);
+    BasicBlock *rptBB = newBB(new std::list<RTL *> { *ri }, BBType::Twoway);
     ri = pBB->m_listOfRTLs->erase(ri);
 
     // Move the remaining RTLs (if any) to a new list of RTLs
-    BasicBlock *newBb;
+    BasicBlock *newBB;
     size_t     oldOutEdges = 0;
     bool       haveB       = true;
 
@@ -1890,12 +1886,12 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
         }
 
         oldOutEdges = pBB->getNumOutEdges();
-        newBb       = newBB(pRtls, pBB->getType(), oldOutEdges);
+        newBB       = this->newBB(pRtls, pBB->getType());
 
         // Transfer the out edges from A to B (pBB to newBb)
         for (size_t i = 0; i < oldOutEdges; i++) {
             // Don't use addOutEdge, since it will also add in-edges back to pBB
-            newBb->m_outEdges.push_back(pBB->getOutEdge(i));
+            newBB->m_outEdges.push_back(pBB->getOutEdge(i));
         }
 
         // addOutEdge(newBb, pBB->getOutEdge(i));
@@ -1904,31 +1900,32 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
         // The "B" part of the above diagram is empty.
         // Don't create a new BB; just point newBB to the successor of pBB
         haveB = false;
-        newBb = pBB->getOutEdge(0);
+        newBB = pBB->getOutEdge(0);
     }
 
     // Change pBB to a FALL bb
-    pBB->updateType(BBType::Fall, 1);
+    pBB->updateType(BBType::Fall);
+
     // Set the first out-edge to be skipBB
     pBB->m_outEdges.erase(pBB->m_outEdges.begin(), pBB->m_outEdges.end());
     addOutEdge(pBB, skipBB);
     // Set the out edges for skipBB. First is the taken (true) leg.
-    addOutEdge(skipBB, newBb);
+    addOutEdge(skipBB, newBB);
     addOutEdge(skipBB, rptBB);
     // Set the out edges for the rptBB
     addOutEdge(rptBB, skipBB);
-    addOutEdge(rptBB, newBb);
+    addOutEdge(rptBB, newBB);
 
     // For each out edge of newBb, change any in-edges from pBB to instead come from newBb
     if (haveB) {
         for (size_t i = 0; i < oldOutEdges; i++) {
-            BasicBlock *succ = newBb->m_outEdges[i];
+            BasicBlock *succ = newBB->m_outEdges[i];
 
             for (auto& elem : succ->m_inEdges) {
                 BasicBlock *pred = elem;
 
                 if (pred == pBB) {
-                    elem = newBb;
+                    elem = newBB;
                     break;
                 }
             }
@@ -1936,7 +1933,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
     }
     else {
         // There is no "B" bb (newBb is just the successor of pBB) Fix that one out-edge to point to rptBB
-        for (auto& elem : newBb->m_inEdges) {
+        for (auto& elem : newBB->m_inEdges) {
             BasicBlock *pred = elem;
 
             if (pred == pBB) {
@@ -1975,7 +1972,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1,
         it++;
     }
 
-    return newBb;
+    return newBB;
 }
 
 
