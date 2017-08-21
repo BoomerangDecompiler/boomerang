@@ -947,7 +947,11 @@ void CCodeGenerator::addIfElseCondOption()
     indent(s, m_indent);
     s << "}";
     appendLine(tgt);
-    appendLine("else {");
+
+    tgt = "";
+    indent(s, m_indent);
+    s << "else {";
+    appendLine(tgt);
 
     m_indent++;
 }
