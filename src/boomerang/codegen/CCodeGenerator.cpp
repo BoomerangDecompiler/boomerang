@@ -71,6 +71,8 @@ static bool isBareMemof(const Exp& e, UserProc *)
 
 
 CCodeGenerator::CCodeGenerator()
+    : m_indent(0)
+    , m_proc(nullptr)
 {
 }
 
