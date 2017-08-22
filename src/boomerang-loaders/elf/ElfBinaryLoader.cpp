@@ -557,7 +557,7 @@ void ElfBinaryLoader::addSyms(int secIndex)
         processSymbol(trans, e_type, i);
     }
 
-       Address uMain = getMainEntryPoint();
+    Address uMain = getMainEntryPoint();
 
     if ((uMain != Address::INVALID) && (nullptr == m_symbols->find(uMain))) {
         // Ugh - main mustn't have the STT_FUNC attribute. Add it

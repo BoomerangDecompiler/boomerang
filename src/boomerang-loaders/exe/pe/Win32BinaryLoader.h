@@ -46,71 +46,78 @@ typedef struct  /* exe file header, just the signature really */
 
 #pragma pack(push,1)
 
+/// IMAGE_OPTIONAL_HEADER on Windows
 typedef struct
 {
     Byte  sigLo;
     Byte  sigHi;
     SWord sigver;
-    SWord cputype;
-    SWord numObjects;
-    DWord TimeDate;
-    DWord Reserved1;
-    DWord Reserved2;
-    SWord NtHdrSize;
-    SWord Flags;
-    SWord Reserved3;
-    Byte  LMajor;
-    Byte  LMinor;
-    DWord Reserved4;
-    DWord Reserved5;
-    DWord Reserved6;
-    DWord EntrypointRVA;
-    DWord Reserved7;
-    DWord Reserved8;
-    DWord Imagebase;
-    DWord ObjectAlign;
-    DWord FileAlign;
-    SWord OSMajor;
-    SWord OSMinor;
-    SWord UserMajor;
-    SWord UserMinor;
-    SWord SubsysMajor;
-    SWord SubsysMinor;
-    DWord Reserved9;
-    DWord ImageSize;
-    DWord HeaderSize;
-    DWord FileChecksum;
-    SWord Subsystem;
-    SWord DLLFlags;
-    DWord StackReserveSize;
-    DWord StackCommitSize;
-    DWord HeapReserveSize;
-    DWord HeapCommitSize;
-    DWord Reserved10;
-    DWord nInterestingRVASizes;
-    DWord ExportTableRVA;
-    DWord TotalExportDataSize;
-    DWord ImportTableRVA;
-    DWord TotalImportDataSize;
-    DWord ResourceTableRVA;
-    DWord TotalResourceDataSize;
-    DWord ExceptionTableRVA;
-    DWord TotalExceptionDataSize;
-    DWord SecurityTableRVA;
-    DWord TotalSecurityDataSize;
-    DWord FixupTableRVA;
-    DWord TotalFixupDataSize;
-    DWord DebugTableRVA;
-    DWord TotalDebugDirectories;
-    DWord ImageDescriptionRVA;
-    DWord TotalDescriptionSize;
-    DWord MachineSpecificRVA;
-    DWord MachineSpecificSize;
-    DWord ThreadLocalStorageRVA;
-    DWord TotalTLSSize;
+    SWord cputype;     ///< Machine
+    SWord numObjects;  ///< number of sections
+    DWord TimeDate;    ///< DateTime stamp
+    DWord Reserved1;   ///< Pointer to symbol table (deprecated)
+    DWord Reserved2;   ///< number of entries in symbol table (deprecated)
+    SWord NtHdrSize;   ///< Size of the optional header
+    SWord Flags;       ///< Characteristics
+    SWord Reserved3;   ///< Magic number
+    Byte  LMajor;      ///< Linker version major
+    Byte  LMinor;      ///< Linker version minor
+    DWord Reserved4;   ///< SizeOfCode (sum of all sections)
+    DWord Reserved5;   ///< Size of initialized data
+    DWord Reserved6;   ///< Size of uninitialized data
+    DWord EntrypointRVA; ///< Address of entry point (RVA)
+    DWord Reserved7;     ///< Base of code (RVA)
+    DWord Reserved8;     ///< Base of data (RVA)
+
+    // Windows specific
+    DWord Imagebase;     ///< image base
+    DWord ObjectAlign;   ///< section alignment
+    DWord FileAlign;     ///< File alignment
+    SWord OSMajor;       ///< OS version major
+    SWord OSMinor;       ///< OS version minor
+    SWord UserMajor;     ///< Image version major
+    SWord UserMinor;     ///< Image version minor
+    SWord SubsysMajor;   ///< Subsystem version major
+    SWord SubsysMinor;   ///< Subsystem version minor
+    DWord Reserved9;     ///< Win32 version value (zero-filled)
+    DWord ImageSize;     ///< Size of image
+    DWord HeaderSize;    ///< Size of headers
+    DWord FileChecksum;  ///< File checksum (usually 0)
+    SWord Subsystem;     ///< Subsystem
+    SWord DLLFlags;      ///< DLL characteristics
+    DWord StackReserveSize;   ///< Size of stack reserve
+    DWord StackCommitSize;    ///< Size of stack commit
+    DWord HeapReserveSize;    ///< Size of heap reserve
+    DWord HeapCommitSize;     ///< Size of heap commit
+    DWord Reserved10;         ///< Loader flags (zero-filled)
+    DWord nInterestingRVASizes; ///< Number of RVA and sizes (see below)
+
+    // data directories
+    DWord ExportTableRVA;        ///< Export table RVA
+    DWord TotalExportDataSize;   ///< Export table size
+    DWord ImportTableRVA;        ///< Import table RVA
+    DWord TotalImportDataSize;   ///< Import table size
+    DWord ResourceTableRVA;      ///< Resource table RVA
+    DWord TotalResourceDataSize; ///< Resource table size
+    DWord ExceptionTableRVA;     ///< Exception table RVA
+    DWord TotalExceptionDataSize;///< Exception table size
+    DWord SecurityTableRVA;      ///< Certificate table RVA
+    DWord TotalSecurityDataSize; ///< Certificate table size
+    DWord FixupTableRVA;         ///< Base relocation table RVA
+    DWord TotalFixupDataSize;    ///< Base relocation table size
+    DWord DebugTableRVA;         ///< Debug table RVA
+    DWord TotalDebugDirectories; ///< Debug table size
+    DWord ImageDescriptionRVA;   ///< Architecture data table RVA
+    DWord TotalDescriptionSize;  ///< Architecture data table size
+    DWord MachineSpecificRVA;    ///< Global pointer RVA
+    DWord MachineSpecificSize;   ///< Must be 0
+    DWord ThreadLocalStorageRVA; ///< TLS table RVA
+    DWord TotalTLSSize;          ///< TLS table size
 } PEHeader;
 
-typedef struct            // The real Win32 name of this struct is IMAGE_SECTION_HEADER
+
+/// The real Win32 name of this struct is IMAGE_SECTION_HEADER
+typedef struct
 {
     char  ObjectName[8];  // Name
     DWord VirtualSize;
@@ -130,7 +137,7 @@ typedef struct
     // or zero if not pre-snapped
     SWord verMajor;           // Major version number of dll being ref'd
     SWord verMinor;           // Minor "         "
-    DWord name;               // RVA of dll name (asciz)
+    DWord name;               // RVA of dll name (ascii)
     DWord firstThunk;         // RVA of start of import address table (IAT)
 } PEImportDtor;
 
@@ -149,6 +156,7 @@ typedef struct
     DWord otRVA;         // RVA of the OT
 } PEExportDtor;
 #pragma pack(pop)
+
 
 /**
  * Class for loading Win32 binary ".exe" files
@@ -187,7 +195,7 @@ public:
     Address getEntryPoint() override;
 
 public:
-    /// \copydoc IFileLoader::isJumpToAnotherAddr
+    /// \copydoc IFileLoader::getJumpTarget
     Address getJumpTarget(Address uNative) override;
 
     /// \copydoc IFileLoader::hasDebugInfo
@@ -218,13 +226,16 @@ private:
     /// Find names for jumps to IATs
     void findJumps(Address curr);
 
-    Header *m_pHeader;                    ///< Pointer to header
-    PEHeader *m_pPEHeader;                ///< Pointer to pe header
-    int m_cbImage;                        ///< Size of image
-    int m_cReloc;                         ///< Number of relocation entries
-    char *m_base;                         ///< Beginning of the loaded image
+private:
+    char* m_base;                   ///< Beginning of the loaded image
+    int m_cbImage;                  ///< Size of image, in bytes
+
+    Header *m_pHeader;              ///< Pointer to header
+    PEHeader *m_pPEHeader;          ///< Pointer to pe header
+    int m_cReloc;                   ///< Number of relocation entries
     bool m_hasDebugInfo;
     bool m_mingw_main;
+
     IBinaryImage *m_image;
     IBinarySymbolTable *m_symbols;
 };
