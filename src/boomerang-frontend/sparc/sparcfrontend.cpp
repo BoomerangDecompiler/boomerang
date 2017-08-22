@@ -219,7 +219,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
             // Now add the out edge
             cfg->addOutEdge(callBB, returnBB);
             // Put a label on the return BB; indicate that a jump is reqd
-            cfg->setLabel(returnBB);
+            cfg->setLabelRequired(returnBB);
             callBB->setJumpRequired();
 
             address += inst.numBytes; // For coverage
@@ -395,7 +395,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
             newBB->getRTLs()->remove(delay_inst.rtl);
 
             // Put a label on the return BB; indicate that a jump is reqd
-            cfg->setLabel(returnBB);
+            cfg->setLabelRequired(returnBB);
             newBB->setJumpRequired();
 
             // Add this call to the list of calls to analyse. We won't be able to analyse its callee(s), of course.
@@ -445,7 +445,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         address += 4; // Skip the SCD only
         // Start a new list of RTLs for the next BB
         BB_rtls = nullptr;
-        LOG_WARN("Instruction at address %1 not copied to true leg of preceeding branch", address);
+        LOG_WARN("Instruction at address %1 not copied to true leg of preceding branch", address);
         return true;
     }
 
@@ -1153,8 +1153,6 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
         // ones (in the .plt)
         if ((symb && symb->isImportedFunction()) || !spec || (dest < m_image->getLimitTextHigh())) {
-            cfg->addCall(*it);
-
             // Don't visit the destination of a register call
             // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
             if (dest != Address::INVALID) {

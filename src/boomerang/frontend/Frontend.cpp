@@ -784,7 +784,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         // Add the out edge if it is to a destination within the
                         // procedure
                         if (uDest < m_image->getLimitTextHigh()) {
-                                                 m_targetQueue.visit(pCfg, uDest, pBB);
+                            m_targetQueue.visit(pCfg, uDest, pBB);
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
@@ -893,7 +893,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                     else {
                         // Add the out edge if it is to a destination within the procedure
                         if (uDest < m_image->getLimitTextHigh()) {
-                                                 m_targetQueue.visit(pCfg, uDest, pBB);
+                            m_targetQueue.visit(pCfg, uDest, pBB);
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
@@ -1055,7 +1055,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     // Add out edge from call to return
                                     pCfg->addOutEdge(pBB, returnBB);
                                     // Put a label on the return BB (since it's an orphan); a jump will be reqd
-                                    pCfg->setLabel(returnBB);
+                                    pCfg->setLabelRequired(returnBB);
                                     pBB->setJumpRequired();
                                     // Mike: do we need to set return locations?
                                     // This ends the function
@@ -1161,7 +1161,6 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
         // linked ones (in the .plt)
         if ((symb && symb->isImportedFunction()) || !spec || (dest < m_image->getLimitTextHigh())) {
-            pCfg->addCall(*it);
             // Don't visit the destination of a register call
             Function *np = (*it)->getDestProc();
 
@@ -1236,9 +1235,10 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
             pBB = pCfg->newBB(BB_rtls, BBType::Oneway);
             // if BB already exists but is incomplete, exception is thrown
             pCfg->addOutEdge(pBB, retAddr, true);
+
             // Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
             // instructions before the return instruction).
-                     m_targetQueue.visit(pCfg, retAddr, pBB);
+            m_targetQueue.visit(pCfg, retAddr, pBB);
         }
         catch (Cfg::BBAlreadyExistsError&) {
             LOG_VERBOSE("Not visiting address %1 due to exception", retAddr);

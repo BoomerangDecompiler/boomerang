@@ -45,6 +45,7 @@ enum class TravType
 /// an enumerated type for the class of stucture determined for a node
 enum class StructType
 {
+    Invalid,
     Loop,     // Header of a loop only
     Cond,     // Header of a conditional only (if-then-else or switch)
     LoopCond, // Header of a loop and a conditional
@@ -55,6 +56,7 @@ enum class StructType
 /// an type for the class of unstructured conditional jumps
 enum class UnstructType
 {
+    Invalid,
     Structured,
     JumpInOutLoop,
     JumpIntoCase
@@ -64,6 +66,7 @@ enum class UnstructType
 /// an enumerated type for the type of conditional headers
 enum class CondType
 {
+    Invalid,
     IfThen,     ///< conditional with only a then clause
     IfThenElse, ///< conditional with a then and an else clause
     IfElse,     ///< conditional with only an else clause
@@ -74,6 +77,7 @@ enum class CondType
 /// an enumerated type for the type of loop headers
 enum class LoopType
 {
+    Invalid,
     PreTested,  ///< Header of a while loop
     PostTested, ///< Header of a do..while loop
     Endless     ///< Header of an endless loop
@@ -142,7 +146,8 @@ public:
      * \brief   Return the type of the basic block.
      * \returns the type of the basic block
      ******************************************************************************/
-    BBType getType();
+    inline BBType getType() const { return m_nodeType; }
+    inline bool isType(BBType type) const { return m_nodeType == type; }
 
     bool isCaseOption();
 
@@ -177,7 +182,6 @@ public:
      * \brief Update the type and number of out edges. Used for example where a COMPJUMP type is updated to an
      * NWAY when a switch idiom is discovered.
      * \param bbType - the new type
-     * \param iNumOutEdges - new number of inedges
      ******************************************************************************/
     void updateType(BBType bbType);
 
@@ -213,7 +217,7 @@ public:
      *         always the address associated with the last RTL.
      * \returns the address
      ******************************************************************************/
-    Address getHiAddr();
+    Address getHiAddr() const;
 
     /***************************************************************************/ /**
      *
@@ -266,33 +270,19 @@ public:
      ******************************************************************************/
     BasicBlock *getOutEdge(size_t i);
 
-    size_t getNumOutEdges() { return m_outEdges.size(); }
-
-    /// \brief Get the index of my in-edges is BB pred
-    /// Basically the "whichPred" function as per Briggs, Cooper, et al (and presumably "Cryton, Ferante, Rosen, Wegman, and
-    /// Zadek").  Return -1 if not found
-    int whichPred(BasicBlock *pred);
+    size_t getNumOutEdges() const { return m_outEdges.size(); }
 
     /***************************************************************************/ /**
      * \brief Add the given in-edge
      * Needed for example when duplicating BBs
-     * \param newInEdge -  pointer to BB that will be a new parent
+     * \param parentBB -  pointer to BB that will be a new parent
      ******************************************************************************/
-    void addInEdge(BasicBlock *newInEdge);
-    void deleteEdge(BasicBlock *edge);
+    void addInEdge(BasicBlock *parentBB);
 
-    /***************************************************************************/ /**
-     * \brief Delete the in-edge from the given BB
-     *  Needed for example when duplicating BBs
-     * \param   it iterator to BB that will no longer be a parent
-     * \note    Side effects: The iterator argument is incremented.
-     * It should be used like this:
-     * \code{.cpp}
-     *     if (pred) deleteInEdge(it) else it++;
-     * \endcode
-     ******************************************************************************/
-    void deleteInEdge(std::vector<BasicBlock *>::iterator& it);
-    void deleteInEdge(BasicBlock *edge);
+    /// delete edge from this bb to the child bb
+    void deleteEdge(BasicBlock *child);
+
+    void deleteInEdge(BasicBlock* edge);
 
     /***************************************************************************/ /**
      * \brief Get the destination of the call, if this is a CALL BB with
@@ -384,9 +374,6 @@ public:
 
     /** Get the destination, if any */
     SharedExp getDest() noexcept(false);
-
-    /** Check for branch if equal relation */
-    bool isJmpZ(BasicBlock *dest);
 
     /** Get the loop body */
     BasicBlock *getLoopBody();

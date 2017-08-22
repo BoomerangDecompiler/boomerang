@@ -78,7 +78,7 @@ public:
     /**
      * Creates an empty CFG.
      */
-    Cfg();
+    Cfg(UserProc* proc);
 
     /***************************************************************************/ /**
      * \brief        Destructor. Note: destructs the component BBs as well
@@ -86,17 +86,11 @@ public:
     ~Cfg();
 
     /***************************************************************************/ /**
-     * \brief   Set the pointer to the owning UserProc object
-     * \param   proc - pointer to the owning UserProc object
-     ******************************************************************************/
-    void setProc(UserProc *proc);
-
-    /***************************************************************************/ /**
      * \brief        Clear the CFG of all basic blocks, ready for decode
      ******************************************************************************/
     void clear();
 
-    size_t getNumBBs() { return m_listBB.size(); } ///< Get the number of BBs
+    size_t getNumBBs() const { return m_listBB.size(); } ///< Get the number of BBs
 
     /***************************************************************************/ /**
      * \brief assignment operator for Cfg's, the BB's are shallow copied
@@ -121,7 +115,6 @@ public:
      *
      * \param pRtls list of pointers to RTLs to initialise the BB with bbType: the type of the BB (e.g. TWOWAY)
      * \param bbType - type of new BasicBlock
-     * \param iNumOutEdges number of out edges this BB will eventually have
      * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
      ******************************************************************************/
     BasicBlock *newBB(std::list<RTL *> *pRtls, BBType bbType) noexcept(false);
@@ -136,43 +129,57 @@ public:
      ******************************************************************************/
     BasicBlock *newIncompleteBB(Address addr);
 
-    /***************************************************************************/ /**
-     * \brief Add an out edge to this BB (and the in-edge to the dest BB)
-     *        May also set a label
-     *
-     * Adds an out-edge to the basic block pBB by filling in the first slot that is empty.
-     * \note  a pointer to a BB is given here.
-     *
-     * \note    Overloaded with address as 2nd argument (calls this proc in the end)
-     * \param   bb source BB (to have the out edge added to)
-     * \param   addr Start address of the BB reached by the out edge
-     * \param   bSetLabel - indicates that label is required in \a pDestBB
-     ******************************************************************************/
-    void addOutEdge(BasicBlock *bb, Address addr, bool bSetLabel = false);
+    /**
+     * Get a BasicBlock starting at the given address.
+     * If there is no such block, return nullptr.
+     */
+    inline BasicBlock* getBB(Address addr)
+    {
+        MAPBB::iterator it = m_mapBB.find(addr);
+        return (it != m_mapBB.end()) ? (*it).second : nullptr;
+    }
+    inline const BasicBlock* getBB(Address addr) const
+    {
+        MAPBB::const_iterator it = m_mapBB.find(addr);
+        return (it != m_mapBB.end()) ? (*it).second : nullptr;
+    }
 
     /***************************************************************************/ /**
-     * \brief        Add an out edge to this BB (and the in-edge to the dest BB)
-     * May also set a label
+     * Add an out edge to \p sourceBB to address \p destAddr.
      *
-     * Adds an out-edge to the basic block pBB by filling in the first slot that is empty.    Note: an address is
-     * given here; the out edge will be filled in as a pointer to a BB. An incomplete BB will be created if
-     * required. If bSetLabel is true, the destination BB will have its "label required" bit set.
+     * Adds an out-edge to the basic block \p sourceBB.
+     * \note An address is given here; the out edge will be filled in as a pointer to a BB.
+     * An incomplete BB will be created if required.
+     * If \p labelRequired is true, the destination BB will have its "label required" bit set.
      *
-     * \note            Calls the above
-     * \param bb source BB (to have the out edge added to)
-     * \param pDestBB   Destination BB of the out edge
-     * \param bSetLabel if true, set a label at the destination address.  Set true on "true" branches of labels
+     * \param sourceBB  Source BB (to have the out edge added to)
+     * \param destAddr  Destination BB of the out edge
+     * \param labelRequired if true, set a label at the destination address. Set true on "true" branches of labels
      ******************************************************************************/
-    void addOutEdge(BasicBlock *bb, BasicBlock *pDestBB, bool bSetLabel = false);
+    void addOutEdge(BasicBlock *sourceBB, Address destAddr, bool labelRequired = false);
 
     /***************************************************************************/ /**
-     * \brief Adds a label for the given basicblock. The label number will be a non-zero integer
-     *        Sets a flag indicating that this BB has a label, in the sense that a label is required in the
-     *        translated source code
+     * Add an edge between \p sourceBB and destBB.
+     *
+     * Adds an out-edge to the basic block \p sourceBB and an in-edge
+     * to the basic block \p destBB
+     *
+     * \param sourceBB source BB (to have the out edge added to)
+     * \param destBB Start address of the BB reached by the out edge
+     * \param labelRequired - indicates that label is required in the destination BB
+     ******************************************************************************/
+    void addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool labelRequired = false);
+
+    /***************************************************************************/ /**
+     * \brief Adds a label for the given basic block. The label number will be a non-zero integer.
+     *
+     * Sets a flag indicating that this BB has a label,
+     * in the sense that a label is required in the translated source code.
+     *
      * \note         The label is only set if it was not set previously
      * \param        bb Pointer to the BB whose label will be set
      ******************************************************************************/
-    void setLabel(BasicBlock *bb);
+    void setLabelRequired(BasicBlock* bb);
 
     /***************************************************************************/ /**
      * \brief Get the first BB of this cfg
@@ -182,8 +189,8 @@ public:
      * \param       it set to an value that must be passed to getNextBB
      * \returns     Pointer to the first BB this cfg, or nullptr if none
      ******************************************************************************/
-    BasicBlock *getFirstBB(BB_IT& it);
-    const BasicBlock *getFirstBB(BBC_IT& it) const;
+    BasicBlock* getFirstBB(BB_IT& it);
+    const BasicBlock* getFirstBB(BBC_IT& it) const;
 
     /***************************************************************************/ /**
      * \brief Get the next BB this cfg. Basically increments the given iterator and returns it
@@ -194,8 +201,8 @@ public:
      * \param   it - iterator from a call to getFirstBB or getNextBB
      * \returns pointer to the BB, or nullptr if no more
      ******************************************************************************/
-    BasicBlock *getNextBB(BB_IT& it);
-    const BasicBlock *getNextBB(BBC_IT& it) const;
+    BasicBlock* getNextBB(BB_IT& it);
+    const BasicBlock* getNextBB(BBC_IT& it) const;
 
     /*
      * An alternative to the above is to use begin() and end():
@@ -258,6 +265,9 @@ public:
      * \returns      True if uNativeAddr starts a BB
      ******************************************************************************/
     bool existsBB(Address addr) const;
+
+    /// Check if the BasicBlock is in this graph
+    bool existsBB(const BasicBlock* bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
 
     /***************************************************************************/ /**
      * \brief   Sorts the BBs in a cfg by first address. Just makes it more convenient to read when BBs are
@@ -332,18 +342,6 @@ public:
     bool establishRevDFTOrder();
 
     /***************************************************************************/ /**
-     * \brief   Return an index for the given PBB
-     *
-     * Given a pointer to a basic block, return an index (e.g. 0 for the first basic block, 1 for the next, ... n-1
-     * for the last BB.
-     *
-     * \note Linear search: O(N) complexity
-     * \param pBB - BasicBlock to find
-     * \returns     Index, or -1 for unknown PBB
-     ******************************************************************************/
-    int pbbToIndex(const BasicBlock *pBB);
-
-    /***************************************************************************/ /**
      * \brief   Reset all the traversed flags.
      *
      * Reset all the traversed flags.
@@ -382,18 +380,6 @@ public:
      * \brief Completely remove a BB from the CFG.
      ******************************************************************************/
     void removeBB(BasicBlock *bb);
-
-    /***************************************************************************/ /**
-     * \brief Add a call to the set of calls within this procedure.
-     * \param call - a call instruction
-     ******************************************************************************/
-    void addCall(CallStatement *call);
-
-    /***************************************************************************/ /**
-     * \brief    Get the set of calls within this procedure.
-     * \returns  the set of calls within this procedure
-     ******************************************************************************/
-    CallStatementSet& getCalls();
 
     /***************************************************************************/ /**
      * \brief Replace all instances of \a search with \a replace in all BasicBlock's
@@ -456,7 +442,7 @@ private:
      * Completes the merge of pb1 and pb2 by adjusting out edges. No checks are made that the merge is valid
      * (hence this is a private function) Deletes pb1 if bDelete is true
      *
-     * \param bb1, bb2 pointers to the two BBs to merge
+     * \param bb1,bb2 pointers to the two BBs to merge
      * \param deleteBB if true, \p bb1 is deleted as well
      *
      ******************************************************************************/
@@ -513,7 +499,7 @@ public:
      * finds immediate post dominators only.
      * \note graph should be reducible
      */
-    void findImmedPDom();
+    void updateImmedPDom();
 
     /// Structures all conditional headers (i.e. nodes with more than one outedge)
     void structConds();
@@ -564,20 +550,6 @@ public:
 
     BasicBlock *findRetNode();
 
-    /***************************************************************************/ /**
-     * \brief Set an additional new out edge to a given value
-     *
-     * Append a new out-edge from the given BB to the other given BB
-     * Needed for example when converting a one-way BB to a two-way BB
-     *
-     * \note        Use BasicBlock::setOutEdge() for the common case where an existing out edge is merely changed
-     * \note        Use Cfg::addOutEdge for ordinary BB creation; this is for unusual cfg manipulation
-     *
-     * \param fromBB pointer to the BB getting the new out edge
-     * \param newOutEdge pointer to BB that will be the new successor
-     ******************************************************************************/
-    void addNewOutEdge(BasicBlock *fromBB, BasicBlock *newOutEdge);
-
     /////////////////////////////////////////////////////////////////////////
     // print this cfg, mainly for debugging
     /////////////////////////////////////////////////////////////////////////
@@ -616,22 +588,18 @@ public:
 
     bool removeOrphanBBs();
 
-protected:
-    void addBB(BasicBlock *bb) { m_listBB.push_back(bb); }
-
 private:
+    UserProc *m_myProc;                      ///< Pointer to the UserProc object that contains this CFG object
     mutable bool m_wellFormed;
     bool m_structured;
-    bool m_implicitsDone; ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
-    int m_lastLabel; ///< Last label (positive integer) used by any BB this Cfg
-    UserProc *m_myProc; ///< Pointer to the UserProc object that contains this CFG object
-    std::list<BasicBlock *> m_listBB; ///< BasicBlock s contained in this CFG
-    std::vector<BasicBlock *> m_ordering; ///< Ordering of BBs for control flow structuring
+    bool m_implicitsDone;                    ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
+    int m_lastLabel;                         ///< Last label (positive integer) used by any BB this Cfg
+    std::list<BasicBlock *> m_listBB;        ///< BasicBlock s contained in this CFG
+    std::vector<BasicBlock *> m_ordering;    ///< Ordering of BBs for control flow structuring
     std::vector<BasicBlock *> m_revOrdering; ///< Ordering of BBs for control flow structuring
 
-    MAPBB m_mapBB; ///< The Address to BB map
-    BasicBlock *m_entryBB; ///< The CFG entry BasicBlock.
-    BasicBlock *m_exitBB;  ///< The CFG exit BasicBlock.
-    CallStatementSet m_callSites; ///< Set of the call instructions in this procedure.
+    MAPBB m_mapBB;                 ///< The Address to BB map
+    BasicBlock* m_entryBB;         ///< The CFG entry BasicBlock.
+    BasicBlock* m_exitBB;          ///< The CFG exit BasicBlock.
     ExpStatementMap m_implicitMap; ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
 };

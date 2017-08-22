@@ -149,7 +149,7 @@ BasicBlock *BranchStatement::getFallBB() const
 
 void BranchStatement::setFallBB(BasicBlock *bb)
 {
-       Address a = getFixedDest();
+    Address a = getFixedDest();
 
     if (a == Address::INVALID) {
         return;

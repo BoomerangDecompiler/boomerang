@@ -50,10 +50,9 @@ UserProc::UserProc(Address address, const QString& name, Module* module)
     , m_cycleGroup(nullptr)
     , theReturnStatement(nullptr)
     , DFGcount(0)
-    , m_cfg(new Cfg())
+    , m_cfg(new Cfg(this))
     , m_status(PROC_UNDECODED)
 {
-    m_cfg->setProc(this); // Initialise cfg.myProc
     m_localTable.setProc(this);
 }
 
@@ -675,20 +674,21 @@ void UserProc::initStatements()
     BasicBlock::rtlit       rit;
     StatementList::iterator sit;
 
-    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-        for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
-            s->setProc(this);
-            s->setBB(bb);
-            CallStatement *call = dynamic_cast<CallStatement *>(s);
+    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb != nullptr; bb = m_cfg->getNextBB(it)) {
+        for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr; stmt = bb->getNextStmt(rit, sit)) {
+            stmt->setProc(this);
+            stmt->setBB(bb);
+            CallStatement *call = dynamic_cast<CallStatement *>(stmt);
 
             if (call) {
                 call->setSigArguments();
 
+                // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
                 if (call->getDestProc() && call->getDestProc()->isNoReturn() && (bb->getNumOutEdges() == 1)) {
-                    BasicBlock *out = bb->getOutEdge(0);
+                    BasicBlock *nextBB = bb->getOutEdge(0);
 
-                    if ((out != m_cfg->getExitBB()) || (m_cfg->getExitBB()->getNumInEdges() != 1)) {
-                        out->deleteInEdge(bb);
+                    if ((nextBB != m_cfg->getExitBB()) || (m_cfg->getExitBB()->getNumInEdges() != 1)) {
+                        nextBB->deleteInEdge(bb);
                         bb->clearOutEdges();
                     }
                 }

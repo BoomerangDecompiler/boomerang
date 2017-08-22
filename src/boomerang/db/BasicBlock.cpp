@@ -167,15 +167,9 @@ void BasicBlock::setRTLs(std::list<RTL *> *rtls)
 }
 
 
-BBType BasicBlock::getType()
-{
-    return m_nodeType;
-}
-
-
 void BasicBlock::updateType(BBType bbType)
 {
-    m_nodeType       = bbType;
+    m_nodeType = bbType;
 }
 
 
@@ -221,7 +215,7 @@ void BasicBlock::print(QTextStream& os, bool html)
         os << "L" << m_labelNum << ": ";
     }
 
-    switch (m_nodeType)
+    switch (getType())
     {
     case BBType::Oneway:   os << "Oneway BB"; break;
     case BBType::Twoway:   os << "Twoway BB"; break;
@@ -327,7 +321,7 @@ Address BasicBlock::getLowAddr() const
 }
 
 
-Address BasicBlock::getHiAddr()
+Address BasicBlock::getHiAddr() const
 {
     assert(m_listOfRTLs != nullptr);
     return m_listOfRTLs->back()->getAddress();
@@ -424,17 +418,11 @@ void BasicBlock::addInEdge(BasicBlock *pNewInEdge)
 }
 
 
-void BasicBlock::deleteInEdge(std::vector<BasicBlock *>::iterator& it)
-{
-    it = m_inEdges.erase(it);
-}
-
-
 void BasicBlock::deleteInEdge(BasicBlock *edge)
 {
     for (auto it = m_inEdges.begin(); it != m_inEdges.end(); it++) {
         if (*it == edge) {
-            deleteInEdge(it);
+            it = m_inEdges.erase(it);
             break;
         }
     }
@@ -516,33 +504,14 @@ bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2)
 
 Address BasicBlock::getCallDest()
 {
-    if (m_nodeType != BBType::Call) {
-        return Address::INVALID;
-    }
-
-    if (m_listOfRTLs->empty()) {
-        return Address::INVALID;
-    }
-
-    RTL *lastRtl = m_listOfRTLs->back();
-
-    for (auto rit = lastRtl->rbegin(); rit != lastRtl->rend(); rit++) {
-        if ((*rit)->getKind() == STMT_CALL) {
-            return ((CallStatement *)(*rit))->getFixedDest();
-        }
-    }
-
-    return Address::INVALID;
+    Function* dest = getCallDestProc();
+    return dest ? dest->getEntryAddress() : Address::INVALID;
 }
 
 
 Function *BasicBlock::getCallDestProc()
 {
-    if (m_nodeType != BBType::Call) {
-        return nullptr;
-    }
-
-    if (m_listOfRTLs->size() == 0) {
+    if (!isType(BBType::Call) || m_listOfRTLs->empty()) {
         return nullptr;
     }
 
@@ -762,30 +731,6 @@ void BasicBlock::setCond(SharedExp e) noexcept(false)
 }
 
 
-bool BasicBlock::isJmpZ(BasicBlock *dest)
-{
-    // The condition will be in the last rtl
-    assert(m_listOfRTLs);
-    RTL *last = m_listOfRTLs->back();
-    // it should contain a BranchStatement
-    assert(!last->empty());
-
-    for (auto it = last->rbegin(); it != last->rend(); it++) {
-        if ((*it)->getKind() == STMT_BRANCH) {
-            BranchType jt = ((BranchStatement *)(*it))->getCond();
-
-            if ((jt != BRANCH_JE) && (jt != BRANCH_JNE)) {
-                return false;
-            }
-
-            return (jt == BRANCH_JE) ? dest == m_outEdges[BTHEN] : dest == m_outEdges[BELSE];
-        }
-    }
-
-    return false;
-}
-
-
 BasicBlock *BasicBlock::getLoopBody()
 {
     assert(m_structType == SBBType::PreTestLoop || m_structType == SBBType::PostTestLoop || m_structType == SBBType::EndlessLoop);
@@ -818,27 +763,27 @@ void BasicBlock::simplify()
         }
     }
 
-    if (m_nodeType == BBType::Twoway) {
+    if (isType(BBType::Twoway)) {
         assert(m_outEdges.size() > 1);
 
         if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-            m_nodeType = BBType::Fall;
+            updateType(BBType::Fall);
         }
         else {
             RTL *last = m_listOfRTLs->back();
 
             if (last->size() == 0) {
-                m_nodeType = BBType::Fall;
+                updateType(BBType::Fall);
             }
             else if (last->back()->isGoto()) {
-                m_nodeType = BBType::Oneway;
+                updateType(BBType::Oneway);
             }
             else if (!last->back()->isBranch()) {
-                m_nodeType = BBType::Fall;
+                updateType(BBType::Fall);
             }
         }
 
-        if (m_nodeType == BBType::Fall) {
+        if (isType(BBType::Fall)) {
             // set out edges to be the second one
             LOG_VERBOSE("Turning TWOWAY into FALL: %1 %2", m_outEdges[0]->getLowAddr(), m_outEdges[1]->getLowAddr());
 
@@ -865,11 +810,11 @@ void BasicBlock::simplify()
             LOG_VERBOSE("  after: %1", m_outEdges[0]->getLowAddr());
         }
 
-        if (m_nodeType == BBType::Oneway) {
+        if (isType(BBType::Oneway)) {
             // set out edges to be the first one
             LOG_VERBOSE("Turning TWOWAY into ONEWAY: %1 %2", m_outEdges[0]->getLowAddr(), m_outEdges[1]->getLowAddr());
 
-            BasicBlock *redundant = m_outEdges[1];
+            BasicBlock *redundant = m_outEdges[BELSE];
             m_outEdges.resize(1);
             LOG_VERBOSE("redundant edge to address %1", redundant->getLowAddr());
             LOG_VERBOSE("  inedges:");
@@ -1008,7 +953,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
 
     // if this is a nested case header, then it's member nodes will already have been tagged so skip straight to its
     // follow
-    if ((getType() == BBType::Nway) && (this != head)) {
+    if (isType(BBType::Nway) && (this != head)) {
         if (m_condFollow && (m_condFollow->m_traversed != TravType::DFS_Case) && (m_condFollow != follow)) {
             m_condFollow->setCaseHead(head, follow);
         }
@@ -1027,12 +972,12 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
 }
 
 
-void BasicBlock::setStructType(StructType s)
+void BasicBlock::setStructType(StructType structType)
 {
     // if this is a conditional header, determine exactly which type of conditional header it is (i.e. switch, if-then,
     // if-then-else etc.)
-    if (s == StructType::Cond) {
-        if (getType() == BBType::Nway) {
+    if (structType == StructType::Cond) {
+        if (isType(BBType::Nway)) {
             m_conditionHeaderType = CondType::Case;
         }
         else if (m_outEdges[BELSE] == m_condFollow) {
@@ -1046,14 +991,14 @@ void BasicBlock::setStructType(StructType s)
         }
     }
 
-    m_structuringType = s;
+    m_structuringType = structType;
 }
 
 
-void BasicBlock::setUnstructType(UnstructType us)
+void BasicBlock::setUnstructType(UnstructType unstructType)
 {
     assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond) && m_conditionHeaderType != CondType::Case);
-    m_unstructuredType = us;
+    m_unstructuredType = unstructType;
 }
 
 
@@ -1248,6 +1193,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
         }
 
         RTL *phiRtl = currBB->m_listOfRTLs->front();
+        assert(phiRtl);
 
         for (Statement *st : *phiRtl) {
             // Only interested in phi assignments. Note that it is possible that some phi assignments have been
@@ -1259,7 +1205,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
             PhiAssign *pa = (PhiAssign *)st;
 
             for (std::pair<const BasicBlock *, PhiInfo> v : pa->getDefs()) {
-                if (-1 != cfg->pbbToIndex(v.first)) {
+                if (!cfg->existsBB(v.first)) {
                     LOG_WARN("Someone removed BB that defined the PHI! Need to update PhiAssign defs");
                 }
             }
@@ -1270,9 +1216,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 
             if (!def) {
                 std::deque<BasicBlock *> to_visit(m_inEdges.begin(), m_inEdges.end());
-                std::set<BasicBlock *> tried{
-                    this
-                };
+                std::set<BasicBlock *> tried { this };
 
                 // TODO: this looks like a hack ?  but sometimes PhiAssign has value which is defined in parent of
                 // 'this'
@@ -1317,21 +1261,6 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
             }
         }
     }
-}
-
-
-int BasicBlock::whichPred(BasicBlock *pred)
-{
-    size_t n = m_inEdges.size();
-
-    for (size_t i = 0; i < n; i++) {
-        if (m_inEdges[i] == pred) {
-            return i;
-        }
-    }
-
-    assert(false);
-    return -1;
 }
 
 
@@ -1572,7 +1501,7 @@ int BasicBlock::findNumCases()
 {
     // should actually search from the statement to i
     for (BasicBlock *in : m_inEdges) {          // For each in-edge
-        if (in->m_nodeType != BBType::Twoway) { // look for a two-way BB
+        if (!in->isType(BBType::Twoway)) {      // look for a two-way BB
             continue;                           // Ignore all others
         }
 
@@ -1685,8 +1614,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
     }
 #endif
 
-    if (m_nodeType == BBType::CompJump) {
-        assert(m_listOfRTLs->size());
+    if (isType(BBType::CompJump)) {
+        assert(m_listOfRTLs->size() > 0);
         RTL *lastRtl = m_listOfRTLs->back();
 
         if (DEBUG_SWITCH) {
@@ -1805,8 +1734,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 
         return false;
     }
-    else if (m_nodeType == BBType::CompCall) {
-        assert(m_listOfRTLs->size());
+    else if (isType(BBType::CompCall)) {
+        assert(m_listOfRTLs->size() > 0);
         RTL *lastRtl = m_listOfRTLs->back();
 
         if (DEBUG_SWITCH) {
@@ -2141,7 +2070,7 @@ bool BasicBlock::undoComputedBB(Statement *stmt)
 
     for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
         if (*rr == stmt) {
-            m_nodeType = BBType::Call;
+            updateType(BBType::Call);
             LOG_MSG("undoComputedBB for statement %1", stmt);
             return true;
         }
