@@ -17,33 +17,40 @@
 
 #include "boomerang/db/IProject.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QIODevice>
+#include <QByteArray>
 
 class Prog;
 class IBinaryImage;
 
 
-class Project : public QObject, public IProject
+class Project : public IProject
 {
-    Q_OBJECT
-
 public:
+    Project();
     virtual ~Project();
 
-    bool serializeTo(QIODevice& dev);
-    bool serializeFrom(QIODevice& dev);
+    /// \copydoc IProject::loadBinaryFile
+    bool loadBinaryFile(const QString& filePath) override;
+
+    /// \copydoc IProject::loadSaveFile
+    bool loadSaveFile(const QString& filePath) override;
+
+    /// \copydoc IProject::writeSavefile
+    bool writeSaveFile(const QString& filePath) override;
+
+    /// \copydoc IProject::isBinaryLoaded
+    bool isBinaryLoaded() const override;
+
+    /// \copydoc IProject::unload
+    void unload() override;
+
 
     QByteArray& getFiledata()       override { return m_fileBytes; }
     const QByteArray& getFiledata() const override { return m_fileBytes; }
 
     IBinaryImage *getOrCreateImage() override;
 
-    const ITypeRecovery *getTypeEngine() const override { return m_typeRecoveryEngine; }
-
 private:
     QByteArray m_fileBytes;
     IBinaryImage *m_image = nullptr; ///< raw memory interface
-    Prog *m_program;                 ///< program interface
-    ITypeRecovery *m_typeRecoveryEngine;
 };
