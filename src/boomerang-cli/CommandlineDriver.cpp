@@ -354,7 +354,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_FATAL("Bad address: %1", args[i + 1]);
                 }
 
-                boom.symbols[addr] = args[++i];
+                boom.m_symbolMap[addr] = args[++i];
             }
             break;
 

@@ -67,6 +67,7 @@ IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
     m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
 }
 
+
 IFrontEnd::~IFrontEnd()
 {
     m_fileLoader = nullptr;
@@ -656,7 +657,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             // Decode the inst at uAddr.
             if (!decodeInstruction(uAddr, inst)) {
-                LOG_ERROR("Invalid instruction at ", uAddr.toString());
+                LOG_ERROR("Invalid instruction at %1", uAddr.toString());
             }
             else if (inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", uAddr);
@@ -891,13 +892,14 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         sequentialDecode = false;
                     }
                     else {
-                        // Add the out edge if it is to a destination within the procedure
+                        // Add the out edge if it is to a destination within the section
                         if (uDest < m_image->getLimitTextHigh()) {
                             m_targetQueue.visit(pCfg, uDest, pBB);
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
                             LOG_WARN("Branch instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
+                            pCfg->addOutEdge(pBB, Address::INVALID, false);
                         }
 
                         // Add the fall-through outedge

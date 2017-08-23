@@ -109,7 +109,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
     prog->setFrontEnd(fe);
 
     // Add symbols from -s switch(es)
-    for (const std::pair<Address, QString>& elem : symbols) {
+    for (const std::pair<Address, QString>& elem : m_symbolMap) {
         fe->addSymbol(elem.first, elem.second);
     }
 

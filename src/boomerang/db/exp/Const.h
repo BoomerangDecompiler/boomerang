@@ -112,7 +112,7 @@ public:
     /***************************************************************************/ /**
     * \brief        Matches this expression to the given patten
     * \param        pattern to match
-    * \returns            list of variable bindings, or nullptr if matching fails
+    * \returns      list of variable bindings, or nullptr if matching fails
     ******************************************************************************/
     virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 

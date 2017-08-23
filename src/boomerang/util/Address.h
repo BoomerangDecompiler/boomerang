@@ -44,18 +44,18 @@ public:
     Address operator+(const Address& other) const { return Address(m_value + other.value()); }
     Address operator-(const Address& other) const { return Address(m_value - other.value()); }
 
-    Address operator++() { ++m_value; return *this; }
-    Address operator--() { --m_value; return *this; }
-    Address operator++(int)    { return Address(m_value++); }
-    Address operator--(int) { return Address(m_value--); }
+    Address operator++()    { ++m_value; m_value &= getSourceMask(); return *this; }
+    Address operator--()    { --m_value; m_value &= getSourceMask(); return *this; }
+    Address operator++(int) { Address addr(*this); m_value = (m_value+1) & getSourceMask(); return addr; }
+    Address operator--(int) { Address addr(*this); m_value = (m_value+1) & getSourceMask(); return addr; }
 
-    Address operator+=(const Address& other) { m_value += other.value(); return *this; }
+    Address operator+=(const Address& other) { m_value += other.value(); m_value &= getSourceMask(); return *this; }
 
-    Address operator+=(value_type offset) { m_value += offset; return *this; }
-    Address operator-=(value_type offset) { m_value -= offset; return *this; }
+    Address operator+=(value_type offset) { m_value += offset; m_value &= getSourceMask(); return *this; }
+    Address operator-=(value_type offset) { m_value -= offset; m_value &= getSourceMask(); return *this; }
 
-    Address operator+(value_type offset) const { return Address(m_value + offset); }
-    Address operator-(value_type offset) const { return Address(m_value - offset); }
+    Address operator+(value_type offset) const { return Address((m_value + offset) & getSourceMask()); }
+    Address operator-(value_type offset) const { return Address((m_value - offset) & getSourceMask()); }
 
     QString toString() const;
 
@@ -95,8 +95,8 @@ public:
     inline bool operator<=(const HostAddress& other) { return m_value <= other.m_value; }
     inline bool operator>=(const HostAddress& other) { return m_value >= other.m_value; }
 
-    HostAddress operator+=(const Address& other) { m_value += other.value(); return *this; }
-    HostAddress operator-=(const Address& other) { m_value -= other.value(); return *this; }
+    HostAddress operator+=(const Address& other) { m_value += (value_type)other.value(); return *this; }
+    HostAddress operator-=(const Address& other) { m_value -= (value_type)other.value(); return *this; }
 
     HostAddress operator+=(value_type offset) { m_value += offset; return *this; }
     HostAddress operator-=(value_type offset) { m_value -= offset; return *this; }
