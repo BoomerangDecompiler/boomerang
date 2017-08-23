@@ -5,14 +5,13 @@
 #include "boomerang/core/BinaryFileFactory.h"
 
 Project::Project()
-    : m_image(nullptr)
 {
+    m_image.reset(new BinaryImage);
 }
 
 
 Project::~Project()
 {
-    delete m_image;
 }
 
 
@@ -47,14 +46,4 @@ bool Project::isBinaryLoaded() const
 
 void Project::unload()
 {
-}
-
-
-IBinaryImage *Project::getOrCreateImage()
-{
-    if (!m_image) {
-        m_image = new BinaryImage;
-    }
-
-    return m_image;
 }

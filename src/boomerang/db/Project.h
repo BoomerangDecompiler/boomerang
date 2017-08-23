@@ -18,10 +18,9 @@
 #include "boomerang/db/IProject.h"
 
 #include <QByteArray>
+#include <memory>
 
-class Prog;
 class IBinaryImage;
-
 
 class Project : public IProject
 {
@@ -45,12 +44,16 @@ public:
     void unload() override;
 
 
+    /// \copydoc IProject::getImage
+    IBinaryImage* getImage() override { return m_image.get(); }
+
+    /// \copydoc IProject::getImage
+    const IBinaryImage* getImage() const override { return m_image.get(); }
+
     QByteArray& getFiledata()       override { return m_fileBytes; }
     const QByteArray& getFiledata() const override { return m_fileBytes; }
 
-    IBinaryImage *getOrCreateImage() override;
-
 private:
     QByteArray m_fileBytes;
-    IBinaryImage *m_image = nullptr; ///< raw memory interface
+    std::shared_ptr<IBinaryImage> m_image; ///< raw memory interface
 };

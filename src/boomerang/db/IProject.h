@@ -47,7 +47,12 @@ public:
      */
     virtual void unload() = 0;
 
+    /**
+     * Get the binary image of the loaded binary.
+     */
+    virtual IBinaryImage* getImage() = 0;
+    virtual const IBinaryImage* getImage() const = 0;
+
     virtual QByteArray& getFiledata()             = 0;
     virtual const QByteArray& getFiledata() const = 0;
-    virtual IBinaryImage *getOrCreateImage()      = 0;
 };
