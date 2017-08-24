@@ -67,5 +67,4 @@ private:
     unsigned        m_bss      : 1;         ///< Set if section is BSS (allocated only)
     unsigned        m_readOnly : 1;         ///< Set if this is a read only section
     uint8_t         m_endianness;           ///< 0 Little endian, 1 Big endian
-
 };

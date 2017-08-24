@@ -9,6 +9,7 @@
 
 #include "boomerang-gui/ui_boomerang.h"
 #include "boomerang-gui/ui_about.h"
+#include "boomerang/type/TypeRecovery.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -1105,7 +1106,7 @@ void MainWindow::on_addButton_pressed()
 void MainWindow::on_removeButton_pressed()
 {
     bool    ok;
-       Address a = Address(ui->entrypoints->item(ui->entrypoints->currentRow(), 0)->text().toInt(&ok, 16));
+    Address a = Address(ui->entrypoints->item(ui->entrypoints->currentRow(), 0)->text().toInt(&ok, 16));
 
     if (!ok) {
         return;

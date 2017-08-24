@@ -56,7 +56,7 @@ struct Translated_ElfSym
     ElfSymVisibility Visibility;
     uint32_t         SymbolSize;
     uint16_t         SectionIdx;
-       Address          Value;
+    Address          Value;
 };
 
 typedef std::map<QString, int, std::less<QString> > StrIntMap;
@@ -380,7 +380,7 @@ const char *ElfBinaryLoader::getStrPtr(int idx, int offset)
     }
 
     // Get a pointer to the start of the string table
-    char *pSym = (char *)m_elfSections[idx].image_ptr.value();
+    const char *pSym = (const char *)m_elfSections[idx].image_ptr.value();
     // Just add the offset
     return pSym + offset;
 }
@@ -703,25 +703,23 @@ Machine ElfBinaryLoader::getMachine() const
 
 bool ElfBinaryLoader::isLibrary() const
 {
-    int type = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_type);
+    const SWord type = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_type);
 
-    return(type == ET_DYN);
+    return (type == ET_DYN);
 }
 
 
 QStringList ElfBinaryLoader::getDependencyList()
 {
     QStringList    result;
-       Address        stringtab = Address::INVALID;
+    Address        stringtab = Address::INVALID;
     IBinarySection *dynsect  = m_binaryImage->getSectionInfoByName(".dynamic");
 
     if (dynsect == nullptr) {
         return result; /* no dynamic section = statically linked */
     }
 
-    Elf32_Dyn *dyn;
-
-    for (dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
+    for (Elf32_Dyn* dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
         if (dyn->d_tag == DT_STRTAB) {
             stringtab = Address(dyn->d_un.d_ptr);
             break;
@@ -734,7 +732,7 @@ QStringList ElfBinaryLoader::getDependencyList()
 
     HostAddress strTab = nativeToHostAddress(stringtab);
 
-    for (dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
+    for (Elf32_Dyn* dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
         if (dyn->d_tag == DT_NEEDED) {
             const char *need = (char *)(strTab + dyn->d_un.d_val).value();
 
