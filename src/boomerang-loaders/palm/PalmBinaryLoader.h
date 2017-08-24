@@ -13,11 +13,8 @@
  * \brief This file contains the definition of the class PalmBinaryLoader.
  */
 
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
+#include "boomerang/loader/IFileLoader.h"
 
-#include "boomerang/core/BinaryFileFactory.h"
 #include <QtCore/QObject>
 
 /**

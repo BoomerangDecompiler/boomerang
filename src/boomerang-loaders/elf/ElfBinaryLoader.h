@@ -13,12 +13,7 @@
  * \brief This file contains the definition of the class ElfBinaryLoader.
  */
 
-
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
-
-#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/loader/IFileLoader.h"
 
 struct Elf32_Ehdr;
 struct Elf32_Phdr;

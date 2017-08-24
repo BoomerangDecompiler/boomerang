@@ -1,6 +1,5 @@
 #include "Project.h"
 
-#include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
@@ -9,8 +8,8 @@
 
 
 Project::Project()
+    : m_image(new BinaryImage)
 {
-    m_image.reset(new BinaryImage);
     loadPlugins();
 }
 
@@ -32,13 +31,13 @@ bool Project::loadBinaryFile(const QString& filePath)
     }
 
     if (isBinaryLoaded()) {
+        loader->unload();
         unloadBinaryFile();
     }
 
-    IBinaryImage       *image   = Boomerang::get()->getImage();
     IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
 
-    loader->initialize(image, symbols);
+    loader->initialize(getImage(), symbols);
 
     QFile srcFile(filePath);
 
@@ -54,7 +53,7 @@ bool Project::loadBinaryFile(const QString& filePath)
         return false;
     }
 
-    image->calculateTextLimits();
+    m_image->calculateTextLimits();
 
     return true;
 }
@@ -76,19 +75,16 @@ bool Project::writeSaveFile(const QString& /*filePath*/)
 
 bool Project::isBinaryLoaded() const
 {
-    return false; // stub
+    return !m_image->empty();
 }
 
 
 void Project::unloadBinaryFile()
 {
-    IBinaryImage       *image   = Boomerang::get()->getImage();
-    IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
-
-    image->reset();
-    symbols->clear();
+    Boomerang::get()->getSymbols()->clear();
 
     m_fileBytes.clear();
+    m_image->reset();
 }
 
 

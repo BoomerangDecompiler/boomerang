@@ -13,6 +13,7 @@
 class IFrontEnd;
 class SparcDecoder;
 class CallStatement;
+class IBinarySymbolTable;
 
 struct DecodeResult;
 
@@ -21,7 +22,7 @@ class SparcFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff);
+    SparcFrontEnd(IFileLoader *p_BF, Prog *prog);
     virtual ~SparcFrontEnd();
 
     /// \copydoc IFrontEnd::getType

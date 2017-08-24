@@ -22,7 +22,7 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
-
+#include "boomerang/util/Util.h"
 
 #include <QBuffer>
 #include <QFile>

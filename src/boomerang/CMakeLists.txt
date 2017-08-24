@@ -15,7 +15,6 @@ set(boomerang_SRC
     core/Boomerang.cpp
     core/IBoomerang.h
     core/Watcher.h
-    core/BinaryFileFactory.cpp
     core/Plugin.h
     core/Plugin.cpp
     core/Settings.h

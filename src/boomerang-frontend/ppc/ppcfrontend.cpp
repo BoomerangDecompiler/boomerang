@@ -23,7 +23,6 @@
 
 #include "ppcfrontend.h"
 
-#include "boomerang/core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/CFG.h"
@@ -33,6 +32,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/util/Log.h"
 
+#include "boomerang/loader/IFileLoader.h"
 #include "boomerang-frontend/ppc/ppcdecoder.h"
 
 #include <cassert>
@@ -40,8 +40,8 @@
 #include <sstream>
 
 
-PPCFrontEnd::PPCFrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
-    : IFrontEnd(pBF, prog, _pbff)
+PPCFrontEnd::PPCFrontEnd(IFileLoader *pBF, Prog *prog)
+    : IFrontEnd(pBF, prog)
 {
     m_decoder = new PPCDecoder(prog);
 }
@@ -83,7 +83,7 @@ std::vector<SharedExp>& PPCFrontEnd::getDefaultReturns()
 Address PPCFrontEnd::getMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
-       Address start = m_fileLoader->getMainEntryPoint();
+    Address start = m_fileLoader->getMainEntryPoint();
 
     if (start != Address::INVALID) {
         return start;

@@ -19,7 +19,6 @@
 #include "boomerang/global.h"
 #include "boomerang/include/decoder.h"
 #include "boomerang/sparc-names.h"
-#include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 
 // Globals in driver disasm.cc file
 extern char _assembly[81];

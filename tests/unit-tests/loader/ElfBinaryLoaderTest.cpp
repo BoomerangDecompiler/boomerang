@@ -1,10 +1,11 @@
 #include "ElfBinaryLoaderTest.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/db/Project.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/Project.h"
+#include "boomerang/util/Log.h"
 
 #include <QLibrary>
 
@@ -30,8 +31,9 @@ void ElfBinaryLoaderTest::initTestCase()
 
 void ElfBinaryLoaderTest::testElfLoadClang()
 {
-    BinaryFileFactory bff;
-    IFileLoader       *loader = bff.loadFile(HELLO_CLANG4);
+    IProject* project = new Project();
+    project->loadBinaryFile(HELLO_CLANG4);
+    IFileLoader       *loader = project->getBestLoader(HELLO_CLANG4);
 
     // test the loader
     QVERIFY(loader != nullptr);
@@ -56,8 +58,9 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 
 void ElfBinaryLoaderTest::testElfLoadClangStatic()
 {
-    BinaryFileFactory bff;
-    IFileLoader       *loader = bff.loadFile(HELLO_CLANG4_STATIC);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_CLANG4_STATIC);
+    IFileLoader       *loader = project.getBestLoader(HELLO_CLANG4_STATIC);
 
     // test the loader
     QVERIFY(loader != nullptr);
@@ -83,8 +86,9 @@ void ElfBinaryLoaderTest::testElfLoadClangStatic()
 void ElfBinaryLoaderTest::testPentiumLoad()
 {
     // Load Pentium hello world
-    BinaryFileFactory bff;
-    IFileLoader       *loader = bff.loadFile(HELLO_PENTIUM);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
 
     QVERIFY(loader != nullptr);
     QCOMPARE(loader->getFormat(), LoadFmt::ELF);

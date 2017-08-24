@@ -17,8 +17,6 @@
 #include "pentiumfrontend.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
-
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/RTL.h"
@@ -34,6 +32,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 
+#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/type/Type.h"
@@ -473,8 +472,8 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
 }
 
 
-PentiumFrontEnd::PentiumFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
-    : IFrontEnd(p_BF, prog, bff)
+PentiumFrontEnd::PentiumFrontEnd(IFileLoader *p_BF, Prog *prog)
+    : IFrontEnd(p_BF, prog)
     , idPF(-1)
 {
     m_decoder = new PentiumDecoder(prog);

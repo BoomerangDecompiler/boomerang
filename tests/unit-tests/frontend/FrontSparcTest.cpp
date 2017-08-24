@@ -7,14 +7,13 @@
 #include "FrontSparcTest.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
-
+#include "boomerang/db/Project.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 
@@ -38,13 +37,15 @@ void FrontSparcTest::test1()
 	QString           expected;
 	QString           actual;
 	QTextStream       strm(&actual);
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_SPARC);
 
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_SPARC);
+    IFileLoader       *pBF = project.getBestLoader(HELLO_SPARC);
 	QVERIFY(pBF != 0);
-	Prog *prog = new Prog(HELLO_SPARC);
 	QVERIFY(pBF->getMachine() == Machine::SPARC);
-	IFrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
+
+	Prog *prog = new Prog(HELLO_SPARC);
+	IFrontEnd *pFE = new SparcFrontEnd(pBF, prog);
 	prog->setFrontEnd(pFE);
 
 	bool    gotMain;
@@ -111,13 +112,15 @@ void FrontSparcTest::test2()
 	QString           expected;
 	QString           actual;
 	QTextStream       strm(&actual);
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_SPARC);
 
-	QVERIFY(pBF != 0);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_SPARC);
+    IFileLoader* loader = project.getBestLoader(HELLO_SPARC);
+	QVERIFY(loader != nullptr);
+
 	Prog *prog = new Prog(HELLO_SPARC);
-	QVERIFY(pBF->getMachine() == Machine::SPARC);
-	IFrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
+	QVERIFY(loader->getMachine() == Machine::SPARC);
+	IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
 	prog->setFrontEnd(pFE);
 
 	pFE->decodeInstruction(Address(0x00010690), inst);
@@ -159,13 +162,15 @@ void FrontSparcTest::test3()
 	QString           expected;
 	QString           actual;
 	QTextStream       strm(&actual);
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_SPARC);
 
-	QVERIFY(pBF != 0);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_SPARC);
+    IFileLoader* loader = project.getBestLoader(HELLO_SPARC);
+	QVERIFY(loader != nullptr);
+
 	Prog *prog = new Prog(HELLO_SPARC);
-	QVERIFY(pBF->getMachine() == Machine::SPARC);
-	IFrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
+	QVERIFY(loader->getMachine() == Machine::SPARC);
+	IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
 	prog->setFrontEnd(pFE);
 
 	pFE->decodeInstruction(Address(0x000106a0), inst);
@@ -223,13 +228,15 @@ void FrontSparcTest::testBranch()
 	QString           expected;
 	QString           actual;
 	QTextStream       strm(&actual);
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(BRANCH_SPARC);
 
-	QVERIFY(pBF != 0);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(BRANCH_SPARC);
+    IFileLoader* loader = project.getBestLoader(BRANCH_SPARC);
+	QVERIFY(loader != nullptr);
+
 	Prog *prog = new Prog(BRANCH_SPARC);
-	QVERIFY(pBF->getMachine() == Machine::SPARC);
-	IFrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
+	QVERIFY(loader->getMachine() == Machine::SPARC);
+	IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
 	prog->setFrontEnd(pFE);
 
 	// bne
@@ -264,13 +271,14 @@ void FrontSparcTest::testBranch()
 
 void FrontSparcTest::testDelaySlot()
 {
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(BRANCH_SPARC);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(BRANCH_SPARC);
+    IFileLoader* loader = project.getBestLoader(BRANCH_SPARC);
+	QVERIFY(loader != nullptr);
 
-	QVERIFY(pBF != 0);
 	Prog *prog = new Prog(BRANCH_SPARC);
-	QVERIFY(pBF->getMachine() == Machine::SPARC);
-	IFrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
+	QVERIFY(loader->getMachine() == Machine::SPARC);
+	IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
 	prog->setFrontEnd(pFE);
 	// decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
 	Type::clearNamedTypes();

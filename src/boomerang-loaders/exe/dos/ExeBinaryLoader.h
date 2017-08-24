@@ -21,7 +21,7 @@
  * even be exposed as another pseudo section.
  */
 
-#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/loader/IFileLoader.h"
 
 class QFile;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 class IBinaryImage;
+class IFileLoader;
 class QByteArray;
 class QString;
 struct ITypeRecovery;
@@ -52,4 +53,6 @@ public:
      */
     virtual IBinaryImage* getImage() = 0;
     virtual const IBinaryImage* getImage() const = 0;
+
+    virtual IFileLoader* getBestLoader(const QString& filePath) const = 0;
 };

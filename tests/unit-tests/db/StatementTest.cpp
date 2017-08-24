@@ -32,17 +32,16 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/BasicBlock.h"
-
-#include "boomerang/util/Log.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Project.h"
 #include "boomerang/db/Managed.h"
+#include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
 #include <sstream>
 #include <map>
-
-#include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/UserProc.h"
 
 
 #define HELLO_PENTIUM      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
@@ -62,14 +61,15 @@ void StatementTest::testEmpty()
 
   	Boomerang *boo = Boomerang::get();
 	boo->getSettings()->setOutputDirectory("./unit_test/");
+	IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+	IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(loader != nullptr);
+
 
 	// create Prog
-	Prog              *prog = new Prog("testEmpty");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM);
-	QVERIFY(pBF != 0);
-
-	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	Prog* prog     = new Prog("testEmpty");
+	IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
 	prog->setFrontEnd(pFE);
 
 	Module *m = *prog->getModuleList().begin();
@@ -77,6 +77,7 @@ void StatementTest::testEmpty()
 
 	// create UserProc
 	UserProc *proc = (UserProc *)m->getOrInsertFunction("test", Address(0x00000123));
+
 	// create CFG
 	Cfg                      *cfg   = proc->getCFG();
 	std::list<RTL *>         *pRtls = new std::list<RTL *>();
@@ -116,9 +117,12 @@ void StatementTest::testFlow()
 {
 	// create Prog
 	Prog              *prog = new Prog("testFlow");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM); // Don't actually use it
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(loader != nullptr);
+	IFrontEnd         *pFE = new PentiumFrontEnd(loader, prog);
 
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
@@ -186,16 +190,21 @@ void StatementTest::testKill()
 {
 	// create Prog
 	Prog              *prog = new Prog("testKill");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM); // Don't actually use it
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(loader != nullptr);
+
+	IFrontEnd         *pFE = new PentiumFrontEnd(loader, prog);
 
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	// create UserProc
-	std::string name  = "test";
+	QString name  = "test";
 	UserProc    *proc = (UserProc *)prog->createProc(Address(0x00000123));
-	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name));
+
 	// create CFG
 	Cfg              *cfg   = proc->getCFG();
 	std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -261,9 +270,12 @@ void StatementTest::testUse()
 {
 	// create Prog
 	Prog              *prog = new Prog("testUse");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM); // Don't actually use it
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(loader != nullptr);
+	IFrontEnd         *pFE = new PentiumFrontEnd(loader, prog);
 
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
@@ -333,9 +345,13 @@ void StatementTest::testUseOverKill()
 {
 	// create Prog
 	Prog              *prog = new Prog("testUseOverKill");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM); // Don't actually use it
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(loader != nullptr);
+
+	IFrontEnd         *pFE = new PentiumFrontEnd(loader, prog);
 
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
@@ -410,9 +426,13 @@ void StatementTest::testUseOverBB()
 {
 	// create Prog
 	Prog              *prog = new Prog("testUseOverBB");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM); // Don't actually use it
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* pBF = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(pBF != nullptr);
+
+	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
@@ -487,9 +507,13 @@ void StatementTest::testUseKill()
 {
 	// create Prog
 	Prog              *prog = new Prog("testUseKill");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM); // Don't actually use it
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(loader != nullptr);
+
+	IFrontEnd         *pFE = new PentiumFrontEnd(loader, prog);
 
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
@@ -560,9 +584,13 @@ void StatementTest::testEndlessLoop()
 
     // create Prog
 	Prog              *prog = new Prog("testEndlessLoop");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM); // Don't actually use it
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(loader != nullptr);
+
+	IFrontEnd         *pFE = new PentiumFrontEnd(loader, prog);
 
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
@@ -754,9 +782,13 @@ void StatementTest::testRecursion()
 
 	// create Prog
 	Prog              *prog = new Prog("testRecursion");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(HELLO_PENTIUM); // Don't actually use it
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+    IFileLoader* pBF = project.getBestLoader(HELLO_PENTIUM);
+	QVERIFY(pBF != nullptr);
+
+	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog);
 
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
@@ -1276,9 +1308,13 @@ void StatementTest::testBypass()
     QSKIP("Disabled.");
 
 	Prog              *prog = new Prog("testBypass");
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(GLOBAL1_PENTIUM);
-	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(GLOBAL1_PENTIUM);
+    IFileLoader* pBF = project.getBestLoader(GLOBAL1_PENTIUM);
+	QVERIFY(pBF != nullptr);
+
+	IFrontEnd         *pFE = new PentiumFrontEnd(pBF, prog);
 
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);

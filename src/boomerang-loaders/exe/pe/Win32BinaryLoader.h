@@ -14,7 +14,8 @@
 
 #pragma once
 
-#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/loader/IFileLoader.h"
+
 #include <string>
 
 /**

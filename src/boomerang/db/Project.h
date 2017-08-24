@@ -53,12 +53,12 @@ public:
     /// \copydoc IProject::getImage
     const IBinaryImage* getImage() const override { return m_image.get(); }
 
+    /// Get the best loader that is able to load the file at \p filePath
+    IFileLoader* getBestLoader(const QString& filePath) const override;
+
 private:
     /// Load all plugins from the plugin directory.
     void loadPlugins();
-
-    /// Get the best loader that is able to load the file at \p filePath
-    IFileLoader* getBestLoader(const QString& filePath) const;
 
 private:
     QByteArray m_fileBytes;

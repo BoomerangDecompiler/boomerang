@@ -9,8 +9,6 @@
 
 #include "Boomerang.h"
 
-#include "boomerang/core/BinaryFileFactory.h"
-
 #include "boomerang/codegen/CCodeGenerator.h"
 
 #include "boomerang/db/BinaryImage.h"
@@ -33,6 +31,7 @@ static Boomerang* boomerang = nullptr;
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
+    , m_currentProject(nullptr)
     , m_symbols(new SymTab)
     , m_codeGenerator(new CCodeGenerator)
 {
@@ -97,7 +96,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
     LOG_MSG("Loading...");
     Prog      *prog = new Prog(fname);
-    IFrontEnd *fe   = IFrontEnd::create(fname, prog);
+    IFrontEnd *fe   = IFrontEnd::create(fname, prog, this->getOrCreateProject());
 
     if (fe == nullptr) {
         LOG_ERROR("Loading '%1' failed.", fname);
@@ -308,8 +307,7 @@ Boomerang *Boomerang::get()
 
 IBinaryImage *Boomerang::getImage()
 {
-    assert(m_currentProject != nullptr);
-    return m_currentProject->getImage();
+    return getOrCreateProject()->getImage();
 }
 
 

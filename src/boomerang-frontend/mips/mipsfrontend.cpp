@@ -20,7 +20,6 @@
 
 #include "mipsfrontend.h"
 
-#include "boomerang/core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/Register.h"
@@ -31,6 +30,7 @@
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
 
+#include "boomerang/loader/IFileLoader.h"
 #include "boomerang-frontend/mips/mipsdecoder.h"
 
 
@@ -39,8 +39,8 @@
 #include <sstream>
 
 
-MIPSFrontEnd::MIPSFrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *_pbff)
-    : IFrontEnd(pBF, prog, _pbff)
+MIPSFrontEnd::MIPSFrontEnd(IFileLoader *pBF, Prog *prog)
+    : IFrontEnd(pBF, prog)
 {
     m_decoder = new MIPSDecoder(prog);
 }
@@ -82,7 +82,7 @@ std::vector<SharedExp>& MIPSFrontEnd::getDefaultReturns()
 Address MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
-       Address start = m_fileLoader->getMainEntryPoint();
+    Address start = m_fileLoader->getMainEntryPoint();
 
     if (start != Address::INVALID) {
         return start;

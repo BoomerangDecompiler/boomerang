@@ -21,7 +21,6 @@
 #include "Proc.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/codegen/SyntaxNode.h"

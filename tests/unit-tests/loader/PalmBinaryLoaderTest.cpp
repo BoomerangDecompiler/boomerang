@@ -1,10 +1,9 @@
 #include "PalmBinaryLoaderTest.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
-
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/Project.h"
 #include "boomerang/util/Log.h"
 
 #define STARTER_PALM           (BOOMERANG_TEST_BASE "/tests/inputs/mc68328/Starter.prc")
@@ -18,8 +17,9 @@ void PalmBinaryLoaderTest::initTestCase()
 
 void PalmBinaryLoaderTest::testPalmLoad()
 {
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(STARTER_PALM);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(STARTER_PALM);
+	IFileLoader       *loader = project.getBestLoader(STARTER_PALM);
 
 	QVERIFY(loader != nullptr);
 	IBinaryImage *image = Boomerang::get()->getImage();

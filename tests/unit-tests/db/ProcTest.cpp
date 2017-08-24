@@ -12,12 +12,12 @@
  */
 
 #include "ProcTest.h"
-#include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
-
+#include "boomerang/db/Project.h"
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
+#include "boomerang/core/Boomerang.h"
 
 #include <map>
 
@@ -31,9 +31,10 @@ void ProcTest::testName()
 	QVERIFY(prog != nullptr);
 
     std::string       nm("default name");
-	BinaryFileFactory bff;
-	IFileLoader* pBF = bff.loadFile(HELLO_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENTIUM);
+
+	IFrontEnd *pFE = new PentiumFrontEnd(project.getBestLoader(HELLO_PENTIUM), prog);
 	QVERIFY(pFE != nullptr);
 	prog->setFrontEnd(pFE);
 

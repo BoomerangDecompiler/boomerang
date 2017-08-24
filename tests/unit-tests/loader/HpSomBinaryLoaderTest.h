@@ -1,7 +1,5 @@
 #pragma once
 
-#include "boomerang/core/BinaryFileFactory.h"
-
 #include <QtTest/QTest>
 
 class HpSomBinaryLoaderTest : public QObject
