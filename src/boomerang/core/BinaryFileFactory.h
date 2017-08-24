@@ -23,10 +23,14 @@
 /// starting at p.
 #define LH(p)    ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
 
+class IFileLoader;
 
 /**
  * This class deals with loading and determining the type of binary input files.
  * Input files can ve either executables or dynamic libraries.
+ *
+ * \note This class is only kept around to not break old code.
+ * For new code, use Project::loadBinary instead.
  */
 class BinaryFileFactory
 {

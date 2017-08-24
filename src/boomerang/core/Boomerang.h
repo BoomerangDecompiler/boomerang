@@ -68,7 +68,7 @@ public:
     IBinaryImage *getImage() override;
     IBinarySymbolTable *getSymbols() override;
 
-    IProject *getProject() override { return m_currentProject; }
+    IProject *getOrCreateProject() override;
 
     static const char *getVersionStr();
 

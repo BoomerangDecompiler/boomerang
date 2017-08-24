@@ -33,7 +33,6 @@ static Boomerang* boomerang = nullptr;
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
-    , m_currentProject(new Project)
     , m_symbols(new SymTab)
     , m_codeGenerator(new CCodeGenerator)
 {
@@ -51,7 +50,6 @@ ICodeGenerator *Boomerang::getCodeGenerator()
 {
     return m_codeGenerator;
 }
-
 
 
 void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
@@ -337,3 +335,13 @@ const char *Boomerang::getVersionStr()
 {
     return BOOMERANG_VERSION;
 }
+
+
+IProject* Boomerang::getOrCreateProject()
+{
+    if (!m_currentProject) {
+        m_currentProject = new Project;
+    }
+    return m_currentProject;
+}
+

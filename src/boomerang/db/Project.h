@@ -16,9 +16,12 @@
  ******************************************************************************/
 
 #include "boomerang/db/IProject.h"
+#include "boomerang/loader/IFileLoader.h"
 
 #include <QByteArray>
 #include <memory>
+#include <vector>
+
 
 class IBinaryImage;
 
@@ -41,7 +44,7 @@ public:
     bool isBinaryLoaded() const override;
 
     /// \copydoc IProject::unload
-    void unload() override;
+    void unloadBinaryFile() override;
 
 
     /// \copydoc IProject::getImage
@@ -50,10 +53,17 @@ public:
     /// \copydoc IProject::getImage
     const IBinaryImage* getImage() const override { return m_image.get(); }
 
-    QByteArray& getFiledata()       override { return m_fileBytes; }
-    const QByteArray& getFiledata() const override { return m_fileBytes; }
+private:
+    /// Load all plugins from the plugin directory.
+    void loadPlugins();
+
+    /// Get the best loader that is able to load the file at \p filePath
+    IFileLoader* getBestLoader(const QString& filePath) const;
 
 private:
     QByteArray m_fileBytes;
     std::shared_ptr<IBinaryImage> m_image; ///< raw memory interface
+
+    // Plugins
+    std::vector<std::shared_ptr<LoaderPlugin>> m_loaderPlugins;
 };

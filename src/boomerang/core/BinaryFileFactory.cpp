@@ -39,41 +39,12 @@ BinaryFileFactory::BinaryFileFactory()
 
 IFileLoader *BinaryFileFactory::loadFile(const QString& filePath)
 {
-    LOG_MSG("Loading binary file '%1'", filePath);
-
-    IBinaryImage       *image   = Boomerang::get()->getImage();
-    IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
-
-    image->reset();
-    symbols->clear();
-
     // Find loader plugin to load file
     IFileLoader *loader = getInstanceFor(filePath);
 
-    if (loader == nullptr) {
-        LOG_WARN("Cannot load %1: Unrecognised binary file format.", filePath);
-        return nullptr;
-    }
+    bool ok = Boomerang::get()->getOrCreateProject()->loadBinaryFile(filePath);
 
-    loader->initialize(image, symbols);
-
-    QFile srcFile(filePath);
-
-    if (false == srcFile.open(QFile::ReadOnly)) {
-        LOG_WARN("Opening '%1' failed");
-        return nullptr;
-    }
-
-    Boomerang::get()->getProject()->getFiledata().clear();
-    Boomerang::get()->getProject()->getFiledata() = srcFile.readAll();
-
-    if (loader->loadFromMemory(Boomerang::get()->getProject()->getFiledata()) == 0) {
-        LOG_WARN("Loading '%1 failed", filePath);
-        return nullptr;
-    }
-
-    image->calculateTextLimits();
-    return loader;
+    return ok ? loader : nullptr;
 }
 
 
