@@ -18,7 +18,6 @@
 
 #include <map>
 
-#include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/type/Type.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Module.h"

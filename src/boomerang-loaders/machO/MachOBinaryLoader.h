@@ -14,9 +14,11 @@
  * \brief This file contains the definition of the class MachOBinaryLoader.
  */
 
-#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/loader/IFileLoader.h"
+
 #include <string>
 #include <vector>
+
 
 /**
  * This file contains the definition of the MachOBinaryLoader class,

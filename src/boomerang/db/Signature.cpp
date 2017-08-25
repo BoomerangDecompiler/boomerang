@@ -15,7 +15,6 @@
 #include "Signature.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
@@ -25,9 +24,8 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
-
 #include "boomerang/db/Managed.h"
-
+#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/Type.h"
 
 #include "boomerang/util/Log.h"

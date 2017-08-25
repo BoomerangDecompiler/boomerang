@@ -9,15 +9,13 @@
 
 #include "Boomerang.h"
 
-#include "boomerang/core/BinaryFileFactory.h"
-
 #include "boomerang/codegen/CCodeGenerator.h"
 
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Project.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/util/Log.h"
 
@@ -33,7 +31,7 @@ static Boomerang* boomerang = nullptr;
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
-    , m_currentProject(new Project)
+    , m_currentProject(nullptr)
     , m_symbols(new SymTab)
     , m_codeGenerator(new CCodeGenerator)
 {
@@ -51,7 +49,6 @@ ICodeGenerator *Boomerang::getCodeGenerator()
 {
     return m_codeGenerator;
 }
-
 
 
 void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
@@ -99,7 +96,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
     LOG_MSG("Loading...");
     Prog      *prog = new Prog(fname);
-    IFrontEnd *fe   = IFrontEnd::create(fname, prog);
+    IFrontEnd *fe   = IFrontEnd::create(fname, prog, this->getOrCreateProject());
 
     if (fe == nullptr) {
         LOG_ERROR("Loading '%1' failed.", fname);
@@ -310,8 +307,7 @@ Boomerang *Boomerang::get()
 
 IBinaryImage *Boomerang::getImage()
 {
-    assert(m_currentProject != nullptr);
-    return m_currentProject->getOrCreateImage();
+    return getOrCreateProject()->getImage();
 }
 
 
@@ -337,3 +333,13 @@ const char *Boomerang::getVersionStr()
 {
     return BOOMERANG_VERSION;
 }
+
+
+IProject* Boomerang::getOrCreateProject()
+{
+    if (!m_currentProject) {
+        m_currentProject = new Project;
+    }
+    return m_currentProject;
+}
+

@@ -18,8 +18,8 @@ class PPCFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PPCFrontEnd(IFileLoader *pLoader, Prog *Program, BinaryFileFactory *pbff);
-    
+    PPCFrontEnd(IFileLoader *pLoader, Prog *Program);
+
     /// \copydoc IFrontEnd::~IFrontEnd
     virtual ~PPCFrontEnd();
 

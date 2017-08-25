@@ -15,12 +15,12 @@
 #include "TypeTest.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h" // Ugh - needed before frontend.h
 #include "boomerang/db/Signature.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/core/Project.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 
@@ -57,9 +57,12 @@ void TypeTest::testNotEqual()
 
 void TypeTest::testCompound()
 {
-	BinaryFileFactory bff;
-	IFileLoader       *loader = bff.loadFile(HELLO_WINDOWS);
-	IFrontEnd          *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS), &bff);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_WINDOWS);
+    IFileLoader* loader = project.getBestLoader(HELLO_WINDOWS);
+	QVERIFY(loader != nullptr);
+
+	IFrontEnd *pFE    = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS));
 
 	pFE->readLibraryCatalog(); // Read definitions
 

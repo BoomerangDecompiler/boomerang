@@ -98,7 +98,7 @@ void Decompiler::load()
 
     m_image = Boomerang::get()->getImage();
     m_prog  = new Prog(m_filename);
-    m_fe    = IFrontEnd::create(m_filename, m_prog);
+    m_fe    = IFrontEnd::create(m_filename, m_prog, Boomerang::get()->getOrCreateProject());
 
     if (m_fe == NULL) {
         emit machineType(QString("Unavailable: Load Failed!"));

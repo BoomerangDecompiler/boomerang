@@ -18,8 +18,6 @@
 #include "Frontend.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
-
 #include "boomerang/c/ansi-c-parser.h"
 
 #include "boomerang/db/CFG.h"
@@ -37,7 +35,7 @@
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/exp/Location.h"
-
+#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 
@@ -57,9 +55,8 @@
 #include <sstream>
 
 
-IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
+IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog)
     : m_fileLoader(p_BF)
-    , m_bff(bff)
     , m_program(prog)
 {
     m_image = Boomerang::get()->getImage();
@@ -74,24 +71,24 @@ IFrontEnd::~IFrontEnd()
 }
 
 
-IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactory *pbff)
+IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog)
 {
     switch (pBF->getMachine())
     {
     case Machine::PENTIUM:
-        return new PentiumFrontEnd(pBF, prog, pbff);
+        return new PentiumFrontEnd(pBF, prog);
 
     case Machine::SPARC:
-        return new SparcFrontEnd(pBF, prog, pbff);
+        return new SparcFrontEnd(pBF, prog);
 
     case Machine::PPC:
-        return new PPCFrontEnd(pBF, prog, pbff);
+        return new PPCFrontEnd(pBF, prog);
 
     case Machine::MIPS:
-        return new MIPSFrontEnd(pBF, prog, pbff);
+        return new MIPSFrontEnd(pBF, prog);
 
     case Machine::ST20:
-        return new ST20FrontEnd(pBF, prog, pbff);
+        return new ST20FrontEnd(pBF, prog);
 
     case Machine::HPRISC:
         LOG_VERBOSE("No frontend for HP RISC");
@@ -113,22 +110,16 @@ IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog, BinaryFileFactor
 }
 
 
-IFrontEnd *IFrontEnd::create(const QString& fname, Prog *prog)
+IFrontEnd *IFrontEnd::create(const QString& fname, Prog *prog, IProject* project)
 {
-    BinaryFileFactory *pbff = new BinaryFileFactory();
-
-    if (pbff == nullptr) {
+    IFileLoader* loader = project->getBestLoader(fname);
+    if (loader == nullptr) {
         return nullptr;
     }
 
-    IFileLoader *loader = pbff->loadFile(qPrintable(fname));
+    project->loadBinaryFile(fname);
 
-    if (!loader) {
-        return nullptr;
-    }
-
-    IFrontEnd *fe = instantiate(loader, prog, pbff);
-    return fe;
+    return instantiate(loader, prog);
 }
 
 

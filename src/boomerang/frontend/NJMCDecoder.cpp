@@ -17,7 +17,6 @@
 #include "NJMCDecoder.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 

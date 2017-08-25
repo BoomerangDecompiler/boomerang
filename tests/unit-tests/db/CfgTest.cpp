@@ -7,13 +7,12 @@
 #include "CfgTest.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Location.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
@@ -37,12 +36,13 @@ void CfgTest::initTestCase()
 
 void CfgTest::testDominators()
 {
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
-	QVERIFY(pBF != nullptr);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(FRONTIER_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(FRONTIER_PENTIUM);
+    QVERIFY(loader != nullptr);
 
 	Prog      prog(FRONTIER_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -97,12 +97,13 @@ void CfgTest::testDominators()
 
 void CfgTest::testSemiDominators()
 {
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(SEMI_PENTIUM);
-	QVERIFY(pBF != nullptr);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(SEMI_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(SEMI_PENTIUM);
+    QVERIFY(loader != nullptr);
 
 	Prog      prog(SEMI_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -160,12 +161,13 @@ void CfgTest::testPlacePhi()
 {
 	QSKIP("Disabled.");
 
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
-	QVERIFY(pBF != 0);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(FRONTIER_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(FRONTIER_PENTIUM);
+	QVERIFY(loader != 0);
 
 	Prog      prog(FRONTIER_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -206,12 +208,13 @@ void CfgTest::testPlacePhi2()
 {
 	QSKIP("Disabled.");
 
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(IFTHEN_PENTIUM);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(IFTHEN_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(IFTHEN_PENTIUM);
 
-	QVERIFY(pBF != 0);
+	QVERIFY(loader != 0);
 	Prog      prog(IFTHEN_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(pBF, &prog, &bff);
+	IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
 	Type::clearNamedTypes();
 	prog.setFrontEnd(pFE);
 	pFE->decode(&prog);
@@ -291,12 +294,13 @@ void CfgTest::testPlacePhi2()
 
 void CfgTest::testRenameVars()
 {
-	BinaryFileFactory bff;
-	IFileLoader       *pBF = bff.loadFile(FRONTIER_PENTIUM);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(FRONTIER_PENTIUM);
+    IFileLoader* loader = project.getBestLoader(FRONTIER_PENTIUM);
+	QVERIFY(loader != 0);
 
-	QVERIFY(pBF != 0);
 	Prog      *prog = new Prog(FRONTIER_PENTIUM);
-	IFrontEnd *pFE  = new PentiumFrontEnd(pBF, prog, &bff);
+	IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);

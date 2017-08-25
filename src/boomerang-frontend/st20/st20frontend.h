@@ -19,7 +19,7 @@ class ST20FrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    ST20FrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
+    ST20FrontEnd(IFileLoader *pLoader, Prog *prog);
 
     /// \copydoc IFrontEnd::~IFrontEnd
     virtual ~ST20FrontEnd();

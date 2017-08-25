@@ -16,8 +16,8 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/IBinarySymbols.h"
+#include "boomerang/loader/IFileLoader.h"
 
 #include <set>
 

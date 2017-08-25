@@ -1,10 +1,10 @@
 #include "SparcBinaryLoaderTest.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/util/Log.h"
 
 
 #define HELLO_SPARC  (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
@@ -19,8 +19,9 @@ void SparcBinaryLoaderTest::initTestCase()
 void SparcBinaryLoaderTest::testSparcLoad()
 {
     // Load SPARC hello world
-    BinaryFileFactory bff;
-    IFileLoader       *loader = bff.loadFile(HELLO_SPARC);
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_SPARC);
+    IFileLoader       *loader = project.getBestLoader(HELLO_SPARC);
 
     QVERIFY(loader != nullptr);
 

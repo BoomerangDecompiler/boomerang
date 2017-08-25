@@ -20,9 +20,8 @@
 
 void ProgTest::testName()
 {
-    Prog *prog = new Prog(HELLO_PENTIUM);
-
     QString progName = HELLO_PENTIUM;
+    Prog *prog = new Prog(progName);
     QCOMPARE(prog->getName(), progName);
 
     progName = "Happy Prog";

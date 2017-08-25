@@ -43,8 +43,6 @@
 #include "boomerang/csr.h"
 #include "boomerang/include/frontend.h"
 #include "boomerang/include/decoder.h"
-#include "boomerang/core/BinaryFileFactory.h"
-
 /***************************************************************************/ /**
  * Globals and enumerated types used for decoding.
  *============================================================================*/

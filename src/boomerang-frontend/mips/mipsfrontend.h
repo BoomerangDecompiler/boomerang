@@ -38,8 +38,8 @@ class MIPSFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    MIPSFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
-    
+    MIPSFrontEnd(IFileLoader *pLoader, Prog *prog);
+
     /// \copydoc IFrontEnd::~IFrontEnd
     virtual ~MIPSFrontEnd();
 

@@ -34,7 +34,6 @@
 
 #include "boomerang/global.h"
 #include "boomerang/include/decoder.h"
-#include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/hppa-names.h"
 

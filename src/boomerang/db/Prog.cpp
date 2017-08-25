@@ -21,9 +21,8 @@
 #include "Prog.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
-
 #include "boomerang/c/ansi-c-parser.h"
+#include "boomerang/codegen/ICodeGenerator.h"
 
 #include "boomerang/db/Module.h"
 #include "boomerang/db/CFG.h"
@@ -37,11 +36,9 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
-
-#include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/Managed.h"
 
-#include "boomerang/loader/IBinaryFile.h"
+#include "boomerang/loader/IFileLoader.h"
 
 #include "boomerang/passes/RangeAnalysis.h"
 
@@ -87,7 +84,7 @@ Prog::Prog(const QString& name)
     , m_iNumberedProc(1)
 {
     m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
-    m_rootModule   = getOrInsertModule(getNameNoPathNoExt());
+    m_rootModule    = getOrInsertModule(getNameNoPathNoExt());
     m_path          = m_name;
     m_image         = Boomerang::get()->getImage();
 }

@@ -21,7 +21,6 @@
 
 #include "boomerang/util/Types.h"
 #include "boomerang/frontend/SigEnum.h" // For enums platform and cc
-#include "boomerang/core/BinaryFileFactory.h"
 
 #include "boomerang/frontend/TargetQueue.h"
 
@@ -41,6 +40,7 @@ class Exp;
 class TypedExp;
 class Cfg;
 class Prog;
+class IProject;
 struct DecodeResult;
 
 class Signature;
@@ -48,6 +48,7 @@ class Statement;
 class CallStatement;
 class SymTab;
 class IBinaryImage;
+class IFileLoader;
 
 using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
@@ -72,9 +73,8 @@ public:
     * \brief      Construct the FrontEnd object
     * \param loader pointer to the Loader
     * \param prog program being decoded
-    * \param bff  pointer to a BinaryFileFactory object (so the library can be unloaded)
     ******************************************************************************/
-    IFrontEnd(IFileLoader *loader, Prog *prog, BinaryFileFactory *bff);
+    IFrontEnd(IFileLoader *loader, Prog *prog);
 
     virtual ~IFrontEnd();
 
@@ -83,9 +83,8 @@ public:
     * Static function to instantiate an appropriate concrete front end
     * \param loader pointer to the loader object
     * \param prog program being decoded
-    * \param bff pointer to a BinaryFileFactory object (so the library can be unloaded)
     ******************************************************************************/
-    static IFrontEnd *instantiate(IFileLoader *loader, Prog *prog, BinaryFileFactory *bff);
+    static IFrontEnd *instantiate(IFileLoader *loader, Prog *prog);
 
     /***************************************************************************/ /**
     * \brief Create FrontEnd instance given \a fname and \a prog
@@ -94,7 +93,7 @@ public:
     * \param prog program being decoded
     * \returns Binary-specific frontend.
     ******************************************************************************/
-    static IFrontEnd *create(const QString& fname, Prog *prog);
+    static IFrontEnd *create(const QString& fname, Prog *prog, IProject* project);
 
     /// Is this a win32 frontend?
     bool isWin32() const;
@@ -249,15 +248,8 @@ private:
 
 protected:
     IBinaryImage *m_image;
-
-//    const int NOP_SIZE;            ///< Size of a no-op instruction (in bytes)
-//    const int NOP_INST;            ///< No-op pattern
-
     IDecoder *m_decoder; ///< The decoder
-
     IFileLoader *m_fileLoader;
-
-    BinaryFileFactory *m_bff; ///< The binary file factory (for closing properly)
     Prog *m_program;          ///< The Prog object
 
     /// The queue of addresses still to be processed

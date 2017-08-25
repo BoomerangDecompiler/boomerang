@@ -14,7 +14,7 @@
  */
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/IProject.h"
+#include "boomerang/core/IProject.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Settings.h"
@@ -68,7 +68,7 @@ public:
     IBinaryImage *getImage() override;
     IBinarySymbolTable *getSymbols() override;
 
-    IProject *getProject() override { return m_currentProject; }
+    IProject *getOrCreateProject() override;
 
     static const char *getVersionStr();
 

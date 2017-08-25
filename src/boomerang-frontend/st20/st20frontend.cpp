@@ -23,7 +23,6 @@
 
 #include "st20frontend.h"
 
-#include "boomerang/core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/Register.h"
@@ -34,7 +33,7 @@
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
 
-
+#include "boomerang/loader/IFileLoader.h"
 #include "boomerang-frontend/st20/st20decoder.h"
 
 #include <cassert>
@@ -42,8 +41,8 @@
 #include <sstream>
 
 
-ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog, BinaryFileFactory *bff)
-    : IFrontEnd(pBF, prog, bff)
+ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog)
+    : IFrontEnd(pBF, prog)
 {
     m_decoder = new ST20Decoder(prog);
 }
@@ -83,7 +82,7 @@ std::vector<SharedExp>& ST20FrontEnd::getDefaultReturns()
 Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
-       Address start = m_fileLoader->getMainEntryPoint();
+    Address start = m_fileLoader->getMainEntryPoint();
 
     if (start != Address::INVALID) {
         return start;

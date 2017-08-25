@@ -23,7 +23,6 @@
 #include "sparcfrontend.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h" // E.g. IsDynamicallyLinkedProc
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/BasicBlock.h"
@@ -40,7 +39,7 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
-
+#include "boomerang/loader/IFileLoader.h"
 #include "boomerang-frontend/sparc/sparcdecoder.h"
 
 #include <cassert>
@@ -1400,8 +1399,8 @@ bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, std::list<RTL *> 
 }
 
 
-SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog, BinaryFileFactory *bff)
-    : IFrontEnd(p_BF, prog, bff)
+SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog)
+    : IFrontEnd(p_BF, prog)
 {
     m_decoder         = new SparcDecoder(prog);
     SymbolTable       = Boomerang::get()->getSymbols();

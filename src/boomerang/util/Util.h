@@ -95,3 +95,8 @@ void writeQWord(void* dst, DWord value, bool dstBigEndian);
 
 #define DEBUG_BUFSIZE    5000 // Size of the debug print buffer
 extern char debug_buffer[DEBUG_BUFSIZE];
+
+
+/// Given a pointer p, returns the 16 bits (halfword) in the two bytes
+/// starting at p.
+#define LH(p)    ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))

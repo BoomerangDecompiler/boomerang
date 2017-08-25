@@ -134,7 +134,7 @@ void CCodeGenerator::generateCode(const Prog* prog, Module *cluster, UserProc *p
         os = &prog->getRootModule()->getStream();
 
         if (proc == nullptr) {
-            bool           global = false;
+            bool global = false;
 
             if (SETTING(noDecompile)) {
                 const char *sections[] = { "rodata", "data", "data1", nullptr };

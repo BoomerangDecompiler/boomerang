@@ -25,7 +25,6 @@
 #include "sparcdecoder.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h" // For SymbolByAddress()
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/Prog.h"

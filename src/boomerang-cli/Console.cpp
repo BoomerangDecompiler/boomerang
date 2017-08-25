@@ -171,6 +171,7 @@ CommandStatus Console::handleDecode(const QStringList& args)
         return CommandStatus::Failure;
     }
 
+    Boomerang::get()->getOrCreateProject();
     prog = Boomerang::get()->loadAndDecode(args[0]);
 
     if (prog) {

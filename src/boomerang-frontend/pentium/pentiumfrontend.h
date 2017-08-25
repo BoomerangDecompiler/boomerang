@@ -11,7 +11,7 @@ class PentiumFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PentiumFrontEnd(IFileLoader *pLoader, Prog *prog, BinaryFileFactory *pbff);
+    PentiumFrontEnd(IFileLoader *pLoader, Prog *prog);
 
     /// \copydoc IFrontEnd::~IFrontEnd
     virtual ~PentiumFrontEnd();

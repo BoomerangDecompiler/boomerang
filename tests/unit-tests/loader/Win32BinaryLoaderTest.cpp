@@ -1,7 +1,7 @@
 #include "Win32BinaryLoaderTest.h"
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/BinaryFileFactory.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
 
@@ -17,11 +17,11 @@ void Win32BinaryLoaderTest::initTestCase()
 
 void Win32BinaryLoaderTest::testWinLoad()
 {
-	BinaryFileFactory bff;
-	IFileLoader       *loader = nullptr;
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(SWITCH_BORLAND);
 
 	// Borland
-	loader = bff.loadFile(SWITCH_BORLAND);
+    IFileLoader* loader = project.getBestLoader(SWITCH_BORLAND);
 	QVERIFY(loader != nullptr);
 	QCOMPARE(loader->getMainEntryPoint(), Address(0x00401150));
 }

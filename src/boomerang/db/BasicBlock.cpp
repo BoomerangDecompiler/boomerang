@@ -673,7 +673,7 @@ SharedExp BasicBlock::getCond()
     assert(m_listOfRTLs);
     RTL *last = m_listOfRTLs->back();
     // it should contain a BranchStatement
-    BranchStatement *bs = (BranchStatement *)last->getHlStmt();
+    BranchStatement *bs = dynamic_cast<BranchStatement*>(last->getHlStmt());
 
     if (bs && (bs->getKind() == STMT_BRANCH)) {
         return bs->getCondExpr();

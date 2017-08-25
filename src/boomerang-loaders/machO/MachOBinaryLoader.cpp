@@ -24,7 +24,6 @@
 #include "objc/objc-class.h"
 #include "objc/objc-runtime.h"
 
-#include "boomerang/core/BinaryFileFactory.h"
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
