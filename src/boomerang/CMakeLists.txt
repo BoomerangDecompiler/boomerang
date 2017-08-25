@@ -14,11 +14,14 @@ set(boomerang_SRC
     core/Boomerang.h
     core/Boomerang.cpp
     core/IBoomerang.h
-    core/Watcher.h
+    core/IProject.h
     core/Plugin.h
     core/Plugin.cpp
+    core/Project.cpp
+    core/Project.h
     core/Settings.h
     core/Settings.cpp
+    core/Watcher.h
 
     db/BasicBlock.cpp
     db/BasicBlock.h
@@ -35,15 +38,12 @@ set(boomerang_SRC
     db/IBinarySymbols.h
     db/InsNameElem.cpp
     db/InsNameElem.h
-    db/IProject.h
     db/Managed.cpp
     db/Managed.h
     db/Module.cpp
     db/Module.h
     db/Prog.cpp
     db/Prog.h
-    db/Project.cpp
-    db/Project.h
     db/Register.cpp
     db/Register.h
     db/RTL.cpp

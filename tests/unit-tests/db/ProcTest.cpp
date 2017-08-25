@@ -15,7 +15,7 @@
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
-#include "boomerang/db/Project.h"
+#include "boomerang/core/Project.h"
 #include "boomerang-frontend/pentium/pentiumfrontend.h"
 #include "boomerang/core/Boomerang.h"
 

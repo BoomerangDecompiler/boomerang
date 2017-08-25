@@ -12,7 +12,7 @@
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/Project.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 
 #include "boomerang-frontend/pentium/pentiumfrontend.h"

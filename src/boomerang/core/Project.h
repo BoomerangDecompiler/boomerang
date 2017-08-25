@@ -15,7 +15,7 @@
  * \brief    This file contains the definition for the Project class
  ******************************************************************************/
 
-#include "boomerang/db/IProject.h"
+#include "boomerang/core/IProject.h"
 #include "boomerang/loader/IFileLoader.h"
 
 #include <QByteArray>

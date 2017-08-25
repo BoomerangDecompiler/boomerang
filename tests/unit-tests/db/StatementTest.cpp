@@ -34,7 +34,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Project.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/Managed.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"

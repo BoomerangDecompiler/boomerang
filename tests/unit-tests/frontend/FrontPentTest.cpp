@@ -8,7 +8,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Project.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/frontend/Decoder.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
