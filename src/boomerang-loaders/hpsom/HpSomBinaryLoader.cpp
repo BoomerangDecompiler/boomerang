@@ -450,7 +450,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 
     unsigned numDLT = UINT4(DLTable + 0x40);
     // Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-    unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + m_image->getSectionInfo(1)->getHostAddr().value());
+    unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + m_image->getSection(1)->getHostAddr().value());
 
     // The DLT is paralelled by the first <numDLT> entries in the import table;
     // the import table has the symbolic names

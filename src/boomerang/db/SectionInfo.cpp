@@ -164,7 +164,7 @@ void SectionInfo::resize(uint32_t sz)
 
 //    assert(false && "This function is not implmented yet");
 //    if(sz!=uSectionSize) {
-//        const IBinarySection *sect = Boomerang::get()->getImage()->getSectionInfoByAddr(uNativeAddr+sz);
+//        const IBinarySection *sect = Boomerang::get()->getImage()->getSectionByAddr(uNativeAddr+sz);
 //        if(sect==nullptr || sect==this ) {
 //        }
 //    }

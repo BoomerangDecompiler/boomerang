@@ -44,16 +44,16 @@ public:
     IBinarySection* createSection(const QString& name, Address from, Address to) override;
 
     /// \copydoc IBinaryImage::getSectionInfo
-    const IBinarySection* getSectionInfo(int idx) const override { return m_sections[idx]; }
+    const IBinarySection* getSection(int idx) const override { return m_sections[idx]; }
 
     /// \copydoc IBinaryImage::getSectionInfoByName
-    IBinarySection* getSectionInfoByName(const QString& sectionName) override;
+    IBinarySection* getSectionByName(const QString& sectionName) override;
 
-    /// \copydoc IBinaryImage::getSectionInfoByAddr
-    const IBinarySection* getSectionInfoByAddr(Address addr) const override;
+    /// \copydoc IBinaryImage::getSectionByAddr
+    const IBinarySection* getSectionByAddr(Address addr) const override;
 
     /// \copydoc IBinaryImage::getSectionIndexByName
-    int getSectionIndexByName(const QString& sName) override;
+    int getSectionIndex(const QString& sName) override;
 
     /// \copydoc IBinaryImage::getNumSections
     size_t getNumSections() const override { return m_sections.size(); }

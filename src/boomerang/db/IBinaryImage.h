@@ -29,18 +29,18 @@ public:
     virtual IBinarySection* createSection(const QString& name, Address from, Address to) = 0;
 
     /// Get a section by its index
-    virtual const IBinarySection* getSectionInfo(int idx) const = 0;
+    virtual const IBinarySection* getSection(int idx) const = 0;
 
     /// Get the section with name \p sectionName
-    virtual IBinarySection* getSectionInfoByName(const QString& sectionName) = 0;
+    virtual IBinarySection* getSectionByName(const QString& sectionName) = 0;
 
     /// Get the section the address \p addr is in.
     /// If the address does not belong to a section, this function returns nullptr.
-    virtual const IBinarySection* getSectionInfoByAddr(Address addr) const = 0;
+    virtual const IBinarySection* getSectionByAddr(Address addr) const = 0;
 
     /// Get the index of the section with name \p sectionName
     /// Returns -1 if no section was found.
-    virtual int getSectionIndexByName(const QString& sectionName) = 0;
+    virtual int getSectionIndex(const QString& sectionName) = 0;
 
     /// \returns the number of sections in this image.
     virtual size_t getNumSections() const = 0;

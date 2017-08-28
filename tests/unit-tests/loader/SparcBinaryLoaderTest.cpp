@@ -29,8 +29,8 @@ void SparcBinaryLoaderTest::testSparcLoad()
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), (size_t)28);
-    QCOMPARE(image->getSectionInfo(1)->getName(), QString(".hash"));
-    QCOMPARE(image->getSectionInfo(27)->getName(), QString(".stab.indexstr"));
+    QCOMPARE(image->getSection(1)->getName(), QString(".hash"));
+    QCOMPARE(image->getSection(27)->getName(), QString(".stab.indexstr"));
 }
 
 QTEST_MAIN(SparcBinaryLoaderTest)

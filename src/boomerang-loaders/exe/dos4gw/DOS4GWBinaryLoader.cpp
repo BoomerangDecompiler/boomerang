@@ -100,14 +100,14 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     bool gotSubEbp   = false;                                   // True if see sub ebp, ebp
     bool lastWasCall = false;                                   // True if the last instruction was a call
 
-    IBinarySection *si = m_image->getSectionInfoByName("seg0"); // Assume the first section is text
+    IBinarySection *si = m_image->getSectionByName("seg0"); // Assume the first section is text
 
     if (si == nullptr) {
-        si = m_image->getSectionInfoByName(".text");
+        si = m_image->getSectionByName(".text");
     }
 
     if (si == nullptr) {
-        si = m_image->getSectionInfoByName("CODE");
+        si = m_image->getSectionByName("CODE");
     }
 
     assert(si);

@@ -48,9 +48,9 @@ void ElfBinaryLoaderTest::testElfLoadClang()
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), (size_t)29);
-    QCOMPARE(image->getSectionInfo(0)->getName(),  QString(".interp"));
-    QCOMPARE(image->getSectionInfo(10)->getName(), QString(".plt"));
-    QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
+    QCOMPARE(image->getSection(0)->getName(),  QString(".interp"));
+    QCOMPARE(image->getSection(10)->getName(), QString(".plt"));
+    QCOMPARE(image->getSection(28)->getName(), QString(".shstrtab"));
     QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
     QCOMPARE(image->getLimitTextHigh(), Address(0x0804A020));
 }
@@ -75,9 +75,9 @@ void ElfBinaryLoaderTest::testElfLoadClangStatic()
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), (size_t)29);
-    QCOMPARE(image->getSectionInfo(0)->getName(), QString(".note.ABI-tag"));
-    QCOMPARE(image->getSectionInfo(13)->getName(), QString(".eh_frame"));
-    QCOMPARE(image->getSectionInfo(28)->getName(), QString(".shstrtab"));
+    QCOMPARE(image->getSection(0)->getName(), QString(".note.ABI-tag"));
+    QCOMPARE(image->getSection(13)->getName(), QString(".eh_frame"));
+    QCOMPARE(image->getSection(28)->getName(), QString(".shstrtab"));
     QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
     QCOMPARE(image->getLimitTextHigh(), Address(0x080ECDA4));
 }
@@ -98,8 +98,8 @@ void ElfBinaryLoaderTest::testPentiumLoad()
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), (size_t)33);
-    QCOMPARE(image->getSectionInfo(1)->getName(), QString(".note.ABI-tag"));
-    QCOMPARE(image->getSectionInfo(32)->getName(), QString(".strtab"));
+    QCOMPARE(image->getSection(1)->getName(), QString(".note.ABI-tag"));
+    QCOMPARE(image->getSection(32)->getName(), QString(".strtab"));
 }
 
 
