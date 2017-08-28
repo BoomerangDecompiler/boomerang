@@ -128,14 +128,14 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     // Create a separate, uncompressed, initialised data section
-    IBinarySection *pData = m_image->getSectionInfoByName("data0");
+    IBinarySection *pData = m_image->getSectionByName("data0");
 
     if (pData == nullptr) {
         fprintf(stderr, "No data section!\n");
         return false;
     }
 
-    IBinarySection *pCode0 = m_image->getSectionInfoByName("code0");
+    IBinarySection *pCode0 = m_image->getSectionByName("code0");
 
     if (pCode0 == nullptr) {
         fprintf(stderr, "No code 0 section!\n");
@@ -341,7 +341,7 @@ void PalmBinaryLoader::addTrapSymbols()
 std::pair<Address, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
 {
     Address              agp = Address::ZERO;
-    const IBinarySection *ps = m_image->getSectionInfoByName("data0");
+    const IBinarySection *ps = m_image->getSectionByName("data0");
 
     if (ps) {
         agp = ps->getSourceAddr();
@@ -437,7 +437,7 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
 // For Palm binaries, this is PilotMain.
 Address PalmBinaryLoader::getMainEntryPoint()
 {
-    IBinarySection *psect = m_image->getSectionInfoByName("code1");
+    IBinarySection *psect = m_image->getSectionByName("code1");
 
     if (psect == nullptr) {
         return Address::ZERO; // Failed

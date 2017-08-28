@@ -1,10 +1,10 @@
 #pragma once
 
+
 class IBinaryImage;
 class IFileLoader;
-class QByteArray;
 class QString;
-struct ITypeRecovery;
+
 
 /**
  * \brief The Project interface class

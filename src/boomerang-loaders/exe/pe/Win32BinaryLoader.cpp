@@ -145,10 +145,10 @@ Address Win32BinaryLoader::getMainEntryPoint()
     int           gap;              // Number of instructions from the last ordinary call
     int           borlandState = 0; // State machine for Borland
 
-    IBinarySection *section = m_image->getSectionInfoByName(".text");
+    IBinarySection *section = m_image->getSectionByName(".text");
 
     if (section == nullptr) {
-        section = m_image->getSectionInfoByName("CODE");
+        section = m_image->getSectionByName("CODE");
         if (section == nullptr) {
             LOG_ERROR("Cannot find a section containing code!");
             return Address::INVALID;
@@ -722,10 +722,10 @@ int Win32BinaryLoader::canLoad(QIODevice& fl) const
 void Win32BinaryLoader::findJumps(Address curr)
 {
     int            cnt  = 0; // Count of bytes with no match
-    IBinarySection *section = m_image->getSectionInfoByName(".text");
+    IBinarySection *section = m_image->getSectionByName(".text");
 
     if (section == nullptr) {
-        section = m_image->getSectionInfoByName("CODE");
+        section = m_image->getSectionByName("CODE");
     }
 
     assert(section);
@@ -985,7 +985,7 @@ bool Win32BinaryLoader::isStaticLinkedLibProc(Address uNative)
 bool Win32BinaryLoader::isMinGWsAllocStack(Address uNative)
 {
     if (m_mingw_main) {
-        const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
+        const IBinarySection *si = m_image->getSectionByAddr(uNative);
 
         if (si) {
             HostAddress host  = si->getHostAddr() - si->getSourceAddr() + uNative;
@@ -1010,7 +1010,7 @@ bool Win32BinaryLoader::isMinGWsAllocStack(Address uNative)
 bool Win32BinaryLoader::isMinGWsFrameInit(Address uNative)
 {
     if (m_mingw_main) {
-        const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
+        const IBinarySection *si = m_image->getSectionByAddr(uNative);
 
         if (si) {
             HostAddress host = si->getHostAddr() - si->getSourceAddr() + uNative;
@@ -1042,7 +1042,7 @@ bool Win32BinaryLoader::isMinGWsFrameInit(Address uNative)
 bool Win32BinaryLoader::isMinGWsFrameEnd(Address uNative)
 {
     if (m_mingw_main) {
-        const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
+        const IBinarySection *si = m_image->getSectionByAddr(uNative);
 
         if (si) {
             HostAddress host   = si->getHostAddr() - si->getSourceAddr() + uNative;
@@ -1069,7 +1069,7 @@ bool Win32BinaryLoader::isMinGWsFrameEnd(Address uNative)
 bool Win32BinaryLoader::isMinGWsCleanupSetup(Address uNative)
 {
     if (m_mingw_main) {
-        const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
+        const IBinarySection *si = m_image->getSectionByAddr(uNative);
 
         if (si) {
             HostAddress host   = si->getHostAddr() - si->getSourceAddr() + uNative;
@@ -1100,7 +1100,7 @@ bool Win32BinaryLoader::isMinGWsCleanupSetup(Address uNative)
 bool Win32BinaryLoader::isMinGWsMalloc(Address uNative)
 {
     if (m_mingw_main) {
-        const IBinarySection *si = m_image->getSectionInfoByAddr(uNative);
+        const IBinarySection *si = m_image->getSectionByAddr(uNative);
 
         if (si) {
             HostAddress host = si->getHostAddr() - si->getSourceAddr() + uNative;

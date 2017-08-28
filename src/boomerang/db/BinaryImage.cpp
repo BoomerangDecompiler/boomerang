@@ -20,31 +20,31 @@ void BinaryImage::reset()
 {
     m_sectionMap.clear();
 
-    for (IBinarySection *si : m_sections) {
-        delete si;
+    for (IBinarySection* section : m_sections) {
+        delete section;
     }
 
     m_sections.clear();
 }
 
 
-Byte BinaryImage::readNative1(Address nat)
+Byte BinaryImage::readNative1(Address addr)
 {
-    const IBinarySection *si = getSectionInfoByAddr(nat);
+    const IBinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr) {
-        LOG_WARN("Target Memory access in unmapped section at address %1", nat.toString());
+        LOG_WARN("Target Memory access in unmapped section at address %1", addr.toString());
         return -1;
     }
 
-    HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
+    HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
     return *(Byte *)host.value();
 }
 
 
 SWord BinaryImage::readNative2(Address nat)
 {
-    const IBinarySection *si = getSectionInfoByAddr(nat);
+    const IBinarySection *si = getSectionByAddr(nat);
 
     if (si == nullptr) {
         return 0;
@@ -57,7 +57,7 @@ SWord BinaryImage::readNative2(Address nat)
 
 DWord BinaryImage::readNative4(Address addr)
 {
-    const IBinarySection *si = getSectionInfoByAddr(addr);
+    const IBinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr) {
         return 0;
@@ -70,7 +70,7 @@ DWord BinaryImage::readNative4(Address addr)
 
 QWord BinaryImage::readNative8(Address addr)
 {
-    const IBinarySection *si = getSectionInfoByAddr(addr);
+    const IBinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr) {
         return 0;
@@ -90,7 +90,7 @@ float BinaryImage::readNativeFloat4(Address nat)
 
 double BinaryImage::readNativeFloat8(Address nat)
 {
-    const IBinarySection *si = getSectionInfoByAddr(nat);
+    const IBinarySection *si = getSectionByAddr(nat);
 
     if (si == nullptr) {
         return 0;
@@ -103,7 +103,7 @@ double BinaryImage::readNativeFloat8(Address nat)
 
 void BinaryImage::writeNative4(Address addr, uint32_t value)
 {
-    const IBinarySection *si = getSectionInfoByAddr(addr);
+    const IBinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr) {
         LOG_WARN("Ignoring write at address %1: Address is outside any known section");
@@ -116,7 +116,7 @@ void BinaryImage::writeNative4(Address addr, uint32_t value)
 }
 
 
-void BinaryImage::calculateTextLimits()
+void BinaryImage::updateTextLimits()
 {
     m_limitTextLow  = Address::INVALID;
     m_limitTextHigh = Address::ZERO;
@@ -157,19 +157,15 @@ void BinaryImage::calculateTextLimits()
 }
 
 
-const IBinarySection *BinaryImage::getSectionInfoByAddr(Address uEntry) const
+const IBinarySection *BinaryImage::getSectionByAddr(Address uEntry) const
 {
     auto iter = m_sectionMap.find(uEntry);
 
-    if (iter == m_sectionMap.end()) {
-        return nullptr;
-    }
-
-    return iter->second;
+    return (iter != m_sectionMap.end()) ? iter->second : nullptr;
 }
 
 
-int BinaryImage::getSectionIndexByName(const QString& sName)
+int BinaryImage::getSectionIndex(const QString& sName)
 {
     for (size_t i = 0; i < m_sections.size(); i++) {
         if (m_sections[i]->getName() == sName) {
@@ -181,9 +177,9 @@ int BinaryImage::getSectionIndexByName(const QString& sName)
 }
 
 
-IBinarySection *BinaryImage::getSectionInfoByName(const QString& sName)
+IBinarySection *BinaryImage::getSectionByName(const QString& sName)
 {
-    int i = getSectionIndexByName(sName);
+    int i = getSectionIndex(sName);
 
     if (i == -1) {
         return nullptr;
@@ -193,9 +189,9 @@ IBinarySection *BinaryImage::getSectionInfoByName(const QString& sName)
 }
 
 
-bool BinaryImage::isReadOnly(Address uEntry)
+bool BinaryImage::isReadOnly(Address addr)
 {
-    const SectionInfo *p = static_cast<const SectionInfo *>(getSectionInfoByAddr(uEntry));
+    const SectionInfo *p = static_cast<const SectionInfo *>(getSectionByAddr(addr));
 
     if (!p) {
         return false;
@@ -205,29 +201,27 @@ bool BinaryImage::isReadOnly(Address uEntry)
         return true;
     }
 
-    QVariant v = p->attributeInRange("ReadOnly", uEntry, uEntry + 1);
+    QVariant v = p->attributeInRange("ReadOnly", addr, addr + 1);
     return !v.isNull();
 }
 
 
-Address BinaryImage::getLimitTextLow()
+Address BinaryImage::getLimitTextLow() const
 {
-    auto interval = m_sectionMap.begin()->first;
-
-    return interval.lower();
+    return m_sectionMap.begin()->first.lower();
 }
 
 
-Address BinaryImage::getLimitTextHigh()
+Address BinaryImage::getLimitTextHigh() const
 {
-    auto interval = m_sectionMap.rbegin()->first;
-
-    return interval.upper();
+    return m_sectionMap.rbegin()->first.upper();
 }
 
 
-SectionInfo *BinaryImage::createSection(const QString& name, Address from, Address to)
+IBinarySection* BinaryImage::createSection(const QString& name, Address from, Address to)
 {
+    assert(from <= to);
+
     if (from == to) {
         to += 1; // open interval, so -> [from,to+1) is right
     }

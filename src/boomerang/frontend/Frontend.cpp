@@ -478,13 +478,13 @@ void IFrontEnd::decodeFragment(UserProc *proc, Address a)
 
 bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 {
-    if (!m_image || (m_image->getSectionInfoByAddr(pc) == nullptr)) {
+    if (!m_image || (m_image->getSectionByAddr(pc) == nullptr)) {
         LOG_ERROR("attempted to decode outside any known section at address %1");
         result.valid = false;
         return false;
     }
 
-    const IBinarySection *pSect           = m_image->getSectionInfoByAddr(pc);
+    const IBinarySection *pSect           = m_image->getSectionByAddr(pc);
     ptrdiff_t            host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).value();
     return m_decoder->decodeInstruction(pc, host_native_diff, result);
 }

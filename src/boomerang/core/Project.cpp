@@ -53,7 +53,7 @@ bool Project::loadBinaryFile(const QString& filePath)
         return false;
     }
 
-    m_image->calculateTextLimits();
+    m_image->updateTextLimits();
 
     return true;
 }

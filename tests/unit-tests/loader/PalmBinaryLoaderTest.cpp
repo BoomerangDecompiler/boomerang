@@ -25,14 +25,14 @@ void PalmBinaryLoaderTest::testPalmLoad()
 	IBinaryImage *image = Boomerang::get()->getImage();
 
 	QCOMPARE(image->getNumSections(), (size_t)8);
-	QCOMPARE(image->getSectionInfo(0)->getName(), QString("code1"));
-	QCOMPARE(image->getSectionInfo(1)->getName(), QString("MBAR1000"));
-	QCOMPARE(image->getSectionInfo(2)->getName(), QString("tFRM1000"));
-	QCOMPARE(image->getSectionInfo(3)->getName(), QString("Talt1001"));
-	QCOMPARE(image->getSectionInfo(4)->getName(), QString("data0"));
-	QCOMPARE(image->getSectionInfo(5)->getName(), QString("code0"));
-	QCOMPARE(image->getSectionInfo(6)->getName(), QString("tAIN1000"));
-	QCOMPARE(image->getSectionInfo(7)->getName(), QString("tver1000"));
+	QCOMPARE(image->getSection(0)->getName(), QString("code1"));
+	QCOMPARE(image->getSection(1)->getName(), QString("MBAR1000"));
+	QCOMPARE(image->getSection(2)->getName(), QString("tFRM1000"));
+	QCOMPARE(image->getSection(3)->getName(), QString("Talt1001"));
+	QCOMPARE(image->getSection(4)->getName(), QString("data0"));
+	QCOMPARE(image->getSection(5)->getName(), QString("code0"));
+	QCOMPARE(image->getSection(6)->getName(), QString("tAIN1000"));
+	QCOMPARE(image->getSection(7)->getName(), QString("tver1000"));
 }
 
 QTEST_MAIN(PalmBinaryLoaderTest)

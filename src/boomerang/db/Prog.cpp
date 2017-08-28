@@ -769,7 +769,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
         }
     }
 
-    if (m_image->getSectionInfoByAddr(uaddr) == nullptr) {
+    if (m_image->getSectionByAddr(uaddr) == nullptr) {
         LOG_VERBOSE("Refusing to create a global at address %1 "
             "that is in no known section of the binary", uaddr);
         return false;
@@ -922,7 +922,7 @@ void Prog::setGlobalType(const QString& name, SharedType ty)
 
 const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false */) const
 {
-    const IBinarySection *si = m_image->getSectionInfoByAddr(uaddr);
+    const IBinarySection *si = m_image->getSectionByAddr(uaddr);
 
     // Too many compilers put constants, including string constants, into read/write sections
     // if (si && si->bReadOnly)
@@ -970,7 +970,7 @@ const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false *
 double Prog::getFloatConstant(Address uaddr, bool& ok, int bits) const
 {
     ok = true;
-    const IBinarySection *si = m_image->getSectionInfoByAddr(uaddr);
+    const IBinarySection *si = m_image->getSectionByAddr(uaddr);
 
     if (si && si->isReadOnly()) {
         if (bits == 64) { // TODO: handle 80bit floats ?
@@ -995,9 +995,9 @@ QString Prog::getSymbolByAddress(Address dest) const
 }
 
 
-const IBinarySection *Prog::getSectionInfoByAddr(Address a) const
+const IBinarySection *Prog::getSectionByAddr(Address a) const
 {
-    return m_image->getSectionInfoByAddr(a);
+    return m_image->getSectionByAddr(a);
 }
 
 
@@ -1089,7 +1089,7 @@ const void *Prog::getCodeInfo(Address uAddr, const char *& last, int& delta) con
 {
     delta = 0;
     last  = nullptr;
-    const IBinarySection *pSect = m_image->getSectionInfoByAddr(uAddr);
+    const IBinarySection *pSect = m_image->getSectionByAddr(uAddr);
 
     if (!pSect) {
         return nullptr;
@@ -1725,7 +1725,7 @@ void Prog::readSymbolFile(const QString& fname)
 
 SharedExp Global::getInitialValue(const Prog *prog) const
 {
-    const IBinarySection *si = prog->getSectionInfoByAddr(m_addr);
+    const IBinarySection *si = prog->getSectionByAddr(m_addr);
 
     // TODO: see what happens when we skip Bss check here
     if (si && si->isAddressBss(m_addr)) {
@@ -1758,7 +1758,7 @@ QString Global::toString() const
 SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 {
     SharedExp            e   = nullptr;
-    const IBinarySection *si = getSectionInfoByAddr(uaddr);
+    const IBinarySection *si = getSectionByAddr(uaddr);
 
     if (si == nullptr) {
         return nullptr;
@@ -1985,7 +1985,7 @@ SharedExp Prog::addReloc(SharedExp e, Address lc)
 
 bool Prog::isStringConstant(Address a) const
 {
-    const SectionInfo *si = static_cast<const SectionInfo *>(m_image->getSectionInfoByAddr(a));
+    const SectionInfo *si = static_cast<const SectionInfo *>(m_image->getSectionByAddr(a));
 
     if (!si) {
         return false;
