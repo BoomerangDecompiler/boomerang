@@ -35,6 +35,8 @@ Boomerang::Boomerang()
     , m_symbols(new SymTab)
     , m_codeGenerator(new CCodeGenerator)
 {
+    m_settings->setWorkingDirectory(".");
+    m_settings->setDataDirectory("../lib/boomerang/");
 }
 
 

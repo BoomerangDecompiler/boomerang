@@ -2,7 +2,7 @@
 include(boomerang-utils)
 
 set(TESTS
-    CTest
+    ProjectTest
 )
 
 foreach(t ${TESTS})

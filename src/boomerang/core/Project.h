@@ -46,7 +46,6 @@ public:
     /// \copydoc IProject::unload
     void unloadBinaryFile() override;
 
-
     /// \copydoc IProject::getImage
     IBinaryImage* getImage() override { return m_image.get(); }
 
