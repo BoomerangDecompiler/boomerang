@@ -131,7 +131,7 @@ void GotoStatement::print(QTextStream& os, bool html) const
         m_dest->print(os);
     }
     else {
-        os << "0x" << getFixedDest();
+        os << getFixedDest();
     }
 
     if (html) {
@@ -191,7 +191,7 @@ bool GotoStatement::usesExp(const Exp& e) const
 {
     SharedExp where;
 
-    return(m_dest->search(e, where));
+    return m_dest->search(e, where);
 }
 
 

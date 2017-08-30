@@ -228,7 +228,7 @@ void BasicBlock::print(QTextStream& os, bool html)
     case BBType::Invalid:  os << "Invalid BB"; break;
     }
 
-    os << "@" << this->getLowAddr() << ":\n";
+    os << ":\n";
     os << "  in edges: ";
 
     for (BasicBlock *bb : m_inEdges) {

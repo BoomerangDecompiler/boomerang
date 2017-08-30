@@ -262,21 +262,20 @@ BasicBlock *Cfg::newIncompleteBB(Address addr)
 }
 
 
-void Cfg::addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool requiresLabel /* = false */)
+void Cfg::addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool destRequiresLabel /* = false */)
 {
-    // Add the given BB pointer to the list of out edges
+    // Wire up edges
     sourceBB->m_outEdges.push_back(destBB);
-    // Add the in edge to the destination BB
     destBB->m_inEdges.push_back(sourceBB);
 
     // special handling for upgrading oneway BBs to twoway BBs
-    if (sourceBB->getType() == BBType::Oneway) {
+    if (sourceBB->getType() == BBType::Oneway && sourceBB->getOutEdges().size() > 1) {
         sourceBB->updateType(BBType::Twoway);
         sourceBB->setJumpRequired();
-        requiresLabel = true;
+        destRequiresLabel = true;
     }
 
-    if (requiresLabel) {
+    if (destRequiresLabel) {
         setLabelRequired(destBB); // Indicate "label required"
     }
 }
@@ -1535,12 +1534,12 @@ void Cfg::generateDotFile(QTextStream& of)
     Address returnAddress = Address::INVALID;
 
     // The nodes
-    for (BasicBlock *pbb : m_listBB) {
+    for (BasicBlock *bb : m_listBB) {
         of << "       "
-           << "bb" << pbb->getLowAddr() << " ["
-           << "label=\"" << pbb->getLowAddr() << " ";
+           << "bb" << bb->getLowAddr() << " ["
+           << "label=\"" << bb->getLowAddr() << " ";
 
-        switch (pbb->getType())
+        switch (bb->getType())
         {
         case BBType::Oneway:
             of << "oneway";
@@ -1548,9 +1547,9 @@ void Cfg::generateDotFile(QTextStream& of)
 
         case BBType::Twoway:
 
-            if (pbb->getCond()) {
+            if (bb->getCond()) {
                 of << "\\n";
-                pbb->getCond()->print(of);
+                bb->getCond()->print(of);
                 of << "\" shape=diamond];\n";
                 continue;
             }
@@ -1563,7 +1562,7 @@ void Cfg::generateDotFile(QTextStream& of)
         case BBType::Nway:
             {
                 of << "nway";
-                SharedExp de = pbb->getDest();
+                SharedExp de = bb->getDest();
 
                 if (de) {
                     of << "\\n";
@@ -1577,7 +1576,7 @@ void Cfg::generateDotFile(QTextStream& of)
         case BBType::Call:
             {
                 of << "call";
-                Function *dest = pbb->getDestProc();
+                Function *dest = bb->getDestProc();
 
                 if (dest) {
                     of << "\\n" << dest->getName();
@@ -1589,7 +1588,7 @@ void Cfg::generateDotFile(QTextStream& of)
         case BBType::Ret:
             of << "ret\" shape=triangle];\n";
             // Remember the (unique) return BB's address
-            returnAddress = pbb->getLowAddr();
+            returnAddress = bb->getLowAddr();
             continue;
 
         case BBType::Fall:

@@ -149,8 +149,15 @@ bool IFrontEnd::isWin32() const
 
 bool IFrontEnd::isNoReturnCallDest(const QString& name)
 {
-    return((name == "_exit") || (name == "exit") || (name == "ExitProcess") || (name == "abort") ||
-           (name == "_assert"));
+    if (name == "_exit" ||
+        name == "exit"  ||
+        name == "ExitProcess" ||
+        name == "abort" ||
+        name == "_assert") {
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -911,18 +918,22 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         // Check for a dynamic linked library function
                         if (refersToImportedFunction(call->getDest())) {
                             // Dynamic linked proc pointers are treated as static.
-                                             Address  linked_addr = call->getDest()->access<Const, 1>()->getAddr();
-                            QString  nam         = m_binarySymbols->find(linked_addr)->getName();
-                            Function *p          = pProc->getProg()->getLibraryProc(nam);
-                            call->setDestProc(p);
+                            Address  linkedAddr  = call->getDest()->access<Const, 1>()->getAddr();
+                            QString  name        = m_binarySymbols->find(linkedAddr)->getName();
+                            Function *function   = pProc->getProg()->getLibraryProc(name);
+                            call->setDestProc(function);
                             call->setIsComputed(false);
+
+                            if (function->isNoReturn() || IFrontEnd::isNoReturnCallDest(function->getName())) {
+                                sequentialDecode = false;
+                            }
                         }
 
                         // Is the called function a thunk calling a library function?
                         // A "thunk" is a function which only consists of: "GOTO library_function"
                         if (call && (call->getFixedDest() != Address::INVALID)) {
                             // Get the address of the called function.
-                                             Address callAddr = call->getFixedDest();
+                            Address callAddr = call->getFixedDest();
 
                             // It should not be in the PLT either, but getLimitTextHigh() takes this into account
                             if (callAddr < m_image->getLimitTextHigh()) {
@@ -944,19 +955,22 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                         if ((nullptr != case_stmt) &&
                                             refersToImportedFunction(case_stmt->getDest())) { // Is it an "DynamicLinkedProcPointer"?
                                             // Yes, it's a library function. Look up it's name.
-                                                                         Address a   = stmt_jump->getDest()->access<Const, 1>()->getAddr();
+                                            Address a   = stmt_jump->getDest()->access<Const, 1>()->getAddr();
                                             QString nam = m_binarySymbols->find(a)->getName();
                                             // Assign the proc to the call
                                             Function *p = pProc->getProg()->getLibraryProc(nam);
-
                                             if (call->getDestProc()) {
                                                 // prevent unnecessary __imp procs
-                                                                                m_program->removeProc(call->getDestProc()->getName());
+                                                m_program->removeProc(call->getDestProc()->getName());
                                             }
 
                                             call->setDestProc(p);
                                             call->setIsComputed(false);
                                             call->setDest(Location::memOf(Const::get(a)));
+
+                                            if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
+                                                sequentialDecode = false;
+                                            }
                                         }
                                     }
                                 }
@@ -982,18 +996,18 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             callList.push_back(call);
                         }
                         else { // Static call
-                               // Find the address of the callee.
-                                             Address uNewAddr = call->getFixedDest();
+                            // Find the address of the callee.
+                            Address callAddr = call->getFixedDest();
 
                             // Calls with 0 offset (i.e. call the next instruction) are simply pushing the PC to the
                             // stack. Treat these as non-control flow instructions and continue.
-                            if (uNewAddr == uAddr + inst.numBytes) {
+                            if (callAddr == uAddr + inst.numBytes) {
                                 break;
                             }
 
                             // Call the virtual helper function. If implemented, will check for machine specific funcion
                             // calls
-                            if (isHelperFunc(uNewAddr, uAddr, BB_rtls)) {
+                            if (isHelperFunc(callAddr, uAddr, BB_rtls)) {
                                 // We have already added to BB_rtls
                                 pRtl = nullptr; // Discard the call semantics
                                 break;
@@ -1006,26 +1020,26 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             callList.push_back(call);
 
                             // Record the called address as the start of a new procedure if it didn't already exist.
-                            if (!uNewAddr.isZero() && (uNewAddr != Address::INVALID) &&
-                                (pProc->getProg()->findProc(uNewAddr) == nullptr)) {
+                            if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
+                                (pProc->getProg()->findProc(callAddr) == nullptr)) {
                                 callList.push_back(call);
 
                                 // newProc(pProc->getProg(), uNewAddr);
                                 if (SETTING(traceDecoder)) {
-                                    LOG_MSG("p%1", uNewAddr);
+                                    LOG_MSG("p%1", callAddr);
                                 }
                             }
 
                             // Check if this is the _exit or exit function. May prevent us from attempting to decode
                             // invalid instructions, and getting invalid stack height errors
-                            QString name = m_program->getSymbolByAddress(uNewAddr);
+                            QString name = m_program->getSymbolByAddress(callAddr);
 
                             if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
-                                                    Address a = call->getDest()->access<Const, 1>()->getAddr();
+                                Address a = call->getDest()->access<Const, 1>()->getAddr();
                                 name = m_binarySymbols->find(a)->getName();
                             }
 
-                            if (!name.isEmpty() && isNoReturnCallDest(name)) {
+                            if (!name.isEmpty() && IFrontEnd::isNoReturnCallDest(name)) {
                                 // Make sure it has a return appended (so there is only one exit from the function)
                                 // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
                                 // Create the new basic block
@@ -1053,6 +1067,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     // Put a label on the return BB (since it's an orphan); a jump will be reqd
                                     cfg->setLabelRequired(returnBB);
                                     pBB->setJumpRequired();
+
                                     // Mike: do we need to set return locations?
                                     // This ends the function
                                     sequentialDecode = false;
