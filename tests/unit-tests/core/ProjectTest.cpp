@@ -55,4 +55,4 @@ void ProjectTest::testIsBinaryLoaded()
 }
 
 
-QTEST_MAIN(ProjectTest);
+QTEST_MAIN(ProjectTest)
