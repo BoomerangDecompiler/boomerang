@@ -27,14 +27,16 @@
  */
 
 #ifdef _WIN32
-#include <windows.h>
-#ifndef __MINGW32__
+#  define NOMINMAX
+#  include <windows.h>
+#  ifndef __MINGW32__
 namespace dbghelp
 {
-#include <dbghelp.h>
+    #include <dbghelp.h>
 }
+#  endif
 #endif
-#endif
+
 #include "Win32BinaryLoader.h"
 
 #include "boomerang/db/IBinaryImage.h"
@@ -43,7 +45,7 @@ namespace dbghelp
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
 
-
+#include <algorithm>
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
