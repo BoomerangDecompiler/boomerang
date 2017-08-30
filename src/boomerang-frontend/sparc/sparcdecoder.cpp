@@ -1,4 +1,6 @@
-#define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
+#define sign_extend(N, SIZE)  Util::signExtend(N, SIZE)
+
+
 #include <cassert>
 
 // #line 0 "frontend/machine/sparc/decoder.m"

@@ -91,6 +91,26 @@ void writeWord(void* dst, SWord value, bool dstBigEndian);
 void writeDWord(void* dst, DWord value, bool dstBigEndian);
 void writeQWord(void* dst, DWord value, bool dstBigEndian);
 
+/**
+ * Sign-extend \p src into \a TgtType.
+ * Example:
+ *   signExtend<int>((unsigned char)0xFF) == -1
+ *
+ * \param src number to sign-extend
+ * \param numSrcBits Number of Bits in the source type
+ *        (Mainly to counter int-promption in (blabla & 0xFF))
+ */
+template<typename TgtType = int, typename SrcType>
+TgtType signExtend(const SrcType& src, size_t numSrcBits = 8*sizeof(SrcType))
+{
+    static_assert(std::is_integral<SrcType>::value, "Source type must be an integer!");
+    static_assert(std::is_integral<TgtType>::value && std::is_signed<TgtType>::value, "Target type must be a signed integer!");
+
+    // size difference, in bits
+    const int sizeDifference = 8*sizeof(TgtType) - numSrcBits;
+    return ((TgtType)((TgtType)src << sizeDifference)) >> sizeDifference;
+}
+
 }
 
 #define DEBUG_BUFSIZE    5000 // Size of the debug print buffer

@@ -179,7 +179,7 @@ bool isFuncPrologue(Address hostPC);
     BranchStatement *jump = new BranchStatement;     \
     result.rtl->appendStmt(jump);                    \
     result.numBytes = size;                          \
-    jump->setDest(Address(relocd.value() - delta));  \
+    jump->setDest(Address(relocd.value() - Util::signExtend<int64_t>(delta))); \
     jump->setCondType(cond);                         \
     SHOW_ASM(name << " " << relocd)
 

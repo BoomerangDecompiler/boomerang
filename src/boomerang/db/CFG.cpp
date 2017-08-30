@@ -133,11 +133,11 @@ bool Cfg::hasNoEntryBB()
 BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
 {
     MAPBB::iterator mi = m_mapBB.end();
-    BasicBlock      *pBB = nullptr;
+    BasicBlock      *currentBB = nullptr;
 
     // First find the native address of the first RTL
     // Can't use BasicBlock::GetLowAddr(), since we don't yet have a BB!
-    Address addr = pRtls->front()->getAddress();
+    Address startAddr = pRtls->front()->getAddress();
 
     // If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a delayed branch only,
     // with its delay instruction moved in front of it (with 0 address).
@@ -145,37 +145,37 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
     // instr (if not a NOP), and one for the side effect of copying %o7 to %o1.
     // Note that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the map, but they
     // have no RTLs with a non zero address.
-    if (addr.isZero() && (pRtls->size() > 1)) {
-        std::list<RTL *>::iterator next = pRtls->begin();
-        addr = (*++next)->getAddress();
+    if (startAddr.isZero() && (pRtls->size() > 1)) {
+        std::list<RTL *>::iterator next = std::next(pRtls->begin());
+        startAddr = (*next)->getAddress();
     }
 
     // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here already
     // If it is zero, this is a special BB for handling delayed branches or the like
     bool bDone = false;
 
-    if (!addr.isZero()) {
-        mi = m_mapBB.find(addr);
+    if (!startAddr.isZero()) {
+        mi = m_mapBB.find(startAddr);
 
         if ((mi != m_mapBB.end()) && (*mi).second) {
-            pBB = (*mi).second;
+            currentBB = (*mi).second;
 
             // It should be incomplete, or the pBB there should be zero (we have called Label but not yet created the BB
             // for it).  Else we have duplicated BBs. Note: this can happen with forward jumps into the middle of a
             // loop, so not error
-            if (!pBB->m_incomplete) {
+            if (!currentBB->m_incomplete) {
                 // This list of RTLs is not needed now
                 delete_lrtls(*pRtls);
 
                 LOG_VERBOSE("throwing BBAlreadyExistsError");
 
-                throw BBAlreadyExistsError(pBB);
+                throw BBAlreadyExistsError(currentBB);
             }
             else {
                 // Fill in the details, and return it
-                pBB->setRTLs(pRtls);
-                pBB->m_incomplete     = false;
-                pBB->updateType(bbType);
+                currentBB->setRTLs(pRtls);
+                currentBB->m_incomplete     = false;
+                currentBB->updateType(bbType);
             }
 
             bDone = true;
@@ -184,22 +184,23 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
 
     if (!bDone) {
         // Else add a new BB to the back of the current list.
-        pBB = new BasicBlock(m_myProc, pRtls, bbType);
-        m_listBB.push_back(pBB);
+        currentBB = new BasicBlock(m_myProc, pRtls, bbType);
+        m_listBB.push_back(currentBB);
 
         // Also add the address to the map from native (source) address to
         // pointer to BB, unless it's zero
-        if (!addr.isZero()) {
-            m_mapBB[addr] = pBB; // Insert the mapping
-            mi            = m_mapBB.find(addr);
+        if (!startAddr.isZero()) {
+            m_mapBB[startAddr] = currentBB; // Insert the mapping
+            mi                 = m_mapBB.find(startAddr);
         }
     }
 
-    if (!addr.isZero() && (mi != m_mapBB.end())) {
-        // Existing New            +---+ Top of new
+    if (!startAddr.isZero() && (mi != m_mapBB.end())) {
+        //
+        //  Existing   New         +---+ Top of new
         //            +---+        +---+
-        //    +---+   |   |        +---+ Fall through
-        //    |   |   |   | =>     |   |
+        //            |   |          \/ Fall through
+        //    +---+   |   | =>     +---+
         //    |   |   |   |        |   | Existing; rest of new discarded
         //    +---+   +---+        +---+
         //
@@ -210,39 +211,42 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
         // Also, in this case, we return a pointer to the newly completed BB, so it will get out edges added
         // (if required). In the other case (i.e. we overlap with an existing, completed BB), we want to return 0, since
         // the out edges are already created.
-        if (++mi != m_mapBB.end()) {
-            BasicBlock *pNextBB    = (*mi).second;
-            Address    uNext       = (*mi).first;
-            bool bIncomplete = pNextBB->m_incomplete;
+        //
+        mi = std::next(mi);
+        if (mi != m_mapBB.end()) {
+            BasicBlock *nextBB    = (*mi).second;
+            Address    nextAddr   = (*mi).first;
+            bool nextIsIncomplete = nextBB->m_incomplete;
 
-            if (uNext <= pRtls->back()->getAddress()) {
+            if (nextAddr <= pRtls->back()->getAddress()) {
                 // Need to truncate the current BB. We use splitBB(), but pass it pNextBB so it doesn't create a new BB
                 // for the "bottom" BB of the split pair
-                splitBB(pBB, uNext, pNextBB);
+                splitBB(currentBB, nextAddr, nextBB);
 
                 // If the overlapped BB was incomplete, return the "bottom" part of the BB, so adding out edges will
                 // work properly.
-                if (bIncomplete) {
-                    return pNextBB;
+                if (nextIsIncomplete) {
+                    return nextBB;
                 }
 
                 // However, if the overlapping BB was already complete, return 0, so out edges won't be added twice
-                throw BBAlreadyExistsError(pNextBB);
+                throw BBAlreadyExistsError(nextBB);
             }
         }
 
-        // Existing New            +---+ Top of existing
+        //  Existing    New        +---+ Top of existing
         //    +---+                +---+
         //    |   |    +---+       +---+ Fall through
         //    |   |    |   | =>    |   |
         //    |   |    |   |       |   | New; rest of existing discarded
         //    +---+    +---+       +---+
+        //
         // Note: no need to check the other way around, because in this case, we will have called Cfg::Label(), and it
         // will have split the existing BB already.
     }
 
-    assert(pBB);
-    return pBB;
+    assert(currentBB);
+    return currentBB;
 }
 
 
@@ -298,71 +302,73 @@ bool Cfg::existsBB(Address addr) const
 }
 
 
-BasicBlock *Cfg::splitBB(BasicBlock *pBB, Address splitAddr, BasicBlock *pNewBB /* = 0 */,
-                         bool bDelRtls /* = false */)
+BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB /* = 0 */,
+                         bool deleteRTLs /* = false */)
 {
     std::list<RTL *>::iterator ri;
 
     // First find which RTL has the split address; note that this could fail (e.g. label in the middle of an
     // instruction, or some weird delay slot effects)
-    for (ri = pBB->m_listOfRTLs->begin(); ri != pBB->m_listOfRTLs->end(); ri++) {
+    for (ri = bb->m_listOfRTLs->begin(); ri != bb->m_listOfRTLs->end(); ri++) {
         if ((*ri)->getAddress() == splitAddr) {
             break;
         }
     }
 
-    if (ri == pBB->m_listOfRTLs->end()) {
-        LOG_WARN("Cannot split BB at address %1 at split address %2", pBB->getLowAddr(), splitAddr);
-        return pBB;
+    if (ri == bb->m_listOfRTLs->end()) {
+        LOG_WARN("Cannot split BB at address %1 at split address %2", bb->getLowAddr(), splitAddr);
+        return bb;
     }
 
     // If necessary, set up a new basic block with information from the original bb
-    if (pNewBB == nullptr) {
-        pNewBB = new BasicBlock(*pBB);
+    if (newBB == nullptr) {
+        newBB = new BasicBlock(*bb);
         // But we don't want the top BB's in edges; our only in-edge should be the out edge from the top BB
-        pNewBB->m_inEdges.clear();
+        newBB->m_inEdges.clear();
+
         // The "bottom" BB now starts at the implicit label, so we create a new list
         // that starts at ri. We need a new list, since it is different from the
         // original BB's list. We don't have to "deep copy" the RTLs themselves,
         // since they will never overlap
-        pNewBB->setRTLs(new std::list<RTL *>(ri, pBB->m_listOfRTLs->end()));
-        m_listBB.push_back(pNewBB); // Put it in the graph
+        newBB->setRTLs(new std::list<RTL *>(ri, bb->m_listOfRTLs->end()));
+        m_listBB.push_back(newBB); // Put it in the graph
         // Put the implicit label into the map. Need to do this before the addOutEdge() below
-        m_mapBB[splitAddr] = pNewBB;
+        m_mapBB[splitAddr] = newBB;
         // There must be a label here; else would not be splitting. Give it a new label
-        pNewBB->m_labelNum = ++m_lastLabel;
+        newBB->m_labelNum = ++m_lastLabel;
     }
-    else if (pNewBB->m_incomplete) {
+    else if (newBB->m_incomplete) {
         // We have an existing BB and a map entry, but no details except for
         // in-edges and m_bHasLabel.
         // First save the in-edges and m_iLabelNum
-        std::vector<BasicBlock *> ins(pNewBB->m_inEdges);
-        int label = pNewBB->m_labelNum;
+        std::vector<BasicBlock *> ins(newBB->m_inEdges);
+        int label = newBB->m_labelNum;
+
         // Copy over the details now, completing the bottom BB
-        *pNewBB = *pBB;             // Assign the BB, copying fields. This will set m_bIncomplete false
+        *newBB = *bb;               // Assign the BB, copying fields. This will set m_bIncomplete false
                                     // Replace the in edges (likely only one)
-        pNewBB->m_inEdges  = ins;
-        pNewBB->m_labelNum = label; // Replace the label (must be one, since we are splitting this BB!)
+        newBB->m_inEdges  = ins;
+        newBB->m_labelNum = label;  // Replace the label (must be one, since we are splitting this BB!)
                                     // The "bottom" BB now starts at the implicit label
                                     // We need to create a new list of RTLs, as per above
-        pNewBB->setRTLs(new std::list<RTL *>(ri, pBB->m_listOfRTLs->end()));
+        newBB->setRTLs(new std::list<RTL *>(ri, bb->m_listOfRTLs->end()));
     }
 
     // else pNewBB exists and is complete. We don't want to change the complete
     // BB in any way, except to later add one in-edge
-    pBB->updateType(BBType::Fall); // Update original ("top") basic block's info and make it a fall-through
+    bb->updateType(BBType::Fall); // Update original ("top") basic block's info and make it a fall-through
 
     // Fix the in-edges of pBB's descendants. They are now pNewBB
     // Note: you can't believe m_iNumOutEdges at the time that this function may
     // get called
-    for (BasicBlock *pDescendant : pBB->m_outEdges) {
+    for (BasicBlock *pDescendant : bb->m_outEdges) {
         // Search through the in edges for pBB (old ancestor)
         unsigned k;
 
         for (k = 0; k < pDescendant->m_inEdges.size(); k++) {
-            if (pDescendant->m_inEdges[k] == pBB) {
+            if (pDescendant->m_inEdges[k] == bb) {
                 // Replace with a pointer to the new ancestor
-                pDescendant->m_inEdges[k] = pNewBB;
+                pDescendant->m_inEdges[k] = newBB;
                 break;
             }
         }
@@ -373,19 +379,19 @@ BasicBlock *Cfg::splitBB(BasicBlock *pBB, Address splitAddr, BasicBlock *pNewBB 
 
     // The old BB needs to have part of its list of RTLs erased, since the
     // instructions overlap
-    if (bDelRtls) {
+    if (deleteRTLs) {
         // Delete the list of pointers, and also the RTLs they point to
-        erase_lrtls(*pBB->m_listOfRTLs, ri, pBB->m_listOfRTLs->end());
+        erase_lrtls(*bb->m_listOfRTLs, ri, bb->m_listOfRTLs->end());
     }
     else {
         // Delete the list of pointers, but not the RTLs they point to
-        pBB->m_listOfRTLs->erase(ri, pBB->m_listOfRTLs->end());
+        bb->m_listOfRTLs->erase(ri, bb->m_listOfRTLs->end());
     }
 
     // Erase any existing out edges
-    pBB->m_outEdges.erase(pBB->m_outEdges.begin(), pBB->m_outEdges.end());
-    addOutEdge(pBB, splitAddr);
-    return pNewBB;
+    bb->m_outEdges.erase(bb->m_outEdges.begin(), bb->m_outEdges.end());
+    addOutEdge(bb, splitAddr);
+    return newBB;
 }
 
 

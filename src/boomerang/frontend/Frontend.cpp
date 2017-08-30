@@ -612,14 +612,14 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
     // Will be true for all NCTs and for CTIs with a fall through branch.
     bool sequentialDecode = true;
 
-    Cfg *pCfg = pProc->getCFG();
+    Cfg *cfg = pProc->getCFG();
 
     // If this is a speculative decode, the second time we decode the same address, we get no cfg. Else an error.
-    if (spec && (pCfg == nullptr)) {
+    if (spec && (cfg == nullptr)) {
         return false;
     }
 
-    assert(pCfg);
+    assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
     m_targetQueue.initial(uAddr);
@@ -632,7 +632,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
     Address startAddr   = uAddr;
     Address lastAddr    = uAddr;
 
-    while ((uAddr = m_targetQueue.nextAddress(*pCfg)) != Address::INVALID) {
+    while ((uAddr = m_targetQueue.nextAddress(*cfg)) != Address::INVALID) {
         // The list of RTLs for the current basic block
         std::list<RTL *> *BB_rtls = new std::list<RTL *>();
 
@@ -683,7 +683,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                 // Emit the RTL anyway, so we have the address and maybe some other clues
                 BB_rtls->push_back(new RTL(uAddr));
-                pBB = pCfg->newBB(BB_rtls, BBType::Invalid);
+                pBB = cfg->newBB(BB_rtls, BBType::Invalid);
                 sequentialDecode = false;
                 BB_rtls          = nullptr;
                 continue;
@@ -720,10 +720,9 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 LOG_MSG(tgt);
             }
 
-            Address uDest;
-
             // For each Statement in the RTL
             std::list<Statement *> sl = *pRtl;
+
             // Make a copy (!) of the list. This is needed temporarily to work around the following problem.
             // We are currently iterating an RTL, which could be a return instruction. The RTL is passed to
             // createReturnBlock; if this is not the first return statement, it will get cleared, and this will
@@ -738,7 +737,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                 if (m_refHints.find(pRtl->getAddress()) != m_refHints.end()) {
                     const QString& nam(m_refHints[pRtl->getAddress()]);
-                                   Address        gu = m_program->getGlobalAddr(nam);
+                    Address        gu = m_program->getGlobalAddr(nam);
 
                     if (gu != Address::INVALID) {
                         s->searchAndReplace(Const(gu), Unary::get(opAddrOf, Location::global(nam, pProc)));
@@ -758,32 +757,33 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 switch (s->getKind())
                 {
                 case STMT_GOTO:
-                    uDest = stmt_jump->getFixedDest();
+                    {
+                        Address uDest = stmt_jump->getFixedDest();
 
-                    // Handle one way jumps and computed jumps separately
-                    if (uDest != Address::INVALID) {
-                        BB_rtls->push_back(pRtl);
-                        sequentialDecode = false;
+                        // Handle one way jumps and computed jumps separately
+                        if (uDest != Address::INVALID) {
+                            BB_rtls->push_back(pRtl);
+                            sequentialDecode = false;
 
-                        pBB     = pCfg->newBB(BB_rtls, BBType::Oneway);
-                        BB_rtls = nullptr; // Clear when make new BB
+                            pBB     = cfg->newBB(BB_rtls, BBType::Oneway);
+                            BB_rtls = nullptr; // Clear when make new BB
 
-                        // Exit the switch now if the basic block already existed
-                        if (pBB == nullptr) {
-                            break;
-                        }
+                            // Exit the switch now if the basic block already existed
+                            if (pBB == nullptr) {
+                                break;
+                            }
 
-                        // Add the out edge if it is to a destination within the
-                        // procedure
-                        if (uDest < m_image->getLimitTextHigh()) {
-                            m_targetQueue.visit(pCfg, uDest, pBB);
-                            pCfg->addOutEdge(pBB, uDest, true);
-                        }
-                        else {
-                            LOG_WARN("Goto instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
+                            // Add the out edge if it is to a destination within the
+                            // procedure
+                            if (uDest < m_image->getLimitTextHigh()) {
+                                m_targetQueue.visit(cfg, uDest, pBB);
+                                cfg->addOutEdge(pBB, uDest, true);
+                            }
+                            else {
+                                LOG_WARN("Goto instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
+                            }
                         }
                     }
-
                     break;
 
                 case STMT_CASE:
@@ -792,7 +792,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                         if (pDest == nullptr) { // Happens if already analysed (now redecoding)
                             BB_rtls->push_back(pRtl);
-                            pBB = pCfg->newBB(BB_rtls, BBType::Nway);    // processSwitch will update num outedges
+                            pBB = cfg->newBB(BB_rtls, BBType::Nway);    // processSwitch will update num outedges
                             pBB->processSwitch(pProc);                   // decode arms, set out edges, etc
                             sequentialDecode = false;                    // Don't decode after the jump
                             BB_rtls          = nullptr;                  // New RTLList for next BB
@@ -820,7 +820,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             std::list<Statement *> *stmt_list = new std::list<Statement *>;
                             stmt_list->push_back(call);
                             BB_rtls->push_back(new RTL(pRtl->getAddress(), stmt_list));
-                            pBB = pCfg->newBB(BB_rtls, BBType::Call);
+                            pBB = cfg->newBB(BB_rtls, BBType::Call);
                             appendSyntheticReturn(pBB, pProc, pRtl);
                             sequentialDecode = false;
                             BB_rtls          = nullptr;
@@ -842,7 +842,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                         BB_rtls->push_back(pRtl);
                         // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out to be a switch stmt
-                        pBB = pCfg->newBB(BB_rtls, BBType::CompJump);
+                        pBB = cfg->newBB(BB_rtls, BBType::CompJump);
                         LOG_VERBOSE("COMPUTED JUMP at address %1, pDest = %2", uAddr, pDest);
 
                         if (SETTING(noDecompile)) {
@@ -860,8 +860,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     }
                                     LOG_MSG("  guessed uDest %1", destAddr);
 
-                                    m_targetQueue.visit(pCfg, destAddr, pBB);
-                                    pCfg->addOutEdge(pBB, destAddr, true);
+                                    m_targetQueue.visit(cfg, destAddr, pBB);
+                                    cfg->addOutEdge(pBB, destAddr, true);
                                 }
 
                                 pBB->updateType(BBType::Nway);
@@ -874,31 +874,34 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                     }
 
                 case STMT_BRANCH:
-                    uDest = stmt_jump->getFixedDest();
-                    BB_rtls->push_back(pRtl);
-                    pBB = pCfg->newBB(BB_rtls, BBType::Twoway);
+                    {
+                        Address jumpDest = stmt_jump->getFixedDest();
+                        BB_rtls->push_back(pRtl);
 
-                    // Stop decoding sequentially if the basic block already existed otherwise complete the basic block
-                    if (pBB == nullptr) {
-                        sequentialDecode = false;
-                    }
-                    else {
-                        // Add the out edge if it is to a destination within the section
-                        if (uDest < m_image->getLimitTextHigh()) {
-                            m_targetQueue.visit(pCfg, uDest, pBB);
-                            pCfg->addOutEdge(pBB, uDest, true);
+                        pBB = cfg->newBB(BB_rtls, BBType::Twoway);
+
+                        // Stop decoding sequentially if the basic block already existed otherwise complete the basic block
+                        if (pBB == nullptr) {
+                            sequentialDecode = false;
                         }
                         else {
-                            LOG_WARN("Branch instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
-                            pCfg->addOutEdge(pBB, Address::INVALID, false);
+                            // Add the out edge if it is to a destination within the section
+                            if (jumpDest < m_image->getLimitTextHigh()) {
+                                m_targetQueue.visit(cfg, jumpDest, pBB);
+                                cfg->addOutEdge(pBB, jumpDest, true);
+                            }
+                            else {
+                                LOG_WARN("Branch instruction at address %1 branches beyond end of section, to %2", uAddr, jumpDest);
+                                cfg->addOutEdge(pBB, Address::INVALID, false);
+                            }
+
+                            // Add the fall-through outedge
+                            cfg->addOutEdge(pBB, uAddr + inst.numBytes);
                         }
 
-                        // Add the fall-through outedge
-                        pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                        // Create the list of RTLs for the next basic block and continue with the next instruction.
+                        BB_rtls = nullptr;
                     }
-
-                    // Create the list of RTLs for the next basic block and continue with the next instruction.
-                    BB_rtls = nullptr;
                     break;
 
                 case STMT_CALL:
@@ -963,7 +966,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         // Treat computed and static calls separately
                         if (call->isComputed()) {
                             BB_rtls->push_back(pRtl);
-                            pBB = pCfg->newBB(BB_rtls, BBType::CompCall);
+                            pBB = cfg->newBB(BB_rtls, BBType::CompCall);
 
                             // Stop decoding sequentially if the basic block already
                             // existed otherwise complete the basic block
@@ -971,7 +974,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 sequentialDecode = false;
                             }
                             else {
-                                pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                                cfg->addOutEdge(pBB, uAddr + inst.numBytes);
                             }
 
                             // Add this call to the list of calls to analyse. We won't
@@ -1026,7 +1029,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 // Make sure it has a return appended (so there is only one exit from the function)
                                 // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
                                 // Create the new basic block
-                                pBB = pCfg->newBB(BB_rtls, BBType::Call);
+                                pBB = cfg->newBB(BB_rtls, BBType::Call);
                                 appendSyntheticReturn(pBB, pProc, pRtl);
 
                                 // Stop decoding sequentially
@@ -1034,7 +1037,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             }
                             else {
                                 // Create the new basic block
-                                pBB = pCfg->newBB(BB_rtls, BBType::Call);
+                                pBB = cfg->newBB(BB_rtls, BBType::Call);
 
                                 if (call->isReturnAfterCall()) {
                                     // Constuct the RTLs for the new basic block
@@ -1044,11 +1047,11 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     instrList->push_back(new ReturnStatement());
                                     rtls->push_back(new RTL(pRtl->getAddress() + 1, instrList));
 
-                                    BasicBlock *returnBB = pCfg->newBB(rtls, BBType::Ret);
+                                    BasicBlock *returnBB = cfg->newBB(rtls, BBType::Ret);
                                     // Add out edge from call to return
-                                    pCfg->addOutEdge(pBB, returnBB);
+                                    cfg->addOutEdge(pBB, returnBB);
                                     // Put a label on the return BB (since it's an orphan); a jump will be reqd
-                                    pCfg->setLabelRequired(returnBB);
+                                    cfg->setLabelRequired(returnBB);
                                     pBB->setJumpRequired();
                                     // Mike: do we need to set return locations?
                                     // This ends the function
@@ -1058,7 +1061,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     // Add the fall through edge if the block didn't
                                     // already exist
                                     if (pBB != nullptr) {
-                                        pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                                        cfg->addOutEdge(pBB, uAddr + inst.numBytes);
                                     }
                                 }
                             }
@@ -1118,20 +1121,20 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             // In fact, mustn't decode twice, because it will muck up the coverage, but also will cause subtle problems
             // like add a call to the list of calls to be processed, then delete the call RTL (e.g. Pentium 134.perl
             // benchmark)
-            if (sequentialDecode && pCfg->existsBB(uAddr)) {
+            if (sequentialDecode && cfg->existsBB(uAddr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
-                    BasicBlock *bb = pCfg->newBB(BB_rtls, BBType::Fall);
+                    BasicBlock *bb = cfg->newBB(BB_rtls, BBType::Fall);
 
                     // Add an out edge to this address
                     if (bb) {
-                        pCfg->addOutEdge(bb, uAddr);
+                        cfg->addOutEdge(bb, uAddr);
                         BB_rtls = nullptr; // Need new list of RTLs
                     }
                 }
 
                 // Pick a new address to decode from, if the BB is complete
-                if (!pCfg->isIncomplete(uAddr)) {
+                if (!cfg->isIncomplete(uAddr)) {
                     sequentialDecode = false;
                 }
             }

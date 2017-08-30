@@ -1,4 +1,3 @@
-#define sign_extend(N, SIZE)    (((int)((N) << (sizeof(unsigned) * 8 - (SIZE)))) >> (sizeof(unsigned) * 8 - (SIZE)))
 // #line 1 "frontend/machine/pentium/decoder.m"
 
 /*
@@ -522,7 +521,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1738 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "ORiAL", { DIS_I8 });
@@ -1791,7 +1790,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 0:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 246 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.Sod", 6, relocd, BRANCH_JMI)
@@ -1801,7 +1800,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 1:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 244 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.NSod", 6, relocd, BRANCH_JPOS)
@@ -1811,7 +1810,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 2:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 242 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.Pod", 6, relocd, BRANCH_JPAR)
@@ -1821,7 +1820,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 3:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 240 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.NPod", 6, relocd, (BranchType)0)
@@ -1831,7 +1830,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 4:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 238 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.Lod", 6, relocd, BRANCH_JSL)
@@ -1841,7 +1840,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 5:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 236 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.NLod", 6, relocd, BRANCH_JSGE)
@@ -1851,7 +1850,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 6:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 234 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.LEod", 6, relocd, BRANCH_JSLE)
@@ -1861,7 +1860,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 7:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 232 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.NLEod", 6, relocd, BRANCH_JSG)
@@ -1878,7 +1877,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 0:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 263 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.Ood", 6, relocd, (BranchType)0)
@@ -1888,7 +1887,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 1:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 260 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.NOod", 6, relocd, (BranchType)0)
@@ -1898,7 +1897,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 2:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 258 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.Bod", 6, relocd, BRANCH_JUL)
@@ -1908,7 +1907,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 3:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 256 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.NBod", 6, relocd, BRANCH_JUGE)
@@ -1918,7 +1917,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 4:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 254 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.Zod", 6, relocd, BRANCH_JE)
@@ -1928,7 +1927,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 5:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
 
                                         nextPC = MATCH_p + 6;
                                         // #line 252 "frontend/machine/pentium/decoder.m"
@@ -1939,7 +1938,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 6:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 250 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.BEod", 6, relocd, BRANCH_JULE)
@@ -1949,7 +1948,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 7:
                                     MATCH_w_32_16 = getDword(MATCH_p + 2);
                                     {
-                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + MATCH_w_32_16 /* i32 at 16 */;
+                                        HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 248 "frontend/machine/pentium/decoder.m"
                                         COND_JUMP("Jv.NBEod", 6, relocd, BRANCH_JUG)
@@ -4185,7 +4184,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
                                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1346 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "BTiod", { DIS_EADDR32, DIS_I8 });
@@ -4292,7 +4291,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
                                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1310 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "BTSiod", { DIS_I8, DIS_EADDR32 });
@@ -4399,7 +4398,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
                                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1322 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "BTRiod", { DIS_EADDR32, DIS_I8 });
@@ -4506,7 +4505,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
                                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1334 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "BTCiod", { DIS_EADDR32, DIS_I8 });
@@ -6577,7 +6576,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1732 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "SBBiAL", { DIS_I8 });
@@ -6975,7 +6974,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1726 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "SUBiAL", { DIS_I8 });
@@ -7374,7 +7373,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1720 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "CMPiAL", { DIS_I8 });
@@ -7544,7 +7543,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 2:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 826 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "PUSH.Ixob", { DIS_I8 });
@@ -7610,7 +7609,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 MATCH_w_8_32 = getByte(MATCH_p + 4);
                                 {
                                     HostAddress Eaddr = addressToPC(MATCH_p) + 1;
-                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                     unsigned              reg   = (MATCH_w_8_8 >> 3 & 0x7) /* reg_opcode at 8 */;
                                     nextPC = MATCH_p + 5;
                                     // #line 1160 "frontend/machine/pentium/decoder.m"
@@ -7672,7 +7671,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 0:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 174 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.S", 2, relocd, BRANCH_JMI)
@@ -7682,7 +7681,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 1:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 172 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.NS", 2, relocd, BRANCH_JPOS)
@@ -7692,7 +7691,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 2:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 170 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.P", 2, relocd, BRANCH_JPAR)
@@ -7702,7 +7701,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 3:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 168 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.NP", 2, relocd, (BranchType)0)
@@ -7712,7 +7711,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 166 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.L", 2, relocd, BRANCH_JSL)
@@ -7722,7 +7721,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 5:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 164 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.NL", 2, relocd, BRANCH_JSGE)
@@ -7732,7 +7731,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 6:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 162 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.LE", 2, relocd, BRANCH_JSLE)
@@ -7742,7 +7741,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 7:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 160 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.NLE", 2, relocd, BRANCH_JSG)
@@ -7811,7 +7810,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 (true
                                  /* index at 16 */ &&
                                  ((MATCH_w_8_16 >> 3 & 0x7) /* index at 16 */ < 8))) {
-                                                        HostAddress  Eaddr = addressToPC(MATCH_p) + 1;
+                                HostAddress  Eaddr = addressToPC(MATCH_p) + 1;
                                 unsigned reg   = (MATCH_w_8_8 >> 3 & 0x7) /* reg_opcode at 8 */;
                                 nextPC = MATCH_p + 4;
                                 // #line 1037 "frontend/machine/pentium/decoder.m"
@@ -8462,7 +8461,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                         MATCH_w_8_24 = getByte(MATCH_p + 3);
                         {
                             unsigned i16 = (MATCH_w_16_8 & 0xffff) /* i16 at 8 */;
-                            int      i8  = sign_extend((MATCH_w_8_24 & 0xff), 8);
+                            int      i8  = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
                             nextPC = MATCH_p + 4;
                             // #line 1193 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "ENTER", { DIS_I16, DIS_I8 });
@@ -8503,7 +8502,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 5:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1104 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "INT.Ib", { DIS_I8 });
@@ -8562,7 +8561,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 6:
                                 case 7:
                                     {
-                                             HostAddress Mem32 = addressToPC(MATCH_p) + 1;
+                                        HostAddress Mem32 = addressToPC(MATCH_p) + 1;
                                         nextPC = MATCH_p + 2;
                                         // #line 1760 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "FADD.R32", { DIS_MEM32 });
@@ -8603,7 +8602,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                                   /* index at 16 */ &&
                                                                                   ((MATCH_w_8_16 >> 3 & 0x7)
                                                                                    /* index at 16 */ < 8))) {
-                                          HostAddress Mem32 = addressToPC(MATCH_p) + 1;
+                                    HostAddress Mem32 = addressToPC(MATCH_p) + 1;
                                     nextPC = MATCH_p + 4;
                                     // #line 1760 "frontend/machine/pentium/decoder.m"
                                     stmts = instantiate(pc, "FADD.R32", { DIS_MEM32 });
@@ -14381,7 +14380,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 0:
                         MATCH_w_32_8 = getDword(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 5 + MATCH_w_32_8 /* i32 at 8 */;
+                            HostAddress relocd = addressToPC(MATCH_p) + 5 + Util::signExtend<int64_t>(MATCH_w_32_8) /* i32 at 8 */;
                             nextPC = MATCH_p + 5;
                             // #line 1283 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "CALL.Jvod", { dis_Num(relocd.value()) });
@@ -14423,7 +14422,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                         MATCH_name   = MATCH_name_col_59[(MATCH_w_8_0 & 0x7) /* col at 0 */];
                         {
                             const char *name  = MATCH_name;
-                            HostAddress    relocd = addressToPC(MATCH_p) + 5 + MATCH_w_32_8;
+                            HostAddress    relocd = addressToPC(MATCH_p) + 5 + Util::signExtend<int64_t>(MATCH_w_32_8);
                             nextPC = MATCH_p + 5;
                             processUnconditionalJump(name, 5, relocd, delta, pc, stmts, result);
                         }
@@ -14442,9 +14441,9 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                         MATCH_name  = MATCH_name_col_59[(MATCH_w_8_0 & 0x7) /* col at 0 */];
                         {
                             const char *name  = MATCH_name;
-                            HostAddress    relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress    relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
-                                                 processUnconditionalJump(name, 2, relocd, delta, pc, stmts, result);
+                            processUnconditionalJump(name, 2, relocd, delta, pc, stmts, result);
 
                             /*
                              * Conditional branches, 8 bit offset: 7X XX
@@ -15562,7 +15561,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1741 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "ADDiAL", { DIS_I8 });
@@ -15960,7 +15959,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1735 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "ADCiAL", { DIS_I8 });
@@ -16358,7 +16357,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1729 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "ANDiAL", { DIS_I8 });
@@ -16757,7 +16756,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            int i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            int i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1723 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "XORiAL", { DIS_I8 });
@@ -17253,7 +17252,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     /* page at 8 */ == 1) {
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 1714 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ORiAX", { DIS_I16 });
@@ -17262,7 +17261,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 else {
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 1717 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ADDiAX", { DIS_I16 });
@@ -17535,8 +17534,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 0:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 210 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.Sow", 4, relocd, BRANCH_JMI)
@@ -17546,8 +17545,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 1:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 208 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NSow", 4, relocd, BRANCH_JPOS)
@@ -17557,8 +17556,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 2:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 206 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.Pow", 4, relocd, BRANCH_JPAR)
@@ -17568,8 +17567,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 3:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 204 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NPow", 4, relocd, (BranchType)0)
@@ -17579,8 +17578,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 4:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 202 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.Low", 4, relocd, BRANCH_JSL)
@@ -17590,8 +17589,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 5:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 200 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NLow", 4, relocd, BRANCH_JSGE)
@@ -17601,8 +17600,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 6:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 198 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.LEow", 4, relocd, BRANCH_JSLE)
@@ -17612,8 +17611,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 7:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 196 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NLEow", 4, relocd, BRANCH_JSG)
@@ -17632,8 +17631,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 0:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 227 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.Oow", 4, relocd, (BranchType)0)
@@ -17647,8 +17646,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 1:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 224 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NOow", 4, relocd, (BranchType)0)
@@ -17658,8 +17657,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 2:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 222 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.Bow", 4, relocd, BRANCH_JUL)
@@ -17669,8 +17668,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 3:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 220 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NBow", 4, relocd, BRANCH_JUGE)
@@ -17680,8 +17679,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 4:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 218 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.Zow", 4, relocd, BRANCH_JE)
@@ -17691,8 +17690,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 5:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 216 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NZow", 4, relocd, BRANCH_JNE)
@@ -17702,8 +17701,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 6:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 214 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.BEow", 4, relocd, BRANCH_JULE)
@@ -17713,8 +17712,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             case 7:
                                                 MATCH_w_16_24 = getWord(MATCH_p + 3);
                                                 {
-                                                        HostAddress relocd = addressToPC(MATCH_p) + 5 +
-                                                                     sign_extend((MATCH_w_16_24 & 0xffff), 16);
+                                                    HostAddress relocd = addressToPC(MATCH_p) + 5 +
+                                                                     Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 212 "frontend/machine/pentium/decoder.m"
                                                     COND_JUMP("Jv.NBEow", 4, relocd, BRANCH_JUG)
@@ -18667,9 +18666,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                               /* index at 32 */ < 8))) {
                                                             MATCH_w_8_48 = getByte(MATCH_p + 6);
                                                             {
-                                                                             HostAddress               Eaddr = addressToPC(MATCH_p) + 3;
-                                                                int /* [~128..127] */ i8    =
-                                                                    sign_extend((MATCH_w_8_48 & 0xff), 8);
+                                                                HostAddress               Eaddr = addressToPC(MATCH_p) + 3;
+                                                                int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff), 8);
                                                                 nextPC = MATCH_p + 7;
                                                                 // #line 1349 "frontend/machine/pentium/decoder.m"
                                                                 stmts = instantiate(pc, "BTiow", { DIS_EADDR16, DIS_I8 });
@@ -18775,9 +18773,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                               /* index at 32 */ < 8))) {
                                                             MATCH_w_8_48 = getByte(MATCH_p + 6);
                                                             {
-                                                                             HostAddress               Eaddr = addressToPC(MATCH_p) + 3;
-                                                                int /* [~128..127] */ i8    =
-                                                                    sign_extend((MATCH_w_8_48 & 0xff), 8);
+                                                                HostAddress               Eaddr = addressToPC(MATCH_p) + 3;
+                                                                int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff), 8);
                                                                 nextPC = MATCH_p + 7;
                                                                 // #line 1313 "frontend/machine/pentium/decoder.m"
                                                                 stmts = instantiate(pc, "BTSiow", { DIS_I8, DIS_EADDR16 });
@@ -18883,9 +18880,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                               /* index at 32 */ < 8))) {
                                                             MATCH_w_8_48 = getByte(MATCH_p + 6);
                                                             {
-                                                                             HostAddress               Eaddr = addressToPC(MATCH_p) + 3;
-                                                                int /* [~128..127] */ i8    =
-                                                                    sign_extend((MATCH_w_8_48 & 0xff), 8);
+                                                                HostAddress               Eaddr = addressToPC(MATCH_p) + 3;
+                                                                int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff), 8);
                                                                 nextPC = MATCH_p + 7;
                                                                 // #line 1325 "frontend/machine/pentium/decoder.m"
                                                                 stmts = instantiate(pc, "BTRiow", { DIS_EADDR16, DIS_I8 });
@@ -18991,9 +18987,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                               /* index at 32 */ < 8))) {
                                                             MATCH_w_8_48 = getByte(MATCH_p + 6);
                                                             {
-                                                                             HostAddress               Eaddr = addressToPC(MATCH_p) + 3;
-                                                                int /* [~128..127] */ i8    =
-                                                                    sign_extend((MATCH_w_8_48 & 0xff), 8);
+                                                                HostAddress               Eaddr = addressToPC(MATCH_p) + 3;
+                                                                int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff), 8);
                                                                 nextPC = MATCH_p + 7;
                                                                 // #line 1337 "frontend/machine/pentium/decoder.m"
                                                                 stmts = instantiate(pc, "BTCiow", { DIS_EADDR16, DIS_I8 });
@@ -19108,7 +19103,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                          /* index at 32 */ &&
                                                          ((MATCH_w_8_32 >> 3 & 0x7)
                                                           /* index at 32 */ < 8))) {
-                                                               HostAddress  Eaddr = addressToPC(MATCH_p) + 3;
+                                                        HostAddress  Eaddr = addressToPC(MATCH_p) + 3;
                                                         unsigned reg   = (MATCH_w_8_24 >> 3 & 0x7)
                                                                          /* reg_opcode at 24 */;
                                                         nextPC = MATCH_p + 6;
@@ -20226,7 +20221,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     /* page at 8 */ == 1) {
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 1708 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SBBiAX", { DIS_I16 });
@@ -20235,7 +20230,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 else {
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 1711 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ADCiAX", { DIS_I16 });
@@ -20664,7 +20659,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     /* page at 8 */ == 1) {
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 1702 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SUBiAX", { DIS_I16 });
@@ -20673,7 +20668,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 else {
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 1705 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ANDiAX", { DIS_I16 });
@@ -21102,7 +21097,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     /* page at 8 */ == 1) {
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 1696 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "CMPiAX", { DIS_I16 });
@@ -21111,7 +21106,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 else {
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 1699 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "XORiAX", { DIS_I16 });
@@ -21168,7 +21163,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 0:
                                     MATCH_w_16_16 = getWord(MATCH_p + 2);
                                     {
-                                        int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                        int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                         nextPC = MATCH_p + 4;
                                         // #line 823 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "PUSH.Ivow", { DIS_I16 });
@@ -21239,8 +21234,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             MATCH_w_16_40 = getWord(MATCH_p + 5);
                                             {
                                                  HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                int /* [~32768..32767] */ i16 =
-                                                    sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                 unsigned reg = (MATCH_w_8_16 >> 3 & 0x7)
                                                                /* reg_opcode at 16 */;
                                                 nextPC = MATCH_p + 7;
@@ -21289,7 +21283,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 case 2:
                                     MATCH_w_8_16 = getByte(MATCH_p + 2);
                                     {
-                                        int /* [~128..127] */ i8 = sign_extend((MATCH_w_8_16 & 0xff), 8);
+                                        int /* [~128..127] */ i8 = Util::signExtend((MATCH_w_8_16 & 0xff), 8);
                                         nextPC = MATCH_p + 3;
                                         // #line 829 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "PUSH.Ixow", { DIS_I8 });
@@ -21360,7 +21354,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             MATCH_w_8_40 = getByte(MATCH_p + 5);
                                             {
                                                  HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                 unsigned              reg   = (MATCH_w_8_16 >> 3 & 0x7)
                                                                               /* reg_opcode at 16 */;
                                                 nextPC = MATCH_p + 6;
@@ -21605,9 +21599,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 1645 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ADDiw", { DIS_EADDR16, DIS_I16 });
@@ -21713,9 +21706,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 1642 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ORiw", { DIS_EADDR16, DIS_I16 });
@@ -21821,9 +21813,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 1639 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ADCiw", { DIS_EADDR16, DIS_I16 });
@@ -21929,9 +21920,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 1636 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "SBBiw", { DIS_EADDR16, DIS_I16 });
@@ -22037,9 +22027,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 1633 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ANDiw", { DIS_EADDR16, DIS_I16 });
@@ -22145,9 +22134,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 1630 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "SUBiw", { DIS_EADDR16, DIS_I16 });
@@ -22253,9 +22241,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 1627 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "XORiw", { DIS_EADDR16, DIS_I16 });
@@ -22361,9 +22348,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 1624 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "CMPiw", { DIS_EADDR16, DIS_I16 });
@@ -22582,8 +22568,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8 = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1597 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ADDiowb", { DIS_EADDR16, DIS_I8 });
@@ -22689,8 +22675,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1591 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ORiowb", { DIS_EADDR16, DIS_I8 });
@@ -22796,8 +22782,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1585 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ADCiowb", { DIS_EADDR16, DIS_I8 });
@@ -22903,8 +22889,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1579 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "SBBiowb", { DIS_EADDR16, DIS_I8 });
@@ -23010,8 +22996,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1573 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ANDiowb", { DIS_EADDR16, DIS_I8 });
@@ -23117,8 +23103,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1564 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "SUBiowb", { DIS_EADDR16, DIS_I8 });
@@ -23224,8 +23210,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1558 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "XORiowb", { DIS_EADDR16, DIS_I8 });
@@ -23331,8 +23317,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 1552 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "CMPiowb", { DIS_EADDR16, DIS_I8 });
@@ -23955,7 +23941,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             if ((MATCH_w_8_8 >> 3 & 0x1) /* page at 8 */ == 1) {
                                 MATCH_w_16_16 = getWord(MATCH_p + 2);
                                 {
-                                    int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_16 & 0xffff), 16);
                                     unsigned r16 = (MATCH_w_8_8 & 0x7) /* r16 at 8 */;
                                     nextPC = MATCH_p + 4;
                                     // #line 992 "frontend/machine/pentium/decoder.m"
@@ -24055,8 +24041,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 638 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "ROLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -24162,8 +24148,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 632 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "RORB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -24269,8 +24255,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 626 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "RCLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -24376,8 +24362,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 620 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "RCRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -24483,8 +24469,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 614 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "SHLSALB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -24590,8 +24576,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 608 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "SHRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -24701,8 +24687,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_8_40 = getByte(MATCH_p + 5);
                                                 {
-                                                        HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+                                                    HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
                                                     nextPC = MATCH_p + 6;
                                                     // #line 602 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "SARB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -24825,9 +24811,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                   /* index at 24 */ < 8))) {
                                                 MATCH_w_16_40 = getWord(MATCH_p + 5);
                                                 {
-                                                        HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-                                                    int /* [~32768..32767] */ i16 =
-                                                        sign_extend((MATCH_w_16_40 & 0xffff), 16);
+                                                    HostAddress Eaddr = addressToPC(MATCH_p) + 2;
+                                                    int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_40 & 0xffff), 16);
                                                     nextPC = MATCH_p + 7;
                                                     // #line 983 "frontend/machine/pentium/decoder.m"
                                                     stmts = instantiate(pc, "MOV.Ew.Ivow", { DIS_EADDR16, DIS_I16 });
@@ -26287,10 +26272,10 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                   /* page at 8 */];
                                 {
                                     const char *name  = MATCH_name;
-                                          HostAddress    relocd =
-                                        addressToPC(MATCH_p) + 4 + sign_extend((MATCH_w_16_16 & 0xffff), 16);
+                                    HostAddress    relocd =
+                                        addressToPC(MATCH_p) + 4 + Util::signExtend<int64_t>((MATCH_w_16_16 & 0xffff), 16);
                                     nextPC = MATCH_p + 4;
-                                                               processUnconditionalJump(name, 3, relocd, delta, pc, stmts, result);
+                                    processUnconditionalJump(name, 3, relocd, delta, pc, stmts, result);
                                 }
                             } /*opt-block*/
                             else {
@@ -27334,7 +27319,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 0:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 191 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.O", 2, relocd, (BranchType)0)
@@ -27348,7 +27333,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 1:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 188 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.NO", 2, relocd, (BranchType)0)
@@ -27358,7 +27343,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 2:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 186 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.B", 2, relocd, BRANCH_JUL)
@@ -27368,7 +27353,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 3:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 184 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.NB", 2, relocd, BRANCH_JUGE)
@@ -27378,7 +27363,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 4:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 182 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.Z", 2, relocd, BRANCH_JE)
@@ -27388,7 +27373,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 5:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 180 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.NZ", 2, relocd, BRANCH_JNE)
@@ -27398,7 +27383,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 6:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 178 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.BE", 2, relocd, BRANCH_JULE)
@@ -27408,7 +27393,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 7:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 176 "frontend/machine/pentium/decoder.m"
                             COND_JUMP("Jb.NBE", 2, relocd, BRANCH_JUG)
@@ -27488,7 +27473,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1669 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ADDib", { DIS_EADDR8, DIS_I8 });
@@ -27587,7 +27572,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1666 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ORib", { DIS_EADDR8, DIS_I8 });
@@ -27686,7 +27671,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1663 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ADCib", { DIS_EADDR8, DIS_I8 });
@@ -27785,7 +27770,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1660 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SBBib", { DIS_EADDR8, DIS_I8 });
@@ -27884,7 +27869,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1657 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ANDib", { DIS_EADDR8, DIS_I8 });
@@ -27983,7 +27968,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1654 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SUBib", { DIS_EADDR8, DIS_I8 });
@@ -28082,7 +28067,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1651 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "XORib", { DIS_EADDR8, DIS_I8 });
@@ -28181,7 +28166,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1648 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "CMPib", { DIS_EADDR8, DIS_I8 });
@@ -29098,7 +29083,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1594 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ADDiodb", { DIS_EADDR32, DIS_I8 });
@@ -29197,7 +29182,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1588 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ORiodb", { DIS_EADDR32, DIS_I8 });
@@ -29296,7 +29281,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1582 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ADCiodb", { DIS_EADDR32, DIS_I8 });
@@ -29395,7 +29380,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1576 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SBBiodb", { DIS_EADDR32, DIS_I8 });
@@ -29494,7 +29479,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1567 "frontend/machine/pentium/decoder.m"
                                         // Special hack to ignore and $0xfffffff0, %esp
@@ -29598,7 +29583,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1561 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SUBiodb", { DIS_EADDR32, DIS_I8 });
@@ -29697,7 +29682,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1555 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "XORiodb", { DIS_EADDR32, DIS_I8 });
@@ -29796,7 +29781,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 1549 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "CMPiodb", { DIS_EADDR32, DIS_I8 });
@@ -30314,7 +30299,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                 case 11:
                     MATCH_w_8_8 = getByte(MATCH_p + 1);
                     {
-                        int      i8 = sign_extend((MATCH_w_8_8 & 0xff), 8);
+                        int      i8 = Util::signExtend((MATCH_w_8_8 & 0xff), 8);
                         unsigned r8 = (MATCH_w_8_0 & 0x7) /* r8 at 0 */;
                         nextPC = MATCH_p + 2;
                         // #line 995 "frontend/machine/pentium/decoder.m"
@@ -30389,7 +30374,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 659 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ROLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -30488,7 +30473,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 656 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "RORB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -30587,7 +30572,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 653 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "RCLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -30686,7 +30671,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 650 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "RCRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -30785,7 +30770,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 647 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SHLSALB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -30884,7 +30869,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 644 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SHRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -30987,7 +30972,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 641 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SARB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -31097,7 +31082,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 635 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "ROLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -31196,7 +31181,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 629 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "RORB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -31295,7 +31280,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 623 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "RCLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -31394,7 +31379,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 617 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "RCRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -31493,7 +31478,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 611 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SHLSALB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -31592,7 +31577,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 605 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SHRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -31695,7 +31680,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 599 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "SARB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -32019,7 +32004,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     MATCH_w_8_32 = getByte(MATCH_p + 4);
                                     {
                                         HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-                                        int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+                                        int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
                                         nextPC = MATCH_p + 5;
                                         // #line 986 "frontend/machine/pentium/decoder.m"
                                         stmts = instantiate(pc, "MOV.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -34710,7 +34695,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 0:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1052 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "LOOPNE", { dis_Num((relocd - hostPC - 2).value()) });
@@ -34720,7 +34705,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 1:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1055 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "LOOPE", { dis_Num((relocd - hostPC - 2).value()) });
@@ -34730,7 +34715,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                     case 2:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
                         {
-                            HostAddress relocd = addressToPC(MATCH_p) + 2 + sign_extend((MATCH_w_8_8 & 0xff), 8);
+                            HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 1058 "frontend/machine/pentium/decoder.m"
                             stmts = instantiate(pc, "LOOP", { dis_Num((relocd - hostPC - 2).value()) });
@@ -37832,7 +37817,7 @@ MATCH_label_c121:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1349 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTiow", { DIS_EADDR16, DIS_I8 });
@@ -37842,7 +37827,7 @@ MATCH_label_c122:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
             nextPC = MATCH_p + 6;
             // #line 1349 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTiow", { DIS_EADDR16, DIS_I8 });
@@ -37852,7 +37837,7 @@ MATCH_label_c123:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_72 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_72 & 0xff), 8);
             nextPC = MATCH_p + 10;
             // #line 1349 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTiow", { DIS_EADDR16, DIS_I8 });
@@ -37862,7 +37847,7 @@ MATCH_label_c124:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1349 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTiow", { DIS_EADDR16, DIS_I8 });
@@ -37872,7 +37857,7 @@ MATCH_label_c125:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1313 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTSiow", { DIS_I8, DIS_EADDR16 });
@@ -37882,7 +37867,7 @@ MATCH_label_c126:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
             nextPC = MATCH_p + 6;
             // #line 1313 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTSiow", { DIS_I8, DIS_EADDR16 });
@@ -37892,7 +37877,7 @@ MATCH_label_c127:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_72 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_72 & 0xff), 8);
             nextPC = MATCH_p + 10;
             // #line 1313 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTSiow", { DIS_I8, DIS_EADDR16 });
@@ -37902,7 +37887,7 @@ MATCH_label_c128:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1313 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTSiow", { DIS_I8, DIS_EADDR16 });
@@ -37912,7 +37897,7 @@ MATCH_label_c129:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1325 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTRiow", { DIS_EADDR16, DIS_I8 });
@@ -37922,7 +37907,7 @@ MATCH_label_c130:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
             nextPC = MATCH_p + 6;
             // #line 1325 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTRiow", { DIS_EADDR16, DIS_I8 });
@@ -37932,7 +37917,7 @@ MATCH_label_c131:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_72 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_72 & 0xff), 8);
             nextPC = MATCH_p + 10;
             // #line 1325 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTRiow", { DIS_EADDR16, DIS_I8 });
@@ -37942,7 +37927,7 @@ MATCH_label_c132:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1325 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTRiow", { DIS_EADDR16, DIS_I8 });
@@ -37952,7 +37937,7 @@ MATCH_label_c133:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1337 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTCiow", { DIS_EADDR16, DIS_I8 });
@@ -37962,7 +37947,7 @@ MATCH_label_c134:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_40 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_40 & 0xff), 8);
             nextPC = MATCH_p + 6;
             // #line 1337 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTCiow", { DIS_EADDR16, DIS_I8 });
@@ -37972,7 +37957,7 @@ MATCH_label_c135:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_72 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_72 & 0xff), 8);
             nextPC = MATCH_p + 10;
             // #line 1337 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTCiow", { DIS_EADDR16, DIS_I8 });
@@ -37982,7 +37967,7 @@ MATCH_label_c136:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 3;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1337 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTCiow", { DIS_EADDR16, DIS_I8 });
@@ -38821,7 +38806,7 @@ MATCH_label_c213:
         (void)0; /*placeholder for label*/
         {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
-            int      i16   = sign_extend((MATCH_w_16_24 & 0xffff), 16);
+            int      i16   = Util::signExtend((MATCH_w_16_24 & 0xffff), 16);
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 5;
             // #line 1157 "frontend/machine/pentium/decoder.m"
@@ -38832,7 +38817,7 @@ MATCH_label_c214:
         (void)0; /*placeholder for label*/
         {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
-            int      i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int      i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 6;
             // #line 1157 "frontend/machine/pentium/decoder.m"
@@ -38843,7 +38828,7 @@ MATCH_label_c215:
         (void)0; /*placeholder for label*/
         {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
-            int      i16   = sign_extend((MATCH_w_16_64 & 0xffff), 16);
+            int      i16   = Util::signExtend((MATCH_w_16_64 & 0xffff), 16);
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 10;
             // #line 1157 "frontend/machine/pentium/decoder.m"
@@ -38854,7 +38839,7 @@ MATCH_label_c216:
         (void)0; /*placeholder for label*/
         {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
-            int      i16   = sign_extend((MATCH_w_16_56 & 0xffff), 16);
+            int      i16   = Util::signExtend((MATCH_w_16_56 & 0xffff), 16);
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 9;
             // #line 1157 "frontend/machine/pentium/decoder.m"
@@ -38865,7 +38850,7 @@ MATCH_label_c217:
         (void)0; /*placeholder for label*/
         {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
-            int      i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int      i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 4;
             // #line 1163 "frontend/machine/pentium/decoder.m"
@@ -38876,7 +38861,7 @@ MATCH_label_c218:
         (void)0; /*placeholder for label*/
         {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
-            int      i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int      i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 5;
             // #line 1163 "frontend/machine/pentium/decoder.m"
@@ -38887,7 +38872,7 @@ MATCH_label_c219:
         (void)0; /*placeholder for label*/
         {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
-            int      i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int      i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 9;
             // #line 1163 "frontend/machine/pentium/decoder.m"
@@ -38898,7 +38883,7 @@ MATCH_label_c220:
         (void)0; /*placeholder for label*/
         {
                      HostAddress  Eaddr = addressToPC(MATCH_p) + 2;
-            int      i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int      i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             unsigned reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 8;
             // #line 1163 "frontend/machine/pentium/decoder.m"
@@ -38909,7 +38894,7 @@ MATCH_label_c221:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_24 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_24 & 0xffff), 16);
             nextPC = MATCH_p + 5;
             // #line 1645 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiw", { DIS_EADDR16, DIS_I16 });
@@ -38919,7 +38904,7 @@ MATCH_label_c222:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             nextPC = MATCH_p + 6;
             // #line 1645 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiw", { DIS_EADDR16, DIS_I16 });
@@ -38929,7 +38914,7 @@ MATCH_label_c223:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_64 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_64 & 0xffff), 16);
             nextPC = MATCH_p + 10;
             // #line 1645 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiw", { DIS_EADDR16, DIS_I16 });
@@ -38939,7 +38924,7 @@ MATCH_label_c224:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_56 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_56 & 0xffff), 16);
             nextPC = MATCH_p + 9;
             // #line 1645 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiw", { DIS_EADDR16, DIS_I16 });
@@ -38949,7 +38934,7 @@ MATCH_label_c225:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_24 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_24 & 0xffff), 16);
             nextPC = MATCH_p + 5;
             // #line 1642 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiw", { DIS_EADDR16, DIS_I16 });
@@ -38959,7 +38944,7 @@ MATCH_label_c226:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             nextPC = MATCH_p + 6;
             // #line 1642 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiw", { DIS_EADDR16, DIS_I16 });
@@ -38969,7 +38954,7 @@ MATCH_label_c227:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_64 & 0xffff) /* i16 at 64 */, 16);
+            int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_64 & 0xffff) /* i16 at 64 */, 16);
             nextPC = MATCH_p + 10;
             // #line 1642 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiw", { DIS_EADDR16, DIS_I16 });
@@ -38979,7 +38964,7 @@ MATCH_label_c228:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_56 & 0xffff) /* i16 at 56 */, 16);
+            int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_56 & 0xffff) /* i16 at 56 */, 16);
             nextPC = MATCH_p + 9;
             // #line 1642 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiw", { DIS_EADDR16, DIS_I16 });
@@ -38989,7 +38974,7 @@ MATCH_label_c229:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_24 & 0xffff) /* i16 at 24 */, 16);
+            int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_24 & 0xffff) /* i16 at 24 */, 16);
             nextPC = MATCH_p + 5;
             // #line 1639 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiw", { DIS_EADDR16, DIS_I16 });
@@ -38999,7 +38984,7 @@ MATCH_label_c230:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             nextPC = MATCH_p + 6;
             // #line 1639 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiw", { DIS_EADDR16, DIS_I16 });
@@ -39009,7 +38994,7 @@ MATCH_label_c231:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_64 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_64 & 0xffff), 16);
             nextPC = MATCH_p + 10;
             // #line 1639 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiw", { DIS_EADDR16, DIS_I16 });
@@ -39019,7 +39004,7 @@ MATCH_label_c232:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_56 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_56 & 0xffff), 16);
             nextPC = MATCH_p + 9;
             // #line 1639 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiw", { DIS_EADDR16, DIS_I16 });
@@ -39029,7 +39014,7 @@ MATCH_label_c233:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_24 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_24 & 0xffff), 16);
             nextPC = MATCH_p + 5;
             // #line 1636 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiw", { DIS_EADDR16, DIS_I16 });
@@ -39039,7 +39024,7 @@ MATCH_label_c234:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             nextPC = MATCH_p + 6;
             // #line 1636 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiw", { DIS_EADDR16, DIS_I16 });
@@ -39049,7 +39034,7 @@ MATCH_label_c235:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_64 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_64 & 0xffff), 16);
             nextPC = MATCH_p + 10;
             // #line 1636 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiw", { DIS_EADDR16, DIS_I16 });
@@ -39059,7 +39044,7 @@ MATCH_label_c236:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_56 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_56 & 0xffff), 16);
             nextPC = MATCH_p + 9;
             // #line 1636 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiw", { DIS_EADDR16, DIS_I16 });
@@ -39069,7 +39054,7 @@ MATCH_label_c237:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_24 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_24 & 0xffff), 16);
             nextPC = MATCH_p + 5;
             // #line 1633 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDiw", { DIS_EADDR16, DIS_I16 });
@@ -39079,7 +39064,7 @@ MATCH_label_c238:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             nextPC = MATCH_p + 6;
             // #line 1633 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDiw", { DIS_EADDR16, DIS_I16 });
@@ -39089,7 +39074,7 @@ MATCH_label_c239:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_64 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_64 & 0xffff), 16);
             nextPC = MATCH_p + 10;
             // #line 1633 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDiw", { DIS_EADDR16, DIS_I16 });
@@ -39099,7 +39084,7 @@ MATCH_label_c240:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_56 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_56 & 0xffff), 16);
             nextPC = MATCH_p + 9;
             // #line 1633 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDiw", { DIS_EADDR16, DIS_I16 });
@@ -39109,7 +39094,7 @@ MATCH_label_c241:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_24 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_24 & 0xffff), 16);
             nextPC = MATCH_p + 5;
             // #line 1630 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiw", { DIS_EADDR16, DIS_I16 });
@@ -39119,7 +39104,7 @@ MATCH_label_c242:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             nextPC = MATCH_p + 6;
             // #line 1630 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiw", { DIS_EADDR16, DIS_I16 });
@@ -39129,7 +39114,7 @@ MATCH_label_c243:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_64 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_64 & 0xffff), 16);
             nextPC = MATCH_p + 10;
             // #line 1630 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiw", { DIS_EADDR16, DIS_I16 });
@@ -39139,7 +39124,7 @@ MATCH_label_c244:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_56 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_56 & 0xffff), 16);
             nextPC = MATCH_p + 9;
             // #line 1630 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiw", { DIS_EADDR16, DIS_I16 });
@@ -39149,7 +39134,7 @@ MATCH_label_c245:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_24 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_24 & 0xffff), 16);
             nextPC = MATCH_p + 5;
             // #line 1627 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiw", { DIS_EADDR16, DIS_I16 });
@@ -39159,7 +39144,7 @@ MATCH_label_c246:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             nextPC = MATCH_p + 6;
             // #line 1627 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiw", { DIS_EADDR16, DIS_I16 });
@@ -39169,7 +39154,7 @@ MATCH_label_c247:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_64 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_64 & 0xffff), 16);
             nextPC = MATCH_p + 10;
             // #line 1627 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiw", { DIS_EADDR16, DIS_I16 });
@@ -39179,7 +39164,7 @@ MATCH_label_c248:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_56 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_56 & 0xffff), 16);
             nextPC = MATCH_p + 9;
             // #line 1627 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiw", { DIS_EADDR16, DIS_I16 });
@@ -39189,7 +39174,7 @@ MATCH_label_c249:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_24 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_24 & 0xffff), 16);
             nextPC = MATCH_p + 5;
             // #line 1624 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiw", { DIS_EADDR16, DIS_I16 });
@@ -39199,7 +39184,7 @@ MATCH_label_c250:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_32 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_32 & 0xffff), 16);
             nextPC = MATCH_p + 6;
             // #line 1624 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiw", { DIS_EADDR16, DIS_I16 });
@@ -39209,7 +39194,7 @@ MATCH_label_c251:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_64 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_64 & 0xffff), 16);
             nextPC = MATCH_p + 10;
             // #line 1624 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiw", { DIS_EADDR16, DIS_I16 });
@@ -39219,7 +39204,7 @@ MATCH_label_c252:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i16   = sign_extend((MATCH_w_16_56 & 0xffff), 16);
+            int     i16   = Util::signExtend((MATCH_w_16_56 & 0xffff), 16);
             nextPC = MATCH_p + 9;
             // #line 1624 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiw", { DIS_EADDR16, DIS_I16 });
@@ -39269,7 +39254,7 @@ MATCH_label_c257:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 1597 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiowb", { DIS_EADDR16, DIS_I8 });
@@ -39279,7 +39264,7 @@ MATCH_label_c258:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 1597 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiowb", { DIS_EADDR16, DIS_I8 });
@@ -39289,7 +39274,7 @@ MATCH_label_c259:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1597 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiowb", { DIS_EADDR16, DIS_I8 });
@@ -39299,7 +39284,7 @@ MATCH_label_c260:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 1597 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiowb", { DIS_EADDR16, DIS_I8 });
@@ -39309,7 +39294,7 @@ MATCH_label_c261:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 1591 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiowb", { DIS_EADDR16, DIS_I8 });
@@ -39319,7 +39304,7 @@ MATCH_label_c262:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1591 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiowb", { DIS_EADDR16, DIS_I8 });
@@ -39329,7 +39314,7 @@ MATCH_label_c263:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1591 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiowb", { DIS_EADDR16, DIS_I8 });
@@ -39339,7 +39324,7 @@ MATCH_label_c264:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 1591 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiowb", { DIS_EADDR16, DIS_I8 });
@@ -39349,7 +39334,7 @@ MATCH_label_c265:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 1585 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiowb", { DIS_EADDR16, DIS_I8 });
@@ -39359,7 +39344,7 @@ MATCH_label_c266:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1585 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiowb", { DIS_EADDR16, DIS_I8 });
@@ -39369,7 +39354,7 @@ MATCH_label_c267:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1585 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiowb", { DIS_EADDR16, DIS_I8 });
@@ -39379,7 +39364,7 @@ MATCH_label_c268:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 1585 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiowb", { DIS_EADDR16, DIS_I8 });
@@ -39389,7 +39374,7 @@ MATCH_label_c269:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 1579 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiowb", { DIS_EADDR16, DIS_I8 });
@@ -39399,7 +39384,7 @@ MATCH_label_c270:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1579 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiowb", { DIS_EADDR16, DIS_I8 });
@@ -39409,7 +39394,7 @@ MATCH_label_c271:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1579 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiowb", { DIS_EADDR16, DIS_I8 });
@@ -39419,7 +39404,7 @@ MATCH_label_c272:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 1579 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiowb", { DIS_EADDR16, DIS_I8 });
@@ -39429,7 +39414,7 @@ MATCH_label_c273:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 1573 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDiowb", { DIS_EADDR16, DIS_I8 });
@@ -39439,7 +39424,7 @@ MATCH_label_c274:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1573 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDiowb", { DIS_EADDR16, DIS_I8 });
@@ -39449,7 +39434,7 @@ MATCH_label_c275:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1573 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDiowb", { DIS_EADDR16, DIS_I8 });
@@ -39459,7 +39444,7 @@ MATCH_label_c276:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 1573 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDiowb", { DIS_EADDR16, DIS_I8 });
@@ -39469,7 +39454,7 @@ MATCH_label_c277:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 1564 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiowb", { DIS_EADDR16, DIS_I8 });
@@ -39479,7 +39464,7 @@ MATCH_label_c278:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1564 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiowb", { DIS_EADDR16, DIS_I8 });
@@ -39489,7 +39474,7 @@ MATCH_label_c279:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1564 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiowb", { DIS_EADDR16, DIS_I8 });
@@ -39499,7 +39484,7 @@ MATCH_label_c280:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 1564 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiowb", { DIS_EADDR16, DIS_I8 });
@@ -39509,7 +39494,7 @@ MATCH_label_c281:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 1558 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiowb", { DIS_EADDR16, DIS_I8 });
@@ -39519,7 +39504,7 @@ MATCH_label_c282:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1558 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiowb", { DIS_EADDR16, DIS_I8 });
@@ -39529,7 +39514,7 @@ MATCH_label_c283:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1558 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiowb", { DIS_EADDR16, DIS_I8 });
@@ -39539,7 +39524,7 @@ MATCH_label_c284:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 1558 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiowb", { DIS_EADDR16, DIS_I8 });
@@ -39549,7 +39534,7 @@ MATCH_label_c285:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 1552 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiowb", { DIS_EADDR16, DIS_I8 });
@@ -39559,7 +39544,7 @@ MATCH_label_c286:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 1552 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiowb", { DIS_EADDR16, DIS_I8 });
@@ -39569,7 +39554,7 @@ MATCH_label_c287:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 1552 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiowb", { DIS_EADDR16, DIS_I8 });
@@ -39579,7 +39564,7 @@ MATCH_label_c288:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 1552 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiowb", { DIS_EADDR16, DIS_I8 });
@@ -39847,7 +39832,7 @@ MATCH_label_c308:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 638 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39857,7 +39842,7 @@ MATCH_label_c309:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 638 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39867,7 +39852,7 @@ MATCH_label_c310:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 638 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39877,7 +39862,7 @@ MATCH_label_c311:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 638 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39887,7 +39872,7 @@ MATCH_label_c312:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 632 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39897,7 +39882,7 @@ MATCH_label_c313:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_32 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_32 & 0xff), 8);
             nextPC = MATCH_p + 5;
             // #line 632 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39907,7 +39892,7 @@ MATCH_label_c314:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_64 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_64 & 0xff), 8);
             nextPC = MATCH_p + 9;
             // #line 632 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39917,7 +39902,7 @@ MATCH_label_c315:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_56 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_56 & 0xff), 8);
             nextPC = MATCH_p + 8;
             // #line 632 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39927,7 +39912,7 @@ MATCH_label_c316:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int     i8    = sign_extend((MATCH_w_8_24 & 0xff), 8);
+            int     i8    = Util::signExtend((MATCH_w_8_24 & 0xff), 8);
             nextPC = MATCH_p + 4;
             // #line 626 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39937,7 +39922,7 @@ MATCH_label_c317:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 626 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39947,7 +39932,7 @@ MATCH_label_c318:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 626 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39957,7 +39942,7 @@ MATCH_label_c319:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 626 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39967,7 +39952,7 @@ MATCH_label_c320:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 620 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39977,7 +39962,7 @@ MATCH_label_c321:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 620 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39987,7 +39972,7 @@ MATCH_label_c322:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 620 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -39997,7 +39982,7 @@ MATCH_label_c323:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 620 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40007,7 +39992,7 @@ MATCH_label_c324:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 614 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40017,7 +40002,7 @@ MATCH_label_c325:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 614 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40027,7 +40012,7 @@ MATCH_label_c326:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 614 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40037,7 +40022,7 @@ MATCH_label_c327:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 614 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40047,7 +40032,7 @@ MATCH_label_c328:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 608 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40057,7 +40042,7 @@ MATCH_label_c329:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 608 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40067,7 +40052,7 @@ MATCH_label_c330:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 608 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40077,7 +40062,7 @@ MATCH_label_c331:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 608 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40087,7 +40072,7 @@ MATCH_label_c332:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 602 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40097,7 +40082,7 @@ MATCH_label_c333:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 602 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40107,7 +40092,7 @@ MATCH_label_c334:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 602 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40117,7 +40102,7 @@ MATCH_label_c335:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 602 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Ev.Ibow", { DIS_EADDR16, DIS_I8 });
@@ -40127,7 +40112,7 @@ MATCH_label_c336:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_24 & 0xffff) /* i16 at 24 */, 16);
+            int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_24 & 0xffff) /* i16 at 24 */, 16);
             nextPC = MATCH_p + 5;
             // #line 983 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "MOV.Ew.Ivow", { DIS_EADDR16, DIS_I16 });
@@ -40137,7 +40122,7 @@ MATCH_label_c337:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_32 & 0xffff) /* i16 at 32 */, 16);
+            int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_32 & 0xffff) /* i16 at 32 */, 16);
             nextPC = MATCH_p + 6;
             // #line 983 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "MOV.Ew.Ivow", { DIS_EADDR16, DIS_I16 });
@@ -40147,7 +40132,7 @@ MATCH_label_c338:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_64 & 0xffff) /* i16 at 64 */, 16);
+            int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_64 & 0xffff) /* i16 at 64 */, 16);
             nextPC = MATCH_p + 10;
             // #line 983 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "MOV.Ew.Ivow", { DIS_EADDR16, DIS_I16 });
@@ -40157,7 +40142,7 @@ MATCH_label_c339:
         (void)0; /*placeholder for label*/
         {
                      HostAddress Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~32768..32767] */ i16 = sign_extend((MATCH_w_16_56 & 0xffff) /* i16 at 56 */, 16);
+            int /* [~32768..32767] */ i16 = Util::signExtend((MATCH_w_16_56 & 0xffff) /* i16 at 56 */, 16);
             nextPC = MATCH_p + 9;
             // #line 983 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "MOV.Ew.Ivow", { DIS_EADDR16, DIS_I16 });
@@ -41067,7 +41052,7 @@ MATCH_label_c436:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1669 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDib", { DIS_EADDR8, DIS_I8 });
@@ -41077,7 +41062,7 @@ MATCH_label_c437:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1669 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDib", { DIS_EADDR8, DIS_I8 });
@@ -41087,7 +41072,7 @@ MATCH_label_c438:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1669 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDib", { DIS_EADDR8, DIS_I8 });
@@ -41097,7 +41082,7 @@ MATCH_label_c439:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1669 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDib", { DIS_EADDR8, DIS_I8 });
@@ -41107,7 +41092,7 @@ MATCH_label_c440:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1666 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORib", { DIS_EADDR8, DIS_I8 });
@@ -41117,7 +41102,7 @@ MATCH_label_c441:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1666 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORib", { DIS_EADDR8, DIS_I8 });
@@ -41127,7 +41112,7 @@ MATCH_label_c442:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1666 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORib", { DIS_EADDR8, DIS_I8 });
@@ -41137,7 +41122,7 @@ MATCH_label_c443:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1666 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORib", { DIS_EADDR8, DIS_I8 });
@@ -41147,7 +41132,7 @@ MATCH_label_c444:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1663 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCib", { DIS_EADDR8, DIS_I8 });
@@ -41157,7 +41142,7 @@ MATCH_label_c445:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1663 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCib", { DIS_EADDR8, DIS_I8 });
@@ -41167,7 +41152,7 @@ MATCH_label_c446:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1663 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCib", { DIS_EADDR8, DIS_I8 });
@@ -41177,7 +41162,7 @@ MATCH_label_c447:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1663 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCib", { DIS_EADDR8, DIS_I8 });
@@ -41187,7 +41172,7 @@ MATCH_label_c448:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1660 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBib", { DIS_EADDR8, DIS_I8 });
@@ -41197,7 +41182,7 @@ MATCH_label_c449:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1660 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBib", { DIS_EADDR8, DIS_I8 });
@@ -41207,7 +41192,7 @@ MATCH_label_c450:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1660 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBib", { DIS_EADDR8, DIS_I8 });
@@ -41217,7 +41202,7 @@ MATCH_label_c451:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1660 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBib", { DIS_EADDR8, DIS_I8 });
@@ -41227,7 +41212,7 @@ MATCH_label_c452:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1657 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDib", { DIS_EADDR8, DIS_I8 });
@@ -41237,7 +41222,7 @@ MATCH_label_c453:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1657 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDib", { DIS_EADDR8, DIS_I8 });
@@ -41247,7 +41232,7 @@ MATCH_label_c454:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1657 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDib", { DIS_EADDR8, DIS_I8 });
@@ -41257,7 +41242,7 @@ MATCH_label_c455:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1657 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ANDib", { DIS_EADDR8, DIS_I8 });
@@ -41267,7 +41252,7 @@ MATCH_label_c456:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1654 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBib", { DIS_EADDR8, DIS_I8 });
@@ -41277,7 +41262,7 @@ MATCH_label_c457:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1654 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBib", { DIS_EADDR8, DIS_I8 });
@@ -41287,7 +41272,7 @@ MATCH_label_c458:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1654 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBib", { DIS_EADDR8, DIS_I8 });
@@ -41297,7 +41282,7 @@ MATCH_label_c459:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1654 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBib", { DIS_EADDR8, DIS_I8 });
@@ -41307,7 +41292,7 @@ MATCH_label_c460:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1651 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORib", { DIS_EADDR8, DIS_I8 });
@@ -41317,7 +41302,7 @@ MATCH_label_c461:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1651 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORib", { DIS_EADDR8, DIS_I8 });
@@ -41327,7 +41312,7 @@ MATCH_label_c462:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1651 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORib", { DIS_EADDR8, DIS_I8 });
@@ -41337,7 +41322,7 @@ MATCH_label_c463:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1651 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORib", { DIS_EADDR8, DIS_I8 });
@@ -41347,7 +41332,7 @@ MATCH_label_c464:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1648 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPib", { DIS_EADDR8, DIS_I8 });
@@ -41357,7 +41342,7 @@ MATCH_label_c465:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1648 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPib", { DIS_EADDR8, DIS_I8 });
@@ -41367,7 +41352,7 @@ MATCH_label_c466:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1648 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPib", { DIS_EADDR8, DIS_I8 });
@@ -41377,7 +41362,7 @@ MATCH_label_c467:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1648 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPib", { DIS_EADDR8, DIS_I8 });
@@ -41707,7 +41692,7 @@ MATCH_label_c500:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1594 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiodb", { DIS_EADDR32, DIS_I8 });
@@ -41717,7 +41702,7 @@ MATCH_label_c501:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1594 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiodb", { DIS_EADDR32, DIS_I8 });
@@ -41727,7 +41712,7 @@ MATCH_label_c502:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1594 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiodb", { DIS_EADDR32, DIS_I8 });
@@ -41737,7 +41722,7 @@ MATCH_label_c503:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1594 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADDiodb", { DIS_EADDR32, DIS_I8 });
@@ -41747,7 +41732,7 @@ MATCH_label_c504:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1588 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiodb", { DIS_EADDR32, DIS_I8 });
@@ -41757,7 +41742,7 @@ MATCH_label_c505:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1588 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiodb", { DIS_EADDR32, DIS_I8 });
@@ -41767,7 +41752,7 @@ MATCH_label_c506:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1588 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiodb", { DIS_EADDR32, DIS_I8 });
@@ -41777,7 +41762,7 @@ MATCH_label_c507:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1588 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ORiodb", { DIS_EADDR32, DIS_I8 });
@@ -41787,7 +41772,7 @@ MATCH_label_c508:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1582 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiodb", { DIS_EADDR32, DIS_I8 });
@@ -41797,7 +41782,7 @@ MATCH_label_c509:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1582 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiodb", { DIS_EADDR32, DIS_I8 });
@@ -41807,7 +41792,7 @@ MATCH_label_c510:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1582 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiodb", { DIS_EADDR32, DIS_I8 });
@@ -41817,7 +41802,7 @@ MATCH_label_c511:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1582 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ADCiodb", { DIS_EADDR32, DIS_I8 });
@@ -41827,7 +41812,7 @@ MATCH_label_c512:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1576 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiodb", { DIS_EADDR32, DIS_I8 });
@@ -41837,7 +41822,7 @@ MATCH_label_c513:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1576 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiodb", { DIS_EADDR32, DIS_I8 });
@@ -41847,7 +41832,7 @@ MATCH_label_c514:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1576 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiodb", { DIS_EADDR32, DIS_I8 });
@@ -41857,7 +41842,7 @@ MATCH_label_c515:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1576 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SBBiodb", { DIS_EADDR32, DIS_I8 });
@@ -41867,7 +41852,7 @@ MATCH_label_c516:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1567 "frontend/machine/pentium/decoder.m"
             // Special hack to ignore and $0xfffffff0, %esp
@@ -41882,7 +41867,7 @@ MATCH_label_c517:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1567 "frontend/machine/pentium/decoder.m"
             // Special hack to ignore and $0xfffffff0, %esp
@@ -41897,7 +41882,7 @@ MATCH_label_c518:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1567 "frontend/machine/pentium/decoder.m"
             // Special hack to ignore and $0xfffffff0, %esp
@@ -41912,7 +41897,7 @@ MATCH_label_c519:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1567 "frontend/machine/pentium/decoder.m"
             // Special hack to ignore and $0xfffffff0, %esp
@@ -41927,7 +41912,7 @@ MATCH_label_c520:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1561 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiodb", { DIS_EADDR32, DIS_I8 });
@@ -41937,7 +41922,7 @@ MATCH_label_c521:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1561 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiodb", { DIS_EADDR32, DIS_I8 });
@@ -41947,7 +41932,7 @@ MATCH_label_c522:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1561 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiodb", { DIS_EADDR32, DIS_I8 });
@@ -41957,7 +41942,7 @@ MATCH_label_c523:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1561 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SUBiodb", { DIS_EADDR32, DIS_I8 });
@@ -41967,7 +41952,7 @@ MATCH_label_c524:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1555 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiodb", { DIS_EADDR32, DIS_I8 });
@@ -41977,7 +41962,7 @@ MATCH_label_c525:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1555 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiodb", { DIS_EADDR32, DIS_I8 });
@@ -41987,7 +41972,7 @@ MATCH_label_c526:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1555 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiodb", { DIS_EADDR32, DIS_I8 });
@@ -41997,7 +41982,7 @@ MATCH_label_c527:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1555 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "XORiodb", { DIS_EADDR32, DIS_I8 });
@@ -42007,7 +41992,7 @@ MATCH_label_c528:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 1549 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiodb", { DIS_EADDR32, DIS_I8 });
@@ -42017,7 +42002,7 @@ MATCH_label_c529:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1549 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiodb", { DIS_EADDR32, DIS_I8 });
@@ -42027,7 +42012,7 @@ MATCH_label_c530:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1549 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiodb", { DIS_EADDR32, DIS_I8 });
@@ -42037,7 +42022,7 @@ MATCH_label_c531:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 1549 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "CMPiodb", { DIS_EADDR32, DIS_I8 });
@@ -42207,7 +42192,7 @@ MATCH_label_c548:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 659 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42217,7 +42202,7 @@ MATCH_label_c549:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 659 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42227,7 +42212,7 @@ MATCH_label_c550:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 659 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42237,7 +42222,7 @@ MATCH_label_c551:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 659 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42247,7 +42232,7 @@ MATCH_label_c552:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 656 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42257,7 +42242,7 @@ MATCH_label_c553:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 656 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42267,7 +42252,7 @@ MATCH_label_c554:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 656 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42277,7 +42262,7 @@ MATCH_label_c555:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 656 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42287,7 +42272,7 @@ MATCH_label_c556:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 653 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42297,7 +42282,7 @@ MATCH_label_c557:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 653 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42307,7 +42292,7 @@ MATCH_label_c558:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 653 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42317,7 +42302,7 @@ MATCH_label_c559:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 653 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42327,7 +42312,7 @@ MATCH_label_c560:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 650 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42337,7 +42322,7 @@ MATCH_label_c561:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 650 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42347,7 +42332,7 @@ MATCH_label_c562:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 650 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42357,7 +42342,7 @@ MATCH_label_c563:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 650 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42367,7 +42352,7 @@ MATCH_label_c564:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 647 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42377,7 +42362,7 @@ MATCH_label_c565:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 647 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42387,7 +42372,7 @@ MATCH_label_c566:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 647 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42397,7 +42382,7 @@ MATCH_label_c567:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 647 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42407,7 +42392,7 @@ MATCH_label_c568:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 644 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42417,7 +42402,7 @@ MATCH_label_c569:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 644 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42427,7 +42412,7 @@ MATCH_label_c570:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 644 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42437,7 +42422,7 @@ MATCH_label_c571:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 644 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42447,7 +42432,7 @@ MATCH_label_c572:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 641 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42457,7 +42442,7 @@ MATCH_label_c573:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 641 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42467,7 +42452,7 @@ MATCH_label_c574:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 641 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42477,7 +42462,7 @@ MATCH_label_c575:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 641 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42487,7 +42472,7 @@ MATCH_label_c576:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 635 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42497,7 +42482,7 @@ MATCH_label_c577:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 635 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42507,7 +42492,7 @@ MATCH_label_c578:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 635 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42517,7 +42502,7 @@ MATCH_label_c579:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 635 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "ROLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42527,7 +42512,7 @@ MATCH_label_c580:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 629 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42537,7 +42522,7 @@ MATCH_label_c581:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 629 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42547,7 +42532,7 @@ MATCH_label_c582:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 629 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42557,7 +42542,7 @@ MATCH_label_c583:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 629 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RORB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42567,7 +42552,7 @@ MATCH_label_c584:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 623 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42577,7 +42562,7 @@ MATCH_label_c585:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 623 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42587,7 +42572,7 @@ MATCH_label_c586:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 623 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42597,7 +42582,7 @@ MATCH_label_c587:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 623 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCLB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42607,7 +42592,7 @@ MATCH_label_c588:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 617 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42617,7 +42602,7 @@ MATCH_label_c589:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 617 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42627,7 +42612,7 @@ MATCH_label_c590:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 617 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42637,7 +42622,7 @@ MATCH_label_c591:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 617 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "RCRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42647,7 +42632,7 @@ MATCH_label_c592:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 611 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42657,7 +42642,7 @@ MATCH_label_c593:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 611 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42667,7 +42652,7 @@ MATCH_label_c594:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 611 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42677,7 +42662,7 @@ MATCH_label_c595:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 611 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHLSALB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42687,7 +42672,7 @@ MATCH_label_c596:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 605 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42697,7 +42682,7 @@ MATCH_label_c597:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 605 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42707,7 +42692,7 @@ MATCH_label_c598:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 605 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42717,7 +42702,7 @@ MATCH_label_c599:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 605 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SHRB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42727,7 +42712,7 @@ MATCH_label_c600:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 599 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42737,7 +42722,7 @@ MATCH_label_c601:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 599 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42747,7 +42732,7 @@ MATCH_label_c602:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 599 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42757,7 +42742,7 @@ MATCH_label_c603:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 599 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "SARB.Ev.Ibod", { DIS_EADDR32, DIS_I8 });
@@ -42827,7 +42812,7 @@ MATCH_label_c610:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             nextPC = MATCH_p + 3;
             // #line 986 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "MOV.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42837,7 +42822,7 @@ MATCH_label_c611:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 986 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "MOV.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42847,7 +42832,7 @@ MATCH_label_c612:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 986 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "MOV.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -42857,7 +42842,7 @@ MATCH_label_c613:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             nextPC = MATCH_p + 7;
             // #line 986 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "MOV.Eb.Ib", { DIS_EADDR8, DIS_I8 });
@@ -46160,7 +46145,7 @@ MATCH_label_c947:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1346 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTiod", { DIS_EADDR32, DIS_I8 });
@@ -46170,7 +46155,7 @@ MATCH_label_c948:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 1346 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTiod", { DIS_EADDR32, DIS_I8 });
@@ -46180,7 +46165,7 @@ MATCH_label_c949:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 1346 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTiod", { DIS_EADDR32, DIS_I8 });
@@ -46190,7 +46175,7 @@ MATCH_label_c950:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1346 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTiod", { DIS_EADDR32, DIS_I8 });
@@ -46200,7 +46185,7 @@ MATCH_label_c951:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1310 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTSiod", { DIS_I8, DIS_EADDR32 });
@@ -46210,7 +46195,7 @@ MATCH_label_c952:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 1310 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTSiod", { DIS_I8, DIS_EADDR32 });
@@ -46220,7 +46205,7 @@ MATCH_label_c953:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 1310 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTSiod", { DIS_I8, DIS_EADDR32 });
@@ -46230,7 +46215,7 @@ MATCH_label_c954:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1310 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTSiod", { DIS_I8, DIS_EADDR32 });
@@ -46240,7 +46225,7 @@ MATCH_label_c955:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1322 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTRiod", { DIS_EADDR32, DIS_I8 });
@@ -46250,7 +46235,7 @@ MATCH_label_c956:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 1322 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTRiod", { DIS_EADDR32, DIS_I8 });
@@ -46260,7 +46245,7 @@ MATCH_label_c957:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 1322 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTRiod", { DIS_EADDR32, DIS_I8 });
@@ -46270,7 +46255,7 @@ MATCH_label_c958:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1322 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTRiod", { DIS_EADDR32, DIS_I8 });
@@ -46280,7 +46265,7 @@ MATCH_label_c959:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             nextPC = MATCH_p + 4;
             // #line 1334 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTCiod", { DIS_EADDR32, DIS_I8 });
@@ -46290,7 +46275,7 @@ MATCH_label_c960:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_32 & 0xff) /* i8 at 32 */, 8);
             nextPC = MATCH_p + 5;
             // #line 1334 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTCiod", { DIS_EADDR32, DIS_I8 });
@@ -46300,7 +46285,7 @@ MATCH_label_c961:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_64 & 0xff) /* i8 at 64 */, 8);
             nextPC = MATCH_p + 9;
             // #line 1334 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTCiod", { DIS_EADDR32, DIS_I8 });
@@ -46310,7 +46295,7 @@ MATCH_label_c962:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 2;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             nextPC = MATCH_p + 8;
             // #line 1334 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, "BTCiod", { DIS_EADDR32, DIS_I8 });
@@ -47152,7 +47137,7 @@ MATCH_label_c1046:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
             unsigned              reg   = (MATCH_w_8_8 >> 3 & 0x7) /* reg_opcode at 8 */;
             nextPC = MATCH_p + 3;
             // #line 1160 "frontend/machine/pentium/decoder.m"
@@ -47163,7 +47148,7 @@ MATCH_label_c1047:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_24 & 0xff) /* i8 at 24 */, 8);
             unsigned              reg   = (MATCH_w_8_8 >> 3 & 0x7) /* reg_opcode at 8 */;
             nextPC = MATCH_p + 4;
             // #line 1160 "frontend/machine/pentium/decoder.m"
@@ -47174,7 +47159,7 @@ MATCH_label_c1048:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_56 & 0xff) /* i8 at 56 */, 8);
             unsigned              reg   = (MATCH_w_8_8 >> 3 & 0x7) /* reg_opcode at 8 */;
             nextPC = MATCH_p + 8;
             // #line 1160 "frontend/machine/pentium/decoder.m"
@@ -47185,7 +47170,7 @@ MATCH_label_c1049:
         (void)0; /*placeholder for label*/
         {
                      HostAddress               Eaddr = addressToPC(MATCH_p) + 1;
-            int /* [~128..127] */ i8    = sign_extend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
+            int /* [~128..127] */ i8    = Util::signExtend((MATCH_w_8_48 & 0xff) /* i8 at 48 */, 8);
             unsigned              reg   = (MATCH_w_8_8 >> 3 & 0x7) /* reg_opcode at 8 */;
             nextPC = MATCH_p + 7;
             // #line 1160 "frontend/machine/pentium/decoder.m"
@@ -49538,7 +49523,7 @@ SharedExp PentiumDecoder::dis_Mem(HostAddress pc)
                         MATCH_w_8_16 = getByte(MATCH_p + 2);
                         {
                             unsigned              base  = (MATCH_w_8_8 & 0x7) /* base at 8 */;
-                            int /* [~128..127] */ d     = sign_extend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
+                            int /* [~128..127] */ d     = Util::signExtend((MATCH_w_8_16 & 0xff) /* i8 at 16 */, 8);
                             unsigned              index = (MATCH_w_8_8 >> 3 & 0x7) /* index at 8 */;
                             unsigned              ss    = (MATCH_w_8_8 >> 6 & 0x3) /* ss at 8 */;
                             // #line 2187 "frontend/machine/pentium/decoder.m"
@@ -49553,7 +49538,7 @@ SharedExp PentiumDecoder::dis_Mem(HostAddress pc)
                 else {
                     MATCH_w_8_8 = getByte(MATCH_p + 1);
                     {
-                        int /* [~128..127] */ d   = sign_extend((MATCH_w_8_8 & 0xff) /* i8 at 8 */, 8);
+                        int /* [~128..127] */ d   = Util::signExtend((MATCH_w_8_8 & 0xff) /* i8 at 8 */, 8);
                         unsigned              r32 = (MATCH_w_8_0 & 0x7) /* r_m at 0 */;
                         // #line 2158 "frontend/machine/pentium/decoder.m"
                         // m[ r[ r32] + d]
