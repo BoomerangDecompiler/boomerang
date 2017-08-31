@@ -59,8 +59,8 @@ void FileLogSink::flush()
 
 
 Log::Log(LogLevel level)
-    : m_level(level)
-    , m_fileNameOffset(0)
+    : m_fileNameOffset(0)
+    , m_level(level)
 {
     const char* lastSrc = __FILE__;
     const char* p = lastSrc;
