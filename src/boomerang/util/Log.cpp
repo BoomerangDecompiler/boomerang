@@ -60,11 +60,12 @@ void FileLogSink::flush()
 
 Log::Log(LogLevel level)
     : m_level(level)
+    , m_fileNameOffset(0)
 {
     const char* lastSrc = __FILE__;
     const char* p = lastSrc;
 
-    while ((p = strstr(lastSrc+1, "src/")) != nullptr) {
+    while ((p = strstr(lastSrc+1, "src")) != nullptr) {
         m_fileNameOffset = (p-lastSrc);
         lastSrc = p;
     }
