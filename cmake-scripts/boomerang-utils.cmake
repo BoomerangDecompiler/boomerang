@@ -84,7 +84,7 @@ endfunction(BOOMERANG_ADD_TEST)
 # Copy the Debug and Release DLL(s) for an IMPORTED target to the output directory on Windows
 # Example: BOOMERANG_COPY_IMPORTED_DLL(Qt5::Core)
 #
-macro(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
+function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
     if (MSVC)
         string(REPLACE "::" "" SanitizedName "${ImportedName}")
         get_target_property(${SanitizedName}-Debug   "${ImportedName}" LOCATION_Debug)
@@ -106,5 +106,5 @@ macro(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
                 "${BOOMERANG_OUTPUT_DIR}/bin"
         )
     endif (MSVC)
-endmacro(BOOMERANG_COPY_IMPORTED_DLL)
+endfunction(BOOMERANG_COPY_IMPORTED_DLL)
     
