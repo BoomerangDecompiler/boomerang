@@ -264,13 +264,12 @@ if (BOOMERANG_BUILD_TESTS)
     add_subdirectory(tests/unit-tests)
     
     file(COPY "${CMAKE_SOURCE_DIR}/tests/inputs/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/tests/inputs/")
+    
+    # run regression suite by 'make check'
+    add_custom_target(check "${CMAKE_SOURCE_DIR}/tests/regression-tests/full_regression.sh"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
 endif (BOOMERANG_BUILD_TESTS)
-
-
-# run regression suite by 'make check'
-add_custom_target(check "./full_regression.sh"
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-)
 
 
 ###############################################################################
