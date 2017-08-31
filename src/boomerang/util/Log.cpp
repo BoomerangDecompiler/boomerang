@@ -66,7 +66,7 @@ Log::Log(LogLevel level)
     const char* p = lastSrc;
 
     while ((p = strstr(lastSrc+1, "src")) != nullptr) {
-        m_fileNameOffset = (p-lastSrc);
+        m_fileNameOffset += (p-lastSrc);
         lastSrc = p;
     }
 }
