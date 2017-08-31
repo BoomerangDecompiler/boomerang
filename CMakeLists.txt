@@ -40,6 +40,8 @@ if (WIN32)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
 endif ()
 
+# target for copying DLLs to output directory
+add_custom_target(COPY_DLLS ALL)
 
 ###############################################################################
 # Options section
@@ -75,7 +77,7 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 elseif (CMAKE_SIZEOF_VOID_P EQUAL 4)
     add_definitions(-DBOOMERANG_BIT_COUNT=32)
 else ()
-    message(FATAL_ERROR "Unknown platform with sizeof(void*) == " ${CMAKE_SIZEOF_VOID_P})
+    message(FATAL_ERROR "Unknown platform with sizeof(void*) == ${CMAKE_SIZEOF_VOID_P}")
 endif ()
 
 # Define this to 1 if you want to use Dominance Numbers for analysis
@@ -230,6 +232,11 @@ set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS}")
 # Find Qt
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Xml REQUIRED)
+
+include(boomerang-utils)
+BOOMERANG_COPY_IMPORTED_DLL(COPY_DLLS Qt5::Core)
+BOOMERANG_COPY_IMPORTED_DLL(COPY_DLLS Qt5::Xml)
+
 find_package(Threads)
 
 set(CMAKE_AUTOMOC ON)
@@ -251,10 +258,11 @@ add_subdirectory(src)
 if (BOOMERANG_BUILD_TESTS)
     enable_testing()
     find_package(Qt5Test REQUIRED)
-
+    BOOMERANG_COPY_IMPORTED_DLL(COPY_DLLS Qt5::Test)
+    
     add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
     add_subdirectory(tests/unit-tests)
-
+    
     file(COPY "${CMAKE_SOURCE_DIR}/tests/inputs/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/tests/inputs/")
 endif (BOOMERANG_BUILD_TESTS)
 
