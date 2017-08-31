@@ -36,5 +36,5 @@ BOOMERANG_COPY_IMPORTED_DLL(boomerang-gui Qt5::Gui)
 
 # installation
 install(TARGETS boomerang-gui
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION bin/
 )

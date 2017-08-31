@@ -19,10 +19,12 @@ set_target_properties(boomerang PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED
 
 # install library and headers
 install(TARGETS boomerang
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib/
+    LIBRARY DESTINATION lib/
+    RUNTIME DESTINATION bin/
 )
 
 install(DIRECTORY . DESTINATION include/boomerang
-        FILES_MATCHING PATTERN "*.h")
+    FILES_MATCHING PATTERN "*.h"
+)
 
