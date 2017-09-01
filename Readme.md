@@ -5,7 +5,11 @@ Right now, there are no pre-compiled binaries available, so you'll have to compi
 
 ## Building
 
-[![Build Status](https://travis-ci.org/ceeac/boomerang.svg?branch=develop)](https://travis-ci.org/ceeac/boomerang)
+| **Build status** | Linux | Windows |
+|------------------|-------|---------|
+|    **develop**   | [![Travis CI](https://travis-ci.org/ceeac/boomerang.svg?branch=develop)](https://travis-ci.org/ceeac/boomerang) | [![Appveyor](https://ci.appveyor.com/api/projects/status/850gpt2u2wm6sxjs/branch/develop?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/develop) |
+|     **master**   | [![Travis CI](https://travis-ci.org/ceeac/boomerang.svg?branch=master)](https://travis-ci.org/ceeac/boomerang)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/850gpt2u2wm6sxjs/branch/master?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/master)   |
+
 
 ### Building prerequisites
 
