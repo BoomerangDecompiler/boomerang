@@ -95,7 +95,7 @@ function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
             ARGS
                 -E copy_if_different
                 "${${SanitizedName}-Debug}"
-                "${BOOMERANG_OUTPUT_DIR}/bin"
+                "${BOOMERANG_OUTPUT_DIR}/bin/"
         )
         
         add_custom_command(TARGET ${TargetName} POST_BUILD
@@ -103,7 +103,7 @@ function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
             ARGS
                 -E copy_if_different
                 "${${SanitizedName}-Release}"
-                "${BOOMERANG_OUTPUT_DIR}/bin"
+                "${BOOMERANG_OUTPUT_DIR}/bin/"
         )
     endif (MSVC)
 endfunction(BOOMERANG_COPY_IMPORTED_DLL)
