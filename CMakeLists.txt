@@ -28,7 +28,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 # Set a single output directory for generated binaries.
 # This is not ideal, but necessary for tests.
-set(BOOMERANG_OUTPUT_DIR "${PROJECT_BINARY_DIR}/out/")
+set(BOOMERANG_OUTPUT_DIR "${PROJECT_BINARY_DIR}/out")
 
 set(CMAKE_SHARED_MODULE_PREFIX "") # prevent windows/mingw modules having lib* prefix
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/bin/")
@@ -42,6 +42,8 @@ endif ()
 
 # target for copying DLLs to output directory
 add_custom_target(COPY_DLLS ALL)
+
+file(MAKE_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/bin)
 
 ###############################################################################
 # Options section
