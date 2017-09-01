@@ -15,7 +15,9 @@ add_subdirectory(util)
 add_library(boomerang ${boomerang-sources})
 target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB})
 
-set_target_properties(boomerang PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
+include(boomerang-utils)
+BOOMERANG_COPY_IMPORTED_DLL(boomerang Qt5::Core)
+BOOMERANG_COPY_IMPORTED_DLL(boomerang Qt5::Xml)
 
 # install library and headers
 install(TARGETS boomerang

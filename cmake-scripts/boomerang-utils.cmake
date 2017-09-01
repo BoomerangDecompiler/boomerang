@@ -1,6 +1,36 @@
 
 include(CMakeParseArguments)
 
+
+#
+# Copy the Debug and Release DLL(s) for an IMPORTED target to the output directory on Windows
+# Example: BOOMERANG_COPY_IMPORTED_DLL(Qt5::Core)
+#
+function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
+    if (MSVC)
+        string(REPLACE "::" "" SanitizedName "${ImportedName}")
+        get_target_property(${SanitizedName}-Debug   "${ImportedName}" LOCATION_Debug)
+        get_target_property(${SanitizedName}-Release "${ImportedName}" LOCATION_Release)
+
+        add_custom_command(TARGET ${TargetName} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}"
+            ARGS
+                -E copy_if_different
+                "${${SanitizedName}-Debug}"
+                "${BOOMERANG_OUTPUT_DIR}/bin/$<CONFIG>/"
+        )
+        
+        add_custom_command(TARGET ${TargetName} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}"
+            ARGS
+                -E copy_if_different
+                "${${SanitizedName}-Release}"
+                "${BOOMERANG_OUTPUT_DIR}/bin/$<CONFIG>/"
+        )
+    endif (MSVC)
+endfunction(BOOMERANG_COPY_IMPORTED_DLL)
+
+
 #
 # Usage: BOOMERANG_ADD_LOADER(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
 #
@@ -78,33 +108,5 @@ function(BOOMERANG_ADD_TEST)
 
 	add_test(NAME ${TEST_NAME} COMMAND $<TARGET_FILE:${TEST_NAME}>)
 	set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
+    BOOMERANG_COPY_IMPORTED_DLL(${TEST_NAME} Qt5::Test)
 endfunction(BOOMERANG_ADD_TEST)
-
-#
-# Copy the Debug and Release DLL(s) for an IMPORTED target to the output directory on Windows
-# Example: BOOMERANG_COPY_IMPORTED_DLL(Qt5::Core)
-#
-function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
-    if (MSVC)
-        string(REPLACE "::" "" SanitizedName "${ImportedName}")
-        get_target_property(${SanitizedName}-Debug   "${ImportedName}" LOCATION_Debug)
-        get_target_property(${SanitizedName}-Release "${ImportedName}" LOCATION_Release)
-
-        add_custom_command(TARGET ${TargetName} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}"
-            ARGS
-                -E copy_if_different
-                "${${SanitizedName}-Debug}"
-                "${BOOMERANG_OUTPUT_DIR}/bin/"
-        )
-        
-        add_custom_command(TARGET ${TargetName} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}"
-            ARGS
-                -E copy_if_different
-                "${${SanitizedName}-Release}"
-                "${BOOMERANG_OUTPUT_DIR}/bin/"
-        )
-    endif (MSVC)
-endfunction(BOOMERANG_COPY_IMPORTED_DLL)
-    
