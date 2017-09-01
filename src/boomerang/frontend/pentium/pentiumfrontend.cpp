@@ -37,7 +37,7 @@
 #include "boomerang/util/Types.h"
 #include "boomerang/type/Type.h"
 
-#include "boomerang-frontend/pentium/pentiumdecoder.h"
+#include "boomerang/frontend/pentium/pentiumdecoder.h"
 
 
 #include <cassert>

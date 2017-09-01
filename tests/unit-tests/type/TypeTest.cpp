@@ -22,7 +22,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/core/Project.h"
 
-#include "boomerang-frontend/pentium/pentiumfrontend.h"
+#include "boomerang/frontend/pentium/pentiumfrontend.h"
 
 #include <QTextStream>
 #include <QDebug>

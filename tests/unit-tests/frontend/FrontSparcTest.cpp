@@ -17,7 +17,7 @@
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 
-#include "boomerang-frontend/sparc/sparcfrontend.h"
+#include "boomerang/frontend/sparc/sparcfrontend.h"
 
 #include <QDebug>
 

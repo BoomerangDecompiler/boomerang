@@ -1,13 +1,6 @@
 
 include(boomerang-utils)
 
-set(test_LIBRARIES
-	${DEBUG_LIB}
-	boomerang
-	boomerang-frontend
-	${CMAKE_THREAD_LIBS_INIT}
-)
-
 set(TESTS
     RtlTest
     CfgTest
@@ -26,7 +19,6 @@ foreach(t ${TESTS})
 		LIBRARIES
 			${DEBUG_LIB}
 			boomerang
-			boomerang-frontend
 			${CMAKE_THREAD_LIBS_INIT}
 	)
 endforeach()

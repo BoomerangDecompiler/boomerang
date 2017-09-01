@@ -13,7 +13,6 @@ add_executable(boomerang-cli
 
 target_link_libraries(boomerang-cli
     boomerang
-    boomerang-frontend
     ${CMAKE_DL_LIBS}
     Qt5::Core
 )

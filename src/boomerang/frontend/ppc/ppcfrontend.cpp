@@ -33,7 +33,7 @@
 #include "boomerang/util/Log.h"
 
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang-frontend/ppc/ppcdecoder.h"
+#include "boomerang/frontend/ppc/ppcdecoder.h"
 
 #include <cassert>
 #include <iomanip> // For setfill etc
