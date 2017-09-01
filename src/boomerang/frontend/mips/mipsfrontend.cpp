@@ -31,7 +31,7 @@
 #include "boomerang/db/exp/Location.h"
 
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang-frontend/mips/mipsdecoder.h"
+#include "boomerang/frontend/mips/mipsdecoder.h"
 
 
 #include <cassert>

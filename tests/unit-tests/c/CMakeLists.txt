@@ -11,7 +11,6 @@ foreach(t ${TESTS})
 		SOURCES ${t}.h ${t}.cpp
 		LIBRARIES
 			boomerang
-			boomerang-frontend
 			${CMAKE_DL_LIBS}
 			${CMAKE_THREAD_LIBS_INIT}
 	)

@@ -34,7 +34,7 @@
 #include "boomerang/db/exp/Location.h"
 
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang-frontend/st20/st20decoder.h"
+#include "boomerang/frontend/st20/st20decoder.h"
 
 #include <cassert>
 #include <iomanip> // For setfill etc

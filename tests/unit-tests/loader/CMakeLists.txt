@@ -9,6 +9,7 @@ set(TESTS
 	MicroX86DisTest
 )
 
+
 foreach(t ${TESTS})
 	BOOMERANG_ADD_TEST(
 		NAME ${t}
@@ -16,7 +17,6 @@ foreach(t ${TESTS})
 		LIBRARIES
 			${DEBUG_LIB}
 			boomerang
-			boomerang-frontend
 			${CMAKE_THREAD_LIBS_INIT}
 	)
 endforeach()

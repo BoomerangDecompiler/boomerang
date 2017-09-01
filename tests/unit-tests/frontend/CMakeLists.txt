@@ -13,7 +13,7 @@ foreach(t ${TESTS})
 		SOURCES ${t}.h ${t}.cpp
 		LIBRARIES
 			${DEBUG_LIB}
-			boomerang-frontend
+			boomerang
 			${CMAKE_DL_LIBS}
 			${CMAKE_THREAD_LIBS_INIT}
 	)

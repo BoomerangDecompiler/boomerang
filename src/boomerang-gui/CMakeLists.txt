@@ -22,7 +22,6 @@ add_executable(boomerang-gui ${boomerang_SRC} ${gui_UI_H} ${resources_SRC})
 
 target_link_libraries(boomerang-gui
     boomerang
-    boomerang-frontend
     ${GC_LIBS}
     ${DEBUG_LIB}
     ${CMAKE_THREAD_LIBS_INIT}

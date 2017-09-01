@@ -40,7 +40,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang-frontend/sparc/sparcdecoder.h"
+#include "boomerang/frontend/sparc/sparcdecoder.h"
 
 #include <cassert>
 #include <cstring>

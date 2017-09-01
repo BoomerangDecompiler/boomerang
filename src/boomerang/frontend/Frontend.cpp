@@ -39,11 +39,11 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 
-#include "boomerang-frontend/sparc/sparcfrontend.h"
-#include "boomerang-frontend/pentium/pentiumfrontend.h"
-#include "boomerang-frontend/ppc/ppcfrontend.h"
-#include "boomerang-frontend/st20/st20frontend.h"
-#include "boomerang-frontend/mips/mipsfrontend.h"
+#include "boomerang/frontend/sparc/sparcfrontend.h"
+#include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/frontend/ppc/ppcfrontend.h"
+#include "boomerang/frontend/st20/st20frontend.h"
+#include "boomerang/frontend/mips/mipsfrontend.h"
 
 #include <QDir>
 

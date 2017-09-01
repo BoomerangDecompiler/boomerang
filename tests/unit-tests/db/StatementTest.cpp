@@ -38,7 +38,7 @@
 #include "boomerang/db/Managed.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
-#include "boomerang-frontend/pentium/pentiumfrontend.h"
+#include "boomerang/frontend/pentium/pentiumfrontend.h"
 
 #include <sstream>
 #include <map>
