@@ -210,11 +210,6 @@ QString Log::collectArg(const QString& msg, int i)
     return msg.arg(i);
 }
 
-QString Log::collectArg(const QString& msg, size_t i)
-{
-    return msg.arg(i);
-}
-
 QString Log::collectArg(const QString& msg, char c)
 {
     return msg.arg(c);
