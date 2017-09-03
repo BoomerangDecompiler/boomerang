@@ -1,15 +1,14 @@
 #!/bin/bash
 #./test_use_all.sh
 
-if hash ruby 2>/dev/null; then
-  ./regression_tester.rb ./out/boomerang
-elif hash python 2>/dev/null; then
-  ./regression_tester.py ./out/boomerang
+# exepath=$1
+# workingDir=$2
+
+if hash python3 2>/dev/null; then
+    python3 ./regression_tester.py $@
 else
-  echo "$0 requires ruby or python to run"
-  exit 1
+    echo "$0 requires Python 3 to run"
+    exit 1
 fi
 
 #diff -rwB tests/baseline/ tests/outputs/
-
-

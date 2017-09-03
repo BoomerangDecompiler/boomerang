@@ -253,16 +253,12 @@ add_subdirectory(src)
 if (BOOMERANG_BUILD_TESTS)
     enable_testing()
     find_package(Qt5Test REQUIRED)
-    
-    add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
-    add_subdirectory(tests/unit-tests)
-    
+
     file(COPY "${CMAKE_SOURCE_DIR}/tests/inputs/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/tests/inputs/")
-    
-    # run regression suite by 'make check'
-    add_custom_target(check "${CMAKE_SOURCE_DIR}/tests/regression-tests/full_regression.sh"
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    )
+    add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
+
+    add_subdirectory(tests/unit-tests)
+    add_subdirectory(tests/regression-tests)
 endif (BOOMERANG_BUILD_TESTS)
 
 
