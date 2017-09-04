@@ -31,8 +31,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 set(BOOMERANG_OUTPUT_DIR "${PROJECT_BINARY_DIR}/out")
 
 set(CMAKE_SHARED_MODULE_PREFIX "") # prevent windows/mingw modules having lib* prefix
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/bin/")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/")
 
 if (WIN32)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
@@ -40,8 +40,7 @@ if (WIN32)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
 endif ()
 
-# target for copying DLLs to output directory
-add_custom_target(COPY_DLLS ALL)
+file(MAKE_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/bin)
 
 ###############################################################################
 # Options section
@@ -233,10 +232,6 @@ set(CMAKE_EXE_LINKER_FLAGS "${LINKER_FLAGS}")
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
-include(boomerang-utils)
-BOOMERANG_COPY_IMPORTED_DLL(COPY_DLLS Qt5::Core)
-BOOMERANG_COPY_IMPORTED_DLL(COPY_DLLS Qt5::Xml)
-
 find_package(Threads)
 
 set(CMAKE_AUTOMOC ON)
@@ -258,7 +253,6 @@ add_subdirectory(src)
 if (BOOMERANG_BUILD_TESTS)
     enable_testing()
     find_package(Qt5Test REQUIRED)
-    BOOMERANG_COPY_IMPORTED_DLL(COPY_DLLS Qt5::Test)
     
     add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
     add_subdirectory(tests/unit-tests)

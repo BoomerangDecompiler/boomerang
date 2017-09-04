@@ -18,6 +18,6 @@ target_link_libraries(boomerang-cli
 )
 
 install(TARGETS boomerang-cli
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION bin/
 )
 

@@ -15,14 +15,14 @@ add_subdirectory(util)
 add_library(boomerang ${boomerang-sources})
 target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB})
 
-set_target_properties(boomerang PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
-
 # install library and headers
 install(TARGETS boomerang
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib/
+    LIBRARY DESTINATION lib/
+    RUNTIME DESTINATION bin/
 )
 
 install(DIRECTORY . DESTINATION include/boomerang
-        FILES_MATCHING PATTERN "*.h")
+    FILES_MATCHING PATTERN "*.h"
+)
 
