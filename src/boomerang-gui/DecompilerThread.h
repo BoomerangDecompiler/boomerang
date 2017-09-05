@@ -48,7 +48,7 @@ public:
 
 public slots:
     void changeInputFile(const QString& f);
-    void changeOutputPath(const QString& path);
+    void setOutputPath(const QString& path);
     void load();
     void decode();
     void decompile();

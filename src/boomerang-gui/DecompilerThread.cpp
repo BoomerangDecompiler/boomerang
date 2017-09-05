@@ -27,8 +27,6 @@ void DecompilerThread::run()
 
     Boomerang::get()->getSettings()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
     Boomerang::get()->getSettings()->setOutputDirectory("output");
-    // Boomerang::get()->vFlag = true;
-    // SETTING(traceDecoder) = true;
 
     m_parent = new Decompiler();
     m_parent->moveToThread(this);
@@ -86,8 +84,16 @@ void Decompiler::changeInputFile(const QString& f)
 }
 
 
-void Decompiler::changeOutputPath(const QString& path)
+void Decompiler::setOutputPath(const QString& path)
 {
+    if (!QDir(path).exists(path)) {
+        // create directory if it does not exist yet.
+        // This should only happen for the default ./output value or
+        // when using the command line, since in the GUI you can only
+        // select existing directories
+        LOG_MSG("Creating output directory '%1'", path);
+        QDir().mkpath(path);
+    }
     Boomerang::get()->getSettings()->setOutputDirectory(path);
 }
 
