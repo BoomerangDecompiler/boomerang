@@ -39,9 +39,8 @@ public slots:
     void showGenerateCodePage();
     void on_inputFileBrowseButton_clicked();
     void on_outputPathBrowseButton_clicked();
-    void on_inputFileComboBox_editTextChanged(const QString& text);
     void on_inputFileComboBox_currentIndexChanged(const QString& text);
-    void on_outputPathComboBox_editTextChanged(const QString& text);
+    void on_outputPathComboBox_currentIndexChanged(const QString& text);
     void showConsideringProc(const QString& parent, const QString& name);
     void showDecompilingProc(const QString& name);
     void showNewUserProc(const QString& name, Address addr);
