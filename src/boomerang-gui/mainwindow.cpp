@@ -50,12 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->toDecodeButton, SIGNAL(clicked()), d, SLOT(decode()));
     connect(ui->toDecompileButton, SIGNAL(clicked()), d, SLOT(decompile()));
     connect(ui->toGenerateCodeButton, SIGNAL(clicked()), d, SLOT(generateCode()));
-    // connect(ui->inputFileComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(
-    //    changeInputFile(const QString &)));
-    // connect(ui->outputPathComboBox, SIGNAL(editTextChanged(const QString &)), d,  SLOT(
-    //    changeOutputPath(const QString &)));
-    // connect(ui->inputFileBrowseButton, SIGNAL(clicked()), this, SLOT(browseForInputFile()));
-    // connect(ui->outputPathBrowseButton, SIGNAL(clicked()), this, SLOT(browseForOutputPath()));
+    connect(ui->inputFileComboBox, SIGNAL(editTextChanged(const QString &)), d, SLOT(changeInputFile(const QString &)));
+    connect(ui->outputPathComboBox, SIGNAL(editTextChanged(const QString &)), d, SLOT(changeOutputPath(const QString &)));
+//     connect(ui->inputFileBrowseButton, SIGNAL(clicked()), this, SLOT(browseForInputFile()));
+//     connect(ui->outputPathBrowseButton, SIGNAL(clicked()), this, SLOT(browseForOutputPath()));
 
     ui->userProcs->horizontalHeader()->disconnect(SIGNAL(sectionClicked(int)));
     connect(ui->userProcs->horizontalHeader(), &QHeaderView::sectionClicked, this,
@@ -165,17 +163,17 @@ void MainWindow::on_inputFileBrowseButton_clicked()
         openFileDir = fi.absolutePath();
     }
 
-    QString s = QFileDialog::getOpenFileName(this, tr("Select a file to decompile..."), openFileDir,
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Select a file to decompile..."), openFileDir,
                                              "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*)");
 
-    if (!s.isEmpty()) {
-        if (ui->inputFileComboBox->findText(s) == -1) {
-            ui->inputFileComboBox->addItem(s);
-            ui->inputFileComboBox->setCurrentIndex(ui->inputFileComboBox->findText(s));
+    if (!fileName.isEmpty()) {
+        if (ui->inputFileComboBox->findText(fileName) == -1) {
+            ui->inputFileComboBox->addItem(fileName);
+            ui->inputFileComboBox->setCurrentIndex(ui->inputFileComboBox->findText(fileName));
             saveSettings();
         }
 
-        decompilerThread->getDecompiler()->changeInputFile(s);
+        decompilerThread->getDecompiler()->changeInputFile(fileName);
 
         if (!ui->outputPathComboBox->currentText().isEmpty()) {
             ui->toLoadButton->setDisabled(false);
@@ -184,9 +182,26 @@ void MainWindow::on_inputFileBrowseButton_clicked()
 }
 
 
+void MainWindow::on_inputFileComboBox_editTextChanged(const QString& text)
+{
+    decompilerThread->getDecompiler()->changeInputFile(text);
+
+    if (!ui->outputPathComboBox->currentText().isEmpty()) {
+        ui->toLoadButton->setDisabled(false);
+    }
+}
+
+
+void MainWindow::on_inputFileComboBox_currentIndexChanged(const QString& text)
+{
+    decompilerThread->getDecompiler()->changeInputFile(text);
+    saveSettings();
+}
+
+
 void MainWindow::on_outputPathBrowseButton_clicked()
 {
-    QString s = QFileDialog::getExistingDirectory(this, tr("Select a location to write output..."), "output");
+    QString s = QFileDialog::getExistingDirectory(this, tr("Select a location to write the output to..."), "output");
 
     if (!s.isEmpty()) {
         if (ui->outputPathComboBox->findText(s) == -1) {
@@ -200,29 +215,6 @@ void MainWindow::on_outputPathBrowseButton_clicked()
             ui->toLoadButton->setDisabled(false);
         }
     }
-}
-
-
-void MainWindow::on_inputFileComboBox_editTextChanged(const QString& text)
-{
-    decompilerThread->getDecompiler()->changeInputFile(text);
-
-    if (ui->inputFileComboBox->findText(text) == -1) {
-        ui->inputFileComboBox->addItem(text);
-        ui->inputFileComboBox->setCurrentIndex(ui->inputFileComboBox->findText(text));
-        saveSettings();
-    }
-
-    if (!ui->outputPathComboBox->currentText().isEmpty()) {
-        ui->toLoadButton->setDisabled(false);
-    }
-}
-
-
-void MainWindow::on_inputFileComboBox_currentIndexChanged(const QString& text)
-{
-    decompilerThread->getDecompiler()->changeInputFile(text);
-    saveSettings();
 }
 
 
@@ -1142,7 +1134,4 @@ void MainWindow::on_cmb_typeRecoveryEngine_currentIndexChanged(int index)
     else {
         decompilerThread->getDecompiler()->setUseDFTA(true);
     }
-
-
-    // boom->project()->typeEngine(ptr);
 }
