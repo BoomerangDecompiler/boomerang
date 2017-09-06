@@ -197,7 +197,7 @@ void MainWindow::on_outputPathBrowseButton_clicked()
     }
 
     ui->outputPathComboBox->setCurrentIndex(existingIdx);
-    decompilerThread->getDecompiler()->changeInputFile(outputDir);
+    decompilerThread->getDecompiler()->setOutputPath(outputDir);
 
     // we now have at least one output directory
     ui->toLoadButton->setEnabled(ui->inputFileComboBox->count() > 0);
