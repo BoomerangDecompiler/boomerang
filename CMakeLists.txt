@@ -52,9 +52,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type. Valid values are Debug Release MinSizeRel RelWithDebInfo")
 endif ()
 
-# help the cmake find 3rd_party compiled/installed packages
-list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party")
-
 
 ###############################################################################
 # Defines/configuration section
@@ -235,7 +232,6 @@ find_package(Qt5Xml REQUIRED)
 find_package(Threads)
 
 set(CMAKE_AUTOMOC ON)
-include_directories("${CMAKE_SOURCE_DIR}/3rd_party/")
 
 
 ###############################################################################
@@ -277,4 +273,3 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/frontend"   DESTINATION "lib/boomera
 set(EXTRA_CLEAN_FILES "${BOOMERANG_OUTPUT_DIR}")
 
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${EXTRA_CLEAN_FILES}")
-
