@@ -36,4 +36,4 @@ void IntervalMapTest::testFind()
     QVERIFY(map.find(Address(0x3000)) == map.end());
 }
 
-QTEST_MAIN(IntervalMapTest);
+QTEST_MAIN(IntervalMapTest)
