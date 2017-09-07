@@ -3,8 +3,7 @@
 #include "SectionInfo.h"
 #include "boomerang/db/IBinaryImage.h"
 
-#include <boost/icl/interval_map.hpp>
-
+#include "boomerang/util/IntervalMap.h"
 
 struct SectionHolder
 {
@@ -25,7 +24,7 @@ class BinaryImage : public IBinaryImage
 {
 public:
     /// The type for the list of functions.
-    typedef boost::icl::interval_map<Address, SectionHolder> SectionRangeMap;
+    typedef IntervalMap<Address, SectionHolder> SectionRangeMap;
 
 public:
     BinaryImage();

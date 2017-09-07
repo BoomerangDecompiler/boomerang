@@ -2,6 +2,7 @@
 list(APPEND boomerang-util-sources
     util/Address.h
     util/Address.cpp
+    util/IntervalMap.h
     util/Log.h
     util/Log.cpp
     util/Util.h

@@ -11,4 +11,4 @@ add_subdirectory(db)
 add_subdirectory(frontend)
 add_subdirectory(loader)
 add_subdirectory(type)
-
+add_subdirectory(util)
