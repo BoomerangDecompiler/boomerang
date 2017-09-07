@@ -1,43 +1,7 @@
 #pragma once
 
 #include <map>
-
-/**
- * Right open interval
- */
-template<typename T>
-class Interval
-{
-public:
-    Interval(const T& lower, const T& upper)
-        : m_lower(lower)
-        , m_upper(upper)
-    {}
-    ~Interval() = default;
-
-    const T& lower() const { return m_lower; }
-    const T& upper() const { return m_upper; }
-
-    bool isContained(const T& value) const
-    {
-        return m_lower <= value && m_upper > value;
-    }
-
-    bool operator<(const Interval<T>& other) const
-    {
-        return m_lower < other.m_lower;
-    }
-
-    bool operator<(const T& value) const
-    {
-        return m_lower < value;
-    }
-
-private:
-    T m_lower; ///< Lower bound of the interval
-    T m_upper; ///< Upper bound of the interval
-};
-
+#include "boomerang/util/Interval.h"
 
 /**
  * A map that maps intervals of Key types to Value types.

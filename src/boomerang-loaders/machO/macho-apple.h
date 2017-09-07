@@ -445,7 +445,7 @@ struct fvmlib_command
 };
 
 /*
- * Dynamicly linked shared libraries are identified by two things.  The
+ * Dynamically linked shared libraries are identified by two things.  The
  * pathname (the name of the library as found for execution), and the
  * compatibility version number.  The pathname must match and the compatibility
  * number in the user of the library must be greater than or equal to the

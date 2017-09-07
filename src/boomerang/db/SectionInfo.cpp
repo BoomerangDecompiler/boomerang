@@ -2,11 +2,9 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/util/IntervalMap.h"
+#include "boomerang/util/IntervalSet.h"
 
 #include <QVariantMap>
-
-#include <boost/icl/interval_set.hpp>
-
 #include <algorithm>
 #include <utility>
 
@@ -36,13 +34,13 @@ public:
 
     void addDefinedArea(Address from, Address to)
     {
-        m_hasDefinedValue.insert(boost::icl::interval<Address>::right_open(from, to));
+        m_hasDefinedValue.insert(from, to);
     }
 
     bool isAddressBss(Address a) const
     {
-        assert(!m_hasDefinedValue.empty());
-        return m_hasDefinedValue.find(a) == m_hasDefinedValue.end();
+        assert(!m_hasDefinedValue.isEmpty());
+        return m_hasDefinedValue.isContained(a);
     }
 
     void setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
@@ -95,7 +93,7 @@ public:
     }
 
 public:
-    boost::icl::interval_set<Address>   m_hasDefinedValue;
+    IntervalSet<Address>   m_hasDefinedValue;
     IntervalMap<Address, VariantHolder> m_attributeMap;
 };
 
@@ -153,7 +151,7 @@ bool SectionInfo::isAddressBss(Address a) const
 
 bool SectionInfo::anyDefinedValues() const
 {
-    return !m_impl->m_hasDefinedValue.empty();
+    return !m_impl->m_hasDefinedValue.isEmpty();
 }
 
 

@@ -226,17 +226,20 @@ IBinarySection* BinaryImage::createSection(const QString& name, Address from, Ad
         to += 1; // open interval, so -> [from,to+1) is right
     }
 
-#ifdef DEBUG
+#if DEBUG
     // see https://stackoverflow.com/questions/25501044/gcc-ld-overlapping-sections-tbss-init-array-in-statically-linked-elf-bin
     // Basically, the .tbss section is of type SHT_NOBITS, so there is no data associated to the section.
     // It can therefore overlap other sections containing data.
     // This is a quirk of ELF programs linked statically with glibc
     if (name != ".tbss") {
-        auto clash_with = m_sectionMap.find(boost::icl::interval<ADDRESS>::right_open(from, to));
+        SectionRangeMap::iterator itFrom, itTo;
+        std::tie(itFrom, itTo) = m_sectionMap.equalRange(from, to);
 
-        if ((clash_with != m_sectionMap.end()) && ((*clash_with->second).getName() != ".tbss")) {
-            LOG_WARN("Segment %1 would intersect existing segment %2", name, (*clash_with->second).getName());
-            return nullptr;
+        for (SectionRangeMap::iterator clash_with = itFrom; clash_with != itTo; clash_with++) {
+            if ((*clash_with->second).getName() != ".tbss") {
+                LOG_WARN("Segment %1 would intersect existing segment %2", name, (*clash_with->second).getName());
+                return nullptr;
+            }
         }
     }
 #endif
