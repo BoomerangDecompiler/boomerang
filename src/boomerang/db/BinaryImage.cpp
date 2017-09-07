@@ -244,6 +244,6 @@ IBinarySection* BinaryImage::createSection(const QString& name, Address from, Ad
     SectionInfo *sect = new SectionInfo(from, (to - from).value(), name);
     m_sections.push_back(sect);
 
-    m_sectionMap.insert(std::make_pair(boost::icl::interval<Address>::right_open(from, to), sect));
+    m_sectionMap.insert(from, to, sect);
     return sect;
 }

@@ -1,11 +1,11 @@
 #include "SectionInfo.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/IBinaryImage.h"
+#include "boomerang/util/IntervalMap.h"
 
 #include <QVariantMap>
 
 #include <boost/icl/interval_set.hpp>
-#include <boost/icl/interval_map.hpp>
 
 #include <algorithm>
 #include <utility>
@@ -51,20 +51,21 @@ public:
 
         vmap[name] = val;
         VariantHolder map { vmap };
-        m_attributeMap.add(std::make_pair(boost::icl::interval<Address>::right_open(from, to), map));
+        m_attributeMap.insert(from, to, map);
     }
 
     QVariant attributeInRange(const QString& attrib, Address from, Address to) const
     {
-        auto v = m_attributeMap.equal_range(boost::icl::interval<Address>::right_open(from, to));
+        auto startIt = m_attributeMap.find(from);
+        auto endIt   = m_attributeMap.find(to);
 
-        if (v.first == m_attributeMap.end()) {
+        if (startIt == m_attributeMap.end()) {
             return QVariant();
         }
 
         QList<QVariant> vals;
 
-        for (auto iter = v.first; iter != v.second; ++iter) {
+        for (auto iter = startIt; iter != endIt; ++iter) {
             if (iter->second.get().contains(attrib)) {
                 vals << iter->second.get()[attrib];
             }
@@ -80,7 +81,7 @@ public:
     QVariantMap getAttributesForRange(Address from, Address to)
     {
         QVariantMap res;
-        auto        v = m_attributeMap.equal_range(boost::icl::interval<Address>::right_open(from, to));
+        auto        v = m_attributeMap.equalRange(from, to);
 
         if (v.first == m_attributeMap.end()) {
             return res;
@@ -94,9 +95,8 @@ public:
     }
 
 public:
-    boost::icl::interval_set<Address>                m_hasDefinedValue;
-    boost::icl::interval_map<Address, VariantHolder> m_attributeMap;
-
+    boost::icl::interval_set<Address>   m_hasDefinedValue;
+    IntervalMap<Address, VariantHolder> m_attributeMap;
 };
 
 
