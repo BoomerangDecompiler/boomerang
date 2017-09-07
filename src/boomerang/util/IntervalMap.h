@@ -22,10 +22,13 @@ public:
     IntervalMap() {}
     ~IntervalMap() = default;
 
+    /// \returns true if the map does not contain any elements.
     bool isEmpty() const { return m_data.empty(); }
 
+    /// Remove all elements from this map.
     void clear() { m_data.clear(); }
 
+    /// Inserts an interval with a mapped value into this map.
     iterator insert(const Interval<Key>& key, const Value& value)
     {
         std::pair<typename Data::iterator, bool> p = m_data.insert({ key, value });
@@ -37,6 +40,11 @@ public:
         return insert(Interval<Key>(lower, upper), value);
     }
 
+    /**
+     * Finds the mapped value at \p key.
+     * If there are muliple candidate intervals,
+     * the interval with the lowest lower bound is retrieved.
+     */
     const_iterator find(const Key& key) const
     {
         // todo: speed up
@@ -59,7 +67,7 @@ public:
     }
 
     /**
-     * Returns an iterator range containng all intervals between \p lower and \p upper
+     * \returns an iterator range containing all intervals between \p lower and \p upper.
      */
     std::pair<const_iterator, const_iterator> equalRange(const Key& lower, const Key& upper)
     {

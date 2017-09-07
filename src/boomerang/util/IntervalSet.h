@@ -5,7 +5,7 @@
 #include <set>
 
 /**
- *
+ * An IntervalSet implements a set as a set of intervals, merging adjoining intervals.
  */
 template<typename T>
 class IntervalSet
@@ -23,7 +23,10 @@ public:
     ~IntervalSet() = default;
 
 public:
+    /// \returns true if the set does not contain any elements.
     bool isEmpty() const { return m_data.empty(); }
+
+    /// Removes all intervals from the set.
     void clear() { m_data.clear(); }
 
     iterator insert(const T& from, const T& to) { return insert(Interval<T>(from, to)); }
@@ -81,6 +84,7 @@ public:
         return std::make_pair(itLower, itUpper);
     }
 
+    /// \returns true if \p value is contained in any interval of this set.
     bool isContained(const T& value) const
     {
         if (isEmpty()) {
