@@ -197,27 +197,24 @@ public:
 
 public:
     /// \copydoc IFileLoader::getJumpTarget
-    Address getJumpTarget(Address uNative) override;
+    Address getJumpTarget(Address addr) const override;
 
     /// \copydoc IFileLoader::hasDebugInfo
-    bool hasDebugInfo() override { return m_hasDebugInfo; }
+    bool hasDebugInfo() const override { return m_hasDebugInfo; }
 
     bool isLibrary() const;
-
-    DWord getDelta();
 
 protected:
     SWord win32Read2(const void* src) const; ///< Read 2 bytes from native addr
     DWord win32Read4(const void* src) const; ///< Read 4 bytes from native addr
 
 public:
-    bool isStaticLinkedLibProc(Address uNative);
-
-    bool isMinGWsAllocStack(Address uNative);
-    bool isMinGWsFrameInit(Address uNative);
-    bool isMinGWsFrameEnd(Address uNative);
-    bool isMinGWsCleanupSetup(Address uNative);
-    bool isMinGWsMalloc(Address uNative);
+    bool isStaticLinkedLibProc(Address addr) const;
+    bool isMinGWsAllocStack(Address addr) const;
+    bool isMinGWsFrameInit(Address addr) const;
+    bool isMinGWsFrameEnd(Address addr) const;
+    bool isMinGWsCleanupSetup(Address addr) const;
+    bool isMinGWsMalloc(Address addr) const;
 
 protected:
     void processIAT();
@@ -228,15 +225,15 @@ private:
     void findJumps(Address curr);
 
 private:
-    char* m_base;                   ///< Beginning of the loaded image
-    int m_cbImage;                  ///< Size of image, in bytes
+    char* m_image;                  ///< Beginning of the loaded image
+    int m_imageSize;                ///< Size of image, in bytes
 
     Header *m_pHeader;              ///< Pointer to header
     PEHeader *m_pPEHeader;          ///< Pointer to pe header
-    int m_cReloc;                   ///< Number of relocation entries
+    int m_numRelocs;                ///< Number of relocation entries
     bool m_hasDebugInfo;
     bool m_mingw_main;
 
-    IBinaryImage *m_image;
+    IBinaryImage *m_binaryImage;
     IBinarySymbolTable *m_symbols;
 };

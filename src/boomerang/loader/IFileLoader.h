@@ -69,8 +69,9 @@ public:
     /// Relocation functions
     virtual bool isRelocationAt(Address /*uNative*/) { return false; }
 
-    virtual Address getJumpTarget(Address /*uNative*/) { return Address::INVALID; }
-    virtual bool hasDebugInfo() { return false; }
+    /// \returns the target of the jmp/jXX instruction at address \p addr
+    virtual Address getJumpTarget(Address addr) const { Q_UNUSED(addr); return Address::INVALID; }
+    virtual bool hasDebugInfo() const { return false; }
 };
 
 typedef Plugin<IFileLoader> LoaderPlugin;
