@@ -68,7 +68,7 @@ public:
     virtual Address getEntryPoint() override;
 
     /// \copydoc IFileLoader::isRelocationAt
-    bool isRelocationAt(Address uNative) override;
+    bool isRelocationAt(Address addr) override;
 
 private:
     /// Reset internal state, except for those that keep track of which member
@@ -90,27 +90,26 @@ private:
     /// Not meant to be used externally, but sometimes you just have to have it.
     /// Like a replacement for elf_strptr().
     /// If the string pointer could not be found, this function returns nullptr.
-    const char *getStrPtr(int idx, int offset); // Calc string pointer
+    const char *getStrPtr(int sectionIdx, int offset); // Calc string pointer
 
 
     /// FIXME: the below assumes a fixed delta
-    HostAddress nativeToHostAddress(Address uNative);
+    HostAddress nativeToHostAddress(Address addr);
 
     /// Add appropriate symbols to the symbol table.
     /// \p secIndex is the section index of the symbol table.
-    void addSyms(int secIndex);
+    void addSymbolsForSection(int secIndex);
 
     /// FIXME: this function is way off the rails. It seems to always overwrite the relocation entry with the 32 bit value
     /// from the symbol table. Totally invalid for SPARC, and most X86 relocations!
     /// So currently not called
     void addRelocsAsSyms(uint32_t secIndex);
-    void setRelocInfo(SectionInfo *pSect);
 
     /// Search the .rel[a].plt section for an entry with symbol table index i.
     /// If found, return the native address of the associated PLT entry.
     /// A linear search will be needed. However, starting at offset i and searching backwards with wraparound should
     /// typically minimise the number of entries to search
-       Address findRelPltOffset(int i);
+    Address findRelPltOffset(int i);
 
     // Internal elf reading methods // TODO replace by Util::swapEndian
 
