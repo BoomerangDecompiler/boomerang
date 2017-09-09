@@ -23,7 +23,7 @@
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/codegen/SyntaxNode.h"
+#include "boomerang/codegen/syntax/SyntaxNode.h"
 
 #include "boomerang/db/Module.h"
 #include "boomerang/db/Register.h"
