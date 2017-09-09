@@ -205,21 +205,6 @@ QString Log::collectArg(const QString& msg, const RTL *r)
     return msg.arg(r->prints());
 }
 
-QString Log::collectArg(const QString& msg, int i)
-{
-    return msg.arg(i);
-}
-
-QString Log::collectArg(const QString& msg, char c)
-{
-    return msg.arg(c);
-}
-
-QString Log::collectArg(const QString& msg, double d)
-{
-    return msg.arg(d);
-}
-
 QString Log::collectArg(const QString& msg, Address a)
 {
     return msg.arg(a.toString());
