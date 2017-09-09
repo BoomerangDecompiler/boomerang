@@ -76,7 +76,7 @@ struct plt_record
 struct symElem
 {
     const char *name; // Simple symbol table entry
-       Address    value;
+    Address    value;
 };
 
 

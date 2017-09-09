@@ -35,22 +35,22 @@
 
 
 PalmBinaryLoader::PalmBinaryLoader()
-    : m_pImage(nullptr)
-    , m_pData(nullptr)
+    : m_image(nullptr)
+    , m_data(nullptr)
 {
 }
 
 
 PalmBinaryLoader::~PalmBinaryLoader()
 {
-    m_pImage = nullptr;
-    delete[] m_pData;
+    m_image = nullptr;
+    delete[] m_data;
 }
 
 
 void PalmBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
 {
-    m_image   = image;
+    m_binaryImage   = image;
     m_symbols = symbols;
 }
 
@@ -69,11 +69,11 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 {
     long size = img.size();
 
-    m_pImage = (uint8_t *)img.data();
+    m_image = (uint8_t *)img.data();
 
     // Check type at offset 0x3C; should be "appl" (or "palm"; ugh!)
-    if ((strncmp((char *)(m_pImage + 0x3C), "appl", 4) != 0) && (strncmp((char *)(m_pImage + 0x3C), "panl", 4) != 0) &&
-        (strncmp((char *)(m_pImage + 0x3C), "libr", 4) != 0)) {
+    if ((strncmp((char *)(m_image + 0x3C), "appl", 4) != 0) && (strncmp((char *)(m_image + 0x3C), "panl", 4) != 0) &&
+        (strncmp((char *)(m_image + 0x3C), "libr", 4) != 0)) {
         LOG_ERROR("This is not a standard .prc file");
         return false;
     }
@@ -81,10 +81,10 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     addTrapSymbols();
     // Get the number of resource headers (one section per resource)
 
-    uint32_t numSections = (m_pImage[0x4C] << 8) + m_pImage[0x4D];
+    uint32_t numSections = (m_image[0x4C] << 8) + m_image[0x4D];
 
     // Iterate through the resource headers (generating section info structs)
-    unsigned char              *p  = m_pImage + 0x4E; // First resource header
+    unsigned char              *p  = m_image + 0x4E; // First resource header
     unsigned                   off = 0;
     std::vector<SectionParams> params;
 
@@ -106,7 +106,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
             params.back().to = start_addr;
         }
 
-        params.push_back({ name, start_addr, Address::INVALID, HostAddress(m_pImage + off) }); // Address::INVALID will be overwritten
+        params.push_back({ name, start_addr, Address::INVALID, HostAddress(m_image + off) }); // Address::INVALID will be overwritten
     }
 
     // Set the length for the last section
@@ -114,7 +114,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 
     for (SectionParams param : params) {
         assert(param.to != Address::INVALID);
-        IBinarySection *sect = m_image->createSection(param.name, param.from, param.to);
+        IBinarySection *sect = m_binaryImage->createSection(param.name, param.from, param.to);
 
         if (sect) {
             // Decide if code or data; note that code0 is a special case (not code)
@@ -128,42 +128,41 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     // Create a separate, uncompressed, initialised data section
-    IBinarySection *pData = m_image->getSectionByName("data0");
-
-    if (pData == nullptr) {
-        fprintf(stderr, "No data section!\n");
+    IBinarySection *dataSection = m_binaryImage->getSectionByName("data0");
+    if (dataSection == nullptr) {
+        LOG_ERROR("No data section found!");
         return false;
     }
 
-    IBinarySection *pCode0 = m_image->getSectionByName("code0");
-
-    if (pCode0 == nullptr) {
-        fprintf(stderr, "No code 0 section!\n");
+    const IBinarySection *code0Section = m_binaryImage->getSectionByName("code0");
+    if (code0Section == nullptr) {
+        LOG_ERROR("No code 0 section found!");
         return false;
     }
 
     // When the info is all boiled down, the two things we need from the
     // code 0 section are at offset 0, the size of data above a5, and at
     // offset 4, the size below. Save the size below as a member variable
-    m_sizeBelowA5 = UINT4ADDR(pCode0->getHostAddr() + 4);
+    m_sizeBelowA5 = UINT4ADDR(code0Section->getHostAddr() + 4);
+
     // Total size is this plus the amount above (>=) a5
-    unsigned sizeData = m_sizeBelowA5 + UINT4ADDR(pCode0->getHostAddr());
+    unsigned sizeData = m_sizeBelowA5 + UINT4ADDR(code0Section->getHostAddr());
 
     // Allocate a new data section
-    m_pData = new unsigned char[sizeData];
+    m_data = new unsigned char[sizeData];
 
-    if (m_pData == nullptr) {
-        fprintf(stderr, "Could not allocate %u bytes for data section\n", sizeData);
+    if (m_data == nullptr) {
+        LOG_FATAL("Could not allocate %1 bytes for data section", sizeData);
     }
 
     // Uncompress the data. Skip first long (offset of CODE1 "xrefs")
-    p = (unsigned char *)(pData->getHostAddr() + 4).value();
+    p = (unsigned char *)(dataSection->getHostAddr() + 4).value();
     int start = (int)UINT4(p);
     p += 4;
-    unsigned char *q   = (m_pData + m_sizeBelowA5 + start);
+    unsigned char *q   = (m_data + m_sizeBelowA5 + start);
     bool          done = false;
 
-    while (!done && (p < (unsigned char *)(pData->getHostAddr() + pData->getSize()).value())) {
+    while (!done && (p < (unsigned char *)(dataSection->getHostAddr() + dataSection->getSize()).value())) {
         unsigned char rle = *p++;
 
         if (rle == 0) {
@@ -173,10 +172,10 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
         else if (rle == 1) {
             // 0x01 b_0 b_1
             // => 0x00 0x00 0x00 0x00 0xFF 0xFF b_0 b_1
-            *q++ = 0;
-            *q++ = 0;
-            *q++ = 0;
-            *q++ = 0;
+            *q++ = 0x00;
+            *q++ = 0x00;
+            *q++ = 0x00;
+            *q++ = 0x00;
             *q++ = 0xFF;
             *q++ = 0xFF;
             *q++ = *p++;
@@ -185,10 +184,10 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
         else if (rle == 2) {
             // 0x02 b_0 b_1 b_2
             // => 0x00 0x00 0x00 0x00 0xFF b_0 b_1 b_2
-            *q++ = 0;
-            *q++ = 0;
-            *q++ = 0;
-            *q++ = 0;
+            *q++ = 0x00;
+            *q++ = 0x00;
+            *q++ = 0x00;
+            *q++ = 0x00;
             *q++ = 0xFF;
             *q++ = *p++;
             *q++ = *p++;
@@ -199,11 +198,11 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
             // => 0xA9 0xF0 0x00 0x00 b_0 b_1 0x00 b_2
             *q++ = 0xA9;
             *q++ = 0xF0;
-            *q++ = 0;
-            *q++ = 0;
+            *q++ = 0x00;
+            *q++ = 0x00;
             *q++ = *p++;
             *q++ = *p++;
-            *q++ = 0;
+            *q++ = 0x00;
             *q++ = *p++;
         }
         else if (rle == 4) {
@@ -211,16 +210,16 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
             // => 0xA9 axF0 0x00 b_0 b_1 b_3 0x00 b_3
             *q++ = 0xA9;
             *q++ = 0xF0;
-            *q++ = 0;
+            *q++ = 0x00;
             *q++ = *p++;
             *q++ = *p++;
             *q++ = *p++;
-            *q++ = 0;
+            *q++ = 0x00;
             *q++ = *p++;
         }
         else if (rle < 0x10) {
             // 5-0xF are invalid.
-            assert(0);
+            assert(false);
         }
         else if (rle >= 0x80) {
             // n+1 bytes of literal data
@@ -231,7 +230,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
         else if (rle >= 40) {
             // n+1 repetitions of 0
             for (int k = 0; k <= (rle - 0x40); k++) {
-                *q++ = 0;
+                *q++ = 0x00;
             }
         }
         else if (rle >= 20) {
@@ -251,19 +250,17 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     if (!done) {
-        fprintf(stderr, "Warning! Compressed data section premature end\n");
+        LOG_WARN("Compressed data section premature end");
     }
 
-    // printf("Used %u bytes of %u in decompressing data section\n",
-    // p-(unsigned char*)pData->getHostAddr(), pData->size());
+    LOG_VERBOSE("Used %1 bytes of %2 in decompressing data section",
+                p-(unsigned char*)dataSection->getHostAddr().value(), dataSection->getSize());
 
     // Replace the data pointer and size with the uncompressed versions
 
-    pData->setHostAddr(HostAddress(m_pData));
-    pData->resize(sizeData);
-    // May as well make the native address zero; certainly the offset in the
-    // file is no longer appropriate (and is confusing)
-    // pData->getSourceAddr() = 0;
+    dataSection->setHostAddr(HostAddress(m_data));
+    dataSection->resize(sizeData);
+
     m_symbols->create(getMainEntryPoint(), "PilotMain").setAttr("EntryPoint", true);
     return true;
 }
@@ -316,7 +313,7 @@ Machine PalmBinaryLoader::getMachine() const
 
 bool PalmBinaryLoader::isLibrary() const
 {
-    return(strncmp((char *)(m_pImage + 0x3C), "libr", 4) == 0);
+    return(strncmp((char *)(m_image + 0x3C), "libr", 4) == 0);
 }
 
 
@@ -341,7 +338,7 @@ void PalmBinaryLoader::addTrapSymbols()
 std::pair<Address, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
 {
     Address              agp = Address::ZERO;
-    const IBinarySection *ps = m_image->getSectionByName("data0");
+    const IBinarySection *ps = m_binaryImage->getSectionByName("data0");
 
     if (ps) {
         agp = ps->getSourceAddr();
@@ -359,14 +356,14 @@ std::pair<Address, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
 int PalmBinaryLoader::getAppID() const
 {
     // The answer is in the header. Return 0 if file not loaded
-    if (m_pImage == nullptr) {
+    if (m_image == nullptr) {
         return 0;
     }
 
 // Beware the endianness (large)
 #define OFFSET_ID    0x40
-    return (m_pImage[OFFSET_ID] << 24) + (m_pImage[OFFSET_ID + 1] << 16) + (m_pImage[OFFSET_ID + 2] << 8) +
-           (m_pImage[OFFSET_ID + 3]);
+    return (m_image[OFFSET_ID] << 24) + (m_image[OFFSET_ID + 1] << 16) + (m_image[OFFSET_ID + 2] << 8) +
+           (m_image[OFFSET_ID + 3]);
 }
 
 
@@ -437,7 +434,7 @@ SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
 // For Palm binaries, this is PilotMain.
 Address PalmBinaryLoader::getMainEntryPoint()
 {
-    IBinarySection *psect = m_image->getSectionByName("code1");
+    IBinarySection *psect = m_binaryImage->getSectionByName("code1");
 
     if (psect == nullptr) {
         return Address::ZERO; // Failed
@@ -487,7 +484,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 
 void PalmBinaryLoader::generateBinFiles(const QString& path) const
 {
-    for (const IBinarySection *si : *m_image) {
+    for (const IBinarySection *si : *m_binaryImage) {
         const IBinarySection& psect(*si);
 
         if (psect.getName().startsWith("code") || psect.getName().startsWith("data")) {

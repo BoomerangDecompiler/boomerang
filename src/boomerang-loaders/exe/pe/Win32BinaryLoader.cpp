@@ -886,71 +886,71 @@ void printType(DWORD index, DWORD64 ImageBase)
 }
 
 
-BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext)
+BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO symInfo, ULONG SymbolSize, PVOID UserContext)
 {
     HANDLE hProcess = GetCurrentProcess();
 
-    printType(pSymInfo->TypeIndex, pSymInfo->ModBase);
+    printType(symInfo->TypeIndex, symInfo->ModBase);
 
     QString flagsStr;
     QTextStream ost(&flagsStr);
 
-    ost << " " << pSymInfo->Name << " flags: ";
+    ost << " " << symInfo->Name << " flags: ";
 
-    if (pSymInfo->Flags & SYMFLAG_VALUEPRESENT) {
+    if (symInfo->Flags & SYMFLAG_VALUEPRESENT) {
         ost << "value present, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_REGISTER) {
+    if (symInfo->Flags & SYMFLAG_REGISTER) {
         ost << "register, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_REGREL) {
+    if (symInfo->Flags & SYMFLAG_REGREL) {
         ost << "regrel, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_FRAMEREL) {
+    if (symInfo->Flags & SYMFLAG_FRAMEREL) {
         ost << "framerel, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_PARAMETER) {
+    if (symInfo->Flags & SYMFLAG_PARAMETER) {
         ost << "parameter, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_LOCAL) {
+    if (symInfo->Flags & SYMFLAG_LOCAL) {
         ost << "local, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_CONSTANT) {
+    if (symInfo->Flags & SYMFLAG_CONSTANT) {
         ost << "constant, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_EXPORT) {
+    if (symInfo->Flags & SYMFLAG_EXPORT) {
         ost << "export, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_FORWARDER) {
+    if (symInfo->Flags & SYMFLAG_FORWARDER) {
         ost << "forwarder, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_FUNCTION) {
+    if (symInfo->Flags & SYMFLAG_FUNCTION) {
         ost << "function, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_VIRTUAL) {
+    if (symInfo->Flags & SYMFLAG_VIRTUAL) {
         ost << "virtual, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_THUNK) {
+    if (symInfo->Flags & SYMFLAG_THUNK) {
         ost << "thunk, ";
     }
 
-    if (pSymInfo->Flags & SYMFLAG_TLSREL) {
+    if (symInfo->Flags & SYMFLAG_TLSREL) {
         ost << "tlsrel, ";
     }
 
     LOG_VERBOSE(flagsStr);
-    LOG_VERBOSE("register: %1, address: %2", (int)pSymInfo->Register, Address(pSymInfo->Address));
+    LOG_VERBOSE("register: %1, address: %2", (int)symInfo->Register, Address(symInfo->Address));
     return TRUE;
 }
 
