@@ -403,8 +403,7 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>&
             LOG_VERBOSE("Successor: infinite loop");
             SyntaxNode *n = root->clone();
             n->setDepth(root->getDepth() + 1);
-            InfiniteLoopSyntaxNode *nloop = new InfiniteLoopSyntaxNode();
-            nloop->setBody(statements[i]->clone());
+            LoopSyntaxNode *nloop = new LoopSyntaxNode(statements[i]->clone());
             n = n->replace(statements[i], nloop);
             successors.push_back(n);
             PRINT_BEFORE_AFTER(root, n);
