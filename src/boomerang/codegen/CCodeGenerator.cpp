@@ -96,20 +96,20 @@ void CCodeGenerator::generateCode(const Prog* prog, QTextStream& os)
     print(os);
 
     for (Module *module : prog->getModuleList()) {
-        for (Function *pProc : *module) {
-            if (pProc->isLib()) {
+        for (Function *function : *module) {
+            if (function->isLib()) {
                 continue;
             }
 
-            UserProc *p = (UserProc *)pProc;
+            UserProc *userProc = (UserProc *)function;
 
-            if (!p->isDecoded()) {
+            if (!userProc->isDecoded()) {
                 continue;
             }
 
-            p->getCFG()->compressCfg();
+            userProc->getCFG()->compressCfg();
 
-            generateCode(p);
+            generateCode(userProc);
             print(os);
         }
     }

@@ -27,7 +27,7 @@ namespace dbghelp
 
 #if defined(_WIN32) && !defined(__MINGW32__)
 // From prog.cpp
-BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext);
+BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG SymbolSize, PVOID UserContext);
 SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 
 #endif
