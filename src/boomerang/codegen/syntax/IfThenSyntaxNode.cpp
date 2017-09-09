@@ -158,10 +158,10 @@ SyntaxNode *IfThenElseSyntaxNode::clone()
     IfThenElseSyntaxNode *b = new IfThenElseSyntaxNode();
 
     b->m_correspond = this;
-    b->m_bb        = m_bb;
-    b->m_cond         = m_cond->clone();
-    b->m_then        = m_then->clone();
-    b->m_else        = m_else->clone();
+    b->m_bb         = m_bb;
+    b->m_cond       = m_cond->clone();
+    b->m_then       = m_then->clone();
+    b->m_else       = m_else->clone();
     return b;
 }
 

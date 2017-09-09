@@ -364,10 +364,11 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>&
                 SyntaxNode *n = root->clone();
                 n->setDepth(root->getDepth() + 1);
                 n = n->replace(tBody, nullptr);
-                PretestedLoopSyntaxNode *nloop = new PretestedLoopSyntaxNode();
-                nloop->setCond(statements[i]->getBB()->getCond()->clone());
+                LoopSyntaxNode *nloop = new LoopSyntaxNode(tBody->clone(),
+                                                           statements[i]->getBB()->getCond()->clone(),
+                                                           false);
+
                 nloop->setBB(statements[i]->getBB());
-                nloop->setBody(tBody->clone());
                 n = n->replace(statements[i], nloop);
                 successors.push_back(n);
                 // PRINT_BEFORE_AFTER
@@ -387,10 +388,10 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>&
                 SyntaxNode *n = root->clone();
                 n->setDepth(root->getDepth() + 1);
                 n = n->replace(tBody, nullptr);
-                PostTestedLoopSyntaxNode *nloop = new PostTestedLoopSyntaxNode();
-                nloop->setCond(statements[i]->getBB()->getCond()->clone());
+                LoopSyntaxNode *nloop = new LoopSyntaxNode(tBody->clone(),
+                                                           statements[i]->getBB()->getCond()->clone(),
+                                                           true);
                 nloop->setBB(statements[i]->getBB());
-                nloop->setBody(tBody->clone());
                 n = n->replace(statements[i], nloop);
                 successors.push_back(n);
                 // PRINT_BEFORE_AFTER
@@ -468,7 +469,8 @@ SyntaxNode *BlockSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 }
 
 
-bool BlockSyntaxNode::isBlock() const {
+bool BlockSyntaxNode::isBlock() const
+{
     return m_bb == nullptr;
 }
 

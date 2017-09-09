@@ -5,14 +5,15 @@
 #include "boomerang/db/exp/Exp.h"
 
 
-PretestedLoopSyntaxNode::PretestedLoopSyntaxNode()
-    : m_body(nullptr)
-    , m_cond(nullptr)
+LoopSyntaxNode::LoopSyntaxNode(SyntaxNode *body, SharedExp cond, bool postTested)
+    : m_cond(cond)
+    , m_body(body)
+    , m_postTested(postTested)
 {
 }
 
 
-PretestedLoopSyntaxNode::~PretestedLoopSyntaxNode()
+LoopSyntaxNode::~LoopSyntaxNode()
 {
     if (m_body) {
         delete m_body;
@@ -20,13 +21,13 @@ PretestedLoopSyntaxNode::~PretestedLoopSyntaxNode()
 }
 
 
-SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
+SyntaxNode *LoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
     return root->findNodeFor(m_bb->getOutEdge(1));
 }
 
 
-int PretestedLoopSyntaxNode::evaluate(SyntaxNode *root)
+int LoopSyntaxNode::evaluate(SyntaxNode *root)
 {
     int n = 1;
 
@@ -35,7 +36,7 @@ int PretestedLoopSyntaxNode::evaluate(SyntaxNode *root)
 }
 
 
-void PretestedLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors)
+void LoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors)
 {
     // we can always ignore gotos at the end of the body.
     if ((m_body->getNumOutEdges() == 1) && m_body->endsWithGoto()) {
@@ -54,19 +55,17 @@ void PretestedLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<Syntax
 }
 
 
-SyntaxNode *PretestedLoopSyntaxNode::clone()
+SyntaxNode *LoopSyntaxNode::clone()
 {
-    PretestedLoopSyntaxNode *b = new PretestedLoopSyntaxNode();
-
+    LoopSyntaxNode *b = new LoopSyntaxNode(m_body->clone(), m_cond->clone(), m_postTested);
     b->m_correspond = this;
-    b->m_bb        = m_bb;
-    b->m_cond         = m_cond->clone();
-    b->m_body        = m_body->clone();
+    b->m_bb         = m_bb;
+
     return b;
 }
 
 
-SyntaxNode *PretestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
+SyntaxNode *LoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
     assert(m_correspond != from);
 
@@ -82,126 +81,24 @@ SyntaxNode *PretestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 }
 
 
-SyntaxNode *PretestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
-{
-    if (m_bb == bb) {
-        return this;
-    }
-
-    return m_body->findNodeFor(bb);
-}
-
-
-void PretestedLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
-{
-    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
-    os << "[label=\"loop pretested ";
-    os << m_cond << " \"];" << '\n';
-    m_body->printAST(root, os);
-    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
-    os << " -> " << m_body->getNumber() << ";" << '\n';
-    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
-    os << " -> " << getOutEdge(root, 0)->getNumber() << " [style=dotted];" << '\n';
-}
-
-
-PostTestedLoopSyntaxNode::PostTestedLoopSyntaxNode()
-    : m_body(nullptr)
-    , m_cond(nullptr)
-{
-}
-
-
-PostTestedLoopSyntaxNode::~PostTestedLoopSyntaxNode()
-{
-    if (m_body) {
-        delete m_body;
-    }
-}
-
-
-SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
-{
-    return root->findNodeFor(m_bb->getOutEdge(1));
-}
-
-
-int PostTestedLoopSyntaxNode::evaluate(SyntaxNode *root)
-{
-    int n = 1;
-
-    n += m_body->evaluate(root);
-    return n;
-}
-
-
-void PostTestedLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors)
-{
-    // we can always ignore gotos at the end of the body.
-    if ((m_body->getNumOutEdges() == 1) && m_body->endsWithGoto()) {
-        LOG_VERBOSE("successor: ignoring goto at end of body of posttested loop");
-        assert(m_body->getOutEdge(root, 0) == this);
-
-        SyntaxNode *n = root->clone();
-        n->setDepth(root->getDepth() + 1);
-        SyntaxNode *nBody = m_body->clone();
-        nBody->ignoreGoto();
-        n = n->replace(m_body, nBody);
-        successors.push_back(n);
-    }
-
-    m_body->addSuccessors(root, successors);
-}
-
-
-SyntaxNode *PostTestedLoopSyntaxNode::clone()
-{
-    PostTestedLoopSyntaxNode *b = new PostTestedLoopSyntaxNode();
-
-    b->m_correspond = this;
-    b->m_bb        = m_bb;
-    b->m_cond         = m_cond->clone();
-    b->m_body        = m_body->clone();
-    return b;
-}
-
-
-SyntaxNode *PostTestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
-{
-    assert(m_correspond != from);
-
-    if (m_body->getCorrespond() == from) {
-        assert(to);
-        m_body = to;
-    }
-    else {
-        m_body = m_body->replace(from, to);
-    }
-
-    return this;
-}
-
-
-SyntaxNode *PostTestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
+SyntaxNode *LoopSyntaxNode::findNodeFor(BasicBlock *bb)
 {
     if (m_bb == bb) {
         return this;
     }
 
     SyntaxNode *n = m_body->findNodeFor(bb);
-
-    if (n == m_body) {
+    if (m_postTested && n == m_body) {
         return this;
     }
-
     return n;
 }
 
 
-void PostTestedLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
+void LoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
     os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
-    os << "[label=\"loop posttested ";
+    os << "[label=\"loop " << (m_postTested ? "post" : "pre") << "-tested ";
     os << m_cond << " \"];" << '\n';
     m_body->printAST(root, os);
     os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
@@ -311,7 +208,7 @@ void InfiniteLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
     }
 }
 
-SyntaxNode* PretestedLoopSyntaxNode::getEnclosingLoop(SyntaxNode* base, SyntaxNode* cur)
+SyntaxNode* LoopSyntaxNode::getEnclosingLoop(SyntaxNode* base, SyntaxNode* cur)
 {
     if (this == base) {
         return cur;
