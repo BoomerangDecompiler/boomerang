@@ -183,12 +183,19 @@ private:
     QString collectArg(const QString& msg, const RTL *r);
     QString collectArg(const QString& msg, const LocationSet *l);
 
-    QString collectArg(const QString& msg, char arg);
-    QString collectArg(const QString& msg, long arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, sint32 arg);
+    QString collectArg(const QString& msg, char arg)   { return msg.arg(arg); }
+    QString collectArg(const QString& msg, sint16 arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, sint32 arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, sint64 arg) { return msg.arg(arg); }
+    
+    QString collectArg(const QString& msg, uint8 arg)  { return msg.arg(arg); }
+    QString collectArg(const QString& msg, uint16 arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, uint32 arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, uint64 arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, double d);
+
+    QString collectArg(const QString& msg, float arg)  { return msg.arg(arg); }
+    QString collectArg(const QString& msg, double arg) { return msg.arg(arg); }
+
     QString collectArg(const QString& msg, Address addr);
 
     template<typename Arg>

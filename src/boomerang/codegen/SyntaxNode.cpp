@@ -41,12 +41,12 @@ void PRINT_BEFORE_AFTER(SyntaxNode *root, SyntaxNode *n)
 
 
 SyntaxNode::SyntaxNode()
-    : m_pbb(nullptr)
+    : m_bb(nullptr)
     , m_score(-1)
     , m_correspond(nullptr)
-    , m_notGoto(false)
+    , m_isGoto(true)
 {
-    m_nodenum = nodecount++;
+    m_nodeID = nodecount++;
 }
 
 
@@ -67,13 +67,13 @@ int SyntaxNode::getScore()
 
 bool SyntaxNode::isGoto() const
 {
-    return m_pbb && m_pbb->getType() == BBType::Oneway && !m_notGoto;
+    return m_bb && m_bb->getType() == BBType::Oneway && m_isGoto;
 }
 
 
 bool SyntaxNode::isBranch() const
 {
-    return m_pbb && m_pbb->getType() == BBType::Twoway;
+    return m_bb && m_bb->getType() == BBType::Twoway;
 }
 
 
@@ -92,8 +92,8 @@ BlockSyntaxNode::~BlockSyntaxNode()
 
 size_t BlockSyntaxNode::getNumOutEdges() const
 {
-    if (m_pbb) {
-        return m_pbb->getNumOutEdges();
+    if (m_bb) {
+        return m_bb->getNumOutEdges();
     }
 
     if (statements.size() == 0) {
@@ -106,8 +106,8 @@ size_t BlockSyntaxNode::getNumOutEdges() const
 
 SyntaxNode *BlockSyntaxNode::getOutEdge(SyntaxNode *root, size_t n)
 {
-    if (m_pbb) {
-        return root->findNodeFor(m_pbb->getOutEdge(n));
+    if (m_bb) {
+        return root->findNodeFor(m_bb->getOutEdge(n));
     }
 
     if (statements.size() == 0) {
@@ -120,7 +120,7 @@ SyntaxNode *BlockSyntaxNode::getOutEdge(SyntaxNode *root, size_t n)
 
 SyntaxNode *BlockSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-    if (m_pbb == bb) {
+    if (m_bb == bb) {
         return this;
     }
 
@@ -144,17 +144,17 @@ SyntaxNode *BlockSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
 
     os << "[label=\"";
 
-    if (m_pbb) {
-        switch (m_pbb->getType())
+    if (m_bb) {
+        switch (m_bb->getType())
         {
         case BBType::Oneway:
             os << "Oneway";
 
-            if (m_notGoto) {
+            if (!m_isGoto) {
                 os << " (ignored)";
             }
 
@@ -193,7 +193,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
             break;
         }
 
-        os << " " << m_pbb->getLowAddr();
+        os << " " << m_bb->getLowAddr();
     }
     else {
         os << "block";
@@ -201,16 +201,16 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 
     os << "\"];" << '\n';
 
-    if (m_pbb) {
-        for (size_t i = 0; i < m_pbb->getNumOutEdges(); i++) {
-            BasicBlock *out = m_pbb->getOutEdge(i);
-            os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+    if (m_bb) {
+        for (size_t i = 0; i < m_bb->getNumOutEdges(); i++) {
+            BasicBlock *out = m_bb->getOutEdge(i);
+            os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
 
             SyntaxNode *to = root->findNodeFor(out);
             assert(to);
             os << " -> " << to->getNumber() << " [style=dotted";
 
-            if (m_pbb->getNumOutEdges() > 1) {
+            if (m_bb->getNumOutEdges() > 1) {
                 os << ",label=" << i;
             }
 
@@ -223,7 +223,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
         }
 
         for (unsigned i = 0; i < statements.size(); i++) {
-            os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+            os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
             os << " -> " << statements[i]->getNumber() << " [label=\"" << i << "\"];" << '\n';
         }
     }
@@ -240,7 +240,7 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
     }
 #endif
 
-    if (m_pbb) {
+    if (m_bb) {
         return 1;
     }
 
@@ -489,8 +489,8 @@ SyntaxNode *BlockSyntaxNode::clone()
 
     b->m_correspond = this;
 
-    if (m_pbb) {
-        b->m_pbb = m_pbb;
+    if (m_bb) {
+        b->m_bb = m_bb;
     }
     else {
         for (auto& elem : statements) {
@@ -508,7 +508,7 @@ SyntaxNode *BlockSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
         return to;
     }
 
-    if (m_pbb == nullptr) {
+    if (m_bb == nullptr) {
         std::vector<SyntaxNode *> news;
 
         for (auto& elem : statements) {
@@ -538,23 +538,23 @@ SyntaxNode *BlockSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 
 IfThenSyntaxNode::IfThenSyntaxNode()
-    : pThen(nullptr)
-    , cond(nullptr)
+    : m_then(nullptr)
+    , m_cond(nullptr)
 {
 }
 
 
 IfThenSyntaxNode::~IfThenSyntaxNode()
 {
-    delete pThen;
+    delete m_then;
 }
 
 
 SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
-    SyntaxNode *n1 = root->findNodeFor(m_pbb->getOutEdge(0));
+    SyntaxNode *n1 = root->findNodeFor(m_bb->getOutEdge(0));
 
-    assert(n1 != pThen);
+    assert(n1 != m_then);
     return n1;
 }
 
@@ -563,14 +563,14 @@ int IfThenSyntaxNode::evaluate(SyntaxNode *root)
 {
     int n = 1;
 
-    n += pThen->evaluate(root);
+    n += m_then->evaluate(root);
     return n;
 }
 
 
 void IfThenSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors)
 {
-    pThen->addSuccessors(root, successors);
+    m_then->addSuccessors(root, successors);
 }
 
 
@@ -579,9 +579,9 @@ SyntaxNode *IfThenSyntaxNode::clone()
     IfThenSyntaxNode *b = new IfThenSyntaxNode();
 
     b->m_correspond = this;
-    b->m_pbb        = m_pbb;
-    b->cond         = cond->clone();
-    b->pThen        = pThen->clone();
+    b->m_bb        = m_bb;
+    b->m_cond         = m_cond->clone();
+    b->m_then        = m_then->clone();
     return b;
 }
 
@@ -590,12 +590,12 @@ SyntaxNode *IfThenSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
     assert(m_correspond != from);
 
-    if (pThen->getCorrespond() == from) {
+    if (m_then->getCorrespond() == from) {
         assert(to);
-        pThen = to;
+        m_then = to;
     }
     else {
-        pThen = pThen->replace(from, to);
+        m_then = m_then->replace(from, to);
     }
 
     return this;
@@ -604,43 +604,43 @@ SyntaxNode *IfThenSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *IfThenSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-    if (m_pbb == bb) {
+    if (m_bb == bb) {
         return this;
     }
 
-    return pThen->findNodeFor(bb);
+    return m_then->findNodeFor(bb);
 }
 
 
 void IfThenSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
-    os << "[label=\"if " << cond << " \"];" << '\n';
-    pThen->printAST(root, os);
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
-    os << " -> " << pThen->getNumber() << " [label=then];" << '\n';
-    SyntaxNode *follows = root->findNodeFor(m_pbb->getOutEdge(0));
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+    os << "[label=\"if " << m_cond << " \"];" << '\n';
+    m_then->printAST(root, os);
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+    os << " -> " << m_then->getNumber() << " [label=then];" << '\n';
+    SyntaxNode *follows = root->findNodeFor(m_bb->getOutEdge(0));
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
     os << " -> " << follows->getNumber() << " [style=dotted];" << '\n';
 }
 
 
 IfThenElseSyntaxNode::IfThenElseSyntaxNode()
-    : pThen(nullptr)
-    , pElse(nullptr)
-    , cond(nullptr)
+    : m_then(nullptr)
+    , m_else(nullptr)
+    , m_cond(nullptr)
 {
 }
 
 
 IfThenElseSyntaxNode::~IfThenElseSyntaxNode()
 {
-    if (pThen) {
-        delete pThen;
+    if (m_then) {
+        delete m_then;
     }
 
-    if (pElse) {
-        delete pElse;
+    if (m_else) {
+        delete m_else;
     }
 }
 
@@ -649,8 +649,8 @@ int IfThenElseSyntaxNode::evaluate(SyntaxNode *root)
 {
     int n = 1;
 
-    n += pThen->evaluate(root);
-    n += pElse->evaluate(root);
+    n += m_then->evaluate(root);
+    n += m_else->evaluate(root);
     return n;
 }
 
@@ -660,28 +660,28 @@ void IfThenElseSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNod
     // at the moment we can always ignore gotos at the end of
     // then and else, because we assume they have the same
     // follow
-    if ((pThen->getNumOutEdges() == 1) && pThen->endsWithGoto()) {
+    if ((m_then->getNumOutEdges() == 1) && m_then->endsWithGoto()) {
         LOG_VERBOSE("Successor: ignoring goto at end of then of if then else");
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
-        SyntaxNode *nThen = pThen->clone();
+        SyntaxNode *nThen = m_then->clone();
         nThen->ignoreGoto();
-        n = n->replace(pThen, nThen);
+        n = n->replace(m_then, nThen);
         successors.push_back(n);
     }
 
-    if ((pElse->getNumOutEdges() == 1) && pElse->endsWithGoto()) {
+    if ((m_else->getNumOutEdges() == 1) && m_else->endsWithGoto()) {
         LOG_VERBOSE("Successor: ignoring goto at end of else of if then else");;
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
-        SyntaxNode *nElse = pElse->clone();
+        SyntaxNode *nElse = m_else->clone();
         nElse->ignoreGoto();
-        n = n->replace(pElse, nElse);
+        n = n->replace(m_else, nElse);
         successors.push_back(n);
     }
 
-    pThen->addSuccessors(root, successors);
-    pElse->addSuccessors(root, successors);
+    m_then->addSuccessors(root, successors);
+    m_else->addSuccessors(root, successors);
 }
 
 
@@ -690,10 +690,10 @@ SyntaxNode *IfThenElseSyntaxNode::clone()
     IfThenElseSyntaxNode *b = new IfThenElseSyntaxNode();
 
     b->m_correspond = this;
-    b->m_pbb        = m_pbb;
-    b->cond         = cond->clone();
-    b->pThen        = pThen->clone();
-    b->pElse        = pElse->clone();
+    b->m_bb        = m_bb;
+    b->m_cond         = m_cond->clone();
+    b->m_then        = m_then->clone();
+    b->m_else        = m_else->clone();
     return b;
 }
 
@@ -702,20 +702,20 @@ SyntaxNode *IfThenElseSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
     assert(m_correspond != from);
 
-    if (pThen->getCorrespond() == from) {
+    if (m_then->getCorrespond() == from) {
         assert(to);
-        pThen = to;
+        m_then = to;
     }
     else {
-        pThen = pThen->replace(from, to);
+        m_then = m_then->replace(from, to);
     }
 
-    if (pElse->getCorrespond() == from) {
+    if (m_else->getCorrespond() == from) {
         assert(to);
-        pElse = to;
+        m_else = to;
     }
     else {
-        pElse = pElse->replace(from, to);
+        m_else = m_else->replace(from, to);
     }
 
     return this;
@@ -724,14 +724,14 @@ SyntaxNode *IfThenElseSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *IfThenElseSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-    if (m_pbb == bb) {
+    if (m_bb == bb) {
         return this;
     }
 
-    SyntaxNode *n = pThen->findNodeFor(bb);
+    SyntaxNode *n = m_then->findNodeFor(bb);
 
     if (n == nullptr) {
-        n = pElse->findNodeFor(bb);
+        n = m_else->findNodeFor(bb);
     }
 
     return n;
@@ -740,35 +740,35 @@ SyntaxNode *IfThenElseSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void IfThenElseSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
-    os << "[label=\"if " << cond << " \"];" << '\n';
-    pThen->printAST(root, os);
-    pElse->printAST(root, os);
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
-    os << " -> " << pThen->getNumber() << " [label=then];" << '\n';
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
-    os << " -> " << pElse->getNumber() << " [label=else];" << '\n';
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+    os << "[label=\"if " << m_cond << " \"];" << '\n';
+    m_then->printAST(root, os);
+    m_else->printAST(root, os);
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+    os << " -> " << m_then->getNumber() << " [label=then];" << '\n';
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+    os << " -> " << m_else->getNumber() << " [label=else];" << '\n';
 }
 
 
 PretestedLoopSyntaxNode::PretestedLoopSyntaxNode()
-    : pBody(nullptr)
-    , cond(nullptr)
+    : m_body(nullptr)
+    , m_cond(nullptr)
 {
 }
 
 
 PretestedLoopSyntaxNode::~PretestedLoopSyntaxNode()
 {
-    if (pBody) {
-        delete pBody;
+    if (m_body) {
+        delete m_body;
     }
 }
 
 
 SyntaxNode *PretestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
-    return root->findNodeFor(m_pbb->getOutEdge(1));
+    return root->findNodeFor(m_bb->getOutEdge(1));
 }
 
 
@@ -776,7 +776,7 @@ int PretestedLoopSyntaxNode::evaluate(SyntaxNode *root)
 {
     int n = 1;
 
-    n += pBody->evaluate(root);
+    n += m_body->evaluate(root);
     return n;
 }
 
@@ -784,19 +784,19 @@ int PretestedLoopSyntaxNode::evaluate(SyntaxNode *root)
 void PretestedLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors)
 {
     // we can always ignore gotos at the end of the body.
-    if ((pBody->getNumOutEdges() == 1) && pBody->endsWithGoto()) {
+    if ((m_body->getNumOutEdges() == 1) && m_body->endsWithGoto()) {
         LOG_VERBOSE("successor: ignoring goto at end of body of pretested loop");
-        assert(pBody->getOutEdge(root, 0)->startsWith(this));
+        assert(m_body->getOutEdge(root, 0)->startsWith(this));
 
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
-        SyntaxNode *nBody = pBody->clone();
+        SyntaxNode *nBody = m_body->clone();
         nBody->ignoreGoto();
-        n = n->replace(pBody, nBody);
+        n = n->replace(m_body, nBody);
         successors.push_back(n);
     }
 
-    pBody->addSuccessors(root, successors);
+    m_body->addSuccessors(root, successors);
 }
 
 
@@ -805,9 +805,9 @@ SyntaxNode *PretestedLoopSyntaxNode::clone()
     PretestedLoopSyntaxNode *b = new PretestedLoopSyntaxNode();
 
     b->m_correspond = this;
-    b->m_pbb        = m_pbb;
-    b->cond         = cond->clone();
-    b->pBody        = pBody->clone();
+    b->m_bb        = m_bb;
+    b->m_cond         = m_cond->clone();
+    b->m_body        = m_body->clone();
     return b;
 }
 
@@ -816,12 +816,12 @@ SyntaxNode *PretestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
     assert(m_correspond != from);
 
-    if (pBody->getCorrespond() == from) {
+    if (m_body->getCorrespond() == from) {
         assert(to);
-        pBody = to;
+        m_body = to;
     }
     else {
-        pBody = pBody->replace(from, to);
+        m_body = m_body->replace(from, to);
     }
 
     return this;
@@ -830,45 +830,45 @@ SyntaxNode *PretestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *PretestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-    if (m_pbb == bb) {
+    if (m_bb == bb) {
         return this;
     }
 
-    return pBody->findNodeFor(bb);
+    return m_body->findNodeFor(bb);
 }
 
 
 void PretestedLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
     os << "[label=\"loop pretested ";
-    os << cond << " \"];" << '\n';
-    pBody->printAST(root, os);
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
-    os << " -> " << pBody->getNumber() << ";" << '\n';
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+    os << m_cond << " \"];" << '\n';
+    m_body->printAST(root, os);
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+    os << " -> " << m_body->getNumber() << ";" << '\n';
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
     os << " -> " << getOutEdge(root, 0)->getNumber() << " [style=dotted];" << '\n';
 }
 
 
 PostTestedLoopSyntaxNode::PostTestedLoopSyntaxNode()
-    : pBody(nullptr)
-    , cond(nullptr)
+    : m_body(nullptr)
+    , m_cond(nullptr)
 {
 }
 
 
 PostTestedLoopSyntaxNode::~PostTestedLoopSyntaxNode()
 {
-    if (pBody) {
-        delete pBody;
+    if (m_body) {
+        delete m_body;
     }
 }
 
 
 SyntaxNode *PostTestedLoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
-    return root->findNodeFor(m_pbb->getOutEdge(1));
+    return root->findNodeFor(m_bb->getOutEdge(1));
 }
 
 
@@ -876,7 +876,7 @@ int PostTestedLoopSyntaxNode::evaluate(SyntaxNode *root)
 {
     int n = 1;
 
-    n += pBody->evaluate(root);
+    n += m_body->evaluate(root);
     return n;
 }
 
@@ -884,19 +884,19 @@ int PostTestedLoopSyntaxNode::evaluate(SyntaxNode *root)
 void PostTestedLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors)
 {
     // we can always ignore gotos at the end of the body.
-    if ((pBody->getNumOutEdges() == 1) && pBody->endsWithGoto()) {
+    if ((m_body->getNumOutEdges() == 1) && m_body->endsWithGoto()) {
         LOG_VERBOSE("successor: ignoring goto at end of body of posttested loop");
-        assert(pBody->getOutEdge(root, 0) == this);
+        assert(m_body->getOutEdge(root, 0) == this);
 
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
-        SyntaxNode *nBody = pBody->clone();
+        SyntaxNode *nBody = m_body->clone();
         nBody->ignoreGoto();
-        n = n->replace(pBody, nBody);
+        n = n->replace(m_body, nBody);
         successors.push_back(n);
     }
 
-    pBody->addSuccessors(root, successors);
+    m_body->addSuccessors(root, successors);
 }
 
 
@@ -905,9 +905,9 @@ SyntaxNode *PostTestedLoopSyntaxNode::clone()
     PostTestedLoopSyntaxNode *b = new PostTestedLoopSyntaxNode();
 
     b->m_correspond = this;
-    b->m_pbb        = m_pbb;
-    b->cond         = cond->clone();
-    b->pBody        = pBody->clone();
+    b->m_bb        = m_bb;
+    b->m_cond         = m_cond->clone();
+    b->m_body        = m_body->clone();
     return b;
 }
 
@@ -916,12 +916,12 @@ SyntaxNode *PostTestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
     assert(m_correspond != from);
 
-    if (pBody->getCorrespond() == from) {
+    if (m_body->getCorrespond() == from) {
         assert(to);
-        pBody = to;
+        m_body = to;
     }
     else {
-        pBody = pBody->replace(from, to);
+        m_body = m_body->replace(from, to);
     }
 
     return this;
@@ -930,13 +930,13 @@ SyntaxNode *PostTestedLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *PostTestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-    if (m_pbb == bb) {
+    if (m_bb == bb) {
         return this;
     }
 
-    SyntaxNode *n = pBody->findNodeFor(bb);
+    SyntaxNode *n = m_body->findNodeFor(bb);
 
-    if (n == pBody) {
+    if (n == m_body) {
         return this;
     }
 
@@ -946,27 +946,27 @@ SyntaxNode *PostTestedLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void PostTestedLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
     os << "[label=\"loop posttested ";
-    os << cond << " \"];" << '\n';
-    pBody->printAST(root, os);
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
-    os << " -> " << pBody->getNumber() << ";" << '\n';
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+    os << m_cond << " \"];" << '\n';
+    m_body->printAST(root, os);
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+    os << " -> " << m_body->getNumber() << ";" << '\n';
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
     os << " -> " << getOutEdge(root, 0)->getNumber() << " [style=dotted];" << '\n';
 }
 
 
 InfiniteLoopSyntaxNode::InfiniteLoopSyntaxNode()
-    : pBody(nullptr)
+    : m_body(nullptr)
 {
 }
 
 
 InfiniteLoopSyntaxNode::~InfiniteLoopSyntaxNode()
 {
-    if (pBody) {
-        delete pBody;
+    if (m_body) {
+        delete m_body;
     }
 }
 
@@ -975,7 +975,7 @@ int InfiniteLoopSyntaxNode::evaluate(SyntaxNode *root)
 {
     int n = 1;
 
-    n += pBody->evaluate(root);
+    n += m_body->evaluate(root);
     return n;
 }
 
@@ -983,19 +983,19 @@ int InfiniteLoopSyntaxNode::evaluate(SyntaxNode *root)
 void InfiniteLoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& successors)
 {
     // we can always ignore gotos at the end of the body.
-    if ((pBody->getNumOutEdges() == 1) && pBody->endsWithGoto()) {
+    if ((m_body->getNumOutEdges() == 1) && m_body->endsWithGoto()) {
         LOG_VERBOSE("Successor: ignoring goto at end of body of infinite loop");
-        assert(pBody->getOutEdge(root, 0) == this);
+        assert(m_body->getOutEdge(root, 0) == this);
 
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
-        SyntaxNode *nBody = pBody->clone();
+        SyntaxNode *nBody = m_body->clone();
         nBody->ignoreGoto();
-        n = n->replace(pBody, nBody);
+        n = n->replace(m_body, nBody);
         successors.push_back(n);
     }
 
-    pBody->addSuccessors(root, successors);
+    m_body->addSuccessors(root, successors);
 }
 
 
@@ -1004,8 +1004,8 @@ SyntaxNode *InfiniteLoopSyntaxNode::clone()
     InfiniteLoopSyntaxNode *b = new InfiniteLoopSyntaxNode();
 
     b->m_correspond = this;
-    b->m_pbb        = m_pbb;
-    b->pBody        = pBody->clone();
+    b->m_bb        = m_bb;
+    b->m_body        = m_body->clone();
     return b;
 }
 
@@ -1014,12 +1014,12 @@ SyntaxNode *InfiniteLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 {
     assert(m_correspond != from);
 
-    if (pBody->getCorrespond() == from) {
+    if (m_body->getCorrespond() == from) {
         assert(to);
-        pBody = to;
+        m_body = to;
     }
     else {
-        pBody = pBody->replace(from, to);
+        m_body = m_body->replace(from, to);
     }
 
     return this;
@@ -1028,13 +1028,13 @@ SyntaxNode *InfiniteLoopSyntaxNode::replace(SyntaxNode *from, SyntaxNode *to)
 
 SyntaxNode *InfiniteLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 {
-    if (m_pbb == bb) {
+    if (m_bb == bb) {
         return this;
     }
 
-    SyntaxNode *n = pBody->findNodeFor(bb);
+    SyntaxNode *n = m_body->findNodeFor(bb);
 
-    if (n == pBody) {
+    if (n == m_body) {
         return this;
     }
 
@@ -1044,15 +1044,15 @@ SyntaxNode *InfiniteLoopSyntaxNode::findNodeFor(BasicBlock *bb)
 
 void InfiniteLoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
-    os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
+    os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
     os << "[label=\"loop infinite\"];" << '\n';
 
-    if (pBody) {
-        pBody->printAST(root, os);
+    if (m_body) {
+        m_body->printAST(root, os);
     }
 
-    if (pBody) {
-        os << qSetFieldWidth(4) << m_nodenum << qSetFieldWidth(0) << " ";
-        os << " -> " << pBody->getNumber() << ";" << '\n';
+    if (m_body) {
+        os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+        os << " -> " << m_body->getNumber() << ";" << '\n';
     }
 }

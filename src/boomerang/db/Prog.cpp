@@ -551,31 +551,31 @@ int debugRegister(int r)
 }
 
 
-BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext)
+BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG SymbolSize, PVOID UserContext)
 {
     Function *proc = (Function *)UserContext;
 
-    if (pSymInfo->Flags & SYMFLAG_PARAMETER) {
-        SharedType ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
+    if (symInfo->Flags & SYMFLAG_PARAMETER) {
+        SharedType ty = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
 
-        if (pSymInfo->Flags & SYMFLAG_REGREL) {
-            assert(pSymInfo->Register == 8); // ebp
+        if (symInfo->Flags & SYMFLAG_REGREL) {
+            assert(symInfo->Register == 8); // ebp
             proc->getSignature()->addParameter(
-                ty, pSymInfo->Name,
-                Location::memOf(Binary::get(opPlus, Location::regOf(28), Const::get((int)pSymInfo->Address - 4))));
+                ty, symInfo->Name,
+                Location::memOf(Binary::get(opPlus, Location::regOf(28), Const::get((int)symInfo->Address - 4))));
         }
-        else if (pSymInfo->Flags & SYMFLAG_REGISTER) {
-            proc->getSignature()->addParameter(ty, pSymInfo->Name, Location::regOf(debugRegister(pSymInfo->Register)));
+        else if (symInfo->Flags & SYMFLAG_REGISTER) {
+            proc->getSignature()->addParameter(ty, symInfo->Name, Location::regOf(debugRegister(symInfo->Register)));
         }
     }
-    else if ((pSymInfo->Flags & SYMFLAG_LOCAL) && !proc->isLib()) {
+    else if ((symInfo->Flags & SYMFLAG_LOCAL) && !proc->isLib()) {
         UserProc *u = (UserProc *)proc;
-        assert(pSymInfo->Flags & SYMFLAG_REGREL);
-        assert(pSymInfo->Register == 8);
+        assert(symInfo->Flags & SYMFLAG_REGREL);
+        assert(symInfo->Register == 8);
         SharedExp memref =
-            Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(-((int)pSymInfo->Address - 4))));
-        SharedType ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
-        u->addLocal(ty, pSymInfo->Name, memref);
+            Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(-((int)symInfo->Address - 4))));
+        SharedType ty = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
+        u->addLocal(ty, symInfo->Name, memref);
     }
 
     return TRUE;

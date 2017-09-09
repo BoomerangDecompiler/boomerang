@@ -85,7 +85,7 @@ void HpSomBinaryLoader::processSymbols()
     unsigned numSym = UINT4(m_loadedImage + 0x60);
 
     HostAddress symPtr  = HostAddress(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
-    char    *pNames = (char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
+    const char *symbolNames = (const char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
 
 #define SYMSIZE    20 // 5 4-byte words per symbol entry
 #define SYMBOLNM(idx)     (UINT4((symPtr + idx * SYMSIZE + 4).value()))
@@ -94,26 +94,24 @@ void HpSomBinaryLoader::processSymbols()
 #define SYMBOLTY(idx)     ((UINT4((symPtr + idx * SYMSIZE).value()) >> 24) & 0x3f)
 
     for (unsigned u = 0; u < numSym; u++) {
-        // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << SYMBOLVAL(u)
-        // << ", aux " << SYMBOLAUX(u) << endl;
-        unsigned symbol_type = SYMBOLTY(u);
-        Address  value       = Address(SYMBOLVAL(u));
-        char     *pSymName   = pNames + SYMBOLNM(u);
+        unsigned symbolType    = SYMBOLTY(u);
+        Address  value         = Address(SYMBOLVAL(u));
+        const char *symbolName = symbolNames + SYMBOLNM(u);
 
         // Only interested in type 3 (code), 8 (stub), and 12 (millicode)
-        if ((symbol_type != 3) && (symbol_type != 8) && (symbol_type != 12)) {
+        if ((symbolType != 3) && (symbolType != 8) && (symbolType != 12)) {
             // 2 - initialized data
             // 4 - primary entry point
             // 5 - secondary entrypoint
-            // 6- any antry code
+            // 6 - any antry code
             // 7 - uninitialized data blocks
             // 9 - MODULE name of source module
             if (m_symbols->find(value)) {
                 continue;
             }
 
-            if (!m_symbols->find(pSymName)) {
-                m_symbols->create(value, pSymName);
+            if (!m_symbols->find(symbolName)) {
+                m_symbols->create(value, symbolName);
             }
 
             continue;
@@ -124,7 +122,7 @@ void HpSomBinaryLoader::processSymbols()
         //              continue;
         // Ignore symbols starting with one $; for example, there are many
         // $CODE$ (but we want to see helper functions like $$remU)
-        if ((pSymName[0] == '$') && (pSymName[1] != '$')) {
+        if ((symbolName[0] == '$') && (symbolName[1] != '$')) {
             continue;
         }
 
@@ -134,12 +132,9 @@ void HpSomBinaryLoader::processSymbols()
 
         // HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
         // value. So we have to check whether the symbol has already been entered (assume first one is correct).
-        if ((m_symbols->find(value) == nullptr) && (m_symbols->find(pSymName) == nullptr)) {
-            m_symbols->create(value, pSymName);
+        if ((m_symbols->find(value) == nullptr) && (m_symbols->find(symbolName) == nullptr)) {
+            m_symbols->create(value, symbolName);
         }
-
-        // cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << value << ",
-        // aux " << SYMBOLAUX(u) << endl;  // HACK!
     }
 }
 
@@ -155,7 +150,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
         return false;
     }
 
-    long size = fp.size();
+    QWord size = fp.size();
 
     // Allocate a buffer for the image
     m_loadedImage = new unsigned char[size];
@@ -224,13 +219,13 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // The DL table (Dynamic Link info?) is supposed to be at the start of
     // the $TEXT$ space, but the only way I can presently find that is to
     // assume that the first subspace entry points to it
-    char         *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
-    Address      first_subspace_fileloc = Address(UINT4(subspace_location + 8));
-    char         *DLTable     = (char *)m_loadedImage + first_subspace_fileloc.value();
-    char         *pDlStrings  = DLTable + UINT4(DLTable + 0x28);
-    unsigned     numImports   = UINT4(DLTable + 0x14); // Number of import strings
-    unsigned     numExports   = UINT4(DLTable + 0x24); // Number of export strings
-    export_entry *export_list = (export_entry *)(DLTable + UINT4(DLTable + 0x20));
+    const char   *subspaceLoc     = (const char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
+    Address      firstSubspaceFileLoc = Address(UINT4(subspaceLoc + 8));
+    const char   *dlTable     = (const char *)m_loadedImage + firstSubspaceFileLoc.value();
+    const char   *dlStrings   = dlTable + UINT4(dlTable + 0x28);
+    unsigned     numImports   = UINT4(dlTable + 0x14); // Number of import strings
+    unsigned     numExports   = UINT4(dlTable + 0x24); // Number of export strings
+    export_entry *export_list = (export_entry *)(dlTable + UINT4(dlTable + 0x20));
 
     // A convenient macro for accessing the fields (0-11) of the auxilliary header
     // Fields 0, 1 are the header (flags, aux header type, and size)
@@ -289,7 +284,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // Note: DLT entries come before PLT entries in the import array, but
     // the $DLT$ subsection is not necessarilly just before the $PLT$
     // subsection in memory.
-    int numDLT = UINT4(DLTable + 0x40);
+    int numDLT = UINT4(dlTable + 0x40);
 
     // For each PLT import table entry, add a symbol
     // u runs through import table; v through $PLT$ subspace
@@ -306,7 +301,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     for (u = 0; u < numExports; u++) {
         // cout << "Exporting " << (pDlStrings+UINT4(&export_list[u].name)) << " value " << hex <<
         // UINT4(&export_list[u].value) << endl;
-        if (strncmp(pDlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
+        if (strncmp(dlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
             // Enter the symbol "_callmain" for this address
             m_symbols->create(UINT4ADDR(&export_list[u].value), "_callmain");
             // Found call to main. Extract the offset. See assemble_17
@@ -365,7 +360,7 @@ void HpSomBinaryLoader::unload()
 
 Address HpSomBinaryLoader::getEntryPoint()
 {
-    assert(0); /* FIXME: Someone who understands this file please implement */
+    assert(false); /* FIXME: Someone who understands this file please implement */
     return Address::ZERO;
 }
 
@@ -456,7 +451,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
     // the import table has the symbolic names
     const import_entry *import_list = (import_entry *)(DLTable + UINT4(DLTable + 0x10));
     // Those names are in the DLT string table
-    const char *pDlStrings = DLTable + UINT4(DLTable + 0x28);
+    const char *dlStrings = DLTable + UINT4(DLTable + 0x28);
 
     std::map<Address, const char *> *ret = new std::map<Address, const char *>;
 
@@ -466,7 +461,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
             continue;
         }
 
-        const char *str = pDlStrings + import_list[u].name;
+        const char *str = dlStrings + import_list[u].name;
         (*ret)[Address(*p++)] = str;
     }
 

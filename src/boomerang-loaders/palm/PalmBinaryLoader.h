@@ -54,8 +54,6 @@ public:
     virtual Address getEntryPoint() override;
 
     // Analysis functions
-    //    bool        IsDynamicLinkedProc(ADDRESS wNative);
-    //    ADDRESS     NativeToHostAddress(ADDRESS uNative);
     bool isLibrary() const;
 
 private:
@@ -75,12 +73,13 @@ private:
 
     void addTrapSymbols();
 
-    unsigned char *m_pImage; ///< Points to loaded image
-    unsigned char *m_pData;  ///< Points to data
+private:
+    unsigned char *m_image; ///< Points to loaded image
+    unsigned char *m_data;  ///< Points to data
 
     /// Offset from start of data to where register a5 should be initialised to
     unsigned int m_sizeBelowA5;
 
-    IBinaryImage *m_image;
+    IBinaryImage *m_binaryImage;
     IBinarySymbolTable *m_symbols;
 };

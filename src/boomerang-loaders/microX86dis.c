@@ -122,11 +122,13 @@ static unsigned char op0Fmap[256] = {
     NH, NH, NH, NH, NH, NH, NH, NH, NH, NH, NH, NH, NH, NH, NH, NH
 };
 
-int microX86Dis(unsigned char* pCode) {
+int microX86Dis(const unsigned char* instruction)
+{
+    const unsigned char* p = instruction;
     int opsize = 4;             /* Operand size override will change to 2 */
     int size = 0;
     unsigned char modrm, mod, op2, sib;
-    unsigned char op = *pCode++;
+    unsigned char op = *p++;
     int prefix = 1;
 
     while (prefix) {
@@ -134,7 +136,7 @@ int microX86Dis(unsigned char* pCode) {
             case 0x66:
                 /* Operand size override */
                 opsize = 2;
-                op = *pCode++;
+                op = *p++;
                 size += 1;              /* Count the 0x66 */
                 break;
             case 0xF0: case 0xF2: case 0xF3:
@@ -145,7 +147,7 @@ int microX86Dis(unsigned char* pCode) {
                   count these as part of the instruction rather than
                   returning 1 byte.
                   Easier to compare output with disassembly */
-                op = *pCode++;
+                op = *p++;
                 size += 1;              /* Count the prefix */
                 break;
             default:
@@ -155,7 +157,7 @@ int microX86Dis(unsigned char* pCode) {
 
     if (op == 0x0F) {
         /* Two byte escape */
-        op2 = *pCode++;
+        op2 = *p++;
         size += op0Fmap[op2];
     }
     else
@@ -164,12 +166,12 @@ int microX86Dis(unsigned char* pCode) {
     if (size & MODRM) {
         size &= ~MODRM;     /* Remove flag from size */
         size++;             /* Count the mod/rm itself */
-        modrm = *pCode++;
+        modrm = *p++;
         mod = modrm >> 6;
         if ((mod != 3) && ((modrm & 0x7) == 4)) {
             /* SIB also present */
             size++;     /* Count the SIB itself */
-            sib = *pCode++;
+            sib = *p++;
             if ((mod == 0) && ((sib & 0x7) == 0x5)) {
                 /* ds:d32 with scale */
                 size += 4;
