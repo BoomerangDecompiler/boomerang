@@ -147,8 +147,8 @@ private:
     size_t m_imageSize;                         ///< total image size (bytes)
     Address m_firstExtern;                      ///< where the first extern will be placed
     Address m_nextExtern;                       ///< where the next extern will be placed
-    int *m_shLink = nullptr;                    ///< pointer to array of sh_link values
-    int *m_shInfo = nullptr;                    ///< pointer to array of sh_info values
+    uint32 *m_shLink = nullptr;                 ///< pointer to array of sh_link values
+    uint32 *m_shInfo = nullptr;                 ///< pointer to array of sh_info values
 
     std::vector<struct SectionParam> m_elfSections;
     IBinaryImage *m_binaryImage;
