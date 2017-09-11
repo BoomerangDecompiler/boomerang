@@ -40,7 +40,7 @@ public:
     bool isAddressBss(Address a) const
     {
         assert(!m_hasDefinedValue.isEmpty());
-        return m_hasDefinedValue.isContained(a);
+        return !m_hasDefinedValue.isContained(a);
     }
 
     void setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
