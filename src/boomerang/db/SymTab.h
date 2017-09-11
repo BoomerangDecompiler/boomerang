@@ -43,7 +43,7 @@ struct BinarySymbol : public IBinarySymbol
         return *this;
     }
 
-    bool rename(const QString& s) override;
+    bool rename(const QString& newName) override;
 
     bool isImportedFunction() const override;
     bool isStaticFunction() const override;
@@ -68,11 +68,16 @@ class SymTab : public IBinarySymbolTable
 public:
     SymTab();                     // Constructor
     ~SymTab();                    // Destructor
-    BinarySymbol *getOrCreateSymbol();
 
-    IBinarySymbol& create(Address a, const QString& s, bool local = false) override;
-    const IBinarySymbol *find(Address a) const override;        ///< Find an entry by address; nullptr if none
-    const IBinarySymbol *find(const QString& s) const override; ///< Find an entry by name; Address::INVALID if none
+    /// \copydoc IBinarySymbolTable::find(Address)
+    const IBinarySymbol *find(Address addr) const override;
+
+    /// \copydoc IBinarySymbolTable::find(const QString&)
+    const IBinarySymbol *find(const QString& name) const override;
+
+    /// \copydoc IBinarySymbolTable::create
+    IBinarySymbol& create(Address addr, const QString& name, bool local = false) override;
+
 
     SymbolListType& getSymbolList() { return SymbolList; }
     iterator begin()       override { return SymbolList.begin(); }

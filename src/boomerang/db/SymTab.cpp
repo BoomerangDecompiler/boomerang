@@ -47,18 +47,26 @@ void SymTab::clear()
 }
 
 
-IBinarySymbol& SymTab::create(Address a, const QString& s, bool local)
+IBinarySymbol& SymTab::create(Address addr, const QString& name, bool local)
 {
-    assert(amap.find(a) == amap.end());
-    assert(smap.find(s) == smap.end());
+    assert(amap.find(addr) == amap.end());
+
+    // If the symbol already exists, redirect the new symbol to the old one.
+    std::map<QString, BinarySymbol*>::iterator it = smap.find(name);
+    if (it != smap.end()) {
+        LOG_WARN("Symbol '%1' already exists in the global symbol table!", name);
+        BinarySymbol *existingSymbol = it->second;
+        amap[addr] = existingSymbol;
+        return *existingSymbol;
+    }
 
     BinarySymbol *sym = new BinarySymbol;
-    sym->Location = a;
-    sym->Name     = s;
-    amap[a]       = sym;
+    sym->Location = addr;
+    sym->Name     = name;
+    amap[addr]    = sym;
 
     if (!local) {
-        smap[s] = sym;
+        smap[name] = sym;
     }
 
     return *sym;
@@ -89,18 +97,18 @@ const IBinarySymbol *SymTab::find(const QString& s) const
 }
 
 
-bool BinarySymbol::rename(const QString& s)
+bool BinarySymbol::rename(const QString& newName)
 {
     // TODO: this code assumes only one BinarySymbolTable instance exists
     SymTab *sym_tab = (SymTab *)Boomerang::get()->getSymbols();
 
-    if (sym_tab->smap.find(s) != sym_tab->smap.end()) {
-        LOG_ERROR("Renaming symbol %1 to %2 failed - new name clashes with another symbol", Name, s);
+    if (sym_tab->smap.find(newName) != sym_tab->smap.end()) {
+        LOG_ERROR("Renaming symbol %1 to %2 failed - new name clashes with another symbol", Name, newName);
         return false; // symbol name clash
     }
 
     sym_tab->smap.erase(Name);
-    Name = s;
+    Name = newName;
     sym_tab->smap[Name] = this;
     return true;
 }
