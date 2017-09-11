@@ -181,15 +181,12 @@ void CCodeGenerator::generateCode(const Prog* prog, Module *cluster, UserProc *p
 
             UserProc *_proc   = (UserProc *)func;
             addPrototype(_proc); // May be the wrong signature if up has ellipsis
-
-            if (generate_all) {
-                print(*os);
-            }
         }
     }
 
     if (generate_all) {
-        *os << "\n"; // Separate prototype(s) from first proc
+        appendLine(""); // Separate prototype(s) from first proc
+        print(*os);
     }
 
     for (Module *module : prog->getModuleList()) {
@@ -678,7 +675,6 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 
     s << proc->getName() << "(";
     StatementList& parameters = proc->getParameters();
-    StatementList::iterator pp;
 
     if ((parameters.size() > 10) && open) {
         LOG_WARN("Proc %1 has %2 parameters", proc->getName(), parameters.size());
@@ -686,7 +682,7 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
 
     bool first = true;
 
-    for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
+    for (auto pp = parameters.begin(); pp != parameters.end(); ++pp) {
         if (first) {
             first = false;
         }
@@ -733,14 +729,14 @@ void CCodeGenerator::addProcDec(UserProc *proc, bool open)
     s << ")";
 
     if (open) {
-        s << "\n{";
+        appendLine(tgt);
+        appendLine("{");
         m_indent++;
     }
     else {
-        s << ";\n";
+        s << ";";
+        appendLine(tgt);
     }
-
-    appendLine(tgt);
 }
 
 
@@ -2759,11 +2755,7 @@ void CCodeGenerator::writeBB(BasicBlock* bb)
 
 void CCodeGenerator::print(QTextStream& os)
 {
-    os << m_lines.join('\n');
-
-    if (m_proc == nullptr) {
-        os << '\n';
-    }
+    os << m_lines.join('\n') << '\n';
 }
 
 
