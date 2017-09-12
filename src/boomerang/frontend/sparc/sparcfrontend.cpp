@@ -710,7 +710,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             if (!inst.valid) {
                 ptrdiff_t delta = m_image->getTextDelta();
 
-                const Byte* instructionData = (const Byte*)(uAddr + delta).value();
+                const Byte* instructionData = (const Byte*)(uAddr.value() + delta);
                 QString instructionString;
                 QTextStream ost(&instructionString);
 
@@ -721,7 +721,8 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     }
                 }
 
-                LOG_FATAL("Invalid instruction at %1: %2", uAddr, instructionString);
+                LOG_ERROR("Invalid instruction at %1: %2", uAddr, instructionString);
+                return false;
             }
 
             // Don't display the RTL here; do it after the switch statement in case the delay slot instruction is moved

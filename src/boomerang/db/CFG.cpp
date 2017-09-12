@@ -547,8 +547,6 @@ void Cfg::sortByLastDFT()
 
 bool Cfg::wellFormCfg() const
 {
-    QTextStream q_cerr(stderr);
-
     m_wellFormed = true;
 
     for (const BasicBlock *elem : m_listBB) {
@@ -567,10 +565,10 @@ bool Cfg::wellFormCfg() const
             }
 
             if (itm == m_mapBB.end()) {
-                q_cerr << "WellFormCfg: incomplete BB not even in map!\n";
+                LOG_ERROR("Incomplete BB not even in map!");
             }
             else {
-                q_cerr << "WellFormCfg: BB with native address " << (*itm).first << " is incomplete\n";
+                LOG_ERROR("BB with native address %1 is incomplete", (*itm).first);
             }
         }
         else {
@@ -586,16 +584,16 @@ bool Cfg::wellFormCfg() const
                     // Check that the out edge has been written (i.e. nonzero)
                     if (pBB == nullptr) {
                         m_wellFormed = false;                   // At least one problem
-                                          Address addr = current->getLowAddr();
-                        q_cerr << "WellFormCfg: BB with native address " << addr << " is missing outedge " << i << '\n';
+                        Address addr = current->getLowAddr();
+                        LOG_ERROR("BB with native address %1 is missing outedge %2", addr, i);
                     }
                     else {
                         // Check that there is a corresponding in edge from the child to here
                         auto ii = std::find(pBB->m_inEdges.begin(), pBB->m_inEdges.end(), elem);
 
                         if (ii == pBB->m_inEdges.end()) {
-                            q_cerr << "WellFormCfg: No in edge to BB at " << (elem)->getLowAddr()
-                                   << " from successor BB at " << pBB->getLowAddr() << '\n';
+                            LOG_ERROR("No in edge to BB at %1 from successor BB at %2",
+                                      (elem)->getLowAddr(), pBB->getLowAddr());
                             m_wellFormed = false;                      // At least one problem
                         }
                     }
@@ -610,8 +608,8 @@ bool Cfg::wellFormCfg() const
                 auto oo = std::find(elem_inedge->m_outEdges.begin(), elem_inedge->m_outEdges.end(), elem);
 
                 if (oo == elem_inedge->m_outEdges.end()) {
-                    q_cerr << "WellFormCfg: No out edge to BB at " << elem->getLowAddr()
-                           << " from predecessor BB at " << elem_inedge->getLowAddr() << '\n';
+                    LOG_ERROR("No out edge to BB at %1 from predecessor BB at %2",
+                              elem->getLowAddr(), elem_inedge->getLowAddr());
                     m_wellFormed = false;                // At least one problem
                 }
             }
