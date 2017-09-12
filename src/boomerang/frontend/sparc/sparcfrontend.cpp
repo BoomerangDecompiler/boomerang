@@ -62,9 +62,10 @@ bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delt
         return false;
     }
 
-    unsigned delay_inst       = *((unsigned *)(src + 4 + delta).value());
-    unsigned inst_before_dest = *((unsigned *)(dest - 4 + delta).value());
-    return(delay_inst == inst_before_dest);
+    const DWord delay_inst       = *(DWord *)(src.value()  + 4 + delta);
+    const DWord inst_before_dest = *(DWord *)(dest.value() - 4 + delta);
+
+    return (delay_inst == inst_before_dest);
 }
 
 
