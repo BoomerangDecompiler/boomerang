@@ -92,13 +92,13 @@ Cfg& Cfg::operator=(const Cfg& other)
 }
 
 
-void Cfg::setEntryBB(BasicBlock *bb)
+void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
 {
-    m_entryBB = bb;
+    m_entryBB = entryBB;
 
-    for (BasicBlock *it : m_listBB) {
-        if (it->getType() == BBType::Ret) {
-            m_exitBB = it;
+    for (BasicBlock *bb : m_listBB) {
+        if (bb->getType() == BBType::Ret) {
+            m_exitBB = bb;
             return;
         }
     }

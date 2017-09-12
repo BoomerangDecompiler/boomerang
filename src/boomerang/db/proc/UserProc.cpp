@@ -472,7 +472,7 @@ void UserProc::setEntryBB()
         pBB = m_cfg->getNextBB(bbit);
     }
 
-    m_cfg->setEntryBB(pBB);
+    m_cfg->setEntryAndExitBB(pBB);
 }
 
 
@@ -1023,6 +1023,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     if (child->empty()) {
         Boomerang::get()->alertDecompiling(this);
         LOG_MSG("Decompiling procedure '%1'", getName());
+
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         child = middleDecompile(path, indent);

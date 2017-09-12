@@ -543,10 +543,10 @@ public:
     /***************************************************************************/ /**
      * \brief       Set the entry and calculate exit BB pointers
      * \note        Each cfg should have only one exit node now
-     * \param       bb pointer to the entry BB
+     * \param       entryBB pointer to the entry BB
      ******************************************************************************/
-    void setEntryBB(BasicBlock *bb);
-    void setExitBB(BasicBlock *bb);
+    void setEntryAndExitBB(BasicBlock *entryBB);
+    void setExitBB(BasicBlock *exitBB);
 
     BasicBlock *findRetNode();
 

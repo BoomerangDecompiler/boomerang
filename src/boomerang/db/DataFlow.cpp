@@ -62,7 +62,10 @@ void DataFlow::dfs(int p, size_t n)
 void DataFlow::dominators(Cfg *cfg)
 {
     BasicBlock *entryBB = cfg->getEntryBB();
-    size_t     numBB    = cfg->getNumBBs();
+    const size_t numBB  = cfg->getNumBBs();
+
+    assert(entryBB != nullptr);
+    assert(numBB > 0);
 
     m_BBs.resize(numBB, (BasicBlock *)-1);
     N        = 0;
