@@ -416,6 +416,10 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
     int curr         = first;
     int pltEntrySize = siPlt->getEntrySize();
 
+    if (pltEntrySize == 0) {
+        return Address::INVALID;
+    }
+
     do {
         // Each entry is sizeRelPlt bytes, and will contain the offset, then the info (addend optionally follows)
         DWord *pltEntry = (DWord *)(addrRelPlt + (curr * sizeRelPlt)).value();
