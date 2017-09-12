@@ -129,7 +129,7 @@ private:
 
     Elf32_Ehdr *m_elfHeader   = nullptr;        ///< ELF header
     Elf32_Phdr *m_programHdrs = nullptr;        ///< Pointer to program headers
-    Elf32_Shdr *m_sectionhdrs = nullptr;        ///< Array of section header structs
+    Elf32_Shdr *m_sectionHdrs = nullptr;        ///< Array of section header structs
 
     const char *m_strings = nullptr;            ///< Pointer to the string section
     bool m_bigEndian;                           ///< 1 = Big Endian

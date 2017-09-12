@@ -34,13 +34,13 @@ struct SectionParam
     QString     Name;
     Address     SourceAddr;
     size_t      Size;
-    size_t      entry_size;
+    DWord       entry_size;
     bool        ReadOnly;
     bool        Bss;
     bool        Code;
     bool        Data;
     HostAddress imagePtr;
-    unsigned    sectionType; ///< Type of section (format dependent)
+    DWord       sectionType;  ///< Type of section (format dependent)
 };
 
 // not part of anonymous namespace, since it would create an ambiguity
@@ -87,7 +87,7 @@ void ElfBinaryLoader::init()
     m_loadedImage   = nullptr;
     m_elfHeader     = nullptr;  // No ELF header
     m_programHdrs   = nullptr;  // No program headers
-    m_sectionhdrs   = nullptr;  // No section headers
+    m_sectionHdrs   = nullptr;  // No section headers
     m_strings       = nullptr;  // No strings
     m_relocSection  = nullptr;
     m_symbolSection = nullptr;
@@ -149,6 +149,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         return false;
     }
 
+    // endianness
     switch (m_elfHeader->e_ident[EI_DATA])
     {
     case ELFDATA2LSB: m_bigEndian = false; break;
@@ -167,30 +168,28 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     // Set up section header pointer
     const Elf32_Off shOffset = elfRead4(&m_elfHeader->e_shoff);
     if (shOffset > 0) {
-        m_sectionhdrs = (Elf32_Shdr *)(m_loadedImage + shOffset);
-    }
-
-    // Set up section header string table pointer
-    // NOTE: it does not appear that endianness affects shorts.. they are always in little endian format
-    // Gerard: I disagree. I need the elfRead on linux/i386
-    const Elf32_Half stringSectionIndex = elfRead2(&m_elfHeader->e_shstrndx);
-    if (stringSectionIndex > 0) {
-        m_strings = (const char *)(m_loadedImage + elfRead4(&m_sectionhdrs[stringSectionIndex].sh_offset));
+        m_sectionHdrs = (Elf32_Shdr *)(m_loadedImage + shOffset);
     }
 
     // Number of sections
     const Elf32_Half numSections = elfRead2(&m_elfHeader->e_shnum);
+
     // Set up the m_sh_link and m_sh_info arrays
     m_shLink = new Elf32_Word[numSections];
     m_shInfo = new Elf32_Word[numSections];
 
-    // Number of elf sections
+    // Set up section header string table pointer
+    const Elf32_Half stringSectionIndex = elfRead2(&m_elfHeader->e_shstrndx);
+    if (stringSectionIndex > 0 && stringSectionIndex < numSections) {
+        m_strings = (const char *)(m_loadedImage + elfRead4(&m_sectionHdrs[stringSectionIndex].sh_offset));
+    }
+
     bool    seenCode         = false; // True when have seen a code sect
     Address arbitaryLoadAddr = Address(0x08000000);
 
     for (Elf32_Half i = 0; i < numSections; i++) {
         // Get section information.
-        const Elf32_Shdr *sectionHeader = m_sectionhdrs + i;
+        const Elf32_Shdr *sectionHeader = m_sectionHdrs + i;
 
         if ((Byte *)sectionHeader > m_loadedImage + m_loadedImageSize) {
             LOG_ERROR("Section %1 header is outside the image size", i);
@@ -203,25 +202,24 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
             return false;
         }
 
-        SectionParam sect;
-        sect.Name = sectionName;
-        // Can't use the SHF_ALLOC bit to determine bss section; the bss section has SHF_ALLOC but also SHT_NOBITS.
-        // (But many other sections, such as .comment, also have SHT_NOBITS). So for now, just use the name
-        //      if ((elfRead4(&pShdr->sh_flags) & SHF_ALLOC) == 0)
-        sect.Bss      = (strcmp(sectionName, ".bss") == 0);
-        sect.Code     = false;
-        sect.Data     = false;
-        sect.ReadOnly = false;
+        SectionParam newSection;
+        newSection.Name = sectionName;
+
+        // Since the bss section is a special section, just assume it is always present
+        newSection.Bss      = (strcmp(sectionName, ".bss") == 0);
+        newSection.Code     = false;
+        newSection.Data     = false;
+        newSection.ReadOnly = false;
 
         Elf32_Off _off = elfRead4(&sectionHeader->sh_offset);
         if (_off) {
-            sect.imagePtr = HostAddress(m_loadedImage) + _off;
+            newSection.imagePtr = HostAddress(m_loadedImage) + _off;
         }
 
-        sect.SourceAddr = Address(elfRead4(&sectionHeader->sh_addr));
-        sect.Size       = elfRead4(&sectionHeader->sh_size);
+        newSection.SourceAddr = Address(elfRead4(&sectionHeader->sh_addr));
+        newSection.Size       = elfRead4(&sectionHeader->sh_size);
 
-        if (sect.SourceAddr.isZero() && strncmp(sectionName, ".rel", 4) != 0) {
+        if (newSection.SourceAddr.isZero() && strncmp(sectionName, ".rel", 4) != 0) {
             const Elf32_Word align = elfRead4(&sectionHeader->sh_addralign);
 
             if (align > 1) {
@@ -230,25 +228,25 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
                 }
             }
 
-            sect.SourceAddr   = arbitaryLoadAddr;
-            arbitaryLoadAddr += sect.Size ? sect.Size : 1;
+            newSection.SourceAddr   = arbitaryLoadAddr;
+            arbitaryLoadAddr += newSection.Size ? newSection.Size : 1;
         }
 
-        sect.sectionType = elfRead4(&sectionHeader->sh_type);
-        m_shLink[i]      = elfRead4(&sectionHeader->sh_link);
-        m_shInfo[i]      = elfRead4(&sectionHeader->sh_info);
-        sect.entry_size  = elfRead4(&sectionHeader->sh_entsize);
+        newSection.sectionType = elfRead4(&sectionHeader->sh_type);
+        newSection.entry_size  = elfRead4(&sectionHeader->sh_entsize);
+        m_shLink[i]            = elfRead4(&sectionHeader->sh_link);
+        m_shInfo[i]            = elfRead4(&sectionHeader->sh_info);
 
-        if (sect.SourceAddr + sect.Size > m_nextExtern) {
-            m_firstExtern = m_nextExtern = sect.SourceAddr + sect.Size;
+        if (newSection.SourceAddr + newSection.Size > m_nextExtern) {
+            m_firstExtern = m_nextExtern = newSection.SourceAddr + newSection.Size;
         }
 
         if ((elfRead4(&sectionHeader->sh_flags) & SHF_WRITE) == 0) {
-            sect.ReadOnly = true;
+            newSection.ReadOnly = true;
         }
 
         if (elfRead4(&sectionHeader->sh_flags) & SHF_EXECINSTR) {
-            sect.Code = true;
+            newSection.Code = true;
             seenCode  = true; // We've got to a code section
         }
 
@@ -267,17 +265,17 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         if (seenCode &&
             ((elfRead4(&sectionHeader->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC)) == SHF_ALLOC) &&
             (elfRead4(&sectionHeader->sh_type) != SHT_NOBITS)) {
-            sect.Data = true;
+            newSection.Data = true;
         }
 
-        m_elfSections.push_back(sect);
+        m_elfSections.push_back(newSection);
     } // for each section
 
     // assign arbitary addresses to .rel.* sections too
     for (SectionParam& sect : m_elfSections) {
         if (sect.SourceAddr.isZero() && sect.Name.startsWith(".rel")) {
             sect.SourceAddr   = arbitaryLoadAddr;
-            arbitaryLoadAddr += sect.Size ? sect.Size : 1;
+            arbitaryLoadAddr += (sect.Size > 0) ? sect.Size : 1;
         }
     }
 
@@ -422,7 +420,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
                 int plt_offset2 = elfRead4((DWord *)(targetSect->getHostAddr() + c).value());
                 int plt_idx     = (plt_offset2 % pltEntrySize);
 
-                if (entryType == R_386_JUMP_SLOT) {
+                if (entryType == R_386_JMP_SLOT) {
                     return Address(plt_offset2 - 6);
                 }
 
@@ -889,7 +887,7 @@ void ElfBinaryLoader::applyRelocations()
                         S = Address(elfRead4(&symOrigin[symTabIndex].st_value));
 
                         if (e_type == ET_REL) {
-                            const SWord sectionIdx = elfRead2(&symOrigin[symTabIndex].st_shndx);
+                            const Elf32_Half sectionIdx = elfRead2(&symOrigin[symTabIndex].st_shndx);
 
                             if (sectionIdx < m_elfSections.size()) {
                                 S += m_elfSections[sectionIdx].SourceAddr;
@@ -899,9 +897,8 @@ void ElfBinaryLoader::applyRelocations()
                         break;
 
                     case R_386_PC32: // S + A - P
-
                         if (ELF32_ST_TYPE(symOrigin[symTabIndex].st_info) == STT_SECTION) {
-                            const SWord sectionIdx = elfRead2(&symOrigin[symTabIndex].st_shndx);
+                            const Elf32_Half sectionIdx = elfRead2(&symOrigin[symTabIndex].st_shndx);
 
                             if (sectionIdx < m_elfSections.size()) {
                                 S += m_elfSections[sectionIdx].SourceAddr;
@@ -968,13 +965,12 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
         return false; // No file loaded
     }
 
-    const SWord machine = elfRead2(&m_elfHeader->e_machine);
-    const SWord e_type  = elfRead2(&m_elfHeader->e_type);
+    const Elf32_Half machine = elfRead2(&m_elfHeader->e_machine);
+    const Elf32_Half e_type  = elfRead2(&m_elfHeader->e_type); ///< relocation type
 
     switch (machine)
     {
     case EM_386:
-
         for (size_t i = 1; i < m_elfSections.size(); ++i) {
             const SectionParam& ps(m_elfSections[i]);
 
@@ -985,24 +981,20 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
                 // r_info has the type in the bottom byte, and a symbol table index in the top 3 bytes.
                 // A symbol table offset of 0 (STN_UNDEF) means use value 0. The symbol table involved comes from
                 // the section header's sh_link field.
-                DWord *relocEntry = (DWord *)ps.imagePtr.value();
-                DWord size        = ps.Size;
+                const Elf32_Rel *relocEntry = (Elf32_Rel *)ps.imagePtr.value();
+                const DWord size    = ps.Size / sizeof(Elf32_Rel);
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
                 Address     destNatOrigin  = Address::ZERO;
-                HostAddress destHostOrigin = HostAddress::ZERO;
 
                 if (e_type == ET_REL) {
                     int destSection = m_shInfo[i];
                     destNatOrigin  = m_elfSections[destSection].SourceAddr;
-                    destHostOrigin = m_elfSections[destSection].imagePtr;
                 }
 
-                for (DWord u = 0; u < size; u += 2 * sizeof(DWord)) {
-                    DWord r_offset = elfRead4(relocEntry++);
-                    DWord info     = elfRead4(relocEntry++);
-                    Q_UNUSED(info);
+                for (DWord u = 0; u < size; u++) {
+                    Elf32_Addr r_offset = elfRead4(&relocEntry[u].r_offset);
 
                     Address relocDestination; // Pointer to the word to be relocated
                     if (e_type == ET_REL) {

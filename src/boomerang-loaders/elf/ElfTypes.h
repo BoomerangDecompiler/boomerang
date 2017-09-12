@@ -9,9 +9,10 @@
 #pragma endregion License
 #pragma once
 
-/// \file ElfTypes.h This file contains the elf format support structures
 
- * \sa http://docs.oracle.com/cd/E18752_01/pdf/817-1984.pdf
+/// \file ElfTypes.h This file contains the elf format support structures
+/// \sa http://docs.oracle.com/cd/E18752_01/pdf/817-1984.pdf
+
 
 // Data types for 32 bit ELF files
 typedef uint8  Elf32_Byte;
@@ -164,19 +165,21 @@ typedef struct {
 #define SHN_XINDEX          0xffff
 #define SHN_HIRESERVE       0xffff
 
+
 struct Elf32_Shdr
 {
-    Elf32_Word sh_name;
-    Elf32_Word sh_type;
-    Elf32_Word sh_flags;
-    Elf32_Addr sh_addr;
-    Elf32_Off  sh_offset;
-    Elf32_Word sh_size;
-    Elf32_Word sh_link;
-    Elf32_Word sh_info;
-    Elf32_Word sh_addralign;
-    Elf32_Word sh_entsize;
+    Elf32_Word sh_name;         ///< section name.
+    Elf32_Word sh_type;         ///< section type. See SHT_* values.
+    Elf32_Word sh_flags;        ///< section flags See SHF_* values.
+    Elf32_Addr sh_addr;         ///< section base address in memory.
+    Elf32_Off  sh_offset;       ///< byte offset of the section data from the beginning of the file
+    Elf32_Word sh_size;         ///< section data size in bytes.
+    Elf32_Word sh_link;         ///< Interpretation depends on the section type.
+    Elf32_Word sh_info;         ///< Extra information; Interpretation depends on section type.
+    Elf32_Word sh_addralign;    ///< Force alignment to x bytes; 0 = no alignment
+    Elf32_Word sh_entsize;      ///< Entry size for fixed-entrysize tables (symbol tables etc.)
 };
+
 
 struct Elf64_Shdr
 {
@@ -192,14 +195,15 @@ struct Elf64_Shdr
     Elf64_Xword sh_entsize;
 };
 
+
 // sh_type
 enum ElfSectionTypes
 {
     SHT_NULL            = 0,
     SHT_PROGBITS        = 1,
-    SHT_SYMTAB          = 2,  // Symbol table
+    SHT_SYMTAB          = 2,  ///< Symbol table
     SHT_STRTAB          = 3,
-    SHT_RELA            = 4,  // Relocation table (with addend, e.g. RISC)
+    SHT_RELA            = 4,  ///< Relocation table (with addend, e.g. RISC)
     SHT_HASH            = 5,
     SHT_DYNAMIC         = 6,
     SHT_NOTE            = 7,
@@ -241,10 +245,11 @@ enum ElfSectionTypes
     SHT_HIUSER          = 0xffffffff
 };
 
+
 // sh_flags
-#define SHF_WRITE               (1<<0) // Writeable
-#define SHF_ALLOC               (1<<1) // Consumes memory in exe
-#define SHF_EXECINSTR           (1<<2) // Executable
+#define SHF_WRITE               (1<<0) ///< Writeable
+#define SHF_ALLOC               (1<<1) ///< Consumes memory in exe
+#define SHF_EXECINSTR           (1<<2) ///< Executable
 #define SHF_MERGE               (1<<4)
 #define SHF_STRINGS             (1<<5)
 #define SHF_INFO_LINK           (1<<6)
@@ -306,21 +311,29 @@ struct Elf64_Rela
 #define ELF64_R_TYPE_INFO(data, type)   (((Elf64_Xword)(data)<<8)+(Elf64_Xword)(type))
 
 
+/**
+ * Abbreviations for relocations:
+ * A    The addend used to compute the value of the relocatable field.
+ * B    The base address at which a shared object is loaded into memory during execution.
+ *      Generally, a shared object file is built with a base virtual address of 0.
+ *      However, the execution address of the shared object is different. See
+ *      “Program Header” on page 282.
+ * G    The offset into the global offset table at which the address of the relocation entry's
+ *      symbol resides during execution. See “Global Offset Table (Processor-Specific)” on
+ *      page 309.
+ * GOT  The address of the global offset table. See “Global Offset Table (Processor-Specific)”
+ *      on page 309.
+ * L    The section offset or address of the procedure linkage table entry for a symbol. See
+ *      “Procedure Linkage Table (Processor-Specific)” on page 310.
+ * O    The secondary addend used to compute the value of the relocation field. This
+ *      addend is extracted from the r_info field by applying the ELF64_R_TYPE_DATA macro.
+ *      (64-bit SPARC only)
+ * P    The section offset or address of the storage unit being relocated, computed using
+ *      r_offset.
+ * S    The value of the symbol whose index resides in the relocation entry.
+ * Z    The size of the symbol whose index resides in the relocation entry.
+ */
 
-enum ElfRelocKind
-{
-    R_386_NONE      = 0,
-    R_386_32        = 1,
-    R_386_PC32      = 2,
-    R_386_GOT32     = 3,
-    R_386_PLT32     = 4,
-    R_386_COPY      = 5,
-    R_386_GLOB_DAT  = 6,
-    R_386_JUMP_SLOT = 7,
-    R_386_RELATIVE  = 8,
-    R_386_GOTOFF    = 9,
-    R_386_GOTPC     = 10
-};
 
 // Relocation types for x86-32
 #define R_386_NONE      0   ///< None       None
@@ -328,7 +341,7 @@ enum ElfRelocKind
 #define R_386_PC32      2   ///< word32     S+A-P
 #define R_386_GOT32     3   ///< word32     G + A
 #define R_386_PLT32     4   ///< word32     L+A-P
-#define R_386_COPY      5   ///< None       Refer to the explanation following this table.
+#define R_386_COPY      5   ///< None
 #define R_386_GLOB_DAT  6   ///< word32     S
 #define R_386_JMP_SLOT  7   ///< word32     S
 #define R_386_RELATIVE  8   ///< word32     B + A
@@ -347,7 +360,7 @@ enum ElfRelocKind
 #define R_AMD64_PC32        2   ///< word32     S+A-P
 #define R_AMD64_GOT32       3   ///< word32     G + A
 #define R_AMD64_PLT32       4   ///< word32     L+A-P
-#define R_AMD64_COPY        5   ///< None       Refer to the explanation following this table.
+#define R_AMD64_COPY        5   ///< None
 #define R_AMD64_GLOB_DAT    6   ///< word64     S
 #define R_AMD64_JUMP_SLOT   7   ///< word64     S
 #define R_AMD64_RELATIVE    8   ///< word64     B + A
@@ -421,7 +434,7 @@ enum ElfRelocKind
 #define R_SPARC_GOTDATA_LOX10 81 ///< T-imm13   ((S+A-GOT)&0x3ff)|(((S+A-GOT) >> 31) & 0x1c00)
 #define R_SPARC_GOTDATA_OP_HIX22 82 ///< T-imm22    (G >> 10) ^ (G >> 31)
 #define R_SPARC_GOTDATA_OP_LOX10 83 ///< T-imm13    (G & 0x3ff) | ((G >> 31) & 0x1c00)
-#define R_SPARC_GOTDATA_OP  84  ///< Word32 Refer to the explanation following this table.
+#define R_SPARC_GOTDATA_OP  84  ///< Word32
 #define R_SPARC_SIZE32      86  ///< V-word32   Z + A
 
 // 64-bit SPARC
