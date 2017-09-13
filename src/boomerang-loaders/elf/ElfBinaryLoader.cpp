@@ -943,7 +943,8 @@ void ElfBinaryLoader::applyRelocations()
                                 // if (S == (e_type == E_REL ? 0x8000000 : 0)) {
                                 S = Address(((int)nextFakeLibAddr--) & Address::getSourceMask()); // Allocate a new fake address
                                 IBinarySymbol& newFunction = m_symbols->create(S, symbolName);
-                                newFunction.setAttr("StaticFunction", true);
+                                newFunction.setAttr("Function", true);
+                                newFunction.setAttr("Imported", true);
                                 // }
                             }
                             else if (e_type == E_REL) {
@@ -982,7 +983,6 @@ void ElfBinaryLoader::applyRelocations()
 
 bool ElfBinaryLoader::isRelocationAt(Address addr)
 {
-    // int nextFakeLibAddr = -2;            // See R_386_PC32 below; -1 sometimes used for main
     if (m_loadedImage == nullptr) {
         return false; // No file loaded
     }

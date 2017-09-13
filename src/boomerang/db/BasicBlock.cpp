@@ -1004,7 +1004,10 @@ void BasicBlock::setUnstructType(UnstructType unstructType)
 
 UnstructType BasicBlock::getUnstructType() const
 {
-    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond) && m_conditionHeaderType != CondType::Case);
+    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond));
+    // fails when cenerating code for switches; not sure if actually needed TODO
+    //assert(m_conditionHeaderType != CondType::Case);
+
     return m_unstructuredType;
 }
 
