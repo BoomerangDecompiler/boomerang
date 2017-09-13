@@ -1150,7 +1150,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     {
     case opIntConst:
         {
-            int K = exp.access<Const>()->getInt();
+            int K = c.getInt();
 
             if (uns && (K < 0)) {
                 // An unsigned constant. Use some heuristics
