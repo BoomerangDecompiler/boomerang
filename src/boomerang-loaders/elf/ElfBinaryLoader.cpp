@@ -941,8 +941,9 @@ void ElfBinaryLoader::applyRelocations()
                                 // this is too slow, I'm just going to assume it is 0
                                 // S = GetAddressByName(pName);
                                 // if (S == (e_type == E_REL ? 0x8000000 : 0)) {
-                                S = Address(nextFakeLibAddr--); // Allocate a new fake address
-                                m_symbols->create(S, symbolName);
+                                S = Address(((int)nextFakeLibAddr--) & Address::getSourceMask()); // Allocate a new fake address
+                                IBinarySymbol& newFunction = m_symbols->create(S, symbolName);
+                                newFunction.setAttr("StaticFunction", true);
                                 // }
                             }
                             else if (e_type == E_REL) {
