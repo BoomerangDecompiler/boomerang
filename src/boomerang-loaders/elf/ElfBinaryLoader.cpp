@@ -827,14 +827,17 @@ void ElfBinaryLoader::applyRelocations()
 
                     switch (relType)
                     {
-                    case 0: // R_386_NONE: just ignore (common)
+                    case R_SPARC_NONE: // just ignore (common)
                         break;
 
-                    default:
+                        // TODO These relocation types need to be implemented.
                     case R_SPARC_HI22:
                     case R_SPARC_LO10:
+                    case R_SPARC_COPY:
                     case R_SPARC_GLOB_DAT:
-                        LOG_WARN("Unhandled SPARC relocation");
+                    case R_SPARC_JMP_SLOT:
+                    default:
+                        LOG_WARN("Unhandled SPARC relocation type %1", relType);
                         break;
                     }
                 }

@@ -17,6 +17,7 @@ Address::Address()
     : m_value(0)
 {}
 
+
 Address::Address(value_type value)
     : m_value(value)
 {
@@ -25,6 +26,7 @@ Address::Address(value_type value)
             QString("0x%1").arg(m_value, 2*sizeof(value_type), 16, QChar('0')));
     }
 }
+
 
 void Address::setSourceBits(Byte bitCount)
 {

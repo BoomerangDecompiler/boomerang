@@ -1,10 +1,3 @@
-#define sign_extend(N, SIZE)  Util::signExtend(N, SIZE)
-
-
-#include <cassert>
-
-// #line 0 "frontend/machine/sparc/decoder.m"
-
 /*
  * Copyright (C) 1996-2001, The University of Queensland
  *
@@ -13,6 +6,11 @@
  * WARRANTIES.
  *
  */
+
+#include <cassert>
+
+// #line 0 "frontend/machine/sparc/decoder.m"
+
 
 /***************************************************************************/ /**
  * \file       sparcdecoder.cpp
@@ -427,9 +425,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                     }
                     else if ((MATCH_w_32_0 >> 25 & 0xf) /* cond at 0 */ == 8) {
                         unsigned cc01 = (MATCH_w_32_0 >> 20 & 0x3) /* cc01 at 0 */;
-                        HostAddress  tgt  = addressToPC(MATCH_p) + Address(4 * sign_extend((MATCH_w_32_0 & 0x7ffff)
-                                                                   /* disp19 at 0 */,
-                                                                   19));
+                        HostAddress  tgt  = addressToPC(MATCH_p) + 4 * Util::signExtend<sint64>((MATCH_w_32_0 & 0x7ffff) /* disp19 at 0 */, 19);
                         nextPC = MATCH_p + 4;
                         // #line 400 "frontend/machine/sparc/decoder.m"
                         /* Can see bpa xcc,tgt in 32 bit code */
@@ -451,7 +447,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         {
                             const char *name = MATCH_name;
                             unsigned   cc01  = (MATCH_w_32_0 >> 20 & 0x3) /* cc01 at 0 */;
-                            HostAddress tgt  = addressToPC(MATCH_p) + Address(4 * sign_extend((MATCH_w_32_0 & 0x7ffff) /* disp19 at 0 */, 19));
+                            HostAddress tgt  = addressToPC(MATCH_p) + 4 * Util::signExtend<sint64>((MATCH_w_32_0 & 0x7ffff) /* disp19 at 0 */, 19);
                             nextPC = MATCH_p + 4;
                             // #line 411 "frontend/machine/sparc/decoder.m"
 
@@ -611,7 +607,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
             case 1:
                 {
-                    HostAddress addr = addressToPC(MATCH_p) +  Address(4 * sign_extend((MATCH_w_32_0 & 0x3fffffff) /* disp30 at 0 */, 30));
+                    HostAddress addr = addressToPC(MATCH_p) +  4 * Util::signExtend<sint64>((MATCH_w_32_0 & 0x3fffffff) /* disp30 at 0 */, 30);
                     nextPC = MATCH_p + 4;
                     // #line 215 "frontend/machine/sparc/decoder.m"
 
@@ -1881,7 +1877,7 @@ MATCH_label_d0:
         {
             const char *name = MATCH_name;
             unsigned   cc01  = (MATCH_w_32_0 >> 20 & 0x3) /* cc01 at 0 */;
-            HostAddress    tgt   = addressToPC(MATCH_p) + 4 * sign_extend((MATCH_w_32_0 & 0x7ffff) /* disp19 at 0 */, 19);
+            HostAddress    tgt   = addressToPC(MATCH_p) + 4 * Util::signExtend<sint64>((MATCH_w_32_0 & 0x7ffff) /* disp19 at 0 */, 19);
             nextPC = MATCH_p + 4;
             // #line 316 "frontend/machine/sparc/decoder.m"
 
@@ -1945,8 +1941,7 @@ MATCH_label_d1:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            HostAddress    tgt   =
-                HostAddress(4 * sign_extend((MATCH_w_32_0 & 0x3fffff) /* disp22 at 0 */, 22)) + addressToPC(MATCH_p);
+            HostAddress    tgt   = addressToPC(MATCH_p) + 4 * Util::signExtend<sint64>((MATCH_w_32_0 & 0x3fffff) /* disp22 at 0 */, 22);
             nextPC = MATCH_p + 4;
             // #line 358 "frontend/machine/sparc/decoder.m"
 
@@ -2016,8 +2011,7 @@ MATCH_label_d2:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            HostAddress tgt   =
-                HostAddress(4 * sign_extend((MATCH_w_32_0 & 0x3fffff) /* disp22 at 0 */, 22)) + addressToPC(MATCH_p);
+            HostAddress tgt  = addressToPC(MATCH_p) + 4 * Util::signExtend<sint64>((MATCH_w_32_0 & 0x3fffff) /* disp22 at 0 */, 22);
             nextPC = MATCH_p + 4;
             // #line 272 "frontend/machine/sparc/decoder.m"
 
@@ -2407,7 +2401,7 @@ SharedExp SparcDecoder::dis_RegImm(HostAddress pc)
     unsigned MATCH_w_32_0 = getDword(MATCH_p);
 
     if ((MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */ == 1) {
-        int /* [~4096..4095] */ i = sign_extend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
+        int /* [~4096..4095] */ i = Util::signExtend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
         return Const::get(i);
     } /*opt-block*/ /*opt-block+*/
     else {
@@ -2434,13 +2428,13 @@ SharedExp SparcDecoder::dis_Eaddr(HostAddress pc, int size)
 
             if ((MATCH_w_32_0 >> 13 & 0x1) /* i at 0 */ == 1) {
                 if ((MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */ == 0) {
-                    int /* [~4096..4095] */ i = sign_extend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
+                    int /* [~4096..4095] */ i = Util::signExtend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
                     // #line 722 "frontend/machine/sparc/decoder.m"
 
                     expr = Const::get((int)i);
                 } /*opt-block*/ /*opt-block+*/
                 else {
-                    int /* [~4096..4095] */ i   = sign_extend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
+                    int /* [~4096..4095] */ i   = Util::signExtend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
                     unsigned                rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
                     // #line 725 "frontend/machine/sparc/decoder.m"
 

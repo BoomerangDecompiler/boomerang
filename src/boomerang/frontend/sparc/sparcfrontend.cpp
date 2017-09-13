@@ -166,7 +166,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
     // Get the new return basic block for the special case where the delay instruction is a restore
     BasicBlock *returnBB = optimise_CallReturn(call_stmt, inst.rtl, delay_rtl, proc);
 
-    int disp30 = (call_stmt->getFixedDest() - address).value() >> 2;
+    int disp30 = (call_stmt->getFixedDest().value() - address.value()) >> 2;
 
     // Don't test for small offsets if part of a move_call_move pattern.
     // These patterns assign to %o7 in the delay slot, and so can't possibly be used to copy %pc to %o7
