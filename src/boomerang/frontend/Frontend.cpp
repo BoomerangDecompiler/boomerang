@@ -405,8 +405,9 @@ void IFrontEnd::decode(Prog *prg, Address addr)
         }
 
         QTextStream os(stderr); // rtl output target
-        processProc(addr, p, os);
-        p->setDecoded();
+        if (processProc(addr, p, os)) {
+            p->setDecoded();
+        }
     }
     else {   // a == Address::INVALID
         bool change = true;
@@ -674,7 +675,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             RTL *pRtl = inst.rtl;
 
-            if (inst.valid == false) {
+            if (!inst.valid) {
                 // Alert the watchers to the problem
                 Boomerang::get()->alertBadDecode(uAddr);
 

@@ -48,11 +48,10 @@ bool MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
     // Clear the result structure;
     result.reset();
-
     // The actual list of instantiated statements
     // std::list<Statement*>* stmts = nullptr;
     // ADDRESS nextPC = Address::INVALID;
-    // Decoding goes here....
-
+    // Decoding goes here.... TODO
+    result.valid = false;
     return result.valid;
 }
