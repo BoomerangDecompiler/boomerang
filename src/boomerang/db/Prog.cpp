@@ -1112,7 +1112,7 @@ void Prog::decodeEntryPoint(Address a)
     Function *p = (UserProc *)findProc(a);
 
     if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
-        if ((a < m_image->getLimitTextLow()) || (a >= m_image->getLimitTextHigh())) {
+        if (!Util::inRange(a, m_image->getLimitTextLow(), m_image->getLimitTextHigh())) {
             LOG_WARN("Attempt to decode entrypoint at address %1 outside text area", a);
             return;
         }
