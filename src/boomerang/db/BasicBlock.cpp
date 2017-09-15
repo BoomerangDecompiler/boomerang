@@ -1970,8 +1970,6 @@ void BasicBlock::processSwitch(UserProc *proc)
     CaseStatement *lastStmt((CaseStatement *)last->getHlStmt());
     SWITCH_INFO   *si(lastStmt->getSwitchInfo());
 
-    SETTING(debugSwitch) = true;
-
     if (SETTING(debugSwitch)) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
                 si->chForm, si->uTable, si->iNumTable, si->iLower, si->iUpper);

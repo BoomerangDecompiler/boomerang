@@ -390,7 +390,11 @@ void IFrontEnd::decode(Prog *prg, Address addr)
     assert(m_program == prg);
 
     if (addr != Address::INVALID) {
-        m_program->createProc(addr);
+        Function* newProc = m_program->createProc(addr);
+
+        // Sometimes, we have to adjust the entry address since
+        // the instruction at addr is just a jump to another address.
+        addr = newProc->getEntryAddress();
         LOG_MSG("Starting decode at address %1", addr);
         UserProc *p = (UserProc *)m_program->findProc(addr);
 

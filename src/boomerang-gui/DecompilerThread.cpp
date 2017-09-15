@@ -180,15 +180,15 @@ void Decompiler::decode()
     bool    gotMain;
     Address a = m_fe->getMainEntryPoint(gotMain);
 
-    for (unsigned int i = 0; i < m_userEntrypoints.size(); i++) {
-        if (m_userEntrypoints[i] == a) {
+    for (Address entryAddr : m_userEntrypoints) {
+        if (entryAddr == a) {
             m_fe->decode(m_prog, true, NULL);
             break;
         }
     }
 
-    for (unsigned int i = 0; i < m_userEntrypoints.size(); i++) {
-        m_prog->decodeEntryPoint(m_userEntrypoints[i]);
+    for (Address entryAddr : m_userEntrypoints) {
+        m_prog->decodeEntryPoint(entryAddr);
     }
 
     if (!SETTING(noDecodeChildren)) {

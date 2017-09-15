@@ -4323,7 +4323,7 @@ void UserProc::updateArguments()
 
 void UserProc::updateCallDefines()
 {
-    LOG_VERBOSE("### Update call defines for % ###", getName());
+    LOG_VERBOSE("### Update call defines for %1 ###", getName());
 
     StatementList stmts;
     getStatements(stmts);
