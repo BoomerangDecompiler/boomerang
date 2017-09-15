@@ -382,15 +382,9 @@ public:
     {
         switch (SUB_IDX)
         {
-        case 1:
-            return getSubExp1()->access<T, Path ...>();
-
-        case 2:
-            return getSubExp2()->access<T, Path ...>();
-
-        case 3:
-            return getSubExp3()->access<T, Path ...>();
-
+        case 1: return getSubExp1()->access<T, Path ...>();
+        case 2: return getSubExp2()->access<T, Path ...>();
+        case 3: return getSubExp3()->access<T, Path ...>();
         default:
             assert(false);
         }
@@ -403,15 +397,9 @@ public:
     {
         switch (SUB_IDX)
         {
-        case 1:
-            return getSubExp1()->access<T, Path ...>();
-
-        case 2:
-            return getSubExp2()->access<T, Path ...>();
-
-        case 3:
-            return getSubExp3()->access<T, Path ...>();
-
+        case 1: return getSubExp1()->access<T, Path ...>();
+        case 2: return getSubExp2()->access<T, Path ...>();
+        case 3: return getSubExp3()->access<T, Path ...>();
         default:
             assert(false);
         }

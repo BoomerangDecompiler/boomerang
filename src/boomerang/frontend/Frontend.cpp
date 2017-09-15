@@ -957,13 +957,14 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                         // In fact it's a computed (looked up) jump, so the jump seems to be a case
                                         // statement.
-                                        if ((nullptr != case_stmt) &&
-                                            refersToImportedFunction(case_stmt->getDest())) { // Is it an "DynamicLinkedProcPointer"?
+                                        // Is it an "DynamicLinkedProcPointer"?
+                                        if (case_stmt && refersToImportedFunction(case_stmt->getDest())) {
                                             // Yes, it's a library function. Look up it's name.
-                                            Address a   = stmt_jump->getDest()->access<Const, 1>()->getAddr();
-                                            QString nam = m_binarySymbols->find(a)->getName();
+                                            SharedExp jumpDest = stmt_jump->getDest();
+                                            Address functionAddr   = ((const Const*)jumpDest.get())->getAddr();
+                                            QString name = m_binarySymbols->find(functionAddr)->getName();
                                             // Assign the proc to the call
-                                            Function *p = pProc->getProg()->getLibraryProc(nam);
+                                            Function *p = pProc->getProg()->getLibraryProc(name);
                                             if (call->getDestProc()) {
                                                 // prevent unnecessary __imp procs
                                                 m_program->removeProc(call->getDestProc()->getName());
@@ -971,7 +972,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                             call->setDestProc(p);
                                             call->setIsComputed(false);
-                                            call->setDest(Location::memOf(Const::get(a)));
+                                            call->setDest(Location::memOf(Const::get(functionAddr)));
 
                                             if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
                                                 sequentialDecode = false;

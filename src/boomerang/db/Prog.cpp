@@ -1441,7 +1441,7 @@ void Prog::globalTypeAnalysis()
 
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
-            LOG_VERBOSE("Global type analysis for %1", proc->getName());
+            LOG_VERBOSE("Global type analysis for '%1'", proc->getName());
             proc->typeAnalysis();
         }
     }

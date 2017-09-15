@@ -744,7 +744,7 @@ void Win32BinaryLoader::findJumps(Address curr)
             continue;
         }
 
-        Address operand   = Address(LMMH2((curr + delta + 2).value()));
+        Address operand   = Address(LMMH2((curr.value() + delta + 2)));
         const IBinarySymbol* symbol = m_symbols->find(operand);
 
         if (symbol == nullptr) {
