@@ -947,21 +947,21 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                 if (decodeInstruction(callAddr, decoded) && !decoded.rtl->empty()) { // is the instruction decoded succesfully?
                                     // Yes, it is. Create a Statement from it.
-                                    RTL         *rtl             = decoded.rtl;
+                                    RTL       *rtl             = decoded.rtl;
                                     Statement *first_statement = rtl->front();
 
                                     if (first_statement) {
                                         first_statement->setProc(pProc);
                                         first_statement->simplify();
-                                        CaseStatement *case_stmt = dynamic_cast<CaseStatement *>(first_statement);
 
-                                        // In fact it's a computed (looked up) jump, so the jump seems to be a case
-                                        // statement.
-                                        // Is it an "DynamicLinkedProcPointer"?
-                                        if (case_stmt && refersToImportedFunction(case_stmt->getDest())) {
+                                        GotoStatement *jmpStatement = dynamic_cast<GotoStatement *>(first_statement);
+
+                                        // This is a direct jump (x86 opcode FF 25)
+                                        // The imported function is at the jump destination.
+                                        if (jmpStatement && refersToImportedFunction(jmpStatement->getDest())) {
                                             // Yes, it's a library function. Look up it's name.
-                                            SharedExp jumpDest = stmt_jump->getDest();
-                                            Address functionAddr   = ((const Const*)jumpDest.get())->getAddr();
+                                            Address functionAddr   = jmpStatement->getDest()->access<Const, 1>()->getAddr();
+
                                             QString name = m_binarySymbols->find(functionAddr)->getName();
                                             // Assign the proc to the call
                                             Function *p = pProc->getProg()->getLibraryProc(name);
