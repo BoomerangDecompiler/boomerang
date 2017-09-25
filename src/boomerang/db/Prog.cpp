@@ -363,10 +363,6 @@ Function *Prog::createProc(Address startAddress)
     // Check if we already have this proc
     Function *pProc = findProc(startAddress);
 
-    if (pProc == (Function *)-1) { // Already decoded and deleted?
-        return nullptr;            // Yes, exit with 0
-    }
-
     if (pProc) {      // Exists already ?
         return pProc; // Yes, we are done
     }
@@ -398,8 +394,7 @@ Function *Prog::createProc(Address startAddress)
         LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
     }
 
-    pProc = m_rootModule->getOrInsertFunction(procName, startAddress, bLib);
-    return pProc;
+    return m_rootModule->getOrInsertFunction(procName, startAddress, bLib);
 }
 
 
@@ -638,13 +633,13 @@ int Prog::getNumProcs(bool user_only) const
 }
 
 
-Function *Prog::findProc(Address uAddr) const
+Function *Prog::findProc(Address addr) const
 {
     for (Module *m : m_moduleList) {
-        Function *r = m->getFunction(uAddr);
+        Function *proc = m->getFunction(addr);
 
-        if (r != nullptr) {
-            return r;
+        if (proc != nullptr) {
+            return proc;
         }
     }
 
@@ -1107,22 +1102,30 @@ const void *Prog::getCodeInfo(Address uAddr, const char *& last, int& delta) con
 }
 
 
-void Prog::decodeEntryPoint(Address a)
+void Prog::decodeEntryPoint(Address entryAddr)
 {
-    Function *p = (UserProc *)findProc(a);
+    Function *p = (UserProc *)findProc(entryAddr);
 
     if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
-        if ((a < m_image->getLimitTextLow()) || (a >= m_image->getLimitTextHigh())) {
-            LOG_WARN("Attempt to decode entrypoint at address %1 outside text area", a);
+        if (!Util::inRange(entryAddr, m_image->getLimitTextLow(), m_image->getLimitTextHigh())) {
+            LOG_WARN("Attempt to decode entrypoint at address %1 outside text area", entryAddr);
             return;
         }
 
-        m_defaultFrontend->decode(this, a);
+        m_defaultFrontend->decode(this, entryAddr);
         finishDecode();
     }
 
     if (p == nullptr) {
-        p = findProc(a);
+        p = findProc(entryAddr);
+
+        // Chek if there is a library thunk at entryAddr
+        if (p == nullptr) {
+            Address jumpTarget = m_fileLoader->getJumpTarget(entryAddr);
+            if (jumpTarget != Address::INVALID) {
+                p = findProc(jumpTarget);
+            }
+        }
     }
 
     assert(p);
@@ -1438,7 +1441,7 @@ void Prog::globalTypeAnalysis()
 
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
-            LOG_VERBOSE("Global type analysis for %1", proc->getName());
+            LOG_VERBOSE("Global type analysis for '%1'", proc->getName());
             proc->typeAnalysis();
         }
     }

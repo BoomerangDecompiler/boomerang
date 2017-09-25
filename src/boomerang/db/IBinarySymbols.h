@@ -25,7 +25,7 @@ public:
 
     //    virtual IBinarySymbol &setName(const QString &name) = 0;
     //    virtual IBinarySymbol &setSize(size_t sz) = 0;
-    virtual bool rename(const QString& s) = 0; ///< Rename an existing symbol
+    virtual bool rename(const QString& newName) = 0; ///< Rename an existing symbol
 };
 
 class QString;
@@ -42,12 +42,22 @@ public:
 public:
     virtual ~IBinarySymbolTable() {}
 
-    virtual const IBinarySymbol *find(Address a) const        = 0; ///< Find an entry by address; nullptr if none
-    virtual const IBinarySymbol *find(const QString& s) const = 0; ///< Find an entry by name; Address::INVALID if none
+    /// \returns the binary symbol at address \p addr, or nullptr if no such symbol exists.
+    virtual const IBinarySymbol *find(Address addr) const        = 0;
 
-    /// Add a new symbol to table, if \a local is set than the symbol is local, thus it won't be
-    /// added to global name->symbol mapping
-    virtual IBinarySymbol& create(Address a, const QString& s, bool local = false) = 0;
+    /// \returns the binary symbol with name \p name, or nullptr if no such symbol exists.
+    virtual const IBinarySymbol *find(const QString& name) const = 0;
+
+    /**
+     * Add a new symbol to table, if \p local is set than the symbol is local,
+     * thus it won't be added to global name->symbol mapping.
+     * If the symbol already exists in the global name->symbol table, the the symbol address \p addr
+     * is redirected to the already exsting symbol (the old symbol is NOT overwritten).
+     *
+     * \param addr address of the new symbol
+     * \param name (unique) name of the new symbol
+     */
+    virtual IBinarySymbol& create(Address addr, const QString& name, bool local = false) = 0;
 
     virtual iterator begin()             = 0;
     virtual const_iterator begin() const = 0;

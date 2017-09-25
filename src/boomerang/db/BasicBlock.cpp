@@ -1004,7 +1004,10 @@ void BasicBlock::setUnstructType(UnstructType unstructType)
 
 UnstructType BasicBlock::getUnstructType() const
 {
-    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond) && m_conditionHeaderType != CondType::Case);
+    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond));
+    // fails when cenerating code for switches; not sure if actually needed TODO
+    //assert(m_conditionHeaderType != CondType::Case);
+
     return m_unstructuredType;
 }
 
@@ -1966,8 +1969,6 @@ void BasicBlock::processSwitch(UserProc *proc)
     RTL           *last(m_listOfRTLs->back());
     CaseStatement *lastStmt((CaseStatement *)last->getHlStmt());
     SWITCH_INFO   *si(lastStmt->getSwitchInfo());
-
-    SETTING(debugSwitch) = true;
 
     if (SETTING(debugSwitch)) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",

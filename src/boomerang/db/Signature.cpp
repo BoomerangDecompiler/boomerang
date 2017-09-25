@@ -2316,18 +2316,11 @@ int Signature::getStackRegister(Prog *prog) noexcept(false)
 {
     switch (prog->getMachine())
     {
-    case Machine::SPARC:
-        return 14;
-
-    case Machine::PENTIUM:
-        return 28;
-
-    case Machine::PPC:
-        return 1;
-
-    case Machine::ST20:
-        return 3;
-
+    case Machine::SPARC:        return 14;
+    case Machine::PENTIUM:      return 28;
+    case Machine::PPC:          return 1;
+    case Machine::ST20:         return 3;
+    case Machine::MIPS:         return 29;
     default:
         throw StackRegisterNotDefinedException();
     }

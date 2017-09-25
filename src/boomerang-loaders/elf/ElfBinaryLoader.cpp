@@ -416,6 +416,10 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
     int curr         = first;
     int pltEntrySize = siPlt->getEntrySize();
 
+    if (pltEntrySize == 0) {
+        return Address::INVALID;
+    }
+
     do {
         // Each entry is sizeRelPlt bytes, and will contain the offset, then the info (addend optionally follows)
         DWord *pltEntry = (DWord *)(addrRelPlt + (curr * sizeRelPlt)).value();
@@ -823,14 +827,17 @@ void ElfBinaryLoader::applyRelocations()
 
                     switch (relType)
                     {
-                    case 0: // R_386_NONE: just ignore (common)
+                    case R_SPARC_NONE: // just ignore (common)
                         break;
 
-                    default:
+                        // TODO These relocation types need to be implemented.
                     case R_SPARC_HI22:
                     case R_SPARC_LO10:
+                    case R_SPARC_COPY:
                     case R_SPARC_GLOB_DAT:
-                        LOG_WARN("Unhandled SPARC relocation");
+                    case R_SPARC_JMP_SLOT:
+                    default:
+                        LOG_WARN("Unhandled SPARC relocation type %1", relType);
                         break;
                     }
                 }
@@ -934,8 +941,10 @@ void ElfBinaryLoader::applyRelocations()
                                 // this is too slow, I'm just going to assume it is 0
                                 // S = GetAddressByName(pName);
                                 // if (S == (e_type == E_REL ? 0x8000000 : 0)) {
-                                S = Address(nextFakeLibAddr--); // Allocate a new fake address
-                                m_symbols->create(S, symbolName);
+                                S = Address(((int)nextFakeLibAddr--) & Address::getSourceMask()); // Allocate a new fake address
+                                IBinarySymbol& newFunction = m_symbols->create(S, symbolName);
+                                newFunction.setAttr("Function", true);
+                                newFunction.setAttr("Imported", true);
                                 // }
                             }
                             else if (e_type == E_REL) {
@@ -974,7 +983,6 @@ void ElfBinaryLoader::applyRelocations()
 
 bool ElfBinaryLoader::isRelocationAt(Address addr)
 {
-    // int nextFakeLibAddr = -2;            // See R_386_PC32 below; -1 sometimes used for main
     if (m_loadedImage == nullptr) {
         return false; // No file loaded
     }

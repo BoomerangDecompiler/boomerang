@@ -62,7 +62,10 @@ void DataFlow::dfs(int p, size_t n)
 void DataFlow::dominators(Cfg *cfg)
 {
     BasicBlock *entryBB = cfg->getEntryBB();
-    size_t     numBB    = cfg->getNumBBs();
+    const size_t numBB  = cfg->getNumBBs();
+
+    assert(entryBB != nullptr);
+    assert(numBB > 0);
 
     m_BBs.resize(numBB, (BasicBlock *)-1);
     N        = 0;
@@ -105,20 +108,19 @@ void DataFlow::dominators(Cfg *cfg)
 
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
-        BasicBlock                          *bb     = m_BBs[n];
-        std::vector<BasicBlock *>&          inEdges = bb->getInEdges();
+        const std::vector<BasicBlock *>&          inEdges = m_BBs[n]->getInEdges();
         std::vector<BasicBlock *>::iterator it;
 
-        for (it = inEdges.begin(); it != inEdges.end(); it++) {
-            if (m_indices.find(*it) == m_indices.end()) {
+        for (BasicBlock* parentBB : inEdges) {
+            if (m_indices.find(parentBB) == m_indices.end()) {
                 QTextStream q_cerr(stderr);
 
                 q_cerr << "BB not in indices: ";
-                (*it)->print(q_cerr);
+                parentBB->print(q_cerr);
                 assert(false);
             }
 
-            int v     = m_indices[*it];
+            int v     = m_indices[parentBB];
             int sdash = v;
 
             if (m_dfnum[v] > m_dfnum[n]) {
@@ -346,8 +348,9 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     bool change = false;
 
     // Set the sizes of needed vectors
-    const size_t numBB = m_indices.size();
-    assert(numBB == proc->getCFG()->getNumBBs());
+    const size_t numIndices = m_indices.size();
+    const size_t numBB = proc->getCFG()->getNumBBs();
+    assert(numIndices == numBB);
 
     m_A_orig.resize(numBB);
 

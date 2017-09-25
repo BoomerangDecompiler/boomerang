@@ -229,7 +229,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 
     // A convenient macro for accessing the fields (0-11) of the auxilliary header
     // Fields 0, 1 are the header (flags, aux header type, and size)
-#define AUXHDR(idx)    (UINT4(m_image + Address::value_type(auxHeaders + idx)))
+#define AUXHDR(idx)    (UINT4(m_loadedImage + Address::value_type(auxHeaders + idx)))
 
     // Section 0: text (code)
     IBinarySection *text = m_image->createSection("$TEXT$", Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
@@ -302,8 +302,9 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
         // cout << "Exporting " << (pDlStrings+UINT4(&export_list[u].name)) << " value " << hex <<
         // UINT4(&export_list[u].value) << endl;
         if (strncmp(dlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
+            Address callMainAddr = UINT4ADDR(&export_list[u].value);
             // Enter the symbol "_callmain" for this address
-            m_symbols->create(UINT4ADDR(&export_list[u].value), "_callmain");
+            m_symbols->create(callMainAddr, "_callmain");
             // Found call to main. Extract the offset. See assemble_17
             // in pa-risc 1.1 manual page 5-9
             // +--------+--------+--------+----+------------+-+-+
@@ -315,13 +316,13 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
             // +----------------------+--------+-----+----------+
             //  31                  16|15    11| 10  |9        0
 
-            unsigned bincall = *(unsigned *)(UINT4(&export_list[u].value) + deltaText);
+            DWord bincall = *(DWord *)(callMainAddr.value() + deltaText);
             int      offset  = ((((bincall & 1) << 31) >> 15) | // w
                                 ((bincall & 0x1f0000) >> 5) |   // w1
                                 ((bincall & 4) << 8) |          // w2@10
                                 ((bincall & 0x1ff8) >> 3));     // w2@0..9
             // Address of main is st + 8 + offset << 2
-            m_symbols->create(UINT4ADDR(&export_list[u].value) + 8 + (offset << 2), "main")
+            m_symbols->create(callMainAddr + 8 + (offset << 2), "main")
                .setAttr("Export", true);
             break;
         }

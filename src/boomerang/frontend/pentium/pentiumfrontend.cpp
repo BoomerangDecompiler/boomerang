@@ -965,9 +965,9 @@ bool PentiumFrontEnd::decodeSpecial_invalid(Address pc, DecodeResult& r)
 
 bool PentiumFrontEnd::decodeSpecial(Address pc, DecodeResult& r)
 {
-    int n = m_image->readNative1(pc);
+    Byte n = m_image->readNative1(pc);
 
-    switch ((int)(char)n)
+    switch (n)
     {
     case 0xee:
         return decodeSpecial_out(pc, r);

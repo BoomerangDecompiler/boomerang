@@ -390,7 +390,11 @@ void IFrontEnd::decode(Prog *prg, Address addr)
     assert(m_program == prg);
 
     if (addr != Address::INVALID) {
-        m_program->createProc(addr);
+        Function* newProc = m_program->createProc(addr);
+
+        // Sometimes, we have to adjust the entry address since
+        // the instruction at addr is just a jump to another address.
+        addr = newProc->getEntryAddress();
         LOG_MSG("Starting decode at address %1", addr);
         UserProc *p = (UserProc *)m_program->findProc(addr);
 
@@ -405,8 +409,9 @@ void IFrontEnd::decode(Prog *prg, Address addr)
         }
 
         QTextStream os(stderr); // rtl output target
-        processProc(addr, p, os);
-        p->setDecoded();
+        if (processProc(addr, p, os)) {
+            p->setDecoded();
+        }
     }
     else {   // a == Address::INVALID
         bool change = true;
@@ -674,7 +679,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             RTL *pRtl = inst.rtl;
 
-            if (inst.valid == false) {
+            if (!inst.valid) {
                 // Alert the watchers to the problem
                 Boomerang::get()->alertBadDecode(uAddr);
 
@@ -693,7 +698,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 pBB = cfg->newBB(BB_rtls, BBType::Invalid);
                 sequentialDecode = false;
                 BB_rtls          = nullptr;
-                continue;
+                break; // try the next instruction in the queue
             }
 
             // alert the watchers that we have decoded an instruction
@@ -936,29 +941,30 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             Address callAddr = call->getFixedDest();
 
                             // It should not be in the PLT either, but getLimitTextHigh() takes this into account
-                            if (callAddr < m_image->getLimitTextHigh()) {
+                            if (Util::inRange(callAddr, m_image->getLimitTextLow(), m_image->getLimitTextHigh())) {
                                 // Decode it.
                                 DecodeResult decoded;
 
                                 if (decodeInstruction(callAddr, decoded) && !decoded.rtl->empty()) { // is the instruction decoded succesfully?
                                     // Yes, it is. Create a Statement from it.
-                                    RTL         *rtl             = decoded.rtl;
+                                    RTL       *rtl             = decoded.rtl;
                                     Statement *first_statement = rtl->front();
 
                                     if (first_statement) {
                                         first_statement->setProc(pProc);
                                         first_statement->simplify();
-                                        CaseStatement *case_stmt = dynamic_cast<CaseStatement *>(first_statement);
 
-                                        // In fact it's a computed (looked up) jump, so the jump seems to be a case
-                                        // statement.
-                                        if ((nullptr != case_stmt) &&
-                                            refersToImportedFunction(case_stmt->getDest())) { // Is it an "DynamicLinkedProcPointer"?
+                                        GotoStatement *jmpStatement = dynamic_cast<GotoStatement *>(first_statement);
+
+                                        // This is a direct jump (x86 opcode FF 25)
+                                        // The imported function is at the jump destination.
+                                        if (jmpStatement && refersToImportedFunction(jmpStatement->getDest())) {
                                             // Yes, it's a library function. Look up it's name.
-                                            Address a   = stmt_jump->getDest()->access<Const, 1>()->getAddr();
-                                            QString nam = m_binarySymbols->find(a)->getName();
+                                            Address functionAddr   = jmpStatement->getDest()->access<Const, 1>()->getAddr();
+
+                                            QString name = m_binarySymbols->find(functionAddr)->getName();
                                             // Assign the proc to the call
-                                            Function *p = pProc->getProg()->getLibraryProc(nam);
+                                            Function *p = pProc->getProg()->getLibraryProc(name);
                                             if (call->getDestProc()) {
                                                 // prevent unnecessary __imp procs
                                                 m_program->removeProc(call->getDestProc()->getName());
@@ -966,7 +972,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                             call->setDestProc(p);
                                             call->setIsComputed(false);
-                                            call->setDest(Location::memOf(Const::get(a)));
+                                            call->setDest(Location::memOf(Const::get(functionAddr)));
 
                                             if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
                                                 sequentialDecode = false;

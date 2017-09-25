@@ -62,9 +62,10 @@ bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delt
         return false;
     }
 
-    unsigned delay_inst       = *((unsigned *)(src + 4 + delta).value());
-    unsigned inst_before_dest = *((unsigned *)(dest - 4 + delta).value());
-    return(delay_inst == inst_before_dest);
+    const DWord delay_inst       = *(DWord *)(src.value()  + 4 + delta);
+    const DWord inst_before_dest = *(DWord *)(dest.value() - 4 + delta);
+
+    return (delay_inst == inst_before_dest);
 }
 
 
@@ -165,7 +166,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
     // Get the new return basic block for the special case where the delay instruction is a restore
     BasicBlock *returnBB = optimise_CallReturn(call_stmt, inst.rtl, delay_rtl, proc);
 
-    int disp30 = (call_stmt->getFixedDest() - address).value() >> 2;
+    int disp30 = (call_stmt->getFixedDest().value() - address.value()) >> 2;
 
     // Don't test for small offsets if part of a move_call_move pattern.
     // These patterns assign to %o7 in the delay slot, and so can't possibly be used to copy %pc to %o7
@@ -709,7 +710,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             if (!inst.valid) {
                 ptrdiff_t delta = m_image->getTextDelta();
 
-                const Byte* instructionData = (const Byte*)(uAddr + delta).value();
+                const Byte* instructionData = (const Byte*)(uAddr.value() + delta);
                 QString instructionString;
                 QTextStream ost(&instructionString);
 
@@ -720,7 +721,8 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     }
                 }
 
-                LOG_FATAL("Invalid instruction at %1: %2", uAddr, instructionString);
+                LOG_ERROR("Invalid instruction at %1: %2", uAddr, instructionString);
+                return false;
             }
 
             // Don't display the RTL here; do it after the switch statement in case the delay slot instruction is moved

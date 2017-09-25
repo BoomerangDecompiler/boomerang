@@ -320,11 +320,7 @@ Function *Module::getFunction(Address loc) const
 {
     auto iter = m_labelsToProcs.find(loc);
 
-    if (iter == m_labelsToProcs.end()) {
-        return nullptr;
-    }
-
-    return iter->second;
+    return (iter != m_labelsToProcs.end()) ? iter->second : nullptr;
 }
 
 

@@ -84,9 +84,9 @@ void StatementTest::testEmpty()
 	std::list<Statement *> *ls    = new std::list<Statement *>;
 	ls->push_back(new ReturnStatement);
 	pRtls->push_back(new RTL(Address(0x00000123)));
-	BasicBlock* bb = cfg->newBB(pRtls, BBType::Ret);
 
-    cfg->setEntryBB(bb);
+	BasicBlock* entryBB = cfg->newBB(pRtls, BBType::Ret);
+    cfg->setEntryAndExitBB(entryBB);
 	proc->setDecoded(); // We manually "decoded"
 
 	// compute dataflow
@@ -155,7 +155,7 @@ void StatementTest::testFlow()
 	BasicBlock* ret = cfg->newBB(pRtls, BBType::Ret);
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
-	cfg->setEntryBB(first); // Also sets exitBB; important!
+	cfg->setEntryAndExitBB(first); // Also sets exitBB; important!
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
@@ -235,8 +235,9 @@ void StatementTest::testKill()
 	BasicBlock* ret = cfg->newBB(pRtls, BBType::Ret);
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
-	cfg->setEntryBB(first);
+	cfg->setEntryAndExitBB(first);
 	proc->setDecoded();
+
 	// compute dataflow
 	int indent = 0;
 	proc->decompile(new ProcList, indent);
@@ -311,7 +312,7 @@ void StatementTest::testUse()
 	BasicBlock* ret = cfg->newBB(pRtls, BBType::Ret);
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
-	cfg->setEntryBB(first);
+	cfg->setEntryAndExitBB(first);
 	proc->setDecoded();
 
 	// compute dataflow
@@ -391,8 +392,9 @@ void StatementTest::testUseOverKill()
 	BasicBlock* ret = cfg->newBB(pRtls, BBType::Ret);
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
-	cfg->setEntryBB(first);
+	cfg->setEntryAndExitBB(first);
 	proc->setDecoded();
+
 	// compute dataflow
 	int indent = 0;
 	proc->decompile(new ProcList, indent);
@@ -472,8 +474,9 @@ void StatementTest::testUseOverBB()
 	BasicBlock* ret = cfg->newBB(pRtls, BBType::Ret);
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
-	cfg->setEntryBB(first);
+	cfg->setEntryAndExitBB(first);
 	proc->setDecoded();
+
 	// compute dataflow
 	int indent = 0;
 	proc->decompile(new ProcList, indent);
@@ -547,7 +550,7 @@ void StatementTest::testUseKill()
 	BasicBlock* ret = cfg->newBB(pRtls, BBType::Ret);
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
-	cfg->setEntryBB(first);
+	cfg->setEntryAndExitBB(first);
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
@@ -620,7 +623,7 @@ void StatementTest::testEndlessLoop()
 	body->addInEdge(first);
 	body->setOutEdge(0, body);
 	body->addInEdge(body);
-	cfg->setEntryBB(first);
+	cfg->setEntryAndExitBB(first);
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
@@ -870,7 +873,7 @@ void StatementTest::testRecursion()
 	BasicBlock* ret = cfg->newBB(pRtls, BBType::Ret);
 	callbb->setOutEdge(0, ret);
 	ret->addInEdge(callbb);
-	cfg->setEntryBB(first);
+	cfg->setEntryAndExitBB(first);
 
 	// decompile the "proc"
 	prog->decompile();

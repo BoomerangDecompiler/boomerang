@@ -1368,7 +1368,7 @@ SharedType Binary::ascendType()
 SharedType RefExp::ascendType()
 {
     if (m_def == nullptr) {
-        LOG_WARN("Null reference in %1", (const Statement*)this);
+        LOG_WARN("Null reference in %1", this->prints());
         return VoidType::get();
     }
 
