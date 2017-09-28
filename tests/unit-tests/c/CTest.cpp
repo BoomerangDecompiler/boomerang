@@ -1,13 +1,23 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+#include "CTest.h"
+
+
 /**
  * \file CTest.cpp Provides the implementation for the CTest class, which
  * tests the c parser
  */
-
-#include "CTest.h"
-
 #include "boomerang/c/ansi-c-parser.h"
 
 #include <sstream>
+
 
 void CTest::testSignature()
 {

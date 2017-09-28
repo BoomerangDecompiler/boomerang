@@ -1,3 +1,15 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+#include "ProcTest.h"
+
+
 /**
  * \file ProcTest.cpp
  * Provides the implementation for the ProcTest class, which
@@ -11,7 +23,6 @@
  * 10 Mar 03 - Mike: Mods to not use Prog::pBF (no longer public)
  */
 
-#include "ProcTest.h"
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"

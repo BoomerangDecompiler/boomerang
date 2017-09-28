@@ -1,15 +1,15 @@
+#pragma region License
 /*
- * Copyright (C) 2000-2001, The University of Queensland
- * Copyright (C) 2001, Sun Microsystems, Inc
- * Copyright (C) 2002, Trent Waddington
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "Util.h"
 
-#include "boomerang/util/Util.h"
+
 #include "boomerang/util/Types.h"
 
 #include <QString>

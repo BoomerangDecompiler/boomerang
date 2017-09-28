@@ -1,13 +1,20 @@
-/*==============================================================================
- * FILE:       ansi-c.y
- * OVERVIEW:   Parser for ANSI C.
- *
- *============================================================================*/
+#pragma region License
 /*
- * $Revision$
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+
+
+/**
+ * \file ansi-c.y Parser for ANSI C.
  * 10 Apr 02 - Trent: Created
  * 03 Dec 02 - Trent: reduced to just parse types and signatures
  */
+
 %name AnsiCParser
 
 %define DEBUG 1

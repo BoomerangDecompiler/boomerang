@@ -1,22 +1,19 @@
-#define sign_extend(N, SIZE) Util::signExtend(N, SIZE)
-// #line 1 "frontend/machine/st20/decoder.m"
-
+#pragma region License
 /*
- * Copyright (C) 2005 Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "st20decoder.h"
+
 
 /***************************************************************************/ /**
  * \file       st20decoder.cpp
  * \brief   This file contains the high level decoding functionality, for matching ST-20 instructions.
  ******************************************************************************/
-
-#include "st20decoder.h"
-
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
 
@@ -33,6 +30,7 @@
 /**********************************
 * ST20Decoder methods.
 **********************************/
+#define sign_extend(N, SIZE) Util::signExtend(N, SIZE)
 
 /***************************************************************************/ /**
  * \fn    ST20Decoder::decodeInstruction

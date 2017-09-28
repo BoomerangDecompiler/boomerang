@@ -1,19 +1,20 @@
+#pragma region License
 /*
- * Copyright (C) 2000, The University of Queensland
- * Copyright (C) 2001, Sun Microsystems, Inc
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "PalmBinaryLoader.h"
+
 
 /** \file PalmBinaryLoader.cpp
  * This class loads a Palm Pilot .prc file.
  * Derived from class IFileLoader.
  */
 
-#include "PalmBinaryLoader.h"
 #include "palmsystraps.h"
 
 #include "boomerang/core/IBoomerang.h"

@@ -1,14 +1,19 @@
+#pragma region License
 /*
- * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
  */
+#pragma endregion License
+#include "GenericExpTransformer.h"
+
 
 /***************************************************************************/ /**
  * \file       generic.cpp
  * OVERVIEW:   Implementation of the GenericExpTransformer and related classes.
  ******************************************************************************/
-
-#include "GenericExpTransformer.h"
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"

@@ -1,18 +1,20 @@
+#pragma region License
 /*
- * Copyright (C) 2005, Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "SymTab.h"
+
 
 /***************************************************************************/ /**
  * \file        SymTab.cpp
  * \brief    This file contains the implementation of the class SymTab, a simple class to maintain a pair of maps
  *                so that symbols can be accessed by symbol or by name
  ******************************************************************************/
-#include "SymTab.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"

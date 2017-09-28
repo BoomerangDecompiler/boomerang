@@ -1,13 +1,19 @@
+#pragma region License
 /*
- * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
  */
+#pragma endregion License
+#pragma once
+
 
 /***************************************************************************/ /**
  * \file       exp.h
  * \brief   Provides the definition for the Exp class and its subclasses.
  ******************************************************************************/
-
-#pragma once
 
 #include <QString>
 

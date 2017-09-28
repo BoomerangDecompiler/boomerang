@@ -1,16 +1,26 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #include "Console.h"
-
-#include <QFile>
-#include <QString>
-#include <QStringRef>
-#include <QTextStream>
-#include <iostream>
 
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/codegen/ICodeGenerator.h"
+
+#include <QFile>
+#include <QString>
+#include <QStringRef>
+#include <QTextStream>
+
+#include <iostream>
 
 static Prog* prog;
 

@@ -1,20 +1,19 @@
+#pragma region License
 /*
- * Copyright (C) 2001, The University of Queensland
- * Copyright (C) 2002, Trent Waddington
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "Table.h"
+
 
 /***************************************************************************/ /**
  * \file  Table.cpp
  * \brief Provides the implementation of classes Table, OpTable, and ExprTable
  ******************************************************************************/
-
-#include "Table.h"
-
 
 Table::Table(TABLE_TYPE t)
     : TableType(t)

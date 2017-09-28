@@ -1,3 +1,14 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+
+
 /* Tiny X86 disassembler, capable only of finding the number of bytes of a given instruction
  * In other words, a surface engine
  * Assumes a seg32 segment; ignores the address size override

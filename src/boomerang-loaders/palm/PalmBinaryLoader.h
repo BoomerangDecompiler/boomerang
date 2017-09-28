@@ -1,13 +1,14 @@
-#pragma once
-
+#pragma region License
 /*
- * Copyright (C) 2000-2001, The University of Queensland
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#pragma once
+
 
 /** \file PalmBinaryLoader.h
  * \brief This file contains the definition of the class PalmBinaryLoader.

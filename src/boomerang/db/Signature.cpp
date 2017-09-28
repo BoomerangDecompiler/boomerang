@@ -1,18 +1,19 @@
+#pragma region License
 /*
- * Copyright (C) 2002, Trent Waddington
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "Signature.h"
+
 
 /***************************************************************************/ /**
  * \file       signature.cpp
  * \brief   Implementation of the classes that describe a procedure signature
  ******************************************************************************/
-
-#include "Signature.h"
 
 #include "boomerang/core/Boomerang.h"
 

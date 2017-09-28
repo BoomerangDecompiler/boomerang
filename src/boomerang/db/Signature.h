@@ -1,19 +1,24 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #pragma once
 
-/*
- * Copyright (C) 2002, Trent Waddington
- */
 
 /***************************************************************************/ /**
- * \file    Signature.h"
+ * \file    Signature.h
  * \brief   Provides the definition for the signature classes.
  *
- *
- * \note Trent had the idea of "promoting" to signatures with known behaviour (e.g. conforms to ABI). However, it seems
- * more
- *    general to only assume ABI behaviour for library functions, and derive the signature information from child
- *    procedures in all user procedures. At present, this promotion is basically disabled (promotion always succeeds,
- *    but not much is assumed by the process of promotion). The role of the Signature classes is still being
+ * \note Trent had the idea of "promoting" to signatures with known behaviour (e.g. conforms to ABI).
+ * However, it seems more general to only assume ABI behaviour for library functions,
+ * and derive the signature information from child procedures in all user procedures.
+ * At present, this promotion is basically disabled (promotion always succeeds,
+ * but not much is assumed by the process of promotion). The role of the Signature classes is still being
  * considered.
  *    - MVE Jun 2005.
  */

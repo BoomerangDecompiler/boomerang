@@ -1,9 +1,24 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #pragma once
+
 
 #include "boomerang/db/statements/Assignment.h"
 
-/// The below could almost be a RefExp. But we could not at one stage #include exp.h as part of statement,h; that's since
-/// changed so it is now possible, and arguably desirable.  However, it's convenient to have these members public
+
+/**
+ * The below could almost be a RefExp. But we could not
+ * at one stage #include exp.h as part of statement,h; that's since changed
+ * so it is now possible, and arguably desirable.
+ * However, it's convenient to have these members public
+ */
 struct PhiInfo
 {
     SharedExp         e; // The expression for the thing being defined (never subscripted)
@@ -15,17 +30,17 @@ struct PhiInfo
 };
 
 
-/***************************************************************************/ /**
+/**
  * PhiAssign is a subclass of Assignment, having a left hand side, and a StatementVec with the references.
  * \code
  * m[1000] := phi{3 7 10}    // m[1000] is defined at statements 3, 7, and 10
  * m[r28{3}+4] := phi{2 8}   // the memof is defined at 2 and 8, and the r28 is defined at 3.
  * \endcode
- * The integers are really pointers to statements,printed as the statement number for compactness
+ * The integers are really pointers to statements, printed as the statement number for compactness
  *
  * \note Although the left hand side is nearly always redundant, it is essential in at least one circumstance: when
  * finding locations used by some statement, and the reference is to a CallStatement returning multiple locations.
- ******************************************************************************/
+ */
 class PhiAssign : public Assignment
 {
 public:

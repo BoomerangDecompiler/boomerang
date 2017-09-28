@@ -1,9 +1,21 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #pragma once
+
+
+#include "boomerang/core/Boomerang.h"
+
 #include <QThread>
 #include <QString>
 #include <QTableWidget>
 
-#include "boomerang/core/Boomerang.h"
 
 class MainWindow;
 class IFrontEnd;
@@ -13,6 +25,7 @@ class Prog;
 class Module;
 class QTableWidget;
 class QObject;
+
 
 class Decompiler : public QObject, public IWatcher
 {

@@ -1,9 +1,20 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+#include "ParserTest.h"
+
+
 /**
  * \file ParserTest.cpp
  * Provides the implementation for the ParserTest class,
  * which tests the SSL parser
  */
-#include "ParserTest.h"
 
 #include "boomerang/core/Boomerang.h"
 

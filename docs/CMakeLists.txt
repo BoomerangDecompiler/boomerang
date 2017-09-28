@@ -1,5 +1,14 @@
+#
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
 
 find_package(Doxygen)
+
 if (Doxygen_FOUND)
 	option(BOOMERANG_BUILD_DOCS "Build the documentation" ON)
 	if (BOOMERANG_BUILD_DOCS)
@@ -16,7 +25,6 @@ if (Doxygen_FOUND)
 			VERBATIM
 			SOURCES mainpage.dox
 		)
-
 	endif (BOOMERANG_BUILD_DOCS)
 endif (Doxygen_FOUND)
 

@@ -1,20 +1,20 @@
-// #line 1 "frontend/machine/pentium/decoder.m"
-
+#pragma region License
 /*
- * Copyright (C) 1998-2001, The University of Queensland
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "pentiumdecoder.h"
+
 
 /***************************************************************************/ /**
  * \file       pentiumdecoder.cpp
  * \brief   This file contains the high level decoding functionality, for example matching logues, calls, branches,
  *                etc. Ordinary instructions are processed in decoder_low.m
  ******************************************************************************/
-#include "pentiumdecoder.h"
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"

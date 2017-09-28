@@ -1,10 +1,21 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #pragma once
+
 
 #include "boomerang/db/exp/Unary.h"
 
+
 /***************************************************************************/ /**
-* TypedExp is a subclass of Unary, holding one subexpression and a Type
-******************************************************************************/
+ * TypedExp is a subclass of Unary, holding one subexpression and a Type
+ ******************************************************************************/
 class TypedExp : public Unary
 {
 public:

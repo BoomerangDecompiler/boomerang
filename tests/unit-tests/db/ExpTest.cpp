@@ -1,3 +1,15 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+#include "ExpTest.h"
+
+
 /**
  * \file ExpTest.cpp
  * Provides the implementation for the ExpTest class, which
@@ -15,7 +27,6 @@
  * 13 Dec 02 - Mike: Added test for killFill()
  */
 
-#include "ExpTest.h"
 
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"

@@ -1,6 +1,12 @@
+#
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
 
 include(CMakeParseArguments)
-
 
 #
 # Copy the Debug and Release DLL(s) for an IMPORTED target to the output directory on Windows
@@ -19,7 +25,7 @@ function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
                 "${${SanitizedName}-Debug}"
                 "${BOOMERANG_OUTPUT_DIR}/bin/$<CONFIG>/"
         )
-        
+
         add_custom_command(TARGET ${TargetName} POST_BUILD
             COMMAND "${CMAKE_COMMAND}"
             ARGS

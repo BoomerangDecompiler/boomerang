@@ -1,17 +1,19 @@
+#pragma region License
 /*
- * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "Statement.h"
+
 
 /***************************************************************************/ /**
  * \file       statement.cpp
  * \brief   Implementation of the Statement and related classes.
  ******************************************************************************/
-
 
 #include "boomerang/core/Boomerang.h"
 

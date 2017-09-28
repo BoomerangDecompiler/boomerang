@@ -1,9 +1,20 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #pragma once
+
 
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Const.h"
 
-/*=============================================================================
+
+/**
  * GotoStatement has just one member variable, an expression representing the
  * jump's destination (an integer constant for direct jumps; an expression
  * for register jumps). An instance of this class will never represent a
@@ -11,7 +22,7 @@
  * instantiated as CallStatements and ReturnStatements respecitvely.
  * This class also represents unconditional jumps with a fixed offset
  * (e.g BN, Ba on SPARC).
- *===========================================================================*/
+ */
 class GotoStatement : public Statement
 {
 public:

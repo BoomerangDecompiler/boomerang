@@ -1,24 +1,20 @@
+#pragma region License
 /*
- * Copyright (C) 1997-2001, The University of Queensland
- * Copyright (C) 2000-2001, Sun Microsystems, Inc
- * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
  */
+#pragma endregion License
+#include "Proc.h"
 
 /***************************************************************************/ /**
  * \file    proc.cpp
  * \brief   Implementation of the Proc hierachy (Proc, UserProc, LibProc).
  *               All aspects of a procedure, apart from the actual code in the
  *               Cfg, are stored here
- *
- * Copyright (C) 1997-2001, The University of Queensland, BT group
- * Copyright (C) 2000-2001, Sun Microsystems, Inc
  ******************************************************************************/
-
-#include "Proc.h"
 
 #include "boomerang/core/Boomerang.h"
 

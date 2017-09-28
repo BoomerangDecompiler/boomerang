@@ -1,3 +1,14 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+
+
 /*==============================================================================
  * FILE:       transformation.y
  * OVERVIEW:   Parser for transformation language.
@@ -52,7 +63,7 @@ public: \
 %token POINTER COMPOUND ARRAY
 %token TYPE
 %token<str> FUNC
-%token WHERE 
+%token WHERE
 %token BECOMES
 %token REGOF
 %token MEMOF
@@ -153,15 +164,15 @@ exp: REGOF CONSTANT ']'
     { $$ = new Binary(opFlagCall, new Const($1), $2);
     }
     | IDENTIFIER
-    { 
-      if (strlen($1) > 2 && $1[0] == 'o' && $1[1] == 'p')  
+    {
+      if (strlen($1) > 2 && $1[0] == 'o' && $1[1] == 'p')
           $$ = new Const($1); // treat op* as a string constant
       else
           $$ = new Unary(opVar, new Const($1));
     }
     | '(' exp ')'
     { $$ = $2;
-    } 
+    }
     | KIND exp ')'
     { $$ = new Unary(opKindOf, $2);
     }

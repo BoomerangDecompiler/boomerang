@@ -1,14 +1,19 @@
+#pragma region License
 /*
- * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
  */
+#pragma endregion License
+#include "ExpTransformer.h"
+
 
 /***************************************************************************/ /**
  * \file        transformer.cpp
  * OVERVIEW:    Implementation of the Transformer and related classes.
  ******************************************************************************/
-
-#include "ExpTransformer.h"
-
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/CFG.h"

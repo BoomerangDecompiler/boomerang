@@ -1,3 +1,11 @@
+#
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
 cmake_minimum_required(VERSION 3.1)
 project(Boomerang VERSION 0.4.0 LANGUAGES C CXX)
 set(CMAKE_WARN_DEPRECATED ON)
@@ -154,6 +162,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         -Wno-missing-noreturn
         -Wno-gnu-zero-variadic-macro-arguments
         -Wno-undef
+        -Wno-unknown-pragmas
     )
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
@@ -172,6 +181,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
         -fPIC
         -Wno-unused-local-typedefs
         -Wno-strict-aliasing
+        -Wno-unknown-pragmas
     )
 
     # other warnings:

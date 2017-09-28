@@ -1,4 +1,17 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #pragma once
+
+
+#include "boomerang/util/Address.h"
+#include "boomerang/util/Util.h"
 
 #include <QString>
 #include <QFile>
@@ -7,9 +20,6 @@
 #include <fstream>
 #include <vector>
 #include <cassert>
-
-#include "boomerang/util/Address.h"
-#include "boomerang/util/Util.h"
 
 
 class Statement;
@@ -187,7 +197,7 @@ private:
     QString collectArg(const QString& msg, sint16 arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, sint32 arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, sint64 arg) { return msg.arg(arg); }
-    
+
     QString collectArg(const QString& msg, uint8 arg)  { return msg.arg(arg); }
     QString collectArg(const QString& msg, uint16 arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, uint32 arg) { return msg.arg(arg); }

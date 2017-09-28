@@ -1,3 +1,15 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+#include "StatementTest.h"
+
+
 /**
  * \file StatementTest.cpp
  * Provides the implementation for the StatementTest class, which
@@ -12,7 +24,6 @@
  * 06 Jul 05 - Mike: Split testAddUsedLocs into six separate tests for Assign ... Bool
  */
 
-#include "StatementTest.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/core/Boomerang.h"
 

@@ -1,11 +1,14 @@
+#pragma region License
 /*
- * Copyright (C) 2003, Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "Managed.h"
+
 
 /***************************************************************************/ /**
  * \file       managed.cpp
@@ -16,7 +19,6 @@
 #include <cstring>
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/Managed.h"
 
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/Assign.h"
@@ -26,6 +28,7 @@
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
+
 
 QTextStream& operator<<(QTextStream& os, const InstructionSet *ss)
 {

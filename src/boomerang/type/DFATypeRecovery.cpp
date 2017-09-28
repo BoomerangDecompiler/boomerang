@@ -1,17 +1,20 @@
+#pragma region License
 /*
- * Copyright (C) 2004-2006, Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
  */
+#pragma endregion License
+#include "DFATypeRecovery.h"
+
 
 /***************************************************************************/ /**
  * \file       dfa.cpp
  * \brief   Implementation of class Type functions related to solving type analysis in an iterative,
  * data-flow-based manner
  ******************************************************************************/
-#include "DFATypeRecovery.h"
 
 #include "boomerang/core/Boomerang.h"
 

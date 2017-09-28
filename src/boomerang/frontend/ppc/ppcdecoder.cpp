@@ -1,17 +1,14 @@
-#define sign_extend(N, SIZE)  Util::signExtend(N, SIZE)
-
-#include <cassert>
-
-// #line 0 "frontend/machine/ppc/decoder.m"
-
+#pragma region License
 /*
- * Copyright (C) 2004, The University of Queensland
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "ppcdecoder.h"
+
 
 /***************************************************************************/ /**
  * \file       ppcdecoder.cpp
@@ -22,7 +19,6 @@
  * Dependencies.
  ******************************************************************************/
 
-#include "ppcdecoder.h"
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
@@ -39,6 +35,9 @@
 
 #include <cassert>
 #include <cstring>
+
+
+#define sign_extend(N, SIZE)  Util::signExtend(N, SIZE)
 
 
 SharedExp crBit(int bitNum); // Get an expression for a CR bit access

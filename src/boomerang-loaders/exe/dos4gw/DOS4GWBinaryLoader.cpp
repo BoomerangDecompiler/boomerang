@@ -1,13 +1,13 @@
+#pragma region License
 /*
- * Copyright (C) 2000, The University of Queensland
- * Copyright (C) 2001, Sun Microsystems, Inc
- * Copyright (C) 2002, Trent Waddington
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "DOS4GWBinaryLoader.h"
 
 /**
  * \file DOS4GWBinaryLoader.cpp
@@ -16,7 +16,6 @@
  * 24 Jan 05 - Trent: created.
  */
 
-#include "DOS4GWBinaryLoader.h"
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IBinaryImage.h"

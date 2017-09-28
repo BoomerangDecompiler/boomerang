@@ -1,10 +1,14 @@
+#pragma region License
 /*
- * Copyright (C) 2002-2006, Trent Waddington
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
  */
+#pragma endregion License
+#include "CCodeGenerator.h"
+
 
 /***************************************************************************/ /**
  * \file       CCodeGenerator.cpp
@@ -13,7 +17,6 @@
  *          I guess this will be the most popular output language unless we do C++.
  ******************************************************************************/
 
-#include "CCodeGenerator.h"
 
 #include "boomerang/core/Boomerang.h"
 

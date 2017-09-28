@@ -1,3 +1,15 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+#include "MicroX86DisTest.h"
+
+
 /**
  * \file MicroX86DisTest.cpp
  * Provides the implementation for the LoaderTest class, which
@@ -16,7 +28,6 @@
  * 05 Aug 05 - Mike: added borland test; check address of main (not just != Address::INVALID)
  */
 
-#include "MicroX86DisTest.h"
 
 #include <QDebug>
 

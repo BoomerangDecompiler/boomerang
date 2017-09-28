@@ -1,14 +1,19 @@
+#pragma region License
 /*
- * Copyright (C) 2004, Mike Van Emmerik and Trent Waddington
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
  */
+#pragma endregion License
+#include "RDIExpTransformer.h"
+
 
 /***************************************************************************/ /**
  * \file    generic.cpp
  * \brief   Implementation of the RDIExpTransformer and related classes.
  ******************************************************************************/
-
-#include "RDIExpTransformer.h"
-
 #include "boomerang/util/Types.h"
 
 #include "boomerang/db/CFG.h"

@@ -1,19 +1,20 @@
-#pragma once
-
+#pragma region License
 /*
- * Copyright (C) 2000-2001, The University of Queensland
- * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
  */
+#pragma endregion License
+#pragma once
+
 
 /***************************************************************************/ /**
  * \file       type.h
  * OVERVIEW:   Definition of the Type class: low level type information
- *               Note that we may have a compeltely different system for
- *                recording high level types
+ *             Note that we may have a completely different system for
+ *             recording high level types
  ******************************************************************************/
 
 #include "boomerang/util/Address.h"

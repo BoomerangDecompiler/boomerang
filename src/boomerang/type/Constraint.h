@@ -1,19 +1,19 @@
+#pragma region License
 /*
- * Copyright (C) 2003, Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
 #pragma once
+
 
 /***************************************************************************/ /**
  * \file       constraint.h
  * OVERVIEW:   Definition of objects related to type constraints
  ******************************************************************************/
-
-
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/type/Type.h"
 #include "boomerang/db/Managed.h"

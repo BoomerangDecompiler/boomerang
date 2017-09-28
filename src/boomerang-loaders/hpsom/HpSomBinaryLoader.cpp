@@ -1,11 +1,14 @@
+#pragma region License
 /*
- * Copyright (C) 2000-2001, The University of Queensland
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "HpSomBinaryLoader.h"
+
 
 /***************************************************************************/ /**
  * \file    HpSomBinaryLoader.cpp
@@ -13,9 +16,6 @@
  *          HpSomBinaryLoader, for decoding PA/RISC SOM executable files.
  *          Derived from class IFileLoader.
  ******************************************************************************/
-
-#include "HpSomBinaryLoader.h"
-
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"

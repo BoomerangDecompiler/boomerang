@@ -1,11 +1,14 @@
+#pragma region License
 /*
- * Copyright (C) 1997,2001, The University of Queensland
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "ExeBinaryLoader.h"
+
 
 /**
  * \file ExeBinaryLoader.cpp
@@ -15,7 +18,6 @@
  * 21 May 02 - Mike: Slight mod for gcc 3.1
  */
 
-#include "ExeBinaryLoader.h"
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/loader/IFileLoader.h"

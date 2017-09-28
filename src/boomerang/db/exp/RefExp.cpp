@@ -1,4 +1,14 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #include "RefExp.h"
+
 
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Const.h"
@@ -6,6 +16,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
+
 
 RefExp::RefExp(SharedExp e, Statement *d)
     : Unary(opSubscript, e)

@@ -1,21 +1,20 @@
+#pragma region License
 /*
- * Copyright (C) 1997, Shane Sendall
- * Copyright (C) 1998-2001, The University of Queensland
- * Copyright (C) 2001, Sun Microsystems, Inc
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
+ */
+#pragma endregion License
+
+
+/*
+ * \file  sslscanner.l Defines a scanner to parse the tokens of a Semantic
+ * Specification Language specification.
  */
 
-/*==============================================================================
- * FILE:          sslscanner.l
- * OVERVIEW:      Defines a scanner to parse the tokens of a Semantic
- *                  Specification Language specification.
- *============================================================================*/
- 
-/* 
+/*
  * Shane Sendall (original C version) Dec 1997
  * Doug Simon (C++ version) Jan 1998
  * 29 Apr 02 - Mike: Mods for boomerang; removed &~, |~, and ^~ operators
@@ -25,7 +24,7 @@
  */
 
 %name SSLScanner
- 
+
 %header{
 #include "sslparser.h"
 #define MAX_LINE 1024       // the longest SSL spec line
@@ -37,7 +36,7 @@
 #include <cstring>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
-#endif 
+#endif
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #pragma warning(disable:4996)        // Warnings about e.g. _strdup deprecated in VS 2005
 #endif
@@ -62,7 +61,7 @@ public: \
     bool traceLines;    /* echo each lines as it is scanned */ \
     std::istream &in;
 
-%define LEX_PARAM YY_SSLParser_STYPE &yylval 
+%define LEX_PARAM YY_SSLParser_STYPE &yylval
 
 %%
 
@@ -298,7 +297,7 @@ _?[A-Za-z][A-Za-z0-9_]* {
                     int sign = (yytext[0] == '-' ? -1 : 1);
                     char* start = yytext + (sign == -1 ? 4:3);
 
-                        // David - changed to << for more efficient and 
+                        // David - changed to << for more efficient and
                         // not depend on the <cmath> anymore.
                     yylval.num = 1 << (strtol(start,0,10) * sign);
                         // yylval.num = (int)pow(2,strtol(start,0,10)) * sign;

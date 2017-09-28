@@ -1,3 +1,14 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+#include "TypeTest.h"
+
 /**
  * \file TypeTest.cpp
  * Provides the implementation for the TypeTest class,
@@ -12,7 +23,6 @@
  * 25 Juk 05 - Mike: DataIntervalMap tests
  */
 
-#include "TypeTest.h"
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Signature.h"

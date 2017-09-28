@@ -1,11 +1,21 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #pragma once
+
 
 #include "boomerang/db/statements/Statement.h"
 
-/***************************************************************************/ /**
- * TypingStatement is an abstract subclass of Statement. It has a type, representing the type of a reference or an
- * assignment
- ****************************************************************************/
+/**
+ * TypingStatement is an abstract subclass of Statement.
+ * It has a type, representing the type of a reference or an assignment
+ */
 class TypingStatement : public Statement
 {
 public:

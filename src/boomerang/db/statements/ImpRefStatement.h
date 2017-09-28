@@ -1,10 +1,27 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
 #pragma once
+
 
 #include "boomerang/db/statements/TypingStatement.h"
 
-// An implicit reference has only an expression. It holds the type information that results from taking the address
-// of a location. Note that dataflow can't decide which local variable (in the decompiled output) is being taken,
-// if there is more than one local variable sharing the same memory address (separated then by type).
+
+/**
+ * An implicit reference has only an expression.
+ * It holds the type information that results
+ * from taking the address of a location.
+ * Note that dataflow can't decide which local variable
+ * (in the decompiled output) is being taken,
+ * if there is more than one local variable
+ * sharing the same memory address (separated then by type).
+ */
 class ImpRefStatement : public TypingStatement
 {
 public:

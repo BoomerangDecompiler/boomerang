@@ -1,5 +1,4 @@
-#pragma once
-
+#pragma region License
 /*
  * Copyright (C) 1996-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -7,15 +6,15 @@
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#pragma once
+
 
 /***************************************************************************/ /**
  * \file       pentiumdecoder.h
  * \brief   The implementation of the instruction decoder for Pentium.
  ******************************************************************************/
-
-#include <cstddef>
 
 #include "boomerang/frontend/NJMCDecoder.h"
 

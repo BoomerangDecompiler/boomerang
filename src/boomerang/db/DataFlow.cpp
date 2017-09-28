@@ -1,18 +1,20 @@
+#pragma region License
 /*
- * Copyright (C) 2005, Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "DataFlow.h"
+
 
 /***************************************************************************/ /**
  * \file       dataflow.cpp
  * \brief   Implementation of the DataFlow class
  ******************************************************************************/
 
-#include "DataFlow.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"

@@ -1,15 +1,13 @@
+#pragma region License
 /*
- * Copyright (C) 1996-2001, The University of Queensland
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
-
-#include <cassert>
-
-// #line 0 "frontend/machine/sparc/decoder.m"
+#pragma endregion License
+#include "sparcdecoder.h"
 
 
 /***************************************************************************/ /**
@@ -21,8 +19,6 @@
 /***************************************************************************/ /**
  * Dependencies.
  ******************************************************************************/
-
-#include "sparcdecoder.h"
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"

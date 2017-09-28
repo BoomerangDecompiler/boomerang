@@ -1,18 +1,20 @@
+#pragma region License
 /*
- * Copyright (C) 1997-2001, The University of Queensland
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#include "ElfBinaryLoader.h"
+
 
 /***************************************************************************/ /**
  * \file ElfBinaryLoader.cpp
  * Desc: This file contains the implementation of the class ElfBinaryLoader.
  ******************************************************************************/
 
-#include "ElfBinaryLoader.h"
 #include "ElfTypes.h"
 
 #include "boomerang/core/IBoomerang.h"

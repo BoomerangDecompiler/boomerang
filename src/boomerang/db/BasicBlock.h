@@ -1,14 +1,14 @@
-#pragma once
+#pragma region License
 /*
- * Copyright (C) 1997-2000, The University of Queensland
- * Copyright (C) 2001, Sun Microsystems, Inc
- * Copyright (C) 2002-2006, Trent Waddington and Mike Van Emmerik
+ * This file is part of the Boomerang Decompiler.
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
- *
  */
+#pragma endregion License
+#pragma once
+
 
 /***************************************************************************/ /**
  * \file       basicblock.h
