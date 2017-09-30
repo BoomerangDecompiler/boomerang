@@ -2499,7 +2499,7 @@ SparcDecoder::SparcDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {
     machine = new SparcMachine;
-    QString file = Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("frontend/machine/sparc/sparc.ssl");
+    QString file = Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/sparc.ssl");
     m_rtlDict.readSSLFile(file);
 }
 

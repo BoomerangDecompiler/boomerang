@@ -9376,7 +9376,7 @@ DWord PPCDecoder::getDword(HostAddress lc)
 PPCDecoder::PPCDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {
-    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("frontend/machine/ppc/ppc.ssl"));
+    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/ppc.ssl"));
 }
 
 

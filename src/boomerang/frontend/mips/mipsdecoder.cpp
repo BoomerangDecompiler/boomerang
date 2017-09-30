@@ -44,7 +44,7 @@
 MIPSDecoder::MIPSDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {
-    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("frontend/machine/mips/mips.ssl"));
+    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/mips.ssl"));
 }
 
 

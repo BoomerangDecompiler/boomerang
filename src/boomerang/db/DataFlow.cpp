@@ -353,6 +353,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     const size_t numIndices = m_indices.size();
     const size_t numBB = proc->getCFG()->getNumBBs();
     assert(numIndices == numBB);
+    Q_UNUSED(numIndices);
 
     m_A_orig.resize(numBB);
 

@@ -49689,7 +49689,7 @@ bool PentiumDecoder::isFuncPrologue(Address)
 PentiumDecoder::PentiumDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {
-    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("frontend/machine/pentium/pentium.ssl"));
+    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/pentium.ssl"));
 }
 
 static int BSFRstate = 0;                                                     // State number for this state machine

@@ -27,7 +27,7 @@
 #include <QtCore/QDebug>
 
 
-#define SPARC_SSL    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("frontend/machine/sparc/sparc.ssl"))
+#define SPARC_SSL    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/sparc.ssl"))
 
 
 void ParserTest::initTestCase()
