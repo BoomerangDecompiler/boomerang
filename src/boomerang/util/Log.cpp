@@ -109,6 +109,16 @@ Log& Log::getOrCreateLog()
 
 void Log::log(LogLevel level, const char* file, int line, const QString& msg)
 {
+    const QStringList msgLines = msg.split('\n');
+
+    for (const QString& msgLine : msgLines) {
+        logDirect(level, file, line, msgLine);
+    }
+}
+
+
+void Log::logDirect(LogLevel level, const char* file, int line, const QString& msg)
+{
     if (!canLog(level)) {
         return;
     }
@@ -124,8 +134,6 @@ void Log::log(LogLevel level, const char* file, int line, const QString& msg)
         abort();
     }
 }
-
-
 
 
 void Log::addLogSink(ILogSink* s)

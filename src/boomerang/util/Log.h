@@ -134,6 +134,9 @@ public:
      */
     void log(LogLevel level, const char* file, int line, const QString& msg);
 
+    // Same as Log::log, but does not split multiline strings
+    void logDirect(LogLevel level, const char* file, int line, const QString& msg);
+
     /**
      * Log a message to all log sinks, replacing %1, %2, ... etc by \p args
      *
@@ -220,6 +223,7 @@ private:
     {
         return collectArgs(collectArg(msg, arg), args...);
     }
+
 
     /**
      * Write the raw string \p msg to all log sinks.
