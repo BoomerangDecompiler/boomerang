@@ -1022,52 +1022,6 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
 }
 
 
-SharedType UpperType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
-{
-    if (other->resolvesToVoid()) {
-        return ((UpperType *)this)->shared_from_this();
-    }
-
-    if (other->resolvesToUpper()) {
-        auto otherUpp = other->as<UpperType>();
-        auto newBase  = base_type->clone()->meetWith(otherUpp->base_type, ch, bHighestPtr);
-
-        if (*newBase != *base_type) {
-            ch        = true;
-            base_type = newBase;
-        }
-
-        return ((UpperType *)this)->shared_from_this();
-    }
-
-    // Needs work?
-    return createUnion(other, ch, bHighestPtr);
-}
-
-
-SharedType LowerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
-{
-    if (other->resolvesToVoid()) {
-        return ((LowerType *)this)->shared_from_this();
-    }
-
-    if (other->resolvesToUpper()) {
-        std::shared_ptr<LowerType> otherLow = other->as<LowerType>();
-        SharedType                 newBase  = base_type->clone()->meetWith(otherLow->base_type, ch, bHighestPtr);
-
-        if (*newBase != *base_type) {
-            ch        = true;
-            base_type = newBase;
-        }
-
-        return ((LowerType *)this)->shared_from_this();
-    }
-
-    // Needs work?
-    return createUnion(other, ch, bHighestPtr);
-}
-
-
 SharedType Statement::meetWithFor(SharedType ty, SharedExp e, bool& ch)
 {
     bool       thisCh  = false;
@@ -2181,42 +2135,6 @@ bool CompoundType::isCompatible(const Type& other, bool all) const
     }
 
     return true;
-}
-
-
-bool UpperType::isCompatible(const Type& other, bool /*all*/) const
-{
-    if (other.resolvesToVoid()) {
-        return true;
-    }
-
-    if (other.resolvesToUpper() && base_type->isCompatibleWith(*other.as<UpperType>()->base_type)) {
-        return true;
-    }
-
-    if (other.resolvesToUnion()) {
-        return other.isCompatibleWith(*this);
-    }
-
-    return false;
-}
-
-
-bool LowerType::isCompatible(const Type& other, bool /*all*/) const
-{
-    if (other.resolvesToVoid()) {
-        return true;
-    }
-
-    if (other.resolvesToLower() && base_type->isCompatibleWith(*other.as<LowerType>()->base_type)) {
-        return true;
-    }
-
-    if (other.resolvesToUnion()) {
-        return other.isCompatibleWith(*this);
-    }
-
-    return false;
 }
 
 

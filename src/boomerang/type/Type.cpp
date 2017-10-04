@@ -360,18 +360,6 @@ SharedType SizeType::clone() const
 }
 
 
-SharedType UpperType::clone() const
-{
-    return std::make_shared<UpperType>(base_type->clone());
-}
-
-
-SharedType LowerType::clone() const
-{
-    return std::make_shared<LowerType>(base_type->clone());
-}
-
-
 size_t IntegerType::getSize() const
 {
     return size;
@@ -748,18 +736,6 @@ bool SizeType::operator==(const Type& other) const
 }
 
 
-bool UpperType::operator==(const Type& other) const
-{
-    return other.isUpper() && *base_type == *((UpperType&)other).base_type;
-}
-
-
-bool LowerType::operator==(const Type& other) const
-{
-    return other.isLower() && *base_type == *((LowerType&)other).base_type;
-}
-
-
 bool Type::operator!=(const Type& other) const
 {
     return !(*this == other);
@@ -924,34 +900,6 @@ bool SizeType::operator<(const Type& other) const
     }
 
     return(size < ((SizeType&)other).size);
-}
-
-
-bool UpperType::operator<(const Type& other) const
-{
-    if (id < other.getId()) {
-        return true;
-    }
-
-    if (id > other.getId()) {
-        return false;
-    }
-
-    return(*base_type < *((UpperType&)other).base_type);
-}
-
-
-bool LowerType::operator<(const Type& other) const
-{
-    if (id < other.getId()) {
-        return true;
-    }
-
-    if (id > other.getId()) {
-        return false;
-    }
-
-    return(*base_type < *((LowerType&)other).base_type);
 }
 
 
@@ -1292,26 +1240,6 @@ QString SizeType::getCtype(bool /*final*/) const
     QTextStream ost(&res);
 
     ost << "__size" << size;
-    return res;
-}
-
-
-QString UpperType::getCtype(bool /*final*/) const
-{
-    QString     res;
-    QTextStream ost(&res);
-
-    ost << "/*upper*/(" << base_type << ")";
-    return res;
-}
-
-
-QString LowerType::getCtype(bool /*final*/) const
-{
-    QString     res;
-    QTextStream ost(&res);
-
-    ost << "/*lower*/(" << base_type << ")";
     return res;
 }
 
@@ -1664,14 +1592,6 @@ QTextStream& operator<<(QTextStream& os, const Type& t)
     case eNamed:
         os << t.as<NamedType>()->getName();
         break;
-
-    case eUpper:
-        os << "U(" << t.as<UpperType>()->getBaseType() << ')';
-        break;
-
-    case eLower:
-        os << "L(" << t.as<LowerType>()->getBaseType() << ')';
-        break;
     }
 
     return os;
@@ -1722,20 +1642,6 @@ SharedType SizeType::mergeWith(SharedType other) const
 }
 
 
-SharedType UpperType::mergeWith(SharedType /*other*/) const
-{
-    // FIXME: TBC
-    return ((UpperType *)this)->shared_from_this();
-}
-
-
-SharedType LowerType::mergeWith(SharedType /*other*/) const
-{
-    // FIXME: TBC
-    return ((LowerType *)this)->shared_from_this();
-}
-
-
 bool CompoundType::isSuperStructOf(const SharedType& other)
 {
     if (!other->isCompound()) {
@@ -1780,28 +1686,12 @@ bool CompoundType::isSubStructOf(SharedType other) const
 
     return true;
 }
-
-
 bool UnionType::findType(SharedType ty)
 {
     UnionElement ue;
 
     ue.type = ty;
     return li.find(ue) != li.end();
-}
-
-
-void UpperType::setSize(size_t /*size*/)
-{
-    // Does this make sense?
-    assert(0);
-}
-
-
-void LowerType::setSize(size_t /*size*/)
-{
-    // Does this make sense?
-    assert(0);
 }
 
 

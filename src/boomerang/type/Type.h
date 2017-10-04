@@ -69,9 +69,7 @@ enum eType
     eNamed,
     eCompound,
     eUnion,
-    eSize,
-    eUpper,
-    eLower
+    eSize
 }; // For operator< mostly
 
 // TODO: untangle the dynamic-size types from static size types ( Int vs Boolean etc. )
@@ -814,71 +812,6 @@ public:
 
 private:
     mutable size_t size; // Size in bits, e.g. 16
-};
-
-
-// This class represents the upper half of its base type
-// Mainly needed to represent the upper and lower half for type double
-class UpperType : public Type
-{
-public:
-    UpperType(SharedType base)
-        : Type(eUpper)
-        , base_type(base) {}
-    virtual ~UpperType() {}
-    virtual SharedType clone() const override;
-    virtual bool operator==(const Type& other) const override;
-    virtual bool operator<(const Type& other) const override;
-
-    // virtual Exp         *match(SharedType pattern);
-    virtual SharedType mergeWith(SharedType other) const override;
-
-    SharedType getBaseType() { return base_type; }
-    const SharedType getBaseType() const { return base_type; }
-    void setBaseType(SharedType b) { base_type = b; }
-
-    virtual size_t getSize() const override { return base_type->getSize() / 2; }
-    virtual void setSize(size_t sz) override; // Does this make sense?
-
-    virtual bool isUpper() const override { return true; }
-    virtual bool isComplete() override { return base_type->isComplete(); }
-    virtual QString getCtype(bool final = false) const override;
-    virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
-    virtual bool isCompatible(const Type& other, bool all) const override;
-
-    mutable SharedType base_type;
-};
-
-// As above, but stores the lower half
-class LowerType : public Type
-{
-public:
-    LowerType(SharedType base)
-        : Type(eUpper)
-        , base_type(base) {}
-    virtual ~LowerType() {}
-    virtual SharedType clone() const override;
-    virtual bool operator==(const Type& other) const override;
-    virtual bool operator<(const Type& other) const override;
-
-    // virtual Exp         *match(SharedType pattern);
-    virtual SharedType mergeWith(SharedType other) const override;
-
-    SharedType getBaseType() { return base_type; }
-    const SharedType getBaseType() const { return base_type; }
-    void setBaseType(SharedType b) { base_type = b; }
-
-    virtual size_t getSize() const override { return base_type->getSize() / 2; }
-    virtual void setSize(size_t sz) override; // Does this make sense?
-
-    virtual bool isLower() const override { return true; }
-    virtual bool isComplete() override { return base_type->isComplete(); }
-    virtual QString getCtype(bool final = false) const override;
-    virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
-    virtual bool isCompatible(const Type& other, bool all) const override;
-
-private:
-    mutable SharedType base_type;
 };
 
 
