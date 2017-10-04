@@ -29,8 +29,17 @@
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/Visitor.h"
 
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/UnionType.h"
+#include "boomerang/type/type/FuncType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/SizeType.h"
+#include "boomerang/type/type/BooleanType.h"
+#include "boomerang/type/type/CharType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -654,7 +663,7 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
     }
 
     if (!other->resolvesToPointer()) {
-        // Would be good to understand class hierarchys, so we know if a* is the same as b* when b is a subclass of a
+        // Would be good to understand class hierarchies, so we know if a* is the same as b* when b is a subclass of a
         return createUnion(other, ch, bHighestPtr);
     }
 
@@ -844,7 +853,7 @@ SharedType CompoundType::meetWith(SharedType other, bool& ch, bool bHighestPtr) 
     }
 
     if (!other->resolvesToCompound()) {
-        if (types[0]->isCompatibleWith(*other)) {
+        if (m_types[0]->isCompatibleWith(*other)) {
             // struct meet first element = struct
             return ((CompoundType *)this)->shared_from_this();
         }
@@ -2118,18 +2127,18 @@ bool CompoundType::isCompatible(const Type& other, bool all) const
 
     if (!other.resolvesToCompound()) {
         // Used to always return false here. But in fact, a struct is compatible with its first member (if all is false)
-        return !all && types[0]->isCompatibleWith(other);
+        return !all && m_types[0]->isCompatibleWith(other);
     }
 
     auto   otherComp = other.as<CompoundType>();
     size_t n         = otherComp->getNumTypes();
 
-    if (n != types.size()) {
+    if (n != m_types.size()) {
         return false; // Is a subcompound compatible with a supercompound?
     }
 
     for (size_t i = 0; i < n; i++) {
-        if (!types[i]->isCompatibleWith(*otherComp->types[i])) {
+        if (!m_types[i]->isCompatibleWith(*otherComp->m_types[i])) {
             return false;
         }
     }

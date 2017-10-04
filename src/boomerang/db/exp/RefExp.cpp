@@ -17,6 +17,7 @@
 #include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
 
+#include "boomerang/type/type/IntegerType.h"
 
 RefExp::RefExp(SharedExp e, Statement *d)
     : Unary(opSubscript, e)

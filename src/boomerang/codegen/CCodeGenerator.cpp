@@ -36,8 +36,11 @@
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/Global.h"
-
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/FuncType.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"

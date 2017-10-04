@@ -32,12 +32,13 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
-
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/FuncType.h"
+#include "boomerang/type/type/PointerType.h"
 #include "boomerang/frontend/pentium/pentiumdecoder.h"
 
 

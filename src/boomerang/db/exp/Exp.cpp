@@ -18,15 +18,16 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
-#include "boomerang/db/RTL.h" // E.g. class ParamEntry in decideType()
+#include "boomerang/db/RTL.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Visitor.h"
-
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/ArrayType.h"
 
 #include <QRegularExpression>
 

@@ -16,7 +16,9 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/statements/StatementHelper.h"
 #include "boomerang/db/Visitor.h"
-
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/BooleanType.h"
 
 BranchStatement::BranchStatement()
     : m_jumpType((BranchType)0)

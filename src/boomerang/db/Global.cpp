@@ -26,5 +26,5 @@ Global::Global()
 
 bool Global::containsAddress(Address addr) const
 {
-    return Util::inRange(addr, m_addr, m_addr + getType()->getBytes());
+    return Util::inRange(addr, m_addr, m_addr + getType()->getSizeInBytes());
 }

@@ -41,6 +41,8 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/frontend/sparc/sparcdecoder.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/IntegerType.h"
 
 #include <cassert>
 #include <cstring>

@@ -15,6 +15,8 @@
  * tests the c parser
  */
 #include "boomerang/c/ansi-c-parser.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/CharType.h"
 
 #include <sstream>
 

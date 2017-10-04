@@ -46,7 +46,14 @@
 #include <list>
 #include <string>
 
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/FuncType.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/VoidType.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
@@ -727,8 +734,8 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 
     case 27 : {
             if (yyvsp[-1].type_ident->ty->isArray() ||
-                (yyvsp[-1].type_ident->ty->isNamed() && std::static_pointer_cast<NamedType>(yyvsp[-1].type_ident->ty)->resolvesTo() &&
-                 std::static_pointer_cast<NamedType>(yyvsp[-1].type_ident->ty)->resolvesTo()->isArray())) {
+                (yyvsp[-1].type_ident->ty->isNamed() && yyvsp[-1].type_ident->ty->as<NamedType>()->resolvesTo() &&
+                 yyvsp[-1].type_ident->ty->as<NamedType>()->resolvesTo()->isArray())) {
                 /* C has complex semantics for passing arrays.. seeing as
                  * we're supposedly parsing C, then we should deal with this.
                  * When you pass an array in C it is understood that you are

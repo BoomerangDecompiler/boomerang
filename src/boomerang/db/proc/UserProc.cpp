@@ -26,10 +26,11 @@
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 #include "boomerang/db/Visitor.h"
-
 #include "boomerang/type/Constraint.h"
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/ArrayType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"

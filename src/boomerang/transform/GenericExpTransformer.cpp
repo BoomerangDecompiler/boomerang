@@ -23,9 +23,8 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/exp/Binary.h"
-
 #include "boomerang/transform/ExpTransformer.h"
-
+#include "boomerang/type/type/CompoundType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 

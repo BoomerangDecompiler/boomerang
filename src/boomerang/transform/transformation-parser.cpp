@@ -113,7 +113,9 @@ void *alloca ();
 
 #include "boomerang/transform/ExpTransformer.h"
 #include "boomerang/transform/GenericExpTransformer.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/type/type/PointerType.h"
+
 
 class TransformationScanner;
 

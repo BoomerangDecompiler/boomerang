@@ -50,6 +50,8 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/type/type/IntegerType.h"
+
 
 #include <sstream>
 #include <map>

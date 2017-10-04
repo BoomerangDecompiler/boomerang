@@ -21,7 +21,7 @@
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/Managed.h"
 #include "boomerang/db/exp/Binary.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/PointerType.h"
 #include "boomerang/util/Log.h"
 
 #include <sstream>

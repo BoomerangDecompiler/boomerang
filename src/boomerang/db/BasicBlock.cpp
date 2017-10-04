@@ -32,11 +32,9 @@
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/Visitor.h"
-
 #include "boomerang/codegen/ICodeGenerator.h"
-
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/FuncType.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"

@@ -37,17 +37,17 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/Managed.h"
-
 #include "boomerang/loader/IFileLoader.h"
-
 #include "boomerang/passes/RangeAnalysis.h"
-
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/SizeType.h"
+#include "boomerang/type/type/FloatType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h" // For lockFileWrite etc
-
+#include "boomerang/type/type/IntegerType.h"
 #include "boomerang/frontend/Frontend.h"
 
 #include <QtCore/QFileInfo>
@@ -781,7 +781,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
             int        baseSize = 0;
 
             if (baseType) {
-                baseSize = baseType->getBytes();
+                baseSize = baseType->getSizeInBytes();
             }
 
             auto symbol = m_binarySymbols->find(nam);
@@ -820,7 +820,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address u, SharedType t)
     }
 
     unsigned int sz = symbol->getSize();
-    int          n  = t->getBytes(); // TODO: use baseType->getBytes()
+    int          n  = t->getSizeInBytes(); // TODO: use baseType->getBytes()
 
     if (n == 0) {
         n = 1;

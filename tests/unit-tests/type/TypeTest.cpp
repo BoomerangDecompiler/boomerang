@@ -31,7 +31,10 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/core/Project.h"
-
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/PointerType.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 
 #include <QTextStream>

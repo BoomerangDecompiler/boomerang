@@ -17,7 +17,12 @@
  */
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/SizeType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/UnionType.h"
 #include "boomerang/util/Log.h"
 
 #include <QtCore/QDebug>

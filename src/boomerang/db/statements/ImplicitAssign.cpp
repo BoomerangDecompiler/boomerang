@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Visitor.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 #include "boomerang/util/Log.h"
 
 

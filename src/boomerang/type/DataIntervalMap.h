@@ -11,7 +11,7 @@
 
 #include "boomerang/util/Address.h"
 #include "boomerang/util/IntervalMap.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 
 
 class QString;

@@ -70,7 +70,10 @@ void *alloca();
 #include "boomerang/db/exp/FlagDef.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/ssl/sslscanner.h"
-
+#include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/SizeType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h" // E.g. str()
 

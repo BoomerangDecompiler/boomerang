@@ -14,6 +14,12 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/FloatType.h"
 
 
 Const::Const(uint32_t i)
@@ -171,8 +177,8 @@ SharedExp Const::genConstraints(SharedExp result)
                 if (t->isPointer()) {
                     auto ptr_type = std::static_pointer_cast<PointerType>(t);
                     match = ptr_type->getPointsTo()->isChar() ||
-                    (ptr_type->getPointsTo()->isArray() &&
-                    std::static_pointer_cast<ArrayType>((ptr_type)->getPointsTo())->getBaseType()->isChar());
+                        (ptr_type->getPointsTo()->isArray() &&
+                        (ptr_type->getPointsTo())->as<ArrayType>()->getBaseType()->isChar());
                 }
 
                 break;

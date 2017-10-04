@@ -17,7 +17,8 @@
  * Holds detailed information about a single register.
  ******************************************************************************/
 
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/IntegerType.h"
 
 #include <cassert>
 #include <cstring>

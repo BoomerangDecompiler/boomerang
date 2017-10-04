@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/type/DataIntervalMap.h"
-
+#include "boomerang/type/type/IntegerType.h"
 
 void DataIntervalMapTest::initTestCase()
 {

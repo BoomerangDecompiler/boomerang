@@ -15,7 +15,8 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/type/CompoundType.h"
+#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/type/type/ArrayType.h"
 
 
 DataIntervalMap::DataIntervalMap(UserProc* userProc)

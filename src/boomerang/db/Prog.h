@@ -17,7 +17,7 @@
 
 #include <map>
 
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 #include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Module.h"

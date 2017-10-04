@@ -23,7 +23,7 @@
  *    - MVE Jun 2005.
  */
 
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Operator.h"
 
