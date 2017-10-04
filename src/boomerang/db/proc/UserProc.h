@@ -118,8 +118,6 @@ public:
     /// \copydoc Function::isNoReturn
     virtual bool isNoReturn() const override;
 
-    DataIntervalMap& localsMap() { return m_localTable; }
-
     /// Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
     bool isDecoded() const { return m_status >= PROC_DECODED; }
     bool isDecompiled() const { return m_status >= PROC_FINAL; }
@@ -756,9 +754,6 @@ protected:
 
 private:
     SymbolMap m_symbolMap;
-
-    /// The local "symbol table", which is aware of overlaps
-    DataIntervalMap m_localTable;
 
     /// Set of callees (Procedures that this procedure calls). Used for call graph, among other things
     std::list<Function *> m_calleeList;

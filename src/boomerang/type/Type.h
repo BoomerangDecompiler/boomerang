@@ -549,8 +549,9 @@ public:
     void setBaseType(SharedType b);
     void fixBaseType(SharedType b);
 
-    size_t getLength() const { return Length; }
-    void setLength(unsigned n) { Length = n; }
+    /// \returns the number of elements in this array.
+    size_t getLength() const { return m_length; }
+    void setLength(unsigned n) { m_length = n; }
     bool isUnbounded() const;
 
     virtual SharedType clone() const override;
@@ -578,11 +579,11 @@ protected:
     ArrayType()
         : Type(eArray)
         , BaseType(nullptr)
-        , Length(0) {}
+        , m_length(0) {}
 
 private:
     mutable SharedType BaseType;
-    mutable size_t Length;
+    mutable size_t m_length; ///< number of elements in this array
 };
 
 class NamedType : public Type
@@ -656,10 +657,10 @@ public:
         return names[n];
     }
 
-    void setTypeAtOffset(unsigned n, SharedType ty);
-    SharedType getTypeAtOffset(unsigned n);
-    void setNameAtOffset(unsigned n, const QString& nam);
-    QString getNameAtOffset(size_t n);
+    void setTypeAtOffset(unsigned offsetInBits, SharedType ty);
+    SharedType getTypeAtOffset(unsigned offsetInBits);
+    void setNameAtOffset(unsigned offsetInBits, const QString& nam);
+    QString getNameAtOffset(size_t offsetInBits);
 
     bool isGeneric() { return generic; }
 
@@ -880,67 +881,6 @@ private:
     mutable SharedType base_type;
 };
 
-
-/**
- * \class DataInterval.
- * \brief This class is used to represent local variables in procedures, and the global variables for the program.
- *
- * The concept is that the data space (the current procedure's stack or the global data space) has to
- * be partitioned into separate variables of various sizes and types. If a new variable is inserted that would cause
- * an overlap, the types have to be reconciled such that they no longer conflict (generally, the smaller type becomes a
- * member of the larger type, which has to be a structure or an array).
- * Each procedure and the Prog object have a map from ADDRESS (stack offset from sp{0} for locals, or native address for
- * globals), to an object of this class. A multimap is not needed, as the type of the entry specifies the overlapping.
- */
-
-struct DataInterval
-{
-    size_t     size; ///< The size of this type in bytes
-    QString    name; ///< The name of the variable
-    SharedType type; ///< The type of the variable
-};
-
-
-class DataIntervalMap
-{
-public:
-    typedef std::pair<const Address, DataInterval> DataIntervalEntry; // For result of find() below
-
-public:
-    DataIntervalMap() {}
-    typedef std::map<Address, DataInterval>::iterator iterator;
-
-    void setProc(UserProc *p) { proc = p; }    ///< Initialise the proc pointer
-    DataIntervalEntry *find(Address addr);     ///< Find the DataInterval at address addr, or nullptr if none
-
-    // Find the entry that overlaps with addr. If none, return end().
-    // We have to use upper_bound and decrement the iterator,
-    // because we might want an entry that starts earlier than addr yet still overlaps it
-    iterator find_it(Address addr);            ///< Return an iterator to the entry for it, or end() if none
-
-    bool isClear(Address addr, unsigned size); ///< True if from addr for size bytes is clear
-
-    // With the forced parameter: are we forcing the name, the type, or always both?
-    /// Add a new data item
-    void addItem(Address addr, QString name, SharedType ty, bool forced = false);
-    void deleteItem(Address addr);             // Mainly for testing?
-    void expandItem(Address addr, unsigned size);
-    char *prints();                            // For test and debug
-    void dump();                               // For debug
-
-private:
-    // We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
-    void enterComponent(DataIntervalEntry *pdie, Address addr, const QString&, SharedType ty, bool);
-
-    // We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
-    // components out of the way, meeting if necessary
-    void replaceComponents(Address addr, const QString& name, SharedType ty, bool);
-    void checkMatching(DataIntervalEntry *pdie, Address addr, const QString&, SharedType ty, bool);
-
-private:
-    std::map<Address, DataInterval> dimap;
-    UserProc *proc; // If used for locals, has ptr to UserProc, else nullptr
-};
 
 // Not part of the Type class, but logically belongs with it:
 

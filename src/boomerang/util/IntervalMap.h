@@ -13,6 +13,7 @@
 #include "boomerang/util/Interval.h"
 
 #include <map>
+#include <cassert>
 
 /**
  * A map that maps intervals of Key types to Value types.
@@ -77,15 +78,37 @@ public:
         return end();
     }
 
+    iterator find(const Key& key)
+    {
+        // todo: speed up
+        for (iterator it = begin(); it != end(); it++) {
+            const Key& lower = it->first.lower();
+            const Key& upper = it->first.upper();
+
+            if (upper <= key) {
+                continue;
+            }
+            else if (lower > key) {
+                break;
+            }
+            else {
+                assert(it->first.isContained(key));
+                return it;
+            }
+        }
+        return end();
+    }
+
     /**
      * \returns an iterator range containing all intervals between \p lower and \p upper.
+     * If there are no intervals between lower and upper, the function returns (end(), end).
      */
-    std::pair<const_iterator, const_iterator> equalRange(const Key& lower, const Key& upper)
+    std::pair<const_iterator, const_iterator> equalRange(const Key& lower, const Key& upper) const
     {
         return equalRange(Interval<Key>(lower, upper));
     }
 
-    std::pair<const_iterator, const_iterator> equalRange(const Interval<Key>& interval)
+    std::pair<const_iterator, const_iterator> equalRange(const Interval<Key>& interval) const
     {
         const_iterator itLower = end();
         const_iterator itUpper = end();
@@ -102,6 +125,60 @@ public:
         }
 
         return std::make_pair(itLower, itUpper);
+    }
+
+
+    std::pair<iterator, iterator> equalRange(const Key& lower, const Key& upper)
+    {
+        return equalRange(Interval<Key>(lower, upper));
+    }
+
+    std::pair<iterator, iterator> equalRange(const Interval<Key>& interval)
+    {
+        iterator itLower = end();
+        iterator itUpper = end();
+
+        // todo: speed up
+        for (iterator it = begin(); it != end(); it++) {
+            if (it->first.upper() > interval.lower() && itLower == end()) {
+                itLower = it;
+            }
+
+            if (itLower != end() && it->first.lower() <= interval.upper()) {
+                itUpper = it;
+            }
+        }
+
+        return std::make_pair(itLower, itUpper);
+    }
+
+
+    /// Erase the item referenced by \p it
+    /// \returns an iterator to the element immediately after the deleted element
+    iterator erase(iterator it) { return m_data.erase(it); }
+
+    /// Remove all intervals containing \p key
+    void eraseAll(const Key& key)
+    {
+        iterator it = find(key);
+        if (it == end()) {
+            return;
+        }
+
+        do {
+            it = erase(it);
+        } while (it != end() && it->first.isContained(key));
+    }
+
+    /// Remove all intervals overlapping with \p interval
+    void eraseAll(const Interval<Key>& interval)
+    {
+        iterator it1, it2;
+        std::tie(it1, it2) = equalRange(interval);
+
+        while (it1 != it2) { // case it1 == it2 == end() accounted for
+            it1 = erase(it1);
+        }
     }
 
     iterator begin() { return m_data.begin(); }

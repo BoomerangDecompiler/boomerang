@@ -10,6 +10,8 @@
 list(APPEND boomerang-type-sources
     type/Constraint.cpp
     type/Constraint.h
+    type/DataIntervalMap.cpp
+    type/DataIntervalMap.h
     type/DFATypeRecovery.cpp
     type/DFATypeRecovery.h
     type/Type.h

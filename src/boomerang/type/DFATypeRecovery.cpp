@@ -208,6 +208,8 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
 
     UserProc *proc = static_cast<UserProc *>(f);
     Cfg      *cfg  = proc->getCFG();
+    DataIntervalMap localsMap(proc); // map of all local variables
+
     Boomerang::get()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
 
     // First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
@@ -464,7 +466,7 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
                 const SharedType& ty = ((TypingStatement *)s)->getType();
                 LOG_VERBOSE("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
                 SharedExp loc_mem = Location::memOf(addrExp);
-                proc->localsMap().addItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
+                localsMap.insertItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
             }
         }
     }
@@ -748,12 +750,12 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
         if (*newBase != *BaseType) {
             ch       = true;
-            Length   = convertLength(newBase);
+            m_length   = convertLength(newBase);
             BaseType = newBase; // No: call setBaseType to adjust length
         }
 
         if (other->as<ArrayType>()->getLength() < getLength()) {
-            Length = other->as<ArrayType>()->getLength();
+            m_length = other->as<ArrayType>()->getLength();
         }
 
         return std::const_pointer_cast<Type>(this->shared_from_this());
@@ -795,10 +797,10 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
             return std::const_pointer_cast<Type>(this->shared_from_this());
         }
 
-        size_t new_length = Length;
+        size_t new_length = m_length;
 
-        if (Length != NO_BOUND) {
-            new_length = (Length * bitsize) / new_size;
+        if (m_length != NO_BOUND) {
+            new_length = (m_length * bitsize) / new_size;
         }
 
         return ArrayType::get(res, new_length);
@@ -972,7 +974,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     if (unionCount == 999) {                         // Adjust the count to catch the one you want
         LOG_MSG("createUnion breakpokint"); // Note: you need two breakpoints (also in Type::createUnion)
     }
-    LOG_MSG("  %1 Created union from %1 and %2", ++unionCount, this->getCtype(), other->getCtype();
+    LOG_MSG("  %1 Created union from %1 and %2", ++unionCount, this->getCtype(), other->getCtype());
 #endif
     ((UnionType *)this)->addType(other->clone(), QString("x%1").arg(++nextUnionNumber));
 #if PRINT_UNION

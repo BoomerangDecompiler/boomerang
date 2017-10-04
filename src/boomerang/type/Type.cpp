@@ -25,7 +25,7 @@
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
-
+#include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
@@ -125,7 +125,7 @@ PointerType::PointerType(SharedType p)
 ArrayType::ArrayType(SharedType p, unsigned _length)
     : Type(eArray)
     , BaseType(p)
-    , Length(_length)
+    , m_length(_length)
 {
 }
 
@@ -133,28 +133,28 @@ ArrayType::ArrayType(SharedType p, unsigned _length)
 ArrayType::ArrayType(SharedType p)
     : Type(eArray)
     , BaseType(p)
-    , Length(NO_BOUND)
+    , m_length(NO_BOUND)
 {
 }
 
 
 bool ArrayType::isUnbounded() const
 {
-    return Length == NO_BOUND;
+    return m_length == NO_BOUND;
 }
 
 
 size_t ArrayType::convertLength(SharedType b) const
 {
     // MVE: not sure if this is always the right thing to do
-    if (Length != NO_BOUND) {
+    if (m_length != NO_BOUND) {
         size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
 
         if (baseSize == 0) {
             baseSize = 1;   // Count void as size 1
         }
 
-        baseSize *= Length; // Old base size (length elements) in bytes
+        baseSize *= m_length; // Old base size (length elements) in bytes
         size_t newSize = b->getSize() / 8;
 
         if (newSize == 0) {
@@ -171,21 +171,21 @@ size_t ArrayType::convertLength(SharedType b) const
 void ArrayType::setBaseType(SharedType b)
 {
     // MVE: not sure if this is always the right thing to do
-    if (Length != NO_BOUND) {
+    if (m_length != NO_BOUND) {
         size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
 
         if (baseSize == 0) {
             baseSize = 1;   // Count void as size 1
         }
 
-        baseSize *= Length; // Old base size (length elements) in bytes
-        size_t newSize = b->getSize() / 8;
+        baseSize *= m_length; // Old base size (length elements) in bytes
+        size_t newElementSize = b->getSize() / 8;
 
-        if (newSize == 0) {
-            newSize = 1;
+        if (newElementSize == 0) {
+            newElementSize = 1;
         }
 
-        Length = baseSize / newSize; // Preserve same byte size for array
+        m_length = baseSize / newElementSize; // Preserve same byte size for array
     }
 
     BaseType = b;
@@ -320,7 +320,7 @@ SharedType PointerType::clone() const
 
 SharedType ArrayType::clone() const
 {
-    return ArrayType::get(BaseType->clone(), Length);
+    return ArrayType::get(BaseType->clone(), m_length);
 }
 
 
@@ -417,7 +417,7 @@ size_t PointerType::getSize() const
 
 size_t ArrayType::getSize() const
 {
-    return BaseType->getSize() * Length;
+    return BaseType->getSize() * m_length;
 }
 
 
@@ -692,7 +692,7 @@ bool PointerType::operator==(const Type& other) const
 
 bool ArrayType::operator==(const Type& other) const
 {
-    return other.isArray() && *BaseType == *((ArrayType&)other).BaseType && ((ArrayType&)other).Length == Length;
+    return other.isArray() && *BaseType == *((ArrayType&)other).BaseType && ((ArrayType&)other).m_length == m_length;
 }
 
 
@@ -1235,7 +1235,7 @@ QString ArrayType::getCtype(bool final) const
         return s + "[]";
     }
 
-    return s + "[" + QString::number(Length) + "]";
+    return s + "[" + QString::number(m_length) + "]";
 }
 
 
@@ -1819,333 +1819,18 @@ SharedType Type::newIntegerLikeType(int size, int signedness)
 }
 
 
-DataIntervalMap::iterator DataIntervalMap::find_it(Address addr)
-{
-    iterator it = dimap.upper_bound(addr); // Find the first item strictly greater than addr
-
-    if (it == dimap.begin()) {
-        return dimap.end(); // None <= this address, so no overlap possible
-    }
-
-    it--;                   // If any item overlaps, it is this one
-
-    if ((addr >= it->first) && ((addr - it->first).value() < it->second.size)) {
-        // This is the one that overlaps with addr
-        return it;
-    }
-
-    return dimap.end();
-}
-
-
-DataIntervalMap::DataIntervalEntry *DataIntervalMap::find(Address addr)
-{
-    iterator it = find_it(addr);
-
-    if (it == dimap.end()) {
-        return nullptr;
-    }
-
-    return &*it;
-}
-
-
-bool DataIntervalMap::isClear(Address addr, unsigned size)
-{
-    iterator it = dimap.upper_bound(addr + size - 1); // Find the first item strictly greater than address of last byte
-
-    if (it == dimap.begin()) {
-        return true; // None <= this address, so no overlap possible
-    }
-
-    it--;            // If any item overlaps, it is this one
-    // Make sure the previous item ends before this one will start
-    Address end;
-
-    if (it->first + it->second.size < it->first) {
-        end = Address::INVALID; // overflow
-    }
-    else {
-        end = it->first + it->second.size;
-    }
-
-    if (end <= addr) {
-        return true;
-    }
-
-    if (it->second.type->isArray() && it->second.type->as<ArrayType>()->isUnbounded()) {
-        it->second.size = (addr - it->first).value();
-        LOG_VERBOSE("Shrinking size of unbound array to %1 bytes", it->second.size);
-        return true;
-    }
-
-    return false;
-}
-
-
-void DataIntervalMap::addItem(Address addr, QString name, SharedType ty, bool forced /* = false */)
-{
-    if (name.isNull()) {
-        name = "<noname>";
-    }
-
-    DataIntervalEntry *pdie = find(addr);
-
-    if (pdie == nullptr) {
-        // Check that this new item is compatible with any items it overlaps with, and insert it
-        replaceComponents(addr, name, ty, forced);
-        return;
-    }
-
-    // There are two basic cases, and an error if the two data types weave
-    if (pdie->first < addr) {
-        // The existing entry comes first. Make sure it ends last (possibly equal last)
-        if (pdie->first + pdie->second.size < addr + ty->getSize() / 8) {
-            LOG_ERROR("TYPE ERROR: attempt to insert item %1 at address %2 of type %3 which weaves after %4 at %5 of type %6",
-                name, addr, ty->getCtype(), pdie->second.name, pdie->first, pdie->second.type->getCtype());
-            return;
-        }
-
-        enterComponent(pdie, addr, name, ty, forced);
-    }
-    else if (pdie->first == addr) {
-        // Could go either way, depending on where the data items end
-        Address endOfCurrent = pdie->first + pdie->second.size;
-        Address endOfNew     = addr + ty->getSize() / 8;
-
-        if (endOfCurrent < endOfNew) {
-            replaceComponents(addr, name, ty, forced);
-        }
-        else if (endOfCurrent == endOfNew) {
-            checkMatching(pdie, addr, name, ty, forced); // Size match; check that new type matches old
-        }
-        else {
-            enterComponent(pdie, addr, name, ty, forced);
-        }
-    }
-    else {
-        // Old starts after new; check it also ends first
-        if (pdie->first + pdie->second.size > addr + ty->getSize() / 8) {
-            LOG_ERROR("TYPE ERROR: attempt to insert item %1 at %2 of type %3 which weaves before %4 at %5 of type %6",
-                name, addr, ty->getCtype(), pdie->second.name, pdie->first, pdie->second.type->getCtype());
-            return;
-        }
-
-        replaceComponents(addr, name, ty, forced);
-    }
-}
-
-
-void DataIntervalMap::enterComponent(DataIntervalEntry *pdie, Address addr, const QString& /*name*/, SharedType ty,
-                                     bool /*forced*/)
-{
-    if (pdie->second.type->resolvesToCompound()) {
-        unsigned   bitOffset  = (addr - pdie->first).value() * 8;
-        SharedType memberType = pdie->second.type->as<CompoundType>()->getTypeAtOffset(bitOffset);
-
-        if (memberType->isCompatibleWith(*ty)) {
-            bool ch;
-            memberType = memberType->meetWith(ty, ch);
-            pdie->second.type->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
-        }
-        else {
-            LOG_ERROR("TYPE ERROR: At address %1 type %2 is not compatible with existing structure member type %3",
-                      addr, ty->getCtype(), memberType->getCtype());
-        }
-    }
-    else if (pdie->second.type->resolvesToArray()) {
-        SharedType memberType = pdie->second.type->as<ArrayType>()->getBaseType();
-
-        if (memberType->isCompatibleWith(*ty)) {
-            bool ch;
-            memberType = memberType->meetWith(ty, ch);
-            pdie->second.type->as<ArrayType>()->setBaseType(memberType);
-        }
-        else {
-            LOG_ERROR("TYPE ERROR: At address %1 type %2 is not compatible with existing array member type %3",
-                      addr, ty->getCtype(), memberType->getCtype());
-        }
-    }
-    else {
-        LOG_ERROR("TYPE ERROR: Existing type at address %1 is not structure or array type",
-                  pdie->first);
-    }
-}
-
-
-void DataIntervalMap::replaceComponents(Address addr, const QString& name, SharedType ty, bool /*forced*/)
-{
-    iterator it;
-    Address  pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
-
-    // First check that the new entry will be compatible with everything it will overlap
-    if (ty->resolvesToCompound()) {
-        iterator it1 = dimap.lower_bound(addr);         // Iterator to the first overlapping item (could be end(), but
-        // if so, it2 will also be end())
-        iterator it2 = dimap.upper_bound(pastLast - 1); // Iterator to the first item that starts too late
-
-        for (it = it1; it != it2; ++it) {
-            unsigned bitOffset = (it->first - addr).value() * 8;
-
-            SharedType memberType = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
-
-            if (memberType->isCompatibleWith(*it->second.type, true)) {
-                LOG_VERBOSE("%1", this->prints());
-                LOG_VERBOSE("%1 %2", memberType->getCtype(), it->second.type->getCtype());
-
-                bool ch;
-                memberType = it->second.type->meetWith(memberType, ch);
-                ty->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
-            }
-            else {
-                LOG_ERROR("TYPE ERROR: At address %1 struct type %2 is not compatible with existing type ",
-                          addr, ty->getCtype(), it->second.type->getCtype());
-                return;
-            }
-        }
-    }
-    else if (ty->resolvesToArray()) {
-        SharedType memberType = ty->as<ArrayType>()->getBaseType();
-        iterator   it1        = dimap.lower_bound(addr);
-        iterator   it2        = dimap.upper_bound(pastLast - 1);
-
-        for (it = it1; it != it2; ++it) {
-            if (memberType->isCompatibleWith(*it->second.type, true)) {
-                bool ch;
-                memberType = memberType->meetWith(it->second.type, ch);
-                ty->as<ArrayType>()->setBaseType(memberType);
-            }
-            else {
-                LOG_ERROR("TYPE ERROR: At address %1 array type %2 is not compatible with existing type %3",
-                          addr, ty->getCtype(), it->second.type->getCtype());
-                return;
-            }
-        }
-    }
-    else {
-        // Just make sure it doesn't overlap anything
-        if (!isClear(addr, (ty->getSize() + 7) / 8)) {
-            LOG_ERROR("TYPE ERROR: at address %1, overlapping type %2 "
-                "does not resolve to compound or array", addr, ty->getCtype());
-            return;
-        }
-    }
-
-    // The compound or array type is compatible. Remove the items that it will overlap with
-    iterator it1 = dimap.lower_bound(addr);
-    iterator it2 = dimap.upper_bound(pastLast - 1);
-
-    // Check for existing locals that need to be updated
-    if (ty->resolvesToCompound() || ty->resolvesToArray()) {
-        SharedExp rsp  = Location::regOf(proc->getSignature()->getStackRegister());
-        auto      rsp0 = RefExp::get(rsp, proc->getCFG()->findTheImplicitAssign(rsp)); // sp{0}
-
-        for (it = it1; it != it2; ++it) {
-            // Check if there is an existing local here
-            SharedExp locl = Location::memOf(Binary::get(opPlus, rsp0->clone(), Const::get(it->first.native())));
-            locl->simplifyArith(); // Convert m[sp{0} + -4] to m[sp{0} - 4]
-            SharedType elemTy;
-            int        bitOffset = (it->first - addr).value() / 8;
-
-            if (ty->resolvesToCompound()) {
-                elemTy = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
-            }
-            else {
-                elemTy = ty->as<ArrayType>()->getBaseType();
-            }
-
-            QString locName = proc->findLocal(locl, elemTy);
-
-            if (!locName.isNull() && ty->resolvesToCompound()) {
-                auto c = ty->as<CompoundType>();
-                // want s.m where s is the new compound object and m is the member at offset bitOffset
-                QString   memName = c->getNameAtOffset(bitOffset);
-                SharedExp s       = Location::memOf(Binary::get(opPlus, rsp0->clone(), Const::get(addr)));
-                s->simplifyArith();
-                SharedExp memberExp = Binary::get(opMemberAccess, s, Const::get(memName));
-                proc->mapSymbolTo(locl, memberExp);
-            }
-            else {
-                // FIXME: to be completed
-            }
-        }
-    }
-
-    for (it = it1; it != it2 && it != dimap.end(); ) {
-        // I believe that it is a conforming extension for map::erase() to return the iterator, but it is not portable
-        // to use it. In particular, gcc considers using the return value as an error
-        // The postincrement operator seems to be the definitive way to do this
-        dimap.erase(it++);
-    }
-
-    DataInterval *pdi = &dimap[addr]; // Finally add the new entry
-    pdi->size = ty->getBytes();
-    pdi->name = name;
-    pdi->type = ty;
-}
-
-
-void DataIntervalMap::checkMatching(DataIntervalEntry *pdie, Address addr, const QString& /*name*/, SharedType ty,
-                                    bool /*forced*/)
-{
-    if (pdie->second.type->isCompatibleWith(*ty)) {
-        // Just merge the types and exit
-        bool ch = false;
-        pdie->second.type = pdie->second.type->meetWith(ty, ch);
-        return;
-    }
-
-    LOG_MSG("TYPE DIFFERENCE (could be OK): At address %1 existing type %2 but added type %3",
-            addr, pdie->second.type->getCtype(), ty->getCtype());
-}
-
-
-void DataIntervalMap::deleteItem(Address addr)
-{
-    iterator it = dimap.find(addr);
-
-    if (it == dimap.end()) {
-        return;
-    }
-
-    dimap.erase(it);
-}
-
-
-void DataIntervalMap::dump()
-{
-    LOG_MSG(prints());
-}
-
-
-char *DataIntervalMap::prints()
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-    iterator    it;
-
-    for (it = dimap.begin(); it != dimap.end(); ++it) {
-        ost << it->first << "-" << it->first + it->second.type->getBytes() << " " << it->second.name << " " << it->second.type->getCtype()
-            << "\n";
-    }
-
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
-}
-
 
 ComplexTypeCompList& Type::compForAddress(Address addr, DataIntervalMap& dim)
 {
-    DataIntervalMap::DataIntervalEntry *pdie = dim.find(addr);
+    const TypedVariable *pdie = dim.find(addr);
     ComplexTypeCompList *res  = new ComplexTypeCompList;
 
     if (pdie == nullptr) {
         return *res;
     }
 
-    Address    startCurrent = pdie->first;
-    SharedType curType      = pdie->second.type;
+    Address    startCurrent = pdie->baseAddr;
+    SharedType curType      = pdie->type;
 
     while (startCurrent < addr) {
         size_t bitOffset = (addr - startCurrent).value() * 8;

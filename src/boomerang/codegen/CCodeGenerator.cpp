@@ -377,11 +377,10 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name, State
     }
 
     s << name << "(";
-    StatementList::iterator ss;
     bool first = true;
     int n      = 0;
 
-    for (ss = args.begin(); ss != args.end(); ++ss, ++n) {
+    for (StatementList::iterator ss = args.begin(); ss != args.end(); ++ss, ++n) {
         if (first) {
             first = false;
         }
@@ -428,7 +427,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name, State
         first = true;
         s << " /* Warning: also results in ";
 
-        for (ss = ++results->begin(); ss != results->end(); ++ss) {
+        for (StatementList::iterator ss = ++results->begin(); ss != results->end(); ++ss) {
             if (first) {
                 first = false;
             }

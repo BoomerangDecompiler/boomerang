@@ -61,7 +61,6 @@ UserProc::UserProc(Address address, const QString& name, Module* module)
     , m_cfg(new Cfg(this))
     , m_status(PROC_UNDECODED)
 {
-    m_localTable.setProc(this);
 }
 
 

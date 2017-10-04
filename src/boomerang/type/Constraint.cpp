@@ -152,7 +152,7 @@ void ConstraintMap::substitute(ConstraintMap& other)
             if (ch) {
                 if (*cc->first == *newVal) {
                     // e.g. was <char*> = <alpha6> now <char*> = <char*>
-                    cmap.erase(cc);
+                    cc = cmap.erase(cc);
                 }
                 else {
                     cmap[cc->first] = newVal;
