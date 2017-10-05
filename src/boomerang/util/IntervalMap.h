@@ -119,7 +119,9 @@ public:
                 itLower = it;
             }
 
-            if (itLower != end() && it->first.lower() <= interval.upper()) {
+            // we want to have the interval after the last interval overlapping
+            // with the desired interval
+            if (itLower != end() && it->first.lower() >= interval.upper()) {
                 itUpper = it;
             }
         }
@@ -138,13 +140,16 @@ public:
         iterator itLower = end();
         iterator itUpper = end();
 
-        // todo: speed up
+        // todo: speed up, use binary search since intervals are sorted
         for (iterator it = begin(); it != end(); it++) {
-            if (it->first.upper() > interval.lower() && itLower == end()) {
+            // intersection between it->first and interval must not be empty
+            if (it->first.upper() > interval.lower() && it->first.lower() < interval.upper() && itLower == end()) {
                 itLower = it;
             }
 
-            if (itLower != end() && it->first.lower() <= interval.upper()) {
+            // we want to have the interval after the last interval overlapping
+            // with the desired interval
+            if (itLower != end() && it->first.lower() >= interval.upper()) {
                 itUpper = it;
             }
         }

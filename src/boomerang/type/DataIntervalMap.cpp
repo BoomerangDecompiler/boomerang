@@ -154,12 +154,12 @@ void DataIntervalMap::insertComponentType(TypedVariable* existingVar, Address ad
 
 DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const QString& name, SharedType ty, bool /*forced*/)
 {
-    Address pastLast = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
+    const Address endAddr = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
     VariableMap::const_iterator it1, it2;
     // First check that the new entry will be compatible with everything it will overlap
     if (ty->resolvesToCompound()) {
 
-        std::tie(it1, it2) = m_varMap.equalRange(addr, pastLast-1);
+        std::tie(it1, it2) = m_varMap.equalRange(addr, endAddr);
 
         for (VariableMap::const_iterator it = it1; it != it2; ++it) {
             unsigned bitOffset = (it->second.baseAddr - addr).value() * 8;
@@ -182,7 +182,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
     }
     else if (ty->resolvesToArray()) {
         SharedType memberType = ty->as<ArrayType>()->getBaseType();
-        std::tie(it1, it2) = m_varMap.equalRange(addr, pastLast-1);
+        std::tie(it1, it2) = m_varMap.equalRange(addr, endAddr);
 
         for (VariableMap::const_iterator it = it1; it != it2; ++it) {
             if (memberType->isCompatibleWith(*it->second.type, true)) {
@@ -207,7 +207,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
     }
 
     // The compound or array type is compatible. Remove the items that it will overlap with
-    std::tie(it1, it2) = m_varMap.equalRange(addr, pastLast-1);
+    std::tie(it1, it2) = m_varMap.equalRange(addr, endAddr);
 
     // Check for existing locals that need to be updated
     if (ty->resolvesToCompound() || ty->resolvesToArray()) {
