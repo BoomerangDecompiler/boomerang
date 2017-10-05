@@ -66,25 +66,16 @@ void DataIntervalMapTest::testInsert()
     QVERIFY(var.baseAddr == Address(0x1000));
     QVERIFY(var.size == 32);
     QVERIFY(var.name == "first");
-    QVERIFY(var.type == IntegerType::get(32, 1));
+    QCOMPARE(var.type->toString(), IntegerType::get(32, 1)->toString());
 
     // overlapped non-forced
     QVERIFY(dim.insertItem(Address(0x1002), "second", IntegerType::get(32, 1)) == dim.end());
+    QCOMPARE(dim.prints(), "0x00001000-0x00001004 first int\n");
 
     // overlapped forced
     DataIntervalMap::iterator it2 = dim.insertItem(Address(0x1002), "second", IntegerType::get(32, 1), true);
     QVERIFY(it2 != dim.end());
-
-    DataIntervalMap::const_iterator it3 = dim.find_it(Address(0x1000));
-    QVERIFY(it3 != dim.end());
-
-//     const TypedVariable& shortVar = it->second;
-//     QVERIFY(shortVar.size == 16);
-//     QVERIFY(shortVar.type == IntegerType::get(16, 1));
-
-    const TypedVariable& longVar = it2->second;
-    QVERIFY(longVar.size == 32);
-    QVERIFY(longVar.type == IntegerType::get(32, 1));
+    QCOMPARE(dim.prints(), "0x00001002-0x00001006 second int\n");
 }
 
 QTEST_MAIN(DataIntervalMapTest)
