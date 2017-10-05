@@ -13,23 +13,27 @@
 #include "boomerang/db/exp/Unary.h"
 
 
-/***************************************************************************/ /**
-* RefExp is a subclass of Unary, holding an ordinary Exp pointer, and a pointer to a defining statement (could be a
-* phi assignment).  This is used for subscripting SSA variables. Example:
-*   m[1000] becomes m[1000]{3} if defined at statement 3
-* The integer is really a pointer to the defining statement, printed as the statement number for compactness.
-******************************************************************************/
+/**
+ * RefExp statements map uses of expressions back to their definitions.
+ * RefExp is a subclass of Unary, holding an ordinary Exp pointer,
+ * and a pointer to a defining statement (could be a phi assignment).
+ * This is used for subscripting SSA variables. Example:
+ *   m[1000] becomes m[1000]{3} if defined at statement 3
+ * The integer is really a pointer to the defining statement,
+ * printed as the statement number for compactness.
+ * If the expression is not explicityl defined anywhere,
+ * the defining statement is nullptr.
+ */
 class RefExp : public Unary
 {
 public:
-    // Constructor with expression (e) and statement defining it (def)
-    RefExp(SharedExp e, Statement *def);
-    virtual ~RefExp()
-    {
-        m_def = nullptr;
-    }
+    /// \param usedExp Expression that is used
+    /// \param definition Pointer to the statment where the expression is defined
+    RefExp(SharedExp usedExp, Statement *definition);
+    virtual ~RefExp() { m_def = nullptr; }
 
-    static std::shared_ptr<RefExp> get(SharedExp e, Statement *def);
+    static std::shared_ptr<RefExp> get(SharedExp usedExp, Statement *definition);
+
     SharedExp clone() const override;
     bool operator==(const Exp& o) const override;
     bool operator<(const Exp& o) const override;
@@ -45,8 +49,9 @@ public:
         return shared_from_this();
     }
 
-    void setDef(Statement *_def)   /*assert(_def);*/
+    void setDef(Statement *_def)
     {
+        assert(_def != nullptr);
         m_def = _def;
     }
 
@@ -57,8 +62,10 @@ public:
     virtual SharedExp match(const SharedConstExp& pattern) override;
     virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
-    // Before type analysis, implicit definitions are nullptr.
-    // During and after TA, they point to an implicit assignment statement.
+    /**
+     * Before type analysis, implicit definitions are nullptr.
+     * During and after TA, they point to an implicit assignment statement.
+     */
     bool isImplicitDef() const;
 
     // Visitation

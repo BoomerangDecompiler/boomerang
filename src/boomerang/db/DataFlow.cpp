@@ -472,9 +472,8 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     BasicBlock::rtlit       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
-    Statement             *S;
 
-    for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
+    for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         // if S is not a phi function (per Appel)
         /* if (!S->isPhi()) */
         {
@@ -492,7 +491,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 // A phi statement may use a location defined in a childless call, in which case its use collector
                 // needs updating
                 for (auto& pp : *pa) {
-                    Statement *def = pp.second.def();
+                    Statement *def = pp.second.getDef();
 
                     if (def && def->isCall()) {
                         ((CallStatement *)def)->useBeforeDefine(phiLeft->clone());
@@ -692,7 +691,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
 
-    for (S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
+    for (Statement *S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
         // For each definition of some variable a in S
         LocationSet defs;
         S->getDefinitions(defs);
@@ -1051,7 +1050,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 
             for (it = pa->begin(); it != pa->end(); ++it) {
                 if (it->second.e) {
-                    auto re = RefExp::get(it->second.e, it->second.def());
+                    auto re = RefExp::get(it->second.e, it->second.getDef());
                     usedByDomPhi0.insert(re);
                 }
             }

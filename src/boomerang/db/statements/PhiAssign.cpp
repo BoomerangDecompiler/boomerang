@@ -24,7 +24,7 @@ Statement *PhiAssign::clone() const
 
     for (dd = DefVec.begin(); dd != DefVec.end(); dd++) {
         PhiInfo pi;
-        pi.def((Statement *)dd->second.def());     // Don't clone the Statement pointer (never moves)
+        pi.setDef((Statement *)dd->second.getDef()); // Don't clone the Statement pointer (never moves)
         pi.e = dd->second.e->clone();                // Do clone the expression pointer
         assert(pi.e);
         pa->DefVec.insert(std::make_pair(dd->first, pi));
@@ -68,12 +68,12 @@ void PhiAssign::printCompact(QTextStream& os, bool html) const
         os << "{";
 
         for (auto it = DefVec.begin(); it != DefVec.end(); /* no increment */) {
-            if (it->second.def()) {
+            if (it->second.getDef()) {
                 if (html) {
-                    os << "<a href=\"#stmt" << it->second.def()->getNumber() << "\">";
+                    os << "<a href=\"#stmt" << it->second.getDef()->getNumber() << "\">";
                 }
 
-                os << it->second.def()->getNumber();
+                os << it->second.getDef()->getNumber();
 
                 if (html) {
                     os << "</a>";
@@ -103,8 +103,8 @@ void PhiAssign::printCompact(QTextStream& os, bool html) const
                 os << e << "{";
             }
 
-            if (it->second.def()) {
-                os << it->second.def()->getNumber();
+            if (it->second.getDef()) {
+                os << it->second.getDef()->getNumber();
             }
             else {
                 os << "-";
@@ -131,7 +131,7 @@ bool PhiAssign::search(const Exp& search, SharedExp& result) const
     for (auto& v : DefVec) {
         assert(v.second.e != nullptr);
         // Note: can't match foo{-} because of this
-        RefExp re(v.second.e, const_cast<Statement *>(v.second.def())); ///< \todo remove const_cast
+        RefExp re(v.second.e, const_cast<Statement *>(v.second.getDef())); ///< \todo remove const_cast
 
         if (re.search(search, result)) {
             return true;
@@ -175,7 +175,7 @@ void PhiAssign::genConstraints(LocationSet& cons)
 
     for (auto& v : DefVec) {
         assert(v.second.e != nullptr);
-        SharedExp conjunct = Binary::get(opEquals, result, Unary::get(opTypeOf, RefExp::get(v.second.e, v.second.def())));
+        SharedExp conjunct = Binary::get(opEquals, result, Unary::get(opTypeOf, RefExp::get(v.second.e, v.second.getDef())));
         cons.insert(conjunct);
     }
 }
@@ -203,7 +203,7 @@ bool PhiAssign::accept(StmtExpVisitor *visitor)
     for (auto& v : DefVec) {
         assert(v.second.e != nullptr);
         // RefExp *re = RefExp::get(v.second.e, v.second.def());
-        ret = RefExp::get(v.second.e, v.second.def())->accept(visitor->ev);
+        ret = RefExp::get(v.second.e, v.second.getDef())->accept(visitor->ev);
 
         if (ret == false) {
             return false;
@@ -283,11 +283,11 @@ void PhiAssign::simplify()
 
     bool allSame                 = true;
     Definitions::iterator uu     = DefVec.begin();
-    Statement           *first = DefVec.begin()->second.def();
+    Statement           *first = DefVec.begin()->second.getDef();
     ++uu;
 
     for ( ; uu != DefVec.end(); uu++) {
-        if (uu->second.def() != first) {
+        if (uu->second.getDef() != first) {
             allSame = false;
             break;
         }
@@ -303,14 +303,14 @@ void PhiAssign::simplify()
     Statement *notthis       = (Statement *)-1;
 
     for (auto& v : DefVec) {
-        if ((v.second.def() == nullptr) || v.second.def()->isImplicit() || !v.second.def()->isPhi() ||
-            (v.second.def() != this)) {
+        if ((v.second.getDef() == nullptr) || v.second.getDef()->isImplicit() || !v.second.getDef()->isPhi() ||
+            (v.second.getDef() != this)) {
             if (notthis != (Statement *)-1) {
                 onlyOneNotThis = false;
                 break;
             }
             else {
-                notthis = v.second.def();
+                notthis = v.second.getDef();
             }
         }
     }
@@ -328,7 +328,7 @@ void PhiAssign::putAt(BasicBlock *i, Statement *def, SharedExp e)
 {
     assert(e);     // should be something surely
     // assert(defVec.end()==defVec.find(i));
-    DefVec[i].def(def);
+    DefVec[i].setDef(def);
     DefVec[i].e = e;
 }
 
@@ -337,7 +337,7 @@ void PhiAssign::enumerateParams(std::list<SharedExp>& le)
 {
     for (auto& v : DefVec) {
         assert(v.second.e != nullptr);
-        auto r = RefExp::get(v.second.e, v.second.def());
+        auto r = RefExp::get(v.second.e, v.second.getDef());
         le.push_back(r);
     }
 }
@@ -352,7 +352,7 @@ void PhiAssign::dfaTypeAnalysis(bool& ch)
     }
 
     assert(it != DefVec.end());
-    SharedType meetOfArgs = it->second.def()->getTypeFor(m_lhs);
+    SharedType meetOfArgs = it->second.getDef()->getTypeFor(m_lhs);
 
     for (++it; it != DefVec.end(); ++it) {
         PhiInfo& phinf(it->second);
@@ -361,8 +361,8 @@ void PhiAssign::dfaTypeAnalysis(bool& ch)
             continue;
         }
 
-        assert(phinf.def());
-        SharedType typeOfDef = phinf.def()->getTypeFor(phinf.e);
+        assert(phinf.getDef() != nullptr);
+        SharedType typeOfDef = phinf.getDef()->getTypeFor(phinf.e);
         meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
     }
 
@@ -373,7 +373,7 @@ void PhiAssign::dfaTypeAnalysis(bool& ch)
             continue;
         }
 
-        it->second.def()->meetWithFor(m_type, it->second.e, ch);
+        it->second.getDef()->meetWithFor(m_type, it->second.e, ch);
     }
 
     Assignment::dfaTypeAnalysis(ch); // Handle the LHS

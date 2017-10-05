@@ -596,7 +596,7 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool& override)
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
         assert(v.second.e);
-        auto temp = RefExp::get(v.second.e, (Statement *)v.second.def());
+        auto temp = RefExp::get(v.second.e, (Statement *)v.second.getDef());
         temp->accept(ev);
     }
 
@@ -907,8 +907,8 @@ void StmtImplicitConverter::visit(PhiAssign *s, bool& recur)
     for (auto& v : *s) {
         assert(v.second.e != nullptr);
 
-        if (v.second.def() == nullptr) {
-            v.second.def(m_cfg->findImplicitAssign(v.second.e));
+        if (v.second.getDef() == nullptr) {
+            v.second.setDef(m_cfg->findImplicitAssign(v.second.e));
         }
     }
 
@@ -1524,7 +1524,7 @@ void StmtSsaXformer::visit(PhiAssign *s, bool& recur)
 
     for (auto& v : *s) {
         assert(v.second.e != nullptr);
-        QString sym = _proc->lookupSymFromRefAny(RefExp::get(v.second.e, v.second.def()));
+        QString sym = _proc->lookupSymFromRefAny(RefExp::get(v.second.e, v.second.getDef()));
 
         if (!sym.isNull()) {
             v.second.e = Location::local(sym, _proc); // Some may be parameters, but hopefully it won't matter

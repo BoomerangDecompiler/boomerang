@@ -1092,7 +1092,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
             PhiAssign *pa = (PhiAssign *)def;
 
             for (auto& v : *pa) {
-                def = v.second.def();
+                def = v.second.getDef();
 
                 if (!def || !def->isAssign()) {
                     continue;
