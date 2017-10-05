@@ -122,33 +122,29 @@ void TypeTest::testDataInterval()
 	UserProc *proc = (UserProc *)m->getOrInsertFunction("test", Address(0x123));
 	DataIntervalMap dim(proc);
 
-	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
+	proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "testProc"));
 
 	dim.insertItem(Address(0x00001000), "first", IntegerType::get(32, 1));
 	dim.insertItem(Address(0x00001004), "second", FloatType::get(64));
-	QString actual(dim.prints());
-	QString expected("0x00001000-0x00001004 first int\n"
-					 "0x00001004-0x0000100c second double\n");
-	QCOMPARE(actual, expected);
+	QCOMPARE(dim.prints(),
+        "0x00001000-0x00001004 first int\n"
+        "0x00001004-0x0000100c second double\n");
 
-	const TypedVariable *pdie = dim.find(Address(0x00001000));
-	QVERIFY(pdie);
-	QCOMPARE(pdie->name, QString("first"));
+	const TypedVariable *var = dim.find(Address(0x00001000));
+	QVERIFY(var != nullptr);
+	QCOMPARE(var->name, QString("first"));
 
-	pdie = dim.find(Address(0x00001003));
-	QVERIFY(pdie);
-	QCOMPARE(pdie->name, QString("first"));
+    var = dim.find(Address(0x00001003));
+	QVERIFY(var != nullptr);
+	QCOMPARE(var->name, QString("first"));
 
-	pdie = dim.find(Address(0x00001004));
-	QVERIFY(pdie);
-	expected = "second";
-	actual   = pdie->name;
-	QCOMPARE(actual, expected);
+	var = dim.find(Address(0x00001004));
+	QVERIFY(var);
+	QCOMPARE(var->name, QString("second"));
 
-	pdie = dim.find(Address(0x00001007));
-	QVERIFY(pdie);
-	actual = pdie->name;
-	QCOMPARE(actual, expected);
+	var = dim.find(Address(0x00001007));
+	QVERIFY(var);
+	QCOMPARE(var->name, QString("second"));
 
 	auto ct(CompoundType::get());
 	ct->addType(IntegerType::get(16, 1), "short1");
@@ -165,9 +161,7 @@ void TypeTest::testDataInterval()
 	ue = 0;
 	ua = ctc.isArray;
 	QCOMPARE(ua, ue);
-	expected = "short2";
-	actual   = ctc.u.memberName;
-	QCOMPARE(actual, expected);
+	QCOMPARE(ctc.u.memberName, QString("short2"));
 
 	// An array of 10 struct1's
 	auto at = ArrayType::get(ct, 10);

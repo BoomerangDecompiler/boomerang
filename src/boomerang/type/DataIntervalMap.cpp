@@ -70,7 +70,7 @@ DataIntervalMap::iterator DataIntervalMap::insertItem(Address baseAddr, QString 
         name = "<noname>";
     }
 
-    const Interval<Address> newTypeRange(baseAddr, baseAddr + type->getSize());
+    const Interval<Address> newTypeRange(baseAddr, baseAddr + type->getSize() / 8);
 
     iterator it1, it2;
     std::tie(it1, it2) = m_varMap.equalRange(newTypeRange);
@@ -284,8 +284,9 @@ char *DataIntervalMap::prints()
     QTextStream ost(&tgt);
 
     for (const auto& varPair : m_varMap) {
+        const Interval<Address>& varRange = varPair.first;
         const TypedVariable& var = varPair.second;
-        ost << var.baseAddr << "-" << var.baseAddr + var.size << " " << var.name << " " << var.type->getCtype() << "\n";
+        ost << varRange.lower() << "-" << varRange.upper() << " " << var.name << " " << var.type->getCtype() << "\n";
     }
 
     strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);

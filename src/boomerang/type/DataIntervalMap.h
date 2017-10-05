@@ -28,7 +28,7 @@ struct TypedVariable
     {}
 
     Address    baseAddr;    ///< The address of the variable, or the SP offset for local variables
-    size_t     size;        ///< The size of this type in bytes
+    size_t     size;        ///< The size of this type in bits
     QString    name;        ///< The name of the variable
     SharedType type;        ///< The type of the variable
 };
