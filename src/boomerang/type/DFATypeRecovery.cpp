@@ -1336,7 +1336,7 @@ SharedType Binary::ascendType()
 SharedType RefExp::ascendType()
 {
     if (m_def == nullptr) {
-        LOG_WARN("Null reference in %1", this->prints());
+        LOG_WARN("Null reference in '%1'", this->prints());
         return VoidType::get();
     }
 
@@ -1583,7 +1583,13 @@ void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
 
 void RefExp::descendType(SharedType parentType, bool& ch, Statement *s)
 {
-    assert(m_def != nullptr);
+    assert(getSubExp1());
+    if (m_def == nullptr) {
+        LOG_ERROR("Cannot descendType of expression '%1' since it does not have a defining statement!", getSubExp1());
+        ch = false;
+        return;
+    }
+
     SharedType newType = m_def->meetWithFor(parentType, subExp1, ch);
     // In case subExp1 is a m[...]
     subExp1->descendType(newType, ch, s);

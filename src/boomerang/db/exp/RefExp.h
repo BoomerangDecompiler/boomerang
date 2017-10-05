@@ -51,7 +51,7 @@ public:
 
     void setDef(Statement *_def)
     {
-        assert(_def != nullptr);
+//         assert(_def != nullptr);
         m_def = _def;
     }
 
