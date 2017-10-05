@@ -267,7 +267,8 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                     break;
                 }
 
-                pCond = Binary::get(_op, at_opFlagsCall_List->getSubExp1()->clone(),
+                pCond = Binary::get(_op,
+                                    at_opFlagsCall_List->getSubExp1()->clone(),
                                     at_opFlagsCall_List->getSubExp2()->getSubExp1()->clone());
                 return true;     // This is a floating point comparison
             }

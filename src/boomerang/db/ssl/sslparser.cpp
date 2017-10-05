@@ -93,7 +93,7 @@ SSLParser::SSLParser(const QString &_sslFile, bool _trace) : sslFile(_sslFile), 
     m_fin = new std::fstream(sslFile.toStdString(), std::ios::in);
     theScanner = nullptr;
     if (!*m_fin) {
-        LOG_ERROR("Can't open SSL file '%1' for reading");
+        LOG_ERROR("Failed to open SSL file '%1' for reading", sslFile);
         return;
     }
     theScanner = new SSLScanner(*m_fin, _trace);
