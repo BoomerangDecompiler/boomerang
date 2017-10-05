@@ -819,6 +819,9 @@ IMUL.Ibod   reg32, modrm, i8
 INT3
             _ ;            # Not expected to be seen in correct code, but decode anyway
 
+INT.Ib      i8
+            _ ;            # Same as above
+
 COND1 := { "~%CF & ~%ZF", "~%CF & ~%ZF", "~%CF", "~%CF", "%CF",
             "%CF", "%CF | %ZF", "%CF | %ZF", "%CF", "~%cx", "%ZF",
             "%ZF", "~(%NF ^ %OF) & ~%ZF", "~(%NF ^ %OF) & ~%ZF",
