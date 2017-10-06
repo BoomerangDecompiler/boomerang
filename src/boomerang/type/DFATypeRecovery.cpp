@@ -161,30 +161,26 @@ void DFATypeRecovery::dfa_analyze_scaled_array_ref(Statement *s)
 
 void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
 {
-    bool       allZero;
-    SharedExp  lhs;
-    SharedExp  slhs;
-    SharedType iType;
-    int        i;
-    UserProc   *pr = s->getProc();
-
-    assert(pr);
-    Prog *prog = pr->getProg();
-    assert(prog);
-
     if (!s->isImplicit()) {
         return;
     }
 
-    lhs = ((ImplicitAssign *)s)->getLeft();
+    UserProc *proc = s->getProc();
+    assert(proc);
+    Prog *prog = proc->getProg();
+    assert(prog);
+
+    SharedExp lhs = ((ImplicitAssign *)s)->getLeft();
     // Note: parameters are not explicit any more
     // if (lhs->isParam()) { // }
-    slhs  = lhs->clone()->removeSubscripts(allZero);
-    iType = ((ImplicitAssign *)s)->getType();
-    i     = pr->getSignature()->findParam(slhs);
+
+    bool       allZero = false;
+    SharedExp slhs = lhs->clone()->removeSubscripts(allZero);
+    SharedType iType = ((ImplicitAssign *)s)->getType();
+    int i     = proc->getSignature()->findParam(slhs);
 
     if (i != -1) {
-        pr->setParamType(i, iType);
+        proc->setParamType(i, iType);
     }
     else if (lhs->isMemOf()) {
         SharedExp sub = lhs->getSubExp1();
@@ -212,12 +208,13 @@ void DFATypeRecovery::recoverFunctionTypes(Function *)
 void DFATypeRecovery::dfaTypeAnalysis(Function *f)
 {
     if (f->isLib()) {
+        LOG_VERBOSE("Not using DFA type analysis on library function '%1'", f->getName());
         return;
     }
 
     UserProc *proc = static_cast<UserProc *>(f);
     Cfg      *cfg  = proc->getCFG();
-    DataIntervalMap localsMap(proc); // map of all local variables
+    DataIntervalMap localsMap(proc); // map of all local variables of proc
 
     Boomerang::get()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
 
@@ -232,21 +229,21 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
 
-        for (Statement *it : stmts) {
-            bool        thisCh  = false;
+        for (Statement *stmt : stmts) {
+            bool      thisCh  = false;
             Statement *before = nullptr;
 
             if (DEBUG_TA) {
-                before = it->clone();
+                before = stmt->clone();
             }
 
-            it->dfaTypeAnalysis(thisCh);
+            stmt->dfaTypeAnalysis(thisCh);
 
             if (thisCh) {
                 ch = true;
 
                 if (DEBUG_TA) {
-                    LOG_MSG(" caused change: FROM: %1 TO: %2", before, it);
+                    LOG_MSG(" caused change: FROM: %1 TO: %2", before, stmt);
                 }
             }
 

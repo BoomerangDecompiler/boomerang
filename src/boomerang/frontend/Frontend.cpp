@@ -520,8 +520,8 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     p->yyparse(plat, cc);
 
     for (auto& elem : p->signatures) {
-        m_librarySignatures[(elem)->getName()] = elem;
-        (elem)->setSigFile(signatureFile);
+        m_librarySignatures[elem->getName()] = elem;
+        elem->setSigFile(signatureFile);
     }
 
     delete p;
