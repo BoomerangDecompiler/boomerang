@@ -74,6 +74,6 @@ protected:
         , m_length(0) {}
 
 private:
-    mutable SharedType BaseType;
-    mutable size_t m_length; ///< number of elements in this array
+    SharedType BaseType;
+    size_t m_length; ///< number of elements in this array
 };

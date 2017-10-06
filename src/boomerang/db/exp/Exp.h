@@ -637,7 +637,6 @@ protected:
 protected:
     OPER m_oper; ///< The operator (e.g. opPlus)
     mutable unsigned int m_lexBegin = 0, m_lexEnd = 0;
-
 };
 
 // Not part of the Exp class, but logically belongs with it:

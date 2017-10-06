@@ -94,5 +94,5 @@ public:
 private:
     // Note: list, not vector, as it is occasionally desirable to insert elements without affecting iterators
     // (e.g. meetWith(another Union))
-    mutable UnionEntrySet li;
+    UnionEntrySet li;
 };

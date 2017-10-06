@@ -29,7 +29,4 @@ private slots:
     /// Test meeting IntegerTypes with various other types
 	void testMeetInt();
     void testMeetInt_data();
-
-    /// Test meeting Unions with various other types
-	void testMeetUnion();
 };

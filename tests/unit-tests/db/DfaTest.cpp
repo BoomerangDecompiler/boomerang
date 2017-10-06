@@ -73,8 +73,8 @@ void DfaTest::testMeetInt()
     QCOMPARE(changed, result->getCtype() != firstOp->getCtype());
 
     // verify that the source types themselves are not changed by meet
-    QCOMPARE(firstOp->getCtype(), oldFirstOp->getCtype());
-    QCOMPARE(secondOp->getCtype(), oldSecondOp->getCtype());
+    QCOMPARE(*(firstOp.ty), *oldFirstOp);
+    QCOMPARE(*(secondOp.ty), *oldSecondOp);
 }
 
 #define TEST_MEET(name, firstOp, secondOp, result) \
@@ -127,43 +127,22 @@ void DfaTest::testMeetInt_data()
     TEST_MEET("pi32 M pv",   PointerType::get(IntegerType::get(32, 1)), PointerType::get(VoidType::get()), PointerType::get(IntegerType::get(32, 1)));
     TEST_MEET("pi32 M pu32", PointerType::get(IntegerType::get(32, 1)), PointerType::get(IntegerType::get(32, -1)), PointerType::get(IntegerType::get(32, 0)));
     TEST_MEET("pi32 M i32",  PointerType::get(IntegerType::get(32, 1)), IntegerType::get(32, 1), UnionType::get({ PointerType::get(IntegerType::get(32, 1)), IntegerType::get(32, 1) }));
+
+    // Union types
+    std::shared_ptr<UnionType> ut = UnionType::get({ IntegerType::get(32, 1), FloatType::get(32) });
+
+    TEST_MEET("u M i32", ut, IntegerType::get(32, 1), ut);
+    TEST_MEET("u M j32", ut, IntegerType::get(32, 0), ut);
+    TEST_MEET("u M f32", ut, FloatType::get(32), ut);
+    TEST_MEET("u M u32", ut, IntegerType::get(32, -1), UnionType::get({ IntegerType::get(32, 0), FloatType::get(32) }));
+//    TEST_MEET("u M u",   ut, UnionType::get({ PointerType::get(VoidType::get()) }), UnionType::get({ IntegerType::get(32, 1), FloatType::get(32), PointerType::get(VoidType::get()) })); //TODO
+
+    // floating point types
+    TEST_MEET("f32 M f32", FloatType::get(32), FloatType::get(32), FloatType::get(32));
+    TEST_MEET("f32 M v",   FloatType::get(32), VoidType::get(),    FloatType::get(32));
+    TEST_MEET("f32 M f64", FloatType::get(32), FloatType::get(64), FloatType::get(64)); // Maybe this should result in a union
 }
 
-
-void DfaTest::testMeetUnion()
-{
-	auto i32  = IntegerType::get(32, 1);
-	auto j32  = IntegerType::get(32, 0);
-	auto u32  = IntegerType::get(32, -1);
-	auto u1   = UnionType::get();
-	auto u2   = UnionType::get();
-	auto flt  = FloatType::get(32);
-	auto flt2 = FloatType::get(32);
-
-	u1->addType(i32, "bow");
-	u1->addType(flt, "wow");
-	u2->addType(flt2, "gorm");
-	QCOMPARE(u1->getCtype(), QString("union { float wow; int bow; }"));
-
-	bool ch  = false;
-	auto res = u1->meetWith(j32, ch, false);
-	QVERIFY(ch == false);
-	QCOMPARE(res->getCtype(), QString("union { float wow; int bow; }"));
-
-	ch  = false;
-	res = u1->meetWith(flt, ch, false);
-	QVERIFY(ch == false);
-	QCOMPARE(res->getCtype(), QString("union { float wow; int bow; }"));
-
-	res = u1->meetWith(u2, ch, false);
-	QVERIFY(ch == false);
-	QCOMPARE(u1->getCtype(), QString("union { float wow; int bow; }"));
-
-	// Note: this test relies on the int in the union having signedness 1
-	res = u1->meetWith(u32, ch, false);
-	QVERIFY(ch == true);
-	QCOMPARE(u1->getCtype(), QString("union { /*signed?*/int bow; float wow; }"));
-}
 
 
 QTEST_MAIN(DfaTest)

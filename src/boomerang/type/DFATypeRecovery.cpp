@@ -600,19 +600,10 @@ SharedType FloatType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
         return ((FloatType *)this)->shared_from_this();
     }
 
-    if (other->resolvesToFloat()) {
-        std::shared_ptr<FloatType> otherFlt(other->as<FloatType>());
-        size_t oldSize = size;
-        size = std::max(size, otherFlt->size);
-        ch  |= size != oldSize;
-        return ((FloatType *)this)->shared_from_this();
-    }
-
-    if (other->resolvesToSize()) {
-        size_t otherSize = other->getSize();
-        ch  |= size != otherSize;
-        size = std::max(size, otherSize);
-        return ((FloatType *)this)->shared_from_this();
+    if (other->resolvesToFloat() || other->resolvesToSize()) {
+        const size_t newSize = std::max(size, other->getSize());
+        ch |= (newSize != size);
+        return FloatType::get(newSize);
     }
 
     return createUnion(other, ch, bHighestPtr);
@@ -751,18 +742,15 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     if (other->resolvesToArray()) {
         auto       otherArr = other->as<ArrayType>();
         SharedType newBase  = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
+        size_t newLength = m_length;
 
         if (*newBase != *BaseType) {
-            ch       = true;
-            m_length   = convertLength(newBase);
-            BaseType = newBase; // No: call setBaseType to adjust length
+            ch        = true;
+            newLength = convertLength(newBase);
         }
 
-        if (other->as<ArrayType>()->getLength() < getLength()) {
-            m_length = other->as<ArrayType>()->getLength();
-        }
-
-        return std::const_pointer_cast<Type>(this->shared_from_this());
+        newLength = std::min(newLength, other->as<ArrayType>()->getLength());
+        return ArrayType::get(newBase, newLength);
     }
 
     if (*BaseType == *other) {
@@ -935,57 +923,57 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     // if a field is found that requires no change to 'meet', this type is returned unchanged
     // if a new meetWith result is 'better' given simplistic type description length heuristic measure
     // then the meetWith result, and this types field iterator are stored.
-    int                     best_meet_quality = INT_MAX;
-    SharedType              best_so_far;
-    UnionEntrySet::iterator location_of_meet = li.end();
+
+    int bestMeetScore = INT_MAX;
+    UnionEntrySet::const_iterator bestElem = li.end();
 
     for (auto it = li.begin(); it != li.end(); ++it) {
-        Type& v(*it->type);
+        SharedType v = it->type;
 
-        if (!v.isCompatibleWith(*other)) {
+        if (!v->isCompatibleWith(*other)) {
             continue;
         }
 
-        SharedType curr     = v.clone();
-        auto       meet_res = curr->meetWith(other, ch, bHighestPtr);
-
-        if (!ch) { // no change necessary for meet, perfect
-            //            qDebug() << getCtype();
+        ch = false;
+        SharedType meet_res = v->meetWith(other, ch, bHighestPtr);
+        if (!ch) {
+            // Fully compatible type alerady present in this union
             return ((UnionType *)this)->shared_from_this();
         }
 
-        int quality = meet_res->getCtype().size();
-
-        if (quality < best_meet_quality) {
-            //            qDebug() << "Found better match:" << meet_res->getCtype();
-            best_so_far       = meet_res;
-            best_meet_quality = quality;
-            location_of_meet  = it;
+        const int currentScore = meet_res->getCtype().size();
+        if (currentScore < bestMeetScore) {
+            // we have found a better match, store it
+            bestElem = it;
+            bestMeetScore = currentScore;
         }
     }
 
-    if (best_meet_quality != INT_MAX) {
-        UnionElement ne = *location_of_meet;
-        ne.type = best_so_far;
-        li.erase(location_of_meet);
-        li.insert(ne);
-        //        qDebug() << getCtype();
-        return ((UnionType *)this)->shared_from_this();
+
+    std::shared_ptr<UnionType> result = UnionType::get();
+    for (UnionEntrySet::const_iterator it = li.begin(); it != li.end(); it++) {
+        if (it == bestElem) {
+            // this is the element to be replaced
+            continue;
+        }
+
+        result->addType(it->type, it->name);
     }
 
-    // Other is not compatible with any of my component types. Add a new type
-#if PRINT_UNION                                      // Set above
-    if (unionCount == 999) {                         // Adjust the count to catch the one you want
-        LOG_MSG("createUnion breakpokint"); // Note: you need two breakpoints (also in Type::createUnion)
+    UnionElement ne;
+    if (bestElem != li.end()) {
+        ne.name = bestElem->name;
+        ne.type = bestElem->type->meetWith(other, ch, bHighestPtr); // we know this works because the types are compatible
     }
-    LOG_MSG("  %1 Created union from %1 and %2", ++unionCount, this->getCtype(), other->getCtype());
-#endif
-    ((UnionType *)this)->addType(other->clone(), QString("x%1").arg(++nextUnionNumber));
-#if PRINT_UNION
-    LOG_MSG("  Result is %1", getCtype());
-#endif
+    else {
+        // Other is not compatible with any of my component types. Add a new type.
+        ne.name = QString("x%1").arg(++nextUnionNumber);
+        ne.type = other->clone();
+    }
+
+    result->addType(ne.type, ne.name);
     ch = true;
-    return ((UnionType *)this)->shared_from_this();
+    return result;
 }
 
 
