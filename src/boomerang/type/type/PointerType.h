@@ -56,5 +56,5 @@ public:
     virtual bool isCompatible(const Type& other, bool all) const override;
 
 private:
-    mutable SharedType points_to;
+    SharedType points_to;
 };

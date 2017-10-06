@@ -44,5 +44,5 @@ public:
     virtual bool isCompatible(const Type& other, bool) const override;
 
 private:
-    mutable size_t size; // Size in bits, e.g. 16
+    size_t size; // Size in bits, e.g. 16
 };

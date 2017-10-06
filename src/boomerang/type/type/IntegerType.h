@@ -67,6 +67,6 @@ public:
     virtual bool isCompatible(const Type& other, bool all) const override;
 
 private:
-    mutable size_t size;    ///< Size in bits, e.g. 16
-    mutable int signedness; ///< pos=signed, neg=unsigned, 0=unknown or evenly matched
+    size_t size;    ///< Size in bits, e.g. 16
+    int signedness; ///< pos=signed, neg=unsigned, 0=unknown or evenly matched
 };

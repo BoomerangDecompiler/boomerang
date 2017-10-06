@@ -28,12 +28,7 @@ private slots:
 
     /// Test meeting IntegerTypes with various other types
 	void testMeetInt();
-
-    /// Test meeting SizeTypes with various other types
-	void testMeetSize();
-
-    /// Test meeting PointerTypes with various other types
-	void testMeetPointer();
+    void testMeetInt_data();
 
     /// Test meeting Unions with various other types
 	void testMeetUnion();

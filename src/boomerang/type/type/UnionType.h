@@ -40,12 +40,26 @@ public:
     typedef UnionEntrySet::iterator ilUnionElement;
 
 public:
+    /// Create a new empty union type.
     UnionType();
+
+    /// Create a new union type with unnamed members.
+    UnionType(const std::initializer_list<SharedType>& members);
+
     virtual ~UnionType();
 
+    /// \copydoc Type::isUnion
     virtual bool isUnion() const override { return true; }
+
     static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
-    void addType(SharedType n, const QString& str);
+    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType>& members) { return std::make_shared<UnionType>(members); }
+
+    /**
+     * Add a new type to this union
+     * \param type the type of the new member
+     * \param name the name of the new member
+     */
+    void addType(SharedType type, const QString& name = QString::null);
 
     size_t getNumTypes() const { return li.size(); }
 
