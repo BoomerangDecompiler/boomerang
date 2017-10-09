@@ -883,16 +883,16 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
             return ((UnionType *)this)->shared_from_this(); // Avoid infinite recursion
         }
 
-        auto otherUnion = other->as<UnionType>();
+        std::shared_ptr<UnionType> otherUnion = other->as<UnionType>();
+        std::shared_ptr<UnionType> result(UnionType::get());
 
-        // Always return this, never other, (even if other is larger than this) because otherwise iterators can become
-        // invalid below
-        // TODO: verify the below, before the return was done after single meetWith on first file of other union
-        for (UnionElement it : otherUnion->li) {
-            meetWith(it.type, ch, bHighestPtr);
+        *result = *this;
+
+        for (UnionElement elem : otherUnion->li) {
+            result = result->meetWith(elem.type, ch, bHighestPtr)->as<UnionType>();
         }
 
-        return ((UnionType *)this)->shared_from_this();
+        return result;
     }
 
     // Other is a non union type

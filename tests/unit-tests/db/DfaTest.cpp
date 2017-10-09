@@ -135,14 +135,12 @@ void DfaTest::testMeetInt_data()
     TEST_MEET("u M j32", ut, IntegerType::get(32, 0), ut);
     TEST_MEET("u M f32", ut, FloatType::get(32), ut);
     TEST_MEET("u M u32", ut, IntegerType::get(32, -1), UnionType::get({ IntegerType::get(32, 0), FloatType::get(32) }));
-//    TEST_MEET("u M u",   ut, UnionType::get({ PointerType::get(VoidType::get()) }), UnionType::get({ IntegerType::get(32, 1), FloatType::get(32), PointerType::get(VoidType::get()) })); //TODO
+    TEST_MEET("u M u",   ut, UnionType::get({ PointerType::get(VoidType::get()) }), UnionType::get({ IntegerType::get(32, 1), FloatType::get(32), PointerType::get(VoidType::get()) }));
 
     // floating point types
     TEST_MEET("f32 M f32", FloatType::get(32), FloatType::get(32), FloatType::get(32));
     TEST_MEET("f32 M v",   FloatType::get(32), VoidType::get(),    FloatType::get(32));
     TEST_MEET("f32 M f64", FloatType::get(32), FloatType::get(64), FloatType::get(64)); // Maybe this should result in a union
 }
-
-
 
 QTEST_MAIN(DfaTest)
