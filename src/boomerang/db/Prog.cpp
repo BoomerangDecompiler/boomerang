@@ -44,6 +44,9 @@
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/SizeType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/FuncType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/BooleanType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h" // For lockFileWrite etc

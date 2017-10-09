@@ -46,7 +46,7 @@ public:
     SharedType ty;
 };
 
-Q_DECLARE_METATYPE(SharedTypeWrapper);
+Q_DECLARE_METATYPE(SharedTypeWrapper)
 
 
 void DfaTest::initTestCase()
