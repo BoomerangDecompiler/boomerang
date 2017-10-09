@@ -43,6 +43,70 @@
 #define HELLO_WINDOWS    (BOOMERANG_TEST_BASE "/tests/inputs/windows/hello.exe")
 
 
+
+// TODO: untangle the dynamic-size types from static size types ( Int vs Boolean etc. )
+// The following two are for compForAddress()
+struct ComplexTypeComp
+{
+    bool isArray;
+    struct
+    {
+        QString  memberName; // Member name if offset
+        unsigned index;      // Constant index if array
+    } u;
+};
+
+typedef std::list<ComplexTypeComp>    ComplexTypeCompList;
+
+
+/// From a complex type like an array of structs with a float, return a list of components so you
+/// can construct e.g. myarray1[8].mystruct2.myfloat7
+ComplexTypeCompList& compForAddress(Address addr, DataIntervalMap& dim)
+{
+    const TypedVariable *var = dim.find(addr);
+    ComplexTypeCompList *res  = new ComplexTypeCompList;
+
+    if (var == nullptr) {
+        return *res;
+    }
+
+    Address    startCurrent = var->baseAddr;
+    SharedType curType      = var->type;
+
+    while (startCurrent < addr) {
+        size_t bitOffset = (addr - startCurrent).value() * 8;
+
+        if (curType->isCompound()) {
+            auto     compCurType = curType->as<CompoundType>();
+            unsigned rem         = compCurType->getOffsetRemainder(bitOffset);
+            startCurrent = addr - (rem / 8);
+            ComplexTypeComp ctc;
+            ctc.isArray      = false;
+            ctc.u.memberName = compCurType->getNameAtOffset(bitOffset);
+            res->push_back(ctc);
+            curType = compCurType->getTypeAtOffset(bitOffset);
+        }
+        else if (curType->isArray()) {
+            curType = curType->as<ArrayType>()->getBaseType();
+            unsigned baseSize = curType->getSize();
+            unsigned index    = bitOffset / baseSize;
+            startCurrent += index * baseSize / 8;
+            ComplexTypeComp ctc;
+            ctc.isArray = true;
+            ctc.u.index = index;
+            res->push_back(ctc);
+        }
+        else {
+            LOG_ERROR("TYPE ERROR: no struct or array at byte address %1", addr);
+            return *res;
+        }
+    }
+
+    return *res;
+}
+
+
+
 void TypeTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
@@ -153,7 +217,7 @@ void TypeTest::testDataInterval()
 	ct->addType(FloatType::get(32), "float1");
 	dim.insertItem(Address(0x00001010), "struct1", ct);
 
-	ComplexTypeCompList& ctcl = ct->compForAddress(Address(0x00001012), dim);
+	ComplexTypeCompList& ctcl = compForAddress(Address(0x00001012), dim);
 	unsigned             ua   = ctcl.size();
 	unsigned             ue   = 1;
 	QCOMPARE(ua, ue);
@@ -166,7 +230,7 @@ void TypeTest::testDataInterval()
 	// An array of 10 struct1's
 	auto at = ArrayType::get(ct, 10);
 	dim.insertItem(Address(0x00001020), "array1", at);
-	ComplexTypeCompList& ctcl2 = at->compForAddress(Address(0x00001020 + 0x3C + 8), dim);
+	ComplexTypeCompList& ctcl2 = compForAddress(Address(0x00001020 + 0x3C + 8), dim);
 	// Should be 2 components: [5] and .float1
 	ue = 2;
 	ua = ctcl2.size();

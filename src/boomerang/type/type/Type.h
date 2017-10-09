@@ -74,20 +74,6 @@ enum TypeID
     eSize
 }; // For operator< mostly
 
-
-// TODO: untangle the dynamic-size types from static size types ( Int vs Boolean etc. )
-// The following two are for Type::compForAddress()
-struct ComplexTypeComp
-{
-    bool isArray;
-    struct
-    {
-        QString  memberName; // Member name if offset
-        unsigned index;      // Constant index if array
-    } u;
-};
-
-typedef std::list<ComplexTypeComp>    ComplexTypeCompList;
 class Type;
 typedef std::shared_ptr<Type>         SharedType;
 typedef std::shared_ptr<const Type>   SharedConstType;
@@ -255,10 +241,6 @@ public:
     /// Create a union of this Type and other. Set ch true if any change
     SharedType createUnion(SharedType other, bool& ch, bool bHighestPtr = false) const;
     static SharedType newIntegerLikeType(int size, int signedness); // Return a new Bool/Char/Int
-
-    /// From a complex type like an array of structs with a float, return a list of components so you
-    /// can construct e.g. myarray1[8].mystruct2.myfloat7
-    ComplexTypeCompList& compForAddress(Address addr, DataIntervalMap& dim);
 
     /// Dereference this type. For most cases, return null unless you are a pointer type. But for a
     /// union of pointers, return a new union with the dereference of all members. In dfa.cpp
