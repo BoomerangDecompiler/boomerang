@@ -27,6 +27,6 @@ private slots:
    	void initTestCase();
 
     /// Test meeting IntegerTypes with various other types
-	void testMeetInt();
-    void testMeetInt_data();
+	void testMeet();
+    void testMeet_data();
 };

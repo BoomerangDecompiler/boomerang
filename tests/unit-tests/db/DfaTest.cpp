@@ -57,7 +57,7 @@ void DfaTest::initTestCase()
 }
 
 
-void DfaTest::testMeetInt()
+void DfaTest::testMeet()
 {
 
     QFETCH(SharedTypeWrapper, firstOp);
@@ -81,7 +81,7 @@ void DfaTest::testMeetInt()
     QTest::newRow(name) << SharedTypeWrapper(firstOp) << SharedTypeWrapper(secondOp) << SharedTypeWrapper(result)
 
 
-void DfaTest::testMeetInt_data()
+void DfaTest::testMeet_data()
 {
     QTest::addColumn<SharedTypeWrapper>("firstOp");
     QTest::addColumn<SharedTypeWrapper>("secondOp");
