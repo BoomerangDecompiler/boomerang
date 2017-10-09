@@ -69,7 +69,7 @@ void DfaTest::testMeet()
 
     bool changed = false;
     SharedType result = firstOp->meetWith(secondOp, changed, false);
-    QCOMPARE(*result, *(tgtResult.ty));
+    QCOMPARE(*result, *(tgtResult.ty)); // we are just comparing types here, not variable names
     QCOMPARE(changed, result->getCtype() != firstOp->getCtype());
 
     // verify that the source types themselves are not changed by meet
