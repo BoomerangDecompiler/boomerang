@@ -50,7 +50,7 @@
 
 static int nextUnionNumber = 0;
 
-#define DFA_ITER_LIMIT    20
+#define DFA_ITER_LIMIT    (100)
 
 // idx + K; leave idx wild
 static const Binary unscaledArrayPat(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst));
@@ -243,7 +243,7 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
                 ch = true;
 
                 if (DEBUG_TA) {
-                    LOG_MSG(" caused change: FROM: %1 TO: %2", before, stmt);
+                    LOG_VERBOSE("  Caused change:\n    FROM: %1\n    TO:   %2", before, stmt);
                 }
             }
 
@@ -259,7 +259,7 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
     }
 
     if (ch) {
-        LOG_WARN("### Iteration limit exceeded for dfaTypeAnalysis of procedure %1 ###", proc->getName());
+        LOG_WARN("Iteration limit exceeded for dfaTypeAnalysis of procedure '%1'", proc->getName());
     }
 
     if (DEBUG_TA) {
