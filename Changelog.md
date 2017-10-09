@@ -1,0 +1,29 @@
+0.4.0 (in development)
+----------------------
+- Fix: Crashes when decompiling SPARC binaries.
+- Fix: Crash when generating code for switch statements.
+- Fix: Crash when loading MIPS binaries.
+- Fix: Crash when loading HPPA binaries.
+- Fix: Crash when decoding backwards relative jumps.
+- Fix: Crash when decompiling a library thunk.
+- Fix: Crash when the instruction at the entry point is a jump instruction.
+- Fix: Disable direct editing of file selection combobox in boomerang-gui.
+- Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
+- Improved: Log output formatting.
+- Improved: Detection of statically imported library functions.
+- Feature: Add 'replay' console command to read console commands from a file.
+- Changed: Rename 'print-*' console command to a single 'print' command with arguments.
+- Changed: Add '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
+- Changed: Slight changes to generated C code.
+- Removed: Ability to read/write XML files, to be replaced by new save format.
+- Performance: Slightly increased performance of code generation.
+- Technical: Drop boost as a dependency.
+- Technical: Code base now uses 4 spaces for indentation exclusively.
+- Technical: Add option to auto-generate Doxygen documentation using CMake.
+- Technical: Allow compilation using GCC, clang and MSVC.
+- Technical: Remove unused files from the repository.
+- Technical: Split project into libboomerang (core library), boomerang-cli (command line interface) and boomerang-gui (GUI frontend)
+- Technical: Upgrade codebase to C++11.
+- Technical: Add more regression tests.
+- Technical: Add more unit tests.
+- Numerous other small changes and fixes.

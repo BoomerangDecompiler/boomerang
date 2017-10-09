@@ -59,4 +59,3 @@ You can also check if your changes to boomerang produced any changes in the qual
  YOUR\_FAVOURITE\_DIFF\_GUI ./tests/outputs ./tests/baseline
 
 
-
