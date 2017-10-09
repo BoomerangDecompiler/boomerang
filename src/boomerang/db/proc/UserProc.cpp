@@ -26,10 +26,11 @@
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 #include "boomerang/db/Visitor.h"
-
 #include "boomerang/type/Constraint.h"
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/ArrayType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
@@ -61,7 +62,6 @@ UserProc::UserProc(Address address, const QString& name, Module* module)
     , m_cfg(new Cfg(this))
     , m_status(PROC_UNDECODED)
 {
-    m_localTable.setProc(this);
 }
 
 
@@ -1826,11 +1826,11 @@ void UserProc::fixUglyBranches()
                 PhiAssign *p = (PhiAssign *)n;
 
                 for (const auto& phi : *p) {
-                    if (!phi.second.def()->isAssign()) {
+                    if (!phi.second.getDef()->isAssign()) {
                         continue;
                     }
 
-                    Assign *a = (Assign *)phi.second.def();
+                    Assign *a = (Assign *)phi.second.getDef();
 
                     if (*a->getRight() == *hl->getSubExp1()) {
                         hl->setSubExp1(RefExp::get(a->getLeft(), a));
@@ -3232,7 +3232,7 @@ void UserProc::fromSSAform()
                 PhiAssign           *pi = (PhiAssign *)def1;
 
                 for (rr = pi->begin(); rr != pi->end(); ++rr) {
-                    auto re(RefExp::get(rr->second.e, rr->second.def()));
+                    auto re(RefExp::get(rr->second.e, rr->second.getDef()));
 
                     if (*re == *r2) {
                         r2IsOperand = true;
@@ -3366,7 +3366,7 @@ void UserProc::fromSSAform()
                     continue;
                 }
 
-                insertAssignAfter(rr->second.def(), tempLoc, rr->second.e);
+                insertAssignAfter(rr->second.getDef(), tempLoc, rr->second.e);
             }
 
             // Replace the RHS of the phi with tempLoc
@@ -3733,7 +3733,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                         for (it = pa->begin(); it != pa->end(); it++) {
                             auto e  = query->clone();
                             auto r1 = e->access<RefExp, 1>();
-                            r1->setDef(it->second.def());
+                            r1->setDef(it->second.getDef());
 
                             if (DEBUG_PROOF) {
                                 LOG_MSG("proving for %1", e);
@@ -4428,8 +4428,8 @@ void UserProc::reverseStrengthReduction()
                     PhiAssign *p = (PhiAssign *)r->getDef();
 
                     if (p->getNumDefs() == 2) {
-                        Statement *first  = p->front().def();
-                        Statement *second = p->back().def();
+                        Statement *first  = p->front().getDef();
+                        Statement *second = p->back().getDef();
 
                         if (first == as) {
                             // want the increment in second
@@ -4747,7 +4747,7 @@ void UserProc::fixCallAndPhiRefs()
         for (PhiAssign::iterator pi = ps->begin(); pi != ps->end(); ) {
             const PhiInfo& p(pi->second);
             assert(p.e);
-            Statement *def    = (Statement *)p.def();
+            Statement *def    = (Statement *)p.getDef();
             auto        current = RefExp::get(p.e, def);
 
             if (*current == *r) {   // Will we ever see this?
@@ -4796,7 +4796,7 @@ void UserProc::fixCallAndPhiRefs()
 
         assert(phi_iter != ps->end()); // Should have been deleted
         PhiInfo&  phi_inf(phi_iter->second);
-        SharedExp first = RefExp::get(phi_inf.e, phi_inf.def());
+        SharedExp first = RefExp::get(phi_inf.e, phi_inf.getDef());
         // bypass to first
         CallBypasser cb(ps);
         first = first->accept(&cb);
@@ -4811,7 +4811,7 @@ void UserProc::fixCallAndPhiRefs()
             // if first is of the form lhs{x}
             if (first->isSubscript() && (*first->getSubExp1() == *lhs)) {
                 // replace first with x
-                phi_inf.def(first->access<RefExp>()->getDef());
+                phi_inf.setDef(first->access<RefExp>()->getDef());
             }
         }
 
@@ -4819,7 +4819,7 @@ void UserProc::fixCallAndPhiRefs()
         for (++phi_iter; phi_iter != ps->end(); ++phi_iter) {
             assert(phi_iter->second.e);
             PhiInfo&     phi_inf2(phi_iter->second);
-            SharedExp    current = RefExp::get(phi_inf2.e, phi_inf2.def());
+            SharedExp    current = RefExp::get(phi_inf2.e, phi_inf2.getDef());
             CallBypasser cb2(ps);
             current = current->accept(&cb2);
 
@@ -4833,7 +4833,7 @@ void UserProc::fixCallAndPhiRefs()
                 // if current is of the form lhs{x}
                 if (current->isSubscript() && (*current->getSubExp1() == *lhs)) {
                     // replace current with x
-                    phi_inf2.def(current->access<RefExp>()->getDef());
+                    phi_inf2.setDef(current->access<RefExp>()->getDef());
                 }
             }
 
@@ -4851,18 +4851,18 @@ void UserProc::fixCallAndPhiRefs()
             }
 
             assert(phi_iter != ps->end()); // Should have been deleted
-            auto best = RefExp::get(phi_iter->second.e, phi_iter->second.def());
+            auto best = RefExp::get(phi_iter->second.e, phi_iter->second.getDef());
 
             for (++phi_iter; phi_iter != ps->end(); ++phi_iter) {
                 assert(phi_iter->second.e);
-                auto current = RefExp::get(phi_iter->second.e, phi_iter->second.def());
+                auto current = RefExp::get(phi_iter->second.e, phi_iter->second.getDef());
 
                 if (current->isImplicitDef()) {
                     best = current;
                     break;
                 }
 
-                if (phi_iter->second.def()->isAssign()) {
+                if (phi_iter->second.getDef()->isAssign()) {
                     best = current;
                 }
 
@@ -5927,7 +5927,7 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
         // For each phi parameter, remove from the final usedByDomPhi set
         for (const auto& v : *it->second) {
             assert(v.second.e);
-            auto wrappedParam = RefExp::get(v.second.e, (Statement *)v.second.def());
+            auto wrappedParam = RefExp::get(v.second.e, (Statement *)v.second.getDef());
             usedByDomPhi.remove(wrappedParam);
         }
 
@@ -5965,7 +5965,7 @@ void UserProc::findPhiUnites(ConnectionGraph& pu)
 
         for (const auto& v : *pa) {
             assert(v.second.e);
-            auto re = RefExp::get(v.second.e, (Statement *)v.second.def());
+            auto re = RefExp::get(v.second.e, (Statement *)v.second.getDef());
             pu.connect(reLhs, re);
         }
     }
@@ -6040,7 +6040,7 @@ void UserProc::verifyPHIs()
 
         for (const auto& pas : *pi) {
             Q_UNUSED(pas);
-            assert(pas.second.def());
+            assert(pas.second.getDef());
         }
     }
 }
@@ -6071,8 +6071,8 @@ void UserProc::nameParameterPhis()
         SharedType ty        = pi->getType();
 
         for (const auto& v : *pi) {
-            if (v.second.def()->isImplicit()) {
-                QString name = lookupSym(RefExp::get(v.second.e, (Statement *)v.second.def()), ty);
+            if (v.second.getDef()->isImplicit()) {
+                QString name = lookupSym(RefExp::get(v.second.e, (Statement *)v.second.getDef()), ty);
 
                 if (!name.isNull()) {
                     if (!firstName.isNull() && (firstName != name)) {

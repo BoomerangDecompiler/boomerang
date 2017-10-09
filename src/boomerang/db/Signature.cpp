@@ -27,10 +27,12 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/Managed.h"
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/Type.h"
+#include "boomerang/type/type/SizeType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/PointerType.h"
 
 #include <cassert>
 #include <string>

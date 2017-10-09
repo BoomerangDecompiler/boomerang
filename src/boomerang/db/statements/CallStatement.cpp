@@ -20,9 +20,14 @@
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/Visitor.h"
-
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/FuncType.h"
 #include "boomerang/codegen/ICodeGenerator.h"
-
 
 
 /// A helper class for updateArguments. It just dishes out a new argument
@@ -1087,7 +1092,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
             PhiAssign *pa = (PhiAssign *)def;
 
             for (auto& v : *pa) {
-                def = v.second.def();
+                def = v.second.getDef();
 
                 if (!def || !def->isAssign()) {
                     continue;

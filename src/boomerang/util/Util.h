@@ -123,7 +123,7 @@ TgtType signExtend(const SrcType& src, size_t numSrcBits = 8*sizeof(SrcType))
 
 }
 
-#define DEBUG_BUFSIZE    5000 // Size of the debug print buffer
+#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kb)
 extern char debug_buffer[DEBUG_BUFSIZE];
 
 

@@ -5,7 +5,7 @@
 
 int proc1 (int x, char* s)
 {
-    int z;
+    int z = 0;
     if (x > 2) {
         x = strlen(s);
         z = strlen(s);

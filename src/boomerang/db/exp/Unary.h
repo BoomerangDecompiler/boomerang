@@ -13,9 +13,9 @@
 #include "boomerang/db/exp/Exp.h"
 
 
-/***************************************************************************/ /**
-* Unary is a subclass of Exp, holding one subexpression
-******************************************************************************/
+/**
+ * Unary is a subclass of Exp, holding one subexpression
+ */
 class Unary : public Exp
 {
 protected:

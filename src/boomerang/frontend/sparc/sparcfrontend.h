@@ -15,7 +15,7 @@
 
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/frontend/Decoder.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 #include "boomerang/db/exp/Operator.h"
 
 class IFrontEnd;

@@ -17,6 +17,11 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/Visitor.h"
+#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/SizeType.h"
 
 #include <QRegularExpression>
 
@@ -815,111 +820,111 @@ SharedExp Binary::polySimplify(bool& bMod)
 
         switch (m_oper)
         {
-            case opPlus:
-                k1 = k1 + k2;
-                break;
+        case opPlus:
+            k1 = k1 + k2;
+            break;
 
-            case opMinus:
-                k1 = k1 - k2;
-                break;
+        case opMinus:
+            k1 = k1 - k2;
+            break;
 
-            case opDiv:
-                k1 = (int)((unsigned)k1 / (unsigned)k2);
-                break;
+        case opDiv:
+            k1 = (int)((unsigned)k1 / (unsigned)k2);
+            break;
 
-            case opDivs:
-                k1 = k1 / k2;
-                break;
+        case opDivs:
+            k1 = k1 / k2;
+            break;
 
-            case opMod:
-                k1 = (int)((unsigned)k1 % (unsigned)k2);
-                break;
+        case opMod:
+            k1 = (int)((unsigned)k1 % (unsigned)k2);
+            break;
 
-            case opMods:
-                k1 = k1 % k2;
-                break;
+        case opMods:
+            k1 = k1 % k2;
+            break;
 
-            case opMult:
-                k1 = (int)((unsigned)k1 * (unsigned)k2);
-                break;
+        case opMult:
+            k1 = (int)((unsigned)k1 * (unsigned)k2);
+            break;
 
-            case opMults:
-                k1 = k1 * k2;
-                break;
+        case opMults:
+            k1 = k1 * k2;
+            break;
 
-            case opShiftL:
+        case opShiftL:
 
-                if (k2 >= 32) {
-                    k1 = 0;
-                }
-                else {
-                    k1 = k1 << k2;
-                }
+            if (k2 >= 32) {
+                k1 = 0;
+            }
+            else {
+                k1 = k1 << k2;
+            }
 
-                break;
+            break;
 
-            case opShiftR:
-                k1 = k1 >> k2;
-                break;
+        case opShiftR:
+            k1 = k1 >> k2;
+            break;
 
-            case opShiftRA:
-                k1 = (k1 >> k2) | (((1 << k2) - 1) << (32 - k2));
-                break;
+        case opShiftRA:
+            k1 = (k1 >> k2) | (((1 << k2) - 1) << (32 - k2));
+            break;
 
-            case opBitOr:
-                k1 = k1 | k2;
-                break;
+        case opBitOr:
+            k1 = k1 | k2;
+            break;
 
-            case opBitAnd:
-                k1 = k1 & k2;
-                break;
+        case opBitAnd:
+            k1 = k1 & k2;
+            break;
 
-            case opBitXor:
-                k1 = k1 ^ k2;
-                break;
+        case opBitXor:
+            k1 = k1 ^ k2;
+            break;
 
-            case opEquals:
-                k1 = (k1 == k2);
-                break;
+        case opEquals:
+            k1 = (k1 == k2);
+            break;
 
-            case opNotEqual:
-                k1 = (k1 != k2);
-                break;
+        case opNotEqual:
+            k1 = (k1 != k2);
+            break;
 
-            case opLess:
-                k1 = (k1 < k2);
-                break;
+        case opLess:
+            k1 = (k1 < k2);
+            break;
 
-            case opGtr:
-                k1 = (k1 > k2);
-                break;
+        case opGtr:
+            k1 = (k1 > k2);
+            break;
 
-            case opLessEq:
-                k1 = (k1 <= k2);
-                break;
+        case opLessEq:
+            k1 = (k1 <= k2);
+            break;
 
-            case opGtrEq:
-                k1 = (k1 >= k2);
-                break;
+        case opGtrEq:
+            k1 = (k1 >= k2);
+            break;
 
-            case opLessUns:
-                k1 = ((unsigned)k1 < (unsigned)k2);
-                break;
+        case opLessUns:
+            k1 = ((unsigned)k1 < (unsigned)k2);
+            break;
 
-            case opGtrUns:
-                k1 = ((unsigned)k1 > (unsigned)k2);
-                break;
+        case opGtrUns:
+            k1 = ((unsigned)k1 > (unsigned)k2);
+            break;
 
-            case opLessEqUns:
-                k1 = ((unsigned)k1 <= (unsigned)k2);
-                break;
+        case opLessEqUns:
+            k1 = ((unsigned)k1 <= (unsigned)k2);
+            break;
 
-            case opGtrEqUns:
-                k1 = ((unsigned)k1 >= (unsigned)k2);
-                break;
+        case opGtrEqUns:
+            k1 = ((unsigned)k1 >= (unsigned)k2);
+            break;
 
-            default:
-                change = false;
+        default:
+            change = false;
         }
 
         if (change) {
@@ -969,480 +974,475 @@ SharedExp Binary::polySimplify(bool& bMod)
     }
 
     // Similarly for adding stuff to the addresses of globals
-    if (subExp2->isAddrOf() && subExp2->getSubExp1()->isSubscript() &&
-        subExp2->getSubExp1()->getSubExp1()->isGlobal() && (m_oper == opPlus)) {
+    if (subExp2->isAddrOf() && subExp2->getSubExp1()->isSubscript() && subExp2->getSubExp1()->getSubExp1()->isGlobal() && (m_oper == opPlus)) {
         commute();
-    // Swap opSub1 and opSub2 as well
-    std::swap(opSub1, opSub2);
-    // This is not counted as a modification
-        }
+        // Swap opSub1 and opSub2 as well
+        std::swap(opSub1, opSub2);
+        // This is not counted as a modification
+    }
 
-        // check for (x + a) + b where a and b are constants, becomes x + a+b
-        if ((m_oper == opPlus) && (opSub1 == opPlus) && (opSub2 == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
-            int n = std::static_pointer_cast<Const>(subExp2)->getInt();
-            res = res->getSubExp1();
-            std::shared_ptr<Const> c_subexp(std::static_pointer_cast<Const>(res->getSubExp2()));
-            c_subexp->setInt(c_subexp->getInt() + n);
-            bMod = true;
-            return res;
-        }
+    // check for (x + a) + b where a and b are constants, becomes x + a+b
+    if ((m_oper == opPlus) && (opSub1 == opPlus) && (opSub2 == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
+        int n = std::static_pointer_cast<Const>(subExp2)->getInt();
+        res = res->getSubExp1();
+        std::shared_ptr<Const> c_subexp(std::static_pointer_cast<Const>(res->getSubExp2()));
+        c_subexp->setInt(c_subexp->getInt() + n);
+        bMod = true;
+        return res;
+    }
 
-        // check for (x - a) + b where a and b are constants, becomes x + -a+b
-        if ((m_oper == opPlus) && (opSub1 == opMinus) && (opSub2 == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
-            int n = std::static_pointer_cast<Const>(subExp2)->getInt();
-            res = res->getSubExp1();
-            res->setOper(opPlus);
-            std::shared_ptr<Const> c_subexp(std::static_pointer_cast<Const>(res->getSubExp2()));
-            c_subexp->setInt(-c_subexp->getInt() + n);
-            bMod = true;
-            return res;
-        }
+    // check for (x - a) + b where a and b are constants, becomes x + -a+b
+    if ((m_oper == opPlus) && (opSub1 == opMinus) && (opSub2 == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
+        int n = std::static_pointer_cast<Const>(subExp2)->getInt();
+        res = res->getSubExp1();
+        res->setOper(opPlus);
+        std::shared_ptr<Const> c_subexp(std::static_pointer_cast<Const>(res->getSubExp2()));
+        c_subexp->setInt(-c_subexp->getInt() + n);
+        bMod = true;
+        return res;
+    }
 
-        // check for (x * k) - x, becomes x * (k-1)
-        // same with +
-        if (((m_oper == opMinus) || (m_oper == opPlus)) && ((opSub1 == opMults) || (opSub1 == opMult)) &&
-            (*subExp2 == *subExp1->getSubExp1())) {
-            res = res->getSubExp1();
+    // check for (x * k) - x, becomes x * (k-1)
+    // same with +
+    if (((m_oper == opMinus) || (m_oper == opPlus)) && ((opSub1 == opMults) || (opSub1 == opMult)) && (*subExp2 == *subExp1->getSubExp1())) {
+        res = res->getSubExp1();
         res->setSubExp2(Binary::get(m_oper, res->getSubExp2(), Const::get(1)));
         bMod = true;
         return res;
-            }
+    }
 
-            // check for x + (x * k), becomes x * (k+1)
-            if ((m_oper == opPlus) && ((opSub2 == opMults) || (opSub2 == opMult)) && (*subExp1 == *subExp2->getSubExp1())) {
-                res = res->getSubExp2();
-                res->setSubExp2(Binary::get(opPlus, res->getSubExp2(), Const::get(1)));
-                bMod = true;
-                return res;
-            }
+    // check for x + (x * k), becomes x * (k+1)
+    if ((m_oper == opPlus) && ((opSub2 == opMults) || (opSub2 == opMult)) && (*subExp1 == *subExp2->getSubExp1())) {
+        res = res->getSubExp2();
+        res->setSubExp2(Binary::get(opPlus, res->getSubExp2(), Const::get(1)));
+        bMod = true;
+        return res;
+    }
 
-            // Turn a + -K into a - K (K is int const > 0)
-            // Also a - -K into a + K (K is int const > 0)
-            // Does not count as a change
-            if (((m_oper == opPlus) || (m_oper == opMinus)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() < 0)) {
-                std::static_pointer_cast<Const>(subExp2)->setInt(-std::static_pointer_cast<const Const>(subExp2)->getInt());
-                m_oper = m_oper == opPlus ? opMinus : opPlus;
-            }
+    // Turn a + -K into a - K (K is int const > 0)
+    // Also a - -K into a + K (K is int const > 0)
+    // Does not count as a change
+    if (((m_oper == opPlus) || (m_oper == opMinus)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() < 0)) {
+        std::static_pointer_cast<Const>(subExp2)->setInt(-std::static_pointer_cast<const Const>(subExp2)->getInt());
+        m_oper = m_oper == opPlus ? opMinus : opPlus;
+    }
 
-            // Check for exp + 0  or  exp - 0  or  exp | 0
-            if (((m_oper == opPlus) || (m_oper == opMinus) || (m_oper == opBitOr)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0)) {
-                res  = res->getSubExp1();
-                bMod = true;
-                return res;
-            }
+    // Check for exp + 0  or  exp - 0  or  exp | 0
+    if (((m_oper == opPlus) || (m_oper == opMinus) || (m_oper == opBitOr)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0)) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
 
-            // Check for exp or false
-            if ((m_oper == opOr) && subExp2->isFalse()) {
-                res  = res->getSubExp1();
-                bMod = true;
-                return res;
-            }
+    // Check for exp or false
+    if ((m_oper == opOr) && subExp2->isFalse()) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
 
-            // Check for SharedExp 0  or exp & 0
-            if (((m_oper == opMult) || (m_oper == opMults) || (m_oper == opBitAnd)) && (opSub2 == opIntConst) &&
-                (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0)) {
-                // delete res;
-                res  = Const::get(0);
+    // Check for SharedExp 0  or exp & 0
+    if (((m_oper == opMult) || (m_oper == opMults) || (m_oper == opBitAnd)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0)) {
+        // delete res;
+        res  = Const::get(0);
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp and false
+    if ((m_oper == opAnd) && subExp2->isFalse()) {
+        // delete res;
+        res  = Terminal::get(opFalse);
+        bMod = true;
+        return res;
+    }
+
+    // Check for SharedExp 1
+    if (((m_oper == opMult) || (m_oper == opMults)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for SharedExp x / x
+    if (((m_oper == opDiv) || (m_oper == opDivs)) && ((opSub1 == opMult) || (opSub1 == opMults)) && (*subExp2 == *subExp1->getSubExp2())) {
+        res  = res->getSubExp1();
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp / 1, becomes exp
+    if (((m_oper == opDiv) || (m_oper == opDivs)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp % 1, becomes 0
+    if (((m_oper == opMod) || (m_oper == opMods)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
+        res  = Const::get(0);
+        bMod = true;
+        return res;
+    }
+
+    // Check for SharedExp x % x, becomes 0
+    if (((m_oper == opMod) || (m_oper == opMods)) && ((opSub1 == opMult) || (opSub1 == opMults)) &&
+        (*subExp2 == *subExp1->getSubExp2())) {
+        res  = Const::get(0);
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp AND -1 (bitwise AND)
+    if ((m_oper == opBitAnd) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == -1)) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp AND TRUE (logical AND)
+    if ((m_oper == opAnd) &&
+        // Is the below really needed?
+        ((((opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() != 0))) || subExp2->isTrue())) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp OR TRUE (logical OR)
+    if ((m_oper == opOr) && ((((opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() != 0))) || subExp2->isTrue())) {
+        // delete res;
+        res  = Terminal::get(opTrue);
+        bMod = true;
+        return res;
+    }
+
+    // Check for [exp] << k where k is a positive integer const
+
+    if ((m_oper == opShiftL) && (opSub2 == opIntConst)) {
+        int k = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        if ((k >= 0) && (k < 32)) {
+            res->setOper(opMult);
+            std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
             bMod = true;
             return res;
-                }
+        }
+    }
 
-                // Check for exp and false
-                if ((m_oper == opAnd) && subExp2->isFalse()) {
-                    // delete res;
-                    res  = Terminal::get(opFalse);
-                    bMod = true;
-                    return res;
-                }
+    if ((m_oper == opShiftR) && (opSub2 == opIntConst)) {
+        int k = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        if ((k >= 0) && (k < 32)) {
+            res->setOper(opDiv);
+            std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
+            bMod = true;
+            return res;
+        }
+    }
 
-                // Check for SharedExp 1
-                if (((m_oper == opMult) || (m_oper == opMults)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
-                    res  = res->getSubExp1();
-                    bMod = true;
-                    return res;
-                }
+    /*
+    *  // Check for -x compare y, becomes x compare -y
+    *  // doesn't count as a change
+    *  if (    isComparison() &&
+    *                  opSub1 == opNeg) {
+    *          SharedExp e = subExp1;
+    *          subExp1 = e->getSubExp1()->clone();
+    *          ;//delete e;
+    *          subExp2 = Unary::get(opNeg, subExp2);
+    *  }
+    *
+    *  // Check for (x + y) compare 0, becomes x compare -y
+    *  if (    isComparison() &&
+    *                  opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0 &&
+    *                  opSub1 == opPlus) {
+    *          ;//delete subExp2;
+    *          Binary *b = (Binary*)subExp1;
+    *          subExp2 = b->subExp2;
+    *          b->subExp2 = 0;
+    *          subExp1 = b->subExp1;
+    *          b->subExp1 = 0;
+    *          ;//delete b;
+    *          subExp2 = Unary::get(opNeg, subExp2);
+    *          bMod = true;
+    *          return res;
+    *  }
+    */
 
-                // Check for SharedExp x / x
-                if (((m_oper == opDiv) || (m_oper == opDivs)) && ((opSub1 == opMult) || (opSub1 == opMults)) &&
-                    (*subExp2 == *subExp1->getSubExp2())) {
-                    res  = res->getSubExp1();
-                res  = res->getSubExp1();
+    // Check for (x == y) == 1, becomes x == y
+    if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1) && (opSub1 == opEquals)) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
+        bMod    = true;
+        return res;
+    }
+
+    // Check for x + -y == 0, becomes x == y
+    if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opPlus) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        int  n = std::static_pointer_cast<Const>(b->subExp2)->getInt();
+
+        if (n < 0) {
+            subExp2 = std::move(b->subExp2);
+            std::static_pointer_cast<Const>(subExp2)->setInt(-std::static_pointer_cast<const Const>(subExp2)->getInt());
+            subExp1 = std::move(b->subExp1);
+            bMod    = true;
+            return res;
+        }
+    }
+
+    // Check for (x == y) == 0, becomes x != y
+    if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opEquals)) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
+        bMod    = true;
+        res->setOper(opNotEqual);
+        return res;
+    }
+
+    // Check for (x == y) != 1, becomes x != y
+    if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1) && (opSub1 == opEquals)) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
+        bMod    = true;
+        res->setOper(opNotEqual);
+        return res;
+    }
+
+    // Check for (x == y) != 0, becomes x == y
+    if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opEquals)) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for (0 - x) != 0, becomes x != 0
+    if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opMinus) &&
+        subExp1->getSubExp1()->isIntConst() && (std::static_pointer_cast<const Const>(subExp1->getSubExp1())->getInt() == 0)) {
+            res  = Binary::get(opNotEqual, subExp1->getSubExp2()->clone(), subExp2->clone());
+            bMod = true;
+            return res;
+    }
+
+    // Check for (x > y) == 0, becomes x <= y
+    if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opGtr)) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
+        bMod    = true;
+        res->setOper(opLessEq);
+        return res;
+    }
+
+    // Check for (x >u y) == 0, becomes x <=u y
+    if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opGtrUns)) {
+        auto b = std::static_pointer_cast<Binary>(subExp1);
+        subExp2 = std::move(b->subExp2);
+        subExp1 = std::move(b->subExp1);
+        bMod    = true;
+        res->setOper(opLessEqUns);
+        return res;
+    }
+
+    auto b1 = std::dynamic_pointer_cast<Binary>(subExp1);
+    auto b2 = std::dynamic_pointer_cast<Binary>(subExp2);
+
+    // Check for (x <= y) || (x == y), becomes x <= y
+    if ((m_oper == opOr) && (opSub2 == opEquals) &&
+        ((opSub1 == opGtrEq) || (opSub1 == opLessEq) || (opSub1 == opGtrEqUns) || (opSub1 == opLessEqUns)) &&
+        (((*b1->subExp1 == *b2->subExp1) && (*b1->subExp2 == *b2->subExp2)) ||
+        ((*b1->subExp1 == *b2->subExp2) && (*b1->subExp2 == *b2->subExp1)))) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // For (a || b) or (a && b) recurse on a and b
+    if ((m_oper == opOr) || (m_oper == opAnd)) {
+        subExp1 = subExp1->polySimplify(bMod);
+        subExp2 = subExp2->polySimplify(bMod);
+        return res;
+    }
+
+    // check for (x & x), becomes x
+    if ((m_oper == opBitAnd) && (*subExp1 == *subExp2)) {
+        res  = res->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // check for a + a*n, becomes a*(n+1) where n is an int
+    if ((m_oper == opPlus) && (opSub2 == opMult) && (*subExp1 == *subExp2->getSubExp1()) &&
+        (subExp2->getSubExp2()->getOper() == opIntConst)) {
+        res = res->getSubExp2();
+        res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() + 1);
+        bMod = true;
+        return res;
+    }
+
+    // check for a*n*m, becomes a*(n*m) where n and m are ints
+    if ((m_oper == opMult) && (opSub1 == opMult) && (opSub2 == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
+        int m = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        res = res->getSubExp1();
+        res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() * m);
+        bMod = true;
+        return res;
+    }
+
+    // check for !(a == b) becomes a != b
+    if ((m_oper == opLNot) && (opSub1 == opEquals)) {
+        res = res->getSubExp1();
+        res->setOper(opNotEqual);
+        bMod = true;
+        return res;
+    }
+
+    // check for !(a != b) becomes a == b
+    if ((m_oper == opLNot) && (opSub1 == opNotEqual)) {
+        res = res->getSubExp1();
+        res->setOper(opEquals);
+        bMod = true;
+        return res;
+    }
+
+    // FIXME: suspect this was only needed for ADHOC TA
+    // check for exp + n where exp is a pointer to a compound type
+    // becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
+    SharedType ty = nullptr; // Type of subExp1
+
+    if (subExp1->isSubscript()) {
+        const Statement *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();
+
+        if (def) {
+            ty = def->getTypeFor(subExp1->getSubExp1());
+        }
+    }
+
+    if ((m_oper == opPlus) && ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToCompound() && (opSub2 == opIntConst)) {
+        unsigned n = (unsigned)std::static_pointer_cast<const Const>(subExp2)->getInt();
+        std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
+        res = convertFromOffsetToCompound(subExp1, c, n);
+
+        if (res) {
+            LOG_VERBOSE("(trans1) replacing %1 with %2", shared_from_this(), res);
+            bMod = true;
+            return res;
+        }
+    }
+
+    if ((m_oper == opFMinus) && (subExp1->getOper() == opFltConst) && (std::static_pointer_cast<const Const>(subExp1)->getFlt() == 0.0)) {
+        res  = Unary::get(opFNeg, subExp2);
+        bMod = true;
+        return res;
+    }
+
+    if (((m_oper == opPlus) || (m_oper == opMinus)) && ((subExp1->getOper() == opMults) || (subExp1->getOper() == opMult)) &&
+        (subExp2->getOper() == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
+            int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
+            int n2 = subExp1->access<Const, 2>()->getInt();
+
+            if (n1 == n2) {
+                res = Binary::get(subExp1->getOper(), Binary::get(m_oper, subExp1->getSubExp1()->clone(), Const::get(1)),
+                                Const::get(n1));
                 bMod = true;
                 return res;
-                    }
+            }
+    }
 
-                    // Check for exp / 1, becomes exp
-                    if (((m_oper == opDiv) || (m_oper == opDivs)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
-                        res  = res->getSubExp1();
-                        bMod = true;
-                        return res;
-                    }
+    if (((m_oper == opPlus) || (m_oper == opMinus)) && (subExp1->getOper() == opPlus) && (subExp2->getOper() == opIntConst) &&
+        ((subExp1->getSubExp2()->getOper() == opMults) || (subExp1->getSubExp2()->getOper() == opMult)) &&
+        (subExp1->access<Exp, 2, 2>()->getOper() == opIntConst)) {
+            int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
+            int n2 = subExp1->access<Const, 2, 2>()->getInt();
 
-                    // Check for exp % 1, becomes 0
-                    if (((m_oper == opMod) || (m_oper == opMods)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
-                        res  = Const::get(0);
-                        bMod = true;
-                        return res;
-                    }
+            if (n1 == n2) {
+                res = Binary::get(opPlus, subExp1->getSubExp1(),
+                                Binary::get(subExp1->getSubExp2()->getOper(),
+                                            Binary::get(m_oper, subExp1->access<Exp, 2, 1>()->clone(), Const::get(1)),
+                                            Const::get(n1)));
+                bMod = true;
+                return res;
+            }
+    }
 
-                    // Check for SharedExp x % x, becomes 0
-                    if (((m_oper == opMod) || (m_oper == opMods)) && ((opSub1 == opMult) || (opSub1 == opMults)) &&
-                        (*subExp2 == *subExp1->getSubExp2())) {
-                        res  = Const::get(0);
+    // check for ((x * a) + (y * b)) / c where a, b and c are all integers and a and b divide evenly by c
+    // becomes: (x * a/c) + (y * b/c)
+    if ((m_oper == opDiv) && (subExp1->getOper() == opPlus) && (subExp2->getOper() == opIntConst) &&
+        (subExp1->getSubExp1()->getOper() == opMult) && (subExp1->getSubExp2()->getOper() == opMult) &&
+        (subExp1->access<Exp, 1, 2>()->getOper() == opIntConst) &&
+        (subExp1->access<Exp, 2, 2>()->getOper() == opIntConst)) {
+            int a = subExp1->access<Const, 1, 2>()->getInt();
+            int b = subExp1->access<Const, 2, 2>()->getInt();
+            int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
+
+            if (((a % c) == 0) && ((b % c) == 0)) {
+                res = Binary::get(opPlus, Binary::get(opMult, subExp1->getSubExp1()->getSubExp1(), Const::get(a / c)),
+                                Binary::get(opMult, subExp1->access<Exp, 2, 1>(), Const::get(b / c)));
+                bMod = true;
+                return res;
+            }
+    }
+
+    // check for ((x * a) + (y * b)) % c where a, b and c are all integers
+    // becomes: (y * b) % c if a divides evenly by c
+    // becomes: (x * a) % c if b divides evenly by c
+    // becomes: 0            if both a and b divide evenly by c
+    if ((m_oper == opMod) && (subExp1->getOper() == opPlus) && (subExp2->getOper() == opIntConst) &&
+        (subExp1->getSubExp1()->getOper() == opMult) && (subExp1->getSubExp2()->getOper() == opMult) &&
+        (subExp1->getSubExp1()->getSubExp2()->getOper() == opIntConst) &&
+        (subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst)) {
+            int a = subExp1->access<Const, 1, 2>()->getInt();
+            int b = subExp1->access<Const, 2, 2>()->getInt();
+            int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
+
+            if (((a % c) == 0) && ((b % c) == 0)) {
+                res  = Const::get(0);
+                bMod = true;
+                return res;
+            }
+
+            if ((a % c) == 0) {
+                res  = Binary::get(opMod, subExp1->getSubExp2()->clone(), Const::get(c));
+                bMod = true;
+                return res;
+            }
+
+            if ((b % c) == 0) {
+                res  = Binary::get(opMod, subExp1->getSubExp1()->clone(), Const::get(c));
+                bMod = true;
+                return res;
+            }
+    }
+
+    // Check for 0 - (0 <u exp1) & exp2 => exp2
+    if ((m_oper == opBitAnd) && (opSub1 == opMinus)) {
+        SharedExp leftOfMinus = subExp1->getSubExp1();
+
+        if (leftOfMinus->isIntConst() && (std::static_pointer_cast<const Const>(leftOfMinus)->getInt() == 0)) {
+            SharedExp rightOfMinus = subExp1->getSubExp2();
+
+            if (rightOfMinus->getOper() == opLessUns) {
+                SharedExp leftOfLess = rightOfMinus->getSubExp1();
+
+                if (leftOfLess->isIntConst() && (std::static_pointer_cast<const Const>(leftOfLess)->getInt() == 0)) {
+                    res  = getSubExp2();
                     bMod = true;
                     return res;
-                        }
+                }
+            }
+        }
+    }
 
-                        // Check for exp AND -1 (bitwise AND)
-                        if ((m_oper == opBitAnd) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == -1)) {
-                            res  = res->getSubExp1();
-                            bMod = true;
-                            return res;
-                        }
+    // Replace opSize(n, loc) with loc and set the type if needed
+    if ((m_oper == opSize) && subExp2->isLocation()) {
+        res  = res->getSubExp2();
+        bMod = true;
+        return res;
+    }
 
-                        // Check for exp AND TRUE (logical AND)
-                        if ((m_oper == opAnd) &&
-                            // Is the below really needed?
-                            ((((opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() != 0))) || subExp2->isTrue())) {
-                            res  = res->getSubExp1();
-                        bMod = true;
-                        return res;
-                            }
-
-                            // Check for exp OR TRUE (logical OR)
-                            if ((m_oper == opOr) && ((((opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() != 0))) || subExp2->isTrue())) {
-                                // delete res;
-                                res  = Terminal::get(opTrue);
-                                bMod = true;
-                                return res;
-                            }
-
-                            // Check for [exp] << k where k is a positive integer const
-
-                            if ((m_oper == opShiftL) && (opSub2 == opIntConst)) {
-                                int k = std::static_pointer_cast<const Const>(subExp2)->getInt();
-                                if ((k >= 0) && (k < 32)) {
-                                    res->setOper(opMult);
-                                    std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
-                                    bMod = true;
-                                    return res;
-                                }
-                            }
-
-                            if ((m_oper == opShiftR) && (opSub2 == opIntConst)) {
-                                int k = std::static_pointer_cast<const Const>(subExp2)->getInt();
-                                if ((k >= 0) && (k < 32)) {
-                                    res->setOper(opDiv);
-                                    std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
-                                    bMod = true;
-                                    return res;
-                                }
-                            }
-
-                            /*
-                             *  // Check for -x compare y, becomes x compare -y
-                             *  // doesn't count as a change
-                             *  if (    isComparison() &&
-                             *                  opSub1 == opNeg) {
-                             *          SharedExp e = subExp1;
-                             *          subExp1 = e->getSubExp1()->clone();
-                             *          ;//delete e;
-                             *          subExp2 = Unary::get(opNeg, subExp2);
-                             *  }
-                             *
-                             *  // Check for (x + y) compare 0, becomes x compare -y
-                             *  if (    isComparison() &&
-                             *                  opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0 &&
-                             *                  opSub1 == opPlus) {
-                             *          ;//delete subExp2;
-                             *          Binary *b = (Binary*)subExp1;
-                             *          subExp2 = b->subExp2;
-                             *          b->subExp2 = 0;
-                             *          subExp1 = b->subExp1;
-                             *          b->subExp1 = 0;
-                             *          ;//delete b;
-                             *          subExp2 = Unary::get(opNeg, subExp2);
-                             *          bMod = true;
-                             *          return res;
-                             *  }
-                             */
-                            // Check for (x == y) == 1, becomes x == y
-                            if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1) && (opSub1 == opEquals)) {
-                                auto b = std::static_pointer_cast<Binary>(subExp1);
-                                subExp2 = std::move(b->subExp2);
-                                subExp1 = std::move(b->subExp1);
-                                bMod    = true;
-                                return res;
-                            }
-
-                            // Check for x + -y == 0, becomes x == y
-                            if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opPlus) &&
-                                (subExp1->getSubExp2()->getOper() == opIntConst)) {
-                                auto b = std::static_pointer_cast<Binary>(subExp1);
-                            int  n = std::static_pointer_cast<Const>(b->subExp2)->getInt();
-
-                            if (n < 0) {
-                                subExp2 = std::move(b->subExp2);
-                                std::static_pointer_cast<Const>(subExp2)->setInt(-std::static_pointer_cast<const Const>(subExp2)->getInt());
-                                subExp1 = std::move(b->subExp1);
-                                bMod    = true;
-                                return res;
-                            }
-                                }
-
-                                // Check for (x == y) == 0, becomes x != y
-                                if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opEquals)) {
-                                    auto b = std::static_pointer_cast<Binary>(subExp1);
-                                    subExp2 = std::move(b->subExp2);
-                                    subExp1 = std::move(b->subExp1);
-                                    bMod    = true;
-                                    res->setOper(opNotEqual);
-                                    return res;
-                                }
-
-                                // Check for (x == y) != 1, becomes x != y
-                                if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1) && (opSub1 == opEquals)) {
-                                    auto b = std::static_pointer_cast<Binary>(subExp1);
-                                    subExp2 = std::move(b->subExp2);
-                                    subExp1 = std::move(b->subExp1);
-                                    bMod    = true;
-                                    res->setOper(opNotEqual);
-                                    return res;
-                                }
-
-                                // Check for (x == y) != 0, becomes x == y
-                                if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opEquals)) {
-                                    res  = res->getSubExp1();
-                                    bMod = true;
-                                    return res;
-                                }
-
-                                // Check for (0 - x) != 0, becomes x != 0
-                                if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opMinus) &&
-                                    subExp1->getSubExp1()->isIntConst() && (std::static_pointer_cast<const Const>(subExp1->getSubExp1())->getInt() == 0)) {
-                                    res  = Binary::get(opNotEqual, subExp1->getSubExp2()->clone(), subExp2->clone());
-                                bMod = true;
-                                return res;
-                                    }
-
-                                    // Check for (x > y) == 0, becomes x <= y
-                                    if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opGtr)) {
-                                        auto b = std::static_pointer_cast<Binary>(subExp1);
-                                        subExp2 = std::move(b->subExp2);
-                                        subExp1 = std::move(b->subExp1);
-                                        bMod    = true;
-                                        res->setOper(opLessEq);
-                                        return res;
-                                    }
-
-                                    // Check for (x >u y) == 0, becomes x <=u y
-                                    if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opGtrUns)) {
-                                        auto b = std::static_pointer_cast<Binary>(subExp1);
-                                        subExp2 = std::move(b->subExp2);
-                                        subExp1 = std::move(b->subExp1);
-                                        bMod    = true;
-                                        res->setOper(opLessEqUns);
-                                        return res;
-                                    }
-
-                                    auto b1 = std::dynamic_pointer_cast<Binary>(subExp1);
-                                    auto b2 = std::dynamic_pointer_cast<Binary>(subExp2);
-
-                                    // Check for (x <= y) || (x == y), becomes x <= y
-                                    if ((m_oper == opOr) && (opSub2 == opEquals) &&
-                                        ((opSub1 == opGtrEq) || (opSub1 == opLessEq) || (opSub1 == opGtrEqUns) || (opSub1 == opLessEqUns)) &&
-                                        (((*b1->subExp1 == *b2->subExp1) && (*b1->subExp2 == *b2->subExp2)) ||
-                                        ((*b1->subExp1 == *b2->subExp2) && (*b1->subExp2 == *b2->subExp1)))) {
-                                        res  = res->getSubExp1();
-                                    bMod = true;
-                                    return res;
-                                        }
-
-                                        // For (a || b) or (a && b) recurse on a and b
-                                        if ((m_oper == opOr) || (m_oper == opAnd)) {
-                                            subExp1 = subExp1->polySimplify(bMod);
-                                            subExp2 = subExp2->polySimplify(bMod);
-                                            return res;
-                                        }
-
-                                        // check for (x & x), becomes x
-                                        if ((m_oper == opBitAnd) && (*subExp1 == *subExp2)) {
-                                            res  = res->getSubExp1();
-                                            bMod = true;
-                                            return res;
-                                        }
-
-                                        // check for a + a*n, becomes a*(n+1) where n is an int
-                                        if ((m_oper == opPlus) && (opSub2 == opMult) && (*subExp1 == *subExp2->getSubExp1()) &&
-                                            (subExp2->getSubExp2()->getOper() == opIntConst)) {
-                                            res = res->getSubExp2();
-                                        res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() + 1);
-                                        bMod = true;
-                                        return res;
-                                            }
-
-                                            // check for a*n*m, becomes a*(n*m) where n and m are ints
-                                            if ((m_oper == opMult) && (opSub1 == opMult) && (opSub2 == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
-                                                int m = std::static_pointer_cast<const Const>(subExp2)->getInt();
-                                                res = res->getSubExp1();
-                                                res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() * m);
-                                                bMod = true;
-                                                return res;
-                                            }
-
-                                            // check for !(a == b) becomes a != b
-                                            if ((m_oper == opLNot) && (opSub1 == opEquals)) {
-                                                res = res->getSubExp1();
-                                                res->setOper(opNotEqual);
-                                                bMod = true;
-                                                return res;
-                                            }
-
-                                            // check for !(a != b) becomes a == b
-                                            if ((m_oper == opLNot) && (opSub1 == opNotEqual)) {
-                                                res = res->getSubExp1();
-                                                res->setOper(opEquals);
-                                                bMod = true;
-                                                return res;
-                                            }
-
-                                            // FIXME: suspect this was only needed for ADHOC TA
-                                            // check for exp + n where exp is a pointer to a compound type
-                                            // becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
-                                            SharedType ty = nullptr; // Type of subExp1
-
-                                            if (subExp1->isSubscript()) {
-                                                const Statement *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();
-
-                                                if (def) {
-                                                    ty = def->getTypeFor(subExp1->getSubExp1());
-                                                }
-                                            }
-
-                                            if ((m_oper == opPlus) && ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToCompound() &&
-                                                (opSub2 == opIntConst)) {
-                                                unsigned n = (unsigned)std::static_pointer_cast<const Const>(subExp2)->getInt();
-                                                std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
-                                                res = convertFromOffsetToCompound(subExp1, c, n);
-
-                                                if (res) {
-                                                    LOG_VERBOSE("(trans1) replacing %1 with %2", shared_from_this(), res);
-                                                    bMod = true;
-                                                    return res;
-                                                }
-                                                }
-
-                                                if ((m_oper == opFMinus) && (subExp1->getOper() == opFltConst) && (std::static_pointer_cast<const Const>(subExp1)->getFlt() == 0.0)) {
-                                                    res  = Unary::get(opFNeg, subExp2);
-                                                    bMod = true;
-                                                    return res;
-                                                }
-
-                                                if (((m_oper == opPlus) || (m_oper == opMinus)) && ((subExp1->getOper() == opMults) || (subExp1->getOper() == opMult)) &&
-                                                    (subExp2->getOper() == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
-                                                    int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
-                                                int n2 = subExp1->access<Const, 2>()->getInt();
-
-                                                if (n1 == n2) {
-                                                    res = Binary::get(subExp1->getOper(), Binary::get(m_oper, subExp1->getSubExp1()->clone(), Const::get(1)),
-                                                                      Const::get(n1));
-                                                    bMod = true;
-                                                    return res;
-                                                }
-                                                    }
-
-                                                    if (((m_oper == opPlus) || (m_oper == opMinus)) && (subExp1->getOper() == opPlus) && (subExp2->getOper() == opIntConst) &&
-                                                        ((subExp1->getSubExp2()->getOper() == opMults) || (subExp1->getSubExp2()->getOper() == opMult)) &&
-                                                        (subExp1->access<Exp, 2, 2>()->getOper() == opIntConst)) {
-                                                        int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
-                                                    int n2 = subExp1->access<Const, 2, 2>()->getInt();
-
-                                                    if (n1 == n2) {
-                                                        res = Binary::get(opPlus, subExp1->getSubExp1(),
-                                                                          Binary::get(subExp1->getSubExp2()->getOper(),
-                                                                                      Binary::get(m_oper, subExp1->access<Exp, 2, 1>()->clone(), Const::get(1)),
-                                                                                      Const::get(n1)));
-                                                        bMod = true;
-                                                        return res;
-                                                    }
-                                                        }
-
-                                                        // check for ((x * a) + (y * b)) / c where a, b and c are all integers and a and b divide evenly by c
-                                                        // becomes: (x * a/c) + (y * b/c)
-                                                        if ((m_oper == opDiv) && (subExp1->getOper() == opPlus) && (subExp2->getOper() == opIntConst) &&
-                                                            (subExp1->getSubExp1()->getOper() == opMult) && (subExp1->getSubExp2()->getOper() == opMult) &&
-                                                            (subExp1->access<Exp, 1, 2>()->getOper() == opIntConst) &&
-                                                            (subExp1->access<Exp, 2, 2>()->getOper() == opIntConst)) {
-                                                            int a = subExp1->access<Const, 1, 2>()->getInt();
-                                                        int b = subExp1->access<Const, 2, 2>()->getInt();
-                                                        int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
-
-                                                        if (((a % c) == 0) && ((b % c) == 0)) {
-                                                            res = Binary::get(opPlus, Binary::get(opMult, subExp1->getSubExp1()->getSubExp1(), Const::get(a / c)),
-                                                                              Binary::get(opMult, subExp1->access<Exp, 2, 1>(), Const::get(b / c)));
-                                                            bMod = true;
-                                                            return res;
-                                                        }
-                                                            }
-
-                                                            // check for ((x * a) + (y * b)) % c where a, b and c are all integers
-                                                            // becomes: (y * b) % c if a divides evenly by c
-                                                            // becomes: (x * a) % c if b divides evenly by c
-                                                            // becomes: 0            if both a and b divide evenly by c
-                                                            if ((m_oper == opMod) && (subExp1->getOper() == opPlus) && (subExp2->getOper() == opIntConst) &&
-                                                                (subExp1->getSubExp1()->getOper() == opMult) && (subExp1->getSubExp2()->getOper() == opMult) &&
-                                                                (subExp1->getSubExp1()->getSubExp2()->getOper() == opIntConst) &&
-                                                                (subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst)) {
-                                                                int a = subExp1->access<Const, 1, 2>()->getInt();
-                                                            int b = subExp1->access<Const, 2, 2>()->getInt();
-                                                            int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
-
-                                                            if (((a % c) == 0) && ((b % c) == 0)) {
-                                                                res  = Const::get(0);
-                                                                bMod = true;
-                                                                return res;
-                                                            }
-
-                                                            if ((a % c) == 0) {
-                                                                res  = Binary::get(opMod, subExp1->getSubExp2()->clone(), Const::get(c));
-                                                                bMod = true;
-                                                                return res;
-                                                            }
-
-                                                            if ((b % c) == 0) {
-                                                                res  = Binary::get(opMod, subExp1->getSubExp1()->clone(), Const::get(c));
-                                                                bMod = true;
-                                                                return res;
-                                                            }
-                                                                }
-
-                                                                // Check for 0 - (0 <u exp1) & exp2 => exp2
-                                                                if ((m_oper == opBitAnd) && (opSub1 == opMinus)) {
-                                                                    SharedExp leftOfMinus = subExp1->getSubExp1();
-
-                                                                    if (leftOfMinus->isIntConst() && (std::static_pointer_cast<const Const>(leftOfMinus)->getInt() == 0)) {
-                                                                        SharedExp rightOfMinus = subExp1->getSubExp2();
-
-                                                                        if (rightOfMinus->getOper() == opLessUns) {
-                                                                            SharedExp leftOfLess = rightOfMinus->getSubExp1();
-
-                                                                            if (leftOfLess->isIntConst() && (std::static_pointer_cast<const Const>(leftOfLess)->getInt() == 0)) {
-                                                                                res  = getSubExp2();
-                                                                                bMod = true;
-                                                                                return res;
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-
-                                                                // Replace opSize(n, loc) with loc and set the type if needed
-                                                                if ((m_oper == opSize) && subExp2->isLocation()) {
-                                                                    res  = res->getSubExp2();
-                                                                    bMod = true;
-                                                                    return res;
-                                                                }
-
-                                                                return res;
+    return res;
 }
 
 

@@ -21,12 +21,17 @@
  */
 struct PhiInfo
 {
-    SharedExp         e; // The expression for the thing being defined (never subscripted)
-    void              def(Statement *def) { m_def = def; /*assert(def);*/ }
-    Statement       *def() { return m_def; }
-    const Statement *def() const { return m_def; }
+    void setDef(Statement *def)
+    {
+        m_def = def;
+    }
 
-    Statement       *m_def; // The defining statement
+    Statement *getDef() { return m_def; }
+    const Statement *getDef() const { return m_def; }
+
+    SharedExp         e; ///< The expression for the thing being defined (never subscripted)
+private:
+    Statement       *m_def; ///< The defining statement
 };
 
 
@@ -108,7 +113,7 @@ public:
             return nullptr;
         }
 
-        return DefVec[idx].def();
+        return DefVec[idx].getDef();
     }
 
     PhiInfo& getAt(BasicBlock *idx);

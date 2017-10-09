@@ -19,8 +19,9 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/SizeType.h"
+#include "boomerang/type/type/PointerType.h"
 #include "boomerang/util/Log.h"
 
 

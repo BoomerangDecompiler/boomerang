@@ -17,6 +17,8 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Binary.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FloatType.h"
 
 
 TableEntry::TableEntry()

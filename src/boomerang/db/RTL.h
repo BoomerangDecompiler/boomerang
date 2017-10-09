@@ -21,9 +21,9 @@
  *       switch statements).
  ******************************************************************************/
 
-#include "boomerang/db/Register.h"   // for Register
-#include "boomerang/type/Type.h"     // for Type
-#include "boomerang/util/Types.h" // for ADDRESS
+#include "boomerang/db/Register.h"    // for Register
+#include "boomerang/type/type/Type.h" // for Type
+#include "boomerang/util/Types.h"     // for ADDRESS
 
 #include <functional>                // for less
 #include <list>                      // for list

@@ -21,7 +21,7 @@
 #include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/Managed.h"
 #include "boomerang/db/exp/Binary.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/PointerType.h"
 #include "boomerang/util/Log.h"
 
 #include <sstream>
@@ -152,7 +152,7 @@ void ConstraintMap::substitute(ConstraintMap& other)
             if (ch) {
                 if (*cc->first == *newVal) {
                     // e.g. was <char*> = <alpha6> now <char*> = <char*>
-                    cmap.erase(cc);
+                    cc = cmap.erase(cc);
                 }
                 else {
                     cmap[cc->first] = newVal;

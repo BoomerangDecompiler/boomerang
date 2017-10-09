@@ -17,7 +17,8 @@
 
 #include <map>
 
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
+#include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/util/Util.h"
@@ -359,7 +360,7 @@ protected:
     std::set<Global *> m_globals; ///< globals to print at code generation time
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
     int m_iNumberedProc;          ///< Next numbered proc will use this
-    Module *m_rootModule;        ///< Root of the cluster tree
+    Module *m_rootModule;         ///< Root of the cluster tree
 
     class IBinaryImage *m_image;
     SymTab *m_binarySymbols;

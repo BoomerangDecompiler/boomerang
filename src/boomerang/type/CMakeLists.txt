@@ -8,14 +8,23 @@
 
 
 list(APPEND boomerang-type-sources
-    type/Constraint.cpp
-    type/Constraint.h
-    type/DFATypeRecovery.cpp
-    type/DFATypeRecovery.h
-    type/Type.h
-    type/Type.cpp
-    type/TypeRecovery.cpp
-    type/TypeRecovery.h
+    type/type/ArrayType
+    type/type/BooleanType
+    type/type/CharType
+    type/type/CompoundType
+    type/type/FloatType
+    type/type/FuncType
+    type/type/IntegerType
+    type/type/NamedType
+    type/type/PointerType
+    type/type/SizeType
+    type/type/Type
+    type/type/UnionType
+    type/type/VoidType
+    type/Constraint
+    type/DataIntervalMap
+    type/DFATypeRecovery
+    type/TypeRecovery
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-type-sources}" PARENT_SCOPE)

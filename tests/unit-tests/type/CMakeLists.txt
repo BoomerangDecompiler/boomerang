@@ -17,6 +17,7 @@ set(test_LIBRARIES
 )
 
 set(TESTS
+    DataIntervalMapTest
     TypeTest
 )
 
@@ -30,4 +31,3 @@ foreach(t ${TESTS})
 			${CMAKE_THREAD_LIBS_INIT}
 	)
 endforeach()
-

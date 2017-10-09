@@ -32,11 +32,9 @@
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/Visitor.h"
-
 #include "boomerang/codegen/ICodeGenerator.h"
-
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/FuncType.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -1559,7 +1557,7 @@ static void findConstantValues(const Statement *s, std::list<int>& dests)
     if (s->isPhi()) {
         // For each definition, recurse
         for (const auto& it : *((PhiAssign *)s)) {
-            findConstantValues(it.second.def(), dests);
+            findConstantValues(it.second.getDef(), dests);
         }
     }
     else if (s->isAssign()) {

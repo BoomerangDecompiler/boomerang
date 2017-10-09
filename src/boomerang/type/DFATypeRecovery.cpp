@@ -29,8 +29,17 @@
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/Visitor.h"
 
-#include "boomerang/type/Type.h"
-
+#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/UnionType.h"
+#include "boomerang/type/type/FuncType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/SizeType.h"
+#include "boomerang/type/type/BooleanType.h"
+#include "boomerang/type/type/CharType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -152,30 +161,26 @@ void DFATypeRecovery::dfa_analyze_scaled_array_ref(Statement *s)
 
 void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
 {
-    bool       allZero;
-    SharedExp  lhs;
-    SharedExp  slhs;
-    SharedType iType;
-    int        i;
-    UserProc   *pr = s->getProc();
-
-    assert(pr);
-    Prog *prog = pr->getProg();
-    assert(prog);
-
     if (!s->isImplicit()) {
         return;
     }
 
-    lhs = ((ImplicitAssign *)s)->getLeft();
+    UserProc *proc = s->getProc();
+    assert(proc);
+    Prog *prog = proc->getProg();
+    assert(prog);
+
+    SharedExp lhs = ((ImplicitAssign *)s)->getLeft();
     // Note: parameters are not explicit any more
     // if (lhs->isParam()) { // }
-    slhs  = lhs->clone()->removeSubscripts(allZero);
-    iType = ((ImplicitAssign *)s)->getType();
-    i     = pr->getSignature()->findParam(slhs);
+
+    bool       allZero = false;
+    SharedExp slhs = lhs->clone()->removeSubscripts(allZero);
+    SharedType iType = ((ImplicitAssign *)s)->getType();
+    int i     = proc->getSignature()->findParam(slhs);
 
     if (i != -1) {
-        pr->setParamType(i, iType);
+        proc->setParamType(i, iType);
     }
     else if (lhs->isMemOf()) {
         SharedExp sub = lhs->getSubExp1();
@@ -203,11 +208,14 @@ void DFATypeRecovery::recoverFunctionTypes(Function *)
 void DFATypeRecovery::dfaTypeAnalysis(Function *f)
 {
     if (f->isLib()) {
+        LOG_VERBOSE("Not using DFA type analysis on library function '%1'", f->getName());
         return;
     }
 
     UserProc *proc = static_cast<UserProc *>(f);
     Cfg      *cfg  = proc->getCFG();
+    DataIntervalMap localsMap(proc); // map of all local variables of proc
+
     Boomerang::get()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
 
     // First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
@@ -221,21 +229,21 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
     for (iter = 1; iter <= DFA_ITER_LIMIT; ++iter) {
         ch = false;
 
-        for (Statement *it : stmts) {
-            bool        thisCh  = false;
+        for (Statement *stmt : stmts) {
+            bool      thisCh  = false;
             Statement *before = nullptr;
 
             if (DEBUG_TA) {
-                before = it->clone();
+                before = stmt->clone();
             }
 
-            it->dfaTypeAnalysis(thisCh);
+            stmt->dfaTypeAnalysis(thisCh);
 
             if (thisCh) {
                 ch = true;
 
                 if (DEBUG_TA) {
-                    LOG_MSG(" caused change: FROM: %1 TO: %2", before, it);
+                    LOG_MSG(" caused change: FROM: %1 TO: %2", before, stmt);
                 }
             }
 
@@ -464,7 +472,7 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
                 const SharedType& ty = ((TypingStatement *)s)->getType();
                 LOG_VERBOSE("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
                 SharedExp loc_mem = Location::memOf(addrExp);
-                proc->localsMap().addItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
+                localsMap.insertItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
             }
         }
     }
@@ -542,44 +550,44 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
 
     if (other->resolvesToInteger()) {
         std::shared_ptr<IntegerType> otherInt = other->as<IntegerType>();
-        // Signedness
-        int oldSignedness = signedness;
+        std::shared_ptr<IntegerType> result = std::dynamic_pointer_cast<IntegerType>(this->clone());
 
+        // Signedness
         if (otherInt->signedness > 0) {
-            signedness++;
+            result->signedness++;
         }
         else if (otherInt->signedness < 0) {
-            signedness--;
+            result->signedness--;
         }
 
-        ch |= ((signedness > 0) != (oldSignedness > 0)); // Changed from signed to not necessarily signed
-        ch |= ((signedness < 0) != (oldSignedness < 0)); // Changed from unsigned to not necessarily unsigned
-        // Size. Assume 0 indicates unknown size
-        unsigned oldSize = size;
-        size = std::max(size, otherInt->size);
-        ch  |= (size != oldSize);
-        return ((IntegerType *)this)->shared_from_this();
-    }
+        ch |= ((result->signedness > 0) != (signedness > 0)); // Changed from signed to not necessarily signed
+        ch |= ((result->signedness < 0) != (signedness < 0)); // Changed from unsigned to not necessarily unsigned
 
-    if (other->resolvesToSize()) {
+        // Size. Assume 0 indicates unknown size
+        result->size = std::max(size, otherInt->size);
+        ch  |= (result->size != size);
+
+        return result;
+    }
+    else if (other->resolvesToSize()) {
+        std::shared_ptr<IntegerType> result = std::dynamic_pointer_cast<IntegerType>(this->clone());
         std::shared_ptr<SizeType> other_sz = other->as<SizeType>();
 
         if (size == 0) { // Doubt this will ever happen
-            size = other_sz->getSize();
-            return ((IntegerType *)this)->shared_from_this();
+            result->size = other_sz->getSize();
+            ch = true;
+            return result;
         }
 
         if (size == other_sz->getSize()) {
-            return ((IntegerType *)this)->shared_from_this();
+            return result;
         }
 
-        LOG_MSG("Integer size %1 meet with SizeType size %2!",
-                size, other->as<SizeType>()->getSize());
+        LOG_VERBOSE("Integer size %1 meet with SizeType size %2!", size, other_sz->getSize());
 
-        unsigned oldSize = size;
-        size = std::max(size, other_sz->getSize());
-        ch   = size != oldSize;
-        return ((IntegerType *)this)->shared_from_this();
+        result->size = std::max(size, other_sz->getSize());
+        ch   = result->size != size;
+        return result;
     }
 
     return createUnion(other, ch, bHighestPtr);
@@ -592,19 +600,10 @@ SharedType FloatType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
         return ((FloatType *)this)->shared_from_this();
     }
 
-    if (other->resolvesToFloat()) {
-        std::shared_ptr<FloatType> otherFlt(other->as<FloatType>());
-        size_t oldSize = size;
-        size = std::max(size, otherFlt->size);
-        ch  |= size != oldSize;
-        return ((FloatType *)this)->shared_from_this();
-    }
-
-    if (other->resolvesToSize()) {
-        size_t otherSize = other->getSize();
-        ch  |= size != otherSize;
-        size = std::max(size, otherSize);
-        return ((FloatType *)this)->shared_from_this();
+    if (other->resolvesToFloat() || other->resolvesToSize()) {
+        const size_t newSize = std::max(size, other->getSize());
+        ch |= (newSize != size);
+        return FloatType::get(newSize);
     }
 
     return createUnion(other, ch, bHighestPtr);
@@ -652,7 +651,7 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
     }
 
     if (!other->resolvesToPointer()) {
-        // Would be good to understand class hierarchys, so we know if a* is the same as b* when b is a subclass of a
+        // Would be good to understand class hierarchies, so we know if a* is the same as b* when b is a subclass of a
         return createUnion(other, ch, bHighestPtr);
     }
 
@@ -666,73 +665,71 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
             return VoidType::get(); // TODO: pointer to void at least ?
         }
 
-        points_to = otherPtr->getPointsTo();
-        return ((PointerType *)this)->shared_from_this();
+        return PointerType::get(otherPtr->getPointsTo());
     }
-    else {
-        // We have a meeting of two pointers.
-        SharedType thisBase  = points_to;
-        SharedType otherBase = otherPtr->points_to;
 
-        if (bHighestPtr) {
-            // We want the greatest type of thisBase and otherBase
-            if (thisBase->isSubTypeOrEqual(otherBase)) {
-                return other->clone();
-            }
+    // We have a meeting of two pointers.
+    SharedType thisBase  = points_to;
+    SharedType otherBase = otherPtr->points_to;
 
-            if (otherBase->isSubTypeOrEqual(thisBase)) {
-                return ((PointerType *)this)->shared_from_this();
-            }
-
-            // There may be another type that is a superset of this and other; for now return void*
-            return PointerType::get(VoidType::get());
+    if (bHighestPtr) {
+        // We want the greatest type of thisBase and otherBase
+        if (thisBase->isSubTypeOrEqual(otherBase)) {
+            return other->clone();
         }
 
-        // See if the base types will meet
-        if (otherBase->resolvesToPointer()) {
-            if (thisBase->resolvesToPointer() && (thisBase->as<PointerType>()->getPointsTo() == thisBase)) {
-                LOG_VERBOSE("HACK! BAD POINTER 1");
-            }
-
-            if (otherBase->resolvesToPointer() && (otherBase->as<PointerType>()->getPointsTo() == otherBase)) {
-                LOG_VERBOSE("HACK! BAD POINTER 2");
-            }
-
-            if (thisBase == otherBase) {                          // Note: compare pointers
-                return ((PointerType *)this)->shared_from_this(); // Crude attempt to prevent stack overflow
-            }
-
-            if (*thisBase == *otherBase) {
-                return ((PointerType *)this)->shared_from_this();
-            }
-
-            if (pointerDepth() == otherPtr->pointerDepth()) {
-                SharedType fType = getFinalPointsTo();
-
-                if (fType->resolvesToVoid()) {
-                    return other->clone();
-                }
-
-                SharedType ofType = otherPtr->getFinalPointsTo();
-
-                if (ofType->resolvesToVoid()) {
-                    return ((PointerType *)this)->shared_from_this();
-                }
-
-                if (*fType == *ofType) {
-                    return ((PointerType *)this)->shared_from_this();
-                }
-            }
-        }
-
-        if (thisBase->isCompatibleWith(*otherBase)) {
-            points_to = points_to->meetWith(otherBase, ch, bHighestPtr);
+        if (otherBase->isSubTypeOrEqual(thisBase)) {
             return ((PointerType *)this)->shared_from_this();
         }
 
-        // The bases did not meet successfully. Union the pointers.
-        return createUnion(other, ch, bHighestPtr);
+        // There may be another type that is a superset of this and other; for now return void*
+        return PointerType::get(VoidType::get());
     }
+
+    // See if the base types will meet
+    if (otherBase->resolvesToPointer()) {
+        if (thisBase->resolvesToPointer() && (thisBase->as<PointerType>()->getPointsTo() == thisBase)) {
+            LOG_VERBOSE("HACK! BAD POINTER 1");
+        }
+
+        if (otherBase->resolvesToPointer() && (otherBase->as<PointerType>()->getPointsTo() == otherBase)) {
+            LOG_VERBOSE("HACK! BAD POINTER 2");
+        }
+
+        if (thisBase == otherBase) {                          // Note: compare pointers
+            return ((PointerType *)this)->shared_from_this(); // Crude attempt to prevent stack overflow
+        }
+
+        if (*thisBase == *otherBase) {
+            return ((PointerType *)this)->shared_from_this();
+        }
+
+        if (pointerDepth() == otherPtr->pointerDepth()) {
+            SharedType fType = getFinalPointsTo();
+
+            if (fType->resolvesToVoid()) {
+                return other->clone();
+            }
+
+            SharedType ofType = otherPtr->getFinalPointsTo();
+
+            if (ofType->resolvesToVoid()) {
+                return ((PointerType *)this)->shared_from_this();
+            }
+
+            if (*fType == *ofType) {
+                return ((PointerType *)this)->shared_from_this();
+            }
+        }
+    }
+
+    if (thisBase->isCompatibleWith(*otherBase)) {
+        // meet recursively if the types are compatible
+        return PointerType::get(points_to->meetWith(otherBase, ch, bHighestPtr));
+    }
+
+    // The bases did not meet successfully. Union the pointers.
+    return createUnion(other, ch, bHighestPtr);
 }
 
 
@@ -745,18 +742,15 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     if (other->resolvesToArray()) {
         auto       otherArr = other->as<ArrayType>();
         SharedType newBase  = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
+        size_t newLength = m_length;
 
         if (*newBase != *BaseType) {
-            ch       = true;
-            Length   = convertLength(newBase);
-            BaseType = newBase; // No: call setBaseType to adjust length
+            ch        = true;
+            newLength = convertLength(newBase);
         }
 
-        if (other->as<ArrayType>()->getLength() < getLength()) {
-            Length = other->as<ArrayType>()->getLength();
-        }
-
-        return std::const_pointer_cast<Type>(this->shared_from_this());
+        newLength = std::min(newLength, other->as<ArrayType>()->getLength());
+        return ArrayType::get(newBase, newLength);
     }
 
     if (*BaseType == *other) {
@@ -795,10 +789,10 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
             return std::const_pointer_cast<Type>(this->shared_from_this());
         }
 
-        size_t new_length = Length;
+        size_t new_length = m_length;
 
-        if (Length != NO_BOUND) {
-            new_length = (Length * bitsize) / new_size;
+        if (m_length != NO_BOUND) {
+            new_length = (m_length * bitsize) / new_size;
         }
 
         return ArrayType::get(res, new_length);
@@ -842,7 +836,7 @@ SharedType CompoundType::meetWith(SharedType other, bool& ch, bool bHighestPtr) 
     }
 
     if (!other->resolvesToCompound()) {
-        if (types[0]->isCompatibleWith(*other)) {
+        if (m_types[0]->isCompatibleWith(*other)) {
             // struct meet first element = struct
             return ((CompoundType *)this)->shared_from_this();
         }
@@ -889,16 +883,16 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
             return ((UnionType *)this)->shared_from_this(); // Avoid infinite recursion
         }
 
-        auto otherUnion = other->as<UnionType>();
+        std::shared_ptr<UnionType> otherUnion = other->as<UnionType>();
+        std::shared_ptr<UnionType> result(UnionType::get());
 
-        // Always return this, never other, (even if other is larger than this) because otherwise iterators can become
-        // invalid below
-        // TODO: verify the below, before the return was done after single meetWith on first file of other union
-        for (UnionElement it : otherUnion->li) {
-            meetWith(it.type, ch, bHighestPtr);
+        *result = *this;
+
+        for (UnionElement elem : otherUnion->li) {
+            result = result->meetWith(elem.type, ch, bHighestPtr)->as<UnionType>();
         }
 
-        return ((UnionType *)this)->shared_from_this();
+        return result;
     }
 
     // Other is a non union type
@@ -929,57 +923,57 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     // if a field is found that requires no change to 'meet', this type is returned unchanged
     // if a new meetWith result is 'better' given simplistic type description length heuristic measure
     // then the meetWith result, and this types field iterator are stored.
-    int                     best_meet_quality = INT_MAX;
-    SharedType              best_so_far;
-    UnionEntrySet::iterator location_of_meet = li.end();
+
+    int bestMeetScore = INT_MAX;
+    UnionEntrySet::const_iterator bestElem = li.end();
 
     for (auto it = li.begin(); it != li.end(); ++it) {
-        Type& v(*it->type);
+        SharedType v = it->type;
 
-        if (!v.isCompatibleWith(*other)) {
+        if (!v->isCompatibleWith(*other)) {
             continue;
         }
 
-        SharedType curr     = v.clone();
-        auto       meet_res = curr->meetWith(other, ch, bHighestPtr);
-
-        if (!ch) { // no change necessary for meet, perfect
-            //            qDebug() << getCtype();
+        ch = false;
+        SharedType meet_res = v->meetWith(other, ch, bHighestPtr);
+        if (!ch) {
+            // Fully compatible type alerady present in this union
             return ((UnionType *)this)->shared_from_this();
         }
 
-        int quality = meet_res->getCtype().size();
-
-        if (quality < best_meet_quality) {
-            //            qDebug() << "Found better match:" << meet_res->getCtype();
-            best_so_far       = meet_res;
-            best_meet_quality = quality;
-            location_of_meet  = it;
+        const int currentScore = meet_res->getCtype().size();
+        if (currentScore < bestMeetScore) {
+            // we have found a better match, store it
+            bestElem = it;
+            bestMeetScore = currentScore;
         }
     }
 
-    if (best_meet_quality != INT_MAX) {
-        UnionElement ne = *location_of_meet;
-        ne.type = best_so_far;
-        li.erase(location_of_meet);
-        li.insert(ne);
-        //        qDebug() << getCtype();
-        return ((UnionType *)this)->shared_from_this();
+
+    std::shared_ptr<UnionType> result = UnionType::get();
+    for (UnionEntrySet::const_iterator it = li.begin(); it != li.end(); it++) {
+        if (it == bestElem) {
+            // this is the element to be replaced
+            continue;
+        }
+
+        result->addType(it->type, it->name);
     }
 
-    // Other is not compatible with any of my component types. Add a new type
-#if PRINT_UNION                                      // Set above
-    if (unionCount == 999) {                         // Adjust the count to catch the one you want
-        LOG_MSG("createUnion breakpokint"); // Note: you need two breakpoints (also in Type::createUnion)
+    UnionElement ne;
+    if (bestElem != li.end()) {
+        ne.name = bestElem->name;
+        ne.type = bestElem->type->meetWith(other, ch, bHighestPtr); // we know this works because the types are compatible
     }
-    LOG_MSG("  %1 Created union from %1 and %2", ++unionCount, this->getCtype(), other->getCtype();
-#endif
-    ((UnionType *)this)->addType(other->clone(), QString("x%1").arg(++nextUnionNumber));
-#if PRINT_UNION
-    LOG_MSG("  Result is %1", getCtype());
-#endif
+    else {
+        // Other is not compatible with any of my component types. Add a new type.
+        ne.name = QString("x%1").arg(++nextUnionNumber);
+        ne.type = other->clone();
+    }
+
+    result->addType(ne.type, ne.name);
     ch = true;
-    return ((UnionType *)this)->shared_from_this();
+    return result;
 }
 
 
@@ -990,14 +984,13 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
     }
 
     if (other->resolvesToSize()) {
+        SharedType result = this->clone();
         if (other->as<SizeType>()->size != size) {
-            LOG_WARN("Size %1 meet with size %2!", size, other->as<SizeType>()->size);
-            unsigned oldSize = size;
-            size = std::max(size, other->as<SizeType>()->size);
-            ch   = size != oldSize;
+            LOG_VERBOSE("Size %1 meet with size %2!", size, other->as<SizeType>()->size);
         }
+        result->setSize(std::max(result->getSize(), other->as<SizeType>()->getSize()));
 
-        return ((SizeType *)this)->shared_from_this();
+        return result;
     }
 
     ch = true;
@@ -1016,52 +1009,6 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
         return other->clone();
     }
 
-    return createUnion(other, ch, bHighestPtr);
-}
-
-
-SharedType UpperType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
-{
-    if (other->resolvesToVoid()) {
-        return ((UpperType *)this)->shared_from_this();
-    }
-
-    if (other->resolvesToUpper()) {
-        auto otherUpp = other->as<UpperType>();
-        auto newBase  = base_type->clone()->meetWith(otherUpp->base_type, ch, bHighestPtr);
-
-        if (*newBase != *base_type) {
-            ch        = true;
-            base_type = newBase;
-        }
-
-        return ((UpperType *)this)->shared_from_this();
-    }
-
-    // Needs work?
-    return createUnion(other, ch, bHighestPtr);
-}
-
-
-SharedType LowerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
-{
-    if (other->resolvesToVoid()) {
-        return ((LowerType *)this)->shared_from_this();
-    }
-
-    if (other->resolvesToUpper()) {
-        std::shared_ptr<LowerType> otherLow = other->as<LowerType>();
-        SharedType                 newBase  = base_type->clone()->meetWith(otherLow->base_type, ch, bHighestPtr);
-
-        if (*newBase != *base_type) {
-            ch        = true;
-            base_type = newBase;
-        }
-
-        return ((LowerType *)this)->shared_from_this();
-    }
-
-    // Needs work?
     return createUnion(other, ch, bHighestPtr);
 }
 
@@ -1108,7 +1055,8 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
         SharedType elemTy   = otherArr->getBaseType();
 
         if (elemTy->isCompatibleWith(*this)) {
-            // array meet element = array
+            // x meet array[x] == array
+            ch = true; // since 'this' type is not an array, but the returned type is
             return other->clone();
         }
     }
@@ -1371,7 +1319,7 @@ SharedType Binary::ascendType()
 SharedType RefExp::ascendType()
 {
     if (m_def == nullptr) {
-        LOG_WARN("Null reference in %1", this->prints());
+        LOG_WARN("Null reference in '%1'", this->prints());
         return VoidType::get();
     }
 
@@ -1618,7 +1566,13 @@ void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
 
 void RefExp::descendType(SharedType parentType, bool& ch, Statement *s)
 {
-    assert(m_def != nullptr);
+    assert(getSubExp1());
+    if (m_def == nullptr) {
+        LOG_ERROR("Cannot descendType of expression '%1' since it does not have a defining statement!", getSubExp1());
+        ch = false;
+        return;
+    }
+
     SharedType newType = m_def->meetWithFor(parentType, subExp1, ch);
     // In case subExp1 is a m[...]
     subExp1->descendType(newType, ch, s);
@@ -2162,59 +2116,23 @@ bool CompoundType::isCompatible(const Type& other, bool all) const
 
     if (!other.resolvesToCompound()) {
         // Used to always return false here. But in fact, a struct is compatible with its first member (if all is false)
-        return !all && types[0]->isCompatibleWith(other);
+        return !all && m_types[0]->isCompatibleWith(other);
     }
 
     auto   otherComp = other.as<CompoundType>();
     size_t n         = otherComp->getNumTypes();
 
-    if (n != types.size()) {
+    if (n != m_types.size()) {
         return false; // Is a subcompound compatible with a supercompound?
     }
 
     for (size_t i = 0; i < n; i++) {
-        if (!types[i]->isCompatibleWith(*otherComp->types[i])) {
+        if (!m_types[i]->isCompatibleWith(*otherComp->m_types[i])) {
             return false;
         }
     }
 
     return true;
-}
-
-
-bool UpperType::isCompatible(const Type& other, bool /*all*/) const
-{
-    if (other.resolvesToVoid()) {
-        return true;
-    }
-
-    if (other.resolvesToUpper() && base_type->isCompatibleWith(*other.as<UpperType>()->base_type)) {
-        return true;
-    }
-
-    if (other.resolvesToUnion()) {
-        return other.isCompatibleWith(*this);
-    }
-
-    return false;
-}
-
-
-bool LowerType::isCompatible(const Type& other, bool /*all*/) const
-{
-    if (other.resolvesToVoid()) {
-        return true;
-    }
-
-    if (other.resolvesToLower() && base_type->isCompatibleWith(*other.as<LowerType>()->base_type)) {
-        return true;
-    }
-
-    if (other.resolvesToUnion()) {
-        return other.isCompatibleWith(*this);
-    }
-
-    return false;
 }
 
 

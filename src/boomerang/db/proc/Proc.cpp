@@ -35,7 +35,7 @@
 #include "boomerang/db/Visitor.h"
 
 #include "boomerang/type/Constraint.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"

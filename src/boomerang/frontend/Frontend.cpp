@@ -45,6 +45,9 @@
 #include "boomerang/frontend/st20/st20frontend.h"
 #include "boomerang/frontend/mips/mipsfrontend.h"
 
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FuncType.h"
+
 #include <QDir>
 
 #include <cassert>
@@ -517,8 +520,8 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     p->yyparse(plat, cc);
 
     for (auto& elem : p->signatures) {
-        m_librarySignatures[(elem)->getName()] = elem;
-        (elem)->setSigFile(signatureFile);
+        m_librarySignatures[elem->getName()] = elem;
+        elem->setSigFile(signatureFile);
     }
 
     delete p;

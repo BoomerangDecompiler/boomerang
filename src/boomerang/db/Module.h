@@ -18,7 +18,7 @@
  * Modules can contain other Modules to form a tree.
  ******************************************************************************/
 
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/CompoundType.h"
 
 #include <list>
 #include <vector>

@@ -15,7 +15,7 @@
  * OVERVIEW:   Definition of objects related to type constraints
  ******************************************************************************/
 #include "boomerang/db/exp/ExpHelp.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 #include "boomerang/db/Managed.h"
 
 #include <sstream>
@@ -23,8 +23,10 @@
 class Exp;
 class Statement;
 
-// This class represents fixed constraints (e.g. Ta = <int>, Tb = <alpha2*>),
-// but also "tentative" constraints resulting from disjunctions of constraints
+/**
+ * This class represents fixed constraints (e.g. Ta = <int>, Tb = <alpha2*>),
+ * but also "tentative" constraints resulting from disjunctions of constraints
+ */
 class ConstraintMap
 {
     std::map<SharedExp, SharedExp, lessExpStar> cmap;

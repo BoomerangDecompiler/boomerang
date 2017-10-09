@@ -32,12 +32,12 @@
 
 #include <list>
 #include <string>
-#include "boomerang/type/Type.h"
+
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/transform/GenericExpTransformer.h"
-
+#include "boomerang/type/type/Type.h"
 class TransformationScanner;
 
 struct yy_TransformationParser_stype

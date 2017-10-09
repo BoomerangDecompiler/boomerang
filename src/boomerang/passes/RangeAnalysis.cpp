@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Visitor.h"
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
@@ -34,7 +34,7 @@
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/VoidType.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"

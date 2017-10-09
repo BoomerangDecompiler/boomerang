@@ -27,11 +27,11 @@
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/ReturnStatement.h"
-
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
+#include "boomerang/type/type/IntegerType.h"
 
 #include <cassert>
 #include <cstring>

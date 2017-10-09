@@ -33,7 +33,10 @@
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/Visitor.h"
-
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/FloatType.h"
 #include <map>
 
 

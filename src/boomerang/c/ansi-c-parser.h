@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "boomerang/type/Type.h"
+#include "boomerang/type/type/Type.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
@@ -29,7 +29,7 @@ class SymbolMods;
 class Symbol
 {
 public:
-       Address addr;
+    Address addr;
     QString nam;
     SharedType ty;
     std::shared_ptr<Signature> sig;

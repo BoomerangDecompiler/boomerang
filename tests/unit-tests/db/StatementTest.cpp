@@ -50,6 +50,8 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/type/type/IntegerType.h"
+
 
 #include <sstream>
 #include <map>
@@ -120,6 +122,7 @@ void StatementTest::testEmpty()
     );
 
 	// clean up
+    delete ls;
 	delete prog;
 }
 
@@ -823,6 +826,8 @@ void StatementTest::testRecursion()
 	a = new Assign(Location::memOf(Location::regOf(28)), Location::regOf(29));
 	rtl->appendStmt(a);
 	pRtls->push_back(rtl);
+    delete pRtls;
+
 	pRtls = new std::list<RTL *>();
 	// push arg+1
 	// r28 := r28 + -4
@@ -902,7 +907,9 @@ void StatementTest::testRecursion()
 			   "** r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
 			   "cfg reachExit: \n";
 	QCOMPARE(actual, expected);
+
 	// clean up
+    delete pRtls;
 	delete prog;
 }
 

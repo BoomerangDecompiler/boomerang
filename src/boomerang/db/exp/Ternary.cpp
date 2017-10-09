@@ -18,7 +18,8 @@
 #include "boomerang/db/Visitor.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/Log.h"
-
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/IntegerType.h"
 
 
 Ternary::Ternary(OPER _op)
@@ -608,7 +609,7 @@ SharedExp Ternary::genConstraints(SharedExp result)
             SharedType t = result->access<TypeVal>()->getType();
 
             // Compare broad types
-            if (!(*retHasToBe *= *t)) {
+            if (!(retHasToBe->getId() == t->getId())) {
                 return Terminal::get(opFalse);
             }
 
