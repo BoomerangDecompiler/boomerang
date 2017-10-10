@@ -1,3 +1,0 @@
-echo sparc $1
-./boomerang -o functest test/sparc/$1 2>/dev/null >/dev/null
-diff -c test/sparc/$1.out functest/code
