@@ -91,6 +91,9 @@ public:
 
     size_t getNumBBs() const { return m_listBB.size(); } ///< Get the number of BBs
 
+    // Checks if the BB is part of this CFG
+    bool hasBB(const BasicBlock *bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
+
     /***************************************************************************/ /**
      * \brief assignment operator for Cfg's, the BB's are shallow copied
      * \param other - rhs
@@ -375,9 +378,9 @@ public:
      ******************************************************************************/
     bool joinBB(BasicBlock *bb1, BasicBlock *bb2);
 
-    /***************************************************************************/ /**
-     * \brief Completely remove a BB from the CFG.
-     ******************************************************************************/
+    /**
+     * Completely removes a single BB from this CFG.
+     */
     void removeBB(BasicBlock *bb);
 
     /***************************************************************************/ /**
@@ -535,15 +538,9 @@ public:
     BasicBlock *getEntryBB() { return m_entryBB; }
     BasicBlock *getExitBB() { return m_exitBB; }
 
-    /////////////////////////////////////////////////////////////////////////
-    // Set the entry-point BB (and exit BB as well)
-    /////////////////////////////////////////////////////////////////////////
-
-    /***************************************************************************/ /**
-     * \brief       Set the entry and calculate exit BB pointers
-     * \note        Each cfg should have only one exit node now
-     * \param       entryBB pointer to the entry BB
-     ******************************************************************************/
+    /**
+     * Set the entry bb to \p entryBB and mark all return BBs as Exit BBs.
+     */
     void setEntryAndExitBB(BasicBlock *entryBB);
     void setExitBB(BasicBlock *exitBB);
 

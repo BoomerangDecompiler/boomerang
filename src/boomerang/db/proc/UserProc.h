@@ -386,7 +386,6 @@ public:
 
     /// Remove all liveness info in UseCollectors in calls
     void removeCallLiveness();
-    bool propagateAndRemoveStatements();
 
     /// Propagate statements, but don't remove
     /// Return true if change; set convert if an indirect call is converted to direct (else clear)
@@ -404,8 +403,6 @@ public:
 
     /// Clear the useCollectors (in this Proc, and all calls).
     void clearUses();
-
-    // int        findMaxDepth();                    ///< Find max memory nesting depth.
 
     void fromSSAform();
 
