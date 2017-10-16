@@ -24,11 +24,14 @@ class DecompilationThread : public QThread
 public:
     void run() override;
 
-    void setDecompiled(const QString value) { m_decompiled = value; }
+    void setPathToBinary(const QString value)
+    {
+        m_pathToBinary = value;
+    }
     int resCode() { return m_result; }
 
 private:
-    QString m_decompiled;
+    QString m_pathToBinary;
     int m_result = 0;
 };
 
@@ -58,5 +61,4 @@ private:
     DecompilationThread m_thread;
     QTimer m_kill_timer;
     int minsToStopAfter = 0;
-
 };

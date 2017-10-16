@@ -267,6 +267,9 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 if (!wd.exists()) {
                     LOG_WARN("Working directory '%1' does not exist!", wd.path());
                 }
+                else {
+                    LOG_MSG("Working directory now '%1'", wd.path());
+                }
                 boom.getSettings()->setWorkingDirectory(wd.path());
             }
             break;
@@ -459,7 +462,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
 
-    m_thread.setDecompiled(args.last());
+    m_thread.setPathToBinary(args.last());
     return 0;
 }
 
@@ -510,6 +513,6 @@ void CommandlineDriver::onCompilationTimeout()
 void DecompilationThread::run()
 {
     Boomerang& boom(*Boomerang::get());
-
-    m_result = boom.decompile(m_decompiled);
+    QDir wd = boom.getSettings()->getWorkingDirectory();
+    m_result = boom.decompile(wd.absoluteFilePath(m_pathToBinary));
 }
