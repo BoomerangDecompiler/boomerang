@@ -110,8 +110,6 @@ static void usage()
 
 int CommandlineDriver::applyCommandline(const QStringList& args)
 {
-    // Display version number (mainly for release versions)
-    std::cout << "This is Boomerang " << BOOMERANG_VERSION << std::endl;
     bool interactiveMode = false;
 
     if (args.size() < 2) {
@@ -265,14 +263,15 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
         case 'P':
             {
-                QString   qstr(args[++i] + "/");
-                QFileInfo qfi(qstr);
-                boom.getSettings()->setWorkingDirectory(qfi.path());
+                QDir wd(args[++i] + "/");
+                if (!wd.exists()) {
+                    LOG_WARN("Working directory '%1' does not exist!", wd.path());
+                }
+                boom.getSettings()->setWorkingDirectory(wd.path());
             }
             break;
 
         case 'n':
-
             switch (arg[2].toLatin1())
             {
             case 'b':
@@ -326,7 +325,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'p':
-
             if (arg[2] == 'a') {
                 SETTING(propOnlyToAll) = true;
                 LOG_WARN(" * * Warning! -pa is not implemented yet!");
@@ -369,7 +367,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'd':
-
             switch (arg[2].toLatin1())
             {
             case 'a':
@@ -415,7 +412,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'm':
-
             if (++i == args.size()) {
                 usage();
                 return 1;
@@ -439,7 +435,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'S':
-
             if (arg[2] == 'D') {
                 SETTING(saveBeforeDecompile) = true;
             }

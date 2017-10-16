@@ -15,6 +15,7 @@ set(CMAKE_WARN_DEPRECATED ON)
 ###############################################################################
 
 # if git is installed, update version string from git tags
+set(BOOMERANG_VERSION "${PROJECT_VERSION}")
 find_package(Git)
 if (GIT_FOUND)
     execute_process(
@@ -30,6 +31,7 @@ if (GIT_FOUND)
     endif (NOT DESCRIBE_FAILED)
 endif (GIT_FOUND)
 
+add_definitions(-DBOOMERANG_VERSION="${BOOMERANG_VERSION}")
 
 message(STATUS "Configuring " ${PROJECT_NAME} " " ${BOOMERANG_VERSION})
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
