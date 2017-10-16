@@ -41,7 +41,7 @@ bool DataIntervalMap::isClear(Address addr, unsigned size)
         // since we don't know the length of unbounded arrays (yet),
         // it is possible that the array ends before \p addr.
         // Therefore, allow these intervals to be marked as "clear"
-        if (!it->second.type->isArray() && !it->second.type->as<ArrayType>()->isUnbounded()) {
+        if (!it->second.type->isArray() || !it->second.type->as<ArrayType>()->isUnbounded()) {
             return false;
         }
     }
