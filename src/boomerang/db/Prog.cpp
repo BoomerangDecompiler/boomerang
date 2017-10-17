@@ -1669,9 +1669,9 @@ Module *Prog::findModule(const QString& name) const
 
 void Prog::readSymbolFile(const QString& fname)
 {
-    AnsiCParser *par = nullptr;
+    std::unique_ptr<AnsiCParser> par = nullptr;
     try {
-        par = new AnsiCParser(qPrintable(fname), false);
+        par.reset(new AnsiCParser(qPrintable(fname), false));
     }
     catch (const char*) {
         LOG_ERROR("Cannot read symbol file '%1'", fname);
@@ -1724,8 +1724,6 @@ void Prog::readSymbolFile(const QString& fname)
     for (SymbolRef *ref : par->refs) {
         m_defaultFrontend->addRefHint(ref->addr, ref->nam);
     }
-
-    delete par;
 }
 
 

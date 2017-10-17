@@ -69,7 +69,7 @@ void DataFlow::dominators(Cfg *cfg)
     assert(entryBB != nullptr);
     assert(numBB > 0);
 
-    m_BBs.resize(numBB, (BasicBlock *)-1);
+    m_BBs.resize(numBB, nullptr);
     N        = 0;
     m_BBs[0] = entryBB;
     m_indices.clear();    // In case restart decompilation due to switch statements
@@ -391,36 +391,29 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 
     // For each variable a (in defsites, i.e. defined anywhere)
     for (auto mm = m_defsites.begin(); mm != m_defsites.end(); mm++) {
-        SharedExp a = (*mm).first; // *mm is pair<Exp*, set<int>>
+        SharedExp a = mm->first; // *mm is pair<Exp*, set<int>>
 
-        // Special processing for define-alls
-        // for each n in defallsites
-        std::set<int>::iterator da;
-
-        for (da = m_defallsites.begin(); da != m_defallsites.end(); ++da) {
+        // Those variables that are defined everywhere (i.e. in defallsites)
+        // need to be defined at every defsite, too
+        for (std::set<int>::iterator da = m_defallsites.begin(); da != m_defallsites.end(); ++da) {
             m_defsites[a].insert(*da);
         }
 
-        // W <- defsites[a];
-        std::set<int> W = m_defsites[a]; // set copy
+        std::set<int> W = m_defsites[a];
 
-        // While W not empty
-        while (W.size() > 0) {
+        while (!W.empty()) {
             // Pop first node from W
             int n = *W.begin();
             W.erase(W.begin());
 
-
-            std::set<int>& DFn = m_DF[n];
+            const std::set<int>& DFn = m_DF[n];
 
             // for each y in DF[n]
-            for (std::set<int>::iterator yy = DFn.begin(); yy != DFn.end(); yy++) {
+            for (std::set<int>::const_iterator yy = DFn.begin(); yy != DFn.end(); yy++) {
                 int y = *yy;
 
-                // if y not element of A_phi[a]
-                std::set<int>& s = m_A_phi[a];
-
-                if (s.find(y) != s.end()) {
+                // phi function already created for y?
+                if (m_A_phi[a].find(y) != m_A_phi[a].end()) {
                     continue;
                 }
 
@@ -431,7 +424,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 
                 Ybb->prependStmt(as, proc);
                 // A_phi[a] <- A_phi[a] U {y}
-                s.insert(y);
+                m_A_phi[a].insert(y);
 
                 // if a !elementof A_orig[y]
                 if (m_A_orig[y].find(a) == m_A_orig[y].end()) {

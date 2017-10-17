@@ -507,9 +507,9 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 
 void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
 {
-    AnsiCParser *p;
+    std::unique_ptr<AnsiCParser> p;
     try {
-        p = new AnsiCParser(signatureFile, false);
+        p.reset(new AnsiCParser(signatureFile, false));
     }
     catch (const char*) {
         LOG_ERROR("Cannot read library signature file '%1'", signatureFile);
@@ -523,8 +523,6 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
         m_librarySignatures[elem->getName()] = elem;
         elem->setSigFile(signatureFile);
     }
-
-    delete p;
 }
 
 

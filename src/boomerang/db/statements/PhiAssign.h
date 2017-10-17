@@ -37,6 +37,8 @@ private:
 
 /**
  * PhiAssign is a subclass of Assignment, having a left hand side, and a StatementVec with the references.
+ * For more information about phi functions, see https://en.wikipedia.org/wiki/Static_single_assignment_form.
+ *
  * \code
  * m[1000] := phi{3 7 10}    // m[1000] is defined at statements 3, 7, and 10
  * m[r28{3}+4] := phi{2 8}   // the memof is defined at 2 and 8, and the r28 is defined at 3.
@@ -49,9 +51,9 @@ private:
 class PhiAssign : public Assignment
 {
 public:
-    typedef std::map<BasicBlock *, PhiInfo>   Definitions;
-    typedef Definitions::iterator             iterator;
-    typedef Definitions::const_iterator       const_iterator;
+    typedef std::map<BasicBlock *, PhiInfo> PhiDefs;
+    typedef PhiDefs::iterator             iterator;
+    typedef PhiDefs::const_iterator       const_iterator;
 
 public:
     PhiAssign(SharedExp _lhs)
@@ -59,7 +61,7 @@ public:
     PhiAssign(SharedType ty, SharedExp _lhs)
         : Assignment(ty, _lhs) { m_kind = STMT_PHIASSIGN; }
     // Copy constructor (not currently used or implemented)
-    PhiAssign(Assign& o);
+    PhiAssign(Assign& other);
     virtual ~PhiAssign() {}
 
     // Clone
@@ -109,30 +111,30 @@ public:
     // Get or put the statement at index idx
     Statement *getStmtAt(BasicBlock *idx)
     {
-        if (DefVec.find(idx) == DefVec.end()) {
+        if (m_defs.find(idx) == m_defs.end()) {
             return nullptr;
         }
 
-        return DefVec[idx].getDef();
+        return m_defs[idx].getDef();
     }
 
     PhiInfo& getAt(BasicBlock *idx);
     void putAt(BasicBlock *idx, Statement *d, SharedExp e);
     void simplifyRefs();
 
-    virtual size_t getNumDefs() const { return DefVec.size(); }
-    Definitions& getDefs() { return DefVec; }
+    virtual size_t getNumDefs() const { return m_defs.size(); }
+    PhiDefs& getDefs() { return m_defs; }
 
     // A hack. Check MVE
     bool hasGlobalFuncParam();
 
-    PhiInfo& front() { return DefVec.begin()->second; }
-    PhiInfo& back() { return DefVec.rbegin()->second; }
-    iterator begin() { return DefVec.begin(); }
-    iterator end() { return DefVec.end(); }
-    const_iterator cbegin() const { return DefVec.begin(); }
-    const_iterator cend() const { return DefVec.end(); }
-    iterator erase(iterator it) { return DefVec.erase(it); }
+    PhiInfo& front() { return m_defs.begin()->second; }
+    PhiInfo& back() { return m_defs.rbegin()->second; }
+    iterator begin() { return m_defs.begin(); }
+    iterator end() { return m_defs.end(); }
+    const_iterator cbegin() const { return m_defs.begin(); }
+    const_iterator cend() const { return m_defs.end(); }
+    iterator erase(iterator it) { return m_defs.erase(it); }
 
     // Convert this phi assignment to an ordinary assignment
 
@@ -146,5 +148,5 @@ public:
     void enumerateParams(std::list<SharedExp>& le);
 
 private:
-    Definitions DefVec; // A vector of information about definitions
+    PhiDefs m_defs; ///< A vector of information about definitions
 };

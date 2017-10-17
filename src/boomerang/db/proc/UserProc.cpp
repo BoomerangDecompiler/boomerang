@@ -1543,8 +1543,33 @@ void UserProc::remUnusedStmtEtc()
 
     updateCalls(); // Or just updateArguments?
 
-    branchAnalysis();
+    bool removedBBs = branchAnalysis();
     fixUglyBranches();
+
+    if (removedBBs) {
+        // recalculate phi assignments of referencing BBs
+        BBIterator it;
+        for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+            BasicBlock::rtlit rtlIt;
+            StatementList::iterator stmtIt;
+            for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
+                if (!stmt->isPhi()) {
+                    continue;
+                }
+
+                PhiAssign *phiStmt = dynamic_cast<PhiAssign *>(stmt);
+                assert(phiStmt);
+                phiStmt->getStmtAt(bb);
+                PhiAssign::PhiDefs& defs = phiStmt->getDefs();
+                for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end(); defIt++) {
+                    if (!m_cfg->hasBB(defIt->first)) {
+                        // remove phi reference to deleted bb
+                        defIt = defs.erase(defIt);
+                    }
+                }
+            }
+        }
+    }
 
     debugPrintAll("after remove unused statements etc");
     Boomerang::get()->alertDecompileDebugPoint(this, "after final");
@@ -1803,7 +1828,7 @@ bool UserProc::branchAnalysis()
 
 void UserProc::fixUglyBranches()
 {
-    LOG_VERBOSE("### fixUglyBranches for %1 ###", getName());
+    LOG_VERBOSE("### fixUglyBranches for '%1' ###", getName());
 
     StatementList stmts;
     getStatements(stmts);

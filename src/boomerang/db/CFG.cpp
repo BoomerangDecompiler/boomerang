@@ -67,10 +67,11 @@ Cfg::~Cfg()
 
 void Cfg::clear()
 {
-    // Don't delete the BBs; this will delete any CaseStatements we want to save for the re-decode. Just let the garbage
-    // collection take care of it.
-    // for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
-    //    delete *it;
+    // Don't delete the BBs; this will delete any CaseStatements we want to save for the re-decode.
+    // Just let them leak since we do not use a garbage collection any more.
+    // A better idea would be to save the CaseStatements explicitly and delete the BBs afterwards.
+    // But this has to wait until the decoder redesign.
+
     m_listBB.clear();
     m_mapBB.clear();
     m_implicitMap.clear();
@@ -668,21 +669,8 @@ void Cfg::completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool bDelete)
         return;
     }
 
-    // Finally, we delete pb1 from the BB list. Note: remove(pb1) should also work, but it would involve member
-    // comparison (not implemented), and also would attempt to remove ALL elements of the list with this value (so
-    // it has to search the whole list, instead of an average of half the list as we have here).
-    for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        if (*it != bb1) {
-            continue;
-        }
-
-        if ((*it)->getLowAddr() != Address::ZERO) {
-            m_mapBB.erase((*it)->getLowAddr());
-        }
-
-        m_listBB.erase(it);
-        break;
-    }
+    // Finally, we delete bb1 from the CFG.
+    removeBB(bb1);
 }
 
 
@@ -706,13 +694,7 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2)
     completeMerge(pb1, pb2); // Mash them together
     // pb1 no longer needed. Remove it from the list of BBs.  This will also delete *pb1. It will be a shallow delete,
     // but that's good because we only did shallow copies to *pb2
-    BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), pb1);
-
-    if ((*bbit)->getLowAddr() != Address::ZERO) {
-        m_mapBB.erase((*bbit)->getLowAddr());
-    }
-
-    m_listBB.erase(bbit);
+    removeBB(pb1);
     return true;
 }
 
@@ -720,12 +702,17 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2)
 void Cfg::removeBB(BasicBlock *bb)
 {
     BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), bb);
+    assert(bbit != m_listBB.end()); // must not delete BBs of other CFGs
 
     if ((*bbit)->getLowAddr() != Address::ZERO) {
         m_mapBB.erase((*bbit)->getLowAddr());
     }
 
     m_listBB.erase(bbit);
+
+    // Actually, removed BBs should be deleted; however,
+    // doing so deletes the statements of the BB that seem to be still in use.
+    // So don't do it for now.
 }
 
 
@@ -784,18 +771,7 @@ bool Cfg::compressCfg()
 
                 // If nothing else uses this BB (J), remove it from the CFG
                 if (pSucc->m_inEdges.empty()) {
-                    for (BB_IT it3 = m_listBB.begin(); it3 != m_listBB.end(); it3++) {
-                        if (*it3 == pSucc) {
-                            if ((*it3)->getLowAddr() != Address::ZERO) {
-                                m_mapBB.erase((*it3)->getLowAddr());
-                            }
-
-                            m_listBB.erase(it3);
-                            // And delete the BB
-                            delete pSucc;
-                            break;
-                        }
-                    }
+                    removeBB(pSucc);
                 }
             }
         }
@@ -1679,7 +1655,7 @@ void Cfg::findInterferences(ConnectionGraph& cg)
 
     int count = 0;
 
-    while (workList.size() && count < 100000) {
+    while (!workList.empty() && count < 100000) {
         count++; // prevent infinite loop
 
         BasicBlock *currBB = workList.back();
@@ -1885,14 +1861,14 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
         }
 
 #if DEBUG_SPLIT_FOR_BRANCH
-        LOG_VERBOSE("About to delete pBB: %1", pBB);
-        dumpBB(pBB);
+        LOG_VERBOSE("About to delete pBB: %1", bb->prints());
+        dumpBB(bb);
         dumpBB(skipBB);
         dumpBB(rptBB);
-        dumpBB(newBb);
+        dumpBB(newBB);
 #endif
 
-        // Must delete pBB. Note that this effectively "increments" iterator it
+        // Must delete bb. Note that this effectively "increments" iterator it
         it  = m_listBB.erase(it);
         bb = nullptr;
     }
@@ -1947,6 +1923,7 @@ Statement *Cfg::findImplicitAssign(SharedExp x)
         def = it->second;
     }
 
+    assert(def);
     return def;
 }
 

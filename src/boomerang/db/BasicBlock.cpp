@@ -1207,7 +1207,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 
             for (std::pair<const BasicBlock *, PhiInfo> v : pa->getDefs()) {
                 if (!cfg->existsBB(v.first)) {
-                    LOG_WARN("Someone removed BB that defined the PHI! Need to update PhiAssign defs");
+                    LOG_WARN("Someone removed the BB that defined the PHI! Need to update PhiAssign defs");
                 }
             }
 
