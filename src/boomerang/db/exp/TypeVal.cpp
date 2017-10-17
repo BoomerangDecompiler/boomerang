@@ -36,15 +36,15 @@ SharedExp TypeVal::clone() const
 
 bool TypeVal::operator==(const Exp& o) const
 {
-    if (((TypeVal&)o).m_oper == opWild) {
+    if (((const TypeVal&)o).m_oper == opWild) {
         return true;
     }
 
-    if (((TypeVal&)o).m_oper != opTypeVal) {
+    if (((const TypeVal&)o).m_oper != opTypeVal) {
         return false;
     }
 
-    return *val == *((TypeVal&)o).val;
+    return *val == *((const TypeVal&)o).val;
 }
 
 
@@ -58,7 +58,7 @@ bool TypeVal::operator<(const Exp& o) const
         return false;
     }
 
-    return *val < *((TypeVal&)o).val;
+    return *val < *((const TypeVal&)o).val;
 }
 
 

@@ -38,7 +38,7 @@ public:
      * \fn        GotoStatement::~GotoStatement
      * \brief        Destructor
      ******************************************************************************/
-    virtual ~GotoStatement();
+    virtual ~GotoStatement() override;
 
     /***************************************************************************/ /**
      * \fn        GotoStatement::clone

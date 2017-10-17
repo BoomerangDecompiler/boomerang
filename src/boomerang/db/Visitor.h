@@ -603,7 +603,7 @@ public:
     UsedLocsFinder(LocationSet& _used, bool _memOnly)
         : m_used(&_used)
         , m_memOnly(_memOnly) {}
-    ~UsedLocsFinder() {}
+    ~UsedLocsFinder() override = default;
 
     LocationSet *getLocSet() { return m_used; }
     void setMemOnly(bool b)
@@ -636,7 +636,7 @@ public:
         : used(&_used)
         , proc(_proc)
         , all(false) {}
-    ~UsedLocalFinder() {}
+    ~UsedLocalFinder() override = default;
 
     LocationSet *getLocSet() { return used; }
     bool wasAllFound() { return all; }
@@ -658,7 +658,7 @@ public:
     UsedLocsVisitor(ExpVisitor *v, bool cc)
         : StmtExpVisitor(v)
         , m_countCol(cc) {}
-    virtual ~UsedLocsVisitor() {}
+    virtual ~UsedLocsVisitor() override = default;
 
     /// Needs special attention because the lhs of an assignment isn't used
     /// (except where it's m[blah], when blah is used)
@@ -705,7 +705,7 @@ class StmtSubscripter : public StmtModifier
 public:
     StmtSubscripter(ExpSubscripter *es)
         : StmtModifier(es) {}
-    virtual ~StmtSubscripter() {}
+    virtual ~StmtSubscripter() override = default;
 
     virtual void visit(Assign *s, bool& recur) override;
     virtual void visit(PhiAssign *s, bool& recur) override;
@@ -719,7 +719,7 @@ class SizeStripper : public ExpModifier
 {
 public:
     SizeStripper() {}
-    virtual ~SizeStripper() {}
+    virtual ~SizeStripper() override = default;
 
     SharedExp preVisit(const std::shared_ptr<Binary>& b, bool& recur) override;
 };
@@ -733,7 +733,7 @@ public:
         , m_ty(_ty)
         , m_changed(false) {}
 
-    virtual ~ExpConstCaster() {}
+    virtual ~ExpConstCaster() override = default;
 
     bool isChanged() const { return m_changed; }
 
@@ -751,7 +751,7 @@ class ConstFinder : public ExpVisitor
 public:
     ConstFinder(std::list<std::shared_ptr<Const> >& _lc)
         : m_constList(_lc) {}
-    virtual ~ConstFinder() {}
+    virtual ~ConstFinder() override = default;
 
     // This is the code (apart from definitions) to find all constants in a Statement
     virtual bool visit(const std::shared_ptr<Const>& e) override;

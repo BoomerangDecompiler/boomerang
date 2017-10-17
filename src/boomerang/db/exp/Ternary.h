@@ -39,7 +39,7 @@ public:
     bool operator*=(const Exp& o) const override;
 
     // Destructor
-    virtual ~Ternary();
+    virtual ~Ternary() override;
 
     template<typename Ty, typename Arg1, typename Arg2, typename Arg3>
     static std::shared_ptr<Ternary> get(Ty ty, Arg1 arg1, Arg2 arg2, Arg3 arg3)

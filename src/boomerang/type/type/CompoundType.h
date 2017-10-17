@@ -20,7 +20,7 @@ class CompoundType : public Type
 public:
     /// Constructs an empty compound type.
     CompoundType(bool isGeneric = false);
-    virtual ~CompoundType();
+    virtual ~CompoundType() override;
 
     /// \copydoc Type::isCompound
     virtual bool isCompound() const override { return true; }

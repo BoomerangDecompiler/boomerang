@@ -63,7 +63,7 @@ public:
         : Assignment(ty, _lhs) { m_kind = STMT_PHIASSIGN; }
     // Copy constructor (not currently used or implemented)
     PhiAssign(Assign& other);
-    virtual ~PhiAssign() {}
+    virtual ~PhiAssign() override = default;
 
     // Clone
     virtual Statement *clone() const override;
@@ -133,8 +133,8 @@ public:
     PhiInfo& back() { return m_defs.rbegin()->second; }
     iterator begin() { return m_defs.begin(); }
     iterator end() { return m_defs.end(); }
-    const_iterator cbegin() const { return m_defs.begin(); }
-    const_iterator cend() const { return m_defs.end(); }
+    const_iterator begin() const { return m_defs.begin(); }
+    const_iterator end() const { return m_defs.end(); }
     iterator erase(iterator it) { return m_defs.erase(it); }
 
     // Convert this phi assignment to an ordinary assignment

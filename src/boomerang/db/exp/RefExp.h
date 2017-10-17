@@ -30,7 +30,7 @@ public:
     /// \param usedExp Expression that is used
     /// \param definition Pointer to the statment where the expression is defined
     RefExp(SharedExp usedExp, Statement *definition);
-    virtual ~RefExp() { m_def = nullptr; }
+    virtual ~RefExp() override { m_def = nullptr; }
 
     static std::shared_ptr<RefExp> get(SharedExp usedExp, Statement *definition);
 

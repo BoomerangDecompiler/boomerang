@@ -81,7 +81,7 @@ class CCodeGenerator : public ICodeGenerator
 {
 public:
     CCodeGenerator();
-    virtual ~CCodeGenerator();
+    virtual ~CCodeGenerator() override;
 
     /// \copydoc ICodeGenerator::generateCode
     virtual void generateCode(const Prog *prog, QTextStream& os) override;

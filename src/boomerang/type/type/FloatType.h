@@ -19,7 +19,7 @@ public:
     explicit FloatType(int sz = 64);
     static std::shared_ptr<FloatType> get(int sz = 64);
 
-    virtual ~FloatType();
+    virtual ~FloatType() override;
     virtual bool isFloat() const override { return true; }
 
     virtual SharedType clone() const override;

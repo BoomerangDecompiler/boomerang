@@ -27,7 +27,7 @@ private:
 public:
     SectionInfo(Address sourceAddr, uint32_t size, const QString& name = ""); // Constructor
     SectionInfo(const SectionInfo& other);
-    virtual ~SectionInfo();
+    virtual ~SectionInfo() override;
 
     HostAddress getHostAddr()   const override { return m_hostAddr; }
     Address getSourceAddr() const override { return m_nativeAddr; }

@@ -29,7 +29,7 @@ public:
     /// Create a new array type with unknown upper bound
     ArrayType(SharedType p);
 
-    virtual ~ArrayType();
+    virtual ~ArrayType() override;
 
     virtual bool isArray() const override { return true; }
 

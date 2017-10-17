@@ -22,7 +22,7 @@ class FlagDef : public Unary
 {
 public:
     FlagDef(SharedExp params, SharedRTL rtl);
-    virtual ~FlagDef();
+    virtual ~FlagDef() override;
 
     virtual void appendDotFile(QTextStream& of) override;
 

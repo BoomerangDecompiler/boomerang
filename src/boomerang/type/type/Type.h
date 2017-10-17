@@ -87,7 +87,7 @@ class Type : public std::enable_shared_from_this<Type>, public Printable
 public:
     // Constructors
     Type(TypeID id);
-    virtual ~Type();
+    virtual ~Type() override;
 
     /// \returns the type class (ID) of this type.
     TypeID getId() const { return id; }

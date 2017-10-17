@@ -88,8 +88,8 @@ public:
 class MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
 {
 public:
-    MachOBinaryLoader();                 // Default constructor
-    virtual ~MachOBinaryLoader();        // Destructor
+    MachOBinaryLoader();
+    virtual ~MachOBinaryLoader() override;
 
     /// \copydoc IFileLoader::initialize
     void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;

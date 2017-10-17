@@ -17,7 +17,7 @@ class VoidType : public Type
 {
 public:
     VoidType();
-    virtual ~VoidType();
+    virtual ~VoidType() override;
     virtual bool isVoid() const override { return true; }
 
     virtual SharedType clone() const override;

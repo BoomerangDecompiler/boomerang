@@ -50,7 +50,7 @@ public:
     static std::shared_ptr<Const> get(T i) { return std::make_shared<Const>(i); }
 
     /// Nothing to destruct: Don't deallocate the string passed to constructor
-    virtual ~Const() {}
+    virtual ~Const() override = default;
 
     // Clone
     virtual SharedExp clone() const override;

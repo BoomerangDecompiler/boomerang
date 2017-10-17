@@ -68,7 +68,7 @@ protected:
         : m_oper(op) {}
 
 public:
-    virtual ~Exp() {}
+    virtual ~Exp() override = default;
 
     /// Return the operator. Note: I'd like to make this protected, but then subclasses don't seem to be able to use
     /// it (at least, for subexpressions)

@@ -120,7 +120,7 @@ bool Unary::operator<(const Exp& o) const
         return false;
     }
 
-    return *subExp1 < *((Unary&)o).getSubExp1();
+    return *subExp1 < *((const Unary&)o).getSubExp1();
 }
 
 

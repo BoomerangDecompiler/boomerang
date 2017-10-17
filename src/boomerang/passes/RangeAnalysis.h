@@ -24,7 +24,6 @@ class RangeAnalysis : public FunctionPass
 {
 public:
     RangeAnalysis();
-    virtual ~RangeAnalysis() {}
 
     /// \brief Range analysis (for procedure).
     bool runOnFunction(Function& F) override;

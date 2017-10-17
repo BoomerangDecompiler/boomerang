@@ -21,7 +21,7 @@ class LoopSyntaxNode : public SyntaxNode
 {
 public:
     LoopSyntaxNode(SyntaxNode *body = nullptr, SharedExp cond = nullptr, bool postTested = false);
-    virtual ~LoopSyntaxNode();
+    virtual ~LoopSyntaxNode() override;
 
 public:
     /// \copydoc SyntaxNode::isBranch
