@@ -13,9 +13,9 @@
 #include "Proc.h"
 
 
-#include "boomerang/db/CFG.h" // For cfg->simplify()
+#include "boomerang/db/CFG.h"      // For cfg->simplify()
 
-#include "boomerang/db/DataFlow.h"       // For class UseCollector
+#include "boomerang/db/DataFlow.h" // For class UseCollector
 #include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/exp/Binary.h"
 
@@ -62,8 +62,8 @@ enum ProcStatus
 };
 
 
-typedef std::set<UserProc *>  ProcSet;
-typedef std::list<UserProc *> ProcList;
+typedef std::set<UserProc *>    ProcSet;
+typedef std::list<UserProc *>   ProcList;
 
 /***************************************************************************/ /**
  * UserProc class.
@@ -79,9 +79,9 @@ public:
      * It is a *multi*map because one location can have several default names differentiated by type.
      * E.g. r24 -> eax for int, r24 -> eax_1 for float
      */
-    typedef std::multimap<SharedConstExp, SharedExp, lessExpStar> SymbolMap;
+    typedef std::multimap<SharedConstExp, SharedExp, lessExpStar>   SymbolMap;
 
-    typedef std::map<Statement *, int> RefCounter;
+    typedef std::map<Statement *, int>                              RefCounter;
 
 public:
     /***************************************************************************/ /**

@@ -17,7 +17,7 @@
 #include "boomerang/util/Log.h"
 
 
-#define HELLO_SPARC  (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
+#define HELLO_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
 
 
 void SparcBinaryLoaderTest::initTestCase()
@@ -30,8 +30,9 @@ void SparcBinaryLoaderTest::testSparcLoad()
 {
     // Load SPARC hello world
     IProject& project = *Boomerang::get()->getOrCreateProject();
+
     project.loadBinaryFile(HELLO_SPARC);
-    IFileLoader       *loader = project.getBestLoader(HELLO_SPARC);
+    IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
 
     QVERIFY(loader != nullptr);
 
@@ -42,5 +43,6 @@ void SparcBinaryLoaderTest::testSparcLoad()
     QCOMPARE(image->getSection(1)->getName(), QString(".hash"));
     QCOMPARE(image->getSection(27)->getName(), QString(".stab.indexstr"));
 }
+
 
 QTEST_MAIN(SparcBinaryLoaderTest)

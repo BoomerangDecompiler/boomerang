@@ -21,15 +21,16 @@
  */
 struct PhiInfo
 {
-    void setDef(Statement *def)
+    void            setDef(Statement *def)
     {
         m_def = def;
     }
 
-    Statement *getDef() { return m_def; }
+    Statement       *getDef() { return m_def; }
     const Statement *getDef() const { return m_def; }
 
-    SharedExp         e; ///< The expression for the thing being defined (never subscripted)
+    SharedExp       e;   ///< The expression for the thing being defined (never subscripted)
+
 private:
     Statement       *m_def; ///< The defining statement
 };
@@ -51,9 +52,9 @@ private:
 class PhiAssign : public Assignment
 {
 public:
-    typedef std::map<BasicBlock *, PhiInfo> PhiDefs;
-    typedef PhiDefs::iterator             iterator;
-    typedef PhiDefs::const_iterator       const_iterator;
+    typedef std::map<BasicBlock *, PhiInfo>   PhiDefs;
+    typedef PhiDefs::iterator                 iterator;
+    typedef PhiDefs::const_iterator           const_iterator;
 
 public:
     PhiAssign(SharedExp _lhs)

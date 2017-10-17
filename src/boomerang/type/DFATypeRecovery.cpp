@@ -88,6 +88,7 @@ void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
             UseCollector *uc = call->getUseCollector();
 
             LOG_VERBOSE("  returns:");
+
             for (ReturnStatement::iterator rr = rs->begin(); rr != rs->end(); ++rr) {
                 // Intersect the callee's returns with the live locations at the call, i.e. make sure that they
                 // exist in *uc
@@ -175,9 +176,9 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
     // if (lhs->isParam()) { // }
 
     bool       allZero = false;
-    SharedExp slhs = lhs->clone()->removeSubscripts(allZero);
-    SharedType iType = ((ImplicitAssign *)s)->getType();
-    int i     = proc->getSignature()->findParam(slhs);
+    SharedExp  slhs    = lhs->clone()->removeSubscripts(allZero);
+    SharedType iType   = ((ImplicitAssign *)s)->getType();
+    int        i       = proc->getSignature()->findParam(slhs);
 
     if (i != -1) {
         proc->setParamType(i, iType);
@@ -187,7 +188,7 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
 
         if (sub->isIntConst()) {
             // We have a m[K] := -
-                     Address K = sub->access<Const>()->getAddr();
+            Address K = sub->access<Const>()->getAddr();
             prog->markGlobalUsed(K, iType);
         }
     }
@@ -212,8 +213,8 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
         return;
     }
 
-    UserProc *proc = static_cast<UserProc *>(f);
-    Cfg      *cfg  = proc->getCFG();
+    UserProc        *proc = static_cast<UserProc *>(f);
+    Cfg             *cfg  = proc->getCFG();
     DataIntervalMap localsMap(proc); // map of all local variables of proc
 
     Boomerang::get()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
@@ -281,7 +282,7 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
         s->findConstants(lc);
 
         for (const std::shared_ptr<Const>& con : lc) {
-            if (!con || con->getOper() == opStrConst) {
+            if (!con || (con->getOper() == opStrConst)) {
                 continue;
             }
 
@@ -354,10 +355,12 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
                     for (auto& elem : result) {
                         // idx + K
                         auto bin_rr = std::dynamic_pointer_cast<Binary>(elem);
+
                         if (!bin_rr) {
                             assert(false);
                             return;
                         }
+
                         auto constK = bin_rr->access<Const, 2>();
 
                         // Note: keep searching till we find the pattern with this constant, since other constants may
@@ -366,7 +369,7 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
                             continue;
                         }
 
-                                          Address   K   = Address(constK->getInt());
+                        Address   K   = Address(constK->getInt());
                         SharedExp idx = bin_rr->getSubExp1();
                         SharedExp arr = Unary::get(
                             opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalName(K), proc), idx));
@@ -550,7 +553,7 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
 
     if (other->resolvesToInteger()) {
         std::shared_ptr<IntegerType> otherInt = other->as<IntegerType>();
-        std::shared_ptr<IntegerType> result = std::dynamic_pointer_cast<IntegerType>(this->clone());
+        std::shared_ptr<IntegerType> result   = std::dynamic_pointer_cast<IntegerType>(this->clone());
 
         // Signedness
         if (otherInt->signedness > 0) {
@@ -565,17 +568,17 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
 
         // Size. Assume 0 indicates unknown size
         result->size = std::max(size, otherInt->size);
-        ch  |= (result->size != size);
+        ch          |= (result->size != size);
 
         return result;
     }
     else if (other->resolvesToSize()) {
-        std::shared_ptr<IntegerType> result = std::dynamic_pointer_cast<IntegerType>(this->clone());
-        std::shared_ptr<SizeType> other_sz = other->as<SizeType>();
+        std::shared_ptr<IntegerType> result   = std::dynamic_pointer_cast<IntegerType>(this->clone());
+        std::shared_ptr<SizeType>    other_sz = other->as<SizeType>();
 
         if (size == 0) { // Doubt this will ever happen
             result->size = other_sz->getSize();
-            ch = true;
+            ch           = true;
             return result;
         }
 
@@ -586,7 +589,7 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
         LOG_VERBOSE("Integer size %1 meet with SizeType size %2!", size, other_sz->getSize());
 
         result->size = std::max(size, other_sz->getSize());
-        ch   = result->size != size;
+        ch           = result->size != size;
         return result;
     }
 
@@ -740,9 +743,9 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     }
 
     if (other->resolvesToArray()) {
-        auto       otherArr = other->as<ArrayType>();
-        SharedType newBase  = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
-        size_t newLength = m_length;
+        auto       otherArr  = other->as<ArrayType>();
+        SharedType newBase   = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
+        size_t     newLength = m_length;
 
         if (*newBase != *BaseType) {
             ch        = true;
@@ -936,21 +939,24 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
         ch = false;
         SharedType meet_res = v->meetWith(other, ch, bHighestPtr);
+
         if (!ch) {
             // Fully compatible type alerady present in this union
             return ((UnionType *)this)->shared_from_this();
         }
 
         const int currentScore = meet_res->getCtype().size();
+
         if (currentScore < bestMeetScore) {
             // we have found a better match, store it
-            bestElem = it;
+            bestElem      = it;
             bestMeetScore = currentScore;
         }
     }
 
 
     std::shared_ptr<UnionType> result = UnionType::get();
+
     for (UnionEntrySet::const_iterator it = li.begin(); it != li.end(); it++) {
         if (it == bestElem) {
             // this is the element to be replaced
@@ -961,6 +967,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     }
 
     UnionElement ne;
+
     if (bestElem != li.end()) {
         ne.name = bestElem->name;
         ne.type = bestElem->type->meetWith(other, ch, bHighestPtr); // we know this works because the types are compatible
@@ -985,9 +992,11 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
 
     if (other->resolvesToSize()) {
         SharedType result = this->clone();
+
         if (other->as<SizeType>()->size != size) {
             LOG_VERBOSE("Size %1 meet with size %2!", size, other->as<SizeType>()->size);
         }
+
         result->setSize(std::max(result->getSize(), other->as<SizeType>()->getSize()));
 
         return result;
@@ -1063,7 +1072,7 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
 
     char name[20];
 #if PRINT_UNION
-    if (unionCount == 999) {                         // Adjust the count to catch the one you want
+    if (unionCount == 999) {                // Adjust the count to catch the one you want
         LOG_MSG("createUnion breakpokint"); // Note: you need two breakpoints (also in UnionType::meetWith)
     }
 #endif
@@ -1567,6 +1576,7 @@ void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
 void RefExp::descendType(SharedType parentType, bool& ch, Statement *s)
 {
     assert(getSubExp1());
+
     if (m_def == nullptr) {
         LOG_ERROR("Cannot descendType of expression '%1' since it does not have a defining statement!", getSubExp1());
         ch = false;
@@ -1673,7 +1683,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
                 x->descendType(IntegerType::get(parentType->getSize(), 0), ch, s);
                 // K2 is of type <array of parentType>
                 auto    constK2 = subExp1->access<Const, 2>();
-                        Address intK2   = Address(constK2->getInt()); // TODO: use getAddr ?
+                Address intK2   = Address(constK2->getInt());         // TODO: use getAddr ?
                 constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
             }
             else if (match_l1_K(shared_from_this(), matches)) {
@@ -1772,12 +1782,12 @@ void Ternary::descendType(SharedType /*parentType*/, bool& ch, Statement *s)
 }
 
 
-void TypedExp::descendType(SharedType, bool &, Statement *)
+void TypedExp::descendType(SharedType, bool&, Statement *)
 {
 }
 
 
-void Terminal::descendType(SharedType, bool &, Statement *)
+void Terminal::descendType(SharedType, bool&, Statement *)
 {
 }
 

@@ -41,9 +41,10 @@ void ElfBinaryLoaderTest::initTestCase()
 
 void ElfBinaryLoaderTest::testElfLoadClang()
 {
-    IProject* project = new Project();
+    IProject *project = new Project();
+
     project->loadBinaryFile(HELLO_CLANG4);
-    IFileLoader       *loader = project->getBestLoader(HELLO_CLANG4);
+    IFileLoader *loader = project->getBestLoader(HELLO_CLANG4);
 
     // test the loader
     QVERIFY(loader != nullptr);
@@ -69,8 +70,9 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 void ElfBinaryLoaderTest::testElfLoadClangStatic()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
+
     project.loadBinaryFile(HELLO_CLANG4_STATIC);
-    IFileLoader       *loader = project.getBestLoader(HELLO_CLANG4_STATIC);
+    IFileLoader *loader = project.getBestLoader(HELLO_CLANG4_STATIC);
 
     // test the loader
     QVERIFY(loader != nullptr);
@@ -97,8 +99,9 @@ void ElfBinaryLoaderTest::testPentiumLoad()
 {
     // Load Pentium hello world
     IProject& project = *Boomerang::get()->getOrCreateProject();
+
     project.loadBinaryFile(HELLO_PENTIUM);
-    IFileLoader* loader = project.getBestLoader(HELLO_PENTIUM);
+    IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
 
     QVERIFY(loader != nullptr);
     QCOMPARE(loader->getFormat(), LoadFmt::ELF);
@@ -132,5 +135,5 @@ void ElfBinaryLoaderTest::testElfHash()
     QCOMPARE(hashValue, 0x737FEU);
 }
 
-QTEST_MAIN(ElfBinaryLoaderTest)
 
+QTEST_MAIN(ElfBinaryLoaderTest)

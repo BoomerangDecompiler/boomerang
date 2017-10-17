@@ -23,7 +23,9 @@ CommandlineDriver::CommandlineDriver(QObject *parent)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
     QCoreApplication::instance()->connect(&m_thread, &DecompilationThread::finished,
-        []() { QCoreApplication::instance()->quit(); });
+                                          []() {
+        QCoreApplication::instance()->quit();
+    });
 }
 
 
@@ -143,7 +145,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         {
         case 'E':
             SETTING(noDecodeChildren) = true;
-            // Fall through
+        // Fall through
 
         case 'e':
             {
@@ -242,6 +244,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'i':
+
             if (arg[2] == 'c') {
                 SETTING(decodeThruIndCall) = true; // -ic;
                 break;
@@ -250,12 +253,14 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 // unknown command
                 break;
             }
-            /* fallthrough */
+
+        /* fallthrough */
 
         case 'k':
             {
                 interactiveMode = true;
-                if (i+1 < args.size() && !args[i+1].startsWith("-")) {
+
+                if ((i + 1 < args.size()) && !args[i + 1].startsWith("-")) {
                     SETTING(replayFile) = args[++i];
                 }
             }
@@ -264,17 +269,20 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 'P':
             {
                 QDir wd(args[++i] + "/");
+
                 if (!wd.exists()) {
                     LOG_WARN("Working directory '%1' does not exist!", wd.path());
                 }
                 else {
                     LOG_MSG("Working directory now '%1'", wd.path());
                 }
+
                 boom.getSettings()->setWorkingDirectory(wd.path());
             }
             break;
 
         case 'n':
+
             switch (arg[2].toLatin1())
             {
             case 'b':
@@ -328,6 +336,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'p':
+
             if (arg[2] == 'a') {
                 SETTING(propOnlyToAll) = true;
                 LOG_WARN(" * * Warning! -pa is not implemented yet!");
@@ -351,7 +360,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     break;
                 }
 
-                        Address addr;
+                Address addr;
 
                 if (++i == args.size()) {
                     usage();
@@ -370,6 +379,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'd':
+
             switch (arg[2].toLatin1())
             {
             case 'a':
@@ -415,6 +425,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'm':
+
             if (++i == args.size()) {
                 usage();
                 return 1;
@@ -438,6 +449,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'S':
+
             if (arg[2] == 'D') {
                 SETTING(saveBeforeDecompile) = true;
             }
@@ -470,13 +482,15 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 int CommandlineDriver::interactiveMain()
 {
     CommandStatus status = m_console.replayFile(SETTING(replayFile));
+
     if (status == CommandStatus::ExitProgram) {
         return 2;
     }
 
     // now handle user commands
     QTextStream strm(stdin);
-    QString line;
+    QString     line;
+
     while (true) {
         std::cout << "boomerang: ";
         std::cout.flush();
@@ -485,7 +499,7 @@ int CommandlineDriver::interactiveMain()
             return 0;
         }
 
-        line = strm.readLine();
+        line   = strm.readLine();
         status = m_console.handleCommand(line);
 
         if (status == CommandStatus::ExitProgram) {
@@ -513,6 +527,7 @@ void CommandlineDriver::onCompilationTimeout()
 void DecompilationThread::run()
 {
     Boomerang& boom(*Boomerang::get());
-    QDir wd = boom.getSettings()->getWorkingDirectory();
+    QDir       wd = boom.getSettings()->getWorkingDirectory();
+
     m_result = boom.decompile(wd.absoluteFilePath(m_pathToBinary));
 }

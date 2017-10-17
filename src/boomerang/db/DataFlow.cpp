@@ -63,8 +63,8 @@ void DataFlow::dfs(int p, size_t n)
 
 void DataFlow::dominators(Cfg *cfg)
 {
-    BasicBlock *entryBB = cfg->getEntryBB();
-    const size_t numBB  = cfg->getNumBBs();
+    BasicBlock   *entryBB = cfg->getEntryBB();
+    const size_t numBB    = cfg->getNumBBs();
 
     assert(entryBB != nullptr);
     assert(numBB > 0);
@@ -110,10 +110,10 @@ void DataFlow::dominators(Cfg *cfg)
 
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
-        const std::vector<BasicBlock *>&          inEdges = m_BBs[n]->getInEdges();
+        const std::vector<BasicBlock *>&    inEdges = m_BBs[n]->getInEdges();
         std::vector<BasicBlock *>::iterator it;
 
-        for (BasicBlock* parentBB : inEdges) {
+        for (BasicBlock *parentBB : inEdges) {
             if (m_indices.find(parentBB) == m_indices.end()) {
                 QTextStream q_cerr(stderr);
 
@@ -307,9 +307,10 @@ void DataFlow::dumpA_phi()
     LOG_MSG("A_phi:");
 
     for (auto zz = m_A_phi.begin(); zz != m_A_phi.end(); ++zz) {
-        std::set<int>&          si = zz->second;
+        std::set<int>& si = zz->second;
 
         LOG_MSG("  %1 ->", zz->first);
+
         for (std::set<int>::iterator qq = si.begin(); qq != si.end(); ++qq) {
             LOG_MSG("    %2", *qq);
         }
@@ -334,7 +335,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     m_defallsites.clear();
 
     for (ExpSet& se : m_A_orig) {
-        for (auto iter = se.begin(), fin = se.end(); iter != fin; ) {
+        for (auto iter = se.begin(), fin = se.end(); iter != fin;) {
             if (m_A_phi.find(*iter) == m_A_phi.end()) {
                 iter = se.erase(iter);
             }
@@ -351,7 +352,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 
     // Set the sizes of needed vectors
     const size_t numIndices = m_indices.size();
-    const size_t numBB = proc->getCFG()->getNumBBs();
+    const size_t numBB      = proc->getCFG()->getNumBBs();
     assert(numIndices == numBB);
     Q_UNUSED(numIndices);
 
@@ -419,8 +420,8 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
 
                 // Insert trivial phi function for a at top of block y: a := phi()
                 change = true;
-                Statement *as  = new PhiAssign(SharedExp(a->clone()));
-                BasicBlock  *Ybb = m_BBs[y];
+                Statement  *as  = new PhiAssign(SharedExp(a->clone()));
+                BasicBlock *Ybb = m_BBs[y];
 
                 Ybb->prependStmt(as, proc);
                 // A_phi[a] <- A_phi[a] U {y}
@@ -727,6 +728,7 @@ void DataFlow::dumpStacks()
         std::deque<Statement *> tt = zz->second; // Copy the stack!
 
         LOG_MSG("  Var %1 [", zz->first);
+
         while (!tt.empty()) {
             LOG_MSG("    %1", tt.back()->getNumber());
             tt.pop_back();
@@ -742,10 +744,10 @@ void DataFlow::dumpDefsites()
     std::map<SharedExp, std::set<int>, lessExpStar>::iterator dd;
 
     for (dd = m_defsites.begin(); dd != m_defsites.end(); ++dd) {
-
-        std::set<int>&          si = dd->second;
+        std::set<int>& si = dd->second;
 
         LOG_MSG("%1", dd->first);
+
         for (std::set<int>::iterator ii = si.begin(); ii != si.end(); ++ii) {
             LOG_MSG("  ", *ii);
         }
@@ -759,6 +761,7 @@ void DataFlow::dumpA_orig()
 
     for (int i = 0; i < n; ++i) {
         LOG_MSG("%1", i);
+
         for (const SharedExp& ee : m_A_orig[i]) {
             LOG_MSG("  %1 ", ee);
         }
@@ -820,7 +823,7 @@ void UseCollector::print(QTextStream& os, bool html) const
 void DefCollector::print(QTextStream& os, bool html) const
 {
     iterator it;
-    size_t col   = 36;
+    size_t   col   = 36;
     bool     first = true;
 
     for (it = m_defs.begin(); it != m_defs.end(); ++it) {
@@ -1013,7 +1016,7 @@ void DataFlow::convertImplicits(Cfg *cfg)
     m_A_orig.clear();
 
     for (ExpSet& se : A_orig_copy) {
-       ExpSet se_new;
+        ExpSet se_new;
 
         for (const SharedExp& ee : se) {
             SharedExp e = ee->clone();
@@ -1033,7 +1036,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
     BasicBlock::rtlit       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
-    Statement             *S;
+    Statement               *S;
 
     for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         if (S->isPhi()) {

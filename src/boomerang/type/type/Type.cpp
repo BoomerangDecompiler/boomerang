@@ -222,16 +222,15 @@ void Type::clearNamedTypes()
 }
 
 
-
 // Note: don't want to call this->resolve() for this case, since then we (probably) won't have a NamedType and the
 // assert will fail
-#define RESOLVES_TO_TYPE(x)                                                     \
-    bool Type::resolvesTo ## x() const {                                        \
-        auto ty = shared_from_this();                                           \
-        if (ty->isNamed()) {                                                    \
-            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();   \
-        }                                                                       \
-        return ty && ty->is ## x();                                             \
+#define RESOLVES_TO_TYPE(x)                                                   \
+    bool Type::resolvesTo ## x() const {                                      \
+        auto ty = shared_from_this();                                         \
+        if (ty->isNamed()) {                                                  \
+            ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo(); \
+        }                                                                     \
+        return ty && ty->is ## x();                                           \
     }
 
 RESOLVES_TO_TYPE(Void)

@@ -62,7 +62,6 @@ char *ConstraintMap::prints()
 
 void ConstraintMap::makeUnion(ConstraintMap& o)
 {
-
     std::pair<std::map<SharedExp, SharedExp, lessExpStar>::iterator, bool> ret;
 
     for (std::map<SharedExp, SharedExp, lessExpStar>::iterator it = o.cmap.begin(); it != o.cmap.end(); it++) {
@@ -279,10 +278,12 @@ void Constraints::substIntoEquates(ConstraintMap& in)
 
                     if (ff != fixed.end()) {
                         if (!unify(val, ff->second, extra)) {
-                            if (DEBUG_TA)
+                            if (DEBUG_TA) {
                                 LOG_WARN("Constraint failure: %1 constrained to be %2 and %3", *ll,
-                                    val->access<TypeVal>()->getType()->getCtype(),
-                                    ff->second->access<TypeVal>()->getType()->getCtype());
+                                         val->access<TypeVal>()->getType()->getCtype(),
+                                         ff->second->access<TypeVal>()->getType()->getCtype());
+                            }
+
                             return;
                         }
                     }
@@ -374,6 +375,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
 {
     QString     tgt_s;
     QTextStream os(&tgt_s);
+
     conSet.print(os);
     LOG_MSG("%1 constraints: %2", conSet.size(), tgt_s);
 
@@ -445,6 +447,7 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
             if (DEBUG_TA) {
                 LOG_WARN("Constraint failure: always false constraint");
             }
+
             return false;
         }
 
@@ -477,10 +480,10 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
 
     {
         LOG_MSG("  %1 disjunctions:", disjunctions.size());
+
         for (std::list<SharedExp>::iterator dd = disjunctions.begin(); dd != disjunctions.end(); dd++) {
             LOG_MSG("    %1,", *dd);
         }
-
     }
 
     LOG_MSG("  %1 fixed:   %2", fixed.size(), fixed.prints());
@@ -672,8 +675,8 @@ bool Constraints::unify(SharedExp x, SharedExp y, ConstraintMap& extra)
     }
     else if (xtype->getSize() || ytype->isSize()) {
         // Assume size=0 means unknown
-        unified = xtype->getSize() == 0 || ytype->getSize() == 0
-            || xtype->getSize() == ytype->getSize();
+        unified = xtype->getSize() == 0 || ytype->getSize() == 0 ||
+                  xtype->getSize() == ytype->getSize();
     }
     else {
         // Otherwise, just compare the sizes

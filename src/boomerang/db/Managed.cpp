@@ -30,7 +30,7 @@
 #include "boomerang/util/Types.h"
 
 
-QTextStream& operator<<(QTextStream& os, const InstructionSet *ss)
+QTextStream & operator<<(QTextStream& os, const InstructionSet *ss)
 {
     ss->print(os);
     return os;
@@ -181,7 +181,7 @@ void InstructionSet::print(QTextStream& os) const
 
 void InstructionSet::printNums(QTextStream& os)
 {
-    for (iterator it = begin(); it != end(); ) {
+    for (iterator it = begin(); it != end();) {
         if (*it) {
             (*it)->printNum(os);
         }
@@ -360,7 +360,7 @@ void AssignSet::print(QTextStream& os) const
 
 void AssignSet::printNums(QTextStream& os)
 {
-    for (iterator it = begin(); it != end(); ) {
+    for (iterator it = begin(); it != end();) {
         if (*it) {
             (*it)->printNum(os);
         }
@@ -416,7 +416,7 @@ LocationSet& LocationSet::operator=(const LocationSet& o)
 
 LocationSet::LocationSet(const LocationSet& o)
 {
-   ExpSet::const_iterator it;
+    ExpSet::const_iterator it;
 
     for (it = o.lset.begin(); it != o.lset.end(); it++) {
         lset.insert((*it)->clone());
@@ -487,7 +487,7 @@ void LocationSet::removeIfDefines(InstructionSet& given)
     InstructionSet::iterator it;
 
     for (it = given.begin(); it != given.end(); ++it) {
-        Statement *s = (Statement *)*it;
+        Statement   *s = (Statement *)*it;
         LocationSet defs;
         s->getDefinitions(defs);
         LocationSet::iterator dd;
@@ -593,8 +593,8 @@ bool LocationSet::existsImplicit(SharedExp e) const
 bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr)
 {
     assert(e);
-    auto search = RefExp::get(e->getSubExp1()->clone(), (Statement *)-1);
-    ExpSet::iterator pos = lset.find(search);
+    auto             search = RefExp::get(e->getSubExp1()->clone(), (Statement *)-1);
+    ExpSet::iterator pos    = lset.find(search);
 
     if (pos == lset.end()) {
         return false;
@@ -791,7 +791,7 @@ char *StatementVec::prints()
 
 void StatementVec::printNums(QTextStream& os)
 {
-    for (iterator it = svec.begin(); it != svec.end(); ) {
+    for (iterator it = svec.begin(); it != svec.end();) {
         if (*it) {
             (*it)->printNum(os);
         }
@@ -883,7 +883,7 @@ Assignment *StatementList::findOnLeft(SharedExp loc) const
 void LocationSet::printDiff(LocationSet *o) const
 {
     ExpSet::iterator it;
-    bool printed2not1 = false;
+    bool             printed2not1 = false;
 
     for (it = o->lset.begin(); it != o->lset.end(); it++) {
         SharedExp oe = *it;
@@ -1070,4 +1070,3 @@ void ConnectionGraph::dump() const
         LOG_MSG("%1 <-> %2", iter.first, iter.second);
     }
 }
-

@@ -35,6 +35,7 @@ bool Project::loadBinaryFile(const QString& filePath)
 
     // Find loader plugin to load file
     IFileLoader *loader = getBestLoader(filePath);
+
     if (loader == nullptr) {
         LOG_WARN("Cannot load %1: Unrecognized binary file format.", filePath);
         return false;
@@ -101,6 +102,7 @@ void Project::unloadBinaryFile()
 void Project::loadPlugins()
 {
     QDir pluginsDir = Boomerang::get()->getSettings()->getDataDirectory();
+
     if (!pluginsDir.cd("plugins/loader/")) {
         LOG_ERROR("Cannot open loader plugin directory!");
     }
@@ -123,7 +125,7 @@ void Project::loadPlugins()
 }
 
 
-IFileLoader* Project::getBestLoader(const QString& filePath) const
+IFileLoader *Project::getBestLoader(const QString& filePath) const
 {
     QFile f(filePath);
 

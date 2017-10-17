@@ -14,11 +14,11 @@
 
 class IntervalMapTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
-	/// Set up anything needed before all tests
-	void initTestCase();
+    /// Set up anything needed before all tests
+    void initTestCase();
 
     /// test isEmpty()
     void testIsEmpty();

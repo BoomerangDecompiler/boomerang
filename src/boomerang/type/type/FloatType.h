@@ -44,4 +44,3 @@ public:
 private:
     size_t size; // Size in bits, e.g. 64
 };
-

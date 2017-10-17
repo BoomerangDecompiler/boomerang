@@ -12,9 +12,11 @@
 
 #include <cassert>
 
-#define HANDLE_OPER(op) case (op): return  #op
+#define HANDLE_OPER(op) \
+case (op):              \
+    return  # op
 
-const char* operToString(OPER oper)
+const char *operToString(OPER oper)
 {
     switch (oper)
     {
@@ -165,8 +167,12 @@ const char* operToString(OPER oper)
         HANDLE_OPER(opFGF);
         HANDLE_OPER(opCTI);
         HANDLE_OPER(opNEXT);
-        case opNumOf: break;
+
+    case opNumOf:
+        break;
     }
+
     assert(!"operToString: Invalid operator.");
+
     return "";
 }

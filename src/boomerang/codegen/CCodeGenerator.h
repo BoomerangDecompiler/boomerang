@@ -84,14 +84,14 @@ public:
     virtual ~CCodeGenerator();
 
     /// \copydoc ICodeGenerator::generateCode
-    virtual void generateCode(const Prog* prog, QTextStream& os) override;
+    virtual void generateCode(const Prog *prog, QTextStream& os) override;
 
     /// \copydoc ICodeGenerator::generateCode
-    virtual void generateCode(const Prog* prog, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) override;
+    virtual void generateCode(const Prog *prog, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) override;
 
 public:
     /// \copydoc ICodeGenerator::addAssignmentStatement
-    virtual void addAssignmentStatement(Assign* asgn) override;
+    virtual void addAssignmentStatement(Assign *asgn) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
     virtual void addCallStatement(Function *proc, const QString& name, StatementList& args,
@@ -111,20 +111,20 @@ public:
 
 private:
     /// Add a prototype (for forward declaration)
-    void addPrototype(UserProc* proc);
+    void addPrototype(UserProc *proc);
 
     /// Generate code for a single procedure.
-    void generateCode(UserProc* proc);
+    void generateCode(UserProc *proc);
 
     /// Generate global variables from data sections.
-    void generateDataSectionCode(IBinaryImage* image, QString section_name, Address section_start, uint32_t size);
+    void generateDataSectionCode(IBinaryImage *image, QString section_name, Address section_start, uint32_t size);
 
     /**
      * Print the declaration of a function.
      * \param proc to print
      * \param isDef False if this is just a prototype and ";" should be printed instead of "{"
      */
-    void addProcDec(UserProc* proc, bool isDef);
+    void addProcDec(UserProc *proc, bool isDef);
 
     /*
      * Functions to add new code
@@ -133,52 +133,64 @@ private:
     // pretested loops (cond is optional because it is in the bb [somewhere])
     /// Adds: while (\p cond) {
     void addPretestedLoopHeader(const SharedExp& cond);
+
     /// Adds: }
     void addPretestedLoopEnd();
 
     // endless loops
     /// Adds: for(;;) {
     void addEndlessLoopHeader();
+
     /// Adds: }
     void addEndlessLoopEnd();
 
     // posttested loops
     /// Adds: do {
     void addPostTestedLoopHeader();
+
     /// Adds: } while (\a cond);
     void addPostTestedLoopEnd(const SharedExp& cond);
 
     // case conditionals "nways"
     /// Adds: switch(\a cond) {
     void addCaseCondHeader(const SharedExp& cond);
+
     /// Adds: case \a opt :
     void addCaseCondOption(Exp& opt);
+
     /// Adds: break;
     void addCaseCondOptionEnd();
+
     /// Adds: default:
     void addCaseCondElse();
+
     /// Adds: }
     void addCaseCondEnd();
 
     // if conditions
     /// Adds: if(\a cond) {
     void addIfCondHeader(const SharedExp& cond);
+
     /// Adds: }
     void addIfCondEnd();
 
     // if else conditions
     /// Adds: if(\a cond) {
     void addIfElseCondHeader(const SharedExp& cond);
+
     /// Adds: } else {
     void addIfElseCondOption();
+
     /// Adds: }
     void addIfElseCondEnd();
 
     // goto, break, continue, etc
     /// Adds: goto L \em ord
     void addGoto(int ord);
+
     /// Adds: continue;
     void addContinue();
+
     /// Adds: break;
     void addBreak();
 
@@ -191,8 +203,8 @@ private:
 
     // proc related
     /**
-    * Print the start of a function, and also as a comment its address.
-    */
+     * Print the start of a function, and also as a comment its address.
+     */
     void addProcStart(UserProc *proc);
 
     /// Adds: }
@@ -245,7 +257,7 @@ private:
     void closeParen(QTextStream& str, PREC outer, PREC inner);
 
 
-    void generateCode(BasicBlock* bb, BasicBlock* latch, std::list<BasicBlock *>& followSet, std::list<BasicBlock *>& gotoSet, UserProc *proc);
+    void generateCode(BasicBlock *bb, BasicBlock *latch, std::list<BasicBlock *>& followSet, std::list<BasicBlock *>& gotoSet, UserProc *proc);
     void generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& gotoSet, UserProc *proc, BasicBlock *latch, std::list<BasicBlock *>& followSet);
 
     /// Emits a goto statement (at the correct indentation level) with the destination label for dest. Also places the label
@@ -254,10 +266,10 @@ private:
     /// emit a 'return' instead (but would have to duplicate the other code in that return BB).    Also, 'continue' and
     /// 'break'
     /// statements are used instead if possible
-    void emitGotoAndLabel(BasicBlock* bb, BasicBlock *dest);
+    void emitGotoAndLabel(BasicBlock *bb, BasicBlock *dest);
 
     /// Generates code for each non-CTI (except procedure calls) statement within the block.
-    void writeBB(BasicBlock* bb);
+    void writeBB(BasicBlock *bb);
 
 private:
     /// Dump all generated code to \a os.
@@ -275,5 +287,5 @@ private:
     std::map<QString, SharedType> m_locals; ///< All locals in a Proc
     std::set<int> m_usedLabels;             ///< All used goto labels.
     QStringList m_lines;                    ///< The generated code.
-    UserProc* m_proc;
+    UserProc *m_proc;
 };

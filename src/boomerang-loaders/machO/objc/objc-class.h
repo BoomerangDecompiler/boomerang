@@ -265,9 +265,9 @@ typedef void *marg_list;
 #define marg_prearg_size    0
 #endif
 
-#define marg_malloc(margs, method)                                                                        \
+#define marg_malloc(margs, method)                                                                      \
     do {                                                                                                \
-        margs = (marg_list *)malloc(marg_prearg_size + ((7 + method_getSizeOfArguments(method)) & ~7));    \
+        margs = (marg_list *)malloc(marg_prearg_size + ((7 + method_getSizeOfArguments(method)) & ~7)); \
     } while (0)
 
 #define marg_free(margs) \

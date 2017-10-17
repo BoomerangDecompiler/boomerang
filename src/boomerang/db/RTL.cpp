@@ -19,9 +19,9 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/exp/Operator.h"          // for OPER::opIntConst
+#include "boomerang/db/exp/Operator.h"        // for OPER::opIntConst
 
-#include "boomerang/util/Log.h"                  // for LOG_VERBOSE
+#include "boomerang/util/Log.h"               // for LOG_VERBOSE
 #include "boomerang/util/Types.h"             // for Address
 
 #include <QString>
@@ -220,7 +220,7 @@ QTextStream& operator<<(QTextStream& os, const RTL *r)
 
 void RTL::simplify()
 {
-    for (iterator it = begin(); it != end(); ) {
+    for (iterator it = begin(); it != end();) {
         Statement *s = *it;
         s->simplify();
 

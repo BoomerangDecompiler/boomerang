@@ -47,13 +47,13 @@ public:
     void unloadBinaryFile() override;
 
     /// \copydoc IProject::getImage
-    IBinaryImage* getImage() override { return m_image.get(); }
+    IBinaryImage *getImage() override { return m_image.get(); }
 
     /// \copydoc IProject::getImage
-    const IBinaryImage* getImage() const override { return m_image.get(); }
+    const IBinaryImage *getImage() const override { return m_image.get(); }
 
     /// Get the best loader that is able to load the file at \p filePath
-    IFileLoader* getBestLoader(const QString& filePath) const override;
+    IFileLoader *getBestLoader(const QString& filePath) const override;
 
 private:
     /// Load all plugins from the plugin directory.
@@ -64,5 +64,5 @@ private:
     std::shared_ptr<IBinaryImage> m_image; ///< raw memory interface
 
     // Plugins
-    std::vector<std::shared_ptr<LoaderPlugin>> m_loaderPlugins;
+    std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins;
 };

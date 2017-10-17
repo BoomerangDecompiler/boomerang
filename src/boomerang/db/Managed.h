@@ -53,12 +53,13 @@ public:
     bool isSubSetOf(InstructionSet& other);      ///< Subset relation
 
     // Remove this Statement. Return false if it was not found
-    bool remove(Statement *s);                 ///< Removal; rets false if not found
+    bool remove(Statement *s);                   ///< Removal; rets false if not found
     bool removeIfDefines(SharedExp given);       ///< Remove if given exp is defined
     bool removeIfDefines(InstructionSet& given); ///< Remove if any given is def'd
 
     // Search for s in this Statement set. Return true if found
     bool exists(Statement *s);                 ///< Search; returns false if !found
+
     // Find a definition for loc in this Statement set. Return true if found
     bool definesLoc(SharedExp loc);              ///< Search; returns true if any
 
@@ -145,9 +146,9 @@ public:
     // This one is needed where you remove in the middle of a loop
     // Use like this: it = mystatementlist.erase(it);
     bool exists(Statement *s);            ///< Search; returns false if not found
-    char *prints();                         ///< Print to string (for debugging)
-    void dump();                            ///< Print to standard error for debugging
-    void makeCloneOf(StatementList& o);     ///< Make this a clone of o
+    char *prints();                       ///< Print to string (for debugging)
+    void dump();                          ///< Print to standard error for debugging
+    void makeCloneOf(StatementList& o);   ///< Make this a clone of o
 
     /// Return true if loc appears on the left of any statements in this list
     /// Note: statements in this list are assumed to be assignments
@@ -211,8 +212,8 @@ class LocationSet
     ExpSet lset;
 
 public:
-    typedef ExpSet::iterator         iterator;
-    typedef ExpSet::const_iterator   const_iterator;
+    typedef ExpSet::iterator       iterator;
+    typedef ExpSet::const_iterator const_iterator;
 
     LocationSet() {}                              ///< Default constructor
     ~LocationSet() {}                             ///< virtual destructor kills warning
@@ -286,8 +287,8 @@ class ConnectionGraph
     std::multimap<SharedExp, SharedExp, lessExpStar> emap;   ///< The map
 
 public:
-    typedef std::multimap<SharedExp, SharedExp, lessExpStar>::iterator         iterator;
-    typedef std::multimap<SharedExp, SharedExp, lessExpStar>::const_iterator   const_iterator;
+    typedef std::multimap<SharedExp, SharedExp, lessExpStar>::iterator       iterator;
+    typedef std::multimap<SharedExp, SharedExp, lessExpStar>::const_iterator const_iterator;
 
     ConnectionGraph() {}
 

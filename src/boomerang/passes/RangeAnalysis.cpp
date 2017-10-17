@@ -95,16 +95,27 @@ public:
 };
 
 
-struct RangePrivateData
+class RangePrivateData
 {
+public:
     RangeMap& getRanges(Statement *insn)
     {
         return m_ranges[insn];
     }
 
-    void setRanges(Statement *insn, RangeMap r)
+    const RangeMap& getRanges(Statement *insn) const
+    {
+        return m_ranges.at(insn);
+    }
+
+    void setRanges(Statement *insn, const RangeMap& r)
     {
         m_ranges[insn] = r;
+    }
+
+    void setRanges(Statement *insn, RangeMap&& r)
+    {
+        m_ranges[insn] = std::move(r);
     }
 
     void clearRanges()
@@ -117,17 +128,22 @@ struct RangePrivateData
         return m_branchRanges[s];
     }
 
-    void setBranchRange(BranchStatement *s, RangeMap& rm)
+    void setBranchRange(BranchStatement *s, const RangeMap& rm)
     {
         m_branchRanges[s] = rm;
+    }
+
+    void setBranchRange(BranchStatement *s, RangeMap&& rm)
+    {
+        m_branchRanges[s] = std::move(rm);
     }
 
     void setSavedRanges(Statement *insn, RangeMap map);
     RangeMap getSavedRanges(Statement *insn);
 
-public:
-    std::map<Statement *, RangeMap>     m_savedInputRanges; ///< overestimation of ranges of locations
-    std::map<Statement *, RangeMap>     m_ranges;           ///< saved overestimation of ranges of locations
+private:
+    std::map<Statement *, RangeMap> m_savedInputRanges;       ///< overestimation of ranges of locations
+    std::map<Statement *, RangeMap> m_ranges;                 ///< saved overestimation of ranges of locations
     std::map<BranchStatement *, RangeMap> m_branchRanges;
 };
 
@@ -160,7 +176,7 @@ void RangeAnalysis::clearRanges()
 class RangeVisitor : public StmtVisitor
 {
 public:
-    RangePrivateData          *tgt;
+    RangePrivateData *tgt;
     std::list<Statement *>& execution_paths;
     RangeVisitor(RangePrivateData *t, std::list<Statement *>& ex_paths)
         : tgt(t)
@@ -208,8 +224,8 @@ public:
             input.addRange(Terminal::get(opPC), rpc);
         }
         else {
-            BasicBlock  *pred = insn->getBB()->getInEdges()[0];
-            Statement *last = pred->getLastStmt();
+            BasicBlock *pred = insn->getBB()->getInEdges()[0];
+            Statement  *last = pred->getLastStmt();
             assert(last);
 
             if (pred->getNumOutEdges() != 2) {
@@ -490,6 +506,7 @@ public:
                     for (size_t i = 0; i < sig->getNumParams(); i++) {
                         auto   a   = sig->getParamExp(i);
                         Assign *as = new Assign(VoidType::get(), a->clone(), a->clone());
+
                         if (as) {
                             as->setProc(stmt->getProc());
                             as->setBB(stmt->getBB());
@@ -531,6 +548,7 @@ public:
             }
             else if (!strncmp(qPrintable(stmt->getDestProc()->getName()), "__imp_", 6)) {
                 Statement *first = ((UserProc *)stmt->getDestProc())->getCFG()->getEntryBB()->getFirstStmt();
+
                 if (!first || !first->isCall()) {
                     assert(false);
                     return false;
@@ -538,12 +556,13 @@ public:
 
                 Function *d = ((CallStatement *)first)->getDestProc();
 
-                if (d && d->getSignature()->getConvention() == CallConv::Pascal) {
+                if (d && (d->getSignature()->getConvention() == CallConv::Pascal)) {
                     c += d->getSignature()->getNumParams() * 4;
                 }
             }
             else if (!stmt->getDestProc()->isLib()) {
                 UserProc *p = (UserProc *)stmt->getDestProc();
+
                 if (!p) {
                     assert(false);
                     return false;
@@ -571,6 +590,7 @@ public:
 
                 if (retbb && (eq == nullptr)) {
                     Statement *last = retbb->getLastStmt();
+
                     if (!last) {
                         assert(false);
                         return false;
@@ -678,7 +698,7 @@ public:
                         LOG_ERROR("Stack height assumption violated %1", r.toString());
                         LOG_ERROR(" my BB: ", stmt->getBB()->getLowAddr());
 
-                        QString procStr;
+                        QString     procStr;
                         QTextStream ost(&procStr);
                         stmt->getProc()->print(ost);
                         LOG_VERBOSE(procStr);
@@ -697,7 +717,7 @@ public:
         }
 
         if (DEBUG_RANGE_ANALYSIS) {
-            LOG_VERBOSE("%1",stmt);
+            LOG_VERBOSE("%1", stmt);
         }
 
         return true;

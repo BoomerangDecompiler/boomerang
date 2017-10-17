@@ -19,7 +19,7 @@
 #include "boomerang/type/type/ArrayType.h"
 
 
-DataIntervalMap::DataIntervalMap(UserProc* userProc)
+DataIntervalMap::DataIntervalMap(UserProc *userProc)
     : m_proc(userProc)
 {
 }
@@ -30,7 +30,7 @@ bool DataIntervalMap::isClear(Address addr, unsigned size)
     VariableMap::const_iterator it1, it2;
     std::tie(it1, it2) = m_varMap.equalRange(addr, addr + size);
 
-    if (it1 == m_varMap.end() && it2 == m_varMap.end()) {
+    if ((it1 == m_varMap.end()) && (it2 == m_varMap.end())) {
         return true; // no variable blocking
     }
     else if (it2 == m_varMap.end()) {
@@ -75,7 +75,7 @@ DataIntervalMap::iterator DataIntervalMap::insertItem(Address baseAddr, QString 
     iterator it1, it2;
     std::tie(it1, it2) = m_varMap.equalRange(newTypeRange);
 
-    if (it1 == end() && it2 == end()) {
+    if ((it1 == end()) && (it2 == end())) {
         // not overlapped by any variable -> just insert directly
         return m_varMap.insert(newTypeRange, TypedVariable(baseAddr, name, type));
     }
@@ -113,14 +113,14 @@ DataIntervalMap::iterator DataIntervalMap::insertItem(Address baseAddr, QString 
 }
 
 
-void DataIntervalMap::insertComponentType(TypedVariable* existingVar, Address addr, const QString& /*name*/, SharedType type, bool /*forced*/)
+void DataIntervalMap::insertComponentType(TypedVariable *existingVar, Address addr, const QString& /*name*/, SharedType type, bool /*forced*/)
 {
     assert(existingVar);
     assert(existingVar->baseAddr <= addr);
 
     if (existingVar->type->resolvesToCompound()) {
-        const uint64 bitOffset = (addr - existingVar->baseAddr).value() * 8;
-        SharedType memberType = existingVar->type->as<CompoundType>()->getTypeAtOffset(bitOffset);
+        const uint64 bitOffset  = (addr - existingVar->baseAddr).value() * 8;
+        SharedType   memberType = existingVar->type->as<CompoundType>()->getTypeAtOffset(bitOffset);
 
         if (!memberType || !memberType->isCompatibleWith(*type)) {
             LOG_ERROR("TYPE ERROR: At address %1 type %2 is not compatible with existing structure type %3",
@@ -155,10 +155,11 @@ void DataIntervalMap::insertComponentType(TypedVariable* existingVar, Address ad
 DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const QString& name, SharedType ty, bool /*forced*/)
 {
     const Address endAddr = addr + ty->getSize() / 8; // This is the byte address just past the type to be inserted
+
     VariableMap::const_iterator it1, it2;
+
     // First check that the new entry will be compatible with everything it will overlap
     if (ty->resolvesToCompound()) {
-
         std::tie(it1, it2) = m_varMap.equalRange(addr, endAddr);
 
         for (VariableMap::const_iterator it = it1; it != it2; ++it) {
@@ -201,7 +202,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
         // Just make sure it doesn't overlap anything
         if (!isClear(addr, (ty->getSize() + 7) / 8)) {
             LOG_ERROR("TYPE ERROR: at address %1, overlapping type %2 "
-                "does not resolve to compound or array", addr, ty->getCtype());
+                      "does not resolve to compound or array", addr, ty->getCtype());
             return end();
         }
     }
@@ -285,7 +286,7 @@ char *DataIntervalMap::prints()
 
     for (const auto& varPair : m_varMap) {
         const Interval<Address>& varRange = varPair.first;
-        const TypedVariable& var = varPair.second;
+        const TypedVariable&     var      = varPair.second;
         ost << varRange.lower() << "-" << varRange.upper() << " " << var.name << " " << var.type->getCtype() << "\n";
     }
 
@@ -298,13 +299,14 @@ char *DataIntervalMap::prints()
 void DataIntervalMap::clearRange(const Interval<Address>& interval)
 {
     iterator it, it2;
+
     std::tie(it, it2) = m_varMap.equalRange(interval);
 
     while (it != it2) {
-        TypedVariable& var = it->second;
-        const Interval<Address> typeRange(var.baseAddr, var.baseAddr + 8*var.size);
+        TypedVariable&          var = it->second;
+        const Interval<Address> typeRange(var.baseAddr, var.baseAddr + 8 * var.size);
 
-        if (var.type->resolvesToArray() && var.baseAddr < interval.lower() && var.type->as<ArrayType>()->isUnbounded()) {
+        if (var.type->resolvesToArray() && (var.baseAddr < interval.lower()) && var.type->as<ArrayType>()->isUnbounded()) {
             // unbounded array -> just adjust the range of the array
             // to not overlap with the interval
             uint64 newSize = interval.lower().value() - var.baseAddr.value();

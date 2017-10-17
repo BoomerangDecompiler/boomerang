@@ -55,8 +55,8 @@ enum class BBType;
  ******************************************************************************/
 class Cfg
 {
-    typedef std::set<CallStatement *>                            CallStatementSet;
-    typedef std::map<SharedExp, Statement *, lessExpStar>        ExpStatementMap;
+    typedef std::set<CallStatement *>                              CallStatementSet;
+    typedef std::map<SharedExp, Statement *, lessExpStar>          ExpStatementMap;
 
     // A type for the ADDRESS to BB map
     typedef std::map<Address, BasicBlock *, std::less<Address> >   MAPBB;
@@ -64,7 +64,7 @@ class Cfg
     typedef std::list<BasicBlock *>::const_iterator                BBC_IT;
 
 public:
-    typedef BB_IT iterator;
+    typedef BB_IT                                                  iterator;
 
     class BBAlreadyExistsError : public std::exception
     {
@@ -77,7 +77,7 @@ public:
     /**
      * Creates an empty CFG.
      */
-    Cfg(UserProc* proc);
+    Cfg(UserProc *proc);
 
     /***************************************************************************/ /**
      * \brief        Destructor. Note: destructs the component BBs as well
@@ -119,7 +119,7 @@ public:
      * \param bbType - type of new BasicBlock
      * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
      ******************************************************************************/
-    BasicBlock *newBB(std::list<RTL *> *pRtls, BBType bbType) noexcept(false);
+    BasicBlock *newBB(std::list<RTL *> *pRtls, BBType bbType) noexcept (false);
 
     /***************************************************************************/ /**
      * \brief Allocates space for a new, incomplete BB, and the given address is
@@ -135,12 +135,13 @@ public:
      * Get a BasicBlock starting at the given address.
      * If there is no such block, return nullptr.
      */
-    inline BasicBlock* getBB(Address addr)
+    inline BasicBlock *getBB(Address addr)
     {
         MAPBB::iterator it = m_mapBB.find(addr);
         return (it != m_mapBB.end()) ? (*it).second : nullptr;
     }
-    inline const BasicBlock* getBB(Address addr) const
+
+    inline const BasicBlock *getBB(Address addr) const
     {
         MAPBB::const_iterator it = m_mapBB.find(addr);
         return (it != m_mapBB.end()) ? (*it).second : nullptr;
@@ -181,7 +182,7 @@ public:
      * \note         The label is only set if it was not set previously
      * \param        bb Pointer to the BB whose label will be set
      ******************************************************************************/
-    void setLabelRequired(BasicBlock* bb);
+    void setLabelRequired(BasicBlock *bb);
 
     /***************************************************************************/ /**
      * \brief Get the first BB of this cfg
@@ -191,8 +192,8 @@ public:
      * \param       it set to an value that must be passed to getNextBB
      * \returns     Pointer to the first BB this cfg, or nullptr if none
      ******************************************************************************/
-    BasicBlock* getFirstBB(BB_IT& it);
-    const BasicBlock* getFirstBB(BBC_IT& it) const;
+    BasicBlock *getFirstBB(BB_IT& it);
+    const BasicBlock *getFirstBB(BBC_IT& it) const;
 
     /***************************************************************************/ /**
      * \brief Get the next BB this cfg. Basically increments the given iterator and returns it
@@ -203,8 +204,8 @@ public:
      * \param   it - iterator from a call to getFirstBB or getNextBB
      * \returns pointer to the BB, or nullptr if no more
      ******************************************************************************/
-    BasicBlock* getNextBB(BB_IT& it);
-    const BasicBlock* getNextBB(BBC_IT& it) const;
+    BasicBlock *getNextBB(BB_IT& it);
+    const BasicBlock *getNextBB(BBC_IT& it) const;
 
     /*
      * An alternative to the above is to use begin() and end():
@@ -269,7 +270,7 @@ public:
     bool existsBB(Address addr) const;
 
     /// Check if the BasicBlock is in this graph
-    bool existsBB(const BasicBlock* bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
+    bool existsBB(const BasicBlock *bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
 
     /***************************************************************************/ /**
      * \brief   Sorts the BBs in a cfg by first address. Just makes it more convenient to read when BBs are
@@ -409,8 +410,8 @@ public:
     BasicBlock *bbForAddr(Address addr) { return m_mapBB[addr]; }
 
     /***************************************************************************/ /**
-    * \brief Simplify all the expressions in the CFG
-    ******************************************************************************/
+     * \brief Simplify all the expressions in the CFG
+     ******************************************************************************/
     void simplify();
 
     /**
@@ -594,8 +595,8 @@ private:
     std::vector<BasicBlock *> m_ordering;    ///< Ordering of BBs for control flow structuring
     std::vector<BasicBlock *> m_revOrdering; ///< Ordering of BBs for control flow structuring
 
-    MAPBB m_mapBB;                 ///< The Address to BB map
-    BasicBlock* m_entryBB;         ///< The CFG entry BasicBlock.
-    BasicBlock* m_exitBB;          ///< The CFG exit BasicBlock.
-    ExpStatementMap m_implicitMap; ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
+    MAPBB m_mapBB;                           ///< The Address to BB map
+    BasicBlock *m_entryBB;                   ///< The CFG entry BasicBlock.
+    BasicBlock *m_exitBB;                    ///< The CFG exit BasicBlock.
+    ExpStatementMap m_implicitMap;           ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
 };

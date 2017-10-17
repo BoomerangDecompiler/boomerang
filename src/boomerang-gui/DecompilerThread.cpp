@@ -104,6 +104,7 @@ void Decompiler::setOutputPath(const QString& path)
         LOG_MSG("Creating output directory '%1'", path);
         QDir().mkpath(path);
     }
+
     Boomerang::get()->getSettings()->setOutputDirectory(path);
 }
 

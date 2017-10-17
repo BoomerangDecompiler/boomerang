@@ -16,16 +16,16 @@
 
 
 /***************************************************************************/ /**
-* Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
-******************************************************************************/
+ * Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
+ ******************************************************************************/
 class Const : public Exp
 {
 private:
     union Data
     {
-        int      i;    ///< Integer
-        QWord    ll;   ///< 64 bit integer / address / pointer
-        double   d;    ///< Double precision float
+        int    i;      ///< Integer
+        QWord  ll;     ///< 64 bit integer / address / pointer
+        double d;      ///< Double precision float
 
         /// Don't store string: function could be renamed
         Function *pp;      ///< Pointer to function
@@ -58,27 +58,27 @@ public:
     // Compare
 
     /***************************************************************************/ /**
-    * \brief        Virtual function to compare myself for equality with
-    *               another Exp
-    * \param  o     Ref to other Exp
-    * \returns      True if equal
-    ******************************************************************************/
+     * \brief        Virtual function to compare myself for equality with
+     *               another Exp
+     * \param  o     Ref to other Exp
+     * \returns      True if equal
+     ******************************************************************************/
     virtual bool operator==(const Exp& o) const override;
 
     /***************************************************************************/ /**
-    * \brief      Virtual function to compare myself with another Exp
-    * \note       The test for a wildcard is only with this object, not the other object (o).
-    *             So when searching and there could be wildcards, use search == *this not *this == search
-    * \param      o - Ref to other Exp
-    * \returns    true if equal
-    ******************************************************************************/
+     * \brief      Virtual function to compare myself with another Exp
+     * \note       The test for a wildcard is only with this object, not the other object (o).
+     *             So when searching and there could be wildcards, use search == *this not *this == search
+     * \param      o - Ref to other Exp
+     * \returns    true if equal
+     ******************************************************************************/
     virtual bool operator<(const Exp& o) const override;
 
     /***************************************************************************/ /**
-    * \brief        Virtual function to compare myself for equality with another Exp, *ignoring subscripts*
-    * \param        o - Ref to other Exp
-    * \returns      True if equal
-    ******************************************************************************/
+     * \brief        Virtual function to compare myself for equality with another Exp, *ignoring subscripts*
+     * \param        o - Ref to other Exp
+     * \returns      True if equal
+     ******************************************************************************/
     virtual bool operator*=(const Exp& o) const override;
 
     // Get the constant
@@ -102,10 +102,10 @@ public:
     void setType(SharedType ty) { m_type = ty; }
 
     /***************************************************************************/ /**
-    * \brief       "Print" in infix notation the expression to a stream.
-    *              Mainly for debugging, or maybe some low level windows
-    * \param       os  - Ref to an output stream
-    ******************************************************************************/
+     * \brief       "Print" in infix notation the expression to a stream.
+     *              Mainly for debugging, or maybe some low level windows
+     * \param       os  - Ref to an output stream
+     ******************************************************************************/
     virtual void print(QTextStream& os, bool = false) const override;
 
     /// Print "recursive" (extra parens not wanted at outer levels)
@@ -120,10 +120,10 @@ public:
     virtual SharedExp accept(ExpModifier *v) override;
 
     /***************************************************************************/ /**
-    * \brief        Matches this expression to the given patten
-    * \param        pattern to match
-    * \returns      list of variable bindings, or nullptr if matching fails
-    ******************************************************************************/
+     * \brief        Matches this expression to the given patten
+     * \param        pattern to match
+     * \returns      list of variable bindings, or nullptr if matching fails
+     ******************************************************************************/
     virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
     int getConscript() const { return m_conscript; }

@@ -84,6 +84,7 @@ Const::Const(Address a)
     u.ll = a.value();
 }
 
+
 // Copy constructor
 Const::Const(const Const& o)
     : Exp(o.m_oper)
@@ -93,7 +94,6 @@ Const::Const(const Const& o)
     m_type      = o.m_type;
     m_string    = o.m_string;
 }
-
 
 
 bool Const::operator<(const Exp& o) const
@@ -121,10 +121,17 @@ bool Const::operator<(const Exp& o) const
 
     switch (m_oper)
     {
-    case opIntConst:  return u.i      < ((Const&)o).u.i;
-    case opLongConst: return u.ll     < ((Const&)o).u.ll;
-    case opFltConst:  return u.d      < ((Const&)o).u.d;
-    case opStrConst:  return m_string < ((Const&)o).m_string;
+    case opIntConst:
+        return u.i < ((Const&)o).u.i;
+
+    case opLongConst:
+        return u.ll < ((Const&)o).u.ll;
+
+    case opFltConst:
+        return u.d < ((Const&)o).u.d;
+
+    case opStrConst:
+        return m_string < ((Const&)o).m_string;
 
     default:
         LOG_FATAL("Invalid operator %1", operToString(m_oper));
@@ -132,7 +139,6 @@ bool Const::operator<(const Exp& o) const
 
     return false;
 }
-
 
 
 bool Const::operator*=(const Exp& o) const
@@ -156,39 +162,39 @@ SharedExp Const::genConstraints(SharedExp result)
 
         switch (m_oper)
         {
-            case opLongConst:
-                // An integer constant is compatible with any size of integer, as long is it is in the right range
-                // (no test yet) FIXME: is there an endianness issue here?
-            case opIntConst:
-                match = t->isInteger();
+        case opLongConst:
+        // An integer constant is compatible with any size of integer, as long is it is in the right range
+        // (no test yet) FIXME: is there an endianness issue here?
+        case opIntConst:
+            match = t->isInteger();
 
-                // An integer constant can also match a pointer to something.  Assume values less than 0x100 can't be a
-                // pointer
-                if ((unsigned)u.i >= 0x100) {
-                    match |= t->isPointer();
-                }
+            // An integer constant can also match a pointer to something.  Assume values less than 0x100 can't be a
+            // pointer
+            if ((unsigned)u.i >= 0x100) {
+                match |= t->isPointer();
+            }
 
-                // We can co-erce 32 bit constants to floats
-                match |= t->isFloat();
-                break;
+            // We can co-erce 32 bit constants to floats
+            match |= t->isFloat();
+            break;
 
-            case opStrConst:
+        case opStrConst:
 
-                if (t->isPointer()) {
-                    auto ptr_type = std::static_pointer_cast<PointerType>(t);
-                    match = ptr_type->getPointsTo()->isChar() ||
+            if (t->isPointer()) {
+                auto ptr_type = std::static_pointer_cast<PointerType>(t);
+                match = ptr_type->getPointsTo()->isChar() ||
                         (ptr_type->getPointsTo()->isArray() &&
-                        (ptr_type->getPointsTo())->as<ArrayType>()->getBaseType()->isChar());
-                }
+                         (ptr_type->getPointsTo())->as<ArrayType>()->getBaseType()->isChar());
+            }
 
-                break;
+            break;
 
-            case opFltConst:
-                match = t->isFloat();
-                break;
+        case opFltConst:
+            match = t->isFloat();
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         if (match) {
@@ -207,7 +213,7 @@ SharedExp Const::genConstraints(SharedExp result)
 
     switch (m_oper)
     {
-        case opIntConst:
+    case opIntConst:
         {
             // We have something like local1 = 1234.  Either they are both integer, or both pointer
             SharedType intt = IntegerType::get(0);
@@ -215,29 +221,29 @@ SharedExp Const::genConstraints(SharedExp result)
             return Binary::get(
                 opOr, Binary::get(
                     opAnd, Binary::get(opEquals, result->clone(), TypeVal::get(intt)),
-                                  Binary::get(opEquals,
-                                              Unary::get(opTypeOf,
-                                                         // Note: don't clone 'this', so we can change the Const after type analysis!
-                                                         shared_from_this()),
-                                              TypeVal::get(intt))),
-                               Binary::get(opAnd, Binary::get(opEquals, result->clone(), TypeVal::get(alph)),
-                                           Binary::get(opEquals, Unary::get(opTypeOf, shared_from_this()), TypeVal::get(alph))));
+                    Binary::get(opEquals,
+                                Unary::get(opTypeOf,
+                                           // Note: don't clone 'this', so we can change the Const after type analysis!
+                                           shared_from_this()),
+                                TypeVal::get(intt))),
+                Binary::get(opAnd, Binary::get(opEquals, result->clone(), TypeVal::get(alph)),
+                            Binary::get(opEquals, Unary::get(opTypeOf, shared_from_this()), TypeVal::get(alph))));
         }
 
-        case opLongConst:
-            t = IntegerType::get(64);
-            break;
+    case opLongConst:
+        t = IntegerType::get(64);
+        break;
 
-        case opStrConst:
-            t = PointerType::get(CharType::get());
-            break;
+    case opStrConst:
+        t = PointerType::get(CharType::get());
+        break;
 
-        case opFltConst:
-            t = FloatType::get(64); // size is not known. Assume double for now
-            break;
+    case opFltConst:
+        t = FloatType::get(64);     // size is not known. Assume double for now
+        break;
 
-        default:
-            return nullptr;
+    default:
+        return nullptr;
     }
 
     auto      tv = TypeVal::get(t);
@@ -257,6 +263,7 @@ bool Const::accept(ExpVisitor *v)
     return v->visit(shared_from_base<Const>());
 }
 
+
 SharedExp Const::accept(ExpModifier *v)
 {
     auto ret       = v->preVisit(shared_from_base<Const>());
@@ -273,11 +280,25 @@ void Const::printx(int ind) const
 
     switch (m_oper)
     {
-        case opIntConst:  LOG_MSG("%1", u.i);           break;
-        case opStrConst:  LOG_MSG("\"%1\"", m_string);  break;
-        case opFltConst:  LOG_MSG("%1", u.d);           break;
-        case opFuncConst: LOG_MSG(u.pp->getName());     break;
-        default:          LOG_MSG("?%1?", (int)m_oper); break;
+    case opIntConst:
+        LOG_MSG("%1", u.i);
+        break;
+
+    case opStrConst:
+        LOG_MSG("\"%1\"", m_string);
+        break;
+
+    case opFltConst:
+        LOG_MSG("%1", u.d);
+        break;
+
+    case opFuncConst:
+        LOG_MSG(u.pp->getName());
+        break;
+
+    default:
+        LOG_MSG("?%1?", (int)m_oper);
+        break;
     }
 
     if (m_conscript) {
@@ -356,6 +377,7 @@ void Const::printNoQuotes(QTextStream& os) const
     }
 }
 
+
 void Const::appendDotFile(QTextStream& of)
 {
     // We define a unique name for each node as "e_0x123456" if the address of "this" == 0x123456
@@ -427,10 +449,17 @@ bool Const::operator==(const Exp& o) const
 
     switch (m_oper)
     {
-    case opIntConst:  return u.i      == ((Const&)o).u.i;
-    case opLongConst: return u.ll     == ((Const&)o).u.ll;
-    case opFltConst:  return u.d      == ((Const&)o).u.d;
-    case opStrConst:  return m_string == ((Const&)o).m_string;
+    case opIntConst:
+        return u.i == ((Const&)o).u.i;
+
+    case opLongConst:
+        return u.ll == ((Const&)o).u.ll;
+
+    case opFltConst:
+        return u.d == ((Const&)o).u.d;
+
+    case opStrConst:
+        return m_string == ((Const&)o).m_string;
 
     default:
         LOG_FATAL("Invalid operator %1", operToString(m_oper));
@@ -438,4 +467,3 @@ bool Const::operator==(const Exp& o) const
 
     return false;
 }
-

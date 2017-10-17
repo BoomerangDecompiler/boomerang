@@ -15,6 +15,7 @@ VoidType::VoidType()
 {
 }
 
+
 VoidType::~VoidType()
 {
 }

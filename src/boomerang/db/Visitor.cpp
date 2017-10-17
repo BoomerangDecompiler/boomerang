@@ -234,7 +234,7 @@ SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp>& r)
 
     m_mask >>= 1;
     // Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and avoids a cast
-    Statement   *def  = r->getDef();
+    Statement     *def  = r->getDef();
     CallStatement *call = dynamic_cast<CallStatement *>(def);
 
     if (call) {
@@ -479,8 +479,8 @@ bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& arg, bool& override)
 bool UsedLocalFinder::visit(const std::shared_ptr<Location>& e, bool& override)
 {
     override = false;
-    if (e->isLocal())
-    {
+
+    if (e->isLocal()) {
         used->insert(e); // Found a local
     }
 
@@ -1043,7 +1043,7 @@ SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& e)
     }
 
     Statement *def = e->getDef();
-    SharedExp   res  = e;
+    SharedExp res  = e;
 
     if (def && def->isAssign()) {
         SharedExp lhs = ((Assign *)def)->getLeft();
@@ -1203,6 +1203,7 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool&
         else if (base->isArrayIndex()) {
             SharedExp idx = base->getSubExp2();
             SharedExp glo = base->getSubExp1();
+
             if (idx && idx->isIntConst() && glo && glo->isGlobal()) {
                 // We have a glo[K]{-}
                 int        K        = idx->access<Const>()->getInt();

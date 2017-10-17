@@ -64,4 +64,3 @@ public:
 private:
     SharedType type;
 };
-

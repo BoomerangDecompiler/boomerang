@@ -32,35 +32,35 @@
 
 void ParserTest::initTestCase()
 {
-		Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
 }
 
 
 void ParserTest::testRead()
 {
-	RTLInstDict d;
+    RTLInstDict d;
 
-	QVERIFY(d.readSSLFile(SPARC_SSL));
+    QVERIFY(d.readSSLFile(SPARC_SSL));
 }
 
 
 void ParserTest::testExp()
 {
-	QString     s("*i32* r0 := 5 + 6");
-	   Statement *a = SSLParser::parseExp(qPrintable(s));
+    QString   s("*i32* r0 := 5 + 6");
+    Statement *a = SSLParser::parseExp(qPrintable(s));
 
-	QVERIFY(a);
-	QString     res;
-	QTextStream ost(&res);
-	a->print(ost);
-	QCOMPARE(res, "   0 " + s);
-	QString s2 = "*i32* r[0] := 5 + 6";
-	a = SSLParser::parseExp(qPrintable(s2));
-	QVERIFY(a);
-	res.clear();
-	a->print(ost);
-	// Still should print to string s, not s2
-	QCOMPARE(res, "   0 " + s);
+    QVERIFY(a);
+    QString     res;
+    QTextStream ost(&res);
+    a->print(ost);
+    QCOMPARE(res, "   0 " + s);
+    QString s2 = "*i32* r[0] := 5 + 6";
+    a = SSLParser::parseExp(qPrintable(s2));
+    QVERIFY(a);
+    res.clear();
+    a->print(ost);
+    // Still should print to string s, not s2
+    QCOMPARE(res, "   0 " + s);
 }
 
 

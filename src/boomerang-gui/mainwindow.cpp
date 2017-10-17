@@ -61,8 +61,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->toDecodeButton, SIGNAL(clicked()), d, SLOT(decode()));
     connect(ui->toDecompileButton, SIGNAL(clicked()), d, SLOT(decompile()));
     connect(ui->toGenerateCodeButton, SIGNAL(clicked()), d, SLOT(generateCode()));
-    connect(ui->inputFileComboBox, SIGNAL(editTextChanged(const QString &)), d, SLOT(changeInputFile(const QString &)));
-    connect(ui->outputPathComboBox, SIGNAL(editTextChanged(const QString &)), d, SLOT(setOutputPath(const QString &)));
+    connect(ui->inputFileComboBox, SIGNAL(editTextChanged(const QString&)), d, SLOT(changeInputFile(const QString&)));
+    connect(ui->outputPathComboBox, SIGNAL(editTextChanged(const QString&)), d, SLOT(setOutputPath(const QString&)));
 //     connect(ui->inputFileBrowseButton, SIGNAL(clicked()), this, SLOT(browseForInputFile()));
 //     connect(ui->outputPathBrowseButton, SIGNAL(clicked()), this, SLOT(browseForOutputPath()));
 
@@ -89,9 +89,10 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Boomerang");
 
     loadingSettings = true;
-    QSettings   settings("Boomerang", "Boomerang");
+    QSettings settings("Boomerang", "Boomerang");
 
     ui->inputFileComboBox->addItems(settings.value("inputfiles").toStringList());
+
     if (ui->inputFileComboBox->count() > 0) {
         int currentIdx = ui->inputFileComboBox->findText(settings.value("inputfile").toString());
         currentIdx = std::max(currentIdx, 0); // if selected input file could not be found, use last one
@@ -100,6 +101,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     ui->outputPathComboBox->addItems(settings.value("outputpaths").toStringList());
+
     if (ui->outputPathComboBox->count() > 0) {
         int currentIdx = ui->outputPathComboBox->findText(settings.value("outputpath").toString());
         currentIdx = std::max(currentIdx, 0); // if selected output path could not be found, use last one
@@ -133,21 +135,26 @@ void MainWindow::saveSettings()
     if (loadingSettings) {
         return;
     }
-    QSettings   settings("Boomerang", "Boomerang");
+
+    QSettings settings("Boomerang", "Boomerang");
 
     // input files
     QStringList inputfiles;
+
     for (int n = 0; n < ui->inputFileComboBox->count(); n++) {
         inputfiles.append(ui->inputFileComboBox->itemText(n));
     }
+
     settings.setValue("inputfiles", inputfiles);
     settings.setValue("inputfile", ui->inputFileComboBox->currentText());
 
     // Output paths
     QStringList outputPaths;
+
     for (int n = 0; n < ui->outputPathComboBox->count(); n++) {
         outputPaths.append(ui->outputPathComboBox->itemText(n));
     }
+
     settings.setValue("outputpaths", outputPaths);
     settings.setValue("outputpath", ui->outputPathComboBox->currentText());
 }
@@ -160,6 +167,7 @@ void MainWindow::on_inputFileBrowseButton_clicked()
     if (ui->inputFileComboBox->currentIndex() != -1) {
         // try to use the directory of the last opened file as starting directory.
         QString lastUsedFile = ui->inputFileComboBox->itemText(ui->inputFileComboBox->currentIndex());
+
         if (!lastUsedFile.isEmpty()) {
             QFileInfo fi(lastUsedFile);
             openFileDir = fi.absolutePath();
@@ -167,7 +175,7 @@ void MainWindow::on_inputFileBrowseButton_clicked()
     }
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select a file to decompile..."), openFileDir,
-                                             "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*)");
+                                                    "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*)");
 
     if (fileName.isEmpty()) {
         // user cancelled
@@ -175,6 +183,7 @@ void MainWindow::on_inputFileBrowseButton_clicked()
     }
 
     int existingIdx = ui->inputFileComboBox->findText(fileName);
+
     if (existingIdx == -1) {
         // file not in the cache
         ui->inputFileComboBox->insertItem(0, fileName);
@@ -200,6 +209,7 @@ void MainWindow::on_outputPathBrowseButton_clicked()
     }
 
     int existingIdx = ui->outputPathComboBox->findText(outputDir);
+
     if (existingIdx == -1) {
         // directory not in the cache
         ui->outputPathComboBox->insertItem(0, outputDir);
@@ -546,6 +556,7 @@ void MainWindow::showNewUserProc(const QString& name, Address addr)
     }
 
     const QString s = addr.toString();
+
     for (int i = 0; i < nrows; i++) {
         if (ui->userProcs->item(i, 0)->text() == s) {
             return;
@@ -590,7 +601,7 @@ void MainWindow::showNewLibProc(const QString& name, const QString& params)
 void MainWindow::showRemoveUserProc(const QString& name, Address addr)
 {
     Q_UNUSED(name);
-    int     nrows = ui->userProcs->rowCount();
+    int nrows = ui->userProcs->rowCount();
 
     const QString addrString = addr.toString();
 
@@ -1079,7 +1090,7 @@ void MainWindow::on_addButton_pressed()
     }
 
     bool    ok;
-       Address a = Address(ui->addressEdit->text().toInt(&ok, 16));
+    Address a = Address(ui->addressEdit->text().toInt(&ok, 16));
 
     if (!ok) {
         return;

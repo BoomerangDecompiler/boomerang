@@ -30,9 +30,8 @@ class ProcTest : public QObject
 {
 private slots:
     /// Test setting and reading name, constructor, native address
-	void testName();
+    void testName();
 
 protected:
-	std::shared_ptr<Proc> m_proc;
-
+    std::shared_ptr<Proc> m_proc;
 };

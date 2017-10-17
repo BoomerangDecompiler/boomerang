@@ -469,7 +469,7 @@ void ReturnStatement::updateModifieds()
     // Mostly the old modifications will be in the correct order, and inserting will be fastest near the start of
     // the
     // new list. So read the old modifications in reverse order
-    for (it = oldMods.end(); it != oldMods.begin(); ) {
+    for (it = oldMods.end(); it != oldMods.begin();) {
         --it;     // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the collector
         Assignment *as = (Assignment *)*it;
@@ -549,7 +549,7 @@ void ReturnStatement::updateReturns()
 
     // Mostly the old returns will be in the correct order, and inserting will be fastest near the start of the
     // new list. So read the old returns in reverse order
-    for (it = oldRets.end(); it != oldRets.begin(); ) {
+    for (it = oldRets.end(); it != oldRets.begin();) {
         --it;     // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the modifieds
         Assign    *as = (Assign *)*it;

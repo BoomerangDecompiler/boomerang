@@ -51,8 +51,8 @@ PalmBinaryLoader::~PalmBinaryLoader()
 
 void PalmBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
 {
-    m_binaryImage   = image;
-    m_symbols = symbols;
+    m_binaryImage = image;
+    m_symbols     = symbols;
 }
 
 
@@ -60,8 +60,8 @@ namespace
 {
 struct SectionParams
 {
-    QString name;
-    Address from, to;
+    QString     name;
+    Address     from, to;
     HostAddress hostAddr;
 };
 }
@@ -102,6 +102,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
         p  += 4;
 
         Address start_addr(off);
+
         // Guess the length
         if (i > 0) {
             params.back().to = start_addr;
@@ -130,12 +131,14 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 
     // Create a separate, uncompressed, initialised data section
     IBinarySection *dataSection = m_binaryImage->getSectionByName("data0");
+
     if (dataSection == nullptr) {
         LOG_ERROR("No data section found!");
         return false;
     }
 
     const IBinarySection *code0Section = m_binaryImage->getSectionByName("code0");
+
     if (code0Section == nullptr) {
         LOG_ERROR("No code 0 section found!");
         return false;
@@ -255,7 +258,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     LOG_VERBOSE("Used %1 bytes of %2 in decompressing data section",
-                p-(unsigned char*)dataSection->getHostAddr().value(), dataSection->getSize());
+                p - (unsigned char *)dataSection->getHostAddr().value(), dataSection->getSize());
 
     // Replace the data pointer and size with the uncompressed versions
 
@@ -299,6 +302,7 @@ void PalmBinaryLoader::close()
 {
     // Not implemented yet
 }
+
 
 LoadFmt PalmBinaryLoader::getFormat() const
 {
@@ -442,16 +446,16 @@ Address PalmBinaryLoader::getMainEntryPoint()
     }
 
     // Return the start of the code1 section
-    uint16_t  *startCode = (uint16_t *)psect->getHostAddr().value();
-    int delta = (psect->getHostAddr() - psect->getSourceAddr()).value();
+    uint16_t *startCode = (uint16_t *)psect->getHostAddr().value();
+    int      delta      = (psect->getHostAddr() - psect->getSourceAddr()).value();
 
     // First try the CW first jump pattern
     SWord *res = findPattern(startCode, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord), 1);
 
     if (res) {
         // We have the code warrior first jump. Get the addil operand
-        const int   addilOp      = Util::readDWord((startCode + 5), true);
-        SWord *startupCode = (SWord *)(HostAddress(startCode) + 10 + addilOp).value();
+        const int addilOp      = Util::readDWord((startCode + 5), true);
+        SWord     *startupCode = (SWord *)(HostAddress(startCode) + 10 + addilOp).value();
         // Now check the next 60 SWords for the call to PilotMain
         res = findPattern(startupCode, CWCallMain, sizeof(CWCallMain) / sizeof(SWord), 60);
 
@@ -460,7 +464,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
             const int _addilOp = Util::readDWord((res + 5), true);
 
             // That operand plus the address of that operand is PilotMain
-            Address offset_loc = Address((Byte*)res - (Byte*)startCode + 5);
+            Address offset_loc = Address((Byte *)res - (Byte *)startCode + 5);
             return offset_loc + _addilOp; // ADDRESS::host_ptr(res) + 10 + addilOp - delta;
         }
         else {
@@ -513,4 +517,4 @@ void PalmBinaryLoader::generateBinFiles(const QString& path) const
 
 
 BOOMERANG_LOADER_PLUGIN(PalmBinaryLoader,
-    "Palm OS binary file loader", BOOMERANG_VERSION, "Boomerang developers")
+                        "Palm OS binary file loader", BOOMERANG_VERSION, "Boomerang developers")

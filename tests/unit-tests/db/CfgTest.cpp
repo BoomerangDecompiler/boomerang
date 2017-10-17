@@ -46,55 +46,56 @@ void CfgTest::initTestCase()
 void CfgTest::testDominators()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
+
     project.loadBinaryFile(FRONTIER_PENTIUM);
-    IFileLoader* loader = project.getBestLoader(FRONTIER_PENTIUM);
+    IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
     QVERIFY(loader != nullptr);
 
-	Prog      prog(FRONTIER_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-	Type::clearNamedTypes();
-	prog.setFrontEnd(pFE);
-	pFE->decode(&prog);
+    Prog      prog(FRONTIER_PENTIUM);
+    IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
+    Type::clearNamedTypes();
+    prog.setFrontEnd(pFE);
+    pFE->decode(&prog);
 
-	bool    gotMain;
+    bool    gotMain;
     Address addr = pFE->getMainEntryPoint(gotMain);
-	QVERIFY(addr != Address::INVALID);
+    QVERIFY(addr != Address::INVALID);
 
-	Module *m = *(prog.getModuleList().begin());
-	QVERIFY(m != nullptr);
-	QVERIFY(m->size() > 0);
+    Module *m = *(prog.getModuleList().begin());
+    QVERIFY(m != nullptr);
+    QVERIFY(m->size() > 0);
 
-	UserProc *pProc = (UserProc *)*(m->begin());
-	Cfg      *cfg   = pProc->getCFG();
-	DataFlow *df    = pProc->getDataFlow();
-	df->dominators(cfg);
+    UserProc *pProc = (UserProc *)*(m->begin());
+    Cfg      *cfg   = pProc->getCFG();
+    DataFlow *df    = pProc->getDataFlow();
+    df->dominators(cfg);
 
-	// Find BB "5" (as per Appel, Figure 19.5).
-	   BBIterator      it;
-	BasicBlock *bb = cfg->getFirstBB(it);
+    // Find BB "5" (as per Appel, Figure 19.5).
+    BBIterator it;
+    BasicBlock *bb = cfg->getFirstBB(it);
 
-	while (bb && bb->getLowAddr() != FRONTIER_FIVE) {
-		bb = cfg->getNextBB(it);
-	}
+    while (bb && bb->getLowAddr() != FRONTIER_FIVE) {
+        bb = cfg->getNextBB(it);
+    }
 
-	QVERIFY(bb);
-	QString     actual_st;
-	QTextStream actual(&actual_st);
+    QVERIFY(bb);
+    QString     actual_st;
+    QTextStream actual(&actual_st);
 
-	int n5 = df->pbbToNode(bb);
-	std::set<int>::iterator ii;
-	std::set<int>&          DFset = df->getDF(n5);
+    int n5 = df->pbbToNode(bb);
+    std::set<int>::iterator ii;
+    std::set<int>&          DFset = df->getDF(n5);
 
-	for (ii = DFset.begin(); ii != DFset.end(); ii++) {
-		actual << df->nodeToBB(*ii)->getLowAddr() << " ";
-	}
+    for (ii = DFset.begin(); ii != DFset.end(); ii++) {
+        actual << df->nodeToBB(*ii)->getLowAddr() << " ";
+    }
 
-	QCOMPARE(actual_st,
+    QCOMPARE(actual_st,
              FRONTIER_THIRTEEN.toString() + " " +
-             FRONTIER_FOUR.toString()     + " " +
-             FRONTIER_TWELVE.toString()   + " " +
-             FRONTIER_FIVE.toString()     + " "
-    );
+             FRONTIER_FOUR.toString() + " " +
+             FRONTIER_TWELVE.toString() + " " +
+             FRONTIER_FIVE.toString() + " "
+             );
 }
 
 
@@ -107,232 +108,233 @@ void CfgTest::testDominators()
 void CfgTest::testSemiDominators()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
+
     project.loadBinaryFile(SEMI_PENTIUM);
-    IFileLoader* loader = project.getBestLoader(SEMI_PENTIUM);
+    IFileLoader *loader = project.getBestLoader(SEMI_PENTIUM);
     QVERIFY(loader != nullptr);
 
-	Prog      prog(SEMI_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-	Type::clearNamedTypes();
-	prog.setFrontEnd(pFE);
-	pFE->decode(&prog);
+    Prog      prog(SEMI_PENTIUM);
+    IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
+    Type::clearNamedTypes();
+    prog.setFrontEnd(pFE);
+    pFE->decode(&prog);
 
-	bool    gotMain;
+    bool    gotMain;
     Address addr = pFE->getMainEntryPoint(gotMain);
-	QVERIFY(addr != Address::INVALID);
+    QVERIFY(addr != Address::INVALID);
 
-	Module *m = *prog.getModuleList().begin();
-	QVERIFY(m != nullptr);
-	QVERIFY(m->size() > 0);
+    Module *m = *prog.getModuleList().begin();
+    QVERIFY(m != nullptr);
+    QVERIFY(m->size() > 0);
 
-	UserProc *pProc = (UserProc *)(*m->begin());
-	Cfg      *cfg   = pProc->getCFG();
+    UserProc *pProc = (UserProc *)(*m->begin());
+    Cfg      *cfg   = pProc->getCFG();
 
-	DataFlow *df = pProc->getDataFlow();
-	df->dominators(cfg);
+    DataFlow *df = pProc->getDataFlow();
+    df->dominators(cfg);
 
-	// Find BB "L (6)" (as per Appel, Figure 19.8).
-    BBIterator      it;
-	BasicBlock *bb = cfg->getFirstBB(it);
+    // Find BB "L (6)" (as per Appel, Figure 19.8).
+    BBIterator it;
+    BasicBlock *bb = cfg->getFirstBB(it);
 
-	while (bb && bb->getLowAddr() != SEMI_L) {
-		bb = cfg->getNextBB(it);
-	}
+    while (bb && bb->getLowAddr() != SEMI_L) {
+        bb = cfg->getNextBB(it);
+    }
 
-	QVERIFY(bb);
-	int nL = df->pbbToNode(bb);
+    QVERIFY(bb);
+    int nL = df->pbbToNode(bb);
 
-	// The dominator for L should be B, where the semi dominator is D
-	// (book says F)
+    // The dominator for L should be B, where the semi dominator is D
+    // (book says F)
     Address actual_dom  = df->nodeToBB(df->getIdom(nL))->getLowAddr();
-	Address actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
-	QCOMPARE(actual_dom, SEMI_B);
-	QCOMPARE(actual_semi, SEMI_D);
+    Address actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
+    QCOMPARE(actual_dom, SEMI_B);
+    QCOMPARE(actual_semi, SEMI_D);
 
-	// Check the final dominator frontier as well; should be M and B
-	QString     actual_st;
-	QTextStream actual(&actual_st);
+    // Check the final dominator frontier as well; should be M and B
+    QString     actual_st;
+    QTextStream actual(&actual_st);
 
-	std::set<int>&          DFset = df->getDF(nL);
+    std::set<int>& DFset = df->getDF(nL);
 
-	for (auto ii = DFset.begin(); ii != DFset.end(); ii++) {
-		actual << df->nodeToBB(*ii)->getLowAddr() << " ";
-	}
+    for (auto ii = DFset.begin(); ii != DFset.end(); ii++) {
+        actual << df->nodeToBB(*ii)->getLowAddr() << " ";
+    }
 
-	QCOMPARE(actual_st,
+    QCOMPARE(actual_st,
              SEMI_B.toString() + " " +
              SEMI_M.toString() + " "
-            );
+             );
 }
 
 
 void CfgTest::testPlacePhi()
 {
-	QSKIP("Disabled.");
+    QSKIP("Disabled.");
 
     IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(FRONTIER_PENTIUM);
-    IFileLoader* loader = project.getBestLoader(FRONTIER_PENTIUM);
-	QVERIFY(loader != 0);
+    IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
+    QVERIFY(loader != 0);
 
-	Prog      prog(FRONTIER_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-	Type::clearNamedTypes();
-	prog.setFrontEnd(pFE);
-	pFE->decode(&prog);
+    Prog      prog(FRONTIER_PENTIUM);
+    IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
+    Type::clearNamedTypes();
+    prog.setFrontEnd(pFE);
+    pFE->decode(&prog);
 
-	Module *m = *prog.getModuleList().begin();
-	QVERIFY(m != nullptr);
-	QVERIFY(m->size() > 0);
+    Module *m = *prog.getModuleList().begin();
+    QVERIFY(m != nullptr);
+    QVERIFY(m->size() > 0);
 
-	UserProc *pProc = (UserProc *)(*m->begin());
-	Cfg      *cfg   = pProc->getCFG();
+    UserProc *pProc = (UserProc *)(*m->begin());
+    Cfg      *cfg   = pProc->getCFG();
 
-	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-	cfg->sortByAddress();
-	prog.finishDecode();
-	DataFlow *df = pProc->getDataFlow();
-	df->dominators(cfg);
-	df->placePhiFunctions(pProc);
+    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
+    cfg->sortByAddress();
+    prog.finishDecode();
+    DataFlow *df = pProc->getDataFlow();
+    df->dominators(cfg);
+    df->placePhiFunctions(pProc);
 
-	// m[r29 - 8] (x for this program)
-	SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(4)));
+    // m[r29 - 8] (x for this program)
+    SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(4)));
 
-	// A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
-	QString     actual_st;
-	QTextStream actual(&actual_st);
+    // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
+    QString     actual_st;
+    QTextStream actual(&actual_st);
 
-	std::set<int>& A_phi = df->getA_phi(e);
+    std::set<int>& A_phi = df->getA_phi(e);
 
-	for (std::set<int>::iterator ii = A_phi.begin(); ii != A_phi.end(); ++ii) {
-		actual << *ii << " ";
-	}
+    for (std::set<int>::iterator ii = A_phi.begin(); ii != A_phi.end(); ++ii) {
+        actual << *ii << " ";
+    }
 
-	QCOMPARE(actual_st, QString("7 8 10 15 20 21 "));
+    QCOMPARE(actual_st, QString("7 8 10 15 20 21 "));
 }
-
 
 
 void CfgTest::testPlacePhi2()
 {
-	QSKIP("Disabled.");
+    QSKIP("Disabled.");
 
     IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(IFTHEN_PENTIUM);
-    IFileLoader* loader = project.getBestLoader(IFTHEN_PENTIUM);
+    IFileLoader *loader = project.getBestLoader(IFTHEN_PENTIUM);
 
-	QVERIFY(loader != 0);
-	Prog      prog(IFTHEN_PENTIUM);
-	IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-	Type::clearNamedTypes();
-	prog.setFrontEnd(pFE);
-	pFE->decode(&prog);
+    QVERIFY(loader != 0);
+    Prog      prog(IFTHEN_PENTIUM);
+    IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
+    Type::clearNamedTypes();
+    prog.setFrontEnd(pFE);
+    pFE->decode(&prog);
 
-	Module *m = *prog.getModuleList().begin();
-	QVERIFY(m != nullptr);
-	QVERIFY(m->size() > 0);
+    Module *m = *prog.getModuleList().begin();
+    QVERIFY(m != nullptr);
+    QVERIFY(m->size() > 0);
 
-	UserProc *pProc = (UserProc *)(*m->begin());
+    UserProc *pProc = (UserProc *)(*m->begin());
 
-	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-	prog.finishDecode();
+    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
+    prog.finishDecode();
 
-	Cfg *cfg = pProc->getCFG();
-	cfg->sortByAddress();
+    Cfg *cfg = pProc->getCFG();
+    cfg->sortByAddress();
 
-	DataFlow *df = pProc->getDataFlow();
-	df->dominators(cfg);
-	df->placePhiFunctions(pProc);
+    DataFlow *df = pProc->getDataFlow();
+    df->dominators(cfg);
+    df->placePhiFunctions(pProc);
 
-	// In this program, x is allocated at [ebp-4], a at [ebp-8], and
-	// b at [ebp-12]
-	// We check that A_phi[ m[ebp-8] ] is 4, and that
-	// A_phi A_phi[ m[ebp-8] ] is null
-	// (block 4 comes out with n=4)
+    // In this program, x is allocated at [ebp-4], a at [ebp-8], and
+    // b at [ebp-12]
+    // We check that A_phi[ m[ebp-8] ] is 4, and that
+    // A_phi A_phi[ m[ebp-8] ] is null
+    // (block 4 comes out with n=4)
 
-	/*
-	 * Call (0)
-	 |
-	 | V
-	 | Call (1)
-	 |
-	 | V
-	 | Twoway (2) if (b < 4 )
-	 |
-	 |-T-> Fall (3)
-	 |      |
-	 |      V
-	 |-F-> Call (4) ----> Ret (5)
-	 */
+    /*
+     * Call (0)
+     |
+     | V
+     | Call (1)
+     |
+     | V
+     | Twoway (2) if (b < 4 )
+     |
+     |-T-> Fall (3)
+     |      |
+     |      V
+     |-F-> Call (4) ----> Ret (5)
+     */
 
-	QString     actual_st;
-	QTextStream actual(&actual_st);
-	// m[r29 - 8]
-	SharedExp               e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(8)));
-	std::set<int>&          s = df->getA_phi(e);
-	std::set<int>::iterator pp;
+    QString     actual_st;
+    QTextStream actual(&actual_st);
+    // m[r29 - 8]
+    SharedExp               e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(8)));
+    std::set<int>&          s = df->getA_phi(e);
+    std::set<int>::iterator pp;
 
-	for (pp = s.begin(); pp != s.end(); pp++) {
-		actual << *pp << " ";
-	}
+    for (pp = s.begin(); pp != s.end(); pp++) {
+        actual << *pp << " ";
+    }
 
-	QCOMPARE(actual_st, QString("4 "));
+    QCOMPARE(actual_st, QString("4 "));
 
-	if (s.size() > 0) {
-		      BBType actualType   = df->nodeToBB(*s.begin())->getType();
-		      BBType expectedType = BBType::Call;
-		QCOMPARE(actualType, expectedType);
-	}
+    if (s.size() > 0) {
+        BBType actualType   = df->nodeToBB(*s.begin())->getType();
+        BBType expectedType = BBType::Call;
+        QCOMPARE(actualType, expectedType);
+    }
 
-	QString     expected = "";
-	QString     actual_st2;
-	QTextStream actual2(&actual_st2);
-	// m[r29 - 12]
-	e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(12)));
+    QString     expected = "";
+    QString     actual_st2;
+    QTextStream actual2(&actual_st2);
+    // m[r29 - 12]
+    e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(12)));
 
-	std::set<int>& s2 = df->getA_phi(e);
+    std::set<int>& s2 = df->getA_phi(e);
 
-	for (pp = s2.begin(); pp != s2.end(); pp++) {
-		actual2 << *pp << " ";
-	}
+    for (pp = s2.begin(); pp != s2.end(); pp++) {
+        actual2 << *pp << " ";
+    }
 
-	QCOMPARE(actual_st2, expected);
-	delete pFE;
+    QCOMPARE(actual_st2, expected);
+    delete pFE;
 }
 
 
 void CfgTest::testRenameVars()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
+
     project.loadBinaryFile(FRONTIER_PENTIUM);
-    IFileLoader* loader = project.getBestLoader(FRONTIER_PENTIUM);
-	QVERIFY(loader != 0);
+    IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
+    QVERIFY(loader != 0);
 
-	Prog      *prog = new Prog(FRONTIER_PENTIUM);
-	IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);
-	Type::clearNamedTypes();
-	prog->setFrontEnd(pFE);
-	pFE->decode(prog);
+    Prog      *prog = new Prog(FRONTIER_PENTIUM);
+    IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);
+    Type::clearNamedTypes();
+    prog->setFrontEnd(pFE);
+    pFE->decode(prog);
 
-	Module *m = *prog->getModuleList().begin();
-	QVERIFY(m != nullptr);
-	QVERIFY(m->size() > 0);
+    Module *m = *prog->getModuleList().begin();
+    QVERIFY(m != nullptr);
+    QVERIFY(m->size() > 0);
 
-	UserProc *pProc = (UserProc *)(*m->begin());
-	Cfg      *cfg   = pProc->getCFG();
-	DataFlow *df    = pProc->getDataFlow();
+    UserProc *pProc = (UserProc *)(*m->begin());
+    Cfg      *cfg   = pProc->getCFG();
+    DataFlow *df    = pProc->getDataFlow();
 
-	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-	prog->finishDecode();
+    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
+    prog->finishDecode();
 
-	df->dominators(cfg);
-	df->placePhiFunctions(pProc);
-	pProc->numberStatements();        // After placing phi functions!
-	df->renameBlockVars(pProc, 0, 1); // Block 0, mem depth 1
+    df->dominators(cfg);
+    df->placePhiFunctions(pProc);
+    pProc->numberStatements();        // After placing phi functions!
+    df->renameBlockVars(pProc, 0, 1); // Block 0, mem depth 1
 
-	// MIKE: something missing here?
+    // MIKE: something missing here?
 
-	delete pFE;
+    delete pFE;
 }
 
 

@@ -38,7 +38,7 @@ public:
     virtual ~Table() {}
     TABLE_TYPE getType() const;
 
-   StringQueue Records;
+    StringQueue Records;
 
 private:
     TABLE_TYPE TableType;

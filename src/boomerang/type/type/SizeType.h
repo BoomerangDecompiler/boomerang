@@ -26,6 +26,7 @@ public:
     virtual SharedType clone() const override;
 
     static std::shared_ptr<SizeType> get(unsigned sz);
+
     static std::shared_ptr<SizeType> get();
 
     virtual bool operator==(const Type& other) const override;

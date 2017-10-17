@@ -60,8 +60,8 @@ public:
     /**
      * Get the binary image of the loaded binary.
      */
-    virtual IBinaryImage* getImage() = 0;
-    virtual const IBinaryImage* getImage() const = 0;
+    virtual IBinaryImage *getImage()             = 0;
+    virtual const IBinaryImage *getImage() const = 0;
 
-    virtual IFileLoader* getBestLoader(const QString& filePath) const = 0;
+    virtual IFileLoader *getBestLoader(const QString& filePath) const = 0;
 };

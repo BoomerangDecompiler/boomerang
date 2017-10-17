@@ -14,14 +14,14 @@
 
 class ParserTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
     void initTestCase();
 
     /// Test reading the SSL file
-	void testRead();
+    void testRead();
 
     /// Test parsing an expression
-	void testExp();
+    void testExp();
 };

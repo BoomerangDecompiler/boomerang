@@ -30,7 +30,7 @@ void BinaryImage::reset()
 {
     m_sectionMap.clear();
 
-    for (IBinarySection* section : m_sections) {
+    for (IBinarySection *section : m_sections) {
         delete section;
     }
 
@@ -61,7 +61,7 @@ SWord BinaryImage::readNative2(Address nat)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
-    return Util::readWord((const void*)host.value(), si->getEndian());
+    return Util::readWord((const void *)host.value(), si->getEndian());
 }
 
 
@@ -74,7 +74,7 @@ DWord BinaryImage::readNative4(Address addr)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readDWord((const void*)host.value(), si->getEndian());
+    return Util::readDWord((const void *)host.value(), si->getEndian());
 }
 
 
@@ -87,13 +87,14 @@ QWord BinaryImage::readNative8(Address addr)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readQWord((const void*)host.value(), si->getEndian());
+    return Util::readQWord((const void *)host.value(), si->getEndian());
 }
 
 
 float BinaryImage::readNativeFloat4(Address nat)
 {
     DWord raw = readNative4(nat);
+
     return *(float *)&raw; // Note: cast, not convert
 }
 
@@ -120,9 +121,9 @@ void BinaryImage::writeNative4(Address addr, uint32_t value)
         return;
     }
 
-    HostAddress host  = si->getHostAddr() - si->getSourceAddr() + addr;
+    HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
 
-    Util::writeDWord((void*)host.value(), value, si->getEndian());
+    Util::writeDWord((void *)host.value(), value, si->getEndian());
 }
 
 
@@ -228,7 +229,7 @@ Address BinaryImage::getLimitTextHigh() const
 }
 
 
-IBinarySection* BinaryImage::createSection(const QString& name, Address from, Address to)
+IBinarySection *BinaryImage::createSection(const QString& name, Address from, Address to)
 {
     assert(from <= to);
 

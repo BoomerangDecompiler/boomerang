@@ -33,48 +33,48 @@ private slots:
      */
     void initTestCase();
 
-	void testEmpty();
-	void testFlow();
-	void testKill();
-	void testUse();
-	void testUseOverKill();
-	void testUseOverBB();
-	void testUseKill();
-	void testLocationSet();
-	void testWildLocationSet();
+    void testEmpty();
+    void testFlow();
+    void testKill();
+    void testUse();
+    void testUseOverKill();
+    void testUseOverBB();
+    void testUseKill();
+    void testLocationSet();
+    void testWildLocationSet();
 
-	void  testEndlessLoop();
+    void testEndlessLoop();
 
     /// Test push of argument (X86 style), then call self
-	void  testRecursion();
+    void testRecursion();
 
 
     /// Test cloning of Assigns (and exps)
-	void testClone();
+    void testClone();
 
     /// Test assignment test
-	void testIsAssign();
+    void testIsAssign();
 
     /// Test the isFlagAssgn function, and opFlagCall
-	void testIsFlagAssgn();
+    void testIsFlagAssgn();
 
     /// Test the finding of locations used by this statement
-	void testAddUsedLocsAssign();
-	void testAddUsedLocsBranch();
-	void testAddUsedLocsCase();
-	void testAddUsedLocsCall();
-	void testAddUsedLocsReturn();
-	void testAddUsedLocsBool();
+    void testAddUsedLocsAssign();
+    void testAddUsedLocsBranch();
+    void testAddUsedLocsCase();
+    void testAddUsedLocsCall();
+    void testAddUsedLocsReturn();
+    void testAddUsedLocsBool();
 
     /// Test the subscripting of locations in Statements
-	void testSubscriptVars();
+    void testSubscriptVars();
 
     /// Test the visitor code that fixes references that were to locations defined by calls
-	void testBypass();
+    void testBypass();
 
     /// Test the visitor code that strips out size casts
-	void testStripSizes();
+    void testStripSizes();
 
     /// Test the visitor code that finds constants
-	void testFindConstants();
+    void testFindConstants();
 };

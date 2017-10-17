@@ -88,4 +88,3 @@ protected:
     SyntaxNode *m_else;
     SharedExp m_cond;
 };
-

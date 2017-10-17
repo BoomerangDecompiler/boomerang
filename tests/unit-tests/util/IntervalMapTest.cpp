@@ -35,15 +35,16 @@ void IntervalMapTest::testIsEmpty()
 
 void IntervalMapTest::testFind()
 {
-    IntervalMap<Address, int> map;
+    IntervalMap<Address, int>           map;
     IntervalMap<Address, int>::iterator it1 = map.insert(Address(0x1000), Address(0x2000), 10);
     IntervalMap<Address, int>::iterator it2 = map.insert(Address(0x2000), Address(0x3000), 20);
 
-    QVERIFY(map.find(Address::ZERO)   == map.end());
-    QVERIFY(map.find(Address(0x1000)) == it1); // start of interval
-    QVERIFY(map.find(Address(0x1800)) == it1); // middle of interval
-    QVERIFY(map.find(Address(0x2000)) == it2); // beginning of interval with preceding interval
+    QVERIFY(map.find(Address::ZERO) == map.end());
+    QVERIFY(map.find(Address(0x1000)) == it1);       // start of interval
+    QVERIFY(map.find(Address(0x1800)) == it1);       // middle of interval
+    QVERIFY(map.find(Address(0x2000)) == it2);       // beginning of interval with preceding interval
     QVERIFY(map.find(Address(0x3000)) == map.end()); // end of interval
 }
+
 
 QTEST_MAIN(IntervalMapTest)

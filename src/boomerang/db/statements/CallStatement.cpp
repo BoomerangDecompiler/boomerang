@@ -620,7 +620,7 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(ICodeGenerator* gen, BasicBlock *pbb)
+void CallStatement::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
 {
     Function *p = getDestProc();
 
@@ -761,7 +761,7 @@ bool CallStatement::convertToDirect()
 
         if (sub->isIntConst()) {
             // m[K]: convert it to a global right here
-                     Address u = Address(sub->access<Const>()->getInt());
+            Address u = Address(sub->access<Const>()->getInt());
             m_proc->getProg()->markGlobalUsed(u);
             QString nam = m_proc->getProg()->newGlobalName(u);
             e      = Location::global(nam, m_proc);
@@ -1376,7 +1376,7 @@ void CallStatement::updateDefines()
         }
     }
 
-    for (it = oldDefines.end(); it != oldDefines.begin(); ) {
+    for (it = oldDefines.end(); it != oldDefines.begin();) {
         --it;     // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the return or collector
         Assignment *as = (Assignment *)*it;
@@ -1496,7 +1496,7 @@ void CallStatement::updateArguments()
 
     StatementList::iterator it;
 
-    for (it = oldArguments.end(); it != oldArguments.begin(); ) {
+    for (it = oldArguments.end(); it != oldArguments.begin();) {
         --it;     // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
         Assign    *as = (Assign *)*it;
@@ -1693,9 +1693,9 @@ void CallStatement::addDefine(ImplicitAssign *as)
 
 void CallStatement::eliminateDuplicateArgs()
 {
-    LocationSet             ls;
+    LocationSet ls;
 
-    for (StatementList::iterator it = m_arguments.begin(); it != m_arguments.end(); ) {
+    for (StatementList::iterator it = m_arguments.begin(); it != m_arguments.end();) {
         SharedExp lhs = ((Assignment *)*it)->getLeft();
 
         if (ls.exists(lhs)) {
@@ -1792,7 +1792,7 @@ void CallStatement::genConstraints(LocationSet& cons)
 
                     case 'x':
                         sign = false;
-                        // fallthrough
+                    // fallthrough
 
                     case 'i':
                     case 'd':

@@ -34,11 +34,11 @@ namespace
 {
 struct SectionParam
 {
-    QString Name;
-    Address from;
-    size_t  Size;
+    QString     Name;
+    Address     from;
+    size_t      Size;
     HostAddress ImageAddress;
-    bool    Bss, Code, Data, ReadOnly;
+    bool        Bss, Code, Data, ReadOnly;
 };
 }
 extern "C" {
@@ -96,8 +96,8 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     Address       addr;
 
     // unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
-    bool gotSubEbp   = false;                                   // True if see sub ebp, ebp
-    bool lastWasCall = false;                                   // True if the last instruction was a call
+    bool gotSubEbp   = false;                               // True if see sub ebp, ebp
+    bool lastWasCall = false;                               // True if the last instruction was a call
 
     IBinarySection *si = m_image->getSectionByName("seg0"); // Assume the first section is text
 
@@ -240,16 +240,16 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
                    LMMH(m_pLXObjects[n].PageTblIdx), LMMH(m_pLXObjects[n].NumPageTblEntries));
 
             SectionParam sect;
-            DWord Flags = LMMH(m_pLXObjects[n].ObjectFlags);
+            DWord        Flags = LMMH(m_pLXObjects[n].ObjectFlags);
 
             sect.Name         = QString("seg%i").arg(n); // no section names in LX
             sect.from         = Address(LMMH(m_pLXObjects[n].RelocBaseAddr));
             sect.ImageAddress = HostAddress(base) + (sect.from - params.front().from).value();
             sect.Size         = LMMH(m_pLXObjects[n].VirtualSize);
-            sect.Bss      = 0; // TODO
-            sect.Code     = Flags & 0x4 ? 1 : 0;
-            sect.Data     = Flags & 0x4 ? 0 : 1;
-            sect.ReadOnly = Flags & 0x1 ? 0 : 1;
+            sect.Bss          = 0; // TODO
+            sect.Code         = Flags & 0x4 ? 1 : 0;
+            sect.Data         = Flags & 0x4 ? 0 : 1;
+            sect.ReadOnly     = Flags & 0x1 ? 0 : 1;
             buf.seek(
                 m_pLXHeader->datapagesoffset + (LMMH(m_pLXObjects[n].PageTblIdx) - 1) * LMMH(m_pLXHeader->pagesize)
                 );
@@ -293,8 +293,8 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
         if ((fixup.src != 7) || (fixup.flags & ~0x50)) {
             LOG_WARN("Unknown fixup type %1 %2",
-                QString("%1").arg(fixup.src,   2, 16, QChar('0')),
-                QString("%1").arg(fixup.flags, 2, 16, QChar('0')));
+                     QString("%1").arg(fixup.src,   2, 16, QChar('0')),
+                     QString("%1").arg(fixup.flags, 2, 16, QChar('0')));
 
             return false;
         }
@@ -333,7 +333,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 }
 
 
-#define TESTMAGIC2(buf, off, a, b)          (buf[off] == a && buf[off + 1] == b)
+#define TESTMAGIC2(buf, off, a, b)    (buf[off] == a && buf[off + 1] == b)
 
 int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
 {
@@ -364,13 +364,13 @@ void DOS4GWBinaryLoader::unload()
 }
 
 
-SWord DOS4GWBinaryLoader::dos4gwRead2(const void* src) const
+SWord DOS4GWBinaryLoader::dos4gwRead2(const void *src) const
 {
     return Util::readWord(src, false);
 }
 
 
-DWord DOS4GWBinaryLoader::dos4gwRead4(const void* src) const
+DWord DOS4GWBinaryLoader::dos4gwRead4(const void *src) const
 {
     return Util::readDWord(src, false);
 }
@@ -398,4 +398,4 @@ DWord DOS4GWBinaryLoader::getDelta()
 
 
 BOOMERANG_LOADER_PLUGIN(DOS4GWBinaryLoader,
-    "DOS4GW binary loader plugin", BOOMERANG_VERSION, "Boomerang developers")
+                        "DOS4GW binary loader plugin", BOOMERANG_VERSION, "Boomerang developers")

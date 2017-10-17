@@ -27,6 +27,7 @@ static int nodecount = 1000;
 void PRINT_BEFORE_AFTER(SyntaxNode *root, SyntaxNode *n)
 {
     QFile tgt("before.dot");
+
     if (!tgt.open(QFile::WriteOnly)) {
         return;
     }

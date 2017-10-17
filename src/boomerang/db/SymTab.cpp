@@ -54,7 +54,8 @@ IBinarySymbol& SymTab::create(Address addr, const QString& name, bool local)
     assert(amap.find(addr) == amap.end());
 
     // If the symbol already exists, redirect the new symbol to the old one.
-    std::map<QString, BinarySymbol*>::iterator it = smap.find(name);
+    std::map<QString, BinarySymbol *>::iterator it = smap.find(name);
+
     if (it != smap.end()) {
         LOG_WARN("Symbol '%1' already exists in the global symbol table!", name);
         BinarySymbol *existingSymbol = it->second;

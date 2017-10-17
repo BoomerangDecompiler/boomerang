@@ -30,7 +30,7 @@
 /**********************************
 * ST20Decoder methods.
 **********************************/
-#define sign_extend(N, SIZE) Util::signExtend(N, SIZE)
+#define sign_extend(N, SIZE)    Util::signExtend(N, SIZE)
 
 /***************************************************************************/ /**
  * \fn    ST20Decoder::decodeInstruction
@@ -42,10 +42,10 @@
  ******************************************************************************/
 bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
-    result.reset();                            // Clear the result structure (numBytes = 0 etc)
-    HostAddress hostPC = HostAddress(delta) + pc;
+    result.reset();                          // Clear the result structure (numBytes = 0 etc)
+    HostAddress            hostPC = HostAddress(delta) + pc;
     std::list<Statement *> *stmts = nullptr; // The actual list of instantiated Statements
-    int total = 0;                             // Total value from all prefixes
+    int total = 0;                           // Total value from all prefixes
 
     while (1) {
         // #line 60 "frontend/machine/st20/decoder.m"
@@ -932,4 +932,3 @@ ST20Decoder::ST20Decoder(Prog *prog_)
 {
     m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/st20.ssl"));
 }
-

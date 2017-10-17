@@ -69,7 +69,7 @@ bool PentiumFrontEnd::isDecAh(RTL *r)
         return false;
     }
 
-    auto        iter = r->begin();
+    auto      iter = r->begin();
     Statement *mid = *(++iter);
 
     if (!mid->isAssign()) {
@@ -292,7 +292,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *pCfg)
 void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
 {
     std::list<RTL *>::iterator rit;
-    Statement                *st;
+    Statement                  *st;
 
     // Loop through each RTL this BB
     std::list<RTL *> *BB_rtls = pBB->getRTLs();
@@ -410,7 +410,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::itera
                               SharedExp cond)
 {
     Statement *asgn = new Assign(lhs, std::make_shared<Ternary>(opTern, cond, Const::get(1), Const::get(0)));
-    RTL         *pRtl = new RTL(uAddr);
+    RTL       *pRtl = new RTL(uAddr);
 
     pRtl->appendStmt(asgn);
     //    std::cout << "Emit "; pRtl->print(); std::cout << '\n';
@@ -439,7 +439,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         // r[24] = trunc(64, 32, r[tmpl])
         // r[26] = r[tmpl] >> 32
         Statement *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
-                                    std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
+                                  std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
         RTL *pRtl = new RTL(addr);
         pRtl->appendStmt(a);
         a = new Assign(Location::regOf(24), std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
@@ -454,7 +454,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         return true;
     }
     else if (name == "__mingw_allocstack") {
-        RTL         *pRtl = new RTL(addr);
+        RTL       *pRtl = new RTL(addr);
         Statement *a    = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
         pRtl->appendStmt(a);
         lrtl->push_back(pRtl);
@@ -705,7 +705,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     StatementList::iterator it;
 
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Statement   *s = *it;
         LocationSet locs;
         s->addUsedLocs(locs);
 
@@ -1100,7 +1100,6 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
             if (compound->getType(n)->resolvesToPointer() &&
                 compound->getType(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
-
                 Address d = Address(m_image->readNative4(a));
                 LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to %2",
                             d, call->getDestProc()->getName());

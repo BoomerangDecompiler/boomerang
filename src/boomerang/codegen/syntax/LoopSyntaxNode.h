@@ -20,7 +20,7 @@
 class LoopSyntaxNode : public SyntaxNode
 {
 public:
-    LoopSyntaxNode(SyntaxNode* body = nullptr, SharedExp cond = nullptr, bool postTested = false);
+    LoopSyntaxNode(SyntaxNode *body = nullptr, SharedExp cond = nullptr, bool postTested = false);
     virtual ~LoopSyntaxNode();
 
 public:
@@ -74,7 +74,7 @@ public:
     inline bool isPostTested() const { return hasCond() && m_postTested; }
 
 protected:
-    SharedExp m_cond;  ///< Condition of the loop header, or nullptr if this loop is infinite
-    SyntaxNode *m_body;///< Loop body
-    bool m_postTested; ///< Is this loop a pre-tested or a post-tested loop?
+    SharedExp m_cond;   ///< Condition of the loop header, or nullptr if this loop is infinite
+    SyntaxNode *m_body; ///< Loop body
+    bool m_postTested;  ///< Is this loop a pre-tested or a post-tested loop?
 };

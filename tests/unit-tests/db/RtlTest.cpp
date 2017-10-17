@@ -49,165 +49,165 @@ void RtlTest::initTestCase()
 
 void RtlTest::testAppend()
 {
-	Assign *a = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
-	RTL    r;
+    Assign *a = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
+    RTL    r;
 
-	r.appendStmt(a);
-	QString     res;
-	QTextStream ost(&res);
-	r.print(ost);
-	QString expected("00000000    0 *v* r8 := r9 + 99\n");
-	QCOMPARE(res, expected);
-	// No! appendExp does not copy the expression, so deleting the RTL will
-	// delete the expression(s) in it.
-	// Not sure if that's what we want...
-	// delete a;
+    r.appendStmt(a);
+    QString     res;
+    QTextStream ost(&res);
+    r.print(ost);
+    QString expected("00000000    0 *v* r8 := r9 + 99\n");
+    QCOMPARE(res, expected);
+    // No! appendExp does not copy the expression, so deleting the RTL will
+    // delete the expression(s) in it.
+    // Not sure if that's what we want...
+    // delete a;
 }
 
 
 void RtlTest::testClone()
 {
-	Assign *a1 = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
-	Assign *a2 = new Assign(IntegerType::get(16), Location::get(opParam, Const::get("x"), nullptr),
-							Location::get(opParam, Const::get("y"), nullptr));
+    Assign *a1 = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
+    Assign *a2 = new Assign(IntegerType::get(16), Location::get(opParam, Const::get("x"), nullptr),
+                            Location::get(opParam, Const::get("y"), nullptr));
 
-	std::list<Statement *> ls;
-	ls.push_back(a1);
-	ls.push_back(a2);
-	RTL         *r = new RTL(Address(0x1234), &ls);
-	RTL         *r2 = r->clone();
-	QString     act1, act2;
-	QTextStream o1(&act1), o2(&act2);
-	r->print(o1);
-	delete r; // And r2 should still stand!
-	r2->print(o2);
-	delete r2;
-	QString expected("00001234    0 *v* r8 := r9 + 99\n"
-					 "            0 *j16* x := y\n");
+    std::list<Statement *> ls;
+    ls.push_back(a1);
+    ls.push_back(a2);
+    RTL         *r = new RTL(Address(0x1234), &ls);
+    RTL         *r2 = r->clone();
+    QString     act1, act2;
+    QTextStream o1(&act1), o2(&act2);
+    r->print(o1);
+    delete r; // And r2 should still stand!
+    r2->print(o2);
+    delete r2;
+    QString expected("00001234    0 *v* r8 := r9 + 99\n"
+                     "            0 *j16* x := y\n");
 
-	QCOMPARE(act1, expected);
-	QCOMPARE(act2, expected);
+    QCOMPARE(act1, expected);
+    QCOMPARE(act2, expected);
 }
 
 
 class StmtVisitorStub : public StmtVisitor
 {
 public:
-	bool a, b, c, d, e, f, g, h;
+    bool a, b, c, d, e, f, g, h;
 
-	void clear() { a = b = c = d = e = f = g = h = false; }
-	StmtVisitorStub() { clear(); }
-	virtual ~StmtVisitorStub() {}
-	virtual bool visit(RTL *) override
-	{
-		a = true;
-		return false;
-	}
+    void clear() { a = b = c = d = e = f = g = h = false; }
+    StmtVisitorStub() { clear(); }
+    virtual ~StmtVisitorStub() {}
+    virtual bool visit(RTL *) override
+    {
+        a = true;
+        return false;
+    }
 
-	virtual bool visit(GotoStatement *) override
-	{
-		b = true;
-		return false;
-	}
+    virtual bool visit(GotoStatement *) override
+    {
+        b = true;
+        return false;
+    }
 
-	virtual bool visit(BranchStatement *) override
-	{
-		c = true;
-		return false;
-	}
+    virtual bool visit(BranchStatement *) override
+    {
+        c = true;
+        return false;
+    }
 
-	virtual bool visit(CaseStatement *) override
-	{
-		d = true;
-		return false;
-	}
+    virtual bool visit(CaseStatement *) override
+    {
+        d = true;
+        return false;
+    }
 
-	virtual bool visit(CallStatement *) override
-	{
-		e = true;
-		return false;
-	}
+    virtual bool visit(CallStatement *) override
+    {
+        e = true;
+        return false;
+    }
 
-	virtual bool visit(ReturnStatement *) override
-	{
-		f = true;
-		return false;
-	}
+    virtual bool visit(ReturnStatement *) override
+    {
+        f = true;
+        return false;
+    }
 
-	virtual bool visit(BoolAssign *) override
-	{
-		g = true;
-		return false;
-	}
+    virtual bool visit(BoolAssign *) override
+    {
+        g = true;
+        return false;
+    }
 
-	virtual bool visit(Assign *) override
-	{
-		h = true;
-		return false;
-	}
+    virtual bool visit(Assign *) override
+    {
+        h = true;
+        return false;
+    }
 };
 
 void RtlTest::testVisitor()
 {
-	StmtVisitorStub *visitor = new StmtVisitorStub();
+    StmtVisitorStub *visitor = new StmtVisitorStub();
 
-	//    /* rtl */
-	//    RTL *rtl = new RTL();
-	//    rtl->accept(visitor);
-	//    QVERIFY(visitor->a);
-	//    delete rtl;
+    //    /* rtl */
+    //    RTL *rtl = new RTL();
+    //    rtl->accept(visitor);
+    //    QVERIFY(visitor->a);
+    //    delete rtl;
 
-	/* jump stmt */
-	GotoStatement *jump = new GotoStatement;
+    /* jump stmt */
+    GotoStatement *jump = new GotoStatement;
 
-	jump->accept(visitor);
-	QVERIFY(visitor->b);
-	delete jump;
+    jump->accept(visitor);
+    QVERIFY(visitor->b);
+    delete jump;
 
-	/* branch stmt */
-	BranchStatement *jcond = new BranchStatement;
-	jcond->accept(visitor);
-	QVERIFY(visitor->c);
-	delete jcond;
+    /* branch stmt */
+    BranchStatement *jcond = new BranchStatement;
+    jcond->accept(visitor);
+    QVERIFY(visitor->c);
+    delete jcond;
 
-	/* nway jump stmt */
-	CaseStatement *nwayjump = new CaseStatement;
-	nwayjump->accept(visitor);
-	QVERIFY(visitor->d);
-	delete nwayjump;
+    /* nway jump stmt */
+    CaseStatement *nwayjump = new CaseStatement;
+    nwayjump->accept(visitor);
+    QVERIFY(visitor->d);
+    delete nwayjump;
 
-	/* call stmt */
-	CallStatement *call = new CallStatement;
-	call->accept(visitor);
-	QVERIFY(visitor->e);
-	delete call;
+    /* call stmt */
+    CallStatement *call = new CallStatement;
+    call->accept(visitor);
+    QVERIFY(visitor->e);
+    delete call;
 
-	/* return stmt */
-	ReturnStatement *ret = new ReturnStatement;
-	ret->accept(visitor);
-	QVERIFY(visitor->f);
-	delete ret;
+    /* return stmt */
+    ReturnStatement *ret = new ReturnStatement;
+    ret->accept(visitor);
+    QVERIFY(visitor->f);
+    delete ret;
 
-	/* "bool" assgn */
-	BoolAssign *scond = new BoolAssign(0);
-	scond->accept(visitor);
-	QVERIFY(visitor->g);
-	delete scond;
+    /* "bool" assgn */
+    BoolAssign *scond = new BoolAssign(0);
+    scond->accept(visitor);
+    QVERIFY(visitor->g);
+    delete scond;
 
-	/* assignment stmt */
-	Assign *as = new Assign;
-	as->accept(visitor);
-	QVERIFY(visitor->h);
-	delete as;
+    /* assignment stmt */
+    Assign *as = new Assign;
+    as->accept(visitor);
+    QVERIFY(visitor->h);
+    delete as;
 
-	/* polymorphic */
-	   Statement *s = new CallStatement;
-	s->accept(visitor);
-	QVERIFY(visitor->e);
-	delete s;
+    /* polymorphic */
+    Statement *s = new CallStatement;
+    s->accept(visitor);
+    QVERIFY(visitor->e);
+    delete s;
 
-	/* cleanup */
-	delete visitor;
+    /* cleanup */
+    delete visitor;
 }
 
 
@@ -267,48 +267,48 @@ void RtlTest::testVisitor()
 
 void RtlTest::testSetConscripts()
 {
-	// m[1000] = m[1000] + 1000
-	   Statement *s1 = new Assign(Location::memOf(Const::get(1000), 0),
-								 Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000)));
+    // m[1000] = m[1000] + 1000
+    Statement *s1 = new Assign(Location::memOf(Const::get(1000), 0),
+                               Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000)));
 
-	// "printf("max is %d", (local0 > 0) ? local0 : global1)
-	CallStatement *s2   = new CallStatement();
-	Prog          *p    = new Prog("fake_prog");
-	Module        *m    = p->getOrInsertModule("test");
-	Function      *proc = new UserProc(Address(0x00002000), "printf", m); // Making a true LibProc is problematic
+    // "printf("max is %d", (local0 > 0) ? local0 : global1)
+    CallStatement *s2   = new CallStatement();
+    Prog          *p    = new Prog("fake_prog");
+    Module        *m    = p->getOrInsertModule("test");
+    Function      *proc = new UserProc(Address(0x00002000), "printf", m); // Making a true LibProc is problematic
 
-	s2->setDestProc(proc);
-	s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call
-	SharedExp e1 = Const::get("max is %d");
-	SharedExp e2 = std::make_shared<Ternary>(opTern, Binary::get(opGtr, Location::local("local0", nullptr), Const::get(0)),
-											 Location::local("local0", nullptr), Location::global("global1", nullptr));
-	StatementList args;
-	args.append(new Assign(Location::regOf(8), e1));
-	args.append(new Assign(Location::regOf(9), e2));
-	s2->setArguments(args);
+    s2->setDestProc(proc);
+    s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call
+    SharedExp e1 = Const::get("max is %d");
+    SharedExp e2 = std::make_shared<Ternary>(opTern, Binary::get(opGtr, Location::local("local0", nullptr), Const::get(0)),
+                                             Location::local("local0", nullptr), Location::global("global1", nullptr));
+    StatementList args;
+    args.append(new Assign(Location::regOf(8), e1));
+    args.append(new Assign(Location::regOf(9), e2));
+    s2->setArguments(args);
 
-	std::list<Statement *> list;
-	list.push_back(s1);
-	list.push_back(s2);
-	RTL                 *rtl = new RTL(Address(0x1000), &list);
-	StmtConscriptSetter sc(0, false);
+    std::list<Statement *> list;
+    list.push_back(s1);
+    list.push_back(s2);
+    RTL                 *rtl = new RTL(Address(0x1000), &list);
+    StmtConscriptSetter sc(0, false);
 
-	for (Statement *s : *rtl) {
-		s->accept(&sc);
-	}
+    for (Statement *s : *rtl) {
+        s->accept(&sc);
+    }
 
-	QString expected("00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
-					 "            0 CALL printf(\n"
-					 "                *v* r8 := \"max is %d\"\\4\\\n"
-					 "                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
-					 "              )\n"
-					 "              Reaching definitions: \n"
-					 "              Live variables: \n");
+    QString expected("00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
+                     "            0 CALL printf(\n"
+                     "                *v* r8 := \"max is %d\"\\4\\\n"
+                     "                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
+                     "              )\n"
+                     "              Reaching definitions: \n"
+                     "              Live variables: \n");
 
-	QString     actual;
-	QTextStream ost(&actual);
-	rtl->print(ost);
-	QCOMPARE(actual, expected);
+    QString     actual;
+    QTextStream ost(&actual);
+    rtl->print(ost);
+    QCOMPARE(actual, expected);
 }
 
 

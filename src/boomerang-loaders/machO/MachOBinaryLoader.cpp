@@ -40,9 +40,9 @@
 #define DEBUG_MACHO_LOADER    0
 
 #if DEBUG_MACHO_LOADER
-#  define DEBUG_PRINT(...)            \
-    do {                              \
-        LOG_VERBOSE(__VA_ARGS__);     \
+#  define DEBUG_PRINT(...)        \
+    do {                          \
+        LOG_VERBOSE(__VA_ARGS__); \
     } while (false)
 #else
 #  define DEBUG_PRINT(...)
@@ -175,7 +175,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
     char     *strtbl = nullptr;
     unsigned *indirectsymtbl = nullptr;
-       Address  objc_symbols = Address::INVALID, objc_modules = Address::INVALID, objc_strings = Address::INVALID, objc_refs = Address::INVALID;
+    Address  objc_symbols = Address::INVALID, objc_modules = Address::INVALID, objc_strings = Address::INVALID, objc_refs = Address::INVALID;
     unsigned objc_modules_size = 0;
 
     fp.seek(imgoffs + sizeof(*header));
@@ -358,12 +358,12 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 sect->setAttributeForRange("StringsSection", true,
                                            Address(BMMH(sections[s_idx].addr)),
                                            Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size))
-                );
+                                           );
             }
 
             sect->setAttributeForRange("ReadOnly", (BMMH(sections[i].flags) & VM_PROT_WRITE) ? true : false,
-                                        Address(BMMH(sections[s_idx].addr)),
-                                        Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size)));
+                                       Address(BMMH(sections[s_idx].addr)),
+                                       Address(BMMH(sections[s_idx].addr) + BMMH(sections[s_idx].size)));
         }
 
         DEBUG_PRINT("loaded segment %1 %2 in mem %3 in file code=%4 data=%5 readonly=%6",
@@ -419,7 +419,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     if (objc_modules != Address::INVALID) {
         DEBUG_PRINT("Processing objective-c section");
 
-        for (unsigned i = 0; i < objc_modules_size; ) {
+        for (unsigned i = 0; i < objc_modules_size;) {
             struct objc_module *module =
                 (struct objc_module *)(HostAddress(base) + objc_modules - loaded_addr + i).value();
             char   *name  = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.value());
@@ -601,4 +601,4 @@ DWord MachOBinaryLoader::getDelta()
 
 
 BOOMERANG_LOADER_PLUGIN(MachOBinaryLoader,
-    "DOS4GW loader plugin", "0.4.0", "Boomerang developers")
+                        "DOS4GW loader plugin", "0.4.0", "Boomerang developers")

@@ -38,21 +38,22 @@
 
 void ProcTest::testName()
 {
-	Prog       *prog = new Prog("testProcName");
-	QVERIFY(prog != nullptr);
+    Prog *prog = new Prog("testProcName");
 
-    std::string       nm("default name");
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    QVERIFY(prog != nullptr);
+
+    std::string nm("default name");
+    IProject&   project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(HELLO_PENTIUM);
 
-	IFrontEnd *pFE = new PentiumFrontEnd(project.getBestLoader(HELLO_PENTIUM), prog);
-	QVERIFY(pFE != nullptr);
-	prog->setFrontEnd(pFE);
+    IFrontEnd *pFE = new PentiumFrontEnd(project.getBestLoader(HELLO_PENTIUM), prog);
+    QVERIFY(pFE != nullptr);
+    prog->setFrontEnd(pFE);
 
-	pFE->readLibraryCatalog();              // Since we are not decoding
+    pFE->readLibraryCatalog();              // Since we are not decoding
 
-    Function* f = prog->createProc(Address(0x00020000));
-    QString procName = "default name";
+    Function *f       = prog->createProc(Address(0x00020000));
+    QString  procName = "default name";
     f->setName(procName);
     QCOMPARE(f->getName(), procName);
 
@@ -61,7 +62,8 @@ void ProcTest::testName()
     QVERIFY(f->isLib());
     QCOMPARE(f->getName(), QString("printf"));
 
-	delete prog;
+    delete prog;
 }
+
 
 QTEST_MAIN(ProcTest)

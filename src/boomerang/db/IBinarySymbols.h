@@ -53,7 +53,7 @@ public:
     virtual ~IBinarySymbolTable() {}
 
     /// \returns the binary symbol at address \p addr, or nullptr if no such symbol exists.
-    virtual const IBinarySymbol *find(Address addr) const        = 0;
+    virtual const IBinarySymbol *find(Address addr) const = 0;
 
     /// \returns the binary symbol with name \p name, or nullptr if no such symbol exists.
     virtual const IBinarySymbol *find(const QString& name) const = 0;

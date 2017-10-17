@@ -104,9 +104,9 @@ public:
     void printAsHL(QTextStream& os); ///< Print with v[5] as v5
 
     /***************************************************************************/ /**
-    * \brief        Print to a static string (for debugging)
-    * \returns            Address of the static buffer
-    ******************************************************************************/
+     * \brief        Print to a static string (for debugging)
+     * \returns            Address of the static buffer
+     ******************************************************************************/
     char *prints();                  ///< Print to string (for debugging and logging)
     void dump();                     ///< Print to standard error (for debugging)
 
@@ -120,10 +120,10 @@ public:
     /// Display as a dotty graph
 
     /***************************************************************************/ /**
-    * \brief Create a dotty file (use dotty to display the file; search the web for "graphviz").
-    *        Mainly for debugging
-    * \param name - Name of the file to create
-    ******************************************************************************/
+     * \brief Create a dotty file (use dotty to display the file; search the web for "graphviz").
+     *        Mainly for debugging
+     * \param name - Name of the file to create
+     ******************************************************************************/
     void createDotFile(const char *name);
     virtual void appendDotFile(QTextStream& os) = 0;
 
@@ -388,9 +388,15 @@ public:
     {
         switch (SUB_IDX)
         {
-        case 1: return getSubExp1()->access<T, Path ...>();
-        case 2: return getSubExp2()->access<T, Path ...>();
-        case 3: return getSubExp3()->access<T, Path ...>();
+        case 1:
+            return getSubExp1()->access<T, Path ...>();
+
+        case 2:
+            return getSubExp2()->access<T, Path ...>();
+
+        case 3:
+            return getSubExp3()->access<T, Path ...>();
+
         default:
             assert(false);
         }
@@ -398,14 +404,20 @@ public:
         return nullptr;
     }
 
-    template<class T, int SUB_IDX, int... Path>
+    template<class T, int SUB_IDX, int ... Path>
     std::shared_ptr<const T> access() const
     {
         switch (SUB_IDX)
         {
-        case 1: return getSubExp1()->access<T, Path ...>();
-        case 2: return getSubExp2()->access<T, Path ...>();
-        case 3: return getSubExp3()->access<T, Path ...>();
+        case 1:
+            return getSubExp1()->access<T, Path ...>();
+
+        case 2:
+            return getSubExp2()->access<T, Path ...>();
+
+        case 3:
+            return getSubExp3()->access<T, Path ...>();
+
         default:
             assert(false);
         }
@@ -656,5 +668,6 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
     os << p.get();
     return os;
 }
+
 
 typedef std::set<SharedExp, lessExpStar> ExpSet;

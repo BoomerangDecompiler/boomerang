@@ -32,6 +32,7 @@ std::shared_ptr<RefExp> RefExp::get(SharedExp e, Statement *def)
     return std::make_shared<RefExp>(e, def);
 }
 
+
 SharedExp RefExp::clone() const
 {
     return RefExp::get(subExp1->clone(), m_def);
@@ -323,4 +324,3 @@ SharedExp RefExp::genConstraints(SharedExp result)
 
     return Terminal::get(opTrue);
 }
-

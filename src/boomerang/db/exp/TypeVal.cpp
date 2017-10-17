@@ -84,12 +84,11 @@ void TypeVal::print(QTextStream& os, bool) const
     }
 }
 
+
 bool TypeVal::accept(ExpVisitor *v)
 {
     return v->visit(shared_from_base<TypeVal>());
 }
-
-
 
 
 SharedExp TypeVal::accept(ExpModifier *v)
@@ -106,5 +105,3 @@ void TypeVal::printx(int ind) const
 {
     LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), val->getCtype());
 }
-
-

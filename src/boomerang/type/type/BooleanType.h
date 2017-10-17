@@ -37,4 +37,3 @@ public:
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool all) const override;
 };
-

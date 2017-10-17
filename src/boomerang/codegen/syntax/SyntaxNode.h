@@ -85,7 +85,7 @@ public:
     SyntaxNode *getCorrespond() const { return m_correspond; }
 
     /// \returns the syntax node containing \p bb
-    virtual SyntaxNode *findNodeFor(BasicBlock *bb)          = 0;
+    virtual SyntaxNode *findNodeFor(BasicBlock *bb) = 0;
 
     /// Print the Syntax Tree to \p os
     virtual void printAST(SyntaxNode *root, QTextStream& os) = 0;

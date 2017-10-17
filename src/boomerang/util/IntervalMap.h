@@ -23,12 +23,12 @@ template<typename Key, typename Value>
 class IntervalMap
 {
 public:
-    typedef typename std::map<Interval<Key>, Value> Data;
+    typedef typename std::map<Interval<Key>, Value>   Data;
 
-    typedef typename Data::iterator iterator;
-    typedef typename Data::const_iterator const_iterator;
-    typedef typename Data::reverse_iterator reverse_iterator;
-    typedef typename Data::const_reverse_iterator const_reverse_iterator;
+    typedef typename Data::iterator                   iterator;
+    typedef typename Data::const_iterator             const_iterator;
+    typedef typename Data::reverse_iterator           reverse_iterator;
+    typedef typename Data::const_reverse_iterator     const_reverse_iterator;
 
 public:
     IntervalMap() {}
@@ -75,6 +75,7 @@ public:
                 return it;
             }
         }
+
         return end();
     }
 
@@ -96,6 +97,7 @@ public:
                 return it;
             }
         }
+
         return end();
     }
 
@@ -115,20 +117,19 @@ public:
 
         // todo: speed up
         for (const_iterator it = begin(); it != end(); it++) {
-            if (it->first.upper() > interval.lower() && itLower == end()) {
+            if ((it->first.upper() > interval.lower()) && (itLower == end())) {
                 itLower = it;
             }
 
             // we want to have the interval after the last interval overlapping
             // with the desired interval
-            if (itLower != end() && it->first.lower() >= interval.upper()) {
+            if ((itLower != end()) && (it->first.lower() >= interval.upper())) {
                 itUpper = it;
             }
         }
 
         return std::make_pair(itLower, itUpper);
     }
-
 
     std::pair<iterator, iterator> equalRange(const Key& lower, const Key& upper)
     {
@@ -143,20 +144,19 @@ public:
         // todo: speed up, use binary search since intervals are sorted
         for (iterator it = begin(); it != end(); it++) {
             // intersection between it->first and interval must not be empty
-            if (it->first.upper() > interval.lower() && it->first.lower() < interval.upper() && itLower == end()) {
+            if ((it->first.upper() > interval.lower()) && (it->first.lower() < interval.upper()) && (itLower == end())) {
                 itLower = it;
             }
 
             // we want to have the interval after the last interval overlapping
             // with the desired interval
-            if (itLower != end() && it->first.lower() >= interval.upper()) {
+            if ((itLower != end()) && (it->first.lower() >= interval.upper())) {
                 itUpper = it;
             }
         }
 
         return std::make_pair(itLower, itUpper);
     }
-
 
     /// Erase the item referenced by \p it
     /// \returns an iterator to the element immediately after the deleted element
@@ -166,6 +166,7 @@ public:
     void eraseAll(const Key& key)
     {
         iterator it = find(key);
+
         if (it == end()) {
             return;
         }
@@ -179,6 +180,7 @@ public:
     void eraseAll(const Interval<Key>& interval)
     {
         iterator it1, it2;
+
         std::tie(it1, it2) = equalRange(interval);
 
         while (it1 != it2) { // case it1 == it2 == end() accounted for
@@ -191,10 +193,10 @@ public:
     const_iterator begin() const { return m_data.begin(); }
     const_iterator end()   const { return m_data.end(); }
     reverse_iterator rbegin() { return m_data.rbegin(); }
-    reverse_iterator rend()   { return m_data.rend();   }
+    reverse_iterator rend()   { return m_data.rend(); }
     const_reverse_iterator rbegin() const { return m_data.rbegin(); }
     const_reverse_iterator rend() const { return m_data.rend(); }
 
 private:
-    std::map<Interval<Key>, Value, std::less<Interval<Key>>> m_data;
+    std::map<Interval<Key>, Value, std::less<Interval<Key> > > m_data;
 };

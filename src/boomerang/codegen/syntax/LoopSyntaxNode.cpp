@@ -66,6 +66,7 @@ void LoopSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>& 
 SyntaxNode *LoopSyntaxNode::clone()
 {
     LoopSyntaxNode *b = new LoopSyntaxNode(m_body->clone(), m_cond ? m_cond->clone() : nullptr, m_postTested);
+
     b->m_correspond = this;
     b->m_bb         = m_bb;
 
@@ -95,11 +96,13 @@ SyntaxNode *LoopSyntaxNode::findNodeFor(BasicBlock *bb)
         return this;
     }
 
-    SyntaxNode *n = m_body->findNodeFor(bb);
-    const bool isPreTested = hasCond() && ! m_postTested;
-    if (isPreTested && n == m_body) {
+    SyntaxNode *n          = m_body->findNodeFor(bb);
+    const bool isPreTested = hasCond() && !m_postTested;
+
+    if (isPreTested && (n == m_body)) {
         return this;
     }
+
     return n;
 }
 
@@ -107,6 +110,7 @@ SyntaxNode *LoopSyntaxNode::findNodeFor(BasicBlock *bb)
 void LoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 {
     os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
+
     if (hasCond()) {
         os << "[label=\"loop " << (m_postTested ? "post" : "pre") << "-tested ";
     }
@@ -130,7 +134,7 @@ void LoopSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
 }
 
 
-SyntaxNode* LoopSyntaxNode::getEnclosingLoop(SyntaxNode* base, SyntaxNode* cur)
+SyntaxNode *LoopSyntaxNode::getEnclosingLoop(SyntaxNode *base, SyntaxNode *cur)
 {
     if (this == base) {
         return cur;
@@ -138,4 +142,3 @@ SyntaxNode* LoopSyntaxNode::getEnclosingLoop(SyntaxNode* base, SyntaxNode* cur)
 
     return m_body->getEnclosingLoop(base, this);
 }
-

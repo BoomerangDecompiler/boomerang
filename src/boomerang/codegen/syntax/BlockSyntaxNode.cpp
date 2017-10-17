@@ -308,7 +308,6 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>&
 
             if ((b->getOutEdge(root, 0) == statements[i + 2]) &&
                 ((statements[i + 1]->getOutEdge(root, 0) == statements[i + 2]) || statements[i + 1]->endsWithGoto())) {
-
                 LOG_VERBOSE("Successor: jump over style if then");
 
                 BlockSyntaxNode *b1 = (BlockSyntaxNode *)this->clone();
@@ -495,7 +494,7 @@ void BlockSyntaxNode::ignoreGoto()
 }
 
 
-SyntaxNode* BlockSyntaxNode::getStatement(size_t n)
+SyntaxNode *BlockSyntaxNode::getStatement(size_t n)
 {
     assert(m_bb == nullptr);
     assert(n < statements.size());
@@ -503,7 +502,7 @@ SyntaxNode* BlockSyntaxNode::getStatement(size_t n)
 }
 
 
-void BlockSyntaxNode::prependStatement(SyntaxNode* n)
+void BlockSyntaxNode::prependStatement(SyntaxNode *n)
 {
     assert(m_bb == nullptr);
     statements.resize(statements.size() + 1);
@@ -516,14 +515,14 @@ void BlockSyntaxNode::prependStatement(SyntaxNode* n)
 }
 
 
-void BlockSyntaxNode::addStatement(SyntaxNode* n)
+void BlockSyntaxNode::addStatement(SyntaxNode *n)
 {
     assert(m_bb == nullptr);
     statements.push_back(n);
 }
 
 
-void BlockSyntaxNode::setStatement(size_t i, SyntaxNode* n)
+void BlockSyntaxNode::setStatement(size_t i, SyntaxNode *n)
 {
     assert(m_bb == nullptr);
     statements[i] = n;
@@ -546,13 +545,13 @@ bool BlockSyntaxNode::endsWithGoto() const
 }
 
 
-bool BlockSyntaxNode::startsWith(SyntaxNode* node) const
+bool BlockSyntaxNode::startsWith(SyntaxNode *node) const
 {
     return this == node || (statements.size() > 0 && statements[0]->startsWith(node));
 }
 
 
-SyntaxNode* BlockSyntaxNode::getEnclosingLoop(SyntaxNode* base, SyntaxNode* cur)
+SyntaxNode *BlockSyntaxNode::getEnclosingLoop(SyntaxNode *base, SyntaxNode *cur)
 {
     if (this == base) {
         return cur;
@@ -570,7 +569,7 @@ SyntaxNode* BlockSyntaxNode::getEnclosingLoop(SyntaxNode* base, SyntaxNode* cur)
 }
 
 
-size_t BlockSyntaxNode::getNumStatements() const {
+size_t BlockSyntaxNode::getNumStatements() const
+{
     return m_bb ? 0 : statements.size();
 }
-

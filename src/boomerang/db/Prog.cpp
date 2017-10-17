@@ -184,11 +184,13 @@ void Prog::finishDecode()
 void Prog::generateDotFile() const
 {
     QString filename = SETTING(dotFile);
+
     if (filename.isEmpty()) {
         filename = "cfg.dot";
     }
 
     QFile tgt(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
+
     if (!tgt.open(QFile::WriteOnly | QFile::Text)) {
         return;
     }
@@ -594,14 +596,16 @@ void Prog::removeProc(const QString& name)
     }
 }
 
-Module* Prog::createModule(const QString& name, Module* parent, const ModuleFactory& factory)
+
+Module *Prog::createModule(const QString& name, Module *parent, const ModuleFactory& factory)
 {
     if (parent == nullptr) {
         parent = m_rootModule;
     }
 
-    Module* module = m_rootModule->find(name);
-    if (module && module->getUpstream() == parent) {
+    Module *module = m_rootModule->find(name);
+
+    if (module && (module->getUpstream() == parent)) {
         // a module already exists
         return nullptr;
     }
@@ -769,7 +773,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 
     if (m_image->getSectionByAddr(uaddr) == nullptr) {
         LOG_VERBOSE("Refusing to create a global at address %1 "
-            "that is in no known section of the binary", uaddr);
+                    "that is in no known section of the binary", uaddr);
         return false;
     }
 
@@ -1125,6 +1129,7 @@ void Prog::decodeEntryPoint(Address entryAddr)
         // Chek if there is a library thunk at entryAddr
         if (p == nullptr) {
             Address jumpTarget = m_fileLoader->getJumpTarget(entryAddr);
+
             if (jumpTarget != Address::INVALID) {
                 p = findProc(jumpTarget);
             }
@@ -1233,7 +1238,7 @@ void Prog::decompile()
     // Type analysis, if requested
     if (SETTING(conTypeAnalysis) && SETTING(dfaTypeAnalysis)) {
         LOG_ERROR("Enabling both constraint-based type analysis and DFA type analysis is not supported, "
-            "falling back to DFA type analysis");
+                  "falling back to DFA type analysis");
         SETTING(conTypeAnalysis) = false;
     }
 
@@ -1245,7 +1250,8 @@ void Prog::decompile()
             LOG_VERBOSE("Prog: global removing unused returns");
 
             // Repeat until no change. Note 100% sure if needed.
-            while (removeUnusedReturns()) {}
+            while (removeUnusedReturns()) {
+            }
         }
 
         // print XML after removing returns
@@ -1386,7 +1392,6 @@ void Prog::fromSSAform()
             LOG_VERBOSE("===== End before transformation from SSA form for %1 ====", proc->getName());
 
             if (VERBOSE) {
-
                 if (!SETTING(dotFile).isEmpty()) {
                     proc->printDFG();
                 }
@@ -1497,6 +1502,7 @@ void Prog::printCallGraph() const
     spaces[procList.front()] = 0;
 
     f2 << "digraph callgraph {\n";
+
     while (!procList.empty()) {
         Function *p = procList.front();
         procList.pop_front();
@@ -1670,16 +1676,17 @@ Module *Prog::findModule(const QString& name) const
 void Prog::readSymbolFile(const QString& fname)
 {
     std::unique_ptr<AnsiCParser> par = nullptr;
+
     try {
         par.reset(new AnsiCParser(qPrintable(fname), false));
     }
-    catch (const char*) {
+    catch (const char *) {
         LOG_ERROR("Cannot read symbol file '%1'", fname);
         return;
     }
 
-    Platform    plat = getFrontEndId();
-    CallConv    cc   = CallConv::C;
+    Platform plat = getFrontEndId();
+    CallConv cc   = CallConv::C;
 
     if (isWin32()) {
         cc = CallConv::Pascal;
@@ -1769,7 +1776,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToPointer()) {
-              Address init = Address(readNative4(uaddr));
+        Address init = Address(readNative4(uaddr));
 
         if (init.isZero()) {
             return Const::get(0);
@@ -1796,7 +1803,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
         auto n = e = Terminal::get(opNil);
 
         for (unsigned int i = 0; i < c->getNumTypes(); i++) {
-                     Address    addr = uaddr + c->getOffsetTo(i) / 8;
+            Address    addr = uaddr + c->getOffsetTo(i) / 8;
             SharedType t    = c->getType(i);
             auto       v    = readNativeAs(addr, t);
 
@@ -1949,7 +1956,7 @@ SharedExp Prog::addReloc(SharedExp e, Address lc)
     // relocations have been applied to the constant, so if there is a
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
-       Address             c_addr   = c->getAddr();
+    Address             c_addr   = c->getAddr();
     const IBinarySymbol *bin_sym = m_binarySymbols->find(c_addr);
 
     if (bin_sym != nullptr) {

@@ -25,18 +25,18 @@
 #include "boomerang/type/type/Type.h" // for Type
 #include "boomerang/util/Types.h"     // for ADDRESS
 
-#include <functional>                // for less
-#include <list>                      // for list
-#include <map>                       // for map
-#include <set>                       // for set
-#include <string>                    // for string
-#include <utility>                   // for pair
-#include <vector>                    // for vector
+#include <functional>                 // for less
+#include <list>                       // for list
+#include <map>                        // for map
+#include <set>                        // for set
+#include <string>                     // for string
+#include <utility>                    // for pair
+#include <vector>                     // for vector
 #include <QMap>
 #include <memory>
 
 
-class Exp;         // lines 38-38
+class Exp;       // lines 38-38
 class Statement; // lines 47-47
 class QTextStream;
 class QString;
@@ -60,10 +60,10 @@ public:
     RTL();
 
     /***************************************************************************/ /**
-    * \brief   Constructor.
-    * \param   instNativeAddr - the native address of the instruction
-    * \param   listStmt - ptr to existing list of Statement
-    ******************************************************************************/
+     * \brief   Constructor.
+     * \param   instNativeAddr - the native address of the instruction
+     * \param   listStmt - ptr to existing list of Statement
+     ******************************************************************************/
     RTL(Address instNativeAddr, const std::list<Statement *> *listStmt = nullptr);
 
     /***************************************************************************/ /**

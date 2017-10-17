@@ -59,11 +59,11 @@ bool Terminal::operator==(const Exp& o) const
            (o.getOper() == opWild) || (m_oper == o.getOper()));
 }
 
+
 bool Terminal::operator<(const Exp& o) const
 {
     return(m_oper < o.getOper());
 }
-
 
 
 bool Terminal::operator*=(const Exp& o) const
@@ -196,7 +196,6 @@ void Terminal::appendDotFile(QTextStream& of)
 }
 
 
-
 bool Terminal::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
 {
     if (Exp::match(pattern, bindings)) {
@@ -241,4 +240,3 @@ void Terminal::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 }
-

@@ -218,15 +218,15 @@ void Binary::printr(QTextStream& os, bool html) const
     // (recursed from a higher level), we want the parens (at least for standard infix operators)
     switch (m_oper)
     {
-        case opSize:
-        case opList: // Otherwise, you get (a, (b, (c, d)))
-            // There may be others
-            // These are the noparen cases
-            print(os, html);
-            return;
+    case opSize:
+    case opList:     // Otherwise, you get (a, (b, (c, d)))
+        // There may be others
+        // These are the noparen cases
+        print(os, html);
+        return;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     // Normal case: we want the parens
@@ -245,63 +245,63 @@ void Binary::print(QTextStream& os, bool html) const
     // Special cases
     switch (m_oper)
     {
-        case opSize:
-            // This can still be seen after decoding and before type analysis after m[...]
-            // *size* is printed after the expression, even though it comes from the first subexpression
-            p2->printr(os, html);
-            os << "*";
-            p1->printr(os, html);
-            os << "*";
-            return;
+    case opSize:
+        // This can still be seen after decoding and before type analysis after m[...]
+        // *size* is printed after the expression, even though it comes from the first subexpression
+        p2->printr(os, html);
+        os << "*";
+        p1->printr(os, html);
+        os << "*";
+        return;
 
-        case opFlagCall:
-            // The name of the flag function (e.g. ADDFLAGS) should be enough
-            std::static_pointer_cast<const Const>(p1)->printNoQuotes(os);
-            os << "( ";
-            p2->printr(os, html);
-            os << " )";
-            return;
+    case opFlagCall:
+        // The name of the flag function (e.g. ADDFLAGS) should be enough
+        std::static_pointer_cast<const Const>(p1)->printNoQuotes(os);
+        os << "( ";
+        p2->printr(os, html);
+        os << " )";
+        return;
 
-        case opExpTable:
-        case opNameTable:
+    case opExpTable:
+    case opNameTable:
 
-            if (m_oper == opExpTable) {
-                os << "exptable(";
-            }
-            else {
-                os << "nametable(";
-            }
+        if (m_oper == opExpTable) {
+            os << "exptable(";
+        }
+        else {
+            os << "nametable(";
+        }
 
-            os << p1 << ", " << p2 << ")";
-            return;
+        os << p1 << ", " << p2 << ")";
+        return;
 
-        case opList:
-            // Because "," is the lowest precedence operator, we don't need printr here.
-            // Also, same as UQBT, so easier to test
-            p1->print(os, html);
+    case opList:
+        // Because "," is the lowest precedence operator, we don't need printr here.
+        // Also, same as UQBT, so easier to test
+        p1->print(os, html);
 
-            if (!p2->isNil()) {
-                os << ", ";
-            }
+        if (!p2->isNil()) {
+            os << ", ";
+        }
 
-            p2->print(os, html);
-            return;
+        p2->print(os, html);
+        return;
 
-        case opMemberAccess:
-            p1->print(os, html);
-            os << ".";
-            std::static_pointer_cast<const Const>(p2)->printNoQuotes(os);
-            return;
+    case opMemberAccess:
+        p1->print(os, html);
+        os << ".";
+        std::static_pointer_cast<const Const>(p2)->printNoQuotes(os);
+        return;
 
-        case opArrayIndex:
-            p1->print(os, html);
-            os << "[";
-            p2->print(os, html);
-            os << "]";
-            return;
+    case opArrayIndex:
+        p1->print(os, html);
+        os << "[";
+        p2->print(os, html);
+        os << "]";
+        return;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     // Ordinary infix operators. Emit parens around the binary
@@ -314,233 +314,233 @@ void Binary::print(QTextStream& os, bool html) const
 
     switch (m_oper)
     {
-        case opPlus:
-            os << " + ";
-            break;
+    case opPlus:
+        os << " + ";
+        break;
 
-        case opMinus:
-            os << " - ";
-            break;
+    case opMinus:
+        os << " - ";
+        break;
 
-        case opMult:
-            os << " * ";
-            break;
+    case opMult:
+        os << " * ";
+        break;
 
-        case opMults:
-            os << " *! ";
-            break;
+    case opMults:
+        os << " *! ";
+        break;
 
-        case opDiv:
-            os << " / ";
-            break;
+    case opDiv:
+        os << " / ";
+        break;
 
-        case opDivs:
-            os << " /! ";
-            break;
+    case opDivs:
+        os << " /! ";
+        break;
 
-        case opMod:
-            os << " % ";
-            break;
+    case opMod:
+        os << " % ";
+        break;
 
-        case opMods:
-            os << " %! ";
-            break;
+    case opMods:
+        os << " %! ";
+        break;
 
-        case opFPlus:
-            os << " +f ";
-            break;
+    case opFPlus:
+        os << " +f ";
+        break;
 
-        case opFMinus:
-            os << " -f ";
-            break;
+    case opFMinus:
+        os << " -f ";
+        break;
 
-        case opFMult:
-            os << " *f ";
-            break;
+    case opFMult:
+        os << " *f ";
+        break;
 
-        case opFDiv:
-            os << " /f ";
-            break;
+    case opFDiv:
+        os << " /f ";
+        break;
 
-        case opPow:
-            os << " pow ";
-            break; // Raising to power
+    case opPow:
+        os << " pow ";
+        break;     // Raising to power
 
-        case opAnd:
-            os << " and ";
-            break;
+    case opAnd:
+        os << " and ";
+        break;
 
-        case opOr:
-            os << " or ";
-            break;
+    case opOr:
+        os << " or ";
+        break;
 
-        case opBitAnd:
-            os << " & ";
-            break;
+    case opBitAnd:
+        os << " & ";
+        break;
 
-        case opBitOr:
-            os << " | ";
-            break;
+    case opBitOr:
+        os << " | ";
+        break;
 
-        case opBitXor:
-            os << " ^ ";
-            break;
+    case opBitXor:
+        os << " ^ ";
+        break;
 
-        case opEquals:
-            os << " = ";
-            break;
+    case opEquals:
+        os << " = ";
+        break;
 
-        case opNotEqual:
-            os << " ~= ";
-            break;
+    case opNotEqual:
+        os << " ~= ";
+        break;
 
-        case opLess:
+    case opLess:
 
-            if (html) {
-                os << " &lt; ";
-            }
-            else {
-                os << " < ";
-            }
+        if (html) {
+            os << " &lt; ";
+        }
+        else {
+            os << " < ";
+        }
 
-            break;
+        break;
 
-        case opGtr:
+    case opGtr:
 
-            if (html) {
-                os << " &gt; ";
-            }
-            else {
-                os << " > ";
-            }
+        if (html) {
+            os << " &gt; ";
+        }
+        else {
+            os << " > ";
+        }
 
-            break;
+        break;
 
-        case opLessEq:
+    case opLessEq:
 
-            if (html) {
-                os << " &lt;= ";
-            }
-            else {
-                os << " <= ";
-            }
+        if (html) {
+            os << " &lt;= ";
+        }
+        else {
+            os << " <= ";
+        }
 
-            break;
+        break;
 
-        case opGtrEq:
+    case opGtrEq:
 
-            if (html) {
-                os << " &gt;= ";
-            }
-            else {
-                os << " >= ";
-            }
+        if (html) {
+            os << " &gt;= ";
+        }
+        else {
+            os << " >= ";
+        }
 
-            break;
+        break;
 
-        case opLessUns:
+    case opLessUns:
 
-            if (html) {
-                os << " &lt;u ";
-            }
-            else {
-                os << " <u ";
-            }
+        if (html) {
+            os << " &lt;u ";
+        }
+        else {
+            os << " <u ";
+        }
 
-            break;
+        break;
 
-        case opGtrUns:
+    case opGtrUns:
 
-            if (html) {
-                os << " &gt;u ";
-            }
-            else {
-                os << " >u ";
-            }
+        if (html) {
+            os << " &gt;u ";
+        }
+        else {
+            os << " >u ";
+        }
 
-            break;
+        break;
 
-        case opLessEqUns:
+    case opLessEqUns:
 
-            if (html) {
-                os << " &lt;u ";
-            }
-            else {
-                os << " <=u ";
-            }
+        if (html) {
+            os << " &lt;u ";
+        }
+        else {
+            os << " <=u ";
+        }
 
-            break;
+        break;
 
-        case opGtrEqUns:
+    case opGtrEqUns:
 
-            if (html) {
-                os << " &gt;=u ";
-            }
-            else {
-                os << " >=u ";
-            }
+        if (html) {
+            os << " &gt;=u ";
+        }
+        else {
+            os << " >=u ";
+        }
 
-            break;
+        break;
 
-        case opUpper:
-            os << " GT ";
-            break;
+    case opUpper:
+        os << " GT ";
+        break;
 
-        case opLower:
-            os << " LT ";
-            break;
+    case opLower:
+        os << " LT ";
+        break;
 
-        case opShiftL:
+    case opShiftL:
 
-            if (html) {
-                os << " &lt;&lt; ";
-            }
-            else {
-                os << " << ";
-            }
+        if (html) {
+            os << " &lt;&lt; ";
+        }
+        else {
+            os << " << ";
+        }
 
-            break;
+        break;
 
-        case opShiftR:
+    case opShiftR:
 
-            if (html) {
-                os << " &gt;&gt; ";
-            }
-            else {
-                os << " >> ";
-            }
+        if (html) {
+            os << " &gt;&gt; ";
+        }
+        else {
+            os << " >> ";
+        }
 
-            break;
+        break;
 
-        case opShiftRA:
+    case opShiftRA:
 
-            if (html) {
-                os << " &gt;&gt;A ";
-            }
-            else {
-                os << " >>A ";
-            }
+        if (html) {
+            os << " &gt;&gt;A ";
+        }
+        else {
+            os << " >>A ";
+        }
 
-            break;
+        break;
 
-        case opRotateL:
-            os << " rl ";
-            break;
+    case opRotateL:
+        os << " rl ";
+        break;
 
-        case opRotateR:
-            os << " rr ";
-            break;
+    case opRotateR:
+        os << " rr ";
+        break;
 
-        case opRotateLC:
-            os << " rlc ";
-            break;
+    case opRotateLC:
+        os << " rlc ";
+        break;
 
-        case opRotateRC:
-            os << " rrc ";
-            break;
+    case opRotateRC:
+        os << " rrc ";
+        break;
 
-        default:
-            LOG_FATAL("Invalid operator %1", operToString(m_oper));
+    default:
+        LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     if (p2 == nullptr) {
@@ -602,12 +602,11 @@ SharedExp Binary::match(const SharedConstExp& pattern)
         for (SharedExp r = b_rhs; r && r->getOper() != opNil; r = r->getSubExp2()) {
             if ((*l->getSubExp1()->getSubExp1() == *r->getSubExp1()->getSubExp1()) &&
                 !(*l->getSubExp1()->getSubExp2() == *r->getSubExp1()->getSubExp2())) {
-
                 return nullptr; // must be agreement between LHS and RHS
-                }
-                else {
-                    result = Binary::get(opList, l->getSubExp1()->clone(), result);
-                }
+            }
+            else {
+                result = Binary::get(opList, l->getSubExp1()->clone(), result);
+            }
         }
     }
 
@@ -617,7 +616,6 @@ SharedExp Binary::match(const SharedConstExp& pattern)
 
     return result;
 }
-
 
 
 bool Binary::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
@@ -797,7 +795,6 @@ SharedExp Binary::simplifyArith()
     return Binary::get(_op, Binary::get(opMinus, Exp::accumulate(positives), Exp::accumulate(negatives)),
                        Const::get(sum));
 }
-
 
 
 SharedExp Binary::polySimplify(bool& bMod)
@@ -1122,6 +1119,7 @@ SharedExp Binary::polySimplify(bool& bMod)
 
     if ((m_oper == opShiftL) && (opSub2 == opIntConst)) {
         int k = std::static_pointer_cast<const Const>(subExp2)->getInt();
+
         if ((k >= 0) && (k < 32)) {
             res->setOper(opMult);
             std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
@@ -1132,6 +1130,7 @@ SharedExp Binary::polySimplify(bool& bMod)
 
     if ((m_oper == opShiftR) && (opSub2 == opIntConst)) {
         int k = std::static_pointer_cast<const Const>(subExp2)->getInt();
+
         if ((k >= 0) && (k < 32)) {
             res->setOper(opDiv);
             std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
@@ -1141,32 +1140,32 @@ SharedExp Binary::polySimplify(bool& bMod)
     }
 
     /*
-    *  // Check for -x compare y, becomes x compare -y
-    *  // doesn't count as a change
-    *  if (    isComparison() &&
-    *                  opSub1 == opNeg) {
-    *          SharedExp e = subExp1;
-    *          subExp1 = e->getSubExp1()->clone();
-    *          ;//delete e;
-    *          subExp2 = Unary::get(opNeg, subExp2);
-    *  }
-    *
-    *  // Check for (x + y) compare 0, becomes x compare -y
-    *  if (    isComparison() &&
-    *                  opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0 &&
-    *                  opSub1 == opPlus) {
-    *          ;//delete subExp2;
-    *          Binary *b = (Binary*)subExp1;
-    *          subExp2 = b->subExp2;
-    *          b->subExp2 = 0;
-    *          subExp1 = b->subExp1;
-    *          b->subExp1 = 0;
-    *          ;//delete b;
-    *          subExp2 = Unary::get(opNeg, subExp2);
-    *          bMod = true;
-    *          return res;
-    *  }
-    */
+     *  // Check for -x compare y, becomes x compare -y
+     *  // doesn't count as a change
+     *  if (    isComparison() &&
+     *                  opSub1 == opNeg) {
+     *          SharedExp e = subExp1;
+     *          subExp1 = e->getSubExp1()->clone();
+     *          ;//delete e;
+     *          subExp2 = Unary::get(opNeg, subExp2);
+     *  }
+     *
+     *  // Check for (x + y) compare 0, becomes x compare -y
+     *  if (    isComparison() &&
+     *                  opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0 &&
+     *                  opSub1 == opPlus) {
+     *          ;//delete subExp2;
+     *          Binary *b = (Binary*)subExp1;
+     *          subExp2 = b->subExp2;
+     *          b->subExp2 = 0;
+     *          subExp1 = b->subExp1;
+     *          b->subExp1 = 0;
+     *          ;//delete b;
+     *          subExp2 = Unary::get(opNeg, subExp2);
+     *          bMod = true;
+     *          return res;
+     *  }
+     */
 
     // Check for (x == y) == 1, becomes x == y
     if ((m_oper == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1) && (opSub1 == opEquals)) {
@@ -1221,9 +1220,9 @@ SharedExp Binary::polySimplify(bool& bMod)
     // Check for (0 - x) != 0, becomes x != 0
     if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opMinus) &&
         subExp1->getSubExp1()->isIntConst() && (std::static_pointer_cast<const Const>(subExp1->getSubExp1())->getInt() == 0)) {
-            res  = Binary::get(opNotEqual, subExp1->getSubExp2()->clone(), subExp2->clone());
-            bMod = true;
-            return res;
+        res  = Binary::get(opNotEqual, subExp1->getSubExp2()->clone(), subExp2->clone());
+        bMod = true;
+        return res;
     }
 
     // Check for (x > y) == 0, becomes x <= y
@@ -1253,7 +1252,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     if ((m_oper == opOr) && (opSub2 == opEquals) &&
         ((opSub1 == opGtrEq) || (opSub1 == opLessEq) || (opSub1 == opGtrEqUns) || (opSub1 == opLessEqUns)) &&
         (((*b1->subExp1 == *b2->subExp1) && (*b1->subExp2 == *b2->subExp2)) ||
-        ((*b1->subExp1 == *b2->subExp2) && (*b1->subExp2 == *b2->subExp1)))) {
+         ((*b1->subExp1 == *b2->subExp2) && (*b1->subExp2 == *b2->subExp1)))) {
         res  = res->getSubExp1();
         bMod = true;
         return res;
@@ -1340,31 +1339,31 @@ SharedExp Binary::polySimplify(bool& bMod)
 
     if (((m_oper == opPlus) || (m_oper == opMinus)) && ((subExp1->getOper() == opMults) || (subExp1->getOper() == opMult)) &&
         (subExp2->getOper() == opIntConst) && (subExp1->getSubExp2()->getOper() == opIntConst)) {
-            int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
-            int n2 = subExp1->access<Const, 2>()->getInt();
+        int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        int n2 = subExp1->access<Const, 2>()->getInt();
 
-            if (n1 == n2) {
-                res = Binary::get(subExp1->getOper(), Binary::get(m_oper, subExp1->getSubExp1()->clone(), Const::get(1)),
-                                Const::get(n1));
-                bMod = true;
-                return res;
-            }
+        if (n1 == n2) {
+            res = Binary::get(subExp1->getOper(), Binary::get(m_oper, subExp1->getSubExp1()->clone(), Const::get(1)),
+                              Const::get(n1));
+            bMod = true;
+            return res;
+        }
     }
 
     if (((m_oper == opPlus) || (m_oper == opMinus)) && (subExp1->getOper() == opPlus) && (subExp2->getOper() == opIntConst) &&
         ((subExp1->getSubExp2()->getOper() == opMults) || (subExp1->getSubExp2()->getOper() == opMult)) &&
         (subExp1->access<Exp, 2, 2>()->getOper() == opIntConst)) {
-            int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
-            int n2 = subExp1->access<Const, 2, 2>()->getInt();
+        int n1 = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        int n2 = subExp1->access<Const, 2, 2>()->getInt();
 
-            if (n1 == n2) {
-                res = Binary::get(opPlus, subExp1->getSubExp1(),
-                                Binary::get(subExp1->getSubExp2()->getOper(),
-                                            Binary::get(m_oper, subExp1->access<Exp, 2, 1>()->clone(), Const::get(1)),
-                                            Const::get(n1)));
-                bMod = true;
-                return res;
-            }
+        if (n1 == n2) {
+            res = Binary::get(opPlus, subExp1->getSubExp1(),
+                              Binary::get(subExp1->getSubExp2()->getOper(),
+                                          Binary::get(m_oper, subExp1->access<Exp, 2, 1>()->clone(), Const::get(1)),
+                                          Const::get(n1)));
+            bMod = true;
+            return res;
+        }
     }
 
     // check for ((x * a) + (y * b)) / c where a, b and c are all integers and a and b divide evenly by c
@@ -1373,16 +1372,16 @@ SharedExp Binary::polySimplify(bool& bMod)
         (subExp1->getSubExp1()->getOper() == opMult) && (subExp1->getSubExp2()->getOper() == opMult) &&
         (subExp1->access<Exp, 1, 2>()->getOper() == opIntConst) &&
         (subExp1->access<Exp, 2, 2>()->getOper() == opIntConst)) {
-            int a = subExp1->access<Const, 1, 2>()->getInt();
-            int b = subExp1->access<Const, 2, 2>()->getInt();
-            int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        int a = subExp1->access<Const, 1, 2>()->getInt();
+        int b = subExp1->access<Const, 2, 2>()->getInt();
+        int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
 
-            if (((a % c) == 0) && ((b % c) == 0)) {
-                res = Binary::get(opPlus, Binary::get(opMult, subExp1->getSubExp1()->getSubExp1(), Const::get(a / c)),
-                                Binary::get(opMult, subExp1->access<Exp, 2, 1>(), Const::get(b / c)));
-                bMod = true;
-                return res;
-            }
+        if (((a % c) == 0) && ((b % c) == 0)) {
+            res = Binary::get(opPlus, Binary::get(opMult, subExp1->getSubExp1()->getSubExp1(), Const::get(a / c)),
+                              Binary::get(opMult, subExp1->access<Exp, 2, 1>(), Const::get(b / c)));
+            bMod = true;
+            return res;
+        }
     }
 
     // check for ((x * a) + (y * b)) % c where a, b and c are all integers
@@ -1393,27 +1392,27 @@ SharedExp Binary::polySimplify(bool& bMod)
         (subExp1->getSubExp1()->getOper() == opMult) && (subExp1->getSubExp2()->getOper() == opMult) &&
         (subExp1->getSubExp1()->getSubExp2()->getOper() == opIntConst) &&
         (subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst)) {
-            int a = subExp1->access<Const, 1, 2>()->getInt();
-            int b = subExp1->access<Const, 2, 2>()->getInt();
-            int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
+        int a = subExp1->access<Const, 1, 2>()->getInt();
+        int b = subExp1->access<Const, 2, 2>()->getInt();
+        int c = std::static_pointer_cast<const Const>(subExp2)->getInt();
 
-            if (((a % c) == 0) && ((b % c) == 0)) {
-                res  = Const::get(0);
-                bMod = true;
-                return res;
-            }
+        if (((a % c) == 0) && ((b % c) == 0)) {
+            res  = Const::get(0);
+            bMod = true;
+            return res;
+        }
 
-            if ((a % c) == 0) {
-                res  = Binary::get(opMod, subExp1->getSubExp2()->clone(), Const::get(c));
-                bMod = true;
-                return res;
-            }
+        if ((a % c) == 0) {
+            res  = Binary::get(opMod, subExp1->getSubExp2()->clone(), Const::get(c));
+            bMod = true;
+            return res;
+        }
 
-            if ((b % c) == 0) {
-                res  = Binary::get(opMod, subExp1->getSubExp1()->clone(), Const::get(c));
-                bMod = true;
-                return res;
-            }
+        if ((b % c) == 0) {
+            res  = Binary::get(opMod, subExp1->getSubExp1()->clone(), Const::get(c));
+            bMod = true;
+            return res;
+        }
     }
 
     // Check for 0 - (0 <u exp1) & exp2 => exp2
@@ -1444,7 +1443,6 @@ SharedExp Binary::polySimplify(bool& bMod)
 
     return res;
 }
-
 
 
 SharedExp Binary::simplifyAddr()
@@ -1483,10 +1481,10 @@ SharedExp Binary::genConstraints(SharedExp result)
 
     switch (m_oper)
     {
-        case opFPlus:
-        case opFMinus:
-        case opFMult:
-        case opFDiv:
+    case opFPlus:
+    case opFMinus:
+    case opFMult:
+    case opFDiv:
         {
             if (restrictTo && !restrictTo->isFloat()) {
                 // Result can only be float
@@ -1506,9 +1504,9 @@ SharedExp Binary::genConstraints(SharedExp result)
             return res;
         }
 
-        case opBitAnd:
-        case opBitOr:
-        case opBitXor:
+    case opBitAnd:
+    case opBitOr:
+    case opBitXor:
         {
             if (restrictTo && !restrictTo->isInteger()) {
                 // Result can only be integer
@@ -1528,7 +1526,7 @@ SharedExp Binary::genConstraints(SharedExp result)
             return res;
         }
 
-        case opPlus:
+    case opPlus:
         {
             // A pointer to anything
             SharedType ptrType = PointerType::newPtrAlpha();
@@ -1580,7 +1578,7 @@ SharedExp Binary::genConstraints(SharedExp result)
             return Terminal::get(opFalse);
         }
 
-        case opMinus:
+    case opMinus:
         {
             SharedType ptrType = PointerType::newPtrAlpha();
             auto       ptrVal  = TypeVal::get(ptrType);
@@ -1631,7 +1629,7 @@ SharedExp Binary::genConstraints(SharedExp result)
             return Terminal::get(opFalse);
         }
 
-        case opSize:
+    case opSize:
         {
             // This used to be considered obsolete, but now, it is used to carry the size of memOf's from the decoder to
             // here
@@ -1656,8 +1654,8 @@ SharedExp Binary::genConstraints(SharedExp result)
             return Binary::get(opEquals, result->clone(), TypeVal::get(SizeType::get(sz)));
         }
 
-        default:
-            break;
+    default:
+        break;
     }
 
     return Terminal::get(opTrue);
@@ -1702,32 +1700,32 @@ SharedExp Binary::simplifyConstraint()
 
     switch (m_oper)
     {
-        case opEquals:
+    case opEquals:
 
-            if (subExp1->isTypeVal() && subExp2->isTypeVal()) {
-                // FIXME: ADHOC TA assumed
-                SharedType t1 = subExp1->access<TypeVal>()->getType();
-                SharedType t2 = subExp2->access<TypeVal>()->getType();
+        if (subExp1->isTypeVal() && subExp2->isTypeVal()) {
+            // FIXME: ADHOC TA assumed
+            SharedType t1 = subExp1->access<TypeVal>()->getType();
+            SharedType t2 = subExp2->access<TypeVal>()->getType();
 
-                if (!t1->isPointerToAlpha() && !t2->isPointerToAlpha()) {
-                    if (*t1 == *t2) {
-                        return Terminal::get(opTrue);
-                    }
-                    else {
-                        return Terminal::get(opFalse);
-                    }
+            if (!t1->isPointerToAlpha() && !t2->isPointerToAlpha()) {
+                if (*t1 == *t2) {
+                    return Terminal::get(opTrue);
+                }
+                else {
+                    return Terminal::get(opFalse);
                 }
             }
+        }
 
-            break;
+        break;
 
-        case opOr:
-        case opAnd:
-        case opNot:
-            return simplify();
+    case opOr:
+    case opAnd:
+    case opNot:
+        return simplify();
 
-        default:
-            break;
+    default:
+        break;
     }
 
     return shared_from_this();

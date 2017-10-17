@@ -16,8 +16,8 @@
  *  (Was dataflow.h a long time ago)
  ******************************************************************************/
 
-#include "boomerang/db/exp/ExpHelp.h"  // For lessExpStar, lessAssignment etc
-#include "boomerang/db/DataFlow.h" // For embedded objects DefCollector and UseCollector#
+#include "boomerang/db/exp/ExpHelp.h" // For lessExpStar, lessAssignment etc
+#include "boomerang/db/DataFlow.h"    // For embedded objects DefCollector and UseCollector#
 
 #include "boomerang/db/Managed.h"
 
@@ -53,10 +53,10 @@ class RTL;
 class InstructionSet;
 class ReturnStatement;
 
-typedef std::set<UserProc *>           CycleSet;
-typedef std::shared_ptr<Exp>           SharedExp;
+typedef std::set<UserProc *>         CycleSet;
+typedef std::shared_ptr<Exp>         SharedExp;
 typedef std::unique_ptr<Statement>   UniqInstruction;
-typedef std::shared_ptr<Type>          SharedType;
+typedef std::shared_ptr<Type>        SharedType;
 
 /***************************************************************************/ /**
  * Types of Statements, or high-level register transfer lists.

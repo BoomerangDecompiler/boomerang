@@ -240,8 +240,8 @@ public:
     };
 
     /// Needed before the signature is promoted
-    virtual int getStackRegister() const noexcept(false);
-    static int getStackRegister(Prog *prog) noexcept(false);
+    virtual int getStackRegister() const noexcept (false);
+    static int getStackRegister(Prog *prog) noexcept (false);
 
     /**
      * Does expression e represent a local stack-based variable?
@@ -334,7 +334,7 @@ public:
 
     void setSP(int nsp);
 
-    virtual int getStackRegister() const noexcept(false) override { return sp; }
+    virtual int getStackRegister() const noexcept (false)override { return sp; }
 
 protected:
     int sp;

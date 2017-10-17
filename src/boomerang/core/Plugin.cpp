@@ -23,11 +23,13 @@ PluginHandle::PluginHandle(const QString& filePath)
 {
 #ifdef _MSC_VER
     m_handle = LoadLibrary(qPrintable(filePath));
+
     if (m_handle == nullptr) {
         throw "Loading plugin failed!";
     }
 #else
     m_handle = dlopen(qPrintable(filePath), RTLD_NOW);
+
     if (m_handle == nullptr) {
         throw dlerror();
     }
@@ -45,7 +47,7 @@ PluginHandle::~PluginHandle()
 }
 
 
-PluginHandle::Symbol PluginHandle::getSymbol(const char* name) const
+PluginHandle::Symbol PluginHandle::getSymbol(const char *name) const
 {
 #ifdef _MSC_VER
     return GetProcAddress((HMODULE)m_handle, name);

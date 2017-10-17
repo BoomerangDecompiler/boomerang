@@ -124,7 +124,6 @@ bool Unary::operator<(const Exp& o) const
 }
 
 
-
 bool Unary::operator*=(const Exp& o) const
 {
     const Exp *other = &o;
@@ -360,6 +359,7 @@ void Unary::print(QTextStream& os, bool html) const
         return;
 
     case opTemp:
+
         if (p1->getOper() == opWildStrConst) {
             assert(p1->isTerminal());
             os << "t[";
@@ -367,7 +367,8 @@ void Unary::print(QTextStream& os, bool html) const
             os << "]";
             return;
         }
-        // fallthrough
+
+    // fallthrough
 
     // Temp: just print the string, no quotes
     case opGlobal:

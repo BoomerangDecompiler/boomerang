@@ -141,5 +141,4 @@ private:
     bool m_isFloat;        ///< True if uses floating point CC
     // jtCond seems to be mainly needed for the Pentium weirdness.
     // Perhaps m_isFloat, m_jumpType, and m_size could one day be merged into a type
-
 };
