@@ -97,8 +97,8 @@ Log& Log::getOrCreateLog()
         g_log = new Log(LogLevel::Default);
         g_log->addLogSink(new ConsoleLogSink());
         g_log->addLogSink(new FileLogSink(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("boomerang.log")));
-
         g_log->writeLogHeader();
+
         LOG_MSG("This is Boomerang " BOOMERANG_VERSION);
         LOG_MSG("Log initialized.");
     }

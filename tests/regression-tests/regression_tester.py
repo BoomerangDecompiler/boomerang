@@ -1,118 +1,133 @@
 #!/usr/bin/env python3
-# Boomerang test functional test runner
-# ARGV[0] test_executable
-# ARGV[1] platform
-# ARGV[2] test
-# ARGV[3] test-set
-# ARGV[4] options
-# ARGV[5] parameters to the recompiled executable
-
 
 import os
-import subprocess
 import shutil
+import subprocess
 import sys
 import time
-import operator
+
 from collections import defaultdict
 
 
-print("Boomerang Regression tester 0.0.1\n")
+TESTS_DIR = os.getcwd() + os.sep + "tests"
+TESTS_INPUT = os.path.join(TESTS_DIR, "inputs")
 
-TESTS_DIR = "." + os.sep + "tests"
-TEST_INPUT = os.path.join(TESTS_DIR, "inputs")
-FAILED_COMMANDLINES = ""
+test_results = defaultdict();
 
 
 '''
   Perform the actual test.
+  Parameters:
+    - exepath:     Path to the Boomerang executable.
+    - test_file:   Path to the input binary file.
+    - output_path: Path to the output directory.
+    - args:        additional command line arguments.
+
+  The output directory will be created if it does not exist.
+
+  Returns:
+    - a character indicatiing test result status (.=success, !=failure etc.)
+    - the full commandline
+    - the input file path
+    - the throughput in B/s
+  as a list.
 '''
-def perform_test(exepath, test_file, output_path, args):
-    log_name  = output_path
-    file_size = os.path.getsize(test_file)
-    upper_dir = os.sep.join(output_path.split(os.sep)[:-1])
-    cmdline   = ['-P', os.getcwd(), '-o', upper_dir] + args + [test_file]
-
-    test_stdout = open(log_name+".stdout", "w")
-    test_stderr = open(log_name+".stderr", "w")
-
-    start_t = time.time()
+def perform_test(exepath, test_file_path, output_path, args):
+    cmdline   = [exepath] + ['-P', os.getcwd(), '-o', output_path] + args + [test_file_path]
+    input_file = os.sep.join(test_file_path.split(os.sep)[-1:]) # input file without the path
 
     try:
-        result = subprocess.call([exepath]+cmdline, stdout=test_stdout, stderr=test_stderr, timeout=20)
+        os.makedirs(output_path)
+
+        test_stdout = open(output_path + input_file + ".stdout", "w")
+        test_stderr = open(output_path + input_file + ".stderr", "w")
+
+        start_t = time.time()
+
+        try:
+            result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=20)
+            result = '.'
+        except:
+            result = '!'
+
+        end_t = time.time()
+
+        test_stdout.close()
+        test_stdout.close()
+
+        file_size = os.path.getsize(test_file_path)
+        return [result, ' '.join(cmdline), test_file_path, float(file_size)/(end_t-start_t)]
     except:
-        result = 1
+        return ['d', ' '.join(cmdline), test_file_path, 0]
 
-    end_t = time.time()
-    test_stdout.close()
-    test_stdout.close()
 
-    sys.stdout.write('.' if (result==0) else '!')
-    sys.stdout.flush()
-    return [result == 0, ' '.join(cmdline), test_file, float(file_size)/(end_t-start_t)]
+
 
 
 '''
-  Test the decompiler with all files in a specific directory.
+  Test the decompiler with all files in a specific directory
+  and all subdirectories.
 '''
-def test_all_inputs_in(base_dir, dirname=""):
-    if dirname != "":
-        sys.stdout.write("\nTesting in " + os.path.join(base_dir, "inputs", dirname))
-
-    current_dir = os.path.join(base_dir, dirname)
-    input_dir = os.path.join(base_dir, "inputs", dirname)
-    output_dir = os.path.join(base_dir, "outputs", dirname)
-    machine = ""
-
-    if dirname != "":
-        machine = dirname.split(os.sep)[0]  # assumption here is that inputs are always in /inputs/<machine_name>
-
-    for f in os.listdir(input_dir):
-        source = os.path.join(base_dir, "inputs", dirname, f)
-        if os.path.isdir(source):
-            test_all_inputs_in(base_dir,os.path.join(dirname,f)) # recurse
+def test_all_inputs_in(dir_path, depth=0):
+    for f in os.listdir(dir_path):
+        if os.path.isdir(os.path.join(dir_path, f)):
+            # recurse into subdirectories
+            test_all_inputs_in(os.path.join(dir_path, f), depth + 1)
         else:
-            test_path = source
-            result_path = os.path.join(base_dir,"outputs",dirname,f)
-            try:
-                os.makedirs(result_path)
-            except:
-                pass
+            # test the actual file
+            input_file = os.path.join(dir_path, f)
+
+            # /inputs/ -> /outputs/
+            output_dir = input_file.replace(os.sep + "inputs" + os.sep, os.sep + "outputs" + os.sep) + os.sep
+            test_results[input_file] = perform_test(sys.argv[1], input_file, output_dir, sys.argv[2:])
+            sys.stdout.write(test_results[input_file][0]) # print status
+            sys.stdout.flush()
+
+def main():
+    print("")
+    print("Boomerang 0.4.0 Regression Tester")
+    print("=================================")
+    print("")
+
+    # Backup previous output to outputs_prev
+    old_path = os.path.join(TESTS_DIR, "outputs_prev")
+    new_path = os.path.join(TESTS_DIR, "outputs")
+
+    if os.path.isdir(old_path): shutil.rmtree(old_path)
+    if os.path.isdir(new_path): shutil.move(new_path, old_path)
+
+    sys.stdout.write("Testing ")
+    test_all_inputs_in(TESTS_INPUT)
+    print("\n")
+
+    num_tests = len(test_results)
+    num_failed = sum(1 for res in test_results.values() if res[0] != '.')
+
+    # Works because items are compared from left to right
+    (min_throughput, min_name) = min((res[3], os.path.relpath(res[2], TESTS_DIR)) for res in test_results.values() if res[0] == '.')
+
+    print("Summary:")
+    print("========")
+    print("Number of tests: " + str(num_tests))
+    print("Failed tests:    " + str(num_failed))
+    print("Min throughput:  " + str(int(min_throughput) / 1000) + " kB/s (" + min_name + ")")
+    print("")
+    print("Failures:")
+    print("=========")
+
+    some_failed = False
+    for res in test_results.values():
+        if (res[0] != '.'):
+            some_failed = True
+            sys.stdout.write(res[0] + " " + os.path.relpath(res[2], TESTS_DIR) + "\n")
+
+    # Everything OK?
+    if not some_failed:
+        print("None")
+
+    print("")
+    sys.stdout.flush()
 
 
-            test_res = perform_test(sys.argv[1], source, result_path, sys.argv[2:])
-
-            assert(not test_res[0] or os.path.isfile(os.path.join(output_dir, "boomerang.log")))
-            try:
-                shutil.move(os.path.join(output_dir, "boomerang.log"), os.path.join(output_dir, f+".log"))
-            except:
-                 pass
-
-            if not test_res[0]:
-                crashes[machine].append([source,test_res[1]])
-            elif test_res[3] != None:
-                times[test_res[2]] = test_res[3]
-
-
-if os.path.isdir(os.path.join(TESTS_DIR, "outputs_prev")):
-    shutil.rmtree(os.path.join(TESTS_DIR, "outputs_prev"))
-
-if os.path.isdir(os.path.join(TESTS_DIR, "outputs")):
-    shutil.move(os.path.join(TESTS_DIR, "outputs"),os.path.join(TESTS_DIR, "outputs_prev"))
-
-#exit(1)
-#sh -c "./boomerang -o functest $4 test/$1/$2 2>/dev/null >/dev/null"
-crashes = defaultdict(list)
-times = {}
-
-test_all_inputs_in(TESTS_DIR)
-print("\n")
-
-for machine, crash_list in crashes.items():
-    numCrashes = len(crash_list)
-    print("\nEncountered " + str(numCrashes) + " program failures for " + machine)
-    for test in crash_list:
-        print("Decompiler failed on " + test[0] + " - " + str(test[1]))
-
-sorted_times = sorted(times.items(), key = operator.itemgetter(1), reverse = True)
-print("\nSlowest run in bytes/sec " + sorted_times[0][0] + " - " + str(int(sorted_times[0][1]/1000)) + " kBytes/sec")
+if __name__ == "__main__":
+    main()
