@@ -46,16 +46,16 @@ struct TypedVariable
 class DataIntervalMap
 {
 public:
-    typedef IntervalMap<Address, TypedVariable> VariableMap;
-    typedef VariableMap::iterator iterator;
-    typedef VariableMap::const_iterator const_iterator;
+    typedef IntervalMap<Address, TypedVariable>   VariableMap;
+    typedef VariableMap::iterator                 iterator;
+    typedef VariableMap::const_iterator           const_iterator;
 
 public:
     /**
      * \param userProc The user proc for which the stack variables are determined,
      * or nullptr for the global variable table
      */
-    DataIntervalMap(UserProc* userProc = nullptr);
+    DataIntervalMap(UserProc *userProc = nullptr);
 
     iterator begin() { return m_varMap.begin(); }
     iterator end()   { return m_varMap.end(); }
@@ -64,7 +64,8 @@ public:
 
     /// \returns true iff the interval [addr; addr+size) does not contain a variable.
     bool isClear(Address addr, unsigned size);
-    bool isClear(Address start, Address end) { assert(end >= start); return isClear(start, (end-start).value()); }
+
+    bool isClear(Address start, Address end) { assert(end >= start); return isClear(start, (end - start).value()); }
     bool isClear(const Interval<Address> interval) { return isClear(interval.lower(), interval.upper()); }
 
     /// \returns the variable that overlaps with address \p addr, or nullptr if no such variable exists.

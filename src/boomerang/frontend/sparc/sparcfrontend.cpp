@@ -64,10 +64,10 @@ bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delt
         return false;
     }
 
-    const DWord delay_inst       = *(DWord *)(src.value()  + 4 + delta);
+    const DWord delay_inst       = *(DWord *)(src.value() + 4 + delta);
     const DWord inst_before_dest = *(DWord *)(dest.value() - 4 + delta);
 
-    return (delay_inst == inst_before_dest);
+    return(delay_inst == inst_before_dest);
 }
 
 
@@ -310,7 +310,7 @@ void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress
     }
 
     // Visit the destination, and add the out-edge
-       Address uDest = SD_stmt->getFixedDest();
+    Address uDest = SD_stmt->getFixedDest();
     handleBranch(uDest, hiAddress, pBB, cfg, tq);
     BB_rtls = nullptr;
 }
@@ -334,9 +334,9 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
     // jmp/call and delay slot instruction, in case we return false
     address += 8;
 
-    BasicBlock  *newBB;
-    bool        bRet      = true;
-    Statement *lastStmt = inst.rtl->back();
+    BasicBlock *newBB;
+    bool       bRet      = true;
+    Statement  *lastStmt = inst.rtl->back();
 
     switch (lastStmt->getKind())
     {
@@ -712,13 +712,14 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             if (!inst.valid) {
                 ptrdiff_t delta = m_image->getTextDelta();
 
-                const Byte* instructionData = (const Byte*)(uAddr.value() + delta);
-                QString instructionString;
+                const Byte  *instructionData = (const Byte *)(uAddr.value() + delta);
+                QString     instructionString;
                 QTextStream ost(&instructionString);
 
                 for (int j = 0; j < inst.numBytes; j++) {
                     ost << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0'));
-                    if (j < inst.numBytes-1) {
+
+                    if (j < inst.numBytes - 1) {
                         ost << " ";
                     }
                 }
@@ -739,7 +740,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             // Define aliases to the RTLs so that they can be treated as a high level types where appropriate.
             RTL           *rtl       = inst.rtl;
             GotoStatement *stmt_jump = nullptr;
-            Statement   *last      = nullptr;
+            Statement     *last      = nullptr;
 
             if (rtl->size()) {
                 last      = rtl->back();
@@ -946,7 +947,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
                             // Adjust the destination of the SD and emit it.
                             GotoStatement *delay_jump = static_cast<GotoStatement *>(delay_rtl->back());
-                                         Address       dest        = uAddr + 4 + delay_jump->getFixedDest();
+                            Address       dest        = uAddr + 4 + delay_jump->getFixedDest();
                             stmt_jump->setDest(dest);
                             BB_rtls->push_back(inst.rtl);
 
@@ -1031,7 +1032,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
                     DecodeResult delay_inst;
                     decodeInstruction(uAddr + 4, delay_inst);
-                    RTL          *delay_rtl = delay_inst.rtl;
+                    RTL *delay_rtl = delay_inst.rtl;
 
                     // Display low level RTL representation if asked
                     if (SETTING(printRtl) && (delay_rtl != nullptr)) {
@@ -1068,7 +1069,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     // not taken.
                     DecodeResult delay_inst;
                     decodeInstruction(uAddr + 4, delay_inst);
-                    RTL          *delay_rtl = delay_inst.rtl;
+                    RTL *delay_rtl = delay_inst.rtl;
 
                     // Display RTL representation if asked
                     if (SETTING(printRtl) && (delay_rtl != nullptr)) {
@@ -1150,7 +1151,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
     // Add the callees to the set of CallStatements to proces for parameter recovery, and also to the Prog object
     for (std::list<CallStatement *>::iterator it = callList.begin(); it != callList.end(); it++) {
-              Address             dest  = (*it)->getFixedDest();
+        Address             dest  = (*it)->getFixedDest();
         const IBinarySymbol *symb = SymbolTable->find(dest);
 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
@@ -1286,7 +1287,7 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> *l
 
     // Need to make an RTAssgn with %o0 = rhs
     SharedExp lhs = Location::regOf(8);
-    Assign *a     = new Assign(lhs, rhs);
+    Assign    *a  = new Assign(lhs, rhs);
     // Create an RTL with this one Exp
     std::list<Statement *> *lrt = new std::list<Statement *>;
     lrt->push_back(a);
@@ -1423,7 +1424,7 @@ SparcFrontEnd::~SparcFrontEnd()
 Address SparcFrontEnd::getMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
-       Address start = m_fileLoader->getMainEntryPoint();
+    Address start = m_fileLoader->getMainEntryPoint();
 
     if (start != Address::INVALID) {
         return start;

@@ -67,7 +67,6 @@ SharedType NamedType::resolvesTo() const
 
 bool NamedType::operator<(const Type& other) const
 {
-
     if (id > other.getId()) {
         return false;
     }

@@ -168,7 +168,7 @@ public:
     bool isVisited() const { return m_visited; }
 
     Module *getParent() { return m_parent; }
-    const Module* getParent() const { return m_parent; }
+    const Module *getParent() const { return m_parent; }
 
     void setParent(Module *c);
     void removeFromParent();
@@ -193,8 +193,8 @@ protected:
     ///////////////////////////////////////////////////
     // Persistent state
     ///////////////////////////////////////////////////
-    Address m_address; ///< Entry address of this procedure.
-    Function *m_firstCaller; ///< first procedure to call this procedure.
+    Address m_address;         ///< Entry address of this procedure.
+    Function *m_firstCaller;   ///< first procedure to call this procedure.
     Address m_firstCallerAddr; ///< can only be used once.
 
     /**

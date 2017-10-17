@@ -14,22 +14,22 @@
 
 class FrontPentTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
-	void initTestCase();
+    void initTestCase();
 
-	/***************************************************************************/ /**
-	 * FUNCTION:        FrontPentTest::test1
-	 * OVERVIEW:        Test decoding some pentium instructions
-	 *============================================================================*/
-	void test1();
+    /***************************************************************************/ /**
+     * FUNCTION:        FrontPentTest::test1
+     * OVERVIEW:        Test decoding some pentium instructions
+     *============================================================================*/
+    void test1();
 
-	void test2();
+    void test2();
 
-	void test3();
+    void test3();
 
-	void testFindMain();
+    void testFindMain();
 
-	void testBranch();
+    void testBranch();
 };

@@ -23,7 +23,7 @@
 class Address
 {
 public:
-    typedef uintptr_t   value_type;
+    typedef uintptr_t value_type;
 
 public:
     static const Address ZERO;
@@ -32,18 +32,19 @@ public:
     explicit Address();
     explicit Address(value_type value);
 
-    Address(const Address&) = default;
+    Address(const Address&)            = default;
     Address& operator=(const Address&) = default;
 
     /// Set the bit count of the source machine.
     static void setSourceBits(Byte bitCount = STD_SIZE);
+
     static Byte getSourceBits() { return m_sourceBits; }
     static value_type getSourceMask();
 
-    Address        native() const { return Address(m_value & 0xFFFFFFFF); }
-    value_type     value() const { return m_value; }
+    Address native() const { return Address(m_value & 0xFFFFFFFF); }
+    value_type value() const { return m_value; }
 
-    bool           isZero() const { return m_value == 0; }
+    bool isZero() const { return m_value == 0; }
     bool operator==(const Address& other) const { return m_value == other.value(); }
     bool operator!=(const Address& other) const { return m_value != other.value(); }
     bool operator<(const Address& other)  const { return m_value < other.value(); }
@@ -56,8 +57,8 @@ public:
 
     Address operator++()    { ++m_value; m_value &= getSourceMask(); return *this; }
     Address operator--()    { --m_value; m_value &= getSourceMask(); return *this; }
-    Address operator++(int) { Address addr(*this); m_value = (m_value+1) & getSourceMask(); return addr; }
-    Address operator--(int) { Address addr(*this); m_value = (m_value+1) & getSourceMask(); return addr; }
+    Address operator++(int) { Address addr(*this); m_value = (m_value + 1) & getSourceMask(); return addr; }
+    Address operator--(int) { Address addr(*this); m_value = (m_value + 1) & getSourceMask(); return addr; }
 
     Address operator+=(const Address& other) { m_value += other.value(); m_value &= getSourceMask(); return *this; }
 
@@ -71,7 +72,7 @@ public:
 
 private:
     static Byte m_sourceBits; ///< number of bits in a source address (typically 32 or 64 bits)
-    value_type  m_value;      ///< Value of this address
+    value_type m_value;       ///< Value of this address
 };
 
 Q_DECLARE_METATYPE(Address)
@@ -88,11 +89,11 @@ public:
 
     HostAddress() { m_value = 0; }
     explicit HostAddress(value_type value);
-    explicit HostAddress(const void* ptr);
+    explicit HostAddress(const void *ptr);
     /// Initializes this HostAddress to \p srcAddr + \p hostDiff
     explicit HostAddress(Address srcAddr, ptrdiff_t hostDiff);
 
-    HostAddress(const HostAddress& other) = default;
+    HostAddress(const HostAddress& other)            = default;
     HostAddress& operator=(const HostAddress& other) = default;
 
     inline value_type value() const { return m_value; }

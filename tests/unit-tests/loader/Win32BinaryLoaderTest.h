@@ -15,11 +15,11 @@
 
 class Win32BinaryLoaderTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
-	void initTestCase();
+    void initTestCase();
 
-	/// Test loading Windows programs
-	void testWinLoad();
+    /// Test loading Windows programs
+    void testWinLoad();
 };

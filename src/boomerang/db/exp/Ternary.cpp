@@ -121,7 +121,6 @@ bool Ternary::operator==(const Exp& o) const
 }
 
 
-
 bool Ternary::operator<(const Exp& o) const
 {
     if (m_oper < o.getOper()) {
@@ -178,6 +177,8 @@ bool Ternary::operator*=(const Exp& o) const
 
     return *subExp3 *= *other->getSubExp3();
 }
+
+
 void Ternary::printr(QTextStream& os, bool) const
 {
     // The function-like operators don't need parentheses
@@ -686,6 +687,7 @@ SharedExp Ternary::accept(ExpModifier *v)
     return v->postVisit(ret);
 }
 
+
 void Ternary::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
@@ -694,4 +696,3 @@ void Ternary::printx(int ind) const
     child(subExp2, ind);
     child(subExp3, ind);
 }
-

@@ -149,7 +149,7 @@ void IfThenElseSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNod
     }
 
     if ((m_else->getNumOutEdges() == 1) && m_else->endsWithGoto()) {
-        LOG_VERBOSE("Successor: ignoring goto at end of else of if then else");;
+        LOG_VERBOSE("Successor: ignoring goto at end of else of if then else");
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
         SyntaxNode *nElse = m_else->clone();
@@ -228,7 +228,8 @@ void IfThenElseSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
     os << " -> " << m_else->getNumber() << " [label=else];" << '\n';
 }
 
-SyntaxNode* IfThenElseSyntaxNode::getOutEdge(SyntaxNode* root, size_t)
+
+SyntaxNode *IfThenElseSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
     SyntaxNode *o = m_then->getOutEdge(root, 0);
 
@@ -237,7 +238,7 @@ SyntaxNode* IfThenElseSyntaxNode::getOutEdge(SyntaxNode* root, size_t)
 }
 
 
-SyntaxNode* IfThenElseSyntaxNode::getEnclosingLoop(SyntaxNode* base, SyntaxNode* cur)
+SyntaxNode *IfThenElseSyntaxNode::getEnclosingLoop(SyntaxNode *base, SyntaxNode *cur)
 {
     if (this == base) {
         return cur;
@@ -246,4 +247,3 @@ SyntaxNode* IfThenElseSyntaxNode::getEnclosingLoop(SyntaxNode* base, SyntaxNode*
     SyntaxNode *n = m_then->getEnclosingLoop(base, cur);
     return n ? n : m_else->getEnclosingLoop(base, cur);
 }
-

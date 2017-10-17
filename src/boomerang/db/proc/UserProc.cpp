@@ -54,7 +54,7 @@ public:
 };
 
 
-UserProc::UserProc(Address address, const QString& name, Module* module)
+UserProc::UserProc(Address address, const QString& name, Module *module)
     : Function(address, new Signature(name), module)
     , m_cycleGroup(nullptr)
     , theReturnStatement(nullptr)
@@ -75,7 +75,7 @@ SyntaxNode *UserProc::getAST() const
 {
     int             numBBs = 0;
     BlockSyntaxNode *init  = new BlockSyntaxNode();
-    BBIterator           it;
+    BBIterator      it;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
         BlockSyntaxNode *b = new BlockSyntaxNode();
@@ -224,15 +224,15 @@ bool UserProc::containsAddr(Address uAddr) const
 }
 
 
-
-
 QString UserProc::toString() const
 {
     QString     tgt;
     QTextStream ost(&tgt);
+
     this->print(ost);
     return tgt;
 }
+
 
 void UserProc::renameParam(const char *oldName, const char *newName)
 {
@@ -407,7 +407,7 @@ void UserProc::printXML()
 void UserProc::printUseGraph()
 {
     QString filePath = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
-    QFile file(filePath);
+    QFile   file(filePath);
 
     if (!file.open(QFile::Text | QFile::WriteOnly)) {
         LOG_ERROR("Can't write to file %1", file.fileName());
@@ -503,8 +503,8 @@ void UserProc::addCallee(Function *callee)
 
 void UserProc::print(QTextStream& out, bool html) const
 {
-    QString     tgt1;
-    QString     tgt2;
+    QString tgt1;
+    QString tgt2;
 
     QTextStream ost1(&tgt1);
     QTextStream ost2(&tgt2);
@@ -611,9 +611,9 @@ void UserProc::dump() const
 void UserProc::printDFG() const
 {
     QString fname = QString("%1%2-%3-dfg.dot")
-        .arg(Boomerang::get()->getSettings()->getOutputDirectory().absolutePath())
-        .arg(getName())
-        .arg(DFGcount);
+                       .arg(Boomerang::get()->getSettings()->getOutputDirectory().absolutePath())
+                       .arg(getName())
+                       .arg(DFGcount);
 
     DFGcount++;
     LOG_MSG("Outputing DFG to '%1'", fname);
@@ -743,7 +743,7 @@ void UserProc::getStatements(StatementList& stmts) const
 void UserProc::removeStatement(Statement *stmt)
 {
     // remove anything proven about this statement
-    for (std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_provenTrue.begin(); it != m_provenTrue.end(); ) {
+    for (std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_provenTrue.begin(); it != m_provenTrue.end();) {
         LocationSet refs;
         it->second->addUsedLocs(refs);
         it->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
@@ -825,7 +825,6 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
         }
 
         for (RTL *rr : *rtls) {
-
             for (std::list<Statement *>::iterator ss = rr->begin(); ss != rr->end(); ss++) {
                 if (*ss == s) {
                     ss++; // This is the point to insert before
@@ -843,53 +842,53 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
 std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 {
     /* Cycle detection logic:
-    * *********************
-    * cycleGrp is an initially null pointer to a set of procedures, representing the procedures involved in the current
-    * recursion group, if any. These procedures have to be analysed together as a group, after individual pre-group
-    * analysis.
-    * child is a set of procedures, cleared at the top of decompile(), representing the cycles associated with the
-    * current procedure and all of its children. If this is empty, the current procedure is not involved in recursion,
-    * and can be decompiled up to and including removing unused statements.
-    * path is an initially empty list of procedures, representing the call path from the current entry point to the
-    * current procedure, inclusive.
-    * If (after all children have been processed: important!) the first element in path and also cycleGrp is the current
-    * procedure, we have the maximal set of distinct cycles, so we can do the recursion group analysis and return an empty
-    * set. At the end of the recursion group analysis, the whole group is complete, ready for the global analyses.
-    * cycleSet decompile(ProcList path)        // path initially empty
-    *      child = new ProcSet
-    *      append this proc to path
-    *      for each child c called by this proc
-    *              if c has already been visited but not finished
-    *                      // have new cycle
-    *                      if c is in path
-    *                        // this is a completely new cycle
-    *                        insert every proc from c to the end of path into child
-    *                      else
-    *                        // this is a new branch of an existing cycle
-    *                        child = c->cycleGrp
-    *                        find first element f of path that is in cycleGrp
-    *                        insert every proc after f to the end of path into child
-    *                      for each element e of child
-    *            insert e->cycleGrp into child
-    *                        e->cycleGrp = child
-    *              else
-    *                      // no new cycle
-    *                      tmp = c->decompile(path)
-    *                      child = union(child, tmp)
-    *                      set return statement in call to that of c
-    *      if (child empty)
-    *              earlyDecompile()
-    *              child = middleDecompile()
-    *              removeUnusedStatments()            // Not involved in recursion
-    *      else
-    *              // Is involved in recursion
-    *              find first element f in path that is also in cycleGrp
-    *              if (f == this)          // The big test: have we got the complete strongly connected component?
-    *                      recursionGroupAnalysis()        // Yes, we have
-    *                      child = new ProcSet            // Don't add these processed cycles to the parent
-    *      remove last element (= this) from path
-    *      return child
-    */
+     * *********************
+     * cycleGrp is an initially null pointer to a set of procedures, representing the procedures involved in the current
+     * recursion group, if any. These procedures have to be analysed together as a group, after individual pre-group
+     * analysis.
+     * child is a set of procedures, cleared at the top of decompile(), representing the cycles associated with the
+     * current procedure and all of its children. If this is empty, the current procedure is not involved in recursion,
+     * and can be decompiled up to and including removing unused statements.
+     * path is an initially empty list of procedures, representing the call path from the current entry point to the
+     * current procedure, inclusive.
+     * If (after all children have been processed: important!) the first element in path and also cycleGrp is the current
+     * procedure, we have the maximal set of distinct cycles, so we can do the recursion group analysis and return an empty
+     * set. At the end of the recursion group analysis, the whole group is complete, ready for the global analyses.
+     * cycleSet decompile(ProcList path)        // path initially empty
+     *      child = new ProcSet
+     *      append this proc to path
+     *      for each child c called by this proc
+     *              if c has already been visited but not finished
+     *                      // have new cycle
+     *                      if c is in path
+     *                        // this is a completely new cycle
+     *                        insert every proc from c to the end of path into child
+     *                      else
+     *                        // this is a new branch of an existing cycle
+     *                        child = c->cycleGrp
+     *                        find first element f of path that is in cycleGrp
+     *                        insert every proc after f to the end of path into child
+     *                      for each element e of child
+     *            insert e->cycleGrp into child
+     *                        e->cycleGrp = child
+     *              else
+     *                      // no new cycle
+     *                      tmp = c->decompile(path)
+     *                      child = union(child, tmp)
+     *                      set return statement in call to that of c
+     *      if (child empty)
+     *              earlyDecompile()
+     *              child = middleDecompile()
+     *              removeUnusedStatments()            // Not involved in recursion
+     *      else
+     *              // Is involved in recursion
+     *              find first element f in path that is also in cycleGrp
+     *              if (f == this)          // The big test: have we got the complete strongly connected component?
+     *                      recursionGroupAnalysis()        // Yes, we have
+     *                      child = new ProcSet            // Don't add these processed cycles to the parent
+     *      remove last element (= this) from path
+     *      return child
+     */
 
     Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
 
@@ -1549,9 +1548,11 @@ void UserProc::remUnusedStmtEtc()
     if (removedBBs) {
         // recalculate phi assignments of referencing BBs
         BBIterator it;
+
         for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-            BasicBlock::rtlit rtlIt;
+            BasicBlock::rtlit       rtlIt;
             StatementList::iterator stmtIt;
+
             for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
                 if (!stmt->isPhi()) {
                     continue;
@@ -1561,6 +1562,7 @@ void UserProc::remUnusedStmtEtc()
                 assert(phiStmt);
                 phiStmt->getStmtAt(bb);
                 PhiAssign::PhiDefs& defs = phiStmt->getDefs();
+
                 for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end(); defIt++) {
                     if (!m_cfg->hasBB(defIt->first)) {
                         // remove phi reference to deleted bb
@@ -1695,13 +1697,15 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
      */
 
     LOG_VERBOSE("# # # recursion group analysis for # # #");
-    for (UserProc* proc : *m_cycleGroup) {
+
+    for (UserProc *proc : *m_cycleGroup) {
         LOG_VERBOSE("    %1", proc->getName());
     }
+
     LOG_VERBOSE("# # #");
 
     // First, do the initial decompile, and call earlyDecompile
-    for (UserProc* proc : *m_cycleGroup) {
+    for (UserProc *proc : *m_cycleGroup) {
         proc->setStatus(PROC_INCYCLE); // So the calls are treated as childless
         Boomerang::get()->alertDecompiling(proc);
         proc->initialiseDecompile();   // Sort the CFG, number statements, etc
@@ -1710,14 +1714,14 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 
     // Now all the procs in the group should be ready for preservation analysis
     // The standard preservation analysis should automatically perform conditional preservation
-    for (UserProc* proc : *m_cycleGroup) {
+    for (UserProc *proc : *m_cycleGroup) {
         proc->middleDecompile(path, indent);
         proc->setStatus(PROC_PRESERVEDS);
     }
 
     // FIXME: why exactly do we do this?
     // Mark all the relevant calls as non childless (will harmlessly get done again later)
-    for (UserProc* proc : *m_cycleGroup) {
+    for (UserProc *proc : *m_cycleGroup) {
         proc->markAsNonChildless(m_cycleGroup);
     }
 
@@ -1725,7 +1729,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
     // statements.
     bool convert;
 
-    for (UserProc* proc : *m_cycleGroup) {
+    for (UserProc *proc : *m_cycleGroup) {
         // proc->initialParameters();                    // FIXME: I think this needs to be mapping locals and params now
         proc->mapLocalsAndParams();
         proc->updateArguments();
@@ -1734,7 +1738,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
 
     // while no change
     for (int i = 0; i < 2; i++) {
-        for (UserProc* proc : *m_cycleGroup) {
+        for (UserProc *proc : *m_cycleGroup) {
             proc->remUnusedStmtEtc(); // Also does final parameters and arguments at present
         }
     }
@@ -1932,7 +1936,7 @@ void UserProc::findPreserveds()
     }
 
     // prove preservation for all modifieds in the return statement
-    StatementList&            modifieds = theReturnStatement->getModifieds();
+    StatementList& modifieds = theReturnStatement->getModifieds();
 
     for (ReturnStatement::iterator mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
         SharedExp lhs      = ((Assignment *)*mm)->getLeft();
@@ -2264,7 +2268,6 @@ void UserProc::removeReturn(SharedExp e)
 }
 
 
-
 void UserProc::addParameter(SharedExp e, SharedType ty)
 {
     // In case it's already an implicit argument:
@@ -2296,7 +2299,7 @@ void UserProc::processFloatConstants()
             if ((fsize->getSubExp3()->getOper() == opMemOf) &&
                 (fsize->getSubExp3()->getSubExp1()->getOper() == opIntConst)) {
                 SharedExp memof = fsize->getSubExp3();
-                            Address   u     = memof->access<Const, 1>()->getAddr();
+                Address   u     = memof->access<Const, 1>()->getAddr();
                 bool      ok;
                 double    d = m_prog->getFloatConstant(u, ok);
 
@@ -2459,7 +2462,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
 
                     if (e) {
                         auto ne = Unary::get(opAddrOf, e);
-                        LOG_VERBOSE("Replacing argument %1 with %2 in %3", olde, ne, (const CallStatement*)call);
+                        LOG_VERBOSE("Replacing argument %1 with %2 in %3", olde, ne, (const CallStatement *)call);
                         call->setArgumentExp(i, ne);
                     }
                 }
@@ -2473,7 +2476,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
     sp_location->access<Const, 1>()->setInt(sp); // set to search sp value
 
     for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-        Statement          *s = *it;
+        Statement            *s = *it;
         std::list<SharedExp> results;
         s->searchAll(nn, results);
 
@@ -2495,7 +2498,7 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
                             nullptr));
 
     for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-        Statement          *s = *it;
+        Statement            *s = *it;
         std::list<SharedExp> results;
         sp_const->setInt(sp);
         s->searchAll(*query_f, results);
@@ -2569,7 +2572,7 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
     StatementList::iterator it;
 
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement          *s = *it;
+        Statement            *s = *it;
         std::list<SharedExp> results;
         s->searchAll(*l, results);
 
@@ -2630,7 +2633,7 @@ bool UserProc::propagateStatements(bool& convert, int pass)
 
     // Also maintain a set of locations which are used by phi statements
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement     *s = *it;
+        Statement       *s = *it;
         ExpDestCounter  edc(destCounts);
         StmtDestCounter sdc(&edc);
         s->accept(&sdc);
@@ -2680,7 +2683,7 @@ Statement *UserProc::getStmtAtLex(unsigned int begin, unsigned int end)
     getStatements(stmts);
 
     unsigned int lowest      = begin;
-    Statement  *loweststmt = nullptr;
+    Statement    *loweststmt = nullptr;
 
     for (auto& stmt : stmts) {
         if ((begin >= (stmt)->getLexBegin()) && (begin <= lowest) && (begin <= (stmt)->getLexEnd()) &&
@@ -2965,7 +2968,7 @@ void UserProc::removeUnusedLocals()
     bool all = false;
 
     for (StatementList::iterator ss = stmts.begin(); ss != stmts.end(); ss++) {
-        Statement *s = *ss;
+        Statement   *s = *ss;
         LocationSet locs;
         all |= s->addUsedLocals(locs);
         LocationSet::iterator uu;
@@ -3028,7 +3031,7 @@ void UserProc::removeUnusedLocals()
 
     // Remove any definitions of the removed locals
     for (StatementList::iterator ss = stmts.begin(); ss != stmts.end(); ++ss) {
-        Statement           *s = *ss;
+        Statement             *s = *ss;
         LocationSet           ls;
         LocationSet::iterator ll;
         s->getDefinitions(ls);
@@ -3063,7 +3066,7 @@ void UserProc::removeUnusedLocals()
     }
 
     // Also remove them from the symbols, since symbols are a superset of locals at present
-    for (SymbolMap::iterator sm = m_symbolMap.begin(); sm != m_symbolMap.end(); ) {
+    for (SymbolMap::iterator sm = m_symbolMap.begin(); sm != m_symbolMap.end();) {
         SharedExp mapsTo = sm->second;
 
         if (mapsTo->isLocal()) {
@@ -3113,15 +3116,15 @@ void UserProc::fromSSAform()
     // First split the live ranges where needed by reason of type incompatibility, i.e. when the type of a subscripted
     // variable is different to its previous type. Start at the top, because we don't want to rename parameters (e.g.
     // argc)
-    typedef std::pair<SharedType, SharedExp>               FirstTypeEnt;
-    typedef std::map<SharedExp, FirstTypeEnt, lessExpStar> FirstTypesMap;
+    typedef std::pair<SharedType, SharedExp>                 FirstTypeEnt;
+    typedef std::map<SharedExp, FirstTypeEnt, lessExpStar>   FirstTypesMap;
     FirstTypesMap           firstTypes;
     FirstTypesMap::iterator ff;
     ConnectionGraph         ig; // The interference graph; these can't have the same local variable
     ConnectionGraph         pu; // The Phi Unites: these need the same local variable or copies
 
     for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Statement   *s = *it;
         LocationSet defs;
         s->getDefinitions(defs);
         LocationSet::iterator dd;
@@ -3210,8 +3213,7 @@ void UserProc::fromSSAform()
         if (rename == nullptr) {
             Statement *def2 = r2->getDef();
 
-            if (def2->isPhi()) // Prefer the destinations of phis
-            {
+            if (def2->isPhi()) { // Prefer the destinations of phis
                 rename = r2;
             }
             else {
@@ -3629,7 +3631,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
             // substitute using a statement that has the same left as the query
             if (!change && (query->getSubExp1()->getOper() == opSubscript)) {
                 auto          r     = query->access<RefExp, 1>();
-                Statement   *s    = r->getDef();
+                Statement     *s    = r->getDef();
                 CallStatement *call = dynamic_cast<CallStatement *>(s);
 
                 if (call) {
@@ -3795,7 +3797,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                         LOG_ERROR("Detected ref loop %1", s);
                         LOG_ERROR("refsTo: ");
 
-                        for (Statement* ins : refsTo) {
+                        for (Statement *ins : refsTo) {
                             LOG_MSG("  %1, ", ins->getNumber());
                         }
 
@@ -4648,9 +4650,9 @@ QString UserProc::findLocal(const SharedExp& e, SharedType ty)
 
 QString UserProc::findLocalFromRef(const std::shared_ptr<RefExp>& r)
 {
-    Statement *def = r->getDef();
-    SharedExp   base = r->getSubExp1();
-    SharedType  ty   = def->getTypeFor(base);
+    Statement  *def = r->getDef();
+    SharedExp  base = r->getSubExp1();
+    SharedType ty   = def->getTypeFor(base);
     // QString name = lookupSym(*base, ty); ?? this actually worked a bit
     QString name = lookupSym(r, ty);
 
@@ -4678,42 +4680,43 @@ QString UserProc::findFirstSymbol(const SharedExp& e)
     return std::static_pointer_cast<Const>(ff->second->getSubExp1())->getStr();
 }
 
+
 // Perform call and phi statement bypassing at depth d <- missing
 void UserProc::fixCallAndPhiRefs()
 {
     /* Algorithm:
-    *      for each statement s in this proc
-    *        if s is a phi statement ps
-    *              let r be a ref made up of lhs and s
-    *              for each parameter p of ps
-    *                if p == r                        // e.g. test/pentium/fromssa2 r28{56}
-    *                      remove p from ps
-    *              let lhs be left hand side of ps
-    *              allSame = true
-    *              let first be a ref built from first p
-    *              do bypass but not propagation on first
-    *              if result is of the form lhs{x}
-    *                replace first with x
-    *              for each parameter p of ps after the first
-    *                let current be a ref built from p
-    *                do bypass but not propagation on current
-    *                if result is of form lhs{x}
-    *                      replace cur with x
-    *                if first != current
-    *                      allSame = false
-    *              if allSame
-    *                let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
-    *                replace ps with an assignment lhs := best
-    *      else (ordinary statement)
-    *        do bypass and propagation for s
-    */
+     *      for each statement s in this proc
+     *        if s is a phi statement ps
+     *              let r be a ref made up of lhs and s
+     *              for each parameter p of ps
+     *                if p == r                        // e.g. test/pentium/fromssa2 r28{56}
+     *                      remove p from ps
+     *              let lhs be left hand side of ps
+     *              allSame = true
+     *              let first be a ref built from first p
+     *              do bypass but not propagation on first
+     *              if result is of the form lhs{x}
+     *                replace first with x
+     *              for each parameter p of ps after the first
+     *                let current be a ref built from p
+     *                do bypass but not propagation on current
+     *                if result is of form lhs{x}
+     *                      replace cur with x
+     *                if first != current
+     *                      allSame = false
+     *              if allSame
+     *                let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
+     *                replace ps with an assignment lhs := best
+     *      else (ordinary statement)
+     *        do bypass and propagation for s
+     */
     LOG_VERBOSE("### Start fix call and phi bypass analysis for %1 ###", getName());
 
     Boomerang::get()->alertDecompileDebugPoint(this, "Before fixing call and phi refs");
 
     std::map<SharedExp, int, lessExpStar> destCounts;
     StatementList::iterator               it;
-    Statement   *s;
+    Statement     *s;
     StatementList stmts;
     getStatements(stmts);
 
@@ -4769,11 +4772,11 @@ void UserProc::fixCallAndPhiRefs()
         PhiAssign *ps = (PhiAssign *)s;
         auto      r   = RefExp::get(ps->getLeft(), ps);
 
-        for (PhiAssign::iterator pi = ps->begin(); pi != ps->end(); ) {
+        for (PhiAssign::iterator pi = ps->begin(); pi != ps->end();) {
             const PhiInfo& p(pi->second);
             assert(p.e);
             Statement *def    = (Statement *)p.getDef();
-            auto        current = RefExp::get(p.e, def);
+            auto      current = RefExp::get(p.e, def);
 
             if (*current == *r) {   // Will we ever see this?
                 pi = ps->erase(pi); // Erase this phi parameter
@@ -4945,7 +4948,7 @@ void UserProc::propagateToCollector()
 {
     UseCollector::iterator it;
 
-    for (it = m_procUseCollector.begin(); it != m_procUseCollector.end(); ) {
+    for (it = m_procUseCollector.begin(); it != m_procUseCollector.end();) {
         if (!(*it)->isMemOf()) {
             ++it;
             continue;
@@ -5169,7 +5172,7 @@ bool UserProc::isRetNonFakeUsed(CallStatement *c, SharedExp retLoc, UserProc *p,
     StatementList::iterator it;
 
     for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
+        Statement   *s = *it;
         LocationSet ls;
         s->addUsedLocs(ls);
         bool found = false;
@@ -5415,7 +5418,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         // Respect the forced signature, but use it to remove returns if necessary
         bool removedRets = false;
 
-        for (ReturnStatement::iterator rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ) {
+        for (ReturnStatement::iterator rr = theReturnStatement->begin(); rr != theReturnStatement->end();) {
             Assign    *a  = (Assign *)*rr;
             SharedExp lhs = a->getLeft();
             // For each location in the returns, check if in the signature
@@ -5485,7 +5488,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     bool removedRets = false;
     ReturnStatement::iterator rr;
 
-    for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ) {
+    for (rr = theReturnStatement->begin(); rr != theReturnStatement->end();) {
         Assign *a = (Assign *)*rr;
 
         if (unionOfCallerLiveLocs.exists(a->getLeft())) {
@@ -5635,7 +5638,7 @@ void UserProc::clearUses()
     }
 
     m_procUseCollector.clear();
-    BBIterator                           it;
+    BBIterator                      it;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
 
@@ -5818,7 +5821,7 @@ void UserProc::eliminateDuplicateArgs()
 {
     LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
 
-    BBIterator                           it;
+    BBIterator                      it;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
 
@@ -5839,7 +5842,7 @@ void UserProc::removeCallLiveness()
 {
     LOG_VERBOSE("### Removing call livenesses for %1 ###", getName());
 
-    BBIterator                           it;
+    BBIterator                      it;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
 
@@ -5970,6 +5973,8 @@ void UserProc::setDominanceNumbers()
 
     m_df.setDominanceNums(0, currNum);
 }
+
+
 #endif
 
 

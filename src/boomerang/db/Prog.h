@@ -47,10 +47,10 @@ class Prog : public QObject
 
 public:
     /// The type for the list of functions.
-    typedef std::list<Module *>          ModuleList;
+    typedef std::list<Module *>                 ModuleList;
 
 public:
-    typedef std::map<Address, BinarySymbol *> AddressToSymbolMap;
+    typedef std::map<Address, BinarySymbol *>   AddressToSymbolMap;
 
 public:
     Prog(const QString& name);
@@ -79,7 +79,7 @@ public:
 
     void removeProc(const QString& name);
 
-    Module* createModule(const QString& name, Module* parent = nullptr, const ModuleFactory& modFactory = DefaultModFactory());
+    Module *createModule(const QString& name, Module *parent = nullptr, const ModuleFactory& modFactory = DefaultModFactory());
 
     QString getName() const { return m_name; } ///< Get the name of this program
 
@@ -94,19 +94,19 @@ public:
     int getNumProcs(bool user_only = true) const;
 
     /***************************************************************************/ /**
-    * \brief    Return a pointer to the associated Proc object, or nullptr if none
-    * \note        Could return -1 for a deleted Proc
-    * \param uAddr - Native address of the procedure entry point
-    * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
-    ******************************************************************************/
+     * \brief    Return a pointer to the associated Proc object, or nullptr if none
+     * \note        Could return -1 for a deleted Proc
+     * \param uAddr - Native address of the procedure entry point
+     * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
+     ******************************************************************************/
     Function *findProc(Address uAddr) const;
 
     /***************************************************************************/ /**
-    * \brief    Return a pointer to the associated Proc object, or nullptr if none
-    * \note        Could return -1 for a deleted Proc
-    * \param name - name of the searched-for procedure
-    * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
-    ******************************************************************************/
+     * \brief    Return a pointer to the associated Proc object, or nullptr if none
+     * \note        Could return -1 for a deleted Proc
+     * \param name - name of the searched-for procedure
+     * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
+     ******************************************************************************/
     Function *findProc(const QString& name) const;
 
     /***************************************************************************/ /**
@@ -155,7 +155,7 @@ public:
      ******************************************************************************/
     const void *getCodeInfo(Address uAddr, const char *& last, int& delta) const;
 
-    const std::set<Global*>& getGlobals() const { return m_globals; }
+    const std::set<Global *>& getGlobals() const { return m_globals; }
 
     QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
     int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }

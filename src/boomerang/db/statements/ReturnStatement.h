@@ -107,7 +107,7 @@ public:
     DefCollector *getCollector() { return &col; } // Return pointer to the collector object
 
     // Get and set the native address for the first and only return statement
-       Address getRetAddr() { return retAddr; }
+    Address getRetAddr() { return retAddr; }
     void setRetAddr(Address r) { retAddr = r; }
 
     // Find definition for e (in the collector)

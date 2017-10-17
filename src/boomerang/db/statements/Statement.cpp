@@ -297,7 +297,7 @@ bool Statement::canPropagateToExp(Exp& e)
 
 
 bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
-                              LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
+                            LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
 {
     bool change;
     int  changes = 0;
@@ -400,8 +400,8 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
 
                     if (doNotPropagate) {
                         LOG_VERBOSE("% propagation of %1 into %2 prevented by "
-                            "the propagate past overwriting statement in loop heuristic",
-                            def->getNumber(), m_number);
+                                    "the propagate past overwriting statement in loop heuristic",
+                                    def->getNumber(), m_number);
 
                         continue;
                     }

@@ -36,16 +36,16 @@
 
 struct SectionParam
 {
-    QString  Name;
-    Address  SourceAddr;
-    size_t   Size;
-    size_t   entry_size;
-    bool     ReadOnly;
-    bool     Bss;
-    bool     Code;
-    bool     Data;
-    HostAddress  imagePtr;
-    unsigned sectionType;  ///< Type of section (format dependent)
+    QString     Name;
+    Address     SourceAddr;
+    size_t      Size;
+    size_t      entry_size;
+    bool        ReadOnly;
+    bool        Bss;
+    bool        Code;
+    bool        Data;
+    HostAddress imagePtr;
+    unsigned    sectionType; ///< Type of section (format dependent)
 };
 
 // not part of anonymous namespace, since it would create an ambiguity
@@ -250,10 +250,10 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
             arbitaryLoadAddr += sect.Size ? sect.Size : 1;
         }
 
-        sect.sectionType      = elfRead4(&sectionHeader->sh_type);
-        m_shLink[i]     = elfRead4(&sectionHeader->sh_link);
-        m_shInfo[i]     = elfRead4(&sectionHeader->sh_info);
-        sect.entry_size = elfRead4(&sectionHeader->sh_entsize);
+        sect.sectionType = elfRead4(&sectionHeader->sh_type);
+        m_shLink[i]      = elfRead4(&sectionHeader->sh_link);
+        m_shInfo[i]      = elfRead4(&sectionHeader->sh_info);
+        sect.entry_size  = elfRead4(&sectionHeader->sh_entsize);
 
         if (sect.SourceAddr + sect.Size > m_nextExtern) {
             m_firstExtern = m_nextExtern = sect.SourceAddr + sect.Size;
@@ -304,6 +304,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
             if (par.Name != "") {
                 LOG_WARN("Not adding 0 sized section %1", par.Name);
             }
+
             continue;
         }
 
@@ -338,12 +339,12 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     IBinarySection *section = m_binaryImage->getSectionByName(".rela.text");
 
     if (section) {
-        m_relocHasAddend = true;                                     // Remember its a relA table
+        m_relocHasAddend = true;                                        // Remember its a relA table
         m_relocSection   = (Elf32_Rel *)section->getHostAddr().value(); // Save pointer to reloc table
     }
     else {
         m_relocHasAddend = false;
-        section             = m_binaryImage->getSectionByName(".rel.text");
+        section          = m_binaryImage->getSectionByName(".rel.text");
 
         if (section) {
             m_relocSection = (Elf32_Rel *)section->getHostAddr().value();          // Save pointer to reloc table
@@ -399,7 +400,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
     }
 
     HostAddress addrRelPlt = HostAddress::ZERO;
-    int     numRelPlt  = 0;
+    int         numRelPlt  = 0;
 
     if (siRelPlt) {
         addrRelPlt = siRelPlt->getHostAddr();
@@ -424,10 +425,10 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 
     do {
         // Each entry is sizeRelPlt bytes, and will contain the offset, then the info (addend optionally follows)
-        DWord *pltEntry = (DWord *)(addrRelPlt + (curr * sizeRelPlt)).value();
-        const int   entry     = elfRead4(pltEntry + 1);
-        const int   sym       = entry >> 8;         // The symbol index is in the top 24 bits (Elf32 only)
-        const int   entryType = entry & 0xFF;
+        DWord     *pltEntry = (DWord *)(addrRelPlt + (curr * sizeRelPlt)).value();
+        const int entry     = elfRead4(pltEntry + 1);
+        const int sym       = entry >> 8;           // The symbol index is in the top 24 bits (Elf32 only)
+        const int entryType = entry & 0xFF;
 
         if (sym == i) {
             const IBinarySection *targetSect = m_binaryImage->getSectionByAddr(Address(elfRead4(pltEntry)));
@@ -456,7 +457,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
         }
     } while (curr != first); // Will eventually wrap around to first if not present
 
-    return Address::ZERO;   // Exit if this happens
+    return Address::ZERO;    // Exit if this happens
 }
 
 
@@ -531,18 +532,18 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 
 void ElfBinaryLoader::addSymbolsForSection(int secIndex)
 {
-    const SWord symbolType       = elfRead2(&m_elfHeader->e_type);
-    const SectionParam& section  = m_elfSections[secIndex];
-    const int strSectionIdx      = m_shLink[secIndex]; // sh_link points to the string table
-    const int numSymbols         = section.Size / section.entry_size;
+    const SWord         symbolType    = elfRead2(&m_elfHeader->e_type);
+    const SectionParam& section       = m_elfSections[secIndex];
+    const int           strSectionIdx = m_shLink[secIndex]; // sh_link points to the string table
+    const int           numSymbols    = section.Size / section.entry_size;
 
     m_symbolSection = (const Elf32_Sym *)section.imagePtr.value(); // Pointer to symbols
 
     // Index 0 is a dummy entry
     for (int i = 1; i < numSymbols; i++) {
         Translated_ElfSym translatedSym;
-        Address val = Address(elfRead4(&m_symbolSection[i].st_value));
-        int nameIdx = elfRead4(&m_symbolSection[i].st_name);
+        Address           val     = Address(elfRead4(&m_symbolSection[i].st_value));
+        int               nameIdx = elfRead4(&m_symbolSection[i].st_name);
 
         if (nameIdx == 0) { /* Silly symbols with no names */
             continue;
@@ -617,7 +618,7 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
         std::map<Address, QString>::iterator it;
         auto symbol = m_symbols->find(symbolName);
         // Add new extern
-              Address location = symbol ? symbol->getLocation() : m_nextExtern;
+        Address location = symbol ? symbol->getLocation() : m_nextExtern;
 
         if (nullptr == symbol) {
             m_symbols->create(m_nextExtern, symbolName);
@@ -709,7 +710,7 @@ bool ElfBinaryLoader::isLibrary() const
 {
     const SWord type = elfRead2(&((Elf32_Ehdr *)m_loadedImage)->e_type);
 
-    return (type == ET_DYN);
+    return(type == ET_DYN);
 }
 
 
@@ -723,7 +724,7 @@ QStringList ElfBinaryLoader::getDependencyList()
         return result; /* no dynamic section = statically linked */
     }
 
-    for (Elf32_Dyn* dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
+    for (Elf32_Dyn *dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
         if (dyn->d_tag == DT_STRTAB) {
             stringtab = Address(dyn->d_un.d_ptr);
             break;
@@ -736,7 +737,7 @@ QStringList ElfBinaryLoader::getDependencyList()
 
     HostAddress strTab = nativeToHostAddress(stringtab);
 
-    for (Elf32_Dyn* dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
+    for (Elf32_Dyn *dyn = (Elf32_Dyn *)dynsect->getHostAddr().value(); dyn->d_tag != DT_NULL; dyn++) {
         if (dyn->d_tag == DT_NEEDED) {
             const char *need = (char *)(strTab + dyn->d_un.d_val).value();
 
@@ -808,12 +809,13 @@ void ElfBinaryLoader::applyRelocations()
     switch (machine)
     {
     case EM_SPARC:
+
         for (size_t i = 1; i < m_elfSections.size(); ++i) {
             const SectionParam& ps(m_elfSections[i]);
 
             if ((ps.sectionType != SHT_REL) && (ps.sectionType == SHT_RELA)) {
-                DWord *relocEntry = (DWord *)ps.imagePtr.value();
-                const DWord sizeInBytes    = ps.Size;
+                DWord       *relocEntry = (DWord *)ps.imagePtr.value();
+                const DWord sizeInBytes = ps.Size;
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
@@ -832,7 +834,7 @@ void ElfBinaryLoader::applyRelocations()
                     case R_SPARC_NONE: // just ignore (common)
                         break;
 
-                        // TODO These relocation types need to be implemented.
+                    // TODO These relocation types need to be implemented.
                     case R_SPARC_HI22:
                     case R_SPARC_LO10:
                     case R_SPARC_COPY:
@@ -861,12 +863,12 @@ void ElfBinaryLoader::applyRelocations()
                 // r_info has the type in the bottom byte, and a symbol table index in the top 3 bytes.
                 // A symbol table offset of 0 (STN_UNDEF) means use value 0. The symbol table involved comes from
                 // the section header's sh_link field.
-                DWord *relocEntry = (DWord *)ps.imagePtr.value();
+                DWord       *relocEntry = (DWord *)ps.imagePtr.value();
                 const DWord sizeInBytes = ps.Size;
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
-                Address destNatOrigin = Address::ZERO;
+                Address     destNatOrigin  = Address::ZERO;
                 HostAddress destHostOrigin = HostAddress::ZERO;
 
                 if (e_type == E_REL) {
@@ -875,28 +877,28 @@ void ElfBinaryLoader::applyRelocations()
                     destHostOrigin = m_elfSections[destSection].imagePtr;
                 }
 
-                const int        symSection    = m_shLink[i];          // Section index for the associated symbol table
-                const int        strSectionIdx = m_shLink[symSection]; // Section index for the string section assoc with this
-                const char      *strSection    = (const char *)m_elfSections[strSectionIdx].imagePtr.value();
-                const Elf32_Sym *symOrigin     = (const Elf32_Sym *)m_elfSections[symSection].imagePtr.value();
+                const int       symSection    = m_shLink[i];           // Section index for the associated symbol table
+                const int       strSectionIdx = m_shLink[symSection];  // Section index for the string section assoc with this
+                const char      *strSection   = (const char *)m_elfSections[strSectionIdx].imagePtr.value();
+                const Elf32_Sym *symOrigin    = (const Elf32_Sym *)m_elfSections[symSection].imagePtr.value();
 
                 for (unsigned u = 0; u < sizeInBytes; u += 2 * sizeof(unsigned)) {
                     const DWord r_offset    = elfRead4(relocEntry++);
                     const DWord info        = elfRead4(relocEntry++);
                     const Byte  relType     = (Byte)(info & 0xFF);
                     const DWord symTabIndex = info >> 8;
-                    DWord *relocDestination; // Pointer to the word to be relocated
+                    DWord       *relocDestination; // Pointer to the word to be relocated
 
                     if (e_type == E_REL) {
                         relocDestination = ((DWord *)(destHostOrigin + r_offset).value());
                     }
                     else {
                         const IBinarySection *destSec = m_binaryImage->getSectionByAddr(Address(r_offset));
-                        relocDestination  = (DWord *)(destSec->getHostAddr() - destSec->getSourceAddr() + r_offset).value();
-                        destNatOrigin     = Address::ZERO;
+                        relocDestination = (DWord *)(destSec->getHostAddr() - destSec->getSourceAddr() + r_offset).value();
+                        destNatOrigin    = Address::ZERO;
                     }
 
-                    Address  A, S = Address::ZERO, P;
+                    Address A, S = Address::ZERO, P;
 
                     switch (relType)
                     {
@@ -937,7 +939,7 @@ void ElfBinaryLoader::applyRelocations()
                                 // to communicate with the loader is through the target address of the call.
                                 // So we use some very improbable addresses (e.g. -1, -2, etc) and give them entries
                                 // in the symbol table
-                                DWord nameOffset  = elfRead4((DWord *)&symOrigin[symTabIndex].st_name);
+                                DWord      nameOffset  = elfRead4((DWord *)&symOrigin[symTabIndex].st_name);
                                 const char *symbolName = strSection + nameOffset;
 
                                 // this is too slow, I'm just going to assume it is 0
@@ -975,6 +977,7 @@ void ElfBinaryLoader::applyRelocations()
                 }
             }
         }
+
         break;
 
     default:
@@ -1007,11 +1010,11 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
                 // A symbol table offset of 0 (STN_UNDEF) means use value 0. The symbol table involved comes from
                 // the section header's sh_link field.
                 DWord *relocEntry = (DWord *)ps.imagePtr.value();
-                DWord size    = ps.Size;
+                DWord size        = ps.Size;
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
-                Address destNatOrigin = Address::ZERO;
+                Address     destNatOrigin  = Address::ZERO;
                 HostAddress destHostOrigin = HostAddress::ZERO;
 
                 if (e_type == E_REL) {
@@ -1026,13 +1029,14 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
                     Q_UNUSED(info);
 
                     Address relocDestination; // Pointer to the word to be relocated
+
                     if (e_type == E_REL) {
                         relocDestination = destNatOrigin + r_offset;
                     }
                     else {
                         const IBinarySection *destSec = m_binaryImage->getSectionByAddr(Address(r_offset));
-                        relocDestination      = destSec->getSourceAddr() + r_offset;
-                        destNatOrigin = Address::ZERO;
+                        relocDestination = destSec->getSourceAddr() + r_offset;
+                        destNatOrigin    = Address::ZERO;
                     }
 
                     if (addr == relocDestination) {
@@ -1065,4 +1069,4 @@ int ElfBinaryLoader::canLoad(QIODevice& fl) const
 
 
 BOOMERANG_LOADER_PLUGIN(ElfBinaryLoader,
-    "ELF32 loader plugin", BOOMERANG_VERSION, "Boomerang developers")
+                        "ELF32 loader plugin", BOOMERANG_VERSION, "Boomerang developers")

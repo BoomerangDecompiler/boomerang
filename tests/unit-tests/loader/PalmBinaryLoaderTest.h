@@ -14,11 +14,11 @@
 
 class PalmBinaryLoaderTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
-	void initTestCase();
+    void initTestCase();
 
-	/// Test loading the Palm 68328 Starter.prc program
-	void testPalmLoad();
+    /// Test loading the Palm 68328 Starter.prc program
+    void testPalmLoad();
 };

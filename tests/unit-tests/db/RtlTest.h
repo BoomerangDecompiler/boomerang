@@ -31,10 +31,10 @@ private slots:
 
     /// Test the accept function for correct visiting behaviour.
     /// \note Stub class to test.
-	void testVisitor();
+    void testVisitor();
 
     /// Test the isCompare function
 //    void testIsCompare();
 
-	void testSetConscripts();
+    void testSetConscripts();
 };

@@ -281,9 +281,9 @@ void PhiAssign::simplify()
         return;
     }
 
-    bool allSame                 = true;
-    PhiDefs::iterator uu     = m_defs.begin();
-    Statement           *first = m_defs.begin()->second.getDef();
+    bool              allSame = true;
+    PhiDefs::iterator uu      = m_defs.begin();
+    Statement         *first  = m_defs.begin()->second.getDef();
     ++uu;
 
     for ( ; uu != m_defs.end(); uu++) {
@@ -299,7 +299,7 @@ void PhiAssign::simplify()
         return;
     }
 
-    bool        onlyOneNotThis = true;
+    bool      onlyOneNotThis = true;
     Statement *notthis       = (Statement *)-1;
 
     for (auto& v : m_defs) {

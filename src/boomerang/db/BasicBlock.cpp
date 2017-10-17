@@ -215,15 +215,41 @@ void BasicBlock::print(QTextStream& os, bool html)
 
     switch (getType())
     {
-    case BBType::Oneway:   os << "Oneway BB"; break;
-    case BBType::Twoway:   os << "Twoway BB"; break;
-    case BBType::Nway:     os << "Nway BB";   break;
-    case BBType::Call:     os << "Call BB";   break;
-    case BBType::Ret:      os << "Ret BB";    break;
-    case BBType::Fall:     os << "Fall BB";   break;
-    case BBType::CompJump: os << "Computed jump BB"; break;
-    case BBType::CompCall: os << "Computed call BB"; break;
-    case BBType::Invalid:  os << "Invalid BB"; break;
+    case BBType::Oneway:
+        os << "Oneway BB";
+        break;
+
+    case BBType::Twoway:
+        os << "Twoway BB";
+        break;
+
+    case BBType::Nway:
+        os << "Nway BB";
+        break;
+
+    case BBType::Call:
+        os << "Call BB";
+        break;
+
+    case BBType::Ret:
+        os << "Ret BB";
+        break;
+
+    case BBType::Fall:
+        os << "Fall BB";
+        break;
+
+    case BBType::CompJump:
+        os << "Computed jump BB";
+        break;
+
+    case BBType::CompCall:
+        os << "Computed call BB";
+        break;
+
+    case BBType::Invalid:
+        os << "Invalid BB";
+        break;
     }
 
     os << ":\n";
@@ -502,7 +528,8 @@ bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2)
 
 Address BasicBlock::getCallDest()
 {
-    Function* dest = getCallDestProc();
+    Function *dest = getCallDestProc();
+
     return dest ? dest->getEntryAddress() : Address::INVALID;
 }
 
@@ -671,7 +698,7 @@ SharedExp BasicBlock::getCond()
     assert(m_listOfRTLs);
     RTL *last = m_listOfRTLs->back();
     // it should contain a BranchStatement
-    BranchStatement *bs = dynamic_cast<BranchStatement*>(last->getHlStmt());
+    BranchStatement *bs = dynamic_cast<BranchStatement *>(last->getHlStmt());
 
     if (bs && (bs->getKind() == STMT_BRANCH)) {
         return bs->getCondExpr();
@@ -681,13 +708,13 @@ SharedExp BasicBlock::getCond()
 }
 
 
-SharedExp BasicBlock::getDest() noexcept(false)
+SharedExp BasicBlock::getDest() noexcept (false)
 {
     // The destianation will be in the last rtl
     assert(m_listOfRTLs);
     RTL *lastRtl = m_listOfRTLs->back();
     // It should contain a GotoStatement or derived class
-    Statement   *lastStmt = lastRtl->getHlStmt();
+    Statement     *lastStmt = lastRtl->getHlStmt();
     CaseStatement *cs       = dynamic_cast<CaseStatement *>(lastStmt);
 
     if (cs) {
@@ -710,7 +737,7 @@ SharedExp BasicBlock::getDest() noexcept(false)
 }
 
 
-void BasicBlock::setCond(SharedExp e) noexcept(false)
+void BasicBlock::setCond(SharedExp e) noexcept (false)
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
@@ -1004,7 +1031,7 @@ UnstructType BasicBlock::getUnstructType() const
 {
     assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond));
     // fails when cenerating code for switches; not sure if actually needed TODO
-    //assert(m_conditionHeaderType != CondType::Case);
+    // assert(m_conditionHeaderType != CondType::Case);
 
     return m_unstructuredType;
 }
@@ -1138,7 +1165,7 @@ bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc *myProc)
 
             // For each statement this RTL
             for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
-                Statement *s = *sit;
+                Statement   *s = *sit;
                 LocationSet defs;
                 s->getDefinitions(defs);
                 // The definitions don't have refs yet
@@ -1217,7 +1244,9 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 
             if (!def) {
                 std::deque<BasicBlock *> to_visit(m_inEdges.begin(), m_inEdges.end());
-                std::set<BasicBlock *> tried { this };
+                std::set<BasicBlock *> tried {
+                    this
+                };
 
                 // TODO: this looks like a hack ?  but sometimes PhiAssign has value which is defined in parent of
                 // 'this'
@@ -1650,7 +1679,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         if (form) {
             SWITCH_INFO *swi = new SWITCH_INFO;
             swi->chForm = form;
-                     Address   T;
+            Address   T;
             SharedExp expr;
             findSwParams(form, e, expr, T);
 
@@ -1664,13 +1693,13 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                     Prog *prog = proc->getProg();
 
                     for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
-                                          Address uSwitch = Address(prog->readNative4(swi->uTable + iPtr * 4));
+                        Address uSwitch = Address(prog->readNative4(swi->uTable + iPtr * 4));
 
                         if ((uSwitch >= prog->getLimitTextHigh()) || (uSwitch < prog->getLimitTextLow())) {
                             if (DEBUG_SWITCH) {
                                 LOG_MSG("Truncating type A indirect jump array to %1 entries "
-                                    "due to finding an array entry pointing outside valid code; %2 isn't in %3..%4",
-                                    iPtr, uSwitch, prog->getLimitTextLow(), prog->getLimitTextHigh());
+                                        "due to finding an array entry pointing outside valid code; %2 isn't in %3..%4",
+                                        iPtr, uSwitch, prog->getLimitTextLow(), prog->getLimitTextHigh());
                             }
 
                             // Found an array that isn't a pointer-to-code. Assume array has ended.
@@ -1719,12 +1748,12 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                         int *destArray = new int[num_dests];
                         std::copy(dests.begin(), dests.end(), destArray);
                         SWITCH_INFO *swi = new SWITCH_INFO;
-                        swi->chForm     = 'F';                          // The "Fortran" form
+                        swi->chForm     = 'F';                                     // The "Fortran" form
                         swi->pSwitchVar = e;
                         swi->uTable     = Address(HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the uTable member as a pointer
                         swi->iNumTable  = (int)num_dests;
-                        swi->iLower     = 1;                            // Not used, except to compute
-                        swi->iUpper     = (int)num_dests;               // the number of options
+                        swi->iLower     = 1;                                       // Not used, except to compute
+                        swi->iUpper     = (int)num_dests;                          // the number of options
                         lastStmt->setDest((SharedExp)nullptr);
                         lastStmt->setSwitchInfo(swi);
                         return true;
@@ -1814,7 +1843,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                     e = e->getSubExp1();                                                        // e is global<name>
                 }
 
-                std::shared_ptr<Const> con  = std::static_pointer_cast<Const>(e->getSubExp1()); // e is <name>
+                std::shared_ptr<Const> con     = std::static_pointer_cast<Const>(e->getSubExp1()); // e is <name>
                 Global                 *global = prog->getGlobal(con->getStr());
                 assert(global);
                 // Set the type to pointer to function, if not already

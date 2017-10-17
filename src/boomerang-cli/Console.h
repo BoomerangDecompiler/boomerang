@@ -61,6 +61,7 @@ public:
     {
         return status == CommandStatus::Success || status == CommandStatus::AsyncSuccess;
     }
+
 private:
     /**
      * Split \p commandWithArgs into \p command and \p args.

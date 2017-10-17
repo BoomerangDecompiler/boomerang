@@ -23,8 +23,8 @@
 #include <iostream>
 
 
-static Log* g_log = nullptr;
-static SeparateLogger* g_separateLog = nullptr;
+static Log            *g_log         = nullptr;
+static SeparateLogger *g_separateLog = nullptr;
 
 
 void ConsoleLogSink::write(const QString& s)
@@ -73,19 +73,19 @@ Log::Log(LogLevel level)
     : m_fileNameOffset(0)
     , m_level(level)
 {
-    const char* lastSrc = __FILE__;
-    const char* p = lastSrc;
+    const char *lastSrc = __FILE__;
+    const char *p       = lastSrc;
 
-    while ((p = strstr(lastSrc+1, "src")) != nullptr) {
-        m_fileNameOffset += (p-lastSrc);
-        lastSrc = p;
+    while ((p = strstr(lastSrc + 1, "src")) != nullptr) {
+        m_fileNameOffset += (p - lastSrc);
+        lastSrc           = p;
     }
 }
 
 
 Log::~Log()
 {
-    for (ILogSink*& sink : m_sinks) {
+    for (ILogSink *& sink : m_sinks) {
         delete sink;
     }
 }
@@ -107,7 +107,7 @@ Log& Log::getOrCreateLog()
 }
 
 
-void Log::log(LogLevel level, const char* file, int line, const QString& msg)
+void Log::log(LogLevel level, const char *file, int line, const QString& msg)
 {
     const QStringList msgLines = msg.split('\n');
 
@@ -117,7 +117,7 @@ void Log::log(LogLevel level, const char* file, int line, const QString& msg)
 }
 
 
-void Log::logDirect(LogLevel level, const char* file, int line, const QString& msg)
+void Log::logDirect(LogLevel level, const char *file, int line, const QString& msg)
 {
     if (!canLog(level)) {
         return;
@@ -126,7 +126,7 @@ void Log::logDirect(LogLevel level, const char* file, int line, const QString& m
     char prettyFile[40]; // truncated file name
     truncateFileName(prettyFile, 40, file);
 
-    QString header = "%1 | %2 | %3 | %4\n";
+    QString header  = "%1 | %2 | %3 | %4\n";
     QString logLine = header.arg(levelToString(level)).arg(prettyFile).arg(line, 4).arg(msg);
     this->write(logLine);
 
@@ -136,19 +136,21 @@ void Log::logDirect(LogLevel level, const char* file, int line, const QString& m
 }
 
 
-void Log::addLogSink(ILogSink* s)
+void Log::addLogSink(ILogSink *s)
 {
     assert(s != nullptr);
+
     if (std::find(m_sinks.begin(), m_sinks.end(), s) == m_sinks.end()) {
         m_sinks.push_back(s);
     }
 }
 
 
-void Log::removeLogSink(ILogSink* s)
+void Log::removeLogSink(ILogSink *s)
 {
     assert(s != nullptr);
     auto it = std::find(m_sinks.begin(), m_sinks.end(), s);
+
     if (it != m_sinks.end()) {
         m_sinks.erase(it);
         delete s;
@@ -182,7 +184,7 @@ void Log::writeLogHeader()
 }
 
 
-void Log::truncateFileName(char* dstBuffer, size_t dstCharacters, const char* fileName)
+void Log::truncateFileName(char *dstBuffer, size_t dstCharacters, const char *fileName)
 {
     assert(dstBuffer);
     assert(fileName);
@@ -193,9 +195,10 @@ void Log::truncateFileName(char* dstBuffer, size_t dstCharacters, const char* fi
     strncpy(dstBuffer, fileName, dstCharacters);
 
     if (len < dstCharacters) {
-        memset(dstBuffer + len, ' ', dstCharacters - len -1);
+        memset(dstBuffer + len, ' ', dstCharacters - len - 1);
     }
-    dstBuffer[dstCharacters -1] = 0;
+
+    dstBuffer[dstCharacters - 1] = 0;
 }
 
 
@@ -204,30 +207,36 @@ QString Log::collectArg(const QString& msg, const Statement *s)
     return msg.arg(s->prints());
 }
 
+
 QString Log::collectArg(const QString& msg, const SharedConstExp& e)
 {
     return msg.arg(e->toString());
 }
+
 
 QString Log::collectArg(const QString& msg, const SharedType& ty)
 {
     return msg.arg(ty->toString());
 }
 
+
 QString Log::collectArg(const QString& msg, const Printable& ty)
 {
     return msg.arg(ty.toString());
 }
+
 
 QString Log::collectArg(const QString& msg, const RTL *r)
 {
     return msg.arg(r->prints());
 }
 
+
 QString Log::collectArg(const QString& msg, Address a)
 {
     return msg.arg(a.toString());
 }
+
 
 QString Log::collectArg(const QString& msg, const LocationSet *l)
 {
@@ -237,7 +246,7 @@ QString Log::collectArg(const QString& msg, const LocationSet *l)
 
 void Log::write(const QString& msg)
 {
-    for (ILogSink* s : m_sinks) {
+    for (ILogSink *s : m_sinks) {
         s->write(msg);
     }
 }
@@ -245,13 +254,17 @@ void Log::write(const QString& msg)
 
 QString Log::levelToString(LogLevel level)
 {
-    switch (level) {
+    switch (level)
+    {
     case LogLevel::Fatal:
         return QString("Fatal");
+
     case LogLevel::Error:
         return QString("Error");
+
     case LogLevel::Warning:
         return QString("Warn ");
+
     default:
         return QString("Msg  ");
     }
@@ -280,4 +293,3 @@ SeparateLogger& SeparateLogger::getOrCreateLog(const QString& name)
 
     return *g_separateLog;
 }
-

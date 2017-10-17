@@ -16,7 +16,6 @@
 #include <QString>
 
 class QVariant;
-struct SectionInfoImpl;
 
 /// SectionInfo structure - All information about the sections is contained in these
 /// structures.
@@ -55,7 +54,7 @@ public:
     bool isAddressBss(Address a) const override;
     bool anyDefinedValues() const override;
 
-    void resize(uint32_t) override;
+    void resize(uint32_t newSize) override;
 
     void clearDefinedArea();
     void addDefinedArea(Address from, Address to) override;
@@ -64,17 +63,17 @@ public:
     QVariant attributeInRange(const QString& attrib, Address from, Address to) const;
 
 private:
-    SectionInfoImpl *m_impl;
+    class SectionInfoImpl *m_impl;
 
-    QString         m_sectionName;          ///< Name of section
-    Address         m_nativeAddr;           ///< Logical or native load address
-    HostAddress     m_hostAddr;             ///< Host or actual address of data
-    uint32_t        m_sectionSize;          ///< Size of section in bytes
-    uint32_t        m_sectionEntrySize;     ///< Size of one section entry (if applicable)
-    unsigned        m_type;                 ///< Type of section (format dependent)
-    unsigned        m_code     : 1;         ///< Set if section contains instructions
-    unsigned        m_data     : 1;         ///< Set if section contains data
-    unsigned        m_bss      : 1;         ///< Set if section is BSS (allocated only)
-    unsigned        m_readOnly : 1;         ///< Set if this is a read only section
-    uint8_t         m_endianness;           ///< 0 Little endian, 1 Big endian
+    QString               m_sectionName;      ///< Name of section
+    Address               m_nativeAddr;       ///< Logical or native load address
+    HostAddress           m_hostAddr;         ///< Host or actual address of data
+    uint32_t              m_sectionSize;      ///< Size of section in bytes
+    uint32_t              m_sectionEntrySize; ///< Size of one section entry (if applicable)
+    unsigned              m_type;             ///< Type of section (format dependent)
+    unsigned              m_code     : 1;     ///< Set if section contains instructions
+    unsigned              m_data     : 1;     ///< Set if section contains data
+    unsigned              m_bss      : 1;     ///< Set if section is BSS (allocated only)
+    unsigned              m_readOnly : 1;     ///< Set if this is a read only section
+    uint8_t               m_endianness;       ///< 0 Little endian, 1 Big endian
 };

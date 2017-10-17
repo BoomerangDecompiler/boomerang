@@ -139,8 +139,8 @@ public:
     ~BasicBlock();
 
     /// \brief return enclosing function, null if none
-    const Function* getParent() const { return m_parent; }
-    Function* getParent()             { return m_parent; }
+    const Function *getParent() const { return m_parent; }
+    Function *getParent()             { return m_parent; }
 
     /***************************************************************************/ /**
      * \brief   Return the type of the basic block.
@@ -282,7 +282,7 @@ public:
     /// delete edge from this bb to the child bb
     void deleteEdge(BasicBlock *child);
 
-    void deleteInEdge(BasicBlock* edge);
+    void deleteInEdge(BasicBlock *edge);
 
     /***************************************************************************/ /**
      * \brief Get the destination of the call, if this is a CALL BB with
@@ -360,20 +360,20 @@ public:
 
     /// Get the condition
     /*
-    * Structuring and code generation.
-    *
-    * This code is whole heartly based on AST by Doug Simon. Portions may be copyright to him and are available under a BSD
-    * style license.
-    *
-    * Adapted for Boomerang by Trent Waddington, 20 June 2002.
-    */
-    SharedExp getCond() noexcept(false);
+     * Structuring and code generation.
+     *
+     * This code is whole heartly based on AST by Doug Simon. Portions may be copyright to him and are available under a BSD
+     * style license.
+     *
+     * Adapted for Boomerang by Trent Waddington, 20 June 2002.
+     */
+    SharedExp getCond() noexcept (false);
 
     /** set the condition */
-    void setCond(SharedExp e) noexcept(false);
+    void setCond(SharedExp e) noexcept (false);
 
     /** Get the destination, if any */
-    SharedExp getDest() noexcept(false);
+    SharedExp getDest() noexcept (false);
 
     /** Get the loop body */
     BasicBlock *getLoopBody();
@@ -478,13 +478,13 @@ public:
     bool searchAndReplace(const Exp& search, SharedExp replace);
 
     bool isLatchNode() { return m_loopHead && m_loopHead->m_latchNode == this; }
-    BasicBlock* getLatchNode()  const { return m_latchNode; }
-    BasicBlock* getLoopHead()   const { return m_loopHead; }
-    BasicBlock* getLoopFollow() const { return m_loopFollow; }
-    BasicBlock* getCondFollow() const { return m_condFollow; }
-    BasicBlock* getCaseHead()   const { return m_caseHead; }
+    BasicBlock *getLatchNode()  const { return m_latchNode; }
+    BasicBlock *getLoopHead()   const { return m_loopHead; }
+    BasicBlock *getLoopFollow() const { return m_loopFollow; }
+    BasicBlock *getCondFollow() const { return m_condFollow; }
+    BasicBlock *getCaseHead()   const { return m_caseHead; }
 
-    TravType getTravType() const     { return m_traversed; }
+    TravType getTravType() const { return m_traversed; }
     StructType getStructType() const { return m_structuringType; }
     CondType getCondType() const;
     UnstructType getUnstructType() const;
@@ -499,7 +499,7 @@ public:
     /// had its code generated
     bool allParentsGenerated();
 
-    const std::list<RTL*>* getRTLList() const { return m_listOfRTLs; }
+    const std::list<RTL *> *getRTLList() const { return m_listOfRTLs; }
 
 protected:
     void setLoopStamps(int& time, std::vector<BasicBlock *>& order);
@@ -513,6 +513,7 @@ protected:
     void setUnstructType(UnstructType us);
     void setLoopType(LoopType l);
     void setCondType(CondType l);
+
     void setLoopFollow(BasicBlock *other) { m_loopFollow = other; }
     void setCondFollow(BasicBlock *other) { m_condFollow = other; }
 
@@ -576,10 +577,10 @@ protected:
     /* general basic block information */
     BBType m_nodeType = BBType::Invalid;      ///< type of basic block
     std::list<RTL *> *m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
-    int  m_labelNum     = 0;                  ///< Nonzero if start of BB needs label
-    bool m_labelNeeded = false;
-    bool m_incomplete  = true;                ///< True if not yet complete
-    bool m_jumpRequired    = false;           ///< True if jump required for "fall through"
+    int m_labelNum      = 0;                  ///< Nonzero if start of BB needs label
+    bool m_labelNeeded  = false;
+    bool m_incomplete   = true;               ///< True if not yet complete
+    bool m_jumpRequired = false;              ///< True if jump required for "fall through"
 
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_inEdges;  ///< Vector of in-edges

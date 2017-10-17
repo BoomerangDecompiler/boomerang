@@ -36,7 +36,7 @@ public:
     virtual ~ICodeGenerator() {}
 
     /// Generate code for \p program to \p os.
-    virtual void generateCode(const Prog* program, QTextStream& os) = 0;
+    virtual void generateCode(const Prog *program, QTextStream& os) = 0;
 
     /**
      * Generate code for a module or function, or all modules.
@@ -46,7 +46,7 @@ public:
      * \param intermixRTL Set this to true to intermix code with underlying intermediate representation.
      *                    Currently not implemented.
      */
-    virtual void generateCode(const Prog* program, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) = 0;
+    virtual void generateCode(const Prog *program, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) = 0;
 
 public:
     /*
@@ -87,5 +87,5 @@ public:
     virtual void addReturnStatement(StatementList *rets) = 0;
 
     /// Removes unused labels from the code.
-    virtual void removeUnusedLabels(int maxOrd)  = 0;
+    virtual void removeUnusedLabels(int maxOrd) = 0;
 };

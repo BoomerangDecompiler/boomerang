@@ -16,8 +16,8 @@ class RTL;
 typedef std::shared_ptr<RTL> SharedRTL;
 
 /***************************************************************************/ /**
-* FlagDef is a subclass of Unary, and holds a list of parameters (in the subexpression), and a pointer to an RTL
-******************************************************************************/
+ * FlagDef is a subclass of Unary, and holds a list of parameters (in the subexpression), and a pointer to an RTL
+ ******************************************************************************/
 class FlagDef : public Unary
 {
 public:
@@ -33,4 +33,3 @@ public:
 private:
     SharedRTL rtl;
 };
-

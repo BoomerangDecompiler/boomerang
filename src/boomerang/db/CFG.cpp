@@ -45,7 +45,7 @@ void erase_lrtls(std::list<RTL *>& pLrtl, std::list<RTL *>::iterator begin, std:
 * Cfg methods.
 **********************************/
 
-Cfg::Cfg(UserProc* proc)
+Cfg::Cfg(UserProc *proc)
     : m_myProc(proc)
     , m_wellFormed(false)
     , m_structured(false)
@@ -78,7 +78,7 @@ void Cfg::clear()
     m_entryBB    = nullptr;
     m_exitBB     = nullptr;
     m_wellFormed = false;
-    m_lastLabel = 0;
+    m_lastLabel  = 0;
 }
 
 
@@ -131,7 +131,7 @@ bool Cfg::hasNoEntryBB()
 
 BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
 {
-    MAPBB::iterator mi = m_mapBB.end();
+    MAPBB::iterator mi         = m_mapBB.end();
     BasicBlock      *currentBB = nullptr;
 
     // First find the native address of the first RTL
@@ -173,7 +173,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
             else {
                 // Fill in the details, and return it
                 currentBB->setRTLs(pRtls);
-                currentBB->m_incomplete     = false;
+                currentBB->m_incomplete = false;
                 currentBB->updateType(bbType);
             }
 
@@ -190,7 +190,7 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
         // pointer to BB, unless it's zero
         if (!startAddr.isZero()) {
             m_mapBB[startAddr] = currentBB; // Insert the mapping
-            mi                 = m_mapBB.find(startAddr);
+            mi = m_mapBB.find(startAddr);
         }
     }
 
@@ -212,10 +212,11 @@ BasicBlock *Cfg::newBB(std::list<RTL *> *pRtls, BBType bbType)
         // the out edges are already created.
         //
         mi = std::next(mi);
+
         if (mi != m_mapBB.end()) {
-            BasicBlock *nextBB    = (*mi).second;
-            Address    nextAddr   = (*mi).first;
-            bool nextIsIncomplete = nextBB->m_incomplete;
+            BasicBlock *nextBB          = (*mi).second;
+            Address    nextAddr         = (*mi).first;
+            bool       nextIsIncomplete = nextBB->m_incomplete;
 
             if (nextAddr <= pRtls->back()->getAddress()) {
                 // Need to truncate the current BB. We use splitBB(), but pass it pNextBB so it doesn't create a new BB
@@ -268,7 +269,7 @@ void Cfg::addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool destRequires
     destBB->m_inEdges.push_back(sourceBB);
 
     // special handling for upgrading oneway BBs to twoway BBs
-    if (sourceBB->getType() == BBType::Oneway && sourceBB->getOutEdges().size() > 1) {
+    if ((sourceBB->getType() == BBType::Oneway) && (sourceBB->getOutEdges().size() > 1)) {
         sourceBB->updateType(BBType::Twoway);
         sourceBB->setJumpRequired();
         destRequiresLabel = true;
@@ -284,7 +285,7 @@ void Cfg::addOutEdge(BasicBlock *sourceBB, Address addr, bool requiresLabel /* =
 {
     // If we already have a BB for this address, add the edge to it.
     // If not, create a new incomplete BB at the destination address.
-    BasicBlock* destBB = getBB(addr);
+    BasicBlock *destBB = getBB(addr);
 
     if (!destBB) {
         destBB = newIncompleteBB(addr);
@@ -521,7 +522,8 @@ bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)
 
 bool Cfg::isIncomplete(Address uAddr) const
 {
-    const BasicBlock* bb = getBB(uAddr);
+    const BasicBlock *bb = getBB(uAddr);
+
     return bb && bb->m_incomplete;
 }
 
@@ -702,6 +704,7 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2)
 void Cfg::removeBB(BasicBlock *bb)
 {
     BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), bb);
+
     assert(bbit != m_listBB.end()); // must not delete BBs of other CFGs
 
     if ((*bbit)->getLowAddr() != Address::ZERO) {
@@ -837,8 +840,8 @@ bool Cfg::establishDFTOrder()
     // Reset all the traversed flags
     unTraverse();
 
-    int      first = 0;
-    int      last  = 0;
+    int                first        = 0;
+    int                last         = 0;
     const unsigned int numTraversed = m_entryBB->getDFTOrder(first, last);
 
     return numTraversed == m_listBB.size();
@@ -907,7 +910,7 @@ bool Cfg::isOrphan(Address uAddr)
 
     // If it's incomplete, it can't be an orphan
     return pBB && !pBB->m_incomplete &&
-        pBB->m_listOfRTLs->front()->getAddress().isZero();
+           pBB->m_listOfRTLs->front()->getAddress().isZero();
 }
 
 
@@ -1088,11 +1091,11 @@ void Cfg::updateImmedPDom()
 {
     // traverse the nodes in order (i.e from the bottom up)
     for (int i = m_revOrdering.size() - 1; i >= 0; i--) {
-        BasicBlock* curNode = m_revOrdering[i];
+        BasicBlock *curNode = m_revOrdering[i];
         const std::vector<BasicBlock *>& oEdges = curNode->getOutEdges();
 
         for (auto& oEdge : oEdges) {
-            BasicBlock* succNode = oEdge;
+            BasicBlock *succNode = oEdge;
 
             if (succNode->m_revOrd > curNode->m_revOrd) {
                 curNode->m_immPDom = commonPDom(curNode->m_immPDom, succNode);
@@ -1101,7 +1104,7 @@ void Cfg::updateImmedPDom()
     }
 
     // make a second pass but consider the original CFG ordering this time
-    for (BasicBlock* curNode : m_ordering) {
+    for (BasicBlock *curNode : m_ordering) {
         const std::vector<BasicBlock *>& oEdges = curNode->getOutEdges();
 
         if (oEdges.size() <= 1) {
@@ -1109,18 +1112,18 @@ void Cfg::updateImmedPDom()
         }
 
         for (auto& oEdge : oEdges) {
-            BasicBlock* succNode = oEdge;
+            BasicBlock *succNode = oEdge;
             curNode->m_immPDom = commonPDom(curNode->m_immPDom, succNode);
         }
     }
 
     // one final pass to fix up nodes involved in a loop
-    for (BasicBlock* curNode : m_ordering) {
+    for (BasicBlock *curNode : m_ordering) {
         const std::vector<BasicBlock *>& oEdges = curNode->getOutEdges();
 
         if (oEdges.size() > 1) {
             for (auto& oEdge : oEdges) {
-                BasicBlock* succNode = oEdge;
+                BasicBlock *succNode = oEdge;
 
                 if (curNode->hasBackEdgeTo(succNode) && (curNode->getOutEdges().size() > 1) && succNode->m_immPDom &&
                     (succNode->m_immPDom->m_ord < curNode->m_immPDom->m_ord)) {
@@ -1597,9 +1600,9 @@ void Cfg::generateDotFile(QTextStream& of)
         const std::vector<BasicBlock *>& outEdges = srcBB->getOutEdges();
 
         for (unsigned int j = 0; j < outEdges.size(); j++) {
-            BasicBlock* dstBB = outEdges[j];
+            BasicBlock *dstBB = outEdges[j];
             of << "       bb" << srcBB->getLowAddr() << " -> ";
-            of << "bb"        << dstBB->getLowAddr();
+            of << "bb" << dstBB->getLowAddr();
 
             if (srcBB->getType() == BBType::Twoway) {
                 if (j == 0) {
@@ -1869,7 +1872,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
 #endif
 
         // Must delete bb. Note that this effectively "increments" iterator it
-        it  = m_listBB.erase(it);
+        it = m_listBB.erase(it);
         bb = nullptr;
     }
     else {

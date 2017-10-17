@@ -15,7 +15,7 @@
 #include "boomerang/frontend/Frontend.h"
 
 
-LibProc::LibProc(Address addr, const QString& name, Module* module)
+LibProc::LibProc(Address addr, const QString& name, Module *module)
     : Function(addr, nullptr, module)
 {
     m_signature = module->getLibSignature(name);

@@ -32,15 +32,15 @@ public:
 
     /// \copydoc NJMCDecoder::decodeInstruction
     /***************************************************************************/ /**
-    * \brief   Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
-    *              decoded. However, if a higher level construct that may consist of multiple instructions is matched,
-    *              then there may be a need to return more than one RTL. The caller_prologue2 is an example of such
-    *              a construct which encloses an abritary instruction that must be decoded into its own RTL.
-    * \param   pc - the native address of the pc
-    * \param   delta - the difference between the above address and the host address of the pc (i.e. the address
-    *              that the pc is at in the loaded object file)
-    * \returns a DecodeResult structure containing all the information gathered during decoding
-    ******************************************************************************/
+     * \brief   Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
+     *              decoded. However, if a higher level construct that may consist of multiple instructions is matched,
+     *              then there may be a need to return more than one RTL. The caller_prologue2 is an example of such
+     *              a construct which encloses an abritary instruction that must be decoded into its own RTL.
+     * \param   pc - the native address of the pc
+     * \param   delta - the difference between the above address and the host address of the pc (i.e. the address
+     *              that the pc is at in the loaded object file)
+     * \returns a DecodeResult structure containing all the information gathered during decoding
+     ******************************************************************************/
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 
 private:
@@ -56,9 +56,9 @@ private:
     bool isFuncPrologue(Address hostPC);
 
     /// Read bytes, words or dwords from the memory at address \p addr
-    Byte  getByte(HostAddress addr)  { return *(Byte*)addr.value(); }
-    SWord getWord(HostAddress addr)  { return *(SWord*)addr.value(); }
-    DWord getDword(HostAddress addr) { return *(DWord*)addr.value(); }
+    Byte getByte(HostAddress addr)  { return *(Byte *)addr.value(); }
+    SWord getWord(HostAddress addr)  { return *(SWord *)addr.value(); }
+    DWord getDword(HostAddress addr) { return *(DWord *)addr.value(); }
 
 private:
     Address lastDwordLc;

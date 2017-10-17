@@ -80,8 +80,8 @@ public:
     ICodeGenerator *getCodeGenerator();
 
 
-    Settings* getSettings() { return m_settings.get(); }
-    const Settings* getSettings() const { return m_settings.get(); }
+    Settings *getSettings() { return m_settings.get(); }
+    const Settings *getSettings() const { return m_settings.get(); }
 
     /**
      * Loads the executable file and decodes it.
@@ -263,15 +263,15 @@ public:
 public:
     std::shared_ptr<Settings> m_settings;
 
-    std::vector<Address> m_entryPoints; ///< A vector which contains all know entrypoints for the Prog.
-    std::vector<QString> m_symbolFiles; ///< A vector containing the names off all symbolfiles to load.
+    std::vector<Address> m_entryPoints;     ///< A vector which contains all know entrypoints for the Prog.
+    std::vector<QString> m_symbolFiles;     ///< A vector containing the names off all symbolfiles to load.
     std::map<Address, QString> m_symbolMap; ///< A map to find a name by a given address.
     IProject *m_currentProject;
 
     IBinarySymbolTable *m_symbols = nullptr;
 
     std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
-    ICodeGenerator* m_codeGenerator;
+    ICodeGenerator *m_codeGenerator;
 
 private:
     /// Prints help for the interactive mode.
@@ -285,7 +285,7 @@ private:
  * Global settings
  */
 
-#define SETTING(var) (Boomerang::get()->getSettings()->var)
+#define SETTING(var)    (Boomerang::get()->getSettings()->var)
 
 #define VERBOSE                 (Boomerang::get()->getSettings()->vFlag)
 #define DEBUG_TA                (Boomerang::get()->getSettings()->debugTA)

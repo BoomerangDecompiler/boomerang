@@ -15,12 +15,12 @@
 
 class MicroX86DisTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
-	void initTestCase();
+    void initTestCase();
 
-	/// Test the micro disassembler
-	void testMicroDis1();
-	void testMicroDis2();
+    /// Test the micro disassembler
+    void testMicroDis1();
+    void testMicroDis2();
 };

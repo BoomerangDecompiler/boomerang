@@ -35,7 +35,7 @@ struct VariantHolder
     }
 };
 
-struct SectionInfoImpl
+class SectionInfoImpl
 {
 public:
     void clearDefinedArea()
@@ -104,9 +104,10 @@ public:
     }
 
 public:
-    IntervalSet<Address>   m_hasDefinedValue;
+    IntervalSet<Address> m_hasDefinedValue;
     IntervalMap<Address, VariantHolder> m_attributeMap;
 };
+
 
 
 SectionInfo::SectionInfo(Address sourceAddr, uint32_t size, const QString& name)

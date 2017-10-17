@@ -15,8 +15,6 @@
 class Cfg;
 class Function;
 class Statement;
-struct RangePrivateData;
-
 class UserProc;
 
 /***************************************************************************/ /**
@@ -40,6 +38,6 @@ private:
     void addJunctionStatements(Cfg& cfg);
     void clearRanges();
 
-    RangePrivateData *RangeData;
+    class RangePrivateData *RangeData;
     void logSuspectMemoryDefs(UserProc& UF);
 };

@@ -98,7 +98,6 @@ bool Location::match(const QString& pattern, std::map<QString, SharedConstExp>& 
 }
 
 
-
 SharedExp Location::polySimplify(bool& bMod)
 {
     SharedExp res = Unary::polySimplify(bMod);
@@ -149,7 +148,6 @@ bool Location::accept(ExpVisitor *v)
 }
 
 
-
 SharedExp Location::accept(ExpModifier *v)
 {
     // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
@@ -176,7 +174,6 @@ SharedExp Location::accept(ExpModifier *v)
     assert(false);
     return nullptr;
 }
-
 
 
 std::shared_ptr<Location> Location::local(const QString& nam, UserProc *p)

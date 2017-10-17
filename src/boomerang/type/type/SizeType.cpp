@@ -70,13 +70,13 @@ SharedType SizeType::mergeWith(SharedType other) const
 }
 
 
-std::shared_ptr< SizeType > SizeType::get(unsigned int sz)
+std::shared_ptr<SizeType> SizeType::get(unsigned int sz)
 {
     return std::make_shared<SizeType>(sz);
 }
 
 
-std::shared_ptr< SizeType > SizeType::get()
+std::shared_ptr<SizeType> SizeType::get()
 {
     return std::make_shared<SizeType>();
 }

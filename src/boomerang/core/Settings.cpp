@@ -20,7 +20,6 @@ Settings::Settings()
 }
 
 
-
 /**
  * Creates a directory and tests it.
  *
@@ -47,6 +46,7 @@ bool Settings::setOutputDirectory(const QString& path)
 
     return true;
 }
+
 
 QString Settings::getFilename() const
 {

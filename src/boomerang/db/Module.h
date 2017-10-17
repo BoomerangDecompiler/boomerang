@@ -128,7 +128,7 @@ private:
 protected:
     QString m_name;
     std::vector<Module *> m_children;
-    Prog *m_prog     = nullptr;
+    Prog *m_prog       = nullptr;
     Module *m_upstream = nullptr;
     QFile m_out;
     QTextStream m_strm;

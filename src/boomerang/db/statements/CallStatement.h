@@ -310,5 +310,4 @@ private:
     /// Callee could be unanalysed because of an unanalysed indirect call,
     /// or a "recursion break".
     ReturnStatement *m_calleeReturn;
-
 };

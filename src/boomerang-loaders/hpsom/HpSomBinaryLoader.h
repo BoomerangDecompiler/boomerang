@@ -125,15 +125,15 @@ private:
     std::pair<Address, unsigned> getGlobalPointerInfo();
 
     /***************************************************************************/ /**
-    *
-    * \brief  Get a map from ADDRESS to const char*. This map contains the
-    *         native addresses and symbolic names of global data items
-    *         (if any) which are shared with dynamically linked libraries.
-    *         Example: __iob (basis for stdout). The ADDRESS is the native
-    *         address of a pointer to the real dynamic data object.
-    * \note        The caller should delete the returned map.
-    * \returns     Pointer to a new map with the info
-    ******************************************************************************/
+     *
+     * \brief  Get a map from ADDRESS to const char*. This map contains the
+     *         native addresses and symbolic names of global data items
+     *         (if any) which are shared with dynamically linked libraries.
+     *         Example: __iob (basis for stdout). The ADDRESS is the native
+     *         address of a pointer to the real dynamic data object.
+     * \note        The caller should delete the returned map.
+     * \returns     Pointer to a new map with the info
+     ******************************************************************************/
     std::map<Address, const char *> *getDynamicGlobalMap();
 
     // Private method to get the start and length of a given subspace

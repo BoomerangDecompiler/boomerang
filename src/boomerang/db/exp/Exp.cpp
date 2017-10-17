@@ -105,7 +105,6 @@ void Exp::createDotFile(const char *name)
 }
 
 
-
 bool Exp::isRegOfK()
 {
     if (m_oper != opRegOf) {
@@ -137,7 +136,8 @@ bool Exp::isAfpTerm()
 
     if (cur->getOper() == opAddrOf) {
         SharedExp p = cur->getSubExp1();
-        if (p && p->getOper() == opMemOf) {
+
+        if (p && (p->getOper() == opMemOf)) {
             cur = p->getSubExp1();
         }
     }
@@ -195,7 +195,7 @@ static QRegularExpression variableRegexp("[a-zA-Z0-9]+");
 
 
 // TODO use regexp ?
-#define ISVARIABLE_S(x)    \
+#define ISVARIABLE_S(x) \
     (strspn((x.c_str()), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == (x).length())
 
 
@@ -253,7 +253,6 @@ void Exp::doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool o
     Q_UNUSED(once);
     // Const and Terminal do not override this
 }
-
 
 
 SharedExp Exp::searchReplace(const Exp& search, const SharedExp& replace, bool& change)
@@ -428,7 +427,6 @@ SharedExp Exp::simplify()
         res = res->polySimplify(bMod); // Call the polymorphic simplify
     } while (bMod);                    // If modified at this (or a lower) level, redo
 
-
     // The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is the same as a + b + K
     // No! This slows everything down, and it's slow enough as it is. Call only where needed:
 //    res = res->simplifyArith();
@@ -462,7 +460,7 @@ SharedExp accessMember(SharedExp parent, const std::shared_ptr<CompoundType>& c,
     else if (t->resolvesToArray()) {
         std::shared_ptr<ArrayType> a = t->as<ArrayType>();
         SharedType                 array_member_type = a->getBaseType();
-        int b  = array_member_type->getSize() / 8;
+        int b = array_member_type->getSize() / 8;
         assert(array_member_type->getSize() % 8);
 
         res = Binary::get(opArrayIndex, res, Const::get(n / b));
@@ -621,7 +619,7 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 
     for (xx = locs.begin(); xx != locs.end(); xx++) {
         if ((*xx)->getOper() == opSubscript) {
-            auto              r1   = std::static_pointer_cast<RefExp>(*xx);
+            auto            r1   = std::static_pointer_cast<RefExp>(*xx);
             const Statement *def = r1->getDef();
 
             if (!((def == nullptr) || (def->getNumber() == 0))) {
@@ -655,11 +653,6 @@ SharedExp Exp::genConstraints(SharedExp /*result*/)
     // Default case, no constraints -> return true
     return Terminal::get(opTrue);
 }
-
-
-
-
-
 
 
 //    //    //    //    //    //    //    //
@@ -761,6 +754,7 @@ SharedExp Exp::expSubscriptAllNull(/*Cfg* cfg*/)
 {
     return expSubscriptVar(Terminal::get(opWild), nullptr /* was nullptr, nullptr, cfg */);
 }
+
 
 SharedExp Exp::bypass()
 {

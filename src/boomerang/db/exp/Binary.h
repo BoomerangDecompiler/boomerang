@@ -61,8 +61,8 @@ public:
     SharedConstExp getSubExp2() const override;
 
     /***************************************************************************/ /**
-    * \brief        Swap the two subexpressions
-    ******************************************************************************/
+     * \brief        Swap the two subexpressions
+     ******************************************************************************/
     void commute();                   ///< Commute the two operands
     SharedExp& refSubExp2() override; ///< Get a reference to subexpression 2
 

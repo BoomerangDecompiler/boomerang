@@ -137,7 +137,7 @@ void BranchStatement::setCondExpr(SharedExp pe)
 
 BasicBlock *BranchStatement::getFallBB() const
 {
-       Address a = getFixedDest();
+    Address a = getFixedDest();
 
     if (a == Address::INVALID) {
         return nullptr;
@@ -190,7 +190,7 @@ void BranchStatement::setFallBB(BasicBlock *bb)
 
 BasicBlock *BranchStatement::getTakenBB() const
 {
-       Address a = getFixedDest();
+    Address a = getFixedDest();
 
     if (a == Address::INVALID) {
         return nullptr;
@@ -406,7 +406,7 @@ bool BranchStatement::accept(StmtVisitor *visitor)
 }
 
 
-void BranchStatement::generateCode(ICodeGenerator*, BasicBlock*)
+void BranchStatement::generateCode(ICodeGenerator *, BasicBlock *)
 {
     // dont generate any code for jconds, they will be handled by the bb
 }

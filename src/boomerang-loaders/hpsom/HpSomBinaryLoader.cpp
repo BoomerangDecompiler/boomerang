@@ -84,8 +84,8 @@ void HpSomBinaryLoader::processSymbols()
 
     unsigned numSym = UINT4(m_loadedImage + 0x60);
 
-    HostAddress symPtr  = HostAddress(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
-    const char *symbolNames = (const char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
+    HostAddress symPtr       = HostAddress(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
+    const char  *symbolNames = (const char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
 
 #define SYMSIZE    20 // 5 4-byte words per symbol entry
 #define SYMBOLNM(idx)     (UINT4((symPtr + idx * SYMSIZE + 4).value()))
@@ -94,8 +94,8 @@ void HpSomBinaryLoader::processSymbols()
 #define SYMBOLTY(idx)     ((UINT4((symPtr + idx * SYMSIZE).value()) >> 24) & 0x3f)
 
     for (unsigned u = 0; u < numSym; u++) {
-        unsigned symbolType    = SYMBOLTY(u);
-        Address  value         = Address(SYMBOLVAL(u));
+        unsigned   symbolType  = SYMBOLTY(u);
+        Address    value       = Address(SYMBOLVAL(u));
         const char *symbolName = symbolNames + SYMBOLNM(u);
 
         // Only interested in type 3 (code), 8 (stub), and 12 (millicode)
@@ -177,7 +177,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     if (((system_id != 0x210) && (system_id != 0x20B)) ||
         ((a_magic != 0x107) && (a_magic != 0x108) && (a_magic != 0x10B))) {
         LOG_ERROR("File is not a standard PA/RISC executable file, with system ID %1 and magic number %2",
-                system_id, a_magic);
+                  system_id, a_magic);
         return false;
     }
 
@@ -219,13 +219,13 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // The DL table (Dynamic Link info?) is supposed to be at the start of
     // the $TEXT$ space, but the only way I can presently find that is to
     // assume that the first subspace entry points to it
-    const char   *subspaceLoc     = (const char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
+    const char   *subspaceLoc         = (const char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
     Address      firstSubspaceFileLoc = Address(UINT4(subspaceLoc + 8));
-    const char   *dlTable     = (const char *)m_loadedImage + firstSubspaceFileLoc.value();
-    const char   *dlStrings   = dlTable + UINT4(dlTable + 0x28);
-    unsigned     numImports   = UINT4(dlTable + 0x14); // Number of import strings
-    unsigned     numExports   = UINT4(dlTable + 0x24); // Number of export strings
-    export_entry *export_list = (export_entry *)(dlTable + UINT4(dlTable + 0x20));
+    const char   *dlTable             = (const char *)m_loadedImage + firstSubspaceFileLoc.value();
+    const char   *dlStrings           = dlTable + UINT4(dlTable + 0x28);
+    unsigned     numImports           = UINT4(dlTable + 0x14); // Number of import strings
+    unsigned     numExports           = UINT4(dlTable + 0x24); // Number of export strings
+    export_entry *export_list         = (export_entry *)(dlTable + UINT4(dlTable + 0x20));
 
     // A convenient macro for accessing the fields (0-11) of the auxilliary header
     // Fields 0, 1 are the header (flags, aux header type, and size)
@@ -257,7 +257,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // Section 2: BSS
     // For now, assume that BSS starts at the end of the initialised data
     IBinarySection *bss = m_image->createSection("$BSS$", Address(AUXHDR(6) + AUXHDR(5)),
-                                                          Address(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
+                                                 Address(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
     assert(bss);
     bss->setHostAddr(HostAddress::ZERO)
        .setEntrySize(1)
@@ -290,7 +290,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // u runs through import table; v through $PLT$ subspace
     // There should be a one to one correspondance between (DLT + PLT) entries and import table entries.
     // The DLT entries always come first in the import table
-    unsigned   u = (unsigned)numDLT, v = 0;
+    unsigned u = (unsigned)numDLT, v = 0;
 //   plt_record *PLTs = (plt_record *)(pltStart + deltaData).value();
 
     u += numImports;
@@ -317,10 +317,10 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
             //  31                  16|15    11| 10  |9        0
 
             DWord bincall = *(DWord *)(callMainAddr.value() + deltaText);
-            int      offset  = ((((bincall & 1) << 31) >> 15) | // w
-                                ((bincall & 0x1f0000) >> 5) |   // w1
-                                ((bincall & 4) << 8) |          // w2@10
-                                ((bincall & 0x1ff8) >> 3));     // w2@0..9
+            int   offset  = ((((bincall & 1) << 31) >> 15) |    // w
+                             ((bincall & 0x1f0000) >> 5) |      // w1
+                             ((bincall & 4) << 8) |             // w2@10
+                             ((bincall & 0x1ff8) >> 3));        // w2@0..9
             // Address of main is st + 8 + offset << 2
             m_symbols->create(callMainAddr + 8 + (offset << 2), "main")
                .setAttr("Export", true);
@@ -371,6 +371,7 @@ void HpSomBinaryLoader::close()
     // Not implemented yet
 }
 
+
 LoadFmt HpSomBinaryLoader::getFormat() const
 {
     return LoadFmt::PAR;
@@ -387,7 +388,7 @@ bool HpSomBinaryLoader::isLibrary() const
 {
     int type = UINT4(m_loadedImage) & 0xFFFF;
 
-    return (type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
+    return(type == 0x0104 || type == 0x010D || type == 0x010E || type == 0x0619);
 }
 
 
@@ -472,11 +473,11 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 
 Address HpSomBinaryLoader::getMainEntryPoint()
 {
-    const IBinarySymbol* sym = m_symbols->find("main");
+    const IBinarySymbol *sym = m_symbols->find("main");
 
     return sym ? sym->getLocation() : Address::INVALID;
 }
 
 
 BOOMERANG_LOADER_PLUGIN(HpSomBinaryLoader,
-    "HpSom binary file loader", BOOMERANG_VERSION, "Boomerang developers")
+                        "HpSom binary file loader", BOOMERANG_VERSION, "Boomerang developers")

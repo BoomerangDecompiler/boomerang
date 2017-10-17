@@ -13,10 +13,10 @@
 
 class FrontendTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
 
-	/// Test loading the sparc hello world program
-	void test1();
+    /// Test loading the sparc hello world program
+    void test1();
 };

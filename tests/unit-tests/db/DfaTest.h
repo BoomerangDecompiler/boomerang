@@ -21,12 +21,12 @@
  */
 class DfaTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
-   	void initTestCase();
+    void initTestCase();
 
     /// Test meeting IntegerTypes with various other types
-	void testMeet();
+    void testMeet();
     void testMeet_data();
 };

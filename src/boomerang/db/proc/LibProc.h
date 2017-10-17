@@ -47,4 +47,3 @@ public:
     /// Return whether \p e is preserved by this proc
     virtual bool isPreserved(SharedExp e) override;
 };
-

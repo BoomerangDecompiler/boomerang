@@ -20,6 +20,7 @@ UnionType::UnionType()
 {
 }
 
+
 UnionType::UnionType::UnionType(const std::initializer_list<SharedType>& members)
     : Type(eUnion)
 {

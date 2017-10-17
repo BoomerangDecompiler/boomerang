@@ -14,21 +14,21 @@
 
 class FrontSparcTest : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 private slots:
-	void initTestCase();
+    void initTestCase();
 
-	/**
+    /**
      * Test decoding some sparc instructions
      */
-	void test1();
+    void test1();
 
-	void test2();
+    void test2();
 
-	void test3();
+    void test3();
 
-	void testBranch();
+    void testBranch();
 
-	void testDelaySlot();
+    void testDelaySlot();
 };

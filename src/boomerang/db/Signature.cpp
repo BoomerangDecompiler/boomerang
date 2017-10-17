@@ -125,7 +125,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept(false) override { return 28; }
+    virtual int getStackRegister() const noexcept (false)override { return 28; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
@@ -176,7 +176,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept(false) override { return 28; }
+    virtual int getStackRegister() const noexcept (false)override { return 28; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 
@@ -210,7 +210,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept(false) override { return 14; }
+    virtual int getStackRegister() const noexcept (false)override { return 14; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 
@@ -259,7 +259,7 @@ public:
                               const QString& boundMax = "") override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept(false) override { return 1; }
+    virtual int getStackRegister() const noexcept (false)override { return 1; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
     virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
@@ -292,7 +292,7 @@ public:
                               const QString& boundMax = "") override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept(false) override { return 29; }
+    virtual int getStackRegister() const noexcept (false)override { return 29; }
     virtual SharedExp getProven(SharedExp left) const override;
 
     // Return whether e is preserved by this proc
@@ -326,7 +326,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept(false) override { return 3; }
+    virtual int getStackRegister() const noexcept (false)override { return 3; }
     virtual SharedExp getProven(SharedExp left) const override;
 
     virtual bool isPromoted() const override { return true; }
@@ -2307,7 +2307,7 @@ StatementList& Signature::getStdRetStmt(Prog *prog)
 }
 
 
-int Signature::getStackRegister() const noexcept(false)
+int Signature::getStackRegister() const noexcept (false)
 {
     LOG_VERBOSE("thowing StackRegisterNotDefinedException");
 
@@ -2315,15 +2315,25 @@ int Signature::getStackRegister() const noexcept(false)
 }
 
 
-int Signature::getStackRegister(Prog *prog) noexcept(false)
+int Signature::getStackRegister(Prog *prog) noexcept (false)
 {
     switch (prog->getMachine())
     {
-    case Machine::SPARC:        return 14;
-    case Machine::PENTIUM:      return 28;
-    case Machine::PPC:          return 1;
-    case Machine::ST20:         return 3;
-    case Machine::MIPS:         return 29;
+    case Machine::SPARC:
+        return 14;
+
+    case Machine::PENTIUM:
+        return 28;
+
+    case Machine::PPC:
+        return 1;
+
+    case Machine::ST20:
+        return 3;
+
+    case Machine::MIPS:
+        return 29;
+
     default:
         throw StackRegisterNotDefinedException();
     }

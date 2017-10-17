@@ -32,7 +32,7 @@
 // Given a little endian value x, load its value assuming little endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the parameter is not a pointer
-#define LMMH(x)                                                                                                  \
+#define LMMH(x)                                                                                               \
     ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
      ((unsigned)((Byte *)(&x))[3] << 24))
 // With this one, x is a pointer to unsigned
@@ -54,67 +54,67 @@ typedef struct
     Byte  sigLo;
     Byte  sigHi;
     SWord sigver;
-    SWord cputype;     ///< Machine
-    SWord numObjects;  ///< number of sections
-    DWord TimeDate;    ///< DateTime stamp
-    DWord Reserved1;   ///< Pointer to symbol table (deprecated)
-    DWord Reserved2;   ///< number of entries in symbol table (deprecated)
-    SWord NtHdrSize;   ///< Size of the optional header
-    SWord Flags;       ///< Characteristics
-    SWord Reserved3;   ///< Magic number
-    Byte  LMajor;      ///< Linker version major
-    Byte  LMinor;      ///< Linker version minor
-    DWord Reserved4;   ///< SizeOfCode (sum of all sections)
-    DWord Reserved5;   ///< Size of initialized data
-    DWord Reserved6;   ///< Size of uninitialized data
+    SWord cputype;       ///< Machine
+    SWord numObjects;    ///< number of sections
+    DWord TimeDate;      ///< DateTime stamp
+    DWord Reserved1;     ///< Pointer to symbol table (deprecated)
+    DWord Reserved2;     ///< number of entries in symbol table (deprecated)
+    SWord NtHdrSize;     ///< Size of the optional header
+    SWord Flags;         ///< Characteristics
+    SWord Reserved3;     ///< Magic number
+    Byte  LMajor;        ///< Linker version major
+    Byte  LMinor;        ///< Linker version minor
+    DWord Reserved4;     ///< SizeOfCode (sum of all sections)
+    DWord Reserved5;     ///< Size of initialized data
+    DWord Reserved6;     ///< Size of uninitialized data
     DWord EntrypointRVA; ///< Address of entry point (RVA)
     DWord Reserved7;     ///< Base of code (RVA)
     DWord Reserved8;     ///< Base of data (RVA)
 
     // Windows specific
-    DWord Imagebase;     ///< image base
-    DWord ObjectAlign;   ///< section alignment
-    DWord FileAlign;     ///< File alignment
-    SWord OSMajor;       ///< OS version major
-    SWord OSMinor;       ///< OS version minor
-    SWord UserMajor;     ///< Image version major
-    SWord UserMinor;     ///< Image version minor
-    SWord SubsysMajor;   ///< Subsystem version major
-    SWord SubsysMinor;   ///< Subsystem version minor
-    DWord Reserved9;     ///< Win32 version value (zero-filled)
-    DWord ImageSize;     ///< Size of image
-    DWord HeaderSize;    ///< Size of headers
-    DWord FileChecksum;  ///< File checksum (usually 0)
-    SWord Subsystem;     ///< Subsystem
-    SWord DLLFlags;      ///< DLL characteristics
-    DWord StackReserveSize;   ///< Size of stack reserve
-    DWord StackCommitSize;    ///< Size of stack commit
-    DWord HeapReserveSize;    ///< Size of heap reserve
-    DWord HeapCommitSize;     ///< Size of heap commit
-    DWord Reserved10;         ///< Loader flags (zero-filled)
+    DWord Imagebase;            ///< image base
+    DWord ObjectAlign;          ///< section alignment
+    DWord FileAlign;            ///< File alignment
+    SWord OSMajor;              ///< OS version major
+    SWord OSMinor;              ///< OS version minor
+    SWord UserMajor;            ///< Image version major
+    SWord UserMinor;            ///< Image version minor
+    SWord SubsysMajor;          ///< Subsystem version major
+    SWord SubsysMinor;          ///< Subsystem version minor
+    DWord Reserved9;            ///< Win32 version value (zero-filled)
+    DWord ImageSize;            ///< Size of image
+    DWord HeaderSize;           ///< Size of headers
+    DWord FileChecksum;         ///< File checksum (usually 0)
+    SWord Subsystem;            ///< Subsystem
+    SWord DLLFlags;             ///< DLL characteristics
+    DWord StackReserveSize;     ///< Size of stack reserve
+    DWord StackCommitSize;      ///< Size of stack commit
+    DWord HeapReserveSize;      ///< Size of heap reserve
+    DWord HeapCommitSize;       ///< Size of heap commit
+    DWord Reserved10;           ///< Loader flags (zero-filled)
     DWord nInterestingRVASizes; ///< Number of RVA and sizes (see below)
 
     // data directories
-    DWord ExportTableRVA;        ///< Export table RVA
-    DWord TotalExportDataSize;   ///< Export table size
-    DWord ImportTableRVA;        ///< Import table RVA
-    DWord TotalImportDataSize;   ///< Import table size
-    DWord ResourceTableRVA;      ///< Resource table RVA
-    DWord TotalResourceDataSize; ///< Resource table size
-    DWord ExceptionTableRVA;     ///< Exception table RVA
-    DWord TotalExceptionDataSize;///< Exception table size
-    DWord SecurityTableRVA;      ///< Certificate table RVA
-    DWord TotalSecurityDataSize; ///< Certificate table size
-    DWord FixupTableRVA;         ///< Base relocation table RVA
-    DWord TotalFixupDataSize;    ///< Base relocation table size
-    DWord DebugTableRVA;         ///< Debug table RVA
-    DWord TotalDebugDirectories; ///< Debug table size
-    DWord ImageDescriptionRVA;   ///< Architecture data table RVA
-    DWord TotalDescriptionSize;  ///< Architecture data table size
-    DWord MachineSpecificRVA;    ///< Global pointer RVA
-    DWord MachineSpecificSize;   ///< Must be 0
-    DWord ThreadLocalStorageRVA; ///< TLS table RVA
-    DWord TotalTLSSize;          ///< TLS table size
+    DWord ExportTableRVA;         ///< Export table RVA
+    DWord TotalExportDataSize;    ///< Export table size
+    DWord ImportTableRVA;         ///< Import table RVA
+    DWord TotalImportDataSize;    ///< Import table size
+    DWord ResourceTableRVA;       ///< Resource table RVA
+    DWord TotalResourceDataSize;  ///< Resource table size
+    DWord ExceptionTableRVA;      ///< Exception table RVA
+    DWord TotalExceptionDataSize; ///< Exception table size
+    DWord SecurityTableRVA;       ///< Certificate table RVA
+    DWord TotalSecurityDataSize;  ///< Certificate table size
+    DWord FixupTableRVA;          ///< Base relocation table RVA
+    DWord TotalFixupDataSize;     ///< Base relocation table size
+    DWord DebugTableRVA;          ///< Debug table RVA
+    DWord TotalDebugDirectories;  ///< Debug table size
+    DWord ImageDescriptionRVA;    ///< Architecture data table RVA
+    DWord TotalDescriptionSize;   ///< Architecture data table size
+    DWord MachineSpecificRVA;     ///< Global pointer RVA
+    DWord MachineSpecificSize;    ///< Must be 0
+    DWord ThreadLocalStorageRVA;  ///< TLS table RVA
+    DWord TotalTLSSize;           ///< TLS table size
 } PEHeader;
 
 
@@ -206,8 +206,8 @@ public:
     bool isLibrary() const;
 
 protected:
-    SWord win32Read2(const void* src) const; ///< Read 2 bytes from native addr
-    DWord win32Read4(const void* src) const; ///< Read 4 bytes from native addr
+    SWord win32Read2(const void *src) const; ///< Read 2 bytes from native addr
+    DWord win32Read4(const void *src) const; ///< Read 4 bytes from native addr
 
 public:
     bool isStaticLinkedLibProc(Address addr) const;
@@ -226,7 +226,7 @@ private:
     void findJumps(Address curr);
 
 private:
-    char* m_image;                  ///< Beginning of the loaded image
+    char *m_image;                  ///< Beginning of the loaded image
     int m_imageSize;                ///< Size of image, in bytes
 
     Header *m_pHeader;              ///< Pointer to header

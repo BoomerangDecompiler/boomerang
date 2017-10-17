@@ -32,7 +32,7 @@ class QFile;
 // Given a little endian value x, load its value assuming little endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
-#define LMMH(x)                                                                                                  \
+#define LMMH(x)                                                                                               \
     ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
      ((unsigned)((Byte *)(&x))[3] << 24))
 // With this one, x IS a pounsigneder
@@ -167,8 +167,8 @@ public:
     DWord getDelta();
 
 protected:
-    SWord dos4gwRead2(const void* src) const; // Read 2 bytes from native addr
-    DWord dos4gwRead4(const void* src) const;   // Read 4 bytes from native addr
+    SWord dos4gwRead2(const void *src) const; // Read 2 bytes from native addr
+    DWord dos4gwRead4(const void *src) const; // Read 4 bytes from native addr
 
 private:
     LXHeader *m_pLXHeader  = nullptr;     ///< Pointer to lx header

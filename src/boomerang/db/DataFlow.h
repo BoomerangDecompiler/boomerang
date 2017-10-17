@@ -15,8 +15,8 @@
  * \brief Interface for SSA based data flow analysis
  ******************************************************************************/
 
-#include "boomerang/db/exp/ExpHelp.h"      // For lessExpStar, etc
-#include "boomerang/db/Managed.h" // For LocationSet
+#include "boomerang/db/exp/ExpHelp.h" // For lessExpStar, etc
+#include "boomerang/db/Managed.h"     // For LocationSet
 
 #include <vector>
 #include <map>

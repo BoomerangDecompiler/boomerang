@@ -36,11 +36,11 @@ using SharedConstExp = std::shared_ptr<const Exp>;
 /// Log level / verbosity.
 enum class LogLevel
 {
-    Fatal = 0,
-    Error = 1,
-    Warning = 2,
-    Message = 3,
-    Default = 3,
+    Fatal    = 0,
+    Error    = 1,
+    Warning  = 2,
+    Message  = 3,
+    Default  = 3,
     Verbose1 = 4,
     Verbose2 = 5
 };
@@ -132,10 +132,10 @@ public:
      * \param line  Source line frim which this function was called, usually __LINE__
      * \param msg   Log message.
      */
-    void log(LogLevel level, const char* file, int line, const QString& msg);
+    void log(LogLevel level, const char *file, int line, const QString& msg);
 
     // Same as Log::log, but does not split multiline strings
-    void logDirect(LogLevel level, const char* file, int line, const QString& msg);
+    void logDirect(LogLevel level, const char *file, int line, const QString& msg);
 
     /**
      * Log a message to all log sinks, replacing %1, %2, ... etc by \p args
@@ -146,21 +146,21 @@ public:
      * \param msg   Log message.
      * \param args  Arguments to replace in \p msg
      */
-    template<typename... Args>
-    void log(LogLevel level, const char* file, int line, const QString& msg, Args... args)
+    template<typename ... Args>
+    void log(LogLevel level, const char *file, int line, const QString& msg, Args ... args)
     {
         if (!canLog(level)) {
             return;
         }
 
-        log(level, file, line, collectArgs(msg, args...));
+        log(level, file, line, collectArgs(msg, args ...));
     }
 
     /// Add a log sink / target. Takes ownership of the pointer.
-    void addLogSink(ILogSink* s);
+    void addLogSink(ILogSink *s);
 
     /// Removes and deletes a log sink.
-    void removeLogSink(ILogSink* s);
+    void removeLogSink(ILogSink *s);
 
     Log& setLogLevel(LogLevel level);
     LogLevel getLogLevel() const;
@@ -179,7 +179,7 @@ private:
      * \param dstCharacters Size (in characters) of the destination buffer
      * \param fileName file name to truncate
      */
-    void truncateFileName(char* dstBuffer, size_t dstCharacters, const char* fileName);
+    void truncateFileName(char *dstBuffer, size_t dstCharacters, const char *fileName);
 
     /**
      * Replace format arguments in \p msg.
@@ -187,7 +187,7 @@ private:
      */
     template<typename T>
     QString collectArg(const QString& msg, const std::shared_ptr<T>& arg) { return msg.arg(arg->toString()); }
-    QString collectArg(const QString& msg, const char* arg) { return msg.arg(arg); }
+    QString collectArg(const QString& msg, const char *arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, const QString& arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, const Statement *s);
     QString collectArg(const QString& msg, const SharedConstExp& e);
@@ -217,13 +217,11 @@ private:
         return collectArg(msg, arg);
     }
 
-
-    template<typename Arg, typename... Args>
-    QString collectArgs(QString msg, Arg arg, Args... args)
+    template<typename Arg, typename ... Args>
+    QString collectArgs(QString msg, Arg arg, Args ... args)
     {
-        return collectArgs(collectArg(msg, arg), args...);
+        return collectArgs(collectArg(msg, arg), args ...);
     }
-
 
     /**
      * Write the raw string \p msg to all log sinks.
@@ -265,11 +263,11 @@ private:
 
 
 /// Usage: LOG_ERROR("%1, we have a problem", "Houston");
-#define LOG_FATAL(...)    Log::getOrCreateLog().log(LogLevel::Fatal,    __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_ERROR(...)    Log::getOrCreateLog().log(LogLevel::Error,    __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_WARN(...)     Log::getOrCreateLog().log(LogLevel::Warning,  __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_MSG(...)      Log::getOrCreateLog().log(LogLevel::Default,  __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_VERBOSE(...)  Log::getOrCreateLog().log(LogLevel::Verbose1, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_VERBOSE2(...) Log::getOrCreateLog().log(LogLevel::Verbose2, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_FATAL(...)             Log::getOrCreateLog().log(LogLevel::Fatal,    __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_ERROR(...)             Log::getOrCreateLog().log(LogLevel::Error,    __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_WARN(...)              Log::getOrCreateLog().log(LogLevel::Warning,  __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_MSG(...)               Log::getOrCreateLog().log(LogLevel::Default,  __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_VERBOSE(...)           Log::getOrCreateLog().log(LogLevel::Verbose1, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_VERBOSE2(...)          Log::getOrCreateLog().log(LogLevel::Verbose2, __FILE__, __LINE__, __VA_ARGS__)
 
-#define LOG_SEPARATE(name, ...) SeparateLogger::getOrCreateLog(name).log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_SEPARATE(name, ...)    SeparateLogger::getOrCreateLog(name).log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)

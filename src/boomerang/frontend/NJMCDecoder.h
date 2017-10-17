@@ -173,22 +173,22 @@ bool isFuncPrologue(Address hostPC);
 // Macros for branches. Note: don't put inside a "match" statement, since
 // the ordering is changed and multiple copies may be made
 
-#define COND_JUMP(name, size, relocd, cond)          \
-    result.rtl = new RTL(pc, stmts);                 \
-    BranchStatement *jump = new BranchStatement;     \
-    result.rtl->appendStmt(jump);                    \
-    result.numBytes = size;                          \
+#define COND_JUMP(name, size, relocd, cond)                                    \
+    result.rtl = new RTL(pc, stmts);                                           \
+    BranchStatement *jump = new BranchStatement;                               \
+    result.rtl->appendStmt(jump);                                              \
+    result.numBytes = size;                                                    \
     jump->setDest(Address(relocd.value() - Util::signExtend<int64_t>(delta))); \
-    jump->setCondType(cond);                         \
+    jump->setCondType(cond);                                                   \
     SHOW_ASM(name << " " << relocd)
 
 // This one is X86 specific
-#define SETS(name, dest, cond)               \
-    BoolAssign * bs = new BoolAssign(8);     \
-    bs->setLeftFromList(stmts);              \
-    stmts->clear();                          \
-    result.rtl = new RTL(pc, stmts);         \
-    result.rtl->appendStmt(bs);              \
-    bs->setCondType(cond);                   \
-    result.numBytes = 3;                     \
+#define SETS(name, dest, cond)           \
+    BoolAssign * bs = new BoolAssign(8); \
+    bs->setLeftFromList(stmts);          \
+    stmts->clear();                      \
+    result.rtl = new RTL(pc, stmts);     \
+    result.rtl->appendStmt(bs);          \
+    bs->setCondType(cond);               \
+    result.numBytes = 3;                 \
     SHOW_ASM(name << " " << dest)

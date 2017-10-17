@@ -35,8 +35,10 @@
 struct SharedTypeWrapper
 {
 public:
-    SharedTypeWrapper() : ty(nullptr) {}
-    SharedTypeWrapper(SharedType _ty) : ty(_ty) {}
+    SharedTypeWrapper()
+        : ty(nullptr) {}
+    SharedTypeWrapper(SharedType _ty)
+        : ty(_ty) {}
 
     SharedType operator->() { return ty; }
     SharedType operator*() { return ty; }
@@ -59,16 +61,15 @@ void DfaTest::initTestCase()
 
 void DfaTest::testMeet()
 {
-
     QFETCH(SharedTypeWrapper, firstOp);
     QFETCH(SharedTypeWrapper, secondOp);
     QFETCH(SharedTypeWrapper, tgtResult);
 
-    SharedType oldFirstOp = firstOp->clone();
+    SharedType oldFirstOp  = firstOp->clone();
     SharedType oldSecondOp = secondOp->clone();
 
-    bool changed = false;
-    SharedType result = firstOp->meetWith(secondOp, changed, false);
+    bool       changed = false;
+    SharedType result  = firstOp->meetWith(secondOp, changed, false);
     QCOMPARE(*result, *(tgtResult.ty)); // we are just comparing types here, not variable names
     QCOMPARE(changed, result->getCtype() != firstOp->getCtype());
 
@@ -76,6 +77,7 @@ void DfaTest::testMeet()
     QCOMPARE(*(firstOp.ty), *oldFirstOp);
     QCOMPARE(*(secondOp.ty), *oldSecondOp);
 }
+
 
 #define TEST_MEET(name, firstOp, secondOp, result) \
     QTest::newRow(name) << SharedTypeWrapper(firstOp) << SharedTypeWrapper(secondOp) << SharedTypeWrapper(result)
@@ -142,5 +144,6 @@ void DfaTest::testMeet_data()
     TEST_MEET("f32 M v",   FloatType::get(32), VoidType::get(),    FloatType::get(32));
     TEST_MEET("f32 M f64", FloatType::get(32), FloatType::get(64), FloatType::get(64)); // Maybe this should result in a union
 }
+
 
 QTEST_MAIN(DfaTest)

@@ -21,12 +21,12 @@ template<typename T>
 class IntervalSet
 {
 public:
-    typedef typename std::set<Interval<T>, std::less<Interval<T>>> Data;
+    typedef typename std::set<Interval<T>, std::less<Interval<T> > >   Data;
 
-    typedef typename Data::iterator iterator;
-    typedef typename Data::const_iterator const_iterator;
-    typedef typename Data::reverse_iterator reverse_iterator;
-    typedef typename Data::const_reverse_iterator const_reverse_iterator;
+    typedef typename Data::iterator                                    iterator;
+    typedef typename Data::const_iterator                              const_iterator;
+    typedef typename Data::reverse_iterator                            reverse_iterator;
+    typedef typename Data::const_reverse_iterator                      const_reverse_iterator;
 
 public:
     IntervalSet() {}
@@ -57,7 +57,7 @@ public:
     const_iterator begin() const { return m_data.begin(); }
     const_iterator end()   const { return m_data.end(); }
     reverse_iterator rbegin() { return m_data.rbegin(); }
-    reverse_iterator rend()   { return m_data.rend();   }
+    reverse_iterator rend()   { return m_data.rend(); }
     const_reverse_iterator rbegin() const { return m_data.rbegin(); }
     const_reverse_iterator rend() const { return m_data.rend(); }
 
@@ -77,7 +77,7 @@ public:
 
         // todo: speed up
         for (iterator it = begin(); it != end(); it++) {
-            if (itLower == end() && it->upper() > interval.lower()) {
+            if ((itLower == end()) && (it->upper() > interval.lower())) {
                 itLower = it;
             }
 
@@ -102,7 +102,8 @@ public:
         }
 
         const_iterator it = std::lower_bound(m_data.begin(), m_data.end(), value);
-        if (it != end() && it->isContained(value)) {
+
+        if ((it != end()) && it->isContained(value)) {
             return true;
         }
         else if (it == m_data.begin()) {

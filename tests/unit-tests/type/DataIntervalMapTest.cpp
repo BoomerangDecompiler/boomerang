@@ -35,6 +35,7 @@ void DataIntervalMapTest::testIsClear()
     QVERIFY(dim.isClear(Address(0x1004), Address(0x1010)));
 }
 
+
 void DataIntervalMapTest::testFind()
 {
     DataIntervalMap dim;
@@ -59,6 +60,7 @@ void DataIntervalMapTest::testFind()
 void DataIntervalMapTest::testInsert()
 {
     DataIntervalMap dim;
+
     DataIntervalMap::iterator it = dim.insertItem(Address(0x1000), "first", IntegerType::get(32, 1));
 
     const TypedVariable& var = it->second;
@@ -77,5 +79,6 @@ void DataIntervalMapTest::testInsert()
     QVERIFY(it2 != dim.end());
     QCOMPARE(dim.prints(), "0x00001002-0x00001006 second int\n");
 }
+
 
 QTEST_MAIN(DataIntervalMapTest)

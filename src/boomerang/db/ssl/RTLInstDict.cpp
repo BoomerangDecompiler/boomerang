@@ -74,7 +74,6 @@ int TableEntry::appendRTL(std::list<QString>& p, RTL& r)
 }
 
 
-
 RTLInstDict::RTLInstDict()
 {
 }
@@ -301,7 +300,7 @@ bool RTLInstDict::partialType(Exp *exp, Type& ty)
 
 
 std::list<Statement *> *RTLInstDict::instantiateRTL(const QString& name, Address natPC,
-                                                      const std::vector<SharedExp>& actuals)
+                                                    const std::vector<SharedExp>& actuals)
 {
     QTextStream q_cerr(stderr);
     // If -f is in force, use the fast (but not as precise) name instead
@@ -323,7 +322,7 @@ std::list<Statement *> *RTLInstDict::instantiateRTL(const QString& name, Address
 
 
 std::list<Statement *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std::list<QString>& params,
-                                                      const std::vector<SharedExp>& actuals)
+                                                    const std::vector<SharedExp>& actuals)
 {
     Q_UNUSED(natPC);
     assert(params.size() == actuals.size());
@@ -369,14 +368,14 @@ std::list<Statement *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std
 /* Small struct for transformPostVars */
 struct transPost
 {
-    bool used; // If the base expression (e.g. r[0]) is used
+    bool       used; // If the base expression (e.g. r[0]) is used
     // Important because if not, we don't have to make any
     // substitutions at all
-    bool isNew;      // Not sure (MVE)
-    SharedExp tmp;   // The temp to replace r[0]' with
-    SharedExp post;  // The whole postvar expression. e.g. r[0]'
-    SharedExp base;  // The base expression (e.g. r[0])
-    SharedType type; // The type of the temporary (needed for the final assign)
+    bool       isNew; // Not sure (MVE)
+    SharedExp  tmp;   // The temp to replace r[0]' with
+    SharedExp  post;  // The whole postvar expression. e.g. r[0]'
+    SharedExp  base;  // The base expression (e.g. r[0])
+    SharedType type;  // The type of the temporary (needed for the final assign)
 };
 
 

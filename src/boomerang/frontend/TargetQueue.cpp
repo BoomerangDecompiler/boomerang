@@ -31,6 +31,7 @@ void TargetQueue::visit(Cfg *pCfg, Address uNewAddr, BasicBlock *& pNewBB)
     }
 }
 
+
 void TargetQueue::initial(Address uAddr)
 {
     targets.push(uAddr);
@@ -64,6 +65,6 @@ void TargetQueue::dump()
     while (!copy.empty()) {
         Address a = copy.front();
         copy.pop();
-        LOG_MSG("  %1,",a);
+        LOG_MSG("  %1,", a);
     }
 }

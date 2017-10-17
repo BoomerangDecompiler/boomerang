@@ -14,8 +14,8 @@
 
 
 /***************************************************************************/ /**
-* class TypeVal. Just a Terminal with a Type. Used for type values in constraints
-* ==============================================================================*/
+ * class TypeVal. Just a Terminal with a Type. Used for type values in constraints
+ * ==============================================================================*/
 class TypeVal : public Terminal
 {
 public:

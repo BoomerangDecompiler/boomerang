@@ -32,7 +32,7 @@
     ((unsigned)((Byte *)(&x))[3] + ((unsigned)((Byte *)(&x))[2] << 8) + ((unsigned)((Byte *)(&x))[1] << 16) + \
      ((unsigned)((Byte *)(&x))[0] << 24))
 // With this one, x IS a pounsigneder
-#define _BMMH2(x)                                                                                           \
+#define _BMMH2(x)                                                                                          \
     ((unsigned)((Byte *)(x))[3] + ((unsigned)((Byte *)(x))[2] << 8) + ((unsigned)((Byte *)(x))[1] << 16) + \
      ((unsigned)((Byte *)(x))[0] << 24))
 
@@ -55,7 +55,7 @@ class ObjcMethod
 {
 public:
     QString name, types;
-       Address addr;
+    Address addr;
 };
 
 

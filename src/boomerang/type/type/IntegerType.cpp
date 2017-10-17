@@ -62,7 +62,7 @@ bool IntegerType::operator<(const Type& other) const
         return false;
     }
 
-    return (signedness < ((IntegerType&)other).signedness);
+    return(signedness < ((IntegerType&)other).signedness);
 }
 
 

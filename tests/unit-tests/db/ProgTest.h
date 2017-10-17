@@ -23,8 +23,8 @@ class ProgTest : public QObject
 
 private slots:
     /// Test setting and reading name
-	void testName();
+    void testName();
 
 private:
-	Prog *m_prog;
+    Prog *m_prog;
 };

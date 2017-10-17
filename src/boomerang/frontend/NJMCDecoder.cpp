@@ -123,8 +123,8 @@ void NJMCDecoder::substituteCallArgs(char *name, SharedExp *exp, const std::init
         return;
     }
 
-    ParamEntry& ent = m_rtlDict.DetParamMap[name];
-    auto arg_iter = args.begin();
+    ParamEntry& ent      = m_rtlDict.DetParamMap[name];
+    auto        arg_iter = args.begin();
 
     for (auto& elem : ent.m_funcParams) {
         Location  formal(opParam, Const::get(elem), nullptr);

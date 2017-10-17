@@ -99,17 +99,17 @@ public:
     static SharedType getNamedType(const QString& name);
 
     /***************************************************************************/ /**
-    * \brief   Given the name of a temporary variable, return its Type
-    * \param   name reference to a string (e.g. "tmp", "tmpd")
-    * \returns Ptr to a new Type object
-    ******************************************************************************/
+     * \brief   Given the name of a temporary variable, return its Type
+     * \param   name reference to a string (e.g. "tmp", "tmpd")
+     * \returns Ptr to a new Type object
+     ******************************************************************************/
     static SharedType getTempType(const QString& name);
 
     /***************************************************************************/ /**
-    * \brief        static Constructor from string
-    * \param        str string to parse
-    * \returns      constructed type.
-    ******************************************************************************/
+     * \brief        static Constructor from string
+     * \param        str string to parse
+     * \returns      constructed type.
+     ******************************************************************************/
     static SharedType parseType(const char *str); // parse a C type
 
     /// \returns true if this type is a (const) char* pointer or char array.
@@ -166,10 +166,10 @@ public:
     virtual bool operator<(const Type& other) const = 0;  ///< Considers sign
 
     /***************************************************************************/ /**
-    * \brief        Match operation.
-    * \param        pattern - Type to match
-    * \returns            Exp list of bindings if match or nullptr
-    ******************************************************************************/
+     * \brief        Match operation.
+     * \param        pattern - Type to match
+     * \returns            Exp list of bindings if match or nullptr
+     ******************************************************************************/
     virtual SharedExp match(SharedType pattern);
 
     // Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
@@ -205,12 +205,12 @@ public:
     static void dumpNames();             // For debugging
 
     /***************************************************************************/ /**
-    * \brief  Return a minimal temporary name for this type. It'd be even
-    *          nicer to return a unique name, but we don't know scope at
-    *          this point, and even so we could still clash with a user-defined
-    *          name later on :(
-    * \returns        a string
-    ******************************************************************************/
+     * \brief  Return a minimal temporary name for this type. It'd be even
+     *          nicer to return a unique name, but we don't know scope at
+     *          this point, and even so we could still clash with a user-defined
+     *          name later on :(
+     * \returns        a string
+     ******************************************************************************/
     virtual QString getTempName() const; // Get a temporary name for the type
 
     // Clear the named type map. This is necessary when testing; the

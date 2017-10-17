@@ -22,7 +22,7 @@
 
 #include <iostream>
 
-static Prog* prog;
+static Prog *prog;
 
 
 Console::Console()
@@ -46,7 +46,7 @@ Console::Console()
 CommandStatus Console::handleCommand(const QString& commandWithArgs)
 {
     QStringList args;
-    QString command;
+    QString     command;
 
     if (!commandSucceeded(splitCommand(commandWithArgs, command, args))) {
         return CommandStatus::Failure;
@@ -65,14 +65,15 @@ CommandStatus Console::replayFile(const QString& replayFile)
 
     // replay commands in file
     QFile file(replayFile);
+
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         std::cerr << "Cannot open replay file!\n";
         return CommandStatus::Failure;
     }
 
     // execute commands until the first failure
-    QString line;
-    QTextStream ist(&file);
+    QString       line;
+    QTextStream   ist(&file);
     CommandStatus lastResult = CommandStatus::Success;
 
     while (!ist.atEnd()) {
@@ -84,6 +85,7 @@ CommandStatus Console::replayFile(const QString& replayFile)
             if (lastResult != CommandStatus::ExitProgram) {
                 std::cerr << "Stopping replay due to command failure." << std::endl;
             }
+
             break;
         }
     }
@@ -102,19 +104,22 @@ CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mai
 
     // find first whitespace
     while (i < command.size() && command[i] != ' ') {
-        if (command[i] == '\"') { return CommandStatus::ParseError; } // quotation marks in commands are not allowed
+        if (command[i] == '\"') {
+            return CommandStatus::ParseError;
+        }                                                             // quotation marks in commands are not allowed
+
         i++;
     }
 
     mainCommand = QStringRef(&command, 0, i).toString();
 
     /// extract arguments
-    int lastSeparator = i; // position of last space ' ' not within quotation marks
+    int  lastSeparator = i; // position of last space ' ' not within quotation marks
     bool isInQuotation = false;
 
     while (i < command.size()) {
         while (++i < command.size()) {
-            if (command[i] == '\"' && command[i-1] != '\\') {
+            if ((command[i] == '\"') && (command[i - 1] != '\\')) {
                 isInQuotation = !isInQuotation;
             }
             else if (command[i] == ' ') {
@@ -124,12 +129,14 @@ CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mai
             }
         }
 
-        if (isInQuotation) { return CommandStatus::ParseError; } // missing closing "
+        if (isInQuotation) {
+            return CommandStatus::ParseError;
+        }                                                                 // missing closing "
 
-        const bool argIsQuoted  = (command[lastSeparator+1] == '\"'); // Were we in a quotation before?
-        const int posBegin = lastSeparator + (argIsQuoted ? 2 : 1);
-        const int posEnd   = i             - (argIsQuoted ? 2 : 1);
-        const QString arg = command.mid(posBegin, posEnd - posBegin +1);
+        const bool    argIsQuoted = (command[lastSeparator + 1] == '\"'); // Were we in a quotation before?
+        const int     posBegin    = lastSeparator + (argIsQuoted ? 2 : 1);
+        const int     posEnd      = i - (argIsQuoted ? 2 : 1);
+        const QString arg         = command.mid(posBegin, posEnd - posBegin + 1);
 
         args.push_back(arg);
         lastSeparator = i;
@@ -143,18 +150,41 @@ CommandStatus Console::processCommand(const QString& command, const QStringList&
 {
     switch (commandNameToType(command))
     {
-    case CT_decode:    return handleDecode(args);
-    case CT_decompile: return handleDecompile(args);
-    case CT_codegen:   return handleCodegen(args);
-    case CT_replay:    return handleReplay(args);
-    case CT_move:      return handleMove(args);
-    case CT_add:       return handleAdd(args);
-    case CT_delete:    return handleDelete(args);
-    case CT_rename:    return handleRename(args);
-    case CT_info:      return handleInfo(args);
-    case CT_print:     return handlePrint(args);
-    case CT_exit:      return handleExit(args);
-    case CT_help:      return handleHelp(args);
+    case CT_decode:
+        return handleDecode(args);
+
+    case CT_decompile:
+        return handleDecompile(args);
+
+    case CT_codegen:
+        return handleCodegen(args);
+
+    case CT_replay:
+        return handleReplay(args);
+
+    case CT_move:
+        return handleMove(args);
+
+    case CT_add:
+        return handleAdd(args);
+
+    case CT_delete:
+        return handleDelete(args);
+
+    case CT_rename:
+        return handleRename(args);
+
+    case CT_info:
+        return handleInfo(args);
+
+    case CT_print:
+        return handlePrint(args);
+
+    case CT_exit:
+        return handleExit(args);
+
+    case CT_help:
+        return handleHelp(args);
 
     default:
         std::cerr << "Unrecognized command '" << command.toStdString() << "', try 'help'" << std::endl;
@@ -222,13 +252,13 @@ CommandStatus Console::handleDecompile(const QStringList& args)
                 return CommandStatus::Failure;
             }
 
-            UserProc* userProc = dynamic_cast<UserProc*>(proc);
+            UserProc *userProc = dynamic_cast<UserProc *>(proc);
             assert(userProc != nullptr);
 
             procSet.insert(userProc);
         }
 
-        for (UserProc* userProc : procSet) {
+        for (UserProc *userProc : procSet) {
             int indent = 0;
             userProc->decompile(new ProcList, indent);
         }
@@ -249,10 +279,11 @@ CommandStatus Console::handleCodegen(const QStringList& args)
         Boomerang::get()->getCodeGenerator()->generateCode(prog);
     }
     else {
-        std::set<Module*> modules;
+        std::set<Module *> modules;
 
         for (QString name : args) {
-            Module* module = prog->findModule(name);
+            Module *module = prog->findModule(name);
+
             if (!module) {
                 std::cerr << "Cannot find module '" << name.toStdString() << "'\n";
                 return CommandStatus::Failure;
@@ -261,7 +292,7 @@ CommandStatus Console::handleCodegen(const QStringList& args)
             modules.insert(module);
         }
 
-        for (Module* mod : modules) {
+        for (Module *mod : modules) {
             Boomerang::get()->getCodeGenerator()->generateCode(prog, mod);
         }
     }
@@ -363,14 +394,15 @@ CommandStatus Console::handleAdd(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Module* parent = (args.size() > 2) ? prog->findModule(args[2]) : prog->getRootModule();
+        Module *parent = (args.size() > 2) ? prog->findModule(args[2]) : prog->getRootModule();
+
         if (!parent) {
             std::cerr << "Cannot find parent module." << std::endl;
             return CommandStatus::Failure;
         }
         else {
             for (size_t i = 0; i < parent->getNumChildren(); i++) {
-                Module* existingChild = parent->getChild(i);
+                Module *existingChild = parent->getChild(i);
                 assert(existingChild);
 
                 if (existingChild->getName() == args[1]) {
@@ -381,7 +413,7 @@ CommandStatus Console::handleAdd(const QStringList& args)
             }
         }
 
-        Module* module = prog->createModule(args[1], parent);
+        Module *module = prog->createModule(args[1], parent);
 
         if (module == nullptr) {
             std::cerr << "Cannot create module " << args[1].toStdString() << std::endl;
@@ -434,6 +466,7 @@ CommandStatus Console::handleDelete(const QStringList& args)
             assert(module->getUpstream());
             module->getUpstream()->removeChild(module);
         }
+
         return CommandStatus::Success;
     }
     else {
@@ -456,7 +489,7 @@ CommandStatus Console::handleRename(const QStringList& args)
 
     if (args[0] == "proc") {
         if (args.size() < 3) {
-            std::cerr  << "Not enough arguments for cmd" << std::endl;
+            std::cerr << "Not enough arguments for cmd" << std::endl;
             return CommandStatus::Failure;
         }
 
@@ -525,12 +558,13 @@ CommandStatus Console::handleInfo(const QStringList& args)
         prog->getRootModule()->printTree(ost);
 
 
-        std::list<const Function*> libFunctions;
-        std::list<const Function*> userFunctions;
+        std::list<const Function *> libFunctions;
+        std::list<const Function *> userFunctions;
 
         const Prog::ModuleList& modules = prog->getModuleList();
-        for (const Module* module : modules) {
-            for (const Function* function : *module) {
+
+        for (const Module *module : modules) {
+            for (const Function *function : *module) {
                 if (function->isLib()) {
                     libFunctions.push_back(function);
                 }
@@ -541,13 +575,15 @@ CommandStatus Console::handleInfo(const QStringList& args)
         }
 
         ost << "\n\tLibrary functions:\n";
-        for (const Function* function : libFunctions) {
+
+        for (const Function *function : libFunctions) {
             ost << "\t\t" << function->getParent()->getName() << "::" << function->getName() << "\n";
         }
 
         ost << "\n\tUser functions:\n";
-        for (const Function* function : userFunctions) {
-            ost <<  "\t\t" << function->getParent()->getName() << "::" << function->getName() << "\n";
+
+        for (const Function *function : userFunctions) {
+            ost << "\t\t" << function->getParent()->getName() << "::" << function->getName() << "\n";
         }
 
         ost << "\n";
@@ -561,6 +597,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
         }
 
         Module *module = prog->findModule(args[1]);
+
         if (module == nullptr) {
             std::cerr << "Cannot find module " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
@@ -593,6 +630,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
         }
 
         Function *proc = prog->findProc(args[1]);
+
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
@@ -658,7 +696,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
                 return CommandStatus::Failure;
             }
 
-            UserProc* userProc = dynamic_cast<UserProc*>(proc);
+            UserProc *userProc = dynamic_cast<UserProc *>(proc);
             assert(userProc != nullptr);
 
             QTextStream outStream(stdout);
@@ -666,6 +704,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
             outStream << "\n";
             outStream.flush();
         }
+
         return CommandStatus::Success;
     }
     else if (args[0] == "callgraph") {
@@ -684,8 +723,10 @@ CommandStatus Console::handlePrint(const QStringList& args)
         }
         else {
             ProcSet procs;
+
             for (int i = 1; i < args.size(); i++) {
-                Function* proc = prog->findProc(args[i]);
+                Function *proc = prog->findProc(args[i]);
+
                 if (!proc) {
                     std::cerr << "Procedure '" << args[i].toStdString() << "' not found.";
                     return CommandStatus::Failure;
@@ -695,7 +736,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
                     return CommandStatus::Failure;
                 }
 
-                UserProc* userProc = dynamic_cast<UserProc*>(proc);
+                UserProc *userProc = dynamic_cast<UserProc *>(proc);
                 assert(userProc);
                 procs.insert(userProc);
             }
@@ -705,10 +746,11 @@ CommandStatus Console::handlePrint(const QStringList& args)
             QTextStream textStream(&outFile);
             textStream << "digraph cfg {\n";
 
-            for (UserProc* userProc : procs) {
+            for (UserProc *userProc : procs) {
                 textStream << "subgraph " << userProc->getName() << " {\n";
                 userProc->getCFG()->generateDotFile(textStream);
             }
+
             textStream << "}";
 
             return CommandStatus::Success;

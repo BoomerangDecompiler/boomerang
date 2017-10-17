@@ -33,16 +33,16 @@ struct PluginInfo
 class PluginHandle
 {
 public:
-    typedef void* Symbol;
+    typedef void *Symbol;
 
 public:
     PluginHandle(const QString& filePath);
     ~PluginHandle();
 
-    Symbol getSymbol(const char* name) const;
+    Symbol getSymbol(const char *name) const;
 
 private:
-    void* m_handle;
+    void *m_handle;
 };
 
 
@@ -65,9 +65,9 @@ private:
 template<typename IFC, PluginType ty = PluginType::Invalid>
 class Plugin
 {
-    using PluginInitFunction = IFC * (*)();
-    using PluginDeinitFunction = void(*)();
-    using PluginInfoFunction = const PluginInfo *(*)();
+    using PluginInitFunction   = IFC * (*)();
+    using PluginDeinitFunction = void (*)();
+    using PluginInfoFunction   = const PluginInfo * (*)();
 
 public:
     /// Create a plugin from a dynamic library file.
@@ -86,7 +86,7 @@ public:
     }
 
     /// Get information about the plugin.
-    const PluginInfo* getInfo() const
+    const PluginInfo *getInfo() const
     {
         return getFunction<PluginInfoFunction>("getInfo")();
     }
@@ -120,7 +120,7 @@ private:
     /// Given a non-mangled function name (e.g. initPlugin),
     /// get the function pointer for the function exported by this plugin.
     template<class FuncPtr>
-    FuncPtr getFunction(const char* name) const
+    FuncPtr getFunction(const char *name) const
     {
         PluginHandle::Symbol symbol = m_pluginHandle.getSymbol(name);
 
@@ -134,37 +134,37 @@ private:
 
 private:
     PluginHandle m_pluginHandle; ///< handle to the dynamic library
-    IFC *m_ifc;           ///< Interface pointer
+    IFC *m_ifc;                  ///< Interface pointer
 };
 
 
 /// Do not use this macro directly. Use the BOOMERANG_*_PLUGIN macros below instead.
-#define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor)   \
-    static Classname * g_pluginInstance = nullptr;                            \
-    extern "C" {                                                              \
-    Interface *initPlugin()                                                   \
-    {                                                                         \
-        if (!g_pluginInstance) {                                              \
-            g_pluginInstance = new Classname();                               \
-        }                                                                     \
-        return g_pluginInstance;                                              \
-    }                                                                         \
-                                                                              \
-    void deinitPlugin()                                                       \
-    {                                                                         \
-        delete g_pluginInstance;                                              \
-        g_pluginInstance = nullptr;                                           \
-    }                                                                         \
-                                                                              \
-    const PluginInfo *getInfo()                                               \
-    {                                                                         \
-        static PluginInfo info;                                               \
-        info.name    = PName;                                                 \
-        info.version = PVersion;                                              \
-        info.author  = PAuthor;                                               \
-        info.type    = Type;                                                  \
-        return &info;                                                         \
-    }                                                                         \
+#define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor) \
+    static Classname * g_pluginInstance = nullptr;                          \
+    extern "C" {                                                            \
+    Interface *initPlugin()                                                 \
+    {                                                                       \
+        if (!g_pluginInstance) {                                            \
+            g_pluginInstance = new Classname();                             \
+        }                                                                   \
+        return g_pluginInstance;                                            \
+    }                                                                       \
+                                                                            \
+    void deinitPlugin()                                                     \
+    {                                                                       \
+        delete g_pluginInstance;                                            \
+        g_pluginInstance = nullptr;                                         \
+    }                                                                       \
+                                                                            \
+    const PluginInfo *getInfo()                                             \
+    {                                                                       \
+        static PluginInfo info;                                             \
+        info.name    = PName;                                               \
+        info.version = PVersion;                                            \
+        info.author  = PAuthor;                                             \
+        info.type    = Type;                                                \
+        return &info;                                                       \
+    }                                                                       \
     }
 
 

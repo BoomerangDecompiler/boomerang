@@ -101,7 +101,6 @@ public:
     /// \copydoc IFileLoader::getEntryPoint
     Address getEntryPoint() override;
 
-
 private:
     ExeHeader *m_header;  ///< Pointer to header
     Byte *m_loadedImage;  ///< Pointer to image buffer

@@ -68,20 +68,20 @@ public:
     // Do the work of simplifying this expression
 
     /***************************************************************************/ /**
-    * \brief        Do the work of simplification
-    * \note         User must ;//delete result
-    * \note         Address simplification (a[ m[ x ]] == x) is done separately
-    * \returns      Ptr to the simplified expression
-    ******************************************************************************/
+     * \brief        Do the work of simplification
+     * \note         User must ;//delete result
+     * \note         Address simplification (a[ m[ x ]] == x) is done separately
+     * \returns      Ptr to the simplified expression
+     ******************************************************************************/
     virtual SharedExp polySimplify(bool& bMod) override;
     SharedExp simplifyArith() override;
 
     /***************************************************************************/ /**
-    * \brief        Just do addressof simplification: a[ m[ any ]] == any, m[ a[ any ]] = any, and also
-    *               a[ size m[ any ]] == any
-    * \todo         Replace with a visitor some day
-    * \returns      Ptr to the simplified expression
-    ******************************************************************************/
+     * \brief        Just do addressof simplification: a[ m[ any ]] == any, m[ a[ any ]] = any, and also
+     *               a[ size m[ any ]] == any
+     * \todo         Replace with a visitor some day
+     * \returns      Ptr to the simplified expression
+     ******************************************************************************/
     SharedExp simplifyAddr() override;
     virtual SharedExp simplifyConstraint() override;
 

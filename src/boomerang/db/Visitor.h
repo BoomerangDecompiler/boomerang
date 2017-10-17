@@ -158,7 +158,6 @@ public:
 
 private:
     UserProc *proc; ///< The result (or nullptr)
-
 };
 
 
@@ -183,7 +182,6 @@ private:
     int m_curConscript;
     bool m_bInLocalGlobal; // True when inside a local or global
     bool m_bClear;         // True when clearing, not setting
-
 };
 
 
@@ -616,6 +614,7 @@ public:
     bool isMemOnly() { return m_memOnly; }
 
     bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
+
     // Add used locations finder
     bool visit(const std::shared_ptr<Location>& e, bool& override) override;
     bool visit(const std::shared_ptr<Terminal>& e) override;
@@ -943,7 +942,6 @@ public:
 
 class TempToLocalMapper : public ExpVisitor
 {
-
 public:
     TempToLocalMapper(UserProc *p)
         : proc(p) {}

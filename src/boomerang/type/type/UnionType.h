@@ -36,8 +36,8 @@ struct hashUnionElem
 class UnionType : public Type
 {
 public:
-    typedef std::unordered_set<UnionElement, hashUnionElem> UnionEntrySet;
-    typedef UnionEntrySet::iterator ilUnionElement;
+    typedef std::unordered_set<UnionElement, hashUnionElem>   UnionEntrySet;
+    typedef UnionEntrySet::iterator                           ilUnionElement;
 
 public:
     /// Create a new empty union type.

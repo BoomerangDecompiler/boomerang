@@ -69,30 +69,30 @@ class IFrontEnd
 {
 public:
     /***************************************************************************/ /**
-    * \brief      Construct the FrontEnd object
-    * \param loader pointer to the Loader
-    * \param prog program being decoded
-    ******************************************************************************/
+     * \brief      Construct the FrontEnd object
+     * \param loader pointer to the Loader
+     * \param prog program being decoded
+     ******************************************************************************/
     IFrontEnd(IFileLoader *loader, Prog *prog);
 
     virtual ~IFrontEnd();
 
     /***************************************************************************/ /**
-    * \brief Create from a binary file
-    * Static function to instantiate an appropriate concrete front end
-    * \param loader pointer to the loader object
-    * \param prog program being decoded
-    ******************************************************************************/
+     * \brief Create from a binary file
+     * Static function to instantiate an appropriate concrete front end
+     * \param loader pointer to the loader object
+     * \param prog program being decoded
+     ******************************************************************************/
     static IFrontEnd *instantiate(IFileLoader *loader, Prog *prog);
 
     /***************************************************************************/ /**
-    * \brief Create FrontEnd instance given \a fname and \a prog
-    *
-    * \param fname string with full path to decoded file
-    * \param prog program being decoded
-    * \returns Binary-specific frontend.
-    ******************************************************************************/
-    static IFrontEnd *create(const QString& fname, Prog *prog, IProject* project);
+     * \brief Create FrontEnd instance given \a fname and \a prog
+     *
+     * \param fname string with full path to decoded file
+     * \param prog program being decoded
+     * \returns Binary-specific frontend.
+     ******************************************************************************/
+    static IFrontEnd *create(const QString& fname, Prog *prog, IProject *project);
 
     /// Is this a win32 frontend?
     bool isWin32() const;
@@ -139,10 +139,10 @@ public:
 
 
     /***************************************************************************/ /**
-    * \brief       Read the library signatures from a file
-    * \param       signatureFile The path to the file containing the signatures
-    * \param       cc the calling convention assumed
-    ******************************************************************************/
+     * \brief       Read the library signatures from a file
+     * \param       signatureFile The path to the file containing the signatures
+     * \param       cc the calling convention assumed
+     ******************************************************************************/
     void readLibrarySignatures(const char *signatureFile, CallConv cc);
     void readLibraryCatalog(const QString& sPath);              ///< read from a catalog
     void readLibraryCatalog();                                  ///< read from default catalog
@@ -165,23 +165,23 @@ public:
 
 
     /***************************************************************************/ /**
-    * \brief      Process a procedure, given a native (source machine) address.
-    *
-    * This is the main function for decoding a procedure. It is usually overridden in the derived
-    * class to do source machine specific things.  If frag is set, we are decoding just a fragment of the proc
-    * (e.g. each arm of a switch statement is decoded). If spec is set, this is a speculative decode.
-    *
-    * \param addr - the address at which the procedure starts
-    * \param proc - the procedure object
-    * \param os   - the output stream for .rtl output
-    * \param frag - if true, this is just a fragment of a procedure
-    * \param spec - if true, this is a speculative decode
-    *
-    * \note This is a sort of generic front end. For many processors, this will be overridden
-    *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
-    *
-    * \returns          true for a good decode (no illegal instructions)
-    ******************************************************************************/
+     * \brief      Process a procedure, given a native (source machine) address.
+     *
+     * This is the main function for decoding a procedure. It is usually overridden in the derived
+     * class to do source machine specific things.  If frag is set, we are decoding just a fragment of the proc
+     * (e.g. each arm of a switch statement is decoded). If spec is set, this is a speculative decode.
+     *
+     * \param addr - the address at which the procedure starts
+     * \param proc - the procedure object
+     * \param os   - the output stream for .rtl output
+     * \param frag - if true, this is just a fragment of a procedure
+     * \param spec - if true, this is a speculative decode
+     *
+     * \note This is a sort of generic front end. For many processors, this will be overridden
+     *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
+     *
+     * \returns          true for a good decode (no illegal instructions)
+     ******************************************************************************/
     virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false);
 
     /**
@@ -205,21 +205,21 @@ public:
     static void closeInstance(void *dlHandle); ///< Close the library opened by getInstanceFor
 
     /***************************************************************************/ /**
-    * \brief    Get a Prog object (mainly for testing and not decoding)
-    * \returns  Pointer to a Prog object (with pFE and pBF filled in)
-    ******************************************************************************/
+     * \brief    Get a Prog object (mainly for testing and not decoding)
+     * \returns  Pointer to a Prog object (with pFE and pBF filled in)
+     ******************************************************************************/
     Prog *getProg();
 
 
     /***************************************************************************/ /**
-    * \brief    Create a Return or a Oneway BB if a return statement already exists
-    * \param    pProc pointer to enclosing UserProc
-    * \param    BB_rtls list of RTLs for the current BB (not including pRtl)
-    * \param    pRtl pointer to the current RTL with the semantics for the return statement (including a
-    *           ReturnStatement as the last statement)
-    *
-    * \returns  Pointer to the newly created BB
-    ******************************************************************************/
+     * \brief    Create a Return or a Oneway BB if a return statement already exists
+     * \param    pProc pointer to enclosing UserProc
+     * \param    BB_rtls list of RTLs for the current BB (not including pRtl)
+     * \param    pRtl pointer to the current RTL with the semantics for the return statement (including a
+     *           ReturnStatement as the last statement)
+     *
+     * \returns  Pointer to the newly created BB
+     ******************************************************************************/
     BasicBlock *createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl);
 
     /**
@@ -249,7 +249,7 @@ protected:
     IBinaryImage *m_image;
     IDecoder *m_decoder; ///< The decoder
     IFileLoader *m_fileLoader;
-    Prog *m_program;          ///< The Prog object
+    Prog *m_program;     ///< The Prog object
 
     /// The queue of addresses still to be processed
     TargetQueue m_targetQueue;

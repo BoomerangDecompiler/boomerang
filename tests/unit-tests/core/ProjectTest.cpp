@@ -13,7 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 
-#define HELLO_CLANG4   (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-dynamic")
+#define HELLO_CLANG4    (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-dynamic")
 
 void ProjectTest::initTestCase()
 {
@@ -24,6 +24,7 @@ void ProjectTest::initTestCase()
 void ProjectTest::testLoadBinaryFile()
 {
     Project project;
+
     QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
     QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
 
@@ -51,6 +52,7 @@ void ProjectTest::testWriteSaveFile()
 void ProjectTest::testIsBinaryLoaded()
 {
     Project project;
+
     project.loadBinaryFile(HELLO_CLANG4);
     QVERIFY(project.isBinaryLoaded());
 

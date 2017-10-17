@@ -39,7 +39,7 @@ public:
     bool containsAddress(Address addr) const;
 
     /// Get the initial value as an expression (or nullptr if not initialised)
-    SharedExp getInitialValue(const Prog* prog) const;
+    SharedExp getInitialValue(const Prog *prog) const;
 
 protected:
     Global();

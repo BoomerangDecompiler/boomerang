@@ -143,6 +143,7 @@ bool ImplicitAssign::accept(StmtPartModifier *v)
     return true;
 }
 
+
 void ImplicitAssign::dfaTypeAnalysis(bool& ch)
 {
     Assignment::dfaTypeAnalysis(ch);

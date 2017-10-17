@@ -28,6 +28,7 @@ public:
     {
         m_pathToBinary = value;
     }
+
     int resCode() { return m_result; }
 
 private:

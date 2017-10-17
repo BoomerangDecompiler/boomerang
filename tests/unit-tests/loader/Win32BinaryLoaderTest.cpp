@@ -17,7 +17,7 @@
 
 #include "boomerang/util/Log.h"
 
-#define SWITCH_BORLAND         (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
+#define SWITCH_BORLAND    (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
 
 void Win32BinaryLoaderTest::initTestCase()
 {
@@ -28,12 +28,14 @@ void Win32BinaryLoaderTest::initTestCase()
 void Win32BinaryLoaderTest::testWinLoad()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
+
     project.loadBinaryFile(SWITCH_BORLAND);
 
-	// Borland
-    IFileLoader* loader = project.getBestLoader(SWITCH_BORLAND);
-	QVERIFY(loader != nullptr);
-	QCOMPARE(loader->getMainEntryPoint(), Address(0x00401150));
+    // Borland
+    IFileLoader *loader = project.getBestLoader(SWITCH_BORLAND);
+    QVERIFY(loader != nullptr);
+    QCOMPARE(loader->getMainEntryPoint(), Address(0x00401150));
 }
+
 
 QTEST_MAIN(Win32BinaryLoaderTest)

@@ -33,7 +33,7 @@
 #include <ctime>
 
 
-static Boomerang* boomerang = nullptr;
+static Boomerang *boomerang = nullptr;
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
@@ -343,11 +343,11 @@ const char *Boomerang::getVersionStr()
 }
 
 
-IProject* Boomerang::getOrCreateProject()
+IProject *Boomerang::getOrCreateProject()
 {
     if (!m_currentProject) {
         m_currentProject = new Project;
     }
+
     return m_currentProject;
 }
-
