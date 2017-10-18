@@ -130,7 +130,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     # Reject Clang 3 and below
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.0)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.9)
         message(FATAL_ERROR "Your Clang version is too old.\n\
             Please upgrade Clang or select another compiler.")
     endif ()
