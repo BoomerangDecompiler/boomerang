@@ -134,7 +134,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
     // Allocate memory to hold the file
     m_loadedImage = (Byte *)img.data();
-    m_elfHeader = (Elf32_Ehdr *)img.data(); // Save a lot of casts
+    m_elfHeader   = (Elf32_Ehdr *)img.data(); // Save a lot of casts
 
     // Basic checks
     if ((m_elfHeader->e_ident[EI_MAGO] != ELFMAG0) ||
@@ -152,8 +152,14 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     // endianness
     switch (m_elfHeader->e_ident[EI_DATA])
     {
-    case ELFDATA2LSB: m_bigEndian = false; break;
-    case ELFDATA2MSB: m_bigEndian = true;  break;
+    case ELFDATA2LSB:
+        m_bigEndian = false;
+        break;
+
+    case ELFDATA2MSB:
+        m_bigEndian = true;
+        break;
+
     default:
         LOG_WARN("Unknown ELF Endianness %1, file may be corrupted.", m_elfHeader->e_ident[EI_DATA]);
         return false;
@@ -161,12 +167,14 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
     // Set up program header pointer (in case needed)
     const Elf32_Off phOffset = elfRead4(&m_elfHeader->e_phoff);
+
     if (phOffset > 0) {
         m_programHdrs = (Elf32_Phdr *)(m_loadedImage + phOffset);
     }
 
     // Set up section header pointer
     const Elf32_Off shOffset = elfRead4(&m_elfHeader->e_shoff);
+
     if (shOffset > 0) {
         m_sectionHdrs = (Elf32_Shdr *)(m_loadedImage + shOffset);
     }
@@ -180,7 +188,8 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
     // Set up section header string table pointer
     const Elf32_Half stringSectionIndex = elfRead2(&m_elfHeader->e_shstrndx);
-    if (stringSectionIndex > 0 && stringSectionIndex < numSections) {
+
+    if ((stringSectionIndex > 0) && (stringSectionIndex < numSections)) {
         m_strings = (const char *)(m_loadedImage + elfRead4(&m_sectionHdrs[stringSectionIndex].sh_offset));
     }
 
@@ -197,6 +206,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         }
 
         const char *sectionName = m_strings + elfRead4(&sectionHeader->sh_name);
+
         if ((Byte *)sectionName > m_loadedImage + m_loadedImageSize) {
             LOG_ERROR("Name for section %1 is outside the image size", i);
             return false;
@@ -212,6 +222,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         newSection.ReadOnly = false;
 
         Elf32_Off _off = elfRead4(&sectionHeader->sh_offset);
+
         if (_off) {
             newSection.imagePtr = HostAddress(m_loadedImage) + _off;
         }
@@ -219,7 +230,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         newSection.SourceAddr = Address(elfRead4(&sectionHeader->sh_addr));
         newSection.Size       = elfRead4(&sectionHeader->sh_size);
 
-        if (newSection.SourceAddr.isZero() && strncmp(sectionName, ".rel", 4) != 0) {
+        if (newSection.SourceAddr.isZero() && (strncmp(sectionName, ".rel", 4) != 0)) {
             const Elf32_Word align = elfRead4(&sectionHeader->sh_addralign);
 
             if (align > 1) {
@@ -228,8 +239,8 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
                 }
             }
 
-            newSection.SourceAddr   = arbitaryLoadAddr;
-            arbitaryLoadAddr += newSection.Size ? newSection.Size : 1;
+            newSection.SourceAddr = arbitaryLoadAddr;
+            arbitaryLoadAddr     += newSection.Size ? newSection.Size : 1;
         }
 
         newSection.sectionType = elfRead4(&sectionHeader->sh_type);
@@ -247,7 +258,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
         if (elfRead4(&sectionHeader->sh_flags) & SHF_EXECINSTR) {
             newSection.Code = true;
-            seenCode  = true; // We've got to a code section
+            seenCode        = true; // We've got to a code section
         }
 
         // Deciding what is data and what is not is actually quite tricky but important.
@@ -796,13 +807,13 @@ void ElfBinaryLoader::applyRelocations()
 
             if ((ps.sectionType != SHT_REL) && (ps.sectionType == SHT_RELA)) {
                 const Elf32_Rela *relaEntries = (const Elf32_Rela *)ps.imagePtr.value();
-                const DWord numEntries = ps.Size / sizeof(Elf32_Rela);
+                const DWord      numEntries   = ps.Size / sizeof(Elf32_Rela);
                 assert(ps.Size % sizeof(Elf32_Rela) == 0);
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
                 for (DWord u = 0; u < numEntries; u++) {
-                    Elf32_Byte relType     = ELF32_R_TYPE(elfRead4(&relaEntries[u].r_info));
+                    Elf32_Byte relType = ELF32_R_TYPE(elfRead4(&relaEntries[u].r_info));
 //                  Elf32_Word symTabIndex = ELF32_R_SYM(elfRead4(&relaEntries[u].r_info));
 
                     switch (relType)
@@ -828,6 +839,7 @@ void ElfBinaryLoader::applyRelocations()
         break; // Not implemented yet
 
     case EM_386:
+
         for (size_t i = 1; i < m_elfSections.size(); ++i) {
             const SectionParam& ps(m_elfSections[i]);
 
@@ -856,7 +868,7 @@ void ElfBinaryLoader::applyRelocations()
                 const Elf32_Sym *symOrigin    = (const Elf32_Sym *)m_elfSections[symSection].imagePtr.value();
 
                 const Elf32_Rel *relEntries = (const Elf32_Rel *)ps.imagePtr.value();
-                const DWord numEntries = ps.Size / sizeof(Elf32_Rel);
+                const DWord     numEntries  = ps.Size / sizeof(Elf32_Rel);
                 assert(ps.Size % sizeof(Elf32_Rel) == 0);
 
                 for (unsigned u = 0; u < numEntries; u++) {
@@ -865,6 +877,7 @@ void ElfBinaryLoader::applyRelocations()
                     const Elf32_Word symTabIndex = ELF32_R_SYM(elfRead4(&relEntries[i].r_info));
 
                     DWord *relocDestination; // Pointer to the word to be relocated
+
                     if (e_type == ET_REL) {
                         relocDestination = ((DWord *)(destHostOrigin + r_offset).value());
                     }
@@ -893,10 +906,12 @@ void ElfBinaryLoader::applyRelocations()
                                 S += m_elfSections[sectionIdx].SourceAddr;
                             }
                         }
+
                         elfWrite4(relocDestination, (S + A).value());
                         break;
 
                     case R_386_PC32: // S + A - P
+
                         if (ELF32_ST_TYPE(symOrigin[symTabIndex].st_info) == STT_SECTION) {
                             const Elf32_Half sectionIdx = elfRead2(&symOrigin[symTabIndex].st_shndx);
 
@@ -971,6 +986,7 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
     switch (machine)
     {
     case EM_386:
+
         for (size_t i = 1; i < m_elfSections.size(); ++i) {
             const SectionParam& ps(m_elfSections[i]);
 
@@ -982,21 +998,22 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
                 // A symbol table offset of 0 (STN_UNDEF) means use value 0. The symbol table involved comes from
                 // the section header's sh_link field.
                 const Elf32_Rel *relocEntry = (Elf32_Rel *)ps.imagePtr.value();
-                const DWord size    = ps.Size / sizeof(Elf32_Rel);
+                const DWord     size        = ps.Size / sizeof(Elf32_Rel);
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
-                Address     destNatOrigin  = Address::ZERO;
+                Address destNatOrigin = Address::ZERO;
 
                 if (e_type == ET_REL) {
                     int destSection = m_shInfo[i];
-                    destNatOrigin  = m_elfSections[destSection].SourceAddr;
+                    destNatOrigin = m_elfSections[destSection].SourceAddr;
                 }
 
                 for (DWord u = 0; u < size; u++) {
                     Elf32_Addr r_offset = elfRead4(&relocEntry[u].r_offset);
 
                     Address relocDestination; // Pointer to the word to be relocated
+
                     if (e_type == ET_REL) {
                         relocDestination = destNatOrigin + r_offset;
                     }
