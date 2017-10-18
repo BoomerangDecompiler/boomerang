@@ -129,6 +129,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
     list(APPEND COMMON_COMPILE_FLAGS /W3 /EHsc)
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    # Reject Clang 3 and below
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.0)
+        message(FATAL_ERROR "Your Clang version is too old.\n\
+            Please upgrade Clang or select another compiler.")
+    endif ()
+
     # Warning options
     list(APPEND COMMON_COMPILE_FLAGS
         -Wall -Wextra -Werror
@@ -165,10 +171,15 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         -Wno-gnu-zero-variadic-macro-arguments
         -Wno-undef
         -Wno-unknown-pragmas
-        -Wno-zero-as-null-pointer-constant
-        -Wno-inconsistent-missing-destructor-override
-        -Wno-cast-qual
     )
+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0)
+        list(APPEND COMMON_COMPILE_FLAGS
+            -Wno-zero-as-null-pointer-constant
+            -Wno-inconsistent-missing-destructor-override
+            -Wno-cast-qual
+        )
+    endif ()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     # Reject GCC < 4.9
