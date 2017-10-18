@@ -389,15 +389,15 @@ int SSLScanner::yy___wrap()
 #endif
 void SSLScanner::yy_initialize()
 {
-    yy___in   = 0;
-    yy___out  = 0;
+    yy___in   = nullptr;
+    yy___out  = nullptr;
     yy_init   = 1;
     yy_start  = 0;
-    yy___text = 0;
+    yy___text = nullptr;
     yy___leng = 0;
-    YY_SSLScanner_CURRENT_BUFFER = 0;
+    YY_SSLScanner_CURRENT_BUFFER = nullptr;
     yy_did_buffer_switch_on_eof  = 0;
-    yy_c_buf_p   = 0;
+    yy_c_buf_p   = nullptr;
     yy_hold_char = 0;
     yy_n_chars   = 0;
 #if YY_SSLScanner_DEBUG != 0
@@ -1395,7 +1395,7 @@ do_action:     /* this label is used only to access EOF actions */
         case 115:
 #line 281 "db/sslscanner.l"
             {
-                yylval.num = strtol(yytext, 0, 10);
+                yylval.num = strtol(yytext, nullptr, 10);
                 return SSLParser::NUM;
             }
 
@@ -1403,7 +1403,7 @@ do_action:     /* this label is used only to access EOF actions */
         case 116:
 #line 286 "db/sslscanner.l"
             {
-                yylval.num = strtol(yytext, 0, 16);
+                yylval.num = strtol(yytext, nullptr, 16);
                 return SSLParser::NUM;
             }
 
@@ -1417,7 +1417,7 @@ do_action:     /* this label is used only to access EOF actions */
 
                 // David - changed to << for more efficient and
                 // not depend on the <cmath> anymore.
-                yylval.num = sign * (1 << (strtol(start, 0, 10)));
+                yylval.num = sign * (1 << (strtol(start, nullptr, 10)));
                 // yylval.num = (int)pow(2,strtol(start,0,10)) * sign;
                 return SSLParser::NUM;
             }
@@ -1459,7 +1459,7 @@ do_action:     /* this label is used only to access EOF actions */
 
                 // Quell a warning
                 yy_last_accepting_state = 0;
-                yy_last_accepting_cpos  = 0;
+                yy_last_accepting_cpos  = nullptr;
             }
 
             YY_BREAK
@@ -1999,7 +1999,7 @@ void SSLScanner::YY_SSLScanner_DELETE_BUFFER(YY_BUFFER_STATE b)
 #endif
 {
     if (b == YY_SSLScanner_CURRENT_BUFFER) {
-        YY_SSLScanner_CURRENT_BUFFER = (YY_BUFFER_STATE)0;
+        YY_SSLScanner_CURRENT_BUFFER = (YY_BUFFER_STATE)nullptr;
     }
 
     free((char *)b->yy_ch_buf);

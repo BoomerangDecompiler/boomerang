@@ -117,7 +117,7 @@ void Decompiler::load()
     m_prog  = new Prog(m_filename);
     m_fe    = IFrontEnd::create(m_filename, m_prog, Boomerang::get()->getOrCreateProject());
 
-    if (m_fe == NULL) {
+    if (m_fe == nullptr) {
         emit machineType(QString("Unavailable: Load Failed!"));
         return;
     }
@@ -193,7 +193,7 @@ void Decompiler::decode()
 
     for (Address entryAddr : m_userEntrypoints) {
         if (entryAddr == a) {
-            m_fe->decode(m_prog, true, NULL);
+            m_fe->decode(m_prog, true, nullptr);
             break;
         }
     }
@@ -319,7 +319,7 @@ void Decompiler::alertNew(Function *p)
     if (p->isLib()) {
         QString params;
 
-        if ((p->getSignature() == NULL) || p->getSignature()->isUnknown()) {
+        if ((p->getSignature() == nullptr) || p->getSignature()->isUnknown()) {
             params = "<unknown>";
         }
         else {
@@ -412,7 +412,7 @@ QString Decompiler::getClusterFile(const QString& name)
 {
     Module *c = m_prog->findModule(name);
 
-    if (c == NULL) {
+    if (c == nullptr) {
         return "";
     }
 

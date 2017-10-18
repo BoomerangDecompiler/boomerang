@@ -125,7 +125,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
 
     // If the destination address is the same as this very instruction, we have a call with iDisp30 == 0. Don't treat
     // this as the start of a real procedure.
-    if ((dest != address) && (proc->getProg()->findProc(dest) == 0)) {
+    if ((dest != address) && (proc->getProg()->findProc(dest) == nullptr)) {
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that failed. Instead, we
         // use the set of CallStatements (not in this procedure) that is needed by CSR
         if (SETTING(traceDecoder)) {
@@ -304,7 +304,7 @@ void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress
     // Add the one-way branch BB
     BasicBlock *pBB = cfg->newBB(BB_rtls, BBType::Oneway);
 
-    if (pBB == 0) {
+    if (pBB == nullptr) {
         BB_rtls = nullptr;
         return;
     }
@@ -437,7 +437,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         BB_rtls->push_back(inst.rtl);
         BasicBlock *pBB = cfg->newBB(BB_rtls, BBType::Twoway);
 
-        if (pBB == 0) {
+        if (pBB == nullptr) {
             return false;
         }
 
@@ -465,7 +465,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         BB_rtls->push_back(inst.rtl);
         BasicBlock *pBB = cfg->newBB(BB_rtls, BBType::Twoway);
 
-        if (pBB == 0) {
+        if (pBB == nullptr) {
             return false;
         }
 
@@ -482,7 +482,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         BB_rtls->push_back(inst.rtl);
         BasicBlock *pBB = cfg->newBB(BB_rtls, BBType::Twoway);
 
-        if (pBB == 0) {
+        if (pBB == nullptr) {
             return false;
         }
 
@@ -498,7 +498,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         // Make a BB for the current list of RTLs. We want to do this first, else ordering can go silly
         BasicBlock *pBB = cfg->newBB(BB_rtls, BBType::Twoway);
 
-        if (pBB == 0) {
+        if (pBB == nullptr) {
             return false;
         }
 
@@ -554,7 +554,7 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
         BB_rtls->push_back(inst.rtl);
         pBB = cfg->newBB(BB_rtls, BBType::Twoway);
 
-        if (pBB == 0) {
+        if (pBB == nullptr) {
             return false;
         }
 
@@ -566,7 +566,7 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
         // Make a BB for the current list of RTLs.  We want to do this first, else ordering can go silly
         pBB = cfg->newBB(BB_rtls, BBType::Twoway);
 
-        if (pBB == 0) {
+        if (pBB == nullptr) {
             return false;
         }
 
@@ -663,7 +663,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
     // If this is a speculative decode, the second time we decode the same
     // address, we get no cfg. Else an error.
-    if (spec && (cfg == 0)) {
+    if (spec && (cfg == nullptr)) {
         return false;
     }
 
@@ -1085,7 +1085,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                             // Create the BB and add it to the CFG
                             BasicBlock *pBB = cfg->newBB(BB_rtls, BBType::Twoway);
 
-                            if (pBB == 0) {
+                            if (pBB == nullptr) {
                                 sequentialDecode = false;
                                 break;
                             }

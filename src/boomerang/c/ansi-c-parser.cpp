@@ -1225,7 +1225,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 
             msg = (char *)malloc(size + 15);
 
-            if (msg != 0) {
+            if (msg != nullptr) {
                 strcpy(msg, "parse error");
 
                 if (count < 5) {

@@ -26,8 +26,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , decompilerThread(NULL)
-    , step(NULL)
+    , decompilerThread(nullptr)
+    , step(nullptr)
 {
     ui->setupUi(this);
 
@@ -701,7 +701,7 @@ void MainWindow::showDebuggingPoint(const QString& name, const QString& descript
 
 void MainWindow::showRTLEditor(const QString& name)
 {
-    RTLEditor *n = NULL;
+    RTLEditor *n = nullptr;
 
     for (int i = 0; i < ui->tabWidget->count(); i++) {
         if (ui->tabWidget->tabText(i) == name) {
@@ -710,7 +710,7 @@ void MainWindow::showRTLEditor(const QString& name)
         }
     }
 
-    if (n == NULL) {
+    if (n == nullptr) {
         n = new RTLEditor(decompilerThread->getDecompiler(), name);
         ui->tabWidget->addTab(n, name);
     }
@@ -752,7 +752,7 @@ void MainWindow::on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column
         top = top->parent();
     }
 
-    QTextEdit *n = NULL;
+    QTextEdit *n = nullptr;
 
     for (int i = 0; i < ui->tabWidget->count(); i++) {
         if (ui->tabWidget->tabText(i) == top->text(0)) {
@@ -761,7 +761,7 @@ void MainWindow::on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column
         }
     }
 
-    if (n == NULL) {
+    if (n == nullptr) {
         n = new QTextEdit();
         QString name = top->text(0);
         name = name.left(name.lastIndexOf("."));
@@ -830,7 +830,7 @@ void MainWindow::onUserProcsHorizontalHeaderSectionClicked(int logicalIndex)
 {
     if (logicalIndex == 2) {
         for (int i = 0; i < ui->userProcs->rowCount(); i++) {
-            if (ui->userProcs->item(i, 2) == NULL) {
+            if (ui->userProcs->item(i, 2) == nullptr) {
                 ui->userProcs->setItem(i, 2, new QTableWidgetItem(""));
             }
 
@@ -882,7 +882,7 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
     QString sigFileStar = sigFile;
     sigFileStar.append("*");
 
-    QTextEdit *n = NULL;
+    QTextEdit *n = nullptr;
 
     for (int i = 0; i < ui->tabWidget->count(); i++) {
         if ((ui->tabWidget->tabText(i) == sigFile) || (ui->tabWidget->tabText(i) == sigFileStar)) {
@@ -891,7 +891,7 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
         }
     }
 
-    if (n == NULL) {
+    if (n == nullptr) {
         n = new QTextEdit();
         QFile file(filename);
 

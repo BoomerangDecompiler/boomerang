@@ -454,7 +454,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 return false;
                             }
 
-                            GotoStatement *jump = 0;
+                            GotoStatement *jump = nullptr;
                             RTL           *rtl  = nullptr;
 
                             if (strcmp(name, "BPN") == 0) {
@@ -1894,7 +1894,7 @@ MATCH_label_d0:
                 return result.valid;
             }
 
-            GotoStatement *jump = 0;
+            GotoStatement *jump = nullptr;
             RTL           *rtl  = nullptr; // Init to nullptr to suppress a warning
 
             if ((strcmp(name, "BPA,a") == 0) || (strcmp(name, "BPN,a") == 0)) {
@@ -1963,7 +1963,7 @@ MATCH_label_d1:
             // NOTE: NJMC toolkit cannot handle embedded plain else statements! (But OK with curly bracket before the
             // else)
 
-            GotoStatement *jump = 0;
+            GotoStatement *jump = nullptr;
             RTL           *rtl  = nullptr;
 
             if ((strcmp(name, "BA") == 0) || (strcmp(name, "BN") == 0)) {
@@ -2032,7 +2032,7 @@ MATCH_label_d2:
 
             // NOTE: NJMC toolkit cannot handle embedded else statements!
 
-            GotoStatement *jump = 0;
+            GotoStatement *jump = nullptr;
             RTL           *rtl  = nullptr; // Init to nullptr to suppress a warning
 
             if ((strcmp(name, "BA,a") == 0) || (strcmp(name, "BN,a") == 0)) {
@@ -2367,7 +2367,7 @@ MATCH_finished_d:
     result.numBytes = (nextPC - hostPC).value();
     assert(result.numBytes > 0);
 
-    if (result.valid && (result.rtl == 0)) { // Don't override higher level res
+    if (result.valid && (result.rtl == nullptr)) { // Don't override higher level res
         result.rtl = new RTL(pc, stmts);
     }
 
