@@ -27,7 +27,7 @@ public:
      * \brief Destructor
      * \note  Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
      ******************************************************************************/
-    virtual ~CaseStatement();
+    virtual ~CaseStatement() override;
 
     // Make a deep copy, and make the copy a derived object if needed.
 

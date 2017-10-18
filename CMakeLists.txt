@@ -165,6 +165,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         -Wno-gnu-zero-variadic-macro-arguments
         -Wno-undef
         -Wno-unknown-pragmas
+        -Wno-zero-as-null-pointer-constant
+        -Wno-inconsistent-missing-destructor-override
+        -Wno-cast-qual
     )
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")

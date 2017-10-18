@@ -18,7 +18,7 @@ class FuncType : public Type
 public:
     static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature>& sig = nullptr) { return std::make_shared<FuncType>(sig); }
     FuncType(const std::shared_ptr<Signature>& sig = nullptr);
-    virtual ~FuncType();
+    virtual ~FuncType() override;
     virtual bool isFunc() const override { return true; }
 
     virtual SharedType clone() const override;

@@ -33,7 +33,7 @@ public:
      * \fn      CallStatement::~CallStatement
      * \brief   Destructor
      ******************************************************************************/
-    virtual ~CallStatement();
+    virtual ~CallStatement() override;
 
     virtual void setNumber(int num) override;
 

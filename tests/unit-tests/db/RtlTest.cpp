@@ -147,6 +147,7 @@ public:
     }
 };
 
+
 void RtlTest::testVisitor()
 {
     StmtVisitorStub *visitor = new StmtVisitorStub();

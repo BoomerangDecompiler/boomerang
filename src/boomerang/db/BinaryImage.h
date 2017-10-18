@@ -39,7 +39,7 @@ public:
 
 public:
     BinaryImage();
-    ~BinaryImage();
+    ~BinaryImage() override;
 
     /// \copydoc IBinaryImage::size
     size_t size() const override { return m_sections.size(); }

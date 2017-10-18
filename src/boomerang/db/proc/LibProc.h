@@ -26,7 +26,7 @@ public:
      * \param        module - Module that contains this Function
      ******************************************************************************/
     LibProc(Address address, const QString& name, Module *module);
-    virtual ~LibProc() = default;
+    virtual ~LibProc() override = default;
 
     QString toString() const override;
 

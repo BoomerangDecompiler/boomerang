@@ -29,7 +29,7 @@ class Project : public IProject
 {
 public:
     Project();
-    virtual ~Project();
+    virtual ~Project() override;
 
     /// \copydoc IProject::loadBinaryFile
     bool loadBinaryFile(const QString& filePath) override;

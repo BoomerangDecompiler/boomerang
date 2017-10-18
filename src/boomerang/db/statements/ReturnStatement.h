@@ -24,7 +24,7 @@ public:
 
 public:
     ReturnStatement();
-    virtual ~ReturnStatement();
+    virtual ~ReturnStatement() override;
 
     iterator begin() { return returns.begin(); }
     iterator end()   { return returns.end(); }

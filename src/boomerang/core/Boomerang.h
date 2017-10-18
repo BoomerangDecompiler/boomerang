@@ -60,7 +60,7 @@ private:
      * - Main log stream is output on stderr
      */
     Boomerang();
-    virtual ~Boomerang();
+    virtual ~Boomerang() override;
 
 public:
     /// \returns The global boomerang object. It will be created if it does not already exist.

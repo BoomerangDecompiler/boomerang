@@ -42,7 +42,7 @@ public:
     bool operator*=(const Exp& o) const override;
 
     /// Destructor
-    virtual ~Binary();
+    virtual ~Binary() override;
 
     /// Arity
     int getArity() const override { return 2; }

@@ -68,8 +68,8 @@ class SymTab : public IBinarySymbolTable
     friend struct BinarySymbol;
 
 public:
-    SymTab();                     // Constructor
-    ~SymTab();                    // Destructor
+    SymTab();
+    ~SymTab() override;
 
     /// \copydoc IBinarySymbolTable::find(Address)
     const IBinarySymbol *find(Address addr) const override;

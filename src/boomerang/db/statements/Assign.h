@@ -18,20 +18,18 @@
 class Assign : public Assignment
 {
 public:
+    /// Default constructor, for XML parser
+    Assign();
+
     /// Constructor, subexpressions
     Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
 
     /// Constructor, type and subexpressions
     Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
 
-    /// Default constructor, for XML parser
-    Assign();
-
-    /// Copy constructor
     Assign(Assign& o);
 
-    /// Destructor
-    ~Assign() {}
+    ~Assign()  override = default;
 
     /// Clone
     virtual Statement *clone() const override;

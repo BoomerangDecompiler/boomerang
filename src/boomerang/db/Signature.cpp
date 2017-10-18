@@ -110,7 +110,7 @@ class Win32Signature : public Signature
 public:
     Win32Signature(const QString& nam);
     Win32Signature(Signature& old);
-    virtual ~Win32Signature() {}
+    virtual ~Win32Signature() override = default;
 
     virtual std::shared_ptr<Signature> clone() const override;
     virtual bool operator==(const Signature& other) const override;
@@ -160,7 +160,8 @@ class PentiumSignature : public Signature
 public:
     PentiumSignature(const QString& nam);
     PentiumSignature(Signature& old);
-    virtual ~PentiumSignature() {}
+    virtual ~PentiumSignature() override = default;
+
     virtual std::shared_ptr<Signature> clone() const override;
     virtual bool operator==(const Signature& other) const override;
 
@@ -196,7 +197,7 @@ class SparcSignature : public Signature
 public:
     SparcSignature(const QString& nam);
     SparcSignature(Signature& old);
-    virtual ~SparcSignature() {}
+    virtual ~SparcSignature() override = default;
 
     virtual std::shared_ptr<Signature> clone() const override;
     virtual bool operator==(const Signature& other) const override;
@@ -248,7 +249,7 @@ class PPCSignature : public Signature
 public:
     PPCSignature(const QString& name);
     PPCSignature(Signature& old);
-    virtual ~PPCSignature() {}
+    virtual ~PPCSignature() override = default;
 
     virtual std::shared_ptr<Signature> clone() const override;
 
@@ -281,7 +282,7 @@ class MIPSSignature : public Signature
 public:
     MIPSSignature(const QString& name);
     MIPSSignature(Signature& old);
-    virtual ~MIPSSignature() {}
+    virtual ~MIPSSignature() override = default;
 
     virtual std::shared_ptr<Signature> clone() const override;
 
@@ -313,7 +314,8 @@ class ST20Signature : public Signature
 public:
     ST20Signature(const QString& name);
     ST20Signature(Signature& old);
-    virtual ~ST20Signature() {}
+    virtual ~ST20Signature() override = default;
+
     std::shared_ptr<Signature> clone() const override;
     virtual bool operator==(const Signature& other) const override;
     static bool qualified(UserProc *p, Signature&);

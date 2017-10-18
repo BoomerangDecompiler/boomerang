@@ -16,7 +16,7 @@ class BlockSyntaxNode : public SyntaxNode
 {
 public:
     BlockSyntaxNode();
-    virtual ~BlockSyntaxNode();
+    virtual ~BlockSyntaxNode() override;
 
     virtual bool isBlock() const override;
 

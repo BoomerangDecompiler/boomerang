@@ -17,7 +17,7 @@ class CharType : public Type
 {
 public:
     CharType();
-    virtual ~CharType();
+    virtual ~CharType() override;
     virtual bool isChar() const override { return true; }
 
     virtual SharedType clone() const override;

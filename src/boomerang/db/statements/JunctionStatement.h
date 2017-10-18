@@ -17,7 +17,7 @@ class JunctionStatement : public Statement
 {
 public:
     JunctionStatement();
-    virtual ~JunctionStatement();
+    virtual ~JunctionStatement() override;
 
     virtual Statement *clone() const override { return new JunctionStatement(); }
 

@@ -69,7 +69,7 @@ public:
 class ConsoleLogSink : public ILogSink
 {
 public:
-    virtual ~ConsoleLogSink() = default;
+    virtual ~ConsoleLogSink() override = default;
 
     /// \copydoc ILogSink::write
     virtual void write(const QString& s) override;
@@ -86,7 +86,7 @@ class FileLogSink : public ILogSink
 {
 public:
     FileLogSink(const QString& filename, bool append = false);
-    virtual ~FileLogSink();
+    virtual ~FileLogSink() override;
 
     /// \copydoc ILogSink::write
     virtual void write(const QString& s) override;

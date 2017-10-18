@@ -19,7 +19,7 @@ private:
 
 public:
     NamedType(const QString& _name);
-    virtual ~NamedType();
+    virtual ~NamedType() override;
 
     virtual bool isNamed() const override { return true; }
     QString getName() const { return name; }

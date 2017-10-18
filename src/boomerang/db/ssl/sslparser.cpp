@@ -1222,12 +1222,12 @@ SSLParser::
         break;
     }
     case 79: {
-        yyval.regtransfer = 0;
+        yyval.regtransfer = nullptr;
         ;
         break;
     }
     case 80: {
-        yyval.regtransfer = 0;
+        yyval.regtransfer = nullptr;
         ;
         break;
     }

@@ -17,7 +17,7 @@ class BooleanType : public Type
 {
 public:
     BooleanType();
-    virtual ~BooleanType();
+    virtual ~BooleanType() override;
 
     virtual bool isBoolean() const override { return true; }
     static std::shared_ptr<BooleanType> get() { return std::make_shared<BooleanType>(); }

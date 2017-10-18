@@ -26,7 +26,7 @@ public:
      * \param         size - the size of the assignment
      ******************************************************************************/
     BoolAssign(int size);
-    virtual ~BoolAssign();
+    virtual ~BoolAssign() override;
 
     // Make a deep copy, and make the copy a derived object if needed.
 

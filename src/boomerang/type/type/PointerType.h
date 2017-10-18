@@ -17,7 +17,7 @@ class PointerType : public Type
 {
 public:
     PointerType(SharedType p);
-    virtual ~PointerType();
+    virtual ~PointerType() override;
     virtual bool isPointer() const override { return true; }
 
     /// Set the pointer type of this pointer.

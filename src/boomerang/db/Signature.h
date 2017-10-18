@@ -327,7 +327,7 @@ class CustomSignature : public Signature
 {
 public:
     CustomSignature(const QString& nam);
-    virtual ~CustomSignature() {}
+    virtual ~CustomSignature() override = default;
 
     virtual bool isPromoted() const override { return true; }
     virtual std::shared_ptr<Signature> clone() const override;

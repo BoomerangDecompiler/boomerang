@@ -20,7 +20,7 @@ class TypeVal : public Terminal
 {
 public:
     TypeVal(SharedType ty);
-    ~TypeVal();
+    ~TypeVal() override;
 
     static std::shared_ptr<TypeVal> get(const SharedType& st) { return std::make_shared<TypeVal>(st); }
 

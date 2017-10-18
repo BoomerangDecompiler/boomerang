@@ -46,7 +46,7 @@ public:
     /// Create a new union type with unnamed members.
     UnionType(const std::initializer_list<SharedType>& members);
 
-    virtual ~UnionType();
+    virtual ~UnionType() override;
 
     /// \copydoc Type::isUnion
     virtual bool isUnion() const override { return true; }

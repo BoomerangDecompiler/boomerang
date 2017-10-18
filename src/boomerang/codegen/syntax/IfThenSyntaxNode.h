@@ -18,7 +18,7 @@ class IfThenSyntaxNode : public SyntaxNode
 {
 public:
     IfThenSyntaxNode();
-    virtual ~IfThenSyntaxNode();
+    virtual ~IfThenSyntaxNode() override;
 
     virtual bool isGoto() const override { return false; }
     virtual bool isBranch() const override { return false; }
@@ -58,7 +58,7 @@ class IfThenElseSyntaxNode : public SyntaxNode
 {
 public:
     IfThenElseSyntaxNode();
-    virtual ~IfThenElseSyntaxNode();
+    virtual ~IfThenElseSyntaxNode() override;
 
     virtual bool isGoto() const override { return false; }
     virtual bool isBranch() const override { return false; }

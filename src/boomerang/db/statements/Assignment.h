@@ -23,7 +23,7 @@ public:
     /// Constructor, type, and subexpression
     Assignment(SharedType ty, SharedExp lhs);
     /// Destructor
-    virtual ~Assignment();
+    virtual ~Assignment() override;
 
     /// Clone
     virtual Statement *clone() const override = 0;

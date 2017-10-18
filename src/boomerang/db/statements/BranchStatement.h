@@ -28,7 +28,7 @@ public:
      * \fn        BranchStatement::~BranchStatement
      * \brief     Destructor
      ******************************************************************************/
-    virtual ~BranchStatement();
+    virtual ~BranchStatement() override;
 
     // Make a deep copy, and make the copy a derived object if needed.
 

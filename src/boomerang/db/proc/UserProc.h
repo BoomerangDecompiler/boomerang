@@ -91,7 +91,7 @@ public:
      * \param mod - Module that contains this Function
      ******************************************************************************/
     UserProc(Address address, const QString& name, Module *mod);
-    virtual ~UserProc();
+    virtual ~UserProc() override;
 
     QString toString() const override;
 

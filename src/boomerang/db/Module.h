@@ -157,7 +157,7 @@ public:
 class ModuleFactory
 {
 public:
-    virtual ~ModuleFactory() {}
+    virtual ~ModuleFactory() = default;
     virtual Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const = 0;
 };
 
@@ -165,7 +165,7 @@ public:
 class DefaultModFactory : public ModuleFactory
 {
 public:
-    virtual ~DefaultModFactory() {}
+    virtual ~DefaultModFactory() override = default;
     Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const override
     {
         return new Module(name, parent, fe);
@@ -175,7 +175,7 @@ public:
 
 struct ClassModFactory : public ModuleFactory
 {
-    virtual ~ClassModFactory() {}
+    virtual ~ClassModFactory() override = default;
 
     Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const override
     {

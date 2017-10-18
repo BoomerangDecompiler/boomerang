@@ -1585,12 +1585,12 @@ static void findConstantValues(const Statement *s, std::list<int>& dests)
 
     if (s->isPhi()) {
         // For each definition, recurse
-        for (const auto& it : *((PhiAssign *)s)) {
+        for (const auto& it : *((const PhiAssign *)s)) {
             findConstantValues(it.second.getDef(), dests);
         }
     }
     else if (s->isAssign()) {
-        SharedExp rhs = ((Assign *)s)->getRight();
+        SharedExp rhs = ((const Assign *)s)->getRight();
 
         if (rhs->isIntConst()) {
             dests.push_back(rhs->access<Const>()->getInt());
