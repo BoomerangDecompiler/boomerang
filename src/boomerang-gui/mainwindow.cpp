@@ -23,8 +23,8 @@
 #include "boomerang/type/TypeRecovery.h"
 
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+MainWindow::MainWindow(QWidget *_parent)
+    : QMainWindow(_parent)
     , ui(new Ui::MainWindow)
     , decompilerThread(nullptr)
     , step(nullptr)
@@ -501,24 +501,24 @@ void MainWindow::generateCodeComplete()
 }
 
 
-void MainWindow::showConsideringProc(const QString& parent, const QString& name)
+void MainWindow::showConsideringProc(const QString& calledByName, const QString& procName)
 {
     QList<QTreeWidgetItem *> foundit =
-        ui->decompileProcsTreeWidget->findItems(name, Qt::MatchExactly | Qt::MatchRecursive);
+        ui->decompileProcsTreeWidget->findItems(procName, Qt::MatchExactly | Qt::MatchRecursive);
 
     if (foundit.isEmpty()) {
-        QStringList texts(name);
+        QStringList texts(procName);
 
-        if (parent.isEmpty()) {
+        if (calledByName.isEmpty()) {
             ui->decompileProcsTreeWidget->addTopLevelItem(new QTreeWidgetItem(texts));
         }
         else {
             QList<QTreeWidgetItem *> found =
-                ui->decompileProcsTreeWidget->findItems(parent, Qt::MatchExactly | Qt::MatchRecursive);
+                ui->decompileProcsTreeWidget->findItems(calledByName, Qt::MatchExactly | Qt::MatchRecursive);
 
             if (!found.isEmpty()) {
                 QTreeWidgetItem *n = new QTreeWidgetItem(found.first(), texts);
-                n->setData(0, 1, name);
+                n->setData(0, 1, procName);
                 ui->decompileProcsTreeWidget->expandItem(found.first());
                 ui->decompileProcsTreeWidget->scrollToItem(n);
                 ui->decompileProcsTreeWidget->setCurrentItem(n, 0);
@@ -873,10 +873,10 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
     sigFile = decompilerThread->getDecompiler()->getSigFile(name);
     QString filename = sigFile;
 
-    int pos = sigFile.lastIndexOf(QRegExp("[/\\\\]"));
+    int lastIndex = sigFile.lastIndexOf(QRegExp("[/\\\\]"));
 
-    if (pos != -1) {
-        sigFile = sigFile.right(sigFile.length() - pos - 1);
+    if (lastIndex != -1) {
+        sigFile = sigFile.right(sigFile.length() - lastIndex - 1);
     }
 
     QString sigFileStar = sigFile;
@@ -915,10 +915,10 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
         n->find(name, QTextDocument::FindBackward | QTextDocument::FindCaseSensitively | QTextDocument::FindWholeWords);
     }
     else {
-        QTextCursor cursor = n->textCursor();
-        cursor.clearSelection();
-        cursor.movePosition(QTextCursor::End);
-        n->setTextCursor(cursor);
+        QTextCursor textCursor = n->textCursor();
+        textCursor.clearSelection();
+        textCursor.movePosition(QTextCursor::End);
+        n->setTextCursor(textCursor);
         QString comment = "// unknown library proc: ";
         comment.append(ui->libProcs->item(row, 0)->text());
         comment.append("\n");

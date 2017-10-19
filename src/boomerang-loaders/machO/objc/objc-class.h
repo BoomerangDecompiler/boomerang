@@ -148,8 +148,8 @@ struct objc_ivar_list
     struct objc_ivar ivar_list[1]; /* variable length structure */
 };
 
-OBJC_EXPORT Ivar object_setInstanceVariable(id, const char *name, void *);
-OBJC_EXPORT Ivar object_getInstanceVariable(id, const char *name, void **);
+OBJC_EXPORT Ivar object_setInstanceVariable(_id, const char *name, void *);
+OBJC_EXPORT Ivar object_getInstanceVariable(_id, const char *name, void **);
 
 /*
  *    Method Template
@@ -229,8 +229,8 @@ struct objc_cache
 };
 
 /* operations */
-OBJC_EXPORT id class_createInstance(Class, unsigned idxIvars);
-OBJC_EXPORT id class_createInstanceFromZone(Class, unsigned idxIvars, void *z);
+OBJC_EXPORT _id class_createInstance(Class, unsigned idxIvars);
+OBJC_EXPORT _id class_createInstanceFromZone(Class, unsigned idxIvars, void *z);
 
 OBJC_EXPORT void class_setVersion(Class, int);
 OBJC_EXPORT int  class_getVersion(Class);

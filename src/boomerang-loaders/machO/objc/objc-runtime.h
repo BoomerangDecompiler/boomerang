@@ -57,32 +57,32 @@ struct objc_module
 
 struct objc_super
 {
-    id    receiver;
+    _id    receiver;
     // Class class;
     Class pclass;
 };
 
 /* kernel operations */
 
-OBJC_EXPORT id objc_getClass(const char *name);
-OBJC_EXPORT id objc_getMetaClass(const char *name);
-OBJC_EXPORT id objc_msgSend(id self, SEL op, ...);
+OBJC_EXPORT _id objc_getClass(const char *name);
+OBJC_EXPORT _id objc_getMetaClass(const char *name);
+OBJC_EXPORT _id objc_msgSend(_id self, SEL op, ...);
 
 #if defined(WINNT) || defined(__cplusplus)
 // The compiler on NT is broken when dealing with structure-returns.
 // Help out the compiler group by tweaking the prototype.
-OBJC_EXPORT id objc_msgSend_stret(id self, SEL op, ...);
+OBJC_EXPORT _id objc_msgSend_stret(_id self, SEL op, ...);
 
 #else
 OBJC_EXPORT void objc_msgSend_stret(void *stretAddr, id self, SEL op, ...);
 
 #endif
-OBJC_EXPORT id objc_msgSendSuper(struct objc_super *super, SEL op, ...);
+OBJC_EXPORT _id objc_msgSendSuper(struct objc_super *super, SEL op, ...);
 
 #if defined(WINNT) || defined(__cplusplus)
 // The compiler on NT is broken when dealing with structure-returns.
 // Help out the compiler group by tweaking the prototype.
-OBJC_EXPORT id objc_msgSendSuper_stret(struct objc_super *super, SEL op, ...);
+OBJC_EXPORT _id objc_msgSendSuper_stret(struct objc_super *super, SEL op, ...);
 
 #else
 OBJC_EXPORT void objc_msgSendSuper_stret(void *stretAddr, struct objc_super *super, SEL op, ...);
@@ -91,8 +91,8 @@ OBJC_EXPORT void objc_msgSendSuper_stret(void *stretAddr, struct objc_super *sup
 
 /* forwarding operations */
 
-OBJC_EXPORT id objc_msgSendv(id self, SEL op, unsigned arg_size, marg_list arg_frame);
-OBJC_EXPORT void objc_msgSendv_stret(void *stretAddr, id self, SEL op, unsigned arg_size, marg_list arg_frame);
+OBJC_EXPORT _id objc_msgSendv(_id self, SEL op, unsigned arg_size, marg_list arg_frame);
+OBJC_EXPORT void objc_msgSendv_stret(void *stretAddr, _id self, SEL op, unsigned arg_size, marg_list arg_frame);
 
 /*
  *  getting all the classes in the application...
@@ -131,7 +131,7 @@ OBJC_EXPORT void *objc_getClasses();
 
 #endif
 
-OBJC_EXPORT id objc_lookUpClass(const char *name);
+OBJC_EXPORT _id objc_lookUpClass(const char *name);
 OBJC_EXPORT void objc_addClass(Class myClass);
 
 /* customizing the error handling for objc_getClass/objc_getMetaClass */
@@ -143,14 +143,14 @@ OBJC_EXPORT void objc_setMultithreaded(BOOL flag);
 
 /* overriding the default object allocation and error handling routines */
 
-OBJC_EXPORT id (*_alloc)(Class, unsigned int);
-OBJC_EXPORT id (*_copy)(id, unsigned int);
-OBJC_EXPORT id (*_realloc)(id, unsigned int);
-OBJC_EXPORT id (*_dealloc)(id);
-OBJC_EXPORT id (*_zoneAlloc)(Class, unsigned int, void *);
-OBJC_EXPORT id (*_zoneRealloc)(id, unsigned int, void *);
-OBJC_EXPORT id (*_zoneCopy)(id, unsigned int, void *);
+OBJC_EXPORT _id (*_alloc)(Class, unsigned int);
+OBJC_EXPORT _id (*_copy)(_id, unsigned int);
+OBJC_EXPORT _id (*_realloc)(_id, unsigned int);
+OBJC_EXPORT _id (*_dealloc)(_id);
+OBJC_EXPORT _id (*_zoneAlloc)(Class, unsigned int, void *);
+OBJC_EXPORT _id (*_zoneRealloc)(_id, unsigned int, void *);
+OBJC_EXPORT _id (*_zoneCopy)(_id, unsigned int, void *);
 
-OBJC_EXPORT void (*_error)(id, const char *, va_list);
+OBJC_EXPORT void (*_error)(_id, const char *, va_list);
 
 #endif /* _OBJC_RUNTIME_H_ */

@@ -1250,8 +1250,8 @@ void RangeMap::killAllMemOfs()
 {
     for (auto& elem : ranges) {
         if ((elem).first->isMemOf()) {
-            Range empty;
-            (elem).second.unionWith(empty);
+            Range emptyRange;
+            (elem).second.unionWith(emptyRange);
         }
     }
 }

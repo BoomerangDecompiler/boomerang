@@ -114,24 +114,24 @@ bool ImpRefStatement::accept(StmtPartModifier *v)
 }
 
 
-bool ImpRefStatement::search(const Exp& search, SharedExp& result) const
+bool ImpRefStatement::search(const Exp& pattern, SharedExp& result) const
 {
     result = nullptr;
-    return m_addressExp->search(search, result);
+    return m_addressExp->search(pattern, result);
 }
 
 
-bool ImpRefStatement::searchAll(const Exp& search, std::list<SharedExp, std::allocator<SharedExp> >& result) const
+bool ImpRefStatement::searchAll(const Exp& pattern, std::list<SharedExp, std::allocator<SharedExp> >& result) const
 {
-    return m_addressExp->searchAll(search, result);
+    return m_addressExp->searchAll(pattern, result);
 }
 
 
-bool ImpRefStatement::searchAndReplace(const Exp& search, SharedExp replace, bool /*cc*/)
+bool ImpRefStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/)
 {
     bool change;
 
-    m_addressExp = m_addressExp->searchReplaceAll(search, replace, change);
+    m_addressExp = m_addressExp->searchReplaceAll(pattern, replace, change);
     return change;
 }
 

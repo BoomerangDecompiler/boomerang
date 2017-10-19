@@ -40,23 +40,23 @@ void CaseStatement::setSwitchInfo(SWITCH_INFO *psi)
 }
 
 
-bool CaseStatement::searchAndReplace(const Exp& search, SharedExp replace, bool cc)
+bool CaseStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
 {
-    bool ch  = GotoStatement::searchAndReplace(search, replace, cc);
+    bool ch  = GotoStatement::searchAndReplace(pattern, replace, cc);
     bool ch2 = false;
 
     if (pSwitchInfo && pSwitchInfo->pSwitchVar) {
-        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(search, replace, ch2);
+        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(pattern, replace, ch2);
     }
 
     return ch | ch2;
 }
 
 
-bool CaseStatement::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool CaseStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
-    return GotoStatement::searchAll(search, result) ||
-           (pSwitchInfo && pSwitchInfo->pSwitchVar && pSwitchInfo->pSwitchVar->searchAll(search, result));
+    return GotoStatement::searchAll(pattern, result) ||
+           (pSwitchInfo && pSwitchInfo->pSwitchVar && pSwitchInfo->pSwitchVar->searchAll(pattern, result));
 }
 
 

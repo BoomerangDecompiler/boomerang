@@ -16,8 +16,8 @@
 #include "boomerang-gui/ui_LoggingSettingsDlg.h"
 
 
-LoggingSettingsDlg::LoggingSettingsDlg(QWidget *parent)
-    : QDialog(parent)
+LoggingSettingsDlg::LoggingSettingsDlg(QWidget *_parent)
+    : QDialog(_parent)
     , ui(new Ui::LoggingSettingsDlg)
 {
     ui->setupUi(this);

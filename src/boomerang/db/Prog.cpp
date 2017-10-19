@@ -597,21 +597,21 @@ void Prog::removeProc(const QString& name)
 }
 
 
-Module *Prog::createModule(const QString& name, Module *parent, const ModuleFactory& factory)
+Module *Prog::createModule(const QString& name, Module *parentModule, const ModuleFactory& factory)
 {
-    if (parent == nullptr) {
-        parent = m_rootModule;
+    if (parentModule == nullptr) {
+        parentModule = m_rootModule;
     }
 
     Module *module = m_rootModule->find(name);
 
-    if (module && (module->getUpstream() == parent)) {
+    if (module && (module->getUpstream() == parentModule)) {
         // a module already exists
         return nullptr;
     }
 
     module = factory.create(name, this, this->getFrontEnd());
-    parent->addChild(module);
+    parentModule->addChild(module);
     m_moduleList.push_back(module);
     return module;
 }
@@ -1494,7 +1494,7 @@ void Prog::printCallGraph() const
     QTextStream                      f2(&file2);
     std::set<Function *>             seen;
     std::map<Function *, int>        spaces;
-    std::map<Function *, Function *> parent;
+    std::map<Function *, Function *> calledBy;
     std::list<Function *>            procList;
 
     std::copy(m_entryProcs.begin(), m_entryProcs.end(), std::back_inserter(procList));
@@ -1524,8 +1524,8 @@ void Prog::printCallGraph() const
 
         f1 << p->getName() << " @ " << p->getEntryAddress();
 
-        if (parent.find(p) != parent.end()) {
-            f1 << " [parent=" << parent[p]->getName() << "]";
+        if (calledBy.find(p) != calledBy.end()) {
+            f1 << " [parent=" << calledBy[p]->getName() << "]";
         }
 
         f1 << '\n';
@@ -1538,7 +1538,7 @@ void Prog::printCallGraph() const
             for (auto it1 = calleeList.rbegin(); it1 != calleeList.rend(); it1++) {
                 procList.push_front(*it1);
                 spaces[*it1] = n;
-                parent[*it1] = p;
+                calledBy[*it1] = p;
                 f2 << p->getName() << " -> " << (*it1)->getName() << ";\n";
             }
         }

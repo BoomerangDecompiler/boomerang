@@ -15,8 +15,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
             Please upgrade Clang or select another compiler.")
     endif ()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    # Reject GCC < 4.9
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+    # Reject GCC < 4.8
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
         message(FATAL_ERROR "Your GCC version is too old.\n\
             Please upgrade GCC or select another compiler.")
     endif ()

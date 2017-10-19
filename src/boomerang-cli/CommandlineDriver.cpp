@@ -17,8 +17,8 @@
 #include <iostream>
 
 
-CommandlineDriver::CommandlineDriver(QObject *parent)
-    : QObject(parent)
+CommandlineDriver::CommandlineDriver(QObject *_parent)
+    : QObject(_parent)
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);

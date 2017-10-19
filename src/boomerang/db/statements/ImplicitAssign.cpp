@@ -68,23 +68,23 @@ void ImplicitAssign::printCompact(QTextStream& os, bool html) const
 }
 
 
-bool ImplicitAssign::search(const Exp& search, SharedExp& result) const
+bool ImplicitAssign::search(const Exp& pattern, SharedExp& result) const
 {
-    return m_lhs->search(search, result);
+    return m_lhs->search(pattern, result);
 }
 
 
-bool ImplicitAssign::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool ImplicitAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
-    return m_lhs->searchAll(search, result);
+    return m_lhs->searchAll(pattern, result);
 }
 
 
-bool ImplicitAssign::searchAndReplace(const Exp& search, SharedExp replace, bool cc)
+bool ImplicitAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
 {
     Q_UNUSED(cc);
     bool change;
-    m_lhs = m_lhs->searchReplaceAll(search, replace, change);
+    m_lhs = m_lhs->searchReplaceAll(pattern, replace, change);
     return change;
 }
 

@@ -454,10 +454,10 @@ bool Unary::match(const QString& pattern, std::map<QString, SharedConstExp>& bin
 }
 
 
-void Unary::doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once)
+void Unary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
     if (m_oper != opInitValueOf) { // don't search child
-        doSearch(search, subExp1, li, once);
+        doSearch(pattern, subExp1, li, once);
     }
 }
 

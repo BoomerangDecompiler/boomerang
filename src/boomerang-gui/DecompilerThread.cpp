@@ -302,9 +302,9 @@ const char *Decompiler::getProcStatus(UserProc *p)
 }
 
 
-void Decompiler::alertConsidering(Function *parent, Function *p)
+void Decompiler::alertConsidering(Function *calledBy, Function *proc)
 {
-    emit consideringProc(parent ? parent->getName() : "", p->getName());
+    emit consideringProc(calledBy ? calledBy->getName() : "", proc->getName());
 }
 
 

@@ -56,15 +56,15 @@ CommandStatus Console::handleCommand(const QString& commandWithArgs)
 }
 
 
-CommandStatus Console::replayFile(const QString& replayFile)
+CommandStatus Console::replayFile(const QString& filePath)
 {
-    if (replayFile == QString::null) {
+    if (filePath == QString::null) {
         // nothing to execute
         return CommandStatus::Success;
     }
 
     // replay commands in file
-    QFile file(replayFile);
+    QFile file(filePath);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         std::cerr << "Cannot open replay file!\n";

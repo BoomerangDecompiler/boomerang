@@ -390,21 +390,21 @@ bool Ternary::match(const QString& pattern, std::map<QString, SharedConstExp>& b
 }
 
 
-void Ternary::doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once)
+void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
-    doSearch(search, subExp1, li, once);
+    doSearch(pattern, subExp1, li, once);
 
     if (once && li.size()) {
         return;
     }
 
-    doSearch(search, subExp2, li, once);
+    doSearch(pattern, subExp2, li, once);
 
     if (once && li.size()) {
         return;
     }
 
-    doSearch(search, subExp3, li, once);
+    doSearch(pattern, subExp3, li, once);
 }
 
 

@@ -96,10 +96,10 @@ SyntaxNode *LoopSyntaxNode::findNodeFor(BasicBlock *bb)
         return this;
     }
 
-    SyntaxNode *n          = m_body->findNodeFor(bb);
-    const bool isPreTested = hasCond() && !m_postTested;
+    SyntaxNode *n        = m_body->findNodeFor(bb);
+    const bool preTested = hasCond() && !m_postTested;
 
-    if (isPreTested && (n == m_body)) {
+    if (preTested && (n == m_body)) {
         return this;
     }
 

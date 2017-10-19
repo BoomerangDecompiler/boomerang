@@ -65,7 +65,7 @@ public:
     /// \returns true iff the interval [addr; addr+size) does not contain a variable.
     bool isClear(Address addr, unsigned size);
 
-    bool isClear(Address start, Address end) { assert(end >= start); return isClear(start, (end - start).value()); }
+    bool isClear(Address lower, Address upper) { assert(upper >= lower); return isClear(lower, (upper - lower).value()); }
     bool isClear(const Interval<Address> interval) { return isClear(interval.lower(), interval.upper()); }
 
     /// \returns the variable that overlaps with address \p addr, or nullptr if no such variable exists.

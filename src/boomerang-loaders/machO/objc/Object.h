@@ -160,9 +160,9 @@
 @end
 
 OBJC_EXPORT id object_dispose(Object *anObject);
-OBJC_EXPORT id object_copy(Object *anObject, unsigned nBytes);
-OBJC_EXPORT id object_copyFromZone(Object *anObject, unsigned nBytes, void *z);
-OBJC_EXPORT id object_realloc(Object *anObject, unsigned nBytes);
-OBJC_EXPORT id object_reallocFromZone(Object *anObject, unsigned nBytes, void *z);
+OBJC_EXPORT _id object_copy(Object *anObject, unsigned nBytes);
+OBJC_EXPORT _id object_copyFromZone(Object *anObject, unsigned nBytes, void *z);
+OBJC_EXPORT _id object_realloc(Object *anObject, unsigned nBytes);
+OBJC_EXPORT _id object_reallocFromZone(Object *anObject, unsigned nBytes, void *z);
 
 #endif /* _OBJC_OBJECT_H_ */
