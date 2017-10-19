@@ -98,8 +98,12 @@ else () # GCC / Clang
     AddCompileFlags(-Wsuggest-override)
     AddCompileFlags(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otehrwise
     AddCompileFlags(-Wundef)
-    AddCompileFlags(-Wzero-as-null-pointer-constant)
 #    AddCompileFlags(-Wswitch-enum)
+
+    if (Qt5Core_VERSION VERSION_GREATER 5.6.1)
+        # See https://bugreports.qt.io/browse/QTBUG-45291
+        AddCompileFlags(-Wzero-as-null-pointer-constant)
+    endif ()
 
     # Do not treat specific warnings as errors
     AddCompileFlags(-Wno-error=strict-overflow)
