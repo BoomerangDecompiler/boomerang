@@ -98,7 +98,7 @@ void StatementTest::testEmpty()
     ls->push_back(new ReturnStatement);
     pRtls->push_back(new RTL(Address(0x00000123)));
 
-    BasicBlock *entryBB = cfg->newBB(pRtls, BBType::Ret);
+    BasicBlock *entryBB = cfg->createBB(pRtls, BBType::Ret);
     cfg->setEntryAndExitBB(entryBB);
     proc->setDecoded(); // We manually "decoded"
 
@@ -156,7 +156,7 @@ void StatementTest::testFlow()
     a->setNumber(1);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->newBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
     rtl   = new RTL(Address(0x00000123));
 
@@ -167,7 +167,7 @@ void StatementTest::testFlow()
     rs->addReturn(a);
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->newBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
     cfg->setEntryAndExitBB(first); // Also sets exitBB; important!
@@ -237,7 +237,7 @@ void StatementTest::testKill()
     rtl->appendStmt(e);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->newBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
@@ -248,7 +248,7 @@ void StatementTest::testKill()
     rtl->appendStmt(rs);
 
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->newBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
     cfg->setEntryAndExitBB(first);
@@ -316,7 +316,7 @@ void StatementTest::testUse()
     rtl->appendStmt(a);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->newBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
@@ -326,7 +326,7 @@ void StatementTest::testUse()
     rs->addReturn(a);
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->newBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
     cfg->setEntryAndExitBB(first);
@@ -396,7 +396,7 @@ void StatementTest::testUseOverKill()
     rtl->appendStmt(e);
     pRtls->push_back(rtl);
 
-    BasicBlock *first = cfg->newBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
@@ -407,7 +407,7 @@ void StatementTest::testUseOverKill()
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->newBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
     cfg->setEntryAndExitBB(first);
@@ -473,7 +473,7 @@ void StatementTest::testUseOverBB()
     a->setProc(proc);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->newBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
     rtl   = new RTL();
     a     = new Assign(Location::regOf(28), Location::regOf(24));
@@ -490,7 +490,7 @@ void StatementTest::testUseOverBB()
     rs->addReturn(a);
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->newBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
     cfg->setEntryAndExitBB(first);
@@ -557,7 +557,7 @@ void StatementTest::testUseKill()
     rtl->appendStmt(a);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->newBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
@@ -567,7 +567,7 @@ void StatementTest::testUseKill()
     rs->addReturn(a);
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->newBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
     cfg->setEntryAndExitBB(first);
@@ -630,7 +630,7 @@ void StatementTest::testEndlessLoop()
     e->setProc(proc);
     rtl->appendStmt(e);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->newBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
     rtl   = new RTL();
     // r[24] := r[24] + 1
@@ -638,7 +638,7 @@ void StatementTest::testEndlessLoop()
     e->setProc(proc);
     rtl->appendStmt(e);
     pRtls->push_back(rtl);
-    BasicBlock *body = cfg->newBB(pRtls, BBType::Oneway);
+    BasicBlock *body = cfg->createBB(pRtls, BBType::Oneway);
     first->setOutEdge(0, body);
     body->addInEdge(first);
     body->setOutEdge(0, body);
@@ -850,7 +850,7 @@ void StatementTest::testRecursion()
     a->setProc(proc);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->newBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
 
     // The call BB
     pRtls = new std::list<RTL *>();
@@ -873,7 +873,7 @@ void StatementTest::testRecursion()
     rtl->appendStmt(c);
 
     c->setDestProc(proc); // Just call self
-    BasicBlock *callbb = cfg->newBB(pRtls, BBType::Call);
+    BasicBlock *callbb = cfg->createBB(pRtls, BBType::Call);
     first->setOutEdge(0, callbb);
     callbb->addInEdge(first);
     callbb->setOutEdge(0, callbb);
@@ -892,7 +892,7 @@ void StatementTest::testRecursion()
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->newBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     callbb->setOutEdge(0, ret);
     ret->addInEdge(callbb);
     cfg->setEntryAndExitBB(first);

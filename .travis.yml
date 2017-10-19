@@ -14,14 +14,13 @@ matrix:
       install:
         - sudo apt-get -qq install qt5-default gcc-4.9 g++-4.9
       env:
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_C_COMPILER=/usr/bin/gcc-4.9 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.9"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_C_COMPILER=/usr/bin/gcc-4.9 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.9 -DBOOMERANG_BUILD_TESTS=ON"
     - os: linux
       install:
         - sudo apt-get -qq install qt5-default clang-3.9
       env:
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_C_COMPILER=/usr/bin/clang-3.9 -DCMAKE_CXX_COMPILER=/usr/bin/clang++-3.9"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_C_COMPILER=/usr/bin/clang-3.9 -DCMAKE_CXX_COMPILER=/usr/bin/clang++-3.9 -DBOOMERANG_BUILD_TESTS=ON"
 
 
 before_script: mkdir build && cd build
 script: cmake $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
-

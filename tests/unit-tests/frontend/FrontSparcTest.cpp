@@ -53,7 +53,7 @@ void FrontSparcTest::test1()
 
     project.loadBinaryFile(HELLO_SPARC);
     IFileLoader *pBF = project.getBestLoader(HELLO_SPARC);
-    QVERIFY(pBF != 0);
+    QVERIFY(pBF != nullptr);
     QVERIFY(pBF->getMachine() == Machine::SPARC);
 
     Prog      *prog = new Prog(HELLO_SPARC);

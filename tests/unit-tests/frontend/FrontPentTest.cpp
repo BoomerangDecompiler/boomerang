@@ -53,7 +53,7 @@ void FrontPentTest::test1()
     project.loadBinaryFile(HELLO_PENT);
     IFileLoader *loader = project.getBestLoader(HELLO_PENT);
 
-    QVERIFY(loader != 0);
+    QVERIFY(loader != nullptr);
 
     Prog *prog = new Prog(HELLO_PENT);
     QVERIFY(loader->getMachine() == Machine::PENTIUM);
@@ -106,7 +106,7 @@ void FrontPentTest::test2()
     project.loadBinaryFile(HELLO_PENT);
     IFileLoader *pBF = project.getBestLoader(HELLO_PENT);
 
-    QVERIFY(pBF != 0);
+    QVERIFY(pBF != nullptr);
     Prog *prog = new Prog(HELLO_PENT);
     QVERIFY(pBF->getMachine() == Machine::PENTIUM);
 
