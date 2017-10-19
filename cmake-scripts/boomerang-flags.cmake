@@ -96,7 +96,7 @@ else () # GCC / Clang
     AddCompileFlags(-rdynamic -fPIC)
     AddCompileFlags(-Wno-unknown-pragmas) # pragma region is not supported by GCC
     AddCompileFlags(-Wsuggest-override)
-    AddCompileFlags(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otehrwise
+    AddCompileFlags(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otherwise
     AddCompileFlags(-Wundef)
     AddCompileFlags(-Wno-gnu-zero-variadic-macro-arguments) # Will break QSKIP() macro on clang otherwise
 
