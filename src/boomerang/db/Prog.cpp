@@ -1867,7 +1867,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
             }
 
             // "null" terminated
-            if ((nelems == (size_t)-1) && v->isConst() && (v->access<Const>()->getInt() == 0)) {
+            if ((nelems == -1) && v->isConst() && (v->access<Const>()->getInt() == 0)) {
                 break;
             }
         }
