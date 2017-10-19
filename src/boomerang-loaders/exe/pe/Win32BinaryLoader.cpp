@@ -550,7 +550,8 @@ void Win32BinaryLoader::readDebugData(QString exename)
         return;
     }
 
-    DWORD64 dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0);
+    DWORD64 dwBaseAddr = 0;
+    dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0);
 
     if (dwBaseAddr != 0) {
         assert(dwBaseAddr == m_pPEHeader->Imagebase);
