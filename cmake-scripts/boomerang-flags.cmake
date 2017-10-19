@@ -98,7 +98,7 @@ else () # GCC / Clang
     AddCompileFlags(-Wsuggest-override)
     AddCompileFlags(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otehrwise
     AddCompileFlags(-Wundef)
-#    AddCompileFlags(-Wswitch-enum)
+    AddCompileFlags(-Wno-gnu-zero-variadic-macro-arguments) # Will break QSKIP() macro on clang otherwise
 
     if (Qt5Core_VERSION VERSION_GREATER 5.6.1)
         # See https://bugreports.qt.io/browse/QTBUG-45291
@@ -112,6 +112,7 @@ else () # GCC / Clang
     # Other warnings
 #    AddCompileFlags(-Wcast-qual)
 #    AddCompileFlags(-Wconversion)
+#    AddCompileFlags(-Wswitch-enum)
 endif ()
 
 
