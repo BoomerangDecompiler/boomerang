@@ -481,7 +481,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
 
 #if defined(_WIN32) && !defined(__MINGW32__)
-BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE SourceFile, PVOID UserContext)
+BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE /*SourceFile*/, PVOID UserContext)
 {
     *(bool *)UserContext = true;
     return FALSE;
@@ -891,10 +891,8 @@ void printType(DWORD index, DWORD64 ImageBase)
 }
 
 
-BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO symInfo, ULONG SymbolSize, PVOID UserContext)
+BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVOID /*UserContext*/)
 {
-    HANDLE hProcess = GetCurrentProcess();
-
     printType(symInfo->TypeIndex, symInfo->ModBase);
 
     QString     flagsStr;

@@ -16,11 +16,11 @@
 #include <cassert>
 
 const Address Address::ZERO         = Address(0);
-const Address Address::INVALID      = Address(-1);
+const Address Address::INVALID      = Address((Address::value_type)-1);
 Byte          Address::m_sourceBits = 32U;
 
 const HostAddress HostAddress::ZERO    = HostAddress(nullptr);
-const HostAddress HostAddress::INVALID = HostAddress(-1);
+const HostAddress HostAddress::INVALID = HostAddress((HostAddress::value_type)-1);
 
 
 Address::Address()

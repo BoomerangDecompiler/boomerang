@@ -1216,7 +1216,7 @@ Prog *IFrontEnd::getProg()
 BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl)
 {
     Cfg        *pCfg = pProc->getCFG();
-    BasicBlock *pBB;
+    BasicBlock *pBB = nullptr;
 
     // Add the RTL to the list; this has the semantics for the return instruction as well as the ReturnStatement
     // The last Statement may get replaced with a GotoStatement

@@ -512,7 +512,7 @@ int CommandlineDriver::interactiveMain()
 int CommandlineDriver::decompile()
 {
     m_thread.start();
-    m_thread.wait(-1);
+    m_thread.wait(); // wait indefinitely
     return m_thread.resCode();
 }
 

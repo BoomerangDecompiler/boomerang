@@ -80,9 +80,11 @@ if (MSVC)
         -D_SCL_SECURE_NO_WARNINGS
     )
 
-    AddCompileFlags(/W3 /WX)
+    AddCompileFlags(/W4 /WX)
     AddCompileFlags(/wd4267) # conversion from size_t to int
     AddCompileFlags(/wd4091) # 'typedef ': ignored on left of '' when no variable is declared
+    AddCompileFlags(/wd4702) # Unreachable code
+    AddCompileFlags(/wd4127) # conditional expression is constant
     AddCompileFlags(/EHsc /MP)
 
     set(DEBUG_LIB dbghelp.lib)

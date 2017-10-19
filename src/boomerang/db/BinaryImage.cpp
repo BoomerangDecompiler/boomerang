@@ -44,7 +44,7 @@ Byte BinaryImage::readNative1(Address addr)
 
     if (si == nullptr) {
         LOG_WARN("Target Memory access in unmapped section at address %1", addr.toString());
-        return -1;
+        return 0xFF;
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;

@@ -551,7 +551,7 @@ int debugRegister(int r)
 }
 
 
-BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG SymbolSize, PVOID UserContext)
+BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVOID UserContext)
 {
     Function *proc = (Function *)UserContext;
 
@@ -1836,7 +1836,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToArray()) {
-        size_t  nelems  = -1;
+        int  nelems  = -1;
         QString nam     = getGlobalName(uaddr);
         int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
 
@@ -1849,7 +1849,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 
         auto n = e = Terminal::get(opNil);
 
-        for (size_t i = 0; i < nelems; i++) {
+        for (int i = 0; i < nelems; i++) {
             auto v = readNativeAs(uaddr + i * base_sz, type->as<ArrayType>()->getBaseType());
 
             if (v == nullptr) {

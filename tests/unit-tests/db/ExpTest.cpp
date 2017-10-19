@@ -687,22 +687,17 @@ void ExpTest::testSimpConstr()
 void ExpTest::testLess()
 {
     // Simple constants
-    Const two(2), three(3), mThree(-3), twoPointTwo(2.2), threePointThree(3.3);
-    Const mThreePointThree(-3.3);
+    Const two(2), three(3), minusThree(-3), twoPointTwo(2.2), threePointThree(3.3);
+    Const minusThreePointThree(-3.3);
 
     QVERIFY(two < three);
-    QVERIFY(mThree < two);
+    QVERIFY(minusThree < two);
     QVERIFY(twoPointTwo < threePointThree);
-    QVERIFY(mThreePointThree < twoPointTwo);
+    QVERIFY(minusThreePointThree < twoPointTwo);
+
     // Terminal
     Terminal afp(opAFP), agp(opAGP);
-
-    if (opAFP < opAGP) {
-        QVERIFY(afp < agp);
-    }
-    else {
-        QVERIFY(agp < afp);
-    }
+    QVERIFY((opAFP < opAGP) == (afp < agp));
 
     // Unary
     Unary negTwo(opNeg, Const::get(2)), negThree(opNeg, Const::get(3));
@@ -714,6 +709,7 @@ void ExpTest::testLess()
     Binary thrByThr(opMult, Const::get(3), Const::get(3));
     QVERIFY(twoByThr < twoByFou);
     QVERIFY(twoByThr < thrByThr);
+
     // Ternary
     Ternary twoAtThrToFou(opAt, Const::get(2), Const::get(3), Const::get(4));
     Ternary twoAtThrToFiv(opAt, Const::get(2), Const::get(3), Const::get(5));
