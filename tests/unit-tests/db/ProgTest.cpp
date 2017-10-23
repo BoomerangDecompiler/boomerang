@@ -26,7 +26,7 @@
 
 #include "boomerang/db/Prog.h"
 
-#define HELLO_PENTIUM    (BOOMERANG_TEST_BASE "/tests/input/pentium/hello")
+#define HELLO_PENTIUM    (BOOMERANG_TEST_BASE "tests/input/pentium/hello")
 
 
 void ProgTest::testName()

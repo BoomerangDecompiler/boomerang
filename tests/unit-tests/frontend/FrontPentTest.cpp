@@ -29,16 +29,16 @@
 #include <QDebug>
 
 
-#define HELLO_PENT      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
-#define BRANCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/branch")
-#define FEDORA2_TRUE    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/fedora2_true")
-#define FEDORA3_TRUE    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/fedora3_true")
-#define SUSE_TRUE       (BOOMERANG_TEST_BASE "/tests/inputs/pentium/suse_true")
+#define HELLO_PENT      (BOOMERANG_TEST_BASE "tests/inputs/pentium/hello")
+#define BRANCH_PENT     (BOOMERANG_TEST_BASE "tests/inputs/pentium/branch")
+#define FEDORA2_TRUE    (BOOMERANG_TEST_BASE "tests/inputs/pentium/fedora2_true")
+#define FEDORA3_TRUE    (BOOMERANG_TEST_BASE "tests/inputs/pentium/fedora3_true")
+#define SUSE_TRUE       (BOOMERANG_TEST_BASE "tests/inputs/pentium/suse_true")
 
 
 void FrontPentTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
 }
 
 

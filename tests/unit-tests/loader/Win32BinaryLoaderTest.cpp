@@ -17,11 +17,11 @@
 
 #include "boomerang/util/Log.h"
 
-#define SWITCH_BORLAND    (BOOMERANG_TEST_BASE "/tests/inputs/windows/switch_borland.exe")
+#define SWITCH_BORLAND    (BOOMERANG_TEST_BASE "tests/inputs/windows/switch_borland.exe")
 
 void Win32BinaryLoaderTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
 }
 
 

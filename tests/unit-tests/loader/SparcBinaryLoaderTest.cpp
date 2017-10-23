@@ -17,12 +17,12 @@
 #include "boomerang/util/Log.h"
 
 
-#define HELLO_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/hello")
+#define HELLO_SPARC    (BOOMERANG_TEST_BASE "tests/inputs/sparc/hello")
 
 
 void SparcBinaryLoaderTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
 }
 
 
