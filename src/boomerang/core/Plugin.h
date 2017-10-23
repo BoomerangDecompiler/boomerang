@@ -76,7 +76,9 @@ public:
         : m_pluginHandle(pluginPath)
         , m_ifc(nullptr)
     {
-        init();
+        if (!init()) {
+            throw "Plugin initialization function not found!";
+        }
     }
 
     ~Plugin()
@@ -88,7 +90,13 @@ public:
     /// Get information about the plugin.
     const PluginInfo *getInfo() const
     {
-        return getFunction<PluginInfoFunction>("getInfo")();
+        PluginInfoFunction infoFunction = getFunction<PluginInfoFunction>("getInfo");
+        if (!infoFunction) {
+            return nullptr;
+        }
+        else {
+            return infoFunction();
+        }
     }
 
     /// Get the interface pointer for this plugin.
@@ -103,18 +111,30 @@ private:
     const Plugin& operator=(const Plugin& other) = delete;
 
     /// Initialize the plugin.
-    void init()
+    bool init()
     {
         assert(m_ifc == nullptr);
-        m_ifc = getFunction<PluginInitFunction>("initPlugin")();
+        PluginInitFunction initFunction = getFunction<PluginInitFunction>("initPlugin");
+        if (!initFunction) {
+            return false;
+        }
+
+        m_ifc = initFunction();
+        return m_ifc != nullptr;
     }
 
     /// De-initialize the plugin.
-    void deinit()
+    bool deinit()
     {
         assert(m_ifc != nullptr);
-        getFunction<PluginDeinitFunction>("deinitPlugin")();
+        PluginDeinitFunction deinitFunction = getFunction<PluginDeinitFunction>("deinitPlugin");
+        if (!deinitFunction) {
+            return false;
+        }
+        
+        deinitFunction();
         m_ifc = nullptr;
+        return true;
     }
 
     /// Given a non-mangled function name (e.g. initPlugin),
@@ -142,7 +162,7 @@ private:
 #define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor) \
     static Classname * g_pluginInstance = nullptr;                          \
     extern "C" {                                                            \
-    Interface *initPlugin()                                                 \
+    Q_DECL_EXPORT Interface *initPlugin()                                   \
     {                                                                       \
         if (!g_pluginInstance) {                                            \
             g_pluginInstance = new Classname();                             \
@@ -150,13 +170,13 @@ private:
         return g_pluginInstance;                                            \
     }                                                                       \
                                                                             \
-    void deinitPlugin()                                                     \
+    Q_DECL_EXPORT void deinitPlugin()                                       \
     {                                                                       \
         delete g_pluginInstance;                                            \
         g_pluginInstance = nullptr;                                         \
     }                                                                       \
                                                                             \
-    const PluginInfo *getInfo()                                             \
+    Q_DECL_EXPORT const PluginInfo *getInfo()                               \
     {                                                                       \
         static PluginInfo info;                                             \
         info.name    = PName;                                               \
