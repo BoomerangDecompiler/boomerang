@@ -110,6 +110,12 @@ void Project::loadPlugins()
     for (QString fileName : pluginsDir.entryList(QDir::Files)) {
         const QString sofilename = pluginsDir.absoluteFilePath(fileName);
 
+#if WIN32
+        if (!sofilename.endsWith(".dll")) {
+            continue;
+        }
+#endif
+
         try {
             std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
             m_loaderPlugins.push_back(loaderPlugin);
