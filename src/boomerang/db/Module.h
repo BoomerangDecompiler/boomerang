@@ -121,6 +121,9 @@ public:
     std::shared_ptr<Signature> getLibSignature(const QString& name);
 
 private:
+    void addWin32DbgInfo(Function *pProc);
+
+private:
     FunctionList m_functionList; ///< The Functions in the module
     IFrontEnd *m_currentFrontend;
     FunctionMap m_labelsToProcs;

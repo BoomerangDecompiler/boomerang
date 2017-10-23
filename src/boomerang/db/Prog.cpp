@@ -96,7 +96,7 @@ Prog::Prog(const QString& name)
 Prog::~Prog()
 {
     delete m_defaultFrontend;
-
+    m_defaultFrontend = nullptr;
     for (Module *m : m_moduleList) {
         delete m;
     }
