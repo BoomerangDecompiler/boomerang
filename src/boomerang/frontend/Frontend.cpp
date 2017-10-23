@@ -265,7 +265,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
         entrypoints.push_back(a);
     }
     else { // try some other tricks
-        QString fname = Boomerang::get()->getSettings()->getFilename();
+        QString fname = QString::null; // Boomerang::get()->getSettings()->getFilename();
 
         // X11 Module
         if (fname.endsWith("_drv.o")) {

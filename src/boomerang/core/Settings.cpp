@@ -14,9 +14,13 @@
 #include "boomerang/util/Util.h"
 
 Settings::Settings()
+    : m_settings("test", "Boomerang")
 {
     m_workingDirectory = QDir("./").absolutePath();
-    setOutputDirectory(m_workingDirectory.absoluteFilePath("output/"));
+
+    m_settings.setValue("DataDirectory", m_settings.value("DataDirectory", m_workingDirectory.absoluteFilePath("data/")));
+    m_settings.setValue("OutputDirectory", m_settings.value("OutputDirectory", m_workingDirectory.absoluteFilePath("output/")));
+    m_settings.sync();
 }
 
 
@@ -34,21 +38,7 @@ bool createDirectory(const QString& dir)
 }
 
 
-bool Settings::setOutputDirectory(const QString& path)
+void Settings::setOutputDirectory(const QString& path)
 {
-    m_outputDirectory = QDir(path);
-
-    // Create the output directory, if needed
-    if (!createDirectory(path)) {
-        LOG_ERROR("Could not create output directory %1", m_outputDirectory.path());
-        return false;
-    }
-
-    return true;
-}
-
-
-QString Settings::getFilename() const
-{
-    return "";
+    m_settings.setValue("OutputDirectory", path);
 }

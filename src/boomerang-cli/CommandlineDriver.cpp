@@ -125,7 +125,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
     }
 
     Boomerang& boom(*Boomerang::get());
-    boom.getSettings()->setWorkingDirectory(QFileInfo(args[0]).absolutePath());
     boom.getSettings()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
 
     for (int i = 1; i < args.size(); ++i) {
