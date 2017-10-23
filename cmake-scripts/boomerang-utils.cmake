@@ -117,3 +117,41 @@ function(BOOMERANG_ADD_TEST)
 	set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
     BOOMERANG_COPY_IMPORTED_DLL(${TEST_NAME} Qt5::Test)
 endfunction(BOOMERANG_ADD_TEST)
+
+
+include(CheckCXXCompilerFlag)
+include(CheckCCompilerFlag)
+# This function adds the flag(s) to the c/c++ compiler flags
+function(BOOMERANG_ADD_COMPILE_FLAGS)
+    set(C_COMPILE_FLAGS "")
+    set(CXX_COMPILE_FLAGS "")
+
+    foreach (flag ${ARGN})
+        # We cannot check for -Wno-foo as this won't throw a warning so we must check for the -Wfoo option directly
+        # https://stackoverflow.com/questions/38785168/cc1plus-unrecognized-command-line-option-warning-on-any-other-warning
+        string(REGEX REPLACE "^-Wno-" "-W" checkedFlag ${flag})
+        set(VarName ${checkedFlag})
+        string(REPLACE "+" "X" VarName ${VarName})
+        string(REGEX REPLACE "[-=]" "_" VarName ${VarName})
+
+        # Avoid double checks. A compiler will not magically support a flag it did not before
+        if (NOT ${VarName}_CHECKED)
+            CHECK_CXX_COMPILER_FLAG(${checkedFlag} CXX_FLAG_${VarName}_SUPPORTED)
+            CHECK_C_COMPILER_FLAG(${checkedFlag}   C_FLAG_${VarName}_SUPPORTED)
+            set(${VarName}_CHECKED YES CACHE INTERNAL "")
+        endif()
+
+        if (CXX_FLAG_${VarName}_SUPPORTED)
+            set(CXX_COMPILE_FLAGS "${C_COMPILE_FLAGS} ${flag}")
+        endif ()
+        if (C_FLAG_${VarName}_SUPPORTED)
+            set(C_COMPILE_FLAGS "${C_COMPILE_FLAGS} ${flag}")
+        endif ()
+
+        unset(VarName)
+        unset(checkedFlag)
+    endforeach ()
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_COMPILE_FLAGS}" PARENT_SCOPE)
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${C_COMPILE_FLAGS}" PARENT_SCOPE)
+endfunction()

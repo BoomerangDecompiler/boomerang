@@ -33,44 +33,7 @@ set(C_COMPILE_FLAGS "")
 set(CXX_COMPILE_FLAGS "")
 set(LINKER_FLAGS "")
 
-include(CheckCXXCompilerFlag)
-include(CheckCCompilerFlag)
-
-# This function adds the flag(s) to the c++ compiler flags
-function(AddCompileFlags)
-    set(C_COMPILE_FLAGS "")
-    set(CXX_COMPILE_FLAGS "")
-
-    foreach (flag ${ARGN})
-        # We cannot check for -Wno-foo as this won't throw a warning so we must check for the -Wfoo option directly
-        # http://stackoverflow.com/questions/38785168/cc1plus-unrecognized-command-line-option-warning-on-any-other-warning
-        string(REGEX REPLACE "^-Wno-" "-W" checkedFlag ${flag})
-        set(VarName ${checkedFlag})
-        string(REPLACE "+" "X" VarName ${VarName})
-        string(REGEX REPLACE "[-=]" "_" VarName ${VarName})
-
-        # Avoid double checks. A compiler will not magically support a flag it did not before
-        if (NOT ${VarName}_CHECKED)
-            CHECK_CXX_COMPILER_FLAG(${checkedFlag} CXX_FLAG_${VarName}_SUPPORTED)
-            CHECK_C_COMPILER_FLAG(${checkedFlag}   C_FLAG_${VarName}_SUPPORTED)
-            set(${VarName}_CHECKED YES CACHE INTERNAL "")
-        endif()
-
-        if (CXX_FLAG_${VarName}_SUPPORTED)
-            set(CXX_COMPILE_FLAGS "${C_COMPILE_FLAGS} ${flag}")
-        endif ()
-        if (C_FLAG_${VarName}_SUPPORTED)
-            set(C_COMPILE_FLAGS "${C_COMPILE_FLAGS} ${flag}")
-        endif ()
-
-        unset(VarName)
-        unset(checkedFlag)
-    endforeach ()
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_COMPILE_FLAGS}" PARENT_SCOPE)
-    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${C_COMPILE_FLAGS}" PARENT_SCOPE)
-endfunction()
-
+include(boomerang-utils)
 
 # Add compiler flags if available
 if (MSVC)
@@ -80,57 +43,57 @@ if (MSVC)
         -D_SCL_SECURE_NO_WARNINGS
     )
 
-    AddCompileFlags(/W4 /WX)
-    AddCompileFlags(/wd4267) # conversion from size_t to int
-    AddCompileFlags(/wd4091) # 'typedef ': ignored on left of '' when no variable is declared
-    AddCompileFlags(/wd4702) # Unreachable code
-    AddCompileFlags(/wd4127) # conditional expression is constant
-    AddCompileFlags(/EHsc /MP)
+    BOOMERANG_ADD_COMPILE_FLAGS(/W4 /WX)
+    BOOMERANG_ADD_COMPILE_FLAGS(/EHsc /MP)
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4267) # conversion from size_t to int
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4091) # 'typedef ': ignored on left of '' when no variable is declared
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4702) # Unreachable code
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4127) # conditional expression is constant
 
     set(DEBUG_LIB dbghelp.lib)
     
 else () # GCC / Clang
-    AddCompileFlags(-Wall -Wextra -Werror -Wshadow)
-    AddCompileFlags(-Werror=pedantic)
-    AddCompileFlags(-Wformat=2)
-    AddCompileFlags(-Wmissing-include-dirs)
-    AddCompileFlags(-Wstrict-overflow=2)
-    AddCompileFlags(-Wnull-dereference)
-    AddCompileFlags(-Wduplicated-cond)
-    AddCompileFlags(-Wduplicated-branches)
-    AddCompileFlags(-Walloc-zero)
-    AddCompileFlags(-Walloca)
-    AddCompileFlags(-rdynamic -fPIC)
-    AddCompileFlags(-Wno-unknown-pragmas) # pragma region is not supported by GCC
-    AddCompileFlags(-Wsuggest-override)
-    AddCompileFlags(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otherwise
-    AddCompileFlags(-Wundef)
-    AddCompileFlags(-Wno-gnu-zero-variadic-macro-arguments) # Will break QSKIP() macro on clang otherwise
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wall -Wextra -Werror -Wshadow)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Werror=pedantic)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wformat=2)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wmissing-include-dirs)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wstrict-overflow=2)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wnull-dereference)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wduplicated-cond)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wduplicated-branches)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Walloc-zero)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Walloca)
+    BOOMERANG_ADD_COMPILE_FLAGS(-rdynamic -fPIC)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wsuggest-override)
+    BOOMERANG_ADD_COMPILE_FLAGS(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otherwise
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wundef)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-gnu-zero-variadic-macro-arguments) # Will break QSKIP() macro on clang otherwise
 
     if (Qt5Core_VERSION VERSION_GREATER 5.6.1)
         # See https://bugreports.qt.io/browse/QTBUG-45291
-        AddCompileFlags(-Wzero-as-null-pointer-constant)
+        BOOMERANG_ADD_COMPILE_FLAGS(-Wzero-as-null-pointer-constant)
     endif ()
 
     # Do not treat specific warnings as errors
-    AddCompileFlags(-Wno-error=strict-overflow)
-    AddCompileFlags(-Wno-error=alloca)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=strict-overflow)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=alloca)
 
     # Other warnings
-#    AddCompileFlags(-Wcast-qual)
-#    AddCompileFlags(-Wconversion)
-#    AddCompileFlags(-Wswitch-enum)
+#    BOOMERANG_ADD_COMPILE_FLAGS(-Wcast-qual)
+#    BOOMERANG_ADD_COMPILE_FLAGS(-Wconversion)
+#    BOOMERANG_ADD_COMPILE_FLAGS(-Wswitch-enum)
 endif ()
 
 
 if (NOT MSVC)
     if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        AddCompileFlags(-g -O0)
+        BOOMERANG_ADD_COMPILE_FLAGS(-g -O0)
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-        AddCompileFlags(-g -O2)
+        BOOMERANG_ADD_COMPILE_FLAGS(-g -O2)
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
-        AddCompileFlags(-Os)
+        BOOMERANG_ADD_COMPILE_FLAGS(-Os)
     else () # Release
-        AddCompileFlags(-O3)
+        BOOMERANG_ADD_COMPILE_FLAGS(-O3)
     endif ()
 endif (NOT MSVC)
