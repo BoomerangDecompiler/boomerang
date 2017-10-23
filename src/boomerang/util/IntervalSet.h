@@ -45,8 +45,11 @@ public:
         typename Data::iterator firstInRange, lastInRange;
         std::tie(firstInRange, lastInRange) = equalRange(interval.lower(), interval.upper());
 
-        T minLower = std::min(interval.lower(), firstInRange->lower());
-        T maxUpper = std::max(interval.upper(), lastInRange->upper());
+        T minLower = interval.lower();
+        T maxUpper = interval.upper();
+
+        if (firstInRange != m_data.end()) { minLower = std::min(minLower, firstInRange->lower()); }
+        if (lastInRange != m_data.end())  { maxUpper = std::max(maxUpper, lastInRange->upper()); }
 
         typename Data::iterator it = m_data.erase(firstInRange, lastInRange);
         return m_data.insert(it, Interval<T>(minLower, maxUpper));
