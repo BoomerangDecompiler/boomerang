@@ -35,7 +35,6 @@ void DecompilerThread::run()
 {
     threadToCollect = QThread::currentThreadId();
 
-    Boomerang::get()->getSettings()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
     Boomerang::get()->getSettings()->setOutputDirectory("output");
 
     m_parent = new Decompiler();

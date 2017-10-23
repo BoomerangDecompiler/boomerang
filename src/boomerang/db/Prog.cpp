@@ -399,7 +399,7 @@ Function *Prog::createProc(Address startAddress)
         LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
     }
 
-    return m_rootModule->getOrInsertFunction(procName, startAddress, bLib);
+    return m_rootModule->createFunction(procName, startAddress, bLib);
 }
 
 
@@ -676,7 +676,7 @@ LibProc *Prog::getLibraryProc(const QString& nam) const
         return (LibProc *)p;
     }
 
-    return (LibProc *)m_rootModule->getOrInsertFunction(nam, Address::INVALID, true);
+    return (LibProc *)m_rootModule->createFunction(nam, Address::INVALID, true);
 }
 
 
@@ -1704,7 +1704,7 @@ void Prog::readSymbolFile(const QString& fname)
                                  // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
                                  // to specifically specify that this function obeys library calling conventions
                                  sym->mods->noDecode;
-            Function *p = tgt_mod->getOrInsertFunction(name, sym->addr, do_not_decode);
+            Function *p = tgt_mod->createFunction(name, sym->addr, do_not_decode);
 
             if (!sym->mods->incomplete) {
                 p->setSignature(sym->sig->clone());

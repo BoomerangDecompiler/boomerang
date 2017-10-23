@@ -14,31 +14,30 @@
 #include "boomerang/util/Util.h"
 
 Settings::Settings()
-    : m_settings("test", "Boomerang")
 {
     m_workingDirectory = QDir("./").absolutePath();
 
-    m_settings.setValue("DataDirectory", m_settings.value("DataDirectory", m_workingDirectory.absoluteFilePath("data/")));
-    m_settings.setValue("OutputDirectory", m_settings.value("OutputDirectory", m_workingDirectory.absoluteFilePath("output/")));
-    m_settings.sync();
+    setDataDirectory("../lib/boomerang");
+    setOutputDirectory("./output");
 }
 
 
-/**
- * Creates a directory and tests it.
- *
- * \param dir The name of the directory.
- *
- * \retval true The directory is valid.
- * \retval false The directory is invalid.
- */
-bool createDirectory(const QString& dir)
+void Settings::setWorkingDirectory(const QString& directoryPath)
 {
-    return QDir::root().mkpath(QFileInfo(dir).absolutePath());
+    m_workingDirectory = QDir(directoryPath);
+    LOG_VERBOSE("wd now '%1'", m_workingDirectory.absolutePath());
 }
 
 
-void Settings::setOutputDirectory(const QString& path)
+void Settings::setDataDirectory(const QString& directoryPath)
 {
-    m_settings.setValue("OutputDirectory", path);
+    m_dataDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
+    LOG_VERBOSE("dd now '%1'", m_dataDirectory.absolutePath());
+}
+
+
+void Settings::setOutputDirectory(const QString& directoryPath)
+{
+    m_outputDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
+    LOG_VERBOSE("od now '%1'", m_outputDirectory.absolutePath());
 }

@@ -113,7 +113,7 @@ public:
      * \param bLib - If true, this will be a libProc; else a UserProc
      * \returns        A pointer to the new Function object
      ******************************************************************************/
-    Function *getOrInsertFunction(const QString& name, Address uNative, bool bLib = false);
+    Function *createFunction(const QString& name, Address uNative, bool bLib = false);
     Function *getFunction(const QString& name) const;
     Function *getFunction(Address loc) const;
 

@@ -184,7 +184,7 @@ void TypeTest::testDataInterval()
 {
     Prog            *prog = new Prog("test");
     Module          *m    = prog->getOrInsertModule("test");
-    UserProc        *proc = (UserProc *)m->getOrInsertFunction("test", Address(0x123));
+    UserProc        *proc = (UserProc *)m->createFunction("test", Address(0x123));
     DataIntervalMap dim(proc);
 
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "testProc"));
@@ -249,7 +249,7 @@ void TypeTest::testDataIntervalOverlaps()
 {
     Prog            *prog = new Prog("test");
     Module          *m    = prog->getOrInsertModule("test");
-    UserProc        *proc = (UserProc *)m->getOrInsertFunction("test", Address(0x00000100));
+    UserProc        *proc = (UserProc *)m->createFunction("test", Address(0x00000100));
     DataIntervalMap dim(proc);
 
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));

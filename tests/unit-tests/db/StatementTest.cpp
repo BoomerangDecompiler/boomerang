@@ -89,7 +89,7 @@ void StatementTest::testEmpty()
     QVERIFY(m != nullptr);
 
     // create UserProc
-    UserProc *proc = (UserProc *)m->getOrInsertFunction("test", Address(0x00000123));
+    UserProc *proc = (UserProc *)m->createFunction("test", Address(0x00000123));
 
     // create CFG
     Cfg                    *cfg   = proc->getCFG();

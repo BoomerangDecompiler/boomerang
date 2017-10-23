@@ -294,7 +294,7 @@ void Module::addWin32DbgInfo(Function *pProc)
 }
 
 
-Function *Module::getOrInsertFunction(const QString& name, Address entryAddress, bool bLib)
+Function *Module::createFunction(const QString& name, Address entryAddress, bool bLib)
 {
     Function *pProc;
 

@@ -41,7 +41,6 @@ Boomerang::Boomerang()
     , m_symbols(new SymTab)
     , m_codeGenerator(new CCodeGenerator)
 {
-    m_settings->setDataDirectory("../lib/boomerang/");
 }
 
 
@@ -87,7 +86,7 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *p
                     continue;
                 }
 
-                Function *p = cl->getOrInsertFunction(method_name, m.addr);
+                Function *p = cl->createFunction(method_name, m.addr);
                 p->setSignature(Signature::instantiate(prog->getFrontEndId(), CallConv::C, method_name));
                 // TODO: decode types in m.types
                 LOG_VERBOSE("\t\t\tMethod: ", m.name);
