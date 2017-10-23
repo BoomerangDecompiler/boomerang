@@ -39,6 +39,6 @@ matrix:
   fast_finish: true
 
 build_script:
-    - cmake --build .
+    - cmake --build . --target RUN_TESTS
 
 test: off
