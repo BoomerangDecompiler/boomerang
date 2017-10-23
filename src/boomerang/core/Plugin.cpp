@@ -25,7 +25,7 @@ PluginHandle::PluginHandle(const QString& filePath)
     m_handle = LoadLibrary(qPrintable(filePath));
 
     if (m_handle == nullptr) {
-        throw "Loading plugin failed!";
+        throw "Failed to LoadLibrary!";
     }
 #else
     m_handle = dlopen(qPrintable(filePath), RTLD_NOW);
