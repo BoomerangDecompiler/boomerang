@@ -42,11 +42,15 @@ void ConsoleLogSink::flush()
 FileLogSink::FileLogSink(const QString& filename, bool append)
     : m_logFile(filename)
 {
-    if (append) {
-        m_logFile.open(QFile::WriteOnly | QFile::Append);
-    }
-    else {
-        m_logFile.open(QFile::WriteOnly);
+    QIODevice::OpenMode openFlags = QFile::WriteOnly;
+    if (append) { openFlags |= QFile::Append; }
+
+    bool ok = m_logFile.open(openFlags);
+    if (!ok) {
+        // Parent directory might not exist. Create directories and try again.
+        QFileInfo(m_logFile).dir().mkpath(".");
+        ok = m_logFile.open(openFlags);
+        assert(ok);
     }
 }
 
