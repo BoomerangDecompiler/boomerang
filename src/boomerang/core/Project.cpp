@@ -110,7 +110,7 @@ void Project::loadPlugins()
     for (QString fileName : pluginsDir.entryList(QDir::Files)) {
         const QString sofilename = pluginsDir.absoluteFilePath(fileName);
 
-#if WIN32
+#ifdef _WIN32
         if (!sofilename.endsWith(".dll")) {
             continue;
         }

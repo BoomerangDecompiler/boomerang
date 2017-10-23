@@ -244,9 +244,10 @@ void Module::setLocationMap(Address loc, Function *fnc)
 void Module::addWin32DbgInfo(Function *pProc)
 {
 #if !defined(_WIN32) || defined(__MINGW32__)
+    Q_UNUSED(pProc);
     LOG_ERROR("Adding debug information for Windows programs is only supported on Windows!");
     return;
-#endif
+#else
     if (!m_currentFrontend || !m_currentFrontend->isWin32()) {
         return;
     }
@@ -291,6 +292,7 @@ void Module::addWin32DbgInfo(Function *pProc)
         LOG_MSG("Final signature:");
         pProc->getSignature()->printToLog();
     }
+#endif
 }
 
 
