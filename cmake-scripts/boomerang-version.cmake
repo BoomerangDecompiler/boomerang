@@ -8,7 +8,7 @@
 
 
 # default Boomerang version
-set(BOOMERANG_VERSION "0.4.0")
+set(BOOMERANG_VERSION "0.4.0-alpha")
 
 # if git is installed, update version string from git tags
 set(BOOMERANG_VERSION "${PROJECT_VERSION}")
@@ -16,7 +16,7 @@ find_package(Git)
 if (GIT_FOUND)
     # get current git branch
     execute_process(
-        COMMAND "${GIT_EXECUTABLE}" describe rev-parse --abbrev-ref HEAD
+        COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         RESULT_VARIABLE BRANCH_FAILED
         OUTPUT_VARIABLE BOOMERANG_BRANCH
@@ -34,17 +34,15 @@ if (GIT_FOUND)
         ERROR_QUIET
     )
 
-    # get last
-
     execute_process(
-        COMMAND "${GIT_EXECUTABLE}" ARGS describe --dirty --tags --always
+        COMMAND "${GIT_EXECUTABLE}" describe --dirty --tags --always
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         RESULT_VARIABLE DESCRIBE_FAILED
         OUTPUT_VARIABLE BOOMERANG_VERSION_TEMP
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
     )
-
+    
     # do not overwrite default version with empty one
     if (NOT DESCRIBE_FAILED)
         set(BOOMERANG_VERSION "${BOOMERANG_VERSION_TEMP}")
@@ -54,4 +52,4 @@ endif (GIT_FOUND)
 set(PROJECT_VERSION "${BOOMERANG_VERSION}")
 add_definitions(-DBOOMERANG_VERSION="${BOOMERANG_VERSION}")
 
-message(STATUS "Configuring ${PROJECT_NAME} ${BOOMERANG_VERSION}")
+message(STATUS "Configuring ${PROJECT_NAME} ${BOOMERANG_VERSION} ...")
