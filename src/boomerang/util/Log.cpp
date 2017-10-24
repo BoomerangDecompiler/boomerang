@@ -143,10 +143,10 @@ void Log::addLogSink(std::unique_ptr<ILogSink> s)
 
 void Log::addDefaultLogSinks()
 {
-    addLogSink(std::make_unique<ConsoleLogSink>());
+    addLogSink(Util::makeUnique<ConsoleLogSink>());
 
     QFileInfo fi(Boomerang::get()->getSettings()->getOutputDirectory(), "boomerang.log");
-    addLogSink(std::make_unique<FileLogSink>(fi.absoluteFilePath()));
+    addLogSink(Util::makeUnique<FileLogSink>(fi.absoluteFilePath()));
 
     writeLogHeader();
 }
@@ -284,7 +284,7 @@ SeparateLogger::SeparateLogger(const QString filePath)
 
     QString full_path = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(
         QString("%1_%2.log").arg(filePath).arg(versions[filePath]++, 2, 10, QChar('0')));
-    addLogSink(std::make_unique<FileLogSink>(full_path, true));
+    addLogSink(Util::makeUnique<FileLogSink>(full_path, true));
 }
 
 

@@ -13,6 +13,8 @@
 #include <QString>
 #include <QTextStream>
 
+#include <memory>
+
 #include "boomerang/util/Types.h"
 
 class Printable
@@ -34,13 +36,6 @@ QString escapeStr(const QString& str);
 
 QTextStream& alignStream(QTextStream& str, int align);
 
-/// return a bit mask with exactly \p bitCount of the lowest bits set to 1.
-/// (example: 16 -> 0xFFFF)
-inline QWord getLowerBitMask(DWord bitCount)
-{
-    return (1ULL << (bitCount % (8 * sizeof(QWord)))) - 1ULL;
-}
-
 
 /// Check if \p value is in [\p rangeStart, \p rangeEnd)
 template<class T, class U>
@@ -55,6 +50,23 @@ template<typename Cont, typename T>
 bool isIn(const Cont& cont, const T& value)
 {
     return std::find(cont.begin(), cont.end(), value) != cont.end();
+}
+
+
+/// Basically the same as C++14's std::make_unique
+/// that is not available in C++11. Can be removed when
+/// dropping support for compilers that are not C++14 compilant.
+template<typename T, typename... Args>
+std::unique_ptr<T> makeUnique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+
+/// return a bit mask with exactly \p bitCount of the lowest bits set to 1.
+/// (example: 16 -> 0xFFFF)
+inline QWord getLowerBitMask(DWord bitCount)
+{
+    return (1ULL << (bitCount % (8 * sizeof(QWord)))) - 1ULL;
 }
 
 
