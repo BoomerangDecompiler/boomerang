@@ -89,9 +89,6 @@ Log::Log(LogLevel level)
 
 Log::~Log()
 {
-    for (ILogSink *& sink : m_sinks) {
-        delete sink;
-    }
 }
 
 
@@ -99,12 +96,6 @@ Log& Log::getOrCreateLog()
 {
     if (!g_log) {
         g_log = new Log(LogLevel::Default);
-        g_log->addLogSink(new ConsoleLogSink());
-        g_log->addLogSink(new FileLogSink(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("boomerang.log")));
-        g_log->writeLogHeader();
-
-        LOG_MSG("This is Boomerang " BOOMERANG_VERSION);
-        LOG_MSG("Log initialized.");
     }
 
     return *g_log;
@@ -140,25 +131,30 @@ void Log::logDirect(LogLevel level, const char *file, int line, const QString& m
 }
 
 
-void Log::addLogSink(ILogSink *s)
+void Log::addLogSink(std::unique_ptr<ILogSink> s)
 {
     assert(s != nullptr);
 
     if (std::find(m_sinks.begin(), m_sinks.end(), s) == m_sinks.end()) {
-        m_sinks.push_back(s);
+        m_sinks.push_back(std::move(s));
     }
 }
 
 
-void Log::removeLogSink(ILogSink *s)
+void Log::addDefaultLogSinks()
 {
-    assert(s != nullptr);
-    auto it = std::find(m_sinks.begin(), m_sinks.end(), s);
+    addLogSink(std::make_unique<ConsoleLogSink>());
 
-    if (it != m_sinks.end()) {
-        m_sinks.erase(it);
-        delete s;
-    }
+    QFileInfo fi(Boomerang::get()->getSettings()->getOutputDirectory(), "boomerang.log");
+    addLogSink(std::make_unique<FileLogSink>(fi.absoluteFilePath()));
+
+    writeLogHeader();
+}
+
+
+void Log::removeAllSinks()
+{
+    m_sinks.clear();
 }
 
 
@@ -185,6 +181,9 @@ void Log::writeLogHeader()
 {
     this->write("Level | File                                    | Line | Message\n");
     this->write(QString(100, '=') + "\n");
+
+    LOG_MSG("This is Boomerang " BOOMERANG_VERSION);
+    LOG_MSG("Log initialized.");
 }
 
 
@@ -250,7 +249,7 @@ QString Log::collectArg(const QString& msg, const LocationSet *l)
 
 void Log::write(const QString& msg)
 {
-    for (ILogSink *s : m_sinks) {
+    for (std::unique_ptr<ILogSink>& s : m_sinks) {
         s->write(msg);
     }
 }
@@ -285,7 +284,7 @@ SeparateLogger::SeparateLogger(const QString filePath)
 
     QString full_path = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(
         QString("%1_%2.log").arg(filePath).arg(versions[filePath]++, 2, 10, QChar('0')));
-    addLogSink(new FileLogSink(full_path, true));
+    addLogSink(std::make_unique<FileLogSink>(full_path, true));
 }
 
 

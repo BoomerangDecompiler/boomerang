@@ -157,10 +157,10 @@ public:
     }
 
     /// Add a log sink / target. Takes ownership of the pointer.
-    void addLogSink(ILogSink *s);
+    void addLogSink(std::unique_ptr<ILogSink> s);
+    void addDefaultLogSinks();
 
-    /// Removes and deletes a log sink.
-    void removeLogSink(ILogSink *s);
+    void removeAllSinks();
 
     Log& setLogLevel(LogLevel level);
     LogLevel getLogLevel() const;
@@ -240,7 +240,7 @@ private:
      */
     size_t m_fileNameOffset;
     LogLevel m_level = LogLevel::Default;
-    std::vector<ILogSink *> m_sinks;
+    std::vector<std::unique_ptr<ILogSink>> m_sinks;
 };
 
 

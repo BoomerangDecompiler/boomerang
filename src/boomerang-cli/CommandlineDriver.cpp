@@ -511,6 +511,8 @@ int CommandlineDriver::interactiveMain()
 
 int CommandlineDriver::decompile()
 {
+    Log::getOrCreateLog().addDefaultLogSinks();
+
     m_thread.start();
     m_thread.wait(); // wait indefinitely
     return m_thread.resCode();
