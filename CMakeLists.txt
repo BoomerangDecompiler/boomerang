@@ -24,11 +24,8 @@ include(boomerang-configure)    # boomerang configuration (options)
 include(boomerang-flags)        # find required compiler flags
 include(boomerang-output)       # compiler output directories
 
-
 add_subdirectory(docs)
 add_subdirectory(src)
 
-
 include(boomerang-tests)
 include(boomerang-install)
-
