@@ -276,6 +276,8 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 }
 
                 boom.getSettings()->setWorkingDirectory(wd.path());
+                boom.getSettings()->setDataDirectory(wd.path() + "/../lib/boomerang/");
+                boom.getSettings()->setOutputDirectory(wd.path() + "/./output/");
             }
             break;
 

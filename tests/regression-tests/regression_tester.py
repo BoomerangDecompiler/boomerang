@@ -33,7 +33,7 @@ test_results = defaultdict();
   as a list.
 '''
 def perform_test(exepath, test_file_path, output_path, args):
-    cmdline   = [exepath] + ['-P', os.getcwd(), '-o', output_path] + args + [test_file_path]
+    cmdline   = [exepath] + ['-P', os.path.dirname(exepath), '-o', output_path] + args + [test_file_path]
     input_file = os.sep.join(test_file_path.split(os.sep)[-1:]) # input file without the path
 
     try:
