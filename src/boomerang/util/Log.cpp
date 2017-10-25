@@ -89,6 +89,7 @@ Log::Log(LogLevel level)
 
 Log::~Log()
 {
+    flush();
 }
 
 
@@ -154,6 +155,8 @@ void Log::addDefaultLogSinks()
 
 void Log::removeAllSinks()
 {
+    flush();
+
     m_sinks.clear();
 }
 

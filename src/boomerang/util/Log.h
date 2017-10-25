@@ -156,6 +156,13 @@ public:
         log(level, file, line, collectArgs(msg, args ...));
     }
 
+    void flush()
+    {
+        for (std::unique_ptr<ILogSink>& s : m_sinks) {
+            s->flush();
+        }
+    }
+
     /// Add a log sink / target. Takes ownership of the pointer.
     void addLogSink(std::unique_ptr<ILogSink> s);
     void addDefaultLogSinks();
