@@ -9,6 +9,10 @@
 cmake_minimum_required(VERSION 3.1)
 project(Boomerang LANGUAGES C CXX)
 
+if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
+    message(FATAL_ERROR "Building in-source is not supported! Create a build dir and remove ${CMAKE_SOURCE_DIR}/CMakeCache.txt")
+endif()
+
 set(CMAKE_WARN_DEPRECATED ON)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-scripts")
 
