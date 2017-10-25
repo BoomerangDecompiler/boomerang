@@ -16,11 +16,11 @@
 #include <cassert>
 
 const Address Address::ZERO         = Address(0);
-const Address Address::INVALID      = Address(-1);
+const Address Address::INVALID      = Address((Address::value_type)-1);
 Byte          Address::m_sourceBits = 32U;
 
 const HostAddress HostAddress::ZERO    = HostAddress(nullptr);
-const HostAddress HostAddress::INVALID = HostAddress(-1);
+const HostAddress HostAddress::INVALID = HostAddress((HostAddress::value_type)-1);
 
 
 Address::Address()
@@ -29,10 +29,10 @@ Address::Address()
 }
 
 
-Address::Address(value_type value)
-    : m_value(value)
+Address::Address(value_type _value)
+    : m_value(_value)
 {
-    if ((m_value != (value_type) - 1) && ((value & ~getSourceMask()) != 0)) {
+    if ((m_value != (value_type) - 1) && ((_value & ~getSourceMask()) != 0)) {
         LOG_WARN("Address initialized with invalid value %1",
                  QString("0x%1").arg(m_value, 2 * sizeof(value_type), 16, QChar('0')));
     }
@@ -63,8 +63,8 @@ HostAddress::HostAddress(const void *ptr)
 }
 
 
-HostAddress::HostAddress(value_type value)
-    : m_value(value)
+HostAddress::HostAddress(value_type _value)
+    : m_value(_value)
 {
 }
 

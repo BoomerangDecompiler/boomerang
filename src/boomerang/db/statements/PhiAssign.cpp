@@ -122,9 +122,9 @@ void PhiAssign::printCompact(QTextStream& os, bool html) const
 }
 
 
-bool PhiAssign::search(const Exp& search, SharedExp& result) const
+bool PhiAssign::search(const Exp& pattern, SharedExp& result) const
 {
-    if (m_lhs->search(search, result)) {
+    if (m_lhs->search(pattern, result)) {
         return true;
     }
 
@@ -133,7 +133,7 @@ bool PhiAssign::search(const Exp& search, SharedExp& result) const
         // Note: can't match foo{-} because of this
         RefExp re(v.second.e, const_cast<Statement *>(v.second.getDef())); ///< \todo remove const_cast
 
-        if (re.search(search, result)) {
+        if (re.search(pattern, result)) {
             return true;
         }
     }
@@ -142,23 +142,23 @@ bool PhiAssign::search(const Exp& search, SharedExp& result) const
 }
 
 
-bool PhiAssign::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool PhiAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
-    return m_lhs->searchAll(search, result);
+    return m_lhs->searchAll(pattern, result);
 }
 
 
-bool PhiAssign::searchAndReplace(const Exp& search, SharedExp replace, bool /*cc*/)
+bool PhiAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/)
 {
     bool change;
 
-    m_lhs = m_lhs->searchReplaceAll(search, replace, change);
+    m_lhs = m_lhs->searchReplaceAll(pattern, replace, change);
 
     for (auto& v : m_defs) {
         assert(v.second.e != nullptr);
         bool ch;
         // Assume that the definitions will also be replaced
-        v.second.e = v.second.e->searchReplaceAll(search, replace, ch);
+        v.second.e = v.second.e->searchReplaceAll(pattern, replace, ch);
         assert(v.second.e);
         change |= ch;
     }

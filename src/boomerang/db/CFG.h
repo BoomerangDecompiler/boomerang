@@ -119,7 +119,7 @@ public:
      * \param bbType - type of new BasicBlock
      * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
      ******************************************************************************/
-    BasicBlock *newBB(std::list<RTL *> *pRtls, BBType bbType) noexcept (false);
+    BasicBlock *createBB(std::list<RTL *> *pRtls, BBType bbType) noexcept (false);
 
     /***************************************************************************/ /**
      * \brief Allocates space for a new, incomplete BB, and the given address is

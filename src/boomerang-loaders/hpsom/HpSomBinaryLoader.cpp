@@ -155,7 +155,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // Allocate a buffer for the image
     m_loadedImage = new unsigned char[size];
 
-    if (m_loadedImage == 0) {
+    if (m_loadedImage == nullptr) {
         LOG_ERROR("Could not allocate %1 bytes for image", size);
         return false;
     }
@@ -354,7 +354,7 @@ void HpSomBinaryLoader::unload()
 {
     if (m_loadedImage) {
         delete[] m_loadedImage;
-        m_loadedImage = 0;
+        m_loadedImage = nullptr;
     }
 }
 

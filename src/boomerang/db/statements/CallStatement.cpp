@@ -379,20 +379,20 @@ void CallStatement::setSigArguments()
 }
 
 
-bool CallStatement::search(const Exp& search, SharedExp& result) const
+bool CallStatement::search(const Exp& pattern, SharedExp& result) const
 {
-    if (GotoStatement::search(search, result)) {
+    if (GotoStatement::search(pattern, result)) {
         return true;
     }
 
     for (auto ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        if ((*ss)->search(search, result)) {
+        if ((*ss)->search(pattern, result)) {
             return true;
         }
     }
 
     for (auto ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        if ((*ss)->search(search, result)) {
+        if ((*ss)->search(pattern, result)) {
             return true;
         }
     }
@@ -401,26 +401,26 @@ bool CallStatement::search(const Exp& search, SharedExp& result) const
 }
 
 
-bool CallStatement::searchAndReplace(const Exp& search, SharedExp replace, bool cc)
+bool CallStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
 {
-    bool change = GotoStatement::searchAndReplace(search, replace, cc);
+    bool change = GotoStatement::searchAndReplace(pattern, replace, cc);
 
     StatementList::iterator ss;
 
     // FIXME: MVE: Check if we ever want to change the LHS of arguments or defines...
     for (ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        change |= (*ss)->searchAndReplace(search, replace, cc);
+        change |= (*ss)->searchAndReplace(pattern, replace, cc);
     }
 
     for (ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        change |= (*ss)->searchAndReplace(search, replace, cc);
+        change |= (*ss)->searchAndReplace(pattern, replace, cc);
     }
 
     if (cc) {
         DefCollector::iterator dd;
 
         for (dd = m_defCol.begin(); dd != m_defCol.end(); ++dd) {
-            change |= (*dd)->searchAndReplace(search, replace, cc);
+            change |= (*dd)->searchAndReplace(pattern, replace, cc);
         }
     }
 
@@ -428,18 +428,18 @@ bool CallStatement::searchAndReplace(const Exp& search, SharedExp replace, bool 
 }
 
 
-bool CallStatement::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool CallStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
-    bool found = GotoStatement::searchAll(search, result);
+    bool found = GotoStatement::searchAll(pattern, result);
 
     for (auto ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        if ((*ss)->searchAll(search, result)) {
+        if ((*ss)->searchAll(pattern, result)) {
             found = true;
         }
     }
 
     for (auto ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        if ((*ss)->searchAll(search, result)) {
+        if ((*ss)->searchAll(pattern, result)) {
             found = true;
         }
     }

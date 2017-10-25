@@ -18,9 +18,9 @@ class Interval
 {
 public:
     /// Construct a right-open interval
-    explicit Interval(const T& lower, const T& upper)
-        : m_lower(lower)
-        , m_upper(upper)
+    explicit Interval(const T& _lower, const T& _upper)
+        : m_lower(_lower)
+        , m_upper(_upper)
     {}
     ~Interval() = default;
 

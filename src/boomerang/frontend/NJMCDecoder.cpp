@@ -49,8 +49,12 @@ std::list<Statement *> *NJMCDecoder::instantiate(Address pc, const char *name, c
     std::pair<QString, unsigned> sig = m_rtlDict.getSignature(name);
     QString      opcode      = sig.first;
     unsigned int numOperands = sig.second;
-    assert(numOperands == args.size());
-    Q_UNUSED(numOperands);
+
+    if (numOperands != args.size()) {
+        LOG_FATAL("Disassembled instruction '%1' has %2 arguments,\n"
+            "but the instruction has %3 parameters in the RTL dictionary",
+            name, args.size(), numOperands);
+    }
 
     // Put the operands into a vector
     std::vector<SharedExp> actuals(args);

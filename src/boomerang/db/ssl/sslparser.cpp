@@ -1241,7 +1241,7 @@ SSLParser::
         /*            Location* pFlag = Location::regOf(Dict.RegMap[$3]);
                         $1->push_back(pFlag);
                         $$ = $1;
-*/ yyval.explist = 0;
+*/ yyval.explist = nullptr;
         ;
         break;
     }
@@ -1250,12 +1250,12 @@ SSLParser::
                         Unary* pFlag = Unary::get(opIdRegOf, Dict.RegMap[$1]);
                         tmp->push_back(pFlag);
                         $$ = tmp;
-*/ yyval.explist = 0;
+*/ yyval.explist = nullptr;
         ;
         break;
     }
     case 84: {
-        assert(yyvsp[0].str != 0);
+        assert(yyvsp[0].str != nullptr);
         yyvsp[-2].parmlist->push_back(yyvsp[0].str);
         yyval.parmlist = yyvsp[-2].parmlist;
         ;

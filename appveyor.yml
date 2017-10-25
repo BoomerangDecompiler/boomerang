@@ -40,5 +40,6 @@ matrix:
 
 build_script:
     - cmake --build .
+    - cmake --build . --target RUN_TESTS
 
 test: off

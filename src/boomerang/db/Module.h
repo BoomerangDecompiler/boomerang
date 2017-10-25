@@ -113,12 +113,15 @@ public:
      * \param bLib - If true, this will be a libProc; else a UserProc
      * \returns        A pointer to the new Function object
      ******************************************************************************/
-    Function *getOrInsertFunction(const QString& name, Address uNative, bool bLib = false);
+    Function *createFunction(const QString& name, Address uNative, bool bLib = false);
     Function *getFunction(const QString& name) const;
     Function *getFunction(Address loc) const;
 
     /// Get a library signature for a given name (used when creating a new library proc).
     std::shared_ptr<Signature> getLibSignature(const QString& name);
+
+private:
+    void addWin32DbgInfo(Function *pProc);
 
 private:
     FunctionList m_functionList; ///< The Functions in the module

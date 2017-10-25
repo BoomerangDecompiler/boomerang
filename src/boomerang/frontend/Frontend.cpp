@@ -265,7 +265,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
         entrypoints.push_back(a);
     }
     else { // try some other tricks
-        QString fname = Boomerang::get()->getSettings()->getFilename();
+        QString fname = QString::null; // Boomerang::get()->getSettings()->getFilename();
 
         // X11 Module
         if (fname.endsWith("_drv.o")) {
@@ -699,7 +699,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                 // Emit the RTL anyway, so we have the address and maybe some other clues
                 BB_rtls->push_back(new RTL(uAddr));
-                pBB = cfg->newBB(BB_rtls, BBType::Invalid);
+                pBB = cfg->createBB(BB_rtls, BBType::Invalid);
                 sequentialDecode = false;
                 BB_rtls          = nullptr;
                 break; // try the next instruction in the queue
@@ -781,7 +781,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             BB_rtls->push_back(pRtl);
                             sequentialDecode = false;
 
-                            pBB     = cfg->newBB(BB_rtls, BBType::Oneway);
+                            pBB     = cfg->createBB(BB_rtls, BBType::Oneway);
                             BB_rtls = nullptr; // Clear when make new BB
 
                             // Exit the switch now if the basic block already existed
@@ -808,7 +808,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                         if (pDest == nullptr) {                      // Happens if already analysed (now redecoding)
                             BB_rtls->push_back(pRtl);
-                            pBB = cfg->newBB(BB_rtls, BBType::Nway); // processSwitch will update num outedges
+                            pBB = cfg->createBB(BB_rtls, BBType::Nway); // processSwitch will update num outedges
                             pBB->processSwitch(pProc);               // decode arms, set out edges, etc
                             sequentialDecode = false;                // Don't decode after the jump
                             BB_rtls          = nullptr;              // New RTLList for next BB
@@ -836,7 +836,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             std::list<Statement *> *stmt_list = new std::list<Statement *>;
                             stmt_list->push_back(call);
                             BB_rtls->push_back(new RTL(pRtl->getAddress(), stmt_list));
-                            pBB = cfg->newBB(BB_rtls, BBType::Call);
+                            pBB = cfg->createBB(BB_rtls, BBType::Call);
                             appendSyntheticReturn(pBB, pProc, pRtl);
                             sequentialDecode = false;
                             BB_rtls          = nullptr;
@@ -858,7 +858,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                         BB_rtls->push_back(pRtl);
                         // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out to be a switch stmt
-                        pBB = cfg->newBB(BB_rtls, BBType::CompJump);
+                        pBB = cfg->createBB(BB_rtls, BBType::CompJump);
                         LOG_VERBOSE("COMPUTED JUMP at address %1, pDest = %2", uAddr, pDest);
 
                         if (SETTING(noDecompile)) {
@@ -895,7 +895,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         Address jumpDest = stmt_jump->getFixedDest();
                         BB_rtls->push_back(pRtl);
 
-                        pBB = cfg->newBB(BB_rtls, BBType::Twoway);
+                        pBB = cfg->createBB(BB_rtls, BBType::Twoway);
 
                         // Stop decoding sequentially if the basic block already existed otherwise complete the basic block
                         if (pBB == nullptr) {
@@ -992,7 +992,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         // Treat computed and static calls separately
                         if (call->isComputed()) {
                             BB_rtls->push_back(pRtl);
-                            pBB = cfg->newBB(BB_rtls, BBType::CompCall);
+                            pBB = cfg->createBB(BB_rtls, BBType::CompCall);
 
                             // Stop decoding sequentially if the basic block already
                             // existed otherwise complete the basic block
@@ -1055,7 +1055,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 // Make sure it has a return appended (so there is only one exit from the function)
                                 // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
                                 // Create the new basic block
-                                pBB = cfg->newBB(BB_rtls, BBType::Call);
+                                pBB = cfg->createBB(BB_rtls, BBType::Call);
                                 appendSyntheticReturn(pBB, pProc, pRtl);
 
                                 // Stop decoding sequentially
@@ -1063,7 +1063,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             }
                             else {
                                 // Create the new basic block
-                                pBB = cfg->newBB(BB_rtls, BBType::Call);
+                                pBB = cfg->createBB(BB_rtls, BBType::Call);
 
                                 if (call->isReturnAfterCall()) {
                                     // Constuct the RTLs for the new basic block
@@ -1073,7 +1073,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     instrList->push_back(new ReturnStatement());
                                     rtls->push_back(new RTL(pRtl->getAddress() + 1, instrList));
 
-                                    BasicBlock *returnBB = cfg->newBB(rtls, BBType::Ret);
+                                    BasicBlock *returnBB = cfg->createBB(rtls, BBType::Ret);
                                     // Add out edge from call to return
                                     cfg->addOutEdge(pBB, returnBB);
                                     // Put a label on the return BB (since it's an orphan); a jump will be reqd
@@ -1151,7 +1151,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             if (sequentialDecode && cfg->existsBB(uAddr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
-                    BasicBlock *bb = cfg->newBB(BB_rtls, BBType::Fall);
+                    BasicBlock *bb = cfg->createBB(BB_rtls, BBType::Fall);
 
                     // Add an out edge to this address
                     if (bb) {
@@ -1216,7 +1216,7 @@ Prog *IFrontEnd::getProg()
 BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl)
 {
     Cfg        *pCfg = pProc->getCFG();
-    BasicBlock *pBB;
+    BasicBlock *pBB = nullptr;
 
     // Add the RTL to the list; this has the semantics for the return instruction as well as the ReturnStatement
     // The last Statement may get replaced with a GotoStatement
@@ -1230,7 +1230,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
     // LOG << "retAddr = " << retAddr << " rtl = " << pRtl->getAddress() << "\n";
     if (retAddr == Address::INVALID) {
         // Create the basic block
-        pBB = pCfg->newBB(BB_rtls, BBType::Ret);
+        pBB = pCfg->createBB(BB_rtls, BBType::Ret);
         Statement *s = pRtl->back(); // The last statement should be the ReturnStatement
         pProc->setTheReturnAddr((ReturnStatement *)s, pRtl->getAddress());
     }
@@ -1255,7 +1255,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
 
         pRtl->appendStmt(new GotoStatement(retAddr));
         try {
-            pBB = pCfg->newBB(BB_rtls, BBType::Oneway);
+            pBB = pCfg->createBB(BB_rtls, BBType::Oneway);
             // if BB already exists but is incomplete, exception is thrown
             pCfg->addOutEdge(pBB, retAddr, true);
 

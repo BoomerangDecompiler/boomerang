@@ -9316,7 +9316,7 @@ MATCH_finished_a:
 
     result.numBytes = nextPC.value() - hostPC.value();
 
-    if (result.valid && (result.rtl == 0)) { // Don't override higher level res
+    if (result.valid && (result.rtl == nullptr)) { // Don't override higher level res
         result.rtl = new RTL(pc, stmts);
     }
 

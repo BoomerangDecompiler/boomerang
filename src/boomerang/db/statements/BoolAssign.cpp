@@ -232,42 +232,42 @@ bool BoolAssign::usesExp(const Exp& e) const
 }
 
 
-bool BoolAssign::search(const Exp& search, SharedExp& result) const
+bool BoolAssign::search(const Exp& pattern, SharedExp& result) const
 {
     assert(m_lhs);
 
-    if (m_lhs->search(search, result)) {
+    if (m_lhs->search(pattern, result)) {
         return true;
     }
 
     assert(m_cond);
-    return m_cond->search(search, result);
+    return m_cond->search(pattern, result);
 }
 
 
-bool BoolAssign::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool BoolAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
     bool ch = false;
 
     assert(m_lhs);
 
-    if (m_lhs->searchAll(search, result)) {
+    if (m_lhs->searchAll(pattern, result)) {
         ch = true;
     }
 
     assert(m_cond);
-    return m_cond->searchAll(search, result) || ch;
+    return m_cond->searchAll(pattern, result) || ch;
 }
 
 
-bool BoolAssign::searchAndReplace(const Exp& search, SharedExp replace, bool cc)
+bool BoolAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
 {
     Q_UNUSED(cc);
     bool chl, chr;
     assert(m_cond);
     assert(m_lhs);
-    m_cond = m_cond->searchReplaceAll(search, replace, chl);
-    m_lhs  = m_lhs->searchReplaceAll(search, replace, chr);
+    m_cond = m_cond->searchReplaceAll(pattern, replace, chl);
+    m_lhs  = m_lhs->searchReplaceAll(pattern, replace, chr);
     return chl | chr;
 }
 

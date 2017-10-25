@@ -34,7 +34,7 @@
 
 void CfgTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
 }
 
 
@@ -175,7 +175,7 @@ void CfgTest::testPlacePhi()
     IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(FRONTIER_PENTIUM);
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
-    QVERIFY(loader != 0);
+    QVERIFY(loader != nullptr);
 
     Prog      prog(FRONTIER_PENTIUM);
     IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
@@ -222,7 +222,7 @@ void CfgTest::testPlacePhi2()
     project.loadBinaryFile(IFTHEN_PENTIUM);
     IFileLoader *loader = project.getBestLoader(IFTHEN_PENTIUM);
 
-    QVERIFY(loader != 0);
+    QVERIFY(loader != nullptr);
     Prog      prog(IFTHEN_PENTIUM);
     IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
     Type::clearNamedTypes();
@@ -308,7 +308,7 @@ void CfgTest::testRenameVars()
 
     project.loadBinaryFile(FRONTIER_PENTIUM);
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
-    QVERIFY(loader != 0);
+    QVERIFY(loader != nullptr);
 
     Prog      *prog = new Prog(FRONTIER_PENTIUM);
     IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);

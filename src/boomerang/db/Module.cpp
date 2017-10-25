@@ -67,10 +67,10 @@ Module::Module()
 }
 
 
-Module::Module(const QString& name, Prog *parent, IFrontEnd *fe)
+Module::Module(const QString& name, Prog *prog, IFrontEnd *fe)
     : m_currentFrontend(fe)
     , m_name(name)
-    , m_prog(parent)
+    , m_prog(prog)
 {
     m_strm.setDevice(&m_out);
 }
@@ -241,7 +241,62 @@ void Module::setLocationMap(Address loc, Function *fnc)
 }
 
 
-Function *Module::getOrInsertFunction(const QString& name, Address entryAddress, bool bLib)
+void Module::addWin32DbgInfo(Function *pProc)
+{
+#if !defined(_WIN32) || defined(__MINGW32__)
+    Q_UNUSED(pProc);
+    LOG_ERROR("Adding debug information for Windows programs is only supported on Windows!");
+    return;
+#else
+    if (!m_currentFrontend || !m_currentFrontend->isWin32()) {
+        return;
+    }
+    // use debugging information
+    HANDLE               hProcess = GetCurrentProcess();
+    dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
+    sym->SizeOfStruct = sizeof(*sym);
+    sym->MaxNameLen = 1000;
+    sym->Name[0] = 0;
+    BOOL  got = dbghelp::SymFromAddr(hProcess, pProc->getEntryAddress().value(), 0, sym);
+    DWORD retType;
+
+    if (got && *sym->Name &&
+        dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_TYPE, &retType)) {
+        DWORD d;
+        // get a calling convention
+        got =
+            dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
+
+        if (got) {
+            LOG_VERBOSE("calling convention: %1", (int)d);
+            // TODO: use it
+        }
+        else {
+            // assume we're stdc calling convention, remove r28, r24 returns
+            pProc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, pProc->getName()));
+        }
+
+        // get a return type
+        SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
+
+        if (!rtype->isVoid()) {
+            pProc->getSignature()->addReturn(rtype, Location::regOf(24));
+        }
+
+        // find params and locals
+        dbghelp::IMAGEHLP_STACK_FRAME stack;
+        stack.InstructionOffset = pProc->getEntryAddress().value();
+        dbghelp::SymSetContext(hProcess, &stack, 0);
+        dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
+
+        LOG_MSG("Final signature:");
+        pProc->getSignature()->printToLog();
+    }
+#endif
+}
+
+
+Function *Module::createFunction(const QString& name, Address entryAddress, bool bLib)
 {
     Function *pProc;
 
@@ -261,55 +316,10 @@ Function *Module::getOrInsertFunction(const QString& name, Address entryAddress,
     // alert the watchers of a new proc
     emit newFunction(pProc);
     Boomerang::get()->alertNew(pProc);
+
     // TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog should just collect info
     // from Loader
-
-#if defined(_WIN32) && !defined(__MINGW32__)
-    if (m_currentFrontend->isWin32()) {
-        // use debugging information
-        HANDLE               hProcess = GetCurrentProcess();
-        dbghelp::SYMBOL_INFO *sym     = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
-        sym->SizeOfStruct = sizeof(*sym);
-        sym->MaxNameLen   = 1000;
-        sym->Name[0]      = 0;
-        BOOL  got = dbghelp::SymFromAddr(hProcess, entryAddress.value(), 0, sym);
-        DWORD retType;
-
-        if (got && *sym->Name &&
-            dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_TYPE, &retType)) {
-            DWORD d;
-            // get a calling convention
-            got =
-                dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
-
-            if (got) {
-                LOG_VERBOSE("calling convention: %1", (int)d);
-                // TODO: use it
-            }
-            else {
-                // assume we're stdc calling convention, remove r28, r24 returns
-                pProc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name));
-            }
-
-            // get a return type
-            SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
-
-            if (!rtype->isVoid()) {
-                pProc->getSignature()->addReturn(rtype, Location::regOf(24));
-            }
-
-            // find params and locals
-            dbghelp::IMAGEHLP_STACK_FRAME stack;
-            stack.InstructionOffset = entryAddress.value();
-            dbghelp::SymSetContext(hProcess, &stack, 0);
-            dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
-
-            LOG_MSG("Final signature:");
-            pProc->getSignature()->printToLog();
-        }
-    }
-#endif
-
+    addWin32DbgInfo(pProc);
     return pProc;
 }
 

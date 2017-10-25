@@ -29,16 +29,16 @@
 #include <QDebug>
 
 
-#define HELLO_PENT      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
-#define BRANCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/branch")
-#define FEDORA2_TRUE    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/fedora2_true")
-#define FEDORA3_TRUE    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/fedora3_true")
-#define SUSE_TRUE       (BOOMERANG_TEST_BASE "/tests/inputs/pentium/suse_true")
+#define HELLO_PENT      (BOOMERANG_TEST_BASE "tests/inputs/pentium/hello")
+#define BRANCH_PENT     (BOOMERANG_TEST_BASE "tests/inputs/pentium/branch")
+#define FEDORA2_TRUE    (BOOMERANG_TEST_BASE "tests/inputs/pentium/fedora2_true")
+#define FEDORA3_TRUE    (BOOMERANG_TEST_BASE "tests/inputs/pentium/fedora3_true")
+#define SUSE_TRUE       (BOOMERANG_TEST_BASE "tests/inputs/pentium/suse_true")
 
 
 void FrontPentTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
 }
 
 
@@ -53,7 +53,7 @@ void FrontPentTest::test1()
     project.loadBinaryFile(HELLO_PENT);
     IFileLoader *loader = project.getBestLoader(HELLO_PENT);
 
-    QVERIFY(loader != 0);
+    QVERIFY(loader != nullptr);
 
     Prog *prog = new Prog(HELLO_PENT);
     QVERIFY(loader->getMachine() == Machine::PENTIUM);
@@ -106,7 +106,7 @@ void FrontPentTest::test2()
     project.loadBinaryFile(HELLO_PENT);
     IFileLoader *pBF = project.getBestLoader(HELLO_PENT);
 
-    QVERIFY(pBF != 0);
+    QVERIFY(pBF != nullptr);
     Prog *prog = new Prog(HELLO_PENT);
     QVERIFY(pBF->getMachine() == Machine::PENTIUM);
 

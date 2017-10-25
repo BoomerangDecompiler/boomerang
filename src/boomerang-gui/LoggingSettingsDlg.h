@@ -22,7 +22,7 @@ class LoggingSettingsDlg : public QDialog
     Q_OBJECT
 
 public:
-    explicit LoggingSettingsDlg(QWidget *parent = 0);
+    explicit LoggingSettingsDlg(QWidget *parent = nullptr);
     ~LoggingSettingsDlg();
 
 protected:

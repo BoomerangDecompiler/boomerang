@@ -23,11 +23,11 @@
 #include "boomerang/type/TypeRecovery.h"
 
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+MainWindow::MainWindow(QWidget *_parent)
+    : QMainWindow(_parent)
     , ui(new Ui::MainWindow)
-    , decompilerThread(NULL)
-    , step(NULL)
+    , decompilerThread(nullptr)
+    , step(nullptr)
 {
     ui->setupUi(this);
 
@@ -501,24 +501,24 @@ void MainWindow::generateCodeComplete()
 }
 
 
-void MainWindow::showConsideringProc(const QString& parent, const QString& name)
+void MainWindow::showConsideringProc(const QString& calledByName, const QString& procName)
 {
     QList<QTreeWidgetItem *> foundit =
-        ui->decompileProcsTreeWidget->findItems(name, Qt::MatchExactly | Qt::MatchRecursive);
+        ui->decompileProcsTreeWidget->findItems(procName, Qt::MatchExactly | Qt::MatchRecursive);
 
     if (foundit.isEmpty()) {
-        QStringList texts(name);
+        QStringList texts(procName);
 
-        if (parent.isEmpty()) {
+        if (calledByName.isEmpty()) {
             ui->decompileProcsTreeWidget->addTopLevelItem(new QTreeWidgetItem(texts));
         }
         else {
             QList<QTreeWidgetItem *> found =
-                ui->decompileProcsTreeWidget->findItems(parent, Qt::MatchExactly | Qt::MatchRecursive);
+                ui->decompileProcsTreeWidget->findItems(calledByName, Qt::MatchExactly | Qt::MatchRecursive);
 
             if (!found.isEmpty()) {
                 QTreeWidgetItem *n = new QTreeWidgetItem(found.first(), texts);
-                n->setData(0, 1, name);
+                n->setData(0, 1, procName);
                 ui->decompileProcsTreeWidget->expandItem(found.first());
                 ui->decompileProcsTreeWidget->scrollToItem(n);
                 ui->decompileProcsTreeWidget->setCurrentItem(n, 0);
@@ -701,7 +701,7 @@ void MainWindow::showDebuggingPoint(const QString& name, const QString& descript
 
 void MainWindow::showRTLEditor(const QString& name)
 {
-    RTLEditor *n = NULL;
+    RTLEditor *n = nullptr;
 
     for (int i = 0; i < ui->tabWidget->count(); i++) {
         if (ui->tabWidget->tabText(i) == name) {
@@ -710,7 +710,7 @@ void MainWindow::showRTLEditor(const QString& name)
         }
     }
 
-    if (n == NULL) {
+    if (n == nullptr) {
         n = new RTLEditor(decompilerThread->getDecompiler(), name);
         ui->tabWidget->addTab(n, name);
     }
@@ -752,7 +752,7 @@ void MainWindow::on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column
         top = top->parent();
     }
 
-    QTextEdit *n = NULL;
+    QTextEdit *n = nullptr;
 
     for (int i = 0; i < ui->tabWidget->count(); i++) {
         if (ui->tabWidget->tabText(i) == top->text(0)) {
@@ -761,7 +761,7 @@ void MainWindow::on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column
         }
     }
 
-    if (n == NULL) {
+    if (n == nullptr) {
         n = new QTextEdit();
         QString name = top->text(0);
         name = name.left(name.lastIndexOf("."));
@@ -830,7 +830,7 @@ void MainWindow::onUserProcsHorizontalHeaderSectionClicked(int logicalIndex)
 {
     if (logicalIndex == 2) {
         for (int i = 0; i < ui->userProcs->rowCount(); i++) {
-            if (ui->userProcs->item(i, 2) == NULL) {
+            if (ui->userProcs->item(i, 2) == nullptr) {
                 ui->userProcs->setItem(i, 2, new QTableWidgetItem(""));
             }
 
@@ -873,16 +873,16 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
     sigFile = decompilerThread->getDecompiler()->getSigFile(name);
     QString filename = sigFile;
 
-    int pos = sigFile.lastIndexOf(QRegExp("[/\\\\]"));
+    int lastIndex = sigFile.lastIndexOf(QRegExp("[/\\\\]"));
 
-    if (pos != -1) {
-        sigFile = sigFile.right(sigFile.length() - pos - 1);
+    if (lastIndex != -1) {
+        sigFile = sigFile.right(sigFile.length() - lastIndex - 1);
     }
 
     QString sigFileStar = sigFile;
     sigFileStar.append("*");
 
-    QTextEdit *n = NULL;
+    QTextEdit *n = nullptr;
 
     for (int i = 0; i < ui->tabWidget->count(); i++) {
         if ((ui->tabWidget->tabText(i) == sigFile) || (ui->tabWidget->tabText(i) == sigFileStar)) {
@@ -891,7 +891,7 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
         }
     }
 
-    if (n == NULL) {
+    if (n == nullptr) {
         n = new QTextEdit();
         QFile file(filename);
 
@@ -915,10 +915,10 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
         n->find(name, QTextDocument::FindBackward | QTextDocument::FindCaseSensitively | QTextDocument::FindWholeWords);
     }
     else {
-        QTextCursor cursor = n->textCursor();
-        cursor.clearSelection();
-        cursor.movePosition(QTextCursor::End);
-        n->setTextCursor(cursor);
+        QTextCursor textCursor = n->textCursor();
+        textCursor.clearSelection();
+        textCursor.movePosition(QTextCursor::End);
+        n->setTextCursor(textCursor);
         QString comment = "// unknown library proc: ";
         comment.append(ui->libProcs->item(row, 0)->text());
         comment.append("\n");

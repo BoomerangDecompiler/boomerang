@@ -16,12 +16,12 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 
-#define HELLO_HPPA    (BOOMERANG_TEST_BASE "/tests/inputs/hppa/hello")
+#define HELLO_HPPA    (BOOMERANG_TEST_BASE "tests/inputs/hppa/hello")
 
 
 void HpSomBinaryLoaderTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "/lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
 }
 
 

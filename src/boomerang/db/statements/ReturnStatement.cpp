@@ -103,12 +103,12 @@ void ReturnStatement::addReturn(Assignment *a)
 }
 
 
-bool ReturnStatement::search(const Exp& search, SharedExp& result) const
+bool ReturnStatement::search(const Exp& pattern, SharedExp& result) const
 {
     result = nullptr;
 
     for (auto rr = begin(); rr != end(); ++rr) {
-        if ((*rr)->search(search, result)) {
+        if ((*rr)->search(pattern, result)) {
             return true;
         }
     }
@@ -117,21 +117,21 @@ bool ReturnStatement::search(const Exp& search, SharedExp& result) const
 }
 
 
-bool ReturnStatement::searchAndReplace(const Exp& search, SharedExp replace, bool cc)
+bool ReturnStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
 {
     bool change = false;
 
     ReturnStatement::iterator rr;
 
     for (rr = begin(); rr != end(); ++rr) {
-        change |= (*rr)->searchAndReplace(search, replace, cc);
+        change |= (*rr)->searchAndReplace(pattern, replace, cc);
     }
 
     if (cc) {
         DefCollector::iterator dd;
 
         for (dd = col.begin(); dd != col.end(); ++dd) {
-            change |= (*dd)->searchAndReplace(search, replace);
+            change |= (*dd)->searchAndReplace(pattern, replace);
         }
     }
 
@@ -139,12 +139,12 @@ bool ReturnStatement::searchAndReplace(const Exp& search, SharedExp replace, boo
 }
 
 
-bool ReturnStatement::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool ReturnStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
     bool found = false;
 
     for (auto rr = begin(); rr != end(); ++rr) {
-        if ((*rr)->searchAll(search, result)) {
+        if ((*rr)->searchAll(pattern, result)) {
             found = true;
         }
     }

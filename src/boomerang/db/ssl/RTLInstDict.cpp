@@ -104,7 +104,8 @@ int RTLInstDict::insert(const QString& n, std::list<QString>& p, RTL& r)
 bool RTLInstDict::readSSLFile(const QString& SSLFileName)
 {
     // emptying the rtl dictionary
-    idict.erase(idict.begin(), idict.end());
+    idict.clear();
+
     // Clear all state
     reset();
 
@@ -274,12 +275,15 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
 
     if (it == idict.end()) {
         LOG_ERROR("No entry for '%1' in RTL dictionary", name);
-        it = idict.find("NOP"); // At least, don't cause segfault
+        it = idict.find("NOP");
+        
+		if (it == idict.end()) {
+            LOG_ERROR("No entry for 'NOP' in RTL dictionary");
+			return { hlpr, 0 }; // At least, don't cause segfault
+		}
     }
 
-    return {
-               hlpr, (it->second).m_params.size()
-    };
+    return { hlpr, (it->second).m_params.size() };
 }
 
 

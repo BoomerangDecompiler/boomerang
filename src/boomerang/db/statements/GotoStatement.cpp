@@ -89,34 +89,34 @@ void GotoStatement::adjustFixedDest(int delta)
 }
 
 
-bool GotoStatement::search(const Exp& search, SharedExp& result) const
+bool GotoStatement::search(const Exp& pattern, SharedExp& result) const
 {
     result = nullptr;
 
     if (m_dest) {
-        return m_dest->search(search, result);
+        return m_dest->search(pattern, result);
     }
 
     return false;
 }
 
 
-bool GotoStatement::searchAndReplace(const Exp& search, SharedExp replace, bool /*cc*/)
+bool GotoStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/)
 {
     bool change = false;
 
     if (m_dest) {
-        m_dest = m_dest->searchReplaceAll(search, replace, change);
+        m_dest = m_dest->searchReplaceAll(pattern, replace, change);
     }
 
     return change;
 }
 
 
-bool GotoStatement::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool GotoStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
     if (m_dest) {
-        return m_dest->searchAll(search, result);
+        return m_dest->searchAll(pattern, result);
     }
 
     return false;

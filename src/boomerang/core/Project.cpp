@@ -104,11 +104,17 @@ void Project::loadPlugins()
     QDir pluginsDir = Boomerang::get()->getSettings()->getDataDirectory();
 
     if (!pluginsDir.cd("plugins/loader/")) {
-        LOG_ERROR("Cannot open loader plugin directory!");
+        LOG_ERROR("Cannot open loader plugin directory '%1'!", pluginsDir.absolutePath());
     }
 
     for (QString fileName : pluginsDir.entryList(QDir::Files)) {
         const QString sofilename = pluginsDir.absoluteFilePath(fileName);
+
+#ifdef _WIN32
+        if (!sofilename.endsWith(".dll")) {
+            continue;
+        }
+#endif
 
         try {
             std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));

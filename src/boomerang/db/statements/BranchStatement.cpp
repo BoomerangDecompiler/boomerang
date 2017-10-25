@@ -241,10 +241,10 @@ void BranchStatement::setTakenBB(BasicBlock *bb)
 }
 
 
-bool BranchStatement::search(const Exp& search, SharedExp& result) const
+bool BranchStatement::search(const Exp& pattern, SharedExp& result) const
 {
     if (m_cond) {
-        return m_cond->search(search, result);
+        return m_cond->search(pattern, result);
     }
 
     result = nullptr;
@@ -252,23 +252,23 @@ bool BranchStatement::search(const Exp& search, SharedExp& result) const
 }
 
 
-bool BranchStatement::searchAndReplace(const Exp& search, SharedExp replace, bool cc)
+bool BranchStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
 {
-    GotoStatement::searchAndReplace(search, replace, cc);
+    GotoStatement::searchAndReplace(pattern, replace, cc);
     bool change = false;
 
     if (m_cond) {
-        m_cond = m_cond->searchReplaceAll(search, replace, change);
+        m_cond = m_cond->searchReplaceAll(pattern, replace, change);
     }
 
     return change;
 }
 
 
-bool BranchStatement::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool BranchStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
     if (m_cond) {
-        return m_cond->searchAll(search, result);
+        return m_cond->searchAll(pattern, result);
     }
 
     return false;

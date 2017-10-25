@@ -153,7 +153,7 @@ typedef struct
 
 typedef struct
 {
-	char           *id;
+	char           *_id;
 	char           *vendor;
 	char           *model;
 	int            nHsync;
@@ -172,7 +172,7 @@ typedef MonRec *MonPtr;
 
 typedef struct
 {
-	char             *id;
+	char             *_id;
 	int              screennum;
 	int              defaultdepth;
 	int              defaultbpp;
@@ -267,7 +267,7 @@ typedef struct
 typedef struct
 {
 	int                           myNum;
-	ATOM                          id;
+	ATOM                          _id;
 	short                         width;
 	short                         height;
 	short                         mmWidth;

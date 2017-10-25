@@ -17,8 +17,8 @@
 #include <iostream>
 
 
-CommandlineDriver::CommandlineDriver(QObject *parent)
-    : QObject(parent)
+CommandlineDriver::CommandlineDriver(QObject *_parent)
+    : QObject(_parent)
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
@@ -125,8 +125,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
     }
 
     Boomerang& boom(*Boomerang::get());
-    boom.getSettings()->setWorkingDirectory(QFileInfo(args[0]).absolutePath());
-    boom.getSettings()->setDataDirectory(qApp->applicationDirPath() + "/../lib/boomerang/");
 
     for (int i = 1; i < args.size(); ++i) {
         QString arg = args[i];
@@ -278,6 +276,8 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 }
 
                 boom.getSettings()->setWorkingDirectory(wd.path());
+                boom.getSettings()->setDataDirectory(wd.path() + "/../lib/boomerang/");
+                boom.getSettings()->setOutputDirectory(wd.path() + "/./output/");
             }
             break;
 
@@ -511,8 +511,10 @@ int CommandlineDriver::interactiveMain()
 
 int CommandlineDriver::decompile()
 {
+    Log::getOrCreateLog().addDefaultLogSinks();
+
     m_thread.start();
-    m_thread.wait(-1);
+    m_thread.wait(); // wait indefinitely
     return m_thread.resCode();
 }
 

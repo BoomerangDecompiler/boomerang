@@ -37,13 +37,13 @@
 
 #include <sstream>
 
-#define SWITCH_SPARC    (BOOMERANG_TEST_BASE "/tests/inputs/sparc/switch_cc")
-#define SWITCH_PENT     (BOOMERANG_TEST_BASE "/tests/inputs/pentium/switch_cc")
+#define SWITCH_SPARC    (BOOMERANG_TEST_BASE "tests/inputs/sparc/switch_cc")
+#define SWITCH_PENT     (BOOMERANG_TEST_BASE "tests/inputs/pentium/switch_cc")
 
 
 void RtlTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE);
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang");
 }
 
 
@@ -269,7 +269,7 @@ void RtlTest::testVisitor()
 void RtlTest::testSetConscripts()
 {
     // m[1000] = m[1000] + 1000
-    Statement *s1 = new Assign(Location::memOf(Const::get(1000), 0),
+    Statement *s1 = new Assign(Location::memOf(Const::get(1000), nullptr),
                                Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000)));
 
     // "printf("max is %d", (local0 > 0) ? local0 : global1)

@@ -273,15 +273,15 @@ int TransformationScanner::yy___wrap()
 
 void TransformationScanner::yy_initialize()
 {
-    yy___in   = 0;
-    yy___out  = 0;
+    yy___in   = nullptr;
+    yy___out  = nullptr;
     yy_init   = 1;
     yy_start  = 0;
-    yy___text = 0;
+    yy___text = nullptr;
     yyleng    = 0;
-    YY_TransformationScanner_CURRENT_BUFFER = 0;
+    YY_TransformationScanner_CURRENT_BUFFER = nullptr;
     yy_did_buffer_switch_on_eof             = 0;
-    yy_c_buf_p   = 0;
+    yy_c_buf_p   = nullptr;
     yy_hold_char = 0;
     yy_n_chars   = 0;
 #if YY_TransformationScanner_DEBUG != 0
@@ -1831,7 +1831,7 @@ void TransformationScanner::YY_TransformationScanner_DELETE_BUFFER(YY_BUFFER_STA
 
 {
     if (b == YY_TransformationScanner_CURRENT_BUFFER) {
-        YY_TransformationScanner_CURRENT_BUFFER = (YY_BUFFER_STATE)0;
+        YY_TransformationScanner_CURRENT_BUFFER = (YY_BUFFER_STATE)nullptr;
     }
 
     free((char *)b->yy_ch_buf);

@@ -158,7 +158,7 @@ SharedExp Const::genConstraints(SharedExp result)
     if (result->isTypeVal()) {
         // result is a constant type, or possibly a partial type such as ptr(alpha)
         SharedType t     = result->access<TypeVal>()->getType();
-        bool       match = false;
+        bool       constraintMatched = false;
 
         switch (m_oper)
         {
@@ -166,23 +166,23 @@ SharedExp Const::genConstraints(SharedExp result)
         // An integer constant is compatible with any size of integer, as long is it is in the right range
         // (no test yet) FIXME: is there an endianness issue here?
         case opIntConst:
-            match = t->isInteger();
+            constraintMatched = t->isInteger();
 
             // An integer constant can also match a pointer to something.  Assume values less than 0x100 can't be a
             // pointer
             if ((unsigned)u.i >= 0x100) {
-                match |= t->isPointer();
+                constraintMatched |= t->isPointer();
             }
 
             // We can co-erce 32 bit constants to floats
-            match |= t->isFloat();
+            constraintMatched |= t->isFloat();
             break;
 
         case opStrConst:
 
             if (t->isPointer()) {
                 auto ptr_type = std::static_pointer_cast<PointerType>(t);
-                match = ptr_type->getPointsTo()->isChar() ||
+                constraintMatched = ptr_type->getPointsTo()->isChar() ||
                         (ptr_type->getPointsTo()->isArray() &&
                          (ptr_type->getPointsTo())->as<ArrayType>()->getBaseType()->isChar());
             }
@@ -190,14 +190,14 @@ SharedExp Const::genConstraints(SharedExp result)
             break;
 
         case opFltConst:
-            match = t->isFloat();
+            constraintMatched = t->isFloat();
             break;
 
         default:
             break;
         }
 
-        if (match) {
+        if (constraintMatched) {
             // This constant may require a cast or a change of format. So we generate a constraint.
             // Don't clone 'this', so it can be co-erced after type analysis
             return Binary::get(opEquals, Unary::get(opTypeOf, shared_from_this()), result->clone());

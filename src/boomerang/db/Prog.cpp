@@ -96,7 +96,7 @@ Prog::Prog(const QString& name)
 Prog::~Prog()
 {
     delete m_defaultFrontend;
-
+    m_defaultFrontend = nullptr;
     for (Module *m : m_moduleList) {
         delete m;
     }
@@ -399,7 +399,7 @@ Function *Prog::createProc(Address startAddress)
         LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
     }
 
-    return m_rootModule->getOrInsertFunction(procName, startAddress, bLib);
+    return m_rootModule->createFunction(procName, startAddress, bLib);
 }
 
 
@@ -551,7 +551,7 @@ int debugRegister(int r)
 }
 
 
-BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG SymbolSize, PVOID UserContext)
+BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVOID UserContext)
 {
     Function *proc = (Function *)UserContext;
 
@@ -597,21 +597,21 @@ void Prog::removeProc(const QString& name)
 }
 
 
-Module *Prog::createModule(const QString& name, Module *parent, const ModuleFactory& factory)
+Module *Prog::createModule(const QString& name, Module *parentModule, const ModuleFactory& factory)
 {
-    if (parent == nullptr) {
-        parent = m_rootModule;
+    if (parentModule == nullptr) {
+        parentModule = m_rootModule;
     }
 
     Module *module = m_rootModule->find(name);
 
-    if (module && (module->getUpstream() == parent)) {
+    if (module && (module->getUpstream() == parentModule)) {
         // a module already exists
         return nullptr;
     }
 
     module = factory.create(name, this, this->getFrontEnd());
-    parent->addChild(module);
+    parentModule->addChild(module);
     m_moduleList.push_back(module);
     return module;
 }
@@ -676,7 +676,7 @@ LibProc *Prog::getLibraryProc(const QString& nam) const
         return (LibProc *)p;
     }
 
-    return (LibProc *)m_rootModule->getOrInsertFunction(nam, Address::INVALID, true);
+    return (LibProc *)m_rootModule->createFunction(nam, Address::INVALID, true);
 }
 
 
@@ -1494,7 +1494,7 @@ void Prog::printCallGraph() const
     QTextStream                      f2(&file2);
     std::set<Function *>             seen;
     std::map<Function *, int>        spaces;
-    std::map<Function *, Function *> parent;
+    std::map<Function *, Function *> calledBy;
     std::list<Function *>            procList;
 
     std::copy(m_entryProcs.begin(), m_entryProcs.end(), std::back_inserter(procList));
@@ -1524,8 +1524,8 @@ void Prog::printCallGraph() const
 
         f1 << p->getName() << " @ " << p->getEntryAddress();
 
-        if (parent.find(p) != parent.end()) {
-            f1 << " [parent=" << parent[p]->getName() << "]";
+        if (calledBy.find(p) != calledBy.end()) {
+            f1 << " [parent=" << calledBy[p]->getName() << "]";
         }
 
         f1 << '\n';
@@ -1538,7 +1538,7 @@ void Prog::printCallGraph() const
             for (auto it1 = calleeList.rbegin(); it1 != calleeList.rend(); it1++) {
                 procList.push_front(*it1);
                 spaces[*it1] = n;
-                parent[*it1] = p;
+                calledBy[*it1] = p;
                 f2 << p->getName() << " -> " << (*it1)->getName() << ";\n";
             }
         }
@@ -1704,7 +1704,7 @@ void Prog::readSymbolFile(const QString& fname)
                                  // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
                                  // to specifically specify that this function obeys library calling conventions
                                  sym->mods->noDecode;
-            Function *p = tgt_mod->getOrInsertFunction(name, sym->addr, do_not_decode);
+            Function *p = tgt_mod->createFunction(name, sym->addr, do_not_decode);
 
             if (!sym->mods->incomplete) {
                 p->setSignature(sym->sig->clone());
@@ -1836,7 +1836,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToArray()) {
-        size_t  nelems  = -1;
+        int  nelems  = -1;
         QString nam     = getGlobalName(uaddr);
         int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
 
@@ -1849,7 +1849,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 
         auto n = e = Terminal::get(opNil);
 
-        for (size_t i = 0; i < nelems; i++) {
+        for (int i = 0; i < nelems; i++) {
             auto v = readNativeAs(uaddr + i * base_sz, type->as<ArrayType>()->getBaseType());
 
             if (v == nullptr) {
@@ -1867,7 +1867,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
             }
 
             // "null" terminated
-            if ((nelems == (size_t)-1) && v->isConst() && (v->access<Const>()->getInt() == 0)) {
+            if ((nelems == -1) && v->isConst() && (v->access<Const>()->getInt() == 0)) {
                 break;
             }
         }

@@ -41,25 +41,25 @@
 
 
 // This to satisfy the compiler (never gets called!)
-SharedExp  dummy;
+SharedExp  _dummy;
 SharedExp& Exp::refSubExp1()
 {
     assert(false);
-    return dummy;
+    return _dummy;
 }
 
 
 SharedExp& Exp::refSubExp2()
 {
     assert(false);
-    return dummy;
+    return _dummy;
 }
 
 
 SharedExp& Exp::refSubExp3()
 {
     assert(false);
-    return dummy;
+    return _dummy;
 }
 
 
@@ -246,33 +246,33 @@ void Exp::doSearch(const Exp& search, SharedExp& pSrc, std::list<SharedExp *>& l
 }
 
 
-void Exp::doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once)
+void Exp::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
-    Q_UNUSED(search);
+    Q_UNUSED(pattern);
     Q_UNUSED(li);
     Q_UNUSED(once);
     // Const and Terminal do not override this
 }
 
 
-SharedExp Exp::searchReplace(const Exp& search, const SharedExp& replace, bool& change)
+SharedExp Exp::searchReplace(const Exp& pattern, const SharedExp& replace, bool& change)
 {
-    return searchReplaceAll(search, replace, change, true);
+    return searchReplaceAll(pattern, replace, change, true);
 }
 
 
-SharedExp Exp::searchReplaceAll(const Exp& search, const SharedExp& replace, bool& change, bool once /* = false */)
+SharedExp Exp::searchReplaceAll(const Exp& pattern, const SharedExp& replace, bool& change, bool once /* = false */)
 {
     // TODO: consider working on base object, and only in case when we find the search, use clone call to return the
     // new object ?
-    if (this == &search) { // TODO: WAT ?
+    if (*this == pattern) {
         change = true;
         return replace->clone();
     }
 
     std::list<SharedExp *> li;
     SharedExp              top = shared_from_this(); // top may change; that's why we have to return it
-    doSearch(search, top, li, false);
+    doSearch(pattern, top, li, false);
 
     for (auto it = li.begin(); it != li.end(); it++) {
         SharedExp *pp = *it;
@@ -289,14 +289,14 @@ SharedExp Exp::searchReplaceAll(const Exp& search, const SharedExp& replace, boo
 }
 
 
-bool Exp::search(const Exp& search, SharedExp& result)
+bool Exp::search(const Exp& pattern, SharedExp& result)
 {
     std::list<SharedExp *> li;
     result = nullptr; // In case it fails; don't leave it unassigned
     // The search requires a reference to a pointer to this object.
     // This isn't needed for searches, only for replacements, but we want to re-use the same search routine
     SharedExp top = shared_from_this();
-    doSearch(search, top, li, false);
+    doSearch(pattern, top, li, false);
 
     if (li.size()) {
         result = *li.front();
@@ -307,7 +307,7 @@ bool Exp::search(const Exp& search, SharedExp& result)
 }
 
 
-bool Exp::searchAll(const Exp& search, std::list<SharedExp>& result)
+bool Exp::searchAll(const Exp& pattern, std::list<SharedExp>& result)
 {
     std::list<SharedExp *> li;
     // result.clear();    // No! Useful when searching for more than one thing
@@ -315,7 +315,7 @@ bool Exp::searchAll(const Exp& search, std::list<SharedExp>& result)
     // The search requires a reference to a pointer to this object.
     // This isn't needed for searches, only for replacements, but we want to re-use the same search routine
     SharedExp pSrc = shared_from_this();
-    doSearch(search, pSrc, li, false);
+    doSearch(pattern, pSrc, li, false);
 
     for (auto it : li) {
         // li is list of pointers to SharedExp ; result is list of SharedExp

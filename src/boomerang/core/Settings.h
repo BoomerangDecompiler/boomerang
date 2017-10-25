@@ -12,6 +12,7 @@
 
 #include <QString>
 #include <QDir>
+#include <QSettings>
 
 /**
  * Settings that affect decompilation and output behavior.
@@ -22,23 +23,18 @@ public:
     Settings();
 
 public:
-    /// get input file name
-    QString getFilename() const;
+    void setWorkingDirectory(const QString& directoryPath);
+    void setDataDirectory(const QString& directoryPath);
+    void setOutputDirectory(const QString& directoryPath);
 
     /// Get the path where the boomerang executable is run from.
     QDir getWorkingDirectory() const { return m_workingDirectory; }
-    void setWorkingDirectory(const QString& directoryPath) { m_workingDirectory = directoryPath; }
 
     /// Get the path of the data directory where plugins, ssl files etc. are stored.
     QDir getDataDirectory() const { return m_dataDirectory; }
-    void setDataDirectory(const QString& directoryPath) { m_dataDirectory = directoryPath; }
 
-    /// Get the path where the decompiled files sould be put
-    QDir getOutputDirectory() { return m_outputDirectory; }
-
-    /// Set the output path. the directory will be created if it does not exist
-    /// \returns true if successful, false if the directory could not be created.
-    bool setOutputDirectory(const QString& directoryPath);
+    /// Get the path where the decompiled files should be put
+    QDir getOutputDirectory() const { return m_outputDirectory; }
 
 public:
     // Command line flags
@@ -95,6 +91,6 @@ public:
 
 private:
     QDir m_workingDirectory;       ///< Directory where Boomerang is run from
-    QDir m_outputDirectory;        ///< The path where all output files are created.
-    QDir m_dataDirectory;          ///< Data directory where plugin libraries, ssl files etc. are stored.
+    QDir m_dataDirectory;
+    QDir m_outputDirectory;
 };

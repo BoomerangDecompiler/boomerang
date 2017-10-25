@@ -481,7 +481,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
 
 #if defined(_WIN32) && !defined(__MINGW32__)
-BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE SourceFile, PVOID UserContext)
+BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE /*SourceFile*/, PVOID UserContext)
 {
     *(bool *)UserContext = true;
     return FALSE;
@@ -550,7 +550,8 @@ void Win32BinaryLoader::readDebugData(QString exename)
         return;
     }
 
-    DWORD64 dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0);
+    DWORD64 dwBaseAddr = 0;
+    dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0);
 
     if (dwBaseAddr != 0) {
         assert(dwBaseAddr == m_pPEHeader->Imagebase);
@@ -890,10 +891,8 @@ void printType(DWORD index, DWORD64 ImageBase)
 }
 
 
-BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO symInfo, ULONG SymbolSize, PVOID UserContext)
+BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVOID /*UserContext*/)
 {
-    HANDLE hProcess = GetCurrentProcess();
-
     printType(symInfo->TypeIndex, symInfo->ModBase);
 
     QString     flagsStr;

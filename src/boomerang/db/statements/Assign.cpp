@@ -145,25 +145,25 @@ void Assign::printCompact(QTextStream& os, bool html) const
 }
 
 
-bool Assign::search(const Exp& search, SharedExp& result) const
+bool Assign::search(const Exp& pattern, SharedExp& result) const
 {
-    if (m_lhs->search(search, result)) {
+    if (m_lhs->search(pattern, result)) {
         return true;
     }
 
-    return m_rhs->search(search, result);
+    return m_rhs->search(pattern, result);
 }
 
 
-bool Assign::searchAll(const Exp& search, std::list<SharedExp>& result) const
+bool Assign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
     bool res;
 
     std::list<SharedExp>           leftResult;
     std::list<SharedExp>::iterator it;
-    res = m_lhs->searchAll(search, leftResult);
+    res = m_lhs->searchAll(pattern, leftResult);
     // Ugh: searchAll clears the list!
-    res |= m_rhs->searchAll(search, result);
+    res |= m_rhs->searchAll(pattern, result);
 
     for (it = leftResult.begin(); it != leftResult.end(); it++) {
         result.push_back(*it);
@@ -173,15 +173,15 @@ bool Assign::searchAll(const Exp& search, std::list<SharedExp>& result) const
 }
 
 
-bool Assign::searchAndReplace(const Exp& search, SharedExp replace, bool /*cc*/)
+bool Assign::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/)
 {
     bool chl, chr, chg = false;
 
-    m_lhs = m_lhs->searchReplaceAll(search, replace, chl);
-    m_rhs = m_rhs->searchReplaceAll(search, replace, chr);
+    m_lhs = m_lhs->searchReplaceAll(pattern, replace, chl);
+    m_rhs = m_rhs->searchReplaceAll(pattern, replace, chr);
 
     if (m_guard) {
-        m_guard = m_guard->searchReplaceAll(search, replace, chg);
+        m_guard = m_guard->searchReplaceAll(pattern, replace, chg);
     }
 
     return chl | chr | chg;

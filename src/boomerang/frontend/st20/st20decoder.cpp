@@ -867,7 +867,7 @@ MATCH_finished_a:
         break;
     }
 
-    if (result.rtl == 0) {
+    if (result.rtl == nullptr) {
         result.rtl = new RTL(pc, stmts);
     }
 

@@ -36,10 +36,10 @@ typedef struct objc_class *Class;
 typedef struct objc_object
 {
     Class isa;
-} *id;
+} *_id;
 
 typedef struct objc_selector *SEL;
-typedef id (*IMP)(id, SEL, ...);
+typedef _id (*IMP)(_id, SEL, ...);
 #ifndef BOOL
 typedef char                  BOOL;
 #endif
@@ -63,8 +63,8 @@ OBJC_EXPORT BOOL sel_isMapped(SEL sel);
 OBJC_EXPORT const char *sel_getName(SEL sel);
 OBJC_EXPORT SEL sel_getUid(const char *str);
 OBJC_EXPORT SEL sel_registerName(const char *str);
-OBJC_EXPORT const char *object_getClassName(id obj);
-OBJC_EXPORT void *object_getIndexedIvars(id obj);
+OBJC_EXPORT const char *object_getClassName(_id obj);
+OBJC_EXPORT void *object_getIndexedIvars(_id obj);
 
 #define ISSELECTOR(sel)    sel_isMapped(sel)
 #define SELNAME(sel)       sel_getName(sel)

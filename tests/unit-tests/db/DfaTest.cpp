@@ -53,7 +53,7 @@ Q_DECLARE_METATYPE(SharedTypeWrapper)
 
 void DfaTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE);
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang");
 
     qRegisterMetaType<SharedTypeWrapper>();
 }

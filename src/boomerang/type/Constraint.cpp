@@ -544,11 +544,12 @@ bool Constraints::solve(std::list<ConstraintMap>& solns)
 }
 
 
-static int level = 0;
+// just used in doSolve() below
+static int g_constraintSolveLevel = 0;
 
 bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln, std::list<ConstraintMap>& solns)
 {
-    LOG_MSG("Begin doSolve at level %1", ++level);
+    LOG_MSG("Begin doSolve at level %1", ++g_constraintSolveLevel);
     LOG_MSG("Soln now: %1", soln.prints());
 
     if (it == disjunctions.end()) {
@@ -561,7 +562,7 @@ bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln
         // Copy the fixed constraints
         soln.makeUnion(fixed);
         solns.push_back(soln);
-        LOG_MSG("Exiting doSolve at level %1 returning true", level--);
+        LOG_MSG("Exiting doSolve at level %1 returning true", g_constraintSolveLevel--);
         return true;
     }
 
@@ -637,7 +638,7 @@ bool Constraints::doSolve(std::list<SharedExp>::iterator it, ConstraintMap& soln
 
     // We have run out of disjuncts. Return true if any disjuncts had no
     // unification failures
-    LOG_MSG("Exiting doSolve at level %1 returning %2", level--, anyUnified);
+    LOG_MSG("Exiting doSolve at level %1 returning %2", g_constraintSolveLevel--, anyUnified);
     return anyUnified;
 }
 

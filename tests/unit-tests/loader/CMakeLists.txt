@@ -10,12 +10,21 @@
 include(boomerang-utils)
 
 set(TESTS
-	ElfBinaryLoaderTest
-	SparcBinaryLoaderTest
-	HpSomBinaryLoaderTest
-	PalmBinaryLoaderTest
-	Win32BinaryLoaderTest
-	MicroX86DisTest
+    HpSomBinaryLoaderTest
+    MicroX86DisTest
+)
+
+set(TESTS_WITH_ELF
+    ElfBinaryLoaderTest
+    SparcBinaryLoaderTest
+)
+
+set(TESTS_WITH_WIN32
+    Win32BinaryLoaderTest
+)
+
+set(TESTS_WITH_PALM
+    PalmBinaryLoaderTest
 )
 
 
@@ -30,3 +39,41 @@ foreach(t ${TESTS})
 	)
 endforeach()
 
+if (BOOMERANG_BUILD_LOADER_Elf)
+    foreach(t ${TESTS_WITH_ELF})
+        BOOMERANG_ADD_TEST(
+            NAME ${t}
+            SOURCES ${t}.h ${t}.cpp
+            LIBRARIES
+                ${DEBUG_LIB}
+                boomerang
+                ${CMAKE_THREAD_LIBS_INIT}
+        )
+    endforeach()
+endif (BOOMERANG_BUILD_LOADER_Elf)
+
+if (BOOMERANG_BUILD_LOADER_Win32)
+    foreach(t ${TESTS_WITH_WIN32})
+        BOOMERANG_ADD_TEST(
+            NAME ${t}
+            SOURCES ${t}.h ${t}.cpp
+            LIBRARIES
+                ${DEBUG_LIB}
+                boomerang
+                ${CMAKE_THREAD_LIBS_INIT}
+        )
+    endforeach()
+endif (BOOMERANG_BUILD_LOADER_Win32)
+
+if (BOOMERANG_BUILD_LOADER_Palm)
+    foreach(t ${TESTS_WITH_PALM})
+        BOOMERANG_ADD_TEST(
+            NAME ${t}
+            SOURCES ${t}.h ${t}.cpp
+            LIBRARIES
+                ${DEBUG_LIB}
+                boomerang
+                ${CMAKE_THREAD_LIBS_INIT}
+        )
+    endforeach()
+endif (BOOMERANG_BUILD_LOADER_Palm)
