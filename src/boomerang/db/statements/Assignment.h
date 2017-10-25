@@ -12,7 +12,7 @@
 
 #include "boomerang/db/statements/TypingStatement.h"
 
-/***************************************************************************/ /**
+/**
  * Assignment is an abstract subclass of TypingStatement, holding a location
  ****************************************************************************/
 class Assignment : public TypingStatement

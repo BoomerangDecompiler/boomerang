@@ -10,13 +10,13 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       module.h
  *    Definition of the classes that describe a Module, a grouping
  * of functions irrespective of relationship.  For example, the
  * Object Oriented Programming concept of a Class is a Module.
  * Modules can contain other Modules to form a tree.
- ******************************************************************************/
+ */
 
 #include "boomerang/type/type/CompoundType.h"
 
@@ -105,14 +105,14 @@ public:
     bool empty() const { return m_functionList.empty(); }
 
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Creates a new Function object, adds it to the list of procs in this Module,
      * and adds the address to the list
      * \param name - Name for the proc
      * \param uNative - Native address of the entry point of the proc
      * \param bLib - If true, this will be a libProc; else a UserProc
      * \returns        A pointer to the new Function object
-     ******************************************************************************/
+     */
     Function *createFunction(const QString& name, Address uNative, bool bLib = false);
     Function *getFunction(const QString& name) const;
     Function *getFunction(Address loc) const;

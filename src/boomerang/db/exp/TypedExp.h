@@ -13,9 +13,9 @@
 #include "boomerang/db/exp/Unary.h"
 
 
-/***************************************************************************/ /**
+/**
  * TypedExp is a subclass of Unary, holding one subexpression and a Type
- ******************************************************************************/
+ */
 class TypedExp : public Unary
 {
 public:

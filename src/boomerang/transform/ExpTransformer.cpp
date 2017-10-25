@@ -10,10 +10,10 @@
 #include "ExpTransformer.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file        transformer.cpp
  * OVERVIEW:    Implementation of the Transformer and related classes.
- ******************************************************************************/
+ */
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/CFG.h"

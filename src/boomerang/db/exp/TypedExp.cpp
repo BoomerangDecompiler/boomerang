@@ -200,5 +200,5 @@ SharedExp TypedExp::accept(ExpModifier *v)
 void TypedExp::printx(int ind) const
 {
     LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), type->getCtype());
-    child(subExp1, ind);
+    printChild(subExp1, ind);
 }

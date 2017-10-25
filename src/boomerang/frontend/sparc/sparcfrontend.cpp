@@ -10,16 +10,16 @@
 #include "sparcfrontend.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       sparcfrontend.cpp
  * \brief   This file contains routines to manage the decoding of sparc instructions and the instantiation to RTLs,
  *                removing sparc dependent features such as delay slots in the process. These functions replace
  *                frontend.cpp for decoding sparc instructions.
- ******************************************************************************/
+ */
 
-/***************************************************************************/ /**
+/**
  * Dependencies.
- ******************************************************************************/
+ */
 
 
 #include "boomerang/core/Boomerang.h"

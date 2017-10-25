@@ -10,10 +10,10 @@
 #include "Managed.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       managed.cpp
  * \brief   Implementation of "managed" classes such as InstructionSet, which feature makeUnion etc
- ******************************************************************************/
+ */
 
 #include <sstream>
 #include <cstring>

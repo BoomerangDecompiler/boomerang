@@ -10,10 +10,10 @@
 #include "Constraint.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file   constraint.cpp
  * \brief  Implementation of objects related to type constraints
- ******************************************************************************/
+ */
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/proc/Proc.h"

@@ -10,11 +10,11 @@
 #include "pentiumdecoder.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       pentiumdecoder.cpp
  * \brief   This file contains the high level decoding functionality, for example matching logues, calls, branches,
  *                etc. Ordinary instructions are processed in decoder_low.m
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
@@ -49394,19 +49394,19 @@ MATCH_finished_c:
 }
 
 
-/***************************************************************************/ /**
+/**
  * These are machine specific functions used to decode instruction operands into
  * Exps.
- ******************************************************************************/
+ */
 
-/***************************************************************************/ /**
+/**
  * \fn        dis_Mem
  * \brief        Converts a dynamic address to a Exp* expression.
  *                    E.g. [1000] --> m[, 1000
  * \param        pc - the address of the Eaddr part of the instr
  *                    expr - the expression that will be built
  * \returns             the Exp* representation of the given Eaddr
- ******************************************************************************/
+ */
 SharedExp PentiumDecoder::dis_Mem(HostAddress pc)
 {
     SharedExp expr = nullptr;
@@ -49612,7 +49612,7 @@ MATCH_finished_b:
 }
 
 
-/***************************************************************************/ /** * \fn        dis_Eaddr
+/** * \fn        dis_Eaddr
  * \brief        Converts a dynamic address to a Exp* expression.
  *                    E.g. %ecx --> r[ 25 ]
  * CALLED FROM:        Macros DIS_EADDR32, DIS_EADDR16 and DIS_EADDR8
@@ -49620,7 +49620,7 @@ MATCH_finished_b:
  *                      address
  *                    size - size of the operand (important if a register)
  * \returns             the Exp* representation of the given Eaddr
- ******************************************************************************/
+ */
 SharedExp PentiumDecoder::dis_Eaddr(HostAddress pc, int size)
 {
     // #line 2231 "frontend/machine/pentium/decoder.m"
@@ -49672,24 +49672,24 @@ MATCH_label_a0:
 }
 
 
-/***************************************************************************/ /**
+/**
  * \fn      PentiumDecoder::isFuncPrologue()
  * \brief      Check to see if the instructions at the given offset match
  *                    any callee prologue, i.e. does it look like this offset
  *                    is a pointer to a function?
  * \param      hostPC - pointer to the code in question (native address)
  * \returns           True if a match found
- ******************************************************************************/
+ */
 bool PentiumDecoder::isFuncPrologue(Address)
 {
     return false;
 }
 
 
-/***************************************************************************/ /**
+/**
  * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
  *
- ******************************************************************************/
+ */
 PentiumDecoder::PentiumDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {
@@ -49699,7 +49699,7 @@ PentiumDecoder::PentiumDecoder(Prog *_prog)
 
 static int BSFRstate = 0;                                                     // State number for this state machine
 
-/***************************************************************************/ /**
+/**
  * \brief Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
  * \param pc native PC address (start of the BSF/BSR instruction)
  * \param dest an expression for the destination register
@@ -49708,7 +49708,7 @@ static int BSFRstate = 0;                                                     //
  * \param size sizeof(modrm) (in bits)
  * \param incdec either opPlus for Forward scans, or opMinus for Reverse scans
  * \param numBytes number of bytes this instruction
- ******************************************************************************/
+ */
 void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result)
 {
     // Note the horrible hack needed here. We need initialisation code, and an extra branch, so the %SKIP/%RPT won't

@@ -10,10 +10,10 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       constraint.h
  * OVERVIEW:   Definition of objects related to type constraints
- ******************************************************************************/
+ */
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/db/Managed.h"

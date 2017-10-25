@@ -10,10 +10,10 @@
 #include "CFG.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file    cfg.cpp
  * \brief   Implementation of the CFG class.
- ******************************************************************************/
+ */
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/Signature.h"
@@ -934,10 +934,10 @@ bool Cfg::searchAll(const Exp& search, std::list<SharedExp>& result)
 }
 
 
-/***************************************************************************/ /**
+/**
  * \brief    "deep" delete for a list of pointers to RTLs
  * \param pLrtl - the list
- ******************************************************************************/
+ */
 void delete_lrtls(std::list<RTL *>& pLrtl)
 {
     for (RTL *it : pLrtl) {
@@ -946,14 +946,14 @@ void delete_lrtls(std::list<RTL *>& pLrtl)
 }
 
 
-/***************************************************************************/ /**
+/**
  *
  * \brief   "deep" erase for a list of pointers to RTLs
  * \param   pLrtl - the list
  * \param   begin - iterator to first (inclusive) item to delete
  * \param   end - iterator to last (exclusive) item to delete
  *
- ******************************************************************************/
+ */
 void erase_lrtls(std::list<RTL *>& pLrtl, std::list<RTL *>::iterator begin, std::list<RTL *>::iterator end)
 {
     for (auto it = begin; it != end; it++) {

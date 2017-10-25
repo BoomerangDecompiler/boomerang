@@ -10,10 +10,10 @@
 #include "DataFlow.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       dataflow.cpp
  * \brief   Implementation of the DataFlow class
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"

@@ -83,10 +83,10 @@ public:
 
     // Make a deep copy, and make the copy a derived object if needed.
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Deep copy clone
      * \returns             Pointer to a new Statement, a clone of this ReturnStatement
-     ******************************************************************************/
+     */
     virtual Statement *clone() const override;
 
     // Accept a visitor to this Statement

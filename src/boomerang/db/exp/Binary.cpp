@@ -1769,6 +1769,6 @@ void Binary::printx(int ind) const
 {
     assert(subExp1 && subExp2);
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-    child(subExp1, ind);
-    child(subExp2, ind);
+    printChild(subExp1, ind);
+    printChild(subExp2, ind);
 }

@@ -10,10 +10,10 @@
 #include "Exp.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       exp.cpp
  * \brief   Implementation of the Exp and related classes.
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"

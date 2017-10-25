@@ -10,14 +10,14 @@
 #include "ppcdecoder.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       ppcdecoder.cpp
  * \brief   Implementation of the PPC specific parts of the PPCDecoder class.
- ******************************************************************************/
+ */
 
-/***************************************************************************/ /**
+/**
  * Dependencies.
- ******************************************************************************/
+ */
 
 
 #include "boomerang/core/Boomerang.h"
@@ -81,7 +81,7 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
     jump->setCondType(cond);                          \
     SHOW_ASM(name << " " << BIcr << ", 0x" << relocd - delta)
 
-/***************************************************************************/ /**
+/**
  * \fn       PPCDecoder::decodeInstruction
  * \brief       Attempt to decode the high level instruction at a given address.
  *
@@ -97,7 +97,7 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
  *                 in the loaded object file)
  * \returns            a DecodeResult structure containing all the information
  *                     gathered during decoding
- ******************************************************************************/
+ */
 bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
     HostAddress hostPC = HostAddress(delta) + pc;
@@ -9354,12 +9354,12 @@ bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
 * These are the fetch routines.
 **********************************/
 
-/***************************************************************************/ /**
+/**
  * \fn        PPCDecoder::getDword
  * \brief        Returns the double starting at the given address.
  * \param        lc - address at which to decode the double
  * \returns             the decoded double
- ******************************************************************************/
+ */
 DWord PPCDecoder::getDword(HostAddress lc)
 {
     Byte *p = (Byte *)lc.value();
@@ -9368,11 +9368,11 @@ DWord PPCDecoder::getDword(HostAddress lc)
 }
 
 
-/***************************************************************************/ /**
+/**
  * \fn       PPCDecoder::PPCDecoder
  * \brief
  *
- ******************************************************************************/
+ */
 PPCDecoder::PPCDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {

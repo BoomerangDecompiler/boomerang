@@ -10,10 +10,10 @@
 #include "Signature.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       signature.cpp
  * \brief   Implementation of the classes that describe a procedure signature
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 

@@ -161,7 +161,7 @@
 /***************************************************************************//**
  * \file       transformation.l
  * OVERVIEW:   Scanner for transformation language.
- ******************************************************************************/
+ */
 
 /* ALlow ? and @ in identifiers, so we can use mangled names */
 #include "boomerang/transform/transformation-scanner.h"

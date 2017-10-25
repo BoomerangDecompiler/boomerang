@@ -664,7 +664,7 @@ SharedExp Unary::simplifyAddr()
 void Unary::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-    child(subExp1, ind);
+    printChild(subExp1, ind);
 }
 
 

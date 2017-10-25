@@ -10,10 +10,10 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       exphelp.h
  * OVERVIEW:   Element comparison functions for expressions and statements
- ******************************************************************************/
+ */
 
 #include <map>
 #include <memory>
@@ -55,4 +55,4 @@ struct lessAssign : public std::binary_function<Assign *, Assign *, bool>
     bool operator()(const Assign *x, const Assign *y) const;
 };
 
-void child(const SharedExp& e, int ind);
+void printChild(const SharedExp& e, int ind);

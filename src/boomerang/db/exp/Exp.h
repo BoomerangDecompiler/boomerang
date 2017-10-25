@@ -10,10 +10,10 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       exp.h
  * \brief   Provides the definition for the Exp class and its subclasses.
- ******************************************************************************/
+ */
 
 #include <QString>
 
@@ -88,26 +88,26 @@ public:
     /// Print the expression to the given stream
     virtual void print(QTextStream& os, bool html = false) const = 0;
 
-    /***************************************************************************/ /**
+    /**
      * \brief  Print an infix representation of the object to the given file stream,
      *         with its type in \<angle brackets\>.
      * \param os Output stream to send the output to
-     ******************************************************************************/
+     */
     void printt(QTextStream& os) const;
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Print an infix representation of the object to the given file stream, but convert r[10] to r10 and
      *               v[5] to v5
      * \note   Never modify this function to emit debugging info; the back ends rely on this being clean to emit
      *         correct C.  If debugging is desired, use operator<<
      * \param os Output stream to send the output to
-     ******************************************************************************/
+     */
     void printAsHL(QTextStream& os); ///< Print with v[5] as v5
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Print to a static string (for debugging)
      * \returns            Address of the static buffer
-     ******************************************************************************/
+     */
     char *prints();                  ///< Print to string (for debugging and logging)
     void dump();                     ///< Print to standard error (for debugging)
 
@@ -120,11 +120,11 @@ public:
 
     /// Display as a dotty graph
 
-    /***************************************************************************/ /**
+    /**
      * \brief Create a dotty file (use dotty to display the file; search the web for "graphviz").
      *        Mainly for debugging
      * \param name - Name of the file to create
-     ******************************************************************************/
+     */
     void createDotFile(const char *name);
     virtual void appendDotFile(QTextStream& os) = 0;
 
@@ -160,17 +160,17 @@ public:
     /// True if this is a register location
     bool isRegOf() const { return m_oper == opRegOf; }
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Returns true if the expression is r[K] where K is int const
      * \returns      True if matches
-     ******************************************************************************/
+     */
     bool isRegOfK();
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Returns true if the expression is r[N] where N is the given int const
      * \param n      the specific register to be tested for
      * \returns      True if this is a specific numeric register
-     ******************************************************************************/
+     */
     bool isRegN(int n) const;
 
     /// True if this is a memory location (any memory nesting depth)
@@ -191,10 +191,10 @@ public:
     /// True if this is %pc
     bool isPC() { return m_oper == opPC; }
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Returns true if is %afp, %afp+k, %afp-k, or a[m[<any of these]]
      * \returns            True if found
-     ******************************************************************************/
+     */
     bool isAfpTerm();
 
     /// True if is int const
@@ -223,10 +223,10 @@ public:
     /// True if this is a typeof
     bool isTypeOf() const { return m_oper == opTypeOf; }
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Returns the index for this var, e.g. if v[2], return 2
      * \returns      The index
-     ******************************************************************************/
+     */
     int getVarIndex();
 
     /// True if this is a terminal
@@ -278,31 +278,31 @@ public:
     /// Search for Exp *search in this Exp. If found, return true and return a ptr to the matching expression in
     /// result (useful with wildcards).
 
-    /***************************************************************************/ /**
+    /**
      * \brief  Search this expression for the given subexpression, and if found, return true and return a pointer
      *         to the matched expression in result
      *         useful when there are wildcards, e.g. search pattern is *r[?] result is r[2].
      * \param   search     ptr to Exp we are searching for
      * \param   result     ref to ptr to Exp that matched
      * \returns            True if a match was found
-     ******************************************************************************/
+     */
     virtual bool search(const Exp& search, SharedExp& result);
 
     // Search for Exp search in this Exp. For each found, add a ptr to the matching expression in result (useful
     // with wildcards).      Does NOT clear result on entry
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Search this expression for the given subexpression, and for each found, return a pointer to the
      *                      matched expression in result
      * \param   search     ptr to Exp we are searching for
      * \param   result  ref to list of Exp that matched
      * \returns            True if a match was found
-     ******************************************************************************/
+     */
     bool searchAll(const Exp& search, std::list<SharedExp>& result);
 
     /// Search this Exp for *search; if found, replace with *replace
 
-    /***************************************************************************/ /**
+    /**
      * \brief   Search for the given subexpression, and replace if found
      * \note    If the top level expression matches, return val != this
      *
@@ -310,10 +310,10 @@ public:
      * \param       replace - ptr to Exp to replace it with
      * \param       change - ref to boolean, set true if a change made (else cleared)
      * \returns     True if a change made
-     ******************************************************************************/
+     */
     SharedExp searchReplace(const Exp& search, const SharedExp& replace, bool& change);
 
-    /***************************************************************************/ /**
+    /**
      * \brief   Search for the given subexpression, and replace wherever found
      * \note    If the top level expression matches, something other than "this" will be returned
      * \note    It is possible with wildcards that in very unusual circumstances a replacement will be made to
@@ -327,10 +327,10 @@ public:
      * \param   once - if set to true only the first possible replacement will be made
      *
      * \returns the result (often this, but possibly changed)
-     ******************************************************************************/
+     */
     SharedExp searchReplaceAll(const Exp& search, const SharedExp& replace, bool& change, bool once = false);
 
-    /***************************************************************************/ /**
+    /**
      * \brief   Search for the given subexpression
      * \note    Caller must free the list li after use, but not the Exp objects that they point to
      * \note    If the top level expression matches, li will contain search
@@ -343,10 +343,10 @@ public:
      * \param   li   list of Exp** where pointers to the matches are found
      * \param   once true if not all occurrences to be found, false for all
      *
-     ******************************************************************************/
+     */
     static void doSearch(const Exp& search, SharedExp& pSrc, std::list<SharedExp *>& li, bool once);
 
-    /***************************************************************************/ /**
+    /**
      * \brief       Search for the given subexpression in all children
      * \note        Virtual function; different implementation for each subclass of Exp
      * \note            Will recurse via doSearch
@@ -354,7 +354,7 @@ public:
      * \param       search - ptr to Exp we are searching for
      * \param       li - list of Exp** where pointers to the matches are found
      * \param       once - true if not all occurrences to be found, false for all
-     ******************************************************************************/
+     */
     virtual void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once);
 
     /// Propagate all possible assignments to components of this expression.
@@ -426,10 +426,10 @@ public:
         return nullptr;
     }
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Get subexpression
      * \returns  Pointer to the requested subexpression
-     ******************************************************************************/
+     */
     virtual SharedExp getSubExp1() { return nullptr; }
     virtual SharedConstExp getSubExp1() const { return nullptr; }
     virtual SharedExp getSubExp2() { return nullptr; }
@@ -440,11 +440,11 @@ public:
     virtual SharedExp& refSubExp2();
     virtual SharedExp& refSubExp3();
 
-    /***************************************************************************/ /**
+    /**
      * \brief  Set requested subexpression; 1 is first
      * param  e Pointer to subexpression to set
      * \note   If an expression already exists, it is ;//deleted
-     ******************************************************************************/
+     */
     virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
     virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
     virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
@@ -459,10 +459,10 @@ public:
     //    Guarded assignment    //
     //    //    //    //    //    //    //
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Returns a ptr to the guard expression, or 0 if none
      * \returns            Ptr to the guard, or 0
-     ******************************************************************************/
+     */
     SharedExp getGuard(); // Get the guard expression, or 0 if not
 
     //    //    //    //    //    //    //    //    //
@@ -473,7 +473,7 @@ public:
     // These simplifying functions don't really belong in class Exp, but they know too much about how Exps work
     // They can't go into util.so, since then util.so and db.so would co-depend on each other for testing at least
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Takes an expression consisting on only + and - operators and partitions its terms into positive
      *               non-integer fixed terms, negative non-integer fixed terms and integer terms. For example, given:
      *                   %sp + 108 + n - %sp - 92
@@ -488,30 +488,30 @@ public:
      * \param negatives - the list of negative terms
      * \param integers - the vector of integer terms
      * \param negate - determines whether or not to negate the whole expression, i.e. we are on the RHS of an opMinus
-     ******************************************************************************/
+     */
     void partitionTerms(std::list<SharedExp>& positives, std::list<SharedExp>& negatives, std::vector<int>& integers,
                         bool negate);
 
-    /***************************************************************************/ /**
+    /**
      * \brief        This method simplifies an expression consisting of + and - at the top level. For example,
      *               (%sp + 100) - (%sp + 92) will be simplified to 8.
      * \note         Any expression can be so simplified
      * \note         User must ;//delete result
      * \returns      Ptr to the simplified expression
-     ******************************************************************************/
+     */
     virtual SharedExp simplifyArith() { return shared_from_this(); }
 
-    /***************************************************************************/ /**
+    /**
      * \brief        This method creates an expression that is the sum of all expressions in a list.
      *               E.g. given the list <4,r[8],m[14]> the resulting expression is 4+r[8]+m[14].
      * \note         static (non instance) function
      * \note         Exps ARE cloned
      * \param        exprs - a list of expressions
      * \returns      a new Exp with the accumulation
-     ******************************************************************************/
+     */
     static SharedExp accumulate(std::list<SharedExp>& exprs);
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Apply various simplifications such as constant folding. Also canonicalise by putting iteger
      *               constants on the right hand side of sums, adding of negative constants changed to subtracting
      *               positive constants, etc.  Changes << k to a multiply
@@ -525,7 +525,7 @@ public:
      * We're trying to do it with a simple iterative algorithm, but the algorithm keeps getting more and more complex.
      * Eventually I will replace this with a simple theorem prover and we'll have something powerful, but until then,
      * dont rely on this code to do anything critical. - trent 8/7/2002
-     ******************************************************************************/
+     */
     SharedExp simplify();
 
     virtual SharedExp polySimplify(bool& bMod)
@@ -538,21 +538,21 @@ public:
     virtual SharedExp simplifyAddr() { return shared_from_this(); }
     virtual SharedExp simplifyConstraint() { return shared_from_this(); }
 
-    /***************************************************************************/ /**
+    /**
      * \brief       Replace succ(r[k]) by r[k+1]
      * \note        Could change top level expression
      * \returns     Fixed expression
-     ******************************************************************************/
+     */
     SharedExp fixSuccessor(); // succ(r2) -> r3
 
     /// Kill any zero fill, sign extend, or truncates
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Remove size operations such as zero fill, sign extend
      * \note         Could change top level expression
      * \note         Does not handle truncation at present
      * \returns      Fixed expression
-     ******************************************************************************/
+     */
     SharedExp killFill();
 
     /// Do the work of finding used locations. If memOnly set, only look inside m[...]
@@ -654,13 +654,13 @@ protected:
 
 // Not part of the Exp class, but logically belongs with it:
 
-/***************************************************************************/ /**
+/**
  * \brief Output operator for Exp*
  * Prints the Exp pointed to by p
  * \param os output stream to send to
  * \param p ptr to Exp to print to the stream
  * \returns copy of os (for concatenation)
- ******************************************************************************/
+ */
 QTextStream& operator<<(QTextStream& os, const Exp *p);
 
 

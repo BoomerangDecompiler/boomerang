@@ -10,12 +10,12 @@
 #include "Register.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file register.cpp
  * \brief Register class descriptions
  *
  * Holds detailed information about a single register.
- ******************************************************************************/
+ */
 
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"

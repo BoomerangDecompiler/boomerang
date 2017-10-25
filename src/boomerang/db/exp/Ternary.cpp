@@ -692,7 +692,7 @@ void Ternary::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 
-    child(subExp1, ind);
-    child(subExp2, ind);
-    child(subExp3, ind);
+    printChild(subExp1, ind);
+    printChild(subExp2, ind);
+    printChild(subExp3, ind);
 }

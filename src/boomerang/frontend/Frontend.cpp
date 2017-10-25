@@ -10,12 +10,12 @@
 #include "Frontend.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       frontend.cpp
  * \brief   This file contains common code for all front ends. The majority
  *                of frontend logic remains in the source dependent files such as
  *                frontsparc.cpp
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/c/ansi-c-parser.h"

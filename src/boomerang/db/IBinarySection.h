@@ -10,10 +10,10 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       IBinarySection.h
  *   Interface definition for Sections
- ******************************************************************************/
+ */
 #include "boomerang/type/type/Type.h"
 
 #include <cstdint>

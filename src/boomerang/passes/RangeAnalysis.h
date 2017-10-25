@@ -17,9 +17,9 @@ class Function;
 class Statement;
 class UserProc;
 
-/***************************************************************************/ /**
+/**
  * \brief Detect and log possible buffer overflows
- ******************************************************************************/
+ */
 class RangeAnalysis : public FunctionPass
 {
 public:
@@ -31,9 +31,9 @@ public:
 private:
     friend class RangeVisitor;
 
-    /***************************************************************************/ /**
+    /**
      * \brief Add Junction statements
-     *******************************************************************************/
+     **/
     void addJunctionStatements(Cfg& cfg);
     void clearRanges();
 

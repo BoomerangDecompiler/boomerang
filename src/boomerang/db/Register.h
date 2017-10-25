@@ -10,10 +10,10 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file        register.h
  * OVERVIEW:    Header information for the Register class.
- ******************************************************************************/
+ */
 
 #include <string>
 #include <stdint.h>
@@ -23,7 +23,7 @@
 class Type;
 typedef std::shared_ptr<Type> SharedType;
 
-/***************************************************************************/ /**
+/**
  * \class  Register
  * Summarises one line of the \@REGISTERS section of an SSL
  * file. This class is used extensively in sslparser.y, and there is a public
@@ -32,42 +32,42 @@ typedef std::shared_ptr<Type> SharedType;
  * not just an array of Register objects).
  * This class plays a more active role in the Interpreter, which is not yet
  * integrated into uqbt
- ******************************************************************************/
+ */
 class Register
 {
 public:
     Register(); ///< needed for use in stl classes.
     Register(const Register&);
 
-    /***************************************************************************/ /**
+    /**
      * \brief      Copy operator
      * \param      r2 - Reference to another Register object (to be copied)
      * \returns    This object
-     ******************************************************************************/
+     */
     Register& operator=(const Register& r2);
 
-    /***************************************************************************/ /**
+    /**
      * \brief   Equality operator
      * \param   r2 - Reference to another Register object
      * \returns True if the same
-     ******************************************************************************/
+     */
     bool operator==(const Register& r2) const;
 
-    /***************************************************************************/ /**
+    /**
      * \brief   Comparison operator (to establish an ordering)
      * \param   r2 - Reference to another Register object
      * \returns true if this name is less than the given Register's name
-     ******************************************************************************/
+     */
     bool operator<(const Register& r2) const;
 
     ///////////////////////////////////////////////////////////////////////////////
     // access and set functions
     ///////////////////////////////////////////////////////////////////////////////
 
-    /***************************************************************************/ /**
+    /**
      * \brief      Set the name for this register
      * \param      name - name to set it to
-     ******************************************************************************/
+     */
     void setName(const QString& name);
 
     void setSize(uint16_t s) { m_size = s; }
@@ -76,20 +76,20 @@ public:
 
     /* These are only used in the interpreter */
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Get the name for this register
      * \returns  The name as a character string
-     ******************************************************************************/
+     */
     const QString& getName() const;
 
     void *getAddress() const { return m_address; }
 
     int getSize() const { return m_size; }
 
-    /***************************************************************************/ /**
+    /**
      * \brief   Get the type for this register
      * \returns The type as a pointer to a Type object
-     ******************************************************************************/
+     */
     SharedType getType() const;
 
     /**

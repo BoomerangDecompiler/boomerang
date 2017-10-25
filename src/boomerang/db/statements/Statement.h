@@ -10,11 +10,11 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       statement.h
  * OVERVIEW:   The Statement and related classes
  *  (Was dataflow.h a long time ago)
- ******************************************************************************/
+ */
 
 #include "boomerang/db/exp/ExpHelp.h" // For lessExpStar, lessAssignment etc
 #include "boomerang/db/DataFlow.h"    // For embedded objects DefCollector and UseCollector#
@@ -58,10 +58,10 @@ typedef std::shared_ptr<Exp>         SharedExp;
 typedef std::unique_ptr<Statement>   UniqInstruction;
 typedef std::shared_ptr<Type>        SharedType;
 
-/***************************************************************************/ /**
+/**
  * Types of Statements, or high-level register transfer lists.
  * changing the order of these will result in save files not working - trent
- ******************************************************************************/
+ */
 enum StmtType : uint8_t   // ' : uint8_t' so that it can be forward declared in rtl.h
 {
     STMT_ASSIGN = 0,
@@ -78,11 +78,11 @@ enum StmtType : uint8_t   // ' : uint8_t' so that it can be forward declared in 
     STMT_JUNCTION
 };
 
-/***************************************************************************/ /**
+/**
  * BRANCH_TYPE: These values indicate what kind of conditional jump or
  * conditonal assign is being performed.
  * Changing the order of these will result in save files not working - trent
- ******************************************************************************/
+ */
 enum BranchType
 {
     BRANCH_JE = 0, // Jump if equals
@@ -244,14 +244,14 @@ public:
     // Note: static member function
     static bool canPropagateToExp(Exp& e);
 
-    /***************************************************************************/ /**
+    /**
      * \brief Propagate to this statement
      * \param destCounts is a map that indicates how may times a statement's definition is used
      * \param convert set true if an indirect call is changed to direct (otherwise, no change)
      * \param force set to true to propagate even memofs (for switch analysis)
      * \param usedByDomPhi is a set of subscripted locations used in phi statements
      * \returns true if a change
-     ******************************************************************************/
+     */
     bool propagateTo(bool& convert, ExpIntMap *destCounts = nullptr, LocationSet *usedByDomPhi = nullptr,
                      bool force = false);
 
@@ -389,10 +389,10 @@ QTextStream& operator<<(QTextStream& os, const LocationSet *p);
 
 
 
-/***************************************************************************/ /**
+/**
  * CaseStatement is derived from GotoStatement. In addition to the destination
  * of the jump, it has a switch variable Exp.
- ******************************************************************************/
+ */
 struct SWITCH_INFO
 {
     SharedExp pSwitchVar;  ///< Ptr to Exp repres switch var, e.g. v[7]

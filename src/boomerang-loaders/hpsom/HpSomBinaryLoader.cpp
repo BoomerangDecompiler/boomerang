@@ -10,12 +10,6 @@
 #include "HpSomBinaryLoader.h"
 
 
-/***************************************************************************/ /**
- * \file    HpSomBinaryLoader.cpp
- * \brief   This file contains the implementation of the class
- *          HpSomBinaryLoader, for decoding PA/RISC SOM executable files.
- *          Derived from class IFileLoader.
- ******************************************************************************/
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"

@@ -10,11 +10,6 @@
 #include "Win32BinaryLoader.h"
 
 
-/***************************************************************************/ /**
- * \file Win32BinaryLoader.cpp
- * This file contains the implementation of the class Win32BinaryLoader.
- */
-
 /* Win32 binary file format.
  *    This file implements the class Win32BinaryLoader, derived from class
  *    IFileLoader. See Win32BinaryLoader.h and IFileLoader.h for details.
@@ -56,6 +51,7 @@ namespace dbghelp
 extern "C" {
 int microX86Dis(void *p); // From microX86dis.c
 }
+
 namespace
 {
 struct SectionParam

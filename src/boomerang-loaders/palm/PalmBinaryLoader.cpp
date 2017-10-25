@@ -398,7 +398,7 @@ static SWord GccCallMain[] =
     0x6100, WILD
 };                                                // bsr PilotMain
 
-/***************************************************************************/ /**
+/**
  *
  * \brief      Try to find a pattern
  * \param start - pointer to code to start searching
@@ -406,7 +406,7 @@ static SWord GccCallMain[] =
  * \param pattSize - size of the pattern (in SWords)
  * \param max - max number of SWords to search
  * \returns       0 if no match; pointer to start of match if found
- ******************************************************************************/
+ */
 SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
 {
     const SWord *last = start + max;

@@ -10,11 +10,11 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       proc.h
  * OVERVIEW:   Interface for the procedure classes, which are used to store information about variables in the
  *                procedure such as parameters and locals.
- ******************************************************************************/
+ */
 
 #include "boomerang/util/Address.h"
 #include "boomerang/db/Signature.h"
@@ -34,12 +34,12 @@ class Function : public Printable
     typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 
 public:
-    /***************************************************************************/ /**
+    /**
      * \brief        Constructor with name and native address.
      * \param        address - Native address of entry point of procedure
      * \param        signature - the Signature for this Proc
      * \param        module - the Module this procedure belongs to
-     ******************************************************************************/
+     */
     Function(Address address, Signature *signature, Module *module);
     virtual ~Function();
 

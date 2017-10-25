@@ -102,10 +102,10 @@
 /* % section 1 definitions go here */
 #define INITIAL    0
 
-/***************************************************************************/ /**
+/**
  * \file       ansi-c.l
  * \brief   Scanner for ANSI C.
- ******************************************************************************/
+ */
 
 /* ALlow ? and @ in identifiers, so we can use mangled names */
 #include "ansi-c-scanner.h"

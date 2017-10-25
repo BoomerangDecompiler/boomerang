@@ -10,11 +10,11 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       table.h
  * \brief   Provides the definition of class Table and children used by
  *               the SSL parser
- ******************************************************************************/
+ */
 
 #include <QString>
 #include <deque>

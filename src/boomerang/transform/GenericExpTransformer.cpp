@@ -10,10 +10,10 @@
 #include "GenericExpTransformer.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       generic.cpp
  * OVERVIEW:   Implementation of the GenericExpTransformer and related classes.
- ******************************************************************************/
+ */
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"

@@ -10,12 +10,12 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file     frontend.h
  * \brief    This file contains the definition for the FrontEnd class, which implements the source indendent parts of
  *           the front end: decoding machine instructions into a control flow graph populated with low and high level
  *           RTLs.
- ******************************************************************************/
+ */
 
 #include "boomerang/util/Types.h"
 #include "boomerang/frontend/SigEnum.h" // For enums platform and cc
@@ -68,30 +68,30 @@ enum INSTTYPE
 class IFrontEnd
 {
 public:
-    /***************************************************************************/ /**
+    /**
      * \brief      Construct the FrontEnd object
      * \param loader pointer to the Loader
      * \param prog program being decoded
-     ******************************************************************************/
+     */
     IFrontEnd(IFileLoader *loader, Prog *prog);
 
     virtual ~IFrontEnd();
 
-    /***************************************************************************/ /**
+    /**
      * \brief Create from a binary file
      * Static function to instantiate an appropriate concrete front end
      * \param loader pointer to the loader object
      * \param prog program being decoded
-     ******************************************************************************/
+     */
     static IFrontEnd *instantiate(IFileLoader *loader, Prog *prog);
 
-    /***************************************************************************/ /**
+    /**
      * \brief Create FrontEnd instance given \a fname and \a prog
      *
      * \param fname string with full path to decoded file
      * \param prog program being decoded
      * \returns Binary-specific frontend.
-     ******************************************************************************/
+     */
     static IFrontEnd *create(const QString& fname, Prog *prog, IProject *project);
 
     /// Is this a win32 frontend?
@@ -138,11 +138,11 @@ public:
     virtual void extraProcessCall(CallStatement * /*call*/, std::list<RTL *> * /*BB_rtls*/) {}
 
 
-    /***************************************************************************/ /**
+    /**
      * \brief       Read the library signatures from a file
      * \param       signatureFile The path to the file containing the signatures
      * \param       cc the calling convention assumed
-     ******************************************************************************/
+     */
     void readLibrarySignatures(const char *signatureFile, CallConv cc);
     void readLibraryCatalog(const QString& sPath);              ///< read from a catalog
     void readLibraryCatalog();                                  ///< read from default catalog
@@ -164,7 +164,7 @@ public:
     void decodeFragment(UserProc *proc, Address a);
 
 
-    /***************************************************************************/ /**
+    /**
      * \brief      Process a procedure, given a native (source machine) address.
      *
      * This is the main function for decoding a procedure. It is usually overridden in the derived
@@ -181,7 +181,7 @@ public:
      *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
      *
      * \returns          true for a good decode (no illegal instructions)
-     ******************************************************************************/
+     */
     virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false);
 
     /**
@@ -204,14 +204,14 @@ public:
 
     static void closeInstance(void *dlHandle); ///< Close the library opened by getInstanceFor
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Get a Prog object (mainly for testing and not decoding)
      * \returns  Pointer to a Prog object (with pFE and pBF filled in)
-     ******************************************************************************/
+     */
     Prog *getProg();
 
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Create a Return or a Oneway BB if a return statement already exists
      * \param    pProc pointer to enclosing UserProc
      * \param    BB_rtls list of RTLs for the current BB (not including pRtl)
@@ -219,7 +219,7 @@ public:
      *           ReturnStatement as the last statement)
      *
      * \returns  Pointer to the newly created BB
-     ******************************************************************************/
+     */
     BasicBlock *createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl);
 
     /**

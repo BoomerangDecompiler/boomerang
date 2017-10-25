@@ -10,10 +10,10 @@
 #include "Table.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file  Table.cpp
  * \brief Provides the implementation of classes Table, OpTable, and ExprTable
- ******************************************************************************/
+ */
 
 Table::Table(TABLE_TYPE t)
     : TableType(t)

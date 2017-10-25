@@ -13,9 +13,9 @@
 #include "boomerang/db/exp/Exp.h"
 
 
-/***************************************************************************/ /**
+/**
  * Terminal is a subclass of Exp, and holds special zero arity items such as opFlags (abstract flags register)
- ******************************************************************************/
+ */
 class Terminal : public Exp
 {
 public:

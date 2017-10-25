@@ -253,7 +253,7 @@ void RefExp::printx(int ind) const
     }
 
     LOG_VERBOSE("}");
-    child(subExp1, ind);
+    printChild(subExp1, ind);
 }
 
 

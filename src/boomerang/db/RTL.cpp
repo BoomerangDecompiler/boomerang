@@ -10,11 +10,11 @@
 #include "RTL.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       rtl.cpp
  * \brief   Implementation of the classes that describe a low level RTL (
  *               register transfer list)
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/BranchStatement.h"
@@ -199,13 +199,13 @@ char *RTL::prints() const
 }
 
 
-/***************************************************************************/ /**
+/**
  * \brief   Output operator for RTL*
  *          Just makes it easier to use e.g. LOG_STREAM() << myRTLptr
  * \param   os output stream to send to
  * \param   r ptr to RTL to print to the stream
  * \returns os (for concatenation)
- ******************************************************************************/
+ */
 QTextStream& operator<<(QTextStream& os, const RTL *r)
 {
     if (r == nullptr) {

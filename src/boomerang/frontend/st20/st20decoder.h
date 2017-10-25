@@ -10,10 +10,10 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       st20decoder.h
  * \brief   The definition of the instruction decoder for ST20.
- ******************************************************************************/
+ */
 
 #include "boomerang/frontend/NJMCDecoder.h"
 

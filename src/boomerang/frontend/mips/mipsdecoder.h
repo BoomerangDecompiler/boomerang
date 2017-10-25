@@ -45,7 +45,7 @@ public:
 
     /// \copydoc NJMCDecoder::decodeInstruction
 
-    /****************************************************************************/ /**
+    /**
     * \brief   Attempt to decode the high level instruction at a given
     *              address and return the corresponding HL type (e.g. CallStatement,
     *              GotoStatement etc). If no high level instruction exists at the
@@ -57,6 +57,6 @@ public:
     *              host address of the pc (i.e. the address that the pc is at in the loaded object file)
     * \returns a DecodeResult structure containing all the information
     *              gathered during decoding
-    *********************************************************************************/
+    ****/
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 };

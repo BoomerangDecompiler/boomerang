@@ -13,7 +13,7 @@
 /*========================================================================*//**
 * \file        prog.h
 * OVERVIEW:    interface for the program object.
-******************************************************************************/
+*/
 
 #include <map>
 
@@ -63,7 +63,7 @@ public:
     /// Assign a name to this program
     void setName(const QString& name);
 
-    /***************************************************************************/ /**
+    /**
      * \note     Formally Frontend::newProc
      * \brief    Create a new unnamed Proc at address \p addr.
      *
@@ -74,7 +74,7 @@ public:
      * \param addr    Native address of the procedure entry point
      * \returns       Pointer to the Proc object, or 0 if this is a deleted (not to
      *                be decoded) address
-     ******************************************************************************/
+     */
     Function *createProc(Address addr);
 
     void removeProc(const QString& name);
@@ -86,55 +86,55 @@ public:
     QString getPath() const { return m_path; }
     QString getPathAndName() const { return m_path + m_name; }
 
-    /***************************************************************************/ /**
+    /**
      *
      * \brief    Return the number of user (non deleted, non library) procedures
      * \returns  The number of procedures
-     ******************************************************************************/
+     */
     int getNumProcs(bool user_only = true) const;
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Return a pointer to the associated Proc object, or nullptr if none
      * \note        Could return -1 for a deleted Proc
      * \param uAddr - Native address of the procedure entry point
      * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
-     ******************************************************************************/
+     */
     Function *findProc(Address uAddr) const;
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Return a pointer to the associated Proc object, or nullptr if none
      * \note        Could return -1 for a deleted Proc
      * \param name - name of the searched-for procedure
      * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
-     ******************************************************************************/
+     */
     Function *findProc(const QString& name) const;
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Return a pointer to the Proc object containing uAddr, or 0 if none
      * \note     Could return nullptr for a deleted Proc
      * \param uAddr - Native address to search for
      * \returns       Pointer to the Proc object, or 0 if none, or -1 if deleted
-     ******************************************************************************/
+     */
     Function *findContainingProc(Address uAddr) const;
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Return true if this is a real procedure
      * \param addr   Native address of the procedure entry point
      * \returns      True if a real (non deleted) proc
-     ******************************************************************************/
+     */
     bool isProcLabel(Address addr) const;
 
-    /***************************************************************************/ /**
+    /**
      * \brief Get the name for the progam, without any path at the front
      * \returns A string with the name
-     ******************************************************************************/
+     */
     QString getNameNoPath() const;
 
-    /***************************************************************************/ /**
+    /**
      * \brief Get the name for the progam, without any path at the front, and no extension
      * \sa Prog::getNameNoPath
      * \returns A string with the name
-     ******************************************************************************/
+     */
     QString getNameNoPathNoExt() const;
     UserProc *getFirstUserProc(std::list<Function *>::iterator& it) const;
     UserProc *getNextUserProc(std::list<Function *>::iterator& it) const;
@@ -143,7 +143,7 @@ public:
     /// \note deletes everything!
     void clear();
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Lookup the given native address in the code section,
      *           returning a host pointer corresponding to the same address
      *
@@ -152,7 +152,7 @@ public:
      * \param delta will be set to the difference between the host and native addresses
      * \returns     Host pointer if in range; nullptr if not
      *              Also sets 2 reference parameters (see above)
-     ******************************************************************************/
+     */
     const void *getCodeInfo(Address uAddr, const char *& last, int& delta) const;
 
     const std::set<Global *>& getGlobals() const { return m_globals; }
@@ -160,16 +160,16 @@ public:
     QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
     int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Decode from entry point given as an agrument
      * \param a -  Native address of the entry point
-     ******************************************************************************/
+     */
     void decodeEntryPoint(Address a);
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Add entry point given as an agrument to the list of entryProcs
      * \param a -  Native address of the entry point
-     ******************************************************************************/
+     */
     void setEntryPoint(Address a);
     void decodeEverythingUndecoded();
     void decodeFragment(UserProc *proc, Address a);
@@ -191,7 +191,7 @@ public:
     void removeRestoreStmts(InstructionSet& rs);
     void globalTypeAnalysis();
 
-    /***************************************************************************/ /**
+    /**
      * \brief    Remove unused return locations
      *
      * This is the global removing of unused and redundant returns. The initial idea
@@ -204,7 +204,7 @@ public:
      *    the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
      *    child.
      * \returns true if any change
-     ******************************************************************************/
+     */
     bool removeUnusedReturns();
 
     /// Have to transform out of SSA form after the above final pass
@@ -320,12 +320,12 @@ public:
     /// Add the given RTL to the front end's map from address to aldready-decoded-RTL
     void addDecodedRtl(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRtl(a, rtl); }
 
-    /***************************************************************************/ /**
+    /**
      * \brief This does extra processing on a constant.
      * The Exp* \a e is expected to be a Const, and the Address \p location is the native
      * location from which the constant was read.
      * \returns processed Exp
-     ******************************************************************************/
+     */
     SharedExp addReloc(SharedExp e, Address location);
 
 

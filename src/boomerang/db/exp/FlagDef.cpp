@@ -64,8 +64,8 @@ bool FlagDef::accept(ExpVisitor *v)
 SharedExp FlagDef::accept(ExpModifier *v)
 {
     bool recur;
-    auto ret        = v->preVisit(shared_from_base<FlagDef>(), recur);
-    auto flgdef_ret = std::dynamic_pointer_cast<FlagDef>(ret);
+    SharedExp ret        = v->preVisit(shared_from_base<FlagDef>(), recur);
+    std::shared_ptr<FlagDef> flgdef_ret = std::dynamic_pointer_cast<FlagDef>(ret);
 
     if (recur) {
         subExp1 = subExp1->accept(v);

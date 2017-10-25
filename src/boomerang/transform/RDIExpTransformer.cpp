@@ -10,10 +10,10 @@
 #include "RDIExpTransformer.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file    generic.cpp
  * \brief   Implementation of the RDIExpTransformer and related classes.
- ******************************************************************************/
+ */
 #include "boomerang/util/Types.h"
 
 #include "boomerang/db/CFG.h"

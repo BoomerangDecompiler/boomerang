@@ -10,10 +10,10 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       decoder.h
  * OVERVIEW:   The interface to the instruction decoder.
- ******************************************************************************/
+ */
 
 #include "boomerang/util/Address.h"
 
@@ -46,11 +46,11 @@ enum ICLASS : Byte
 };
 
 
-/***************************************************************************/ /**
+/**
  * The DecodeResult struct contains all the information that results from
  * calling the decoder. This prevents excessive use of confusing
  * reference parameters.
- ******************************************************************************/
+ */
 struct DecodeResult
 {
 public:

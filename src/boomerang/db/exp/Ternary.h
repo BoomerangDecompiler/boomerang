@@ -13,9 +13,9 @@
 #include "boomerang/db/exp/Binary.h"
 
 
-/***************************************************************************/ /**
+/**
  * Ternary is a subclass of Binary, holding three subexpressions
- ******************************************************************************/
+ */
 class Ternary : public Binary
 {
 public:
@@ -24,13 +24,13 @@ public:
     // Copy constructor
     Ternary(const Ternary& o);
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Virtual function to make a clone of myself, i.e. to create
      *               a new Exp with the same contents as myself, but not sharing
      *               any memory. Deleting the clone will not affect this object.
      *               Pointers to subexpressions are not copied, but also cloned.
      * \returns      Pointer to cloned object
-     ******************************************************************************/
+     */
     virtual SharedExp clone() const override;
 
     // Compare

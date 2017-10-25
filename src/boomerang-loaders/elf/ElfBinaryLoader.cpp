@@ -10,11 +10,6 @@
 #include "ElfBinaryLoader.h"
 
 
-/***************************************************************************/ /**
- * \file ElfBinaryLoader.cpp
- * Desc: This file contains the implementation of the class ElfBinaryLoader.
- ******************************************************************************/
-
 #include "ElfTypes.h"
 
 #include "boomerang/core/IBoomerang.h"

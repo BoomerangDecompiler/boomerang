@@ -10,7 +10,7 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       visitor.h
  * \details   Provides the definition for the various visitor and modifier classes.
  *            These classes sometimes are associated with Statement and Exp classes, so they are here to avoid

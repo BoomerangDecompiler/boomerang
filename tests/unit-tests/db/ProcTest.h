@@ -10,7 +10,7 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file    ProcTest.h
  * Provides the interface for the ProcTest class, which tests the Proc class
  *============================================================================*/

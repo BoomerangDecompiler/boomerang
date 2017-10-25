@@ -10,15 +10,15 @@
 #include "Prog.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file     prog.cpp
  * \brief    Implementation of the program class. Holds information of
  *                interest to the whole program.
- ******************************************************************************/
+ */
 
-/***************************************************************************/ /**
+/**
  * Dependencies.
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/c/ansi-c-parser.h"

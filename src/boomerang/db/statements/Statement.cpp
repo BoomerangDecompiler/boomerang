@@ -10,10 +10,10 @@
 #include "Statement.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       statement.cpp
  * \brief   Implementation of the Statement and related classes.
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 
@@ -207,13 +207,13 @@ Statement *Statement::getNextStatementInBB() const
 }
 
 
-/***************************************************************************/ /**
+/**
  * \brief Output operator for Instruction*
  *        Just makes it easier to use e.g. LOG_STREAM() << myStmtStar
  * \param os output stream to send to
  * \param s  ptr to Statement to print to the stream
  * \returns copy of os (for concatenation)
- ******************************************************************************/
+ */
 QTextStream& operator<<(QTextStream& os, const Statement *s)
 {
     if (s == nullptr) {

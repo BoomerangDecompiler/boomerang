@@ -16,34 +16,34 @@
 
 class ImplicitAssign;
 
-/***************************************************************************/ /**
+/**
  * CallStatement: represents a high level call.
  * Information about parameters and the like are stored here.
- ******************************************************************************/
+ */
 class CallStatement : public GotoStatement
 {
 public:
-    /***************************************************************************/ /**
+    /**
      * \fn         CallStatement::CallStatement
      * \brief      Constructor for a call
-     ******************************************************************************/
+     */
     CallStatement();
 
-    /***************************************************************************/ /**
+    /**
      * \fn      CallStatement::~CallStatement
      * \brief   Destructor
-     ******************************************************************************/
+     */
     virtual ~CallStatement() override;
 
     virtual void setNumber(int num) override;
 
     // Make a deep copy, and make the copy a derived object if needed.
 
-    /***************************************************************************/ /**
+    /**
      * \fn        CallStatement::clone
      * \brief     Deep copy clone
      * \returns   Pointer to a new Statement, a clone of this CallStatement
-     ******************************************************************************/
+     */
     virtual Statement *clone() const override;
 
     // Accept a visitor to this stmt
@@ -53,22 +53,22 @@ public:
     virtual bool accept(StmtModifier *visitor) override;
     virtual bool accept(StmtPartModifier *visitor) override;
 
-    /***************************************************************************/ /**
+    /**
      * \fn      CallStatement::setArguments
      * \brief      Set the arguments of this call.
      * \param      args - the list of locations to set the arguments to (for testing)
-     ******************************************************************************/
+     */
     void setArguments(const StatementList& args);
 
     // Set implicit arguments: so far, for testing only:
     // void setImpArguments(std::vector<Exp*>& arguments);
     // void setReturns(std::vector<Exp*>& returns);// Set call's return locs
 
-    /***************************************************************************/ /**
+    /**
      * \fn      CallStatement::setSigArguments
      * \brief   Set the arguments of this call based on signature info
      * \note    Should only be called for calls to library functions
-     ******************************************************************************/
+     */
     void setSigArguments();                             // Set arguments based on signature
 
     const StatementList& getArguments() { return m_arguments; } // Return call's arguments
@@ -143,45 +143,45 @@ public:
 
     // Replace all instances of "search" with "replace".
 
-    /***************************************************************************/ /**
+    /**
      * \fn              CallStatement::searchAndReplace
      * \brief           Replace all instances of search with replace.
      * \param search  - a location to search for
      * \param replace - the expression with which to replace it
      * \param cc -      true to replace in collectors
      * \returns         True if any change
-     ******************************************************************************/
+     */
     virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
 
-    /***************************************************************************/ /**
+    /**
      * \fn    CallStatement::searchAll
      * \brief Find all instances of the search expression
      * \param search - a location to search for
      * \param result - a list which will have any matching exprs appended to it
      * \returns true if there were any matches
-     ******************************************************************************/
+     */
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
     // Set and return whether the call is effectively followed by a return.
     // E.g. on Sparc, whether there is a restore in the delay slot.
 
-    /***************************************************************************/ /**
+    /**
      * \fn    CallStatement::setReturnAfterCall
      * \brief Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
      *        Sparc when there is a restore in the delay slot of the call
      * \param b true if this is to be set; false to clear the bit
-     ******************************************************************************/
+     */
     void setReturnAfterCall(bool b);
 
-    /***************************************************************************/ /**
+    /**
      * \fn    CallStatement::isReturnAfterCall
      * \brief Tests a bit that says that this call is effectively followed by a return. This happens e.g. on
      *        Sparc when there is a restore in the delay slot of the call
      * \returns True if this call is effectively followed by a return
-     ******************************************************************************/
+     */
     bool isReturnAfterCall() const;
 
     // Set and return the list of Exps that occur *after* the call (the
@@ -192,10 +192,10 @@ public:
 
     // Set and return the destination proc.
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Set the destination of this jump to be a given expression.
      * \param        dest - the new target
-     ******************************************************************************/
+     */
     void setDestProc(Function *dest);
     Function *getDestProc();
 

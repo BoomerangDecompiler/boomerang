@@ -10,7 +10,7 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file    Signature.h
  * \brief   Provides the definition for the signature classes.
  *

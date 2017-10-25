@@ -10,15 +10,15 @@
 #include "sparcdecoder.h"
 
 
-/***************************************************************************/ /**
+/**
  * \file       sparcdecoder.cpp
  * \brief   Implementation of the SPARC specific parts of the
  *               SparcDecoder class.
- ******************************************************************************/
+ */
 
-/***************************************************************************/ /**
+/**
  * Dependencies.
- ******************************************************************************/
+ */
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"

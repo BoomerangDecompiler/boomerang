@@ -10,10 +10,10 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       transformer.h
  * \brief   Provides the definition for the transformer and related classes.
- ******************************************************************************/
+ */
 
 #include <list>
 #include <memory>

@@ -10,7 +10,7 @@
 #pragma once
 
 
-/***************************************************************************/ /**
+/**
  * \file       managed.h
  * \brief   Definition of "managed" classes such as InstructionSet, which feature makeUnion etc
  * CLASSES:        InstructionSet

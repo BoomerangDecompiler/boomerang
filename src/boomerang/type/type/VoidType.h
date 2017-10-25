@@ -32,11 +32,11 @@ public:
 
     virtual size_t getSize() const override;
 
-    /***************************************************************************/ /**
+    /**
      * \brief        Return a string representing this type
      * \param        final if true, this is final output
      * \returns      Pointer to a constant string of char
-     ******************************************************************************/
+     */
     virtual QString getCtype(bool final = false) const override;
 
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;

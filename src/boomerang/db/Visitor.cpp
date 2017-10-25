@@ -9,10 +9,10 @@
 #pragma endregion License
 
 
-/***************************************************************************/ /**
+/**
  * \file       visitor.cpp
  * \brief   Provides the implementation for the various visitor and modifier classes.
- ******************************************************************************/
+ */
 #include "Visitor.h"
 
 #include "boomerang/core/Boomerang.h"
