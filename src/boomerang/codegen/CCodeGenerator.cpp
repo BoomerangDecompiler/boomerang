@@ -550,7 +550,7 @@ void CCodeGenerator::removeUnusedLabels(int)
 void CCodeGenerator::addPrototype(UserProc *proc)
 {
     m_proc = proc;
-    addProcDec(proc, false);
+    addFunctionSignature(proc, false);
 }
 
 
@@ -633,7 +633,7 @@ void CCodeGenerator::generateDataSectionCode(IBinaryImage *image, QString sectio
 }
 
 
-void CCodeGenerator::addProcDec(UserProc *proc, bool open)
+void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 {
     QString         tgt;
     QTextStream     s(&tgt);
@@ -1036,7 +1036,7 @@ void CCodeGenerator::addProcStart(UserProc *proc)
 
     s << "/** address: " << proc->getEntryAddress() << " */";
     appendLine(tgt);
-    addProcDec(proc, true);
+    addFunctionSignature(proc, true);
 }
 
 

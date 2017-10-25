@@ -87,15 +87,14 @@ public:
     virtual void generateCode(const Prog *prog, QTextStream& os) override;
 
     /// \copydoc ICodeGenerator::generateCode
-    virtual void generateCode(const Prog *prog, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) override;
+    virtual void generateCode(const Prog *prog, Module *module = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) override;
 
 public:
     /// \copydoc ICodeGenerator::addAssignmentStatement
-    virtual void addAssignmentStatement(Assign *asgn) override;
+    virtual void addAssignmentStatement(Assign *assign) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
-    virtual void addCallStatement(Function *dest, const QString& name,
-                                  const StatementList& args, const StatementList& results) override;
+    virtual void addCallStatement(Function *func, const QString& name, StatementList& args, StatementList *results) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
     virtual void addIndCallStatement(const SharedExp& exp, const StatementList& args,
@@ -106,9 +105,8 @@ public:
 
     /**
      * \copydoc ICodeGenerator::removeUnusedLabels
-     * \param maxOrd UNUSED
      */
-    virtual void removeUnusedLabels(int maxOrd) override;
+    virtual void removeUnusedLabels(int) override;
 
 private:
     /// Add a prototype (for forward declaration)
@@ -118,14 +116,14 @@ private:
     void generateCode(UserProc *proc);
 
     /// Generate global variables from data sections.
-    void generateDataSectionCode(IBinaryImage *image, QString section_name, Address section_start, uint32_t size);
+    void generateDataSectionCode(IBinaryImage *image, QString sectionName, Address sectionStart, uint32_t sectionSize);
 
     /**
      * Print the declaration of a function.
-     * \param proc to print
-     * \param isDef False if this is just a prototype and ";" should be printed instead of "{"
+     * \param proc Function to print
+     * \param isDef True to print trailing opening bracket '{', false to print ';'
      */
-    void addProcDec(UserProc *proc, bool isDef);
+    void addFunctionSignature(UserProc *proc, bool isDef);
 
     /*
      * Functions to add new code
@@ -234,14 +232,14 @@ private:
     /**
      * Append code for the given expression \a exp to stream \a str.
      *
-     * \param str        The stream to output to.
-     * \param exp        The expresson to output.
-     * \param curPrec    The current operator precedence. Add parens around this expression if necessary.
-     * \param uns        If true, cast operands to unsigned if necessary.
+     * \param str           The stream to output to.
+     * \param exp           The expresson to output.
+     * \param curPrec       The current operator precedence. Add parens around this expression if necessary.
+     * \param allowUnsigned If true, cast operands to unsigned if necessary.
      *
      * \todo This function is 800+ lines, and should possibly be split up.
      */
-    void appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool uns = false);
+    void appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool allowUnsigned = false);
 
     /// Print the type represented by \a typ to \a str.
     void appendType(QTextStream& str, SharedType typ);
@@ -273,10 +271,10 @@ private:
     void writeBB(const BasicBlock *bb);
 
 private:
-    /// Dump all generated code to \a os.
+    /// Dump all generated code to \p os.
     void print(QTextStream& os);
 
-    /// Output 4 * \a indLevel spaces to \a str
+    /// Output 4 * \p indLevel spaces to \p str
     void indent(QTextStream& str, int indLevel);
 
     /// Private helper functions, to reduce redundant code, and

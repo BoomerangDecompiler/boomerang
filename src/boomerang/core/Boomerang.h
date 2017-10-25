@@ -10,10 +10,6 @@
 #pragma once
 
 
-/** \file boomerang.h
- * \brief Interface for the boomerang singleton object.
- */
-
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/core/IProject.h"
 #include "boomerang/core/Watcher.h"
