@@ -1449,7 +1449,7 @@ SharedType Ternary::ascendType()
 
 SharedType TypedExp::ascendType()
 {
-    return type;
+    return m_type;
 }
 
 
@@ -1602,14 +1602,14 @@ void Const::descendType(SharedType parentType, bool& ch, Statement *)
             if (m_oper == opIntConst) {
                 m_oper = opFltConst;
                 m_type = FloatType::get(64);
-                float f = *(float *)&u.i;
-                u.d = (double)f;
+                float f = *(float *)&m_value.i;
+                m_value.d = (double)f;
             }
             else if (m_oper == opLongConst) {
                 m_oper = opFltConst;
                 m_type = FloatType::get(64);
-                double d = *(double *)&u.ll;
-                u.d = d;
+                double d = *(double *)&m_value.ll;
+                m_value.d = d;
             }
         }
 

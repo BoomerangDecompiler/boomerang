@@ -3977,8 +3977,8 @@ void UserProc::conTypeAnalysis()
                 setLocalType(nam, ty);
             }
             else if (loc->isIntConst()) {
-                auto con = loc->access<Const>();
-                int  val = con->getInt();
+                std::shared_ptr<Const> con = loc->access<Const>();
+                const int  val = con->getInt();
 
                 if (ty->isFloat()) {
                     // Need heavy duty cast here

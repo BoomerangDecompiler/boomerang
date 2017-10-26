@@ -10,27 +10,6 @@
 #include "mipsdecoder.h"
 
 
-/****************************************************************
- *
- * FILENAME
- *
- *   \file decoder.m
- *
- * PURPOSE
- *
- * Decoding MIPS
- *
- * AUTHOR
- *
- *   \author Markus Gothe, nietzsche@lysator.liu.se
- *
- * REVISION
- *
- *   $Id$
- *
- *****************************************************************/
-
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 

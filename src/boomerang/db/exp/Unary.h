@@ -18,81 +18,84 @@
  */
 class Unary : public Exp
 {
-protected:
-    /// Constructor, with just ID
-    Unary(OPER op);
-
 public:
-    /// Constructor, with ID and subexpression
-    Unary(OPER op, SharedExp e);
-    /// Copy constructor
+    Unary(OPER op, SharedExp subExp1);
     Unary(const Unary& o);
-
-    static SharedExp get(OPER op, SharedExp e1) { return std::make_shared<Unary>(op, e1); }
-
-    // Clone
-    virtual SharedExp clone() const override;
-
-    // Compare
-    virtual bool operator==(const Exp& o) const override;
-    virtual bool operator<(const Exp& o) const override;
-    bool operator*=(const Exp& o) const override;
-
-    // Destructor
     virtual ~Unary() override;
 
-    /// Arity
-    virtual int getArity() const override { return 1; }
+    /// \copydoc Exp::clone
+    virtual SharedExp clone() const override;
 
-    // Print
+    /// \copydoc Exp::get
+    static SharedExp get(OPER op, SharedExp e1) { return std::make_shared<Unary>(op, e1); }
+
+    /// \copydoc Exp::operator==
+    virtual bool operator==(const Exp& o) const override;
+
+    /// \copydoc Exp::operator<
+    virtual bool operator<(const Exp& o) const override;
+
+    /// \copydoc Exp::operator*=
+    bool operator*=(const Exp& o) const override;
+
+    /// \copydoc Exp::print
     virtual void print(QTextStream& os, bool html = false) const override;
-    virtual void appendDotFile(QTextStream& of) override;
+
+    /// \copydoc Exp::printx
     virtual void printx(int ind) const override;
 
-    // Set first subexpression
-    void setSubExp1(SharedExp e) override;
+    /// \copydoc Exp::appendDotFile
+    virtual void appendDotFile(QTextStream& of) override;
 
-    // Get first subexpression
-    SharedExp getSubExp1() override;
-    SharedConstExp getSubExp1() const override;
+    /// \copydoc Exp::getArity
+    virtual int getArity() const override { return 1; }
 
-    // Get a reference to subexpression 1
-    SharedExp& refSubExp1() override;
-
+    /// \copydoc Exp::match
     virtual SharedExp match(const SharedConstExp& pattern) override;
+
+    /// \copydoc Exp::match
     virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
-    // Search children
+    /// \copydoc Exp::doSearchChildren
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
-    // Do the work of simplifying this expression
+    /// \copydoc Exp::getSubExp1
+    SharedExp getSubExp1() override;
 
-    /**
-     * \brief        Do the work of simplification
-     * \note         User must ;//delete result
-     * \note         Address simplification (a[ m[ x ]] == x) is done separately
-     * \returns      Ptr to the simplified expression
-     */
+    /// \copydoc Exp::getSubExp1
+    SharedConstExp getSubExp1() const override;
+
+    /// \copydoc Exp::setSubExp1
+    void setSubExp1(SharedExp e) override;
+
+    /// \copydoc Exp::refSubExp1
+    SharedExp& refSubExp1() override;
+
+    /// \copydoc Exp::polySimplify
     virtual SharedExp polySimplify(bool& bMod) override;
-    SharedExp simplifyArith() override;
 
-    /**
-     * \brief        Just do addressof simplification: a[ m[ any ]] == any, m[ a[ any ]] = any, and also
-     *               a[ size m[ any ]] == any
-     * \todo         Replace with a visitor some day
-     * \returns      Ptr to the simplified expression
-     */
-    SharedExp simplifyAddr() override;
+    /// \copydoc Exp::simplifyArith
+    virtual SharedExp simplifyArith() override;
+
+    /// \copydoc Exp::simplifyAddr
+    virtual SharedExp simplifyAddr() override;
+
+    /// \copydoc Exp::simplifyConstraint
     virtual SharedExp simplifyConstraint() override;
 
-    // Type analysis
-    SharedExp genConstraints(SharedExp restrictTo) override;
+    /// \copydoc Exp::genConstraints
+    virtual SharedExp genConstraints(SharedExp restrictTo) override;
 
-    // Visitation
+    /// \copydoc Exp::accept
     virtual bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Exp::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
+    /// \copydoc Exp::ascendType
     virtual SharedType ascendType() override;
+
+    /// \copydoc Exp::descendType
     virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
 
 protected:

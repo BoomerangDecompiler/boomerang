@@ -16,7 +16,7 @@
 
 FlagDef::FlagDef(SharedExp params, SharedRTL _rtl)
     : Unary(opFlagDef, params)
-    , rtl(_rtl)
+    , m_rtl(_rtl)
 {
 }
 
@@ -33,7 +33,7 @@ void FlagDef::appendDotFile(QTextStream& of)
     of << "opFlagDef \\n" << HostAddress(this) << "| ";
     // Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
     of << "{ RTL ";
-    const size_t n = rtl->size();
+    const size_t n = m_rtl->size();
 
     for (size_t i = 0; i < n; i++) {
         of << "| <r" << i << "> ";

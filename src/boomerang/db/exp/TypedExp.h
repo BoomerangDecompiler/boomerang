@@ -14,53 +14,63 @@
 
 
 /**
- * TypedExp is a subclass of Unary, holding one subexpression and a Type
+ * Holds one subexpression and the type of this subexpression.
  */
 class TypedExp : public Unary
 {
 public:
-    // Constructor
-    TypedExp();
-    // Constructor, subexpression
     TypedExp(SharedExp e1);
+
     // Constructor, type, and subexpression.
     // A rare const parameter allows the common case of providing a temporary,
     // e.g. foo = new TypedExp(Type(INTEGER), ...);
     TypedExp(SharedType ty, SharedExp e1);
-    // Copy constructor
     TypedExp(TypedExp& o);
 
-    // Clone
+    /// \copydoc Unary::clone
     virtual SharedExp clone() const override;
 
-    // Compare
+    /// \copydoc Unary::operator==
     bool operator==(const Exp& o) const override;
+
+    /// \copydoc Unary::operator<
     bool operator<(const Exp& o) const override;
+
+    /// \copydoc Exp::operator<<
     bool operator<<(const Exp& o) const override;
+
+    /// \copydoc Unary::operator*=
     bool operator*=(const Exp& o) const override;
 
+    /// \copydoc Unary::print
     virtual void print(QTextStream& os, bool html = false) const override;
-    virtual void appendDotFile(QTextStream& of) override;
+
+    /// \copydoc Unary::printx
     virtual void printx(int ind) const override;
 
-    /// Get and set the type
-    virtual SharedType getType()       { return type; }
-    virtual const SharedType& getType() const { return type; }
-    virtual void setType(SharedType ty) { type = ty; }
+    /// \copydoc Unary::appendDotFile
+    virtual void appendDotFile(QTextStream& of) override;
 
-    // polySimplify
+    /// Get and set the type
+    SharedType getType()       { return m_type; }
+    const SharedType& getType() const { return m_type; }
+    void setType(SharedType ty) { m_type = ty; }
+
+    /// \copydoc Unary::polySimplify
     virtual SharedExp polySimplify(bool& bMod) override;
 
-    // Visitation
-    /// All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
-    /// function called each time is different for each class (because "this" is different each time)
+    /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
+    /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 
+    /// \copydoc Unary::descendType
     virtual void descendType(SharedType, bool&, Statement *) override;
 
 private:
-    SharedType type;
+    SharedType m_type;
 };

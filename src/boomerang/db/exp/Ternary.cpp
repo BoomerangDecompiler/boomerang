@@ -22,13 +22,6 @@
 #include "boomerang/type/type/IntegerType.h"
 
 
-Ternary::Ternary(OPER _op)
-    : Binary(_op)
-{
-    subExp3 = nullptr;
-}
-
-
 Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)
     : Binary(_op, _e1, _e2)
 {
@@ -38,10 +31,8 @@ Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)
 
 
 Ternary::Ternary(const Ternary& o)
-    : Binary(o.m_oper)
+    : Binary(o)
 {
-    subExp1 = o.subExp1->clone();
-    subExp2 = o.subExp2->clone();
     subExp3 = o.subExp3->clone();
     assert(subExp1 && subExp2 && subExp3);
 }

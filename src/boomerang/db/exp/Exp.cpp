@@ -10,11 +10,6 @@
 #include "Exp.h"
 
 
-/**
- * \file       exp.cpp
- * \brief   Implementation of the Exp and related classes.
- */
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
@@ -520,28 +515,23 @@ void Exp::printt(QTextStream& os) const
 }
 
 
-void Exp::printAsHL(QTextStream& os)
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    ost << this; // Print to the string stream
-
-    if ((tgt.length() >= 4) && (tgt[1] == '[')) {
-        // r[nn]; change to rnn
-        tgt.remove(1, 1);             // '['
-        tgt.remove(tgt.length() - 1); // ']'
-    }
-
-    os << tgt;                        // Print to the output stream
-}
-
-
 QTextStream& operator<<(QTextStream& os, const Exp *p)
 {
     // Useful for debugging, but can clutter the output
     p->printt(os);
     return os;
+}
+
+SharedType Exp::ascendType()
+{
+    assert(false);
+    return nullptr;
+}
+
+
+void Exp::descendType(SharedType, bool&, Statement*)
+{
+    assert(false);
 }
 
 
@@ -639,7 +629,6 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 SharedExp Exp::fromSSAleft(UserProc *proc, Statement *d)
 {
     auto r = RefExp::get(shared_from_this(), d); // "Wrap" in a ref
-
     ExpSsaXformer *xformer = new ExpSsaXformer(proc);
     SharedExp result = r->accept(xformer);
     delete xformer;
@@ -658,44 +647,10 @@ SharedExp Exp::genConstraints(SharedExp /*result*/)
 }
 
 
-//    //    //    //    //    //    //    //
-//                            //
-//       V i s i t i n g        //
-//                            //
-//    //    //    //    //    //    //    //
-
-// The following are similar, but don't have children that have to accept visitors
-
-
-
-void Exp::fixLocationProc(UserProc *p)
-{
-    // All locations are supposed to have a pointer to the enclosing UserProc that they are a location of. Sometimes,
-    // you have an arbitrary expression that may not have all its procs set. This function fixes the procs for all
-    // Location subexpresssions.
-    FixProcVisitor fpv;
-
-    fpv.setProc(p);
-    accept(&fpv);
-}
-
-
-// GetProcVisitor class
-
-UserProc *Exp::findProc()
-{
-    GetProcVisitor gpv;
-
-    accept(&gpv);
-    return gpv.getProc();
-}
-
-
 void Exp::setConscripts(int n, bool bClear)
 {
     SetConscripts sc(n, bClear);
-
-    accept(&sc);
+    this->accept(&sc);
 }
 
 
@@ -703,7 +658,7 @@ SharedExp Exp::stripSizes()
 {
     SizeStripper ss;
 
-    return accept(&ss);
+    return this->accept(&ss);
 }
 
 
@@ -753,9 +708,9 @@ SharedExp Exp::expSubscriptValNull(const SharedExp& e)
 }
 
 
-SharedExp Exp::expSubscriptAllNull(/*Cfg* cfg*/)
+SharedExp Exp::expSubscriptAllNull()
 {
-    return expSubscriptVar(Terminal::get(opWild), nullptr /* was nullptr, nullptr, cfg */);
+    return expSubscriptVar(Terminal::get(opWild), nullptr);
 }
 
 
@@ -764,16 +719,6 @@ SharedExp Exp::bypass()
     CallBypasser cb(nullptr);
 
     return accept(&cb);
-}
-
-
-void Exp::bypassComp()
-{
-    if (m_oper != opMemOf) {
-        return;
-    }
-
-    setSubExp1(getSubExp1()->bypass());
 }
 
 
@@ -841,13 +786,4 @@ bool Exp::containsBadMemof(UserProc *proc)
 
     accept(&bmf);
     return bmf.isFound();
-}
-
-
-bool Exp::containsMemof(UserProc *proc)
-{
-    ExpHasMemofTester ehmt(proc);
-
-    accept(&ehmt);
-    return ehmt.getResult();
 }

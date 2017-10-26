@@ -17,13 +17,6 @@
 #include "boomerang/db/Visitor.h"
 
 
-Unary::Unary(OPER _op)
-    : Exp(_op)
-{
-    assert(m_oper != opRegOf);
-}
-
-
 Unary::Unary(OPER _op, SharedExp e)
     : Exp(_op)
     , subExp1(e)

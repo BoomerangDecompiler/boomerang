@@ -41,10 +41,6 @@ void delete_lrtls(std::list<RTL *>& pLrtl);
 void erase_lrtls(std::list<RTL *>& pLrtl, std::list<RTL *>::iterator begin, std::list<RTL *>::iterator end);
 
 
-/**********************************
-* Cfg methods.
-**********************************/
-
 Cfg::Cfg(UserProc *proc)
     : m_myProc(proc)
     , m_wellFormed(false)

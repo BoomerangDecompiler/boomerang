@@ -11,8 +11,7 @@
 
 
 /**
- * \file       exphelp.h
- * OVERVIEW:   Element comparison functions for expressions and statements
+ * \file exphelp.h Element comparison functions for expressions and statements
  */
 
 #include <map>

@@ -110,7 +110,7 @@ public:
     void dumpA_phi();
 
 private:
-    /******************** Dominance Frontier Data *******************/
+    /* Dominance Frontier Data */
 
     /* These first two are not from Appel; they map PBBs to indices */
     std::vector<BasicBlock *> m_BBs;       ///< Pointers to BBs from indices

@@ -14,7 +14,7 @@
 
 /**
  * Assignment is an abstract subclass of TypingStatement, holding a location
- ****************************************************************************/
+ */
 class Assignment : public TypingStatement
 {
 public:

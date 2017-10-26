@@ -169,10 +169,11 @@ bool GenericExpTransformer::checkCond(SharedExp cond, SharedExp bindings)
                 return false;
             }
 
-
-            SharedExp le;
-
-            for (le = bindings; le->getOper() != opNil && le->getSubExp2()->getOper() != opNil; le = le->getSubExp2()) {
+            SharedExp le = bindings;
+            assert(le);
+            while (le->getOper() != opNil && le->getSubExp2()->getOper() != opNil) {
+                le = le->getSubExp2();
+                assert(le);
             }
 
             assert(le->getOper() != opNil);

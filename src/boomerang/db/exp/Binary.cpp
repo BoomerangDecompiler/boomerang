@@ -63,14 +63,6 @@ int tlstrchr(const QString& str, char ch)
 }
 
 
-Binary::Binary(OPER op)
-    : Unary(op)
-{
-    // Initialise the 2nd pointer. The first pointer is initialised in the Unary constructor
-    // subExp2 = 0;
-}
-
-
 Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
     : Unary(op, e1)
     , subExp2(e2)
@@ -80,9 +72,8 @@ Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
 
 
 Binary::Binary(const Binary& o)
-    : Unary(m_oper)
+    : Unary(o)
 {
-    setSubExp1(subExp1->clone());
     subExp2 = o.subExp2->clone();
     assert(subExp1 && subExp2);
 }
@@ -90,20 +81,11 @@ Binary::Binary(const Binary& o)
 
 Binary::~Binary()
 {
-    if (subExp2 != nullptr) {
-        // delete subExp2;
-    }
-
-    // Note that the first pointer is destructed in the Exp1 destructor
 }
 
 
 void Binary::setSubExp2(SharedExp e)
 {
-    if (subExp2 != nullptr) {
-        // delete subExp2;
-    }
-
     subExp2 = e;
     assert(subExp1 && subExp2);
 }

@@ -14,37 +14,52 @@
 
 
 /**
- * class TypeVal. Just a Terminal with a Type. Used for type values in constraints
- * ==============================================================================*/
+ * class TypeVal. Just a Terminal with a Type.
+ * Used for type values in constraints
+ */
 class TypeVal : public Terminal
 {
 public:
     TypeVal(SharedType ty);
-    ~TypeVal() override;
+    virtual ~TypeVal() override;
 
-    static std::shared_ptr<TypeVal> get(const SharedType& st) { return std::make_shared<TypeVal>(st); }
-
-    virtual SharedType getType() { return val; }
-    virtual void setType(SharedType t) { val = t; }
+    /// \copydoc Terminal::clone
     virtual SharedExp clone() const override;
 
+    /// \copydoc Terminal::get
+    static std::shared_ptr<TypeVal> get(const SharedType& st) { return std::make_shared<TypeVal>(st); }
+
+    /// \copydoc Terminal::operator==
     bool operator==(const Exp& o) const override;
+
+    /// \copydoc Terminal::operator<
     bool operator<(const Exp& o) const override;
+
+    /// \copydoc Terminal::operator*=
     bool operator*=(const Exp& o) const override;
+
+    /// \copydoc Terminal::print
     void print(QTextStream& os, bool = false) const override;
+
+    /// \copydoc Terminal::printx
     void printx(int ind) const override;
+
+    virtual SharedType getType() { return m_type; }
+    virtual void setType(SharedType t) { m_type = t; }
 
     /// Should not be constraining constraints
     SharedExp genConstraints(SharedExp /*restrictTo*/) override
     {
-        assert(0);
+        assert(false);
         return nullptr;
     }
 
-    // Visitation
+    /// \copydoc Terminal::accept
     virtual bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Terminal::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
 private:
-    SharedType val;
+    SharedType m_type;
 };

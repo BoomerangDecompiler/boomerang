@@ -17,7 +17,7 @@
 
 TypeVal::TypeVal(SharedType ty)
     : Terminal(opTypeVal)
-    , val(ty)
+    , m_type(ty)
 {
 }
 
@@ -30,7 +30,7 @@ TypeVal::~TypeVal()
 
 SharedExp TypeVal::clone() const
 {
-    return std::make_shared<TypeVal>(val->clone());
+    return std::make_shared<TypeVal>(m_type->clone());
 }
 
 
@@ -44,7 +44,7 @@ bool TypeVal::operator==(const Exp& o) const
         return false;
     }
 
-    return *val == *((const TypeVal&)o).val;
+    return *m_type == *((const TypeVal&)o).m_type;
 }
 
 
@@ -58,7 +58,7 @@ bool TypeVal::operator<(const Exp& o) const
         return false;
     }
 
-    return *val < *((const TypeVal&)o).val;
+    return *m_type < *((const TypeVal&)o).m_type;
 }
 
 
@@ -76,8 +76,8 @@ bool TypeVal::operator*=(const Exp& o) const
 
 void TypeVal::print(QTextStream& os, bool) const
 {
-    if (val) {
-        os << "<" << val->getCtype() << ">";
+    if (m_type) {
+        os << "<" << m_type->getCtype() << ">";
     }
     else {
         os << "<nullptr>";
@@ -103,5 +103,5 @@ SharedExp TypeVal::accept(ExpModifier *v)
 
 void TypeVal::printx(int ind) const
 {
-    LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), val->getCtype());
+    LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), m_type->getCtype());
 }

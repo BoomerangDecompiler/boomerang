@@ -21,7 +21,7 @@
  *   m[1000] becomes m[1000]{3} if defined at statement 3
  * The integer is really a pointer to the defining statement,
  * printed as the statement number for compactness.
- * If the expression is not explicityl defined anywhere,
+ * If the expression is not explicitly defined anywhere,
  * the defining statement is nullptr.
  */
 class RefExp : public Unary
@@ -32,34 +32,39 @@ public:
     RefExp(SharedExp usedExp, Statement *definition);
     virtual ~RefExp() override { m_def = nullptr; }
 
+    /// \copydoc Unary::clone
+    SharedExp clone() const override;
+
+    /// \copydoc Unary::get
     static std::shared_ptr<RefExp> get(SharedExp usedExp, Statement *definition);
 
-    SharedExp clone() const override;
+    /// \copydoc Unary::operator==
     bool operator==(const Exp& o) const override;
+
+    /// \copydoc Unary::operator<
     bool operator<(const Exp& o) const override;
+
+    /// \copydoc Unary::operator*=
     bool operator*=(const Exp& o) const override;
 
+    /// \copydoc Unary::print
     virtual void print(QTextStream& os, bool html = false) const override;
+
+    /// \copydoc Unary::printx
     virtual void printx(int ind) const override;
 
     Statement *getDef() const { return m_def; } // Ugh was called getRef()
-    SharedExp addSubscript(Statement *_def)
-    {
-        m_def = _def;
-        return shared_from_this();
-    }
+    void setDef(Statement *_def);
 
-    void setDef(Statement *_def)
-    {
-//         assert(_def != nullptr);
-        m_def = _def;
-    }
+    SharedExp addSubscript(Statement *_def);
 
-    SharedExp genConstraints(SharedExp restrictTo) override;
+    /// \copydoc Unary::genConstraints
+    virtual SharedExp genConstraints(SharedExp restrictTo) override;
 
     bool references(const Statement *s) const { return m_def == s; }
+
     virtual SharedExp polySimplify(bool& bMod) override;
-    virtual SharedExp match(const SharedConstExp& pattern) override;
+
     virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
     /**
@@ -68,18 +73,18 @@ public:
      */
     bool isImplicitDef() const;
 
-    // Visitation
+    /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
+    /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
+
+    /// \copydoc Unary::descendType
     virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
 
-protected:
-    RefExp()
-        : Unary(opSubscript)
-        , m_def(nullptr) {}
-
 private:
-    Statement *m_def; // The defining statement
+    Statement *m_def; ///< The defining statement
 };

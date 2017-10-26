@@ -16,7 +16,7 @@ class RTL;
 typedef std::shared_ptr<RTL> SharedRTL;
 
 /**
- * FlagDef is a subclass of Unary, and holds a list of parameters (in the subexpression), and a pointer to an RTL
+ * FlagDef holds a list of parameters (in the subexpression), and a pointer to an RTL
  */
 class FlagDef : public Unary
 {
@@ -24,12 +24,15 @@ public:
     FlagDef(SharedExp params, SharedRTL rtl);
     virtual ~FlagDef() override;
 
+    /// \copydoc Unary::appendDotFile
     virtual void appendDotFile(QTextStream& of) override;
 
-    // Visitation
+    /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
 private:
-    SharedRTL rtl;
+    SharedRTL m_rtl;
 };

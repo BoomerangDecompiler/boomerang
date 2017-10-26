@@ -17,14 +17,14 @@
 
 Location::Location(Location& o)
     : Unary(o.m_oper, o.subExp1->clone())
-    , proc(o.proc)
+    , m_proc(o.m_proc)
 {
 }
 
 
 Location::Location(OPER _op, SharedExp exp, UserProc *_p)
     : Unary(_op, exp)
-    , proc(_p)
+    , m_proc(_p)
 {
     assert(m_oper == opRegOf || m_oper == opMemOf || m_oper == opLocal || m_oper == opGlobal || m_oper == opParam || m_oper == opTemp);
 
@@ -35,7 +35,7 @@ Location::Location(OPER _op, SharedExp exp, UserProc *_p)
         if (e) {
             bool giveUp = false;
 
-            while (this->proc == nullptr && !giveUp) {
+            while (this->m_proc == nullptr && !giveUp) {
                 switch (e->getOper())
                 {
                 case opRegOf:
@@ -44,7 +44,7 @@ Location::Location(OPER _op, SharedExp exp, UserProc *_p)
                 case opLocal:
                 case opGlobal:
                 case opParam:
-                    this->proc = std::static_pointer_cast<Location>(e)->getProc();
+                    this->m_proc = std::static_pointer_cast<Location>(e)->getProc();
                     giveUp     = true;
                     break;
 
@@ -64,7 +64,7 @@ Location::Location(OPER _op, SharedExp exp, UserProc *_p)
 
 SharedExp Location::clone() const
 {
-    return std::make_shared<Location>(m_oper, subExp1->clone(), proc);
+    return std::make_shared<Location>(m_oper, subExp1->clone(), m_proc);
 }
 
 

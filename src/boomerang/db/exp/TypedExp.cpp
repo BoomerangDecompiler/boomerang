@@ -14,38 +14,30 @@
 #include "boomerang/core/Boomerang.h"
 
 
-TypedExp::TypedExp()
-    : Unary(opTypedExp)
-    , type(nullptr)
-{
-}
-
-
 TypedExp::TypedExp(SharedExp e1)
     : Unary(opTypedExp, e1)
-    , type(nullptr)
+    , m_type(nullptr)
 {
 }
 
 
 TypedExp::TypedExp(SharedType ty, SharedExp e1)
     : Unary(opTypedExp, e1)
-    , type(ty)
+    , m_type(ty)
 {
 }
 
 
 TypedExp::TypedExp(TypedExp& o)
-    : Unary(opTypedExp)
+    : Unary(o)
 {
-    subExp1 = o.subExp1->clone();
-    type    = o.type->clone();
+    m_type    = o.m_type->clone();
 }
 
 
 SharedExp TypedExp::clone() const
 {
-    return std::make_shared<TypedExp>(type, subExp1->clone());
+    return std::make_shared<TypedExp>(m_type, subExp1->clone());
 }
 
 
@@ -60,7 +52,7 @@ bool TypedExp::operator==(const Exp& o) const
     }
 
     // This is the strict type version
-    if (*type != *((TypedExp&)o).type) {
+    if (*m_type != *((TypedExp&)o).m_type) {
         return false;
     }
 
@@ -92,11 +84,11 @@ bool TypedExp::operator<(const Exp& o) const   // Type sensitive
         return false;
     }
 
-    if (*type < *((TypedExp&)o).type) {
+    if (*m_type < *((TypedExp&)o).m_type) {
         return true;
     }
 
-    if (*((TypedExp&)o).type < *type) {
+    if (*((TypedExp&)o).m_type < *m_type) {
         return false;
     }
 
@@ -121,7 +113,7 @@ bool TypedExp::operator*=(const Exp& o) const
     }
 
     // This is the strict type version
-    if (*type != *((TypedExp *)other)->type) {
+    if (*m_type != *((TypedExp *)other)->m_type) {
         return false;
     }
 
@@ -132,7 +124,7 @@ bool TypedExp::operator*=(const Exp& o) const
 void TypedExp::print(QTextStream& os, bool html) const
 {
     os << " ";
-    type->starPrint(os);
+    m_type->starPrint(os);
     SharedConstExp p1 = this->getSubExp1();
     p1->print(os, html);
 }
@@ -143,7 +135,7 @@ void TypedExp::appendDotFile(QTextStream& of)
     of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
     of << "opTypedExp\\n" << HostAddress(this) << " | ";
     // Just display the C type for now
-    of << type->getCtype() << " | <p1>";
+    of << m_type->getCtype() << " | <p1>";
     of << " }\"];\n";
     subExp1->appendDotFile(of);
     of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
@@ -199,6 +191,6 @@ SharedExp TypedExp::accept(ExpModifier *v)
 
 void TypedExp::printx(int ind) const
 {
-    LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), type->getCtype());
+    LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), m_type->getCtype());
     printChild(subExp1, ind);
 }

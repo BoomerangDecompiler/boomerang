@@ -14,36 +14,55 @@
 
 
 /**
- * Terminal is a subclass of Exp, and holds special zero arity items such as opFlags (abstract flags register)
+ * Terminal holds special zero arity items
+ * such as opFlags (abstract flags register)
  */
 class Terminal : public Exp
 {
 public:
-    // Constructors
     Terminal(OPER op);
-    Terminal(const Terminal& o); ///< Copy constructor
+    Terminal(const Terminal& o);
+    virtual ~Terminal() override = default;
 
+    /// \copydoc Exp::clone
+    virtual SharedExp clone() const override;
+
+    /// \copydoc Exp::get
     static SharedExp get(OPER op) { return std::make_shared<Terminal>(op); }
 
-    // Clone
-    SharedExp clone() const override;
-
-    // Compare
+    /// \copydoc Exp::operator==
     bool operator==(const Exp& o) const override;
+
+    /// \copydoc Exp::operator<
     bool operator<(const Exp& o) const override;
+
+    /// \copydoc Exp::operator*=
     bool operator*=(const Exp& o) const override;
+
+    /// \copydoc Exp::print
     void print(QTextStream& os, bool = false) const override;
-    void appendDotFile(QTextStream& of) override;
+
+    /// \copydoc Exp::printx
     void printx(int ind) const override;
 
+    /// \copydoc Exp::appendDotFile
+    void appendDotFile(QTextStream& of) override;
+
+    /// \copydoc Exp::isTerminal
     bool isTerminal() const override { return true; }
 
-    /// Visitation
+    /// \copydoc Exp::match
+    bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
+
+    /// \copydoc Exp::accept
     bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Exp::accept
     SharedExp accept(ExpModifier *v) override;
 
+    /// \copydoc Exp::ascendType
     SharedType ascendType() override;
-    void descendType(SharedType parentType, bool& ch, Statement *s) override;
 
-    bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
+    /// \copydoc Exp::descendType
+    void descendType(SharedType parentType, bool& ch, Statement *s) override;
 };
