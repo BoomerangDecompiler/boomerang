@@ -144,6 +144,8 @@ bool PhiAssign::search(const Exp& pattern, SharedExp& result) const
 
 bool PhiAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
+    // FIXME: is this the right semantics for searching a phi statement,
+    // disregarding the RHS?
     return m_lhs->searchAll(pattern, result);
 }
 
@@ -379,3 +381,13 @@ void PhiAssign::dfaTypeAnalysis(bool& ch)
 
     Assignment::dfaTypeAnalysis(ch); // Handle the LHS
 }
+
+Statement* PhiAssign::getStmtAt(BasicBlock* idx)
+{
+    if (m_defs.find(idx) == m_defs.end()) {
+        return nullptr;
+    }
+
+    return m_defs[idx].getDef();
+}
+

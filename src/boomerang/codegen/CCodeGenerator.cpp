@@ -2397,7 +2397,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             writeBB(bb);
 
             // write the conditional header
-            SWITCH_INFO *psi = nullptr; // Init to nullptr to suppress a warning
+            SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
 
             if (bb->getCondType() == CondType::Case) {
                 // The CaseStatement will be in the last RTL this BB

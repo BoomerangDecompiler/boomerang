@@ -157,7 +157,7 @@ bool StmtConscriptSetter::visit(CallStatement *stmt)
 bool StmtConscriptSetter::visit(CaseStatement *stmt)
 {
     SetConscripts sc(m_curConscript, m_clear);
-    SWITCH_INFO   *si = stmt->getSwitchInfo();
+    SwitchInfo   *si = stmt->getSwitchInfo();
 
     if (si) {
         si->pSwitchVar->accept(&sc);

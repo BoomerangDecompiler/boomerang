@@ -26,7 +26,7 @@ class BasicBlock;
 class RTL;
 class Function;
 class UserProc;
-struct SWITCH_INFO;
+struct SwitchInfo;
 
 
 /// Depth-first traversal constants.

@@ -14,75 +14,56 @@
 #include "boomerang/db/statements/Assignment.h"
 #include "boomerang/db/Managed.h"
 
+
 class ImplicitAssign;
 
+
 /**
- * CallStatement: represents a high level call.
+ * Represents a high level call.
  * Information about parameters and the like are stored here.
  */
 class CallStatement : public GotoStatement
 {
 public:
-    /**
-     * \fn         CallStatement::CallStatement
-     * \brief      Constructor for a call
-     */
     CallStatement();
-
-    /**
-     * \fn      CallStatement::~CallStatement
-     * \brief   Destructor
-     */
     virtual ~CallStatement() override;
 
-    virtual void setNumber(int num) override;
-
-    // Make a deep copy, and make the copy a derived object if needed.
-
-    /**
-     * \fn        CallStatement::clone
-     * \brief     Deep copy clone
-     * \returns   Pointer to a new Statement, a clone of this CallStatement
-     */
+    /// \copydoc GotoStatement::clone
     virtual Statement *clone() const override;
 
-    // Accept a visitor to this stmt
-    // visit this stmt
+    /// \copydoc GotoStatement::accept
     virtual bool accept(StmtVisitor *visitor) override;
+
+    /// \copydoc GotoStatement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
-    virtual bool accept(StmtModifier *visitor) override;
-    virtual bool accept(StmtPartModifier *visitor) override;
 
-    /**
-     * \fn      CallStatement::setArguments
-     * \brief      Set the arguments of this call.
-     * \param      args - the list of locations to set the arguments to (for testing)
-     */
-    void setArguments(const StatementList& args);
+    /// \copydoc GotoStatement::accept
+    virtual bool accept(StmtModifier *modifier) override;
 
-    // Set implicit arguments: so far, for testing only:
-    // void setImpArguments(std::vector<Exp*>& arguments);
-    // void setReturns(std::vector<Exp*>& returns);// Set call's return locs
+    /// \copydoc GotoStatement::accept
+    virtual bool accept(StmtPartModifier *modifier) override;
 
-    /**
-     * \fn      CallStatement::setSigArguments
-     * \brief   Set the arguments of this call based on signature info
-     * \note    Should only be called for calls to library functions
-     */
-    void setSigArguments();                             // Set arguments based on signature
+    /// \copydoc Statement::setNumber
+    virtual void setNumber(int num) override;
 
-    const StatementList& getArguments() { return m_arguments; } // Return call's arguments
-    void updateArguments();                             // Update the arguments based on a callee change
+    /// Set the arguments of this call.
+    /// \param args The list of locations to set the arguments to (for testing)
+    void setArguments(StatementList& args);
 
-    // Exp        *getDefineExp(int i);
+    /// Set the arguments of this call based on signature info
+    /// \note Should only be called for calls to library functions
+    void setSigArguments();
+
+    /// Return call's arguments
+    StatementList& getArguments() { return m_arguments; }
+
+    /// Update the arguments based on a callee change
+    void updateArguments();
+
     /// Temporarily needed for ad-hoc type analysis
     int findDefine(SharedExp e);        // Still needed temporarily for ad hoc type analysis
     void removeDefine(SharedExp e);
     void addDefine(ImplicitAssign *as); // For testing
-
-    // void        ignoreReturn(SharedExp e);
-    // void        ignoreReturn(int n);
-    // void        addReturn(SharedExp e, Type* ty = nullptr);
 
     /// Set the defines to the set of locations modified by the callee,
     /// or if no callee, to all variables live at this call
@@ -136,113 +117,91 @@ public:
     void clearLiveEntry();
     void eliminateDuplicateArgs();
 
+    /// \copydoc GotoStatement::print
     virtual void print(QTextStream& os, bool html = false) const override;
 
-    // general search
+    /// \copydoc GotoStatement::search
     virtual bool search(const Exp& search, SharedExp& result) const override;
 
-    // Replace all instances of "search" with "replace".
-
-    /**
-     * \fn              CallStatement::searchAndReplace
-     * \brief           Replace all instances of search with replace.
-     * \param search  - a location to search for
-     * \param replace - the expression with which to replace it
-     * \param cc -      true to replace in collectors
-     * \returns         True if any change
-     */
+    /// \copydoc GotoStatement::searchAndReplace
     virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
-    // Searches for all instances of a given subexpression within this
-    // expression and adds them to a given list in reverse nesting order.
-
-    /**
-     * \fn    CallStatement::searchAll
-     * \brief Find all instances of the search expression
-     * \param search - a location to search for
-     * \param result - a list which will have any matching exprs appended to it
-     * \returns true if there were any matches
-     */
+    /// \copydoc GotoStatement::search
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
-    // Set and return whether the call is effectively followed by a return.
-    // E.g. on Sparc, whether there is a restore in the delay slot.
-
     /**
-     * \fn    CallStatement::setReturnAfterCall
-     * \brief Sets a bit that says that this call is effectively followed by a return. This happens e.g. on
-     *        Sparc when there is a restore in the delay slot of the call
+     * \brief Sets a bit that says that this call is effectively followed by a return.
+     * This happens e.g. on Sparc when there is a restore in the delay slot of the call
      * \param b true if this is to be set; false to clear the bit
      */
     void setReturnAfterCall(bool b);
 
     /**
-     * \fn    CallStatement::isReturnAfterCall
-     * \brief Tests a bit that says that this call is effectively followed by a return. This happens e.g. on
-     *        Sparc when there is a restore in the delay slot of the call
+     * \brief Tests a bit that says that this call is effectively followed by a return.
+     * This happens e.g. on Sparc when there is a restore in the delay slot of the call
      * \returns True if this call is effectively followed by a return
      */
     bool isReturnAfterCall() const;
 
-    // Set and return the list of Exps that occur *after* the call (the
-    // list of exps in the RTL occur before the call). Useful for odd patterns.
+    /// Set and return the list of Exps that occur *after* the call (the
+    /// list of exps in the RTL occur before the call). Useful for odd patterns.
     void setPostCallExpList(std::list<SharedExp> *le);
 
     std::list<SharedExp> *getPostCallExpList();
 
-    // Set and return the destination proc.
-
-    /**
-     * \brief        Set the destination of this jump to be a given expression.
-     * \param        dest - the new target
-     */
+    /// Set the function that is called by this call statement.
     void setDestProc(Function *dest);
+
+    /// \returns the function that is called by this call statement.
     Function *getDestProc();
 
-    // Generate constraints
+    /// \copydoc Statement::genConstraints
     virtual void genConstraints(LocationSet& cons) override;
 
-    // Data flow based type analysis
-    void dfaTypeAnalysis(bool& ch) override;
+    /// \copydoc Statement::dfaTypeAnalysis
+    virtual void dfaTypeAnalysis(bool& ch) override;
 
-    // code generation
+    /// \copydoc GotoStatement::dfaTypeAnalysis
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
-    // dataflow analysis
-    virtual bool usesExp(const Exp& e) const override;
+    /// \copydoc GotoStatement::usesExp
+    virtual bool usesExp(const Exp& exp) const override;
 
-    // dataflow related functions
+    /// \copydoc GotoStatement::isDefinition
     virtual bool isDefinition() const override;
+
+    /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet& defs) const override;
 
-    /// Does a ReturnStatement define anything? Not really, the locations are already defined earlier in the procedure.
-    /// However, nothing comes after the return statement, so it doesn't hurt to pretend it does, and this is a place to
-    /// store the return type(s) for example.
-    /// FIXME: seems it would be cleaner to say that Return Statements don't define anything.
+    /// \copydoc Statement::definesLoc
     virtual bool definesLoc(SharedExp loc) const override; // True if this Statement defines loc
 
-    // get how to replace this statement in a use
-    // virtual Exp*        getRight() { return nullptr; }
-
-    // simplify all the uses/defs in this Statement
+    /// \copydoc GotoStatement::simplify
     virtual void simplify() override;
 
-    //        void        setIgnoreReturnLoc(bool b);
+    /// \copydoc Statement::getTypeFor
+    virtual SharedType getTypeFor(SharedExp e) const override;
 
-    void decompile();
-
-    // Insert actual arguments to match formal parameters
-    // void        insertArguments(InstructionSet& rs);
-
-    virtual SharedType getTypeFor(SharedExp e) const override;     // Get the type defined by this Statement for this location
+    /// \copydoc Statement::setTypeFor
     virtual void setTypeFor(SharedExp e, SharedType ty) override;  // Set the type for this location, defined in this statement
 
-    DefCollector *getDefCollector() { return &m_defCol; } // Return pointer to the def collector object
-    UseCollector *getUseCollector() { return &m_useCol; }    // Return pointer to the use collector object
-    void useBeforeDefine(SharedExp x) { m_useCol.insert(x); } // Add x to the UseCollector for this call
-    void removeLiveness(SharedExp e) { m_useCol.remove(e); } // Remove e from the UseCollector
-    void removeAllLive() { m_useCol.clear(); }               // Remove all livenesses
-    StatementList& getDefines() { return m_defines; } // Get list of locations defined by this call
+    /// \returns pointer to the def collector object
+    DefCollector *getDefCollector() { return &m_defCol; }
+
+    /// \returns pointer to the use collector object
+    UseCollector *getUseCollector() { return &m_useCol; }
+
+    /// Add x to the UseCollector for this call
+    void useBeforeDefine(SharedExp x) { m_useCol.insert(x); }
+
+    /// Remove e from the UseCollector
+    void removeLiveness(SharedExp e) { m_useCol.remove(e); }
+
+    /// Remove all livenesses
+    void removeAllLive() { m_useCol.clear(); }
+
+    /// Get list of locations defined by this call
+    StatementList& getDefines() { return m_defines; }
 
     /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
     /// parameters if needed, and return true if any signature parameters added
@@ -254,20 +213,22 @@ public:
     /// Attempt to convert this call, if indirect, to a direct call.
     /// NOTE: at present, we igore the possibility that some other statement
     /// will modify the global. This is a serious limitation!!
-    bool convertToDirect(); // Internal function: attempt to convert an indirect to a
+    /// \returns true if converted
+    bool convertToDirect();
 
-    // direct call
+    /// direct call
     void useColFromSsaForm(Statement *s) { m_useCol.fromSSAform(m_proc, s); }
 
     bool isCallToMemOffset() const;
 
 private:
-    // Private helper functions for the above
-    // Helper function for makeArgAssign(?)
+    /// Private helper functions for the above
+    /// Helper function for makeArgAssign(?)
     void addSigParam(SharedType ty, bool isScanf);
 
     /// Make an assign suitable for use as an argument from a callee context expression
     Assign *makeArgAssign(SharedType ty, SharedExp e);
+
     bool objcSpecificProcessing(const QString& formatStr);
 
 protected:

@@ -10,12 +10,6 @@
 #pragma once
 
 
-/**
- * \file       statement.h
- * OVERVIEW:   The Statement and related classes
- *  (Was dataflow.h a long time ago)
- */
-
 #include "boomerang/db/exp/ExpHelp.h" // For lessExpStar, lessAssignment etc
 #include "boomerang/db/DataFlow.h"    // For embedded objects DefCollector and UseCollector#
 
@@ -102,15 +96,12 @@ enum BranchType
     BRANCH_JPAR    // Jump if parity even (Intel only)
 };
 
-//    //    //    //    //    //    //    //    //    //    //    //    //    //
-//
-//    A b s t r a c t      C l a s s      S t a t e m e n t //
-//
-//    //    //    //    //    //    //    //    //    //    //    //    //    //
 
-/* Statements define values that are used in expressions.
+/**
+ * Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
- * Class hierarchy:   Statement@            (@ = abstract)
+ * Class hierarchy:
+ *                    Statement@            (@ = abstract)
  *                  __/   |   \________________________
  *                 /      |            \               \
  *     GotoStatement  TypingStatement@  ReturnStatement JunctionStatement
@@ -131,30 +122,36 @@ public:
 
     virtual ~Statement() = default;
 
-    /// get/set the enclosing BB, etc
+    /// Make copy of self, and make the copy a derived object if needed.
+    virtual Statement *clone() const = 0;
+
+    /// \returns the BB that this statement is part of.
     BasicBlock *getBB() { return m_parent; }
     const BasicBlock *getBB() const { return m_parent; }
+
+    /// Changes the BB that this statment is part of.
     void setBB(BasicBlock *bb) { m_parent = bb; }
 
-    // bool operator==(Statement& o);
-    // Get and set *enclosing* proc (not destination proc)
-    void setProc(UserProc *p);
-
+    /// \returns the procedure this statement is part of.
     UserProc *getProc() const { return m_proc; }
 
+    /// Changes the procedure this statement is part of.
+    void setProc(UserProc *p);
+
     int getNumber() const { return m_number; }
-    virtual void setNumber(int num) { m_number = num; } ///< Overridden for calls (and maybe later returns)
+
+    /// Overridden for calls (and maybe later returns)
+    virtual void setNumber(int num) { m_number = num; }
 
     StmtType getKind() const { return m_kind; }
     void setKind(StmtType k) { m_kind = k; }
 
-    virtual Statement *clone() const = 0;  ///< Make copy of self
-
-    // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
-    virtual bool accept(StmtVisitor *visitor)      = 0;
-    virtual bool accept(StmtExpVisitor *visitor)   = 0;
-    virtual bool accept(StmtModifier *visitor)     = 0;
-    virtual bool accept(StmtPartModifier *visitor) = 0;
+    /// Accept a visitor (of various kinds) to this Statement.
+    /// \return true to continue visiting
+    virtual bool accept(StmtVisitor *visitor)       = 0;
+    virtual bool accept(StmtExpVisitor *visitor)    = 0;
+    virtual bool accept(StmtModifier *modifier)     = 0;
+    virtual bool accept(StmtPartModifier *modifier) = 0;
 
     void setLexBegin(unsigned int n) { m_lexBegin = n; }
     void setLexEnd(unsigned int n) { m_lexEnd = n; }
@@ -163,37 +160,50 @@ public:
 
     /// returns true if this statement defines anything
     virtual bool isDefinition() const = 0;
-    bool isNullStatement() const; ///< true if is a null statement
 
-    virtual bool isTyping() const { return false; } // Return true if a TypingStatement
+    /// true if is a null statement
+    bool isNullStatement() const;
+
+    /// Return true if a TypingStatement
+    virtual bool isTyping() const { return false; }
 
     /// true if this statement is a standard assign
     bool isAssign() const { return m_kind == STMT_ASSIGN; }
+
     /// true if this statement is a any kind of assignment
     bool isAssignment() const
     {
-        return m_kind == STMT_ASSIGN || m_kind == STMT_PHIASSIGN || m_kind == STMT_IMPASSIGN || m_kind == STMT_BOOLASSIGN;
+        return m_kind == STMT_ASSIGN
+            || m_kind == STMT_PHIASSIGN
+            || m_kind == STMT_IMPASSIGN
+            || m_kind == STMT_BOOLASSIGN;
     }
 
-    bool isPhi() const { return m_kind == STMT_PHIASSIGN; }      ///< true    if this statement is a phi assignment
-    bool isImplicit() const { return m_kind == STMT_IMPASSIGN; } ///< true if this statement is an implicit assignment
-    bool isFlagAssign() const;                                   ///< true if this statment is a flags assignment
+    /// \returns true if this statement is a phi assignment
+    bool isPhi() const { return m_kind == STMT_PHIASSIGN; }
 
-    bool isImpRef() const { return m_kind == STMT_IMPREF; } ///< true of this statement is an implicit reference
+    /// \returns true if this statement is an implicit assignment
+    bool isImplicit() const { return m_kind == STMT_IMPASSIGN; }
+
+    /// \returns true if this statment is a flags assignment
+    bool isFlagAssign() const;
+
+    /// \returns true if this statement is an implicit reference
+    bool isImpRef() const { return m_kind == STMT_IMPREF; }
 
     virtual bool isGoto() { return m_kind == STMT_GOTO; }
     virtual bool isBranch() { return m_kind == STMT_BRANCH; }
 
-    // true if this statement is a junction
+    /// \returns true if this statement is a junction
     bool isJunction() const { return m_kind == STMT_JUNCTION; }
 
-    /// true if this statement is a call
+    /// \returns true if this statement is a call
     bool isCall() const { return m_kind == STMT_CALL; }
 
-    /// true if this statement is a BoolAssign
+    /// \returns true if this statement is a BoolAssign
     bool isBool() const { return m_kind == STMT_BOOLASSIGN; }
 
-    /// true if this statement is a ReturnStatement
+    /// \returns true if this statement is a ReturnStatement
     bool isReturn() const { return m_kind == STMT_RET; }
 
     /// true if this statement is a decoded ICT.
@@ -202,7 +212,7 @@ public:
 
     bool isCase() { return m_kind == STMT_CASE; }
 
-    /// true if this is a fpush/fpop
+    /// \returns true if this is a fpush/fpop
     bool isFpush() const;
     bool isFpop() const;
 
@@ -210,17 +220,13 @@ public:
     /// returns a set of locations defined by this statement in a LocationSet argument.
     virtual void getDefinitions(LocationSet& /*def*/) const {}
 
-    // set the left for forExp to newExp
-
     virtual bool definesLoc(SharedExp /*loc*/) const { return false; }  // True if this Statement defines loc
 
-    // returns true if this statement uses the given expression
-    virtual bool usesExp(const Exp&) const = 0;
+    /// returns true if this statement uses the given expression
+    virtual bool usesExp(const Exp& exp) const = 0;
 
-    // statements should be printable (for debugging)
+    /// statements should be printable (for debugging)
     virtual void print(QTextStream& os, bool html = false) const = 0;
-
-    // print functions
 
     void printAsUse(QTextStream& os) const { os << m_number; }
     void printAsUseBy(QTextStream& os) const { os << m_number; }
@@ -230,19 +236,34 @@ public:
     // This version prints much better in gdb
     void dump() const;    // For debugging
 
-    // general search
-    virtual bool search(const Exp& search, SharedExp& result) const = 0;
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const = 0;
+    /// general search
+    virtual bool search(const Exp& pattern, SharedExp& result) const = 0;
 
+    /**
+     * \brief   Find all instances of the search expression
+     * \param   pattern a location to search for
+     * \param   result  a list which will have any matching exps appended to it in reverse nesting order.
+     * \returns true if there were any matches
+     */
+    virtual bool searchAll(const Exp& pattern, std::list<SharedExp>& result) const = 0;
+
+    /**
+     * Replace all instances of search with replace.
+     * \param pattern a location to search for
+     * \param replace the expression with which to replace it
+     * \param cc      ignored
+     * \returns True if any change
+     */
     /// general search and replace. Set cc true to change collectors as well. Return true if any change
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) = 0; // TODO: consider constness
+    virtual bool searchAndReplace(const Exp& pattern, SharedExp replace, bool cc = false) = 0; // TODO: consider constness
 
-    // True if can propagate to expression e in this Statement.
-    // Return true if can propagate to Exp* e (must be a RefExp to return true)
-    // Note: does not consider whether e is able to be renamed (from a memory Primitive point of view), only if the
-    // definition can be propagated TO this stmt
-    // Note: static member function
-    static bool canPropagateToExp(Exp& e);
+    /**
+     * \returns true if can propagate to \p exp (must be a RefExp to return true)
+     * \note does not consider whether e is able to be renamed
+     * (from a memory Primitive point of view),
+     * only if the definition can be propagated TO this stmt
+     */
+    static bool canPropagateToExp(Exp& exp);
 
     /**
      * \brief Propagate to this statement
@@ -259,9 +280,11 @@ public:
     /// without tests about complexity or the propagation limiting heuristic
     bool propagateFlagsTo();
 
-    // code generation
+    /// Generate code for this statement
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) = 0;
-    virtual void simplify() = 0; ///< simpify internal expressions
+
+    /// simpify internal expressions
+    virtual void simplify() = 0;
 
     /// simplify internal address expressions (a[m[x]] -> x) etc
     /// Only Assignments override at present
@@ -276,7 +299,6 @@ public:
     /// insert casts where needed, since fromSSA will erase type information
     void insertCasts();
 
-    // fixSuccessor
     // Only Assign overrides at present
     virtual void fixSuccessor() {}
 
@@ -393,7 +415,7 @@ QTextStream& operator<<(QTextStream& os, const LocationSet *p);
  * CaseStatement is derived from GotoStatement. In addition to the destination
  * of the jump, it has a switch variable Exp.
  */
-struct SWITCH_INFO
+struct SwitchInfo
 {
     SharedExp pSwitchVar;  ///< Ptr to Exp repres switch var, e.g. v[7]
     char      chForm;      ///< Switch form: 'A', 'O', 'R', 'H', or 'F' etc

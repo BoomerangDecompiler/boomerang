@@ -25,32 +25,57 @@
 class ImpRefStatement : public TypingStatement
 {
 public:
-    // Constructor, subexpression
     ImpRefStatement(SharedType ty, SharedExp a);
 
-    SharedExp getAddressExp() const { return m_addressExp; }
-    SharedType getType() const { return m_type; }
-    void meetWith(SharedType ty, bool& ch); // Meet the internal type with ty. Set ch if a change
-
-    // Virtuals
+    /// \copydoc Statement::clone
     virtual Statement *clone() const override;
-    virtual bool accept(StmtVisitor *) override;
-    virtual bool accept(StmtExpVisitor *) override;
-    virtual bool accept(StmtModifier *) override;
-    virtual bool accept(StmtPartModifier *) override;
 
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtVisitor *visitor) override;
+
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtExpVisitor *visitor) override;
+
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtModifier *modifier) override;
+
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtPartModifier *modifier) override;
+
+    /// \copydoc Statement::isDefinition
     virtual bool isDefinition() const override { return false; }
+
+    /// \copydoc Statement::usesExp
     virtual bool usesExp(const Exp&) const override { return false; }
+
+    /// \copydoc Statement::search
     virtual bool search(const Exp&, SharedExp&) const override;
+
+    /// \copydoc Statement::searchAll
     virtual bool searchAll(const Exp&, std::list<SharedExp, std::allocator<SharedExp> >&) const override;
 
+    /// \copydoc Statement::searchAndReplace
     virtual bool searchAndReplace(const Exp&, SharedExp, bool cc = false) override;
-    virtual void generateCode(ICodeGenerator *, const BasicBlock *)  override {}
+
+    /// \copydoc Statement::generateCode
+    virtual void generateCode(ICodeGenerator *, BasicBlock *)  override {}
+
+    /// \copydoc Statement::simplify
     virtual void simplify() override;
 
-    // NOTE: ImpRefStatement not yet used
+    /// \copydoc Statement::print
+    /// \note ImpRefStatement not yet used
     virtual void print(QTextStream& os, bool html = false) const override;
 
+    /// \returns the address expression of the (implicitly) referenced location.
+    SharedExp getAddressExp() const { return m_addressExp; }
+
+    /// \returns the type of this expression
+    SharedType getType() const { return m_type; }
+
+    /// Meet the internal type with ty. Set ch if a change
+    void meetWith(SharedType ty, bool& ch);
+
 private:
-    SharedExp m_addressExp; // The expression representing the address of the location referenced
+    SharedExp m_addressExp; ///< The expression representing the address of the location referenced
 };

@@ -1056,7 +1056,7 @@ void StatementTest::testAddUsedLocsCase()
     CaseStatement *c = new CaseStatement;
 
     c->setDest(Location::memOf(Location::regOf(26)));
-    SWITCH_INFO si;
+    SwitchInfo si;
     si.pSwitchVar = Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(12)));
     c->setSwitchInfo(&si);
     c->addUsedLocs(l);
@@ -1226,7 +1226,7 @@ void StatementTest::testSubscriptVars()
     // CaseStatement with pDest = m[r26], switchVar = m[r28 - 12]
     CaseStatement *c = new CaseStatement;
     c->setDest(Location::memOf(Location::regOf(26)));
-    SWITCH_INFO si;
+    SwitchInfo si;
     si.pSwitchVar = Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(12)));
     c->setSwitchInfo(&si);
 

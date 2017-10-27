@@ -719,7 +719,7 @@ SharedExp BasicBlock::getDest() noexcept (false)
 
     if (cs) {
         // Get the expression from the switch info
-        SWITCH_INFO *si = cs->getSwitchInfo();
+        SwitchInfo *si = cs->getSwitchInfo();
 
         if (si) {
             return si->pSwitchVar;
@@ -1677,7 +1677,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         }
 
         if (form) {
-            SWITCH_INFO *swi = new SWITCH_INFO;
+            SwitchInfo *swi = new SwitchInfo;
             swi->chForm = form;
             Address   T;
             SharedExp expr;
@@ -1747,7 +1747,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                     if (num_dests) {
                         int *destArray = new int[num_dests];
                         std::copy(dests.begin(), dests.end(), destArray);
-                        SWITCH_INFO *swi = new SWITCH_INFO;
+                        SwitchInfo *swi = new SwitchInfo;
                         swi->chForm     = 'F';                                     // The "Fortran" form
                         swi->pSwitchVar = e;
                         swi->uTable     = Address(HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the uTable member as a pointer
@@ -1995,7 +1995,7 @@ void BasicBlock::processSwitch(UserProc *proc)
 {
     RTL           *last(m_listOfRTLs->back());
     CaseStatement *lastStmt((CaseStatement *)last->getHlStmt());
-    SWITCH_INFO   *si(lastStmt->getSwitchInfo());
+    SwitchInfo   *si(lastStmt->getSwitchInfo());
 
     if (SETTING(debugSwitch)) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",

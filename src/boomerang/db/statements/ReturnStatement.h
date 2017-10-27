@@ -26,6 +26,9 @@ public:
     ReturnStatement();
     virtual ~ReturnStatement() override;
 
+    /// \copydoc Statement::clone
+    virtual Statement *clone() const override;
+
     iterator begin() { return m_returns.begin(); }
     iterator end()   { return m_returns.end(); }
 
@@ -39,84 +42,86 @@ public:
 
     size_t getNumReturns() const { return m_returns.size(); }
 
-    // Update the modifieds, in case the signature and hence ordering and filtering has changed, or the locations in the
-    // collector have changed. Does NOT remove preserveds (deferred until updating returns).
+    /// Update the modifieds, in case the signature and hence ordering and filtering has changed, or the locations in the
+    /// collector have changed. Does NOT remove preserveds (deferred until updating returns).
     void updateModifieds(); // Update modifieds from the collector
 
-    // Update the returns, in case the signature and hence ordering
-    // and filtering has changed, or the locations in the modifieds list
-    void updateReturns();   // Update returns from the modifieds
+    /// Update the returns, in case the signature and hence ordering
+    /// and filtering has changed, or the locations in the modifieds list
+    void updateReturns();
 
+    /// \copydoc Statement::print
     virtual void print(QTextStream& os, bool html = false) const override;
 
-    // general search
+    /// \copydoc Statement::search
     virtual bool search(const Exp&, SharedExp&) const override;
 
-    // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
-
-    // Searches for all instances of a given subexpression within this statement and adds them to a given list
+    /// \copydoc Statement::searchAll
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
-    // returns true if this statement uses the given expression
+    /// \copydoc Statement::searchAndReplace
+    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+
+    /// \copydoc Statement::usesExp
     virtual bool usesExp(const Exp& e) const override;
 
+    /// \copydoc Statement::getDefinitions
     virtual void getDefinitions(LocationSet& defs) const override;
 
-    void removeModified(SharedExp loc); // Remove from modifieds AND from returns
+    /// Remove from modifieds AND from returns
+    void removeModified(SharedExp loc);
 
-    // Remove the return (if any) related to loc. Loc may or may not be subscripted
-    void removeReturn(SharedExp loc);   // Remove from returns only
+    /// Remove the return (if any) related to \p loc. Loc may or may not be subscripted
+    void removeReturn(SharedExp loc);
     void addReturn(Assignment *a);
 
-    /// Scan the returns for e. If found, return the type associated with that return
-    SharedType getTypeFor(SharedExp e) const override;
-    void setTypeFor(SharedExp e, SharedType ty) override;
+    /// \copydoc Statement::getTypeFor
+    virtual SharedType getTypeFor(SharedExp e) const override;
 
-    // simplify all the uses/defs in this Statement
+    /// \copydoc Statement::setTypeFor
+    virtual void setTypeFor(SharedExp e, SharedType ty) override;
+
+    /// \copydoc Statement::simplify
     virtual void simplify() override;
 
+    /// \copydoc Statement::isDefinition
     virtual bool isDefinition() const override { return true; }
 
-    // Get a subscripted version of e from the collector
+    /// Get a subscripted version of e from the collector
     SharedExp subscriptWithDef(SharedExp e);
 
-    // Make a deep copy, and make the copy a derived object if needed.
-
-    /**
-     * \brief        Deep copy clone
-     * \returns             Pointer to a new Statement, a clone of this ReturnStatement
-     */
-    virtual Statement *clone() const override;
-
-    // Accept a visitor to this Statement
-    // visit this stmt
+    /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) override;
+
+    /// \copydoc Statement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
+
+    /// \copydoc Statement::accept
     virtual bool accept(StmtModifier *visitor) override;
+
+    /// \copydoc Statement::accept
     virtual bool accept(StmtPartModifier *visitor) override;
 
-    virtual bool definesLoc(SharedExp loc) const override; // True if this Statement defines loc
+    /// \copydoc Statement::definesLoc
+    virtual bool definesLoc(SharedExp loc) const override;
 
-    // code generation
+    /// \copydoc Statement::generateCode
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
-    // Exp        *getReturnExp(int n) { return returns[n]; }
-    // void        setReturnExp(int n, SharedExp e) { returns[n] = e; }
-    // void        setSigArguments();                     // Set returns based on signature
-    DefCollector *getCollector() { return &m_col; } // Return pointer to the collector object
+    /// \returns pointer to the collector object
+    DefCollector *getCollector() { return &m_col; }
 
-    // Get and set the native address for the first and only return statement
+    /// Get and set the native address for the first and only return statement
     Address getRetAddr() { return m_retAddr; }
-    void setRetAddr(Address r) {
-        m_retAddr = r; }
+    void setRetAddr(Address r) { m_retAddr = r; }
 
-    // Find definition for e (in the collector)
+    /// Find definition for e (in the collector)
     SharedExp findDefFor(SharedExp e) { return m_col.findDefFor(e); }
 
-    void dfaTypeAnalysis(bool& ch) override;
+    /// \copydoc Statement::dfaTypeAnalysis
+    virtual void dfaTypeAnalysis(bool& ch) override;
 
-    // Remove the stack pointer and return a statement list
+    /// Remove the stack pointer and return a statement list
     StatementList *getCleanReturns();
 
 protected:

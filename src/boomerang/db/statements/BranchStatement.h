@@ -18,122 +18,79 @@
 class BranchStatement : public GotoStatement
 {
 public:
-    /**
-     * \fn        BranchStatement::BranchStatement
-     * \brief     Constructor.
-     */
     BranchStatement();
-
-    /**
-     * \fn        BranchStatement::~BranchStatement
-     * \brief     Destructor
-     */
     virtual ~BranchStatement() override;
 
-    // Make a deep copy, and make the copy a derived object if needed.
-
-    /**
-     * \fn        BranchStatement::clone
-     * \brief     Deep copy clone
-     * \returns   Pointer to a new Instruction, a clone of this BranchStatement
-     */
+    /// \copydoc GotoStatement::clone
     virtual Statement *clone() const override;
 
-    /// Accept a visitor to this Statement
-    /// visit this stmt
+    /// \copydoc GotoStatement::accept
     virtual bool accept(StmtVisitor *visitor) override;
+
+    /// \copydoc GotoStatement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
-    virtual bool accept(StmtModifier *visitor) override;
-    virtual bool accept(StmtPartModifier *visitor) override;
+
+    /// \copydoc GotoStatement::accept
+    virtual bool accept(StmtModifier *modifier) override;
+
+    /// \copydoc GotoStatement::accept
+    virtual bool accept(StmtPartModifier *modifier) override;
 
     // Set and return the BRANCH_TYPE of this jcond as well as whether the
     // floating point condition codes are used.
 
     /**
-     * \fn    BranchStatement::setCondType
-     * \brief Sets the BRANCH_TYPE of this jcond as well as the flag
-     *        indicating whether or not the floating point condition codes
-     *        are used.
-     * \param cond - the BRANCH_TYPE
-     * \param usesFloat - this condional jump checks the floating point condition codes
+     * Sets the type of conditional jump.
+     * \param cond      The type of conditional jump
+     * \param usesFloat true if this condional jump checks the floating point condition codes
      */
     void setCondType(BranchType cond, bool usesFloat = false);
 
-    BranchType getCond() const { return m_jumpType; }
-    bool isFloat() const { return m_isFloat; }
-    void setFloat(bool b) { m_isFloat = b; }
-
-    // Set and return the Exp representing the HL condition
-
-    /**
-     * \fn      BranchStatement::getCondExpr
-     * \brief   Return the SemStr expression containing the HL condition.
-     * \returns ptr to an expression
-     */
+    /// Return the SemStr expression containing the HL condition.
+    /// \returns ptr to an expression
     SharedExp getCondExpr() const;
 
-    /**
-     * \fn          BranchStatement::setCondExpr
-     * \brief       Set the SemStr expression containing the HL condition.
-     * \param       pe - Pointer to Exp to set
-     */
+    /// Set the SemStr expression containing the HL condition.
+    /// \param pe Pointer to Exp to set
     void setCondExpr(SharedExp pe);
 
+    /// \returns the destination BB of the fallthrough branch of a conditional jump
     BasicBlock *getFallBB() const;
+
+    /// \returns the destination BB of a taken conditional jump
     BasicBlock *getTakenBB() const;
 
-    /// not that if you set the taken BB or fixed dest first,
+    /// \note if you set the taken BB or fixed dest first,
     /// you will not be able to set the fall BB
     void setFallBB(BasicBlock *bb);
     void setTakenBB(BasicBlock *bb);
 
-    /**
-     * \fn        BranchStatement::print
-     * \brief     Write a text representation to the given stream
-     * \param     os stream
-     * \param     html produce html encoded representation
-     */
-    void print(QTextStream& os, bool html = false) const override;
+    /// \copydoc GotoStatement::print
+    virtual void print(QTextStream& os, bool html = false) const override;
 
-    // general search
-    bool search(const Exp& search, SharedExp& result) const override;
+    /// \copydoc GotoStatement::search
+    virtual bool search(const Exp& search, SharedExp& result) const override;
 
-    /**
-     * \fn    BranchStatement::searchAndReplace
-     * \brief Replace all instances of search with replace.
-     * \param search - a location to search for
-     * \param replace - the expression with which to replace it
-     * \param cc - ignored
-     * \returns True if any change
-     */
-    bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+    /// \copydoc GotoStatement::searchAndReplace
+    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
-    // Searches for all instances of a given subexpression within this
-    // expression and adds them to a given list in reverse nesting order.
+    /// \copydoc GotoStatement::searchAll
+    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
-    /**
-     * \brief   Find all instances of the search expression
-     * \param   search - a location to search for
-     * \param   result - a list which will have any matching exprs
-     *          appended to it
-     * \returns true if there were any matches
-     */
-    bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
-
-    /// code generation
+    /// \copydoc GotoStatement::generateCode
     virtual void generateCode(ICodeGenerator *generator, const BasicBlock *parentBB) override;
 
-    /// dataflow analysis
-    bool usesExp(const Exp& e) const override;
+    /// \copydoc GotoStatement::usesExp
+    virtual bool usesExp(const Exp& e) const override;
 
-    /// simplify all the uses/defs in this Statememt
-    void simplify() override;
+    /// \copydoc GotoStatement::simplify
+    virtual void simplify() override;
 
-    /// Generate constraints
-    void genConstraints(LocationSet& cons) override;
+    /// \copydoc GotoStatement::genConstraints
+    virtual void genConstraints(LocationSet& cons) override;
 
-    /// Data flow based type analysis
-    void dfaTypeAnalysis(bool& ch) override;
+    /// \copydoc GotoStatement::dfaTypeAnalysis
+    virtual void dfaTypeAnalysis(bool& ch) override;
 
 private:
     BranchType m_jumpType; ///< The condition for jumping
