@@ -26,8 +26,8 @@ class CallStatement;
 class Prog;
 
 /**
- * Interface for the procedure classes, which are used to store information about variables in the
- * procedure such as parameters and locals.
+ * Interface for the procedure classes, which are used to store information
+ * about variables in the procedure such as parameters and locals.
  */
 class Function : public Printable
 {
@@ -35,10 +35,9 @@ class Function : public Printable
 
 public:
     /**
-     * \brief        Constructor with name and native address.
-     * \param        address - Native address of entry point of procedure
-     * \param        signature - the Signature for this Proc
-     * \param        module - the Module this procedure belongs to
+     * \param address   Address of entry point of procedure
+     * \param signature The Signature for this Proc
+     * \param module    The Module this procedure belongs to
      */
     Function(Address address, Signature *signature, Module *module);
     virtual ~Function();
@@ -70,7 +69,7 @@ public:
         }
     }
 
-    std::shared_ptr<Signature> getSignature() const { return m_signature; } ///< Returns a pointer to the Signature
+    std::shared_ptr<Signature> getSignature() const { return m_signature; }
     void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; }
 
     void eraseFromParent();
@@ -167,8 +166,8 @@ public:
     void clearVisited() { m_visited = false; }
     bool isVisited() const { return m_visited; }
 
-    Module *getParent() { return m_parent; }
-    const Module *getParent() const { return m_parent; }
+    Module *getParent() { return m_module; }
+    const Module *getParent() const { return m_module; }
 
     void setParent(Module *c);
     void removeFromParent();
@@ -193,7 +192,7 @@ protected:
     ///////////////////////////////////////////////////
     // Persistent state
     ///////////////////////////////////////////////////
-    Address m_address;         ///< Entry address of this procedure.
+    Address m_entryAddress;    ///< Entry address of this procedure.
     Function *m_firstCaller;   ///< first procedure to call this procedure.
     Address m_firstCallerAddr; ///< can only be used once.
 
@@ -215,5 +214,5 @@ protected:
      */
     ExpExpMap m_recurPremises;
     std::set<CallStatement *> m_callerSet; ///< Set of callers (CallStatements that call this procedure).
-    Module *m_parent;
+    Module *m_module;
 };

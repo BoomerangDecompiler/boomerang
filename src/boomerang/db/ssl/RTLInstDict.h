@@ -116,17 +116,21 @@ protected:
  */
 class RTLInstDict
 {
+    friend class SSLParser;
+    friend class NJMCDecoder;
+
 public:
     RTLInstDict();
     ~RTLInstDict();
 
     /**
-     * \brief        Read and parse the SSL file, and initialise the expanded instruction dictionary (this object).
-     * This also reads and sets up the register map and flag functions.
-     * \param SSLFileName - the name of the file containing the SSL specification.
+     * Read and parse the SSL file, and initialise the expanded instruction dictionary
+     * (this object). This also reads and sets up the register map and flag functions.
+     *
+     * \param sslFileName - the name of the file containing the SSL specification.
      * \returns        true if the file was successfully read
      */
-    bool readSSLFile(const QString& SSLFileName);
+    bool readSSLFile(const QString& sslFileName);
 
     /**
      * Reset the object to "undo" a readSSLFile()
@@ -134,44 +138,44 @@ public:
      */
     void reset();
 
-    /**
-     * \brief         Returns the signature of the given instruction.
-     * \param name - instruction name
-     * \returns       the signature (name + number of operands)
-     */
+    /// \returns the name and the number of operands of the instruction wwith name \p name
     std::pair<QString, DWord> getSignature(const char *name);
 
     /**
-     * \brief        Appends one RTL to the dictionary,or adds it to idict if an
-     * entry does not already exist.
-     * \param name name of the instruction to add to
-     * \param parameters list of formal parameters (as strings) for the RTL to add
-     * \param rtl reference to the RTL to add
-     * \returns 0 for success, non-zero for failure
-     */
-    int insert(const QString& name, std::list<QString>& parameters, RTL& rtl);
-
-    /**
-     * \brief         Returns an instance of a register transfer list for the instruction named 'name' with the actuals
-     *                given as the second parameter.
-     * \param name - the name of the instruction (must correspond to one defined in the SSL file).
-     * \param pc - address at which the named instruction is located
-     * \param actuals - the actual values
-     * \returns   the instantiated list of Exps
+     * Returns an instance of a register transfer list for the instruction named 'name' with the actuals
+     * given as the second parameter.
+     *
+     * \param name    the name of the instruction (must correspond to one defined in the SSL file).
+     * \param pc      address at which the named instruction is located
+     * \param actuals the actual values
+     * \returns       the instantiated list of Exps
      */
     std::list<Statement *> *instantiateRTL(const QString& name, Address pc, const std::vector<SharedExp>& actuals);
 
     /**
-     * \brief         Returns an instance of a register transfer list for the parameterized rtlist with the given formals
-     *      replaced with the actuals given as the third parameter.
-     * \param   rtls - a register transfer list
-     * \param   pc - address at which the named instruction is located
-     * \param   params - a list of formal parameters
-     * \param   actuals - the actual parameter values
+     * Returns an instance of a register transfer list for the parameterized rtlist with the given formals
+     * replaced with the actuals given as the third parameter.
+     *
+     * \param   rtls    a register transfer list
+     * \param   pc      address at which the named instruction is located
+     * \param   params  a list of formal parameters
+     * \param   actuals the actual parameter values
      * \returns the instantiated list of Exps
      */
     std::list<Statement *> *instantiateRTL(RTL& rtls, Address pc, std::list<QString>& params,
                                            const std::vector<SharedExp>& actuals);
+
+private:
+    /**
+     * Appends one RTL to the dictionary, or adds it to idict if an
+     * entry does not already exist.
+     *
+     * \param name name of the instruction to add to
+     * \param parameters list of formal parameters (as strings) for the RTL to add
+     * \param rtl reference to the RTL to add
+     * \returns zero for success, non-zero for failure
+     */
+    int insert(const QString& name, std::list<QString>& parameters, RTL& rtl);
 
     /**
      * \brief Transform an RTL to eliminate any uses of post-variables.
@@ -206,24 +210,24 @@ public:
     void addRegister(const QString& name, int id, int size, bool flt);
 
     /**
-     * \brief         Scan the Exp* pointed to by exp; if its top level operator indicates even a partial type, then set
-     *                        the expression's type, and return true
+     * Scan the Exp* pointed to by exp; if its top level operator indicates even a partial type, then set
+     * the expression's type, and return true
      * \note This version only inspects one expression
+     *
      * \param  exp - points to a Exp* to be scanned
      * \param  ty - ref to a Type object to put the partial type into
      * \returns true if a partial type is found
      */
     bool partialType(Exp *exp, Type& ty);
 
-
     /**
-     * \brief         Runs after the ssl file is parsed to fix up variant params
-     *                     where the arms are lambdas.
-     * Go through the params and fixup any lambda functions
+     * Runs after the ssl file is parsed to fix up variant params
+     * where the arms are lambdas.
      */
     void fixupParams();
 
-public:
+    void fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark);
+
     /// An RTL describing the machine's basic fetch-execute cycle
     SharedRTL fetchExecCycle;
 
@@ -247,9 +251,6 @@ public:
     std::map<QString, QString> fastMap;
 
     bool m_bigEndian; // True if this source is big endian
-
-private:
-    void fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark);
 
     /// A map from symbolic representation of a special (non-addressable) register to a Register object
     std::map<QString, Register, std::less<QString> > SpecialRegMap;

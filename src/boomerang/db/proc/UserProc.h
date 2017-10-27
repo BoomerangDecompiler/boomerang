@@ -85,15 +85,16 @@ public:
 
 public:
     /**
-     * \brief        Constructor with name, native address.
-     * \param address - Native address of entry point of procedure
-     * \param name - Name of procedure
-     * \param mod - Module that contains this Function
+     * \brief         Constructor with name, native address.
+     * \param address Native address of entry point of procedure
+     * \param name    Name of procedure
+     * \param mod     Module that contains this Function
      */
     UserProc(Address address, const QString& name, Module *mod);
     virtual ~UserProc() override;
 
-    QString toString() const override;
+    /// \copydoc Printable::toString
+    virtual QString toString() const override;
 
     /// Returns a pointer to the CFG object.
     Cfg *getCFG()       { return m_cfg; }
@@ -654,12 +655,8 @@ public:
      */
     void addCallee(Function *callee);
 
-    /**
-     * \brief Return true if this procedure contains the given address
-     * \param uAddr address to search for
-     * \returns          true if it does
-     */
-    bool containsAddr(Address uAddr) const;
+    /// \returns true if this procedure contains the given address
+    bool containsAddr(Address addr) const;
 
     /// Change BB containing this statement from a COMPCALL to a CALL.
     void undoComputedBB(Statement *stmt) const { m_cfg->undoComputedBB(stmt); }

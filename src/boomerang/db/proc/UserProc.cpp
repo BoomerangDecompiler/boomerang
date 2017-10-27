@@ -480,7 +480,7 @@ void UserProc::setEntryBB()
     BasicBlock *pBB = m_cfg->getFirstBB(bbit); // Get an iterator to the first BB
 
     // Usually, but not always, this will be the first BB, or at least in the first few
-    while (pBB && m_address != pBB->getLowAddr()) {
+    while (pBB && m_entryAddress != pBB->getLowAddr()) {
         pBB = m_cfg->getNextBB(bbit);
     }
 
@@ -523,7 +523,7 @@ void UserProc::print(QTextStream& out, bool html) const
         out << "<br>";
     }
 
-    out << "in module " << m_parent->getName() << "\n";
+    out << "in module " << m_module->getName() << "\n";
 
     if (html) {
         out << "<br>";
