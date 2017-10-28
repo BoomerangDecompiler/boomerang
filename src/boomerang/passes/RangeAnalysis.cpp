@@ -157,7 +157,7 @@ RangeAnalysis::RangeAnalysis()
 void RangeAnalysis::addJunctionStatements(Cfg& cfg)
 {
     for (BasicBlock *pbb : cfg) {
-        if ((pbb->getNumInEdges() > 1) && ((pbb->getFirstStmt() == nullptr) || !pbb->getFirstStmt()->isJunction())) {
+        if ((pbb->getNumPredecessors() > 1) && ((pbb->getFirstStmt() == nullptr) || !pbb->getFirstStmt()->isJunction())) {
             assert(pbb->getRTLs());
             JunctionStatement *j = new JunctionStatement();
             j->setBB(pbb);
@@ -199,10 +199,10 @@ public:
             return SavedInputRanges;
         }
 
-        assert(insn->getBB() && insn->getBB()->getNumInEdges() <= 1);
+        assert(insn->getBB() && insn->getBB()->getNumPredecessors() <= 1);
         RangeMap input;
 
-        if (insn->getBB()->getNumInEdges() == 0) {
+        if (insn->getBB()->getNumPredecessors() == 0) {
             // setup input for start of procedure
             Range ra24(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(24)));
             Range ra25(1, 0, 0, Unary::get(opInitValueOf, Location::regOf(25)));
@@ -224,15 +224,15 @@ public:
             input.addRange(Terminal::get(opPC), rpc);
         }
         else {
-            BasicBlock *pred = insn->getBB()->getInEdges()[0];
+            BasicBlock *pred = insn->getBB()->getPredecessors()[0];
             Statement  *last = pred->getLastStmt();
             assert(last);
 
-            if (pred->getNumOutEdges() != 2) {
+            if (pred->getNumSuccessors() != 2) {
                 input = tgt->getRanges(last);
             }
             else {
-                assert(pred->getNumOutEdges() == 2);
+                assert(pred->getNumSuccessors() == 2);
                 assert(last->isBranch());
                 input = getRangesForOutEdgeTo((BranchStatement *)last, insn->getBB());
             }
@@ -256,10 +256,10 @@ public:
                 }
 
                 if (insn->isLastStatementInBB()) {
-                    if (insn->getBB()->getNumOutEdges()) {
+                    if (insn->getBB()->getNumSuccessors()) {
                         uint32_t arc = 0;
 
-                        if (insn->getBB()->getOutEdge(0)->getLowAddr() != self_branch->getFixedDest()) {
+                        if (insn->getBB()->getSuccessor(0)->getLowAddr() != self_branch->getFixedDest()) {
                             arc = 1;
                         }
 
@@ -267,7 +267,7 @@ public:
                             arc ^= 1;
                         }
 
-                        execution_paths.push_back(insn->getBB()->getOutEdge(arc)->getFirstStmt());
+                        execution_paths.push_back(insn->getBB()->getSuccessor(arc)->getFirstStmt());
                     }
                 }
                 else {
@@ -280,8 +280,8 @@ public:
                 tgt->setRanges(insn, output);
 
                 if (insn->isLastStatementInBB()) {
-                    if (insn->getBB()->getNumOutEdges()) {
-                        execution_paths.push_back(insn->getBB()->getOutEdge(0)->getFirstStmt());
+                    if (insn->getBB()->getNumSuccessors()) {
+                        execution_paths.push_back(insn->getBB()->getSuccessor(0)->getFirstStmt());
                     }
                 }
                 else {
@@ -604,8 +604,8 @@ public:
 
                     if (last == nullptr) {
                         // call followed by a ret, sigh
-                        for (size_t i = 0; i < retbb->getNumInEdges(); i++) {
-                            last = retbb->getInEdges()[i]->getLastStmt();
+                        for (size_t i = 0; i < retbb->getNumPredecessors(); i++) {
+                            last = retbb->getPredecessors()[i]->getLastStmt();
 
                             if (last->isCall()) {
                                 break;
@@ -655,11 +655,11 @@ public:
             LOG_VERBOSE("unioning {");
         }
 
-        for (size_t i = 0; i < stmt->getBB()->getNumInEdges(); i++) {
-            Statement *last = stmt->getBB()->getInEdges()[i]->getLastStmt();
+        for (size_t i = 0; i < stmt->getBB()->getNumPredecessors(); i++) {
+            Statement *last = stmt->getBB()->getPredecessors()[i]->getLastStmt();
 
             if (DEBUG_RANGE_ANALYSIS) {
-                LOG_VERBOSE("  in BB: address %1 %2", stmt->getBB()->getInEdges()[i]->getLowAddr(), last);
+                LOG_VERBOSE("  in BB: address %1 %2", stmt->getBB()->getPredecessors()[i]->getLowAddr(), last);
             }
 
             if (last->isBranch()) {

@@ -2384,7 +2384,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                         }
                     }
 
-                    tmpCondFollow = bb->getOutEdge((bb->getCondType() == CondType::IfThen) ? BELSE : BTHEN);
+                    tmpCondFollow = bb->getSuccessor((bb->getCondType() == CondType::IfThen) ? BELSE : BTHEN);
 
                     // for a jump into a case, the temp follow is added to the follow set
                     if (bb->getUnstructType() == UnstructType::JumpIntoCase) {
@@ -2430,7 +2430,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
             // write code for the body of the conditional
             if (bb->getCondType() != CondType::Case) {
-                BasicBlock *succ = bb->getOutEdge((bb->getCondType() == CondType::IfElse) ? BELSE : BTHEN);
+                BasicBlock *succ = bb->getSuccessor((bb->getCondType() == CondType::IfElse) ? BELSE : BTHEN);
 
                 // emit a goto statement if the first clause has already been
                 // generated or it is the follow of this node's enclosing loop
@@ -2446,7 +2446,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                     // generate the 'else' keyword and matching brackets
                     addIfElseCondOption();
 
-                    succ = bb->getOutEdge(BELSE);
+                    succ = bb->getSuccessor(BELSE);
 
                     // emit a goto statement if the second clause has already
                     // been generated
@@ -2468,7 +2468,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             else { // case header
                    // TODO: linearly emitting each branch of the switch does not result in optimal fall-through.
                    // generate code for each out branch
-                for (unsigned int i = 0; i < bb->getOutEdges().size(); i++) {
+                for (unsigned int i = 0; i < bb->getSuccessors().size(); i++) {
                     // emit a case label
                     // FIXME: Not valid for all switch types
                     Const caseVal(0);
@@ -2484,7 +2484,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                     addCaseCondOption(caseVal);
 
                     // generate code for the current out-edge
-                    BasicBlock *succ = bb->getOutEdge(i);
+                    BasicBlock *succ = bb->getSuccessor(i);
 
                     // assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
                     if (succ->getTravType() == TravType::DFS_Codegen) {
@@ -2540,7 +2540,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         }
 
         // return if this doesn't have any out edges (emit a warning)
-        if (bb->getOutEdges().empty()) {
+        if (bb->getSuccessors().empty()) {
             LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
 
             if (bb->getType() == BBType::CompJump) {
@@ -2559,16 +2559,16 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             return;
         }
 
-        child = bb->getOutEdge(0);
+        child = bb->getSuccessor(0);
 
-        if (bb->getOutEdges().size() > 1) {
-            BasicBlock *other = bb->getOutEdge(1);
+        if (bb->getSuccessors().size() > 1) {
+            BasicBlock *other = bb->getSuccessor(1);
             LOG_MSG("Found seq with more than one outedge!");
             auto const_dest = std::static_pointer_cast<Const>(bb->getDest());
 
             if (const_dest->isIntConst() && (const_dest->getAddr() == child->getLowAddr())) {
                 other = child;
-                child = bb->getOutEdge(1);
+                child = bb->getSuccessor(1);
                 LOG_MSG("Taken branch is first out edge");
             }
 
@@ -2626,7 +2626,7 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
     }
 
     if (bb->getLoopType() == LoopType::PreTested) {
-        assert(bb->getLatchNode()->getOutEdges().size() == 1);
+        assert(bb->getLatchNode()->getSuccessors().size() == 1);
 
         // write the body of the block (excluding the predicate)
         writeBB(bb);
@@ -2634,7 +2634,7 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
         // write the 'while' predicate
         SharedExp cond = bb->getCond();
 
-        if (bb->getOutEdge(BTHEN) == bb->getLoopFollow()) {
+        if (bb->getSuccessor(BTHEN) == bb->getLoopFollow()) {
             cond = Unary::get(opNot, cond);
             cond = cond->simplify();
         }
@@ -2642,7 +2642,7 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
         addPretestedLoopHeader(cond);
 
         // write the code for the body of the loop
-        BasicBlock *loopBody = (bb->getOutEdge(BELSE) == bb->getLoopFollow()) ? bb->getOutEdge(BTHEN) : bb->getOutEdge(BELSE);
+        BasicBlock *loopBody = (bb->getSuccessor(BELSE) == bb->getLoopFollow()) ? bb->getSuccessor(BTHEN) : bb->getSuccessor(BELSE);
         generateCode(loopBody, bb->getLatchNode(), followSet, gotoSet, proc);
 
         // if code has not been generated for the latch node, generate it now
@@ -2679,7 +2679,7 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
             writeBB(bb);
 
             // write the code for the body of the loop
-            generateCode(bb->getOutEdge(0), bb->getLatchNode(), followSet, gotoSet, proc);
+            generateCode(bb->getSuccessor(0), bb->getLatchNode(), followSet, gotoSet, proc);
         }
 
         if (bb->getLoopType() == LoopType::PostTested) {

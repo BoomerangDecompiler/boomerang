@@ -433,8 +433,8 @@ void ReturnStatement::updateModifieds()
 
     m_modifieds.clear();
 
-    if ((m_parent->getNumInEdges() == 1) && m_parent->getInEdges()[0]->getLastStmt()->isCall()) {
-        CallStatement *call = (CallStatement *)m_parent->getInEdges()[0]->getLastStmt();
+    if ((m_parent->getNumPredecessors() == 1) && m_parent->getPredecessors()[0]->getLastStmt()->isCall()) {
+        CallStatement *call = (CallStatement *)m_parent->getPredecessors()[0]->getLastStmt();
 
         if (call->getDestProc() && IFrontEnd::isNoReturnCallDest(call->getDestProc()->getName())) {
             return;

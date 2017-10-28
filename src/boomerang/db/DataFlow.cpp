@@ -52,7 +52,7 @@ void DataFlow::dfs(int p, size_t n)
 
         // For each successor w of n
         BasicBlock *bb = m_BBs[n];
-        const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
+        const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
 
         for (BasicBlock *_bb : outEdges) {
             dfs(n, m_indices[_bb]);
@@ -110,7 +110,7 @@ void DataFlow::dominators(Cfg *cfg)
 
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
-        const std::vector<BasicBlock *>&    inEdges = m_BBs[n]->getInEdges();
+        const std::vector<BasicBlock *>&    inEdges = m_BBs[n]->getPredecessors();
         std::vector<BasicBlock *>::iterator it;
 
         for (BasicBlock *parentBB : inEdges) {
@@ -217,7 +217,7 @@ void DataFlow::computeDF(int n)
     /* This loop computes DF_local[n] */
     // for each node y in succ(n)
     BasicBlock *bb = m_BBs[n];
-    const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
+    const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
 
     for (BasicBlock *b : outEdges) {
         int y = m_indices[b];
@@ -631,7 +631,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     }
 
     // For each successor Y of block n
-    const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
+    const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
     size_t numSucc = outEdges.size();
 
     for (unsigned succ = 0; succ < numSucc; succ++) {

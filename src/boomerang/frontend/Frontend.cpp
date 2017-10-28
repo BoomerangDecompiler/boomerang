@@ -653,7 +653,6 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
         std::list<RTL *> *BB_rtls = new std::list<RTL *>();
 
         // Keep decoding sequentially until a CTI without a fall through branch is decoded
-        // ADDRESS start = uAddr;
         DecodeResult inst;
 
         while (sequentialDecode) {
@@ -739,9 +738,6 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 LOG_MSG(tgt);
             }
 
-            // For each Statement in the RTL
-            std::list<Statement *> sl = *pRtl;
-
             // Make a copy (!) of the list. This is needed temporarily to work around the following problem.
             // We are currently iterating an RTL, which could be a return instruction. The RTL is passed to
             // createReturnBlock; if this is not the first return statement, it will get cleared, and this will
@@ -750,6 +746,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             // Statements to mark the start of instructions (and their native address).
             // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL followed by a return
             // if it points to the start of a known procedure
+            std::list<Statement *> sl = *pRtl;
+
             for (auto ss = sl.begin(); ss != sl.end(); ss++) {
                 Statement *s = *ss;
                 s->setProc(pProc); // let's do this really early!
@@ -1285,6 +1283,7 @@ void IFrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL 
     std::list<Statement *> *stmt_list = new std::list<Statement *>;
     stmt_list->push_back(ret);
     BasicBlock *pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress() + 1, stmt_list));
-    pret->addInEdge(pCallBB);
-    pCallBB->setOutEdge(0, pret);
+    pret->addPredecessor(pCallBB);
+    assert(pCallBB->getNumSuccessors() == 0);
+    pCallBB->addPredecessor(pret);
 }

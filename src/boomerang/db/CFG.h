@@ -10,11 +10,6 @@
 #pragma once
 
 
-/**
- * \file    cfg.h
- * \brief   Interface for a control flow graph, based on basic block nodes.
- */
-
 #include "boomerang/db/exp/ExpHelp.h" // For lessExpStar
 #include "boomerang/util/Address.h"
 
@@ -48,24 +43,22 @@ enum class BBType;
 
 
 /**
- * \class Cfg
  * Control Flow Graph class. Contains all the BasicBlock objects for a procedure.
  * These BBs contain all the RTLs for the procedure, so by traversing the Cfg,
  * one traverses the whole procedure.
  */
 class Cfg
 {
-    typedef std::set<CallStatement *>                              CallStatementSet;
     typedef std::map<SharedExp, Statement *, lessExpStar>          ExpStatementMap;
 
-    // A type for the ADDRESS to BB map
+    // A type for the Address to BB map
     typedef std::map<Address, BasicBlock *, std::less<Address> >   MAPBB;
-    typedef std::list<BasicBlock *>::iterator                      BB_IT;
-    typedef std::list<BasicBlock *>::const_iterator                BBC_IT;
 
 public:
-    typedef BB_IT                                                  iterator;
+    typedef std::list<BasicBlock *>::iterator                      iterator;
+    typedef std::list<BasicBlock *>::const_iterator                const_iterator;
 
+public:
     class BBAlreadyExistsError : public std::exception
     {
     public:
@@ -74,31 +67,20 @@ public:
             : pBB(_pBB) {}
     };
 
-    /**
-     * Creates an empty CFG.
-     */
+    /// Creates an empty CFG for the function \p proc
     Cfg(UserProc *proc);
-
-    /**
-     * \brief        Destructor. Note: destructs the component BBs as well
-     */
+    Cfg(const Cfg&) = delete;
+    Cfg& operator=(const Cfg&) = delete;
     ~Cfg();
 
-    /**
-     * \brief        Clear the CFG of all basic blocks, ready for decode
-     */
+    /// Remove all basic blocks from the CFG
     void clear();
 
-    size_t getNumBBs() const { return m_listBB.size(); } ///< Get the number of BBs
+    /// \returns the number of BBs in this CFG.
+    size_t getNumBBs() const { return m_listBB.size(); }
 
-    // Checks if the BB is part of this CFG
+    /// Checks if the BB is part of this CFG
     bool hasBB(const BasicBlock *bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
-
-    /**
-     * \brief assignment operator for Cfg's, the BB's are shallow copied
-     * \param other - rhs
-     */
-    Cfg& operator=(const Cfg& other);
 
     /**
      * \brief        Add a new basic block to this cfg
@@ -122,14 +104,13 @@ public:
     BasicBlock *createBB(std::list<RTL *> *pRtls, BBType bbType) noexcept (false);
 
     /**
-     * \brief Allocates space for a new, incomplete BB, and the given address is
-     * added to the map. This BB will have to be completed before calling WellFormCfg.
+     * Allocates space for a new, incomplete BB, and the given address is added to the map.
+     * This BB will have to be completed before calling WellFormCfg.
      *
      * Use this function when there are outedges to BBs that are not created yet. Usually used via addOutEdge()
-     * This function will commonly be called via AddOutEdge()
-     * \returns           pointer to allocated BasicBlock
+     * This function will commonly be called via addOutEdge()
      */
-    BasicBlock *newIncompleteBB(Address addr);
+    BasicBlock *createIncompleteBB(Address addr);
 
     /**
      * Get a BasicBlock starting at the given address.
@@ -174,7 +155,7 @@ public:
     void addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool labelRequired = false);
 
     /**
-     * \brief Adds a label for the given basic block. The label number will be a non-zero integer.
+     * Adds a label for the given basic block; the label number will be a non-zero integer.
      *
      * Sets a flag indicating that this BB has a label,
      * in the sense that a label is required in the translated source code.
@@ -185,15 +166,15 @@ public:
     void setLabelRequired(BasicBlock *bb);
 
     /**
-     * \brief Get the first BB of this cfg
+     * Get the first BB of this CFG.
      * Gets a pointer to the first BB this cfg. Also initialises `it' so that calling GetNextBB will return the
      * second BB, etc.  Also, *it is the first BB.  Returns null if there are no BBs this CFG.
      *
      * \param       it set to an value that must be passed to getNextBB
      * \returns     Pointer to the first BB this cfg, or nullptr if none
      */
-    BasicBlock *getFirstBB(BB_IT& it);
-    const BasicBlock *getFirstBB(BBC_IT& it) const;
+    BasicBlock *getFirstBB(iterator& it);
+    const BasicBlock *getFirstBB(const_iterator& it) const;
 
     /**
      * \brief Get the next BB this cfg. Basically increments the given iterator and returns it
@@ -204,8 +185,8 @@ public:
      * \param   it - iterator from a call to getFirstBB or getNextBB
      * \returns pointer to the BB, or nullptr if no more
      */
-    BasicBlock *getNextBB(BB_IT& it);
-    const BasicBlock *getNextBB(BBC_IT& it) const;
+    BasicBlock *getNextBB(iterator& it);
+    const BasicBlock *getNextBB(const_iterator& it) const;
 
     /*
      * An alternative to the above is to use begin() and end():
@@ -396,27 +377,19 @@ public:
     bool searchAll(const Exp& search, std::list<SharedExp>& result);
     Exp *getReturnVal();
 
-    /**
-     * \brief Structures the control flow graph
-     **/
+    /// Structures the control flow graph
     void structure();
 
-    /**
-     * \brief Remove Junction statements
-     **/
+    /// Remove Junction statements
     void removeJunctionStatements();
 
-    /// return a bb given an address
+    /// return a BB given an address
     BasicBlock *bbForAddr(Address addr) { return m_mapBB[addr]; }
 
-    /**
-     * \brief Simplify all the expressions in the CFG
-     */
+    /// Simplify all the expressions in the CFG
     void simplify();
 
-    /**
-     * \brief Change the BB enclosing stmt to be CALL, not COMPCALL
-     */
+    /// Change the BB enclosing stmt to be CALL, not COMPCALL
     void undoComputedBB(Statement *stmt);
 
 private:
@@ -429,13 +402,13 @@ private:
      *
      * \pre assumes \p splitAddr is an address within the boundaries of the given basic block.
      *
-     * \param   bb            - pointer to the BB to be split
-     * \param   splitAddr     - address of RTL to become the start of the new BB
-     * \param   newBB         - if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part
-     *                          to not overlap.
-     * \param   deleteRTLs    - if true, deletes the RTLs removed from the existing BB after the split point. Only used if
-     *                          there is an overlap with existing instructions
-     * \returns Returns a pointer to the "bottom" (new) part of the split BB.
+     * \param   bb         pointer to the BB to be split
+     * \param   splitAddr  address of RTL to become the start of the new BB
+     * \param   newBB      if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part
+     *                     to not overlap.
+     * \param   deleteRTLs if true, deletes the RTLs removed from the existing BB after the split point. Only used if
+     *                     there is an overlap with existing instructions
+     * \returns A pointer to the "bottom" (new) part of the split BB.
      */
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr, bool deleteRTLs = false);
 
@@ -445,7 +418,7 @@ private:
      * Completes the merge of pb1 and pb2 by adjusting out edges. No checks are made that the merge is valid
      * (hence this is a private function) Deletes pb1 if bDelete is true
      *
-     * \param bb1,bb2 pointers to the two BBs to merge
+     * \param bb1, bb2 pointers to the two BBs to merge
      * \param deleteBB if true, \p bb1 is deleted as well
      *
      */
@@ -485,7 +458,7 @@ public:
      * S is an RTL with 6 statements representing one string instruction (so this function is highly specialised for the job
      * of replacing the %SKIP and %RPT parts of string instructions)
      */
-    BasicBlock *splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2, BB_IT& it);
+    BasicBlock *splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2, iterator& it);
 
     /////////////////////////////////////////////////////////////////////////
     // Control flow analysis stuff, lifted from Doug Simon's honours thesis.

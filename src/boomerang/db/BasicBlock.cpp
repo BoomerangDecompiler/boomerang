@@ -10,15 +10,6 @@
 #include "BasicBlock.h"
 
 
-/**
- * \file  basicblock.cpp
- * \brief Implementation of the BasicBlock class.
- */
-
-/**
- * Dependencies.
- */
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Global.h"
@@ -59,7 +50,7 @@ BasicBlock::BasicBlock(Function *parent)
     , m_unstructuredType(UnstructType::Structured)
     , m_overlappedRegProcessingDone(false) // others
 {
-    m_parent = parent;
+    m_function = parent;
 }
 
 
@@ -83,8 +74,8 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     , m_labelNum(bb.m_labelNum)
     , m_incomplete(bb.m_incomplete) // m_labelNeeded is initialized to false, not copied
     , m_jumpRequired(bb.m_jumpRequired)
-    , m_inEdges(bb.m_inEdges)
-    , m_outEdges(bb.m_outEdges)
+    , m_predecessors(bb.m_predecessors)
+    , m_successors(bb.m_successors)
     // From Doug's code
     , m_ord(bb.m_ord)
     , m_revOrd(bb.m_revOrd)
@@ -103,7 +94,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     , m_unstructuredType(bb.m_unstructuredType)
 {
     setRTLs(bb.m_listOfRTLs);
-    m_parent = bb.m_parent;
+    m_function = bb.m_function;
 }
 
 
@@ -123,7 +114,7 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType)
     , m_unstructuredType(UnstructType::Structured)
     , m_overlappedRegProcessingDone(false) // Others
 {
-    m_parent = parent;
+    m_function = parent;
 
     // Set the RTLs
     setRTLs(pRtls);
@@ -133,8 +124,8 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType)
 bool BasicBlock::isCaseOption()
 {
     if (m_caseHead) {
-        for (unsigned int i = 0; i < m_caseHead->getNumOutEdges() - 1; i++) {
-            if (m_caseHead->getOutEdge(i) == this) {
+        for (unsigned int i = 0; i < m_caseHead->getNumSuccessors() - 1; i++) {
+            if (m_caseHead->getSuccessor(i) == this) {
                 return true;
             }
         }
@@ -255,14 +246,14 @@ void BasicBlock::print(QTextStream& os, bool html)
     os << ":\n";
     os << "  in edges: ";
 
-    for (BasicBlock *bb : m_inEdges) {
+    for (BasicBlock *bb : m_predecessors) {
         os << bb->getHiAddr() << "(" << bb->getLowAddr() << ") ";
     }
 
     os << "\n";
     os << "  out edges: ";
 
-    for (BasicBlock *bb : m_outEdges) {
+    for (BasicBlock *bb : m_successors) {
         os << bb->getLowAddr() << " ";
     }
 
@@ -290,7 +281,7 @@ void BasicBlock::print(QTextStream& os, bool html)
         os << "Synthetic out edge(s) to ";
 
         // assert(TargetOutEdges == OutEdges.size());
-        for (BasicBlock *outEdge : m_outEdges) {
+        for (BasicBlock *outEdge : m_successors) {
             if (outEdge && outEdge->m_labelNum) {
                 os << "L" << outEdge->m_labelNum << " ";
             }
@@ -313,7 +304,7 @@ void BasicBlock::printToLog()
 
 bool BasicBlock::isBackEdge(size_t inEdge) const
 {
-    const BasicBlock *in = m_inEdges[inEdge];
+    const BasicBlock *in = m_predecessors[inEdge];
 
     return this == in || (m_DFTfirst < in->m_DFTfirst && m_DFTlast > in->m_DFTlast);
 }
@@ -382,41 +373,36 @@ RTL *BasicBlock::getRTLWithStatement(Statement *stmt)
 }
 
 
-std::vector<BasicBlock *>& BasicBlock::getInEdges()
+std::vector<BasicBlock *>& BasicBlock::getPredecessors()
 {
-    return m_inEdges;
+    return m_predecessors;
 }
 
 
-const std::vector<BasicBlock *>& BasicBlock::getOutEdges()
+const std::vector<BasicBlock *>& BasicBlock::getSuccessors()
 {
-    return m_outEdges;
+    return m_successors;
 }
 
 
-void BasicBlock::setInEdge(size_t i, BasicBlock *pNewInEdge)
+void BasicBlock::setPredecessor(size_t i, BasicBlock *pNewInEdge)
 {
-    m_inEdges[i] = pNewInEdge;
+    assert(i < getNumPredecessors());
+    m_predecessors[i] = pNewInEdge;
 }
 
 
-void BasicBlock::setOutEdge(size_t i, BasicBlock *pNewOutEdge)
+void BasicBlock::setSuccessor(size_t i, BasicBlock *pNewOutEdge)
 {
-    if (m_outEdges.empty()) {
-        assert(i == 0);
-        m_outEdges.push_back(pNewOutEdge);       // TODO: why is it allowed to set new edge in empty m_OutEdges array ?
-    }
-    else {
-        assert(i < m_outEdges.size());
-        m_outEdges[i] = pNewOutEdge;
-    }
+    assert(i < getNumSuccessors());
+    m_successors[i] = pNewOutEdge;
 }
 
 
-BasicBlock *BasicBlock::getOutEdge(size_t i)
+BasicBlock *BasicBlock::getSuccessor(size_t i)
 {
-    if (i < m_outEdges.size()) {
-        return m_outEdges[i];
+    if (i < m_successors.size()) {
+        return m_successors[i];
     }
     else {
         return nullptr;
@@ -424,42 +410,36 @@ BasicBlock *BasicBlock::getOutEdge(size_t i)
 }
 
 
-BasicBlock *BasicBlock::getCorrectOutEdge(Address a)
+void BasicBlock::addPredecessor(BasicBlock *pNewInEdge)
 {
-    for (BasicBlock *it : m_outEdges) {
-        if (it->getLowAddr() == a) {
-            return it;
-        }
-    }
-
-    return nullptr;
+    m_predecessors.push_back(pNewInEdge);
 }
 
 
-void BasicBlock::addInEdge(BasicBlock *pNewInEdge)
+void BasicBlock::addSuccessor(BasicBlock* successor)
 {
-    m_inEdges.push_back(pNewInEdge);
+    m_successors.push_back(successor);
 }
 
 
-void BasicBlock::deleteInEdge(BasicBlock *edge)
+void BasicBlock::removePredecessor(BasicBlock *edge)
 {
-    for (auto it = m_inEdges.begin(); it != m_inEdges.end(); it++) {
+    for (auto it = m_predecessors.begin(); it != m_predecessors.end(); it++) {
         if (*it == edge) {
-            it = m_inEdges.erase(it);
+            it = m_predecessors.erase(it);
             break;
         }
     }
 }
 
 
-void BasicBlock::deleteEdge(BasicBlock *edge)
+void BasicBlock::removeSuccessor(BasicBlock *edge)
 {
-    edge->deleteInEdge(this);
+    edge->removePredecessor(this);
 
-    for (auto it = m_outEdges.begin(); it != m_outEdges.end(); it++) {
+    for (auto it = m_successors.begin(); it != m_successors.end(); it++) {
         if (*it == edge) {
-            m_outEdges.erase(it);
+            m_successors.erase(it);
             break;
         }
     }
@@ -474,7 +454,7 @@ unsigned BasicBlock::getDFTOrder(int& first, int& last)
     unsigned numTraversed = 1;
     m_traversedMarker = true;
 
-    for (BasicBlock *child : m_outEdges) {
+    for (BasicBlock *child : m_successors) {
         if (child->m_traversedMarker == false) {
             numTraversed = numTraversed + child->getDFTOrder(first, last);
         }
@@ -495,7 +475,7 @@ unsigned BasicBlock::getRevDFTOrder(int& first, int& last)
     unsigned numTraversed = 1;
     m_traversedMarker = true;
 
-    for (BasicBlock *parent : m_inEdges) {
+    for (BasicBlock *parent : m_predecessors) {
         if (parent->m_traversedMarker == false) {
             numTraversed = numTraversed + parent->getRevDFTOrder(first, last);
         }
@@ -549,6 +529,23 @@ Function *BasicBlock::getCallDestProc()
     }
 
     return nullptr;
+}
+
+
+Function *BasicBlock::getDestProc()
+{
+    // The last Statement of the last RTL should be a CallStatement
+    CallStatement *call = (CallStatement *)(m_listOfRTLs->back()->getHlStmt());
+
+    assert(call->getKind() == STMT_CALL);
+    Function *proc = call->getDestProc();
+
+    if (proc == nullptr) {
+        LOG_FATAL("Indirect calls not handled yet.");
+        assert(false);
+    }
+
+    return proc;
 }
 
 
@@ -708,7 +705,7 @@ SharedExp BasicBlock::getCond()
 }
 
 
-SharedExp BasicBlock::getDest() noexcept (false)
+SharedExp BasicBlock::getDest()
 {
     // The destianation will be in the last rtl
     assert(m_listOfRTLs);
@@ -733,7 +730,8 @@ SharedExp BasicBlock::getDest() noexcept (false)
         }
     }
 
-    throw LastStatementNotAGotoError(lastStmt);
+    LOG_ERROR("Last statement of BB at address %1 is not a goto!", this->getLowAddr());
+    return nullptr;
 }
 
 
@@ -759,13 +757,13 @@ void BasicBlock::setCond(SharedExp e) noexcept (false)
 BasicBlock *BasicBlock::getLoopBody()
 {
     assert(m_structType == SBBType::PreTestLoop || m_structType == SBBType::PostTestLoop || m_structType == SBBType::EndlessLoop);
-    assert(m_outEdges.size() == 2);
+    assert(m_successors.size() == 2);
 
-    if (m_outEdges[0] != m_loopFollow) {
-        return m_outEdges[0];
+    if (m_successors[0] != m_loopFollow) {
+        return m_successors[0];
     }
 
-    return m_outEdges[1];
+    return m_successors[1];
 }
 
 
@@ -789,7 +787,7 @@ void BasicBlock::simplify()
     }
 
     if (isType(BBType::Twoway)) {
-        assert(m_outEdges.size() > 1);
+        assert(m_successors.size() > 1);
 
         if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
             updateType(BBType::Fall);
@@ -810,21 +808,21 @@ void BasicBlock::simplify()
 
         if (isType(BBType::Fall)) {
             // set out edges to be the second one
-            LOG_VERBOSE("Turning TWOWAY into FALL: %1 %2", m_outEdges[0]->getLowAddr(), m_outEdges[1]->getLowAddr());
+            LOG_VERBOSE("Turning TWOWAY into FALL: %1 %2", m_successors[0]->getLowAddr(), m_successors[1]->getLowAddr());
 
-            BasicBlock *redundant = m_outEdges[0];
-            m_outEdges[0] = m_outEdges[1];
-            m_outEdges.resize(1);
+            BasicBlock *redundant = m_successors[0];
+            m_successors[0] = m_successors[1];
+            m_successors.resize(1);
             LOG_VERBOSE("Redundant edge to address %1", redundant->getLowAddr());
             LOG_VERBOSE("  inedges:");
 
-            std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
-            redundant->m_inEdges.clear();
+            std::vector<BasicBlock *> rinedges = redundant->m_predecessors;
+            redundant->m_predecessors.clear();
 
             for (BasicBlock *redundant_edge : rinedges) {
                 if (redundant_edge != this) {
                     LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
-                    redundant->m_inEdges.push_back(redundant_edge);
+                    redundant->m_predecessors.push_back(redundant_edge);
                 }
                 else {
                     LOG_VERBOSE("    %1 (ignored)", redundant_edge->getLowAddr());
@@ -832,25 +830,25 @@ void BasicBlock::simplify()
             }
 
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE("  after: %1", m_outEdges[0]->getLowAddr());
+            LOG_VERBOSE("  after: %1", m_successors[0]->getLowAddr());
         }
 
         if (isType(BBType::Oneway)) {
             // set out edges to be the first one
-            LOG_VERBOSE("Turning TWOWAY into ONEWAY: %1 %2", m_outEdges[0]->getLowAddr(), m_outEdges[1]->getLowAddr());
+            LOG_VERBOSE("Turning TWOWAY into ONEWAY: %1 %2", m_successors[0]->getLowAddr(), m_successors[1]->getLowAddr());
 
-            BasicBlock *redundant = m_outEdges[BELSE];
-            m_outEdges.resize(1);
+            BasicBlock *redundant = m_successors[BELSE];
+            m_successors.resize(1);
             LOG_VERBOSE("redundant edge to address %1", redundant->getLowAddr());
             LOG_VERBOSE("  inedges:");
 
-            std::vector<BasicBlock *> rinedges = redundant->m_inEdges;
-            redundant->m_inEdges.clear();
+            std::vector<BasicBlock *> rinedges = redundant->m_predecessors;
+            redundant->m_predecessors.clear();
 
             for (BasicBlock *redundant_edge : rinedges) {
                 if (redundant_edge != this) {
                     LOG_VERBOSE("    %1", redundant_edge->getLowAddr());
-                    redundant->m_inEdges.push_back(redundant_edge);
+                    redundant->m_predecessors.push_back(redundant_edge);
                 }
                 else {
                     LOG_VERBOSE("    %1 (ignored)", redundant_edge->getLowAddr());
@@ -858,7 +856,7 @@ void BasicBlock::simplify()
             }
 
             // redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG_VERBOSE("  after: %1", m_outEdges[0]->getLowAddr());
+            LOG_VERBOSE("  after: %1", m_successors[0]->getLowAddr());
         }
     }
 }
@@ -872,8 +870,8 @@ bool BasicBlock::hasBackEdgeTo(BasicBlock *dest)
 
 bool BasicBlock::allParentsGenerated()
 {
-    for (BasicBlock *in : m_inEdges) {
-        if (!in->hasBackEdgeTo(this) && (in->m_traversed != TravType::DFS_Codegen)) {
+    for (BasicBlock *pred : m_predecessors) {
+        if (!pred->hasBackEdgeTo(this) && (pred->m_traversed != TravType::DFS_Codegen)) {
             return false;
         }
     }
@@ -882,32 +880,15 @@ bool BasicBlock::allParentsGenerated()
 }
 
 
-Function *BasicBlock::getDestProc()
-{
-    // The last Statement of the last RTL should be a CallStatement
-    CallStatement *call = (CallStatement *)(m_listOfRTLs->back()->getHlStmt());
-
-    assert(call->getKind() == STMT_CALL);
-    Function *proc = call->getDestProc();
-
-    if (proc == nullptr) {
-        LOG_FATAL("Indirect calls not handled yet.");
-        assert(false);
-    }
-
-    return proc;
-}
-
-
 void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 {
-    // timestamp the current node with the current time and set its traversed
-    // flag
+    // timestamp the current node with the current time
+    // and set its traversed flag
     m_traversed     = TravType::DFS_LNum;
     m_loopStamps[0] = time;
 
     // recurse on unvisited children and set inedges for all children
-    for (BasicBlock *out : m_outEdges) {
+    for (BasicBlock *out : m_successors) {
         // set the in edge from this child to its parent (the current node)
         // (not done here, might be a problem)
         // outEdges[i]->inEdges.Add(this);
@@ -934,10 +915,10 @@ void BasicBlock::setRevLoopStamps(int& time)
     m_revLoopStamps[0] = time;
 
     // recurse on the unvisited children in reverse order
-    for (int i = (int)m_outEdges.size() - 1; i >= 0; i--) {
+    for (int i = (int)m_successors.size() - 1; i >= 0; i--) {
         // recurse on this child if it hasn't already been visited
-        if (m_outEdges[i]->m_traversed != TravType::DFS_RNum) {
-            m_outEdges[i]->setRevLoopStamps(++time);
+        if (m_successors[i]->m_traversed != TravType::DFS_RNum) {
+            m_successors[i]->setRevLoopStamps(++time);
         }
     }
 
@@ -952,7 +933,7 @@ void BasicBlock::setRevOrder(std::vector<BasicBlock *>& order)
     m_traversed = TravType::DFS_PDom;
 
     // recurse on unvisited children
-    for (BasicBlock *in : m_inEdges) {
+    for (BasicBlock *in : m_predecessors) {
         if (in->m_traversed != TravType::DFS_PDom) {
             in->setRevOrder(order);
         }
@@ -988,7 +969,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
         //   i) isn't on a back-edge,
         //  ii) hasn't already been traversed in a case tagging traversal and,
         // iii) isn't the follow node.
-        for (BasicBlock *out : m_outEdges) {
+        for (BasicBlock *out : m_successors) {
             if (!hasBackEdgeTo(out) && (out->m_traversed != TravType::DFS_Case) && (out != follow)) {
                 out->setCaseHead(head, follow);
             }
@@ -1005,10 +986,10 @@ void BasicBlock::setStructType(StructType structType)
         if (isType(BBType::Nway)) {
             m_conditionHeaderType = CondType::Case;
         }
-        else if (m_outEdges[BELSE] == m_condFollow) {
+        else if (m_successors[BELSE] == m_condFollow) {
             m_conditionHeaderType = CondType::IfThen;
         }
-        else if (m_outEdges[BTHEN] == m_condFollow) {
+        else if (m_successors[BTHEN] == m_condFollow) {
             m_conditionHeaderType = CondType::IfElse;
         }
         else {
@@ -1089,7 +1070,7 @@ bool BasicBlock::inLoop(BasicBlock *header, BasicBlock *latch)
 
 void BasicBlock::prependStmt(Statement *s, UserProc *proc)
 {
-    assert(m_parent == proc);
+    assert(m_function == proc);
     // Check the first RTL (if any)
     assert(m_listOfRTLs);
     s->setBB(this);
@@ -1207,11 +1188,11 @@ bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc *myProc)
 
 void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
 {
-    Cfg *cfg(((UserProc *)m_parent)->getCFG());
+    Cfg *cfg(((UserProc *)m_function)->getCFG());
 
     liveout.clear();
 
-    for (BasicBlock *currBB : m_outEdges) {
+    for (BasicBlock *currBB : m_successors) {
         // First add the non-phi liveness
         liveout.makeUnion(currBB->m_liveIn); // add successor liveIn to this liveout set.
 
@@ -1243,7 +1224,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
             Statement *def = pa->getStmtAt(this);
 
             if (!def) {
-                std::deque<BasicBlock *> to_visit(m_inEdges.begin(), m_inEdges.end());
+                std::deque<BasicBlock *> to_visit(m_predecessors.begin(), m_predecessors.end());
                 std::set<BasicBlock *> tried {
                     this
                 };
@@ -1270,7 +1251,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
                     tried.insert(pbb);
                     to_visit.pop_back();
 
-                    for (BasicBlock *bb : pbb->m_inEdges) {
+                    for (BasicBlock *bb : pbb->m_predecessors) {
                         if (tried.find(bb) != tried.end()) { // already tried
                             continue;
                         }
@@ -1530,7 +1511,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
 int BasicBlock::findNumCases()
 {
     // should actually search from the statement to i
-    for (BasicBlock *in : m_inEdges) {          // For each in-edge
+    for (BasicBlock *in : m_predecessors) {          // For each in-edge
         if (!in->isType(BBType::Twoway)) {      // look for a two-way BB
             continue;                           // Ignore all others
         }
@@ -2071,10 +2052,10 @@ void BasicBlock::processSwitch(UserProc *proc)
             // TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
             // Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
             // assert(iNumOut        >= (iNum - i));
-            assert(int(m_outEdges.size()) >= (iNum - i));
-            size_t remove_from_this = m_outEdges.size() - (iNum - i);
+            assert(int(m_successors.size()) >= (iNum - i));
+            size_t remove_from_this = m_successors.size() - (iNum - i);
             // remove last (iNum - i) out edges
-            m_outEdges.erase(m_outEdges.begin() + remove_from_this, m_outEdges.end());
+            m_successors.erase(m_successors.begin() + remove_from_this, m_successors.end());
             break;
         }
     }

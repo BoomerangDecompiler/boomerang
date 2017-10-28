@@ -168,9 +168,11 @@ void StatementTest::testFlow()
     rs->addReturn(a);
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
+
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
-    first->setOutEdge(0, ret);
-    ret->addInEdge(first);
+    // first was empty before
+    first->addSuccessor(ret);
+    ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first); // Also sets exitBB; important!
     proc->setDecoded();
     // compute dataflow
@@ -250,8 +252,8 @@ void StatementTest::testKill()
 
     pRtls->push_back(rtl);
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
-    first->setOutEdge(0, ret);
-    ret->addInEdge(first);
+    first->addSuccessor(ret);
+    ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
     proc->setDecoded();
 
@@ -328,8 +330,8 @@ void StatementTest::testUse()
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
-    first->setOutEdge(0, ret);
-    ret->addInEdge(first);
+    first->addSuccessor(ret);
+    ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
     proc->setDecoded();
 
@@ -409,8 +411,8 @@ void StatementTest::testUseOverKill()
     pRtls->push_back(rtl);
 
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
-    first->setOutEdge(0, ret);
-    ret->addInEdge(first);
+    first->addSuccessor(ret);
+    ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
     proc->setDecoded();
 
@@ -492,8 +494,8 @@ void StatementTest::testUseOverBB()
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
-    first->setOutEdge(0, ret);
-    ret->addInEdge(first);
+    first->addSuccessor(ret);
+    ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
     proc->setDecoded();
 
@@ -569,8 +571,8 @@ void StatementTest::testUseKill()
     rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
-    first->setOutEdge(0, ret);
-    ret->addInEdge(first);
+    first->addSuccessor(ret);
+    ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
     proc->setDecoded();
     // compute dataflow
@@ -639,11 +641,12 @@ void StatementTest::testEndlessLoop()
     e->setProc(proc);
     rtl->appendStmt(e);
     pRtls->push_back(rtl);
+
     BasicBlock *body = cfg->createBB(pRtls, BBType::Oneway);
-    first->setOutEdge(0, body);
-    body->addInEdge(first);
-    body->setOutEdge(0, body);
-    body->addInEdge(body);
+    first->addSuccessor(body);
+    body->addPredecessor(first);
+    body->addSuccessor(body);
+    body->addPredecessor(body);
     cfg->setEntryAndExitBB(first);
     proc->setDecoded();
     // compute dataflow
@@ -875,10 +878,10 @@ void StatementTest::testRecursion()
 
     c->setDestProc(proc); // Just call self
     BasicBlock *callbb = cfg->createBB(pRtls, BBType::Call);
-    first->setOutEdge(0, callbb);
-    callbb->addInEdge(first);
-    callbb->setOutEdge(0, callbb);
-    callbb->addInEdge(callbb);
+    first->addSuccessor(callbb);
+    callbb->addPredecessor(first);
+    callbb->addSuccessor(callbb);
+    callbb->addPredecessor(callbb);
 
     pRtls = new std::list<RTL *>();
     rtl   = new RTL(Address(0x00000123));
@@ -894,8 +897,8 @@ void StatementTest::testRecursion()
     pRtls->push_back(rtl);
 
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
-    callbb->setOutEdge(0, ret);
-    ret->addInEdge(callbb);
+    callbb->addSuccessor(ret);
+    ret->addPredecessor(callbb);
     cfg->setEntryAndExitBB(first);
 
     // decompile the "proc"

@@ -30,7 +30,7 @@ IfThenSyntaxNode::~IfThenSyntaxNode()
 
 SyntaxNode *IfThenSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
-    SyntaxNode *n1 = root->findNodeFor(m_bb->getOutEdge(0));
+    SyntaxNode *n1 = root->findNodeFor(m_bb->getSuccessor(0));
 
     assert(n1 != m_then);
     return n1;
@@ -97,7 +97,7 @@ void IfThenSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
     m_then->printAST(root, os);
     os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
     os << " -> " << m_then->getNumber() << " [label=then];" << '\n';
-    SyntaxNode *follows = root->findNodeFor(m_bb->getOutEdge(0));
+    SyntaxNode *follows = root->findNodeFor(m_bb->getSuccessor(0));
     os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
     os << " -> " << follows->getNumber() << " [style=dotted];" << '\n';
 }

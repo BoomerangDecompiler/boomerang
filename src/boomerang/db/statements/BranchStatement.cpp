@@ -147,15 +147,15 @@ BasicBlock *BranchStatement::getFallBB() const
         return nullptr;
     }
 
-    if (m_parent->getNumOutEdges() != 2) {
+    if (m_parent->getNumSuccessors() != 2) {
         return nullptr;
     }
 
-    if (m_parent->getOutEdge(0)->getLowAddr() == a) {
-        return m_parent->getOutEdge(1);
+    if (m_parent->getSuccessor(0)->getLowAddr() == a) {
+        return m_parent->getSuccessor(1);
     }
 
-    return m_parent->getOutEdge(0);
+    return m_parent->getSuccessor(0);
 }
 
 
@@ -171,19 +171,19 @@ void BranchStatement::setFallBB(BasicBlock *bb)
         return;
     }
 
-    if (m_parent->getNumOutEdges() != 2) {
+    if (m_parent->getNumSuccessors() != 2) {
         return;
     }
 
-    if (m_parent->getOutEdge(0)->getLowAddr() == a) {
-        m_parent->getOutEdge(1)->deleteInEdge(m_parent);
-        m_parent->setOutEdge(1, bb);
-        bb->addInEdge(m_parent);
+    if (m_parent->getSuccessor(0)->getLowAddr() == a) {
+        m_parent->getSuccessor(1)->removePredecessor(m_parent);
+        m_parent->setSuccessor(1, bb);
+        bb->addPredecessor(m_parent);
     }
     else {
-        m_parent->getOutEdge(0)->deleteInEdge(m_parent);
-        m_parent->setOutEdge(0, bb);
-        bb->addInEdge(m_parent);
+        m_parent->getSuccessor(0)->removePredecessor(m_parent);
+        m_parent->setSuccessor(0, bb);
+        bb->addPredecessor(m_parent);
     }
 }
 
@@ -200,15 +200,15 @@ BasicBlock *BranchStatement::getTakenBB() const
         return nullptr;
     }
 
-    if (m_parent->getNumOutEdges() != 2) {
+    if (m_parent->getNumSuccessors() != 2) {
         return nullptr;
     }
 
-    if (m_parent->getOutEdge(0)->getLowAddr() == a) {
-        return m_parent->getOutEdge(0);
+    if (m_parent->getSuccessor(0)->getLowAddr() == a) {
+        return m_parent->getSuccessor(0);
     }
 
-    return m_parent->getOutEdge(1);
+    return m_parent->getSuccessor(1);
 }
 
 
@@ -224,19 +224,19 @@ void BranchStatement::setTakenBB(BasicBlock *bb)
         return;
     }
 
-    if (m_parent->getNumOutEdges() != 2) {
+    if (m_parent->getNumSuccessors() != 2) {
         return;
     }
 
-    if (m_parent->getOutEdge(0)->getLowAddr() == destination) {
-        m_parent->getOutEdge(0)->deleteInEdge(m_parent);
-        m_parent->setOutEdge(0, bb);
-        bb->addInEdge(m_parent);
+    if (m_parent->getSuccessor(0)->getLowAddr() == destination) {
+        m_parent->getSuccessor(0)->removePredecessor(m_parent);
+        m_parent->setSuccessor(0, bb);
+        bb->addPredecessor(m_parent);
     }
     else {
-        m_parent->getOutEdge(1)->deleteInEdge(m_parent);
-        m_parent->setOutEdge(1, bb);
-        bb->addInEdge(m_parent);
+        m_parent->getSuccessor(1)->removePredecessor(m_parent);
+        m_parent->setSuccessor(1, bb);
+        bb->addPredecessor(m_parent);
     }
 }
 

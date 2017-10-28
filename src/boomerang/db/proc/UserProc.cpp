@@ -187,8 +187,8 @@ bool UserProc::isNoReturn() const
         return true;
     }
 
-    if (exitbb->getNumInEdges() == 1) {
-        Statement *s = exitbb->getInEdges()[0]->getLastStmt();
+    if (exitbb->getNumPredecessors() == 1) {
+        Statement *s = exitbb->getPredecessors()[0]->getLastStmt();
 
         if (!s->isCall()) {
             return false;
@@ -694,12 +694,12 @@ void UserProc::initStatements()
                 call->setSigArguments();
 
                 // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
-                if (call->getDestProc() && call->getDestProc()->isNoReturn() && (bb->getNumOutEdges() == 1)) {
-                    BasicBlock *nextBB = bb->getOutEdge(0);
+                if (call->getDestProc() && call->getDestProc()->isNoReturn() && (bb->getNumSuccessors() == 1)) {
+                    BasicBlock *nextBB = bb->getSuccessor(0);
 
-                    if ((nextBB != m_cfg->getExitBB()) || (m_cfg->getExitBB()->getNumInEdges() != 1)) {
-                        nextBB->deleteInEdge(bb);
-                        bb->clearOutEdges();
+                    if ((nextBB != m_cfg->getExitBB()) || (m_cfg->getExitBB()->getNumPredecessors() != 1)) {
+                        nextBB->removePredecessor(bb);
+                        bb->removeAllSuccessors();
                     }
                 }
             }
@@ -1789,17 +1789,17 @@ bool UserProc::branchAnalysis()
                 // A: something
                 // B:
                 //
-                if ((fallto->getFallBB() == branch->getTakenBB()) && (fallto->getBB()->getNumInEdges() == 1)) {
+                if ((fallto->getFallBB() == branch->getTakenBB()) && (fallto->getBB()->getNumPredecessors() == 1)) {
                     branch->setFallBB(fallto->getFallBB());
                     branch->setTakenBB(fallto->getTakenBB());
                     branch->setDest(fallto->getFixedDest());
                     SharedExp cond =
                         Binary::get(opAnd, Unary::get(opNot, branch->getCondExpr()), fallto->getCondExpr()->clone());
                     branch->setCondExpr(cond->simplify());
-                    assert(fallto->getBB()->getNumInEdges() == 0);
-                    fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
-                    fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
-                    assert(fallto->getBB()->getNumOutEdges() == 0);
+                    assert(fallto->getBB()->getNumPredecessors() == 0);
+                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
+                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
+                    assert(fallto->getBB()->getNumSuccessors() == 0);
                     m_cfg->removeBB(fallto->getBB());
                     removedBBs = true;
                 }
@@ -1812,13 +1812,13 @@ bool UserProc::branchAnalysis()
                 //   branch to B if cond1 || cond2
                 // A: something
                 // B:
-                if ((fallto->getTakenBB() == branch->getTakenBB()) && (fallto->getBB()->getNumInEdges() == 1)) {
+                if ((fallto->getTakenBB() == branch->getTakenBB()) && (fallto->getBB()->getNumPredecessors() == 1)) {
                     branch->setFallBB(fallto->getFallBB());
                     branch->setCondExpr(Binary::get(opOr, branch->getCondExpr(), fallto->getCondExpr()->clone()));
-                    assert(fallto->getBB()->getNumInEdges() == 0);
-                    fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
-                    fallto->getBB()->deleteEdge(fallto->getBB()->getOutEdge(0));
-                    assert(fallto->getBB()->getNumOutEdges() == 0);
+                    assert(fallto->getBB()->getNumPredecessors() == 0);
+                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
+                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
+                    assert(fallto->getBB()->getNumSuccessors() == 0);
                     m_cfg->removeBB(fallto->getBB());
                     removedBBs = true;
                 }

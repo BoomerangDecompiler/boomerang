@@ -34,10 +34,6 @@ struct SectionHolder
 class BinaryImage : public IBinaryImage
 {
 public:
-    /// The type for the list of functions.
-    typedef IntervalMap<Address, SectionHolder> SectionRangeMap;
-
-public:
     BinaryImage();
     virtual ~BinaryImage() override;
 
@@ -106,6 +102,6 @@ private:
     Address m_limitTextLow;
     Address m_limitTextHigh;
     ptrdiff_t m_textDelta;
-    SectionRangeMap m_sectionMap;
+    IntervalMap<Address, SectionHolder> m_sectionMap;
     SectionListType m_sections; ///< The section info
 };
