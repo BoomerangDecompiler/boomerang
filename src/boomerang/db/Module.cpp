@@ -98,12 +98,12 @@ Module *Module::getChild(size_t n)
 
 void Module::addChild(Module *n)
 {
-    if (n->m_upstream) {
-        n->m_upstream->removeChild(n);
+    if (n->m_parent) {
+        n->m_parent->removeChild(n);
     }
 
     m_children.push_back(n);
-    n->m_upstream = this;
+    n->m_parent = this;
 }
 
 
@@ -124,7 +124,7 @@ void Module::removeChild(Module *n)
 
 Module *Module::getUpstream() const
 {
-    return m_upstream;
+    return m_parent;
 }
 
 
@@ -173,8 +173,8 @@ QString Module::makeDirs()
 {
     QString path;
 
-    if (m_upstream) {
-        path = m_upstream->makeDirs();
+    if (m_parent) {
+        path = m_parent->makeDirs();
     }
     else {
         path = Boomerang::get()->getSettings()->getOutputDirectory().absolutePath();
@@ -182,7 +182,7 @@ QString Module::makeDirs()
 
     QDir dr(path);
 
-    if ((getNumChildren() > 0) || (m_upstream == nullptr)) {
+    if ((getNumChildren() > 0) || (m_parent == nullptr)) {
         dr.mkpath(m_name);
         dr.cd(m_name);
     }
@@ -241,23 +241,28 @@ void Module::setLocationMap(Address loc, Function *fnc)
 }
 
 
-void Module::addWin32DbgInfo(Function *pProc)
+void Module::addWin32DbgInfo(Function *function)
 {
 #if !defined(_WIN32) || defined(__MINGW32__)
-    Q_UNUSED(pProc);
+    Q_UNUSED(function);
     LOG_ERROR("Adding debug information for Windows programs is only supported on Windows!");
     return;
 #else
-    if (!m_currentFrontend || !m_currentFrontend->isWin32()) {
+    if (!function) {
         return;
     }
+    else if (!m_currentFrontend || !m_currentFrontend->isWin32()) {
+        LOG_WARNING("Cannot add debugging information for function '%1'", function->getName());
+        return;
+    }
+
     // use debugging information
     HANDLE               hProcess = GetCurrentProcess();
     dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
     sym->SizeOfStruct = sizeof(*sym);
     sym->MaxNameLen = 1000;
     sym->Name[0] = 0;
-    BOOL  got = dbghelp::SymFromAddr(hProcess, pProc->getEntryAddress().value(), 0, sym);
+    BOOL  got = dbghelp::SymFromAddr(hProcess, function->getEntryAddress().value(), 0, sym);
     DWORD retType;
 
     if (got && *sym->Name &&
@@ -273,14 +278,14 @@ void Module::addWin32DbgInfo(Function *pProc)
         }
         else {
             // assume we're stdc calling convention, remove r28, r24 returns
-            pProc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, pProc->getName()));
+            function->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, function->getName()));
         }
 
         // get a return type
         SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
 
         if (!rtype->isVoid()) {
-            pProc->getSignature()->addReturn(rtype, Location::regOf(24));
+            function->getSignature()->addReturn(rtype, Location::regOf(24));
         }
 
         // find params and locals
@@ -289,38 +294,38 @@ void Module::addWin32DbgInfo(Function *pProc)
         dbghelp::SymSetContext(hProcess, &stack, 0);
         dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
 
-        LOG_MSG("Final signature:");
-        pProc->getSignature()->printToLog();
+        LOG_VERBOSE("Retrieved Win32 debugging information:");
+        function->getSignature()->printToLog();
     }
 #endif
 }
 
 
-Function *Module::createFunction(const QString& name, Address entryAddress, bool bLib)
+Function *Module::createFunction(const QString& name, Address entryAddr, bool libraryFunction)
 {
-    Function *pProc;
+    Function *function;
 
-    if (bLib) {
-        pProc = new LibProc(entryAddress, name, this);
+    if (libraryFunction) {
+        function = new LibProc(entryAddr, name, this);
     }
     else {
-        pProc = new UserProc(entryAddress, name, this);
+        function = new UserProc(entryAddr, name, this);
     }
 
-    if (Address::INVALID != entryAddress) {
-        assert(m_labelsToProcs.find(entryAddress) == m_labelsToProcs.end());
-        m_labelsToProcs[entryAddress] = pProc;
+    if (Address::INVALID != entryAddr) {
+        assert(m_labelsToProcs.find(entryAddr) == m_labelsToProcs.end());
+        m_labelsToProcs[entryAddr] = function;
     }
 
-    m_functionList.push_back(pProc); // Append this to list of procs
+    m_functionList.push_back(function); // Append this to list of procs
     // alert the watchers of a new proc
-    emit newFunction(pProc);
-    Boomerang::get()->alertNew(pProc);
+    emit newFunction(function);
+    Boomerang::get()->alertNew(function);
 
     // TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog should just collect info
     // from Loader
-    addWin32DbgInfo(pProc);
-    return pProc;
+    addWin32DbgInfo(function);
+    return function;
 }
 
 
