@@ -352,7 +352,7 @@ void Decompiler::alertUpdateSignature(Function *p)
 
 bool Decompiler::getRtlForProc(const QString& name, QString& rtl)
 {
-    Function *p = m_prog->findProc(name);
+    Function *p = m_prog->findFunction(name);
 
     if (p->isLib()) {
         return false;
@@ -388,7 +388,7 @@ void Decompiler::stopWaiting()
 
 QString Decompiler::getSigFile(const QString& name)
 {
-    Function *p = m_prog->findProc(name);
+    Function *p = m_prog->findFunction(name);
 
     if ((p == nullptr) || !p->isLib() || (p->getSignature() == nullptr)) {
         return "";
@@ -412,13 +412,13 @@ QString Decompiler::getClusterFile(const QString& name)
 
 void Decompiler::rereadLibSignatures()
 {
-    m_prog->rereadLibSignatures();
+    m_prog->updateLibrarySignatures();
 }
 
 
 void Decompiler::renameProc(const QString& oldName, const QString& newName)
 {
-    Function *p = m_prog->findProc(oldName);
+    Function *p = m_prog->findFunction(oldName);
 
     if (p) {
         p->setName(newName);

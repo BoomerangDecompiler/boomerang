@@ -431,7 +431,6 @@ public:
     void nameParameterPhis();
     void mapParameters();
 
-    void conTypeAnalysis();
     void dfaTypeAnalysis();
 
     /**

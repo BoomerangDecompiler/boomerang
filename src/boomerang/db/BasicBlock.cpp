@@ -1954,7 +1954,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
             Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
             Address pfunc = Address(prog->readNative4(addr));
 
-            if (prog->findProc(pfunc) == nullptr) {
+            if (prog->findFunction(pfunc) == nullptr) {
                 // A new, undecoded procedure
                 if (SETTING(noDecodeChildren)) {
                     return false;

@@ -458,12 +458,12 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         Statement *a    = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
         pRtl->appendStmt(a);
         lrtl->push_back(pRtl);
-        m_program->removeProc(name);
+        m_program->removeFunction(name);
         return true;
     }
     else if ((name == "__mingw_frame_init") || (name == "__mingw_cleanup_setup") || (name == "__mingw_frame_end")) {
         LOG_MSG("Found removable call to static lib proc %1 at address %2", name, addr);
-        m_program->removeProc(name);
+        m_program->removeFunction(name);
         return true;
     }
     else {
@@ -1083,7 +1083,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         if (paramIsFuncPointer) {
             LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to '%2'.",
                         a, call->getDestProc()->getName());
-            Function *proc = m_program->createProc(a);
+            Function *proc = m_program->createFunction(a);
             auto     sig   = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
             sig->setName(proc->getName());
             sig->setForced(true);
@@ -1103,7 +1103,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
                 LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to %2",
                             d, call->getDestProc()->getName());
 
-                Function *proc = m_program->createProc(d);
+                Function *proc = m_program->createFunction(d);
                 auto     sig   = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);

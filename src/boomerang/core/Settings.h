@@ -82,7 +82,6 @@ public:
     bool saveBeforeDecompile = false;
     bool noProve             = false;
     bool noChangeSignatures  = false;
-    bool conTypeAnalysis     = false;
     bool dfaTypeAnalysis     = true;
     int propMaxDepth         = 3; ///< Max depth of expression that'll be propagated to more than one dest
     bool generateCallGraph   = false;

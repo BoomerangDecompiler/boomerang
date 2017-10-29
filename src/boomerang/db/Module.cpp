@@ -43,7 +43,7 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 #endif
 
 
-void Module::onLibrarySignaturesChanged()
+void Module::updateLibrarySignatures()
 {
     m_currentFrontend->readLibraryCatalog();
 

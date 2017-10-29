@@ -21,7 +21,6 @@ list(APPEND boomerang-type-sources
     type/type/Type
     type/type/UnionType
     type/type/VoidType
-    type/Constraint
     type/DataIntervalMap
     type/DFATypeRecovery
     type/TypeRecovery

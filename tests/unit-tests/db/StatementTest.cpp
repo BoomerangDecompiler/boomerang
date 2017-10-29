@@ -145,7 +145,7 @@ void StatementTest::testFlow()
 
     // create UserProc
     std::string name  = "test";
-    UserProc    *proc = (UserProc *)prog->createProc(Address(0x00000123));
+    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
@@ -221,7 +221,7 @@ void StatementTest::testKill()
     prog->setFrontEnd(pFE);
     // create UserProc
     QString  name  = "test";
-    UserProc *proc = (UserProc *)prog->createProc(Address(0x00000123));
+    UserProc *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name));
 
     // create CFG
@@ -302,7 +302,7 @@ void StatementTest::testUse()
     prog->setFrontEnd(pFE);
     // create UserProc
     std::string name  = "test";
-    UserProc    *proc = (UserProc *)prog->createProc(Address(0x00000123));
+    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
@@ -379,7 +379,7 @@ void StatementTest::testUseOverKill()
     prog->setFrontEnd(pFE);
     // create UserProc
     std::string name  = "test";
-    UserProc    *proc = (UserProc *)prog->createProc(Address(0x00000123));
+    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
@@ -462,7 +462,7 @@ void StatementTest::testUseOverBB()
     prog->setFrontEnd(pFE);
     // create UserProc
     std::string name  = "test";
-    UserProc    *proc = (UserProc *)prog->createProc(Address(0x00000123));
+    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -545,7 +545,7 @@ void StatementTest::testUseKill()
     prog->setFrontEnd(pFE);
     // create UserProc
     std::string name  = "test";
-    UserProc    *proc = (UserProc *)prog->createProc(Address(0x00000123));
+    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::list<RTL *> *pRtls = new std::list<RTL *>();
@@ -622,7 +622,7 @@ void StatementTest::testEndlessLoop()
     prog->setFrontEnd(pFE);
     // create UserProc
     std::string name  = "test";
-    UserProc    *proc = (UserProc *)prog->createProc(Address(0x00000123));
+    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
 
     // create CFG
     Cfg              *cfg   = proc->getCFG();
@@ -1358,7 +1358,7 @@ void StatementTest::testBypass()
     Address addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
 
-    UserProc *proc = (UserProc *)prog->findProc("foo2");
+    UserProc *proc = (UserProc *)prog->findFunction("foo2");
     QVERIFY(proc);
 
     proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)

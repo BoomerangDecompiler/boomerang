@@ -237,7 +237,7 @@ void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr,
     SharedType ty = NamedType::getNamedType(type);
 
     assert(ty->isFunc());
-    UserProc *proc = (UserProc *)m_program->createProc(addr);
+    UserProc *proc = (UserProc *)m_program->createFunction(addr);
     assert(proc);
     auto                sig    = ty->as<FuncType>()->getSignature()->clone();
     const IBinarySymbol *p_sym = m_binarySymbols->find(addr);
@@ -364,7 +364,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
             continue;
         }
 
-        Function *proc = m_program->findProc(a);
+        Function *proc = m_program->findFunction(a);
 
         if (proc == nullptr) {
             LOG_WARN("No proc found for address %1", a);
@@ -394,13 +394,13 @@ void IFrontEnd::decode(Prog *prg, Address addr)
     assert(m_program == prg);
 
     if (addr != Address::INVALID) {
-        Function *newProc = m_program->createProc(addr);
+        Function *newProc = m_program->createFunction(addr);
 
         // Sometimes, we have to adjust the entry address since
         // the instruction at addr is just a jump to another address.
         addr = newProc->getEntryAddress();
         LOG_MSG("Starting decode at address %1", addr);
-        UserProc *proc = (UserProc *)m_program->findProc(addr);
+        UserProc *proc = (UserProc *)m_program->findFunction(addr);
 
         if (proc == nullptr) {
             LOG_MSG("No proc found at address %1", addr);
@@ -470,7 +470,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address addr)
     Q_UNUSED(prg);
     assert(m_program == prg);
 
-    UserProc *p = (UserProc *)m_program->createProc(addr);
+    UserProc *p = (UserProc *)m_program->createFunction(addr);
     assert(!p->isLib());
     QTextStream os(stderr); // rtl output target
 
@@ -571,13 +571,13 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
         return;
     }
 
-    Function *proc = m_program->findProc(dest);
+    Function *proc = m_program->findFunction(dest);
 
     if (proc == nullptr) {
         auto symb = m_binarySymbols->find(dest);
 
         if (symb && symb->isImportedFunction()) {
-            proc = m_program->createProc(dest);
+            proc = m_program->createFunction(dest);
         }
     }
 
@@ -973,7 +973,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                             if (call->getDestProc()) {
                                                 // prevent unnecessary __imp procs
-                                                m_program->removeProc(call->getDestProc()->getName());
+                                                m_program->removeFunction(call->getDestProc()->getName());
                                             }
 
                                             call->setDestProc(p);
@@ -1036,7 +1036,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                             // Record the called address as the start of a new procedure if it didn't already exist.
                             if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
-                                (pProc->getProg()->findProc(callAddr) == nullptr)) {
+                                (pProc->getProg()->findFunction(callAddr) == nullptr)) {
                                 callList.push_back(call);
 
                                 // newProc(pProc->getProg(), uNewAddr);
@@ -1192,7 +1192,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             if ((np == nullptr) && (dest != Address::INVALID)) {
                 // np = newProc(pProc->getProg(), dest);
-                np = pProc->getProg()->createProc(dest);
+                np = pProc->getProg()->createFunction(dest);
             }
 
             if (np != nullptr) {

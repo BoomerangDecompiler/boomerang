@@ -34,7 +34,6 @@
 #include "boomerang/db/statements/ImpRefStatement.h"
 #include "boomerang/db/Visitor.h"
 
-#include "boomerang/type/Constraint.h"
 #include "boomerang/type/type/Type.h"
 
 #include "boomerang/util/Log.h"
@@ -183,7 +182,7 @@ void Function::printDetailsXML()
 }
 
 
-void Function::removeFromParent()
+void Function::removeFromModule()
 {
     assert(m_module);
     m_module->getFunctionList().remove(this);
@@ -197,7 +196,7 @@ void Function::setParent(Module *c)
         return;
     }
 
-    removeFromParent();
+    removeFromModule();
     m_module = c;
     c->getFunctionList().push_back(this);
     c->setLocationMap(m_entryAddress, this);
@@ -207,7 +206,7 @@ void Function::setParent(Module *c)
 Function *Function::getFirstCaller()
 {
     if ((m_firstCaller == nullptr) && (m_firstCallerAddr != Address::INVALID)) {
-        m_firstCaller     = m_prog->findProc(m_firstCallerAddr);
+        m_firstCaller     = m_prog->findFunction(m_firstCallerAddr);
         m_firstCallerAddr = Address::INVALID;
     }
 

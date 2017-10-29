@@ -125,7 +125,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
 
     // If the destination address is the same as this very instruction, we have a call with iDisp30 == 0. Don't treat
     // this as the start of a real procedure.
-    if ((dest != address) && (proc->getProg()->findProc(dest) == nullptr)) {
+    if ((dest != address) && (proc->getProg()->findFunction(dest) == nullptr)) {
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that failed. Instead, we
         // use the set of CallStatements (not in this procedure) that is needed by CSR
         if (SETTING(traceDecoder)) {
@@ -1160,7 +1160,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             // Don't visit the destination of a register call
             // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
             if (dest != Address::INVALID) {
-                proc->getProg()->createProc(dest);
+                proc->getProg()->createFunction(dest);
             }
         }
     }

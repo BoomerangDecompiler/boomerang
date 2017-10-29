@@ -26,7 +26,6 @@
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 #include "boomerang/db/Visitor.h"
-#include "boomerang/type/Constraint.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -2125,7 +2124,7 @@ void UserProc::assignProcsToCalls()
             CallStatement *call = (CallStatement *)(rtl)->back();
 
             if ((call->getDestProc() == nullptr) && !call->isComputed()) {
-                Function *p = m_prog->findProc(call->getFixedDest());
+                Function *p = m_prog->findFunction(call->getFixedDest());
 
                 if (p == nullptr) {
                     LOG_FATAL("Cannot find proc for dest %1 in call at %2",
@@ -3887,133 +3886,6 @@ void UserProc::getDefinitions(LocationSet& ls)
 }
 
 
-void UserProc::conTypeAnalysis()
-{
-    if (DEBUG_TA) {
-        LOG_MSG("type analysis for procedure %1", getName());
-    }
-
-    Constraints   consObj;
-    LocationSet   cons;
-    StatementList stmts;
-    getStatements(stmts);
-
-    // For each statement this proc
-    int conscript = 0;
-
-    for (auto ss = stmts.begin(); ss != stmts.end(); ss++) {
-        cons.clear();
-        // So we can co-erce constants:
-        conscript = (*ss)->setConscripts(conscript);
-        (*ss)->genConstraints(cons);
-        consObj.addConstraints(cons);
-
-        if (DEBUG_TA) {
-            LOG_MSG("%1", (*ss));
-            LOG_MSG("%1", &cons);
-        }
-
-        // Remove the sizes immediately the constraints are generated.
-        // Otherwise, x and x*8* look like different expressions
-        (*ss)->stripSizes();
-    }
-
-    std::list<ConstraintMap> solns;
-    bool ret = consObj.solve(solns);
-
-    if (DEBUG_TA) {
-        if (!ret) {
-            LOG_VERBOSE("** could not solve type constraints for proc %1!", getName());
-        }
-        else if (solns.size() > 1) {
-            LOG_VERBOSE("** %1 solutions to type constraints for proc %2!", solns.size(), getName());
-        }
-    }
-
-    std::list<ConstraintMap>::iterator it;
-    int solnNum = 0;
-
-    if (DEBUG_TA) {
-        for (it = solns.begin(); it != solns.end(); it++) {
-            LOG_MSG("Solution %1 for proc %2", ++solnNum, getName());
-            ConstraintMap& cm = *it;
-
-            for (ConstraintMap::iterator cc = cm.begin(); cc != cm.end(); cc++) {
-                LOG_MSG("  %1 = %2", cc->first, cc->second);
-            }
-        }
-    }
-
-    // Just use the first solution, if there is one
-    Prog *_prog = getProg();
-
-    if (!solns.empty()) {
-        ConstraintMap& cm = *solns.begin();
-
-        for (ConstraintMap::iterator cc = cm.begin(); cc != cm.end(); cc++) {
-            // Ick. A workaround for now (see test/pentium/sumarray-O4)
-            // assert(cc->first->isTypeOf());
-            if (!cc->first->isTypeOf()) {
-                continue;
-            }
-
-            auto loc = cc->first->getSubExp1();
-            assert(cc->second->isTypeVal());
-            SharedType ty = cc->second->access<TypeVal>()->getType();
-
-            if (loc->isSubscript()) {
-                loc = loc->getSubExp1();
-            }
-
-            if (loc->isGlobal()) {
-                QString nam = loc->access<Const, 1>()->getStr();
-
-                if (!ty->resolvesToVoid()) {
-                    _prog->setGlobalType(nam, ty->clone());
-                }
-            }
-            else if (loc->isLocal()) {
-                QString nam = loc->access<Const, 1>()->getStr();
-                setLocalType(nam, ty);
-            }
-            else if (loc->isIntConst()) {
-                std::shared_ptr<Const> con = loc->access<Const>();
-                const int  val = con->getInt();
-
-                if (ty->isFloat()) {
-                    // Need heavy duty cast here
-                    // MVE: check this! Especially when a double prec float
-                    con->setFlt(*(float *)&val);
-                    con->setOper(opFltConst);
-                }
-                else if (ty->isCString()) {
-                    // Convert to a string
-                    const char *str = _prog->getStringConstant(Address(val), true);
-
-                    if (str) {
-                        // Make a string
-                        con->setStr(str);
-                        con->setOper(opStrConst);
-                    }
-                }
-                else {
-                    if (ty->isInteger() && ty->getSize() && (ty->getSize() != STD_SIZE)) {
-                        // Wrap the constant in a TypedExp (for a cast)
-                        castConst(con->getConscript(), ty);
-                    }
-                }
-            }
-        }
-    }
-
-    // Clear the conscripts. These confuse the fromSSA logic, causing infinite
-    // loops
-    for (auto ss = stmts.begin(); ss != stmts.end(); ss++) {
-        (*ss)->clearConscripts();
-    }
-}
-
-
 bool UserProc::searchAndReplace(const Exp& search, SharedExp replace)
 {
     bool          ch = false;
@@ -4028,13 +3900,6 @@ bool UserProc::searchAndReplace(const Exp& search, SharedExp replace)
     }
 
     return ch;
-}
-
-
-unsigned fudge(StatementList::iterator x)
-{
-    StatementList::iterator y = x;
-    return *(unsigned *)&y;
 }
 
 
@@ -5693,9 +5558,6 @@ void UserProc::typeAnalysis()
         if (DEBUG_TA) {
             LOG_VERBOSE("=== End type analysis for %1 ===", getName());
         }
-    }
-    else if (CON_TYPE_ANALYSIS) {
-        // FIXME: if we want to do comparison
     }
 
     printXML();

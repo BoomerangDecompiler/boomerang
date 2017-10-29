@@ -52,12 +52,12 @@ void ProcTest::testName()
 
     pFE->readLibraryCatalog();              // Since we are not decoding
 
-    Function *f       = prog->createProc(Address(0x00020000));
+    Function *f       = prog->createFunction(Address(0x00020000));
     QString  procName = "default name";
     f->setName(procName);
     QCOMPARE(f->getName(), procName);
 
-    f = prog->findProc("printf");
+    f = prog->findFunction("printf");
     QVERIFY(f != nullptr);
     QVERIFY(f->isLib());
     QCOMPARE(f->getName(), QString("printf"));

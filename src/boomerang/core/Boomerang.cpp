@@ -77,7 +77,7 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *p
                 const ObjcMethod& m = (_it2).second;
                 // TODO: parse :'s in names
                 QString  method_name = m.name + "_" + m.types;
-                Function *existing   = prog->findProc(method_name);
+                Function *existing   = prog->findFunction(method_name);
 
                 if (existing) {
                     assert(!"Name clash in objc processor ?");
@@ -146,7 +146,7 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
 
     Boomerang::get()->alertEndDecode();
 
-    LOG_MSG("Found %1 procs", prog->getNumProcs());
+    LOG_MSG("Found %1 procs", prog->getNumFunctions());
 
     // GK: The analysis which was performed was not exactly very "analysing", and so it has been moved to
     // prog::finishDecode, UserProc::assignProcsToCalls and UserProc::finalSimplify

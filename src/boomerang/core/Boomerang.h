@@ -290,7 +290,5 @@ private:
 #define DEBUG_DECODER           (Boomerang::get()->getSettings()->debugDecoder)
 #define DEBUG_LIVENESS          (Boomerang::get()->getSettings()->debugLiveness)
 #define DFA_TYPE_ANALYSIS       (Boomerang::get()->getSettings()->dfaTypeAnalysis)
-#define CON_TYPE_ANALYSIS       (Boomerang::get()->getSettings()->conTypeAnalysis)
-#define ADHOC_TYPE_ANALYSIS     (!Boomerang::get()->getSettings()->dfaTypeAnalysis && !Boomerang::get()->getSettings()->conTypeAnalysis)
 #define DUMP_XML                (Boomerang::get()->getSettings()->dumpXML)
 #define EXPERIMENTAL            (Boomerang::get()->getSettings()->experimental)

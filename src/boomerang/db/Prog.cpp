@@ -113,7 +113,6 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
 
     Module *m = fact.create(name, this, frontEnd ? frontEnd : m_defaultFrontend);
     m_moduleList.push_back(m);
-    connect(this, SIGNAL(rereadLibSignatures()), m, SLOT(onLibrarySignaturesChanged()));
     return m;
 }
 
@@ -334,12 +333,11 @@ void Prog::print(QTextStream& out) const
 
             UserProc *p = (UserProc *)proc;
 
-            if (!p->isDecoded()) {
-                continue;
+            if (p->isDecoded()) {
+                p->print(out);
             }
 
-            // decoded userproc.. print it
-            p->print(out);
+
         }
     }
 }
@@ -359,14 +357,14 @@ void Prog::clear()
 }
 
 
-Function *Prog::createProc(Address startAddress)
+Function *Prog::createFunction(Address startAddress)
 {
     // this test fails when decoding sparc, why?  Please investigate - trent
     // Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section
     // assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
 
     // Check if we already have this proc
-    Function *pProc = findProc(startAddress);
+    Function *pProc = findFunction(startAddress);
 
     if (pProc) {      // Exists already ?
         return pProc; // Yes, we are done
@@ -378,7 +376,7 @@ Function *Prog::createProc(Address startAddress)
         startAddress = other;
     }
 
-    pProc = findProc(startAddress);
+    pProc = findFunction(startAddress);
 
     if (pProc) {      // Exists already ?
         return pProc; // Yes, we are done
@@ -581,16 +579,15 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
     return TRUE;
 }
 
-
 #endif
 
 
-void Prog::removeProc(const QString& name)
+void Prog::removeFunction(const QString& name)
 {
-    Function *f = findProc(name);
+    Function *f = findFunction(name);
 
-    if (f && (f != (Function *)-1)) {
-        f->removeFromParent();
+    if (f) {
+        f->removeFromModule();
         Boomerang::get()->alertRemove(f);
         // FIXME: this function removes the function from module, but it leaks it
     }
@@ -617,7 +614,7 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const Modu
 }
 
 
-int Prog::getNumProcs(bool user_only) const
+int Prog::getNumFunctions(bool user_only) const
 {
     int n = 0;
 
@@ -640,12 +637,13 @@ int Prog::getNumProcs(bool user_only) const
 }
 
 
-Function *Prog::findProc(Address addr) const
+Function *Prog::findFunction(Address entryAddr) const
 {
     for (Module *m : m_moduleList) {
-        Function *proc = m->getFunction(addr);
+        Function *proc = m->getFunction(entryAddr);
 
         if (proc != nullptr) {
+            assert(proc != (Function *)-1);
             return proc;
         }
     }
@@ -654,12 +652,13 @@ Function *Prog::findProc(Address addr) const
 }
 
 
-Function *Prog::findProc(const QString& name) const
+Function *Prog::findFunction(const QString& name) const
 {
     for (Module *m : m_moduleList) {
         Function *f = m->getFunction(name);
 
         if (f) {
+            assert(f != (Function *)-1);
             return f;
         }
     }
@@ -670,7 +669,7 @@ Function *Prog::findProc(const QString& name) const
 
 LibProc *Prog::getLibraryProc(const QString& nam) const
 {
-    Function *p = findProc(nam);
+    Function *p = findFunction(nam);
 
     if (p && p->isLib()) {
         return (LibProc *)p;
@@ -1039,21 +1038,21 @@ int Prog::readNative4(Address a) const
 }
 
 
-Function *Prog::findContainingProc(Address uAddr) const
+Function *Prog::findFunctionContaining(Address uAddr) const
 {
     for (Module *module : m_moduleList) {
         for (Function *p : *module) {
+            assert(p && p != (Function *)-1);
+
             if (p->getEntryAddress() == uAddr) {
                 return p;
             }
-
-            if (p->isLib()) {
+            else if (p->isLib()) {
                 continue;
             }
 
-            UserProc *u = (UserProc *)p;
-
-            if (u->containsAddr(uAddr)) {
+            /// We now know *p is a UserProc
+            if (dynamic_cast<UserProc *>(p)->containsAddr(uAddr)) {
                 return p;
             }
         }
@@ -1063,7 +1062,7 @@ Function *Prog::findContainingProc(Address uAddr) const
 }
 
 
-bool Prog::isProcLabel(Address addr) const
+bool Prog::isFunctionEntryPoint(Address addr) const
 {
     for (Module *m : m_moduleList) {
         if (m->getFunction(addr)) {
@@ -1087,31 +1086,9 @@ QString Prog::getNameNoPathNoExt() const
 }
 
 
-const void *Prog::getCodeInfo(Address uAddr, const char *& last, int& delta) const
-{
-    delta = 0;
-    last  = nullptr;
-    const IBinarySection *pSect = m_image->getSectionByAddr(uAddr);
-
-    if (!pSect) {
-        return nullptr;
-    }
-
-    if ((!pSect->isCode()) && (!pSect->isReadOnly())) {
-        return nullptr;
-    }
-
-    // Search all code and read-only sections
-    delta = (pSect->getHostAddr() - pSect->getSourceAddr()).value();
-    last  = (const char *)(pSect->getHostAddr() + pSect->getSize()).value();
-    const char *p = (const char *)(uAddr + delta).value();
-    return p;
-}
-
-
 void Prog::decodeEntryPoint(Address entryAddr)
 {
-    Function *p = (UserProc *)findProc(entryAddr);
+    Function *p = (UserProc *)findFunction(entryAddr);
 
     if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
         if (!Util::inRange(entryAddr, m_image->getLimitTextLow(), m_image->getLimitTextHigh())) {
@@ -1124,14 +1101,14 @@ void Prog::decodeEntryPoint(Address entryAddr)
     }
 
     if (p == nullptr) {
-        p = findProc(entryAddr);
+        p = findFunction(entryAddr);
 
         // Chek if there is a library thunk at entryAddr
         if (p == nullptr) {
             Address jumpTarget = m_fileLoader->getJumpTarget(entryAddr);
 
             if (jumpTarget != Address::INVALID) {
-                p = findProc(jumpTarget);
+                p = findFunction(jumpTarget);
             }
         }
     }
@@ -1146,7 +1123,7 @@ void Prog::decodeEntryPoint(Address entryAddr)
 
 void Prog::setEntryPoint(Address a)
 {
-    Function *p = (UserProc *)findProc(a);
+    Function *p = (UserProc *)findFunction(a);
 
     if ((p != nullptr) && !p->isLib()) {
         m_entryProcs.push_back((UserProc *)p);
@@ -1196,8 +1173,8 @@ void Prog::decodeEverythingUndecoded()
 void Prog::decompile()
 {
     assert(!m_moduleList.empty());
-    getNumProcs();
-    LOG_VERBOSE("%1 procedures", getNumProcs(false));
+    getNumFunctions();
+    LOG_VERBOSE("%1 procedures", getNumFunctions(false));
 
     // Start decompiling each entry point
     for (UserProc *up : m_entryProcs) {
@@ -1233,13 +1210,6 @@ void Prog::decompile()
                 }
             }
         }
-    }
-
-    // Type analysis, if requested
-    if (SETTING(conTypeAnalysis) && SETTING(dfaTypeAnalysis)) {
-        LOG_ERROR("Enabling both constraint-based type analysis and DFA type analysis is not supported, "
-                  "falling back to DFA type analysis");
-        SETTING(conTypeAnalysis) = false;
     }
 
     globalTypeAnalysis();
@@ -1404,32 +1374,6 @@ void Prog::fromSSAform()
             LOG_VERBOSE("%1", proc->prints());
             LOG_VERBOSE("===== End after transformation from SSA form for %1 ====", proc->getName());
         }
-    }
-}
-
-
-void Prog::conTypeAnalysis()
-{
-    if (DEBUG_TA) {
-        LOG_VERBOSE("=== Start constraint-based type analysis ===");
-    }
-
-    // FIXME: This needs to be done bottom of the call-tree first, with repeat until no change for cycles
-    // in the call graph
-    for (Module *module : m_moduleList) {
-        for (Function *pp : *module) {
-            UserProc *proc = (UserProc *)pp;
-
-            if (proc->isLib() || !proc->isDecoded()) {
-                continue;
-            }
-
-            proc->conTypeAnalysis();
-        }
-    }
-
-    if (DEBUG_TA) {
-        LOG_VERBOSE("=== End type analysis ===");
     }
 }
 

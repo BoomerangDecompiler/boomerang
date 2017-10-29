@@ -170,7 +170,7 @@ public:
     const Module *getParent() const { return m_module; }
 
     void setParent(Module *c);
-    void removeFromParent();
+    void removeFromModule();
 
 protected:
     /// Delete the CFG from this function.

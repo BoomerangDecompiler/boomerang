@@ -44,9 +44,6 @@ public:
     typedef FunctionList::iterator          iterator;
     typedef FunctionList::const_iterator    const_iterator;
 
-public slots:
-    void onLibrarySignaturesChanged();
-
 signals:
     void newFunction(Function *);
 
@@ -120,6 +117,8 @@ public:
 
     /// \returns the signature of the function with name \p name
     std::shared_ptr<Signature> getLibSignature(const QString& name);
+
+    void updateLibrarySignatures();
 
 private:
     /// Retrieve Win32 PDB debug information for the function \p function

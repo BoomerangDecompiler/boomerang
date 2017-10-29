@@ -10,11 +10,6 @@
 #pragma once
 
 
-/*========================================================================*//**
-* \file        prog.h
-* OVERVIEW:    interface for the program object.
-*/
-
 #include <map>
 
 #include "boomerang/type/type/Type.h"
@@ -41,88 +36,69 @@ class Global;
 struct BinarySymbol;
 
 
-class Prog : public QObject
+class Prog
 {
-    Q_OBJECT
-
 public:
     /// The type for the list of functions.
     typedef std::list<Module *>                 ModuleList;
-
-public:
     typedef std::map<Address, BinarySymbol *>   AddressToSymbolMap;
 
 public:
     Prog(const QString& name);
     virtual ~Prog();
 
+    /// Change the FrontEnd
     void setFrontEnd(IFrontEnd *fe);
-
     IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }
 
-    /// Assign a name to this program
+    /// Assign a new name to this program
     void setName(const QString& name);
+    QString getName() const { return m_name; }
 
     /**
-     * \note     Formally Frontend::newProc
-     * \brief    Create a new unnamed Proc at address \p addr.
-     *
-     * Call this function when a procedure is discovered (usually by
-     * decoding a call instruction). That way, it is given a name
-     * that can be displayed in the dot file, etc. If we assign it
-     * a number now, then it will retain this number always
-     * \param addr    Native address of the procedure entry point
-     * \returns       Pointer to the Proc object, or 0 if this is a deleted (not to
-     *                be decoded) address
+     * Creates a new empty module.
+     * \param name   The name of the new module.
+     * \param parent The parent of the new module.
+     * \param modFactory Determines the type of Module to be created.
+     * \returns the new module, or nullptr if there already exists a module with the same name and parent.
      */
-    Function *createProc(Address addr);
-
-    void removeProc(const QString& name);
-
     Module *createModule(const QString& name, Module *parent = nullptr, const ModuleFactory& modFactory = DefaultModFactory());
 
-    QString getName() const { return m_name; } ///< Get the name of this program
-
-    QString getPath() const { return m_path; }
-    QString getPathAndName() const { return m_path + m_name; }
-
     /**
+     * Create a new unnamed function at address \p addr.
+     * Call this method when a function is discovered (usually by
+     * decoding a call instruction). That way, it is given a name
+     * that can be displayed in the dot file, etc. If we assign it
+     * a number now, then it will retain this number always.
      *
-     * \brief    Return the number of user (non deleted, non library) procedures
-     * \returns  The number of procedures
+     * \param entryAddr Address of the entry point of the function
+     * \returns Pointer to the Function, or nullptr if this is a deleted
+     * (not to be decoded) address
      */
-    int getNumProcs(bool user_only = true) const;
+    Function *createFunction(Address entryAddr);
 
-    /**
-     * \brief    Return a pointer to the associated Proc object, or nullptr if none
-     * \note        Could return -1 for a deleted Proc
-     * \param uAddr - Native address of the procedure entry point
-     * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
-     */
-    Function *findProc(Address uAddr) const;
+    /// Removes the function with name \p name.
+    /// If there is no such function, nothing happens.
+    void removeFunction(const QString& name);
 
-    /**
-     * \brief    Return a pointer to the associated Proc object, or nullptr if none
-     * \note        Could return -1 for a deleted Proc
-     * \param name - name of the searched-for procedure
-     * \returns Pointer to the Proc object, or 0 if none, or -1 if deleted
-     */
-    Function *findProc(const QString& name) const;
+    /// \param userOnly If true, only count user functions, not lbrary functions.
+    /// \returns the number of functions in this program.
+    int getNumFunctions(bool userOnly = true) const;
 
-    /**
-     * \brief    Return a pointer to the Proc object containing uAddr, or 0 if none
-     * \note     Could return nullptr for a deleted Proc
-     * \param uAddr - Native address to search for
-     * \returns       Pointer to the Proc object, or 0 if none, or -1 if deleted
-     */
-    Function *findContainingProc(Address uAddr) const;
+    /// \returns the function with entry address \p entryAddr,
+    /// or nullptr if no such function exists.
+    Function *findFunction(Address entryAddr) const;
 
-    /**
-     * \brief    Return true if this is a real procedure
-     * \param addr   Native address of the procedure entry point
-     * \returns      True if a real (non deleted) proc
-     */
-    bool isProcLabel(Address addr) const;
+    /// \returns the function with name \p name,
+    /// or nullptr if no such function exists.
+    Function *findFunction(const QString& name) const;
+
+    /// \returns the function containing \p addr,
+    /// or nullptr if no such function exists.
+    Function *findFunctionContaining(Address addr) const;
+
+    /// \returns whether \p addr is the entry point of a function.
+    bool isFunctionEntryPoint(Address addr) const;
 
     /**
      * \brief Get the name for the progam, without any path at the front
@@ -143,18 +119,6 @@ public:
     /// \note deletes everything!
     void clear();
 
-    /**
-     * \brief    Lookup the given native address in the code section,
-     *           returning a host pointer corresponding to the same address
-     *
-     * \param uAddr Native address of the candidate string or constant
-     * \param last  will be set to one past end of the code section (host)
-     * \param delta will be set to the difference between the host and native addresses
-     * \returns     Host pointer if in range; nullptr if not
-     *              Also sets 2 reference parameters (see above)
-     */
-    const void *getCodeInfo(Address uAddr, const char *& last, int& delta) const;
-
     const std::set<Global *>& getGlobals() const { return m_globals; }
 
     QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
@@ -162,7 +126,7 @@ public:
 
     /**
      * \brief    Decode from entry point given as an agrument
-     * \param a -  Native address of the entry point
+     * \param a  Native address of the entry point
      */
     void decodeEntryPoint(Address a);
 
@@ -211,8 +175,6 @@ public:
     /// Convert from SSA form
     void fromSSAform();
 
-    /// Constraint based type analysis
-    void conTypeAnalysis();
     void dfaTypeAnalysis();
     void rangeAnalysis();
 
@@ -337,8 +299,12 @@ public:
 
     const ModuleList& getModuleList() const { return m_moduleList; }
 
-signals:
-    void rereadLibSignatures();
+    void updateLibrarySignatures()
+    {
+        for (Module *m : m_moduleList) {
+            m->updateLibrarySignatures();
+        }
+    }
 
 public:
     // Public booleans that are set if and when a register jump or call is

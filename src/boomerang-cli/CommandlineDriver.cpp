@@ -194,8 +194,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 'T':
 
             if (arg[2] == 'c') {
-                SETTING(conTypeAnalysis) = true; // -Tc: use old constraint-based type analysis
-                SETTING(dfaTypeAnalysis) = false;
+                LOG_WARN("Constraint-based type analysis is no longer supported, decompilation results will be inaccurate!");
             }
             else if (arg[2] == 'd') {
                 SETTING(dfaTypeAnalysis) = true; // -Td: use data-flow-based type analysis (now default)
