@@ -281,7 +281,7 @@ public:
      *
      * \returns True if transformation was successful
      */
-    bool wellFormCfg() const;
+    bool isWellFormed() const;
 
     /**
      * Given two basic blocks that belong to a well-formed graph, merges the second block onto the first one and

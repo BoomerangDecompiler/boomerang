@@ -24,7 +24,7 @@ void TypeRecoveryCommon::recoverProgramTypes(Prog *v)
 
     // FIXME: This needs to be done in bottom-up order of the call-tree first,
     // repeating until no changes for cycles in the call graph
-    for (Module *module : v->getModuleList()) {
+    for (const auto& module : v->getModuleList()) {
         for (Function *pp : *module) {
             UserProc *proc = dynamic_cast<UserProc *>(pp);
 

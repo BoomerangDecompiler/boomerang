@@ -2677,27 +2677,6 @@ bool UserProc::propagateStatements(bool& convert, int pass)
 }
 
 
-Statement *UserProc::getStmtAtLex(unsigned int begin, unsigned int end)
-{
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    unsigned int lowest      = begin;
-    Statement    *loweststmt = nullptr;
-
-    for (auto& stmt : stmts) {
-        if ((begin >= (stmt)->getLexBegin()) && (begin <= lowest) && (begin <= (stmt)->getLexEnd()) &&
-            ((end == (unsigned)-1) || (end < (stmt)->getLexEnd()))) {
-            loweststmt = (stmt);
-            lowest     = (stmt)->getLexBegin();
-        }
-    }
-
-    return loweststmt;
-}
-
-
 void UserProc::promoteSignature()
 {
     m_signature = m_signature->promote(this);
@@ -3090,7 +3069,7 @@ void UserProc::removeUnusedLocals()
 //    SSA code
 //
 
-void UserProc::fromSSAform()
+void UserProc::fromSSAForm()
 {
     Boomerang::get()->alertDecompiling(this);
 

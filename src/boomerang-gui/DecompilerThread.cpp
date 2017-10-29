@@ -104,7 +104,7 @@ void Decompiler::load()
     emit loading();
 
     m_image = Boomerang::get()->getImage();
-    m_prog  = new Prog(m_filename);
+    m_prog  = new Prog(QFileInfo(m_filename).baseName());
     m_fe    = IFrontEnd::create(m_filename, m_prog, Boomerang::get()->getOrCreateProject());
 
     if (m_fe == nullptr) {
@@ -241,7 +241,7 @@ void Decompiler::generateCode()
 
     std::list<Function *>::iterator it;
 
-    for (Module *module : m_prog->getModuleList()) {
+    for (const auto& module : m_prog->getModuleList()) {
         for (Function *p : *module) {
             if (p->isLib()) {
                 continue;

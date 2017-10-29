@@ -569,7 +569,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
 
         const Prog::ModuleList& modules = g_prog->getModuleList();
 
-        for (const Module *module : modules) {
+        for (const auto& module : modules) {
             for (const Function *function : *module) {
                 if (function->isLib()) {
                     libFunctions.push_back(function);

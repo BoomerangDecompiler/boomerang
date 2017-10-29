@@ -102,7 +102,7 @@ void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
 
     print(os);
 
-    for (Module *module : prog->getModuleList()) {
+    for (const auto& module : prog->getModuleList()) {
         for (Function *function : *module) {
             if (function->isLib()) {
                 continue;
@@ -180,7 +180,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
     }
 
     // First declare prototypes
-    for (Module *module : prog->getModuleList()) {
+    for (const auto& module : prog->getModuleList()) {
         for (Function *func : *module) {
             if (func->isLib()) {
                 continue;
@@ -196,8 +196,8 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
         print(*os);
     }
 
-    for (Module *module : prog->getModuleList()) {
-        if (!generate_all && (cluster != module)) {
+    for (const auto& module : prog->getModuleList()) {
+        if (!generate_all && (module.get() != cluster)) {
             continue;
         }
 
@@ -226,7 +226,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
         }
     }
 
-    for (Module *module : prog->getModuleList()) {
+    for (const auto& module : prog->getModuleList()) {
         module->closeStreams();
     }
 }

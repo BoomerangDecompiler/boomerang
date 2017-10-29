@@ -10,16 +10,6 @@
 #include "Prog.h"
 
 
-/**
- * \file     prog.cpp
- * \brief    Implementation of the program class. Holds information of
- *                interest to the whole program.
- */
-
-/**
- * Dependencies.
- */
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/codegen/ICodeGenerator.h"
@@ -82,13 +72,11 @@ namespace dbghelp
 
 
 Prog::Prog(const QString& name)
-    : m_defaultFrontend(nullptr)
-    , m_name(name)
-    , m_iNumberedProc(1)
+    : m_name(name)
+    , m_defaultFrontend(nullptr)
 {
     m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
-    m_rootModule    = getOrInsertModule(getNameNoPathNoExt());
-    m_path          = m_name;
+    m_rootModule    = getOrInsertModule(getName());
     m_image         = Boomerang::get()->getImage();
 }
 
@@ -105,14 +93,14 @@ Prog::~Prog()
 
 Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, IFrontEnd *frontEnd)
 {
-    for (Module *m : m_moduleList) {
+    for (const auto& m : m_moduleList) {
         if (m->getName() == name) {
-            return m;
+            return m.get();
         }
     }
 
     Module *m = fact.create(name, this, frontEnd ? frontEnd : m_defaultFrontend);
-    m_moduleList.push_back(m);
+    m_moduleList.push_back(std::unique_ptr<Module>(m));
     return m;
 }
 
@@ -122,15 +110,11 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
     m_fileLoader      = frontEnd->getLoader();
     m_defaultFrontend = frontEnd;
 
-    for (Module *m : m_moduleList) {
-        delete m;
-    }
-
     m_moduleList.clear();
     m_rootModule = nullptr;
 
     if (m_fileLoader && !m_name.isEmpty()) {
-        m_rootModule = getOrInsertModule(this->getNameNoPathNoExt());
+        m_rootModule = getOrInsertModule(m_name);
     }
 }
 
@@ -142,15 +126,15 @@ void Prog::setName(const QString& name)
 }
 
 
-bool Prog::wellForm() const
+bool Prog::isWellFormed() const
 {
     bool wellformed = true;
 
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         for (Function *func : *module) {
             if (!func->isLib()) {
                 UserProc *u = (UserProc *)func;
-                wellformed &= u->getCFG()->wellFormCfg();
+                wellformed &= u->getCFG()->isWellFormed();
             }
         }
     }
@@ -161,7 +145,7 @@ bool Prog::wellForm() const
 
 void Prog::finishDecode()
 {
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         for (Function *func : *module) {
             if (func->isLib()) {
                 continue;
@@ -197,7 +181,7 @@ void Prog::generateDotFile() const
     QTextStream of(&tgt);
     of << "digraph Cfg {\n";
 
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         for (Function *func : *module) {
             if (func->isLib()) {
                 continue;
@@ -226,8 +210,8 @@ void Prog::generateRTL(Module *cluster, UserProc *proc) const
     bool generate_all   = cluster == nullptr;
     bool all_procedures = proc == nullptr;
 
-    for (Module *module : m_moduleList) {
-        if (!generate_all && (module != cluster)) {
+    for (const auto& module : m_moduleList) {
+        if (!generate_all && (module.get() != cluster)) {
             continue;
         }
 
@@ -252,41 +236,9 @@ void Prog::generateRTL(Module *cluster, UserProc *proc) const
         }
     }
 
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         module->closeStreams();
     }
-}
-
-
-Statement *Prog::getStmtAtLex(Module *cluster, unsigned int begin, unsigned int end) const
-{
-    bool search_all = cluster == nullptr;
-
-    for (Module *m : m_moduleList) {
-        if (!search_all && (m != cluster)) {
-            continue;
-        }
-
-        for (Function *pProc : *m) {
-            if (pProc->isLib()) {
-                continue;
-            }
-
-            UserProc *p = (UserProc *)pProc;
-
-            if (!p->isDecoded()) {
-                continue;
-            }
-
-            Statement *s = p->getStmtAtLex(begin, end);
-
-            if (s) {
-                return s;
-            }
-        }
-    }
-
-    return nullptr;
 }
 
 
@@ -325,7 +277,7 @@ Module *Prog::getDefaultModule(const QString& name)
 
 void Prog::print(QTextStream& out) const
 {
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         for (Function *proc : *module) {
             if (proc->isLib()) {
                 continue;
@@ -340,20 +292,6 @@ void Prog::print(QTextStream& out) const
 
         }
     }
-}
-
-
-void Prog::clear()
-{
-    m_name = "";
-
-    for (Module *module : m_moduleList) {
-        delete module;
-    }
-
-    m_moduleList.clear();
-    delete m_defaultFrontend;
-    m_defaultFrontend = nullptr;
 }
 
 
@@ -609,7 +547,7 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const Modu
 
     module = factory.create(name, this, this->getFrontEnd());
     parentModule->addChild(module);
-    m_moduleList.push_back(module);
+    m_moduleList.push_back(std::unique_ptr<Module>(module));
     return module;
 }
 
@@ -619,7 +557,7 @@ int Prog::getNumFunctions(bool user_only) const
     int n = 0;
 
     if (user_only) {
-        for (Module *m : m_moduleList) {
+        for (const auto& m : m_moduleList) {
             for (Function *pProc : *m) {
                 if (!pProc->isLib()) {
                     n++;
@@ -628,7 +566,7 @@ int Prog::getNumFunctions(bool user_only) const
         }
     }
     else {
-        for (Module *m : m_moduleList) {
+        for (const auto& m : m_moduleList) {
             n += m->size();
         }
     }
@@ -639,7 +577,7 @@ int Prog::getNumFunctions(bool user_only) const
 
 Function *Prog::findFunction(Address entryAddr) const
 {
-    for (Module *m : m_moduleList) {
+    for (const auto& m : m_moduleList) {
         Function *proc = m->getFunction(entryAddr);
 
         if (proc != nullptr) {
@@ -654,7 +592,7 @@ Function *Prog::findFunction(Address entryAddr) const
 
 Function *Prog::findFunction(const QString& name) const
 {
-    for (Module *m : m_moduleList) {
+    for (const auto& m : m_moduleList) {
         Function *f = m->getFunction(name);
 
         if (f) {
@@ -688,18 +626,6 @@ Platform Prog::getFrontEndId() const
 std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name) const
 {
     return m_defaultFrontend->getDefaultSignature(name);
-}
-
-
-std::vector<SharedExp>& Prog::getDefaultParams()
-{
-    return m_defaultFrontend->getDefaultParams();
-}
-
-
-std::vector<SharedExp>& Prog::getDefaultReturns()
-{
-    return m_defaultFrontend->getDefaultReturns();
 }
 
 
@@ -745,16 +671,12 @@ Address Prog::getGlobalAddr(const QString& nam) const
 
 Global *Prog::getGlobal(const QString& name) const
 {
-    auto iter =
-        std::find_if(m_globals.begin(), m_globals.end(), [name](Global *g) -> bool {
-        return g->getName() == name;
-    });
+    auto iter = std::find_if(m_globals.begin(), m_globals.end(),
+        [&name](Global *g) -> bool {
+            return g->getName() == name;
+        });
 
-    if (iter == m_globals.end()) {
-        return nullptr;
-    }
-
-    return *iter;
+    return iter != m_globals.end() ? *iter : nullptr;
 }
 
 
@@ -813,26 +735,22 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 }
 
 
-std::shared_ptr<ArrayType> Prog::makeArrayType(Address u, SharedType t)
+std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType baseType)
 {
-    QString nam = newGlobalName(u);
+    QString nam = newGlobalName(startAddr);
 
     assert(m_fileLoader);
     // TODO: fix the case of missing symbol table interface
     auto symbol = m_binarySymbols->find(nam);
 
     if (!symbol || (symbol->getSize() == 0)) {
-        return ArrayType::get(t); // An "unbounded" array
+        return ArrayType::get(baseType); // An "unbounded" array
     }
 
-    unsigned int sz = symbol->getSize();
-    int          n  = t->getSizeInBytes(); // TODO: use baseType->getBytes()
+    size_t size   = symbol->getSize();
+    int numElems  = std::max(baseType->getSizeInBytes(), 1UL);
 
-    if (n == 0) {
-        n = 1;
-    }
-
-    return ArrayType::get(t, sz / n);
+    return ArrayType::get(baseType, size / numElems);
 }
 
 
@@ -1038,54 +956,6 @@ int Prog::readNative4(Address a) const
 }
 
 
-Function *Prog::findFunctionContaining(Address uAddr) const
-{
-    for (Module *module : m_moduleList) {
-        for (Function *p : *module) {
-            assert(p && p != (Function *)-1);
-
-            if (p->getEntryAddress() == uAddr) {
-                return p;
-            }
-            else if (p->isLib()) {
-                continue;
-            }
-
-            /// We now know *p is a UserProc
-            if (dynamic_cast<UserProc *>(p)->containsAddr(uAddr)) {
-                return p;
-            }
-        }
-    }
-
-    return nullptr;
-}
-
-
-bool Prog::isFunctionEntryPoint(Address addr) const
-{
-    for (Module *m : m_moduleList) {
-        if (m->getFunction(addr)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-QString Prog::getNameNoPath() const
-{
-    return QFileInfo(m_name).fileName();
-}
-
-
-QString Prog::getNameNoPathNoExt() const
-{
-    return QFileInfo(m_name).baseName();
-}
-
-
 void Prog::decodeEntryPoint(Address entryAddr)
 {
     Function *p = (UserProc *)findFunction(entryAddr);
@@ -1121,12 +991,12 @@ void Prog::decodeEntryPoint(Address entryAddr)
 }
 
 
-void Prog::setEntryPoint(Address a)
+void Prog::addEntryPoint(Address entryAddr)
 {
-    Function *p = (UserProc *)findFunction(a);
+    Function *func = (UserProc *)findFunction(entryAddr);
 
-    if ((p != nullptr) && !p->isLib()) {
-        m_entryProcs.push_back((UserProc *)p);
+    if (func && !func->isLib()) {
+        m_entryProcs.push_back((UserProc *)func);
     }
 }
 
@@ -1145,28 +1015,6 @@ const QString& Prog::getDynamicProcName(Address uNative) const
     auto           sym = m_binarySymbols->find(uNative);
 
     return sym ? sym->getName() : dyn;
-}
-
-
-void Prog::decodeEverythingUndecoded()
-{
-    for (Module *module : m_moduleList) {
-        for (Function *pp : *module) {
-            UserProc *up = (UserProc *)pp;
-
-            if (!pp || pp->isLib()) {
-                continue;
-            }
-
-            if (up->isDecoded()) {
-                continue;
-            }
-
-            m_defaultFrontend->decode(this, pp->getEntryAddress());
-        }
-    }
-
-    finishDecode();
 }
 
 
@@ -1192,7 +1040,7 @@ void Prog::decompile()
         while (foundone) {
             foundone = false;
 
-            for (Module *module : m_moduleList) {
+            for (const auto& module : m_moduleList) {
                 for (Function *pp : *module) {
                     if (pp->isLib()) {
                         continue;
@@ -1225,7 +1073,7 @@ void Prog::decompile()
         }
 
         // print XML after removing returns
-        for (Module *m :m_moduleList) {
+        for (const auto& m : m_moduleList) {
             for (Function *pp : *m) {
                 if (pp->isLib()) {
                     continue;
@@ -1240,9 +1088,8 @@ void Prog::decompile()
     LOG_VERBOSE("Transforming from SSA");
 
     // Now it is OK to transform out of SSA form
-    fromSSAform();
+    fromSSAForm();
 
-    // removeUnusedLocals(); Note: is now in UserProc::generateCode()
     removeUnusedGlobals();
 }
 
@@ -1254,7 +1101,7 @@ void Prog::removeUnusedGlobals()
     // seach for used globals
     std::list<SharedExp> usedGlobals;
 
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         for (Function *pp : *module) {
             if (pp->isLib()) {
                 continue;
@@ -1322,7 +1169,7 @@ bool Prog::removeUnusedReturns()
     std::set<UserProc *> removeRetSet;
     bool                 change = false;
 
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         for (Function *pp : *module) {
             UserProc *proc = dynamic_cast<UserProc *>(pp);
 
@@ -1349,9 +1196,9 @@ bool Prog::removeUnusedReturns()
 }
 
 
-void Prog::fromSSAform()
+void Prog::fromSSAForm()
 {
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         for (Function *pp : *module) {
             if (pp->isLib()) {
                 continue;
@@ -1368,7 +1215,7 @@ void Prog::fromSSAform()
                 }
             }
 
-            proc->fromSSAform();
+            proc->fromSSAForm();
 
             LOG_VERBOSE("===== After transformation from SSA form for %1 ====", proc->getName());
             LOG_VERBOSE("%1", proc->prints());
@@ -1384,7 +1231,7 @@ void Prog::globalTypeAnalysis()
         LOG_VERBOSE("### Start global data-flow-based type analysis ###");
     }
 
-    for (Module *module : m_moduleList) {
+    for (const auto& module : m_moduleList) {
         for (Function *pp : *module) {
             UserProc *proc = dynamic_cast<UserProc *>(pp);
 
@@ -1401,24 +1248,6 @@ void Prog::globalTypeAnalysis()
 
     if (DEBUG_TA) {
         LOG_VERBOSE("### End type analysis ###");
-    }
-}
-
-
-void Prog::rangeAnalysis()
-{
-    for (Module *module : m_moduleList) {
-        RangeAnalysis ra;
-
-        for (Function *pp : *module) {
-            UserProc *proc = (UserProc *)pp;
-
-            if (proc->isLib() || !proc->isDecoded()) {
-                continue;
-            }
-
-            ra.runOnFunction(*proc);
-        }
     }
 }
 
@@ -1532,6 +1361,14 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
 }
 
 
+void Prog::updateLibrarySignatures()
+{
+    for (const auto& m : m_moduleList) {
+        m->updateLibrarySignatures();
+    }
+}
+
+
 Machine Prog::getMachine() const
 {
     return m_fileLoader->getMachine();
@@ -1561,7 +1398,7 @@ void Prog::printSymbolsToFile() const
 
     f << "/* Leftovers: */\n";
 
-    for (Module *m : m_moduleList) {
+    for (const auto& m : m_moduleList) {
         for (Function *pp : *m) {
             if (!pp->isLib() && (seen.find(pp) == seen.end())) {
                 printProcsRecursive(pp, 0, f, seen);
@@ -1581,7 +1418,7 @@ void Prog::printCallGraphXML() const
         return;
     }
 
-    for (Module *m : m_moduleList) {
+    for (const auto& m : m_moduleList) {
         for (Function *it : *m) {
             it->clearVisited();
         }
@@ -1597,7 +1434,7 @@ void Prog::printCallGraphXML() const
         up->printCallGraphXML(f, 2);
     }
 
-    for (Module *m : m_moduleList) {
+    for (const auto& m : m_moduleList) {
         for (Function *pp : *m) {
             if (!pp->isVisited() && !pp->isLib()) {
                 pp->printCallGraphXML(f, 2);

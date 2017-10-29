@@ -378,7 +378,7 @@ void CallStatement::setSigArguments()
                                 e->clone());
         as->setProc(m_proc);
         as->setBB(m_parent);
-        as->setNumber(m_number);     // So fromSSAform will work later. But note: this call is probably not numbered yet!
+        as->setNumber(m_number);     // So fromSSAForm will work later. But note: this call is probably not numbered yet!
         // as->setParent(this);
         m_arguments.append(as);
     }
@@ -664,7 +664,7 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB
                                         e->clone());
                 as->setProc(m_proc);
                 as->setBB(const_cast<BasicBlock *>(parentBB));
-                as->setNumber(m_number);     // So fromSSAform will work later
+                as->setNumber(m_number);     // So fromSSAForm will work later
                 m_arguments.append(as);
             }
         }

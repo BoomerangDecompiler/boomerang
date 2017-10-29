@@ -63,7 +63,7 @@ void CfgTest::testDominators()
     Address addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
 
-    Module *m = *(prog.getModuleList().begin());
+    const auto& m = *(prog.getModuleList().begin());
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -125,7 +125,7 @@ void CfgTest::testSemiDominators()
     Address addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
 
-    Module *m = *prog.getModuleList().begin();
+    const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -185,7 +185,7 @@ void CfgTest::testPlacePhi()
     prog.setFrontEnd(pFE);
     pFE->decode(&prog);
 
-    Module *m = *prog.getModuleList().begin();
+    const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -231,7 +231,7 @@ void CfgTest::testPlacePhi2()
     prog.setFrontEnd(pFE);
     pFE->decode(&prog);
 
-    Module *m = *prog.getModuleList().begin();
+    const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -312,13 +312,13 @@ void CfgTest::testRenameVars()
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    Prog      *prog = new Prog(FRONTIER_PENTIUM);
+    Prog      *prog = new Prog("FRONTIER_PENTIUM");
     IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);
     Type::clearNamedTypes();
     prog->setFrontEnd(pFE);
     pFE->decode(prog);
 
-    Module *m = *prog->getModuleList().begin();
+    const auto& m = *prog->getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 

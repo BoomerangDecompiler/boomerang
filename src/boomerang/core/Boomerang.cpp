@@ -99,7 +99,7 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *p
 std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
     LOG_MSG("Loading...");
-    std::unique_ptr<Prog> prog(new Prog(fname));
+    std::unique_ptr<Prog> prog(new Prog(QFileInfo(fname).baseName()));
     IFrontEnd *fe   = IFrontEnd::create(fname, prog.get(), this->getOrCreateProject());
 
     if (fe == nullptr) {
@@ -202,7 +202,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     if (SETTING(printAST)) {
         LOG_MSG("Printing AST...");
 
-        for (const Module *module : prog->getModuleList()) {
+        for (const auto& module : prog->getModuleList()) {
             for (Function *func : *module) {
                 if (!func->isLib()) {
                     UserProc *u = (UserProc *)func;

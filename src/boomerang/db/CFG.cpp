@@ -528,7 +528,7 @@ void Cfg::sortByLastDFT()
 }
 
 
-bool Cfg::wellFormCfg() const
+bool Cfg::isWellFormed() const
 {
     m_wellFormed = true;
 

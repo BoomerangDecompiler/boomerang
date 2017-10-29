@@ -348,7 +348,7 @@ public:
     }
 
     /// Translate out of SSA form
-    /// Called from CallStatement::fromSSAform. The UserProc is needed for the symbol map
-    void fromSSAform(UserProc *proc, Statement *def);
+    /// Called from CallStatement::fromSSAForm. The UserProc is needed for the symbol map
+    void fromSSAForm(UserProc *proc, Statement *def);
     bool operator==(UseCollector& other);
 };

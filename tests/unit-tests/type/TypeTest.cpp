@@ -141,7 +141,7 @@ void TypeTest::testCompound()
     IFileLoader *loader = project.getBestLoader(HELLO_WINDOWS);
     QVERIFY(loader != nullptr);
 
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, new Prog(HELLO_WINDOWS));
+    IFrontEnd *pFE = new PentiumFrontEnd(loader, new Prog("HELLO_WINDOWS"));
 
     pFE->readLibraryCatalog(); // Read definitions
 

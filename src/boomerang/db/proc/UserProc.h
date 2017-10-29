@@ -245,8 +245,6 @@ public:
 
     bool canRename(SharedExp e) { return m_df.canRename(e, this); }
 
-    Statement *getStmtAtLex(unsigned int begin, unsigned int end);
-
     /**
      * \brief Initialise the statements, e.g. proc, bb pointers
      */
@@ -405,7 +403,7 @@ public:
     /// Clear the useCollectors (in this Proc, and all calls).
     void clearUses();
 
-    void fromSSAform();
+    void fromSSAForm();
 
     /// Find the locations united by Phi-functions
     void findPhiUnites(ConnectionGraph& pu);

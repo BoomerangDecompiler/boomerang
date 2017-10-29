@@ -217,7 +217,7 @@ public:
     bool convertToDirect();
 
     /// direct call
-    void useColFromSsaForm(Statement *s) { m_useCol.fromSSAform(m_proc, s); }
+    void useColfromSSAForm(Statement *s) { m_useCol.fromSSAForm(m_proc, s); }
 
     bool isCallToMemOffset() const;
 

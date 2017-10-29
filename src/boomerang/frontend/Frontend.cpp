@@ -346,7 +346,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     }
 
     decode(m_program, a);
-    m_program->setEntryPoint(a);
+    m_program->addEntryPoint(a);
 
     if (!gotMain) {
         return;
@@ -425,7 +425,7 @@ void IFrontEnd::decode(Prog *prg, Address addr)
         while (change) {
             change = false;
 
-            for (Module *m : m_program->getModuleList()) {
+            for (const auto& m : m_program->getModuleList()) {
                 for (Function *function : *m) {
                     if (function->isLib()) {
                         continue;
@@ -461,7 +461,7 @@ void IFrontEnd::decode(Prog *prg, Address addr)
         }
     }
 
-    m_program->wellForm();
+    m_program->isWellFormed();
 }
 
 
@@ -478,7 +478,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address addr)
         p->setDecoded();
     }
 
-    m_program->wellForm();
+    m_program->isWellFormed();
 }
 
 

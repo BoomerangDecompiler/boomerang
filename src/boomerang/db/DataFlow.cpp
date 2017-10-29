@@ -926,7 +926,7 @@ void DefCollector::searchReplaceAll(const Exp& from, SharedExp to, bool& change)
 }
 
 
-void UseCollector::fromSSAform(UserProc *proc, Statement *def)
+void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
 {
     LocationSet   removes, inserts;
     iterator      it;
@@ -936,7 +936,7 @@ void UseCollector::fromSSAform(UserProc *proc, Statement *def)
         auto      ref = RefExp::get(*it, def); // Wrap it in a def
         SharedExp ret = ref->accept(&esx);
 
-        // If there is no change, ret will equal *it again (i.e. fromSSAform just removed the subscript)
+        // If there is no change, ret will equal *it again (i.e. fromSSAForm just removed the subscript)
         if (ret != *it) { // Pointer comparison
             // There was a change; we want to replace *it with ret
             removes.insert(*it);

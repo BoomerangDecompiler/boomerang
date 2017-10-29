@@ -1579,11 +1579,11 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
     }
 
     // Don't think we'll need this anyway:
-    // defCol.fromSSAform(ig);
+    // defCol.fromSSAForm(ig);
 
     // However, need modifications of the use collector; needed when say eax is renamed to local5, otherwise
     // local5 is removed from the results of the call
-    s->useColFromSsaForm(s);
+    s->useColfromSSAForm(s);
     recur = false; // TODO: verify recur setting
 }
 
