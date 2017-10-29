@@ -30,8 +30,8 @@ public:
     /// \returns the number of bytes in this image.
     virtual size_t size() const = 0;
 
-    /// \returns true if this image is empty.
-    virtual bool empty()  const = 0;
+    /// \returns true if this image does not contain any sections.
+    virtual bool empty() const = 0;
 
     /// Unloads all data in this image.
     virtual void reset() = 0;

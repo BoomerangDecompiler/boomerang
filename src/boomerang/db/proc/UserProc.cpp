@@ -1126,7 +1126,7 @@ void UserProc::initialiseDecompile()
     debugPrintAll("Before SSA");
 
     // Compute dominance frontier
-    m_df.dominators(m_cfg);
+    m_df.calculateDominators(m_cfg);
 
     // Number the statements
     m_stmtNumber = 0;

@@ -70,7 +70,7 @@ void CfgTest::testDominators()
     UserProc *pProc = (UserProc *)*(m->begin());
     Cfg      *cfg   = pProc->getCFG();
     DataFlow *df    = pProc->getDataFlow();
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
 
     // Find BB "5" (as per Appel, Figure 19.5).
     BBIterator it;
@@ -133,7 +133,7 @@ void CfgTest::testSemiDominators()
     Cfg      *cfg   = pProc->getCFG();
 
     DataFlow *df = pProc->getDataFlow();
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
 
     // Find BB "L (6)" (as per Appel, Figure 19.8).
     BBIterator it;
@@ -196,7 +196,7 @@ void CfgTest::testPlacePhi()
     cfg->sortByAddress();
     prog.finishDecode();
     DataFlow *df = pProc->getDataFlow();
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
     df->placePhiFunctions(pProc);
 
     // m[r29 - 8] (x for this program)
@@ -244,7 +244,7 @@ void CfgTest::testPlacePhi2()
     cfg->sortByAddress();
 
     DataFlow *df = pProc->getDataFlow();
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
     df->placePhiFunctions(pProc);
 
     // In this program, x is allocated at [ebp-4], a at [ebp-8], and
@@ -329,7 +329,7 @@ void CfgTest::testRenameVars()
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->finishDecode();
 
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
     df->placePhiFunctions(pProc);
     pProc->numberStatements();        // After placing phi functions!
     df->renameBlockVars(pProc, 0, 1); // Block 0, mem depth 1

@@ -10,13 +10,14 @@
 #pragma once
 
 
-#include "boomerang/db/exp/ExpHelp.h" // For lessExpStar, etc
-#include "boomerang/db/Managed.h"     // For LocationSet
+#include "boomerang/db/exp/ExpHelp.h" ///< For lessExpStar, etc
+#include "boomerang/db/Managed.h"     ///< For LocationSet
 
 #include <vector>
 #include <map>
 #include <set>
 #include <stack>
+
 
 class Cfg;
 class BasicBlock;
@@ -28,45 +29,39 @@ class PhiAssign;
 class Type;
 class QTextStream;
 
-/// Dominator frontier code largely as per Appel 2002 ("Modern Compiler Implementation in Java")
+
+/**
+ * Dominator frontier code largely as per Appel 2002 ("Modern Compiler Implementation in Java")
+ */
 class DataFlow
 {
 public:
     DataFlow();
-
     ~DataFlow();
 
-    /// depth first search
-    void dfs(int p, size_t n);
-
-    /// Essentially Algorithm 19.9 of Appel's "modern compiler implementation in Java" 2nd ed 2002
-    void dominators(Cfg *cfg);
-
-    /// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
-    /// (overall O(N log N))
-    int getAncestorWithLowestSemi(int v);
-    void link(int p, int n);
-    void computeDF(int n);
-
-    // Place phi functions. Return true if any change
+    /// Place phi functions.
+    /// \returns true if any change
     bool placePhiFunctions(UserProc *proc);
 
-    // Rename variables in basicblock n. Return true if any change made
-    bool renameBlockVars(UserProc *proc, int n, bool clearStacks = false);
+    /// \returns true if the expression \p e can be renamed
+    bool canRename(SharedExp e, UserProc *proc);
 
-    /// Return true if n dominates w
-    bool doesDominate(int n, int w);
+    /// Essentially Algorithm 19.9 of Appel's "modern compiler implementation in Java" 2nd ed 2002
+    void calculateDominators(Cfg *cfg);
 
     void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
-    bool canRenameLocalsParams() const { return renameLocalsAndParams; }
-    bool canRename(SharedExp e, UserProc *proc);
+
+    /// Rename variables in basic block \p n.
+    /// \returns true if any change made
+    bool renameBlockVars(UserProc *proc, int n, bool clearStacks = false);
+
     void convertImplicits(Cfg *cfg);
 
     /**
-     * Find the locations used by a live, dominating phi-function. Also removes dead phi-funcion.
+     * Find the locations used by a live, dominating phi-function. Also removes dead phi-funcions.
      *
      * Helper function for UserProc::propagateStatements()
-     * Works on basic block n; call from UserProc with n=0 (entry BB)
+     * Works on basic block \p n; call from UserProc with n=0 (entry BB)
      *
      * If an SSA location is in usedByDomPhi it means it is used in a phi that dominates its assignment
      * However, it could turn out that the phi is dead, in which case we don't want to keep the associated entries in
@@ -84,10 +79,6 @@ public:
     void findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                           std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
 
-    void setDominanceNums(int n, int& currNum); // Set the dominance statement number
-
-    void clearA_phi() { m_A_phi.clear(); }
-
     // For testing:
     int pbbToNode(BasicBlock *bb) { return m_indices[bb]; }
     std::set<int>& getDF(size_t node) { return m_DF[node]; }
@@ -95,6 +86,27 @@ public:
     int getIdom(size_t node) { return m_idom[node]; }
     int getSemi(size_t node) { return m_semi[node]; }
     std::set<int>& getA_phi(SharedExp e) { return m_A_phi[e]; }
+
+private:
+    /// depth first search
+    void dfs(int p, size_t n);
+
+    /// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
+    /// (overall O(N log N))
+    int getAncestorWithLowestSemi(int v);
+
+    void link(int p, int n);
+
+    void computeDF(int n);
+
+    /// Return true if n dominates w
+    bool doesDominate(int n, int w);
+
+    bool canRenameLocalsParams() const { return renameLocalsAndParams; }
+
+    void setDominanceNums(int n, int& currNum); // Set the dominance statement number
+
+    void clearA_phi() { m_A_phi.clear(); }
 
     // For debugging:
     void dumpStacks();

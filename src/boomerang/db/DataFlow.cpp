@@ -52,16 +52,16 @@ void DataFlow::dfs(int p, size_t n)
 
         // For each successor w of n
         BasicBlock *bb = m_BBs[n];
-        const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
+        const std::vector<BasicBlock *>& successors = bb->getSuccessors();
 
-        for (BasicBlock *_bb : outEdges) {
+        for (BasicBlock *_bb : successors) {
             dfs(n, m_indices[_bb]);
         }
     }
 }
 
 
-void DataFlow::dominators(Cfg *cfg)
+void DataFlow::calculateDominators(Cfg *cfg)
 {
     BasicBlock   *entryBB = cfg->getEntryBB();
     const size_t numBB    = cfg->getNumBBs();

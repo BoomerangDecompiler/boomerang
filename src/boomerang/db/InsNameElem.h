@@ -16,6 +16,7 @@
 #include <map>
 #include <memory>
 
+
 /// An element of an instruction name
 class InsNameElem
 {

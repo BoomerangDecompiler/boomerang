@@ -1365,12 +1365,14 @@ void StatementTest::testBypass()
     Cfg *cfg = proc->getCFG();
     // Sort by address
     cfg->sortByAddress();
+
     // Initialise statements
     proc->initStatements();
+
     // Compute dominance frontier
-    proc->getDataFlow()->dominators(cfg);
+    proc->getDataFlow()->calculateDominators(cfg);
+
     // Number the statements
-    // int stmtNumber = 0;
     proc->numberStatements();
     proc->getDataFlow()->renameBlockVars(proc, 0, 0); // Block 0, mem depth 0
     proc->getDataFlow()->renameBlockVars(proc, 0, 1); // Block 0, mem depth 1

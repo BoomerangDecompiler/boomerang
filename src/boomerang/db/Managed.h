@@ -11,15 +11,14 @@
 
 
 /**
- * \file       managed.h
  * \brief   Definition of "managed" classes such as InstructionSet, which feature makeUnion etc
- * CLASSES:        InstructionSet
- *                AssignSet
- *                StatementList
- *                StatementVec
- *                LocationSet
- *                ConnectionGraph
- *==============================================================================================*/
+ * CLASSES: InstructionSet
+ *          AssignSet
+ *          StatementList
+ *          StatementVec
+ *          LocationSet
+ *          ConnectionGraph
+ */
 
 #include "boomerang/db/exp/ExpHelp.h" // For lessExpStar
 
@@ -276,12 +275,14 @@ public:
 };
 
 
-/// A class to store connections in a graph, e.g. for interferences of types or live ranges, or the phi_unite relation
-/// that phi statements imply
-/// If a is connected to b, then b is automatically connected to a
-// This is implemented in a std::multimap, even though Appel suggests a bitmap (e.g. std::vector<bool> does this in a
-// space efficient manner), but then you still need maps from expression to bit number. So here a standard map is used,
-// and when a -> b is inserted, b->a is redundantly inserted.
+/**
+ * A class to store connections in a graph, e.g. for interferences of types or live ranges, or the phi_unite relation
+ * that phi statements imply
+ * If a is connected to b, then b is automatically connected to a
+ * \internal This is implemented in a std::multimap, even though Appel suggests a bitmap (e.g. std::vector<bool> does this in a
+ * space efficient manner), but then you still need maps from expression to bit number. So here a standard map is used,
+ * and when a -> b is inserted, b->a is redundantly inserted.
+ */
 class ConnectionGraph
 {
     std::multimap<SharedExp, SharedExp, lessExpStar> emap;   ///< The map
@@ -290,9 +291,10 @@ public:
     typedef std::multimap<SharedExp, SharedExp, lessExpStar>::iterator       iterator;
     typedef std::multimap<SharedExp, SharedExp, lessExpStar>::const_iterator const_iterator;
 
-    ConnectionGraph() {}
+    ConnectionGraph() = default;
 
-    void add(SharedExp a, SharedExp b); ///< Add pair with check for existing
+    /// Add pair with check for existing
+    void add(SharedExp a, SharedExp b);
     void connect(SharedExp a, SharedExp b);
 
     iterator begin()       { return emap.begin(); }
