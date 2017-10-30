@@ -35,8 +35,14 @@ if (WIN32)
 endif ()
 
 file(MAKE_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/bin)
+file(MAKE_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/share)
 
-file(COPY "${CMAKE_SOURCE_DIR}/data/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/share/boomerang")
+# link output data directory to ${CMAKE_SOURCE_DIR}/data"
+if (WIN32)
+    execute_process(COMMAND mklink /D "${BOOMERANG_OUTPUT_DIR}/share/boomerang" "${CMAKE_SOURCE_DIR}/data/")
+else () # Linux
+    execute_process(COMMAND ln -s "${CMAKE_SOURCE_DIR}/data/" "${BOOMERANG_OUTPUT_DIR}/share/boomerang")
+endif ()
 
 # delete all files in the 'out/' directory on make clean
 set(EXTRA_CLEAN_FILES "${BOOMERANG_OUTPUT_DIR}")
