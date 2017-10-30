@@ -9,8 +9,9 @@ import time
 from collections import defaultdict
 
 
-TESTS_DIR = os.getcwd() + os.sep + "tests"
-TESTS_INPUT = os.path.join(TESTS_DIR, "inputs")
+# ${CMAKE_BINARY_DIR}/tests/regression-tests
+TESTS_DIR = os.getcwd()
+TESTS_INPUT = os.path.abspath(os.path.join(TESTS_DIR, "../../out/share/boomerang/samples/"))
 
 test_results = defaultdict();
 
@@ -39,8 +40,8 @@ def perform_test(exepath, test_file_path, output_path, args):
     try:
         os.makedirs(output_path)
 
-        test_stdout = open(output_path + input_file + ".stdout", "w")
-        test_stderr = open(output_path + input_file + ".stderr", "w")
+        test_stdout = open(os.path.join(output_path, input_file + ".stdout"), "w")
+        test_stderr = open(os.path.join(output_path, input_file + ".stderr"), "w")
 
         start_t = time.time()
 
@@ -62,23 +63,23 @@ def perform_test(exepath, test_file_path, output_path, args):
 
 
 
-
-
 '''
   Test the decompiler with all files in a specific directory
   and all subdirectories.
 '''
-def test_all_inputs_in(dir_path, depth=0):
+def test_all_inputs_in(dir_path):
     for f in os.listdir(dir_path):
         if os.path.isdir(os.path.join(dir_path, f)):
             # recurse into subdirectories
-            test_all_inputs_in(os.path.join(dir_path, f), depth + 1)
+            test_all_inputs_in(os.path.join(dir_path, f))
         else:
             # test the actual file
             input_file = os.path.join(dir_path, f)
 
-            # /inputs/ -> /outputs/
-            output_dir = input_file.replace(os.sep + "inputs" + os.sep, os.sep + "outputs" + os.sep) + os.sep
+            # Find the path relative to TESTS_INPUT and preprend it with TESTS_DIR
+            output_dir = os.path.relpath(input_file, TESTS_INPUT)
+            output_dir = os.path.abspath(os.path.join(TESTS_DIR, "outputs", output_dir))
+
             test_results[input_file] = perform_test(sys.argv[1], input_file, output_dir, sys.argv[2:])
             sys.stdout.write(test_results[input_file][0]) # print status
             sys.stdout.flush()
@@ -104,7 +105,7 @@ def main():
     num_failed = sum(1 for res in test_results.values() if res[0] != '.')
 
     # Works because items are compared from left to right
-    (min_throughput, min_name) = min((res[3], os.path.relpath(res[2], TESTS_DIR)) for res in test_results.values() if res[0] == '.')
+    (min_throughput, min_name) = min((res[3], os.path.relpath(res[2], TESTS_INPUT)) for res in test_results.values() if res[0] == '.')
 
     print("Summary:")
     print("========")
