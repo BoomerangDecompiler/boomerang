@@ -7,10 +7,4 @@
 #
 
 
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/signatures" DESTINATION "lib/boomerang")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/ssl"   DESTINATION "lib/boomerang")
-
-# installation
-install(FILES ${SSL_FILES} DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/boomerang/frontend/")
-
-
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/" DESTINATION "share/boomerang")

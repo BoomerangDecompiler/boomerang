@@ -101,9 +101,8 @@ void Project::unloadBinaryFile()
 
 void Project::loadPlugins()
 {
-    QDir pluginsDir = Boomerang::get()->getSettings()->getDataDirectory();
-
-    if (!pluginsDir.cd("plugins/loader/")) {
+    QDir pluginsDir = Boomerang::get()->getSettings()->getPluginDirectory();
+    if (!pluginsDir.exists() || !pluginsDir.cd("loader")) {
         LOG_ERROR("Cannot open loader plugin directory '%1'!", pluginsDir.absolutePath());
     }
 

@@ -17,7 +17,8 @@ Settings::Settings()
 {
     m_workingDirectory = QDir("./").absolutePath();
 
-    setDataDirectory("../lib/boomerang");
+    setDataDirectory("../share/boomerang");
+    setPluginDirectory("../lib/boomerang/plugins");
     setOutputDirectory("./output");
 }
 
@@ -33,6 +34,13 @@ void Settings::setDataDirectory(const QString& directoryPath)
 {
     m_dataDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
     LOG_VERBOSE("dd now '%1'", m_dataDirectory.absolutePath());
+}
+
+
+void Settings::setPluginDirectory(const QString& directoryPath)
+{
+    m_pluginDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
+    LOG_VERBOSE("pd now '%1'", m_pluginDirectory.absolutePath());
 }
 
 

@@ -31,7 +31,7 @@
 #include <sstream>
 
 
-/// HACK to work around limitations of QMetaType
+/// HACK to work around limitations of QMetaType which does not allow templates
 struct SharedTypeWrapper
 {
 public:
@@ -53,7 +53,8 @@ Q_DECLARE_METATYPE(SharedTypeWrapper)
 
 void DfaTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 
     qRegisterMetaType<SharedTypeWrapper>();
 }
