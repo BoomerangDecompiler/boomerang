@@ -25,9 +25,8 @@ target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB})
 
 # install library and headers
 install(TARGETS boomerang
-    ARCHIVE DESTINATION lib/
-    LIBRARY DESTINATION lib/
-    RUNTIME DESTINATION bin/
+    ARCHIVE DESTINATION lib/boomerang
+    LIBRARY DESTINATION lib/boomerang
 )
 
 install(DIRECTORY . DESTINATION include/boomerang

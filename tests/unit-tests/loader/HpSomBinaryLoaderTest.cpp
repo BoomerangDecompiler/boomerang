@@ -16,7 +16,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 
-#define HELLO_HPPA    (BOOMERANG_TEST_BASE "tests/inputs/hppa/hello")
+#define HELLO_HPPA    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/hppa/hello"))
 
 
 void HpSomBinaryLoaderTest::initTestCase()

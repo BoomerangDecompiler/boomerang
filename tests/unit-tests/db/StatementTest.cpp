@@ -57,8 +57,8 @@
 #include <map>
 
 
-#define HELLO_PENTIUM      (BOOMERANG_TEST_BASE "tests/inputs/pentium/hello")
-#define GLOBAL1_PENTIUM    (BOOMERANG_TEST_BASE "tests/inputs/pentium/global1")
+#define HELLO_PENTIUM      (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define GLOBAL1_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/global1"))
 
 
 void StatementTest::initTestCase()

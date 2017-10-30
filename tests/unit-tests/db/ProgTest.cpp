@@ -25,8 +25,11 @@
 
 
 #include "boomerang/db/Prog.h"
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Settings.h"
 
-#define HELLO_PENTIUM    (BOOMERANG_TEST_BASE "tests/input/pentium/hello")
+
+#define HELLO_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
 
 
 void ProgTest::testName()

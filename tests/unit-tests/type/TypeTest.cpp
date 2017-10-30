@@ -40,7 +40,7 @@
 #include <QTextStream>
 #include <QDebug>
 
-#define HELLO_WINDOWS    (BOOMERANG_TEST_BASE "tests/inputs/windows/hello.exe")
+#define HELLO_WINDOWS    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/windows/hello.exe"))
 
 
 

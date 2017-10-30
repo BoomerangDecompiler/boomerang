@@ -17,7 +17,7 @@
 #include "boomerang/util/Log.h"
 
 
-#define HELLO_SPARC    (BOOMERANG_TEST_BASE "tests/inputs/sparc/hello")
+#define HELLO_SPARC    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/hello"))
 
 
 void SparcBinaryLoaderTest::initTestCase()

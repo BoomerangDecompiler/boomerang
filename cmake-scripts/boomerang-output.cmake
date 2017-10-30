@@ -41,7 +41,7 @@ file(MAKE_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/share)
 if (WIN32)
     execute_process(COMMAND mklink /D "${BOOMERANG_OUTPUT_DIR}/share/boomerang" "${CMAKE_SOURCE_DIR}/data/")
 else () # Linux
-    execute_process(COMMAND ln -s "${CMAKE_SOURCE_DIR}/data/" "${BOOMERANG_OUTPUT_DIR}/share/boomerang")
+    execute_process(COMMAND ln -sfn "${CMAKE_SOURCE_DIR}/data" "${BOOMERANG_OUTPUT_DIR}/share/boomerang")
 endif ()
 
 # delete all files in the 'out/' directory on make clean

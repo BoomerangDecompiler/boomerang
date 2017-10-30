@@ -11,7 +11,6 @@ if (BOOMERANG_BUILD_TESTS)
     enable_testing()
     find_package(Qt5Test REQUIRED)
 
-    file(COPY "${CMAKE_SOURCE_DIR}/tests/inputs/" DESTINATION "${BOOMERANG_OUTPUT_DIR}/tests/inputs/")
     add_definitions(-DBOOMERANG_TEST_BASE="${BOOMERANG_OUTPUT_DIR}/")
 
     add_subdirectory(${CMAKE_SOURCE_DIR}/tests/unit-tests)
