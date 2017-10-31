@@ -120,7 +120,7 @@ def main():
     for res in test_results.values():
         if (res[0] != '.'):
             some_failed = True
-            sys.stdout.write(res[0] + " " + os.path.relpath(res[2], TESTS_DIR) + "\n")
+            sys.stdout.write(res[0] + " " + os.path.relpath(res[2], TESTS_INPUT) + "\n")
 
     # Everything OK?
     if not some_failed:
