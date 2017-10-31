@@ -145,20 +145,10 @@ void RTLInstDict::addRegister(const QString& name, int id, int size, bool flt)
     RegMap[name] = id;
 
     if (id == -1) {
-        SpecialRegMap[name].setName(name);
-        SpecialRegMap[name].setSize(size);
-        SpecialRegMap[name].setFloat(flt);
-        SpecialRegMap[name].setAddress(nullptr);
-        SpecialRegMap[name].setMappedIndex(-1);
-        SpecialRegMap[name].setMappedOffset(-1);
+        SpecialRegMap.insert(std::make_pair(name, Register(name, size, flt)));
     }
     else {
-        DetRegMap[id].setName(name);
-        DetRegMap[id].setSize(size);
-        DetRegMap[id].setFloat(flt);
-        DetRegMap[id].setAddress(nullptr);
-        DetRegMap[id].setMappedIndex(-1);
-        DetRegMap[id].setMappedOffset(-1);
+        DetRegMap.insert(std::make_pair(id, Register(name, size, flt)));
     }
 }
 
@@ -276,7 +266,7 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
     if (it == idict.end()) {
         LOG_ERROR("No entry for '%1' in RTL dictionary", name);
         it = idict.find("NOP");
-        
+
 		if (it == idict.end()) {
             LOG_ERROR("No entry for 'NOP' in RTL dictionary");
 			return { hlpr, 0 }; // At least, don't cause segfault
