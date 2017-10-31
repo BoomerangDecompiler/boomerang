@@ -39,7 +39,23 @@ file(MAKE_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/share)
 
 # link output data directory to ${CMAKE_SOURCE_DIR}/data"
 if (WIN32)
-    execute_process(COMMAND mklink /D "${BOOMERANG_OUTPUT_DIR}/share/boomerang" "${CMAKE_SOURCE_DIR}/data/")
+    string(REPLACE "/" "\\\\" LNK_LOC    "${BOOMERANG_OUTPUT_DIR}/share/boomerang")
+    string(REPLACE "/" "\\\\" LNK_TARGET "${CMAKE_SOURCE_DIR}/data/")
+    
+    # Do not invoke mklink directly. If invoked directly, mklink will fail if the link already exists.
+    # But we only want to know if mklink fails because of some other reason.
+    set(LNK_COMMAND "if not exist ${LNK_LOC} (mklink /J ${LNK_LOC} ${LNK_TARGET})")
+    execute_process(COMMAND "cmd" /C "${LNK_COMMAND}"
+        WORKING_DIRECTORY "${BOOMERANG_OUTPUT_DIR}"
+        ERROR_VARIABLE LNK_ERROR
+        ERROR_STRIP_TRAILING_WHITESPACE
+    )
+    
+    if (LNK_ERROR)
+        message(WARNING "Could not link to data directory:\n"
+            "Command '${LNK_COMMAND}' failed with\n"
+            "error message '${LNK_ERROR}'")
+    endif (LNK_ERROR)
 else () # Linux
     execute_process(COMMAND ln -sfn "${CMAKE_SOURCE_DIR}/data" "${BOOMERANG_OUTPUT_DIR}/share/boomerang")
 endif ()
