@@ -53,21 +53,19 @@ if (MSVC)
     set(DEBUG_LIB dbghelp.lib)
     
 else () # GCC / Clang
-    BOOMERANG_ADD_COMPILE_FLAGS(-Wall -Wextra -Werror -Wshadow)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Werror=pedantic)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wall -Wextra -Werror -Werror=pedantic)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wshadow)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wformat=2)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wmissing-include-dirs)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wstrict-overflow=2)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wnull-dereference)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Wduplicated-cond)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Wduplicated-branches)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Walloc-zero)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Walloca)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wduplicated-cond -Wduplicated-branches)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Walloc-zero -Walloca)
     BOOMERANG_ADD_COMPILE_FLAGS(-rdynamic -fPIC)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC
     BOOMERANG_ADD_COMPILE_FLAGS(-Wsuggest-override)
-    BOOMERANG_ADD_COMPILE_FLAGS(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otherwise
     BOOMERANG_ADD_COMPILE_FLAGS(-Wundef)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC
+    BOOMERANG_ADD_COMPILE_FLAGS(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otherwise
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-gnu-zero-variadic-macro-arguments) # Will break QSKIP() macro on clang otherwise
 
     if (Qt5Core_VERSION VERSION_GREATER 5.6.1)
