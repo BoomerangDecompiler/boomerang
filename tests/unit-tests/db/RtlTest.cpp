@@ -37,13 +37,14 @@
 
 #include <sstream>
 
-#define SWITCH_SPARC    (BOOMERANG_TEST_BASE "tests/inputs/sparc/switch_cc")
-#define SWITCH_PENT     (BOOMERANG_TEST_BASE "tests/inputs/pentium/switch_cc")
+#define SWITCH_SPARC    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/switch_cc"))
+#define SWITCH_PENT     (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/switch_cc"))
 
 
 void RtlTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

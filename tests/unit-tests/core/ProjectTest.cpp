@@ -12,12 +12,16 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 
-#define HELLO_CLANG4    (BOOMERANG_TEST_BASE "tests/inputs/elf/hello-clang4-dynamic")
+
+#define HELLO_CLANG4    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/elf/hello-clang4-dynamic"))
+
 
 void ProjectTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

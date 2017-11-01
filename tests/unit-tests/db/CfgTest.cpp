@@ -28,13 +28,15 @@
 
 #include <QDebug>
 
-#define FRONTIER_PENTIUM    (BOOMERANG_TEST_BASE "/tests/inputs/pentium/frontier")
-#define SEMI_PENTIUM        (BOOMERANG_TEST_BASE "/tests/inputs/pentium/semi")
-#define IFTHEN_PENTIUM      (BOOMERANG_TEST_BASE "/tests/inputs/pentium/ifthen")
+#define FRONTIER_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/frontier"))
+#define SEMI_PENTIUM        (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/semi"))
+#define IFTHEN_PENTIUM      (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/ifthen"))
+
 
 void CfgTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

@@ -25,13 +25,17 @@ public:
 public:
     void setWorkingDirectory(const QString& directoryPath);
     void setDataDirectory(const QString& directoryPath);
+    void setPluginDirectory(const QString& directoryPath);
     void setOutputDirectory(const QString& directoryPath);
 
     /// Get the path where the boomerang executable is run from.
     QDir getWorkingDirectory() const { return m_workingDirectory; }
 
-    /// Get the path of the data directory where plugins, ssl files etc. are stored.
+    /// Get the path of the data directory where ssl files, signatures etc. are stored.
     QDir getDataDirectory() const { return m_dataDirectory; }
+
+    /// Get the path to the plugin directory
+    QDir getPluginDirectory() const { return m_pluginDirectory; }
 
     /// Get the path where the decompiled files should be put
     QDir getOutputDirectory() const { return m_outputDirectory; }
@@ -92,5 +96,6 @@ public:
 private:
     QDir m_workingDirectory;       ///< Directory where Boomerang is run from
     QDir m_dataDirectory;
+    QDir m_pluginDirectory;
     QDir m_outputDirectory;
 };

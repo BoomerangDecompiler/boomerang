@@ -20,9 +20,9 @@
 #include <QLibrary>
 
 
-#define HELLO_CLANG4           (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-dynamic")
-#define HELLO_CLANG4_STATIC    (BOOMERANG_TEST_BASE "/tests/inputs/elf/hello-clang4-static")
-#define HELLO_PENTIUM          (BOOMERANG_TEST_BASE "/tests/inputs/pentium/hello")
+#define HELLO_CLANG4           (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/elf/hello-clang4-dynamic"))
+#define HELLO_CLANG4_STATIC    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/hello-clang4-static"))
+#define HELLO_PENTIUM          (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
 
 
 /// path to the ELF loader plugin
@@ -35,7 +35,8 @@
 
 void ElfBinaryLoaderTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

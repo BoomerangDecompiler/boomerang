@@ -33,13 +33,14 @@
 #include <QDebug>
 
 
-#define HELLO_SPARC     (BOOMERANG_TEST_BASE "tests/inputs/sparc/hello")
-#define BRANCH_SPARC    (BOOMERANG_TEST_BASE "tests/inputs/sparc/branch")
+#define HELLO_SPARC     (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/hello"))
+#define BRANCH_SPARC    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/branch"))
 
 
 void FrontSparcTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

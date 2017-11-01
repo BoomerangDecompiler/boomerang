@@ -95,15 +95,6 @@ void Decompiler::changeInputFile(const QString& f)
 
 void Decompiler::setOutputPath(const QString& path)
 {
-    if (!QDir(path).exists(path)) {
-        // create directory if it does not exist yet.
-        // This should only happen for the default ./output value or
-        // when using the command line, since in the GUI you can only
-        // select existing directories
-        LOG_MSG("Creating output directory '%1'", path);
-        QDir().mkpath(path);
-    }
-
     Boomerang::get()->getSettings()->setOutputDirectory(path);
 }
 

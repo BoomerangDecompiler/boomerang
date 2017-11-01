@@ -16,12 +16,13 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 
-#define STARTER_PALM    (BOOMERANG_TEST_BASE "tests/inputs/mc68328/Starter.prc")
+#define STARTER_PALM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/mc68328/Starter.prc"))
 
 
 void PalmBinaryLoaderTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

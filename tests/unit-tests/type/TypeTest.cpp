@@ -40,7 +40,7 @@
 #include <QTextStream>
 #include <QDebug>
 
-#define HELLO_WINDOWS    (BOOMERANG_TEST_BASE "tests/inputs/windows/hello.exe")
+#define HELLO_WINDOWS    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/windows/hello.exe"))
 
 
 
@@ -109,7 +109,8 @@ ComplexTypeCompList& compForAddress(Address addr, DataIntervalMap& dim)
 
 void TypeTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

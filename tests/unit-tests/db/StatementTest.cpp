@@ -57,13 +57,14 @@
 #include <map>
 
 
-#define HELLO_PENTIUM      (BOOMERANG_TEST_BASE "tests/inputs/pentium/hello")
-#define GLOBAL1_PENTIUM    (BOOMERANG_TEST_BASE "tests/inputs/pentium/global1")
+#define HELLO_PENTIUM      (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define GLOBAL1_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/global1"))
 
 
 void StatementTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "lib/boomerang/");
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

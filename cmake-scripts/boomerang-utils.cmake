@@ -34,6 +34,9 @@ function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
                 "${${SanitizedName}-Release}"
                 "${BOOMERANG_OUTPUT_DIR}/bin/"
         )
+        
+        install(FILES "${${SanitizedName}-Debug}" DESTINATION bin/ CONFIGURATIONS Debug)
+        install(FILES "${${SanitizedName}-Release}" DESTINATION bin/ CONFIGURATIONS Release)
     endif (MSVC)
 endfunction(BOOMERANG_COPY_IMPORTED_DLL)
 
@@ -50,18 +53,26 @@ function(BOOMERANG_ADD_LOADER)
 		set(target_name "boomerang-${LOADER_NAME}Loader")
 		add_library(${target_name} SHARED ${LOADER_SOURCES})
 
-		set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
 		set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-		if (WIN32)
+		set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+			
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+			set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
 			set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-			set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-		endif (WIN32)
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+			set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+			set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+			set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+			set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+			set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+		endif (MSVC)
 
 		target_link_libraries(${target_name} Qt5::Core boomerang ${LOADER_LIBRARIES})
 
 		install(TARGETS ${target_name}
-			ARCHIVE DESTINATION lib/boomerang/plugins/loader/
 			LIBRARY DESTINATION lib/boomerang/plugins/loader/
+            RUNTIME DESTINATION lib/boomerang/plugins/loader/
 		)
 	endif (BOOMERANG_BUILD_LOADER_${LOADER_NAME})
 endfunction()
