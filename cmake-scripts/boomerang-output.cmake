@@ -47,6 +47,7 @@ if (WIN32)
     set(LNK_COMMAND "if not exist ${LNK_LOC} (mklink /J ${LNK_LOC} ${LNK_TARGET})")
     execute_process(COMMAND "cmd" /C "${LNK_COMMAND}"
         WORKING_DIRECTORY "${BOOMERANG_OUTPUT_DIR}"
+        OUTPUT_QUIET
         ERROR_VARIABLE LNK_ERROR
         ERROR_STRIP_TRAILING_WHITESPACE
     )
