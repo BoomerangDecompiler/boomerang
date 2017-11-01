@@ -257,7 +257,7 @@ void PhiAssign::convertToAssign(SharedExp rhs)
     // I believe we always want to propagate to these ex-phi's; check!:
     rhs = rhs->propagateAll();
     // Thanks to tamlin for this cleaner way of implementing this hack
-    assert(sizeof(Assign) <= sizeof(PhiAssign));
+
     int        n     = m_number;     // These items disappear with the destructor below
     BasicBlock *bb   = m_parent;
     UserProc   *p    = m_proc;
@@ -265,6 +265,7 @@ void PhiAssign::convertToAssign(SharedExp rhs)
     SharedExp  rhs_  = rhs;
     SharedType type_ = m_type;
 
+    assert(sizeof(Assign) <= sizeof(PhiAssign));
     this->~PhiAssign();                                   // Explicitly destroy this, but keep the memory allocated.
     Assign *a = new (this) Assign(type_, lhs_, rhs_);     // construct in-place. Note that 'a' == 'this'
     a->setNumber(n);

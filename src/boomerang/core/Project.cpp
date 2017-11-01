@@ -114,7 +114,6 @@ void Project::loadPlugins()
             continue;
         }
 #endif
-
         try {
             std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
             m_loaderPlugins.push_back(loaderPlugin);
