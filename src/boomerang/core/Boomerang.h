@@ -86,13 +86,10 @@ public:
 
     /**
      * Loads the executable file and decodes it.
-     *
      * \param fname The name of the file to load.
      * \param pname How the Prog will be named.
-     *
-     * \returns A Prog object.
      */
-    Prog *loadAndDecode(const QString& fname, const char *pname = nullptr);
+    std::unique_ptr<Prog> loadAndDecode(const QString& fname, const char *pname = nullptr);
 
     /**
      * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
