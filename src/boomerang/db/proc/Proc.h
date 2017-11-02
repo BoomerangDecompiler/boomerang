@@ -158,7 +158,6 @@ public:
     void addCallers(std::set<UserProc *>& callers);
 
     void removeParameter(SharedExp e);
-    virtual void removeReturn(SharedExp e);
 
     virtual void printCallGraphXML(QTextStream& os, int depth, bool = true);
     void printDetailsXML();

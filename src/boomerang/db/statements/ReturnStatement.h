@@ -71,8 +71,6 @@ public:
     /// Remove from modifieds AND from returns
     void removeModified(SharedExp loc);
 
-    /// Remove the return (if any) related to \p loc. Loc may or may not be subscripted
-    void removeReturn(SharedExp loc);
     void addReturn(Assignment *a);
 
     /// \copydoc Statement::getTypeFor

@@ -524,7 +524,6 @@ public:
     /// Get to a statement list, so they come out in a reasonable and consistent order
     /// get all the statements
     void getStatements(StatementList& stmts) const;
-    virtual void removeReturn(SharedExp e) override;
     void removeStatement(Statement *stmt);
     bool searchAll(const Exp& search, std::list<SharedExp>& result);
 

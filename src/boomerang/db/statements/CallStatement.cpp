@@ -674,7 +674,7 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB
         gen->addCallStatement(dest, dest->getSignature()->getPreferredName(), m_arguments, *results);
     }
     else {
-        gen->addCallStatement(dest, qPrintable(dest->getName()), m_arguments, *results);
+        gen->addCallStatement(dest, dest->getName(), m_arguments, results);
     }
 }
 
@@ -1341,7 +1341,7 @@ void CallStatement::updateDefines()
     }
     else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
-        Signature::setABIdefines(m_proc->getProg(), m_defines);
+        Signature::setABIDefines(m_proc->getProg(), m_defines);
         return;
     }
 

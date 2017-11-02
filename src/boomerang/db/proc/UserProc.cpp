@@ -2261,14 +2261,6 @@ void UserProc::findFinalParameters()
 }
 
 
-void UserProc::removeReturn(SharedExp e)
-{
-    if (theReturnStatement) {
-        theReturnStatement->removeReturn(e);
-    }
-}
-
-
 void UserProc::addParameter(SharedExp e, SharedType ty)
 {
     // In case it's already an implicit argument:

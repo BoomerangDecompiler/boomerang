@@ -232,12 +232,6 @@ void Function::removeParameter(SharedExp e)
 }
 
 
-void Function::removeReturn(SharedExp e)
-{
-    m_signature->removeReturn(e);
-}
-
-
 void Function::addCallers(std::set<UserProc *>& callers)
 {
     std::set<CallStatement *>::iterator it;

@@ -83,21 +83,6 @@ void ReturnStatement::simplify()
 }
 
 
-void ReturnStatement::removeReturn(SharedExp loc)
-{
-    if (loc->isSubscript()) {
-        loc = loc->getSubExp1();
-    }
-
-    for (iterator rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
-        if (*((Assignment *)*rr)->getLeft() == *loc) {
-            m_returns.erase(rr);
-            return;     // Assume only one definition
-        }
-    }
-}
-
-
 void ReturnStatement::addReturn(Assignment *a)
 {
     m_returns.append(a);
