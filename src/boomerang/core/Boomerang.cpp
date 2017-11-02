@@ -33,11 +33,11 @@
 #include <ctime>
 
 
-static Boomerang *boomerang = nullptr;
+static Boomerang *g_boomerang;
+
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
-    , m_currentProject(nullptr)
     , m_symbols(new SymTab)
     , m_codeGenerator(new CCodeGenerator)
 {
@@ -46,14 +46,12 @@ Boomerang::Boomerang()
 
 Boomerang::~Boomerang()
 {
-    delete m_codeGenerator;
-    delete m_currentProject;
 }
 
 
 ICodeGenerator *Boomerang::getCodeGenerator()
 {
-    return m_codeGenerator;
+    return m_codeGenerator.get();
 }
 
 
@@ -303,11 +301,18 @@ void Boomerang::miniDebugger(UserProc *p, const char *description)
 
 Boomerang *Boomerang::get()
 {
-    if (!boomerang) {
-        boomerang = new Boomerang();
+    if (!g_boomerang) {
+        g_boomerang = new Boomerang();
     }
 
-    return boomerang;
+    return g_boomerang;
+}
+
+
+void Boomerang::destroy()
+{
+    delete g_boomerang;
+    g_boomerang = nullptr;
 }
 
 
@@ -319,7 +324,7 @@ IBinaryImage *Boomerang::getImage()
 
 IBinarySymbolTable *Boomerang::getSymbols()
 {
-    return m_symbols;
+    return m_symbols.get();
 }
 
 
@@ -344,8 +349,8 @@ const char *Boomerang::getVersionStr()
 IProject *Boomerang::getOrCreateProject()
 {
     if (!m_currentProject) {
-        m_currentProject = new Project;
+        m_currentProject.reset(new Project);
     }
 
-    return m_currentProject;
+    return m_currentProject.get();
 }
