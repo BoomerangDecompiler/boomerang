@@ -155,7 +155,7 @@ void StatementTest::testFlow()
 
     a->setProc(proc);
     a->setNumber(1);
-    rtl->appendStmt(a);
+    rtl->append(a);
     pRtls->push_back(rtl);
     BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
@@ -166,7 +166,7 @@ void StatementTest::testFlow()
     a = new Assign(Location::regOf(24), std::make_shared<Const>(5));
     a->setProc(proc);
     rs->addReturn(a);
-    rtl->appendStmt(rs);
+    rtl->append(rs);
     pRtls->push_back(rtl);
 
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
@@ -232,12 +232,12 @@ void StatementTest::testKill()
 
     e->setNumber(1);
     e->setProc(proc);
-    rtl->appendStmt(e);
+    rtl->append(e);
 
     e = new Assign(Location::regOf(24), Const::get(6));
     e->setNumber(2);
     e->setProc(proc);
-    rtl->appendStmt(e);
+    rtl->append(e);
 
     pRtls->push_back(rtl);
     BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
@@ -248,7 +248,7 @@ void StatementTest::testKill()
     e = new Assign(Location::regOf(24), Const::get(0));
     e->setProc(proc);
     rs->addReturn(e);
-    rtl->appendStmt(rs);
+    rtl->append(rs);
 
     pRtls->push_back(rtl);
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
@@ -311,12 +311,12 @@ void StatementTest::testUse()
     Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
     a->setNumber(1);
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
 
     a = new Assign(Location::regOf(28), Location::regOf(24));
     a->setNumber(2);
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
 
     pRtls->push_back(rtl);
     BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
@@ -327,7 +327,7 @@ void StatementTest::testUse()
     a = new Assign(Location::regOf(28), Const::get(1000));
     a->setProc(proc);
     rs->addReturn(a);
-    rtl->appendStmt(rs);
+    rtl->append(rs);
     pRtls->push_back(rtl);
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->addSuccessor(ret);
@@ -388,15 +388,15 @@ void StatementTest::testUseOverKill()
     Assign           *e     = new Assign(Location::regOf(24), Const::get(5));
     e->setNumber(1);
     e->setProc(proc);
-    rtl->appendStmt(e);
+    rtl->append(e);
     e = new Assign(Location::regOf(24), Const::get(6));
     e->setNumber(2);
     e->setProc(proc);
-    rtl->appendStmt(e);
+    rtl->append(e);
     e = new Assign(Location::regOf(28), Location::regOf(24));
     e->setNumber(3);
     e->setProc(proc);
-    rtl->appendStmt(e);
+    rtl->append(e);
     pRtls->push_back(rtl);
 
     BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
@@ -407,7 +407,7 @@ void StatementTest::testUseOverKill()
     e = new Assign(Location::regOf(24), Const::get(0));
     e->setProc(proc);
     rs->addReturn(e);
-    rtl->appendStmt(rs);
+    rtl->append(rs);
     pRtls->push_back(rtl);
 
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
@@ -470,11 +470,11 @@ void StatementTest::testUseOverBB()
     Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
     a->setNumber(1);
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
     a = new Assign(Location::regOf(24), Const::get(6));
     a->setNumber(2);
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
     pRtls->push_back(rtl);
     BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
@@ -482,7 +482,7 @@ void StatementTest::testUseOverBB()
     a     = new Assign(Location::regOf(28), Location::regOf(24));
     a->setNumber(3);
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
     pRtls->push_back(rtl);
     rtl = new RTL(Address(0x00000123));
 
@@ -491,7 +491,7 @@ void StatementTest::testUseOverBB()
     a = new Assign(Location::regOf(24), Const::get(0));
     a->setProc(proc);
     rs->addReturn(a);
-    rtl->appendStmt(rs);
+    rtl->append(rs);
     pRtls->push_back(rtl);
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->addSuccessor(ret);
@@ -553,11 +553,11 @@ void StatementTest::testUseKill()
     Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
     a->setNumber(1);
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
     a = new Assign(Location::regOf(24), Binary::get(opPlus, Location::regOf(24), Const::get(1)));
     a->setNumber(2);
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
 
     pRtls->push_back(rtl);
     BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
@@ -568,7 +568,7 @@ void StatementTest::testUseKill()
     a = new Assign(Location::regOf(24), Const::get(0));
     a->setProc(proc);
     rs->addReturn(a);
-    rtl->appendStmt(rs);
+    rtl->append(rs);
     pRtls->push_back(rtl);
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
     first->addSuccessor(ret);
@@ -631,7 +631,7 @@ void StatementTest::testEndlessLoop()
     // r[24] := 5
     Assign *e = new Assign(Location::regOf(24), Const::get(5));
     e->setProc(proc);
-    rtl->appendStmt(e);
+    rtl->append(e);
     pRtls->push_back(rtl);
     BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
     pRtls = new std::list<RTL *>();
@@ -639,7 +639,7 @@ void StatementTest::testEndlessLoop()
     // r[24] := r[24] + 1
     e = new Assign(Location::regOf(24), Binary::get(opPlus, Location::regOf(24), Const::get(1)));
     e->setProc(proc);
-    rtl->appendStmt(e);
+    rtl->append(e);
     pRtls->push_back(rtl);
 
     BasicBlock *body = cfg->createBB(pRtls, BBType::Oneway);
@@ -831,10 +831,10 @@ void StatementTest::testRecursion()
     // push bp
     // r28 := r28 + -4
     Assign *a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
-    rtl->appendStmt(a);
+    rtl->append(a);
     // m[r28] := r29
     a = new Assign(Location::memOf(Location::regOf(28)), Location::regOf(29));
-    rtl->appendStmt(a);
+    rtl->append(a);
     pRtls->push_back(rtl);
     delete pRtls;
 
@@ -842,7 +842,7 @@ void StatementTest::testRecursion()
     // push arg+1
     // r28 := r28 + -4
     a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
-    rtl->appendStmt(a);
+    rtl->append(a);
     // Reference our parameter. At esp+0 is this arg; at esp+4 is old bp;
     // esp+8 is return address; esp+12 is our arg
     // m[r28] := m[r28+12] + 1
@@ -852,7 +852,7 @@ void StatementTest::testRecursion()
                         Binary::get(opPlus, Location::regOf(28), Const::get(12))), Const::get(1)));
 
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
     pRtls->push_back(rtl);
     BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
 
@@ -861,20 +861,20 @@ void StatementTest::testRecursion()
     rtl   = new RTL(Address(0x0000001));
     // r28 := r28 + -4
     a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
-    rtl->appendStmt(a);
+    rtl->append(a);
     // m[r28] := pc
     a = new Assign(Location::memOf(Location::regOf(28)), Terminal::get(opPC));
-    rtl->appendStmt(a);
+    rtl->append(a);
     // %pc := (%pc + 5) + 135893848
     a = new Assign(Terminal::get(opPC),
                    Binary::get(opPlus,
                                Binary::get(opPlus, Terminal::get(opPC), Const::get(5)),
                                Const::get(135893848)));
     a->setProc(proc);
-    rtl->appendStmt(a);
+    rtl->append(a);
     pRtls->push_back(rtl);
     CallStatement *c = new CallStatement;
-    rtl->appendStmt(c);
+    rtl->append(c);
 
     c->setDestProc(proc); // Just call self
     BasicBlock *callbb = cfg->createBB(pRtls, BBType::Call);
@@ -885,15 +885,15 @@ void StatementTest::testRecursion()
 
     pRtls = new std::list<RTL *>();
     rtl   = new RTL(Address(0x00000123));
-    rtl->appendStmt(new ReturnStatement);
+    rtl->append(new ReturnStatement);
     // This ReturnStatement requires the following two sets of semantics to pass the
     // tests for standard Pentium calling convention
     // pc = m[r28]
     a = new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(28)));
-    rtl->appendStmt(a);
+    rtl->append(a);
     // r28 = r28 + 4
     a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(4)));
-    rtl->appendStmt(a);
+    rtl->append(a);
     pRtls->push_back(rtl);
 
     BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);

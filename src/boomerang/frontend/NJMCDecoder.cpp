@@ -158,7 +158,7 @@ void NJMCDecoder::processUnconditionalJump(const char *name, int size, HostAddre
     result.numBytes = size;
     GotoStatement *jump = new GotoStatement();
     jump->setDest(Address((relocd - delta).value()));
-    result.rtl->appendStmt(jump);
+    result.rtl->append(jump);
     SHOW_ASM(name << " " << relocd - delta)
 }
 
@@ -171,7 +171,7 @@ void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest
     GotoStatement *jump = new GotoStatement();
     jump->setDest(dest);
     jump->setIsComputed(true);
-    result.rtl->appendStmt(jump);
+    result.rtl->append(jump);
     SHOW_ASM(name << " " << dest)
 }
 
@@ -184,7 +184,7 @@ void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest
     CallStatement *call = new CallStatement();
     call->setDest(dest);
     call->setIsComputed(true);
-    result.rtl->appendStmt(call);
+    result.rtl->append(call);
     SHOW_ASM(name << " " << dest)
 }
 

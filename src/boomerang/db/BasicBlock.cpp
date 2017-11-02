@@ -1081,7 +1081,7 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc)
 
         if (rtl->getAddress().isZero()) {
             // Append to this RTL
-            rtl->appendStmt(s);
+            rtl->append(s);
             return;
         }
     }

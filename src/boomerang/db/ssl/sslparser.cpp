@@ -1187,7 +1187,7 @@ SSLParser::
         // append any automatically generated register transfers and clear the list they were stored in.
         // Do nothing for a NOP (i.e. $2 = 0)
         if (yyvsp[0].regtransfer != nullptr) {
-            yyvsp[-1].rtlist->appendStmt(yyvsp[0].regtransfer);
+            yyvsp[-1].rtlist->append(yyvsp[0].regtransfer);
         }
         yyval.rtlist = yyvsp[-1].rtlist;
         ;
@@ -1196,7 +1196,7 @@ SSLParser::
     case 76: {
         yyval.rtlist = std::make_shared<RTL>(Address::ZERO); // WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
         if (yyvsp[0].regtransfer != nullptr)
-            yyval.rtlist->appendStmt(yyvsp[0].regtransfer);
+            yyval.rtlist->append(yyvsp[0].regtransfer);
         ;
         break;
     }

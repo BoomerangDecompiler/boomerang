@@ -72,7 +72,7 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
     RTL             *res = new RTL(pc, stmts);
     BranchStatement *br  = new BranchStatement();
 
-    res->appendStmt(br);
+    res->append(br);
 
     if (name[0] == 'F') {
         // fbranch is any of [ FBN FBNE FBLG FBUL FBL    FBUG FBG   FBU
@@ -431,7 +431,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         GotoStatement *jump = new GotoStatement;
                         result.type = SD;
                         result.rtl  = new RTL(pc, stmts);
-                        result.rtl->appendStmt(jump);
+                        result.rtl->append(jump);
                         jump->setDest(Address(tgt.value() - delta));
                         SHOW_ASM("BPA " << tgt - delta)
 
@@ -460,12 +460,12 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                             if (strcmp(name, "BPN") == 0) {
                                 jump = new GotoStatement;
                                 rtl  = new RTL(pc, stmts);
-                                rtl->appendStmt(jump);
+                                rtl->append(jump);
                             }
                             else if ((strcmp(name, "BPVS") == 0) || (strcmp(name, "BPVC") == 0)) {
                                 jump = new GotoStatement;
                                 rtl  = new RTL(pc, stmts);
-                                rtl->appendStmt(jump);
+                                rtl->append(jump);
                             }
                             else {
                                 rtl = createBranchRtl(pc, stmts, name);
@@ -626,7 +626,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
                     newCall->setDestProc(destProc);
                     result.rtl = new RTL(pc, stmts);
-                    result.rtl->appendStmt(newCall);
+                    result.rtl->append(newCall);
                     result.type = SD;
                     SHOW_ASM("call__ " << (nativeDest))
 
@@ -1389,7 +1389,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                      */
 
                                     result.rtl = new RTL(pc, stmts);
-                                    result.rtl->appendStmt(new ReturnStatement);
+                                    result.rtl->append(new ReturnStatement);
                                     result.type = DD;
                                     SHOW_ASM("retl_")
 
@@ -1415,7 +1415,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                      */
 
                                     result.rtl = new RTL(pc, stmts);
-                                    result.rtl->appendStmt(new ReturnStatement);
+                                    result.rtl->append(new ReturnStatement);
                                     result.type = DD;
                                     SHOW_ASM("ret_")
 
@@ -1490,7 +1490,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         // #line 620 "frontend/machine/sparc/decoder.m"
                         stmts      = instantiate(pc, name, { DIS_ADDR });
                         result.rtl = new RTL(pc, stmts);
-                        result.rtl->appendStmt(new ReturnStatement);
+                        result.rtl->append(new ReturnStatement);
                         result.type = DD;
                     }
 
@@ -1900,12 +1900,12 @@ MATCH_label_d0:
             if ((strcmp(name, "BPA,a") == 0) || (strcmp(name, "BPN,a") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else if ((strcmp(name, "BPVS,a") == 0) || (strcmp(name, "BPVC,a") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else {
                 rtl  = createBranchRtl(pc, stmts, name);
@@ -1969,12 +1969,12 @@ MATCH_label_d1:
             if ((strcmp(name, "BA") == 0) || (strcmp(name, "BN") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else if ((strcmp(name, "BVS") == 0) || (strcmp(name, "BVC") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else {
                 rtl  = createBranchRtl(pc, stmts, name);
@@ -2038,12 +2038,12 @@ MATCH_label_d2:
             if ((strcmp(name, "BA,a") == 0) || (strcmp(name, "BN,a") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else if ((strcmp(name, "BVS,a") == 0) || (strcmp(name, "BVC,a") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else {
                 rtl  = createBranchRtl(pc, stmts, name);
@@ -2130,7 +2130,7 @@ MATCH_label_d6:
 
             jump->setIsComputed();
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(jump);
+            result.rtl->append(jump);
             result.type = DD;
             jump->setDest(dis_Eaddr(addr));
             Q_UNUSED(rd);
@@ -2170,7 +2170,7 @@ MATCH_label_d7:
 
             newCall->setDest(dis_Eaddr(addr));
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newCall);
+            result.rtl->append(newCall);
             result.type = DD;
             SHOW_ASM("call_ " << dis_Eaddr(addr))
 

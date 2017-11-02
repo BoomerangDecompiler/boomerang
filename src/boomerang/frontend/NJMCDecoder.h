@@ -176,7 +176,7 @@ bool isFuncPrologue(Address hostPC);
 #define COND_JUMP(name, size, relocd, cond)                                    \
     result.rtl = new RTL(pc, stmts);                                           \
     BranchStatement *jump = new BranchStatement;                               \
-    result.rtl->appendStmt(jump);                                              \
+    result.rtl->append(jump);                                                  \
     result.numBytes = size;                                                    \
     jump->setDest(Address(relocd.value() - Util::signExtend<int64_t>(delta))); \
     jump->setCondType(cond);                                                   \
@@ -188,7 +188,7 @@ bool isFuncPrologue(Address hostPC);
     bs->setLeftFromList(stmts);          \
     stmts->clear();                      \
     result.rtl = new RTL(pc, stmts);     \
-    result.rtl->appendStmt(bs);          \
+    result.rtl->append(bs);              \
     bs->setCondType(cond);               \
     result.numBytes = 3;                 \
     SHOW_ASM(name << " " << dest)

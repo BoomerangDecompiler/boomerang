@@ -10,12 +10,6 @@
 #include "RTL.h"
 
 
-/**
- * \file       rtl.cpp
- * \brief   Implementation of the classes that describe a low level RTL (
- *               register transfer list)
- */
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/Assign.h"
@@ -31,14 +25,15 @@
 #include <cassert>                      // for assert
 #include <cstring>                      // for strncpy
 
+
 RTL::RTL()
     : m_nativeAddr(Address::ZERO)
 {
 }
 
 
-RTL::RTL(Address instNativeAddr, const std::list<Statement *> *listStmt /*= nullptr*/)
-    : m_nativeAddr(instNativeAddr)
+RTL::RTL(Address instrAddr, const std::list<Statement *> *listStmt /*= nullptr*/)
+    : m_nativeAddr(instrAddr)
 {
     if (listStmt) {
         *(std::list<Statement *> *) this = *listStmt;
@@ -62,21 +57,18 @@ RTL::~RTL()
 }
 
 
-RTL& RTL::operator=(const RTL& other)
+const RTL& RTL::operator=(const RTL& other)
 {
-    if (this != &other) {
-        qDeleteAll(*this);
-        // Do a deep copy always
-        clear();
-        const_iterator it;
-
-        for (it = other.begin(); it != other.end(); it++) {
-            push_back((*it)->clone());
-        }
-
-        m_nativeAddr = other.m_nativeAddr;
+    if (this == &other) {
+        return *this;
     }
 
+    // Do a deep copy always
+    qDeleteAll(*this);
+    clear();
+
+    other.deepCopyList(*this);
+    m_nativeAddr = other.m_nativeAddr;
     return *this;
 }
 
@@ -84,24 +76,20 @@ RTL& RTL::operator=(const RTL& other)
 RTL *RTL::clone() const
 {
     std::list<Statement *> le;
-
-    for (auto const& elem : *this) {
-        le.push_back((elem)->clone());
-    }
-
+    deepCopyList(le);
     return new RTL(m_nativeAddr, &le);
 }
 
 
 void RTL::deepCopyList(std::list<Statement *>& dest) const
 {
-    for (Statement *it : *this) {
+    for (const Statement *it : *this) {
         dest.push_back(it->clone());
     }
 }
 
 
-void RTL::appendStmt(Statement *s)
+void RTL::append(Statement *s)
 {
     assert(s != nullptr);
 
@@ -117,7 +105,7 @@ void RTL::appendStmt(Statement *s)
 }
 
 
-void RTL::appendListStmt(std::list<Statement *>& le)
+void RTL::append(std::list<Statement *>& le)
 {
     for (Statement *it : le) {
         push_back(it->clone());

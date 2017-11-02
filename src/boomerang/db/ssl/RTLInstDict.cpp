@@ -66,7 +66,7 @@ int TableEntry::appendRTL(std::list<QString>& p, RTL& r)
     }
 
     if (match) {
-        m_rtl.appendListStmt(r);
+        m_rtl.append(r);
         return 0;
     }
 

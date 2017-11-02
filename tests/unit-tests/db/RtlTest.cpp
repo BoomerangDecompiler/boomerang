@@ -53,7 +53,7 @@ void RtlTest::testAppend()
     Assign *a = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
     RTL    r;
 
-    r.appendStmt(a);
+    r.append(a);
     QString     res;
     QTextStream ost(&res);
     r.print(ost);

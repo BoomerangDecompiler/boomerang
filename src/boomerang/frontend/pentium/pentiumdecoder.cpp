@@ -8483,7 +8483,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             stmts = instantiate(pc, "RET.far.Iw", { DIS_I16 });
                             ReturnStatement *ret = new ReturnStatement;
                             result.rtl = new RTL(pc, stmts);
-                            result.rtl->appendStmt(ret);
+                            result.rtl->append(ret);
                         }
                         break;
 
@@ -8492,7 +8492,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                         // #line 490 "frontend/machine/pentium/decoder.m"
                         stmts      = instantiate(pc, "RET.far");
                         result.rtl = new RTL(pc, stmts);
-                        result.rtl->appendStmt(new ReturnStatement);
+                        result.rtl->append(new ReturnStatement);
                         break;
 
                     case 4:
@@ -14948,7 +14948,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     // Set the destination expression
                                     newCall->setDest(DIS_EADDR32);
                                     result.rtl = new RTL(pc, stmts);
-                                    result.rtl->appendStmt(newCall);
+                                    result.rtl->append(newCall);
                                     // Only one instruction, so size of result is size of this decode
                                     // result.numBytes = nextPC - hostPC;
                                 } /*opt-block*/ /*opt-block+*/
@@ -15053,7 +15053,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                     // Set the destination expression
                                     newJump->setDest(DIS_EADDR32);
                                     result.rtl = new RTL(pc, stmts);
-                                    result.rtl->appendStmt(newJump);
+                                    result.rtl->append(newJump);
                                     // Only one instruction, so size of result is size of this decode
                                     // result.numBytes = nextPC - hostPC;
 
@@ -31736,7 +31736,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             stmts = instantiate(pc, "RET.Iw", { DIS_I16 });
                             ReturnStatement *ret = new ReturnStatement;
                             result.rtl = new RTL(pc, stmts);
-                            result.rtl->appendStmt(ret);
+                            result.rtl->append(ret);
                         }
                         break;
 
@@ -31745,7 +31745,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                         // #line 495 "frontend/machine/pentium/decoder.m"
                         stmts      = instantiate(pc, "RET");
                         result.rtl = new RTL(pc, stmts);
-                        result.rtl->appendStmt(new ReturnStatement);
+                        result.rtl->append(new ReturnStatement);
                         //     | REPNE() =>
                         //        stmts = instantiate(pc,     "REPNE");
                         //    | REP() =>
@@ -49170,7 +49170,7 @@ MATCH_label_c1260:
             // Set the destination expression
             newCall->setDest(DIS_EADDR32);
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newCall);
+            result.rtl->append(newCall);
             // Only one instruction, so size of result is size of this decode
             // result.numBytes = nextPC - hostPC;
         }
@@ -49193,7 +49193,7 @@ MATCH_label_c1261:
             // Set the destination expression
             newCall->setDest(DIS_EADDR32);
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newCall);
+            result.rtl->append(newCall);
             // Only one instruction, so size of result is size of this decode
             // result.numBytes = nextPC - hostPC;
         }
@@ -49216,7 +49216,7 @@ MATCH_label_c1262:
             // Set the destination expression
             newCall->setDest(DIS_EADDR32);
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newCall);
+            result.rtl->append(newCall);
             // Only one instruction, so size of result is size of this decode
             // result.numBytes = nextPC - hostPC;
         }
@@ -49238,7 +49238,7 @@ MATCH_label_c1263:
             newCall->setIsComputed(); // Record the fact that this is a computed call
             newCall->setDest(tgt);    // Set the destination expression
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newCall);
+            result.rtl->append(newCall);
             // Only one instruction, so size of result is size of this decode
             // result.numBytes = nextPC - hostPC;
         }
@@ -49259,7 +49259,7 @@ MATCH_label_c1264:
             // Set the destination expression
             newJump->setDest(DIS_EADDR32);
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newJump);
+            result.rtl->append(newJump);
             // Only one instruction, so size of result is size of this decode
             // result.numBytes = nextPC - hostPC;
 
@@ -49284,7 +49284,7 @@ MATCH_label_c1265:
             // Set the destination expression
             newJump->setDest(DIS_EADDR32);
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newJump);
+            result.rtl->append(newJump);
             // Only one instruction, so size of result is size of this decode
             // result.numBytes = nextPC - hostPC;
 
@@ -49309,7 +49309,7 @@ MATCH_label_c1266:
             // Set the destination expression
             newJump->setDest(DIS_EADDR32);
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newJump);
+            result.rtl->append(newJump);
             // Only one instruction, so size of result is size of this decode
             // result.numBytes = nextPC - hostPC;
 
@@ -49334,7 +49334,7 @@ MATCH_label_c1267:
             // Set the destination expression
             newJump->setDest(DIS_EADDR32);
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newJump);
+            result.rtl->append(newJump);
             // Only one instruction, so size of result is size of this decode
             // result.numBytes = nextPC - hostPC;
 

@@ -1190,7 +1190,7 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL *> *pRtls, Address uAddr)
     // Add the Exp to an RTL
     RTL *pRtl = new RTL(uAddr);
 
-    pRtl->appendStmt(a);
+    pRtl->append(a);
     // Add the RTL to the list of RTLs, but to the second last position
     pRtls->insert(--pRtls->end(), pRtl);
 }

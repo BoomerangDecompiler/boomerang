@@ -138,7 +138,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         result.rtl = new RTL(pc, stmts);
 
-                        result.rtl->appendStmt(newCall);
+                        result.rtl->append(newCall);
                     }
                     break;
 
@@ -160,7 +160,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         result.rtl = new RTL(pc, stmts);
 
-                        result.rtl->appendStmt(br);
+                        result.rtl->append(br);
                     }
                     break;
 
@@ -838,7 +838,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
                             if (isRet) {
                                 result.rtl = new RTL(pc, stmts);
 
-                                result.rtl->appendStmt(new ReturnStatement);
+                                result.rtl->append(new ReturnStatement);
                             }
                         }
                         else {

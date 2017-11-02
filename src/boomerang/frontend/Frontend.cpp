@@ -1256,7 +1256,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_r
             pRtl->clear();
         }
 
-        pRtl->appendStmt(new GotoStatement(retAddr));
+        pRtl->append(new GotoStatement(retAddr));
         try {
             pBB = pCfg->createBB(BB_rtls, BBType::Oneway);
             // if BB already exists but is incomplete, exception is thrown

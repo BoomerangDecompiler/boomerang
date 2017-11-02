@@ -412,7 +412,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::itera
     Statement *asgn = new Assign(lhs, std::make_shared<Ternary>(opTern, cond, Const::get(1), Const::get(0)));
     RTL       *pRtl = new RTL(uAddr);
 
-    pRtl->appendStmt(asgn);
+    pRtl->append(asgn);
     //    std::cout << "Emit "; pRtl->print(); std::cout << '\n';
     // Insert the new RTL before rit
     BB_rtls->insert(rit, pRtl);
@@ -441,13 +441,13 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         Statement *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                   std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
         RTL *pRtl = new RTL(addr);
-        pRtl->appendStmt(a);
+        pRtl->append(a);
         a = new Assign(Location::regOf(24), std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
-        pRtl->appendStmt(a);
+        pRtl->append(a);
         a = new Assign(Location::regOf(26),
                        Binary::get(opShiftR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))), Const::get(32)));
-        pRtl->appendStmt(a);
+        pRtl->append(a);
         // Append this RTL to the list of RTLs for this BB
         lrtl->push_back(pRtl);
         // Return true, so the caller knows not to create a HLCall
@@ -456,7 +456,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
     else if (name == "__mingw_allocstack") {
         RTL       *pRtl = new RTL(addr);
         Statement *a    = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
-        pRtl->appendStmt(a);
+        pRtl->append(a);
         lrtl->push_back(pRtl);
         m_program->removeFunction(name);
         return true;
@@ -937,7 +937,7 @@ bool PentiumFrontEnd::decodeSpecial_out(Address pc, DecodeResult& r)
     call->setDestProc(m_program->getLibraryProc("outp"));
     call->setArgumentExp(0, dx);
     call->setArgumentExp(1, al);
-    r.rtl->appendStmt(call);
+    r.rtl->append(call);
     return true;
 }
 
@@ -959,7 +959,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(Address pc, DecodeResult& r)
 
     CallStatement *call = new CallStatement();
     call->setDestProc(m_program->getLibraryProc("invalid_opcode"));
-    r.rtl->appendStmt(call);
+    r.rtl->append(call);
     return true;
 }
 
