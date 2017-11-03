@@ -251,10 +251,10 @@ CallStatement::~CallStatement()
 
 int CallStatement::findDefine(SharedExp e)
 {
-    StatementList::iterator rr;
+
     int i = 0;
 
-    for (rr = m_defines.begin(); rr != m_defines.end(); ++rr, ++i) {
+    for (StatementList::iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr, ++i) {
         SharedExp ret = ((Assignment *)*rr)->getLeft();
 
         if (*ret == *e) {
@@ -582,14 +582,14 @@ Statement *CallStatement::clone() const
 
     ret->m_dest       = m_dest->clone();
     ret->m_isComputed = m_isComputed;
-    StatementList::const_iterator ss;
 
-    for (ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        ret->m_arguments.append((*ss)->clone());
+
+    for (Statement *stmt : m_arguments) {
+        ret->m_arguments.append(stmt->clone());
     }
 
-    for (ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        ret->m_defines.append((*ss)->clone());
+    for (Statement *stmt : m_defines) {
+        ret->m_defines.append(stmt->clone());
     }
 
     // Statement members
@@ -1333,9 +1333,9 @@ void CallStatement::updateDefines()
         return;
     }
 
-    // Move the defines to a temporary list
-    StatementList           oldDefines(m_defines);     // Copy the old defines
-    StatementList::iterator it;
+    // Move the defines to a temporary list. We must make sure that all defines
+    // that are not inserted into m_defines again are deleted.
+    StatementList           oldDefines(m_defines);
     m_defines.clear();
 
     if (m_procDest && m_calleeReturn) {
@@ -1376,32 +1376,31 @@ void CallStatement::updateDefines()
         }
     }
 
-    for (it = oldDefines.end(); it != oldDefines.begin();) {
-        --it;     // Becuase we are using a forwards iterator backwards
+    for (StatementList::reverse_iterator it = oldDefines.rbegin(); it != oldDefines.rend(); ++it) {
         // Make sure the LHS is still in the return or collector
         Assignment *as = (Assignment *)*it;
         SharedExp  lhs = as->getLeft();
 
         if (m_calleeReturn) {
             if (!m_calleeReturn->definesLoc(lhs)) {
+                delete *it;
                 continue;     // Not in callee returns
             }
         }
-        else {
-            if (!m_useCol.exists(lhs)) {
-                continue;     // Not in collector: delete it (don't copy it)
-            }
+        else if (!m_useCol.exists(lhs)) {
+            delete *it;
+            continue;     // Not in collector: delete it (don't copy it)
         }
 
         if (m_proc->filterReturns(lhs)) {
+            delete *it;
             continue;     // Filtered out: delete it
         }
 
         // Insert as, in order, into the existing set of definitions
-        StatementList::iterator nn;
         bool inserted = false;
 
-        for (nn = m_defines.begin(); nn != m_defines.end(); ++nn) {
+        for (StatementList::iterator nn = m_defines.begin(); nn != m_defines.end(); ++nn) {
             if (sig->returnCompare(*as, *(Assignment *)*nn)) {     // If the new assignment is less than the current one
                 nn       = m_defines.insert(nn, as);               // then insert before this position
                 inserted = true;
@@ -1594,12 +1593,11 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
 
 void CallStatement::removeDefine(SharedExp e)
 {
-    StatementList::iterator ss;
-
-    for (ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
+    for (StatementList::iterator ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
         Assignment *as = ((Assignment *)*ss);
 
         if (*as->getLeft() == *e) {
+            delete *ss;
             m_defines.erase(ss);
             return;
         }

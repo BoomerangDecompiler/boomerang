@@ -1549,9 +1549,8 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
     }
 
     StatementList&          arguments = s->getArguments();
-    StatementList::iterator ss;
 
-    for (ss = arguments.begin(); ss != arguments.end(); ++ss) {
+    for (StatementList::iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
         (*ss)->accept(this);
     }
 
@@ -1560,7 +1559,7 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
     // fromSSA() function
     StatementList& defines = s->getDefines();
 
-    for (ss = defines.begin(); ss != defines.end(); ++ss) {
+    for (StatementList::iterator ss = defines.begin(); ss != defines.end(); ++ss) {
         Assignment *as = ((Assignment *)*ss);
         // FIXME: use of fromSSAleft is deprecated
         SharedExp e = as->getLeft()->fromSSAleft(((ExpSsaXformer *)m_mod)->getProc(), s);

@@ -640,7 +640,10 @@ SharedExp Exp::fromSSAleft(UserProc *proc, Statement *d)
 {
     auto r = RefExp::get(shared_from_this(), d); // "Wrap" in a ref
 
-    return r->accept(new ExpSsaXformer(proc));
+    ExpSsaXformer *xformer = new ExpSsaXformer(proc);
+    SharedExp result = r->accept(xformer);
+    delete xformer;
+    return result;
 }
 
 
