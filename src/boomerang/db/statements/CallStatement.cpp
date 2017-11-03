@@ -625,11 +625,11 @@ void CallStatement::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
     Function *p = getDestProc();
 
     if ((p == nullptr) && isComputed()) {
-        gen->addIndCallStatement(m_dest, m_arguments, calcResults());
+        gen->addIndCallStatement(m_dest, m_arguments, *calcResults());
         return;
     }
 
-    StatementList *results = calcResults();
+    std::unique_ptr<StatementList> results = calcResults();
     assert(p);
 
     if (SETTING(noDecompile)) {
@@ -662,10 +662,10 @@ void CallStatement::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
     }
 
     if (p->isLib() && !p->getSignature()->getPreferredName().isEmpty()) {
-        gen->addCallStatement(p, p->getSignature()->getPreferredName(), m_arguments, results);
+        gen->addCallStatement(p, p->getSignature()->getPreferredName(), m_arguments, *results);
     }
     else {
-        gen->addCallStatement(p, qPrintable(p->getName()), m_arguments, results);
+        gen->addCallStatement(p, qPrintable(p->getName()), m_arguments, *results);
     }
 }
 
@@ -1529,9 +1529,9 @@ void CallStatement::updateArguments()
 }
 
 
-StatementList *CallStatement::calcResults()
+std::unique_ptr<StatementList> CallStatement::calcResults()
 {
-    StatementList *ret = new StatementList;
+    std::unique_ptr<StatementList> result(new StatementList);
 
     if (m_procDest) {
         auto sig = m_procDest->getSignature();
@@ -1547,7 +1547,7 @@ StatementList *CallStatement::calcResults()
             }
 
             if (m_useCol.exists(lhs)) {
-                ret->append(dd);
+                result->append(dd);
             }
         }
     }
@@ -1573,22 +1573,22 @@ StatementList *CallStatement::calcResults()
             ImplicitAssign *as      = new ImplicitAssign(loc);     // Create an implicit assignment
             bool           inserted = false;
 
-            for (nn = ret->begin(); nn != ret->end(); ++nn) {
+            for (nn = result->begin(); nn != result->end(); ++nn) {
                 // If the new assignment is less than the current one,
                 if (sig->returnCompare(*as, *(Assignment *)*nn)) {
-                    nn       = ret->insert(nn, as);     // then insert before this position
+                    nn       = result->insert(nn, as);     // then insert before this position
                     inserted = true;
                     break;
                 }
             }
 
             if (!inserted) {
-                ret->insert(ret->end(), as);     // In case larger than all existing elements
+                result->insert(result->end(), as);     // In case larger than all existing elements
             }
         }
     }
 
-    return ret;
+    return result;
 }
 
 

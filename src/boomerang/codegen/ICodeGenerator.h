@@ -61,16 +61,16 @@ public:
     /**
      * Adds a call to the function \p proc.
      *
-     * \param proc            The Proc the call is to.
-     * \param name            The name the Proc has.
-     * \param args            The arguments to the call.
+     * \param dest           The Proc the call is to.
+     * \param name           The name the Proc has.
+     * \param args           The arguments to the call.
      * \param results        The variable that will receive the return value of the function.
      *
      * \todo                Remove the \p name parameter and use Proc::getName()
      * \todo                Add assingment for when the function returns a struct.
      */
-    virtual void addCallStatement(Function *proc, const QString& name, StatementList& args,
-                                  StatementList *results) = 0;
+    virtual void addCallStatement(Function *dest, const QString& name,
+                                  const StatementList& args, const StatementList& results) = 0;
 
     /**
      * Adds an indirect call to \a exp.
@@ -78,7 +78,8 @@ public:
      * \param results UNUSED
      * \todo Add the use of \a results like AddCallStatement.
      */
-    virtual void addIndCallStatement(const SharedExp& exp, StatementList& args, StatementList *results) = 0;
+    virtual void addIndCallStatement(const SharedExp& exp, const StatementList& args,
+                                     const StatementList& results) = 0;
 
     /**
      * Adds a return statement and returns the first expression in \a rets.

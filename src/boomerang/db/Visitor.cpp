@@ -247,7 +247,10 @@ SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp>& r)
             m_mod        = true;
             // Now have to recurse to do any further bypassing that may be required
             // E.g. bypass the two recursive calls in fibo?? FIXME: check!
-            return ret->accept(new CallBypasser(m_enclosingStmt));
+            CallBypasser *bp = new CallBypasser(m_enclosingStmt);
+            SharedExp result = ret->accept(bp);
+            delete bp;
+            return result;
         }
     }
 

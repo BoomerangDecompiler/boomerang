@@ -106,7 +106,7 @@ IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog)
         break;
 
     default:
-        LOG_WARN("Machine architecture not supported!");
+        LOG_ERROR("Machine architecture not supported!");
     }
 
     return nullptr;

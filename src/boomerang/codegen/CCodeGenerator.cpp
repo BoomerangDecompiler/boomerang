@@ -364,17 +364,17 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
 }
 
 
-void CCodeGenerator::addCallStatement(Function *proc, const QString& name, StatementList& args,
-                                      StatementList *results)
+void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
+                                      const StatementList& args, const StatementList& results)
 {
     QString     tgt;
     QTextStream s(&tgt);
 
     indent(s, m_indent);
 
-    if (!results->empty()) {
+    if (!results.empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
-        SharedExp firstRet = ((Assignment *)*results->begin())->getLeft();
+        SharedConstExp firstRet = ((const Assignment *)*results.begin())->getLeft();
         appendExp(s, *firstRet, PREC_ASSIGN);
         s << " = ";
     }
@@ -383,7 +383,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name, State
     bool first = true;
     int  n     = 0;
 
-    for (StatementList::iterator ss = args.begin(); ss != args.end(); ++ss, ++n) {
+    for (StatementList::const_iterator ss = args.begin(); ss != args.end(); ++ss, ++n) {
         if (first) {
             first = false;
         }
@@ -426,11 +426,12 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name, State
 
     s << ");";
 
-    if (results->size() > 1) {
+    if (results.size() > 1) {
         first = true;
         s << " /* Warning: also results in ";
 
-        for (StatementList::iterator ss = ++results->begin(); ss != results->end(); ++ss) {
+        for (StatementList::const_iterator ss = std::next(results.begin());
+             ss != results.end(); ++ss) {
             if (first) {
                 first = false;
             }
@@ -438,7 +439,9 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name, State
                 s << ", ";
             }
 
-            appendExp(s, *((Assignment *)*ss)->getLeft(), PREC_COMMA);
+            const Assignment* assign = dynamic_cast<const Assignment *>(*ss);
+            assert(assign != nullptr);
+            appendExp(s, *assign->getLeft(), PREC_COMMA);
         }
 
         s << " */";
@@ -448,7 +451,8 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name, State
 }
 
 
-void CCodeGenerator::addIndCallStatement(const SharedExp& exp, StatementList& args, StatementList *results)
+void CCodeGenerator::addIndCallStatement(const SharedExp& exp, const StatementList& args,
+                                         const StatementList& results)
 {
     Q_UNUSED(results);
     //    FIXME: Need to use 'results', since we can infer some defines...
@@ -592,10 +596,10 @@ void CCodeGenerator::generateCode(UserProc *proc)
         StatementList args, results;
 
         if (proc->getProg()->getFrontEndId() == Platform::PENTIUM) {
-            addCallStatement(nullptr, "PENTIUMSETUP", args, &results);
+            addCallStatement(nullptr, "PENTIUMSETUP", args, results);
         }
         else if (proc->getProg()->getFrontEndId() == Platform::SPARC) {
-            addCallStatement(nullptr, "SPARCSETUP", args, &results);
+            addCallStatement(nullptr, "SPARCSETUP", args, results);
         }
     }
 

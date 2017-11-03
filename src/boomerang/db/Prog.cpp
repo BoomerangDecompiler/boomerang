@@ -97,9 +97,9 @@ Prog::~Prog()
 {
     delete m_defaultFrontend;
     m_defaultFrontend = nullptr;
-    for (Module *m : m_moduleList) {
-        delete m;
-    }
+
+    qDeleteAll(m_moduleList);
+    qDeleteAll(m_globals);
 }
 
 
@@ -744,11 +744,11 @@ Address Prog::getGlobalAddr(const QString& nam) const
 }
 
 
-Global *Prog::getGlobal(const QString& nam) const
+Global *Prog::getGlobal(const QString& name) const
 {
     auto iter =
-        std::find_if(m_globals.begin(), m_globals.end(), [nam](Global *g) -> bool {
-        return g->getName() == nam;
+        std::find_if(m_globals.begin(), m_globals.end(), [name](Global *g) -> bool {
+        return g->getName() == name;
     });
 
     if (iter == m_globals.end()) {
@@ -1322,6 +1322,7 @@ void Prog::removeUnusedGlobals()
     // rebuild the globals vector
     Global *usedGlobal;
 
+    qDeleteAll(m_globals);
     m_globals.clear();
 
     for (const SharedExp& e : usedGlobals) {
