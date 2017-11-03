@@ -1370,7 +1370,7 @@ struct SwitchForm
     char           type;
 };
 
-SwitchForm hlForms[] =
+static SwitchForm hlForms[] =
 {
     { forma, 'a' },
     { formA, 'A' },
