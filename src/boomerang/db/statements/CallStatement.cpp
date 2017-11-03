@@ -246,16 +246,16 @@ CallStatement::CallStatement()
 
 CallStatement::~CallStatement()
 {
+    qDeleteAll(m_defines);
 }
 
 
 int CallStatement::findDefine(SharedExp e)
 {
-
     int i = 0;
 
-    for (StatementList::iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr, ++i) {
-        SharedExp ret = ((Assignment *)*rr)->getLeft();
+    for (StatementList::const_iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr, ++i) {
+        SharedConstExp ret = (dynamic_cast<Assignment *>(*rr))->getLeft();
 
         if (*ret == *e) {
             return i;
@@ -458,15 +458,14 @@ void CallStatement::print(QTextStream& os, bool html) const
     }
 
     // Define(s), if any
-    if (m_defines.size()) {
+    if (m_defines.size() > 0) {
         if (m_defines.size() > 1) {
             os << "{";
         }
 
-        StatementList::const_iterator rr;
         bool first = true;
 
-        for (rr = m_defines.begin(); rr != m_defines.end(); ++rr) {
+        for (StatementList::const_iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr) {
             assert((*rr)->isAssignment());
             Assignment *as = (Assignment *)*rr;
 
@@ -584,11 +583,11 @@ Statement *CallStatement::clone() const
     ret->m_isComputed = m_isComputed;
 
 
-    for (Statement *stmt : m_arguments) {
+    for (const Statement *stmt : m_arguments) {
         ret->m_arguments.append(stmt->clone());
     }
 
-    for (Statement *stmt : m_defines) {
+    for (const Statement *stmt : m_defines) {
         ret->m_defines.append(stmt->clone());
     }
 
@@ -1324,12 +1323,12 @@ void CallStatement::updateDefines()
     }
 
     if (m_procDest && m_procDest->isLib()) {
-        sig->setLibraryDefines(&m_defines);     // Set the locations defined
+        sig->setLibraryDefines(m_defines);     // Set the locations defined
         return;
     }
     else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
-        Signature::setABIdefines(m_proc->getProg(), &m_defines);
+        Signature::setABIdefines(m_proc->getProg(), m_defines);
         return;
     }
 

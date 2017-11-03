@@ -128,7 +128,7 @@ public:
     virtual int getStackRegister() const noexcept (false)override { return 28; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
-    virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
+    virtual void setLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
 
     virtual bool isPromoted()        const override { return true; }
     virtual Platform getPlatform()   const override { return Platform::PENTIUM; }
@@ -182,7 +182,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 
     /// Return a list of locations defined by library calls
-    virtual void setLibraryDefines(StatementList *defs) override;
+    virtual void setLibraryDefines(StatementList& defs) override;
 
     virtual bool isPromoted() const override { return true; }
     virtual Platform getPlatform() const override { return Platform::PENTIUM; }
@@ -216,7 +216,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 
     /// Return a list of locations defined by library calls
-    virtual void setLibraryDefines(StatementList *defs) override;
+    virtual void setLibraryDefines(StatementList& defs) override;
 
     /// Stack offsets can be negative (inherited) or positive:
     virtual bool isLocalOffsetPositive() const override { return true; }
@@ -263,7 +263,7 @@ public:
     virtual int getStackRegister() const noexcept (false)override { return 1; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
-    virtual void setLibraryDefines(StatementList *defs) override; // Set list of locations def'd by library calls
+    virtual void setLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
 
     virtual bool isLocalOffsetPositive() const override { return true; }
     virtual bool isPromoted() const override { return true; }
@@ -300,7 +300,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;
 
     /// Return a list of locations defined by library calls
-    virtual void setLibraryDefines(StatementList *defs) override;
+    virtual void setLibraryDefines(StatementList& defs) override;
 
     virtual bool isLocalOffsetPositive() const override { return true; }
     virtual bool isPromoted() const override { return true; }
@@ -624,9 +624,9 @@ bool CallingConvention::Win32Signature::isPreserved(SharedExp e) const
 }
 
 
-void CallingConvention::Win32Signature::setLibraryDefines(StatementList *defs)
+void CallingConvention::Win32Signature::setLibraryDefines(StatementList& defs)
 {
-    if (defs->size()) {
+    if (defs.size()) {
         return;                           // Do only once
     }
 
@@ -637,10 +637,10 @@ void CallingConvention::Win32Signature::setLibraryDefines(StatementList *defs)
         ty = m_returns[1]->m_type;
     }
 
-    defs->append(new ImplicitAssign(ty, r24));             // eax
-    defs->append(new ImplicitAssign(Location::regOf(25))); // ecx
-    defs->append(new ImplicitAssign(Location::regOf(26))); // edx
-    defs->append(new ImplicitAssign(Location::regOf(28))); // esp
+    defs.append(new ImplicitAssign(ty, r24));             // eax
+    defs.append(new ImplicitAssign(Location::regOf(25))); // ecx
+    defs.append(new ImplicitAssign(Location::regOf(26))); // edx
+    defs.append(new ImplicitAssign(Location::regOf(28))); // esp
 }
 
 
@@ -863,10 +863,11 @@ bool CallingConvention::StdC::PentiumSignature::isPreserved(SharedExp e) const
 }
 
 
-void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList *defs)
+void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList& defs)
 {
-    if (defs->size()) {
-        return;                           // Do only once
+    if (defs.size() > 0) {
+        // Do only once
+        return;
     }
 
     auto       r24 = Location::regOf(24); // eax
@@ -876,10 +877,10 @@ void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList 
         ty = m_returns[1]->m_type;
     }
 
-    defs->append(new ImplicitAssign(ty, r24));             // eax
-    defs->append(new ImplicitAssign(Location::regOf(25))); // ecx
-    defs->append(new ImplicitAssign(Location::regOf(26))); // edx
-    defs->append(new ImplicitAssign(Location::regOf(28))); // esp
+    defs.append(new ImplicitAssign(ty, r24));             // eax
+    defs.append(new ImplicitAssign(Location::regOf(25))); // ecx
+    defs.append(new ImplicitAssign(Location::regOf(26))); // edx
+    defs.append(new ImplicitAssign(Location::regOf(28))); // esp
 }
 
 
@@ -1000,14 +1001,14 @@ bool CallingConvention::StdC::PPCSignature::isPreserved(SharedExp e) const
 
 
 // Return a list of locations defined by library calls
-void CallingConvention::StdC::PPCSignature::setLibraryDefines(StatementList *defs)
+void CallingConvention::StdC::PPCSignature::setLibraryDefines(StatementList& defs)
 {
-    if (defs->size()) {
+    if (defs.size() > 0) {
         return; // Do only once
     }
 
     for (int r = 3; r <= 12; ++r) {
-        defs->append(new ImplicitAssign(Location::regOf(r))); // Registers 3-12 are volatile (caller save)
+        defs.append(new ImplicitAssign(Location::regOf(r))); // Registers 3-12 are volatile (caller save)
     }
 }
 
@@ -1374,17 +1375,17 @@ bool CallingConvention::StdC::MIPSSignature::isPreserved(SharedExp e) const
 }
 
 
-void CallingConvention::StdC::MIPSSignature::setLibraryDefines(StatementList *defs)
+void CallingConvention::StdC::MIPSSignature::setLibraryDefines(StatementList& defs)
 {
-    if (defs->size()) {
+    if (defs.size() > 0) {
         return; // Do only once
     }
 
     for (int r = 16; r <= 23; ++r) {
-        defs->append(new ImplicitAssign(Location::regOf(r))); // Registers 16-23 are volatile (caller save)
+        defs.append(new ImplicitAssign(Location::regOf(r))); // Registers 16-23 are volatile (caller save)
     }
 
-    defs->append(new ImplicitAssign(Location::regOf(30)));
+    defs.append(new ImplicitAssign(Location::regOf(30)));
 }
 
 
@@ -1500,14 +1501,14 @@ bool CallingConvention::StdC::SparcSignature::isPreserved(SharedExp e) const
 }
 
 
-void CallingConvention::StdC::SparcSignature::setLibraryDefines(StatementList *defs)
+void CallingConvention::StdC::SparcSignature::setLibraryDefines(StatementList& defs)
 {
-    if (defs->size()) {
+    if (defs.size() > 0) {
         return; // Do only once
     }
 
     for (int r = 8; r <= 15; ++r) {
-        defs->append(new ImplicitAssign(Location::regOf(r))); // o0-o7 (r8-r15) modified
+        defs.append(new ImplicitAssign(Location::regOf(r))); // o0-o7 (r8-r15) modified
     }
 }
 
@@ -2196,41 +2197,41 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 }
 
 
-void Signature::setABIdefines(Prog *prog, StatementList *defs)
+void Signature::setABIdefines(Prog *prog, StatementList& defs)
 {
-    if (defs->size()) {
+    if (defs.size() > 0) {
         return; // Do only once
     }
 
     switch (prog->getMachine())
     {
     case Machine::PENTIUM:
-        defs->append(new ImplicitAssign(Location::regOf(24))); // eax
-        defs->append(new ImplicitAssign(Location::regOf(25))); // ecx
-        defs->append(new ImplicitAssign(Location::regOf(26))); // edx
+        defs.append(new ImplicitAssign(Location::regOf(24))); // eax
+        defs.append(new ImplicitAssign(Location::regOf(25))); // ecx
+        defs.append(new ImplicitAssign(Location::regOf(26))); // edx
         break;
 
     case Machine::SPARC:
 
         for (int r = 8; r <= 13; ++r) {
-            defs->append(new ImplicitAssign(Location::regOf(r))); // %o0-o5
+            defs.append(new ImplicitAssign(Location::regOf(r))); // %o0-o5
         }
 
-        defs->append(new ImplicitAssign(Location::regOf(1)));     // %g1
+        defs.append(new ImplicitAssign(Location::regOf(1)));     // %g1
         break;
 
     case Machine::PPC:
 
         for (int r = 3; r <= 12; ++r) {
-            defs->append(new ImplicitAssign(Location::regOf(r))); // r3-r12
+            defs.append(new ImplicitAssign(Location::regOf(r))); // r3-r12
         }
 
         break;
 
     case Machine::ST20:
-        defs->append(new ImplicitAssign(Location::regOf(0))); // A
-        defs->append(new ImplicitAssign(Location::regOf(1))); // B
-        defs->append(new ImplicitAssign(Location::regOf(2))); // C
+        defs.append(new ImplicitAssign(Location::regOf(0))); // A
+        defs.append(new ImplicitAssign(Location::regOf(1))); // B
+        defs.append(new ImplicitAssign(Location::regOf(2))); // C
         break;
 
     default:

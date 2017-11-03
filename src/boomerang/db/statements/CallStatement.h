@@ -242,7 +242,6 @@ public:
     void useBeforeDefine(SharedExp x) { m_useCol.insert(x); } // Add x to the UseCollector for this call
     void removeLiveness(SharedExp e) { m_useCol.remove(e); } // Remove e from the UseCollector
     void removeAllLive() { m_useCol.clear(); }               // Remove all livenesses
-    //        Exp*        fromCalleeContext(Exp* e);            // Convert e from callee to caller (this) context
     StatementList& getDefines() { return m_defines; } // Get list of locations defined by this call
 
     /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
