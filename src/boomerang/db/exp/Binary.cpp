@@ -1666,7 +1666,8 @@ bool Binary::accept(ExpVisitor *v)
 {
     assert(subExp1 && subExp2);
 
-    bool override, ret = v->visit(shared_from_base<Binary>(), override);
+    bool override = false;
+    bool ret = v->visit(shared_from_base<Binary>(), override);
 
     if (override) {
         return ret;

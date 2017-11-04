@@ -322,11 +322,11 @@ public:
 
     /***************************************************************************/ /**
      * \brief This does extra processing on a constant.
-     * The Exp* \a e is expected to be a Const, and the ADDRESS \a lc is the native
+     * The Exp* \a e is expected to be a Const, and the Address \p location is the native
      * location from which the constant was read.
      * \returns processed Exp
      ******************************************************************************/
-    SharedExp addReloc(SharedExp e, Address lc);
+    SharedExp addReloc(SharedExp e, Address location);
 
 
     /// Create or retrieve existing module
