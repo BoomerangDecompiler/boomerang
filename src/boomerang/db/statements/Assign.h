@@ -75,7 +75,7 @@ public:
     int getMemDepth() const;
 
     /// Generate code
-    virtual void generateCode(ICodeGenerator *gen, BasicBlock *Parent) override;
+    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
     /// simpify internal expressions
     virtual void simplify() override;

@@ -5723,7 +5723,7 @@ void UserProc::processDecodedICTs()
             continue;
         }
 
-        RTL *rtl = bb->getLastRtl();
+        RTL *rtl = bb->getLastRTL();
 
         if (DEBUG_SWITCH) {
             LOG_MSG("Saving high level switch statement %1", rtl);

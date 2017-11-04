@@ -182,7 +182,7 @@ bool GotoStatement::accept(StmtVisitor *visitor)
 }
 
 
-void GotoStatement::generateCode(ICodeGenerator *, BasicBlock *)
+void GotoStatement::generateCode(ICodeGenerator *, const BasicBlock *)
 {
     // don't generate any code for jumps, they will be handled by the BB
 }

@@ -270,7 +270,7 @@ private:
     void emitGotoAndLabel(BasicBlock *bb, BasicBlock *dest);
 
     /// Generates code for each non-CTI (except procedure calls) statement within the block.
-    void writeBB(BasicBlock *bb);
+    void writeBB(const BasicBlock *bb);
 
 private:
     /// Dump all generated code to \a os.

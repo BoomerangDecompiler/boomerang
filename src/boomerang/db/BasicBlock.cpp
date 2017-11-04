@@ -67,14 +67,14 @@ BasicBlock::~BasicBlock()
 {
     if (m_listOfRTLs) {
         // Delete the RTLs
-        for (RTL *it : *m_listOfRTLs) {
-            delete it;
+        for (RTL *rtl : *m_listOfRTLs) {
+            delete rtl;
         }
-
-        // and delete the list
-        delete m_listOfRTLs;
-        m_listOfRTLs = nullptr;
     }
+
+    // and delete the list
+    delete m_listOfRTLs;
+    m_listOfRTLs = nullptr;
 }
 
 
@@ -1230,7 +1230,7 @@ void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
                 continue;
             }
 
-            PhiAssign *pa = (PhiAssign *)st;
+            PhiAssign *pa = dynamic_cast<PhiAssign *>(st);
 
             for (std::pair<const BasicBlock *, PhiInfo> v : pa->getDefs()) {
                 if (!cfg->existsBB(v.first)) {
@@ -1535,7 +1535,7 @@ int BasicBlock::findNumCases()
             continue;                           // Ignore all others
         }
 
-        assert(in->m_listOfRTLs && in->m_listOfRTLs->size());
+        assert(in->m_listOfRTLs && in->m_listOfRTLs->size() > 0);
         RTL *lastRtl = in->m_listOfRTLs->back();
         assert(!lastRtl->empty());
         BranchStatement *lastStmt = (BranchStatement *)lastRtl->back();

@@ -93,7 +93,7 @@ public:
     virtual void printCompact(QTextStream& os, bool html = false) const override;
 
     /// code generation
-    virtual void generateCode(ICodeGenerator *gen, BasicBlock *) override;
+    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
     /// simplify all the uses/defs in this Statement
     virtual void simplify() override;

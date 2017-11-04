@@ -406,7 +406,7 @@ bool BranchStatement::accept(StmtVisitor *visitor)
 }
 
 
-void BranchStatement::generateCode(ICodeGenerator *, BasicBlock *)
+void BranchStatement::generateCode(ICodeGenerator *, const BasicBlock *)
 {
     // dont generate any code for jconds, they will be handled by the bb
 }

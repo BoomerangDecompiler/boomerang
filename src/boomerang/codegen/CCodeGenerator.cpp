@@ -2401,7 +2401,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
             if (bb->getCondType() == CondType::Case) {
                 // The CaseStatement will be in the last RTL this BB
-                RTL           *last = bb->getRTLList()->back();
+                RTL           *last = bb->getRTLs()->back();
                 CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
                 psi = cs->getSwitchInfo();
 
@@ -2544,8 +2544,8 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
 
             if (bb->getType() == BBType::CompJump) {
-                assert(!bb->getRTLList()->empty());
-                RTL *lastRTL = bb->getRTLList()->back();
+                assert(!bb->getRTLs()->empty());
+                RTL *lastRTL = bb->getRTLs()->back();
                 assert(!lastRTL->empty());
                 GotoStatement *gs = (GotoStatement *)lastRTL->back();
 
@@ -2739,7 +2739,7 @@ void CCodeGenerator::emitGotoAndLabel(BasicBlock *bb, BasicBlock *dest)
 }
 
 
-void CCodeGenerator::writeBB(BasicBlock *bb)
+void CCodeGenerator::writeBB(const BasicBlock *bb)
 {
     if (DEBUG_GEN) {
         LOG_MSG("Generating code for BB at address %1", bb->getLowAddr());
@@ -2749,8 +2749,8 @@ void CCodeGenerator::writeBB(BasicBlock *bb)
     // then be generated now or back patched later
     addLabel(bb->getOrdering());
 
-    if (bb->getRTLList()) {
-        for (RTL *rtl : *(bb->getRTLList())) {
+    if (bb->getRTLs()) {
+        for (RTL *rtl : *(bb->getRTLs())) {
             if (DEBUG_GEN) {
                 LOG_MSG("%1", rtl->getAddress());
             }

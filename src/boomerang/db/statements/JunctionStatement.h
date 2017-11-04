@@ -41,7 +41,7 @@ public:
     /// general search and replace. Set cc true to change collectors as well. Return true if any change
     bool searchAndReplace(const Exp& /*search*/, SharedExp /*replace*/, bool /*cc*/ = false)  override { return false; }
 
-    void generateCode(ICodeGenerator * /*hll*/, BasicBlock * /*pbb*/)  override {}
+    virtual void generateCode(ICodeGenerator * /*generator*/, const BasicBlock * /*parentBB*/) override {}
 
     // simpify internal expressions
     void simplify() override {}

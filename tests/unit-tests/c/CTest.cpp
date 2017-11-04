@@ -23,7 +23,7 @@
 
 void CTest::testSignature()
 {
-    std::istringstream os("int printf(char *fmt, ...);");
+    std::istream *os = new std::istringstream("int printf(char *fmt, ...);");
     AnsiCParser        *p = new AnsiCParser(os, false);
     p->yyparse(Platform::PENTIUM, CallConv::C);
 

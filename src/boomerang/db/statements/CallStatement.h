@@ -206,7 +206,7 @@ public:
     void dfaTypeAnalysis(bool& ch) override;
 
     // code generation
-    virtual void generateCode(ICodeGenerator *gen, BasicBlock *Parent) override;
+    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
     // dataflow analysis
     virtual bool usesExp(const Exp& e) const override;

@@ -672,6 +672,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             // If invalid and we are speculating, just exit
             if (spec && !inst.valid) {
+                delete inst.rtl;
                 return false;
             }
 
@@ -715,7 +716,9 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(uAddr);
 
             if (ff != m_previouslyDecoded.end()) {
+                delete pRtl;
                 pRtl = ff->second;
+                inst.rtl = pRtl; // don't leave the inst.rtl pointer dangling
             }
 
             if (pRtl == nullptr) {
@@ -1021,6 +1024,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             // calls
                             if (isHelperFunc(callAddr, uAddr, BB_rtls)) {
                                 // We have already added to BB_rtls
+                                delete pRtl;
                                 pRtl = nullptr; // Discard the call semantics
                                 break;
                             }

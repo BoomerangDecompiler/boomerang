@@ -619,7 +619,7 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
+void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB)
 {
     Function *p = getDestProc();
 
@@ -633,10 +633,11 @@ void CallStatement::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
 
     if (SETTING(noDecompile)) {
         if (m_procDest->getSignature()->getNumReturns() > 0) {
-            Assign *as = new Assign(IntegerType::get(STD_SIZE), Unary::get(opRegOf, Const::get(24)),
+            Assign *as = new Assign(IntegerType::get(STD_SIZE),
+                                    Unary::get(opRegOf, Const::get(24)),
                                     Unary::get(opRegOf, Const::get(24)));
             as->setProc(m_proc);
-            as->setBB(pbb);
+            as->setBB(const_cast<BasicBlock *>(parentBB));
             results->append(as);
         }
 
@@ -651,9 +652,11 @@ void CallStatement::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
                     l->setProc(m_proc);     // Needed?
                 }
 
-                Assign *as = new Assign(m_signature->getParamType(i), e->clone(), e->clone());
+                Assign *as = new Assign(m_signature->getParamType(i),
+                                        e->clone(),
+                                        e->clone());
                 as->setProc(m_proc);
-                as->setBB(pbb);
+                as->setBB(const_cast<BasicBlock *>(parentBB));
                 as->setNumber(m_number);     // So fromSSAform will work later
                 m_arguments.append(as);
             }
