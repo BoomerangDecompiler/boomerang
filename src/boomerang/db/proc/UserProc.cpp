@@ -68,6 +68,8 @@ UserProc::UserProc(Address address, const QString& name, Module *module)
 UserProc::~UserProc()
 {
     deleteCFG();
+
+    qDeleteAll(m_parameters);
 }
 
 
@@ -2179,6 +2181,7 @@ void UserProc::findFinalParameters()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "before find final parameters.");
 
+    qDeleteAll(m_parameters);
     m_parameters.clear();
 
     if (m_signature->isForced()) {
@@ -5001,6 +5004,7 @@ void UserProc::propagateToCollector()
 void UserProc::initialParameters()
 {
     LOG_VERBOSE("### Initial parameters for %1", getName());
+    qDeleteAll(m_parameters);
     m_parameters.clear();
 
     for (const SharedExp& v : m_procUseCollector) {
@@ -5562,7 +5566,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     }
 
     // Save the old parameters and call liveness
-    StatementList oldParameters(m_parameters);
+    const size_t oldNumParameters = m_parameters.size();
     std::map<CallStatement *, UseCollector> callLiveness;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
@@ -5597,7 +5601,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     // findFinalParameters();
     removeRedundantParameters();
 
-    if (m_parameters.size() != oldParameters.size()) {
+    if (m_parameters.size() != oldNumParameters) {
         if (DEBUG_UNUSED) {
             LOG_MSG("%%%  parameters changed for %1", getName());
         }
