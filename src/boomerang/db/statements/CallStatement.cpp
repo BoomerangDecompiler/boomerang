@@ -321,8 +321,9 @@ void CallStatement::setArgumentType(int i, SharedType ty)
 }
 
 
-void CallStatement::setArguments(StatementList& args)
+void CallStatement::setArguments(const StatementList& args)
 {
+    qDeleteAll(m_arguments);
     m_arguments.clear();
     m_arguments.append(args);
     StatementList::iterator ll;
@@ -355,6 +356,8 @@ void CallStatement::setSigArguments()
 
     int n = m_signature->getNumParams();
     int i;
+
+    qDeleteAll(m_arguments);
     m_arguments.clear();
 
     for (i = 0; i < n; i++) {
@@ -817,6 +820,7 @@ bool CallStatement::convertToDirect()
 
     // 3
     // 3a Do the same with the regular arguments
+    qDeleteAll(m_arguments);
     m_arguments.clear();
 
     for (unsigned i = 0; i < sig->getNumParams(); i++) {
@@ -859,7 +863,8 @@ bool CallStatement::isCallToMemOffset() const
 
 SharedExp CallStatement::getArgumentExp(int i) const
 {
-    assert(i < (int)m_arguments.size());
+    assert(Util::inRange(i, 0, getNumArguments()));
+
     StatementList::const_iterator aa = m_arguments.begin();
     std::advance(aa, i);
     return ((Assign *)*aa)->getRight();
@@ -868,10 +873,11 @@ SharedExp CallStatement::getArgumentExp(int i) const
 
 void CallStatement::setArgumentExp(int i, SharedExp e)
 {
-    assert(i < (int)m_arguments.size());
+    assert(Util::inRange(i, 0, getNumArguments()));
+
     StatementList::iterator aa = m_arguments.begin();
     std::advance(aa, i);
-    SharedExp& a = ((Assign *)*aa)->getRightRef();
+    SharedExp& a = (dynamic_cast<Assign *>(*aa))->getRightRef();
     a = e->clone();
 }
 
@@ -884,12 +890,12 @@ int CallStatement::getNumArguments() const
 
 void CallStatement::setNumArguments(int n)
 {
-    int oldSize = m_arguments.size();
+    const int oldSize = getNumArguments();
 
     if (oldSize > n) {
-        StatementList::iterator aa = m_arguments.begin();
-        std::advance(aa, n);
-        m_arguments.erase(aa, m_arguments.end());
+        StatementList::iterator start = std::next(m_arguments.begin(), n);
+        qDeleteAll(start, m_arguments.end());
+        m_arguments.erase(start, m_arguments.end());
     }
 
     // MVE: check if these need extra propagation
@@ -915,8 +921,11 @@ void CallStatement::setNumArguments(int n)
 
 void CallStatement::removeArgument(int i)
 {
+    assert(Util::inRange(i, 0, getNumArguments()));
+
     StatementList::iterator aa = m_arguments.begin();
     std::advance(aa, i);
+    delete *aa;
     m_arguments.erase(aa);
 }
 
@@ -1449,6 +1458,7 @@ void CallStatement::updateArguments()
         m_proc->propagateStatements(convert, 88);
     }
 
+    // Do not delete statements in m_arguments since they are preserved by
     StatementList oldArguments(m_arguments);
     m_arguments.clear();
 
@@ -1495,27 +1505,26 @@ void CallStatement::updateArguments()
         }
     }
 
-    StatementList::iterator it;
-
-    for (it = oldArguments.end(); it != oldArguments.begin();) {
-        --it;     // Becuase we are using a forwards iterator backwards
+    for (StatementList::reverse_iterator it = oldArguments.rbegin(); it != oldArguments.rend(); ++it) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
         Assign    *as = (Assign *)*it;
         SharedExp lhs = as->getLeft();
 
         if (!asp.exists(lhs)) {
+            delete *it;
             continue;
         }
 
         if (m_proc->filterParams(lhs)) {
-            continue;     // Filtered out: delete it
+            // Filtered out: delete it
+            delete *it;
+            continue;
         }
 
         // Insert as, in order, into the existing set of definitions
-        StatementList::iterator nn;
         bool inserted = false;
 
-        for (nn = m_arguments.begin(); nn != m_arguments.end(); ++nn) {
+        for (StatementList::iterator nn = m_arguments.begin(); nn != m_arguments.end(); ++nn) {
             if (sig->argumentCompare(*as, *(Assign *)*nn)) {     // If the new assignment is less than the current one
                 nn       = m_arguments.insert(nn, as);           // then insert before this position
                 inserted = true;
@@ -1524,7 +1533,7 @@ void CallStatement::updateArguments()
         }
 
         if (!inserted) {
-            m_arguments.insert(m_arguments.end(), as);     // In case larger than all existing elements
+            m_arguments.push_back(as); // In case larger than all existing elements
         }
     }
 }

@@ -58,7 +58,7 @@ public:
      * \brief      Set the arguments of this call.
      * \param      args - the list of locations to set the arguments to (for testing)
      ******************************************************************************/
-    void setArguments(StatementList& args);
+    void setArguments(const StatementList& args);
 
     // Set implicit arguments: so far, for testing only:
     // void setImpArguments(std::vector<Exp*>& arguments);
@@ -71,7 +71,7 @@ public:
      ******************************************************************************/
     void setSigArguments();                             // Set arguments based on signature
 
-    StatementList& getArguments() { return m_arguments; } // Return call's arguments
+    const StatementList& getArguments() { return m_arguments; } // Return call's arguments
     void updateArguments();                             // Update the arguments based on a callee change
 
     // Exp        *getDefineExp(int i);

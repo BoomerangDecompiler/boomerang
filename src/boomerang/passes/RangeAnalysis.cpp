@@ -501,18 +501,19 @@ public:
                 if (stmt->getDestProc()) {
                     auto sig = stmt->getDestProc()->getSignature();
                     stmt->setDest(d);
-                    stmt->getArguments().clear();
 
+                    StatementList newArguments;
                     for (size_t i = 0; i < sig->getNumParams(); i++) {
-                        auto   a   = sig->getParamExp(i);
-                        Assign *as = new Assign(VoidType::get(), a->clone(), a->clone());
-
-                        if (as) {
-                            as->setProc(stmt->getProc());
-                            as->setBB(stmt->getBB());
-                            stmt->getArguments().append(as);
-                        }
+                        SharedConstExp a   = sig->getParamExp(i);
+                        Assign *as = new Assign(VoidType::get(),
+                                                a->clone(),
+                                                a->clone());
+                        as->setProc(stmt->getProc());
+                        as->setBB(stmt->getBB());
+                        newArguments.append(as);
                     }
+
+                    stmt->setArguments(newArguments);
 
                     stmt->setSignature(stmt->getDestProc()->getSignature()->clone());
                     stmt->setIsComputed(false);

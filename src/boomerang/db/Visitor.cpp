@@ -143,11 +143,9 @@ bool StmtConscriptSetter::visit(ImplicitAssign *stmt)
 bool StmtConscriptSetter::visit(CallStatement *stmt)
 {
     SetConscripts  sc(m_curConscript, m_clear);
-    StatementList& args = stmt->getArguments();
+    const StatementList& args = stmt->getArguments();
 
-    StatementList::iterator ss;
-
-    for (ss = args.begin(); ss != args.end(); ++ss) {
+    for (StatementList::const_iterator ss = args.begin(); ss != args.end(); ++ss) {
         (*ss)->accept(this);
     }
 
@@ -644,12 +642,12 @@ bool UsedLocsVisitor::visit(CallStatement *s, bool& override)
         pDest->accept(ev);
     }
 
-    StatementList::iterator it;
-    StatementList&          arguments = s->getArguments();
 
-    for (it = arguments.begin(); it != arguments.end(); it++) {
+    const StatementList& arguments = s->getArguments();
+
+    for (StatementList::const_iterator it = arguments.begin(); it != arguments.end(); it++) {
         // Don't want to ever collect anything from the lhs
-        ((Assign *)*it)->getRight()->accept(ev);
+        (dynamic_cast<const Assign *>(*it))->getRight()->accept(ev);
     }
 
     if (m_countCol) {
@@ -835,10 +833,9 @@ void StmtSubscripter::visit(CallStatement *s, bool& recur)
     }
 
     // Subscript the ordinary arguments
-    StatementList&          arguments = s->getArguments();
-    StatementList::iterator ss;
+    const StatementList& arguments = s->getArguments();
 
-    for (ss = arguments.begin(); ss != arguments.end(); ++ss) {
+    for (StatementList::const_iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
         (*ss)->accept(this);
     }
 
@@ -1548,9 +1545,9 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
         s->setDest(pDest);
     }
 
-    StatementList&          arguments = s->getArguments();
+    const StatementList& arguments = s->getArguments();
 
-    for (StatementList::iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
+    for (StatementList::const_iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
         (*ss)->accept(this);
     }
 

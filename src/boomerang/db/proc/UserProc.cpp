@@ -745,7 +745,7 @@ void UserProc::getStatements(StatementList& stmts) const
 void UserProc::removeStatement(Statement *stmt)
 {
     // remove anything proven about this statement
-    for (std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_provenTrue.begin(); it != m_provenTrue.end();) {
+    for (auto it = m_provenTrue.begin(); it != m_provenTrue.end();) {
         LocationSet refs;
         it->second->addUsedLocs(refs);
         it->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
@@ -765,8 +765,7 @@ void UserProc::removeStatement(Statement *stmt)
             LOG_VERBOSE("Removing proven true exp %1 = %2 that uses statement being removed.",
                         it->first, it->second);
 
-            m_provenTrue.erase(it++);
-            // it = provenTrue.begin();
+            it = m_provenTrue.erase(it);
             continue;
         }
 
@@ -5126,11 +5125,9 @@ bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visit
         if (dest == p) { // Pointer comparison is OK here
             // This is a recursive call to p. Check for an argument of the form param{-} FIXME: should be looking for
             // component
-            StatementList&          args = c->getArguments();
-            StatementList::iterator aa;
-
-            for (aa = args.begin(); aa != args.end(); ++aa) {
-                SharedExp rhs = ((Assign *)*aa)->getRight();
+            const StatementList& args = c->getArguments();
+            for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
+                SharedExp rhs = (dynamic_cast<const Assign *>(*aa))->getRight();
 
                 if (rhs && rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef()) {
                     SharedExp base = rhs->getSubExp1();
@@ -5276,11 +5273,10 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                 }
 
                 // Else check for arguments of the form lloc := f(bparam{0})
-                StatementList&          args = c->getArguments();
-                StatementList::iterator aa;
+                const StatementList& args = c->getArguments();
 
-                for (aa = args.begin(); aa != args.end(); ++aa) {
-                    SharedExp   rhs = ((Assign *)*aa)->getRight();
+                for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
+                    SharedExp   rhs = (dynamic_cast<const Assign *>(*aa))->getRight();
                     LocationSet argUses;
                     rhs->addUsedLocs(argUses);
 
