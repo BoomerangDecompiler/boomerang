@@ -29,7 +29,7 @@ public:
 
     Assign(Assign& o);
 
-    ~Assign()  override = default;
+    virtual ~Assign() override = default;
 
     /// Clone
     virtual Statement *clone() const override;

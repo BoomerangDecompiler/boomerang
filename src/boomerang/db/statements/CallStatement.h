@@ -273,8 +273,6 @@ private:
 protected:
     void updateDefineWithType(int n);
 
-    void appendArgument(Assignment *as) { m_arguments.append(as); }
-
 private:
     bool m_returnAfterCall; // True if call is effectively followed by a return.
 

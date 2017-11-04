@@ -129,7 +129,7 @@ public:
         , m_proc(nullptr)
         , m_number(0) {}
 
-    virtual ~Statement() {}
+    virtual ~Statement() = default;
 
     /// get/set the enclosing BB, etc
     BasicBlock *getBB() { return m_parent; }
