@@ -10,12 +10,6 @@
 #include "SymTab.h"
 
 
-/**
- * \file        SymTab.cpp
- * \brief    This file contains the implementation of the class SymTab, a simple class to maintain a pair of maps
- *                so that symbols can be accessed by symbol or by name
- */
-
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
 
@@ -29,91 +23,63 @@ SymTab::SymTab()
 
 SymTab::~SymTab()
 {
-    clear();
 }
 
 
 void SymTab::clear()
 {
-    for (IBinarySymbol *s : SymbolList) {
-        delete s;
-    }
-
-    for (std::pair<const Address, BinarySymbol *>& s : amap) {
-        delete s.second;
-    }
-
-    SymbolList.clear();
-    amap.clear();
-    smap.clear();
+    m_symbolList.clear();
+    m_addrIndex.clear();
+    m_nameIndex.clear();
 }
 
 
 IBinarySymbol& SymTab::create(Address addr, const QString& name, bool local)
 {
-    assert(amap.find(addr) == amap.end());
+    assert(m_addrIndex.find(addr) == m_addrIndex.end());
 
     // If the symbol already exists, redirect the new symbol to the old one.
-    std::map<QString, BinarySymbol *>::iterator it = smap.find(name);
+    std::map<QString, std::shared_ptr<BinarySymbol>>::iterator it = m_nameIndex.find(name);
 
-    if (it != smap.end()) {
+    if (it != m_nameIndex.end()) {
         LOG_WARN("Symbol '%1' already exists in the global symbol table!", name);
-        BinarySymbol *existingSymbol = it->second;
-        amap[addr] = existingSymbol;
+        std::shared_ptr<BinarySymbol> existingSymbol = it->second;
+        m_addrIndex[addr] = existingSymbol;
         return *existingSymbol;
     }
 
-    BinarySymbol *sym = new BinarySymbol;
-    sym->Location = addr;
-    sym->Name     = name;
-    amap[addr]    = sym;
+    std::shared_ptr<BinarySymbol> sym = std::make_shared<BinarySymbol>(addr, name);
+    m_addrIndex[addr]    = sym;
 
     if (!local) {
-        smap[name] = sym;
+        m_nameIndex[name] = sym;
     }
 
     return *sym;
 }
 
 
-const IBinarySymbol *SymTab::find(Address a) const
+const IBinarySymbol *SymTab::find(Address addr) const
 {
-    auto ff = amap.find(a);
+    auto ff = m_addrIndex.find(addr);
 
-    if (ff == amap.end()) {
+    if (ff == m_addrIndex.end()) {
         return nullptr;
     }
 
-    return ff->second;
+    return ff->second.get();
 }
 
 
 const IBinarySymbol *SymTab::find(const QString& s) const
 {
-    auto ff = smap.find(s);
+    auto ff = m_nameIndex.find(s);
 
-    if (ff == smap.end()) {
+    if (ff == m_nameIndex.end()) {
         return nullptr;
     }
 
-    return ff->second;
-}
-
-
-bool BinarySymbol::rename(const QString& newName)
-{
-    // TODO: this code assumes only one BinarySymbolTable instance exists
-    SymTab *sym_tab = (SymTab *)Boomerang::get()->getSymbols();
-
-    if (sym_tab->smap.find(newName) != sym_tab->smap.end()) {
-        LOG_ERROR("Renaming symbol %1 to %2 failed - new name clashes with another symbol", Name, newName);
-        return false; // symbol name clash
-    }
-
-    sym_tab->smap.erase(Name);
-    Name = newName;
-    sym_tab->smap[Name] = this;
-    return true;
+    return ff->second.get();
 }
 
 
@@ -148,4 +114,30 @@ bool BinarySymbol::isImportedFunction() const
 bool BinarySymbol::isStaticFunction() const
 {
     return attributes.contains("StaticFunction") && attributes["StaticFunction"].toBool();
+}
+
+
+bool SymTab::rename(const QString& oldName, const QString& newName)
+{
+    auto oldIt = m_nameIndex.find(oldName);
+    auto newIt = m_nameIndex.find(newName);
+
+    if (oldIt == m_nameIndex.end()) {
+        // symbol not found
+        LOG_ERROR("Could not rename symbol '%1' to '%2': Symbol not found.", oldName, newName);
+        return false;
+    }
+    else if (newIt != m_nameIndex.end()) {
+        // symbol name clash
+        LOG_ERROR("Could not rename symbol '%1' to '%2': A symbol with name '%2' already exists",
+                  oldName, newName);
+        return false;
+    }
+
+    std::shared_ptr<BinarySymbol> oldSymbol = oldIt->second;
+    m_nameIndex.erase(oldIt);
+    oldSymbol->Name = newName;
+    m_nameIndex[newName] = oldSymbol;
+
+    return true;
 }

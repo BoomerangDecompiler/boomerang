@@ -505,7 +505,6 @@ void ReturnStatement::updateReturns()
     // be filtered and sorted to become the new returns
     // Ick... O(N*M) (N existing returns, M modifieds locations)
     for (StatementList::iterator dd = m_modifieds.begin(); dd != m_modifieds.end(); ++dd) {
-    for (dd = m_modifieds.begin(); dd != m_modifieds.end(); ++dd) {
         bool      found = false;
         SharedExp loc   = ((Assignment *)*dd)->getLeft();
 
@@ -568,7 +567,7 @@ void ReturnStatement::updateReturns()
 
         bool inserted = false;
 
-        for (nn = m_returns.begin(); nn != m_returns.end(); ++nn) {
+        for (StatementList::iterator nn = m_returns.begin(); nn != m_returns.end(); ++nn) {
             if (sig->returnCompare(*as, *(Assign *)*nn)) {     // If the new assignment is less than the current one
                 nn       = m_returns.insert(nn, as);             // then insert before this position
                 inserted = true;

@@ -26,25 +26,25 @@ public:
     virtual ~IBinarySymbol() = default;
 
     virtual const QString& getName() const = 0;
-    virtual size_t getSize() const         = 0;
 
+    virtual size_t getSize() const         = 0;
     virtual void setSize(size_t) = 0;
+
     virtual Address getLocation() const         = 0;
+
     virtual bool isImportedFunction() const     = 0;
     virtual bool isStaticFunction() const       = 0;
     virtual bool isFunction() const             = 0;
     virtual bool isImported() const             = 0;
     virtual QString belongsToSourceFile() const = 0;
     virtual const IBinarySymbol& setAttr(const QString& name, const QVariant&) const = 0;
-
-    virtual bool rename(const QString& newName) = 0; ///< Rename an existing symbol
 };
 
 
 class IBinarySymbolTable
 {
 public:
-    typedef std::vector<IBinarySymbol *>   SymbolListType;
+    typedef std::vector<std::shared_ptr<IBinarySymbol>>   SymbolListType;
     typedef SymbolListType::iterator       iterator;
     typedef SymbolListType::const_iterator const_iterator;
 
@@ -73,4 +73,10 @@ public:
     virtual iterator end()             = 0;
     virtual const_iterator end() const = 0;
     virtual void clear() = 0;
+
+    /**
+     * Renames the symbol with name \p oldName to \p newName.
+     * \returns true, if renaming was successful, false otherwise.
+     */
+    virtual bool rename(const QString& oldName, const QString& newName) = 0;
 };

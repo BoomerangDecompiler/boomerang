@@ -348,7 +348,7 @@ public:
     std::shared_ptr<T> access() { return shared_from_base<T>(); }
 
     template<class T>
-    std::shared_ptr<const T> access() const { return const_cast<Exp *>(this)->access<T>(); }
+    std::shared_ptr<const T> access() const { return shared_from_base<const T>(); }
 
     /// Access sub-expressions recursively
     template<class T, int SUB_IDX, int ... Path>
@@ -605,6 +605,12 @@ public:
 protected:
     template<typename CHILD>
     std::shared_ptr<CHILD> shared_from_base()
+    {
+        return std::static_pointer_cast<CHILD>(shared_from_this());
+    }
+
+    template<typename CHILD>
+    std::shared_ptr<const CHILD> shared_from_base() const
     {
         return std::static_pointer_cast<CHILD>(shared_from_this());
     }

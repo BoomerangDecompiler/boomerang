@@ -86,7 +86,6 @@ Prog::~Prog()
     delete m_defaultFrontend;
     m_defaultFrontend = nullptr;
 
-    qDeleteAll(m_moduleList);
     qDeleteAll(m_globals);
 }
 
@@ -1758,12 +1757,14 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
         }
         else {
             // check for accesses into the middle of symbols
-            for (IBinarySymbol *it : *m_binarySymbols) {
-                unsigned int sz = it->getSize();
+            for (const std::shared_ptr<IBinarySymbol> sym : *m_binarySymbols) {
+                unsigned int sz = sym->getSize();
 
-                if ((it->getLocation() < c_addr) && ((it->getLocation() + sz) > c_addr)) {
-                    int off = (c_addr - it->getLocation()).value();
-                    e = Binary::get(opPlus, Unary::get(opAddrOf, Location::global(it->getName(), nullptr)),
+                if ((sym->getLocation() < c_addr) && ((sym->getLocation() + sz) > c_addr)) {
+                    int off = (c_addr - sym->getLocation()).value();
+                    e = Binary::get(opPlus,
+                                    Unary::get(opAddrOf,
+                                               Location::global(sym->getName(), nullptr)),
                                     Const::get(off));
                     break;
                 }

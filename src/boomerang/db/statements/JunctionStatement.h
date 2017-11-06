@@ -53,7 +53,7 @@ public:
     virtual bool searchAndReplace(const Exp& /*search*/, SharedExp /*replace*/, bool /*cc*/ = false)  override { return false; }
 
     /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator * /*hll*/, BasicBlock * /*pbb*/) override {}
+    virtual void generateCode(ICodeGenerator *, const BasicBlock *) override {}
 
     /// \copydoc Statement::simplify
     virtual void simplify() override {}

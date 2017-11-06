@@ -748,23 +748,22 @@ QStringList ElfBinaryLoader::getDependencyList()
 
 void ElfBinaryLoader::markImports()
 {
-    IBinarySymbolTable::const_iterator first = m_symbols->begin();
-    IBinarySymbolTable::const_iterator last  = m_symbols->begin();
-    IBinarySymbolTable::const_iterator end   = m_symbols->end();
 
-    for ( ; first != end; ++first) {
+    auto first = m_symbols->begin();
+    auto end   = m_symbols->end();
+
+    for (; first != end; ++first) {
         if ((*first)->getLocation() >= m_pltMin) {
             break;
         }
     }
 
-    for (last = first; last != end; ++last) {
+    for (auto last = first; last != end; ++last) {
         if ((*last)->getLocation() >= m_pltMax) {
             break;
         }
 
-        const IBinarySymbol *sym = *last;
-        sym->setAttr("Imported", true);
+        (*last)->setAttr("Imported", true);
     }
 }
 

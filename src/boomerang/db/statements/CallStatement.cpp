@@ -674,7 +674,7 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB
         gen->addCallStatement(dest, dest->getSignature()->getPreferredName(), m_arguments, *results);
     }
     else {
-        gen->addCallStatement(dest, dest->getName(), m_arguments, results);
+        gen->addCallStatement(dest, dest->getName(), m_arguments, *results);
     }
 }
 

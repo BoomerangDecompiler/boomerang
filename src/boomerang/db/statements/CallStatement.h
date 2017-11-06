@@ -48,7 +48,7 @@ public:
 
     /// Set the arguments of this call.
     /// \param args The list of locations to set the arguments to (for testing)
-    void setArguments(StatementList& args);
+    void setArguments(const StatementList& args);
 
     /// Set the arguments of this call based on signature info
     /// \note Should only be called for calls to library functions

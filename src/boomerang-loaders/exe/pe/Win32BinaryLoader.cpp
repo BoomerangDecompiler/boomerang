@@ -713,13 +713,15 @@ int Win32BinaryLoader::canLoad(QIODevice& fl) const
 }
 
 
-// Used above for a hack to find jump instructions pointing to IATs.
-// Heuristic: start just before the "start" entry point looking for FF 25 opcodes followed by a pointer to an import
-// entry.  E.g. FF 25 58 44 40 00  where 00404458 is the IAT for _ftol.
-// Note: some are on 0x10 byte boundaries, some on 2 byte boundaries (6 byte jumps packed), and there are often up to
-// 0x30 bytes of statically linked library code (e.g. _atexit, __onexit) with sometimes two static libs in a row.
-// So keep going until there is about 0x60 bytes with no match.
-// Note: slight chance of coming across a misaligned match; probability is about 1/65536 times dozens in 2^32 ~= 10^-13
+/**
+ * \internal Used above for a hack to find jump instructions pointing to IATs.
+ * Heuristic: start just before the "start" entry point looking for FF 25 opcodes followed by a pointer to an import
+ * entry.  E.g. FF 25 58 44 40 00  where 00404458 is the IAT for _ftol.
+ * Note: some are on 0x10 byte boundaries, some on 2 byte boundaries (6 byte jumps packed), and there are often up to
+ * 0x30 bytes of statically linked library code (e.g. _atexit, __onexit) with sometimes two static libs in a row.
+ * So keep going until there is about 0x60 bytes with no match.
+ * Note: slight chance of coming across a misaligned match; probability is about 1/65536 times dozens in 2^32 ~= 10^-13
+ */
 void Win32BinaryLoader::findJumps(Address curr)
 {
     int            cnt      = 0; // Count of bytes with no match
@@ -752,13 +754,13 @@ void Win32BinaryLoader::findJumps(Address curr)
             continue;
         }
 
-        QString symbolName = symbol->getName();
-
-        if (false == const_cast<IBinarySymbol *>(symbol)->rename("__imp_" + symbolName)) {
+        // try to rename symbol
+        const QString oldName = symbol->getName();
+        if (m_symbols->rename(oldName, "__imp_" + oldName) == false) {
             continue;
         }
 
-        m_symbols->create(curr, symbolName).setAttr("Function", true).setAttr("Imported", true);
+        m_symbols->create(curr, oldName).setAttr("Function", true).setAttr("Imported", true);
         curr -= 4; // Next match is at least 4+2 bytes away
         cnt   = 0;
     }
