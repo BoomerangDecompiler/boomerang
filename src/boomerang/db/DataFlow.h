@@ -176,16 +176,11 @@ private:
  */
 class DefCollector
 {
-    /*
-     * True if initialised. When not initialised, callees should not subscript parameters inserted into the
-     * associated CallStatement
-     */
-    bool m_initialised;
-    AssignSet m_defs; ///< The set of definitions.
-
 public:
     DefCollector()
         : m_initialised(false) {}
+
+    ~DefCollector();
 
     /**
      * Clone the given Collector into this one
@@ -206,8 +201,10 @@ public:
         m_initialised = false;
     }
 
-    /*
-     * Insert a new member (make sure none exists yet)
+    /**
+     * Insert a new member (make sure none exists yet).
+     * Takes ownership of the pointer. Deletes \p a
+     * if the LHS of \p a is already present.
      */
     void insert(Assign *a);
 
@@ -253,6 +250,14 @@ public:
      * Search and replace all occurrences
      */
     void searchReplaceAll(const Exp& from, SharedExp to, bool& change);
+
+private:
+    /*
+     * True if initialised. When not initialised, callees should not subscript parameters inserted into the
+     * associated CallStatement
+     */
+    bool m_initialised;
+    AssignSet m_defs; ///< The set of definitions.
 };
 
 

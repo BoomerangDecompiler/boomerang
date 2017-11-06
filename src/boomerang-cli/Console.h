@@ -51,6 +51,7 @@ class Console
 {
 public:
     Console();
+    ~Console();
 
     CommandStatus handleCommand(const QString& command);
 

@@ -61,7 +61,7 @@ private:
 
 private:
     QByteArray m_fileBytes;
-    std::shared_ptr<IBinaryImage> m_image; ///< raw memory interface
+    std::unique_ptr<IBinaryImage> m_image; ///< raw memory interface
 
     // Plugins
     std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins;

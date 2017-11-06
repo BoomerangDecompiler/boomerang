@@ -23,6 +23,7 @@ BinaryImage::BinaryImage()
 
 BinaryImage::~BinaryImage()
 {
+    reset();
 }
 
 

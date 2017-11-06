@@ -20,6 +20,7 @@ class TypingStatement : public Statement
 {
 public:
     TypingStatement(SharedType ty); ///< Constructor
+    virtual ~TypingStatement() override = default;
 
     // Get and set the type.
     SharedType getType() { return m_type; }

@@ -49465,7 +49465,10 @@ SharedExp PentiumDecoder::dis_Mem(HostAddress pc)
                                 // #line 2206 "frontend/machine/pentium/decoder.m"
                                 // m[ r[index] * ss + d ]
                                 expr = Location::memOf(
-                                    Binary::get(opPlus, Binary::get(opMult, dis_Reg(24 + index), Const::get(1 << ss)),
+                                    Binary::get(opPlus,
+                                                Binary::get(opMult,
+                                                            dis_Reg(24 + index),
+                                                            Const::get(1 << ss)),
                                                 addReloc(Const::get(d))));
                             }
                         } /*opt-block*/ /*opt-block+*/

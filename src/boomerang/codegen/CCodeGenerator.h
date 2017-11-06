@@ -94,11 +94,12 @@ public:
     virtual void addAssignmentStatement(Assign *asgn) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
-    virtual void addCallStatement(Function *proc, const QString& name, StatementList& args,
-                                  StatementList *results) override;
+    virtual void addCallStatement(Function *dest, const QString& name,
+                                  const StatementList& args, const StatementList& results) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
-    virtual void addIndCallStatement(const SharedExp& exp, StatementList& args, StatementList *results) override;
+    virtual void addIndCallStatement(const SharedExp& exp, const StatementList& args,
+                                     const StatementList& results) override;
 
     /// \copydoc ICodeGenerator::addReturnStatement
     virtual void addReturnStatement(StatementList *rets) override;
@@ -269,7 +270,7 @@ private:
     void emitGotoAndLabel(BasicBlock *bb, BasicBlock *dest);
 
     /// Generates code for each non-CTI (except procedure calls) statement within the block.
-    void writeBB(BasicBlock *bb);
+    void writeBB(const BasicBlock *bb);
 
 private:
     /// Dump all generated code to \a os.

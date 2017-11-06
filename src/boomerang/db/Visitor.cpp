@@ -143,11 +143,9 @@ bool StmtConscriptSetter::visit(ImplicitAssign *stmt)
 bool StmtConscriptSetter::visit(CallStatement *stmt)
 {
     SetConscripts  sc(m_curConscript, m_clear);
-    StatementList& args = stmt->getArguments();
+    const StatementList& args = stmt->getArguments();
 
-    StatementList::iterator ss;
-
-    for (ss = args.begin(); ss != args.end(); ++ss) {
+    for (StatementList::const_iterator ss = args.begin(); ss != args.end(); ++ss) {
         (*ss)->accept(this);
     }
 
@@ -247,7 +245,10 @@ SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp>& r)
             m_mod        = true;
             // Now have to recurse to do any further bypassing that may be required
             // E.g. bypass the two recursive calls in fibo?? FIXME: check!
-            return ret->accept(new CallBypasser(m_enclosingStmt));
+            CallBypasser *bp = new CallBypasser(m_enclosingStmt);
+            SharedExp result = ret->accept(bp);
+            delete bp;
+            return result;
         }
     }
 
@@ -641,12 +642,12 @@ bool UsedLocsVisitor::visit(CallStatement *s, bool& override)
         pDest->accept(ev);
     }
 
-    StatementList::iterator it;
-    StatementList&          arguments = s->getArguments();
 
-    for (it = arguments.begin(); it != arguments.end(); it++) {
+    const StatementList& arguments = s->getArguments();
+
+    for (StatementList::const_iterator it = arguments.begin(); it != arguments.end(); it++) {
         // Don't want to ever collect anything from the lhs
-        ((Assign *)*it)->getRight()->accept(ev);
+        (dynamic_cast<const Assign *>(*it))->getRight()->accept(ev);
     }
 
     if (m_countCol) {
@@ -832,10 +833,9 @@ void StmtSubscripter::visit(CallStatement *s, bool& recur)
     }
 
     // Subscript the ordinary arguments
-    StatementList&          arguments = s->getArguments();
-    StatementList::iterator ss;
+    const StatementList& arguments = s->getArguments();
 
-    for (ss = arguments.begin(); ss != arguments.end(); ++ss) {
+    for (StatementList::const_iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
         (*ss)->accept(this);
     }
 
@@ -1545,10 +1545,9 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
         s->setDest(pDest);
     }
 
-    StatementList&          arguments = s->getArguments();
-    StatementList::iterator ss;
+    const StatementList& arguments = s->getArguments();
 
-    for (ss = arguments.begin(); ss != arguments.end(); ++ss) {
+    for (StatementList::const_iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
         (*ss)->accept(this);
     }
 
@@ -1557,7 +1556,7 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
     // fromSSA() function
     StatementList& defines = s->getDefines();
 
-    for (ss = defines.begin(); ss != defines.end(); ++ss) {
+    for (StatementList::iterator ss = defines.begin(); ss != defines.end(); ++ss) {
         Assignment *as = ((Assignment *)*ss);
         // FIXME: use of fromSSAleft is deprecated
         SharedExp e = as->getLeft()->fromSSAleft(((ExpSsaXformer *)m_mod)->getProc(), s);

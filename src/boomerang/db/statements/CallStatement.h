@@ -58,7 +58,7 @@ public:
      * \brief      Set the arguments of this call.
      * \param      args - the list of locations to set the arguments to (for testing)
      ******************************************************************************/
-    void setArguments(StatementList& args);
+    void setArguments(const StatementList& args);
 
     // Set implicit arguments: so far, for testing only:
     // void setImpArguments(std::vector<Exp*>& arguments);
@@ -71,7 +71,7 @@ public:
      ******************************************************************************/
     void setSigArguments();                             // Set arguments based on signature
 
-    StatementList& getArguments() { return m_arguments; } // Return call's arguments
+    const StatementList& getArguments() { return m_arguments; } // Return call's arguments
     void updateArguments();                             // Update the arguments based on a callee change
 
     // Exp        *getDefineExp(int i);
@@ -91,7 +91,7 @@ public:
     // Calculate results(this) = defines(this) intersect live(this)
     // Note: could use a LocationList for this, but then there is nowhere to store the types (for DFA based TA)
     // So the RHS is just ignored
-    StatementList *calcResults(); // Calculate defines(this) isect live(this)
+    std::unique_ptr<StatementList> calcResults(); // Calculate defines(this) isect live(this)
 
     ReturnStatement *getCalleeReturn() { return m_calleeReturn; }
     void setCalleeReturn(ReturnStatement *ret) { m_calleeReturn = ret; }
@@ -206,7 +206,7 @@ public:
     void dfaTypeAnalysis(bool& ch) override;
 
     // code generation
-    virtual void generateCode(ICodeGenerator *gen, BasicBlock *Parent) override;
+    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
     // dataflow analysis
     virtual bool usesExp(const Exp& e) const override;
@@ -242,7 +242,6 @@ public:
     void useBeforeDefine(SharedExp x) { m_useCol.insert(x); } // Add x to the UseCollector for this call
     void removeLiveness(SharedExp e) { m_useCol.remove(e); } // Remove e from the UseCollector
     void removeAllLive() { m_useCol.clear(); }               // Remove all livenesses
-    //        Exp*        fromCalleeContext(Exp* e);            // Convert e from callee to caller (this) context
     StatementList& getDefines() { return m_defines; } // Get list of locations defined by this call
 
     /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
@@ -273,8 +272,6 @@ private:
 
 protected:
     void updateDefineWithType(int n);
-
-    void appendArgument(Assignment *as) { m_arguments.append(as); }
 
 private:
     bool m_returnAfterCall; // True if call is effectively followed by a return.

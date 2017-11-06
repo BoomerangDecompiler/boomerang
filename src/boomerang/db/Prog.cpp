@@ -97,9 +97,9 @@ Prog::~Prog()
 {
     delete m_defaultFrontend;
     m_defaultFrontend = nullptr;
-    for (Module *m : m_moduleList) {
-        delete m;
-    }
+
+    qDeleteAll(m_moduleList);
+    qDeleteAll(m_globals);
 }
 
 
@@ -744,11 +744,11 @@ Address Prog::getGlobalAddr(const QString& nam) const
 }
 
 
-Global *Prog::getGlobal(const QString& nam) const
+Global *Prog::getGlobal(const QString& name) const
 {
     auto iter =
-        std::find_if(m_globals.begin(), m_globals.end(), [nam](Global *g) -> bool {
-        return g->getName() == nam;
+        std::find_if(m_globals.begin(), m_globals.end(), [name](Global *g) -> bool {
+        return g->getName() == name;
     });
 
     if (iter == m_globals.end()) {
@@ -1322,6 +1322,7 @@ void Prog::removeUnusedGlobals()
     // rebuild the globals vector
     Global *usedGlobal;
 
+    qDeleteAll(m_globals);
     m_globals.clear();
 
     for (const SharedExp& e : usedGlobals) {
@@ -1944,19 +1945,18 @@ void Prog::decodeFragment(UserProc *proc, Address a)
 }
 
 
-SharedExp Prog::addReloc(SharedExp e, Address lc)
+SharedExp Prog::addReloc(SharedExp e, Address location)
 {
     assert(e->isConst());
 
-    if (!m_fileLoader->isRelocationAt(lc)) {
+    if (!m_fileLoader->isRelocationAt(location)) {
         return e;
     }
 
-    auto c = e->access<Const>();
     // relocations have been applied to the constant, so if there is a
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
-    Address             c_addr   = c->getAddr();
+    Address c_addr = e->access<Const>()->getAddr();
     const IBinarySymbol *bin_sym = m_binarySymbols->find(c_addr);
 
     if (bin_sym != nullptr) {
@@ -1981,7 +1981,7 @@ SharedExp Prog::addReloc(SharedExp e, Address lc)
                 unsigned int sz = it->getSize();
 
                 if ((it->getLocation() < c_addr) && ((it->getLocation() + sz) > c_addr)) {
-                    int off = (c->getAddr() - it->getLocation()).value();
+                    int off = (c_addr - it->getLocation()).value();
                     e = Binary::get(opPlus, Unary::get(opAddrOf, Location::global(it->getName(), nullptr)),
                                     Const::get(off));
                     break;

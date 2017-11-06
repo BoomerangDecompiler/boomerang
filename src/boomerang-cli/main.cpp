@@ -10,6 +10,7 @@
 
 
 #include "CommandlineDriver.h"
+#include "boomerang/core/Boomerang.h"
 
 #include <QCoreApplication>
 #include <QStringList>
@@ -17,14 +18,18 @@
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication  app(argc, argv);
+    Boomerang::get();
+
+    QCoreApplication app(argc, argv);
     CommandlineDriver driver;
 
     bool decompile = driver.applyCommandline(app.arguments()) == 0;
-
     if (!decompile) {
+        Boomerang::destroy();
         return 0;
     }
 
-    return driver.decompile();
+    int status = driver.decompile();
+    Boomerang::destroy();
+    return status;
 }

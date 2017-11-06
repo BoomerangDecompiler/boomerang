@@ -200,7 +200,7 @@ bool BoolAssign::accept(StmtVisitor *visitor)
 }
 
 
-void BoolAssign::generateCode(ICodeGenerator *gen, BasicBlock * /*pbb*/)
+void BoolAssign::generateCode(ICodeGenerator *gen, const BasicBlock *)
 {
     assert(m_lhs);
     assert(m_cond);

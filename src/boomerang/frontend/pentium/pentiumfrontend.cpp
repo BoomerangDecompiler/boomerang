@@ -640,11 +640,10 @@ void toBranches(Address a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb,
 
 void PentiumFrontEnd::processStringInst(UserProc *proc)
 {
-    Cfg::iterator it;
     Cfg           *cfg = proc->getCFG();
 
     // For each BB this proc
-    for (it = cfg->begin(); it != cfg->end(); /* no increment! */) {
+    for (Cfg::iterator it = cfg->begin(); it != cfg->end(); /* no increment! */) {
         bool             noinc = false;
         BasicBlock       *bb   = *it;
         std::list<RTL *> *rtls = bb->getRTLs();

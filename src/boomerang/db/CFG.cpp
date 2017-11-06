@@ -687,9 +687,9 @@ bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2)
 
     // Prepend the RTLs for pb1 to those of pb2. Since they will be pushed to the front of pb2, push them in reverse
     // order
-    std::list<RTL *>::reverse_iterator it;
 
-    for (it = pb1->m_listOfRTLs->rbegin(); it != pb1->m_listOfRTLs->rend(); it++) {
+    for (std::list<RTL *>::reverse_iterator it = pb1->m_listOfRTLs->rbegin();
+         it != pb1->m_listOfRTLs->rend(); it++) {
         pb2->m_listOfRTLs->push_front(*it);
     }
 

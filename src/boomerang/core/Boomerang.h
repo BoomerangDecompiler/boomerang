@@ -65,6 +65,7 @@ private:
 public:
     /// \returns The global boomerang object. It will be created if it does not already exist.
     static Boomerang *get();
+    static void destroy();
 
     IBinaryImage *getImage() override;
     IBinarySymbolTable *getSymbols() override;
@@ -85,13 +86,10 @@ public:
 
     /**
      * Loads the executable file and decodes it.
-     *
      * \param fname The name of the file to load.
      * \param pname How the Prog will be named.
-     *
-     * \returns A Prog object.
      */
-    Prog *loadAndDecode(const QString& fname, const char *pname = nullptr);
+    std::unique_ptr<Prog> loadAndDecode(const QString& fname, const char *pname = nullptr);
 
     /**
      * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
@@ -261,17 +259,15 @@ public:
     void alertDecompileDebugPoint(UserProc *p, const char *description);
 
 public:
-    std::shared_ptr<Settings> m_settings;
+    std::unique_ptr<Settings> m_settings;
+    std::unique_ptr<IProject> m_currentProject;
+    std::unique_ptr<IBinarySymbolTable> m_symbols;
+    std::unique_ptr<ICodeGenerator> m_codeGenerator;
 
+    std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
     std::vector<Address> m_entryPoints;     ///< A vector which contains all know entrypoints for the Prog.
     std::vector<QString> m_symbolFiles;     ///< A vector containing the names off all symbolfiles to load.
     std::map<Address, QString> m_symbolMap; ///< A map to find a name by a given address.
-    IProject *m_currentProject;
-
-    IBinarySymbolTable *m_symbols = nullptr;
-
-    std::set<IWatcher *> m_watchers;   ///< The watchers which are interested in this decompilation.
-    ICodeGenerator *m_codeGenerator;
 
 private:
     /// Prints help for the interactive mode.

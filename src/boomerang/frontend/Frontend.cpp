@@ -106,7 +106,7 @@ IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog)
         break;
 
     default:
-        LOG_WARN("Machine architecture not supported!");
+        LOG_ERROR("Machine architecture not supported!");
     }
 
     return nullptr;
@@ -400,22 +400,22 @@ void IFrontEnd::decode(Prog *prg, Address addr)
         // the instruction at addr is just a jump to another address.
         addr = newProc->getEntryAddress();
         LOG_MSG("Starting decode at address %1", addr);
-        UserProc *p = (UserProc *)m_program->findProc(addr);
+        UserProc *proc = (UserProc *)m_program->findProc(addr);
 
-        if (p == nullptr) {
+        if (proc == nullptr) {
             LOG_MSG("No proc found at address %1", addr);
             return;
         }
 
-        if (p->isLib()) {
+        if (proc->isLib()) {
             LOG_MSG("NOT decoding library proc at address %1", addr);
             return;
         }
 
         QTextStream os(stderr); // rtl output target
 
-        if (processProc(addr, p, os)) {
-            p->setDecoded();
+        if (processProc(addr, proc, os)) {
+            proc->setDecoded();
         }
     }
     else {   // a == Address::INVALID
@@ -672,6 +672,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             // If invalid and we are speculating, just exit
             if (spec && !inst.valid) {
+                delete inst.rtl;
                 return false;
             }
 
@@ -715,7 +716,9 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(uAddr);
 
             if (ff != m_previouslyDecoded.end()) {
+                delete pRtl;
                 pRtl = ff->second;
+                inst.rtl = pRtl; // don't leave the inst.rtl pointer dangling
             }
 
             if (pRtl == nullptr) {
@@ -947,13 +950,12 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                             // It should not be in the PLT either, but getLimitTextHigh() takes this into account
                             if (Util::inRange(callAddr, m_image->getLimitTextLow(), m_image->getLimitTextHigh())) {
-                                // Decode it.
                                 DecodeResult decoded;
 
-                                if (decodeInstruction(callAddr, decoded) && !decoded.rtl->empty()) { // is the instruction decoded succesfully?
-                                    // Yes, it is. Create a Statement from it.
-                                    RTL       *rtl             = decoded.rtl;
-                                    Statement *first_statement = rtl->front();
+                                // Decode it.
+                                if (decodeInstruction(callAddr, decoded) && !decoded.rtl->empty()) {
+                                    // Decoded successfully. Create a Statement from it.
+                                    Statement *first_statement = decoded.rtl->front();
 
                                     if (first_statement) {
                                         first_statement->setProc(pProc);
@@ -986,6 +988,8 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                         }
                                     }
                                 }
+
+                                delete decoded.rtl;
                             }
                         }
 
@@ -1021,6 +1025,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             // calls
                             if (isHelperFunc(callAddr, uAddr, BB_rtls)) {
                                 // We have already added to BB_rtls
+                                delete pRtl;
                                 pRtl = nullptr; // Discard the call semantics
                                 break;
                             }

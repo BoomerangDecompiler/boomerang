@@ -410,7 +410,7 @@ public:
     Statement *getLastStmt();
     Statement *getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
 
-    RTL *getLastRtl() { return m_listOfRTLs->back(); }
+    RTL *getLastRTL() { return m_listOfRTLs->back(); }
     void getStatements(StatementList& stmts) const;
 
 public:
@@ -498,8 +498,6 @@ public:
     /// Return true if every parent (i.e. forward in edge source) of this node has
     /// had its code generated
     bool allParentsGenerated();
-
-    const std::list<RTL *> *getRTLList() const { return m_listOfRTLs; }
 
 protected:
     void setLoopStamps(int& time, std::vector<BasicBlock *>& order);

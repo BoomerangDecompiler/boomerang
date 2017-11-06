@@ -723,13 +723,13 @@ bool StatementList::remove(Statement *s)
 }
 
 
-void StatementList::append(StatementList& sl)
+void StatementList::append(const StatementList& sl)
 {
     insert(end(), sl.begin(), sl.end());
 }
 
 
-void StatementList::append(InstructionSet& ss)
+void StatementList::append(const InstructionSet& ss)
 {
     insert(end(), ss.begin(), ss.end());
 }

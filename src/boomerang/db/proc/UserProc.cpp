@@ -68,6 +68,8 @@ UserProc::UserProc(Address address, const QString& name, Module *module)
 UserProc::~UserProc()
 {
     deleteCFG();
+
+    qDeleteAll(m_parameters);
 }
 
 
@@ -743,7 +745,7 @@ void UserProc::getStatements(StatementList& stmts) const
 void UserProc::removeStatement(Statement *stmt)
 {
     // remove anything proven about this statement
-    for (std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_provenTrue.begin(); it != m_provenTrue.end();) {
+    for (auto it = m_provenTrue.begin(); it != m_provenTrue.end();) {
         LocationSet refs;
         it->second->addUsedLocs(refs);
         it->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
@@ -763,8 +765,7 @@ void UserProc::removeStatement(Statement *stmt)
             LOG_VERBOSE("Removing proven true exp %1 = %2 that uses statement being removed.",
                         it->first, it->second);
 
-            m_provenTrue.erase(it++);
-            // it = provenTrue.begin();
+            it = m_provenTrue.erase(it);
             continue;
         }
 
@@ -2179,6 +2180,7 @@ void UserProc::findFinalParameters()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "before find final parameters.");
 
+    qDeleteAll(m_parameters);
     m_parameters.clear();
 
     if (m_signature->isForced()) {
@@ -5001,6 +5003,7 @@ void UserProc::propagateToCollector()
 void UserProc::initialParameters()
 {
     LOG_VERBOSE("### Initial parameters for %1", getName());
+    qDeleteAll(m_parameters);
     m_parameters.clear();
 
     for (const SharedExp& v : m_procUseCollector) {
@@ -5122,11 +5125,9 @@ bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visit
         if (dest == p) { // Pointer comparison is OK here
             // This is a recursive call to p. Check for an argument of the form param{-} FIXME: should be looking for
             // component
-            StatementList&          args = c->getArguments();
-            StatementList::iterator aa;
-
-            for (aa = args.begin(); aa != args.end(); ++aa) {
-                SharedExp rhs = ((Assign *)*aa)->getRight();
+            const StatementList& args = c->getArguments();
+            for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
+                SharedExp rhs = (dynamic_cast<const Assign *>(*aa))->getRight();
 
                 if (rhs && rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef()) {
                     SharedExp base = rhs->getSubExp1();
@@ -5272,11 +5273,10 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                 }
 
                 // Else check for arguments of the form lloc := f(bparam{0})
-                StatementList&          args = c->getArguments();
-                StatementList::iterator aa;
+                const StatementList& args = c->getArguments();
 
-                for (aa = args.begin(); aa != args.end(); ++aa) {
-                    SharedExp   rhs = ((Assign *)*aa)->getRight();
+                for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
+                    SharedExp   rhs = (dynamic_cast<const Assign *>(*aa))->getRight();
                     LocationSet argUses;
                     rhs->addUsedLocs(argUses);
 
@@ -5562,7 +5562,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     }
 
     // Save the old parameters and call liveness
-    StatementList oldParameters(m_parameters);
+    const size_t oldNumParameters = m_parameters.size();
     std::map<CallStatement *, UseCollector> callLiveness;
     BasicBlock::rtlrit              rrit;
     StatementList::reverse_iterator srit;
@@ -5597,7 +5597,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     // findFinalParameters();
     removeRedundantParameters();
 
-    if (m_parameters.size() != oldParameters.size()) {
+    if (m_parameters.size() != oldNumParameters) {
         if (DEBUG_UNUSED) {
             LOG_MSG("%%%  parameters changed for %1", getName());
         }
@@ -5723,7 +5723,7 @@ void UserProc::processDecodedICTs()
             continue;
         }
 
-        RTL *rtl = bb->getLastRtl();
+        RTL *rtl = bb->getLastRTL();
 
         if (DEBUG_SWITCH) {
             LOG_MSG("Saving high level switch statement %1", rtl);

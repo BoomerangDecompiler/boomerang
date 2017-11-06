@@ -822,11 +822,10 @@ void UseCollector::print(QTextStream& os, bool html) const
 
 void DefCollector::print(QTextStream& os, bool html) const
 {
-    iterator it;
     size_t   col   = 36;
     bool     first = true;
 
-    for (it = m_defs.begin(); it != m_defs.end(); ++it) {
+    for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
         QString     tgt;
         QTextStream ost(&tgt);
         (*it)->getLeft()->print(ost, html);
@@ -910,9 +909,10 @@ void UseCollector::makeCloneOf(UseCollector& other)
 void DefCollector::makeCloneOf(const DefCollector& other)
 {
     m_initialised = other.m_initialised;
+    qDeleteAll(m_defs);
     m_defs.clear();
 
-    for (auto const& elem : other) {
+    for (const auto& elem : other) {
         m_defs.insert((Assign *)(elem)->clone());
     }
 }
@@ -920,9 +920,7 @@ void DefCollector::makeCloneOf(const DefCollector& other)
 
 void DefCollector::searchReplaceAll(const Exp& from, SharedExp to, bool& change)
 {
-    iterator it;
-
-    for (it = m_defs.begin(); it != m_defs.end(); ++it) {
+    for (iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
         change |= (*it)->searchAndReplace(from, to);
     }
 }
@@ -983,6 +981,7 @@ void DefCollector::insert(Assign *a)
     SharedExp l = a->getLeft();
 
     if (existsOnLeft(l)) {
+        delete a;
         return;
     }
 
@@ -1125,4 +1124,9 @@ void DataFlow::setDominanceNums(int n, int& currNum)
     Q_UNUSED(n);
     Q_UNUSED(currNum);
 #endif
+}
+
+DefCollector::~DefCollector()
+{
+    qDeleteAll(m_defs);
 }

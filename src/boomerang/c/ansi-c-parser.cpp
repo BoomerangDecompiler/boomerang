@@ -91,8 +91,8 @@ AnsiCParser::AnsiCParser(const char* file, bool trace)
 }
 
 
-AnsiCParser::AnsiCParser(std::istream& is, bool trace)
-    : in(&is)
+AnsiCParser::AnsiCParser(std::istream *is, bool trace)
+    : in(is)
     , fileName(nullptr)
 {
     if (!in->good()) {
@@ -1372,6 +1372,6 @@ void AnsiCParser::yyerror(const char *s)
 
 AnsiCParser::~AnsiCParser()
 {
+    delete in;
     delete theScanner;
-    // Suppress warnings from gcc about lack of virtual destructor
 }

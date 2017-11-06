@@ -26,18 +26,18 @@ public:
     ReturnStatement();
     virtual ~ReturnStatement() override;
 
-    iterator begin() { return returns.begin(); }
-    iterator end()   { return returns.end(); }
+    iterator begin() { return m_returns.begin(); }
+    iterator end()   { return m_returns.end(); }
 
-    const_iterator begin() const { return returns.begin(); }
-    const_iterator end()   const { return returns.end(); }
+    const_iterator begin() const { return m_returns.begin(); }
+    const_iterator end()   const { return m_returns.end(); }
 
-    iterator erase(iterator it) { return returns.erase(it); }
+    iterator erase(iterator it) { return m_returns.erase(it); }
 
-    StatementList& getModifieds() { return modifieds; }
-    StatementList& getReturns() { return returns; }
+    StatementList& getModifieds() { return m_modifieds; }
+    StatementList& getReturns() { return m_returns; }
 
-    size_t getNumReturns() const { return returns.size(); }
+    size_t getNumReturns() const { return m_returns.size(); }
 
     // Update the modifieds, in case the signature and hence ordering and filtering has changed, or the locations in the
     // collector have changed. Does NOT remove preserveds (deferred until updating returns).
@@ -99,19 +99,20 @@ public:
     virtual bool definesLoc(SharedExp loc) const override; // True if this Statement defines loc
 
     // code generation
-    virtual void generateCode(ICodeGenerator *gen, BasicBlock *parent) override;
+    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
     // Exp        *getReturnExp(int n) { return returns[n]; }
     // void        setReturnExp(int n, SharedExp e) { returns[n] = e; }
     // void        setSigArguments();                     // Set returns based on signature
-    DefCollector *getCollector() { return &col; } // Return pointer to the collector object
+    DefCollector *getCollector() { return &m_col; } // Return pointer to the collector object
 
     // Get and set the native address for the first and only return statement
-    Address getRetAddr() { return retAddr; }
-    void setRetAddr(Address r) { retAddr = r; }
+    Address getRetAddr() { return m_retAddr; }
+    void setRetAddr(Address r) {
+        m_retAddr = r; }
 
     // Find definition for e (in the collector)
-    SharedExp findDefFor(SharedExp e) { return col.findDefFor(e); }
+    SharedExp findDefFor(SharedExp e) { return m_col.findDefFor(e); }
 
     void dfaTypeAnalysis(bool& ch) override;
 
@@ -121,7 +122,7 @@ public:
 protected:
     /// Native address of the (only) return instruction.
     /// Needed for branching to this only return statement
-    Address retAddr;
+    Address m_retAddr;
 
     /**
      * The progression of return information is as follows:
@@ -134,18 +135,17 @@ protected:
      * have RHS where the modifieds don't). Locations not live at any caller are removed from the returns, but not
      * from the modifieds.
      */
-    /// A DefCollector object to collect the reaching definitions
-    DefCollector col;
+    DefCollector m_col;
 
     /// A list of assignments that represents the locations modified by the enclosing procedure. These assignments
     /// have no RHS?
     /// These transmit type information to callers
     /// Note that these include preserved locations early on (?)
-    StatementList modifieds;
+    StatementList m_modifieds;
 
     /// A list of assignments of locations to expressions.
     /// Initially definitions reaching the exit less preserveds; later has locations unused by any callers removed.
     /// A list is used to facilitate ordering. (A set would be ideal, but the ordering depends at runtime on the
     /// signature)
-    StatementList returns;
+    StatementList m_returns;
 };

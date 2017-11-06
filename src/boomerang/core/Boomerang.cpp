@@ -33,11 +33,11 @@
 #include <ctime>
 
 
-static Boomerang *boomerang = nullptr;
+static Boomerang *g_boomerang;
+
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
-    , m_currentProject(nullptr)
     , m_symbols(new SymTab)
     , m_codeGenerator(new CCodeGenerator)
 {
@@ -46,14 +46,12 @@ Boomerang::Boomerang()
 
 Boomerang::~Boomerang()
 {
-    delete m_codeGenerator;
-    delete m_currentProject;
 }
 
 
 ICodeGenerator *Boomerang::getCodeGenerator()
 {
-    return m_codeGenerator;
+    return m_codeGenerator.get();
 }
 
 
@@ -98,11 +96,11 @@ void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *p
 }
 
 
-Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
+std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
     LOG_MSG("Loading...");
-    Prog      *prog = new Prog(fname);
-    IFrontEnd *fe   = IFrontEnd::create(fname, prog, this->getOrCreateProject());
+    std::unique_ptr<Prog> prog(new Prog(fname));
+    IFrontEnd *fe   = IFrontEnd::create(fname, prog.get(), this->getOrCreateProject());
 
     if (fe == nullptr) {
         LOG_ERROR("Loading '%1' failed.", fname);
@@ -134,12 +132,12 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
             LOG_MSG("Decoding entry point...");
         }
 
-        fe->decode(prog, SETTING(decodeMain), pname);
+        fe->decode(prog.get(), SETTING(decodeMain), pname);
 
         if (!SETTING(noDecodeChildren)) {
             // this causes any undecoded userprocs to be decoded
             LOG_MSG("Decoding anything undecoded...");
-            fe->decode(prog, Address::INVALID);
+            fe->decode(prog.get(), Address::INVALID);
         }
     }
 
@@ -170,7 +168,7 @@ Prog *Boomerang::loadAndDecode(const QString& fname, const char *pname)
 
 int Boomerang::decompile(const QString& fname, const char *pname)
 {
-    Prog   *prog = nullptr;
+    std::unique_ptr<Prog> prog = nullptr;
     time_t start;
 
     time(&start);
@@ -216,7 +214,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     }
 
     LOG_MSG("Generating code...");
-    Boomerang::get()->getCodeGenerator()->generateCode(prog);
+    Boomerang::get()->getCodeGenerator()->generateCode(prog.get());
 
     LOG_VERBOSE("Output written to '%1'", Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(prog->getRootModule()->getName()));
 
@@ -228,7 +226,6 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 
     LOG_MSG("Completed in %1 hours %2 minutes %3 seconds.", hours, mins, secs);
 
-    delete prog;
     return 0;
 }
 
@@ -303,11 +300,18 @@ void Boomerang::miniDebugger(UserProc *p, const char *description)
 
 Boomerang *Boomerang::get()
 {
-    if (!boomerang) {
-        boomerang = new Boomerang();
+    if (!g_boomerang) {
+        g_boomerang = new Boomerang();
     }
 
-    return boomerang;
+    return g_boomerang;
+}
+
+
+void Boomerang::destroy()
+{
+    delete g_boomerang;
+    g_boomerang = nullptr;
 }
 
 
@@ -319,7 +323,7 @@ IBinaryImage *Boomerang::getImage()
 
 IBinarySymbolTable *Boomerang::getSymbols()
 {
-    return m_symbols;
+    return m_symbols.get();
 }
 
 
@@ -344,8 +348,8 @@ const char *Boomerang::getVersionStr()
 IProject *Boomerang::getOrCreateProject()
 {
     if (!m_currentProject) {
-        m_currentProject = new Project;
+        m_currentProject.reset(new Project);
     }
 
-    return m_currentProject;
+    return m_currentProject.get();
 }

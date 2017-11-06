@@ -212,9 +212,7 @@ public:
 
 public:
     AnsiCParser(const char* file, bool trace);
-    AnsiCParser(std::istream& is, bool trace);
-
-public:
+    AnsiCParser(std::istream *is, bool trace);
 
 private:
     AnsiCScanner *theScanner;

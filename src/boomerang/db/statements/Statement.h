@@ -129,7 +129,7 @@ public:
         , m_proc(nullptr)
         , m_number(0) {}
 
-    virtual ~Statement() {}
+    virtual ~Statement() = default;
 
     /// get/set the enclosing BB, etc
     BasicBlock *getBB() { return m_parent; }
@@ -260,7 +260,7 @@ public:
     bool propagateFlagsTo();
 
     // code generation
-    virtual void generateCode(ICodeGenerator *gen, BasicBlock *Parent) = 0;
+    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) = 0;
     virtual void simplify() = 0; ///< simpify internal expressions
 
     /// simplify internal address expressions (a[m[x]] -> x) etc

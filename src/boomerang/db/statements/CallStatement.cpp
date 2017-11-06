@@ -37,6 +37,7 @@
 ///   or the defCollector in the call
 class ArgSourceProvider
 {
+public:
     enum Src
     {
         SRC_LIB,
@@ -44,6 +45,14 @@ class ArgSourceProvider
         SRC_COL
     };
 
+public:
+    ArgSourceProvider(CallStatement *call);
+    SharedExp nextArgLoc();              // Get the next location (not subscripted)
+    SharedType curType(SharedExp e);     // Get the current location's type
+    bool exists(SharedExp loc);          // True if the given location (not subscripted) exists as a source
+    SharedExp localise(SharedExp e);     // Localise to this call if necessary
+
+public:
     Src src;
     CallStatement *call;
     int i, n;                       // For SRC_LIB
@@ -52,13 +61,6 @@ class ArgSourceProvider
     StatementList *calleeParams;
     DefCollector::iterator cc;      // For SRC_COL
     DefCollector *defCol;
-
-public:
-    ArgSourceProvider(CallStatement *call);
-    SharedExp nextArgLoc();              // Get the next location (not subscripted)
-    SharedType curType(SharedExp e);     // Get the current location's type
-    bool exists(SharedExp loc);          // True if the given location (not subscripted) exists as a source
-    SharedExp localise(SharedExp e);     // Localise to this call if necessary
 };
 
 
@@ -246,16 +248,16 @@ CallStatement::CallStatement()
 
 CallStatement::~CallStatement()
 {
+    qDeleteAll(m_defines);
 }
 
 
 int CallStatement::findDefine(SharedExp e)
 {
-    StatementList::iterator rr;
     int i = 0;
 
-    for (rr = m_defines.begin(); rr != m_defines.end(); ++rr, ++i) {
-        SharedExp ret = ((Assignment *)*rr)->getLeft();
+    for (StatementList::const_iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr, ++i) {
+        SharedConstExp ret = (dynamic_cast<Assignment *>(*rr))->getLeft();
 
         if (*ret == *e) {
             return i;
@@ -305,31 +307,35 @@ SharedExp CallStatement::findDefFor(SharedExp e) const
 
 SharedType CallStatement::getArgumentType(int i) const
 {
-    assert(i < (int)m_arguments.size());
-    StatementList::const_iterator aa = m_arguments.begin();
-    std::advance(aa, i);
-    return ((Assign *)(*aa))->getType();
+    assert(Util::inRange(i, 0, getNumArguments()));
+    StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
+    Assign *assign = dynamic_cast<Assign *>(*aa);
+    assert(assign != nullptr);
+
+    return assign->getType();
 }
 
 
 void CallStatement::setArgumentType(int i, SharedType ty)
 {
-    assert(i < (int)m_arguments.size());
-    StatementList::const_iterator aa = m_arguments.begin();
-    std::advance(aa, i);
-    ((Assign *)(*aa))->setType(ty);
+    assert(Util::inRange(i, 0, getNumArguments()));
+    StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
+    Assign *assign = dynamic_cast<Assign *>(*aa);
+    assert(assign != nullptr);
+    assign->setType(ty);
 }
 
 
-void CallStatement::setArguments(StatementList& args)
+void CallStatement::setArguments(const StatementList& args)
 {
+    qDeleteAll(m_arguments);
     m_arguments.clear();
     m_arguments.append(args);
-    StatementList::iterator ll;
 
-    for (ll = m_arguments.begin(); ll != m_arguments.end(); ++ll) {
-        ((Assign *)*ll)->setProc(m_proc);
-        ((Assign *)*ll)->setBB(m_parent);
+    for (StatementList::iterator ll = m_arguments.begin(); ll != m_arguments.end(); ++ll) {
+        Assign *asgn = dynamic_cast<Assign *>(*ll);
+        asgn->setProc(m_proc);
+        asgn->setBB(m_parent);
     }
 }
 
@@ -354,10 +360,11 @@ void CallStatement::setSigArguments()
     }
 
     int n = m_signature->getNumParams();
-    int i;
+
+    qDeleteAll(m_arguments);
     m_arguments.clear();
 
-    for (i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         SharedExp e = m_signature->getArgumentExp(i);
         assert(e);
         auto l = std::dynamic_pointer_cast<Location>(e);
@@ -366,7 +373,9 @@ void CallStatement::setSigArguments()
             l->setProc(m_proc);     // Needed?
         }
 
-        Assign *as = new Assign(m_signature->getParamType(i)->clone(), e->clone(), e->clone());
+        Assign *as = new Assign(m_signature->getParamType(i)->clone(),
+                                e->clone(),
+                                e->clone());
         as->setProc(m_proc);
         as->setBB(m_parent);
         as->setNumber(m_number);     // So fromSSAform will work later. But note: this call is probably not numbered yet!
@@ -385,14 +394,14 @@ bool CallStatement::search(const Exp& pattern, SharedExp& result) const
         return true;
     }
 
-    for (auto ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        if ((*ss)->search(pattern, result)) {
+    for (const Statement *stmt : m_defines) {
+        if (stmt->search(pattern, result)) {
             return true;
         }
     }
 
-    for (auto ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        if ((*ss)->search(pattern, result)) {
+    for (const Statement *stmt : m_arguments) {
+        if (stmt->search(pattern, result)) {
             return true;
         }
     }
@@ -405,15 +414,13 @@ bool CallStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool
 {
     bool change = GotoStatement::searchAndReplace(pattern, replace, cc);
 
-    StatementList::iterator ss;
-
     // FIXME: MVE: Check if we ever want to change the LHS of arguments or defines...
-    for (ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        change |= (*ss)->searchAndReplace(pattern, replace, cc);
+    for (Statement *ss : m_defines) {
+        change |= ss->searchAndReplace(pattern, replace, cc);
     }
 
-    for (ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        change |= (*ss)->searchAndReplace(pattern, replace, cc);
+    for (Statement *ss : m_arguments) {
+        change |= ss->searchAndReplace(pattern, replace, cc);
     }
 
     if (cc) {
@@ -438,8 +445,8 @@ bool CallStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
         }
     }
 
-    for (auto ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        if ((*ss)->searchAll(pattern, result)) {
+    for (const Statement *ss : m_arguments) {
+        if (ss->searchAll(pattern, result)) {
             found = true;
         }
     }
@@ -458,15 +465,14 @@ void CallStatement::print(QTextStream& os, bool html) const
     }
 
     // Define(s), if any
-    if (m_defines.size()) {
+    if (m_defines.size() > 0) {
         if (m_defines.size() > 1) {
             os << "{";
         }
 
-        StatementList::const_iterator rr;
         bool first = true;
 
-        for (rr = m_defines.begin(); rr != m_defines.end(); ++rr) {
+        for (StatementList::const_iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr) {
             assert((*rr)->isAssignment());
             Assignment *as = (Assignment *)*rr;
 
@@ -480,7 +486,7 @@ void CallStatement::print(QTextStream& os, bool html) const
             os << "*" << as->getType() << "* " << as->getLeft();
 
             if (as->isAssign()) {
-                os << " := " << ((Assign *)as)->getRight();
+                os << " := " << dynamic_cast<Assign *>(as)->getRight();
             }
         }
 
@@ -530,7 +536,7 @@ void CallStatement::print(QTextStream& os, bool html) const
 
         for (const Statement *aa : m_arguments) {
             os << "                ";
-            ((const Assignment *)aa)->printCompact(os, html);
+            dynamic_cast<const Assignment *>(aa)->printCompact(os, html);
             os << "\n";
         }
 
@@ -582,14 +588,14 @@ Statement *CallStatement::clone() const
 
     ret->m_dest       = m_dest->clone();
     ret->m_isComputed = m_isComputed;
-    StatementList::const_iterator ss;
 
-    for (ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        ret->m_arguments.append((*ss)->clone());
+
+    for (const Statement *stmt : m_arguments) {
+        ret->m_arguments.append(stmt->clone());
     }
 
-    for (ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        ret->m_defines.append((*ss)->clone());
+    for (const Statement *stmt : m_defines) {
+        ret->m_defines.append(stmt->clone());
     }
 
     // Statement members
@@ -620,29 +626,30 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
+void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB)
 {
-    Function *p = getDestProc();
+    Function *dest = getDestProc();
 
-    if ((p == nullptr) && isComputed()) {
-        gen->addIndCallStatement(m_dest, m_arguments, calcResults());
+    if ((dest == nullptr) && isComputed()) {
+        gen->addIndCallStatement(m_dest, m_arguments, *calcResults());
         return;
     }
 
-    StatementList *results = calcResults();
-    assert(p);
+    std::unique_ptr<StatementList> results = calcResults();
+    assert(dest);
 
     if (SETTING(noDecompile)) {
         if (m_procDest->getSignature()->getNumReturns() > 0) {
-            Assign *as = new Assign(IntegerType::get(STD_SIZE), Unary::get(opRegOf, Const::get(24)),
+            Assign *as = new Assign(IntegerType::get(STD_SIZE),
+                                    Unary::get(opRegOf, Const::get(24)),
                                     Unary::get(opRegOf, Const::get(24)));
             as->setProc(m_proc);
-            as->setBB(pbb);
+            as->setBB(const_cast<BasicBlock *>(parentBB));
             results->append(as);
         }
 
         // some hacks
-        if ((p->getName() == "printf") || (p->getName() == "scanf")) {
+        if ((dest->getName() == "printf") || (dest->getName() == "scanf")) {
             for (int i = 1; i < 3; i++) {
                 SharedExp e = m_signature->getArgumentExp(i);
                 assert(e);
@@ -652,35 +659,35 @@ void CallStatement::generateCode(ICodeGenerator *gen, BasicBlock *pbb)
                     l->setProc(m_proc);     // Needed?
                 }
 
-                Assign *as = new Assign(m_signature->getParamType(i), e->clone(), e->clone());
+                Assign *as = new Assign(m_signature->getParamType(i),
+                                        e->clone(),
+                                        e->clone());
                 as->setProc(m_proc);
-                as->setBB(pbb);
+                as->setBB(const_cast<BasicBlock *>(parentBB));
                 as->setNumber(m_number);     // So fromSSAform will work later
                 m_arguments.append(as);
             }
         }
     }
 
-    if (p->isLib() && !p->getSignature()->getPreferredName().isEmpty()) {
-        gen->addCallStatement(p, p->getSignature()->getPreferredName(), m_arguments, results);
+    if (dest->isLib() && !dest->getSignature()->getPreferredName().isEmpty()) {
+        gen->addCallStatement(dest, dest->getSignature()->getPreferredName(), m_arguments, *results);
     }
     else {
-        gen->addCallStatement(p, qPrintable(p->getName()), m_arguments, results);
+        gen->addCallStatement(dest, qPrintable(dest->getName()), m_arguments, *results);
     }
 }
-
 
 void CallStatement::simplify()
 {
     GotoStatement::simplify();
-    StatementList::iterator ss;
 
-    for (ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        (*ss)->simplify();
+    for (Statement *ss : m_arguments) {
+        ss->simplify();
     }
 
-    for (ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        (*ss)->simplify();
+    for (Statement *ss : m_defines) {
+        ss->simplify();
     }
 }
 
@@ -691,14 +698,14 @@ bool CallStatement::usesExp(const Exp& e) const
         return true;
     }
 
-    for (auto ss = m_arguments.begin(); ss != m_arguments.end(); ++ss) {
-        if ((*ss)->usesExp(e)) {
+    for (const Statement *ss : m_arguments) {
+        if (ss->usesExp(e)) {
             return true;
         }
     }
 
-    for (auto ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        if ((*ss)->usesExp(e)) {
+    for (const Statement *ss : m_defines) {
+        if (ss->usesExp(e)) {
             return true;
         }
     }
@@ -815,6 +822,7 @@ bool CallStatement::convertToDirect()
 
     // 3
     // 3a Do the same with the regular arguments
+    qDeleteAll(m_arguments);
     m_arguments.clear();
 
     for (unsigned i = 0; i < sig->getNumParams(); i++) {
@@ -857,19 +865,20 @@ bool CallStatement::isCallToMemOffset() const
 
 SharedExp CallStatement::getArgumentExp(int i) const
 {
-    assert(i < (int)m_arguments.size());
-    StatementList::const_iterator aa = m_arguments.begin();
-    std::advance(aa, i);
-    return ((Assign *)*aa)->getRight();
+    assert(Util::inRange(i, 0, getNumArguments()));
+
+    // stmt = m_arguments[i]
+    const Statement *stmt = *std::next(m_arguments.begin(), i);
+    return dynamic_cast<const Assign *>(stmt)->getRight();
 }
 
 
 void CallStatement::setArgumentExp(int i, SharedExp e)
 {
-    assert(i < (int)m_arguments.size());
-    StatementList::iterator aa = m_arguments.begin();
-    std::advance(aa, i);
-    SharedExp& a = ((Assign *)*aa)->getRightRef();
+    assert(Util::inRange(i, 0, getNumArguments()));
+
+    Statement *stmt = *std::next(m_arguments.begin(), i);
+    SharedExp& a = dynamic_cast<Assign *>(stmt)->getRightRef();
     a = e->clone();
 }
 
@@ -882,12 +891,12 @@ int CallStatement::getNumArguments() const
 
 void CallStatement::setNumArguments(int n)
 {
-    int oldSize = m_arguments.size();
+    const int oldSize = getNumArguments();
 
     if (oldSize > n) {
-        StatementList::iterator aa = m_arguments.begin();
-        std::advance(aa, n);
-        m_arguments.erase(aa, m_arguments.end());
+        StatementList::iterator start = std::next(m_arguments.begin(), n);
+        qDeleteAll(start, m_arguments.end());
+        m_arguments.erase(start, m_arguments.end());
     }
 
     // MVE: check if these need extra propagation
@@ -913,8 +922,11 @@ void CallStatement::setNumArguments(int n)
 
 void CallStatement::removeArgument(int i)
 {
+    assert(Util::inRange(i, 0, getNumArguments()));
+
     StatementList::iterator aa = m_arguments.begin();
     std::advance(aa, i);
+    delete *aa;
     m_arguments.erase(aa);
 }
 
@@ -1324,18 +1336,18 @@ void CallStatement::updateDefines()
     }
 
     if (m_procDest && m_procDest->isLib()) {
-        sig->setLibraryDefines(&m_defines);     // Set the locations defined
+        sig->setLibraryDefines(m_defines);     // Set the locations defined
         return;
     }
     else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
-        Signature::setABIdefines(m_proc->getProg(), &m_defines);
+        Signature::setABIdefines(m_proc->getProg(), m_defines);
         return;
     }
 
-    // Move the defines to a temporary list
-    StatementList           oldDefines(m_defines);     // Copy the old defines
-    StatementList::iterator it;
+    // Move the defines to a temporary list. We must make sure that all defines
+    // that are not inserted into m_defines again are deleted.
+    StatementList           oldDefines(m_defines);
     m_defines.clear();
 
     if (m_procDest && m_calleeReturn) {
@@ -1376,32 +1388,31 @@ void CallStatement::updateDefines()
         }
     }
 
-    for (it = oldDefines.end(); it != oldDefines.begin();) {
-        --it;     // Becuase we are using a forwards iterator backwards
+    for (StatementList::reverse_iterator it = oldDefines.rbegin(); it != oldDefines.rend(); ++it) {
         // Make sure the LHS is still in the return or collector
         Assignment *as = (Assignment *)*it;
         SharedExp  lhs = as->getLeft();
 
         if (m_calleeReturn) {
             if (!m_calleeReturn->definesLoc(lhs)) {
+                delete *it;
                 continue;     // Not in callee returns
             }
         }
-        else {
-            if (!m_useCol.exists(lhs)) {
-                continue;     // Not in collector: delete it (don't copy it)
-            }
+        else if (!m_useCol.exists(lhs)) {
+            delete *it;
+            continue;     // Not in collector: delete it (don't copy it)
         }
 
         if (m_proc->filterReturns(lhs)) {
+            delete *it;
             continue;     // Filtered out: delete it
         }
 
         // Insert as, in order, into the existing set of definitions
-        StatementList::iterator nn;
         bool inserted = false;
 
-        for (nn = m_defines.begin(); nn != m_defines.end(); ++nn) {
+        for (StatementList::iterator nn = m_defines.begin(); nn != m_defines.end(); ++nn) {
             if (sig->returnCompare(*as, *(Assignment *)*nn)) {     // If the new assignment is less than the current one
                 nn       = m_defines.insert(nn, as);               // then insert before this position
                 inserted = true;
@@ -1448,6 +1459,7 @@ void CallStatement::updateArguments()
         m_proc->propagateStatements(convert, 88);
     }
 
+    // Do not delete statements in m_arguments since they are preserved by oldArguments
     StatementList oldArguments(m_arguments);
     m_arguments.clear();
 
@@ -1494,44 +1506,43 @@ void CallStatement::updateArguments()
         }
     }
 
-    StatementList::iterator it;
-
-    for (it = oldArguments.end(); it != oldArguments.begin();) {
-        --it;     // Becuase we are using a forwards iterator backwards
+    for (StatementList::reverse_iterator it = oldArguments.rbegin(); it != oldArguments.rend(); ++it) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
         Assign    *as = (Assign *)*it;
         SharedExp lhs = as->getLeft();
 
         if (!asp.exists(lhs)) {
+            delete *it;
             continue;
         }
 
         if (m_proc->filterParams(lhs)) {
-            continue;     // Filtered out: delete it
+            // Filtered out: delete it
+            delete *it;
+            continue;
         }
 
         // Insert as, in order, into the existing set of definitions
-        StatementList::iterator nn;
         bool inserted = false;
 
-        for (nn = m_arguments.begin(); nn != m_arguments.end(); ++nn) {
+        for (StatementList::iterator nn = m_arguments.begin(); nn != m_arguments.end(); ++nn) {
             if (sig->argumentCompare(*as, *(Assign *)*nn)) {     // If the new assignment is less than the current one
-                nn       = m_arguments.insert(nn, as);           // then insert before this position
+                m_arguments.insert(nn, as);           // then insert before this position
                 inserted = true;
                 break;
             }
         }
 
         if (!inserted) {
-            m_arguments.insert(m_arguments.end(), as);     // In case larger than all existing elements
+            m_arguments.push_back(as); // In case larger than all existing elements
         }
     }
 }
 
 
-StatementList *CallStatement::calcResults()
+std::unique_ptr<StatementList> CallStatement::calcResults()
 {
-    StatementList *ret = new StatementList;
+    std::unique_ptr<StatementList> result(new StatementList);
 
     if (m_procDest) {
         auto sig = m_procDest->getSignature();
@@ -1547,7 +1558,7 @@ StatementList *CallStatement::calcResults()
             }
 
             if (m_useCol.exists(lhs)) {
-                ret->append(dd);
+                result->append(dd);
             }
         }
     }
@@ -1573,33 +1584,32 @@ StatementList *CallStatement::calcResults()
             ImplicitAssign *as      = new ImplicitAssign(loc);     // Create an implicit assignment
             bool           inserted = false;
 
-            for (nn = ret->begin(); nn != ret->end(); ++nn) {
+            for (nn = result->begin(); nn != result->end(); ++nn) {
                 // If the new assignment is less than the current one,
                 if (sig->returnCompare(*as, *(Assignment *)*nn)) {
-                    nn       = ret->insert(nn, as);     // then insert before this position
+                    nn       = result->insert(nn, as);     // then insert before this position
                     inserted = true;
                     break;
                 }
             }
 
             if (!inserted) {
-                ret->insert(ret->end(), as);     // In case larger than all existing elements
+                result->insert(result->end(), as);     // In case larger than all existing elements
             }
         }
     }
 
-    return ret;
+    return result;
 }
 
 
 void CallStatement::removeDefine(SharedExp e)
 {
-    StatementList::iterator ss;
-
-    for (ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
+    for (StatementList::iterator ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
         Assignment *as = ((Assignment *)*ss);
 
         if (*as->getLeft() == *e) {
+            delete *ss;
             m_defines.erase(ss);
             return;
         }
@@ -1700,6 +1710,7 @@ void CallStatement::eliminateDuplicateArgs()
 
         if (ls.exists(lhs)) {
             // This is a duplicate
+            delete *it;
             it = m_arguments.erase(it);
             continue;
         }
@@ -1717,8 +1728,8 @@ void CallStatement::setNumber(int num)
     // front
     // end based in their signature
 
-    for (StatementList::iterator aa = m_arguments.begin(); aa != m_arguments.end(); ++aa) {
-        (*aa)->setNumber(num);
+    for (Statement *stmt : m_arguments) {
+        stmt->setNumber(num);
     }
 }
 
@@ -1734,10 +1745,10 @@ void CallStatement::genConstraints(LocationSet& cons)
     auto destSig = dest->getSignature();
     // Generate a constraint for the type of each actual argument to be equal to the type of each formal parameter
     // (hopefully, these are already calculated correctly; if not, we need repeat till no change)
-    StatementList::iterator aa;
+
     int p = 0;
 
-    for (aa = m_arguments.begin(); aa != m_arguments.end(); ++aa, ++p) {
+    for (StatementList::iterator aa = m_arguments.begin(); aa != m_arguments.end(); ++aa, ++p) {
         SharedExp arg = ((Assign *)*aa)->getRight();
 
         // Handle a[m[x]]
@@ -1761,12 +1772,13 @@ void CallStatement::genConstraints(LocationSet& cons)
     }
 
     if (dest->isLib()) {
+        assert(!m_arguments.empty());
         // A library procedure... check for two special cases
         QString name = dest->getName();
         // Note: might have to chase back via a phi statement to get a sample
         // string
         QString   str;
-        SharedExp arg0 = ((Assign *)*m_arguments.begin())->getRight();
+        SharedExp arg0 = dynamic_cast<Assign *>(*m_arguments.begin())->getRight();
 
         if (((name == "printf") || (name == "scanf")) && !(str = arg0->getAnyStrConst()).isNull()) {
             // actually have to parse it
@@ -1877,9 +1889,7 @@ bool CallStatement::accept(StmtModifier *v)
         m_dest = m_dest->accept(v->m_mod);
     }
 
-    StatementList::iterator it;
-
-    for (it = m_arguments.begin(); recur && it != m_arguments.end(); it++) {
+    for (StatementList::iterator it = m_arguments.begin(); recur && it != m_arguments.end(); it++) {
         (*it)->accept(v);
     }
 
@@ -1897,9 +1907,7 @@ bool CallStatement::accept(StmtModifier *v)
         }
     }
 
-    StatementList::iterator dd;
-
-    for (dd = m_defines.begin(); recur && dd != m_defines.end(); ++dd) {
+    for (StatementList::iterator dd = m_defines.begin(); recur && dd != m_defines.end(); ++dd) {
         (*dd)->accept(v);
     }
 
@@ -1920,9 +1928,8 @@ bool CallStatement::accept(StmtExpVisitor *v)
         ret = m_dest->accept(v->ev);
     }
 
-    StatementList::iterator it;
 
-    for (it = m_arguments.begin(); ret && it != m_arguments.end(); it++) {
+    for (StatementList::iterator it = m_arguments.begin(); ret && it != m_arguments.end(); it++) {
         ret = (*it)->accept(v);
     }
 
@@ -1941,9 +1948,7 @@ bool CallStatement::accept(StmtPartModifier *v)
         m_dest = m_dest->accept(v->mod);
     }
 
-    StatementList::iterator it;
-
-    for (it = m_arguments.begin(); recur && it != m_arguments.end(); it++) {
+    for (StatementList::iterator it = m_arguments.begin(); recur && it != m_arguments.end(); it++) {
         (*it)->accept(v);
     }
 

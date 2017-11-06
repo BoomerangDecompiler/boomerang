@@ -29,7 +29,7 @@ public:
 
     Assign(Assign& o);
 
-    ~Assign()  override = default;
+    virtual ~Assign() override = default;
 
     /// Clone
     virtual Statement *clone() const override;
@@ -75,7 +75,7 @@ public:
     int getMemDepth() const;
 
     /// Generate code
-    virtual void generateCode(ICodeGenerator *gen, BasicBlock *Parent) override;
+    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
     /// simpify internal expressions
     virtual void simplify() override;

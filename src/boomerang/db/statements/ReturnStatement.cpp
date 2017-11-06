@@ -23,7 +23,7 @@
 #include "boomerang/frontend/Frontend.h"
 
 ReturnStatement::ReturnStatement()
-    : retAddr(Address::INVALID)
+    : m_retAddr(Address::INVALID)
 {
     m_kind = STMT_RET;
 }
@@ -31,6 +31,7 @@ ReturnStatement::ReturnStatement()
 
 ReturnStatement::~ReturnStatement()
 {
+    qDeleteAll(m_returns);
 }
 
 
@@ -38,16 +39,16 @@ Statement *ReturnStatement::clone() const
 {
     ReturnStatement *ret = new ReturnStatement();
 
-    for (auto const& elem : modifieds) {
-        ret->modifieds.append((ImplicitAssign *)(elem)->clone());
+    for (auto const& elem : m_modifieds) {
+        ret->m_modifieds.append((ImplicitAssign *)(elem)->clone());
     }
 
-    for (auto const& elem : returns) {
-        ret->returns.append((Assignment *)(elem)->clone());
+    for (auto const& elem : m_returns) {
+        ret->m_returns.append((Assignment *)(elem)->clone());
     }
 
-    ret->retAddr = retAddr;
-    ret->col.makeCloneOf(col);
+    ret->m_retAddr = m_retAddr;
+    ret->m_col.makeCloneOf(m_col);
     // Statement members
     ret->m_parent = m_parent;
     ret->m_proc   = m_proc;
@@ -62,7 +63,7 @@ bool ReturnStatement::accept(StmtVisitor *visitor)
 }
 
 
-void ReturnStatement::generateCode(ICodeGenerator *gen, BasicBlock *)
+void ReturnStatement::generateCode(ICodeGenerator *gen, const BasicBlock *)
 {
     gen->addReturnStatement(&getReturns());
 }
@@ -72,11 +73,11 @@ void ReturnStatement::simplify()
 {
     iterator it;
 
-    for (it = modifieds.begin(); it != modifieds.end(); it++) {
+    for (it = m_modifieds.begin(); it != m_modifieds.end(); it++) {
         (*it)->simplify();
     }
 
-    for (it = returns.begin(); it != returns.end(); it++) {
+    for (it = m_returns.begin(); it != m_returns.end(); it++) {
         (*it)->simplify();
     }
 }
@@ -88,9 +89,9 @@ void ReturnStatement::removeReturn(SharedExp loc)
         loc = loc->getSubExp1();
     }
 
-    for (iterator rr = returns.begin(); rr != returns.end(); ++rr) {
+    for (iterator rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
         if (*((Assignment *)*rr)->getLeft() == *loc) {
-            returns.erase(rr);
+            m_returns.erase(rr);
             return;     // Assume only one definition
         }
     }
@@ -99,7 +100,7 @@ void ReturnStatement::removeReturn(SharedExp loc)
 
 void ReturnStatement::addReturn(Assignment *a)
 {
-    returns.append(a);
+    m_returns.append(a);
 }
 
 
@@ -130,7 +131,7 @@ bool ReturnStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bo
     if (cc) {
         DefCollector::iterator dd;
 
-        for (dd = col.begin(); dd != col.end(); ++dd) {
+        for (dd = m_col.begin(); dd != m_col.end(); ++dd) {
             change |= (*dd)->searchAndReplace(pattern, replace);
         }
     }
@@ -184,7 +185,7 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
     if (!v->isIgnoreCol()) {
         DefCollector::iterator dd;
 
-        for (dd = col.begin(); dd != col.end(); ++dd) {
+        for (dd = m_col.begin(); dd != m_col.end(); ++dd) {
             if (!(*dd)->accept(v)) {
                 return false;
             }
@@ -193,14 +194,14 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
         // EXPERIMENTAL: for now, count the modifieds as if they are a collector (so most, if not all of the time,
         // ignore them). This is so that we can detect better when a definition is used only once, and therefore
         // propagate anything to it
-        for (rr = modifieds.begin(); rr != modifieds.end(); ++rr) {
+        for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
             if (!(*rr)->accept(v)) {
                 return false;
             }
         }
     }
 
-    for (rr = returns.begin(); rr != returns.end(); ++rr) {
+    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
         if (!(*rr)->accept(v)) {
             return false;
         }
@@ -223,7 +224,7 @@ bool ReturnStatement::accept(StmtModifier *v)
     if (!v->ignoreCollector()) {
         DefCollector::iterator dd;
 
-        for (dd = col.begin(); dd != col.end(); ++dd) {
+        for (dd = m_col.begin(); dd != m_col.end(); ++dd) {
             if (!(*dd)->accept(v)) {
                 return false;
             }
@@ -232,13 +233,13 @@ bool ReturnStatement::accept(StmtModifier *v)
 
     ReturnStatement::iterator rr;
 
-    for (rr = modifieds.begin(); rr != modifieds.end(); ++rr) {
+    for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
         if (!(*rr)->accept(v)) {
             return false;
         }
     }
 
-    for (rr = returns.begin(); rr != returns.end(); ++rr) {
+    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
         if (!(*rr)->accept(v)) {
             return false;
         }
@@ -255,13 +256,13 @@ bool ReturnStatement::accept(StmtPartModifier *v)
     v->visit(this, recur);
     ReturnStatement::iterator rr;
 
-    for (rr = modifieds.begin(); rr != modifieds.end(); ++rr) {
+    for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
         if (!(*rr)->accept(v)) {
             return false;
         }
     }
 
-    for (rr = returns.begin(); rr != returns.end(); ++rr) {
+    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
         if (!(*rr)->accept(v)) {
             return false;
         }
@@ -273,7 +274,7 @@ bool ReturnStatement::accept(StmtPartModifier *v)
 
 bool ReturnStatement::definesLoc(SharedExp loc) const
 {
-    for (auto& elem : modifieds) {
+    for (auto& elem : m_modifieds) {
         if ((elem)->definesLoc(loc)) {
             return true;
         }
@@ -285,7 +286,7 @@ bool ReturnStatement::definesLoc(SharedExp loc) const
 
 void ReturnStatement::getDefinitions(LocationSet& ls) const
 {
-    for (auto& elem : modifieds) {
+    for (auto& elem : m_modifieds) {
         (elem)->getDefinitions(ls);
     }
 }
@@ -293,7 +294,7 @@ void ReturnStatement::getDefinitions(LocationSet& ls) const
 
 SharedType ReturnStatement::getTypeFor(SharedExp e) const
 {
-    for (auto& elem : modifieds) {
+    for (auto& elem : m_modifieds) {
         if (*((Assignment *)elem)->getLeft() == *e) {
             return ((Assignment *)elem)->getType();
         }
@@ -305,14 +306,14 @@ SharedType ReturnStatement::getTypeFor(SharedExp e) const
 
 void ReturnStatement::setTypeFor(SharedExp e, SharedType ty)
 {
-    for (auto& elem : modifieds) {
+    for (auto& elem : m_modifieds) {
         if (*((Assignment *)elem)->getLeft() == *e) {
             ((Assignment *)elem)->setType(ty);
             break;
         }
     }
 
-    for (auto& elem : returns) {
+    for (auto& elem : m_returns) {
         if (*((Assignment *)elem)->getLeft() == *e) {
             ((Assignment *)elem)->setType(ty);
             return;
@@ -335,7 +336,7 @@ void ReturnStatement::print(QTextStream& os, bool html) const
     bool     first  = true;
     unsigned column = 19;
 
-    for (auto const& elem : returns) {
+    for (auto const& elem : m_returns) {
         QString     tgt;
         QTextStream ost(&tgt);
         ((const Assignment *)elem)->printCompact(ost, html);
@@ -373,7 +374,7 @@ void ReturnStatement::print(QTextStream& os, bool html) const
     first  = true;
     column = 25;
 
-    for (auto const& elem : modifieds) {
+    for (auto const& elem : m_modifieds) {
         QString          tgt2;
         QTextStream      ost(&tgt2);
         const Assignment *as = (const Assignment *)elem;
@@ -415,16 +416,16 @@ void ReturnStatement::print(QTextStream& os, bool html) const
     }
 
     os << "Reaching definitions: ";
-    col.print(os, html);
+    m_col.print(os, html);
 }
 
 
 void ReturnStatement::updateModifieds()
 {
     auto          sig = m_proc->getSignature();
-    StatementList oldMods(modifieds);     // Copy the old modifieds
+    StatementList oldMods(m_modifieds);     // Copy the old modifieds
 
-    modifieds.clear();
+    m_modifieds.clear();
 
     if ((m_parent->getNumInEdges() == 1) && m_parent->getInEdges()[0]->getLastStmt()->isCall()) {
         CallStatement *call = (CallStatement *)m_parent->getInEdges()[0]->getLastStmt();
@@ -440,7 +441,7 @@ void ReturnStatement::updateModifieds()
 
     StatementList::iterator it;
 
-    for (DefCollector::iterator ll = col.begin(); ll != col.end(); ++ll) {
+    for (DefCollector::iterator ll = m_col.begin(); ll != m_col.end(); ++ll) {
         bool      found  = false;
         Assign    *as    = (Assign *)*ll;
         SharedExp colLhs = as->getLeft();
@@ -475,7 +476,7 @@ void ReturnStatement::updateModifieds()
         Assignment *as = (Assignment *)*it;
         SharedExp  lhs = as->getLeft();
 
-        if (!col.existsOnLeft(lhs)) {
+        if (!m_col.existsOnLeft(lhs)) {
             continue;     // Not in collector: delete it (don't copy it)
         }
 
@@ -487,16 +488,16 @@ void ReturnStatement::updateModifieds()
         StatementList::iterator nn;
         bool inserted = false;
 
-        for (nn = modifieds.begin(); nn != modifieds.end(); ++nn) {
+        for (nn = m_modifieds.begin(); nn != m_modifieds.end(); ++nn) {
             if (sig->returnCompare(*as, *(Assignment *)*nn)) {     // If the new assignment is less than the current one
-                nn       = modifieds.insert(nn, as);               // then insert before this position
+                nn       = m_modifieds.insert(nn, as);               // then insert before this position
                 inserted = true;
                 break;
             }
         }
 
         if (!inserted) {
-            modifieds.insert(modifieds.end(), as);     // In case larger than all existing elements
+            m_modifieds.insert(m_modifieds.end(), as);     // In case larger than all existing elements
         }
     }
 }
@@ -506,15 +507,13 @@ void ReturnStatement::updateReturns()
 {
     auto          sig = m_proc->getSignature();
     int           sp  = sig->getStackRegister();
-    StatementList oldRets(returns);     // Copy the old returns
+    StatementList oldRets(m_returns);     // Copy the old returns
 
-    returns.clear();
+    m_returns.clear();
     // For each location in the modifieds, make sure that there is an assignment in the old returns, which will
     // be filtered and sorted to become the new returns
     // Ick... O(N*M) (N existing returns, M modifieds locations)
-    StatementList::iterator dd, it;
-
-    for (dd = modifieds.begin(); dd != modifieds.end(); ++dd) {
+    for (StatementList::iterator dd = m_modifieds.begin(); dd != m_modifieds.end(); ++dd) {
         bool      found = false;
         SharedExp loc   = ((Assignment *)*dd)->getLeft();
 
@@ -529,7 +528,7 @@ void ReturnStatement::updateReturns()
             continue;
         }
 
-        for (it = oldRets.begin(); it != oldRets.end(); it++) {
+        for (StatementList::iterator it = oldRets.begin(); it != oldRets.end(); it++) {
             SharedExp lhs = ((Assign *)*it)->getLeft();
 
             if (*lhs == *loc) {
@@ -539,7 +538,7 @@ void ReturnStatement::updateReturns()
         }
 
         if (!found) {
-            SharedExp rhs = col.findDefFor(loc);     // Find the definition that reaches the return statement's collector
+            SharedExp rhs = m_col.findDefFor(loc);     // Find the definition that reaches the return statement's collector
             Assign    *as = new Assign(loc->clone(), rhs->clone());
             as->setProc(m_proc);
             as->setBB(m_parent);
@@ -549,17 +548,18 @@ void ReturnStatement::updateReturns()
 
     // Mostly the old returns will be in the correct order, and inserting will be fastest near the start of the
     // new list. So read the old returns in reverse order
-    for (it = oldRets.end(); it != oldRets.begin();) {
-        --it;     // Becuase we are using a forwards iterator backwards
+    for (StatementList::reverse_iterator it = oldRets.rbegin(); it != oldRets.rend(); ++it) {
         // Make sure the LHS is still in the modifieds
         Assign    *as = (Assign *)*it;
         SharedExp lhs = as->getLeft();
 
-        if (!modifieds.existsOnLeft(lhs)) {
+        if (!m_modifieds.existsOnLeft(lhs)) {
+            delete *it;
             continue;     // Not in modifieds: delete it (don't copy it)
         }
 
         if (m_proc->filterReturns(lhs)) {
+            delete *it;
             continue;     // Filtered out: delete it
         }
 
@@ -568,23 +568,24 @@ void ReturnStatement::updateReturns()
         SharedExp rhs = as->getRight();
 
         if (rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef() && (*rhs->getSubExp1() == *lhs)) {
+            delete *it;
             continue;     // Filter out the preserveds
         }
 
         // Insert as, in order, into the existing set of returns
-        StatementList::iterator nn;
+
         bool inserted = false;
 
-        for (nn = returns.begin(); nn != returns.end(); ++nn) {
+        for (StatementList::iterator nn = m_returns.begin(); nn != m_returns.end(); ++nn) {
             if (sig->returnCompare(*as, *(Assign *)*nn)) {     // If the new assignment is less than the current one
-                nn       = returns.insert(nn, as);             // then insert before this position
+                nn       = m_returns.insert(nn, as);             // then insert before this position
                 inserted = true;
                 break;
             }
         }
 
         if (!inserted) {
-            returns.insert(returns.end(), as);     // In case larger than all existing elements
+            m_returns.insert(m_returns.end(), as);     // In case larger than all existing elements
         }
     }
 }
@@ -592,14 +593,14 @@ void ReturnStatement::updateReturns()
 
 void ReturnStatement::removeModified(SharedExp loc)
 {
-    modifieds.removeDefOf(loc);
-    returns.removeDefOf(loc);
+    m_modifieds.removeDefOf(loc);
+    m_returns.removeDefOf(loc);
 }
 
 
 void ReturnStatement::dfaTypeAnalysis(bool& ch)
 {
-    for (Statement *mm : modifieds) {
+    for (Statement *mm : m_modifieds) {
         if (!mm->isAssignment()) {
             LOG_WARN("Non assignment in modifieds of ReturnStatement");
         }
@@ -607,7 +608,7 @@ void ReturnStatement::dfaTypeAnalysis(bool& ch)
         mm->dfaTypeAnalysis(ch);
     }
 
-    for (Statement *rr : returns) {
+    for (Statement *rr : m_returns) {
         if (!rr->isAssignment()) {
             LOG_WARN("Non assignment in returns of ReturnStatement");
         }

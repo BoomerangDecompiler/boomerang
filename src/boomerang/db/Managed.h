@@ -134,8 +134,8 @@ public:
     void makeIsect(StatementList& a, LocationSet& b);
 
     void append(Statement *s) { push_back(s); } ///< Insert at end
-    void append(StatementList& sl);               ///< Append whole StatementList
-    void append(InstructionSet& sl);              ///< Append whole InstructionSet
+    void append(const StatementList& sl);         ///< Append whole StatementList
+    void append(const InstructionSet& sl);        ///< Append whole InstructionSet
 
     bool remove(Statement *s);                  ///< Removal; rets false if not found
 
