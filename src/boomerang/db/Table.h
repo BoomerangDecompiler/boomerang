@@ -10,15 +10,13 @@
 #pragma once
 
 
-/**
- * \file       table.h
- * \brief   Provides the definition of class Table and children used by
- *               the SSL parser
- */
-
 #include <QString>
 #include <deque>
 #include <memory>
+
+
+class Exp;
+using SharedExp = std::shared_ptr<Exp>;
 
 // Kinds of SSL specification tables
 enum TABLE_TYPE
@@ -28,6 +26,10 @@ enum TABLE_TYPE
     EXPRTABLE
 };
 
+
+/**
+ * Provides the definition of class Table used by the SSL parser
+ */
 class Table
 {
     typedef std::deque<QString> StringQueue;
@@ -44,14 +46,13 @@ private:
     TABLE_TYPE TableType;
 };
 
+
 class OpTable : public Table
 {
 public:
     OpTable(const std::deque<QString>& ops);
 };
 
-class Exp;
-using SharedExp = std::shared_ptr<Exp>;
 
 class ExprTable : public Table
 {
