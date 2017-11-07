@@ -25,7 +25,7 @@ public:
     virtual ~ConstFinder() override = default;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
     virtual bool visit(const std::shared_ptr<Const>& exp) override;

@@ -46,7 +46,7 @@ bool ConscriptSetter::visit(const std::shared_ptr<Const>& exp)
 }
 
 
-bool ConscriptSetter::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
+bool ConscriptSetter::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     OPER op = exp->getOper();
 
@@ -54,12 +54,12 @@ bool ConscriptSetter::visit(const std::shared_ptr<Location>& exp, bool& dontVisi
         m_bInLocalGlobal = true;
     }
 
-    dontVisitChildren = false;
+    visitChildren = true;
     return true; // Continue recursion
 }
 
 
-bool ConscriptSetter::visit(const std::shared_ptr<Binary>& exp, bool& override)
+bool ConscriptSetter::visit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
     OPER op = exp->getOper();
 
@@ -67,6 +67,6 @@ bool ConscriptSetter::visit(const std::shared_ptr<Binary>& exp, bool& override)
         m_bInLocalGlobal = true;
     }
 
-    override = false;
+    visitChildren = true;
     return true; // Continue recursion
 }

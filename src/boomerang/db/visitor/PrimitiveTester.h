@@ -32,10 +32,10 @@ public:
     //   References to the results of calls are considered primitive... but only if bypassed?
     //   Other references considered non primitive
     // Start with result=true, must find primitivity in all components
-    bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+    bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren) override;
+    bool visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
 private:
     bool m_result = true; ///< Initialise result true: need AND of all components

@@ -636,10 +636,10 @@ SharedExp Ternary::genConstraints(SharedExp result)
 
 bool Ternary::accept(ExpVisitor *v)
 {
-    bool dontVisitChildren = false;
-    bool ret = v->visit(shared_from_base<Ternary>(), dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(shared_from_base<Ternary>(), visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -661,7 +661,7 @@ bool Ternary::accept(ExpVisitor *v)
 
 SharedExp Ternary::accept(ExpModifier *v)
 {
-    bool visitChildren;
+    bool visitChildren = true;
     auto ret = std::static_pointer_cast<Ternary>(v->preVisit(shared_from_base<Ternary>(), visitChildren));
 
     if (visitChildren) {

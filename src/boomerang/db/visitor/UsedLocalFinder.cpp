@@ -24,9 +24,9 @@ UsedLocalFinder::UsedLocalFinder(LocationSet& used, UserProc* proc)
 {
 }
 
-bool UsedLocalFinder::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
+bool UsedLocalFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
 
     if (exp->isLocal()) {
         m_used->insert(exp); // Found a local
@@ -36,9 +36,9 @@ bool UsedLocalFinder::visit(const std::shared_ptr<Location>& exp, bool& dontVisi
 }
 
 
-bool UsedLocalFinder::visit(const std::shared_ptr<TypedExp>& exp, bool& dontVisitChildren)
+bool UsedLocalFinder::visit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     SharedType ty = exp->getType();
 
     // Assumption: (cast)exp where cast is of pointer type means that exp is the address of a local
@@ -48,7 +48,7 @@ bool UsedLocalFinder::visit(const std::shared_ptr<TypedExp>& exp, bool& dontVisi
 
         if (!m_proc->findLocal(mof, ty).isNull()) {
             m_used->insert(mof);
-            dontVisitChildren = true;
+            visitChildren = false;
         }
     }
 

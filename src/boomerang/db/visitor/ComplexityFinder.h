@@ -27,16 +27,16 @@ public:
     int getDepth() { return m_count; }
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Unary>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Unary>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Binary>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Ternary>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Ternary>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
 private:
     int m_count;

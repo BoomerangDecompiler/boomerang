@@ -16,72 +16,71 @@ StmtExpVisitor::StmtExpVisitor(ExpVisitor *v, bool ignoreCol)
 {
 }
 
-bool StmtExpVisitor::visit(Assign *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(Assign *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(PhiAssign *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(PhiAssign *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ImplicitAssign *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(ImplicitAssign *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(BoolAssign *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(BoolAssign *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(GotoStatement *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(GotoStatement *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(BranchStatement *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(BranchStatement *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(CaseStatement *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(CaseStatement *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(CallStatement *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(CallStatement *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ReturnStatement *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(ReturnStatement *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ImpRefStatement *, bool& dontVisitChildren)
+bool StmtExpVisitor::visit(ImpRefStatement *, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }
-

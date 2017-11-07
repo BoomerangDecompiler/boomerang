@@ -32,10 +32,10 @@ public:
     bool wasAllFound() { return all; }
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<TypedExp>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
     virtual bool visit(const std::shared_ptr<Terminal>& exp) override;

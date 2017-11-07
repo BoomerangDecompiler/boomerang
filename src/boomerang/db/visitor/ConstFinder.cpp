@@ -26,13 +26,13 @@ bool ConstFinder::visit(const std::shared_ptr<Const>& exp)
 }
 
 
-bool ConstFinder::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
+bool ConstFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (exp->isMemOf()) {
-        dontVisitChildren = false; // We DO want to see constants in memofs
+        visitChildren = true; // We DO want to see constants in memofs
     }
     else {
-        dontVisitChildren = true; // Don't consider register numbers, global names, etc
+        visitChildren = false; // Don't consider register numbers, global names, etc
     }
 
     return true;

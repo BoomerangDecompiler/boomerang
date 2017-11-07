@@ -199,10 +199,10 @@ PhiInfo& PhiAssign::getAt(BasicBlock *idx)
 
 bool PhiAssign::accept(StmtExpVisitor *visitor)
 {
-    bool dontVisitChildren;
-    bool ret = visitor->visit(this, dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = visitor->visit(this, visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

@@ -211,10 +211,10 @@ bool GotoStatement::usesExp(const Exp& e) const
 
 bool GotoStatement::accept(StmtExpVisitor *v)
 {
-    bool dontVisitChildren = false;
-    bool ret = v->visit(this, dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

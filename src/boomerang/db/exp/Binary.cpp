@@ -1649,10 +1649,10 @@ bool Binary::accept(ExpVisitor *v)
 {
     assert(subExp1 && subExp2);
 
-    bool dontVisitChildren = false;
-    bool ret = v->visit(shared_from_base<Binary>(), dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(shared_from_base<Binary>(), visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

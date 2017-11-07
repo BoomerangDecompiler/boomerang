@@ -695,10 +695,10 @@ SharedExp Unary::simplifyConstraint()
 
 bool Unary::accept(ExpVisitor *v)
 {
-    bool dontVisitChildren = false;
-    bool ret = v->visit(shared_from_base<Unary>(), dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(shared_from_base<Unary>(), visitChildren);
 
-    if (dontVisitChildren || !ret) {
+    if (!visitChildren || !ret) {
         return ret; // Override the rest of the accept logic
     }
 

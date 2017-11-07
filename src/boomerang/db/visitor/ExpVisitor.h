@@ -39,30 +39,29 @@ public:
      * The default behaviour is to visit all expressions and all children.
      *
      * \param exp the expression to evaluate
-     * \param dontVisitChildren if true, do not visit the children of \p exp.
+     * \param visitChildren if true, also visit the children of \p exp.
      * \returns true to continue visiting
-     * return false to abandon iterating through the expression (terminate the search)
-     * Set override true to not do the usual recursion into children
+     * return false to abandon iterating through the expression (terminate the search).
      */
-    virtual bool visit(const std::shared_ptr<Unary>& exp,    bool& dontVisitChildren);
+    virtual bool visit(const std::shared_ptr<Unary>& exp,    bool& visitChildren);
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Binary>& exp,   bool& dontVisitChildren);
+    virtual bool visit(const std::shared_ptr<Binary>& exp,   bool& visitChildren);
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Ternary>& exp,  bool& dontVisitChildren);
+    virtual bool visit(const std::shared_ptr<Ternary>& exp,  bool& visitChildren);
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<TypedExp>& exp, bool& dontVisitChildren);
+    virtual bool visit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren);
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<FlagDef>& exp,  bool& dontVisitChildren);
+    virtual bool visit(const std::shared_ptr<FlagDef>& exp,  bool& visitChildren);
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<RefExp>& exp,   bool& dontVisitChildren);
+    virtual bool visit(const std::shared_ptr<RefExp>& exp,   bool& visitChildren);
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren);
+    virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren);
 
     /// \copydoc ExpVisitor::visit
     /// A Const does not have children

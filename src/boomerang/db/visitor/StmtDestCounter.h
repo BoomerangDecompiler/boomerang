@@ -27,5 +27,5 @@ public:
     StmtDestCounter(ExpDestCounter *edc);
 
     /// \copydoc StmtExpVisitor::visit
-    bool visit(PhiAssign *stmt, bool& override) override;
+    bool visit(PhiAssign *stmt, bool& visitChildren) override;
 };

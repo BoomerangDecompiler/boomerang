@@ -193,10 +193,10 @@ SharedExp RefExp::polySimplify(bool& bMod)
 
 bool RefExp::accept(ExpVisitor *v)
 {
-    bool dontVisitChildren = false;
-    bool ret = v->visit(shared_from_base<RefExp>(), dontVisitChildren);
+    bool visitChildren = false;
+    bool ret = v->visit(shared_from_base<RefExp>(), visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

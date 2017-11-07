@@ -161,10 +161,10 @@ SharedExp TypedExp::polySimplify(bool& bMod)
 
 bool TypedExp::accept(ExpVisitor *v)
 {
-    bool dontVisitChildren = false;
-    bool ret = v->visit(shared_from_base<TypedExp>(), dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(shared_from_base<TypedExp>(), visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

@@ -10,51 +10,51 @@
 #include "ExpVisitor.h"
 
 
-bool ExpVisitor::visit(const std::shared_ptr<Unary>&, bool& override)
+bool ExpVisitor::visit(const std::shared_ptr<Unary>&, bool& visitChildren)
 {
-    override = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::visit(const std::shared_ptr<Binary>&, bool& override)
+bool ExpVisitor::visit(const std::shared_ptr<Binary>&, bool& visitChildren)
 {
-    override = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::visit(const std::shared_ptr<Ternary>&, bool& override)
+bool ExpVisitor::visit(const std::shared_ptr<Ternary>&, bool& visitChildren)
 {
-    override = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::visit(const std::shared_ptr<TypedExp>&, bool& override)
+bool ExpVisitor::visit(const std::shared_ptr<TypedExp>&, bool& visitChildren)
 {
-    override = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::visit(const std::shared_ptr<FlagDef>&, bool& override)
+bool ExpVisitor::visit(const std::shared_ptr<FlagDef>&, bool& visitChildren)
 {
-    override = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::visit(const std::shared_ptr<RefExp>&, bool& override)
+bool ExpVisitor::visit(const std::shared_ptr<RefExp>&, bool& visitChildren)
 {
-    override = false;
+    visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::visit(const std::shared_ptr<Location>&, bool& override)
+bool ExpVisitor::visit(const std::shared_ptr<Location>&, bool& visitChildren)
 {
-    override = false;
+    visitChildren = true;
     return true;
 }
 

@@ -157,10 +157,10 @@ void CaseStatement::simplify()
 
 bool CaseStatement::accept(StmtExpVisitor *v)
 {
-    bool dontVisitChildren;
-    bool ret = v->visit(this, dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

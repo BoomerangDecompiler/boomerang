@@ -97,10 +97,10 @@ bool ImplicitAssign::searchAndReplace(const Exp& pattern, SharedExp replace, boo
 
 bool ImplicitAssign::accept(StmtExpVisitor *v)
 {
-    bool dontVisitChildren;
-    bool ret = v->visit(this, dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

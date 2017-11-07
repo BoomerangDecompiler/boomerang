@@ -19,13 +19,13 @@ FlagsFinder::FlagsFinder()
 }
 
 
-bool FlagsFinder::visit(const std::shared_ptr<Binary>& e, bool& dontVisitChildren)
+bool FlagsFinder::visit(const std::shared_ptr<Binary>& e, bool& visitChildren)
 {
     if (e->isFlagCall()) {
         m_found = true;
         return false; // Don't continue searching
     }
 
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }

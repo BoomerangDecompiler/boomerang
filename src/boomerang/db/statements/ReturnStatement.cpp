@@ -161,12 +161,12 @@ bool ReturnStatement::usesExp(const Exp& e) const
 
 bool ReturnStatement::accept(StmtExpVisitor *v)
 {
-    bool dontVisitChildren = false;
+    bool visitChildren = true;
 
-    if (!v->visit(this, dontVisitChildren)) {
+    if (!v->visit(this, visitChildren)) {
         return false;
     }
-    else if (dontVisitChildren) {
+    else if (!visitChildren) {
         return true;
     }
 

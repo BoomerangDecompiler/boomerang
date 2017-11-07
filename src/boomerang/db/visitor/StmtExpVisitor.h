@@ -35,36 +35,36 @@ public:
 
     /// Visit all expressions in a statement.
     /// \param[in]  stmt The statement to visit.
-    /// \param[out] dontVisitChildren set to true to not visit child expressions.
+    /// \param[out] visitChildren set to false to not visit child expressions.
     /// \returns true to continue visit
-    virtual bool visit(Assign *stmt, bool& dontVisitChildren);
+    virtual bool visit(Assign *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(PhiAssign *stmt, bool& dontVisitChildren);
+    virtual bool visit(PhiAssign *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt, bool& dontVisitChildren);
+    virtual bool visit(ImplicitAssign *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BoolAssign *stmt, bool& dontVisitChildren);
+    virtual bool visit(BoolAssign *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(GotoStatement *stmt, bool& dontVisitChildren);
+    virtual bool visit(GotoStatement *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BranchStatement *stmt, bool& dontVisitChildren);
+    virtual bool visit(BranchStatement *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(CaseStatement *stmt, bool& dontVisitChildren);
+    virtual bool visit(CaseStatement *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(CallStatement *stmt, bool& dontVisitChildren);
+    virtual bool visit(CallStatement *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ReturnStatement *stmt, bool& dontVisitChildren);
+    virtual bool visit(ReturnStatement *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImpRefStatement *stmt, bool& dontVisitChildren);
+    virtual bool visit(ImpRefStatement *stmt, bool& visitChildren);
 
     bool isIgnoreCol() const { return m_ignoreCol; }
 

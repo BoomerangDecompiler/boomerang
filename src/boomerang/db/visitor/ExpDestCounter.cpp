@@ -19,12 +19,12 @@ ExpDestCounter::ExpDestCounter(ExpDestCounter::ExpCountMap& dc)
 {
 }
 
-bool ExpDestCounter::visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren)
+bool ExpDestCounter::visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     if (Statement::canPropagateToExp(*exp)) {
         m_destCounts[exp->clone()]++;
     }
 
-    dontVisitChildren = false; // Continue searching my children
-    return true;      // Continue visiting the rest of Exp* e
+    visitChildren = true;
+    return true;
 }

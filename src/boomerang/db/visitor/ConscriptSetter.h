@@ -28,10 +28,10 @@ public:
     virtual bool visit(const std::shared_ptr<Const>& exp) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Binary>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 
 private:
     int m_curConscript;

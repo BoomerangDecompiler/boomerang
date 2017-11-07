@@ -27,7 +27,7 @@ UsedLocsVisitor::UsedLocsVisitor(ExpVisitor* v, bool cc)
 }
 
 
-bool UsedLocsVisitor::visit(Assign *stmt, bool& dontVisitChildren)
+bool UsedLocsVisitor::visit(Assign *stmt, bool& visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
     SharedExp rhs = stmt->getRight();
@@ -65,12 +65,12 @@ bool UsedLocsVisitor::visit(Assign *stmt, bool& dontVisitChildren)
         subExp3->accept(ev);
     }
 
-    dontVisitChildren = true; // Don't do the usual accept logic
+    visitChildren = false; // Don't do the usual accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(PhiAssign *stmt, bool& dontVisitChildren)
+bool UsedLocsVisitor::visit(PhiAssign *stmt, bool& visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -103,12 +103,12 @@ bool UsedLocsVisitor::visit(PhiAssign *stmt, bool& dontVisitChildren)
         temp->accept(ev);
     }
 
-    dontVisitChildren = true; // Don't do the usual accept logic
+    visitChildren = false; // Don't do the usual accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool& dontVisitChildren)
+bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool& visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -131,12 +131,12 @@ bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool& dontVisitChildren)
         subExp2->accept(ev);
     }
 
-    dontVisitChildren = true; // Don't do the usual accept logic
+    visitChildren = false; // Don't do the usual accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(CallStatement *stmt, bool& dontVisitChildren)
+bool UsedLocsVisitor::visit(CallStatement *stmt, bool& visitChildren)
 {
     SharedExp pDest = stmt->getDest();
 
@@ -161,12 +161,12 @@ bool UsedLocsVisitor::visit(CallStatement *stmt, bool& dontVisitChildren)
         }
     }
 
-    dontVisitChildren = true; // Don't do the normal accept logic
+    visitChildren = false; // Don't do the normal accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(ReturnStatement *stmt, bool& dontVisitChildren)
+bool UsedLocsVisitor::visit(ReturnStatement *stmt, bool& visitChildren)
 {
     // For the final pass, only consider the first return
     ReturnStatement::iterator rr;
@@ -191,12 +191,12 @@ bool UsedLocsVisitor::visit(ReturnStatement *stmt, bool& dontVisitChildren)
     // FIXME: Not here! Causes locals to never get removed. Find out where this belongs, if anywhere:
     // ((UsedLocsFinder*)ev)->getLocSet()->insert(Terminal::get(opDefineAll));
 
-    dontVisitChildren = true; // Don't do the normal accept logic
+    visitChildren = false; // Don't do the normal accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(BoolAssign *stmt, bool& dontVisitChildren)
+bool UsedLocsVisitor::visit(BoolAssign *stmt, bool& visitChildren)
 {
     SharedExp pCond = stmt->getCondExpr();
 
@@ -225,6 +225,6 @@ bool UsedLocsVisitor::visit(BoolAssign *stmt, bool& dontVisitChildren)
         subExp2->accept(ev);
     }
 
-    dontVisitChildren = true; // Don't do the normal accept logic
+    visitChildren = false; // Don't do the normal accept logic
     return true;     // Continue the recursion
 }

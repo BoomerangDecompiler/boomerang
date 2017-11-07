@@ -136,10 +136,10 @@ void Location::getDefinitions(LocationSet& defs)
 
 bool Location::accept(ExpVisitor *v)
 {
-    bool dontVisitChildren = false;
-    bool ret = v->visit(shared_from_base<Location>(), dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(shared_from_base<Location>(), visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

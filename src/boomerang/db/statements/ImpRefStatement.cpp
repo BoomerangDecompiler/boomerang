@@ -67,10 +67,10 @@ bool ImpRefStatement::accept(StmtVisitor *visitor)
 
 bool ImpRefStatement::accept(StmtExpVisitor *v)
 {
-    bool dontVisitChildren;
-    bool ret = v->visit(this, dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         return ret;
     }
 

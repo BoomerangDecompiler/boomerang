@@ -24,7 +24,7 @@ public:
     bool isFound() { return m_found; }
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Binary>& exp, bool& dontVisitChildren) override;
+    virtual bool visit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 
 private:
     bool m_found;

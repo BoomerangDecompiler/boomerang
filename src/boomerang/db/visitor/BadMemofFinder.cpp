@@ -19,19 +19,19 @@ BadMemofFinder::BadMemofFinder()
 {}
 
 
-bool BadMemofFinder::visit(const std::shared_ptr<Location>& exp, bool& override)
+bool BadMemofFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (exp->isMemOf()) {
         m_found = true;       // A bare memof
         return false;
     }
 
-    override = false;
+    visitChildren = true;
     return true; // Continue searching
 }
 
 
-bool BadMemofFinder::visit(const std::shared_ptr<RefExp>& exp, bool& override)
+bool BadMemofFinder::visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     SharedExp base = exp->getSubExp1();
 
@@ -55,7 +55,7 @@ bool BadMemofFinder::visit(const std::shared_ptr<RefExp>& exp, bool& override)
 #endif
     }
 
-    override = true; // Don't look inside the refexp
+    visitChildren = false; // Don't look inside the refexp
     return true;     // It has a symbol; noting bad foound yet but continue searching
 }
 

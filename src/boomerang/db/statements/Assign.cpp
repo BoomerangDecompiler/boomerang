@@ -229,13 +229,12 @@ void Assign::genConstraints(LocationSet& cons)
 
 bool Assign::accept(StmtExpVisitor *v)
 {
-    bool dontVisitChildren = false;
-    bool ret = v->visit(this, dontVisitChildren);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (dontVisitChildren) {
+    if (!visitChildren) {
         // The visitor has overridden this functionality.  This is needed for example in UsedLocFinder, where the
-        // lhs of
-        // an assignment is not used (but if it's m[blah], then blah is used)
+        // lhs of an assignment is not used (but if it's m[blah], then blah is used)
         return ret;
     }
 

@@ -24,18 +24,18 @@ class StmtRegMapper : public StmtExpVisitor
 public:
     StmtRegMapper(ExpRegMapper *erm);
 
-    virtual bool common(Assignment *stmt, bool& dontVisitChildren);
+    virtual bool common(Assignment *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(Assign *stmt, bool& dontVisitChildren) override;
+    virtual bool visit(Assign *stmt, bool& visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(PhiAssign *stmt, bool& dontVisitChildren) override;
+    virtual bool visit(PhiAssign *stmt, bool& visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt, bool& dontVisitChildren) override;
+    virtual bool visit(ImplicitAssign *stmt, bool& visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BoolAssign *stmt, bool& dontVisitChildren) override;
+    virtual bool visit(BoolAssign *stmt, bool& visitChildren) override;
 };
 

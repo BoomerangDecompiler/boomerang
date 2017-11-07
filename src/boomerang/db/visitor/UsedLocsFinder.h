@@ -28,10 +28,10 @@ public:
     void setMemOnly(bool b) { m_memOnly = b; }
 
     /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren) override;
+    bool visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+    bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::visit
     bool visit(const std::shared_ptr<Terminal>& exp) override;

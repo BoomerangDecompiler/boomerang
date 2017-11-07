@@ -20,7 +20,7 @@ TempToLocalMapper::TempToLocalMapper(UserProc* proc)
 }
 
 
-bool TempToLocalMapper::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
+bool TempToLocalMapper::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (exp->isTemp()) {
         // We have a temp subexpression; get its name
@@ -30,6 +30,6 @@ bool TempToLocalMapper::visit(const std::shared_ptr<Location>& exp, bool& dontVi
         proc->getSymbolExp(exp, ty, true);
     }
 
-    dontVisitChildren = true; // No need to examine the string
+    visitChildren = false; // No need to examine the string
     return true;
 }

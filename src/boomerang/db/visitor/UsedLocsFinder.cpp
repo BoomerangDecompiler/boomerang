@@ -22,7 +22,7 @@ UsedLocsFinder::UsedLocsFinder(LocationSet& used, bool memOnly)
 {}
 
 
-bool UsedLocsFinder::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
+bool UsedLocsFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (!m_memOnly) {
         m_used->insert(exp->shared_from_this());       // All locations visited are used
@@ -36,10 +36,10 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Location>& exp, bool& dontVisit
         m_memOnly = false;
         child->accept(this);
         m_memOnly = wasMemOnly;
-        dontVisitChildren  = true; // Already looked inside child
+        visitChildren = false; // Already looked inside child
     }
     else {
-        dontVisitChildren = false;
+        visitChildren = true;
     }
 
     return true; // Continue looking for other locations
@@ -76,10 +76,10 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& exp)
 }
 
 
-bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren)
+bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     if (m_memOnly) {
-        dontVisitChildren = false; // Look inside the ref for m[...]
+        visitChildren = true; // Look inside the ref for m[...]
         return true;      // Don't count this reference
     }
 
@@ -91,7 +91,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitCh
     }
 
     // However, e's subexpression is NOT used ...
-    dontVisitChildren = true;
+    visitChildren = false;
     // ... unless that is a m[x], array[x] or .x, in which case x (not m[x]/array[x]/refd.x) is used
     SharedExp refd = e->getSubExp1();
 

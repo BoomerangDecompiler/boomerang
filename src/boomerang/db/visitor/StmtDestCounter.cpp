@@ -20,8 +20,8 @@ StmtDestCounter::StmtDestCounter(ExpDestCounter* edc)
 }
 
 
-bool StmtDestCounter::visit(PhiAssign * /*stmt*/, bool& dontVisitChildren)
+bool StmtDestCounter::visit(PhiAssign * /*stmt*/, bool& visitChildren)
 {
-    dontVisitChildren = false;
+    visitChildren = true;
     return true;
 }

@@ -24,7 +24,7 @@ public:
     TempToLocalMapper(UserProc *proc);
 
     /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+    bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
 private:
     UserProc *proc; // Proc object for storing the symbols

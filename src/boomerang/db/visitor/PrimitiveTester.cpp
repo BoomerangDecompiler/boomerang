@@ -14,16 +14,16 @@
 #include "boomerang/db/exp/RefExp.h"
 
 
-bool PrimitiveTester::visit(const std::shared_ptr<Location>& /*exp*/, bool& dontVisitChildren)
+bool PrimitiveTester::visit(const std::shared_ptr<Location>& /*exp*/, bool& visitChildren)
 {
     // We reached a bare (unsubscripted) location. This is certainly not primitive
-    dontVisitChildren = true;
+    visitChildren = false;
     m_result   = false;
     return false; // No need to continue searching
 }
 
 
-bool PrimitiveTester::visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren)
+bool PrimitiveTester::visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     Statement *def = exp->getDef();
 
@@ -31,12 +31,12 @@ bool PrimitiveTester::visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitC
     if ((def == nullptr) || (def->getNumber() == 0) || (def->isCall() && !exp->getSubExp1()->isMemOf())) {
         // Implicit definitions are always primitive
         // The results of calls are always primitive
-        dontVisitChildren = true; // Don't recurse into the reference
+        visitChildren = false; // Don't recurse into the reference
         return true;     // Result remains true
     }
 
     // For now, all references to other definitions will be considered non primitive. I think I'll have to extend this!
     m_result   = false;
-    dontVisitChildren = true; // Regardless of outcome, don't recurse into the reference
+    visitChildren = false; // Regardless of outcome, don't recurse into the reference
     return true;
 }
