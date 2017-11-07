@@ -15,7 +15,7 @@
 
 
 TempToLocalMapper::TempToLocalMapper(UserProc* proc)
-    : proc(proc)
+    : m_proc(proc)
 {
 }
 
@@ -27,7 +27,7 @@ bool TempToLocalMapper::visit(const std::shared_ptr<Location>& exp, bool& visitC
         QString    tempName = exp->access<Const, 1>()->getStr();
         SharedType ty       = Type::getTempType(tempName); // Types for temps strictly depend on the name
         // This call will do the mapping from the temp to a new local:
-        proc->getSymbolExp(exp, ty, true);
+        m_proc->getSymbolExp(exp, ty, true);
     }
 
     visitChildren = false; // No need to examine the string

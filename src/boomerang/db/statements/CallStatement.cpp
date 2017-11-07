@@ -344,8 +344,10 @@ void CallStatement::setArguments(const StatementList& args)
 
     for (StatementList::iterator ll = m_arguments.begin(); ll != m_arguments.end(); ++ll) {
         Assign *asgn = dynamic_cast<Assign *>(*ll);
-        asgn->setProc(m_proc);
-        asgn->setBB(m_parent);
+        if (asgn) {
+            asgn->setProc(m_proc);
+            asgn->setBB(m_parent);
+        }
     }
 }
 
@@ -496,7 +498,10 @@ void CallStatement::print(QTextStream& os, bool html) const
             os << "*" << as->getType() << "* " << as->getLeft();
 
             if (as->isAssign()) {
-                os << " := " << dynamic_cast<Assign *>(as)->getRight();
+                Assign *a = dynamic_cast<Assign *>(as);
+                if (a) {
+                    os << " := " << a->getRight();
+                }
             }
         }
 
@@ -546,7 +551,10 @@ void CallStatement::print(QTextStream& os, bool html) const
 
         for (const Statement *aa : m_arguments) {
             os << "                ";
-            dynamic_cast<const Assignment *>(aa)->printCompact(os, html);
+            const Assignment *a = dynamic_cast<const Assignment *>(aa);
+            if (a) {
+                a->printCompact(os, html);
+            }
             os << "\n";
         }
 
@@ -878,8 +886,9 @@ SharedExp CallStatement::getArgumentExp(int i) const
     assert(Util::inRange(i, 0, getNumArguments()));
 
     // stmt = m_arguments[i]
-    const Statement *stmt = *std::next(m_arguments.begin(), i);
-    return dynamic_cast<const Assign *>(stmt)->getRight();
+    const Assign *asgn = dynamic_cast<const Assign *>(*std::next(m_arguments.begin(), i));
+    assert(asgn);
+    return asgn->getRight();
 }
 
 
@@ -1788,7 +1797,9 @@ void CallStatement::genConstraints(LocationSet& cons)
         // Note: might have to chase back via a phi statement to get a sample
         // string
         QString   str;
-        SharedExp arg0 = dynamic_cast<Assign *>(*m_arguments.begin())->getRight();
+        Assign *a = dynamic_cast<Assign *>(*m_arguments.begin());
+        assert(a != nullptr);
+        SharedExp arg0 = a->getRight();
 
         if (((name == "printf") || (name == "scanf")) && !(str = arg0->getAnyStrConst()).isNull()) {
             // actually have to parse it

@@ -10,19 +10,18 @@
 #include "Module.h"
 
 
-#include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
-
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
-
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/util/Log.h"
 
 #include <QDir>
 #include <QString>
+
 
 #if defined(_WIN32) && !defined(__MINGW32__)
 #  include <windows.h>
@@ -34,6 +33,7 @@ namespace dbghelp
 #  include <iostream>
 #  include "boomerang/util/Log.h"
 #endif
+
 
 #if defined(_WIN32) && !defined(__MINGW32__)
 // From prog.cpp
@@ -47,15 +47,15 @@ void Module::updateLibrarySignatures()
 {
     m_currentFrontend->readLibraryCatalog();
 
-    for (Function *pProc : m_functionList) {
-        if (pProc->isLib()) {
-            pProc->setSignature(getLibSignature(pProc->getName()));
+    for (Function *func : m_functionList) {
+        if (func->isLib()) {
+            func->setSignature(getLibSignature(func->getName()));
 
-            for (CallStatement *call_stmt : pProc->getCallers()) {
+            for (CallStatement *call_stmt : func->getCallers()) {
                 call_stmt->setSigArguments();
             }
 
-            Boomerang::get()->alertUpdateSignature(pProc);
+            Boomerang::get()->alertUpdateSignature(func);
         }
     }
 }
@@ -252,7 +252,7 @@ void Module::addWin32DbgInfo(Function *function)
         return;
     }
     else if (!m_currentFrontend || !m_currentFrontend->isWin32()) {
-        LOG_WARNING("Cannot add debugging information for function '%1'", function->getName());
+        LOG_WARN("Cannot add debugging information for function '%1'", function->getName());
         return;
     }
 
@@ -290,9 +290,9 @@ void Module::addWin32DbgInfo(Function *function)
 
         // find params and locals
         dbghelp::IMAGEHLP_STACK_FRAME stack;
-        stack.InstructionOffset = pProc->getEntryAddress().value();
+        stack.InstructionOffset = function->getEntryAddress().value();
         dbghelp::SymSetContext(hProcess, &stack, 0);
-        dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, pProc);
+        dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, function);
 
         LOG_VERBOSE("Retrieved Win32 debugging information:");
         function->getSignature()->printToLog();

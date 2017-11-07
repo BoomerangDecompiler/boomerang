@@ -27,5 +27,5 @@ public:
     bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
 private:
-    UserProc *proc; // Proc object for storing the symbols
+    UserProc *m_proc; ///< Proc object for storing the symbols
 };

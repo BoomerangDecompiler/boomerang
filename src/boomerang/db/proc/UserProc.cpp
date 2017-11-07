@@ -4977,7 +4977,9 @@ bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visit
             // component
             const StatementList& args = c->getArguments();
             for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
-                SharedExp rhs = (dynamic_cast<const Assign *>(*aa))->getRight();
+                const Assign *a = dynamic_cast<const Assign *>(*aa);
+                assert(a);
+                SharedExp rhs = a->getRight();
 
                 if (rhs && rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef()) {
                     SharedExp base = rhs->getSubExp1();
@@ -5126,7 +5128,10 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                 const StatementList& args = c->getArguments();
 
                 for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
-                    SharedExp   rhs = (dynamic_cast<const Assign *>(*aa))->getRight();
+                    const Assign *a = dynamic_cast<const Assign *>(*aa);
+                    assert(a != nullptr);
+
+                    SharedExp   rhs = a->getRight();
                     LocationSet argUses;
                     rhs->addUsedLocs(argUses);
 

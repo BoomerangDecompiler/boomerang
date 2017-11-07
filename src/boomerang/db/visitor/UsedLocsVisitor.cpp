@@ -149,7 +149,10 @@ bool UsedLocsVisitor::visit(CallStatement *stmt, bool& visitChildren)
 
     for (StatementList::const_iterator it = arguments.begin(); it != arguments.end(); it++) {
         // Don't want to ever collect anything from the lhs
-        (dynamic_cast<const Assign *>(*it))->getRight()->accept(ev);
+        const Assign *retval = dynamic_cast<const Assign *>(*it);
+        if (retval) {
+            retval->getRight()->accept(ev);
+        }
     }
 
     if (m_countCol) {
