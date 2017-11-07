@@ -161,22 +161,17 @@ bool ReturnStatement::usesExp(const Exp& e) const
 
 bool ReturnStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
+    bool dontVisitChildren = false;
 
-    ReturnStatement::iterator rr;
-
-    if (!v->visit(this, override)) {
+    if (!v->visit(this, dontVisitChildren)) {
         return false;
     }
-
-    if (override) {
+    else if (dontVisitChildren) {
         return true;
     }
 
     if (!v->isIgnoreCol()) {
-        DefCollector::iterator dd;
-
-        for (dd = m_col.begin(); dd != m_col.end(); ++dd) {
+        for (DefCollector::iterator dd = m_col.begin(); dd != m_col.end(); ++dd) {
             if (!(*dd)->accept(v)) {
                 return false;
             }
@@ -185,14 +180,14 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
         // EXPERIMENTAL: for now, count the modifieds as if they are a collector (so most, if not all of the time,
         // ignore them). This is so that we can detect better when a definition is used only once, and therefore
         // propagate anything to it
-        for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
+        for (ReturnStatement::iterator rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
             if (!(*rr)->accept(v)) {
                 return false;
             }
         }
     }
 
-    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
+    for (ReturnStatement::iterator rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
         if (!(*rr)->accept(v)) {
             return false;
         }
@@ -204,11 +199,10 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
 
 bool ReturnStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (!recur) {
+    if (!visitChildren) {
         return true;
     }
 
@@ -242,9 +236,8 @@ bool ReturnStatement::accept(StmtModifier *v)
 
 bool ReturnStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
     ReturnStatement::iterator rr;
 
     for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {

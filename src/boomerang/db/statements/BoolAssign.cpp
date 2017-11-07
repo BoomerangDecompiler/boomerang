@@ -289,10 +289,10 @@ void BoolAssign::setLeftFromList(std::list<Statement *> *stmts)
 
 bool BoolAssign::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -306,15 +306,14 @@ bool BoolAssign::accept(StmtExpVisitor *v)
 
 bool BoolAssign::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_cond && recur) {
+    if (m_cond && visitChildren) {
         m_cond = m_cond->accept(v->m_mod);
     }
 
-    if (recur && m_lhs->isMemOf()) {
+    if (visitChildren && m_lhs->isMemOf()) {
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->m_mod));
     }
 
@@ -324,15 +323,15 @@ bool BoolAssign::accept(StmtModifier *v)
 
 bool BoolAssign::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren;
 
-    v->visit(this, recur);
+    v->visit(this, visitChildren);
 
-    if (m_cond && recur) {
+    if (m_cond && visitChildren) {
         m_cond = m_cond->accept(v->mod);
     }
 
-    if (m_lhs && recur) {
+    if (m_lhs && visitChildren) {
         m_lhs = m_lhs->accept(v->mod);
     }
 

@@ -24,70 +24,70 @@ StmtSubscripter::StmtSubscripter(ExpSubscripter *es)
 {
 }
 
-void StmtSubscripter::visit(Assign *s, bool& recur)
+void StmtSubscripter::visit(Assign *stmt, bool& visitChildren)
 {
-    SharedExp rhs = s->getRight();
+    SharedExp rhs = stmt->getRight();
 
-    s->setRight(rhs->accept(m_mod));
+    stmt->setRight(rhs->accept(m_mod));
     // Don't subscript the LHS of an assign, ever
-    SharedExp lhs = s->getLeft();
+    SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf() || lhs->isRegOf()) {
         lhs->setSubExp1(lhs->getSubExp1()->accept(m_mod));
     }
 
-    recur = false;
+    visitChildren = false;
 }
 
 
-void StmtSubscripter::visit(PhiAssign *s, bool& recur)
+void StmtSubscripter::visit(PhiAssign *stmt, bool& visitChildren)
 {
-    SharedExp lhs = s->getLeft();
+    SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf()) {
         lhs->setSubExp1(lhs->getSubExp1()->accept(m_mod));
     }
 
-    recur = false;
+    visitChildren = false;
 }
 
 
-void StmtSubscripter::visit(ImplicitAssign *s, bool& recur)
+void StmtSubscripter::visit(ImplicitAssign *stmt, bool& visitChildren)
 {
-    SharedExp lhs = s->getLeft();
+    SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf()) {
         lhs->setSubExp1(lhs->getSubExp1()->accept(m_mod));
     }
 
-    recur = false;
+    visitChildren = false;
 }
 
 
-void StmtSubscripter::visit(BoolAssign *s, bool& recur)
+void StmtSubscripter::visit(BoolAssign *stmt, bool& visitChildren)
 {
-    SharedExp lhs = s->getLeft();
+    SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf()) {
         lhs->setSubExp1(lhs->getSubExp1()->accept(m_mod));
     }
 
-    SharedExp rhs = s->getCondExpr();
-    s->setCondExpr(rhs->accept(m_mod));
-    recur = false;
+    SharedExp rhs = stmt->getCondExpr();
+    stmt->setCondExpr(rhs->accept(m_mod));
+    visitChildren = false;
 }
 
 
-void StmtSubscripter::visit(CallStatement *s, bool& recur)
+void StmtSubscripter::visit(CallStatement *stmt, bool& visitChildren)
 {
-    SharedExp pDest = s->getDest();
+    SharedExp pDest = stmt->getDest();
 
     if (pDest) {
-        s->setDest(pDest->accept(m_mod));
+        stmt->setDest(pDest->accept(m_mod));
     }
 
     // Subscript the ordinary arguments
-    const StatementList& arguments = s->getArguments();
+    const StatementList& arguments = stmt->getArguments();
 
     for (StatementList::const_iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
         (*ss)->accept(this);
@@ -96,5 +96,5 @@ void StmtSubscripter::visit(CallStatement *s, bool& recur)
     // Returns are like the LHS of an assignment;
     // don't subscript them directly
     // (only if m[x], and then only subscript the x's)
-    recur = false; // Don't do the usual accept logic
+    visitChildren = false; // Don't do the usual accept logic
 }

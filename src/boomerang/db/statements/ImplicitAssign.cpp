@@ -97,10 +97,10 @@ bool ImplicitAssign::searchAndReplace(const Exp& pattern, SharedExp replace, boo
 
 bool ImplicitAssign::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool dontVisitChildren;
+    bool ret = v->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -114,12 +114,11 @@ bool ImplicitAssign::accept(StmtExpVisitor *v)
 
 bool ImplicitAssign::accept(StmtModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren;
+    v->visit(this, visitChildren);
     v->m_mod->clearMod();
 
-    if (recur) {
+    if (visitChildren) {
         m_lhs = m_lhs->accept(v->m_mod);
     }
 
@@ -133,12 +132,11 @@ bool ImplicitAssign::accept(StmtModifier *v)
 
 bool ImplicitAssign::accept(StmtPartModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren;
+    v->visit(this, visitChildren);
     v->mod->clearMod();
 
-    if (recur && m_lhs->isMemOf()) {
+    if (visitChildren && m_lhs->isMemOf()) {
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
     }
 

@@ -17,38 +17,38 @@
 #include "boomerang/db/Managed.h"
 
 
-UsedLocalFinder::UsedLocalFinder(LocationSet& _used, UserProc* _proc)
-    : used(&_used)
-    , proc(_proc)
+UsedLocalFinder::UsedLocalFinder(LocationSet& used, UserProc* proc)
+    : m_used(&used)
+    , m_proc(proc)
     , all(false)
 {
 }
 
-bool UsedLocalFinder::visit(const std::shared_ptr<Location>& e, bool& override)
+bool UsedLocalFinder::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
 
-    if (e->isLocal()) {
-        used->insert(e); // Found a local
+    if (exp->isLocal()) {
+        m_used->insert(exp); // Found a local
     }
 
     return true;         // Continue looking for other locations
 }
 
 
-bool UsedLocalFinder::visit(const std::shared_ptr<TypedExp>& e, bool& override)
+bool UsedLocalFinder::visit(const std::shared_ptr<TypedExp>& exp, bool& dontVisitChildren)
 {
-    override = false;
-    SharedType ty = e->getType();
+    dontVisitChildren = false;
+    SharedType ty = exp->getType();
 
     // Assumption: (cast)exp where cast is of pointer type means that exp is the address of a local
     if (ty->resolvesToPointer()) {
-        SharedExp sub = e->getSubExp1();
+        SharedExp sub = exp->getSubExp1();
         SharedExp mof = Location::memOf(sub);
 
-        if (!proc->findLocal(mof, ty).isNull()) {
-            used->insert(mof);
-            override = true;
+        if (!m_proc->findLocal(mof, ty).isNull()) {
+            m_used->insert(mof);
+            dontVisitChildren = true;
         }
     }
 
@@ -56,16 +56,16 @@ bool UsedLocalFinder::visit(const std::shared_ptr<TypedExp>& e, bool& override)
 }
 
 
-bool UsedLocalFinder::visit(const std::shared_ptr<Terminal>& e)
+bool UsedLocalFinder::visit(const std::shared_ptr<Terminal>& exp)
 {
-    if (e->getOper() == opDefineAll) {
+    if (exp->getOper() == opDefineAll) {
         all = true;
     }
 
-    QString sym = proc->findFirstSymbol(e);
+    QString sym = m_proc->findFirstSymbol(exp);
 
     if (!sym.isNull()) {
-        used->insert(e);
+        m_used->insert(exp);
     }
 
     return true; // Always continue recursion

@@ -23,6 +23,12 @@
 #include "boomerang/db/exp/Exp.h"
 
 
+StmtConscriptSetter::StmtConscriptSetter(int n, bool clear)
+    : m_curConscript(n)
+    , m_clear(clear)
+{
+}
+
 bool StmtConscriptSetter::visit(Assign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
@@ -57,10 +63,9 @@ bool StmtConscriptSetter::visit(ImplicitAssign *stmt)
 bool StmtConscriptSetter::visit(CallStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
-    const StatementList& args = stmt->getArguments();
 
-    for (StatementList::const_iterator ss = args.begin(); ss != args.end(); ++ss) {
-        (*ss)->accept(this);
+    for (Statement *s : stmt->getArguments()) {
+        s->accept(this);
     }
 
     m_curConscript = sc.getLast();
@@ -86,10 +91,8 @@ bool StmtConscriptSetter::visit(ReturnStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
-    ReturnStatement::iterator rr;
-
-    for (rr = stmt->begin(); rr != stmt->end(); ++rr) {
-        (*rr)->accept(this);
+    for (Statement *ret : *stmt) {
+        ret->accept(this);
     }
 
     m_curConscript = sc.getLast();

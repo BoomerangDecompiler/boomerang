@@ -14,22 +14,22 @@
 #include "boomerang/db/proc/UserProc.h"
 
 
-TempToLocalMapper::TempToLocalMapper(UserProc* p)
-    : proc(p)
+TempToLocalMapper::TempToLocalMapper(UserProc* proc)
+    : proc(proc)
 {
 }
 
 
-bool TempToLocalMapper::visit(const std::shared_ptr<Location>& e, bool& override)
+bool TempToLocalMapper::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
 {
-    if (e->isTemp()) {
+    if (exp->isTemp()) {
         // We have a temp subexpression; get its name
-        QString    tempName = e->access<Const, 1>()->getStr();
+        QString    tempName = exp->access<Const, 1>()->getStr();
         SharedType ty       = Type::getTempType(tempName); // Types for temps strictly depend on the name
         // This call will do the mapping from the temp to a new local:
-        proc->getSymbolExp(e, ty, true);
+        proc->getSymbolExp(exp, ty, true);
     }
 
-    override = true; // No need to examine the string
+    dontVisitChildren = true; // No need to examine the string
     return true;
 }

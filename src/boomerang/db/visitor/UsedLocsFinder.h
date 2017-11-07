@@ -13,28 +13,30 @@
 
 class LocationSet;
 
-
+/**
+ *
+ */
 class UsedLocsFinder : public ExpVisitor
 {
 public:
-    UsedLocsFinder(LocationSet& _used, bool _memOnly);
+    UsedLocsFinder(LocationSet& used, bool memOnly);
     ~UsedLocsFinder() override = default;
 
     LocationSet *getLocSet() { return m_used; }
-    void setMemOnly(bool b)
-    {
-        m_memOnly = b;
-    }
 
     bool isMemOnly() { return m_memOnly; }
+    void setMemOnly(bool b) { m_memOnly = b; }
 
-    bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
+    /// \copydoc ExpVisitor::visit
+    bool visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren) override;
 
-    // Add used locations finder
-    bool visit(const std::shared_ptr<Location>& e, bool& override) override;
-    bool visit(const std::shared_ptr<Terminal>& e) override;
+    /// \copydoc ExpVisitor::visit
+    bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+
+    /// \copydoc ExpVisitor::visit
+    bool visit(const std::shared_ptr<Terminal>& exp) override;
 
 private:
-    LocationSet *m_used; // Set of Exps
-    bool m_memOnly;      // If true, only look inside m[...]
+    LocationSet *m_used; ///< Set of Exps
+    bool m_memOnly;      ///< If true, only look inside m[...]
 };

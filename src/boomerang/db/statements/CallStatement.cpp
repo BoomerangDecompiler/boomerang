@@ -1887,11 +1887,10 @@ void CallStatement::genConstraints(LocationSet& cons)
 
 bool CallStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (!recur) {
+    if (!visitChildren) {
         return true;
     }
 
@@ -1899,7 +1898,7 @@ bool CallStatement::accept(StmtModifier *v)
         m_dest = m_dest->accept(v->m_mod);
     }
 
-    for (StatementList::iterator it = m_arguments.begin(); recur && it != m_arguments.end(); it++) {
+    for (StatementList::iterator it = m_arguments.begin(); visitChildren && it != m_arguments.end(); it++) {
         (*it)->accept(v);
     }
 
@@ -1917,7 +1916,7 @@ bool CallStatement::accept(StmtModifier *v)
         }
     }
 
-    for (StatementList::iterator dd = m_defines.begin(); recur && dd != m_defines.end(); ++dd) {
+    for (StatementList::iterator dd = m_defines.begin(); visitChildren && dd != m_defines.end(); ++dd) {
         (*dd)->accept(v);
     }
 
@@ -1927,10 +1926,10 @@ bool CallStatement::accept(StmtModifier *v)
 
 bool CallStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -1950,15 +1949,14 @@ bool CallStatement::accept(StmtExpVisitor *v)
 
 bool CallStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->mod);
     }
 
-    for (StatementList::iterator it = m_arguments.begin(); recur && it != m_arguments.end(); it++) {
+    for (StatementList::iterator it = m_arguments.begin(); visitChildren && it != m_arguments.end(); it++) {
         (*it)->accept(v);
     }
 
@@ -1983,7 +1981,7 @@ bool CallStatement::accept(StmtPartModifier *v)
 
     StatementList::iterator dd;
 
-    for (dd = m_defines.begin(); recur && dd != m_defines.end(); dd++) {
+    for (dd = m_defines.begin(); visitChildren && dd != m_defines.end(); dd++) {
         (*dd)->accept(v);
     }
 

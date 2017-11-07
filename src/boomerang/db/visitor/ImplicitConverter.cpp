@@ -19,12 +19,12 @@ ImplicitConverter::ImplicitConverter(Cfg* cfg)
 {
 }
 
-SharedExp ImplicitConverter::postVisit(const std::shared_ptr<RefExp>& e)
+
+SharedExp ImplicitConverter::postVisit(const std::shared_ptr<RefExp>& exp)
 {
-    if (e->getDef() == nullptr) {
-        e->setDef(m_cfg->findImplicitAssign(e->getSubExp1()));
+    if (exp->getDef() == nullptr) {
+        exp->setDef(m_cfg->findImplicitAssign(exp->getSubExp1()));
     }
 
-    return e;
+    return exp;
 }
-

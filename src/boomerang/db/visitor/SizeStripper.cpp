@@ -13,14 +13,14 @@
 #include "boomerang/db/exp/Binary.h"
 
 
-SharedExp SizeStripper::preVisit(const std::shared_ptr<Binary>& b, bool& recur)
+SharedExp SizeStripper::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
-    recur = true; // Visit the binary's children
+    visitChildren = true;
 
-    if (b->isSizeCast()) {
+    if (exp->isSizeCast()) {
         // Could be a size cast of a size cast
-        return b->getSubExp2()->stripSizes();
+        return exp->getSubExp2()->stripSizes();
     }
 
-    return b;
+    return exp;
 }

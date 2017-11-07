@@ -15,18 +15,20 @@
 #include <list>
 
 /**
- *
+ * This is the code (apart from definitions) to find all constants in a Statement
  */
 class ConstFinder : public ExpVisitor
 {
 public:
-    ConstFinder(std::list<std::shared_ptr<Const> >& _lc);
+    ConstFinder(std::list<std::shared_ptr<Const> >& results);
 
     virtual ~ConstFinder() override = default;
 
-    // This is the code (apart from definitions) to find all constants in a Statement
-    virtual bool visit(const std::shared_ptr<Const>& e) override;
-    virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
+    /// \copydoc ExpVisitor::visit
+    virtual bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+
+    /// \copydoc ExpVisitor::visit
+    virtual bool visit(const std::shared_ptr<Const>& exp) override;
 
 private:
     std::list<std::shared_ptr<Const> >& m_constList;

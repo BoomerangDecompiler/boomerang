@@ -199,10 +199,10 @@ PhiInfo& PhiAssign::getAt(BasicBlock *idx)
 
 bool PhiAssign::accept(StmtExpVisitor *visitor)
 {
-    bool override;
-    bool ret = visitor->visit(this, override);
+    bool dontVisitChildren;
+    bool ret = visitor->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -226,12 +226,11 @@ bool PhiAssign::accept(StmtExpVisitor *visitor)
 
 bool PhiAssign::accept(StmtModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren;
+    v->visit(this, visitChildren);
     v->m_mod->clearMod();
 
-    if (recur) {
+    if (visitChildren) {
         m_lhs = m_lhs->accept(v->m_mod);
     }
 
@@ -245,12 +244,11 @@ bool PhiAssign::accept(StmtModifier *v)
 
 bool PhiAssign::accept(StmtPartModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren;
+    v->visit(this, visitChildren);
     v->mod->clearMod();
 
-    if (recur && m_lhs->isMemOf()) {
+    if (visitChildren && m_lhs->isMemOf()) {
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
     }
 

@@ -21,9 +21,18 @@ public:
     StmtSubscripter(ExpSubscripter *es);
     virtual ~StmtSubscripter() override = default;
 
-    virtual void visit(Assign *s, bool& recur) override;
-    virtual void visit(PhiAssign *s, bool& recur) override;
-    virtual void visit(ImplicitAssign *s, bool& recur) override;
-    virtual void visit(BoolAssign *s, bool& recur) override;
-    virtual void visit(CallStatement *s, bool& recur) override;
+    /// \copydoc StmtModifier::visit
+    virtual void visit(Assign *stmt, bool& visitChildren) override;
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(PhiAssign *stmt, bool& visitChildren) override;
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(ImplicitAssign *stmt, bool& visitChildren) override;
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(BoolAssign *stmt, bool& visitChildren) override;
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(CallStatement *stmt, bool& visitChildren) override;
 };

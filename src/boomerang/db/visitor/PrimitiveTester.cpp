@@ -14,29 +14,29 @@
 #include "boomerang/db/exp/RefExp.h"
 
 
-bool PrimitiveTester::visit(const std::shared_ptr<Location>& /*e*/, bool& override)
+bool PrimitiveTester::visit(const std::shared_ptr<Location>& /*exp*/, bool& dontVisitChildren)
 {
     // We reached a bare (unsubscripted) location. This is certainly not primitive
-    override = true;
-    result   = false;
+    dontVisitChildren = true;
+    m_result   = false;
     return false; // No need to continue searching
 }
 
 
-bool PrimitiveTester::visit(const std::shared_ptr<RefExp>& e, bool& override)
+bool PrimitiveTester::visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren)
 {
-    Statement *def = e->getDef();
+    Statement *def = exp->getDef();
 
     // If defined by a call, e had better not be a memory location (crude approximation for now)
-    if ((def == nullptr) || (def->getNumber() == 0) || (def->isCall() && !e->getSubExp1()->isMemOf())) {
+    if ((def == nullptr) || (def->getNumber() == 0) || (def->isCall() && !exp->getSubExp1()->isMemOf())) {
         // Implicit definitions are always primitive
         // The results of calls are always primitive
-        override = true; // Don't recurse into the reference
+        dontVisitChildren = true; // Don't recurse into the reference
         return true;     // Result remains true
     }
 
     // For now, all references to other definitions will be considered non primitive. I think I'll have to extend this!
-    result   = false;
-    override = true; // Regareless of outcome, don't recurse into the reference
+    m_result   = false;
+    dontVisitChildren = true; // Regardless of outcome, don't recurse into the reference
     return true;
 }

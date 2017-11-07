@@ -12,7 +12,9 @@
 
 #include "boomerang/db/visitor/ExpVisitor.h"
 
+
 class UserProc;
+
 
 /**
  *
@@ -21,19 +23,20 @@ class ComplexityFinder : public ExpVisitor
 {
 public:
     ComplexityFinder(UserProc *proc);
+
     int getDepth() { return m_count; }
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Unary>&, bool& override) override;
+    virtual bool visit(const std::shared_ptr<Unary>& exp, bool& dontVisitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Binary>&, bool& override) override;
+    virtual bool visit(const std::shared_ptr<Binary>& exp, bool& dontVisitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Ternary>&, bool& override) override;
+    virtual bool visit(const std::shared_ptr<Ternary>& exp, bool& dontVisitChildren) override;
 
     /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
+    virtual bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
 
 private:
     int m_count;

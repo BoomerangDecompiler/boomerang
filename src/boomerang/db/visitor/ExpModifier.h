@@ -12,6 +12,7 @@
 
 #include <memory>
 
+
 class Exp;
 class Unary;
 class Binary;
@@ -84,7 +85,7 @@ public:
 
     /**
      * Modify the expression after modifying children.
-     * The default behaviour is to not mmodify the expression.
+     * The default behaviour is to not modify the expression.
      *
      * \param exp the expression to modify.
      * \returns the modified expression.

@@ -21,7 +21,7 @@ ExpRegMapper::ExpRegMapper(UserProc *p)
 }
 
 
-bool ExpRegMapper::visit(const std::shared_ptr<RefExp>& e, bool& override)
+bool ExpRegMapper::visit(const std::shared_ptr<RefExp>& e, bool& dontVisitChildren)
 {
     SharedExp base = e->getSubExp1();
 
@@ -29,6 +29,6 @@ bool ExpRegMapper::visit(const std::shared_ptr<RefExp>& e, bool& override)
         m_proc->checkLocalFor(e);
     }
 
-    override = true; // Don't examine the r[] inside
+    dontVisitChildren = true; // Don't examine the r[] inside
     return true;
 }

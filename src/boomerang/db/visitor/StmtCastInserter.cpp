@@ -18,36 +18,36 @@
 #include "boomerang/db/visitor/ExpCastInserter.h"
 
 
-bool StmtCastInserter::visit(Assign *s)
+bool StmtCastInserter::visit(Assign *stmt)
 {
-    return common(s);
+    return common(stmt);
 }
 
 
-bool StmtCastInserter::visit(PhiAssign *s)
+bool StmtCastInserter::visit(PhiAssign *stmt)
 {
-    return common(s);
+    return common(stmt);
 }
 
 
-bool StmtCastInserter::visit(ImplicitAssign *s)
+bool StmtCastInserter::visit(ImplicitAssign *stmt)
 {
-    return common(s);
+    return common(stmt);
 }
 
 
-bool StmtCastInserter::visit(BoolAssign *s)
+bool StmtCastInserter::visit(BoolAssign *stmt)
 {
-    return common(s);
+    return common(stmt);
 }
 
 
-bool StmtCastInserter::common(Assignment *s)
+bool StmtCastInserter::common(Assignment *stmt)
 {
-    SharedExp lhs = s->getLeft();
+    SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf()) {
-        SharedType memofType = s->getType();
+        SharedType memofType = stmt->getType();
         ExpCastInserter::checkMemofType(lhs, memofType);
     }
 

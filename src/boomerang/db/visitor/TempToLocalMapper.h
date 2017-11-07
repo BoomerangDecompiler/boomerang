@@ -21,9 +21,10 @@ class UserProc;
 class TempToLocalMapper : public ExpVisitor
 {
 public:
-    TempToLocalMapper(UserProc *p);
+    TempToLocalMapper(UserProc *proc);
 
-    bool visit(const std::shared_ptr<Location>& e, bool& override) override;
+    /// \copydoc ExpVisitor::visit
+    bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
 
 private:
     UserProc *proc; // Proc object for storing the symbols

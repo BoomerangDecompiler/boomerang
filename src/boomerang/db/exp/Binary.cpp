@@ -1649,10 +1649,10 @@ bool Binary::accept(ExpVisitor *v)
 {
     assert(subExp1 && subExp2);
 
-    bool override = false;
-    bool ret = v->visit(shared_from_base<Binary>(), override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(shared_from_base<Binary>(), dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -1720,14 +1720,11 @@ SharedExp Binary::accept(ExpModifier *v)
 {
     assert(subExp1 && subExp2);
 
-    bool      recur;
-    SharedExp ret = v->preVisit(shared_from_base<Binary>(), recur);
+    bool      visitChildren = true;
+    SharedExp ret = v->preVisit(shared_from_base<Binary>(), visitChildren);
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
-    }
-
-    if (recur) {
         subExp2 = subExp2->accept(v);
     }
 

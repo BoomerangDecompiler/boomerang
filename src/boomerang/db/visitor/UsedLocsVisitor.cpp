@@ -27,10 +27,10 @@ UsedLocsVisitor::UsedLocsVisitor(ExpVisitor* v, bool cc)
 }
 
 
-bool UsedLocsVisitor::visit(Assign *s, bool& override)
+bool UsedLocsVisitor::visit(Assign *stmt, bool& dontVisitChildren)
 {
-    SharedExp lhs = s->getLeft();
-    SharedExp rhs = s->getRight();
+    SharedExp lhs = stmt->getLeft();
+    SharedExp rhs = stmt->getRight();
 
     if (rhs) {
         rhs->accept(ev);
@@ -65,14 +65,14 @@ bool UsedLocsVisitor::visit(Assign *s, bool& override)
         subExp3->accept(ev);
     }
 
-    override = true; // Don't do the usual accept logic
+    dontVisitChildren = true; // Don't do the usual accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(PhiAssign *s, bool& override)
+bool UsedLocsVisitor::visit(PhiAssign *stmt, bool& dontVisitChildren)
 {
-    SharedExp lhs = s->getLeft();
+    SharedExp lhs = stmt->getLeft();
 
     // Special logic for the LHS
     if (lhs->isMemOf()) {
@@ -93,7 +93,7 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool& override)
         subExp2->accept(ev);
     }
 
-    for (const auto& v : *s) {
+    for (const auto& v : *stmt) {
         // Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
         // Use the actual expression in the PhiAssign
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
@@ -103,14 +103,14 @@ bool UsedLocsVisitor::visit(PhiAssign *s, bool& override)
         temp->accept(ev);
     }
 
-    override = true; // Don't do the usual accept logic
+    dontVisitChildren = true; // Don't do the usual accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(ImplicitAssign *s, bool& override)
+bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool& dontVisitChildren)
 {
-    SharedExp lhs = s->getLeft();
+    SharedExp lhs = stmt->getLeft();
 
     // Special logic for the LHS
     if (lhs->isMemOf()) {
@@ -131,21 +131,21 @@ bool UsedLocsVisitor::visit(ImplicitAssign *s, bool& override)
         subExp2->accept(ev);
     }
 
-    override = true; // Don't do the usual accept logic
+    dontVisitChildren = true; // Don't do the usual accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(CallStatement *s, bool& override)
+bool UsedLocsVisitor::visit(CallStatement *stmt, bool& dontVisitChildren)
 {
-    SharedExp pDest = s->getDest();
+    SharedExp pDest = stmt->getDest();
 
     if (pDest) {
         pDest->accept(ev);
     }
 
 
-    const StatementList& arguments = s->getArguments();
+    const StatementList& arguments = stmt->getArguments();
 
     for (StatementList::const_iterator it = arguments.begin(); it != arguments.end(); it++) {
         // Don't want to ever collect anything from the lhs
@@ -154,24 +154,24 @@ bool UsedLocsVisitor::visit(CallStatement *s, bool& override)
 
     if (m_countCol) {
         DefCollector::iterator dd;
-        DefCollector           *col = s->getDefCollector();
+        DefCollector           *col = stmt->getDefCollector();
 
         for (dd = col->begin(); dd != col->end(); ++dd) {
             (*dd)->accept(this);
         }
     }
 
-    override = true; // Don't do the normal accept logic
+    dontVisitChildren = true; // Don't do the normal accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(ReturnStatement *s, bool& override)
+bool UsedLocsVisitor::visit(ReturnStatement *stmt, bool& dontVisitChildren)
 {
     // For the final pass, only consider the first return
     ReturnStatement::iterator rr;
 
-    for (rr = s->begin(); rr != s->end(); ++rr) {
+    for (rr = stmt->begin(); rr != stmt->end(); ++rr) {
         (*rr)->accept(this);
     }
 
@@ -179,7 +179,7 @@ bool UsedLocsVisitor::visit(ReturnStatement *s, bool& override)
     // ReturnStatement, they can get propagated to.
     if (m_countCol) { // But we need to ignore these "uses" unless propagating
         DefCollector::iterator dd;
-        DefCollector           *col = s->getCollector();
+        DefCollector           *col = stmt->getCollector();
 
         for (dd = col->begin(); dd != col->end(); ++dd) {
             (*dd)->accept(this);
@@ -191,20 +191,20 @@ bool UsedLocsVisitor::visit(ReturnStatement *s, bool& override)
     // FIXME: Not here! Causes locals to never get removed. Find out where this belongs, if anywhere:
     // ((UsedLocsFinder*)ev)->getLocSet()->insert(Terminal::get(opDefineAll));
 
-    override = true; // Don't do the normal accept logic
+    dontVisitChildren = true; // Don't do the normal accept logic
     return true;     // Continue the recursion
 }
 
 
-bool UsedLocsVisitor::visit(BoolAssign *s, bool& override)
+bool UsedLocsVisitor::visit(BoolAssign *stmt, bool& dontVisitChildren)
 {
-    SharedExp pCond = s->getCondExpr();
+    SharedExp pCond = stmt->getCondExpr();
 
     if (pCond) {
         pCond->accept(ev); // Condition is used
     }
 
-    SharedExp lhs = s->getLeft();
+    SharedExp lhs = stmt->getLeft();
     assert(lhs);
 
     if (lhs->isMemOf()) { // If dest is of form m[x]...
@@ -225,6 +225,6 @@ bool UsedLocsVisitor::visit(BoolAssign *s, bool& override)
         subExp2->accept(ev);
     }
 
-    override = true; // Don't do the normal accept logic
+    dontVisitChildren = true; // Don't do the normal accept logic
     return true;     // Continue the recursion
 }

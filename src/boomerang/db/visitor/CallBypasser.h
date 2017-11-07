@@ -34,6 +34,7 @@ public:
     virtual SharedExp postVisit(const std::shared_ptr<Location>& exp) override;
 
 private:
-    Statement *m_enclosingStmt; ///< Statement that is being modified at present, for debugging only
+    /// Statement that is being modified at present, for debugging only
+    Statement *m_enclosingStmt;
 };
 

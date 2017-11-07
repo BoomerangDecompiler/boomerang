@@ -14,16 +14,25 @@
 
 class Statement;
 
-
+/**
+ *
+ */
 class ExpSubscripter : public ExpModifier
 {
 public:
     ExpSubscripter(const SharedExp& s, Statement *d);
 
-    SharedExp preVisit(const std::shared_ptr<Location>& e, bool& recur) override;
-    SharedExp preVisit(const std::shared_ptr<Binary>& e, bool& recur) override;
-    SharedExp preVisit(const std::shared_ptr<Terminal>& e) override;
-    SharedExp preVisit(const std::shared_ptr<RefExp>& e, bool& recur) override;
+    /// \copydoc ExpModifier::preVisit
+    SharedExp preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+
+    /// \copydoc ExpModifier::preVisit
+    SharedExp preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
+
+    /// \copydoc ExpModifier::preVisit
+    SharedExp preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+
+    /// \copydoc ExpModifier::preVisit
+    SharedExp preVisit(const std::shared_ptr<Terminal>& exp) override;
 
 private:
     SharedExp m_search;

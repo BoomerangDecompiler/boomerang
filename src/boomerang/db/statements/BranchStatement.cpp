@@ -497,10 +497,10 @@ void BranchStatement::genConstraints(LocationSet& cons)
 
 bool BranchStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -519,15 +519,14 @@ bool BranchStatement::accept(StmtExpVisitor *v)
 
 bool BranchStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->mod);
     }
 
-    if (m_cond && recur) {
+    if (m_cond && visitChildren) {
         m_cond = m_cond->accept(v->mod);
     }
 
@@ -537,15 +536,15 @@ bool BranchStatement::accept(StmtPartModifier *v)
 
 bool BranchStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren;
 
-    v->visit(this, recur);
+    v->visit(this, visitChildren);
 
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->m_mod);
     }
 
-    if (m_cond && recur) {
+    if (m_cond && visitChildren) {
         m_cond = m_cond->accept(v->m_mod);
     }
 

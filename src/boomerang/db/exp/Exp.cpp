@@ -798,9 +798,9 @@ bool Exp::containsFlags()
 }
 
 
-bool Exp::containsBadMemof(UserProc *proc)
+bool Exp::containsBadMemof()
 {
-    BadMemofFinder bmf(proc);
+    BadMemofFinder bmf;
 
     accept(&bmf);
     return bmf.isFound();

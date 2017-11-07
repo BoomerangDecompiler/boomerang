@@ -15,19 +15,19 @@
 
 class ExpModifier;
 
-
+/**
+ *
+ */
 class PhiStripper : public StmtModifier
 {
-    bool m_del; // Set true if this statment is to be deleted
-
 public:
-    PhiStripper(ExpModifier *em)
-        : StmtModifier(em)
-    {
-        m_del = false;
-    }
-
-    virtual void visit(PhiAssign *, bool& recur) override;
+    PhiStripper(ExpModifier *em);
 
     bool getDelete() const { return m_del; }
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(PhiAssign *stmt, bool& visitChildren) override;
+
+private:
+    bool m_del; ///< Set true if this statment is to be deleted
 };

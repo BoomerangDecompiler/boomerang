@@ -10,35 +10,71 @@
 #pragma once
 
 
+class ExpModifier;
+class Assign;
+class PhiAssign;
+class ImplicitAssign;
+class BoolAssign;
+class GotoStatement;
+class BranchStatement;
+class CaseStatement;
+class CallStatement;
+class ReturnStatement;
+class ImpRefStatement;
+
+
 /**
  * Specialised for propagating to. The top level of the lhs
  * of assignment-like statements (including arguments in calls)
  * is not modified. So for example eax := ebx -> eax := local2,
  * but in m[xxx] := rhs, the rhs and xxx are modified,
  * but not the m[xxx]
+ *
+ * \note This class' visitor functions don't return anything. Maybe we'll need return values at a later stage.
  */
 class StmtPartModifier
 {
-    bool m_ignoreCol;
-
 public:
-    ExpModifier *mod; ///< The expression modifier object
-    StmtPartModifier(ExpModifier *em, bool ignoreCol = false)
-        : m_ignoreCol(ignoreCol)
-        , mod(em) {}
+    StmtPartModifier(ExpModifier *em, bool ignoreCol = false);
 
     virtual ~StmtPartModifier() = default;
     bool ignoreCollector() const { return m_ignoreCol; }
 
-    // This class' visitor functions don't return anything. Maybe we'll need return values at a later stage.
-    virtual void visit(Assign * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(PhiAssign * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(ImplicitAssign * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(BoolAssign * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(GotoStatement * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(BranchStatement * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(CaseStatement * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(CallStatement * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(ReturnStatement * /*s*/, bool& recur) { recur = true; }
-    virtual void visit(ImpRefStatement * /*s*/, bool& recur) { recur = true; }
+    /// Visit this statement.
+    /// \param[in] stmt Statement to visit
+    /// \param[out] visitChildren set to true to visit children of this statement
+    virtual void visit(Assign *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(PhiAssign *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(ImplicitAssign *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(BoolAssign *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(GotoStatement *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(BranchStatement *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(CaseStatement *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(CallStatement *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(ReturnStatement *stmt, bool& visitChildren);
+
+    /// \copydoc StmtPartModifier::visit
+    virtual void visit(ImpRefStatement *stmt, bool& visitChildren);
+
+public:
+    ExpModifier *mod; ///< The expression modifier object
+
+private:
+    bool m_ignoreCol;
 };

@@ -24,37 +24,37 @@ StmtRegMapper::StmtRegMapper(ExpRegMapper* erm)
 }
 
 
-bool StmtRegMapper::common(Assignment *stmt, bool& override)
+bool StmtRegMapper::common(Assignment *stmt, bool& dontVisitChildren)
 {
     // In case lhs is a reg or m[reg] such that reg is otherwise unused
     SharedExp lhs = stmt->getLeft();
     auto      re  = RefExp::get(lhs, stmt);
 
     re->accept((ExpRegMapper *)ev);
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtRegMapper::visit(Assign *stmt, bool& override)
+bool StmtRegMapper::visit(Assign *stmt, bool& dontVisitChildren)
 {
-    return common(stmt, override);
+    return common(stmt, dontVisitChildren);
 }
 
 
-bool StmtRegMapper::visit(PhiAssign *stmt, bool& override)
+bool StmtRegMapper::visit(PhiAssign *stmt, bool& dontVisitChildren)
 {
-    return common(stmt, override);
+    return common(stmt, dontVisitChildren);
 }
 
 
-bool StmtRegMapper::visit(ImplicitAssign *stmt, bool& override)
+bool StmtRegMapper::visit(ImplicitAssign *stmt, bool& dontVisitChildren)
 {
-    return common(stmt, override);
+    return common(stmt, dontVisitChildren);
 }
 
 
-bool StmtRegMapper::visit(BoolAssign *stmt, bool& override)
+bool StmtRegMapper::visit(BoolAssign *stmt, bool& dontVisitChildren)
 {
-    return common(stmt, override);
+    return common(stmt, dontVisitChildren);
 }

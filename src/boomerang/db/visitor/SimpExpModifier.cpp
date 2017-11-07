@@ -97,10 +97,10 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Terminal>& exp)
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<TypeVal>& e)
+SharedExp SimpExpModifier::preVisit(const std::shared_ptr<TypeVal>& exp)
 {
     m_mask <<= 1;
-    return e;
+    return exp;
 }
 
 

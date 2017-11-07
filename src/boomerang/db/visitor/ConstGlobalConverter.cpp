@@ -24,12 +24,12 @@ ConstGlobalConverter::ConstGlobalConverter(Prog* prog)
 }
 
 
-SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool& visitChildren)
+SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
-    Statement *def = e->getDef();
+    Statement *def = exp->getDef();
 
     if (!def || def->isImplicit()) {
-        SharedExp base = e->getSubExp1();
+        SharedExp base = exp->getSubExp1();
         SharedExp addr = base->isMemOf() ? base->getSubExp1() : nullptr;
 
         if (base->isMemOf() && addr && addr->isIntConst()) {
@@ -68,6 +68,6 @@ SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& e, bool&
     }
 
     visitChildren = true;
-    return e;
+    return exp;
 }
 

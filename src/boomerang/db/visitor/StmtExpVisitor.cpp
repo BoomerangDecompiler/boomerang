@@ -9,78 +9,79 @@
 #pragma endregion License
 #include "StmtExpVisitor.h"
 
-StmtExpVisitor::StmtExpVisitor(ExpVisitor* v, bool _ignoreCol)
+
+StmtExpVisitor::StmtExpVisitor(ExpVisitor *v, bool ignoreCol)
     : ev(v)
-    , m_ignoreCol(_ignoreCol)
+    , m_ignoreCol(ignoreCol)
 {
 }
 
-bool StmtExpVisitor::visit(Assign*, bool& override)
+bool StmtExpVisitor::visit(Assign *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(PhiAssign*, bool& override)
+bool StmtExpVisitor::visit(PhiAssign *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ImplicitAssign*, bool& override)
+bool StmtExpVisitor::visit(ImplicitAssign *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(BoolAssign*, bool& override)
+bool StmtExpVisitor::visit(BoolAssign *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(GotoStatement*, bool& override)
+bool StmtExpVisitor::visit(GotoStatement *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(BranchStatement*, bool& override)
+bool StmtExpVisitor::visit(BranchStatement *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(CaseStatement*, bool& override)
+bool StmtExpVisitor::visit(CaseStatement *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(CallStatement*, bool& override)
+bool StmtExpVisitor::visit(CallStatement *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ReturnStatement*, bool& override)
+bool StmtExpVisitor::visit(ReturnStatement *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ImpRefStatement*, bool& override)
+bool StmtExpVisitor::visit(ImpRefStatement *, bool& dontVisitChildren)
 {
-    override = false;
+    dontVisitChildren = false;
     return true;
 }
 

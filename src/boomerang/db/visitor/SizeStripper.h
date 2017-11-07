@@ -19,5 +19,6 @@ public:
     SizeStripper() = default;
     virtual ~SizeStripper() override = default;
 
-    SharedExp preVisit(const std::shared_ptr<Binary>& b, bool& recur) override;
+    /// \copydoc ExpModifier::preVisit
+    SharedExp preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 };

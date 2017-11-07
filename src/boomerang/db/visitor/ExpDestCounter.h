@@ -10,9 +10,9 @@
 #pragma once
 
 
+#include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 
-#include "boomerang/db/exp/ExpHelp.h"
 
 /**
  * Count the number of times a reference expression is used. Increments the count multiple times if the same reference
@@ -26,7 +26,8 @@ public:
 public:
     ExpDestCounter(ExpCountMap& dc);
 
-    bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
+    /// \copydoc ExpVisitor::visit
+    bool visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren) override;
 
 private:
     ExpCountMap& m_destCounts;

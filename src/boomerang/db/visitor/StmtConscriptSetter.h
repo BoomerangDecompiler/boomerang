@@ -12,22 +12,39 @@
 
 #include "boomerang/db/visitor/StmtVisitor.h"
 
+
 class StmtConscriptSetter : public StmtVisitor
 {
 public:
-    StmtConscriptSetter(int n, bool _bClear)
-        : m_curConscript(n)
-        , m_clear(_bClear) {}
+    StmtConscriptSetter(int n, bool _bClear);
+
     int getLast() const { return m_curConscript; }
 
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(Assign *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(PhiAssign *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(ImplicitAssign *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(BoolAssign *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(CaseStatement *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(CallStatement *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(ReturnStatement *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(BranchStatement *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(ImpRefStatement *stmt) override;
 
 private:

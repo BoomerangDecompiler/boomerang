@@ -20,6 +20,7 @@ CallBypasser::CallBypasser(Statement* enclosing)
 {
 }
 
+
 SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp>& exp)
 {
     // If child was modified, simplify now
@@ -56,19 +57,19 @@ SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp>& exp)
 }
 
 
-SharedExp CallBypasser::postVisit(const std::shared_ptr<Location>& e)
+SharedExp CallBypasser::postVisit(const std::shared_ptr<Location>& exp)
 {
     // Hack to preserve a[m[x]]. Can likely go when ad hoc TA goes.
-    bool isAddrOfMem = e->isAddrOf() && e->getSubExp1()->isMemOf();
+    bool isAddrOfMem = exp->isAddrOf() && exp->getSubExp1()->isMemOf();
 
     if (isAddrOfMem) {
-        return e;
+        return exp;
     }
 
-    SharedExp ret = e;
+    SharedExp ret = exp;
 
     if (!(m_unchanged & m_mask)) {
-        ret = e->simplify();
+        ret = exp->simplify();
     }
 
     m_mask >>= 1;

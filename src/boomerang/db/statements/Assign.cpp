@@ -229,10 +229,10 @@ void Assign::genConstraints(LocationSet& cons)
 
 bool Assign::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         // The visitor has overridden this functionality.  This is needed for example in UsedLocFinder, where the
         // lhs of
         // an assignment is not used (but if it's m[blah], then blah is used)
@@ -253,16 +253,16 @@ bool Assign::accept(StmtExpVisitor *v)
 
 bool Assign::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren;
 
-    v->visit(this, recur);
+    v->visit(this, visitChildren);
     v->m_mod->clearMod();
 
-    if (recur) {
+    if (visitChildren) {
         m_lhs = m_lhs->accept(v->m_mod);
     }
 
-    if (recur) {
+    if (visitChildren) {
         m_rhs = m_rhs->accept(v->m_mod);
     }
 
@@ -276,16 +276,15 @@ bool Assign::accept(StmtModifier *v)
 
 bool Assign::accept(StmtPartModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
     v->mod->clearMod();
 
-    if (recur && m_lhs->isMemOf()) {
+    if (visitChildren && m_lhs->isMemOf()) {
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
     }
 
-    if (recur) {
+    if (visitChildren) {
         m_rhs = m_rhs->accept(v->mod);
     }
 

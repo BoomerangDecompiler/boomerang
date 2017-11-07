@@ -33,7 +33,7 @@ class Module;
 class IBinarySection;
 class ICodeGenerator;
 class Global;
-struct BinarySymbol;
+class BinarySymbol;
 
 
 class Prog

@@ -22,8 +22,9 @@ class PrimitiveTester : public ExpVisitor
 public:
     PrimitiveTester() = default;
 
-    bool getResult() { return result; }
+    bool getResult() { return m_result; }
 
+    /// \copydoc ExpVisitor::visit
     // Return true if e is a primitive expression; basically, an expression you can propagate to without causing
     // memory expression problems. See Mike's thesis for details
     // Algorithm: if find any unsubscripted location, not primitive
@@ -31,10 +32,12 @@ public:
     //   References to the results of calls are considered primitive... but only if bypassed?
     //   Other references considered non primitive
     // Start with result=true, must find primitivity in all components
-    bool visit(const std::shared_ptr<Location>& e, bool& override) override;
-    bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
+    bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+
+    /// \copydoc ExpVisitor::visit
+    bool visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren) override;
 
 private:
-    bool result = true; ///< Initialise result true: need AND of all components
+    bool m_result = true; ///< Initialise result true: need AND of all components
 };
 

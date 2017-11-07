@@ -14,6 +14,12 @@
 #include "boomerang/db/statements/Assign.h"
 
 
+ExpPropagator::ExpPropagator()
+    : m_changed(false)
+{
+}
+
+
 SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& exp)
 {
     // No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
@@ -32,7 +38,7 @@ SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& exp)
         res = exp->searchReplaceAll(RefExp(lhs, def), rhs->clone(), ch);
 
         if (ch) {
-            change       = true;    // Record this change
+            m_changed       = true;    // Record this change
             m_unchanged &= ~m_mask; // Been changed now (so simplify parent)
 
             if (res->isSubscript()) {

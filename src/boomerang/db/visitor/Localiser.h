@@ -23,15 +23,21 @@ class CallStatement;
 class Localiser : public SimpExpModifier
 {
 public:
-    Localiser(CallStatement *c);
+    Localiser(CallStatement *call);
 
-    SharedExp preVisit(const std::shared_ptr<RefExp>& e, bool& recur) override;
-    SharedExp preVisit(const std::shared_ptr<Location>& e, bool& recur) override;
-    SharedExp postVisit(const std::shared_ptr<Location>& e) override;
+    /// \copydoc SimpExpModifier::preVisit
+    SharedExp preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
-    // Want to be able to localise a few terminals, in particular <all>
-    SharedExp postVisit(const std::shared_ptr<Terminal>& e) override;
+    /// \copydoc SimpExpModifier::preVisit
+    SharedExp preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+
+    /// \copydoc SimpExpModifier::postVisit
+    SharedExp postVisit(const std::shared_ptr<Location>& exp) override;
+
+    /// \copydoc SimpExpModifier::postVisit
+    /// We want to be able to localise a few terminals, in particular <all>
+    SharedExp postVisit(const std::shared_ptr<Terminal>& exp) override;
 
 private:
-    CallStatement *call; // The call to localise to
+    CallStatement *m_call; ///< The call to localise to
 };

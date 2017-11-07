@@ -636,9 +636,10 @@ SharedExp Ternary::genConstraints(SharedExp result)
 
 bool Ternary::accept(ExpVisitor *v)
 {
-    bool override, ret = v->visit(shared_from_base<Ternary>(), override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(shared_from_base<Ternary>(), dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -660,18 +661,12 @@ bool Ternary::accept(ExpVisitor *v)
 
 SharedExp Ternary::accept(ExpModifier *v)
 {
-    bool recur;
-    auto ret = std::static_pointer_cast<Ternary>(v->preVisit(shared_from_base<Ternary>(), recur));
+    bool visitChildren;
+    auto ret = std::static_pointer_cast<Ternary>(v->preVisit(shared_from_base<Ternary>(), visitChildren));
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
-    }
-
-    if (recur) {
         subExp2 = subExp2->accept(v);
-    }
-
-    if (recur) {
         subExp3 = subExp3->accept(v);
     }
 

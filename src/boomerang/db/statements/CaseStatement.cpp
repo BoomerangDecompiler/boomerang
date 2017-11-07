@@ -157,10 +157,10 @@ void CaseStatement::simplify()
 
 bool CaseStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool dontVisitChildren;
+    bool ret = v->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -178,15 +178,14 @@ bool CaseStatement::accept(StmtExpVisitor *v)
 
 bool CaseStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->m_mod);
     }
 
-    if (m_switchInfo && m_switchInfo->pSwitchVar && recur) {
+    if (m_switchInfo && m_switchInfo->pSwitchVar && visitChildren) {
         m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->accept(v->m_mod);
     }
 
@@ -196,15 +195,14 @@ bool CaseStatement::accept(StmtModifier *v)
 
 bool CaseStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->mod);
     }
 
-    if (m_switchInfo && m_switchInfo->pSwitchVar && recur) {
+    if (m_switchInfo && m_switchInfo->pSwitchVar && visitChildren) {
         m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->accept(v->mod);
     }
 

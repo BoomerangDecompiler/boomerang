@@ -16,38 +16,38 @@
 #include "boomerang/db/statements/CallStatement.h"
 
 
-Localiser::Localiser(CallStatement* c)
-    : call(c)
+Localiser::Localiser(CallStatement* call)
+    : m_call(call)
 {
 }
 
 
-SharedExp Localiser::preVisit(const std::shared_ptr<RefExp>& e, bool& recur)
+SharedExp Localiser::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
-    recur    = false; // Don't recurse into already subscripted variables
+    visitChildren    = false; // Don't recurse into already subscripted variables
     m_mask <<= 1;
-    return e;
+    return exp;
 }
 
 
-SharedExp Localiser::preVisit(const std::shared_ptr<Location>& e, bool& recur)
+SharedExp Localiser::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
-    recur    = true;
+    visitChildren    = true;
     m_mask <<= 1;
-    return e;
+    return exp;
 }
 
 
-SharedExp Localiser::postVisit(const std::shared_ptr<Location>& e)
+SharedExp Localiser::postVisit(const std::shared_ptr<Location>& exp)
 {
-    SharedExp ret = e;
+    SharedExp ret = exp;
 
     if (!(m_unchanged & m_mask)) {
-        ret = e->simplify();
+        ret = exp->simplify();
     }
 
     m_mask >>= 1;
-    SharedExp r = call->findDefFor(ret);
+    SharedExp r = m_call->findDefFor(ret);
 
     if (r) {
         ret = r->clone();
@@ -64,16 +64,16 @@ SharedExp Localiser::postVisit(const std::shared_ptr<Location>& e)
 }
 
 
-SharedExp Localiser::postVisit(const std::shared_ptr<Terminal>& e)
+SharedExp Localiser::postVisit(const std::shared_ptr<Terminal>& exp)
 {
-    SharedExp ret = e;
+    SharedExp ret = exp;
 
     if (!(m_unchanged & m_mask)) {
-        ret = e->simplify();
+        ret = exp->simplify();
     }
 
     m_mask >>= 1;
-    SharedExp r = call->findDefFor(ret);
+    SharedExp r = m_call->findDefFor(ret);
 
     if (r) {
         ret          = r->clone()->bypass();

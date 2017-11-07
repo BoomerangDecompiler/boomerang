@@ -22,7 +22,7 @@ class UserProc;
 class BadMemofFinder : public ExpVisitor
 {
 public:
-    BadMemofFinder(UserProc *proc);
+    BadMemofFinder();
     bool isFound() { return m_found; }
 
 private:

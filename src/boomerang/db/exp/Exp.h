@@ -591,7 +591,7 @@ public:
 
     /// Check if this expression contains a bare memof (no subscripts) or one that has no symbol (i.e. is not a local
     /// variable or a parameter)
-    bool containsBadMemof(UserProc *p); ///< Check if this Exp contains a bare (non subscripted) memof
+    bool containsBadMemof(); ///< Check if this Exp contains a bare (non subscripted) memof
 
     // Data flow based type analysis (implemented in type/dfa.cpp)
     // Pull type information up the expression tree

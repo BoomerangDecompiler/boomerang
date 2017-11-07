@@ -161,9 +161,10 @@ SharedExp TypedExp::polySimplify(bool& bMod)
 
 bool TypedExp::accept(ExpVisitor *v)
 {
-    bool override, ret = v->visit(shared_from_base<TypedExp>(), override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(shared_from_base<TypedExp>(), dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -177,11 +178,11 @@ bool TypedExp::accept(ExpVisitor *v)
 
 SharedExp TypedExp::accept(ExpModifier *v)
 {
-    bool recur;
-    auto ret          = v->preVisit(shared_from_base<TypedExp>(), recur);
+    bool visitChildren;
+    auto ret          = v->preVisit(shared_from_base<TypedExp>(), visitChildren);
     auto typedexp_ret = std::dynamic_pointer_cast<TypedExp>(ret);
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
     }
 

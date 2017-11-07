@@ -35,19 +35,40 @@ public:
     StmtVisitor() = default;
     virtual ~StmtVisitor() = default;
 
-    // visitor functions,
-    // returns true to continue iterating the container
-    virtual bool visit(RTL *rtl); // By default, visits all statements
+    /// returns true to continue iterating the container
+    virtual bool visit(RTL *rtl);
 
+    /// Visit this statement.
+    /// \returns true to continue visiting.
     virtual bool visit(Assign *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(PhiAssign *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(ImplicitAssign *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(BoolAssign *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(GotoStatement *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(BranchStatement *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(CaseStatement *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(CallStatement *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(ReturnStatement *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(ImpRefStatement *stmt);
+
+    /// \copydoc StmtVisitor::visit
     virtual bool visit(JunctionStatement *stmt);
 };

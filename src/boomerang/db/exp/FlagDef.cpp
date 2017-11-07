@@ -48,9 +48,10 @@ void FlagDef::appendDotFile(QTextStream& of)
 
 bool FlagDef::accept(ExpVisitor *v)
 {
-    bool override, ret = v->visit(shared_from_base<FlagDef>(), override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(shared_from_base<FlagDef>(), dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -64,11 +65,11 @@ bool FlagDef::accept(ExpVisitor *v)
 
 SharedExp FlagDef::accept(ExpModifier *v)
 {
-    bool recur;
-    SharedExp ret        = v->preVisit(shared_from_base<FlagDef>(), recur);
+    bool visitChildren = true;
+    SharedExp ret        = v->preVisit(shared_from_base<FlagDef>(), visitChildren);
     std::shared_ptr<FlagDef> flgdef_ret = std::dynamic_pointer_cast<FlagDef>(ret);
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
     }
 

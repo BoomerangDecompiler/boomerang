@@ -13,69 +13,69 @@
 #include "boomerang/db/visitor/ExpModifier.h"
 
 
-StmtModifier::StmtModifier(ExpModifier* em, bool ic)
+StmtModifier::StmtModifier(ExpModifier* em, bool ignnoreCol)
     : m_mod(em)
-    , m_ignoreCol(ic)
+    , m_ignoreCol(ignnoreCol)
 {
 }
 
 
-void StmtModifier::visit(Assign*, bool& recur)
+void StmtModifier::visit(Assign *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(PhiAssign*, bool& recur)
+void StmtModifier::visit(PhiAssign *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(ImplicitAssign*, bool& recur)
+void StmtModifier::visit(ImplicitAssign *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(BoolAssign*, bool& recur)
+void StmtModifier::visit(BoolAssign *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(GotoStatement*, bool& recur)
+void StmtModifier::visit(GotoStatement *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(BranchStatement*, bool& recur)
+void StmtModifier::visit(BranchStatement *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(CaseStatement*, bool& recur)
+void StmtModifier::visit(CaseStatement *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(CallStatement*, bool& recur)
+void StmtModifier::visit(CallStatement *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(ReturnStatement*, bool& recur)
+void StmtModifier::visit(ReturnStatement *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 
 
-void StmtModifier::visit(ImpRefStatement*, bool& recur)
+void StmtModifier::visit(ImpRefStatement *, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 }
 

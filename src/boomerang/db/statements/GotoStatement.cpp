@@ -211,10 +211,10 @@ bool GotoStatement::usesExp(const Exp& e) const
 
 bool GotoStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -228,11 +228,10 @@ bool GotoStatement::accept(StmtExpVisitor *v)
 
 bool GotoStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->m_mod);
     }
 
@@ -242,11 +241,10 @@ bool GotoStatement::accept(StmtModifier *v)
 
 bool GotoStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->mod);
     }
 

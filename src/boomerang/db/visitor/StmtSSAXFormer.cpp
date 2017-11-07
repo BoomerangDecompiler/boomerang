@@ -29,7 +29,6 @@ StmtSsaXformer::StmtSsaXformer(ExpSsaXformer* esx, UserProc* p)
 }
 
 
-// Common code for the left hand side of assignments
 void StmtSsaXformer::commonLhs(Assignment *as)
 {
     SharedExp lhs = as->getLeft();
@@ -43,40 +42,40 @@ void StmtSsaXformer::commonLhs(Assignment *as)
 }
 
 
-void StmtSsaXformer::visit(BoolAssign *s, bool& recur)
+void StmtSsaXformer::visit(BoolAssign *stmt, bool& visitChildren)
 {
-    commonLhs(s);
-    SharedExp pCond = s->getCondExpr();
+    commonLhs(stmt);
+    SharedExp pCond = stmt->getCondExpr();
     pCond = pCond->accept((ExpSsaXformer *)m_mod);
-    s->setCondExpr(pCond);
-    recur = false; // TODO: verify recur setting
+    stmt->setCondExpr(pCond);
+    visitChildren = false; // TODO: verify recur setting
 }
 
 
-void StmtSsaXformer::visit(Assign *s, bool& recur)
+void StmtSsaXformer::visit(Assign *stmt, bool& visitChildren)
 {
-    commonLhs(s);
-    SharedExp rhs = s->getRight();
+    commonLhs(stmt);
+    SharedExp rhs = stmt->getRight();
     rhs = rhs->accept(m_mod);
-    s->setRight(rhs);
-    recur = false; // TODO: verify recur setting
+    stmt->setRight(rhs);
+    visitChildren = false; // TODO: verify recur setting
 }
 
 
-void StmtSsaXformer::visit(ImplicitAssign *s, bool& recur)
+void StmtSsaXformer::visit(ImplicitAssign *stmt, bool& visitChildren)
 {
-    commonLhs(s);
-    recur = false; // TODO: verify recur setting
+    commonLhs(stmt);
+    visitChildren = false; // TODO: verify recur setting
 }
 
 
-void StmtSsaXformer::visit(PhiAssign *s, bool& recur)
+void StmtSsaXformer::visit(PhiAssign *stmt, bool& visitChildren)
 {
-    commonLhs(s);
+    commonLhs(stmt);
 
     UserProc *_proc = ((ExpSsaXformer *)m_mod)->getProc();
 
-    for (auto& v : *s) {
+    for (auto& v : *stmt) {
         assert(v.second.e != nullptr);
         QString sym = _proc->lookupSymFromRefAny(RefExp::get(v.second.e, v.second.getDef()));
 
@@ -85,39 +84,40 @@ void StmtSsaXformer::visit(PhiAssign *s, bool& recur)
         }
     }
 
-    recur = false; // TODO: verify recur setting
+    visitChildren = false; // TODO: verify recur setting
 }
 
 
-void StmtSsaXformer::visit(CallStatement *s, bool& recur)
+void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
 {
-    SharedExp pDest = s->getDest();
+    SharedExp pDest = stmt->getDest();
 
     if (pDest) {
         pDest = pDest->accept((ExpSsaXformer *)m_mod);
-        s->setDest(pDest);
+        stmt->setDest(pDest);
     }
 
-    const StatementList& arguments = s->getArguments();
+    const StatementList& arguments = stmt->getArguments();
 
-    for (StatementList::const_iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
-        (*ss)->accept(this);
+    for (Statement *s : arguments) {
+        s->accept(this);
     }
 
     // Note that defines have statements (assignments) within a statement (this call). The fromSSA logic, which needs
     // to subscript definitions on the left with the statement pointer, won't work if we just call the assignment's
     // fromSSA() function
-    StatementList& defines = s->getDefines();
+    StatementList& defines = stmt->getDefines();
 
     for (StatementList::iterator ss = defines.begin(); ss != defines.end(); ++ss) {
         Assignment *as = ((Assignment *)*ss);
         // FIXME: use of fromSSAleft is deprecated
-        SharedExp e = as->getLeft()->fromSSAleft(((ExpSsaXformer *)m_mod)->getProc(), s);
+        SharedExp e = as->getLeft()->fromSSAleft(((ExpSsaXformer *)m_mod)->getProc(), stmt);
+
         // FIXME: this looks like a HACK that can go:
-        Function *procDest = s->getDestProc();
+        Function *procDest = stmt->getDestProc();
 
         if (procDest && procDest->isLib() && e->isLocal()) {
-            UserProc   *_proc = s->getProc(); // Enclosing proc
+            UserProc   *_proc = stmt->getProc(); // Enclosing proc
             SharedType lty    = _proc->getLocalType(e->access<Const, 1>()->getStr());
             SharedType ty     = as->getType();
 
@@ -136,6 +136,6 @@ void StmtSsaXformer::visit(CallStatement *s, bool& recur)
 
     // However, need modifications of the use collector; needed when say eax is renamed to local5, otherwise
     // local5 is removed from the results of the call
-    s->useColfromSSAForm(s);
-    recur = false; // TODO: verify recur setting
+    stmt->useColfromSSAForm(stmt);
+    visitChildren = false; // TODO: verify recur setting
 }

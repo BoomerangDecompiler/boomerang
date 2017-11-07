@@ -19,8 +19,8 @@
 DfaLocalMapper::DfaLocalMapper(UserProc *proc)
     : m_proc(proc)
 {
-    m_sig  = m_proc->getSignature();
-    m_prog = m_proc->getProg();
+    m_sig  = proc->getSignature();
+    m_prog = proc->getProg();
     change = false;
 }
 
@@ -42,32 +42,33 @@ bool DfaLocalMapper::processExp(const SharedExp& exp)
 }
 
 
-SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Location>& e, bool& recur)
+SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
 
-    if (e->isMemOf() && (m_proc->findFirstSymbol(e) == nullptr)) { // Need the 2nd test to ensure change set correctly
-        recur = processExp(e);
+    // Need the 2nd test to ensure change set correctly
+    if (exp->isMemOf() && (m_proc->findFirstSymbol(exp) == nullptr)) {
+        visitChildren = processExp(exp);
     }
 
-    return e;
+    return exp;
 }
 
 
-SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Binary>& exp, bool& recur)
+SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
 #if 1
     // Check for sp -/+ K
     SharedExp memOf_e = Location::memOf(exp);
 
     if (m_proc->findFirstSymbol(memOf_e) != nullptr) {
-        recur = false; // Already done; don't recurse
+        visitChildren = false; // Already done; don't recurse
         return exp;
     }
     else {
-        recur = processExp(memOf_e);              // Process m[this]
+        visitChildren = processExp(memOf_e);              // Process m[this]
 
-        if (!recur) {                             // If made a change this visit,
+        if (!visitChildren) {                             // If made a change this visit,
             return Unary::get(opAddrOf, memOf_e); // change to a[m[this]]
         }
     }
@@ -76,9 +77,9 @@ SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Binary>& exp, bool& rec
 }
 
 
-SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<TypedExp>& e, bool& recur)
+SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
 {
     // Assume it's already been done correctly, so don't recurse into this
-    recur = false;
-    return e;
+    visitChildren = false;
+    return exp;
 }

@@ -23,12 +23,12 @@ StmtImplicitConverter::StmtImplicitConverter(ImplicitConverter* ic, Cfg* cfg)
 }
 
 
-void StmtImplicitConverter::visit(PhiAssign *s, bool& recur)
+void StmtImplicitConverter::visit(PhiAssign *stmt, bool& visitChildren)
 {
     // The LHS could be a m[x] where x has a null subscript; must do first
-    s->setLeft(s->getLeft()->accept(m_mod));
+    stmt->setLeft(stmt->getLeft()->accept(m_mod));
 
-    for (auto& v : *s) {
+    for (auto& v : *stmt) {
         assert(v.second.e != nullptr);
 
         if (v.second.getDef() == nullptr) {
@@ -36,5 +36,5 @@ void StmtImplicitConverter::visit(PhiAssign *s, bool& recur)
         }
     }
 
-    recur = false; // Already done LHS
+    visitChildren = false; // Already done LHS
 }

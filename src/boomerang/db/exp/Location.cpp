@@ -136,9 +136,10 @@ void Location::getDefinitions(LocationSet& defs)
 
 bool Location::accept(ExpVisitor *v)
 {
-    bool override = false, ret = v->visit(shared_from_base<Location>(), override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(shared_from_base<Location>(), dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -154,10 +155,10 @@ SharedExp Location::accept(ExpModifier *v)
 {
     // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
     // important here!  (it makes a call to a different visitor member function).
-    bool      recur;
-    SharedExp ret = v->preVisit(shared_from_base<Location>(), recur);
+    bool      visitChildren = true;
+    SharedExp ret = v->preVisit(shared_from_base<Location>(), visitChildren);
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
     }
 

@@ -33,10 +33,17 @@ public:
      */
     DfaLocalMapper(UserProc *proc);
 
-    SharedExp preVisit(const std::shared_ptr<Location>& e, bool& recur) override; // To process m[X]
+    /// \copydoc ExpModifier::preVisit
+    /// To process m[X]
+    SharedExp preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
-    SharedExp preVisit(const std::shared_ptr<Binary>& e, bool& recur) override;   // To look for sp -+ K
-    SharedExp preVisit(const std::shared_ptr<TypedExp>& e, bool& recur) override; // To prevent processing TypedExps more than once
+    /// \copydoc ExpModifier::preVisit
+    /// To look for sp -+ K
+    SharedExp preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
+
+    /// \copydoc ExpModifier::preVisit
+    /// To prevent processing TypedExps more than once
+    SharedExp preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
 
 public:
     bool change; // True if changed this statement
@@ -46,7 +53,7 @@ private:
     Prog *m_prog;
     std::shared_ptr<Signature> m_sig;      ///< Look up once (from proc) for speed
 
-    // Common processing for the two main cases (visiting a Location or a Binary)
-    bool processExp(const SharedExp& e);   ///< Common processing here
+    /// Common processing for the two main cases (visiting a Location or a Binary)
+    bool processExp(const SharedExp& e);
 };
 

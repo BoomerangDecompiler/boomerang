@@ -21,51 +21,51 @@
 #include "boomerang/db/exp/TypeVal.h"
 
 
-SharedExp ExpModifier::preVisit(const std::shared_ptr<Unary>& exp, bool& recur)
+SharedExp ExpModifier::preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preVisit(const std::shared_ptr<Binary>& exp, bool& recur)
+SharedExp ExpModifier::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preVisit(const std::shared_ptr<Ternary>& exp, bool& recur)
+SharedExp ExpModifier::preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preVisit(const std::shared_ptr<TypedExp>& exp, bool& recur)
+SharedExp ExpModifier::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preVisit(const std::shared_ptr<FlagDef>& exp, bool& recur)
+SharedExp ExpModifier::preVisit(const std::shared_ptr<FlagDef>& exp, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preVisit(const std::shared_ptr<RefExp>& exp, bool& recur)
+SharedExp ExpModifier::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preVisit(const std::shared_ptr<Location>& exp, bool& recur)
+SharedExp ExpModifier::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
-    recur = true;
+    visitChildren = true;
     return exp;
 }
 

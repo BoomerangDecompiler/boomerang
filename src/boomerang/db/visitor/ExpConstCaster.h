@@ -18,13 +18,14 @@ using SharedType = std::shared_ptr<class Type>;
 class ExpConstCaster : public ExpModifier
 {
 public:
-    ExpConstCaster(int _num, SharedType _ty);
+    ExpConstCaster(int num, SharedType ty);
 
     virtual ~ExpConstCaster() override = default;
 
     bool isChanged() const { return m_changed; }
 
-    SharedExp preVisit(const std::shared_ptr<Const>& c) override;
+    /// \copydoc ExpModifier::preVisit
+    SharedExp preVisit(const std::shared_ptr<Const>& exp) override;
 
 private:
     int m_num;

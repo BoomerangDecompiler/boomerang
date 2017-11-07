@@ -27,10 +27,17 @@ class StmtCastInserter : public StmtVisitor
 public:
     StmtCastInserter() = default;
 
-    bool common(Assignment *s);
+    bool common(Assignment *stmt);
 
-    virtual bool visit(Assign *s) override;
-    virtual bool visit(PhiAssign *s) override;
-    virtual bool visit(ImplicitAssign *s) override;
-    virtual bool visit(BoolAssign *s) override;
+    /// \copydoc StmtVisitor::visit
+    virtual bool visit(Assign *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
+    virtual bool visit(PhiAssign *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
+    virtual bool visit(ImplicitAssign *stmt) override;
+
+    /// \copydoc StmtVisitor::visit
+    virtual bool visit(BoolAssign *stmt) override;
 };

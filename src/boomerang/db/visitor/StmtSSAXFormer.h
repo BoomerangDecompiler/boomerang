@@ -23,16 +23,25 @@ class UserProc;
 class StmtSsaXformer : public StmtModifier
 {
 public:
-    StmtSsaXformer(ExpSsaXformer *esx, UserProc *p);
+    StmtSsaXformer(ExpSsaXformer *esx, UserProc *proc);
 
-    void commonLhs(Assignment *s);
+    /// Common code for the left hand side of assignments
+    void commonLhs(Assignment *stmt);
 
-    // TODO: find out if recur should, or should not be set ?
-    virtual void visit(Assign *s, bool& recur) override;
-    virtual void visit(PhiAssign *s, bool& recur) override;
-    virtual void visit(ImplicitAssign *s, bool& recur) override;
-    virtual void visit(BoolAssign *s, bool& recur) override;
-    virtual void visit(CallStatement *s, bool& recur) override;
+    /// \copydoc StmtModifier::visit
+    virtual void visit(Assign *stmt, bool& visitChildren) override;
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(PhiAssign *stmt, bool& visitChildren) override;
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(ImplicitAssign *stmt, bool& visitChildren) override;
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(BoolAssign *stmt, bool& visitChildren) override;
+
+    /// \copydoc StmtModifier::visit
+    virtual void visit(CallStatement *stmt, bool& visitChildren) override;
 
 private:
     UserProc *m_proc;

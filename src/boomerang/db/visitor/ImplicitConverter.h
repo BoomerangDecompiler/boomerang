@@ -26,9 +26,10 @@ class ImplicitConverter : public ExpModifier
 public:
     ImplicitConverter(Cfg *cfg);
 
+    /// \copydoc ExpModifier::postVisit
     // This is in the POST visit function, because it's important to process any child expressions first.
     // Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a nullptr definition for r28.
-    SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
+    SharedExp postVisit(const std::shared_ptr<RefExp>& exp) override;
 
 private:
     Cfg *m_cfg;

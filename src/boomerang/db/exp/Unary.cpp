@@ -695,9 +695,10 @@ SharedExp Unary::simplifyConstraint()
 
 bool Unary::accept(ExpVisitor *v)
 {
-    bool override, ret = v->visit(shared_from_base<Unary>(), override);
+    bool dontVisitChildren = false;
+    bool ret = v->visit(shared_from_base<Unary>(), dontVisitChildren);
 
-    if (override || !ret) {
+    if (dontVisitChildren || !ret) {
         return ret; // Override the rest of the accept logic
     }
 
@@ -709,10 +710,10 @@ SharedExp Unary::accept(ExpModifier *v)
 {
     // This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
     // postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
-    bool recur = false;
-    auto ret   = std::dynamic_pointer_cast<Unary>(v->preVisit(shared_from_base<Unary>(), recur));
+    bool visitChildren = false;
+    auto ret   = std::dynamic_pointer_cast<Unary>(v->preVisit(shared_from_base<Unary>(), visitChildren));
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
     }
 

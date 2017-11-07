@@ -13,26 +13,26 @@
 #include "boomerang/db/exp/Location.h"
 
 
-ConstFinder::ConstFinder(std::list<std::shared_ptr<Const> >& _lc)
-    : m_constList(_lc)
+ConstFinder::ConstFinder(std::list<std::shared_ptr<Const> >& list)
+    : m_constList(list)
 {
 }
 
 
-bool ConstFinder::visit(const std::shared_ptr<Const>& e)
+bool ConstFinder::visit(const std::shared_ptr<Const>& exp)
 {
-    m_constList.push_back(e);
+    m_constList.push_back(exp);
     return true;
 }
 
 
-bool ConstFinder::visit(const std::shared_ptr<Location>& e, bool& override)
+bool ConstFinder::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
 {
-    if (e->isMemOf()) {
-        override = false; // We DO want to see constants in memofs
+    if (exp->isMemOf()) {
+        dontVisitChildren = false; // We DO want to see constants in memofs
     }
     else {
-        override = true; // Don't consider register numbers, global names, etc
+        dontVisitChildren = true; // Don't consider register numbers, global names, etc
     }
 
     return true;

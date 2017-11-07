@@ -14,7 +14,7 @@
 #include "boomerang/db/exp/RefExp.h"
 
 
-BadMemofFinder::BadMemofFinder(UserProc*)
+BadMemofFinder::BadMemofFinder()
     : m_found(false)
 {}
 

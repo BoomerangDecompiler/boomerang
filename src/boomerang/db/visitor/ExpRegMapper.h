@@ -25,7 +25,8 @@ class ExpRegMapper : public ExpVisitor
 public:
     ExpRegMapper(UserProc *proc);
 
-    bool visit(const std::shared_ptr<RefExp>& e, bool& override) override;
+    /// \copydoc ExpVisitor::visit
+    bool visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren) override;
 
 private:
     UserProc *m_proc; ///< Proc object for storing the symbols

@@ -343,7 +343,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
             SharedExp  rhs  = def->getRight();
 
             // If force is true, ignore the fact that a memof should not be propagated (for switch analysis)
-            if (rhs->containsBadMemof(m_proc) && !(force && rhs->isMemOf())) {
+            if (rhs->containsBadMemof() && !(force && rhs->isMemOf())) {
                 // Must never propagate unsubscripted memofs, or memofs that don't yet have symbols. You could be
                 // propagating past a definition, thereby invalidating the IR
                 continue;
@@ -440,10 +440,13 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
         }
     } while (change && ++changes < 10);
 
-    // Simplify is very costly, especially for calls. I hope that doing one simplify at the end will not affect any
+    // Simplify is very costly, especially for calls.
+    // I hope that doing one simplify at the end will not affect any
     // result...
     simplify();
-    return changes > 0; // Note: change is only for the last time around the do/while loop
+
+    // Note: change is only for the last time around the do/while loop
+    return changes > 0;
 }
 
 

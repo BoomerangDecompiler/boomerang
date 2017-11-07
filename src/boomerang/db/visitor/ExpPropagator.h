@@ -20,16 +20,16 @@
 class ExpPropagator : public SimpExpModifier
 {
 public:
-    ExpPropagator()
-        : change(false) {}
+    ExpPropagator();
 
-    bool isChanged() { return change; }
-    void clearChanged() { change = false; }
+    bool isChanged() { return m_changed; }
+    void clearChanged() { m_changed = false; }
 
+    /// \copydoc SimpExpModifier::postVisit
     // Ugh! This is still a separate propagation mechanism from Statement::propagateTo()
-    SharedExp postVisit(const std::shared_ptr<RefExp>& e) override;
+    SharedExp postVisit(const std::shared_ptr<RefExp>& exp) override;
 
 private:
-    bool change;
+    bool m_changed;
 };
 

@@ -67,10 +67,10 @@ bool ImpRefStatement::accept(StmtVisitor *visitor)
 
 bool ImpRefStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool dontVisitChildren;
+    bool ret = v->visit(this, dontVisitChildren);
 
-    if (override) {
+    if (dontVisitChildren) {
         return ret;
     }
 
@@ -84,12 +84,11 @@ bool ImpRefStatement::accept(StmtExpVisitor *v)
 
 bool ImpRefStatement::accept(StmtModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren;
+    v->visit(this, visitChildren);
     v->m_mod->clearMod();
 
-    if (recur) {
+    if (visitChildren) {
         m_addressExp = m_addressExp->accept(v->m_mod);
     }
 
@@ -103,12 +102,12 @@ bool ImpRefStatement::accept(StmtModifier *v)
 
 bool ImpRefStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren;
 
-    v->visit(this, recur);
+    v->visit(this, visitChildren);
     v->mod->clearMod();
 
-    if (recur) {
+    if (visitChildren) {
         m_addressExp = m_addressExp->accept(v->mod);
     }
 

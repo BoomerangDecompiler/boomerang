@@ -13,8 +13,14 @@
 #include "boomerang/db/statements/PhiAssign.h"
 
 
-void PhiStripper::visit(PhiAssign * /*stmt*/, bool& recur)
+PhiStripper::PhiStripper(ExpModifier* em)
+    : StmtModifier(em)
+    , m_del(false)
+{
+}
+
+void PhiStripper::visit(PhiAssign * /*stmt*/, bool& visitChildren)
 {
     m_del = true;
-    recur = true;
+    visitChildren = true;
 }

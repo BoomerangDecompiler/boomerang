@@ -28,16 +28,21 @@ public:
     UsedLocalFinder(LocationSet& _used, UserProc *_proc);
     ~UsedLocalFinder() override = default;
 
-    LocationSet *getLocSet() { return used; }
+    LocationSet *getLocSet() { return m_used; }
     bool wasAllFound() { return all; }
 
-    virtual bool visit(const std::shared_ptr<Location>& e, bool& override) override;
-    virtual bool visit(const std::shared_ptr<TypedExp>& e, bool& override) override;
-    virtual bool visit(const std::shared_ptr<Terminal>& e) override;
+    /// \copydoc ExpVisitor::visit
+    virtual bool visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren) override;
+
+    /// \copydoc ExpVisitor::visit
+    virtual bool visit(const std::shared_ptr<TypedExp>& exp, bool& dontVisitChildren) override;
+
+    /// \copydoc ExpVisitor::visit
+    virtual bool visit(const std::shared_ptr<Terminal>& exp) override;
 
 private:
-    LocationSet *used; // Set of used locals' names
-    UserProc *proc;    // Enclosing proc
+    LocationSet *m_used; // Set of used locals' names
+    UserProc *m_proc;  // Enclosing proc
     bool all;          // True if see opDefineAll
 };
 

@@ -30,19 +30,41 @@ class ImpRefStatement;
 class StmtExpVisitor
 {
 public:
-    StmtExpVisitor(ExpVisitor *v, bool _ignoreCol = true);
+    StmtExpVisitor(ExpVisitor *v, bool ignoreCol = true);
     virtual ~StmtExpVisitor() = default;
 
-    virtual bool visit(Assign * /*stmt*/, bool& override);
-    virtual bool visit(PhiAssign * /*stmt*/, bool& override);
-    virtual bool visit(ImplicitAssign * /*stmt*/, bool& override);
-    virtual bool visit(BoolAssign * /*stmt*/, bool& override);
-    virtual bool visit(GotoStatement * /*stmt*/, bool& override);
-    virtual bool visit(BranchStatement * /*stmt*/, bool& override);
-    virtual bool visit(CaseStatement * /*stmt*/, bool& override);
-    virtual bool visit(CallStatement * /*stmt*/, bool& override);
-    virtual bool visit(ReturnStatement * /*stmt*/, bool& override);
-    virtual bool visit(ImpRefStatement * /*stmt*/, bool& override);
+    /// Visit all expressions in a statement.
+    /// \param[in]  stmt The statement to visit.
+    /// \param[out] dontVisitChildren set to true to not visit child expressions.
+    /// \returns true to continue visit
+    virtual bool visit(Assign *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(PhiAssign *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(ImplicitAssign *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(BoolAssign *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(GotoStatement *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(BranchStatement *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(CaseStatement *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(CallStatement *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(ReturnStatement *stmt, bool& dontVisitChildren);
+
+    /// \copydoc StmtExpVisitor::visit
+    virtual bool visit(ImpRefStatement *stmt, bool& dontVisitChildren);
 
     bool isIgnoreCol() const { return m_ignoreCol; }
 

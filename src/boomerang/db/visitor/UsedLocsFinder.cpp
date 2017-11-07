@@ -16,43 +16,43 @@
 #include "boomerang/db/exp/Terminal.h"
 
 
-UsedLocsFinder::UsedLocsFinder(LocationSet& _used, bool _memOnly)
-    : m_used(&_used)
-    , m_memOnly(_memOnly)
+UsedLocsFinder::UsedLocsFinder(LocationSet& used, bool memOnly)
+    : m_used(&used)
+    , m_memOnly(memOnly)
 {}
 
 
-bool UsedLocsFinder::visit(const std::shared_ptr<Location>& e, bool& override)
+bool UsedLocsFinder::visit(const std::shared_ptr<Location>& exp, bool& dontVisitChildren)
 {
     if (!m_memOnly) {
-        m_used->insert(e->shared_from_this());       // All locations visited are used
+        m_used->insert(exp->shared_from_this());       // All locations visited are used
     }
 
-    if (e->isMemOf()) {
+    if (exp->isMemOf()) {
         // Example: m[r28{10} - 4]    we use r28{10}
-        SharedExp child = e->access<Exp, 1>();
+        SharedExp child = exp->access<Exp, 1>();
         // Care! Need to turn off the memOnly flag for work inside the m[...], otherwise everything will get ignored
         bool wasMemOnly = m_memOnly;
         m_memOnly = false;
         child->accept(this);
         m_memOnly = wasMemOnly;
-        override  = true; // Already looked inside child
+        dontVisitChildren  = true; // Already looked inside child
     }
     else {
-        override = false;
+        dontVisitChildren = false;
     }
 
     return true; // Continue looking for other locations
 }
 
 
-bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& e)
+bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& exp)
 {
     if (m_memOnly) {
         return true; // Only interested in m[...]
     }
 
-    switch (e->getOper())
+    switch (exp->getOper())
     {
     case opPC:
     case opFlags:
@@ -65,7 +65,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& e)
     case opZF:
     case opNF:
     case opOF: // also these
-        m_used->insert(e);
+        m_used->insert(exp);
         break;
 
     default:
@@ -76,14 +76,14 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& e)
 }
 
 
-bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& arg, bool& override)
+bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& exp, bool& dontVisitChildren)
 {
     if (m_memOnly) {
-        override = false; // Look inside the ref for m[...]
+        dontVisitChildren = false; // Look inside the ref for m[...]
         return true;      // Don't count this reference
     }
 
-    std::shared_ptr<RefExp> e = arg;
+    std::shared_ptr<RefExp> e = exp;
 
     if (m_used->find(e) == m_used->end()) {
         // e = (RefExp *)arg.clone();
@@ -91,7 +91,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& arg, bool& override)
     }
 
     // However, e's subexpression is NOT used ...
-    override = true;
+    dontVisitChildren = true;
     // ... unless that is a m[x], array[x] or .x, in which case x (not m[x]/array[x]/refd.x) is used
     SharedExp refd = e->getSubExp1();
 
