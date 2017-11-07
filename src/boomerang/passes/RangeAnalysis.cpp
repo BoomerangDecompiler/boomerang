@@ -11,9 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/Visitor.h"
-#include "boomerang/type/type/Type.h"
-
+#include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/IBinaryImage.h"
@@ -23,8 +21,8 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/ExpHelp.h"
-#include "boomerang/db/Visitor.h"
-
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/statements/JunctionStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
@@ -33,9 +31,9 @@
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
-
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
 #include "boomerang/type/type/VoidType.h"
-
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 

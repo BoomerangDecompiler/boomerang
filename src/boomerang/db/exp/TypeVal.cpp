@@ -10,9 +10,11 @@
 #include "TypeVal.h"
 
 
-#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/type/type/Type.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
 
 
 TypeVal::TypeVal(SharedType ty)

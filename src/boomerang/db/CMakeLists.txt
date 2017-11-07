@@ -41,8 +41,6 @@ list(APPEND boomerang-db-sources
     db/SymTab.h
     db/Table.cpp
     db/Table.h
-    db/Visitor.cpp
-    db/Visitor.h
 
     # exp handling
     db/exp/Exp.cpp
@@ -118,6 +116,88 @@ list(APPEND boomerang-db-sources
     db/statements/StatementHelper.h
     db/statements/TypingStatement.cpp
     db/statements/TypingStatement.h
+
+    # visitors
+    db/visitor/BadMemofFinder.cpp
+    db/visitor/BadMemofFinder.h
+    db/visitor/CallBypasser.cpp
+    db/visitor/CallBypasser.h
+    db/visitor/ComplexityFinder.cpp
+    db/visitor/ComplexityFinder.h
+    db/visitor/ConscriptSetter.cpp
+    db/visitor/ConscriptSetter.h
+    db/visitor/ConstFinder.cpp
+    db/visitor/ConstFinder.h
+    db/visitor/ConstGlobalConverter.cpp
+    db/visitor/ConstGlobalConverter.h
+    db/visitor/DFALocalMapper.cpp
+    db/visitor/DFALocalMapper.h
+    db/visitor/ExpCastInserter.cpp
+    db/visitor/ExpCastInserter.h
+    db/visitor/ExpConstCaster.cpp
+    db/visitor/ExpConstCaster.h
+    db/visitor/ExpDestCounter.cpp
+    db/visitor/ExpDestCounter.h
+    db/visitor/ExpModifier.cpp
+    db/visitor/ExpModifier.h
+    db/visitor/ExpPropagator.cpp
+    db/visitor/ExpPropagator.h
+    db/visitor/ExpRegMapper.cpp
+    db/visitor/ExpRegMapper.h
+    db/visitor/ExpSSAXformer.cpp
+    db/visitor/ExpSSAXformer.h
+    db/visitor/ExpSubscripter.cpp
+    db/visitor/ExpSubscripter.h
+    db/visitor/ExpVisitor.cpp
+    db/visitor/ExpVisitor.h
+    db/visitor/FlagsFinder.cpp
+    db/visitor/FlagsFinder.h
+    db/visitor/ImplicitConverter.cpp
+    db/visitor/ImplicitConverter.h
+    db/visitor/Localiser.cpp
+    db/visitor/Localiser.h
+    db/visitor/MemDepthFinder.cpp
+    db/visitor/MemDepthFinder.h
+    db/visitor/PhiStripper.cpp
+    db/visitor/PhiStripper.h
+    db/visitor/PrimitiveTester.cpp
+    db/visitor/PrimitiveTester.h
+    db/visitor/SimpExpModifier.cpp
+    db/visitor/SimpExpModifier.h
+    db/visitor/SizeStripper.cpp
+    db/visitor/SizeStripper.h
+    db/visitor/StmtCastInserter.cpp
+    db/visitor/StmtCastInserter.h
+    db/visitor/StmtConscriptSetter.cpp
+    db/visitor/StmtConscriptSetter.h
+    db/visitor/StmtConstFinder.cpp
+    db/visitor/StmtConstFinder.h
+    db/visitor/StmtDestCounter.cpp
+    db/visitor/StmtDestCounter.h
+    db/visitor/StmtExpVisitor.cpp
+    db/visitor/StmtExpVisitor.h
+    db/visitor/StmtImplicitConverter.cpp
+    db/visitor/StmtImplicitConverter.h
+    db/visitor/StmtModifier.cpp
+    db/visitor/StmtModifier.h
+    db/visitor/StmtPartModifier.cpp
+    db/visitor/StmtPartModifier.h
+    db/visitor/StmtRegMapper.cpp
+    db/visitor/StmtRegMapper.h
+    db/visitor/StmtSSAXFormer.cpp
+    db/visitor/StmtSSAXFormer.h
+    db/visitor/StmtSubscripter.cpp
+    db/visitor/StmtSubscripter.h
+    db/visitor/StmtVisitor.cpp
+    db/visitor/StmtVisitor.h
+    db/visitor/TempToLocalMapper.cpp
+    db/visitor/TempToLocalMapper.h
+    db/visitor/UsedLocalFinder.cpp
+    db/visitor/UsedLocalFinder.h
+    db/visitor/UsedLocsFinder.cpp
+    db/visitor/UsedLocsFinder.h
+    db/visitor/UsedLocsVisitor.cpp
+    db/visitor/UsedLocsVisitor.h
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-db-sources}" PARENT_SCOPE)

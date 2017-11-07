@@ -10,12 +10,19 @@
 #include "Assign.h"
 
 
-#include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
-#include "boomerang/db/Visitor.h"
-
 #include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Unary.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/type/type/Type.h"
+#include "boomerang/util/Log.h"
 
 
 Assign::Assign(SharedExp lhs, SharedExp r, SharedExp guard)

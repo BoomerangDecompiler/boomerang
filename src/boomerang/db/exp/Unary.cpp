@@ -13,8 +13,10 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/Visitor.h"
 
 
 Unary::Unary(OPER _op, SharedExp e)

@@ -10,14 +10,18 @@
 #include "RefExp.h"
 
 
-#include "boomerang/db/statements/Statement.h"
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
-
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/Statement.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/IntegerType.h"
+
 
 RefExp::RefExp(SharedExp e, Statement *d)
     : Unary(opSubscript, e)

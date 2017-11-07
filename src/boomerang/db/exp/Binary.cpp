@@ -12,16 +12,17 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/SizeType.h"
+#include "boomerang/util/Log.h"
 
 #include <QRegularExpression>
 

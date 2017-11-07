@@ -10,7 +10,11 @@
 #include "CaseStatement.h"
 
 
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 
 
 CaseStatement::CaseStatement()

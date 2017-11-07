@@ -32,7 +32,7 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
 
 #include "boomerang/type/type/Type.h"
 

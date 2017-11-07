@@ -11,14 +11,21 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/statements/StatementHelper.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/BooleanType.h"
+#include "boomerang/util/Log.h"
+
 
 BranchStatement::BranchStatement()
     : m_jumpType((BranchType)0)

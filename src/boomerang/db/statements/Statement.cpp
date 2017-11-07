@@ -10,22 +10,19 @@
 #include "Statement.h"
 
 
-/**
- * \file       statement.cpp
- * \brief   Implementation of the Statement and related classes.
- */
-
-#include "boomerang/core/Boomerang.h"
-
 #include "boomerang/codegen/ICodeGenerator.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/proc/Proc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/RTL.h" // For debugging code
-#include "boomerang/db/Signature.h"
 #include "boomerang/db/DataFlow.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/Signature.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/statements/JunctionStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
@@ -34,8 +31,26 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/db/Visitor.h"
-
+#include "boomerang/db/visitor/StmtConscriptSetter.h"
+#include "boomerang/db/visitor/ExpConstCaster.h"
+#include "boomerang/db/visitor/SizeStripper.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/CallBypasser.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/db/visitor/UsedLocalFinder.h"
+#include "boomerang/db/visitor/UsedLocsFinder.h"
+#include "boomerang/db/visitor/UsedLocsVisitor.h"
+#include "boomerang/db/visitor/ExpSubscripter.h"
+#include "boomerang/db/visitor/StmtSubscripter.h"
+#include "boomerang/db/visitor/ConstFinder.h"
+#include "boomerang/db/visitor/StmtConstFinder.h"
+#include "boomerang/db/visitor/ExpRegMapper.h"
+#include "boomerang/db/visitor/StmtRegMapper.h"
+#include "boomerang/db/visitor/ExpCastInserter.h"
+#include "boomerang/db/visitor/StmtCastInserter.h"
+#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/db/visitor/StmtSSAXFormer.h"
+#include "boomerang/db/visitor/DFALocalMapper.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -709,7 +724,7 @@ void Statement::mapRegistersToLocals()
 void Statement::insertCasts()
 {
     // First we postvisit expressions using a StmtModifier and an ExpCastInserter
-    ExpCastInserter eci(m_proc);
+    ExpCastInserter eci;
     StmtModifier    sm(&eci, true);     // True to ignore collectors
 
     accept(&sm);

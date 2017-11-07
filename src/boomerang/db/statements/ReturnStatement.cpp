@@ -10,14 +10,20 @@
 #include "ReturnStatement.h"
 
 
-#include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/Visitor.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 #include "boomerang/util/Log.h"
 
 #include "boomerang/frontend/Frontend.h"

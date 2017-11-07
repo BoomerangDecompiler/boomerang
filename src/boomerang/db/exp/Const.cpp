@@ -9,17 +9,19 @@
 #pragma endregion License
 #include "Const.h"
 
-
-#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Util.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/TypeVal.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
 
 
 Const::Const(uint32_t i)

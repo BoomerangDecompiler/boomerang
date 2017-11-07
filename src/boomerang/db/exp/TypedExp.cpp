@@ -10,9 +10,10 @@
 #include "TypedExp.h"
 
 
-#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
-
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/type/type/Type.h"
 
 TypedExp::TypedExp(SharedExp e1)
     : Unary(opTypedExp, e1)

@@ -10,11 +10,17 @@
 #include "BoolAssign.h"
 
 
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/Visitor.h"
 #include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/StatementHelper.h"
-
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 
 BoolAssign::BoolAssign(int size)
     : Assignment(nullptr)

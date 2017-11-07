@@ -11,9 +11,11 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/Visitor.h"
+
 
 Location::Location(Location& o)
     : Unary(o.m_oper, o.subExp1->clone())

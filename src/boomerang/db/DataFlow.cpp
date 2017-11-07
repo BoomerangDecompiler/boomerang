@@ -19,11 +19,13 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/Visitor.h"
-
+#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/db/visitor/ImplicitConverter.h"
 #include "boomerang/util/Log.h"
 
 #include <sstream>

@@ -17,7 +17,25 @@
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Unary.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/visitor/BadMemofFinder.h"
+#include "boomerang/db/visitor/CallBypasser.h"
+#include "boomerang/db/visitor/ConscriptSetter.h"
+#include "boomerang/db/visitor/ComplexityFinder.h"
+#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/db/visitor/ExpSubscripter.h"
+#include "boomerang/db/visitor/ExpPropagator.h"
+#include "boomerang/db/visitor/FlagsFinder.h"
+#include "boomerang/db/visitor/MemDepthFinder.h"
+#include "boomerang/db/visitor/SizeStripper.h"
+#include "boomerang/db/visitor/UsedLocsFinder.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
@@ -649,7 +667,7 @@ SharedExp Exp::genConstraints(SharedExp /*result*/)
 
 void Exp::setConscripts(int n, bool bClear)
 {
-    SetConscripts sc(n, bClear);
+    ConscriptSetter sc(n, bClear);
     this->accept(&sc);
 }
 

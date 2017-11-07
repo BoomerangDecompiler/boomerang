@@ -10,22 +10,35 @@
 #include "UserProc.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/codegen/syntax/BlockSyntaxNode.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/exp/TypedExp.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ImplicitConverter.h"
+#include "boomerang/db/visitor/ExpDestCounter.h"
+#include "boomerang/db/visitor/StmtDestCounter.h"
+#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/db/visitor/StmtImplicitConverter.h"
+#include "boomerang/db/visitor/CallBypasser.h"
+#include "boomerang/db/visitor/TempToLocalMapper.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtDestCounter.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -2517,9 +2530,10 @@ void UserProc::mapExpressionsToLocals(bool lastPass)
             SharedExp replace = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, arr),
                                                             result->access<Exp, 1, 1, 2>()->clone()),
                                                 this);
-            // TODO: the change from de8c876e9ca33e6f5aab39191204e80b81048d67 doesn't change anything, but 'looks'
-            // better
-            auto actual_replacer = std::make_shared<TypedExp>(ArrayType::get(base, n / (base->getSize() / 8)), replace);
+            // TODO: the change from de8c876e9ca33e6f5aab39191204e80b81048d67
+            // doesn't change anything, but 'looks' better
+            SharedExp actual_replacer = std::make_shared<TypedExp>(
+                ArrayType::get(base, n / (base->getSize() / 8)), replace);
 
             LOG_VERBOSE("Replacing %1 with %2 in %3", result, actual_replacer, s);
 

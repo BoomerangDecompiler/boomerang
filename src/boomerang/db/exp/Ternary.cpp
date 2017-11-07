@@ -11,15 +11,16 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/db/Visitor.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/util/Log.h"
 
 
 Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)

@@ -10,16 +10,26 @@
 #include "CallStatement.h"
 
 
+#include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/Localiser.h"
+#include "boomerang/db/visitor/ImplicitConverter.h"
+#include "boomerang/db/visitor/StmtImplicitConverter.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
@@ -27,7 +37,7 @@
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/FuncType.h"
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/util/Log.h"
 
 
 /// A helper class for updateArguments. It just dishes out a new argument
