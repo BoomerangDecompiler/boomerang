@@ -35,7 +35,7 @@ typedef std::shared_ptr<Type> SharedType;
 class Register
 {
 public:
-    Register(const QString& name = QString::null, uint16_t sizeInBits = 0, bool isFloat = false);
+    Register(const QString& name = QString::null, uint16_t sizeInBits = 0, bool isFloatReg = false);
     Register(const Register&);
 
     Register& operator=(const Register& other);

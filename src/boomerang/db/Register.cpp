@@ -18,10 +18,10 @@
 #include <string>
 
 
-Register::Register(const QString& name, uint16_t sizeInBits, bool isFloat)
+Register::Register(const QString& name, uint16_t sizeInBits, bool isFloatReg)
     : m_name(name)
     , m_size(sizeInBits)
-    , m_fltRegister(isFloat)
+    , m_fltRegister(isFloatReg)
     , m_mappedIndex(-1)
     , m_mappedOffset(-1)
 {
