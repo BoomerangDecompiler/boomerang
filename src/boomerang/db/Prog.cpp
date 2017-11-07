@@ -747,7 +747,10 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
     }
 
     size_t size   = symbol->getSize();
-    int numElems  = std::max(baseType->getSizeInBytes(), 1UL);
+    int numElems = baseType->getSizeInBytes();
+    if (numElems < 1) {
+        numElems = 1;
+    }
 
     return ArrayType::get(baseType, size / numElems);
 }
