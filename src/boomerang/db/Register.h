@@ -64,7 +64,7 @@ public:
 
     void setSize(uint16_t newSize) { m_size = newSize; }
 
-    void setIsFloat(bool isFloat) { m_fltRegister = isFloat; }
+    void setIsFloat(bool isFloatReg) { m_fltRegister = isFloatReg; }
 
     /**
      * Set the mapped offset. This is the bit number where this register starts,
