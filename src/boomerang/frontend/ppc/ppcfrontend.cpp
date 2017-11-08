@@ -10,19 +10,6 @@
 #include "ppcfrontend.h"
 
 
-/**
- * \file       ppcfrontend.cpp
- * \brief   This file contains routines to manage the decoding of ppc
- *               instructions and the instantiation to RTLs, removing sparc
- *               dependent features such as delay slots in the process. These
- *               functions replace Frontend.cc for decoding sparc instructions.
- */
-
-/**
- * Dependencies.
- */
-
-
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/CFG.h"

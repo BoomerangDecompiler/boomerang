@@ -15,18 +15,18 @@
 #include "boomerang/util/Log.h"
 
 
-void TargetQueue::visit(Cfg *pCfg, Address uNewAddr, BasicBlock *& pNewBB)
+void TargetQueue::visit(Cfg *cfg, Address newAddr, BasicBlock *& newBB)
 {
     // Find out if we've already parsed the destination
-    bool alreadyParsed = pCfg->label(uNewAddr, pNewBB);
+    const bool alreadyParsed = cfg->label(newAddr, newBB);
 
     // Add this address to the back of the local queue,
     // if not already processed
     if (!alreadyParsed) {
-        targets.push(uNewAddr);
+        m_targets.push(newAddr);
 
         if (SETTING(traceDecoder)) {
-            LOG_MSG(">%1", uNewAddr);
+            LOG_MSG(">%1", newAddr);
         }
     }
 }
@@ -34,15 +34,15 @@ void TargetQueue::visit(Cfg *pCfg, Address uNewAddr, BasicBlock *& pNewBB)
 
 void TargetQueue::initial(Address uAddr)
 {
-    targets.push(uAddr);
+    m_targets.push(uAddr);
 }
 
 
 Address TargetQueue::nextAddress(const Cfg& cfg)
 {
-    while (!targets.empty()) {
-        Address address = targets.front();
-        targets.pop();
+    while (!m_targets.empty()) {
+        Address address = m_targets.front();
+        m_targets.pop();
 
         if (SETTING(traceDecoder)) {
             LOG_MSG("<%1", address);
@@ -60,11 +60,11 @@ Address TargetQueue::nextAddress(const Cfg& cfg)
 
 void TargetQueue::dump()
 {
-    std::queue<Address> copy(targets);
+    std::queue<Address> copy(m_targets);
 
     while (!copy.empty()) {
-        Address a = copy.front();
+        Address addr = copy.front();
         copy.pop();
-        LOG_MSG("  %1,", a);
+        LOG_MSG("  %1,", addr);
     }
 }

@@ -10,11 +10,6 @@
 #pragma once
 
 
-/**
- * \file       ppcdecoder.h
- * \brief   The implementation of the instruction decoder for PPC.
- */
-
 #include "boomerang/frontend/NJMCDecoder.h"
 
 #include <cstdlib>
@@ -24,6 +19,9 @@ class Prog;
 struct DecodeResult;
 
 
+/**
+ * The implementation of the instruction decoder for PPC.
+ */
 class PPCDecoder : public NJMCDecoder
 {
 public:

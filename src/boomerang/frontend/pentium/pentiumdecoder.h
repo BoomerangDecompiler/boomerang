@@ -11,16 +11,15 @@
 #pragma once
 
 
-/**
- * \file       pentiumdecoder.h
- * \brief   The implementation of the instruction decoder for Pentium.
- */
-
 #include "boomerang/frontend/NJMCDecoder.h"
 
 class Prog;
 struct DecodeResult;
 
+/**
+ * Decoder for x86 instructions.
+ * \note x86-64 instructions are nor supported.
+ */
 class PentiumDecoder : public NJMCDecoder
 {
 public:

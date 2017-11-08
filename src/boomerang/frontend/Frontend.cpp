@@ -147,7 +147,7 @@ int IFrontEnd::getRegSize(int idx)
 
 bool IFrontEnd::isWin32() const
 {
-    return m_fileLoader->getFormat() == LoadFmt::PE;
+    return m_fileLoader && m_fileLoader->getFormat() == LoadFmt::PE;
 }
 
 
@@ -1207,12 +1207,6 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
     LOG_VERBOSE("Finished processing proc %1 at address %2", pProc->getName(), pProc->getEntryAddress());
 
     return true;
-}
-
-
-Prog *IFrontEnd::getProg()
-{
-    return m_program;
 }
 
 

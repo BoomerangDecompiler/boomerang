@@ -10,16 +10,6 @@
 #include "ppcdecoder.h"
 
 
-/**
- * \file       ppcdecoder.cpp
- * \brief   Implementation of the PPC specific parts of the PPCDecoder class.
- */
-
-/**
- * Dependencies.
- */
-
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
@@ -81,23 +71,8 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
     jump->setCondType(cond);                          \
     SHOW_ASM(name << " " << BIcr << ", 0x" << relocd - delta)
 
-/**
- * \fn       PPCDecoder::decodeInstruction
- * \brief       Attempt to decode the high level instruction at a given address.
- *
- * Will return the corresponding HL type (e.g. CallStatement,
- * GotoStatement etc). If no high level instruction exists at the
- * given address, then simply return the RTL for the low level
- * instruction at this address. There is an option to also
- * include the low level statements for a HL instruction.
- *
- * \param  pc - the native address of the pc
- * \param  delta - the difference between the above address and the
- *                 host address of the pc (i.e. the address that the pc is at
- *                 in the loaded object file)
- * \returns            a DecodeResult structure containing all the information
- *                     gathered during decoding
- */
+
+
 bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
     HostAddress hostPC = HostAddress(delta) + pc;

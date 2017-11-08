@@ -28,6 +28,7 @@ class MachineOperand
 {
 };
 
+
 struct MachineInstruction
 {
     QString                opcode;
@@ -41,6 +42,7 @@ struct MachineInstruction
     {
     }
 };
+
 
 class MachineSemantics
 {

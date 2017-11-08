@@ -21,15 +21,14 @@
 
 class IBinaryImage;
 
+
 /**
  * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
  */
 class NJMCDecoder : public IDecoder
 {
 public:
-    /**
-     * \param       prog Pointer to the Prog object
-     */
+    /// \param       prog Pointer to the Prog object
     NJMCDecoder(Prog *prog);
 
     /// \copydoc IDecoder::~IDecoder

@@ -10,27 +10,6 @@
 #include "mipsfrontend.h"
 
 
-/****************************************************************
- *
- * FILENAME
- *
- *   \file mipsfrontend.cpp
- *
- * PURPOSE
- *
- *   Skeleton for MIPS disassembly.
- *
- * AUTHOR
- *
- *   \author Markus Gothe, nietzsche@lysator.liu.se
- *
- * REVISION
- *
- *   $Id$
- *
- *****************************************************************/
-
-
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/Register.h"
@@ -50,8 +29,8 @@
 #include <sstream>
 
 
-MIPSFrontEnd::MIPSFrontEnd(IFileLoader *pBF, Prog *prog)
-    : IFrontEnd(pBF, prog)
+MIPSFrontEnd::MIPSFrontEnd(IFileLoader *loader, Prog *prog)
+    : IFrontEnd(loader, prog)
 {
     m_decoder = new MIPSDecoder(prog);
 }
@@ -111,16 +90,16 @@ Address MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool MIPSFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+bool MIPSFrontEnd::processProc(Address uAddr, UserProc *function, QTextStream& os, bool frag /* = false */,
                                bool spec /* = false */)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+    if (!IFrontEnd::processProc(uAddr, function, os, frag, spec)) {
         return false;
     }
 
     // This will get done twice; no harm
-    pProc->setEntryBB();
+    function->setEntryBB();
 
     return true;
 }

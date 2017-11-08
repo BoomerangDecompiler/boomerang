@@ -10,9 +10,6 @@
 #pragma once
 
 
-// Class SparcFrontEnd: derived from FrontEnd, with source machine specific
-// behaviour
-
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/frontend/Decoder.h"
 #include "boomerang/type/type/Type.h"
@@ -26,6 +23,11 @@ class IBinarySymbolTable;
 struct DecodeResult;
 
 
+/**
+ * This file contains routines to manage the decoding of sparc instructions and the instantiation to RTLs,
+ * removing sparc dependent features such as delay slots in the process. These functions replace
+ * frontend.cpp for decoding sparc instructions.
+ */
 class SparcFrontEnd : public IFrontEnd
 {
 public:
