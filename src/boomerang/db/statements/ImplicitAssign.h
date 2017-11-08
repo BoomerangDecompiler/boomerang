@@ -31,9 +31,6 @@ public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 
-    /// \copydoc Statement::dfaTypeAnalysis
-    void dfaTypeAnalysis(bool& ch) override;
-
     /// \copydoc Statement::search
     virtual bool search(const Exp& search, SharedExp& result) const override;
 

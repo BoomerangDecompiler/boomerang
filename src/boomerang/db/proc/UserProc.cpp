@@ -39,6 +39,7 @@
 #include "boomerang/db/visitor/TempToLocalMapper.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtDestCounter.h"
+#include "boomerang/type/TypeRecovery.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -1505,6 +1506,7 @@ void UserProc::remUnusedStmtEtc()
     // to printf/scanf), and removing unused statements is unsafe without full use information
     if (m_status < PROC_FINAL) {
         typeAnalysis();
+
         // Now that locals are identified, redo the dataflow
         change = m_df.placePhiFunctions(this);
 
@@ -5519,35 +5521,11 @@ void UserProc::typeAnalysis()
     // Do this regardless of whether doing dfa-based TA, so things like finding parameters can rely on implicit assigns
     addImplicitAssigns();
 
+    ITypeRecovery *rec = Boomerang::get()->getOrCreateProject()->getTypeRecoveryEngine();
     // Data flow based type analysis
     // Want to be after all propagation, but before converting expressions to locals etc
     if (DFA_TYPE_ANALYSIS) {
-        if (DEBUG_TA) {
-            LOG_VERBOSE("--- Start data flow based type analysis for %1 ---", getName());
-        }
-
-        bool first = true;
-
-        do {
-            if (!first) {
-                doRenameBlockVars(-1, true); // Subscript the discovered extra parameters
-                // propagateAtDepth(maxDepth);        // Hack: Can sometimes be needed, if call was indirect
-                bool convert;
-                propagateStatements(convert, 0);
-            }
-
-            first = false;
-            dfaTypeAnalysis();
-
-            // There used to be a pass here to insert casts. This is best left until global type analysis is complete,
-            // so do it just before translating from SSA form (which is the where type information becomes inaccessible)
-        } while (ellipsisProcessing());
-
-        simplify(); // In case there are new struct members
-
-        if (DEBUG_TA) {
-            LOG_VERBOSE("=== End type analysis for %1 ===", getName());
-        }
+        rec->recoverFunctionTypes(this);
     }
 
     printXML();

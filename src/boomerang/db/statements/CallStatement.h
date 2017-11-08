@@ -158,10 +158,7 @@ public:
     /// \copydoc Statement::genConstraints
     virtual void genConstraints(LocationSet& cons) override;
 
-    /// \copydoc Statement::dfaTypeAnalysis
-    virtual void dfaTypeAnalysis(bool& ch) override;
-
-    /// \copydoc GotoStatement::dfaTypeAnalysis
+    /// \copydoc GotoStatement::generateCode
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
     /// \copydoc GotoStatement::usesExp

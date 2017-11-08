@@ -74,8 +74,6 @@ public:
     /// \copydoc Statement::genConstraints
     virtual void genConstraints(LocationSet& cons) override;
 
-    /// \copydoc Statement::dfaTypeAnalysis
-    void dfaTypeAnalysis(bool& ch) override;
 
 protected:
     SharedExp m_lhs; ///< The left hand side of the assignment

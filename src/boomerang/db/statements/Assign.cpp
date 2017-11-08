@@ -255,18 +255,21 @@ bool Assign::accept(StmtModifier *v)
     bool visitChildren;
 
     v->visit(this, visitChildren);
-    v->m_mod->clearMod();
 
-    if (visitChildren) {
-        m_lhs = m_lhs->accept(v->m_mod);
-    }
+    if (v->m_mod) {
+        v->m_mod->clearMod();
 
-    if (visitChildren) {
-        m_rhs = m_rhs->accept(v->m_mod);
-    }
+        if (visitChildren) {
+            m_lhs = m_lhs->accept(v->m_mod);
+        }
 
-    if (v->m_mod->isMod()) {
-        LOG_VERBOSE("Assignment changed: now %1", this);
+        if (visitChildren) {
+            m_rhs = m_rhs->accept(v->m_mod);
+        }
+
+        if (v->m_mod->isMod()) {
+            LOG_VERBOSE("Assignment changed: now %1", this);
+        }
     }
 
     return true;
@@ -292,17 +295,6 @@ bool Assign::accept(StmtPartModifier *v)
     }
 
     return true;
-}
-
-
-void Assign::dfaTypeAnalysis(bool& ch)
-{
-    SharedType tr = m_rhs->ascendType();
-
-    m_type = m_type->meetWith(tr, ch, true); // Note: bHighestPtr is set true, since the lhs could have a greater type
-    // (more possibilities) than the rhs. Example: pEmployee = pManager.
-    m_rhs->descendType(m_type, ch, this);    // This will effect rhs = rhs MEET lhs
-    Assignment::dfaTypeAnalysis(ch);         // Handle the LHS wrt m[] operands
 }
 
 

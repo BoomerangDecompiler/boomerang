@@ -100,15 +100,6 @@ public:
     /// \copydoc Statement::genConstraints
     virtual void genConstraints(LocationSet& cons) override;
 
-    /**
-     * \copydoc Statement::dfaTypeAnalysis
-     *
-     * For x0 := phi(x1, x2, ...) want
-     * Tx0 := Tx0 meet (Tx1 meet Tx2 meet ...)
-     * Tx1 := Tx1 meet Tx0
-     * Tx2 := Tx2 meet Tx0
-     */
-    virtual void dfaTypeAnalysis(bool& ch) override;
 
     //
     //    Phi specific functions

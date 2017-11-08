@@ -90,9 +90,6 @@ public:
     /// \copydoc Assignment::genConstraints
     virtual void genConstraints(LocationSet& cons) override;
 
-    /// \copydoc Assignment::dfaTypeAnalysis
-    void dfaTypeAnalysis(bool& ch) override;
-
 private:
     SharedExp m_rhs;
     SharedExp m_guard;

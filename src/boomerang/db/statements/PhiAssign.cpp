@@ -228,14 +228,17 @@ bool PhiAssign::accept(StmtModifier *v)
 {
     bool visitChildren;
     v->visit(this, visitChildren);
-    v->m_mod->clearMod();
 
-    if (visitChildren) {
-        m_lhs = m_lhs->accept(v->m_mod);
-    }
+    if (v->m_mod) {
+        v->m_mod->clearMod();
 
-    if (v->m_mod->isMod()) {
-        LOG_VERBOSE("PhiAssign changed: now %1", this);
+        if (visitChildren) {
+            m_lhs = m_lhs->accept(v->m_mod);
+        }
+
+        if (v->m_mod->isMod()) {
+            LOG_VERBOSE("PhiAssign changed: now %1", this);
+        }
     }
 
     return true;
@@ -351,42 +354,6 @@ void PhiAssign::enumerateParams(std::list<SharedExp>& le)
     }
 }
 
-
-void PhiAssign::dfaTypeAnalysis(bool& ch)
-{
-    iterator it = m_defs.begin();
-
-    while (it->second.e == nullptr && it != m_defs.end()) {
-        ++it;
-    }
-
-    assert(it != m_defs.end());
-    SharedType meetOfArgs = it->second.getDef()->getTypeFor(m_lhs);
-
-    for (++it; it != m_defs.end(); ++it) {
-        PhiInfo& phinf(it->second);
-
-        if (phinf.e == nullptr) {
-            continue;
-        }
-
-        assert(phinf.getDef() != nullptr);
-        SharedType typeOfDef = phinf.getDef()->getTypeFor(phinf.e);
-        meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
-    }
-
-    m_type = m_type->meetWith(meetOfArgs, ch);
-
-    for (it = m_defs.begin(); it != m_defs.end(); ++it) {
-        if (it->second.e == nullptr) {
-            continue;
-        }
-
-        it->second.getDef()->meetWithFor(m_type, it->second.e, ch);
-    }
-
-    Assignment::dfaTypeAnalysis(ch); // Handle the LHS
-}
 
 Statement* PhiAssign::getStmtAt(BasicBlock* idx)
 {

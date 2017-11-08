@@ -13,11 +13,11 @@
 #include "boomerang/type/TypeRecovery.h"
 
 
-class Signature;
 class Cfg;
-class StatementList;
+class Signature;
 class Statement;
-
+class StatementList;
+class UserProc;
 
 /**
  * Data-flow based type recovery.
@@ -32,7 +32,7 @@ public:
     QString getName() override { return "data-flow based"; }
 
 private:
-    void dfaTypeAnalysis(Function *function);
+    void dfaTypeAnalysis(UserProc *proc);
     bool dfaTypeAnalysis(Signature *signature, Cfg *cfg);
     bool dfaTypeAnalysis(Statement *stmt);
 

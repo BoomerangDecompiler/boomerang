@@ -181,12 +181,14 @@ bool CaseStatement::accept(StmtModifier *v)
     bool visitChildren;
     v->visit(this, visitChildren);
 
-    if (m_dest && visitChildren) {
-        m_dest = m_dest->accept(v->m_mod);
-    }
+    if (v->m_mod) {
+        if (m_dest && visitChildren) {
+            m_dest = m_dest->accept(v->m_mod);
+        }
 
-    if (m_switchInfo && m_switchInfo->pSwitchVar && visitChildren) {
-        m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->accept(v->m_mod);
+        if (m_switchInfo && m_switchInfo->pSwitchVar && visitChildren) {
+            m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->accept(v->m_mod);
+        }
     }
 
     return true;

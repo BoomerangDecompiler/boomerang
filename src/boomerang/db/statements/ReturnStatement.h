@@ -116,9 +116,6 @@ public:
     /// Find definition for e (in the collector)
     SharedExp findDefFor(SharedExp e) { return m_col.findDefFor(e); }
 
-    /// \copydoc Statement::dfaTypeAnalysis
-    virtual void dfaTypeAnalysis(bool& ch) override;
-
     /// Remove the stack pointer and return a statement list
     StatementList *getCleanReturns();
 

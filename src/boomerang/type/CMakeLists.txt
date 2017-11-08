@@ -27,6 +27,7 @@ list(APPEND boomerang-type-sources
 
     # DFA type recovery
     type/dfa/DFATypeRecovery
+    type/dfa/DFATypeAnalyzer
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-type-sources}" PARENT_SCOPE)

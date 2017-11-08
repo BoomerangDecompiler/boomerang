@@ -26,6 +26,7 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -198,18 +199,43 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
 
 void DFATypeRecovery::recoverFunctionTypes(Function *function)
 {
-    dfaTypeAnalysis(function);
-}
-
-
-void DFATypeRecovery::dfaTypeAnalysis(Function *f)
-{
-    if (f->isLib()) {
-        LOG_VERBOSE("Not using DFA type analysis on library function '%1'", f->getName());
+    if (function->isLib()) {
+        LOG_VERBOSE("Not using DFA type analysis on library function '%1'", function->getName());
         return;
     }
 
-    UserProc        *proc = static_cast<UserProc *>(f);
+    if (DEBUG_TA) {
+        LOG_VERBOSE("--- Start data flow based type analysis for %1 ---", getName());
+    }
+
+    bool first = true;
+    UserProc *up = dynamic_cast<UserProc *>(function);
+    assert(up != nullptr);
+
+    do {
+        if (first) {
+            up->doRenameBlockVars(-1, true); // Subscript the discovered extra parameters
+            bool convert;
+            up->propagateStatements(convert, 0);
+        }
+
+        first = false;
+        dfaTypeAnalysis(up);
+
+        // There used to be a pass here to insert casts. This is best left until global type analysis is complete,
+        // so do it just before translating from SSA form (which is the where type information becomes inaccessible)
+    } while (up->ellipsisProcessing());
+
+    up->simplify(); // In case there are new struct members
+
+    if (DEBUG_TA) {
+        LOG_VERBOSE("=== End type analysis for %1 ===", getName());
+    }
+}
+
+
+void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
+{
     Cfg             *cfg  = proc->getCFG();
     DataIntervalMap localsMap(proc); // map of all local variables of proc
 
@@ -218,7 +244,7 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
     // First use the type information from the signature.
     // Sometimes needed to split variables (e.g. argc as a
     // int and char* in sparc/switch_gcc)
-    bool          ch = proc->getSignature()->dfaTypeAnalysis(cfg);
+    bool          ch = dfaTypeAnalysis(proc->getSignature().get(), cfg);
     StatementList stmts;
     proc->getStatements(stmts);
 
@@ -235,7 +261,9 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
                 before = stmt->clone();
             }
 
-            stmt->dfaTypeAnalysis(thisCh);
+            DFATypeAnalyzer ana;
+            stmt->accept(&ana);
+            thisCh = ana.hasChanged();
 
             if (thisCh) {
                 ch = true;
@@ -485,10 +513,27 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
 
 bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
 {
-    Q_UNUSED(sig);
-    Q_UNUSED(cfg);
-    assert(false);
-    return false;
+    bool ch = false;
+
+    for (const std::shared_ptr<Parameter>& it : sig->getParameters()) {
+        // Parameters should be defined in an implicit assignment
+        Statement *def = cfg->findImplicitParamAssign(it.get());
+
+        if (def) { // But sometimes they are not used, and hence have no implicit definition
+            bool thisCh = false;
+            def->meetWithFor(it->getType(), it->getExp(), thisCh);
+
+            if (thisCh) {
+                ch = true;
+
+                if (DEBUG_TA) {
+                    LOG_MSG("  sig caused change: %1 %2", it->getType()->getCtype(), it->getName());
+                }
+            }
+        }
+    }
+
+    return ch;
 }
 
 
@@ -497,13 +542,6 @@ bool DFATypeRecovery::dfaTypeAnalysis(Statement *i)
     Q_UNUSED(i);
     assert(false);
     return false;
-}
-
-
-void UserProc::dfaTypeAnalysis()
-{
-    ITypeRecovery *tr = Boomerang::get()->getOrCreateProject()->getTypeRecoveryEngine();
-    tr->recoverFunctionTypes(this);
 }
 
 
@@ -1787,35 +1825,6 @@ void TypedExp::descendType(SharedType, bool&, Statement *)
 
 void Terminal::descendType(SharedType, bool&, Statement *)
 {
-}
-
-
-/// Data flow based type analysis.
-/// Meet the parameters with their current types.
-/// \returns true if a change
-bool Signature::dfaTypeAnalysis(Cfg *cfg)
-{
-    bool ch = false;
-
-    for (std::shared_ptr<Parameter>& it : m_params) {
-        // Parameters should be defined in an implicit assignment
-        Statement *def = cfg->findImplicitParamAssign(it.get());
-
-        if (def) { // But sometimes they are not used, and hence have no implicit definition
-            bool thisCh = false;
-            def->meetWithFor(it->getType(), it->getExp(), thisCh);
-
-            if (thisCh) {
-                ch = true;
-
-                if (DEBUG_TA) {
-                    LOG_MSG("  sig caused change: %1 %2", it->getType()->getCtype(), it->getName());
-                }
-            }
-        }
-    }
-
-    return ch;
 }
 
 

@@ -163,6 +163,9 @@ public:
 
     // accessors for parameters
     virtual size_t getNumParams() const { return m_params.size(); }
+
+    const std::vector<std::shared_ptr<Parameter>>& getParameters() const { return m_params; }
+
     virtual const QString& getParamName(size_t n) const;
     virtual SharedExp getParamExp(int n) const;
     virtual SharedType getParamType(int n) const;
@@ -185,8 +188,6 @@ public:
     virtual bool hasEllipsis() const { return m_ellipsis; }
 
     void renameParam(const QString& oldName, const char *newName);
-
-    bool dfaTypeAnalysis(Cfg *cfg);
 
     /// any signature can be promoted to a higher level signature, if available
     virtual std::shared_ptr<Signature> promote(UserProc *p);

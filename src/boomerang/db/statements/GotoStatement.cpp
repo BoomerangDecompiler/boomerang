@@ -231,8 +231,10 @@ bool GotoStatement::accept(StmtModifier *v)
     bool visitChildren = true;
     v->visit(this, visitChildren);
 
-    if (m_dest && visitChildren) {
-        m_dest = m_dest->accept(v->m_mod);
+    if (v->m_mod) {
+        if (m_dest && visitChildren) {
+            m_dest = m_dest->accept(v->m_mod);
+        }
     }
 
     return true;

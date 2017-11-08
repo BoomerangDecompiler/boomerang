@@ -116,14 +116,17 @@ bool ImplicitAssign::accept(StmtModifier *v)
 {
     bool visitChildren;
     v->visit(this, visitChildren);
-    v->m_mod->clearMod();
 
-    if (visitChildren) {
-        m_lhs = m_lhs->accept(v->m_mod);
-    }
+    if (v->m_mod) {
+        v->m_mod->clearMod();
 
-    if (v->m_mod->isMod()) {
-        LOG_VERBOSE("ImplicitAssign changed: now %1", this);
+        if (visitChildren) {
+            m_lhs = m_lhs->accept(v->m_mod);
+        }
+
+        if (v->m_mod->isMod()) {
+            LOG_VERBOSE("ImplicitAssign changed: now %1", this);
+        }
     }
 
     return true;
@@ -145,10 +148,4 @@ bool ImplicitAssign::accept(StmtPartModifier *v)
     }
 
     return true;
-}
-
-
-void ImplicitAssign::dfaTypeAnalysis(bool& ch)
-{
-    Assignment::dfaTypeAnalysis(ch);
 }

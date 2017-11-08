@@ -108,9 +108,6 @@ public:
     /// This is for setting up SETcc instructions; see include/decoder.h macro SETS
     void setLeftFromList(std::list<Statement *> *stmts);
 
-    /// \copydoc Statement::dfaTypeAnalysis
-    virtual void dfaTypeAnalysis(bool& ch) override;
-
 private:
     BranchType m_jumpType; ///< the condition for setting true
     SharedExp m_cond;      ///< Exp representation of the high level condition: e.g. r[8] == 5

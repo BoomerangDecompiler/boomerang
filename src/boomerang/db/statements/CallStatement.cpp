@@ -1905,7 +1905,7 @@ bool CallStatement::accept(StmtModifier *v)
         return true;
     }
 
-    if (m_dest) {
+    if (m_dest && v->m_mod) {
         m_dest = m_dest->accept(v->m_mod);
     }
 
@@ -1999,50 +1999,3 @@ bool CallStatement::accept(StmtPartModifier *v)
     return true;
 }
 
-
-void CallStatement::dfaTypeAnalysis(bool& ch)
-{
-    // Iterate through the arguments
-    int n = 0;
-
-    for (Statement *aa : m_arguments) {
-        Assign *param = dynamic_cast<Assign *>(aa);
-        assert(param);
-
-        if (m_procDest && !m_procDest->getSignature()->getParamBoundMax(n).isNull() && param->getRight()->isIntConst()) {
-            QString boundmax = m_procDest->getSignature()->getParamBoundMax(n);
-            assert(param->getType()->resolvesToInteger());
-            StatementList::iterator aat;
-            int nt = 0;
-
-            for (aat = m_arguments.begin(); aat != m_arguments.end(); ++aat, ++nt) {
-                if (boundmax == m_procDest->getSignature()->getParamName(nt)) {
-                    SharedType tyt = ((Assign *)*aat)->getType();
-
-                    if (tyt->resolvesToPointer() && tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
-                        tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded()) {
-                        tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->setLength(
-                            param->getRight()->access<Const>()->getInt());
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        // The below will ascend type, meet type with that of arg, and descend type. Note that the type of the assign
-        // will already be that of the signature, if this is a library call, from updateArguments()
-        param->dfaTypeAnalysis(ch);
-        ++n;
-    }
-
-    // The destination is a pointer to a function with this function's signature (if any)
-    if (m_dest) {
-        if (m_signature) {
-            m_dest->descendType(FuncType::get(m_signature), ch, this);
-        }
-        else if (m_procDest) {
-            m_dest->descendType(FuncType::get(m_procDest->getSignature()), ch, this);
-        }
-    }
-}

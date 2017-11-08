@@ -540,23 +540,16 @@ bool BranchStatement::accept(StmtModifier *v)
 
     v->visit(this, visitChildren);
 
-    if (m_dest && visitChildren) {
-        m_dest = m_dest->accept(v->m_mod);
-    }
+    if (v->m_mod) {
+        if (m_dest && visitChildren) {
+            m_dest = m_dest->accept(v->m_mod);
+        }
 
-    if (m_cond && visitChildren) {
-        m_cond = m_cond->accept(v->m_mod);
+        if (m_cond && visitChildren) {
+            m_cond = m_cond->accept(v->m_mod);
+        }
     }
 
     return true;
 }
 
-
-void BranchStatement::dfaTypeAnalysis(bool& ch)
-{
-    if (m_cond) {
-        m_cond->descendType(BooleanType::get(), ch, this);
-    }
-
-    // Not fully implemented yet?
-}

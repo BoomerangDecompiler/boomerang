@@ -429,8 +429,6 @@ public:
     void nameParameterPhis();
     void mapParameters();
 
-    void dfaTypeAnalysis();
-
     /**
      * \brief Trim parameters to procedure calls with ellipsis (...).
      * Also add types for ellipsis parameters, if any

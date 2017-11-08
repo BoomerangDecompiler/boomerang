@@ -11,10 +11,8 @@
 
 
 #include "boomerang/db/exp/ExpHelp.h" // For lessExpStar, lessAssignment etc
-#include "boomerang/db/DataFlow.h"    // For embedded objects DefCollector and UseCollector#
-
+#include "boomerang/db/DataFlow.h"    // For embedded objects DefCollector and UseCollector
 #include "boomerang/db/Managed.h"
-
 #include "boomerang/util/Address.h"
 
 #include <QtCore/QTextStream>
@@ -25,6 +23,7 @@
 #include <map>
 #include <memory>
 #include <cassert>
+
 
 class BasicBlock;
 class Prog;
@@ -306,7 +305,6 @@ public:
     virtual void genConstraints(LocationSet& /*cons*/) {}
 
     // Data flow based type analysis
-    virtual void dfaTypeAnalysis(bool& /*ch*/) {}  // Use the type information in this Statement
     SharedType meetWithFor(SharedType ty, SharedExp e, bool& ch); // Meet the type associated with e with ty
 
 public:

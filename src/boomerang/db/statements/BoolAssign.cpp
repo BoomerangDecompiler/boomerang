@@ -309,12 +309,14 @@ bool BoolAssign::accept(StmtModifier *v)
     bool visitChildren = true;
     v->visit(this, visitChildren);
 
-    if (m_cond && visitChildren) {
-        m_cond = m_cond->accept(v->m_mod);
-    }
+    if (v->m_mod) {
+        if (m_cond && visitChildren) {
+            m_cond = m_cond->accept(v->m_mod);
+        }
 
-    if (visitChildren && m_lhs->isMemOf()) {
-        m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->m_mod));
+        if (visitChildren && m_lhs->isMemOf()) {
+            m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->m_mod));
+        }
     }
 
     return true;
@@ -338,9 +340,3 @@ bool BoolAssign::accept(StmtPartModifier *v)
     return true;
 }
 
-
-void BoolAssign::dfaTypeAnalysis(bool& ch)
-{
-    // Not properly implemented yet
-    Assignment::dfaTypeAnalysis(ch);
-}

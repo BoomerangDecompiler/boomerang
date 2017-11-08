@@ -588,21 +588,3 @@ void ReturnStatement::removeModified(SharedExp loc)
 }
 
 
-void ReturnStatement::dfaTypeAnalysis(bool& ch)
-{
-    for (Statement *mm : m_modifieds) {
-        if (!mm->isAssignment()) {
-            LOG_WARN("Non assignment in modifieds of ReturnStatement");
-        }
-
-        mm->dfaTypeAnalysis(ch);
-    }
-
-    for (Statement *rr : m_returns) {
-        if (!rr->isAssignment()) {
-            LOG_WARN("Non assignment in returns of ReturnStatement");
-        }
-
-        rr->dfaTypeAnalysis(ch);
-    }
-}
