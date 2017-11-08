@@ -38,7 +38,7 @@ public:
     /// Test if this file can be loaded by this loader.
     /// This method does not necessarily need to read the whole file,
     /// only the part needed to understand the file format
-//    virtual bool canLoadFile(const std::string& path) const = 0;
+//    virtual bool canLoadFile(const QString& path) const = 0;
 
     /// Checks if the file can be loaded by this loader.
     /// If the file can be loaded, the function returns a score ( > 0)
@@ -47,7 +47,7 @@ public:
     virtual int canLoad(QIODevice& data) const = 0;
 
     /// Load the file with path \p path into memory.
-//    virtual IBinaryFile* loadFromFile(const std::string& path) = 0;
+//    virtual IBinaryFile* loadFromFile(const QString& path) = 0;
 
     /// Load the file from an already existing buffer.
     /// \note \p data cannot be const

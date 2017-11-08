@@ -13,17 +13,18 @@
 class Function;
 
 
-class Pass
+class IPass
 {
 public:
-    Pass();
-    virtual ~Pass() {}
+    IPass() = default;
+    virtual ~IPass() = default;
 };
 
 
-class FunctionPass : public Pass
+class FunctionPass : public IPass
 {
 public:
-    virtual ~FunctionPass() {}
+    virtual ~FunctionPass() override = default;
+
     virtual bool runOnFunction(Function& function) = 0;
 };

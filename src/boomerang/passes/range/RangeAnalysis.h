@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "Pass.h"
+#include "boomerang/passes/Pass.h"
 
 class Cfg;
 class Function;
@@ -18,25 +18,23 @@ class Statement;
 class UserProc;
 
 /**
- * \brief Detect and log possible buffer overflows
+ * Detect and log possible buffer overflows
  */
-class RangeAnalysis : public FunctionPass
+class RangeAnalysisPass : public FunctionPass
 {
-public:
-    RangeAnalysis();
-
-    /// \brief Range analysis (for procedure).
-    bool runOnFunction(Function& F) override;
-
-private:
     friend class RangeVisitor;
 
-    /**
-     * \brief Add Junction statements
-     **/
+public:
+    RangeAnalysisPass();
+
+    /// Range analysis (for procedure).
+    bool runOnFunction(Function& function) override;
+
+private:
+    /// Add Junction statements
     void addJunctionStatements(Cfg& cfg);
     void clearRanges();
-
-    class RangePrivateData *RangeData;
     void logSuspectMemoryDefs(UserProc& UF);
+
+    class RangePrivateData *m_rangeData;
 };

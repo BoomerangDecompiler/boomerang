@@ -9,7 +9,8 @@
 
 list(APPEND boomerang-passes-sources
     passes/Pass
-    passes/RangeAnalysis
+    passes/range/RangeAnalysis
+    passes/range/RangeVisitor
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)

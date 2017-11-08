@@ -9,7 +9,3 @@
 #pragma endregion License
 #include "Pass.h"
 
-
-Pass::Pass()
-{
-}
