@@ -10,24 +10,17 @@
 #include "Managed.h"
 
 
-/**
- * \file       managed.cpp
- * \brief   Implementation of "managed" classes such as InstructionSet, which feature makeUnion etc
- */
-
-#include <sstream>
-#include <cstring>
-
 #include "boomerang/core/Boomerang.h"
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Location.h"
-
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
+
+#include <sstream>
+#include <cstring>
 
 
 QTextStream & operator<<(QTextStream& os, const InstructionSet *ss)

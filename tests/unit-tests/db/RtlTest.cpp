@@ -10,12 +10,6 @@
 #include "RtlTest.h"
 
 
-/**
- * \file RtlTest.cpp
- * Provides the implementation for the RtlTest class, which
- * tests the RTL and derived classes
- */
-
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/RTL.h"

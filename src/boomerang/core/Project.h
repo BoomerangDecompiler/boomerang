@@ -10,11 +10,6 @@
 #pragma once
 
 
-/**
- * \file     project.h
- * \brief    This file contains the definition for the Project class
- */
-
 #include "boomerang/core/IProject.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/TypeRecovery.h"

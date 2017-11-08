@@ -10,12 +10,6 @@
 #include "pentiumdecoder.h"
 
 
-/**
- * \file       pentiumdecoder.cpp
- * \brief   This file contains the high level decoding functionality, for example matching logues, calls, branches,
- *                etc. Ordinary instructions are processed in decoder_low.m
- */
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 

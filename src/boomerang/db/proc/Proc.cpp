@@ -9,12 +9,6 @@
 #pragma endregion License
 #include "Proc.h"
 
-/**
- * \file    proc.cpp
- * \brief   Implementation of the Proc hierachy (Proc, UserProc, LibProc).
- *               All aspects of a procedure, apart from the actual code in the
- *               Cfg, are stored here
- */
 
 #include "boomerang/core/Boomerang.h"
 

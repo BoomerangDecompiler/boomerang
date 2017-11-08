@@ -10,13 +10,6 @@
 #include "FrontSparcTest.h"
 
 
-/**
- * \file FrontSparcTest.cpp
- * Provides the implementation for the FrontSparcTest class, which
- * tests the SPARC frontend
- */
-
-
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/BasicBlock.h"

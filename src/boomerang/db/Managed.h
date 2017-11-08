@@ -235,7 +235,7 @@ public:
 
     void insert(SharedExp loc) { lset.insert(loc); }  ///< Insert the given location
 
-    /// \param given is not modified, and could be const'd if not for std::set requirements
+    /// \param loc is not modified, and could be const'd if not for std::set requirements
     void remove(SharedExp loc);                       ///< Remove the given location
 
     void remove(iterator ll) { lset.erase(ll); } ///< Remove location, given iterator

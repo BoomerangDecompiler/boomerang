@@ -10,13 +10,6 @@
 #pragma once
 
 
-/**
- * \file       type.h
- * OVERVIEW:   Definition of the Type class: low level type information
- *             Note that we may have a completely different system for
- *             recording high level types
- */
-
 #include "boomerang/util/Address.h"
 #include "boomerang/util/Util.h"
 
@@ -81,6 +74,9 @@ typedef std::shared_ptr<const Type>   SharedConstType;
 
 /**
  * Base class for all types.
+ * Types contain low level type information.
+ * Note that we may have a completely different system for
+ * recording high level types
  */
 class Type : public std::enable_shared_from_this<Type>, public Printable
 {

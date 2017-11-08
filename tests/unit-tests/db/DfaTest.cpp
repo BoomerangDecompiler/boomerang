@@ -10,12 +10,6 @@
 #include "DfaTest.h"
 
 
-/**
- * \file DfaTest.cpp
- * Provides the implementation for the DfaTest class, which
- * tests the data flow based type analysis code
- */
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/IntegerType.h"

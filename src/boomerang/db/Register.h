@@ -10,15 +10,12 @@
 #pragma once
 
 
-/**
- * \file        register.h
- * OVERVIEW:    Header information for the Register class.
- */
+#include <QString>
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include <memory>
-#include <QString>
+
 
 
 class Type;

@@ -9,11 +9,6 @@
 #pragma endregion License
 
 
-/**
- * \file       njmcDecoder.cpp
- * \brief   This file contains the machine independent decoding functionality.
- */
-
 #include "NJMCDecoder.h"
 
 #include "boomerang/core/Boomerang.h"

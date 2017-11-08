@@ -9,20 +9,6 @@
 #pragma endregion License
 #include "TypeTest.h"
 
-/**
- * \file TypeTest.cpp
- * Provides the implementation for the TypeTest class,
- * which tests the Type class and some utility functions
- */
-
-/*
- * $Revision$
- *
- * 09 Apr 02 - Mike: Created
- * 22 Aug 03 - Mike: Extended for Constraint tests
- * 25 Juk 05 - Mike: DataIntervalMap tests
- */
-
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Signature.h"

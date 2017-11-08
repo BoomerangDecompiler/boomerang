@@ -10,10 +10,7 @@
 #pragma once
 
 
-/**
- * \file ElfTypes.h
- * \brief This file contains the elf format support structures
- */
+/// \file ElfTypes.h This file contains the elf format support structures
 
 /// Internal elf info
 struct Elf32_Ehdr

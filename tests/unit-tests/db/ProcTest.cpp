@@ -10,20 +10,6 @@
 #include "ProcTest.h"
 
 
-/**
- * \file ProcTest.cpp
- * Provides the implementation for the ProcTest class, which
- * tests the Proc class
- */
-
-/*
- * $Revision$
- *
- * 23 Apr 02 - Mike: Created
- * 10 Mar 03 - Mike: Mods to not use Prog::pBF (no longer public)
- */
-
-
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/core/Project.h"

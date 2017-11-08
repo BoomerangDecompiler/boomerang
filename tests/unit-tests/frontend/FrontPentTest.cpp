@@ -9,11 +9,6 @@
 #pragma endregion License
 
 
-/**
- * \file FrontPentTest.cpp
- * Provides the implementation for the FrontPentTest class, which
- * tests the Pentium frontend
- */
 #include "FrontPentTest.h"
 
 #include "boomerang/core/Boomerang.h"

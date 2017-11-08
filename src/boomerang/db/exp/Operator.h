@@ -11,13 +11,13 @@
 
 
 /**
- * \file operator.h Declares the enum OPER, which is used within class Exp
- * to denote what the top level operator is
+ * \file operator.h Declares the enum OPER,
+ * which is used within class Exp to denote what the top level operator is
  */
 
 /// The OPER (and integer representation) of expressions (they can be a fair
 /// bit different from operators)
-/// @sa operToString
+/// \sa operToString
 enum OPER
 {
     // Operators

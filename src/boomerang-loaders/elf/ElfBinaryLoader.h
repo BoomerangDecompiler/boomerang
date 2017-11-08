@@ -10,10 +10,6 @@
 #pragma once
 
 
-/** \file ElfBinaryLoader.h
- * \brief This file contains the definition of the class ElfBinaryLoader.
- */
-
 #include "boomerang/loader/IFileLoader.h"
 
 struct Elf32_Ehdr;

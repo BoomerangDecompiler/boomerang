@@ -10,21 +10,12 @@
 #include "ParserTest.h"
 
 
-/**
- * \file ParserTest.cpp
- * Provides the implementation for the ParserTest class,
- * which tests the SSL parser
- */
-
 #include "boomerang/core/Boomerang.h"
-
 #include "boomerang/db/ssl/sslparser.h"
 #include "boomerang/db/statements/Statement.h"
-
-#include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 
-#include <QtCore/QDebug>
+#include <QDebug>
 
 
 #define SPARC_SSL    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/sparc.ssl"))

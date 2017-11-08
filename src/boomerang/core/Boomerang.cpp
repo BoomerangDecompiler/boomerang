@@ -10,11 +10,6 @@
 #include "Boomerang.h"
 
 
-/**
- * \file    Boomerang.cpp
- * \brief   Command line processing for the Boomerang decompiler
- */
-
 #include "boomerang/codegen/CCodeGenerator.h"
 
 #include "boomerang/db/BinaryImage.h"

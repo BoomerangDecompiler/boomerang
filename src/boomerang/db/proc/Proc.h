@@ -10,12 +10,6 @@
 #pragma once
 
 
-/**
- * \file       proc.h
- * OVERVIEW:   Interface for the procedure classes, which are used to store information about variables in the
- *                procedure such as parameters and locals.
- */
-
 #include "boomerang/util/Address.h"
 #include "boomerang/db/Signature.h"
 

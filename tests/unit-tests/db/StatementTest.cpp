@@ -10,20 +10,6 @@
 #include "StatementTest.h"
 
 
-/**
- * \file StatementTest.cpp
- * Provides the implementation for the StatementTest class, which
- * tests the dataflow subsystems
- */
-
-/*
- * $Revision$
- *
- * 14 Jan 03 - Trent: Created
- * 17 Apr 03 - Mike: Added testRecursion to track down a nasty bug
- * 06 Jul 05 - Mike: Split testAddUsedLocs into six separate tests for Assign ... Bool
- */
-
 #include "boomerang/db/CFG.h"
 #include "boomerang/core/Boomerang.h"
 

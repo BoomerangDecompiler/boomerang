@@ -10,11 +10,6 @@
 #include "PalmBinaryLoader.h"
 
 
-/** \file PalmBinaryLoader.cpp
- * This class loads a Palm Pilot .prc file.
- * Derived from class IFileLoader.
- */
-
 #include "palmsystraps.h"
 
 #include "boomerang/core/IBoomerang.h"
