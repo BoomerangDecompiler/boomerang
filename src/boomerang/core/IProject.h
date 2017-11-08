@@ -12,11 +12,11 @@
 
 class IBinaryImage;
 class IFileLoader;
+class ITypeRecovery;
 class QString;
 
-
 /**
- * \brief The Project interface class
+ * The Project interface class
  */
 class IProject
 {
@@ -62,6 +62,11 @@ public:
      */
     virtual IBinaryImage *getImage()             = 0;
     virtual const IBinaryImage *getImage() const = 0;
+
+    /**
+     * \returns the type recovery engine
+     */
+    virtual ITypeRecovery *getTypeRecoveryEngine() const = 0;
 
     virtual IFileLoader *getBestLoader(const QString& filePath) const = 0;
 };

@@ -10,14 +10,7 @@
 #include "DFATypeRecovery.h"
 
 
-/**
- * \file       dfa.cpp
- * \brief   Implementation of class Type functions related to solving type analysis in an iterative,
- * data-flow-based manner
- */
-
 #include "boomerang/core/Boomerang.h"
-
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -59,7 +52,6 @@ static int nextUnionNumber = 0;
 // idx + K; leave idx wild
 static const Binary unscaledArrayPat(opPlus, Terminal::get(opWild), Terminal::get(opWildIntConst));
 
-static DFATypeRecovery s_type_recovery;
 
 void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
 {
@@ -204,9 +196,9 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
 }
 
 
-void DFATypeRecovery::recoverFunctionTypes(Function *)
+void DFATypeRecovery::recoverFunctionTypes(Function *function)
 {
-    assert(false);
+    dfaTypeAnalysis(function);
 }
 
 
@@ -223,7 +215,8 @@ void DFATypeRecovery::dfaTypeAnalysis(Function *f)
 
     Boomerang::get()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
 
-    // First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
+    // First use the type information from the signature.
+    // Sometimes needed to split variables (e.g. argc as a
     // int and char* in sparc/switch_gcc)
     bool          ch = proc->getSignature()->dfaTypeAnalysis(cfg);
     StatementList stmts;
@@ -509,7 +502,8 @@ bool DFATypeRecovery::dfaTypeAnalysis(Statement *i)
 
 void UserProc::dfaTypeAnalysis()
 {
-    s_type_recovery.dfaTypeAnalysis(this);
+    ITypeRecovery *tr = Boomerang::get()->getOrCreateProject()->getTypeRecoveryEngine();
+    tr->recoverFunctionTypes(this);
 }
 
 

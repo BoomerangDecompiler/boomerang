@@ -16,19 +16,19 @@
 #include "boomerang/util/Log.h"
 
 
-void TypeRecoveryCommon::recoverProgramTypes(Prog *v)
+void TypeRecoveryCommon::recoverProgramTypes(Prog *prog)
 {
     if (DEBUG_TA) {
-        LOG_VERBOSE("=== start %1 type analysis ===", name());
+        LOG_VERBOSE("=== start %1 type analysis ===", getName());
     }
 
     // FIXME: This needs to be done in bottom-up order of the call-tree first,
     // repeating until no changes for cycles in the call graph
-    for (const auto& module : v->getModuleList()) {
+    for (const auto& module : prog->getModuleList()) {
         for (Function *pp : *module) {
             UserProc *proc = dynamic_cast<UserProc *>(pp);
 
-            if ((nullptr == proc) || !proc->isDecoded()) {
+            if (!proc || !proc->isDecoded()) {
                 continue;
             }
 

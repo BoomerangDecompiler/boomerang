@@ -13,12 +13,13 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
-
+#include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
 
 
 Project::Project()
     : m_image(new BinaryImage)
+    , m_typeRecovery(new DFATypeRecovery())
 {
     loadPlugins();
 }

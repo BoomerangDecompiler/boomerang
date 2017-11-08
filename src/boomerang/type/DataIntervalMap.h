@@ -40,7 +40,7 @@ struct TypedVariable
  * be partitioned into separate variables of various sizes and types. If a new variable is inserted that would cause
  * an overlap, the types have to be reconciled such that they no longer conflict (generally, the smaller type becomes a
  * member of the larger type, which has to be a structure or an array).
- * Each procedure and the Prog object have a map from ADDRESS (stack offset from sp{0} for locals, or native address for
+ * Each procedure and the Prog object have a map from Address (stack offset from sp{0} for locals, or native address for
  * globals), to an object of this class. A multimap is not needed, as the type of the entry specifies the overlapping.
  */
 class DataIntervalMap
