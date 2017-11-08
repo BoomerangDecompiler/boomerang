@@ -101,14 +101,6 @@ public:
     /// Add a Watcher to the set of Watchers for this Boomerang object.
     void addWatcher(IWatcher *watcher) { m_watchers.insert(watcher); }
 
-    /**
-     * Adds information about functions and classes from Objective-C modules to the Prog object.
-     *
-     * \param modules A map from name to the Objective-C modules.
-     * \param prog The Prog object to add the information to.
-     */
-    void objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog);
-
     /// Alert the watchers that decompilation has completed.
     void alert_complete()
     {

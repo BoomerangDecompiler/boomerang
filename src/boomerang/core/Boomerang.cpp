@@ -11,19 +11,14 @@
 
 
 #include "boomerang/codegen/CCodeGenerator.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/db/Signature.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/frontend/Frontend.h"
-
-// TODO: Move the Objective-C loader code to a more suitable place
-#include "../../boomerang-loaders/machO/MachOBinaryLoader.h" // For Objective-C stuff
+#include "boomerang/util/Log.h"
 
 #include <ctime>
 
@@ -47,47 +42,6 @@ Boomerang::~Boomerang()
 ICodeGenerator *Boomerang::getCodeGenerator()
 {
     return m_codeGenerator.get();
-}
-
-
-void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
-{
-    LOG_MSG("Adding Objective-C information to Prog.");
-    Module *root = prog->getRootModule();
-
-    for (auto& modules_it : modules) {
-        const ObjcModule& mod     = (modules_it).second;
-        Module            *module = prog->getOrInsertModule(mod.name);
-        root->addChild(module);
-        LOG_VERBOSE("\tModule: %1", mod.name);
-        ClassModFactory class_fact;
-
-        for (auto& elem : mod.classes) {
-            const ObjcClass& c   = (elem).second;
-            Module           *cl = prog->getOrInsertModule(mod.name, class_fact);
-            root->addChild(cl);
-            LOG_VERBOSE("\t\tClass: %1", c.name);
-
-            for (auto& _it2 : c.methods) {
-                const ObjcMethod& m = (_it2).second;
-                // TODO: parse :'s in names
-                QString  method_name = m.name + "_" + m.types;
-                Function *existing   = prog->findFunction(method_name);
-
-                if (existing) {
-                    assert(!"Name clash in objc processor ?");
-                    continue;
-                }
-
-                Function *p = cl->createFunction(method_name, m.addr);
-                p->setSignature(Signature::instantiate(prog->getFrontEndId(), CallConv::C, method_name));
-                // TODO: decode types in m.types
-                LOG_VERBOSE("\t\t\tMethod: ", m.name);
-            }
-        }
-    }
-
-    LOG_VERBOSE("");
 }
 
 
