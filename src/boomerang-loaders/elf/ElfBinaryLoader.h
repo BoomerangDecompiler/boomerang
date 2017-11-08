@@ -115,9 +115,9 @@ private:
     void elfWrite4(DWord *pi, DWord val);  // Write an 32 bit value, respecting destination endianness
 
     /**
-     * \brief Mark all imported symbols as such.
-     * This function relies on the fact that the symbols are sorted by address, and that Elf PLT
-     * entries have successive addresses beginning soon after m_PltMin
+     * Mark all imported symbols as such.
+     * This function relies on the fact that the symbols are sorted by address,
+     * and that Elf PLT entries have successive addresses beginning soon after m_PltMin
      */
     void markImports();
 
