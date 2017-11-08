@@ -1,12 +1,2 @@
-boomerang.kdev4
 build
-out
-tests/outputs/*
-*.user
-output/log
-3rd_party/gmock
-tests/outputs_prev
-output/*.log
-Win32
-x64
-*.orig
+*.kdev4
