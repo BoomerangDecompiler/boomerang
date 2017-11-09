@@ -33,10 +33,6 @@
 #include <cstring>
 
 
-void delete_lrtls(std::list<RTL *>& pLrtl);
-void erase_lrtls(std::list<RTL *>& pLrtl, std::list<RTL *>::iterator begin, std::list<RTL *>::iterator end);
-
-
 Cfg::Cfg(UserProc *proc)
     : m_myProc(proc)
     , m_wellFormed(false)
@@ -146,7 +142,7 @@ BasicBlock *Cfg::createBB(std::unique_ptr<RTLList> pRtls, BBType bbType)
             // loop, so not error
             if (!currentBB->m_incomplete) {
                 // This list of RTLs is not needed now
-                delete_lrtls(*pRtls);
+                qDeleteAll(*pRtls);
 
                 LOG_VERBOSE("throwing BBAlreadyExistsError");
 
@@ -363,7 +359,8 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
     // instructions overlap
     if (deleteRTLs) {
         // Delete the list of pointers, and also the RTLs they point to
-        erase_lrtls(*bb->m_listOfRTLs, ri, bb->m_listOfRTLs->end());
+        qDeleteAll(ri, bb->m_listOfRTLs->end());
+        bb->m_listOfRTLs->erase(ri, bb->m_listOfRTLs->end());
     }
     else {
         // Delete the list of pointers, but not the RTLs they point to
@@ -914,36 +911,6 @@ bool Cfg::searchAll(const Exp& search, std::list<SharedExp>& result)
     }
 
     return ch;
-}
-
-
-/**
- * \brief    "deep" delete for a list of pointers to RTLs
- * \param pLrtl - the list
- */
-void delete_lrtls(std::list<RTL *>& pLrtl)
-{
-    for (RTL *it : pLrtl) {
-        delete it;
-    }
-}
-
-
-/**
- *
- * \brief   "deep" erase for a list of pointers to RTLs
- * \param   pLrtl - the list
- * \param   begin - iterator to first (inclusive) item to delete
- * \param   end - iterator to last (exclusive) item to delete
- *
- */
-void erase_lrtls(std::list<RTL *>& pLrtl, std::list<RTL *>::iterator begin, std::list<RTL *>::iterator end)
-{
-    for (auto it = begin; it != end; it++) {
-        delete (*it);
-    }
-
-    pLrtl.erase(begin, end);
 }
 
 
