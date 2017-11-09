@@ -113,6 +113,7 @@ enum class SBBType
 typedef std::list<BasicBlock *>::iterator         BBIterator;
 typedef std::list<BasicBlock *>::const_iterator   BBCIterator;
 
+using RTLList   = std::list<RTL *>;
 
 /**
  * BasicBlock class.
@@ -124,14 +125,19 @@ class BasicBlock
 
 public:
     typedef std::vector<BasicBlock *>::iterator   iEdgeIterator;
-    typedef std::list<RTL *>::iterator            rtlit;
-    typedef std::list<RTL *>::reverse_iterator    rtlrit;
+    typedef RTLList::iterator                     rtlit;
+    typedef RTLList::reverse_iterator              rtlrit;
     typedef std::list<SharedExp>::iterator        elit;
 
 public:
+    /// \param parent The function this BB belongs to.
     BasicBlock(Function *parent);
     BasicBlock(const BasicBlock& bb);
+    BasicBlock(BasicBlock&& bb) = default;
     ~BasicBlock();
+
+    BasicBlock& operator=(const BasicBlock& bb);
+    BasicBlock& operator=(BasicBlock&& bb) = default;
 
     /// \returns the type pf the BasicBlock
     inline BBType getType()         const { return m_nodeType; }
@@ -142,13 +148,14 @@ public:
     inline Function *getParent()               { return m_function; }
 
     /**
-     * \brief Get the lowest real address associated with this BB.
-     * Note that although this is usually the address of the first RTL, it is not
+     * Get the lowest real address associated with this BB.
+     * \note although this is usually the address of the first RTL, it is not
      * always so. For example, if the BB contains just a delayed branch,and the delay
      * instruction for the branch does not affect the branch, so the delay instruction
      * is copied in front of the branch instruction. Its address will be
      * UpdateAddress()'ed to 0, since it is "not really there", so the low address
      * for this BB will be the address of the branch.
+     *
      * \returns the lowest real address associated with this BB
      */
     Address getLowAddr() const;
@@ -200,7 +207,6 @@ public:
     /// Can happen e.g. for loops.
     bool isBackEdge(size_t i) const;
 
-
     bool isCaseOption();
 
     /// \returns true if this BB has been traversed.
@@ -234,9 +240,9 @@ public:
     void updateType(BBType bbType);
 
     /**
-     * \brief Sets the "jump required" bit. This means that this BB is an orphan
+     * Sets the "jump required" bit. This means that this BB is an orphan
      * (not generated from input code), and that the "fall through" out edge
-     * (m_OutEdges[1]) needs to be implemented as a jump. The back end
+     * (m_successors[BELSE]) needs to be implemented as a jump. The back end
      * needs to take heed of this bit
      */
     void setJumpRequired();
@@ -246,8 +252,8 @@ public:
     bool isJumpRequired();
 
     /// \returns all RTLs that are part of this BB.
-    std::list<RTL *> *getRTLs();
-    const std::list<RTL *> *getRTLs() const;
+    RTLList *getRTLs();
+    const RTLList *getRTLs() const;
 
     RTL *getRTLWithStatement(Statement *stmt);
 
@@ -480,7 +486,7 @@ protected:
     void addRTL(RTL *rtl)
     {
         if (m_listOfRTLs == nullptr) {
-            m_listOfRTLs = new std::list<RTL *>;
+            m_listOfRTLs.reset(new RTLList);
         }
 
         m_listOfRTLs->push_back(rtl);
@@ -489,22 +495,18 @@ protected:
     void addLiveIn(SharedExp e) { m_liveIn.insert(e); }
 
 private:
+    /**
+     * \param function Function this BasicBlock belongs to.
+     * \param rtls     rtl statements that will be contained in this BasicBlock
+     * \param bbType type of BasicBlock
+     */
+    BasicBlock(Function *function, std::unique_ptr<RTLList> rtls, BBType bbType);
 
     /**
-     * \brief        Private constructor.
-     * \param parent - Function this BasicBlock belongs to.
-     * \param pRtls - rtl statements that will be contained in this BasicBlock
-     * \param bbType - type of BasicBlock
+     * Update the RTL list of this basic block. Takes ownership of the pointer.
+     * \param rtls a list of RTLs
      */
-    BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType);
-
-    /**
-     * \brief        Sets the RTLs for a basic block. This is the only place that
-     * the RTLs for a block must be set as we need to add the back link for a call
-     * instruction to its enclosing BB.
-     * \param rtls - a list of RTLs
-     */
-    void setRTLs(std::list<RTL *> *rtls);
+    void setRTLs(std::unique_ptr<RTLList> rtls);
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
@@ -512,7 +514,7 @@ protected:
 
     /* general basic block information */
     BBType m_nodeType = BBType::Invalid;      ///< type of basic block
-    std::list<RTL *> *m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
+    std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
     int m_labelNum      = 0;                  ///< Nonzero if start of BB needs label
     bool m_labelNeeded  = false;
     bool m_incomplete   = true;               ///< True if not yet complete

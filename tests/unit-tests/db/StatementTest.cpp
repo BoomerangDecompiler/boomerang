@@ -80,12 +80,12 @@ void StatementTest::testEmpty()
 
     // create CFG
     Cfg                    *cfg   = proc->getCFG();
-    std::list<RTL *>       *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new std::list<RTL *>());
     std::list<Statement *> *ls    = new std::list<Statement *>;
     ls->push_back(new ReturnStatement);
     pRtls->push_back(new RTL(Address(0x00000123)));
 
-    BasicBlock *entryBB = cfg->createBB(pRtls, BBType::Ret);
+    BasicBlock *entryBB = cfg->createBB(std::move(pRtls), BBType::Ret);
     cfg->setEntryAndExitBB(entryBB);
     proc->setDecoded(); // We manually "decoded"
 
@@ -135,7 +135,7 @@ void StatementTest::testFlow()
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::list<RTL *> *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new RTLList);
     RTL              *rtl   = new RTL();
     Assign           *a     = new Assign(Location::regOf(24), std::make_shared<Const>(5));
 
@@ -143,8 +143,8 @@ void StatementTest::testFlow()
     a->setNumber(1);
     rtl->append(a);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
-    pRtls = new std::list<RTL *>();
+    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
 
     ReturnStatement *rs = new ReturnStatement;
@@ -155,7 +155,7 @@ void StatementTest::testFlow()
     rtl->append(rs);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
     // first was empty before
     first->addSuccessor(ret);
     ret->addPredecessor(first);
@@ -212,7 +212,7 @@ void StatementTest::testKill()
 
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::list<RTL *> *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new RTLList);
     RTL              *rtl   = new RTL();
     Assign           *e     = new Assign(Location::regOf(24), Const::get(5));
 
@@ -226,8 +226,9 @@ void StatementTest::testKill()
     rtl->append(e);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
-    pRtls = new std::list<RTL *>();
+    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+
+    pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(3);
@@ -237,7 +238,7 @@ void StatementTest::testKill()
     rtl->append(rs);
 
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -292,7 +293,7 @@ void StatementTest::testUse()
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::list<RTL *> *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new RTLList);
     RTL              *rtl   = new RTL();
     Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
     a->setNumber(1);
@@ -305,8 +306,8 @@ void StatementTest::testUse()
     rtl->append(a);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
-    pRtls = new std::list<RTL *>();
+    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(3);
@@ -315,7 +316,8 @@ void StatementTest::testUse()
     rs->addReturn(a);
     rtl->append(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
+
+    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -369,7 +371,7 @@ void StatementTest::testUseOverKill()
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::list<RTL *> *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new RTLList);
     RTL              *rtl   = new RTL();
     Assign           *e     = new Assign(Location::regOf(24), Const::get(5));
     e->setNumber(1);
@@ -385,8 +387,8 @@ void StatementTest::testUseOverKill()
     rtl->append(e);
     pRtls->push_back(rtl);
 
-    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
-    pRtls = new std::list<RTL *>();
+    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(4);
@@ -396,7 +398,7 @@ void StatementTest::testUseOverKill()
     rtl->append(rs);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -451,7 +453,7 @@ void StatementTest::testUseOverBB()
     UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::list<RTL *> *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new RTLList);
     RTL              *rtl   = new RTL();
     Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
     a->setNumber(1);
@@ -462,8 +464,9 @@ void StatementTest::testUseOverBB()
     a->setProc(proc);
     rtl->append(a);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
-    pRtls = new std::list<RTL *>();
+
+    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    pRtls.reset(new RTLList);
     rtl   = new RTL();
     a     = new Assign(Location::regOf(28), Location::regOf(24));
     a->setNumber(3);
@@ -479,7 +482,7 @@ void StatementTest::testUseOverBB()
     rs->addReturn(a);
     rtl->append(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -534,7 +537,7 @@ void StatementTest::testUseKill()
     UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::list<RTL *> *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new RTLList);
     RTL              *rtl   = new RTL();
     Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
     a->setNumber(1);
@@ -546,8 +549,8 @@ void StatementTest::testUseKill()
     rtl->append(a);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
-    pRtls = new std::list<RTL *>();
+    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(3);
@@ -556,7 +559,7 @@ void StatementTest::testUseKill()
     rs->addReturn(a);
     rtl->append(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -612,15 +615,15 @@ void StatementTest::testEndlessLoop()
 
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::list<RTL *> *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new RTLList);
     RTL              *rtl   = new RTL();
     // r[24] := 5
     Assign *e = new Assign(Location::regOf(24), Const::get(5));
     e->setProc(proc);
     rtl->append(e);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
-    pRtls = new std::list<RTL *>();
+    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    pRtls.reset(new RTLList);
     rtl   = new RTL();
     // r[24] := r[24] + 1
     e = new Assign(Location::regOf(24), Binary::get(opPlus, Location::regOf(24), Const::get(1)));
@@ -628,7 +631,7 @@ void StatementTest::testEndlessLoop()
     rtl->append(e);
     pRtls->push_back(rtl);
 
-    BasicBlock *body = cfg->createBB(pRtls, BBType::Oneway);
+    BasicBlock *body = cfg->createBB(std::move(pRtls), BBType::Oneway);
     first->addSuccessor(body);
     body->addPredecessor(first);
     body->addSuccessor(body);
@@ -812,7 +815,7 @@ void StatementTest::testRecursion()
 
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::list<RTL *> *pRtls = new std::list<RTL *>();
+    std::unique_ptr<RTLList> pRtls(new RTLList);
     RTL              *rtl   = new RTL();
     // push bp
     // r28 := r28 + -4
@@ -822,9 +825,9 @@ void StatementTest::testRecursion()
     a = new Assign(Location::memOf(Location::regOf(28)), Location::regOf(29));
     rtl->append(a);
     pRtls->push_back(rtl);
-    delete pRtls;
+    pRtls.reset(); // ???
 
-    pRtls = new std::list<RTL *>();
+    pRtls.reset(new RTLList);
     // push arg+1
     // r28 := r28 + -4
     a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
@@ -840,10 +843,10 @@ void StatementTest::testRecursion()
     a->setProc(proc);
     rtl->append(a);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(pRtls, BBType::Fall);
+    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
 
     // The call BB
-    pRtls = new std::list<RTL *>();
+    pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x0000001));
     // r28 := r28 + -4
     a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
@@ -863,13 +866,13 @@ void StatementTest::testRecursion()
     rtl->append(c);
 
     c->setDestProc(proc); // Just call self
-    BasicBlock *callbb = cfg->createBB(pRtls, BBType::Call);
+    BasicBlock *callbb = cfg->createBB(std::move(pRtls), BBType::Call);
     first->addSuccessor(callbb);
     callbb->addPredecessor(first);
     callbb->addSuccessor(callbb);
     callbb->addPredecessor(callbb);
 
-    pRtls = new std::list<RTL *>();
+    pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
     rtl->append(new ReturnStatement);
     // This ReturnStatement requires the following two sets of semantics to pass the
@@ -882,7 +885,7 @@ void StatementTest::testRecursion()
     rtl->append(a);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->createBB(pRtls, BBType::Ret);
+    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
     callbb->addSuccessor(ret);
     ret->addPredecessor(callbb);
     cfg->setEntryAndExitBB(first);
@@ -905,7 +908,6 @@ void StatementTest::testRecursion()
     QCOMPARE(actual, expected);
 
     // clean up
-    delete pRtls;
     delete prog;
 }
 

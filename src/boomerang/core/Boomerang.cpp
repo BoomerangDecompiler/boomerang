@@ -97,11 +97,6 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
 
     LOG_MSG("Found %1 procs", prog->getNumFunctions());
 
-    // GK: The analysis which was performed was not exactly very "analysing", and so it has been moved to
-    // prog::finishDecode, UserProc::assignProcsToCalls and UserProc::finalSimplify
-    // std::cout << "analysing...\n";
-    // prog->analyse();
-
     if (SETTING(generateSymbols)) {
         prog->printSymbolsToFile();
     }

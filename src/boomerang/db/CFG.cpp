@@ -111,7 +111,7 @@ bool Cfg::hasNoEntryBB()
 }
 
 
-BasicBlock *Cfg::createBB(std::list<RTL *> *pRtls, BBType bbType)
+BasicBlock *Cfg::createBB(std::unique_ptr<RTLList> pRtls, BBType bbType)
 {
     MAPBB::iterator mi         = m_mapBB.end();
     BasicBlock      *currentBB = nullptr;
@@ -154,7 +154,7 @@ BasicBlock *Cfg::createBB(std::list<RTL *> *pRtls, BBType bbType)
             }
             else {
                 // Fill in the details, and return it
-                currentBB->setRTLs(pRtls);
+                currentBB->setRTLs(std::move(pRtls));
                 currentBB->m_incomplete = false;
                 currentBB->updateType(bbType);
             }
@@ -165,7 +165,7 @@ BasicBlock *Cfg::createBB(std::list<RTL *> *pRtls, BBType bbType)
 
     if (!bDone) {
         // Else add a new BB to the back of the current list.
-        currentBB = new BasicBlock(m_myProc, pRtls, bbType);
+        currentBB = new BasicBlock(m_myProc, std::move(pRtls), bbType);
         m_listBB.push_back(currentBB);
 
         // Also add the address to the map from native (source) address to
@@ -200,7 +200,7 @@ BasicBlock *Cfg::createBB(std::list<RTL *> *pRtls, BBType bbType)
             Address    nextAddr         = (*mi).first;
             bool       nextIsIncomplete = nextBB->m_incomplete;
 
-            if (nextAddr <= pRtls->back()->getAddress()) {
+            if (nextAddr <= currentBB->getRTLs()->back()->getAddress()) {
                 // Need to truncate the current BB. We use splitBB(), but pass it pNextBB so it doesn't create a new BB
                 // for the "bottom" BB of the split pair
                 splitBB(currentBB, nextAddr, nextBB);
@@ -208,6 +208,7 @@ BasicBlock *Cfg::createBB(std::list<RTL *> *pRtls, BBType bbType)
                 // If the overlapped BB was incomplete, return the "bottom" part of the BB, so adding out edges will
                 // work properly.
                 if (nextIsIncomplete) {
+                    assert(nextBB);
                     return nextBB;
                 }
 
@@ -311,7 +312,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         // that starts at ri. We need a new list, since it is different from the
         // original BB's list. We don't have to "deep copy" the RTLs themselves,
         // since they will never overlap
-        _newBB->setRTLs(new std::list<RTL *>(ri, bb->m_listOfRTLs->end()));
+        _newBB->setRTLs(Util::makeUnique<RTLList>(ri, bb->m_listOfRTLs->end()));
         m_listBB.push_back(_newBB); // Put it in the graph
         // Put the implicit label into the map. Need to do this before the addOutEdge() below
         m_mapBB[splitAddr] = _newBB;
@@ -326,13 +327,13 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         int labelNum = _newBB->m_labelNum;
 
         // Copy over the details now, completing the bottom BB
-        *_newBB = *bb;               // Assign the BB, copying fields. This will set m_bIncomplete false
+        *_newBB = *bb;              // Assign the BB, copying fields. This will set m_bIncomplete false
                                     // Replace the in edges (likely only one)
         _newBB->m_predecessors  = ins;
         _newBB->m_labelNum = labelNum;  // Replace the label (must be one, since we are splitting this BB!)
                                     // The "bottom" BB now starts at the implicit label
                                     // We need to create a new list of RTLs, as per above
-        _newBB->setRTLs(new std::list<RTL *>(ri, bb->m_listOfRTLs->end()));
+        _newBB->setRTLs(Util::makeUnique<RTLList>(ri, bb->m_listOfRTLs->end()));
     }
 
     // else pNewBB exists and is complete. We don't want to change the complete
@@ -1727,7 +1728,8 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
     // creating the rptBB). Or if there is no A, temporarily use 0
     Address    a        = (haveA) ? addr : Address::ZERO;
     RTL        *skipRtl = new RTL(a, new std::list<Statement *> { br1 }); // list initializer in braces
-    BasicBlock *skipBB  = createBB(new std::list<RTL *> { skipRtl }, BBType::Twoway);
+    std::unique_ptr<RTLList> bbRTL(new RTLList({skipRtl}));
+    BasicBlock *skipBB  = createBB(std::move(bbRTL), BBType::Twoway);
     rtl->setAddress(addr + 1);
 
     if (!haveA) {
@@ -1758,7 +1760,8 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
     rtl->back() = br2;
 
     // Move the remainder of the string RTL into a new BB
-    BasicBlock *rptBB = createBB(new std::list<RTL *> { *ri }, BBType::Twoway);
+    bbRTL.reset(new RTLList({ *ri }));
+    BasicBlock *rptBB = createBB(std::move(bbRTL), BBType::Twoway);
     ri = bb->m_listOfRTLs->erase(ri);
 
     // Move the remaining RTLs (if any) to a new list of RTLs
@@ -1767,7 +1770,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
     bool       haveB       = true;
 
     if (ri != bb->m_listOfRTLs->end()) {
-        auto pRtls = new std::list<RTL *>;
+        std::unique_ptr<RTLList> pRtls(new RTLList);
 
         while (ri != bb->m_listOfRTLs->end()) {
             pRtls->push_back(*ri);
@@ -1775,7 +1778,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
         }
 
         oldOutEdges = bb->getNumSuccessors();
-        newBB       = this->createBB(pRtls, bb->getType());
+        newBB       = this->createBB(std::move(pRtls), bb->getType());
 
         // Transfer the out edges from A to B (pBB to newBb)
         for (size_t i = 0; i < oldOutEdges; i++) {

@@ -986,7 +986,7 @@ bool PentiumFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 }
 
 
-void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls)
+void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rtls)
 {
     if (!call->getDestProc()) {
         return;
@@ -1026,10 +1026,9 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 
         // count pushes backwards to find arg
         SharedExp found = nullptr;
-        std::list<RTL *>::reverse_iterator itr;
         unsigned int pushcount = 0;
 
-        for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
+        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; itr++) {
             RTL *rtl = *itr;
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
@@ -1113,10 +1112,9 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
     if (calledSig->hasEllipsis()) {
         // count pushes backwards to find a push of 0
         bool found = false;
-        std::list<RTL *>::reverse_iterator itr;
         int pushcount = 0;
 
-        for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
+        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; itr++) {
             RTL *rtl = *itr;
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {

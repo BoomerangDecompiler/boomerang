@@ -170,5 +170,5 @@ protected:
     virtual bool decodeInstruction(Address pc, DecodeResult& result) override;
 
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
-    virtual void extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls) override;
+    virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls) override;
 };

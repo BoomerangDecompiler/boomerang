@@ -36,7 +36,10 @@ class Global;
 class Parameter;
 class ConnectionGraph;
 class Statement;
+
 enum class BBType;
+
+using RTLList   = std::list<RTL *>;
 
 #define BTHEN    0
 #define BELSE    1
@@ -83,13 +86,14 @@ public:
     bool hasBB(const BasicBlock *bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
 
     /**
-     * \brief        Add a new basic block to this cfg
+     * Add a new basic block to this cfg.
      *
      * Checks to see if the address associated with pRtls is already in the map as an incomplete BB; if so, it is
      * completed now and a pointer to that BB is returned. Otherwise, allocates memory for a new basic block node,
-     * initializes its list of RTLs with pRtls, its type to the given type, and allocates enough space to hold
-     * pointers to the out-edges (based on given numOutEdges).
+     * initializes its list of RTLs with pRtls, its type to the given type.
      * The native address associated with the start of the BB is taken from pRtls, and added to the map (unless 0).
+     * If the native address of the new BB already belongs to a BB the existing BB is split,
+     * and an exception is thrown.
      *
      * \note You cannot assume that the returned BB will have the RTL associated with pStart as its first RTL, since
      * the BB could be split. You can however assume that the returned BB is suitable for adding out edges (i.e. if
@@ -99,9 +103,9 @@ public:
      *
      * \param pRtls list of pointers to RTLs to initialise the BB with bbType: the type of the BB (e.g. TWOWAY)
      * \param bbType - type of new BasicBlock
-     * \returns Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
+     * \returns Pointer to the newly created BB (non-null)
      */
-    BasicBlock *createBB(std::list<RTL *> *pRtls, BBType bbType) noexcept (false);
+    BasicBlock *createBB(std::unique_ptr<RTLList> pRtls, BBType bbType) noexcept (false);
 
     /**
      * Allocates space for a new, incomplete BB, and the given address is added to the map.

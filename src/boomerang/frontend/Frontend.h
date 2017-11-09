@@ -44,7 +44,7 @@ class IFileLoader;
 
 using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
-
+using RTLList        = std::list<RTL *>;
 
 /**
  * Contains the definition for the FrontEnd class,
@@ -124,7 +124,7 @@ public:
     virtual bool decodeInstruction(Address pc, DecodeResult& result);
 
     /// Do extra processing of call instructions.
-    virtual void extraProcessCall(CallStatement * /*call*/, std::list<RTL *> * /*BB_rtls*/) {}
+    virtual void extraProcessCall(CallStatement * /*call*/, const RTLList& /*BB_rtls*/) {}
 
 
     /**
@@ -197,7 +197,7 @@ public:
      *
      * \returns  Pointer to the newly created BB
      */
-    BasicBlock *createReturnBlock(UserProc *pProc, std::list<RTL *> *BB_rtls, RTL *pRtl);
+    BasicBlock *createReturnBlock(UserProc *pProc, std::unique_ptr<RTLList> BB_rtls, RTL *pRtl);
 
     /**
      * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).

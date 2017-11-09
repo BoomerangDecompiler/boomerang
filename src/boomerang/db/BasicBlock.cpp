@@ -57,23 +57,9 @@ BasicBlock::BasicBlock(Function *parent)
 }
 
 
-BasicBlock::~BasicBlock()
-{
-    if (m_listOfRTLs) {
-        // Delete the RTLs
-        for (RTL *rtl : *m_listOfRTLs) {
-            delete rtl;
-        }
-    }
-
-    // and delete the list
-    delete m_listOfRTLs;
-    m_listOfRTLs = nullptr;
-}
-
-
 BasicBlock::BasicBlock(const BasicBlock& bb)
-    : m_nodeType(bb.m_nodeType)
+    : m_function(bb.m_function)
+    , m_nodeType(bb.m_nodeType)
     , m_labelNum(bb.m_labelNum)
     , m_incomplete(bb.m_incomplete) // m_labelNeeded is initialized to false, not copied
     , m_jumpRequired(bb.m_jumpRequired)
@@ -96,12 +82,35 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     , m_structuringType(bb.m_structuringType)
     , m_unstructuredType(bb.m_unstructuredType)
 {
-    setRTLs(bb.m_listOfRTLs);
-    m_function = bb.m_function;
+    // make a deep copy of the RTL list
+    std::unique_ptr<RTLList> newList(new RTLList());
+    newList->resize(bb.m_listOfRTLs->size());
+
+    RTLList::const_iterator srcIt = bb.m_listOfRTLs->begin();
+    RTLList::const_iterator endIt = bb.m_listOfRTLs->end();
+    RTLList::iterator destIt = newList->begin();
+
+    while (srcIt != endIt) {
+        *destIt++ = new RTL(**srcIt++);
+    }
+
+    setRTLs(std::move(newList));
 }
 
 
-BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType)
+BasicBlock::~BasicBlock()
+{
+}
+
+
+BasicBlock& BasicBlock::operator=(const BasicBlock& bb)
+{
+    *this = BasicBlock(bb);
+    return *this;
+}
+
+
+BasicBlock::BasicBlock(Function *parent, std::unique_ptr<RTLList> pRtls, BBType bbType)
     : m_nodeType(bbType)
     , m_incomplete(false)
     , m_inEdgesVisited(0) // From Doug's code
@@ -120,7 +129,7 @@ BasicBlock::BasicBlock(Function *parent, std::list<RTL *> *pRtls, BBType bbType)
     m_function = parent;
 
     // Set the RTLs
-    setRTLs(pRtls);
+    setRTLs(std::move(pRtls));
 }
 
 
@@ -150,12 +159,9 @@ void BasicBlock::setTraversed(bool bTraversed)
 }
 
 
-void BasicBlock::setRTLs(std::list<RTL *> *rtls)
+void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 {
-    // should we delete old ones here? breaks some things - trent
-    m_listOfRTLs = rtls;
-
-    // Used to set the link between the last instruction (a call) and this BB if this is a call BB
+    m_listOfRTLs = std::move(rtls);
 }
 
 
@@ -346,15 +352,15 @@ Address BasicBlock::getHiAddr() const
 }
 
 
-std::list<RTL *> *BasicBlock::getRTLs()
+RTLList *BasicBlock::getRTLs()
 {
-    return m_listOfRTLs;
+    return m_listOfRTLs.get();
 }
 
 
-const std::list<RTL *> *BasicBlock::getRTLs() const
+const RTLList *BasicBlock::getRTLs() const
 {
-    return m_listOfRTLs;
+    return m_listOfRTLs.get();
 }
 
 
@@ -1629,7 +1635,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 #endif
 
     if (isType(BBType::CompJump)) {
-        assert(m_listOfRTLs->size() > 0);
+        assert(!m_listOfRTLs->empty());
         RTL *lastRtl = m_listOfRTLs->back();
 
         if (DEBUG_SWITCH) {
@@ -1749,7 +1755,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         return false;
     }
     else if (isType(BBType::CompCall)) {
-        assert(m_listOfRTLs->size() > 0);
+        assert(!m_listOfRTLs->empty());
         RTL *lastRtl = m_listOfRTLs->back();
 
         if (DEBUG_SWITCH) {

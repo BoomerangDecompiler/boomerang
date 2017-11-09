@@ -102,3 +102,4 @@ private:
 };
 
 using SharedRTL = std::shared_ptr<RTL>;
+using RTLList   = std::list<RTL *>;
