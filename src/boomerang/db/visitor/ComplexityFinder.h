@@ -39,6 +39,6 @@ public:
     virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
 private:
-    int m_count;
+    int m_count = 0;
     UserProc *m_proc;
 };

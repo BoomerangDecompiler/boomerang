@@ -314,11 +314,9 @@ bool Statement::canPropagateToExp(Exp& e)
 bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
                             LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
 {
-    bool change;
+    bool change = false;
     int  changes = 0;
-    // int sp = proc->getSignature()->getStackRegister(proc->getProg());
-    // Exp* regSp = Location::regOf(sp);
-    int propMaxDepth = SETTING(propMaxDepth);
+    const int propMaxDepth = SETTING(propMaxDepth);
 
     do {
         LocationSet exps;
@@ -424,19 +422,24 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
             }
 
 
-            // Check if the -l flag (propMaxDepth) prevents this propagation
-            if (destCounts && !lhs->isFlags()) { // Always propagate to %flags
+            // Check if the -l flag (propMaxDepth) prevents this propagation,
+            // but always propagate to %flags
+            if (!destCounts || lhs->isFlags() || def->getRight()->containsFlags()) {
+                change |= doPropagateTo(e, def, convert);
+            }
+            else {
                 std::map<SharedExp, int, lessExpStar>::iterator ff = destCounts->find(e);
 
-                if ((ff != destCounts->end()) && (ff->second > 1) && (rhs->getComplexityDepth(m_proc) >= propMaxDepth)) {
-                    if (!def->getRight()->containsFlags()) {
-                        // This propagation is prevented by the -l limit
-                        continue;
-                    }
+                if (ff == destCounts->end()) {
+                    change |= doPropagateTo(e, def, convert);
+                }
+                else if (ff->second <= 1) {
+                    change |= doPropagateTo(e, def, convert);
+                }
+                else if (rhs->getComplexityDepth(m_proc) < propMaxDepth) {
+                    change |= doPropagateTo(e, def, convert);
                 }
             }
-
-            change |= doPropagateTo(e, def, convert);
         }
     } while (change && ++changes < 10);
 
