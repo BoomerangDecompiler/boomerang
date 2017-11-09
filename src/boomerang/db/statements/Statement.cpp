@@ -61,9 +61,9 @@
 #include <algorithm>
 
 
-void Statement::setProc(UserProc *p)
+void Statement::setProc(UserProc *proc)
 {
-    m_proc = p;
+    m_proc = proc;
     LocationSet exps, defs;
     addUsedLocs(exps);
     getDefinitions(defs);
@@ -73,7 +73,7 @@ void Statement::setProc(UserProc *p)
         auto l = std::dynamic_pointer_cast<Location>(*ll);
 
         if (l) {
-            l->setProc(p);
+            l->setProc(proc);
         }
     }
 }

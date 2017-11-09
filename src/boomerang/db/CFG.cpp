@@ -1901,6 +1901,7 @@ Statement *Cfg::findImplicitAssign(SharedExp x)
         x   = x->clone(); // In case the original gets changed
         def = new ImplicitAssign(x);
         m_entryBB->prependStmt(def, m_myProc);
+
         // Remember it for later so we don't insert more than one implicit assignment for any one location
         // We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
         // the definition as at all uses

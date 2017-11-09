@@ -114,7 +114,7 @@ bool ImplicitAssign::accept(StmtExpVisitor *v)
 
 bool ImplicitAssign::accept(StmtModifier *v)
 {
-    bool visitChildren;
+    bool visitChildren = true;
     v->visit(this, visitChildren);
 
     if (v->m_mod) {

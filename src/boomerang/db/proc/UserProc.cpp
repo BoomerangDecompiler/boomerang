@@ -3982,7 +3982,6 @@ void UserProc::addImplicitAssigns()
     m_cfg->setImplicitsDone();
     m_df.convertImplicits(m_cfg); // Some maps have m[...]{-} need to be m[...]{0} now
     makeSymbolsImplicit();
-    // makeParamsImplicit();            // Not necessary yet, since registers are not yet mapped
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after adding implicit assigns");
 }

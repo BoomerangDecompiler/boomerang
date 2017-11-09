@@ -1898,7 +1898,7 @@ void CallStatement::genConstraints(LocationSet& cons)
 
 bool CallStatement::accept(StmtModifier *v)
 {
-    bool visitChildren;
+    bool visitChildren = true;
     v->visit(this, visitChildren);
 
     if (!visitChildren) {

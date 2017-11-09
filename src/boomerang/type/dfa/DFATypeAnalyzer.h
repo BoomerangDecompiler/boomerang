@@ -58,5 +58,5 @@ private:
     void visitAssignment(Assignment *stmt, bool& visitChildren);
 
 private:
-    bool m_changed;
+    bool m_changed = false;
 };

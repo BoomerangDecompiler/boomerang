@@ -291,7 +291,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     if (DEBUG_TA) {
         LOG_MSG("### Results for data flow based type analysis for %1 ###", proc->getName());
         dumpResults(stmts, iter);
-        LOG_MSG("### End results for Data flow based Type Analysis for %1 ###", proc->getName());
+        LOG_MSG("### End results for Data flow based type analysis for %1 ###", proc->getName());
     }
 
     // Now use the type information gathered

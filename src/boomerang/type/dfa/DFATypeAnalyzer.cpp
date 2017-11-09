@@ -34,7 +34,9 @@ DFATypeAnalyzer::DFATypeAnalyzer()
 
 void DFATypeAnalyzer::visitAssignment(Assignment* stmt, bool& visitChildren)
 {
-    auto sig = stmt->getProc()->getSignature();
+    UserProc *proc = stmt->getProc();
+    assert(proc != nullptr);
+    std::shared_ptr<Signature> sig = proc->getSignature();
 
     // Don't do this for the common case of an ordinary local,
     // since it generates hundreds of implicit references,
@@ -64,7 +66,7 @@ void DFATypeAnalyzer::visitAssignment(Assignment* stmt, bool& visitChildren)
         addr->descendType(addrType, ch, stmt);
     }
 
-    visitChildren = true;
+    visitChildren = false;
 }
 
 
@@ -132,7 +134,7 @@ void DFATypeAnalyzer::visit(Assign* stmt, bool& visitChildren)
     m_changed |= ch;
 
     visitAssignment(stmt, ch);  // Handle the LHS wrt m[] operands
-    visitChildren = true;
+    visitChildren = false;
 }
 
 
@@ -152,7 +154,7 @@ void DFATypeAnalyzer::visit(BranchStatement *stmt, bool& visitChildren)
     }
 
     // Not fully implemented yet?
-    visitChildren = true;
+    visitChildren = false;
 }
 
 
@@ -203,6 +205,8 @@ void DFATypeAnalyzer::visit(CallStatement* stmt, bool& visitChildren)
         }
         m_changed |= ch;
     }
+
+    visitChildren = false;
 }
 
 
@@ -230,5 +234,5 @@ void DFATypeAnalyzer::visit(ReturnStatement* stmt, bool& visitChildren)
         visitAssignment(dynamic_cast<Assignment *>(rr), visitChildren);
     }
 
-    visitChildren = true;
+    visitChildren = false; // don't visit the expressions
 }
