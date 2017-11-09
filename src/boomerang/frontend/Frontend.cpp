@@ -759,14 +759,14 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                 // Check for a call to an already existing procedure (including self recursive jumps), or to the PLT
                 // (note that a LibProc entry for the PLT function may not yet exist)
-                if (s->getKind() == STMT_GOTO) {
+                if (s->getKind() == StmtType::Goto) {
                     preprocessProcGoto(ss, stmt_jump->getFixedDest(), sl, pRtl);
                     s = *ss; // *ss can be changed within processProc
                 }
 
                 switch (s->getKind())
                 {
-                case STMT_GOTO:
+                case StmtType::Goto:
                     {
                         Address uDest = stmt_jump->getFixedDest();
 
@@ -796,7 +796,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                     }
                     break;
 
-                case STMT_CASE:
+                case StmtType::Case:
                     {
                         SharedExp pDest = stmt_jump->getDest();
 
@@ -884,7 +884,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         break;
                     }
 
-                case STMT_BRANCH:
+                case StmtType::Branch:
                     {
                         Address jumpDest = stmt_jump->getFixedDest();
                         BB_rtls->push_back(pRtl);
@@ -914,7 +914,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                     }
                     break;
 
-                case STMT_CALL:
+                case StmtType::Call:
                     {
                         CallStatement *call = static_cast<CallStatement *>(s);
 
@@ -1100,7 +1100,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                         break;
                     }
 
-                case STMT_RET:
+                case StmtType::Ret:
                     // Stop decoding sequentially
                     sequentialDecode = false;
 
@@ -1110,18 +1110,21 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                     BB_rtls = nullptr; // New RTLList for next BB
                     break;
 
-                case STMT_BOOLASSIGN:
+                case StmtType::BoolAssign:
                 // This is just an ordinary instruction; no control transfer
                 // Fall through
-                case STMT_JUNCTION:
+                case StmtType::Junction:
                 // FIXME: Do we need to do anything here?
-                case STMT_ASSIGN:
-                case STMT_PHIASSIGN:
-                case STMT_IMPASSIGN:
-                case STMT_IMPREF:
+                case StmtType::Assign:
+                case StmtType::PhiAssign:
+                case StmtType::ImpAssign:
+                case StmtType::ImpRef:
                     // Do nothing
                     break;
-                } // switch (s->getKind())
+                case StmtType::INVALID:
+                    assert(false);
+                    break;
+                }
             }
 
             if (BB_rtls && pRtl) {

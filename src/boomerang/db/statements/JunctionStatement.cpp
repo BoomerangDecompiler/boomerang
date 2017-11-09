@@ -21,7 +21,7 @@
 
 JunctionStatement::JunctionStatement()
 {
-    m_kind = STMT_JUNCTION;
+    m_kind = StmtType::Junction;
 }
 
 

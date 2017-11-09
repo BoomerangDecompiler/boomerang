@@ -23,14 +23,14 @@ GotoStatement::GotoStatement()
     : m_dest(nullptr)
     , m_isComputed(false)
 {
-    m_kind = STMT_GOTO;
+    m_kind = StmtType::Goto;
 }
 
 
 GotoStatement::GotoStatement(Address uDest)
     : m_isComputed(false)
 {
-    m_kind = STMT_GOTO;
+    m_kind = StmtType::Goto;
     m_dest = Const::get(uDest);
 }
 

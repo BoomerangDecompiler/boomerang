@@ -26,7 +26,7 @@ ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)
     : TypingStatement(ty)
     , m_addressExp(a)
 {
-    m_kind = STMT_IMPREF;
+    m_kind = StmtType::ImpRef;
 }
 
 

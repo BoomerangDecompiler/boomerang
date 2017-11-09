@@ -58,9 +58,9 @@ public:
 
 public:
     PhiAssign(SharedExp _lhs)
-        : Assignment(_lhs) { m_kind = STMT_PHIASSIGN; }
+        : Assignment(_lhs) { m_kind = StmtType::PhiAssign; }
     PhiAssign(SharedType ty, SharedExp _lhs)
-        : Assignment(ty, _lhs) { m_kind = STMT_PHIASSIGN; }
+        : Assignment(ty, _lhs) { m_kind = StmtType::PhiAssign; }
 
     virtual ~PhiAssign() override = default;
 

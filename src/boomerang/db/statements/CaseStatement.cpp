@@ -20,7 +20,7 @@
 CaseStatement::CaseStatement()
     : m_switchInfo(nullptr)
 {
-    m_kind = STMT_CASE;
+    m_kind = StmtType::Case;
 }
 
 

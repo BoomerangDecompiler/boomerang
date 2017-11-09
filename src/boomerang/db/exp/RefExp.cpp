@@ -246,7 +246,7 @@ void RefExp::printx(int ind) const
 
 bool RefExp::isImplicitDef() const
 {
-    return m_def == nullptr || m_def->getKind() == STMT_IMPASSIGN;
+    return m_def == nullptr || m_def->getKind() == StmtType::ImpAssign;
 }
 
 

@@ -461,7 +461,7 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
         for (Statement *s : rtl) {
             std::list<SharedExp> le;
             // Expression tables
-            assert(s->getKind() == STMT_ASSIGN);
+            assert(s->getKind() == StmtType::Assign);
 
             if (((Assign *)s)->searchAll(srchExpr, le)) {
                 std::list<SharedExp>::iterator it;

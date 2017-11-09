@@ -532,7 +532,7 @@ Function *BasicBlock::getCallDestProc()
     RTL *lastRtl = m_listOfRTLs->back();
 
     for (auto it = lastRtl->rbegin(); it != lastRtl->rend(); it++) {
-        if ((*it)->getKind() == STMT_CALL) {
+        if ((*it)->getKind() == StmtType::Call) {
             return ((CallStatement *)(*it))->getDestProc();
         }
     }
@@ -546,7 +546,7 @@ Function *BasicBlock::getDestProc()
     // The last Statement of the last RTL should be a CallStatement
     CallStatement *call = (CallStatement *)(m_listOfRTLs->back()->getHlStmt());
 
-    assert(call->getKind() == STMT_CALL);
+    assert(call->getKind() == StmtType::Call);
     Function *proc = call->getDestProc();
 
     if (proc == nullptr) {
@@ -706,7 +706,7 @@ SharedExp BasicBlock::getCond()
     // it should contain a BranchStatement
     BranchStatement *bs = dynamic_cast<BranchStatement *>(last->getHlStmt());
 
-    if (bs && (bs->getKind() == STMT_BRANCH)) {
+    if (bs && (bs->getKind() == StmtType::Branch)) {
         return bs->getCondExpr();
     }
 
@@ -753,7 +753,7 @@ void BasicBlock::setCond(SharedExp e) noexcept (false)
     assert(!last->empty());
 
     for (auto it = last->rbegin(); it != last->rend(); it++) {
-        if ((*it)->getKind() == STMT_BRANCH) {
+        if ((*it)->getKind() == StmtType::Branch) {
             ((BranchStatement *)(*it))->setCondExpr(e);
             return;
         }

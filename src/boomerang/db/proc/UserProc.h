@@ -784,7 +784,7 @@ private:
 private:
     /**
      * We ensure that there is only one return statement now.
-     * See code in frontend/frontend.cpp handling case STMT_RET.
+     * See code in frontend/frontend.cpp handling case StmtType::Ret.
      * If no return statement, this will be nullptr.
      */
     ReturnStatement *theReturnStatement;

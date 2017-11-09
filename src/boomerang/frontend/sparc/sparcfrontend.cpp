@@ -327,14 +327,14 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
 
     switch (lastStmt->getKind())
     {
-    case STMT_CALL:
+    case StmtType::Call:
         // Will be a computed call
         BB_rtls->push_back(inst.rtl);
         newBB = cfg->createBB(std::unique_ptr<RTLList>(BB_rtls), BBType::CompCall);
         BB_rtls = nullptr;
         break;
 
-    case STMT_RET:
+    case StmtType::Ret:
         //            newBB = cfg->newBB(BB_rtls, RET, 0);
         //            proc->setTheReturnAddr((ReturnStatement*)inst.rtl->back(), inst.rtl->getAddress());
         newBB = createReturnBlock(proc, std::unique_ptr<RTLList>(BB_rtls), inst.rtl);
@@ -342,7 +342,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
         bRet  = false;
         break;
 
-    case STMT_CASE:
+    case StmtType::Case:
         {
             BB_rtls->push_back(inst.rtl);
             newBB = cfg->createBB(std::unique_ptr<RTLList>(BB_rtls), BBType::CompJump);
@@ -371,7 +371,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
     Statement *last = inst.rtl->back();
 
     // Do extra processing for for special types of DD
-    if (last->getKind() == STMT_CALL) {
+    if (last->getKind() == StmtType::Call) {
         // Attempt to add a return BB if the delay instruction is a RESTORE
         CallStatement *call_stmt = (CallStatement *)(inst.rtl->back());
         BasicBlock    *returnBB  = optimise_CallReturn(call_stmt, inst.rtl, delay_inst.rtl, proc);
@@ -739,8 +739,8 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             }
 
 #if BRANCH_DS_ERROR
-            if ((last->getKind() == JUMP_RTL) || (last->getKind() == STMT_CALL) || (last->getKind() == JCOND_RTL) ||
-                (last->getKind() == STMT_RET)) {
+            if ((last->getKind() == JUMP_RTL) || (last->getKind() == StmtType::Call) || (last->getKind() == JCOND_RTL) ||
+                (last->getKind() == StmtType::Ret)) {
                 ADDRESS dest = stmt_jump->getFixedDest();
 
                 if ((dest != Address::INVALID) && (dest < hiAddress)) {
@@ -781,7 +781,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                 uAddr += inst.numBytes;
 
                 // Ret/restore epilogues are handled as ordinary RTLs now
-                if (last->getKind() == STMT_RET) {
+                if (last->getKind() == StmtType::Ret) {
                     sequentialDecode = false;
                 }
 
@@ -835,7 +835,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                         LOG_MSG("*%1", uAddr + 4);
                     }
 
-                    if (last->getKind() == STMT_CALL) {
+                    if (last->getKind() == StmtType::Call) {
                         // Check the delay slot of this call. First case of interest is when the instruction is a restore,
                         // e.g.
                         // 142c8:  40 00 5b 91          call           exit
@@ -905,7 +905,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
                         // Ordinary delayed instruction. Since NCT's can't affect unconditional jumps, we put the delay
                         // instruction before the jump or call
-                        if (last->getKind() == STMT_CALL) {
+                        if (last->getKind() == StmtType::Call) {
                             // This is a call followed by an NCT/NOP
                             sequentialDecode = case_CALL(uAddr, inst, delay_inst, BB_rtls, proc, callList, os);
                         }
@@ -948,7 +948,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                             BB_rtls->push_back(inst.rtl);
 
                             // Create the appropriate BB
-                            if (last->getKind() == STMT_CALL) {
+                            if (last->getKind() == StmtType::Call) {
                                 BasicBlock *bb = cfg->createBB(std::unique_ptr<RTLList>(BB_rtls), BBType::Call);
                                 assert(bb);
 
@@ -1050,7 +1050,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
 
                     default:
 
-                        if (delay_inst.rtl->back()->getKind() == STMT_CALL) {
+                        if (delay_inst.rtl->back()->getKind() == StmtType::Call) {
                             // Assume it's the move/call/move pattern
                             sequentialDecode = case_SCD(uAddr, m_image->getTextDelta(), m_image->getLimitTextHigh(),
                                                         inst, delay_inst, BB_rtls, cfg, _targetQueue);

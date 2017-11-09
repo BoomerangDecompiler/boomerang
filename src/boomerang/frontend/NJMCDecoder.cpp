@@ -100,7 +100,7 @@ SharedExp NJMCDecoder::instantiateNamedParam(char *name, const std::initializer_
     }
 
     // Start with the RHS
-    assert(ent.m_asgn->getKind() == STMT_ASSIGN);
+    assert(ent.m_asgn->getKind() == StmtType::Assign);
     SharedExp result   = ((Assign *)ent.m_asgn)->getRight()->clone();
     auto      arg_iter = args.begin();
 

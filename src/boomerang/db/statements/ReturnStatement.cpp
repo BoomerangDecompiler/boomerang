@@ -31,7 +31,7 @@
 ReturnStatement::ReturnStatement()
     : m_retAddr(Address::INVALID)
 {
-    m_kind = STMT_RET;
+    m_kind = StmtType::Ret;
 }
 
 

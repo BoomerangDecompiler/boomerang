@@ -250,14 +250,14 @@ bool RTL::isCall() const
     }
 
     Statement *last = this->back();
-    return last->getKind() == STMT_CALL;
+    return last->getKind() == StmtType::Call;
 }
 
 
 Statement *RTL::getHlStmt() const
 {
     for (auto rit = this->rbegin(); rit != this->rend(); rit++) {
-        if ((*rit)->getKind() != STMT_ASSIGN) {
+        if ((*rit)->getKind() != StmtType::Assign) {
             return *rit;
         }
     }

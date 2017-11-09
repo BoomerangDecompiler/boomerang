@@ -136,7 +136,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         BranchStatement *br = new BranchStatement();
 
-                        // br->setCondType(BRANCH_JE);
+                        // br->setCondType(BranchType::JE);
 
                         br->setDest(pc + result.numBytes + total + oper);
 

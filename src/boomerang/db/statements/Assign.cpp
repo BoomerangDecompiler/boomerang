@@ -30,7 +30,7 @@ Assign::Assign(SharedExp lhs, SharedExp r, SharedExp guard)
     , m_rhs(r)
     , m_guard(guard)
 {
-    m_kind = STMT_ASSIGN;
+    m_kind = StmtType::Assign;
 }
 
 
@@ -39,14 +39,14 @@ Assign::Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard)
     , m_rhs(r)
     , m_guard(guard)
 {
-    m_kind = STMT_ASSIGN;
+    m_kind = StmtType::Assign;
 }
 
 
 Assign::Assign(Assign& o)
     : Assignment(m_lhs->clone())
 {
-    m_kind  = STMT_ASSIGN;
+    m_kind  = StmtType::Assign;
     m_rhs   = o.m_rhs->clone();
     m_type  = nullptr;
     m_guard = nullptr;

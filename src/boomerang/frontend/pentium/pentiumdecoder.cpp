@@ -1787,7 +1787,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 246 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.Sod", 6, relocd, BRANCH_JMI)
+                                        COND_JUMP("Jv.Sod", 6, relocd, BranchType::JMI)
                                     }
                                     break;
 
@@ -1797,7 +1797,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 244 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.NSod", 6, relocd, BRANCH_JPOS)
+                                        COND_JUMP("Jv.NSod", 6, relocd, BranchType::JPOS)
                                     }
                                     break;
 
@@ -1807,7 +1807,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 242 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.Pod", 6, relocd, BRANCH_JPAR)
+                                        COND_JUMP("Jv.Pod", 6, relocd, BranchType::JPAR)
                                     }
                                     break;
 
@@ -1827,7 +1827,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 238 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.Lod", 6, relocd, BRANCH_JSL)
+                                        COND_JUMP("Jv.Lod", 6, relocd, BranchType::JSL)
                                     }
                                     break;
 
@@ -1837,7 +1837,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 236 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.NLod", 6, relocd, BRANCH_JSGE)
+                                        COND_JUMP("Jv.NLod", 6, relocd, BranchType::JSGE)
                                     }
                                     break;
 
@@ -1847,7 +1847,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 234 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.LEod", 6, relocd, BRANCH_JSLE)
+                                        COND_JUMP("Jv.LEod", 6, relocd, BranchType::JSLE)
                                     }
                                     break;
 
@@ -1857,7 +1857,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 232 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.NLEod", 6, relocd, BRANCH_JSG)
+                                        COND_JUMP("Jv.NLEod", 6, relocd, BranchType::JSG)
                                     }
                                     break;
 
@@ -1894,7 +1894,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 258 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.Bod", 6, relocd, BRANCH_JUL)
+                                        COND_JUMP("Jv.Bod", 6, relocd, BranchType::JUL)
                                     }
                                     break;
 
@@ -1904,7 +1904,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 256 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.NBod", 6, relocd, BRANCH_JUGE)
+                                        COND_JUMP("Jv.NBod", 6, relocd, BranchType::JUGE)
                                     }
                                     break;
 
@@ -1914,7 +1914,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 254 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.Zod", 6, relocd, BRANCH_JE)
+                                        COND_JUMP("Jv.Zod", 6, relocd, BranchType::JE)
                                     }
                                     break;
 
@@ -1925,7 +1925,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
 
                                         nextPC = MATCH_p + 6;
                                         // #line 252 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.NZod", 6, relocd, BRANCH_JNE)
+                                        COND_JUMP("Jv.NZod", 6, relocd, BranchType::JNE)
                                     }
                                     break;
 
@@ -1935,7 +1935,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 250 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.BEod", 6, relocd, BRANCH_JULE)
+                                        COND_JUMP("Jv.BEod", 6, relocd, BranchType::JULE)
                                     }
                                     break;
 
@@ -1945,7 +1945,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 248 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.NBEod", 6, relocd, BRANCH_JUG)
+                                        COND_JUMP("Jv.NBEod", 6, relocd, BranchType::JUG)
                                     }
                                     break;
 
@@ -2029,7 +2029,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 287 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JMI)
+                                                SETS(name, DIS_EADDR8, BranchType::JMI)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -2138,7 +2138,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 284 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JPOS)
+                                                SETS(name, DIS_EADDR8, BranchType::JPOS)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -2252,13 +2252,13 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 275 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JSL)
+                                                SETS(name, DIS_EADDR8, BranchType::JSL)
                                                 // | SETb.NP(Eaddr) [name] =>
                                                 //    stmts = instantiate(pc,name, {DIS_EADDR8});
-                                                //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+                                                //    SETS(name, DIS_EADDR8, BranchType::JSG)
                                                 // | SETb.P(Eaddr) [name] =>
                                                 //    stmts = instantiate(pc,name, {DIS_EADDR8});
-                                                //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+                                                //    SETS(name, DIS_EADDR8, BranchType::JSG)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -2367,7 +2367,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 272 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JSGE)
+                                                SETS(name, DIS_EADDR8, BranchType::JSGE)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -2476,7 +2476,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 269 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JSLE)
+                                                SETS(name, DIS_EADDR8, BranchType::JSLE)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -2585,7 +2585,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 266 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JSG)
+                                                SETS(name, DIS_EADDR8, BranchType::JSG)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -2706,13 +2706,13 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 305 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JUL)
+                                                SETS(name, DIS_EADDR8, BranchType::JUL)
                                                 // | SETb.NO(Eaddr) [name] =>
                                                 //    stmts = instantiate(pc,name, {DIS_EADDR8});
-                                                //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+                                                //    SETS(name, DIS_EADDR8, BranchType::JSG)
                                                 // | SETb.O(Eaddr) [name] =>
                                                 //    stmts = instantiate(pc,name, {DIS_EADDR8});
-                                                //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+                                                //    SETS(name, DIS_EADDR8, BranchType::JSG)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -2821,7 +2821,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 302 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JUGE)
+                                                SETS(name, DIS_EADDR8, BranchType::JUGE)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -2930,7 +2930,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 299 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JE)
+                                                SETS(name, DIS_EADDR8, BranchType::JE)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -3039,7 +3039,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 296 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JNE)
+                                                SETS(name, DIS_EADDR8, BranchType::JNE)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -3148,7 +3148,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 293 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JULE)
+                                                SETS(name, DIS_EADDR8, BranchType::JULE)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -3257,7 +3257,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                 nextPC = MATCH_p + 5;
                                                 // #line 290 "frontend/machine/pentium/decoder.m"
                                                 stmts = instantiate(pc, name, { DIS_EADDR8 });
-                                                SETS(name, DIS_EADDR8, BRANCH_JUG)
+                                                SETS(name, DIS_EADDR8, BranchType::JUG)
                                             }
                                         } /*opt-block*/
                                         else {
@@ -7668,7 +7668,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 174 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.S", 2, relocd, BRANCH_JMI)
+                            COND_JUMP("Jb.S", 2, relocd, BranchType::JMI)
                         }
                         break;
 
@@ -7678,7 +7678,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 172 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NS", 2, relocd, BRANCH_JPOS)
+                            COND_JUMP("Jb.NS", 2, relocd, BranchType::JPOS)
                         }
                         break;
 
@@ -7688,7 +7688,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 170 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.P", 2, relocd, BRANCH_JPAR)
+                            COND_JUMP("Jb.P", 2, relocd, BranchType::JPAR)
                         }
                         break;
 
@@ -7708,7 +7708,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 166 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.L", 2, relocd, BRANCH_JSL)
+                            COND_JUMP("Jb.L", 2, relocd, BranchType::JSL)
                         }
                         break;
 
@@ -7718,7 +7718,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 164 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NL", 2, relocd, BRANCH_JSGE)
+                            COND_JUMP("Jb.NL", 2, relocd, BranchType::JSGE)
                         }
                         break;
 
@@ -7728,7 +7728,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 162 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.LE", 2, relocd, BRANCH_JSLE)
+                            COND_JUMP("Jb.LE", 2, relocd, BranchType::JSLE)
                         }
                         break;
 
@@ -7738,7 +7738,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 160 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NLE", 2, relocd, BRANCH_JSG)
+                            COND_JUMP("Jb.NLE", 2, relocd, BranchType::JSG)
                         }
                         break;
 
@@ -17532,7 +17532,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 210 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.Sow", 4, relocd, BRANCH_JMI)
+                                                    COND_JUMP("Jv.Sow", 4, relocd, BranchType::JMI)
                                                 }
                                                 break;
 
@@ -17543,7 +17543,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 208 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.NSow", 4, relocd, BRANCH_JPOS)
+                                                    COND_JUMP("Jv.NSow", 4, relocd, BranchType::JPOS)
                                                 }
                                                 break;
 
@@ -17554,7 +17554,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 206 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.Pow", 4, relocd, BRANCH_JPAR)
+                                                    COND_JUMP("Jv.Pow", 4, relocd, BranchType::JPAR)
                                                 }
                                                 break;
 
@@ -17576,7 +17576,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 202 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.Low", 4, relocd, BRANCH_JSL)
+                                                    COND_JUMP("Jv.Low", 4, relocd, BranchType::JSL)
                                                 }
                                                 break;
 
@@ -17587,7 +17587,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 200 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.NLow", 4, relocd, BRANCH_JSGE)
+                                                    COND_JUMP("Jv.NLow", 4, relocd, BranchType::JSGE)
                                                 }
                                                 break;
 
@@ -17598,7 +17598,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 198 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.LEow", 4, relocd, BRANCH_JSLE)
+                                                    COND_JUMP("Jv.LEow", 4, relocd, BranchType::JSLE)
                                                 }
                                                 break;
 
@@ -17609,7 +17609,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 196 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.NLEow", 4, relocd, BRANCH_JSG)
+                                                    COND_JUMP("Jv.NLEow", 4, relocd, BranchType::JSG)
                                                 }
                                                 break;
 
@@ -17655,7 +17655,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 222 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.Bow", 4, relocd, BRANCH_JUL)
+                                                    COND_JUMP("Jv.Bow", 4, relocd, BranchType::JUL)
                                                 }
                                                 break;
 
@@ -17666,7 +17666,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 220 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.NBow", 4, relocd, BRANCH_JUGE)
+                                                    COND_JUMP("Jv.NBow", 4, relocd, BranchType::JUGE)
                                                 }
                                                 break;
 
@@ -17677,7 +17677,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 218 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.Zow", 4, relocd, BRANCH_JE)
+                                                    COND_JUMP("Jv.Zow", 4, relocd, BranchType::JE)
                                                 }
                                                 break;
 
@@ -17688,7 +17688,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 216 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.NZow", 4, relocd, BRANCH_JNE)
+                                                    COND_JUMP("Jv.NZow", 4, relocd, BranchType::JNE)
                                                 }
                                                 break;
 
@@ -17699,7 +17699,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 214 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.BEow", 4, relocd, BRANCH_JULE)
+                                                    COND_JUMP("Jv.BEow", 4, relocd, BranchType::JULE)
                                                 }
                                                 break;
 
@@ -17710,7 +17710,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 212 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.NBEow", 4, relocd, BRANCH_JUG)
+                                                    COND_JUMP("Jv.NBEow", 4, relocd, BranchType::JUG)
                                                 }
                                                 break;
 
@@ -27340,7 +27340,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 186 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.B", 2, relocd, BRANCH_JUL)
+                            COND_JUMP("Jb.B", 2, relocd, BranchType::JUL)
                         }
                         break;
 
@@ -27350,7 +27350,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 184 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NB", 2, relocd, BRANCH_JUGE)
+                            COND_JUMP("Jb.NB", 2, relocd, BranchType::JUGE)
                         }
                         break;
 
@@ -27360,7 +27360,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 182 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.Z", 2, relocd, BRANCH_JE)
+                            COND_JUMP("Jb.Z", 2, relocd, BranchType::JE)
                         }
                         break;
 
@@ -27370,7 +27370,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 180 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NZ", 2, relocd, BRANCH_JNE)
+                            COND_JUMP("Jb.NZ", 2, relocd, BranchType::JNE)
                         }
                         break;
 
@@ -27380,7 +27380,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 178 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.BE", 2, relocd, BRANCH_JULE)
+                            COND_JUMP("Jb.BE", 2, relocd, BranchType::JULE)
                         }
                         break;
 
@@ -27390,7 +27390,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 176 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NBE", 2, relocd, BRANCH_JUG)
+                            COND_JUMP("Jb.NBE", 2, relocd, BranchType::JUG)
                         }
                         break;
 
@@ -44989,13 +44989,13 @@ MATCH_label_c842:
             nextPC = MATCH_p + 3;
             // #line 305 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUL)
+            SETS(name, DIS_EADDR8, BranchType::JUL)
             // | SETb.NO(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
             // | SETb.O(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c843:
@@ -45006,13 +45006,13 @@ MATCH_label_c843:
             nextPC = MATCH_p + 4;
             // #line 305 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUL)
+            SETS(name, DIS_EADDR8, BranchType::JUL)
             // | SETb.NO(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
             // | SETb.O(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c844:
@@ -45023,13 +45023,13 @@ MATCH_label_c844:
             nextPC = MATCH_p + 8;
             // #line 305 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUL)
+            SETS(name, DIS_EADDR8, BranchType::JUL)
             // | SETb.NO(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
             // | SETb.O(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c845:
@@ -45040,13 +45040,13 @@ MATCH_label_c845:
             nextPC = MATCH_p + 7;
             // #line 305 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUL)
+            SETS(name, DIS_EADDR8, BranchType::JUL)
             // | SETb.NO(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
             // | SETb.O(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c846:
@@ -45057,7 +45057,7 @@ MATCH_label_c846:
             nextPC = MATCH_p + 3;
             // #line 302 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUGE)
+            SETS(name, DIS_EADDR8, BranchType::JUGE)
         }
         goto MATCH_finished_c;
 MATCH_label_c847:
@@ -45068,7 +45068,7 @@ MATCH_label_c847:
             nextPC = MATCH_p + 4;
             // #line 302 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUGE)
+            SETS(name, DIS_EADDR8, BranchType::JUGE)
         }
         goto MATCH_finished_c;
 MATCH_label_c848:
@@ -45079,7 +45079,7 @@ MATCH_label_c848:
             nextPC = MATCH_p + 8;
             // #line 302 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUGE)
+            SETS(name, DIS_EADDR8, BranchType::JUGE)
         }
         goto MATCH_finished_c;
 MATCH_label_c849:
@@ -45090,7 +45090,7 @@ MATCH_label_c849:
             nextPC = MATCH_p + 7;
             // #line 302 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUGE)
+            SETS(name, DIS_EADDR8, BranchType::JUGE)
         }
         goto MATCH_finished_c;
 MATCH_label_c850:
@@ -45101,7 +45101,7 @@ MATCH_label_c850:
             nextPC = MATCH_p + 3;
             // #line 299 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JE)
+            SETS(name, DIS_EADDR8, BranchType::JE)
         }
         goto MATCH_finished_c;
 MATCH_label_c851:
@@ -45112,7 +45112,7 @@ MATCH_label_c851:
             nextPC = MATCH_p + 4;
             // #line 299 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JE)
+            SETS(name, DIS_EADDR8, BranchType::JE)
         }
         goto MATCH_finished_c;
 MATCH_label_c852:
@@ -45123,7 +45123,7 @@ MATCH_label_c852:
             nextPC = MATCH_p + 8;
             // #line 299 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JE)
+            SETS(name, DIS_EADDR8, BranchType::JE)
         }
         goto MATCH_finished_c;
 MATCH_label_c853:
@@ -45134,7 +45134,7 @@ MATCH_label_c853:
             nextPC = MATCH_p + 7;
             // #line 299 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JE)
+            SETS(name, DIS_EADDR8, BranchType::JE)
         }
         goto MATCH_finished_c;
 MATCH_label_c854:
@@ -45145,7 +45145,7 @@ MATCH_label_c854:
             nextPC = MATCH_p + 3;
             // #line 296 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JNE)
+            SETS(name, DIS_EADDR8, BranchType::JNE)
         }
         goto MATCH_finished_c;
 MATCH_label_c855:
@@ -45156,7 +45156,7 @@ MATCH_label_c855:
             nextPC = MATCH_p + 4;
             // #line 296 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JNE)
+            SETS(name, DIS_EADDR8, BranchType::JNE)
         }
         goto MATCH_finished_c;
 MATCH_label_c856:
@@ -45167,7 +45167,7 @@ MATCH_label_c856:
             nextPC = MATCH_p + 8;
             // #line 296 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JNE)
+            SETS(name, DIS_EADDR8, BranchType::JNE)
         }
         goto MATCH_finished_c;
 MATCH_label_c857:
@@ -45178,7 +45178,7 @@ MATCH_label_c857:
             nextPC = MATCH_p + 7;
             // #line 296 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JNE)
+            SETS(name, DIS_EADDR8, BranchType::JNE)
         }
         goto MATCH_finished_c;
 MATCH_label_c858:
@@ -45189,7 +45189,7 @@ MATCH_label_c858:
             nextPC = MATCH_p + 3;
             // #line 293 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JULE)
+            SETS(name, DIS_EADDR8, BranchType::JULE)
         }
         goto MATCH_finished_c;
 MATCH_label_c859:
@@ -45200,7 +45200,7 @@ MATCH_label_c859:
             nextPC = MATCH_p + 4;
             // #line 293 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JULE)
+            SETS(name, DIS_EADDR8, BranchType::JULE)
         }
         goto MATCH_finished_c;
 MATCH_label_c860:
@@ -45211,7 +45211,7 @@ MATCH_label_c860:
             nextPC = MATCH_p + 8;
             // #line 293 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JULE)
+            SETS(name, DIS_EADDR8, BranchType::JULE)
         }
         goto MATCH_finished_c;
 MATCH_label_c861:
@@ -45222,7 +45222,7 @@ MATCH_label_c861:
             nextPC = MATCH_p + 7;
             // #line 293 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JULE)
+            SETS(name, DIS_EADDR8, BranchType::JULE)
         }
         goto MATCH_finished_c;
 MATCH_label_c862:
@@ -45233,7 +45233,7 @@ MATCH_label_c862:
             nextPC = MATCH_p + 3;
             // #line 290 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUG)
+            SETS(name, DIS_EADDR8, BranchType::JUG)
         }
         goto MATCH_finished_c;
 MATCH_label_c863:
@@ -45244,7 +45244,7 @@ MATCH_label_c863:
             nextPC = MATCH_p + 4;
             // #line 290 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUG)
+            SETS(name, DIS_EADDR8, BranchType::JUG)
         }
         goto MATCH_finished_c;
 MATCH_label_c864:
@@ -45255,7 +45255,7 @@ MATCH_label_c864:
             nextPC = MATCH_p + 8;
             // #line 290 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUG)
+            SETS(name, DIS_EADDR8, BranchType::JUG)
         }
         goto MATCH_finished_c;
 MATCH_label_c865:
@@ -45266,7 +45266,7 @@ MATCH_label_c865:
             nextPC = MATCH_p + 7;
             // #line 290 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JUG)
+            SETS(name, DIS_EADDR8, BranchType::JUG)
         }
         goto MATCH_finished_c;
 MATCH_label_c866:
@@ -45277,7 +45277,7 @@ MATCH_label_c866:
             nextPC = MATCH_p + 3;
             // #line 287 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JMI)
+            SETS(name, DIS_EADDR8, BranchType::JMI)
         }
         goto MATCH_finished_c;
 MATCH_label_c867:
@@ -45288,7 +45288,7 @@ MATCH_label_c867:
             nextPC = MATCH_p + 4;
             // #line 287 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JMI)
+            SETS(name, DIS_EADDR8, BranchType::JMI)
         }
         goto MATCH_finished_c;
 MATCH_label_c868:
@@ -45299,7 +45299,7 @@ MATCH_label_c868:
             nextPC = MATCH_p + 8;
             // #line 287 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JMI)
+            SETS(name, DIS_EADDR8, BranchType::JMI)
         }
         goto MATCH_finished_c;
 MATCH_label_c869:
@@ -45310,7 +45310,7 @@ MATCH_label_c869:
             nextPC = MATCH_p + 7;
             // #line 287 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JMI)
+            SETS(name, DIS_EADDR8, BranchType::JMI)
         }
         goto MATCH_finished_c;
 MATCH_label_c870:
@@ -45321,7 +45321,7 @@ MATCH_label_c870:
             nextPC = MATCH_p + 3;
             // #line 284 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JPOS)
+            SETS(name, DIS_EADDR8, BranchType::JPOS)
         }
         goto MATCH_finished_c;
 MATCH_label_c871:
@@ -45332,7 +45332,7 @@ MATCH_label_c871:
             nextPC = MATCH_p + 4;
             // #line 284 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JPOS)
+            SETS(name, DIS_EADDR8, BranchType::JPOS)
         }
         goto MATCH_finished_c;
 MATCH_label_c872:
@@ -45343,7 +45343,7 @@ MATCH_label_c872:
             nextPC = MATCH_p + 8;
             // #line 284 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JPOS)
+            SETS(name, DIS_EADDR8, BranchType::JPOS)
         }
         goto MATCH_finished_c;
 MATCH_label_c873:
@@ -45354,7 +45354,7 @@ MATCH_label_c873:
             nextPC = MATCH_p + 7;
             // #line 284 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JPOS)
+            SETS(name, DIS_EADDR8, BranchType::JPOS)
         }
         goto MATCH_finished_c;
 MATCH_label_c874:
@@ -45365,13 +45365,13 @@ MATCH_label_c874:
             nextPC = MATCH_p + 3;
             // #line 275 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSL)
+            SETS(name, DIS_EADDR8, BranchType::JSL)
             // | SETb.NP(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
             // | SETb.P(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c875:
@@ -45382,13 +45382,13 @@ MATCH_label_c875:
             nextPC = MATCH_p + 4;
             // #line 275 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSL)
+            SETS(name, DIS_EADDR8, BranchType::JSL)
             // | SETb.NP(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
             // | SETb.P(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c876:
@@ -45399,13 +45399,13 @@ MATCH_label_c876:
             nextPC = MATCH_p + 8;
             // #line 275 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSL)
+            SETS(name, DIS_EADDR8, BranchType::JSL)
             // | SETb.NP(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
             // | SETb.P(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c877:
@@ -45416,13 +45416,13 @@ MATCH_label_c877:
             nextPC = MATCH_p + 7;
             // #line 275 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSL)
+            SETS(name, DIS_EADDR8, BranchType::JSL)
             // | SETb.NP(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
             // | SETb.P(Eaddr) [name] =>
             //    stmts = instantiate(pc,name, {DIS_EADDR8});
-            //    SETS(name, DIS_EADDR8, BRANCH_JSG)
+            //    SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c878:
@@ -45433,7 +45433,7 @@ MATCH_label_c878:
             nextPC = MATCH_p + 3;
             // #line 272 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSGE)
+            SETS(name, DIS_EADDR8, BranchType::JSGE)
         }
         goto MATCH_finished_c;
 MATCH_label_c879:
@@ -45444,7 +45444,7 @@ MATCH_label_c879:
             nextPC = MATCH_p + 4;
             // #line 272 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSGE)
+            SETS(name, DIS_EADDR8, BranchType::JSGE)
         }
         goto MATCH_finished_c;
 MATCH_label_c880:
@@ -45455,7 +45455,7 @@ MATCH_label_c880:
             nextPC = MATCH_p + 8;
             // #line 272 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSGE)
+            SETS(name, DIS_EADDR8, BranchType::JSGE)
         }
         goto MATCH_finished_c;
 MATCH_label_c881:
@@ -45466,7 +45466,7 @@ MATCH_label_c881:
             nextPC = MATCH_p + 7;
             // #line 272 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSGE)
+            SETS(name, DIS_EADDR8, BranchType::JSGE)
         }
         goto MATCH_finished_c;
 MATCH_label_c882:
@@ -45477,7 +45477,7 @@ MATCH_label_c882:
             nextPC = MATCH_p + 3;
             // #line 269 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSLE)
+            SETS(name, DIS_EADDR8, BranchType::JSLE)
         }
         goto MATCH_finished_c;
 MATCH_label_c883:
@@ -45488,7 +45488,7 @@ MATCH_label_c883:
             nextPC = MATCH_p + 4;
             // #line 269 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSLE)
+            SETS(name, DIS_EADDR8, BranchType::JSLE)
         }
         goto MATCH_finished_c;
 MATCH_label_c884:
@@ -45499,7 +45499,7 @@ MATCH_label_c884:
             nextPC = MATCH_p + 8;
             // #line 269 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSLE)
+            SETS(name, DIS_EADDR8, BranchType::JSLE)
         }
         goto MATCH_finished_c;
 MATCH_label_c885:
@@ -45510,7 +45510,7 @@ MATCH_label_c885:
             nextPC = MATCH_p + 7;
             // #line 269 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSLE)
+            SETS(name, DIS_EADDR8, BranchType::JSLE)
         }
         goto MATCH_finished_c;
 MATCH_label_c886:
@@ -45521,7 +45521,7 @@ MATCH_label_c886:
             nextPC = MATCH_p + 3;
             // #line 266 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSG)
+            SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c887:
@@ -45532,7 +45532,7 @@ MATCH_label_c887:
             nextPC = MATCH_p + 4;
             // #line 266 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSG)
+            SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c888:
@@ -45543,7 +45543,7 @@ MATCH_label_c888:
             nextPC = MATCH_p + 8;
             // #line 266 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSG)
+            SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c889:
@@ -45554,7 +45554,7 @@ MATCH_label_c889:
             nextPC = MATCH_p + 7;
             // #line 266 "frontend/machine/pentium/decoder.m"
             stmts = instantiate(pc, name, { DIS_EADDR8 });
-            SETS(name, DIS_EADDR8, BRANCH_JSG)
+            SETS(name, DIS_EADDR8, BranchType::JSG)
         }
         goto MATCH_finished_c;
 MATCH_label_c890:
@@ -49731,7 +49731,7 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
         stmts->push_back(s);
         b = new BranchStatement;
         b->setDest(pc + numBytes);
-        b->setCondType(BRANCH_JE);
+        b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals, modrm->clone(), Const::get(0)));
         stmts->push_back(b);
         break;
@@ -49748,7 +49748,7 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
         stmts->push_back(s);
         b = new BranchStatement;
         b->setDest(pc + 2);
-        b->setCondType(BRANCH_JE);
+        b->setCondType(BranchType::JE);
         b->setCondExpr(
             Binary::get(opEquals, std::make_shared<Ternary>(opAt, modrm->clone(), dest->clone(), dest->clone()), Const::get(0)));
         stmts->push_back(b);

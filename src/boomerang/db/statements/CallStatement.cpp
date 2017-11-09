@@ -250,7 +250,7 @@ CallStatement::CallStatement()
     : m_returnAfterCall(false)
     , m_calleeReturn(nullptr)
 {
-    m_kind      = STMT_CALL;
+    m_kind      = StmtType::Call;
     m_procDest  = nullptr;
     m_signature = nullptr;
 }
@@ -876,7 +876,7 @@ bool CallStatement::convertToDirect()
 
 bool CallStatement::isCallToMemOffset() const
 {
-    return(getKind() == STMT_CALL && getDest()->getOper() == opMemOf &&
+    return(getKind() == StmtType::Call && getDest()->getOper() == opMemOf &&
            getDest()->getSubExp1()->getOper() == opIntConst);
 }
 

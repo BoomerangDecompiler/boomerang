@@ -75,19 +75,19 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
         switch (name[2])
         {
         case 'E': // FBE
-            br->setCondType(BRANCH_JE, true);
+            br->setCondType(BranchType::JE, true);
             break;
 
         case 'L':
 
             if (name[3] == 'G') { // FBLG
-                br->setCondType(BRANCH_JNE, true);
+                br->setCondType(BranchType::JNE, true);
             }
             else if (name[3] == 'E') { // FBLE
-                br->setCondType(BRANCH_JSLE, true);
+                br->setCondType(BranchType::JSLE, true);
             }
             else { // FBL
-                br->setCondType(BRANCH_JSL, true);
+                br->setCondType(BranchType::JSL, true);
             }
 
             break;
@@ -95,10 +95,10 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
         case 'G':
 
             if (name[3] == 'E') { // FBGE
-                br->setCondType(BRANCH_JSGE, true);
+                br->setCondType(BranchType::JSGE, true);
             }
             else { // FBG
-                br->setCondType(BRANCH_JSG, true);
+                br->setCondType(BranchType::JSG, true);
             }
 
             break;
@@ -106,7 +106,7 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
         case 'N':
 
             if (name[3] == 'E') { // FBNE
-                br->setCondType(BRANCH_JNE, true);
+                br->setCondType(BranchType::JNE, true);
             }
 
             // Else it's FBN!
@@ -127,21 +127,21 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
     switch (name[1])
     {
     case 'E':
-        br->setCondType(BRANCH_JE); // BE
+        br->setCondType(BranchType::JE); // BE
         break;
 
     case 'L':
 
         if (name[2] == 'E') {
             if (name[3] == 'U') {
-                br->setCondType(BRANCH_JULE); // BLEU
+                br->setCondType(BranchType::JULE); // BLEU
             }
             else {
-                br->setCondType(BRANCH_JSLE); // BLE
+                br->setCondType(BranchType::JSLE); // BLE
             }
         }
         else {
-            br->setCondType(BRANCH_JSL); // BL
+            br->setCondType(BranchType::JSL); // BL
         }
 
         break;
@@ -150,10 +150,10 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
 
         // BNE, BNEG (won't see BN)
         if (name[3] == 'G') {
-            br->setCondType(BRANCH_JMI); // BNEG
+            br->setCondType(BranchType::JMI); // BNEG
         }
         else {
-            br->setCondType(BRANCH_JNE); // BNE
+            br->setCondType(BranchType::JNE); // BNE
         }
 
         break;
@@ -162,10 +162,10 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
 
         // BCC, BCS
         if (name[2] == 'C') {
-            br->setCondType(BRANCH_JUGE); // BCC
+            br->setCondType(BranchType::JUGE); // BCC
         }
         else {
-            br->setCondType(BRANCH_JUL); // BCS
+            br->setCondType(BranchType::JUL); // BCS
         }
 
         break;
@@ -186,13 +186,13 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
 
         // BGE, BG, BGU
         if (name[2] == 'E') {
-            br->setCondType(BRANCH_JSGE); // BGE
+            br->setCondType(BranchType::JSGE); // BGE
         }
         else if (name[2] == 'U') {
-            br->setCondType(BRANCH_JUG); // BGU
+            br->setCondType(BranchType::JUG); // BGU
         }
         else {
-            br->setCondType(BRANCH_JSG); // BG
+            br->setCondType(BranchType::JSG); // BG
         }
 
         break;
@@ -200,7 +200,7 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
     case 'P':
 
         if (name[2] == 'O') {
-            br->setCondType(BRANCH_JPOS); // BPOS
+            br->setCondType(BranchType::JPOS); // BPOS
             break;
         }
 

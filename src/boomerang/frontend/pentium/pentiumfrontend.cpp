@@ -522,7 +522,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         CallStatement *cs = nullptr;
 
         if (!inst.rtl->empty()) {
-            cs = (CallStatement *)((inst.rtl->back()->getKind() == STMT_CALL) ? inst.rtl->back() : nullptr);
+            cs = (CallStatement *)((inst.rtl->back()->getKind() == StmtType::Call) ? inst.rtl->back() : nullptr);
         }
 
         const IBinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
@@ -575,7 +575,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 
         GotoStatement *gs = (GotoStatement *)cs;
 
-        if (gs && (gs->getKind() == STMT_GOTO)) {
+        if (gs && (gs->getKind() == StmtType::Goto)) {
             // Example: Borland often starts with a branch around some debug
             // info
             addr = gs->getFixedDest();

@@ -28,11 +28,11 @@
 
 
 BranchStatement::BranchStatement()
-    : m_jumpType((BranchType)0)
+    : m_jumpType(BranchType::JE)
     , m_cond(nullptr)
     , m_isFloat(false)
 {
-    m_kind = STMT_BRANCH;
+    m_kind = StmtType::Branch;
 }
 
 
@@ -51,67 +51,71 @@ void BranchStatement::setCondType(BranchType cond, bool usesFloat /*= false*/)
 
     switch (cond)
     {
-    case BRANCH_JE:
+    case BranchType::JE:
         p = Binary::get(opEquals, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JNE:
+    case BranchType::JNE:
         p = Binary::get(opNotEqual, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JSL:
+    case BranchType::JSL:
         p = Binary::get(opLess, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JSLE:
+    case BranchType::JSLE:
         p = Binary::get(opLessEq, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JSGE:
+    case BranchType::JSGE:
         p = Binary::get(opGtrEq, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JSG:
+    case BranchType::JSG:
         p = Binary::get(opGtr, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JUL:
+    case BranchType::JUL:
         p = Binary::get(opLessUns, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JULE:
+    case BranchType::JULE:
         p = Binary::get(opLessEqUns, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JUGE:
+    case BranchType::JUGE:
         p = Binary::get(opGtrEqUns, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JUG:
+    case BranchType::JUG:
         p = Binary::get(opGtrUns, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JMI:
+    case BranchType::JMI:
         p = Binary::get(opLess, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JPOS:
+    case BranchType::JPOS:
         p = Binary::get(opGtr, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JOF:
+    case BranchType::JOF:
         p = Binary::get(opLessUns, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JNOF:
+    case BranchType::JNOF:
         p = Binary::get(opGtrUns, Terminal::get(opFlags), Const::get(0));
         break;
 
-    case BRANCH_JPAR:
+    case BranchType::JPAR:
         // Can't handle this properly here; leave an impossible expression involving %flags so propagation will
         // still happen, and we can recognise this later in condToRelational()
         // Update: these expressions seem to get ignored ???
         p = Binary::get(opEquals, Terminal::get(opFlags), Const::get(999));
+        break;
+
+    case BranchType::INVALID:
+        assert(false);
         break;
     }
 
@@ -308,64 +312,68 @@ void BranchStatement::print(QTextStream& os, bool html) const
 
     switch (m_jumpType)
     {
-    case BRANCH_JE:
+    case BranchType::JE:
         os << "equals";
         break;
 
-    case BRANCH_JNE:
+    case BranchType::JNE:
         os << "not equals";
         break;
 
-    case BRANCH_JSL:
+    case BranchType::JSL:
         os << "signed less";
         break;
 
-    case BRANCH_JSLE:
+    case BranchType::JSLE:
         os << "signed less or equals";
         break;
 
-    case BRANCH_JSGE:
+    case BranchType::JSGE:
         os << "signed greater or equals";
         break;
 
-    case BRANCH_JSG:
+    case BranchType::JSG:
         os << "signed greater";
         break;
 
-    case BRANCH_JUL:
+    case BranchType::JUL:
         os << "unsigned less";
         break;
 
-    case BRANCH_JULE:
+    case BranchType::JULE:
         os << "unsigned less or equals";
         break;
 
-    case BRANCH_JUGE:
+    case BranchType::JUGE:
         os << "unsigned greater or equals";
         break;
 
-    case BRANCH_JUG:
+    case BranchType::JUG:
         os << "unsigned greater";
         break;
 
-    case BRANCH_JMI:
+    case BranchType::JMI:
         os << "minus";
         break;
 
-    case BRANCH_JPOS:
+    case BranchType::JPOS:
         os << "plus";
         break;
 
-    case BRANCH_JOF:
+    case BranchType::JOF:
         os << "overflow";
         break;
 
-    case BRANCH_JNOF:
+    case BranchType::JNOF:
         os << "no overflow";
         break;
 
-    case BRANCH_JPAR:
+    case BranchType::JPAR:
         os << "parity";
+        break;
+
+    case BranchType::INVALID:
+        assert(false);
         break;
     }
 
@@ -453,11 +461,11 @@ void BranchStatement::genConstraints(LocationSet& cons)
         opsType = IntegerType::get(0);
     }
 
-    if ((m_jumpType == BRANCH_JUGE) || (m_jumpType == BRANCH_JULE) || (m_jumpType == BRANCH_JUG) || (m_jumpType == BRANCH_JUL)) {
+    if ((m_jumpType == BranchType::JUGE) || (m_jumpType == BranchType::JULE) || (m_jumpType == BranchType::JUG) || (m_jumpType == BranchType::JUL)) {
         assert(!m_isFloat);
         opsType->as<IntegerType>()->bumpSigned(-1);
     }
-    else if ((m_jumpType == BRANCH_JSGE) || (m_jumpType == BRANCH_JSLE) || (m_jumpType == BRANCH_JSG) || (m_jumpType == BRANCH_JSL)) {
+    else if ((m_jumpType == BranchType::JSGE) || (m_jumpType == BranchType::JSLE) || (m_jumpType == BranchType::JSG) || (m_jumpType == BranchType::JSL)) {
         assert(!m_isFloat);
         opsType->as<IntegerType>()->bumpSigned(+1);
     }

@@ -46,53 +46,49 @@ class RTL;
 class InstructionSet;
 class ReturnStatement;
 
-typedef std::set<UserProc *>         CycleSet;
 typedef std::shared_ptr<Exp>         SharedExp;
-typedef std::unique_ptr<Statement>   UniqInstruction;
 typedef std::shared_ptr<Type>        SharedType;
 
-/**
- * Types of Statements, or high-level register transfer lists.
- * changing the order of these will result in save files not working - trent
- */
-enum StmtType : uint8_t   // ' : uint8_t' so that it can be forward declared in rtl.h
+
+/// Types of Statements, or high-level register transfer lists.
+enum class StmtType : uint8_t
 {
-    STMT_ASSIGN = 0,
-    STMT_PHIASSIGN,
-    STMT_IMPASSIGN,
-    STMT_BOOLASSIGN, // For "setCC" instructions that set destination
-    // to 1 or 0 depending on the condition codes.
-    STMT_CALL,
-    STMT_RET,
-    STMT_BRANCH,
-    STMT_GOTO,
-    STMT_CASE, // Represent  a switch statement
-    STMT_IMPREF,
-    STMT_JUNCTION
+    INVALID = 0,
+    Assign = 1,
+    PhiAssign,  ///< x := phi(a, b, c)
+    ImpAssign,
+    BoolAssign, ///< For "setCC" instructions
+    Call,
+    Ret,        ///< Return
+    Branch,
+    Goto,
+    Case,       ///< switch statement
+    ImpRef,
+    Junction
 };
 
 /**
- * BRANCH_TYPE: These values indicate what kind of conditional jump or
+ * These values indicate what kind of conditional jump or
  * conditonal assign is being performed.
- * Changing the order of these will result in save files not working - trent
  */
-enum BranchType
+enum class BranchType : uint8_t
 {
-    BRANCH_JE = 0, // Jump if equals
-    BRANCH_JNE,    // Jump if not equals
-    BRANCH_JSL,    // Jump if signed less
-    BRANCH_JSLE,   // Jump if signed less or equal
-    BRANCH_JSGE,   // Jump if signed greater or equal
-    BRANCH_JSG,    // Jump if signed greater
-    BRANCH_JUL,    // Jump if unsigned less
-    BRANCH_JULE,   // Jump if unsigned less or equal
-    BRANCH_JUGE,   // Jump if unsigned greater or equal
-    BRANCH_JUG,    // Jump if unsigned greater
-    BRANCH_JMI,    // Jump if result is minus
-    BRANCH_JPOS,   // Jump if result is positive
-    BRANCH_JOF,    // Jump if overflow
-    BRANCH_JNOF,   // Jump if no overflow
-    BRANCH_JPAR    // Jump if parity even (Intel only)
+    INVALID = 0,
+    JE = 1, ///< Jump if equals
+    JNE,    ///< Jump if not equals
+    JSL,    ///< Jump if signed less
+    JSLE,   ///< Jump if signed less or equal
+    JSGE,   ///< Jump if signed greater or equal
+    JSG,    ///< Jump if signed greater
+    JUL,    ///< Jump if unsigned less
+    JULE,   ///< Jump if unsigned less or equal
+    JUGE,   ///< Jump if unsigned greater or equal
+    JUG,    ///< Jump if unsigned greater
+    JMI,    ///< Jump if result is minus
+    JPOS,   ///< Jump if result is positive
+    JOF,    ///< Jump if overflow
+    JNOF,   ///< Jump if no overflow
+    JPAR    ///< Jump if parity even (Intel only)
 };
 
 
@@ -167,49 +163,49 @@ public:
     virtual bool isTyping() const { return false; }
 
     /// true if this statement is a standard assign
-    bool isAssign() const { return m_kind == STMT_ASSIGN; }
+    bool isAssign() const { return m_kind == StmtType::Assign; }
 
     /// true if this statement is a any kind of assignment
     bool isAssignment() const
     {
-        return m_kind == STMT_ASSIGN
-            || m_kind == STMT_PHIASSIGN
-            || m_kind == STMT_IMPASSIGN
-            || m_kind == STMT_BOOLASSIGN;
+        return m_kind == StmtType::Assign
+            || m_kind == StmtType::PhiAssign
+            || m_kind == StmtType::ImpAssign
+            || m_kind == StmtType::BoolAssign;
     }
 
     /// \returns true if this statement is a phi assignment
-    bool isPhi() const { return m_kind == STMT_PHIASSIGN; }
+    bool isPhi() const { return m_kind == StmtType::PhiAssign; }
 
     /// \returns true if this statement is an implicit assignment
-    bool isImplicit() const { return m_kind == STMT_IMPASSIGN; }
+    bool isImplicit() const { return m_kind == StmtType::ImpAssign; }
 
     /// \returns true if this statment is a flags assignment
     bool isFlagAssign() const;
 
     /// \returns true if this statement is an implicit reference
-    bool isImpRef() const { return m_kind == STMT_IMPREF; }
+    bool isImpRef() const { return m_kind == StmtType::ImpRef; }
 
-    virtual bool isGoto() { return m_kind == STMT_GOTO; }
-    virtual bool isBranch() { return m_kind == STMT_BRANCH; }
+    virtual bool isGoto()   { return m_kind == StmtType::Goto; }
+    virtual bool isBranch() { return m_kind == StmtType::Branch; }
 
     /// \returns true if this statement is a junction
-    bool isJunction() const { return m_kind == STMT_JUNCTION; }
+    bool isJunction() const { return m_kind == StmtType::Junction; }
 
     /// \returns true if this statement is a call
-    bool isCall() const { return m_kind == STMT_CALL; }
+    bool isCall() const { return m_kind == StmtType::Call; }
 
     /// \returns true if this statement is a BoolAssign
-    bool isBool() const { return m_kind == STMT_BOOLASSIGN; }
+    bool isBool() const { return m_kind == StmtType::BoolAssign; }
 
     /// \returns true if this statement is a ReturnStatement
-    bool isReturn() const { return m_kind == STMT_RET; }
+    bool isReturn() const { return m_kind == StmtType::Ret; }
 
     /// true if this statement is a decoded ICT.
     /// \note for now, it only represents decoded indirect jump instructions
-    bool isHL_ICT() const { return m_kind == STMT_CASE; }
+    bool isHL_ICT() const { return m_kind == StmtType::Case; }
 
-    bool isCase() { return m_kind == STMT_CASE; }
+    bool isCase() { return m_kind == StmtType::Case; }
 
     /// \returns true if this is a fpush/fpop
     bool isFpush() const;
@@ -397,7 +393,7 @@ public:
 protected:
 #endif
 
-    StmtType m_kind; // Statement kind (e.g. STMT_BRANCH)
+    StmtType m_kind = StmtType::INVALID; ///< Statement kind (e.g. STMT_BRANCH)
     unsigned int m_lexBegin, m_lexEnd;
 };
 

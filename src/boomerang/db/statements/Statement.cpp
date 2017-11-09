@@ -243,7 +243,7 @@ QTextStream& operator<<(QTextStream& os, const Statement *s)
 
 bool Statement::isFlagAssign() const
 {
-    if (m_kind != STMT_ASSIGN) {
+    if (m_kind != StmtType::Assign) {
         return false;
     }
 
@@ -595,7 +595,7 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
 
 bool Statement::isNullStatement() const
 {
-    if (m_kind != STMT_ASSIGN) {
+    if (m_kind != StmtType::Assign) {
         return false;
     }
 
@@ -614,7 +614,7 @@ bool Statement::isNullStatement() const
 
 bool Statement::isFpush() const
 {
-    if (m_kind != STMT_ASSIGN) {
+    if (m_kind != StmtType::Assign) {
         return false;
     }
 
@@ -624,7 +624,7 @@ bool Statement::isFpush() const
 
 bool Statement::isFpop() const
 {
-    if (m_kind != STMT_ASSIGN) {
+    if (m_kind != StmtType::Assign) {
         return false;
     }
 
