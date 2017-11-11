@@ -512,9 +512,10 @@ protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function;
 
-    /* general basic block information */
     BBType m_nodeType = BBType::Invalid;      ///< type of basic block
     std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
+
+    /* general basic block information */
     int m_labelNum      = 0;                  ///< Nonzero if start of BB needs label
     bool m_labelNeeded  = false;
     bool m_incomplete   = true;               ///< True if not yet complete

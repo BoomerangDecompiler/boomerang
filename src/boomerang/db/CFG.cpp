@@ -656,27 +656,29 @@ void Cfg::completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool bDelete)
 }
 
 
-bool Cfg::joinBB(BasicBlock *pb1, BasicBlock *pb2)
+bool Cfg::joinBB(BasicBlock *bb1, BasicBlock *bb2)
 {
-    // Ensure that the fallthrough case for pb1 is pb2
-    const std::vector<BasicBlock *>& v = pb1->getSuccessors();
+    // Ensure that the fallthrough case for bb1 is bb2
+    const std::vector<BasicBlock *>& v = bb1->getSuccessors();
 
-    if ((v.size() != 2) || (v[1] != pb2)) {
+    if ((v.size() != 2) || (v[BELSE] != bb2)) {
         return false;
     }
 
-    // Prepend the RTLs for pb1 to those of pb2. Since they will be pushed to the front of pb2, push them in reverse
-    // order
-
-    for (std::list<RTL *>::reverse_iterator it = pb1->m_listOfRTLs->rbegin();
-         it != pb1->m_listOfRTLs->rend(); it++) {
-        pb2->m_listOfRTLs->push_front(*it);
+    // Prepend the RTLs for pb1 to those of pb2.
+    // Since they will be pushed to the front of pb2,
+    // push them in reverse order
+    for (std::list<RTL *>::reverse_iterator it = bb1->m_listOfRTLs->rbegin();
+         it != bb1->m_listOfRTLs->rend(); it++) {
+        bb2->m_listOfRTLs->push_front(*it);
     }
 
-    completeMerge(pb1, pb2); // Mash them together
-    // pb1 no longer needed. Remove it from the list of BBs.  This will also delete *pb1. It will be a shallow delete,
+    completeMerge(bb1, bb2); // Mash them together
+
+    // pb1 no longer needed. Remove it from the list of BBs.
+    // This will also delete *pb1. It will be a shallow delete,
     // but that's good because we only did shallow copies to *pb2
-    removeBB(pb1);
+    removeBB(bb1);
     return true;
 }
 
@@ -712,15 +714,17 @@ bool Cfg::compressCfg()
     //
     // Look in CVS for old code.
 
-    // Find A -> J -> B     where J is a BB that is only a jump
+    // Find A -> J -> B   where J is a BB that is only a jump
     // Then A -> B
     for (iterator it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        for (auto it1 = (*it)->m_successors.begin(); it1 != (*it)->m_successors.end(); it1++) {
-            BasicBlock *pSucc = (*it1); // Pointer to J
+        for (BasicBlock *& successor : (*it)->m_successors) {
             BasicBlock *bb    = (*it);  // Pointer to A
 
-            if ((pSucc->m_predecessors.size() == 1) && (pSucc->m_successors.size() == 1) && (pSucc->m_listOfRTLs->size() == 1) &&
-                (pSucc->m_listOfRTLs->front()->size() == 1) && pSucc->m_listOfRTLs->front()->front()->isGoto()) {
+            if ((successor->m_predecessors.size() == 1) &&
+                (successor->m_successors.size() == 1) &&
+                (successor->m_listOfRTLs->size() == 1) &&
+                (successor->m_listOfRTLs->front()->size() == 1) &&
+                successor->m_listOfRTLs->front()->front()->isGoto()) {
                 // Found an out-edge to an only-jump BB
 
                 /* std::cout << "outedge to jump detected at " << std::hex << bb->getLowAddr() << " to ";
@@ -728,33 +732,35 @@ bool Cfg::compressCfg()
                  * pSucc->m_OutEdges.front()->getLowAddr() << std::dec <<
                  *                      '\n'; */
                 // Point this outedge of A to the dest of the jump (B)
-                *it1 = pSucc->m_successors.front();
-                // Now pSucc still points to J; *it1 points to B.  Almost certainly, we will need a jump in the low
+                successor = successor->m_successors.front();
+
+                // Now successor still points to J; *it1 points to B.
+                // Almost certainly, we will need a jump in the low
                 // level C that may be generated. Also force a label for B
                 bb->m_jumpRequired = true;
-                setLabelRequired(*it1);
-                // Find the in-edge from B to J; replace this with an in-edge to A
-                std::vector<BasicBlock *>::iterator it2;
+                setLabelRequired(successor);
 
-                for (it2 = (*it1)->m_predecessors.begin(); it2 != (*it1)->m_predecessors.end(); it2++) {
-                    if (*it2 == pSucc) {
-                        *it2 = bb; // Point to A
+                // Find the in-edge from B to J; replace this with an in-edge to A
+                for (BasicBlock *& pred : successor->m_predecessors) {
+                    if (pred == successor) {
+                        pred = bb; // Point to A
                     }
                 }
 
                 // Remove the in-edge from J to A. First find the in-edge
-                for (it2 = pSucc->m_predecessors.begin(); it2 != pSucc->m_predecessors.end(); it2++) {
+                std::vector<BasicBlock *>::iterator it2;
+                for (it2 = successor->m_predecessors.begin(); it2 != successor->m_predecessors.end(); it2++) {
                     if (*it2 == bb) {
                         break;
                     }
                 }
 
-                assert(it2 != pSucc->m_predecessors.end());
-                pSucc->removePredecessor(*it2);
+                assert(it2 != successor->m_predecessors.end());
+                successor->removePredecessor(*it2);
 
                 // If nothing else uses this BB (J), remove it from the CFG
-                if (pSucc->m_predecessors.empty()) {
-                    removeBB(pSucc);
+                if (successor->m_predecessors.empty()) {
+                    removeBB(successor);
                 }
             }
         }
@@ -875,12 +881,6 @@ bool Cfg::establishRevDFTOrder()
     unsigned numTraversed = retNode->getRevDFTOrder(first, last);
 
     return numTraversed == m_listBB.size();
-}
-
-
-bool Cfg::isWellFormed()
-{
-    return m_wellFormed;
 }
 
 
