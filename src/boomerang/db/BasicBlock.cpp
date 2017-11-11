@@ -161,6 +161,10 @@ void BasicBlock::setTraversed(bool bTraversed)
 
 void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 {
+    if (m_listOfRTLs) {
+        qDeleteAll(*m_listOfRTLs);
+    }
+
     m_listOfRTLs = std::move(rtls);
 }
 
