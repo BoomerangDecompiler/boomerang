@@ -34,8 +34,7 @@ public:
 
     /// \copydoc IFrontEnd::processProc
     /**
-     * \fn      PentiumFrontEnd::processProc
-     * \brief      Process a procedure, given a native (source machine) address.
+     * Process a procedure, given a native (source machine) address.
      * This is the main function for decoding a procedure.
      * This overrides the base class processProc to do source machine specific things (but often calls the base
      * class to do most of the work. Sparc is an exception)
@@ -56,7 +55,7 @@ public:
 
     /// \copydoc IFrontEnd::getMainEntryPoint
     /**
-     * \brief    Locate the starting address of "main" in the code section
+     * Locate the starting address of "main" in the code section.
      * \returns  Native pointer if found; Address::INVALID if not
      */
     virtual Address getMainEntryPoint(bool& gotMain) override;

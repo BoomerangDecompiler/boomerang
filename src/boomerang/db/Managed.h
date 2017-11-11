@@ -11,7 +11,7 @@
 
 
 /**
- * \brief   Definition of "managed" classes such as InstructionSet, which feature makeUnion etc
+ * Definition of "managed" classes such as InstructionSet, which feature makeUnion etc.
  * CLASSES: InstructionSet
  *          AssignSet
  *          StatementList

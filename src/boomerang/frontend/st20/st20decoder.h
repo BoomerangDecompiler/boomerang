@@ -34,13 +34,12 @@ public:
 
     /// \copydoc NJMCDecoder::decodeInstruction
     /**
-    * \fn    ST20Decoder::decodeInstruction
-    * \brief Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.
-    * \param pc - the native address of the pc
-    * \param delta - the difference between the above address and the host address of the pc (i.e. the address that
-    *         the pc is at in the loaded object file)
-    * \returns            a DecodeResult structure containing all the information gathered during decoding
-    */
+     * Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.
+     * \param pc - the native address of the pc
+     * \param delta - the difference between the above address and the host address of the pc (i.e. the address that
+     *         the pc is at in the loaded object file)
+     * \returns            a DecodeResult structure containing all the information gathered during decoding
+     */
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 
 private:

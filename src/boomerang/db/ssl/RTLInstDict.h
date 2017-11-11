@@ -42,27 +42,23 @@ public:
     TableEntry(std::list<QString>& p, RTL& rtl);
 
     /**
-     * \brief Sets the contents of this object with a deepcopy from another TableEntry object.  Note that this is
-     * different from the semantics of operator= for an RTL which only does a shallow copy!
+     * Sets the contents of this object with a deepcopy from another TableEntry object.
+     * Note that this is different from the semantics of operator= for an RTL
+     * which only does a shallow copy!
+     *
      * \param other - the object to copy
      * \returns a reference to this object
      */
     TableEntry& operator=(const TableEntry& other);
 
-    /**
-     * \brief        Set the parameter list.
-     * \param        p - a list of strings
-     */
+    /// Set the parameter list.
     void setParam(std::list<QString>& p);
 
-    /**
-     * \brief        Set the RTL.
-     * \param        rtl - a RTL
-     */
+    /// Set the RTL.
     void setRTL(RTL& rtl);
 
     /**
-     * \brief        Appends an RTL to an exising TableEntry
+     * Appends an RTL to an exising TableEntry
      * \param        p reference to list of formal parameters (as strings)
      * \param        rtl reference to RTL with list of Exps to append
      * \returns      0 for success, non-zero for failure
@@ -178,31 +174,27 @@ private:
     int insert(const QString& name, std::list<QString>& parameters, RTL& rtl);
 
     /**
-     * \brief Transform an RTL to eliminate any uses of post-variables.
+     * Transform an RTL to eliminate any uses of post-variables by either
+     * adding temporaries or just removing them where possible.
      *
-     * Note that the algorithm used expects to deal with simple
-     * expressions as post vars, ie r[22], m[r[1]], generally things which aren't parameterized at a higher level. This is
-     * ok for the translator (we do substitution first anyway), but may miss some optimizations for the emulator.
-     * For the emulator, if parameters are detected within a postvar, we just force the temporary, which is always safe to
-     * do.  (The parameter optimise is set to false for the emulator to achieve this).
-     * Transform the given list into another list which doesn't have post-variables, by either adding temporaries or
-     * just removing them where possible. Modifies the list passed, and also returns a pointer to it. Second
-     * parameter indicates whether the routine should attempt to optimize the resulting output, ie to minimize the
-     * number of temporaries. This is recommended for fully expanded expressions (ie within uqbt), but unsafe
-     * otherwise.
+     * Note that the algorithm used expects to deal with simple expressions
+     * as post vars, ie r[22], m[r[1]], generally things which aren't parameterized
+     * at a higher level. This is OK for the translator (we do substitution
+     * first anyway), but may miss some optimizations for the emulator.
+     * For the emulator, if parameters are detected within a postvar,
+     * we just force the temporary, which is always safe to do. (The parameter
+     * \p optimize is set to false for the emulator to achieve this).
+     *
      * \param rts the list of statements
-     * \param optimise - try to remove temporary registers
+     * \param optimize - try to remove temporary registers
      */
-    void transformPostVars(std::list<Statement *>& rts, bool optimise);
+    void transformPostVars(std::list<Statement *>& rts, bool optimize);
 
-    /**
-     * \brief        Print a textual representation of the dictionary.
-     * \param        os - stream used for printing
-     */
+    /// Print a textual representation of the dictionary.
     void print(QTextStream& os);
 
     /**
-     * \brief Add a new register definition to the dictionary
+     * Add a new register definition to the dictionary
      * \param name register's name
      * \param size - register size in bits
      * \param flt  - is float register?

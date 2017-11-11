@@ -85,10 +85,9 @@ public:
 
 public:
     /**
-     * \brief         Constructor with name, native address.
-     * \param address Native address of entry point of procedure
-     * \param name    Name of procedure
-     * \param mod     Module that contains this Function
+     * \param address Address of entry point of function
+     * \param name    Name of function
+     * \param mod     Module that contains this function
      */
     UserProc(Address address, const QString& name, Module *mod);
     virtual ~UserProc() override;
@@ -152,129 +151,96 @@ public:
     void dumpLocals(QTextStream& os, bool html = false) const;
     void dumpLocals() const;
 
-    /**
-     * \brief Records that this procedure has been decoded.
-     */
+    /// Records that this procedure has been decoded.
     void setDecoded();
 
-    /**
-     * \brief Removes the decoded bit and throws away all the current information
-     * about this procedure.
-     */
+    /// Removes the decoded bit and throws away all the current information
+    /// about this procedure.
     void unDecode();
 
-    /**
-     * \brief        Deletes the whole Cfg for this proc object. Also clears the
-     * cfg pointer, to prevent strange errors after this is called
-     */
+    /// Deletes the whole Cfg for this proc object.
     void deleteCFG() override;
 
     /// simplify the statements in this proc
     void simplify() { m_cfg->simplify(); }
 
     /**
-     * \brief Begin the decompile process at this procedure
-     * \param  path - is a list of pointers to procedures, representing the path from
+     * Begin the decompile process at this procedure
+     * \param  path A list of pointers to procedures, representing the path from
      * the current entry point to the current procedure in the call graph. Pass an
      * empty set at the top level.
      * \param indent is the indentation level; pass 0 at the top level
      */
     std::shared_ptr<ProcSet> decompile(ProcList *path, int& indent);
 
-    /**
-     * \brief Initialise decompile: sort CFG, number statements, dominator tree, etc.
-     */
+    /// Initialise decompile: sort CFG, number statements, dominator tree, etc.
     void initialiseDecompile();
 
-    /**
-     * \brief Early decompile: Place phi functions, number statements, first rename,
-     * propagation: ready for preserveds.
-     */
+    /// Early decompile: Place phi functions, number statements, first rename,
+    /// propagation: ready for preserveds.
     void earlyDecompile();
 
-    /**
-     * \brief Middle decompile: All the decompilation from preservation up to
-     * but not including removing unused statements.
-     * \returns the cycle set from the recursive call to decompile()
-     */
+    /// Middle decompile: All the decompilation from preservation up to
+    /// but not including removing unused statements.
+    /// \returns the cycle set from the recursive call to decompile()
     std::shared_ptr<ProcSet> middleDecompile(ProcList *path, int indent);
 
     /// Analyse the whole group of procedures for conditional preserveds, and update till no change.
     /// Also finalise the whole group.
     void recursionGroupAnalysis(ProcList *path, int indent);
 
-    /**
-     * \brief Global type analysis (for this procedure).
-     */
+    /// Global type analysis (for this procedure).
     void typeAnalysis();
 
-    /**
-     * \brief The inductive preservation analysis.
-     */
+    /// The inductive preservation analysis.
     bool inductivePreservation(UserProc *);
 
     /**
-     * \brief Mark calls involved in the recursion cycle as non childless
+     * Mark calls involved in the recursion cycle as non childless
      * (each child has had middleDecompile called on it now).
      * \todo Not sure that this is needed...
      */
     void markAsNonChildless(const std::shared_ptr<ProcSet>& cs);
 
-    /**
-     * \brief Update the defines and arguments in calls.
-     */
+    /// Update the defines and arguments in calls.
     void updateCalls();
 
-    /**
-     * \brief Look for short circuit branching
-     */
+    /// Look for short circuit branching
     bool branchAnalysis();
 
-    /**
-     * \brief Fix any ugly branch statements (from propagating too much)
-     */
+    /// Fix any ugly branch statements (from propagating too much)
     void fixUglyBranches();
 
     void placePhiFunctions() { m_df.placePhiFunctions(this); }
 
     /**
-     * \brief Rename block variables, with log if verbose.
+     * Rename block variables, with log if verbose.
      * \returns true if a change
      */
     bool doRenameBlockVars(int pass, bool clearStacks = false);
 
     bool canRename(SharedExp e) { return m_df.canRename(e, this); }
 
-    /**
-     * \brief Initialise the statements, e.g. proc, bb pointers
-     */
+    /// Initialise the statements, e.g. proc, bb pointers
     void initStatements();
     void numberStatements();
     bool nameStackLocations();
     void removeRedundantPhis();
 
-    /**
-     * \brief  Was trimReturns()
-     */
+    /// \note Was trimReturns()
     void findPreserveds();
 
-    /**
-     * \brief Preservations only for the stack pointer
-     */
+    /// Preservations only for the stack pointer
     void findSpPreservation();
     void removeSpAssignsIfPossible();
     void removeMatchingAssignsIfPossible(SharedExp e);
     void updateReturnTypes();
 
-    /**
-     * \brief  Perform call and phi statement bypassing at all depths
-     */
+    /// Perform call and phi statement bypassing at all depths
     void fixCallAndPhiRefs();
 
-    /**
-     * \brief Get the initial parameters, based on this UserProc's use collector
-     * Probably unused now
-     */
+    /// Get the initial parameters, based on this UserProc's use collector
+    /// Probably unused now
     void initialParameters();
 
     /// Map expressions to locals and initial parameters
@@ -295,9 +261,9 @@ public:
     void addParameter(SharedExp e, SharedType ty);
 
     /**
-     * \brief Insert into parameters list correctly sorted
-     * Update the parameters, in case the signature and hence ordering and filtering has changed, or the locations in the
-     * collector have changed
+     * Insert into parameters list correctly sorted.
+     * Update the parameters, in case the signature and hence ordering
+     * and filtering has changed, or the locations in the collector have changed
      */
     void insertParameter(SharedExp e, SharedType ty);
 
@@ -417,27 +383,29 @@ public:
     void insertStatementAfter(Statement *s, Statement *a);
 
     /**
-     * \brief Add a mapping for the destinations of phi functions that have one
-     * argument that is a parameter
+     * Add a mapping for the destinations of phi functions that have one
+     * argument that is a parameter.
      *
-     * The idea here is to give a name to those SSA variables that have one and only one parameter amongst the phi
-     * arguments. For example, in test/source/param1, there is 18 *v* m[r28{-} + 8] := phi{- 7} with m[r28{-} + 8]{0}
-     * mapped
-     * to param1; insert a mapping for m[r28{-} + 8]{18} to param1. This will avoid a copy, and will use the name of the
-     * parameter only when it is acually used as a parameter
+     * The idea here is to give a name to those SSA variables that have one
+     * and only one parameter amongst the phi arguments.
+     * For example, in test/source/param1, there is
+     *     18 *v* m[r28{-} + 8] := phi{- 7} with m[r28{-} + 8]{0}
+     * mapped to param1; insert a mapping for m[r28{-} + 8]{18} to param1.
+     * This will avoid a copy, and will use the name of the parameter only
+     * when it is acually used as a parameter.
      */
     void nameParameterPhis();
     void mapParameters();
 
     /**
-     * \brief Trim parameters to procedure calls with ellipsis (...).
+     * Trim parameters to procedure calls with ellipsis (...).
      * Also add types for ellipsis parameters, if any
      * \returns true if any signature types so added.
      */
     bool ellipsisProcessing();
 
     /**
-     * \brief Used for checking for unused parameters
+     * Used for checking for unused parameters.
      *
      * Remove the unused parameters. Check for uses for each parameter as param{0}.
      * Some parameters are apparently used when in fact they are only used as parameters to calls to procedures in the
@@ -450,10 +418,9 @@ public:
      * to doesReturnChainToCall(param, this proc).
      * but not including removing unused statements.
      *
-     * \param param - Exp to check
-     * \param p - our caller?
-     * \param visited - a set of procs already visited, to prevent infinite recursion
-     * \returns true/false :P
+     * \param param   Exp to check
+     * \param p       our caller?
+     * \param visited a set of procs already visited, to prevent infinite recursion
      */
     bool doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited);
     bool isRetNonFakeUsed(CallStatement *c, SharedExp loc, UserProc *p, ProcSet *Visited);
@@ -462,7 +429,7 @@ public:
     bool removeRedundantParameters();
 
     /**
-     * \brief Remove any returns that are not used by any callers
+     * Remove any returns that are not used by any callers
      *
      * Remove unused returns for this procedure, based on the equation:
      * returns = modifieds isect union(live at c) for all c calling this procedure.
@@ -477,6 +444,7 @@ public:
      * 3) if y is a parameter (i.e. y is of the form loc{0}), then the signature of this procedure changes, and all callers
      *    have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
      *    arguments as is applied here to the removed returns.
+     *
      * The \a removeRetSet is the set of procedures to process with this logic; caller in Prog calls all elements in this
      * set (only add procs to this set, never remove)
      *
@@ -484,16 +452,20 @@ public:
      */
     bool removeRedundantReturns(std::set<UserProc *>& removeRetSet);
 
-    // Check for a gainful use of bparam{0} in this proc. Return with true when the first such use is found.
-    // Ignore uses in return statements of recursive functions, and phi statements that define them
-    // Procs in visited are already visited
-    ///         Reurn true if location e is used gainfully in this procedure. visited is a set of UserProcs already
-    ///            visited.
+    /**
+     * Check for a gainful use of bparam{0} in this proc.
+     * Return with true when the first such use is found.
+     * Ignore uses in return statements of recursive functions,
+     * and phi statements that define them.
+     * Procs in \p visited are already visited.
+     *
+     * \returns true if location \p e is used gainfully in this procedure.
+     */
     bool checkForGainfulUse(SharedExp e, ProcSet& Visited);
 
     /**
-     * \brief Update parameters and call livenesses to take into account the changes
-     * causes by removing a return from this procedure, or a callee's parameter
+     * Update parameters and call livenesses to take into account the changes
+     * caused by removing a return from this procedure, or a callee's parameter
      * (which affects this procedure's arguments, which are also uses).
      *
      * Need to save the old parameters and call livenesses, redo the dataflow and
@@ -530,12 +502,14 @@ public:
     void getDefinitions(LocationSet& defs);
 
     /**
-     * Before Type Analysis, refs like r28{0} have a nullptr Statement pointer. After this, they will point to an
-     * implicit assignment for the location. Thus, during and after type analysis, you can find the type of any
+     * Before Type Analysis, refs like r28{0} have a nullptr Statement pointer.
+     * After this, they will point to an implicit assignment for the location.
+     * Thus, during and after type analysis, you can find the type of any
      * location by following the reference to the definition
-     * Note: you need something recursive to make sure that child subexpressions are processed before parents
-     * Example: m[r28{0} - 12]{0} could end up adding an implicit assignment for r28{-} with a null reference, when other
-     * pieces of code add r28{0}
+     * Note: you need something recursive to make sure that child subexpressions
+     * are processed before parents
+     * Example: m[r28{0} - 12]{0} could end up adding an implicit assignment
+     * for r28{-} with a null reference, when other pieces of code add r28{0}
      */
     void addImplicitAssigns();
     void makeSymbolsImplicit();
@@ -583,7 +557,6 @@ public:
     void removeSymbolMapping(const SharedConstExp& from, SharedExp to);
 
     // FIXME: is this the same as lookupSym() now?
-    /// \brief Lookup the symbol map considering type
     /// Lookup the expression in the symbol map. Return nullptr or a C string with the symbol. Use the Type* ty to
     /// select from several names in the multimap; the name corresponding to the first compatible type is returned
     SharedExp getSymbolFor(const SharedConstExp& e, SharedType ty);
@@ -629,23 +602,21 @@ public:
     void setParamType(int idx, SharedType ty);
 
     /**
-     * \brief    Get the BB with the entry point address for this procedure
+     * Get the BB with the entry point address for this procedure.
      * \note (not always the first BB)
      * \returns   Pointer to the entry point BB, or nullptr if not found
      */
     BasicBlock *getEntryBB();
 
-    /**
-     * \brief        Set the entry BB for this procedure (constructor has the entry address)
-     */
+    /// Set the entry BB for this procedure (constructor has the entry address)
     void setEntryBB();
 
     /// Get the callees.
     std::list<Function *>& getCallees() { return m_calleeList; }
 
     /**
-     * \brief Add this callee to the set of callees for this proc
-     * \param  callee - A pointer to the Proc object for the callee
+     * Add this callee to the set of callees for this proc
+     * \param  callee A pointer to the callee function
      */
     void addCallee(Function *callee);
 
@@ -693,12 +664,12 @@ public:
     void useBeforeDefine(const SharedExp& loc) { m_procUseCollector.insert(loc); }
 
     /**
-     * \brief Copy the decoded indirect control transfer instructions' RTLs to
-     * the front end's map, and decode any new targets for this CFG
+     * Copy the RTLs for the already decoded Indirect Control Transfer instructions,
+     * and decode any new targets in this CFG.
      *
-     * Copy the RTLs for the already decoded Indirect Control Transfer instructions, and decode any new targets in this CFG
-     * Note that we have to delay the new target decoding till now, because otherwise we will attempt to decode nested
-     * switch statements without having any SSA renaming, propagation, etc
+     * Note that we have to delay the new target decoding till now,
+     * because otherwise we will attempt to decode nested switch statements
+     * without having any SSA renaming, propagation, etc
      */
     void processDecodedICTs();
 
@@ -714,16 +685,16 @@ public:
     ReturnStatement *getTheReturnStatement() { return theReturnStatement; }
 
     /**
-     * \brief Decide whether to filter out \a e (return true) or keep it
+     * Decide whether to filter out \p e (return true) or keep it
      * Filter out locations not possible as return locations. Return true to *remove* (filter *out*)
-     * \returns true if \a e  should be filtered out
+     * \returns true if \p e  should be filtered out
      */
     bool filterReturns(SharedExp e);
 
     /**
-     * \brief Decide whether to filter out \a e (return true) or keep it
+     * Decide whether to filter out \p e (return true) or keep it
      * Filter out locations not possible as parameters or arguments. Return true to remove
-     * \returns true if \a e  should be filtered out
+     * \returns true if \p e should be filtered out
      * \sa UserProc::filterReturns
      */
     bool filterParams(SharedExp e);

@@ -34,7 +34,7 @@ struct TypedVariable
 };
 
 /**
- * \brief This class is used to represent local variables in procedures, and global variables for the program.
+ * This class is used to represent local variables in procedures, and global variables for the program.
  *
  * The concept is that the data space (the current procedure's stack or the global data space) has to
  * be partitioned into separate variables of various sizes and types. If a new variable is inserted that would cause

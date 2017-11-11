@@ -41,7 +41,7 @@ public:
     virtual bool accept(StmtPartModifier *modifier) override;
 
     /**
-     * \brief Sets the BranchType of this jcond as well as the flag
+     * Sets the BranchType of this jcond as well as the flag
      * indicating whether or not the floating point condition codes
      * are used.
      * \param cond      the type of branch
@@ -59,7 +59,7 @@ public:
     SharedExp getCondExpr() const;
 
     /**
-     * \brief Set the Exp expression containing the HL condition.
+     * Set the Exp expression containing the HL condition.
      * \param pss Pointer to semantic string to set
      */
     void setCondExpr(SharedExp pss);
@@ -69,7 +69,7 @@ public:
     int getSize() const { return m_size; } // Return the size of the assignment
 
     /**
-     * \brief Change this from an unsigned to a signed branch
+     * Change this from an unsigned to a signed branch.
      * \note Not sure if this is ever going to be used
      */
     void makeSigned();

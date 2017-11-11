@@ -31,7 +31,7 @@ public:
     virtual SharedType clone() const override;
 
     /**
-     * \brief        Equality comparsion.
+     * Equality comparsion.
      * \param        other - Type being compared to
      * \returns      *this == other
      */

@@ -143,11 +143,11 @@ public:
     void removeUnusedGlobals();
 
     /**
-     * \brief    Remove unused return locations
-     *
+     * Remove unused return locations.
      * This is the global removing of unused and redundant returns. The initial idea
      * is simple enough: remove some returns according to the formula:
      * returns(p) = modifieds(p) isect union(live at c) for all c calling p.
+     *
      * However, removing returns reduces the uses, leading to three effects:
      * 1) The statement that defines the return, if only used by that return, becomes unused
      * 2) if the return is implicitly defined, then the parameters may be reduced, which affects all callers
@@ -257,9 +257,9 @@ public:
     void addDecodedRtl(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRtl(a, rtl); }
 
     /**
-     * \brief This does extra processing on a constant.
-     * The expression \p e is expected to be a Const, and the Address \p location is the native
-     * location from which the constant was read.
+     * This does extra processing on a constant. The expression \p e
+     * is expected to be a Const, and the Address \p location
+     * is the native location from which the constant was read.
      * \returns processed Exp
      */
     SharedExp addReloc(SharedExp e, Address location);

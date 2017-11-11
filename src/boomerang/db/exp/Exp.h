@@ -104,7 +104,7 @@ public:
     void printt(QTextStream& os) const;
 
     /**
-     * \brief        Print to a static buffer (for debugging)
+     * Print to a static buffer (for debugging)
      * \returns      Address of the static buffer
      */
     char *prints();
@@ -115,11 +115,7 @@ public:
     /// Print to standard error (for debugging)
     void dump();
 
-    /**
-     * \brief Create a dotty file (use dotty to display the file; search the web for "graphviz").
-     *        Mainly for debugging
-     * \param name - Name of the file to create
-     */
+    /// Write the contents of this expression to \p file in graphviz dot format.
     void createDotFile(const char *name);
 
     /// Append this expression to \p os
@@ -128,10 +124,6 @@ public:
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
     virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc
-
-    //    //    //    //    //    //    //
-    //     Enquiry functions    //
-    //    //    //    //    //    //    //
 
     /// True if this is a call to a flag function
     bool isFlagCall() const { return m_oper == opFlagCall; }
@@ -166,10 +158,7 @@ public:
     /// True if this is %pc
     bool isPC() { return m_oper == opPC; }
 
-    /**
-     * \brief     Returns true if is %afp, %afp+k, %afp-k, or a[m[...]]
-     * \returns   True if found
-     */
+    /// Returns true if is %afp, %afp+k, %afp-k, or a[m[...]]
     bool isAfpTerm();
 
     /// True if is int const
@@ -271,57 +260,57 @@ public:
     bool searchAll(const Exp& pattern, std::list<SharedExp>& results);
 
     /**
-     * \brief   Search for the given subexpression, and replace if found
+     * Search for the given subexpression, and replace if found
      * \note    If the top level expression matches, return val != this
      *
-     * \param    pattern - reference to Exp we are searching for
-     * \param    replacement - ptr to Exp to replace it with
-     * \param    change - ref to boolean, set true if a change made (else cleared)
+     * \param    pattern       reference to Exp we are searching for
+     * \param    replacement   ptr to Exp to replace it with
+     * \param    change        ref to boolean, set true if a change made (else cleared)
      * \returns  True if a change made
      */
     SharedExp searchReplace(const Exp& pattern, const SharedExp& replacement, bool& change);
 
     /**
-     * \brief   Search for the given subexpression, and replace wherever found.
+     * Search for the given subexpression, and replace wherever found.
      * \note    If the top level expression matches, something other than "this" will be returned
      * \note    It is possible with wildcards that in very unusual circumstances a replacement will be made to
      *          something that is already deleted.
      * \note    Replacements are cloned. Caller to delete search and replace
      * \note    \p change is always assigned. No need to clear beforehand.
      *
-     * \param   search  reference to Exp we are searching for
-     * \param   replace ptr to Exp to replace it with
+     * \param   pattern     reference to Exp we are searching for
+     * \param   replacement ptr to Exp to replace it with
      * \param   change  set true if a change made; cleared otherwise
      * \param   once    if set to true only the first possible replacement will be made
      *
      * \returns the result (often this, but possibly changed)
      */
-    SharedExp searchReplaceAll(const Exp& search, const SharedExp& replace, bool& change, bool once = false);
+    SharedExp searchReplaceAll(const Exp& pattern, const SharedExp& replacement, bool& change, bool once = false);
 
     /**
-     * \brief   Search for the given subexpression
+     * Search for the given subexpression.
      * \note    Caller must free the list li after use, but not the Exp objects that they point to
      * \note    If the top level expression matches, li will contain search
      * \note    Now a static function. Searches pSrc, not this
      * \note    Mostly not for public use.
      *
-     * \param   search ptr to Exp we are searching for
-     * \param   pSrc ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
-     *               to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
+     * \param   pattern Exp we are searching for
+     * \param   pSrc ref to ptr to Exp to search. Reason is that we can
+     *              then overwrite that pointer to effect a replacement.
+     *              So we need to append &pSrc in the list. Can't append &this!
      * \param   li   list of Exp** where pointers to the matches are found
      * \param   once true if not all occurrences to be found, false for all
-     *
      */
-    static void doSearch(const Exp& search, SharedExp& pSrc, std::list<SharedExp *>& li, bool once);
+    static void doSearch(const Exp& pattern, SharedExp& pSrc, std::list<SharedExp *>& li, bool once);
 
     /**
-     * \brief       Search for the given subexpression in all children
+     * Search for the given subexpression in all children
      * \note        Virtual function; different implementation for each subclass of Exp
-     * \note            Will recurse via doSearch
+     * \note        Will recurse via doSearch
      *
-     * \param       search - ptr to Exp we are searching for
-     * \param       li - list of Exp** where pointers to the matches are found
-     * \param       once - true if not all occurrences to be found, false for all
+     * \param       search  ptr to Exp we are searching for
+     * \param       li      list of Exp** where pointers to the matches are found
+     * \param       once    true if not all occurrences to be found, false for all
      */
     virtual void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once);
 
@@ -335,9 +324,8 @@ public:
      */
     SharedExp propagateAllRpt(bool& changed);
 
-    //    //    //    //    //    //    //
-    //      Sub expressions    //
-    //    //    //    //    //    //    //
+
+    // Sub expressions
 
     /**
      * These are here so we can (optionally) prevent code clutter.
@@ -393,10 +381,7 @@ public:
         return nullptr;
     }
 
-    /**
-     * \brief    Get subexpression
-     * \returns  Pointer to the requested subexpression
-     */
+    /// \returns  Pointer to the requested subexpression
     virtual SharedExp getSubExp1() { return nullptr; }
     virtual SharedConstExp getSubExp1() const { return nullptr; }
     virtual SharedExp getSubExp2() { return nullptr; }
@@ -407,11 +392,7 @@ public:
     virtual SharedExp& refSubExp2();
     virtual SharedExp& refSubExp3();
 
-    /**
-     * \brief  Set requested subexpression; 1 is first
-     * param  e Pointer to subexpression to set
-     * \note   If an expression already exists, it is ;//deleted
-     */
+    /// Update a sub-expression
     virtual void setSubExp1(SharedExp /*e*/) { assert(false); }
     virtual void setSubExp2(SharedExp /*e*/) { assert(false); }
     virtual void setSubExp3(SharedExp /*e*/) { assert(false); }
@@ -422,64 +403,62 @@ public:
     // Get memory depth. Add one for each m[]
     int getMemDepth();
 
-    //    //    //    //    //    //    //
-    //    Guarded assignment    //
-    //    //    //    //    //    //    //
-
     /// \returns a ptr to the guard expression, or 0 if none
     SharedExp getGuard();
 
-    //    //    //    //    //    //    //    //    //
-    //    Expression Simplification    //
-    //    //    //    //    //    //    //    //    //
 
-
-    // These simplifying functions don't really belong in class Exp, but they know too much about how Exps work
-    // They can't go into util.so, since then util.so and db.so would co-depend on each other for testing at least
+    // These simplifying functions don't really belong in class Exp,
+    // but they know too much about how Exps work
 
     /**
-     * \brief        Takes an expression consisting on only + and - operators and partitions its terms into positive
-     *               non-integer fixed terms, negative non-integer fixed terms and integer terms. For example, given:
-     *                   %sp + 108 + n - %sp - 92
-     *               the resulting partition will be:
-     *                   positives = { %sp, n }
-     *                   negatives = { %sp }
-     *                   integers  = { 108, -92 }
+     * Takes an expression consisting on only + and - operators and partitions
+     * its terms into positive non-integer fixed terms, negative non-integer
+     * fixed terms and integer terms. For example, given:
+     *     %sp + 108 + n - %sp - 92
+     * the resulting partition will be:
+     *     positives = { %sp, n }
+     *     negatives = { %sp }
+     *     integers  = { 108, -92 }
+     *
      * \note         integers is a vector so we can use the accumulate func
      * \note         Expressions are NOT cloned. Therefore, do not delete the expressions in positives or negatives
      *
-     * \param positives - the list of positive terms
-     * \param negatives - the list of negative terms
-     * \param integers - the vector of integer terms
-     * \param negate - determines whether or not to negate the whole expression, i.e. we are on the RHS of an opMinus
+     * \param positives the list of positive terms
+     * \param negatives the list of negative terms
+     * \param integers  the vector of integer terms
+     * \param negate    determines whether or not to negate the whole expression, i.e. we are on the RHS of an opMinus
      */
     void partitionTerms(std::list<SharedExp>& positives, std::list<SharedExp>& negatives, std::vector<int>& integers,
                         bool negate);
 
     /**
-     * \brief        This method simplifies an expression consisting of + and - at the top level. For example,
-     *               (%sp + 100) - (%sp + 92) will be simplified to 8.
+     * This method simplifies an expression consisting of + and - at the top level.
+     * For example,
+     *     (%sp + 100) - (%sp + 92) will be simplified to 8.
+     *
      * \note         Any expression can be so simplified
-     * \note         User must ;//delete result
+     * \note         Overridden in subclasses
      * \returns      Ptr to the simplified expression
      */
     virtual SharedExp simplifyArith() { return shared_from_this(); }
 
     /**
-     * \brief        This method creates an expression that is the sum of all expressions in a list.
-     *               E.g. given the list <4,r[8],m[14]> the resulting expression is 4+r[8]+m[14].
+     * This method creates an expression that is the sum of all expressions in a list.
+     * E.g. given the list <4, r[8], m[14]> the resulting expression is 4+r[8]+m[14].
+     *
      * \note         static (non instance) function
      * \note         Exps ARE cloned
-     * \param        exprs - a list of expressions
+     * \param        exprs a list of expressions
      * \returns      a new Exp with the accumulation
      */
     static SharedExp accumulate(std::list<SharedExp>& exprs);
 
     /**
-     * \brief        Apply various simplifications such as constant folding. Also canonicalise by putting iteger
-     *               constants on the right hand side of sums, adding of negative constants changed to subtracting
-     *               positive constants, etc.  Changes << k to a multiply
-     * \note         User must ;//delete result
+     * Apply various simplifications such as constant folding.
+     * Also canonicalise by putting integer constants on the right hand side of sums,
+     * adding of negative constants changed to subtracting positive constants, etc.
+     * Changes << k to a multiply
+     *
      * \note         Address simplification (a[ m[ x ]] == x) is done separately
      * \returns      Ptr to the simplified expression
      *
@@ -493,7 +472,7 @@ public:
     SharedExp simplify();
 
     /**
-     * \brief        Do the work of simplification
+     * Do the work of simplification
      * \note         Address simplification (a[ m[ x ]] == x) is done separately
      * \returns      Ptr to the simplified expression
      */
@@ -504,8 +483,12 @@ public:
     }
 
     /**
-     * \brief        Just do addressof simplification: a[ m[ any ]] == any, m[ a[ any ]] = any, and also
-     *               a[ size m[ any ]] == any
+     * Just do addressof simplification:
+     *     a[ m[ any ]] == any,
+     *     m[ a[ any ]] = any,
+     * and also
+     *     a[ size m[ any ]] == any
+     *
      * \todo         Replace with a visitor some day
      * \returns      Ptr to the simplified expression
      */
@@ -513,16 +496,14 @@ public:
     virtual SharedExp simplifyConstraint() { return shared_from_this(); }
 
     /**
-     * \brief       Replace succ(r[k]) by r[k+1]
+     * Replace succ(r[k]) by r[k+1]
      * \note        Could change top level expression
      * \returns     Fixed expression
      */
     SharedExp fixSuccessor(); // succ(r2) -> r3
 
-    /// Kill any zero fill, sign extend, or truncates
-
     /**
-     * \brief        Remove size operations such as zero fill, sign extend
+     * Remove size operations such as zero fill, sign extend
      * \note         Could change top level expression
      * \note         Does not handle truncation at present
      * \returns      Fixed expression
@@ -619,15 +600,8 @@ protected:
     OPER m_oper; ///< The operator (e.g. opPlus)
 };
 
-// Not part of the Exp class, but logically belongs with it:
 
-/**
- * \brief Output operator for Exp*
- * Prints the Exp pointed to by p
- * \param os output stream to send to
- * \param p ptr to Exp to print to the stream
- * \returns copy of os (for concatenation)
- */
+/// Prints the Exp pointed to by \p p to \p os
 QTextStream& operator<<(QTextStream& os, const Exp *p);
 
 

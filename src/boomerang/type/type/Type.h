@@ -95,18 +95,18 @@ public:
     static SharedType getNamedType(const QString& name);
 
     /**
-     * \brief   Given the name of a temporary variable, return its Type
+     * Given the name of a temporary variable, return its Type
      * \param   name reference to a string (e.g. "tmp", "tmpd")
      * \returns Ptr to a new Type object
      */
     static SharedType getTempType(const QString& name);
 
     /**
-     * \brief        static Constructor from string
+     * parse a C type from a string.
      * \param        str string to parse
      * \returns      constructed type.
      */
-    static SharedType parseType(const char *str); // parse a C type
+    static SharedType parseType(const char *str);
 
     /// \returns true if this type is a (const) char* pointer or char array.
     bool isCString() const;
@@ -162,7 +162,7 @@ public:
     virtual bool operator<(const Type& other) const = 0;  ///< Considers sign
 
     /**
-     * \brief        Match operation.
+     * Match operation.
      * \param        pattern - Type to match
      * \returns            Exp list of bindings if match or nullptr
      */
@@ -201,10 +201,10 @@ public:
     static void dumpNames();             // For debugging
 
     /**
-     * \brief  Return a minimal temporary name for this type. It'd be even
-     *          nicer to return a unique name, but we don't know scope at
-     *          this point, and even so we could still clash with a user-defined
-     *          name later on :(
+     * Return a minimal temporary name for this type. It'd be even
+     * nicer to return a unique name, but we don't know scope at
+     * this point, and even so we could still clash with a user-defined
+     * name later on. :(
      * \returns        a string
      */
     virtual QString getTempName() const; // Get a temporary name for the type

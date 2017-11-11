@@ -189,7 +189,7 @@ public:
     static void closeInstance(void *dlHandle); ///< Close the library opened by getInstanceFor
 
     /**
-     * \brief    Create a Return or a Oneway BB if a return statement already exists
+     * Create a Return or a Oneway BB if a return statement already exists.
      * \param    pProc pointer to enclosing UserProc
      * \param    BB_rtls list of RTLs for the current BB (not including pRtl)
      * \param    pRtl pointer to the current RTL with the semantics for the return statement (including a

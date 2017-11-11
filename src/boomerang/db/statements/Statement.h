@@ -220,7 +220,13 @@ public:
     /// returns true if this statement uses the given expression
     virtual bool usesExp(const Exp& exp) const = 0;
 
-    /// statements should be printable (for debugging)
+    /**
+     * Display a text reprentation of this statement to the given stream
+     * \note  Usually called from RTL::print, in which case the first 9
+     *        chars of the print have already been output to os
+     * \param os - stream to write to
+     * \param html - produce html encoded representation
+     */
     virtual void print(QTextStream& os, bool html = false) const = 0;
 
     void printAsUse(QTextStream& os) const { os << m_number; }
@@ -235,9 +241,12 @@ public:
     virtual bool search(const Exp& pattern, SharedExp& result) const = 0;
 
     /**
-     * \brief   Find all instances of the search expression
-     * \param   pattern a location to search for
-     * \param   result  a list which will have any matching exps appended to it in reverse nesting order.
+     * Find all instances of \p pattern and adds all found expressions
+     * to \p result in reverse nesting order.
+     *
+     * \param   pattern an expression to search for
+     * \param   result  a list which will have any matching exps
+     *                  appended to it in reverse nesting order.
      * \returns true if there were any matches
      */
     virtual bool searchAll(const Exp& pattern, std::list<SharedExp>& result) const = 0;
@@ -246,10 +255,9 @@ public:
      * Replace all instances of search with replace.
      * \param pattern a location to search for
      * \param replace the expression with which to replace it
-     * \param cc      ignored
+     * \param cc      Set to true to change collectors as well.
      * \returns True if any change
      */
-    /// general search and replace. Set cc true to change collectors as well. Return true if any change
     virtual bool searchAndReplace(const Exp& pattern, SharedExp replace, bool cc = false) = 0; // TODO: consider constness
 
     /**
@@ -261,7 +269,7 @@ public:
     static bool canPropagateToExp(Exp& exp);
 
     /**
-     * \brief Propagate to this statement
+     * Propagate to this statement.
      * \param destCounts is a map that indicates how may times a statement's definition is used
      * \param convert set true if an indirect call is changed to direct (otherwise, no change)
      * \param force set to true to propagate even memofs (for switch analysis)
@@ -398,11 +406,16 @@ protected:
 };
 
 
-/// Print the Statement (etc) pointed to by p
-QTextStream& operator<<(QTextStream& os, const Statement *p);
+/**
+ * Output operator for Statement *.
+ * Just makes it easier to use e.g. LOG_STREAM() << myStmtStar
+ * \param os output stream to send to
+ * \param stmt  ptr to Statement to print to the stream
+ * \returns copy of os (for concatenation)
+ */
+QTextStream& operator<<(QTextStream& os, const Statement *stmt);
 QTextStream& operator<<(QTextStream& os, const InstructionSet *p);
 QTextStream& operator<<(QTextStream& os, const LocationSet *p);
-
 
 
 /**

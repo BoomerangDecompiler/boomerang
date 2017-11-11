@@ -46,8 +46,7 @@ public:
      * work. Sparc is an exception)
      */
     /**
-     * \fn     SparcFrontEnd::processProc
-     * \brief  Builds the CFG for a procedure out of the RTLs constructed
+     * Builds the CFG for a procedure out of the RTLs constructed
      *         during decoding. The semantics of delayed CTIs are
      *         transformed into CTIs that aren't delayed.
      * \note   This function overrides (and replaces) the function with
@@ -71,8 +70,7 @@ public:
 
     /// \copydoc IFrontEnd::getMainEntryPoint
     /**
-     * \fn    SparcFrontEnd::getMainEntryPoint
-     * \brief Locate the starting address of "main" in the code section
+     * Locate the starting address of "main" in the code section
      * \param gotMain set if main found
      * \returns Native pointer if found; Address::INVALID if not
      */
@@ -80,16 +78,14 @@ public:
 
 private:
     /**
-     * \fn    SparcFrontEnd::warnDCTcouple
-     * \brief Emit a warning when encountering a DCTI couple.
+     * Emit a warning when encountering a DCTI couple.
      * \param uAt - the address of the couple
      * \param uDest - the address of the first DCTI in the couple
      */
     void warnDCTcouple(Address uAt, Address uDest);
 
     /**
-     * \fn        SparcFrontEnd::optimise_DelayCopy
-     * \brief  Check if delay instruction can be optimized
+     * Check if delay instruction can be optimized.
      *
      * Determines if a delay instruction is exactly the same as the instruction immediately preceding the
      * destination of a CTI; i.e. has been copied from the real destination to the delay slot as an
@@ -106,38 +102,40 @@ private:
     bool optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper);
 
     /**
-     * \fn     SparcFrontEnd::optimise_CallReturn
-     * \brief      Determines if the given call and delay instruction consitute a call where callee returns to
-     *                    the caller's caller. That is:
+     * Determines if the given call and delay instruction consitute a call
+     * where callee returns to the caller's caller. That is:
      *   ProcA      |  ProcB:       |         ProcC:
      * -------------|---------------|---------------
      * ...          | ...           |        ...
      * call ProcB   | call ProcC    |        ret
      * ...          | restore       |        ...
      *
-     *             The restore instruction in ProcB will effectively set %o7 to be %i7, the address to which ProcB will
-     *             return. So in effect ProcC will return to ProcA at the position just after the call to ProcB. This
-     *             is equivalent to ProcC returning to ProcB which then immediately returns to ProcA.
+     * The restore instruction in ProcB will effectively set %o7 to be %i7,
+     * the address to which ProcB will return. So in effect ProcC will return
+     * to ProcA at the position just after the call to ProcB. This is equivalent
+     * to ProcC returning to ProcB which then immediately returns to ProcA.
      *
-     * \note               We don't set a label at the return, because we also have to force a jump at the call BB,
-     *                 and in some cases we don't have the call BB as yet. So these two are up to the caller
-     * \note               The name of this function is now somewhat irrelevant. The whole function is somewhat irrelevant;
-     *                 it dates from the times when you would always find an actual restore in the delay slot.
-     *                 With some patterns, this is no longer true.
-     * \param          call - the RTL for the caller (e.g. "call ProcC" above)
-     * \param          rtl - pointer to the RTL for the call instruction
-     * \param          delay - the RTL for the delay instruction (e.g. "restore")
-     * \returns        The basic block containing the single return instruction if this optimisation applies, nullptr
-     *                 otherwise.
+     * \note       We don't set a label at the return, because we also have to
+     *             force a jump at the call BB, and in some cases we don't
+     *             have the call BB as yet. So these two are up to the caller
+     * \note       The name of this function is now somewhat irrelevant.
+     *             The whole function is somewhat irrelevant; it dates from
+     *             the times when you would always find an actual restore
+     *             in the delay slot. With some patterns, this is no longer true.
+     *
+     * \param      call  the RTL for the caller (e.g. "call ProcC" above)
+     * \param      rtl   pointer to the RTL for the call instruction
+     * \param      delay the RTL for the delay instruction (e.g. "restore")
+     * \returns    The basic block containing the single return instruction
+     *             if this optimisation applies, nullptr otherwise.
      */
     BasicBlock *optimise_CallReturn(CallStatement *call, RTL *rtl, RTL *delay, UserProc *pProc);
 
     /**
-     * \fn    SparcFrontEnd::handleBranch
-     * \brief Adds the destination of a branch to the queue of address that must be decoded (if this destination
-     *        has not already been visited).
-     *, but newBB may be changed if the destination of the branch is in the middle of an existing
-     *        BB. It will then be changed to point to a new BB beginning with the dest
+     * Adds the destination of a branch to the queue of address
+     * that must be decoded (if this destination has not already been visited).
+     * but newBB may be changed if the destination of the branch is in the middle of an existing
+     * BB. It will then be changed to point to a new BB beginning with the dest
      * \param newBB - the new basic block delimited by the branch instruction. May be nullptr if this block has been
      *        built before.
      * \param dest - the destination being branched to
@@ -148,10 +146,10 @@ private:
     void handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq);
 
     /**
-     * \fn     SparcFrontEnd::handleCall
-     * \brief  Records the fact that there is a procedure at a given address. Also adds the out edge to the
-     *         lexical successor of the call site (taking into consideration the delay slot and possible UNIMP
-     *         instruction).
+     * Records the fact that there is a procedure at a given address. Also adds the out edge to the
+     * lexical successor of the call site (taking into consideration the delay slot and possible UNIMP
+     * instruction).
+     *
      * \param  proc - caller - only used to access Prog
      * \param  dest - the address of the callee
      * \param  callBB - the basic block delimited by the call
@@ -159,22 +157,19 @@ private:
      * \param  address - the address of the call instruction
      * \param  offset - the offset from the call instruction to which an outedge must be added. A value of 0
      *         means no edge is to be added.
-     *
      */
     void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, Cfg *cfg, Address address, int offset = 0);
 
     /**
-     * \fn         SparcFrontEnd::case_unhandled_stub
-     * \brief         This is the stub for cases of DCTI couples that we haven't written analysis code for yet. It simply
-     *                        displays an informative warning and returns.
+     * This is the stub for cases of DCTI couples that we haven't written
+     * analysis code for yet. It simply displays an informative warning and returns.
      * \param         addr - the address of the first CTI in the couple
      *
      */
     void case_unhandled_stub(Address addr);
 
     /**
-     * \fn         SparcFrontEnd::case_CALL
-     * \brief         Handles a call instruction
+     * Handles a call instruction
      * \param address - the native address of the call instruction
      * \param inst - the info summaries when decoding the call instruction
      * \param delay_inst - the info summaries when decoding the delay instruction
@@ -190,8 +185,7 @@ private:
                    UserProc *proc, std::list<CallStatement *>& callList, QTextStream& os, bool isPattern = false);
 
     /**
-     * \fn         SparcFrontEnd::case_SD
-     * \brief         Handles a non-call, static delayed (SD) instruction
+     * Handles a non-call, static delayed (SD) instruction
      * \param address - the native address of the SD
      * \param delta - the offset of the above address from the logical address at which the procedure starts
      *                (i.e. the one given by dis)
@@ -208,8 +202,7 @@ private:
                  std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq, QTextStream& os);
 
     /**
-     * \fn         SparcFrontEnd::case_DD
-     * \brief         Handles all dynamic delayed jumps (jmpl, also dynamic calls)
+     * Handles all dynamic delayed jumps (jmpl, also dynamic calls)
      * \param address - the native address of the DD
      * \param delta - the offset of the above address from the logical address at which the procedure
      *                starts (i.e. the one given by dis)
@@ -227,7 +220,7 @@ private:
 
 
     /**
-     * \brief   Handles all Static Conditional Delayed non-anulled branches
+     * Handles all Static Conditional Delayed non-anulled branches
      * \param   address - the native address of the DD
      * \param   delta - the offset of the above address from the logical address at which the procedure starts
      *                  (i.e. the one given by dis)
@@ -244,10 +237,9 @@ private:
                   std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq);
 
     /**
-     * \fn        SparcFrontEnd::case_SCDAN
-     * \brief        Handles all static conditional delayed anulled branches followed by an NCT (but not NOP)
-     *                    instruction.
-     * \param        address - the native address of the DD
+     * Handles all static conditional delayed anulled branches followed by
+     * an NCT (but not NOP) instruction.
+     * \param address - the native address of the DD
      * \param delta - the offset of the above address from the logical
      *                address at which the procedure starts (i.e. the one given by dis)
      * \param hiAddress - first address outside this code section
@@ -263,15 +255,14 @@ private:
                     std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq);
 
     /**
-     * \brief   Emit a null RTL with the given address.
+     * Emit a null RTL with the given address.
      * \param   pRtls - List of RTLs to append this instruction to
      * \param   uAddr - Native address of this instruction
      */
     void emitNop(std::list<RTL *> *pRtls, Address uAddr);
 
     /**
-     * \fn      SparcFrontEnd::emitCopyPC
-     * \brief  Emit the RTL for a call $+8 instruction, which is merely %o7 = %pc
+     * Emit the RTL for a call $+8 instruction, which is merely %o7 = %pc
      * \note   Assumes that the delay slot RTL has already been pushed; we must push the semantics BEFORE that RTL,
      *         since the delay slot instruction may use %o7. Example:
      *         CALL $+8            ! This code is common in startup code
@@ -293,8 +284,7 @@ private:
     void quadOperation(Address addr, std::list<RTL *> *lrtl, OPER op);
 
     /**
-     * \fn     SparcFrontEnd::helperFunc
-     * \brief  Checks for sparc specific helper functions like .urem, which have specific sematics.
+     * Checks for sparc specific helper functions like .urem, which have specific sematics.
      * Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to lrtl, and return true
      * \note   This needs to be handled in a resourcable way.
      * \param  dest destination of the call (native address)
@@ -304,7 +294,7 @@ private:
      */
     bool isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl) override;
 
-    /*
+    /**
      * Another small helper function to generate either (for V9):
      * 64* tmp[tmpl] = sgnex(32, 64, r8) op sgnex(32, 64, r9)
      * 32* r8 = truncs(64, 32, tmp[tmpl])
@@ -316,12 +306,12 @@ private:
      */
     void gen32op32gives64(OPER op, std::list<RTL *> *lrtl, Address addr);
 
-    /// This is the long version of helperFunc (i.e. -f not used). This does the complete 64 bit semantics
+    /// This is the long version of helperFunc (i.e. -f not used).
+    /// This does the complete 64 bit semantics
     bool helperFuncLong(Address dest, Address addr, std::list<RTL *> *lrtl, QString& name);
 
-    // void    setReturnLocations(CalleeEpilogue* epilogue, int iReg);
-
-    // This struct represents a single nop instruction. Used as a substitute delay slot instruction
+    // This struct represents a single nop instruction.
+    // Used as a substitute delay slot instruction
     DecodeResult nop_inst;
     IBinarySymbolTable *SymbolTable;
 };

@@ -212,9 +212,8 @@ int read();
  */
 
 /**
- * \file          sslscanner.cpp
- * \brief      Defines a scanner to parse the tokens of a Semantic
- *                  Specification Language specification.
+ * \file sslscanner.cpp Defines a scanner to parse the tokens of a Semantic
+ * Specification Language specification.
  */
 
 /*

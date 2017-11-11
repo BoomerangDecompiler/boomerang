@@ -49394,9 +49394,8 @@ MATCH_finished_c:
  */
 
 /**
- * \fn        dis_Mem
- * \brief        Converts a dynamic address to a Exp* expression.
- *                    E.g. [1000] --> m[, 1000
+ * Converts a dynamic address to a Exp* expression.
+ * E.g. [1000] --> m[1000]
  * \param        pc - the address of the Eaddr part of the instr
  *                    expr - the expression that will be built
  * \returns             the Exp* representation of the given Eaddr
@@ -49606,9 +49605,9 @@ MATCH_finished_b:
 }
 
 
-/** * \fn        dis_Eaddr
- * \brief        Converts a dynamic address to a Exp* expression.
- *                    E.g. %ecx --> r[ 25 ]
+/**
+ * Converts a dynamic address to a Exp* expression.
+ * E.g. %ecx --> r[ 25 ]
  * CALLED FROM:        Macros DIS_EADDR32, DIS_EADDR16 and DIS_EADDR8
  * \param        pc - the instruction stream address of the dynamic
  *                      address
@@ -49667,11 +49666,10 @@ MATCH_label_a0:
 
 
 /**
- * \fn      PentiumDecoder::isFuncPrologue()
- * \brief      Check to see if the instructions at the given offset match
- *                    any callee prologue, i.e. does it look like this offset
- *                    is a pointer to a function?
- * \param      hostPC - pointer to the code in question (native address)
+ * Check to see if the instructions at the given offset match
+ * any callee prologue, i.e. does it look like this offset
+ * is a pointer to a function?
+ * \param pointer to the code in question (native address)
  * \returns           True if a match found
  */
 bool PentiumDecoder::isFuncPrologue(Address)
@@ -49680,10 +49678,6 @@ bool PentiumDecoder::isFuncPrologue(Address)
 }
 
 
-/**
- * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
- *
- */
 PentiumDecoder::PentiumDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {
@@ -49694,7 +49688,7 @@ PentiumDecoder::PentiumDecoder(Prog *_prog)
 static int BSFRstate = 0;                                                     // State number for this state machine
 
 /**
- * \brief Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
+ * Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
  * \param pc native PC address (start of the BSF/BSR instruction)
  * \param dest an expression for the destination register
  * \param modrm an expression for the operand being scanned

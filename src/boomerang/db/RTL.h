@@ -59,9 +59,9 @@ public:
     // Statement list editing methods
 
     /**
-     * \brief  Append \p s to the end of this RTL.
-     * \note   Exception: Leaves any flag call at the end (so may push exp
-     *         to second last position, instead of last)
+     *  Append \p s to the end of this RTL.
+     * \note   Exception: Leaves any flag call at the end
+     * (so may push exp to second last position, instead of last)
      * \note   \p s is NOT copied.
      */
     void append(Statement *s);
@@ -73,7 +73,7 @@ public:
     void deepCopyList(std::list<Statement *>& dest) const;
 
     /**
-     * \brief   Prints this object to a stream in text form.
+     * Prints this object to a stream in text form.
      * \param   os   stream to output to (often cout or cerr)
      * \param   html if true output is in html
      */

@@ -377,14 +377,11 @@ private:
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr, bool deleteRTLs = false);
 
     /**
-     * \brief Complete the merge of two BBs by adjusting in and out edges. If \p deleteBB is true, delete \p bb1
-     *
-     * Completes the merge of pb1 and pb2 by adjusting out edges. No checks are made that the merge is valid
-     * (hence this is a private function) Deletes pb1 if bDelete is true
+     * Complete the merge of two BBs by adjusting in and out edges.
+     * No checks are made that the merge is valid (hence this is a private function).
      *
      * \param bb1,bb2 pointers to the two BBs to merge
      * \param deleteBB if true, \p bb1 is deleted as well
-     *
      */
     void completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool deleteBB = false);
 

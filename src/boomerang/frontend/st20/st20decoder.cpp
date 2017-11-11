@@ -870,10 +870,9 @@ MATCH_finished_a:
 **********************************/
 
 /**
- * \fn        ST20Decoder::getByte
- * \brief        Returns the word starting at the given address.
- * \param        lc - address at which to decode the double
- * \returns             the decoded double
+ * Returns the word starting at the given address.
+ * \param lc - address at which to decode the Byte
+ * \returns the decoded Byte
  */
 Byte ST20Decoder::getByte(intptr_t lc)
 /* getByte - returns next byte from image pointed to by lc.     */
@@ -883,10 +882,9 @@ Byte ST20Decoder::getByte(intptr_t lc)
 
 
 /**
- * \fn        ST20Decoder::getWord
- * \brief        Returns the word starting at the given address.
- * \param        lc - address at which to decode the double
- * \returns             the decoded double
+ * Returns the word starting at the given address.
+ * \param    lc - address at which to decode the Word
+ * \returns  the decoded Word
  */
 SWord ST20Decoder::getWord(intptr_t lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
@@ -896,8 +894,7 @@ SWord ST20Decoder::getWord(intptr_t lc)
 
 
 /**
- * \fn        ST20Decoder::getDword
- * \brief        Returns the double starting at the given address.
+ * Returns the double starting at the given address.
  * \param        lc - address at which to decode the double
  * \returns             the decoded double
  */
@@ -908,11 +905,6 @@ DWord ST20Decoder::getDword(intptr_t lc)
 }
 
 
-/**
- * \fn       ST20Decoder::ST20Decoder
- * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
- *
- */
 ST20Decoder::ST20Decoder(Prog *prog_)
     : NJMCDecoder(prog_)
 {

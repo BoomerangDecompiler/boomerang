@@ -70,60 +70,32 @@ public:
     void adjustFixedDest(int delta);
 
     /**
-     * \fn      GotoStatement::setIsComputed
-     * \brief      Sets the fact that this call is computed.
-     * \note This should really be removed, once CaseStatement and
-     *                    HLNwayCall are implemented properly
+     * Sets the fact that this call is computed.
+     * \todo This should really be removed, once CaseStatement
+     * and HLNwayCall are implemented properly
      */
     void setIsComputed(bool b = true);
 
     /**
-     * \fn      GotoStatement::isComputed
-     * \brief      Returns whether or not this call is computed.
-     * \note          This should really be removed, once CaseStatement and HLNwayCall
-     *                    are implemented properly
-     * \returns           this call is computed
+     * Returns whether or not this call is computed.
+     * \todo This should really be removed, once CaseStatement
+     * and HLNwayCall are implemented properly
+     * \returns this call is computed
      */
     bool isComputed() const;
 
-    /**
-     * \fn    GotoStatement::print
-     * \brief Display a text reprentation of this RTL to the given stream
-     * \note  Usually called from RTL::print, in which case the first 9
-     *        chars of the print have already been output to os
-     * \param os - stream to write to
-     * \param html - produce html encoded representation
-     */
+    /// \copydoc Statement::print
     virtual void print(QTextStream& os, bool html = false) const override;
 
-    // general search
-    virtual bool search(const Exp&, SharedExp&) const override;
+    /// \copydoc Statement::search
+    virtual bool search(const Exp& pattern, SharedExp& result) const override;
 
-    // Replace all instances of "search" with "replace".
-
-    /**
-     * \fn        GotoStatement::searchAndReplace
-     * \brief        Replace all instances of search with replace.
-     * \param search - a location to search for
-     * \param replace - the expression with which to replace it
-     * \param cc - ignored
-     * \returns True if any change
-     */
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
-
-
-    /**
-     * \fn        GotoStatement::searchAll
-     * \brief        Find all instances of the search expression
-     * Searches for all instances of a given subexpression within this
-     * expression and adds them to a given list in reverse nesting order.
-     *
-     * \param search - a location to search for
-     * \param result - a list which will have any matching exprs
-     *                 appended to it
-     * \returns true if there were any matches
-     */
+    /// \copydoc Statement::searchAndReplace
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+
+    /// \copydoc Statement::searchAndReplace
+    virtual bool searchAndReplace(const Exp& pattern, SharedExp replace, bool cc = false) override;
+
 
     // code generation
     virtual void generateCode(ICodeGenerator *, const BasicBlock *) override;

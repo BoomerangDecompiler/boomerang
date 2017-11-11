@@ -9330,8 +9330,7 @@ bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
 **********************************/
 
 /**
- * \fn        PPCDecoder::getDword
- * \brief        Returns the double starting at the given address.
+ * Returns the double starting at the given address.
  * \param        lc - address at which to decode the double
  * \returns             the decoded double
  */
@@ -9343,11 +9342,6 @@ DWord PPCDecoder::getDword(HostAddress lc)
 }
 
 
-/**
- * \fn       PPCDecoder::PPCDecoder
- * \brief
- *
- */
 PPCDecoder::PPCDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {

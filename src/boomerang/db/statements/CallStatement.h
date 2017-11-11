@@ -130,14 +130,14 @@ public:
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
     /**
-     * \brief Sets a bit that says that this call is effectively followed by a return.
+     * Sets a bit that says that this call is effectively followed by a return.
      * This happens e.g. on Sparc when there is a restore in the delay slot of the call
      * \param b true if this is to be set; false to clear the bit
      */
     void setReturnAfterCall(bool b);
 
     /**
-     * \brief Tests a bit that says that this call is effectively followed by a return.
+     * Tests a bit that says that this call is effectively followed by a return.
      * This happens e.g. on Sparc when there is a restore in the delay slot of the call
      * \returns True if this call is effectively followed by a return
      */

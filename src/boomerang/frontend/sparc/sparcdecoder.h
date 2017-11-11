@@ -19,8 +19,7 @@ class SparcMachine
 {
 public:
     /**
-     * \fn     SparcMachine::dis_RegRhs
-     * \brief   Decode the register on the RHS
+     * Decode the register on the RHS
      * \note    Replaces r[0] with const 0
      * \note    Not used by DIS_RD since don't want 0 on LHS
      * \param   reg_no - register (0-31)
