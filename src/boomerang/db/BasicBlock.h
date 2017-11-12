@@ -10,10 +10,14 @@
 #pragma once
 
 
-#include "boomerang/db/Managed.h"
 #include "boomerang/util/Address.h"
+#include "boomerang/util/StatementList.h"
+#include "boomerang/util/LocationSet.h"
 
-#include <QtCore/QString>
+#include <QString>
+
+#include <memory>
+
 
 class Location;
 class ICodeGenerator;
@@ -21,6 +25,7 @@ class BasicBlock;
 class RTL;
 class Function;
 class UserProc;
+class ConnectionGraph;
 struct SwitchInfo;
 
 
@@ -114,6 +119,7 @@ typedef std::list<BasicBlock *>::iterator         BBIterator;
 typedef std::list<BasicBlock *>::const_iterator   BBCIterator;
 
 using RTLList   = std::list<RTL *>;
+using SharedExp = std::shared_ptr<class Exp>;
 
 /**
  * BasicBlock class.
@@ -126,7 +132,7 @@ class BasicBlock
 public:
     typedef std::vector<BasicBlock *>::iterator   iEdgeIterator;
     typedef RTLList::iterator                     rtlit;
-    typedef RTLList::reverse_iterator              rtlrit;
+    typedef RTLList::reverse_iterator             rtlrit;
     typedef std::list<SharedExp>::iterator        elit;
 
 public:

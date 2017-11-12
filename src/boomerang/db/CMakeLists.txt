@@ -23,8 +23,6 @@ list(APPEND boomerang-db-sources
     db/IBinarySymbols.h
     db/InsNameElem.cpp
     db/InsNameElem.h
-    db/Managed.cpp
-    db/Managed.h
     db/Module.cpp
     db/Module.h
     db/Prog.cpp

@@ -10,7 +10,6 @@
 #include "UsedLocsFinder.h"
 
 
-#include "boomerang/db/Managed.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"

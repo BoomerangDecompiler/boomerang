@@ -10,8 +10,9 @@
 #pragma once
 
 
-#include "boomerang/db/exp/ExpHelp.h" ///< For lessExpStar, etc
-#include "boomerang/db/Managed.h"     ///< For LocationSet
+#include "boomerang/db/exp/ExpHelp.h"
+#include "boomerang/util/AssignSet.h"
+#include "boomerang/util/LocationSet.h"
 
 #include <vector>
 #include <map>
@@ -28,6 +29,9 @@ class UserProc;
 class PhiAssign;
 class Type;
 class QTextStream;
+class LocationSet;
+
+typedef std::set<SharedExp, lessExpStar> ExpSet;
 
 
 /**

@@ -10,9 +10,8 @@
 #pragma once
 
 
-#include "boomerang/db/exp/ExpHelp.h" // For lessExpStar, lessAssignment etc
-#include "boomerang/db/DataFlow.h"    // For embedded objects DefCollector and UseCollector
-#include "boomerang/db/Managed.h"
+#include "boomerang/db/exp/ExpHelp.h"
+#include "boomerang/db/DataFlow.h"
 #include "boomerang/util/Address.h"
 
 #include <QtCore/QTextStream>
@@ -110,10 +109,7 @@ class Statement
     typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
 public:
-    Statement()
-        : m_parent(nullptr)
-        , m_proc(nullptr)
-        , m_number(0) {}
+    Statement();
 
     virtual ~Statement() = default;
 

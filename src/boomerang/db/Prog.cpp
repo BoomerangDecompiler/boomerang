@@ -26,7 +26,6 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/Managed.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"

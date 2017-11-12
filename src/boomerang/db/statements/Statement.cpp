@@ -61,6 +61,13 @@
 #include <algorithm>
 
 
+Statement::Statement()
+    : m_parent(nullptr)
+    , m_proc(nullptr)
+    , m_number(0)
+{
+
+}
 void Statement::setProc(UserProc *proc)
 {
     m_proc = proc;

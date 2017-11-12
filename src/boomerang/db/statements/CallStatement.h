@@ -12,7 +12,7 @@
 
 #include "boomerang/db/statements/GotoStatement.h"
 #include "boomerang/db/statements/Assignment.h"
-#include "boomerang/db/Managed.h"
+#include "boomerang/util/StatementList.h"
 
 
 class ImplicitAssign;

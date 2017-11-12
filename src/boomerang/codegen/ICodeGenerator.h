@@ -13,12 +13,13 @@
 #include <QTextStream>
 
 #include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/Managed.h"
 
 class Prog;
 class Module;
 class UserProc;
 class Function;
+class StatementList;
+
 
 /**
  * Base class for generating high-level code from statements.

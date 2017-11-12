@@ -32,7 +32,6 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/core/Project.h"
-#include "boomerang/db/Managed.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"

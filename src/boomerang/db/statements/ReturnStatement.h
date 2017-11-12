@@ -11,6 +11,7 @@
 
 
 #include "boomerang/db/statements/Statement.h"
+#include "boomerang/util/StatementList.h"
 
 
 /**

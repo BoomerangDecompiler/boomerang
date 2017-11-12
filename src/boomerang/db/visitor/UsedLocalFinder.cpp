@@ -14,7 +14,6 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/TypedExp.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Managed.h"
 
 
 UsedLocalFinder::UsedLocalFinder(LocationSet& used, UserProc* proc)

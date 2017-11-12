@@ -29,8 +29,9 @@
 #include "boomerang/db/visitor/ConstGlobalConverter.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/FuncType.h"
-#include "boomerang/util/Types.h"
+#include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 
 #include <cassert>

@@ -20,7 +20,6 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/Managed.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/type/type/SizeType.h"
