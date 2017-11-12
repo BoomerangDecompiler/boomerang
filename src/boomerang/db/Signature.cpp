@@ -113,8 +113,8 @@ public:
     static bool qualified(UserProc *p, Signature& candidate);
 
     void addReturn(SharedType type, SharedExp e = nullptr) override;
-    void addParameter(SharedType type, const QString& nam = QString::null, const SharedExp& e = nullptr,
-                      const QString& boundMax = "") override;
+    void addParameter(SharedType type, const QString& name = QString::null,
+                      const SharedExp& e = nullptr, const QString& boundMax = "") override;
     virtual SharedExp getArgumentExp(int n) const override;
 
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
@@ -165,8 +165,8 @@ public:
     static bool qualified(UserProc *p, Signature&);
 
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
-    virtual void addParameter(SharedType type, const QString& nam = QString::null, const SharedExp& e = nullptr,
-                              const QString& boundMax = "") override;
+    virtual void addParameter(SharedType type, const QString& name = QString::null,
+                              const SharedExp& e = nullptr, const QString& boundMax = "") override;
     virtual SharedExp getArgumentExp(int n) const override;
 
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
@@ -199,8 +199,8 @@ public:
     static bool qualified(UserProc *p, Signature&);
 
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
-    virtual void addParameter(SharedType type, const QString& nam = QString::null, const SharedExp& e = nullptr,
-                              const QString& boundMax = "") override;
+    virtual void addParameter(SharedType type, const QString& name = QString::null,
+                              const SharedExp& e = nullptr, const QString& boundMax = "") override;
     virtual SharedExp getArgumentExp(int n) const override;
 
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
@@ -251,8 +251,8 @@ public:
     static bool qualified(UserProc *p, Signature&);
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
     virtual SharedExp getArgumentExp(int n) const override;
-    virtual void addParameter(SharedType type, const QString& nam = QString::null, const SharedExp& e = nullptr,
-                              const QString& boundMax = "") override;
+    virtual void addParameter(SharedType type, const QString& name = QString::null,
+                              const SharedExp& e = nullptr, const QString& boundMax = "") override;
     virtual SharedExp getStackWildcard() const override;
 
     virtual int getStackRegister() const noexcept (false)override { return 1; }
@@ -284,8 +284,8 @@ public:
     static bool qualified(UserProc *p, Signature&);
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
     virtual SharedExp getArgumentExp(int n) const override;
-    virtual void addParameter(SharedType type, const QString& nam = QString::null, const SharedExp& e = nullptr,
-                              const QString& boundMax = "") override;
+    virtual void addParameter(SharedType type, const QString& name = QString::null,
+                              const SharedExp& e = nullptr, const QString& boundMax = "") override;
     virtual SharedExp getStackWildcard() const override;
 
     virtual int getStackRegister() const noexcept (false)override { return 29; }
@@ -316,8 +316,8 @@ public:
     static bool qualified(UserProc *p, Signature&);
 
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
-    void addParameter(SharedType type, const QString& nam = QString::null, const SharedExp& e = nullptr,
-                      const QString& boundMax = "") override;
+    void addParameter(SharedType type, const QString& name = QString::null,
+                      const SharedExp& e = nullptr, const QString& boundMax = "") override;
     SharedExp getArgumentExp(int n) const override;
 
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
@@ -1530,18 +1530,18 @@ SharedExp CallingConvention::StdC::SparcLibSignature::getProven(SharedExp left) 
 }
 
 
-Signature::Signature(const QString& nam)
+Signature::Signature(const QString& name)
     : m_rettype(VoidType::get())
     , m_ellipsis(false)
     , m_unknown(true)
     , m_forced(false)
     , m_preferredReturn(nullptr)
 {
-    if (nam == nullptr) {
+    if (name == nullptr) {
         m_name = "<ANON>";
     }
     else {
-        m_name = nam;
+        m_name = name;
     }
 }
 
@@ -1643,9 +1643,9 @@ void Signature::setName(const QString& nam)
 }
 
 
-void Signature::addParameter(const char *nam /*= nullptr*/)
+void Signature::addParameter(const char *name /*= nullptr*/)
 {
-    addParameter(VoidType::get(), nam);
+    addParameter(VoidType::get(), name);
 }
 
 
@@ -1655,20 +1655,20 @@ void Signature::addParameter(const SharedExp& e, SharedType ty)
 }
 
 
-void Signature::addParameter(SharedType type, const QString& nam /*= nullptr*/, const SharedExp& e /*= nullptr*/,
+void Signature::addParameter(SharedType type, const QString& name /*= nullptr*/, const SharedExp& e /*= nullptr*/,
                              const QString& boundMax /*= ""*/)
 {
     if (e == nullptr) {
         // Else get infinite mutual recursion with the below proc
         LOG_FATAL("No expression for parameter %1 %2",
                   type ? type->getCtype() : "<notype>",
-                  !nam.isNull() ? qPrintable(nam) : "<noname>");
+                  !name.isNull() ? qPrintable(name) : "<noname>");
     }
 
     QString s;
-    QString new_name = nam;
+    QString new_name = name;
 
-    if (nam.isNull()) {
+    if (name.isNull()) {
         size_t n  = m_params.size() + 1;
         bool   ok = false;
 
@@ -1696,16 +1696,16 @@ void Signature::addParameter(SharedType type, const QString& nam /*= nullptr*/, 
 
 void Signature::addParameter(std::shared_ptr<Parameter> param)
 {
-    SharedType ty  = param->getType();
-    QString    nam = param->getName();
-    SharedExp  e   = param->getExp();
+    SharedType ty   = param->getType();
+    QString    name = param->getName();
+    SharedExp  e    = param->getExp();
 
-    if (nam.isEmpty()) {
-        nam = QString::null;
+    if (name.isEmpty()) {
+        name = QString::null;
     }
 
-    if ((ty == nullptr) || (e == nullptr) || nam.isNull()) {
-        addParameter(ty, nam, e, param->getBoundMax());
+    if ((ty == nullptr) || (e == nullptr) || name.isNull()) {
+        addParameter(ty, name, e, param->getBoundMax());
     }
     else {
         m_params.push_back(param);

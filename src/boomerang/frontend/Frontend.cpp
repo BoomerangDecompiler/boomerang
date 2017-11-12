@@ -746,11 +746,11 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 s->setProc(pProc); // let's do this really early!
 
                 if (m_refHints.find(pRtl->getAddress()) != m_refHints.end()) {
-                    const QString& nam(m_refHints[pRtl->getAddress()]);
-                    Address        gu = m_program->getGlobalAddr(nam);
+                    const QString& name(m_refHints[pRtl->getAddress()]);
+                    Address        globAddr = m_program->getGlobalAddr(name);
 
-                    if (gu != Address::INVALID) {
-                        s->searchAndReplace(Const(gu), Unary::get(opAddrOf, Location::global(nam, pProc)));
+                    if (globAddr != Address::INVALID) {
+                        s->searchAndReplace(Const(globAddr), Unary::get(opAddrOf, Location::global(name, pProc)));
                     }
                 }
 

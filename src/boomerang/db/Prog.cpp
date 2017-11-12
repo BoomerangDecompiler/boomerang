@@ -131,8 +131,8 @@ bool Prog::isWellFormed() const
     for (const auto& module : m_moduleList) {
         for (Function *func : *module) {
             if (!func->isLib()) {
-                UserProc *u = (UserProc *)func;
-                wellformed &= u->getCFG()->isWellFormed();
+                UserProc *proc = (UserProc *)func;
+                wellformed &= proc->getCFG()->isWellFormed();
             }
         }
     }
@@ -503,13 +503,13 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
         }
     }
     else if ((symInfo->Flags & SYMFLAG_LOCAL) && !proc->isLib()) {
-        UserProc *u = (UserProc *)proc;
+        UserProc *uproc = (UserProc *)proc;
         assert(symInfo->Flags & SYMFLAG_REGREL);
         assert(symInfo->Register == 8);
         SharedExp memref =
             Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(-((int)symInfo->Address - 4))));
         SharedType ty = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
-        u->addLocal(ty, symInfo->Name, memref);
+        uproc->addLocal(ty, symInfo->Name, memref);
     }
 
     return TRUE;
@@ -696,7 +696,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
         return false;
     }
 
-    QString    nam = newGlobalName(uaddr);
+    QString    name = newGlobalName(uaddr);
     SharedType ty;
 
     if (knownType) {
@@ -710,7 +710,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
                 baseSize = baseType->getSizeInBytes();
             }
 
-            auto symbol = m_binarySymbols->find(nam);
+            auto symbol = m_binarySymbols->find(name);
             int  sz     = symbol ? symbol->getSize() : 0;
 
             if (sz && baseSize) {
@@ -720,14 +720,14 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
         }
     }
     else {
-        ty = guessGlobalType(nam, uaddr);
+        ty = guessGlobalType(name, uaddr);
     }
 
-    Global *global = new Global(ty, uaddr, nam, this);
+    Global *global = new Global(ty, uaddr, name, this);
     m_globals.insert(global);
 
     LOG_VERBOSE("globalUsed: name %1, address %2, %3 type %4",
-                nam, uaddr, knownType ? "known" : "guessed", ty->getCtype());
+                name, uaddr, knownType ? "known" : "guessed", ty->getCtype());
 
     return true;
 }
@@ -735,11 +735,11 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 
 std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType baseType)
 {
-    QString nam = newGlobalName(startAddr);
+    QString name = newGlobalName(startAddr);
 
     assert(m_fileLoader);
     // TODO: fix the case of missing symbol table interface
-    auto symbol = m_binarySymbols->find(nam);
+    auto symbol = m_binarySymbols->find(name);
 
     if (!symbol || (symbol->getSize() == 0)) {
         return ArrayType::get(baseType); // An "unbounded" array
@@ -755,7 +755,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
 }
 
 
-SharedType Prog::guessGlobalType(const QString& nam, Address u) const
+SharedType Prog::guessGlobalType(const QString& globalName, Address globAddr) const
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
     HANDLE               hProcess = GetCurrentProcess();
@@ -763,19 +763,19 @@ SharedType Prog::guessGlobalType(const QString& nam, Address u) const
     sym->SizeOfStruct = sizeof(*sym);
     sym->MaxNameLen   = 1000;
     sym->Name[0]      = 0;
-    BOOL got = dbghelp::SymFromAddr(hProcess, u.value(), 0, sym);
+    BOOL got = dbghelp::SymFromAddr(hProcess, globAddr.value(), 0, sym);
 
     if (got && *sym->Name && sym->TypeIndex) {
-        assert(nam == sym->Name);
+        assert(globalName == sym->Name);
         return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
     }
 #endif
-    auto symbol = m_binarySymbols->find(nam);
+    auto symbol = m_binarySymbols->find(globalName);
     int  sz     = symbol ? symbol->getSize() : 0;
 
     if (sz == 0) {
         // Check if it might be a string
-        const char *str = getStringConstant(u);
+        const char *str = getStringConstant(globAddr);
 
         if (str) {
             // return char* and hope it is dealt with properly
@@ -804,15 +804,15 @@ SharedType Prog::guessGlobalType(const QString& nam, Address u) const
 
 QString Prog::newGlobalName(Address uaddr)
 {
-    QString nam = getGlobalName(uaddr);
+    QString globalName = getGlobalName(uaddr);
 
-    if (!nam.isEmpty()) {
-        return nam;
+    if (!globalName.isEmpty()) {
+        return globalName;
     }
 
-    nam = QString("global%1_%2").arg(m_globals.size()).arg(uaddr.value(), 0, 16);
-    LOG_VERBOSE("Naming new global '%1' at address %2", nam, uaddr);
-    return nam;
+    globalName = QString("global%1_%2").arg(m_globals.size()).arg(uaddr.value(), 0, 16);
+    LOG_VERBOSE("Naming new global '%1' at address %2", globalName, uaddr);
+    return globalName;
 }
 
 
@@ -1103,18 +1103,18 @@ void Prog::removeUnusedGlobals()
     std::list<SharedExp> usedGlobals;
 
     for (const auto& module : m_moduleList) {
-        for (Function *pp : *module) {
-            if (pp->isLib()) {
+        for (Function *func : *module) {
+            if (func->isLib()) {
                 continue;
             }
 
-            UserProc *u = (UserProc *)pp;
-            Location search(opGlobal, Terminal::get(opWild), u);
+            UserProc *proc = (UserProc *)func;
+            Location search(opGlobal, Terminal::get(opWild), proc);
             // Search each statement in u, excepting implicit assignments (their uses don't count, since they don't really
             // exist in the program representation)
             StatementList           stmts;
             StatementList::iterator ss;
-            u->getStatements(stmts);
+            proc->getStatements(stmts);
 
             for (Statement *s : stmts) {
                 if (s->isImplicit()) {
@@ -1327,12 +1327,12 @@ void Prog::printCallGraph() const
 }
 
 
-void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Function *>& seen)
+void printProcsRecursive(Function *function, int indent, QTextStream& f, std::set<Function *>& seen)
 {
     bool fisttime = false;
 
-    if (seen.find(proc) == seen.end()) {
-        seen.insert(proc);
+    if (seen.find(function) == seen.end()) {
+        seen.insert(function);
         fisttime = true;
     }
 
@@ -1340,13 +1340,13 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
         f << "     ";
     }
 
-    if (!proc->isLib() && fisttime) { // seen lib proc
-        f << proc->getEntryAddress();
-        f << " __nodecode __incomplete void " << proc->getName() << "();\n";
+    if (!function->isLib() && fisttime) { // seen lib proc
+        f << function->getEntryAddress();
+        f << " __nodecode __incomplete void " << function->getName() << "();\n";
 
-        UserProc *u = (UserProc *)proc;
+        UserProc *proc = (UserProc *)function;
 
-        for (Function *callee : u->getCallees()) {
+        for (Function *callee : proc->getCallees()) {
             printProcsRecursive(callee, indent + 1, f, seen);
         }
 
@@ -1354,10 +1354,10 @@ void printProcsRecursive(Function *proc, int indent, QTextStream& f, std::set<Fu
             f << "     ";
         }
 
-        f << "// End of " << proc->getName() << "\n";
+        f << "// End of " << function->getName() << "\n";
     }
     else {
-        f << "// " << proc->getName() << "();\n";
+        f << "// " << function->getName() << "();\n";
     }
 }
 
@@ -1495,24 +1495,24 @@ void Prog::readSymbolFile(const QString& fname)
             }
         }
         else {
-            QString nam = sym->nam;
+            QString name = sym->name;
 
-            if (sym->nam.isEmpty()) {
-                nam = newGlobalName(sym->addr);
+            if (sym->name.isEmpty()) {
+                name = newGlobalName(sym->addr);
             }
 
             SharedType ty = sym->ty;
 
             if (ty == nullptr) {
-                ty = guessGlobalType(nam, sym->addr);
+                ty = guessGlobalType(name, sym->addr);
             }
 
-            m_globals.insert(new Global(ty, sym->addr, nam, this));
+            m_globals.insert(new Global(ty, sym->addr, name, this));
         }
     }
 
     for (SymbolRef *ref : par->refs) {
-        m_defaultFrontend->addRefHint(ref->addr, ref->nam);
+        m_defaultFrontend->addRefHint(ref->m_addr, ref->m_name);
     }
 }
 
@@ -1565,11 +1565,11 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
             return Const::get(0);
         }
 
-        QString nam = getGlobalName(init);
+        QString name = getGlobalName(init);
 
-        if (!nam.isEmpty()) {
+        if (!name.isEmpty()) {
             // TODO: typecast?
-            return Location::global(nam, nullptr);
+            return Location::global(name, nullptr);
         }
 
         if (type->as<PointerType>()->getPointsTo()->resolvesToChar()) {
@@ -1620,11 +1620,11 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 
     if (type->resolvesToArray()) {
         int  nelems  = -1;
-        QString nam     = getGlobalName(uaddr);
+        QString name     = getGlobalName(uaddr);
         int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
 
-        if (!nam.isEmpty()) {
-            auto symbol = m_binarySymbols->find(nam);
+        if (!name.isEmpty()) {
+            auto symbol = m_binarySymbols->find(name);
             nelems = symbol ? symbol->getSize() : 0;
             assert(base_sz);
             nelems /= base_sz;

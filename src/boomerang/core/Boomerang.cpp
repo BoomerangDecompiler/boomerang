@@ -149,9 +149,9 @@ int Boomerang::decompile(const QString& fname, const char *pname)
         for (const auto& module : prog->getModuleList()) {
             for (Function *func : *module) {
                 if (!func->isLib()) {
-                    UserProc *u = (UserProc *)func;
-                    u->getCFG()->compressCfg();
-                    u->printAST();
+                    UserProc *proc = (UserProc *)func;
+                    proc->getCFG()->compressCfg();
+                    proc->printAST();
                 }
             }
         }

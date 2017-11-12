@@ -529,10 +529,11 @@ public:
     SharedExp getSymbolExp(SharedExp le, SharedType ty = nullptr, bool lastPass = false);
 
     /**
-     * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
-     * If nam is non null, use that name
+     * Return the next available local variable; make it the given type.
+     * \note was returning TypedExp*.
+     * If \p name is non null, use that name
      */
-    SharedExp newLocal(SharedType ty, const SharedExp& e, char *nam = nullptr);
+    SharedExp createLocal(SharedType ty, const SharedExp& e, char *name = nullptr);
 
     /**
      * Add a new local supplying all needed information.

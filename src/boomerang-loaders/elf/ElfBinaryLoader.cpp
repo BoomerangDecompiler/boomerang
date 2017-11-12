@@ -813,8 +813,8 @@ void ElfBinaryLoader::applyRelocations()
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
-                // ADDRESS destNatOrigin = Address::ZERO, destHostOrigin = Address::ZERO;
-                for (unsigned u = 0; u < sizeInBytes; u += sizeof(Elf32_Rela)) {
+                // Address destNatOrigin = Address::ZERO, destHostOrigin = Address::ZERO;
+                for (unsigned idx = 0; idx < sizeInBytes; idx += sizeof(Elf32_Rela)) {
                     Elf32_Rela r;
                     r.r_offset = elfRead4(relocEntry++);
                     r.r_info   = elfRead4(relocEntry++);

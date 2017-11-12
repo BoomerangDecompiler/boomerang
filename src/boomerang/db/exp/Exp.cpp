@@ -493,9 +493,9 @@ SharedExp Exp::convertFromOffsetToCompound(SharedExp parent, std::shared_ptr<Com
         return nullptr;
     }
 
-    QString nam = c->getNameAtOffset(n * 8);
+    QString name = c->getNameAtOffset(n * 8);
 
-    if (!nam.isNull() && (nam != "pad")) {
+    if (!name.isNull() && (name != "pad")) {
         SharedExp l = Location::memOf(parent);
         return Unary::get(opAddrOf, accessMember(l, c, n));
     }

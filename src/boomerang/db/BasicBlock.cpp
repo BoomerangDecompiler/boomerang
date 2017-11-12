@@ -1106,37 +1106,39 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc)
 }
 
 
-////////////////////////////////////////////////////
-
-// Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
-// Also check for type conflicts if DFA_TYPE_ANALYSIS
-// This is a helper function that is not directly declared in the BasicBlock class
+/**
+ * Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
+ * Also check for type conflicts if DFA_TYPE_ANALYSIS
+ * This is a helper function that is not directly declared in the BasicBlock class
+ */
 void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc *)
 {
     // For each location to be considered
-    for (SharedExp u : ls) {
-        if (!u->isSubscript()) {
+    for (SharedExp exp : ls) {
+        if (!exp->isSubscript()) {
             continue; // Only interested in subscripted vars
         }
 
-        auto r = std::static_pointer_cast<RefExp>(u);
+        assert(std::dynamic_pointer_cast<RefExp>(exp) != nullptr);
+
+        auto refexp = std::static_pointer_cast<RefExp>(exp);
         // Interference if we can find a live variable which differs only in the reference
         SharedExp dr;
 
-        if (liveLocs.findDifferentRef(r, dr)) {
+        if (liveLocs.findDifferentRef(refexp, dr)) {
             assert(dr->access<RefExp>()->getDef() != nullptr);
-            assert(u->access<RefExp>()->getDef() != nullptr);
+            assert(exp->access<RefExp>()->getDef() != nullptr);
             // We have an interference between r and dr. Record it
-            ig.connect(r, dr);
+            ig.connect(refexp, dr);
 
             if (DEBUG_LIVENESS) {
-                LOG_VERBOSE("Interference of %1 with %2", dr, r);
+                LOG_VERBOSE("Interference of %1 with %2", dr, refexp);
             }
         }
 
         // Add the uses one at a time. Note: don't use makeUnion, because then we don't discover interferences
         // from the same statement, e.g.  blah := r24{2} + r24{3}
-        liveLocs.insert(u);
+        liveLocs.insert(exp);
     }
 }
 

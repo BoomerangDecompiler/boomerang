@@ -87,10 +87,10 @@ void HpSomBinaryLoader::processSymbols()
 #define SYMBOLVAL(idx)    (UINT4((symPtr + idx * SYMSIZE + 16).value()))
 #define SYMBOLTY(idx)     ((UINT4((symPtr + idx * SYMSIZE).value()) >> 24) & 0x3f)
 
-    for (unsigned u = 0; u < numSym; u++) {
-        unsigned   symbolType  = SYMBOLTY(u);
-        Address    value       = Address(SYMBOLVAL(u));
-        const char *symbolName = symbolNames + SYMBOLNM(u);
+    for (unsigned idx = 0; idx < numSym; idx++) {
+        unsigned   symbolType  = SYMBOLTY(idx);
+        Address    value       = Address(SYMBOLVAL(idx));
+        const char *symbolName = symbolNames + SYMBOLNM(idx);
 
         // Only interested in type 3 (code), 8 (stub), and 12 (millicode)
         if ((symbolType != 3) && (symbolType != 8) && (symbolType != 12)) {

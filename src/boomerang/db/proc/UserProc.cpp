@@ -926,11 +926,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
     std::shared_ptr<ProcSet> child = std::make_shared<ProcSet>();
     path->push_back(this); // Append this proc to path
 
-    /*    *    *    *    *    *    *    *    *    *    *    *
-    *                                            *
-    *    R e c u r s e   t o   c h i l d r e n    *
-    *                                            *
-    *    *    *    *    *    *    *    *    *    *    *    */
+    // Recurse to children
 
     if (!SETTING(noDecodeChildren)) {
         // Recurse to children first, to perform a depth first search
@@ -1478,11 +1474,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 }
 
 
-/*    *    *    *    *    *    *    *    *    *    *    *    *    *
-*                                                    *
-*    R e m o v e   u n u s e d   s t a t e m e n t s    *
-*                                                    *
-*    *    *    *    *    *    *    *    *    *    *    *    *    */
 void UserProc::remUnusedStmtEtc()
 {
     bool convert;
@@ -2394,7 +2385,7 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
             //            if (le->isSubscript())
             //                base = ((RefExp*)le)->getSubExp1();
             // NOTE: using base below instead of le does not enhance anything, but causes us to lose def information
-            e = newLocal(ty->clone(), le);
+            e = createLocal(ty->clone(), le);
             mapSymbolTo(le->clone(), e);
             e = e->clone();
         }
@@ -2715,16 +2706,9 @@ QString UserProc::newLocalName(const SharedExp& e)
 }
 
 
-SharedExp UserProc::newLocal(SharedType ty, const SharedExp& e, char *nam /* = nullptr */)
+SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, char *name /* = nullptr */)
 {
-    QString name;
-
-    if (nam == nullptr) {
-        name = newLocalName(e);
-    }
-    else {
-        name = nam; // Use provided name
-    }
+    QString localName = (name != nullptr) ? name : newLocalName(e);
 
     m_locals[name] = ty;
 
@@ -2732,9 +2716,9 @@ SharedExp UserProc::newLocal(SharedType ty, const SharedExp& e, char *nam /* = n
         LOG_FATAL("Null type passed to newLocal");
     }
 
-    LOG_VERBOSE("Assigning type %1 to new %2", ty->getCtype(), name);
+    LOG_VERBOSE("Assigning type %1 to new %2", ty->getCtype(), localName);
 
-    return Location::local(name, this);
+    return Location::local(localName, this);
 }
 
 
@@ -3210,7 +3194,7 @@ void UserProc::fromSSAForm()
         }
 
         SharedType ty    = rename->getDef()->getTypeFor(rename->getSubExp1());
-        SharedExp  local = newLocal(ty, rename);
+        SharedExp  local = createLocal(ty, rename);
 
         if (DEBUG_LIVENESS) {
             LOG_MSG("Renaming %1 to %2", rename, local);

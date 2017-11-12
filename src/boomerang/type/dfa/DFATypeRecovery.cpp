@@ -139,13 +139,13 @@ void DFATypeRecovery::dfa_analyze_scaled_array_ref(Statement *s)
         SharedExp idx = l->getSubExp1();
 
         // Replace with the array expression
-        QString nam = prog->getGlobalName(K2);
+        QString name = prog->getGlobalName(K2);
 
-        if (nam.isEmpty()) {
-            nam = prog->newGlobalName(K2);
+        if (name.isEmpty()) {
+            name = prog->newGlobalName(K2);
         }
 
-        arr = Binary::get(opArrayIndex, Location::global(nam, pr), idx);
+        arr = Binary::get(opArrayIndex, Location::global(name, pr), idx);
 
         if (s->searchAndReplace(scaledArrayPat, arr)) {
             if (s->isImplicit()) {
