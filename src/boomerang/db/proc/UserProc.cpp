@@ -73,7 +73,7 @@ public:
 UserProc::UserProc(Address address, const QString& name, Module *module)
     : Function(address, new Signature(name), module)
     , m_cycleGroup(nullptr)
-    , theReturnStatement(nullptr)
+    , m_retStatement(nullptr)
     , DFGcount(0)
     , m_cfg(new Cfg(this))
     , m_status(PROC_UNDECODED)
@@ -1284,9 +1284,9 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
         // Seed the return statement with reaching definitions
         // FIXME: does this have to be in this loop?
-        if (theReturnStatement) {
-            theReturnStatement->updateModifieds(); // Everything including new arguments reaching the exit
-            theReturnStatement->updateReturns();
+        if (m_retStatement) {
+            m_retStatement->updateModifieds(); // Everything including new arguments reaching the exit
+            m_retStatement->updateReturns();
         }
 
         printXML();
@@ -1441,7 +1441,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         // will prevent duplicates
         processDecodedICTs();
         // Now, decode from scratch
-        theReturnStatement = nullptr;
+        m_retStatement = nullptr;
         m_cfg->clear();
         m_prog->reDecode(this);
         m_df.setRenameLocalsParams(false);                      // Start again with memofs
@@ -1935,7 +1935,7 @@ void UserProc::findPreserveds()
 
     Boomerang::get()->alertDecompileDebugPoint(this, "before finding preserveds");
 
-    if (theReturnStatement == nullptr) {
+    if (m_retStatement == nullptr) {
         if (DEBUG_PROOF) {
             LOG_MSG("Can't find preservations as there is no return statement!");
         }
@@ -1945,7 +1945,7 @@ void UserProc::findPreserveds()
     }
 
     // prove preservation for all modifieds in the return statement
-    StatementList& modifieds = theReturnStatement->getModifieds();
+    StatementList& modifieds = m_retStatement->getModifieds();
 
     for (ReturnStatement::iterator mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
         SharedExp lhs      = ((Assignment *)*mm)->getLeft();
@@ -1980,7 +1980,7 @@ void UserProc::findPreserveds()
             continue;
         }
 
-        theReturnStatement->removeModified(lhs);
+        m_retStatement->removeModified(lhs);
     }
 
     Boomerang::get()->alertDecompileDebugPoint(this, "After finding preserveds");
@@ -3486,8 +3486,8 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
         bool gotDef = false;
 
         // replace expression from return set with expression in the collector of the return
-        if (theReturnStatement) {
-            auto def = theReturnStatement->findDefFor(query->getSubExp1());
+        if (m_retStatement) {
+            auto def = m_retStatement->findDefFor(query->getSubExp1());
 
             if (def) {
                 query->setSubExp1(def);
@@ -5141,13 +5141,13 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                 continue;                               //  then ignore this return statement
             }
         }
-        else if (s->isPhi() && (theReturnStatement != nullptr) && m_cycleGroup && m_cycleGroup->size()) {
+        else if (s->isPhi() && (m_retStatement != nullptr) && m_cycleGroup && m_cycleGroup->size()) {
             SharedExp                 phiLeft = ((PhiAssign *)s)->getLeft();
             auto                      refPhi  = RefExp::get(phiLeft, s);
             ReturnStatement::iterator rr;
             bool                      foundPhi = false;
 
-            for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ++rr) {
+            for (rr = m_retStatement->begin(); rr != m_retStatement->end(); ++rr) {
                 SharedExp   rhs = ((Assign *)*rr)->getRight();
                 LocationSet uses;
                 rhs->addUsedLocs(uses);
@@ -5249,7 +5249,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     // First remove the unused parameters
     bool removedParams = removeRedundantParameters();
 
-    if (theReturnStatement == nullptr) {
+    if (m_retStatement == nullptr) {
         return removedParams;
     }
 
@@ -5261,7 +5261,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         // Respect the forced signature, but use it to remove returns if necessary
         bool removedRets = false;
 
-        for (ReturnStatement::iterator rr = theReturnStatement->begin(); rr != theReturnStatement->end();) {
+        for (ReturnStatement::iterator rr = m_retStatement->begin(); rr != m_retStatement->end();) {
             Assign    *a  = (Assign *)*rr;
             SharedExp lhs = a->getLeft();
             // For each location in the returns, check if in the signature
@@ -5279,7 +5279,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
             }
             else {
                 // This return is not in the signature. Remove it
-                rr          = theReturnStatement->erase(rr);
+                rr          = m_retStatement->erase(rr);
                 removedRets = true;
 
                 if (DEBUG_UNUSED) {
@@ -5331,7 +5331,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     bool removedRets = false;
     ReturnStatement::iterator rr;
 
-    for (rr = theReturnStatement->begin(); rr != theReturnStatement->end();) {
+    for (rr = m_retStatement->begin(); rr != m_retStatement->end();) {
         Assign *a = (Assign *)*rr;
 
         if (unionOfCallerLiveLocs.exists(a->getLeft())) {
@@ -5346,7 +5346,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         // If a component of the RHS referenced a call statement, the liveness used to be killed here.
         // This was wrong; you need to notice the liveness changing inside updateForUseChange() to correctly
         // recurse to callee
-        rr          = theReturnStatement->erase(rr);
+        rr          = m_retStatement->erase(rr);
         removedRets = true;
     }
 
@@ -5355,7 +5355,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         QTextStream ost(&tgt);
         unionOfCallerLiveLocs.print(ost);
         LOG_MSG("%%%  union of caller live locations for %1: %2", getName(), tgt);
-        LOG_MSG("%%%  final returns for %1: %2", getName(), theReturnStatement->getReturns().prints());
+        LOG_MSG("%%%  final returns for %1: %2", getName(), m_retStatement->getReturns().prints());
     }
 
     // removing returns might result in params that can be removed, might as well do it now.
@@ -5385,8 +5385,8 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         }
     }
 
-    if (theReturnStatement->getNumReturns() == 1) {
-        Assign *a = (Assign *)*theReturnStatement->getReturns().begin();
+    if (m_retStatement->getNumReturns() == 1) {
+        Assign *a = (Assign *)*m_retStatement->getReturns().begin();
         m_signature->setRetType(a->getType());
     }
 
@@ -5459,10 +5459,10 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 
     for (ll = callLiveness.begin(); ll != callLiveness.end(); ++ll) {
         CallStatement *call       = ll->first;
-        UseCollector& oldLiveness = ll->second;
-        UseCollector& newLiveness = *call->getUseCollector();
+        const UseCollector& oldLiveness = ll->second;
+        const UseCollector& newLiveness = *call->getUseCollector();
 
-        if (!(newLiveness == oldLiveness)) {
+        if (newLiveness != oldLiveness) {
             if (DEBUG_UNUSED) {
                 LOG_MSG("%%%  Liveness for call to %1 in %2 changed",
                         call->getDestProc()->getName(), getName());

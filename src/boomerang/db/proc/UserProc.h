@@ -211,8 +211,6 @@ public:
     /// Fix any ugly branch statements (from propagating too much)
     void fixUglyBranches();
 
-    void placePhiFunctions() { m_df.placePhiFunctions(this); }
-
     /**
      * Rename block variables, with log if verbose.
      * \returns true if a change
@@ -516,7 +514,7 @@ public:
     void makeParamsImplicit();
 
     StatementList& getParameters() { return m_parameters; }
-    StatementList& getModifieds() { return theReturnStatement->getModifieds(); }
+    StatementList& getModifieds() { return m_retStatement->getModifieds(); }
 
 
     /// Return an expression that is equivilent to e in terms of symbols.
@@ -675,15 +673,15 @@ public:
     void processDecodedICTs();
 
 public:
-    Address getTheReturnAddr() { return theReturnStatement == nullptr ? Address::INVALID : theReturnStatement->getRetAddr(); }
+    Address getTheReturnAddr() { return m_retStatement == nullptr ? Address::INVALID : m_retStatement->getRetAddr(); }
     void setTheReturnAddr(ReturnStatement *s, Address r)
     {
-        assert(theReturnStatement == nullptr);
-        theReturnStatement = s;
-        theReturnStatement->setRetAddr(r);
+        assert(m_retStatement == nullptr);
+        m_retStatement = s;
+        m_retStatement->setRetAddr(r);
     }
 
-    ReturnStatement *getTheReturnStatement() { return theReturnStatement; }
+    ReturnStatement *getTheReturnStatement() { return m_retStatement; }
 
     /**
      * Decide whether to filter out \p e (return true) or keep it
@@ -759,7 +757,7 @@ private:
      * See code in frontend/frontend.cpp handling case StmtType::Ret.
      * If no return statement, this will be nullptr.
      */
-    ReturnStatement *theReturnStatement;
+    ReturnStatement *m_retStatement;
     mutable int DFGcount; ///< used in dotty output
 
 private:

@@ -33,6 +33,7 @@ public:
     UseCollector();
 
     bool operator==(const UseCollector& other) const;
+    bool operator!=(const UseCollector& other) const { return !(*this == other); }
 
     inline iterator begin() { return m_locs.begin(); }
     inline iterator end()   { return m_locs.end(); }
