@@ -10,24 +10,27 @@
 #include "GotoStatement.h"
 
 
-#include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
-
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/util/Log.h"
 
 
 GotoStatement::GotoStatement()
     : m_dest(nullptr)
     , m_isComputed(false)
 {
-    m_kind = STMT_GOTO;
+    m_kind = StmtType::Goto;
 }
 
 
 GotoStatement::GotoStatement(Address uDest)
     : m_isComputed(false)
 {
-    m_kind = STMT_GOTO;
+    m_kind = StmtType::Goto;
     m_dest = Const::get(uDest);
 }
 
@@ -81,7 +84,8 @@ void GotoStatement::adjustFixedDest(int delta)
 {
     // Ensure that the destination is fixed.
     if ((m_dest == nullptr) || (m_dest->getOper() != opIntConst)) {
-        LOG_MSG("Can't adjust destination of non-static CTI");
+        LOG_ERROR("Can't adjust destination of non-static CTI");
+        return;
     }
 
     Address dest = constDest()->getAddr();
@@ -207,10 +211,10 @@ bool GotoStatement::usesExp(const Exp& e) const
 
 bool GotoStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -224,12 +228,13 @@ bool GotoStatement::accept(StmtExpVisitor *v)
 
 bool GotoStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
-        m_dest = m_dest->accept(v->m_mod);
+    if (v->m_mod) {
+        if (m_dest && visitChildren) {
+            m_dest = m_dest->accept(v->m_mod);
+        }
     }
 
     return true;
@@ -238,11 +243,10 @@ bool GotoStatement::accept(StmtModifier *v)
 
 bool GotoStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->mod);
     }
 

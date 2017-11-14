@@ -33,13 +33,11 @@
 
 class SSLScanner;
 
-/***************************************************************************/ /**
- * \fn    SSLParser::SSLParser
- * \brief Constructor for an existing stream.
+/**
  * \param in - the input stream
  * \param trace - whether or not to debug
  *
- ******************************************************************************/
+ */
 SSLParser::SSLParser(std::istream& in, bool trace)
     : sslFile("input")
     , bFloat(false)
@@ -56,12 +54,11 @@ SSLParser::SSLParser(std::istream& in, bool trace)
 }
 
 
-/***************************************************************************/ /**
- * \fn     SSLParser::parseExp
- * \brief  Parses an assignment from a string.
+/**
+ * Parses an assignment from a string.
  * \param  str - the string
  * \returns an Assignment or nullptr.
- ******************************************************************************/
+ */
 Statement *SSLParser::parseExp(const char *str)
 {
     std::istringstream ss(str);
@@ -72,11 +69,6 @@ Statement *SSLParser::parseExp(const char *str)
 }
 
 
-/***************************************************************************/ /**
- * \fn        SSLParser::~SSLParser
- * \brief        Destructor.
- *
- ******************************************************************************/
 SSLParser::~SSLParser()
 {
     std::map<QString, Table *>::iterator loc;
@@ -90,36 +82,29 @@ SSLParser::~SSLParser()
 }
 
 
-/***************************************************************************/ /**
- * \brief        Display an error message and exit.
- * \param        msg - an error message
- *
- ******************************************************************************/
+/// Display an error message if the parser encounters an error.
 void SSLParser::yyerror(const char *msg)
 {
     LOG_ERROR("%1: %2: %3", sslFile, theScanner->theLine, msg);
 }
 
 
-/***************************************************************************/ /**
- * \brief        The scanner driver than returns the next token.
- * \returns             the next token
- ******************************************************************************/
+/// \returns the next token
 int SSLParser::yylex()
 {
     return theScanner->yylex(yylval);
 }
 
 
-/***************************************************************************/ /**
- * \fn      SSLParser::strToOper
- * \brief   Convert a string operator (e.g. "+f") to an OPER (opFPlus)
- * \note    An attempt is made to make this moderately efficient, else we might have a skip chain of string
- *          comparisons
- * \note    This is a member of SSLParser so we can call yyyerror and have line number etc printed out
- * \param   s - pointer to the operator C string
+/**
+ * Convert a string operator (e.g. "+f") to an OPER (opFPlus)
+ * \note    An attempt is made to make this moderately efficient,
+ *          else we might have a skip chain of string comparisons
+ * \note    This is a member of SSLParser so we can call yyerror
+ *          and have line number etc printed out
+ * \param   s pointer to the operator C string
  * \returns An OPER, or -1 if not found (enum opWild)
- ******************************************************************************/
+ */
 OPER SSLParser::strToOper(const QString& s)
 {
     static QMap<QString, OPER> opMap {
@@ -385,13 +370,15 @@ OPER strToTerm(const QString& s)
 }
 
 
-/***************************************************************************/ /**
- * \brief        Convert a list of actual parameters in the form of a STL list of Exps into one expression
- *                      (using opList)
- * \note The expressions in the list are not cloned; they are simply copied to the new opList
+/**
+ * Convert a list of actual parameters in the form of a STL list of Exps
+ * into one expression (using opList)
+ * \note The expressions in the list are not cloned;
+ *       they are simply copied to the new opList
+ *
  * \param le  the list of expressions
  * \returns The opList Expression
- ******************************************************************************/
+ */
 SharedExp listExpToExp(std::list<SharedExp> *le)
 {
     SharedExp e;
@@ -410,13 +397,12 @@ SharedExp listExpToExp(std::list<SharedExp> *le)
 }
 
 
-/***************************************************************************/ /**
- *
- * \brief   Convert a list of formal parameters in the form of a STL list of strings into one expression
- *          (using opList)
+/**
+ * Convert a list of formal parameters in the form of a STL list of strings
+ * into one expression (using opList)
  * \param   ls - the list of strings
  * \returns The opList expression
- ******************************************************************************/
+ */
 SharedExp listStrToExp(std::list<QString> *ls)
 {
     SharedExp e;
@@ -436,15 +422,15 @@ SharedExp listStrToExp(std::list<QString> *ls)
 static Binary  srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
 static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
 
-/***************************************************************************/ /**
- *
- * \brief   Expand tables in an RTL and save to dictionary
+/**
+ * Expand tables in an RTL and save to dictionary
  * \note    This may generate many entries
+ *
  * \param   iname Parser object representing the instruction name
  * \param   params Parser object representing the instruction params
  * \param   o_rtlist Original rtlist object (before expanding)
  * \param   Dict Ref to the dictionary that will contain the results of the parse
- ******************************************************************************/
+ */
 void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict& Dict)
 {
     int     i, m;
@@ -461,7 +447,7 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
         for (Statement *s : rtl) {
             std::list<SharedExp> le;
             // Expression tables
-            assert(s->getKind() == STMT_ASSIGN);
+            assert(s->getKind() == StmtType::Assign);
 
             if (((Assign *)s)->searchAll(srchExpr, le)) {
                 std::list<SharedExp>::iterator it;
@@ -517,16 +503,18 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
 }
 
 
-/***************************************************************************/ /**
- * \brief        Make the successor of the given expression, e.g. given r[2], return succ( r[2] )
- *              (using opSuccessor)
- *          We can't do the successor operation here, because the parameters are not yet instantiated
- *          (still of the form param(rd)). Actual successor done in Exp::fixSuccessor()
- * \note            The given expression should be of the form    r[const]
- * \note            The parameter expresion is copied (not cloned) in the result
+/**
+ * Make the successor of the given expression, e.g. given r[2], return succ( r[2] )
+ * (using opSuccessor).
+ * We can't do the successor operation here, because the parameters
+ * are not yet instantiated (still of the form param(rd)).
+ * Actual successor done in Exp::fixSuccessor()
+ *
+ * \note       The given expression should be of the form    r[const]
+ * \note       The parameter expresion is copied (not cloned) in the result
  * \param      e  The expression to find the successor of
- * \returns             The modified expression
- ******************************************************************************/
+ * \returns    The modified expression
+ */
 SharedExp SSLParser::makeSuccessor(SharedExp e)
 {
     return Unary::get(opSuccessor, e);

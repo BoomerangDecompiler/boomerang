@@ -10,13 +10,6 @@
 #include "Register.h"
 
 
-/***************************************************************************/ /**
- * \file register.cpp
- * \brief Register class descriptions
- *
- * Holds detailed information about a single register.
- ******************************************************************************/
-
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
 
@@ -25,9 +18,10 @@
 #include <string>
 
 
-Register::Register()
-    : m_fltRegister(false)
-    , m_address(nullptr)
+Register::Register(const QString& name, uint16_t sizeInBits, bool isFloatReg)
+    : m_name(name)
+    , m_size(sizeInBits)
+    , m_fltRegister(isFloatReg)
     , m_mappedIndex(-1)
     , m_mappedOffset(-1)
 {
@@ -37,7 +31,6 @@ Register::Register()
 Register::Register(const Register& r)
     : m_size(r.m_size)
     , m_fltRegister(r.m_fltRegister)
-    , m_address(r.m_address)
     , m_mappedIndex(r.m_mappedIndex)
     , m_mappedOffset(r.m_mappedOffset)
 {
@@ -49,7 +42,6 @@ Register::Register(const Register& r)
 
 Register& Register::operator=(const Register& r2)
 {
-    // copy operator
     if (this == &r2) {
         return *this;
     }
@@ -57,12 +49,10 @@ Register& Register::operator=(const Register& r2)
     m_name        = r2.m_name;
     m_size        = r2.m_size;
     m_fltRegister = r2.m_fltRegister;
-    m_address     = r2.m_address;
-
     m_mappedIndex  = r2.m_mappedIndex;
     m_mappedOffset = r2.m_mappedOffset;
 
-    return(*this);
+    return *this;
 }
 
 
@@ -78,7 +68,7 @@ bool Register::operator<(const Register& r2) const
 {
     assert(!m_name.isEmpty() && !r2.m_name.isEmpty());
     // compare on name
-    return(m_name < r2.m_name);
+    return m_name < r2.m_name;
 }
 
 
@@ -100,6 +90,13 @@ SharedType Register::getType() const
     if (m_fltRegister) {
         return FloatType::get(m_size);
     }
+    else {
+        return IntegerType::get(m_size);
+    }
+}
 
-    return IntegerType::get(m_size);
+
+uint16_t Register::getSize() const
+{
+    return m_size;
 }

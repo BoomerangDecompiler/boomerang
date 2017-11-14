@@ -10,17 +10,6 @@
 #pragma once
 
 
-/***************************************************************************/ /**
- * \file    ProcTest.h
- * Provides the interface for the ProcTest class, which tests the Proc class
- *============================================================================*/
-
-/*
- * $Revision: 1.5 $
- *
- * 23 Apr 02 - Mike: Created
- */
-
 class Proc;
 
 #include <QtTest/QTest>

@@ -51,7 +51,7 @@ if (MSVC)
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4127) # conditional expression is constant
 
     set(DEBUG_LIB dbghelp.lib)
-    
+
 else () # GCC / Clang
     BOOMERANG_ADD_COMPILE_FLAGS(-Wall -Wextra -Werror -Werror=pedantic)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wshadow)

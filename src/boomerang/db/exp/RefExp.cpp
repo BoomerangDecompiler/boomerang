@@ -10,14 +10,18 @@
 #include "RefExp.h"
 
 
-#include "boomerang/db/statements/Statement.h"
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
-
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/Statement.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/IntegerType.h"
+
 
 RefExp::RefExp(SharedExp e, Statement *d)
     : Unary(opSubscript, e)
@@ -120,23 +124,6 @@ bool RefExp::operator*=(const Exp& o) const
 }
 
 
-SharedExp RefExp::match(const SharedConstExp& pattern)
-{
-    SharedExp r = Unary::match(pattern);
-
-    //      if (r)
-    return r;
-
-    /*      r = subExp1->match(pattern);
-     *  if (r) {
-     *          bool change;
-     *          r = r->searchReplaceAll(subExp1->clone(), this->clone(), change);
-     *          return r;
-     *  }
-     *  return Exp::match(pattern); */
-}
-
-
 bool RefExp::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
 {
     if (Exp::match(pattern, bindings)) {
@@ -206,10 +193,10 @@ SharedExp RefExp::polySimplify(bool& bMod)
 
 bool RefExp::accept(ExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(shared_from_base<RefExp>(), override);
+    bool visitChildren = false;
+    bool ret = v->visit(shared_from_base<RefExp>(), visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -223,11 +210,11 @@ bool RefExp::accept(ExpVisitor *v)
 
 SharedExp RefExp::accept(ExpModifier *v)
 {
-    bool recur;
-    auto ret     = v->preVisit(shared_from_base<RefExp>(), recur);
+    bool visitChildren = true;
+    auto ret     = v->preVisit(shared_from_base<RefExp>(), visitChildren);
     auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
     }
 
@@ -253,13 +240,13 @@ void RefExp::printx(int ind) const
     }
 
     LOG_VERBOSE("}");
-    child(subExp1, ind);
+    printChild(subExp1, ind);
 }
 
 
 bool RefExp::isImplicitDef() const
 {
-    return m_def == nullptr || m_def->getKind() == STMT_IMPASSIGN;
+    return m_def == nullptr || m_def->getKind() == StmtType::ImpAssign;
 }
 
 
@@ -324,3 +311,17 @@ SharedExp RefExp::genConstraints(SharedExp result)
 
     return Terminal::get(opTrue);
 }
+
+SharedExp RefExp::addSubscript(Statement* _def)
+{
+    m_def = _def;
+    return shared_from_this();
+}
+
+
+void RefExp::setDef(Statement* _def)
+{
+//         assert(_def != nullptr);
+    m_def = _def;
+}
+

@@ -28,123 +28,74 @@ class GotoStatement : public Statement
 public:
     GotoStatement();
 
-    /***************************************************************************/ /**
-     * \brief        Construct a jump to a fixed address
-     * \param        jumpDest native address of destination
-     ******************************************************************************/
+    /// Construct a jump to a fixed address \p jumpDest
     GotoStatement(Address jumpDest);
 
-    /***************************************************************************/ /**
-     * \fn        GotoStatement::~GotoStatement
-     * \brief        Destructor
-     ******************************************************************************/
     virtual ~GotoStatement() override;
 
-    /***************************************************************************/ /**
-     * \fn        GotoStatement::clone
-     * \brief     Deep copy clone
-     * \returns   Pointer to a new Statement, a clone of this GotoStatement
-     ******************************************************************************/
-    virtual Statement *clone() const override;  ///< Make a deep copy, and make the copy a derived object if needed.
+    /// \copydoc Statement::clone
+    virtual Statement *clone() const override;
 
-    // Accept a visitor to this Statement
-    // visit this Statement in the RTL
+    /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) override;
+
+    /// \copydoc Statement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
-    virtual bool accept(StmtModifier *visitor) override;
-    virtual bool accept(StmtPartModifier *visitor) override;
 
-    // Set and return the destination of the jump. The destination is either an Exp, or an ADDRESS that
-    // is converted to a Exp.
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtModifier *modifier) override;
 
-    /***************************************************************************/ /**
-     * \brief        Set the destination of this jump to be a given fixed address.
-     * \param   addr - the new fixed address
-     ******************************************************************************/
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtPartModifier *modifier) override;
+
+    /// Set the destination of this jump to be a given fixed address.
     void setDest(Address addr);
+
+    /// Set the destination of this jump to be an expression (computed jump)
     void setDest(SharedExp pd);
 
-    /***************************************************************************/ /**
-     * \brief        Returns the destination of this CTI.
-     * \returns Pointer to the Exp representing the dest of this jump
-     ******************************************************************************/
+    /// Returns the destination of this CTI.
     virtual SharedExp getDest();
     virtual const SharedExp getDest() const;
 
-    /***************************************************************************/ /**
-     * \brief Get the fixed destination of this CTI. Assumes destination
-     *        simplication has already been done so that a fixed dest will
-     *        be of the Exp form:
-     *        opIntConst dest
-     * \returns Fixed dest or Address::INVALID if there isn't one, For dynamic CTIs,
-     *          returns Address::INVALID.
-     ******************************************************************************/
+    /// \returns Fixed destination address or Address::INVALID if there isn't one.
+    /// For dynamic CTIs, returns Address::INVALID.
     Address getFixedDest() const;
 
-    /***************************************************************************/ /**
-     * \brief        Adjust the destination of this CTI by a given amount. Causes
-     *                    an error is this destination is not a fixed destination
-     *                    (i.e. a constant offset).
-     * \param   delta - the amount to add to the destination (can be
-     *                  negative)
-     ******************************************************************************/
+    /**
+     * Adjust the destination of this CTI by a given amount (i.e. a constant offset).
+     * Causes an error if this destination is not a fixed destination.
+     * \param delta the amount to add to the destination (can be negative)
+     */
     void adjustFixedDest(int delta);
 
-    /***************************************************************************/ /**
-     * \fn      GotoStatement::setIsComputed
-     * \brief      Sets the fact that this call is computed.
-     * \note This should really be removed, once CaseStatement and
-     *                    HLNwayCall are implemented properly
-     ******************************************************************************/
+    /**
+     * Sets the fact that this call is computed.
+     * \todo This should really be removed, once CaseStatement
+     * and HLNwayCall are implemented properly
+     */
     void setIsComputed(bool b = true);
 
-    /***************************************************************************/ /**
-     * \fn      GotoStatement::isComputed
-     * \brief      Returns whether or not this call is computed.
-     * \note          This should really be removed, once CaseStatement and HLNwayCall
-     *                    are implemented properly
-     * \returns           this call is computed
-     ******************************************************************************/
+    /**
+     * Returns whether or not this call is computed.
+     * \todo This should really be removed, once CaseStatement
+     * and HLNwayCall are implemented properly
+     * \returns this call is computed
+     */
     bool isComputed() const;
 
-    /***************************************************************************/ /**
-     * \fn    GotoStatement::print
-     * \brief Display a text reprentation of this RTL to the given stream
-     * \note  Usually called from RTL::print, in which case the first 9
-     *        chars of the print have already been output to os
-     * \param os - stream to write to
-     * \param html - produce html encoded representation
-     ******************************************************************************/
+    /// \copydoc Statement::print
     virtual void print(QTextStream& os, bool html = false) const override;
 
-    // general search
-    virtual bool search(const Exp&, SharedExp&) const override;
+    /// \copydoc Statement::search
+    virtual bool search(const Exp& pattern, SharedExp& result) const override;
 
-    // Replace all instances of "search" with "replace".
-
-    /***************************************************************************/ /**
-     * \fn        GotoStatement::searchAndReplace
-     * \brief        Replace all instances of search with replace.
-     * \param search - a location to search for
-     * \param replace - the expression with which to replace it
-     * \param cc - ignored
-     * \returns True if any change
-     ******************************************************************************/
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
-
-
-    /***************************************************************************/ /**
-     * \fn        GotoStatement::searchAll
-     * \brief        Find all instances of the search expression
-     * Searches for all instances of a given subexpression within this
-     * expression and adds them to a given list in reverse nesting order.
-     *
-     * \param search - a location to search for
-     * \param result - a list which will have any matching exprs
-     *                 appended to it
-     * \returns true if there were any matches
-     ******************************************************************************/
+    /// \copydoc Statement::searchAndReplace
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+
+    /// \copydoc Statement::searchAndReplace
+    virtual bool searchAndReplace(const Exp& pattern, SharedExp replace, bool cc = false) override;
+
 
     // code generation
     virtual void generateCode(ICodeGenerator *, const BasicBlock *) override;

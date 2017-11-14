@@ -10,14 +10,6 @@
 #include "MachOBinaryLoader.h"
 
 
-/** \file MachOBinaryLoader.cpp
- * \brief This file contains the implementation of the class MachOBinaryFile.
- *
- *    This file implements the class MachOBinaryFile, derived from class
- *    BinaryFile. See MachOBinaryFile.h and BinaryFile.h for details.
- */
-
-
 #include "nlist.h"
 #include "macho-apple.h"
 

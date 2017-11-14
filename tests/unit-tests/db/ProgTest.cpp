@@ -10,20 +10,6 @@
 #include "ProgTest.h"
 
 
-/**
- * \file ProgTest.cpp
- * Provides the implementation for the ProgTest class, which
- * tests the Prog object
- */
-
-/*
- * $Revision$
- *
- * 18 Apr 02 - Mike: Created
- * 18 Jul 02 - Mike: Set up prog.pFE before calling readLibParams
- */
-
-
 #include "boomerang/db/Prog.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Settings.h"

@@ -9,13 +9,6 @@
 #pragma endregion License
 #include "DOS4GWBinaryLoader.h"
 
-/**
- * \file DOS4GWBinaryLoader.cpp
- * Desc: This file contains the implementation of the class DOS4GWBinaryLoader.
- * See DOS4GWBinaryLoader.h and BinaryFile.h for details.
- * 24 Jan 05 - Trent: created.
- */
-
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/IBinaryImage.h"

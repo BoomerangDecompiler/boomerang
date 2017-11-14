@@ -14,6 +14,7 @@
 #include <string>
 #include <cassert>
 
+
 enum class PluginType
 {
     Invalid = 0,
@@ -30,6 +31,9 @@ struct PluginInfo
 };
 
 
+/**
+ * Wrapper class for platform specific handles to dynamic libraries.
+ */
 class PluginHandle
 {
 public:
@@ -131,7 +135,7 @@ private:
         if (!deinitFunction) {
             return false;
         }
-        
+
         deinitFunction();
         m_ifc = nullptr;
         return true;

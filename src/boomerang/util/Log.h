@@ -134,7 +134,7 @@ public:
      */
     void log(LogLevel level, const char *file, int line, const QString& msg);
 
-    // Same as Log::log, but does not split multiline strings
+    /// Same as \ref Log::log, but does not split multiline strings
     void logDirect(LogLevel level, const char *file, int line, const QString& msg);
 
     /**
@@ -230,14 +230,10 @@ private:
         return collectArgs(collectArg(msg, arg), args ...);
     }
 
-    /**
-     * Write the raw string \p msg to all log sinks.
-     */
+    /// Write the raw string \p msg to all log sinks.
     void write(const QString& msg);
 
-    /**
-     * Given a log level, get the name of the log level as a string.
-     */
+    /// Given a log level, get the name of the log level as a string.
     QString levelToString(LogLevel level);
 
 private:

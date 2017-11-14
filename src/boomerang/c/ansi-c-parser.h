@@ -30,14 +30,14 @@ class Symbol
 {
 public:
     Address addr;
-    QString nam;
+    QString name;
     SharedType ty;
     std::shared_ptr<Signature> sig;
     SymbolMods *mods;
 
     Symbol(Address a)
         : addr(a)
-        , nam("")
+        , name("")
         , sig(nullptr)
         , mods(nullptr) {}
 };
@@ -67,23 +67,25 @@ public:
 class SymbolRef
 {
 public:
-       Address addr;
-    QString nam;
+    Address m_addr;
+    QString m_name;
 
-    SymbolRef(Address a, const QString& _nam)
-        : addr(a)
-        , nam(_nam) {}
+    SymbolRef(Address addr, const QString& name)
+        : m_addr(addr)
+        , m_name(name)
+    {}
 };
 
 class Bound
 {
 public:
-    int kind;
-    QString nam;
+    int m_kind;
+    QString m_name;
 
-    Bound(int _kind, const QString& _nam)
-        : kind(_kind)
-        , nam(_nam) {}
+    Bound(int kind, const QString& name)
+        : m_kind(kind)
+        , m_name(name)
+    {}
 };
 
 typedef struct

@@ -10,11 +10,6 @@
 #pragma once
 
 
-/***************************************************************************/ /**
- * \file       st20decoder.h
- * \brief   The definition of the instruction decoder for ST20.
- ******************************************************************************/
-
 #include "boomerang/frontend/NJMCDecoder.h"
 
 #include "boomerang/db/RTL.h"
@@ -28,6 +23,9 @@ class Statement;
 struct DecodeResult;
 
 
+/**
+ * The definition of the instruction decoder for ST20.
+ */
 class ST20Decoder : public NJMCDecoder
 {
 public:
@@ -35,19 +33,16 @@ public:
     ST20Decoder(Prog *prog);
 
     /// \copydoc NJMCDecoder::decodeInstruction
+    /**
+     * Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.
+     * \param pc - the native address of the pc
+     * \param delta - the difference between the above address and the host address of the pc (i.e. the address that
+     *         the pc is at in the loaded object file)
+     * \returns            a DecodeResult structure containing all the information gathered during decoding
+     */
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 
 private:
-
-    /*
-     * Various functions to decode the operands of an instruction into
-     * a SemStr representation.
-     */
-    // Exp*    dis_Eaddr(ADDRESS pc, int size = 0);
-    // Exp*    dis_RegImm(ADDRESS pc);
-    // Exp*    dis_Reg(unsigned r);
-    // Exp*    dis_RAmbz(unsigned r);        // Special for rA of certain instructions
-
     RTL *createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name);
     bool isFuncPrologue(Address hostPC);
 

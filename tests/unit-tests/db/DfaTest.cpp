@@ -10,12 +10,6 @@
 #include "DfaTest.h"
 
 
-/**
- * \file DfaTest.cpp
- * Provides the implementation for the DfaTest class, which
- * tests the data flow based type analysis code
- */
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -97,15 +91,15 @@ void DfaTest::testMeet_data()
     TEST_MEET("i64 M i64", IntegerType::get(64, 1), IntegerType::get(64, 1),  IntegerType::get(64, 1));
     TEST_MEET("i64 M j64", IntegerType::get(64, 1), IntegerType::get(64, 0),  IntegerType::get(64, 1));
     TEST_MEET("i64 M u64", IntegerType::get(64, 1), IntegerType::get(64, -1), IntegerType::get(64, 0));
-    TEST_MEET("i64 M i32", IntegerType::get(64, 1), IntegerType::get(64, 1),  IntegerType::get(64, 1));
-    TEST_MEET("i64 M j32", IntegerType::get(64, 1), IntegerType::get(64, 0),  IntegerType::get(64, 1));
-    TEST_MEET("i64 M u32", IntegerType::get(64, 1), IntegerType::get(64, -1), IntegerType::get(64, 0));
-    TEST_MEET("i64 M i16", IntegerType::get(64, 1), IntegerType::get(64, 1),  IntegerType::get(64, 1));
-    TEST_MEET("i64 M j16", IntegerType::get(64, 1), IntegerType::get(64, 0),  IntegerType::get(64, 1));
-    TEST_MEET("i64 M u16", IntegerType::get(64, 1), IntegerType::get(64, -1), IntegerType::get(64, 0));
-    TEST_MEET("i64 M i8",  IntegerType::get(64, 1), IntegerType::get(64, 1),  IntegerType::get(64, 1));
-    TEST_MEET("i64 M j8",  IntegerType::get(64, 1), IntegerType::get(64, 0),  IntegerType::get(64, 1));
-    TEST_MEET("i64 M u8",  IntegerType::get(64, 1), IntegerType::get(64, -1), IntegerType::get(64, 0));
+    TEST_MEET("i64 M i32", IntegerType::get(64, 1), IntegerType::get(32, 1),  IntegerType::get(64, 1));
+    TEST_MEET("i64 M j32", IntegerType::get(64, 1), IntegerType::get(32, 0),  IntegerType::get(64, 1));
+    TEST_MEET("i64 M u32", IntegerType::get(64, 1), IntegerType::get(32, -1), IntegerType::get(64, 0));
+    TEST_MEET("i64 M i16", IntegerType::get(64, 1), IntegerType::get(16, 1),  IntegerType::get(64, 1));
+    TEST_MEET("i64 M j16", IntegerType::get(64, 1), IntegerType::get(16, 0),  IntegerType::get(64, 1));
+    TEST_MEET("i64 M u16", IntegerType::get(64, 1), IntegerType::get(16, -1), IntegerType::get(64, 0));
+    TEST_MEET("i64 M i8",  IntegerType::get(64, 1), IntegerType::get(8, 1),   IntegerType::get(64, 1));
+    TEST_MEET("i64 M j8",  IntegerType::get(64, 1), IntegerType::get(8, 0),   IntegerType::get(64, 1));
+    TEST_MEET("i64 M u8",  IntegerType::get(64, 1), IntegerType::get(8, -1),  IntegerType::get(64, 0));
     TEST_MEET("i64 M s64", IntegerType::get(64, 1), SizeType::get(64),        IntegerType::get(64, 1));
     TEST_MEET("i64 M s32", IntegerType::get(64, 1), SizeType::get(32),        IntegerType::get(64, 1));
     TEST_MEET("i64 M s16", IntegerType::get(64, 1), SizeType::get(16),        IntegerType::get(64, 1));
@@ -145,6 +139,5 @@ void DfaTest::testMeet_data()
     TEST_MEET("f32 M v",   FloatType::get(32), VoidType::get(),    FloatType::get(32));
     TEST_MEET("f32 M f64", FloatType::get(32), FloatType::get(64), FloatType::get(64)); // Maybe this should result in a union
 }
-
 
 QTEST_MAIN(DfaTest)

@@ -19,14 +19,15 @@
 class TypingStatement : public Statement
 {
 public:
-    TypingStatement(SharedType ty); ///< Constructor
+    TypingStatement(SharedType ty);
     virtual ~TypingStatement() override = default;
 
-    // Get and set the type.
+    /// \returns the type of this statement.
     SharedType getType() { return m_type; }
     const SharedType& getType() const { return m_type; }
     void setType(SharedType ty) { m_type = ty; }
 
+    /// \copydoc Statement::isTyping
     virtual bool isTyping() const override { return true; }
 
 protected:

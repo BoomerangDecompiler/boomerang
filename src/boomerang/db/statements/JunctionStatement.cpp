@@ -11,12 +11,17 @@
 
 
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 
 
 JunctionStatement::JunctionStatement()
 {
-    m_kind = STMT_JUNCTION;
+    m_kind = StmtType::Junction;
 }
 
 
@@ -60,8 +65,8 @@ void JunctionStatement::print(QTextStream& os, bool html) const
 
     os << "JUNCTION ";
 
-    for (size_t i = 0; i < m_parent->getNumInEdges(); i++) {
-        os << m_parent->getInEdges()[i]->getHiAddr();
+    for (size_t i = 0; i < m_parent->getNumPredecessors(); i++) {
+        os << m_parent->getPredecessors()[i]->getHiAddr();
 
         if (m_parent->isBackEdge(i)) {
             os << "*";
@@ -84,7 +89,7 @@ void JunctionStatement::print(QTextStream& os, bool html) const
 
 bool JunctionStatement::isLoopJunction() const
 {
-    for (size_t i = 0; i < m_parent->getNumInEdges(); i++) {
+    for (size_t i = 0; i < m_parent->getNumPredecessors(); i++) {
         if (m_parent->isBackEdge(i)) {
             return true;
         }

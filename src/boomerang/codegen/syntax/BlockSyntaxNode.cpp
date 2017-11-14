@@ -34,7 +34,7 @@ BlockSyntaxNode::~BlockSyntaxNode()
 size_t BlockSyntaxNode::getNumOutEdges() const
 {
     if (m_bb) {
-        return m_bb->getNumOutEdges();
+        return m_bb->getNumSuccessors();
     }
 
     if (statements.size() == 0) {
@@ -48,7 +48,7 @@ size_t BlockSyntaxNode::getNumOutEdges() const
 SyntaxNode *BlockSyntaxNode::getOutEdge(SyntaxNode *root, size_t n)
 {
     if (m_bb) {
-        return root->findNodeFor(m_bb->getOutEdge(n));
+        return root->findNodeFor(m_bb->getSuccessor(n));
     }
 
     if (statements.size() == 0) {
@@ -143,15 +143,15 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
     os << "\"];" << '\n';
 
     if (m_bb) {
-        for (size_t i = 0; i < m_bb->getNumOutEdges(); i++) {
-            BasicBlock *out = m_bb->getOutEdge(i);
+        for (size_t i = 0; i < m_bb->getNumSuccessors(); i++) {
+            BasicBlock *out = m_bb->getSuccessor(i);
             os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
 
             SyntaxNode *to = root->findNodeFor(out);
             assert(to);
             os << " -> " << to->getNumber() << " [style=dotted";
 
-            if (m_bb->getNumOutEdges() > 1) {
+            if (m_bb->getNumSuccessors() > 1) {
                 os << ",label=" << i;
             }
 
@@ -190,7 +190,7 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
     if (statements.size() == 1) {
         SyntaxNode *out = statements[0]->getOutEdge(root, 0);
 
-        if ((out->getBB() != nullptr) && (out->getBB()->getNumInEdges() > 1)) {
+        if ((out->getBB() != nullptr) && (out->getBB()->getNumPredecessors() > 1)) {
 #if DEBUG_EVAL
             LOG_MSG("Add 15");
 #endif

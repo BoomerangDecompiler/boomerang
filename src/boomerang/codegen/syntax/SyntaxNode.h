@@ -14,6 +14,7 @@
 
 class BasicBlock;
 
+
 /**
  * Base class for all nodes in the Abstract Syntax Tree.
  */
@@ -81,7 +82,7 @@ public:
     virtual SyntaxNode *replace(SyntaxNode *from, SyntaxNode *to) = 0;
 
     /// \returns the corresponding node in a previous state.
-    /// For example, if p is a clone of this, p->getCorrespond() == this.
+    /// For example, if p is a clone of this, then p->getCorrespond() == this.
     SyntaxNode *getCorrespond() const { return m_correspond; }
 
     /// \returns the syntax node containing \p bb

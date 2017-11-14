@@ -10,20 +10,6 @@
 #include "ProcTest.h"
 
 
-/**
- * \file ProcTest.cpp
- * Provides the implementation for the ProcTest class, which
- * tests the Proc class
- */
-
-/*
- * $Revision$
- *
- * 23 Apr 02 - Mike: Created
- * 10 Mar 03 - Mike: Mods to not use Prog::pBF (no longer public)
- */
-
-
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/core/Project.h"
@@ -52,12 +38,12 @@ void ProcTest::testName()
 
     pFE->readLibraryCatalog();              // Since we are not decoding
 
-    Function *f       = prog->createProc(Address(0x00020000));
+    Function *f       = prog->createFunction(Address(0x00020000));
     QString  procName = "default name";
     f->setName(procName);
     QCOMPARE(f->getName(), procName);
 
-    f = prog->findProc("printf");
+    f = prog->findFunction("printf");
     QVERIFY(f != nullptr);
     QVERIFY(f->isLib());
     QCOMPARE(f->getName(), QString("printf"));

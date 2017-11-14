@@ -16,16 +16,28 @@ class Function;
 class Prog;
 
 
-struct ITypeRecovery
+/**
+ * Base class for type recovery engines.
+ */
+class ITypeRecovery
 {
-    virtual ~ITypeRecovery() {}
-    virtual QString name() = 0;
-    virtual void    recoverFunctionTypes(Function *) = 0;
-    virtual void    recoverProgramTypes(Prog *)      = 0;
+public:
+    virtual ~ITypeRecovery() = default;
+
+    /// \returns A descriptive name of this type recovery engine.
+    virtual QString getName() = 0;
+
+    /// Recover program types for a single function \p function
+    virtual void recoverFunctionTypes(Function *function) = 0;
+
+    /// Recover program types for the whole program
+    virtual void recoverProgramTypes(Prog *prog)          = 0;
 };
 
 
-struct TypeRecoveryCommon : public ITypeRecovery
+class TypeRecoveryCommon : public ITypeRecovery
 {
-    virtual void recoverProgramTypes(Prog *v) override;
+public:
+    /// \copydoc ITypeRecovery::recoverProgramTypes
+    virtual void recoverProgramTypes(Prog *prog) override;
 };

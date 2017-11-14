@@ -12,16 +12,17 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/SizeType.h"
+#include "boomerang/util/Log.h"
 
 #include <QRegularExpression>
 
@@ -63,14 +64,6 @@ int tlstrchr(const QString& str, char ch)
 }
 
 
-Binary::Binary(OPER op)
-    : Unary(op)
-{
-    // Initialise the 2nd pointer. The first pointer is initialised in the Unary constructor
-    // subExp2 = 0;
-}
-
-
 Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
     : Unary(op, e1)
     , subExp2(e2)
@@ -80,9 +73,8 @@ Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
 
 
 Binary::Binary(const Binary& o)
-    : Unary(m_oper)
+    : Unary(o)
 {
-    setSubExp1(subExp1->clone());
     subExp2 = o.subExp2->clone();
     assert(subExp1 && subExp2);
 }
@@ -90,20 +82,11 @@ Binary::Binary(const Binary& o)
 
 Binary::~Binary()
 {
-    if (subExp2 != nullptr) {
-        // delete subExp2;
-    }
-
-    // Note that the first pointer is destructed in the Exp1 destructor
 }
 
 
 void Binary::setSubExp2(SharedExp e)
 {
-    if (subExp2 != nullptr) {
-        // delete subExp2;
-    }
-
     subExp2 = e;
     assert(subExp1 && subExp2);
 }
@@ -1666,10 +1649,10 @@ bool Binary::accept(ExpVisitor *v)
 {
     assert(subExp1 && subExp2);
 
-    bool override = false;
-    bool ret = v->visit(shared_from_base<Binary>(), override);
+    bool visitChildren = true;
+    bool ret = v->visit(shared_from_base<Binary>(), visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -1737,14 +1720,11 @@ SharedExp Binary::accept(ExpModifier *v)
 {
     assert(subExp1 && subExp2);
 
-    bool      recur;
-    SharedExp ret = v->preVisit(shared_from_base<Binary>(), recur);
+    bool      visitChildren = true;
+    SharedExp ret = v->preVisit(shared_from_base<Binary>(), visitChildren);
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
-    }
-
-    if (recur) {
         subExp2 = subExp2->accept(v);
     }
 
@@ -1769,6 +1749,6 @@ void Binary::printx(int ind) const
 {
     assert(subExp1 && subExp2);
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-    child(subExp1, ind);
-    child(subExp2, ind);
+    printChild(subExp1, ind);
+    printChild(subExp2, ind);
 }

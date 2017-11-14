@@ -19,32 +19,44 @@ public:
     JunctionStatement();
     virtual ~JunctionStatement() override;
 
+    /// \copydoc Statement::clone
     virtual Statement *clone() const override { return new JunctionStatement(); }
 
-    // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
-    bool accept(StmtVisitor *visitor) override;
-    bool accept(StmtExpVisitor *visitor) override;
-    bool accept(StmtModifier *visitor) override;
-    bool accept(StmtPartModifier *visitor) override;
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtVisitor *visitor) override;
 
-    // returns true if this statement defines anything
-    bool isDefinition() const override { return false; }
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtExpVisitor *visitor) override;
 
-    bool usesExp(const Exp&) const override { return false; }
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtModifier *modifier) override;
 
-    void print(QTextStream& os, bool html = false) const override;
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtPartModifier *modifier) override;
 
-    // general search
-    bool search(const Exp& /*search*/, SharedExp& /*result*/) const override { return false; }
-    bool searchAll(const Exp& /*search*/, std::list<SharedExp>& /*result*/) const override { return false; }
+    /// \copydoc Statement::isDefinition
+    virtual bool isDefinition() const override { return false; }
 
-    /// general search and replace. Set cc true to change collectors as well. Return true if any change
-    bool searchAndReplace(const Exp& /*search*/, SharedExp /*replace*/, bool /*cc*/ = false)  override { return false; }
+    /// \copydoc Statement::usesExp
+    virtual bool usesExp(const Exp&) const override { return false; }
 
-    virtual void generateCode(ICodeGenerator * /*generator*/, const BasicBlock * /*parentBB*/) override {}
+    /// \copydoc Statement::print
+    virtual void print(QTextStream& os, bool html = false) const override;
 
-    // simpify internal expressions
-    void simplify() override {}
+    /// \copydoc Statement::search
+    virtual bool search(const Exp& /*search*/, SharedExp& /*result*/) const override { return false; }
+
+    /// \copydoc Statement::searchAll
+    virtual bool searchAll(const Exp& /*search*/, std::list<SharedExp>& /*result*/) const override { return false; }
+
+    /// \copydoc Statement::searchAndReplace
+    virtual bool searchAndReplace(const Exp& /*search*/, SharedExp /*replace*/, bool /*cc*/ = false)  override { return false; }
+
+    /// \copydoc Statement::generateCode
+    virtual void generateCode(ICodeGenerator *, const BasicBlock *) override {}
+
+    /// \copydoc Statement::simplify
+    virtual void simplify() override {}
 
     bool isLoopJunction() const;
 };

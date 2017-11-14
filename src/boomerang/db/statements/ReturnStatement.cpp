@@ -10,14 +10,20 @@
 #include "ReturnStatement.h"
 
 
-#include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/Visitor.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 #include "boomerang/util/Log.h"
 
 #include "boomerang/frontend/Frontend.h"
@@ -25,7 +31,7 @@
 ReturnStatement::ReturnStatement()
     : m_retAddr(Address::INVALID)
 {
-    m_kind = STMT_RET;
+    m_kind = StmtType::Ret;
 }
 
 
@@ -79,21 +85,6 @@ void ReturnStatement::simplify()
 
     for (it = m_returns.begin(); it != m_returns.end(); it++) {
         (*it)->simplify();
-    }
-}
-
-
-void ReturnStatement::removeReturn(SharedExp loc)
-{
-    if (loc->isSubscript()) {
-        loc = loc->getSubExp1();
-    }
-
-    for (iterator rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
-        if (*((Assignment *)*rr)->getLeft() == *loc) {
-            m_returns.erase(rr);
-            return;     // Assume only one definition
-        }
     }
 }
 
@@ -170,22 +161,17 @@ bool ReturnStatement::usesExp(const Exp& e) const
 
 bool ReturnStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
+    bool visitChildren = true;
 
-    ReturnStatement::iterator rr;
-
-    if (!v->visit(this, override)) {
+    if (!v->visit(this, visitChildren)) {
         return false;
     }
-
-    if (override) {
+    else if (!visitChildren) {
         return true;
     }
 
     if (!v->isIgnoreCol()) {
-        DefCollector::iterator dd;
-
-        for (dd = m_col.begin(); dd != m_col.end(); ++dd) {
+        for (DefCollector::iterator dd = m_col.begin(); dd != m_col.end(); ++dd) {
             if (!(*dd)->accept(v)) {
                 return false;
             }
@@ -194,14 +180,14 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
         // EXPERIMENTAL: for now, count the modifieds as if they are a collector (so most, if not all of the time,
         // ignore them). This is so that we can detect better when a definition is used only once, and therefore
         // propagate anything to it
-        for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
+        for (ReturnStatement::iterator rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
             if (!(*rr)->accept(v)) {
                 return false;
             }
         }
     }
 
-    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
+    for (ReturnStatement::iterator rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
         if (!(*rr)->accept(v)) {
             return false;
         }
@@ -213,11 +199,10 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
 
 bool ReturnStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (!recur) {
+    if (!visitChildren) {
         return true;
     }
 
@@ -251,9 +236,8 @@ bool ReturnStatement::accept(StmtModifier *v)
 
 bool ReturnStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
     ReturnStatement::iterator rr;
 
     for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
@@ -274,6 +258,12 @@ bool ReturnStatement::accept(StmtPartModifier *v)
 
 bool ReturnStatement::definesLoc(SharedExp loc) const
 {
+    /// Does a ReturnStatement define anything?
+    /// Not really, the locations are already defined earlier in the procedure.
+    /// However, nothing comes after the return statement, so it doesn't hurt
+    /// to pretend it does, and this is a place to store the return type(s) for example.
+    /// FIXME: seems it would be cleaner to say that Return Statements don't define anything.
+
     for (auto& elem : m_modifieds) {
         if ((elem)->definesLoc(loc)) {
             return true;
@@ -427,8 +417,8 @@ void ReturnStatement::updateModifieds()
 
     m_modifieds.clear();
 
-    if ((m_parent->getNumInEdges() == 1) && m_parent->getInEdges()[0]->getLastStmt()->isCall()) {
-        CallStatement *call = (CallStatement *)m_parent->getInEdges()[0]->getLastStmt();
+    if ((m_parent->getNumPredecessors() == 1) && m_parent->getPredecessors()[0]->getLastStmt()->isCall()) {
+        CallStatement *call = (CallStatement *)m_parent->getPredecessors()[0]->getLastStmt();
 
         if (call->getDestProc() && IFrontEnd::isNoReturnCallDest(call->getDestProc()->getName())) {
             return;
@@ -598,21 +588,3 @@ void ReturnStatement::removeModified(SharedExp loc)
 }
 
 
-void ReturnStatement::dfaTypeAnalysis(bool& ch)
-{
-    for (Statement *mm : m_modifieds) {
-        if (!mm->isAssignment()) {
-            LOG_WARN("Non assignment in modifieds of ReturnStatement");
-        }
-
-        mm->dfaTypeAnalysis(ch);
-    }
-
-    for (Statement *rr : m_returns) {
-        if (!rr->isAssignment()) {
-            LOG_WARN("Non assignment in returns of ReturnStatement");
-        }
-
-        rr->dfaTypeAnalysis(ch);
-    }
-}

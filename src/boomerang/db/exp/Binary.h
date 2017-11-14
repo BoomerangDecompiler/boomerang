@@ -14,78 +14,95 @@
 
 class TypeVal;
 
+
 /**
  * Binary is a subclass of Unary, holding two subexpressions
  */
 class Binary : public Unary
 {
-protected:
-    /// Constructor, with ID
-    Binary(OPER op);
-
 public:
-    /// Constructor, with ID and subexpressions
     Binary(OPER op, SharedExp e1, SharedExp e2);
-
-    /// Copy constructor
     Binary(const Binary& o);
+    virtual ~Binary() override;
+
+    /// \copydoc Unary::clone
+    virtual SharedExp clone() const override;
 
     static std::shared_ptr<Binary> get(OPER op, SharedExp e1, SharedExp e2)
     { return std::make_shared<Binary>(op, e1, e2); }
 
-    // Clone
-    virtual SharedExp clone() const override;
-
-    // Compare
+    /// \copydoc Unary::operator==
     bool operator==(const Exp& o) const override;
+
+    /// \copydoc Unary::operator<
     bool operator<(const Exp& o) const override;
+
+    /// \copydoc Unary::operator*=
     bool operator*=(const Exp& o) const override;
 
-    /// Destructor
-    virtual ~Binary() override;
-
-    /// Arity
+    /// \copydoc Unary::getArity
     int getArity() const override { return 2; }
 
-    // Print
+    /// \copydoc Unary::print
     virtual void print(QTextStream& os, bool html = false) const override;
+
+    /// \copydoc Unary::printr
     virtual void printr(QTextStream& os, bool html = false) const override;
-    virtual void appendDotFile(QTextStream& of) override;
+
+    /// \copydoc Unary::printx
     virtual void printx(int ind) const override;
 
-    // Set second subexpression
-    void setSubExp2(SharedExp e) override;
+    /// \copydoc Unary::appendDotFile
+    virtual void appendDotFile(QTextStream& of) override;
 
-    // Get second subexpression
+    /// \copydoc Exp::getSubExp2
     SharedExp getSubExp2() override;
     SharedConstExp getSubExp2() const override;
 
-    /***************************************************************************/ /**
-     * \brief        Swap the two subexpressions
-     ******************************************************************************/
-    void commute();                   ///< Commute the two operands
-    SharedExp& refSubExp2() override; ///< Get a reference to subexpression 2
+    /// \copydoc Exp::getSubExp2
+    SharedExp& refSubExp2() override;
 
+    /// \copydoc Exp::getSubExp2
+    void setSubExp2(SharedExp e) override;
+
+    /// Swap the two subexpressions
+    /// \note Changes the meaning for non-commutative operations
+    void commute();
+
+    /// \copydoc Unary::match
     virtual SharedExp match(const SharedConstExp& pattern) override;
+
+    /// \copydoc Unary::match
     virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
-    /// Search children
+    /// \copydoc Unary::doSearchChildren
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
-    /// Do the work of simplifying this expression
+    /// \copydoc Unary::simplify
     virtual SharedExp polySimplify(bool& bMod) override;
+
+    /// \copydoc Unary::simplifyArith
     SharedExp simplifyArith() override;
+
+    /// \copydoc Unary::simplifyAddr
     SharedExp simplifyAddr() override;
+
+    /// \copydoc Unary::simplifyConstraint
     virtual SharedExp simplifyConstraint() override;
 
-    /// Type analysis
-    SharedExp genConstraints(SharedExp restrictTo) override;
+    /// \copydoc Unary::genConstraints
+    virtual SharedExp genConstraints(SharedExp restrictTo) override;
 
-    // Visitation
+    /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
+    /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
+
+    /// \copydoc Unary::ascendType
     virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
 
 private:

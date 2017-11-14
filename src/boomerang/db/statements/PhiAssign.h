@@ -58,73 +58,65 @@ public:
 
 public:
     PhiAssign(SharedExp _lhs)
-        : Assignment(_lhs) { m_kind = STMT_PHIASSIGN; }
+        : Assignment(_lhs) { m_kind = StmtType::PhiAssign; }
     PhiAssign(SharedType ty, SharedExp _lhs)
-        : Assignment(ty, _lhs) { m_kind = STMT_PHIASSIGN; }
-    // Copy constructor (not currently used or implemented)
-    PhiAssign(Assign& other);
+        : Assignment(ty, _lhs) { m_kind = StmtType::PhiAssign; }
+
     virtual ~PhiAssign() override = default;
 
-    // Clone
+    /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 
-    // get how to replace this statement in a use
+    /// \copydoc Statement::getRight
     virtual SharedExp getRight() const override { return nullptr; }
 
-    // Accept a visitor to this Statement
+    /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) override;
+
+    /// \copydoc Statement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
 
-    // Visiting from class StmtPartModifier
-    // Modify all the various expressions in a statement, except for the top level of the LHS of assignments
-    virtual bool accept(StmtModifier *visitor) override;
-    virtual bool accept(StmtPartModifier *visitor) override;
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtModifier *modifier) override;
 
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtPartModifier *modifier) override;
+
+    /// \copydoc Assignment::printCompact
     virtual void printCompact(QTextStream& os, bool html = false) const override;
 
-    // general search
+    /// \copydoc Statement::search
     virtual bool search(const Exp& search, SharedExp& result) const override;
 
-    /// FIXME: is this the right semantics for searching a phi statement, disregarding the RHS?
+    /// \copydoc Statement::searchAll
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
-    // general search and replace
+    /// \copydoc Statement::searchAndReplace
     virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
-    // simplify all the uses/defs in this Statement
+    /// \copydoc Statement::simplify
     virtual void simplify() override;
 
-    // Generate constraints
+    /// \copydoc Statement::genConstraints
     virtual void genConstraints(LocationSet& cons) override;
 
-    // Data flow based type analysis
-    // For x0 := phi(x1, x2, ...) want
-    // Tx0 := Tx0 meet (Tx1 meet Tx2 meet ...)
-    // Tx1 := Tx1 meet Tx0
-    // Tx2 := Tx2 meet Tx0
-    // ...
-    void dfaTypeAnalysis(bool& ch) override;
 
     //
     //    Phi specific functions
     //
 
-    // Get or put the statement at index idx
-    Statement *getStmtAt(BasicBlock *idx)
-    {
-        if (m_defs.find(idx) == m_defs.end()) {
-            return nullptr;
-        }
-
-        return m_defs[idx].getDef();
-    }
-
+    /// Get statement at index \p idx
+    Statement *getStmtAt(BasicBlock *idx);
     PhiInfo& getAt(BasicBlock *idx);
+
+    /// Update the statement at index \p idx
     void putAt(BasicBlock *idx, Statement *d, SharedExp e);
+
     void simplifyRefs();
 
-    virtual size_t getNumDefs() const { return m_defs.size(); }
+    size_t getNumDefs() const { return m_defs.size(); }
     PhiDefs& getDefs() { return m_defs; }
+    const PhiDefs& getDefs() const { return m_defs; }
 
     // A hack. Check MVE
     bool hasGlobalFuncParam();

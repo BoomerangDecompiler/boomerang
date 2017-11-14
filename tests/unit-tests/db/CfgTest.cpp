@@ -10,21 +10,15 @@
 #include "CfgTest.h"
 
 
-/**
- * \file CfgTest.cpp
- * Provides the implementation for the CfgTest class, which
- * tests Control Flow Graphs
- */
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/core/Project.h"
-#include "boomerang/util/Log.h"
-
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/util/Log.h"
 
 #include <QDebug>
 
@@ -63,14 +57,14 @@ void CfgTest::testDominators()
     Address addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
 
-    Module *m = *(prog.getModuleList().begin());
+    const auto& m = *(prog.getModuleList().begin());
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
     UserProc *pProc = (UserProc *)*(m->begin());
     Cfg      *cfg   = pProc->getCFG();
     DataFlow *df    = pProc->getDataFlow();
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
 
     // Find BB "5" (as per Appel, Figure 19.5).
     BBIterator it;
@@ -125,7 +119,7 @@ void CfgTest::testSemiDominators()
     Address addr = pFE->getMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
 
-    Module *m = *prog.getModuleList().begin();
+    const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -133,7 +127,7 @@ void CfgTest::testSemiDominators()
     Cfg      *cfg   = pProc->getCFG();
 
     DataFlow *df = pProc->getDataFlow();
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
 
     // Find BB "L (6)" (as per Appel, Figure 19.8).
     BBIterator it;
@@ -185,7 +179,7 @@ void CfgTest::testPlacePhi()
     prog.setFrontEnd(pFE);
     pFE->decode(&prog);
 
-    Module *m = *prog.getModuleList().begin();
+    const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -196,7 +190,7 @@ void CfgTest::testPlacePhi()
     cfg->sortByAddress();
     prog.finishDecode();
     DataFlow *df = pProc->getDataFlow();
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
     df->placePhiFunctions(pProc);
 
     // m[r29 - 8] (x for this program)
@@ -231,7 +225,7 @@ void CfgTest::testPlacePhi2()
     prog.setFrontEnd(pFE);
     pFE->decode(&prog);
 
-    Module *m = *prog.getModuleList().begin();
+    const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -244,7 +238,7 @@ void CfgTest::testPlacePhi2()
     cfg->sortByAddress();
 
     DataFlow *df = pProc->getDataFlow();
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
     df->placePhiFunctions(pProc);
 
     // In this program, x is allocated at [ebp-4], a at [ebp-8], and
@@ -312,13 +306,13 @@ void CfgTest::testRenameVars()
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    Prog      *prog = new Prog(FRONTIER_PENTIUM);
+    Prog      *prog = new Prog("FRONTIER_PENTIUM");
     IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);
     Type::clearNamedTypes();
     prog->setFrontEnd(pFE);
     pFE->decode(prog);
 
-    Module *m = *prog->getModuleList().begin();
+    const auto& m = *prog->getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -329,7 +323,7 @@ void CfgTest::testRenameVars()
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->finishDecode();
 
-    df->dominators(cfg);
+    df->calculateDominators(cfg);
     df->placePhiFunctions(pProc);
     pProc->numberStatements();        // After placing phi functions!
     df->renameBlockVars(pProc, 0, 1); // Block 0, mem depth 1

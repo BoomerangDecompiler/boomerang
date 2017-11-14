@@ -10,11 +10,6 @@
 #pragma once
 
 
-/** \file Win32BinaryFile.h
- * \brief This file contains the definition of the class Win32BinaryFile.
- */
-
-
 #include "boomerang/loader/IFileLoader.h"
 
 #include <string>
@@ -39,6 +34,7 @@
 #define LMMH2(x)                                                                                           \
     ((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + ((unsigned)((Byte *)(x))[2] << 16) + \
      ((unsigned)((Byte *)(x))[3] << 24))
+
 
 typedef struct  /* exe file header, just the signature really */
 {
@@ -157,6 +153,7 @@ typedef struct
     DWord nptRVA;        // RVA of the NPT
     DWord otRVA;         // RVA of the OT
 } PEExportDtor;
+
 #pragma pack(pop)
 
 

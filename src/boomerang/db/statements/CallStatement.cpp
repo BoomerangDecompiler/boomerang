@@ -10,16 +10,26 @@
 #include "CallStatement.h"
 
 
+#include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/Localiser.h"
+#include "boomerang/db/visitor/ImplicitConverter.h"
+#include "boomerang/db/visitor/StmtImplicitConverter.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
@@ -27,7 +37,7 @@
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/FuncType.h"
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/util/Log.h"
 
 
 /// A helper class for updateArguments. It just dishes out a new argument
@@ -240,7 +250,7 @@ CallStatement::CallStatement()
     : m_returnAfterCall(false)
     , m_calleeReturn(nullptr)
 {
-    m_kind      = STMT_CALL;
+    m_kind      = StmtType::Call;
     m_procDest  = nullptr;
     m_signature = nullptr;
 }
@@ -334,8 +344,10 @@ void CallStatement::setArguments(const StatementList& args)
 
     for (StatementList::iterator ll = m_arguments.begin(); ll != m_arguments.end(); ++ll) {
         Assign *asgn = dynamic_cast<Assign *>(*ll);
-        asgn->setProc(m_proc);
-        asgn->setBB(m_parent);
+        if (asgn) {
+            asgn->setProc(m_proc);
+            asgn->setBB(m_parent);
+        }
     }
 }
 
@@ -378,7 +390,7 @@ void CallStatement::setSigArguments()
                                 e->clone());
         as->setProc(m_proc);
         as->setBB(m_parent);
-        as->setNumber(m_number);     // So fromSSAform will work later. But note: this call is probably not numbered yet!
+        as->setNumber(m_number);     // So fromSSAForm will work later. But note: this call is probably not numbered yet!
         // as->setParent(this);
         m_arguments.append(as);
     }
@@ -486,7 +498,10 @@ void CallStatement::print(QTextStream& os, bool html) const
             os << "*" << as->getType() << "* " << as->getLeft();
 
             if (as->isAssign()) {
-                os << " := " << dynamic_cast<Assign *>(as)->getRight();
+                Assign *a = dynamic_cast<Assign *>(as);
+                if (a) {
+                    os << " := " << a->getRight();
+                }
             }
         }
 
@@ -536,7 +551,10 @@ void CallStatement::print(QTextStream& os, bool html) const
 
         for (const Statement *aa : m_arguments) {
             os << "                ";
-            dynamic_cast<const Assignment *>(aa)->printCompact(os, html);
+            const Assignment *a = dynamic_cast<const Assignment *>(aa);
+            if (a) {
+                a->printCompact(os, html);
+            }
             os << "\n";
         }
 
@@ -664,7 +682,7 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB
                                         e->clone());
                 as->setProc(m_proc);
                 as->setBB(const_cast<BasicBlock *>(parentBB));
-                as->setNumber(m_number);     // So fromSSAform will work later
+                as->setNumber(m_number);     // So fromSSAForm will work later
                 m_arguments.append(as);
             }
         }
@@ -674,7 +692,7 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB
         gen->addCallStatement(dest, dest->getSignature()->getPreferredName(), m_arguments, *results);
     }
     else {
-        gen->addCallStatement(dest, qPrintable(dest->getName()), m_arguments, *results);
+        gen->addCallStatement(dest, dest->getName(), m_arguments, *results);
     }
 }
 
@@ -792,11 +810,11 @@ bool CallStatement::convertToDirect()
         return false;     // Not a valid proc pointer
     }
 
-    Function *p       = prog->findProc(nam);
+    Function *p       = prog->findFunction(nam);
     bool     bNewProc = p == nullptr;
 
     if (bNewProc) {
-        p = prog->createProc(dest);
+        p = prog->createFunction(dest);
     }
 
     LOG_VERBOSE("%1 procedure for call to global '%2' is %3",
@@ -858,7 +876,7 @@ bool CallStatement::convertToDirect()
 
 bool CallStatement::isCallToMemOffset() const
 {
-    return(getKind() == STMT_CALL && getDest()->getOper() == opMemOf &&
+    return(getKind() == StmtType::Call && getDest()->getOper() == opMemOf &&
            getDest()->getSubExp1()->getOper() == opIntConst);
 }
 
@@ -868,8 +886,9 @@ SharedExp CallStatement::getArgumentExp(int i) const
     assert(Util::inRange(i, 0, getNumArguments()));
 
     // stmt = m_arguments[i]
-    const Statement *stmt = *std::next(m_arguments.begin(), i);
-    return dynamic_cast<const Assign *>(stmt)->getRight();
+    const Assign *asgn = dynamic_cast<const Assign *>(*std::next(m_arguments.begin(), i));
+    assert(asgn);
+    return asgn->getRight();
 }
 
 
@@ -1341,7 +1360,7 @@ void CallStatement::updateDefines()
     }
     else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
-        Signature::setABIdefines(m_proc->getProg(), m_defines);
+        Signature::setABIDefines(m_proc->getProg(), m_defines);
         return;
     }
 
@@ -1778,7 +1797,9 @@ void CallStatement::genConstraints(LocationSet& cons)
         // Note: might have to chase back via a phi statement to get a sample
         // string
         QString   str;
-        SharedExp arg0 = dynamic_cast<Assign *>(*m_arguments.begin())->getRight();
+        Assign *a = dynamic_cast<Assign *>(*m_arguments.begin());
+        assert(a != nullptr);
+        SharedExp arg0 = a->getRight();
 
         if (((name == "printf") || (name == "scanf")) && !(str = arg0->getAnyStrConst()).isNull()) {
             // actually have to parse it
@@ -1877,19 +1898,18 @@ void CallStatement::genConstraints(LocationSet& cons)
 
 bool CallStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (!recur) {
+    if (!visitChildren) {
         return true;
     }
 
-    if (m_dest) {
+    if (m_dest && v->m_mod) {
         m_dest = m_dest->accept(v->m_mod);
     }
 
-    for (StatementList::iterator it = m_arguments.begin(); recur && it != m_arguments.end(); it++) {
+    for (StatementList::iterator it = m_arguments.begin(); visitChildren && it != m_arguments.end(); it++) {
         (*it)->accept(v);
     }
 
@@ -1907,7 +1927,7 @@ bool CallStatement::accept(StmtModifier *v)
         }
     }
 
-    for (StatementList::iterator dd = m_defines.begin(); recur && dd != m_defines.end(); ++dd) {
+    for (StatementList::iterator dd = m_defines.begin(); visitChildren && dd != m_defines.end(); ++dd) {
         (*dd)->accept(v);
     }
 
@@ -1917,10 +1937,10 @@ bool CallStatement::accept(StmtModifier *v)
 
 bool CallStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -1940,15 +1960,14 @@ bool CallStatement::accept(StmtExpVisitor *v)
 
 bool CallStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->mod);
     }
 
-    for (StatementList::iterator it = m_arguments.begin(); recur && it != m_arguments.end(); it++) {
+    for (StatementList::iterator it = m_arguments.begin(); visitChildren && it != m_arguments.end(); it++) {
         (*it)->accept(v);
     }
 
@@ -1973,57 +1992,10 @@ bool CallStatement::accept(StmtPartModifier *v)
 
     StatementList::iterator dd;
 
-    for (dd = m_defines.begin(); recur && dd != m_defines.end(); dd++) {
+    for (dd = m_defines.begin(); visitChildren && dd != m_defines.end(); dd++) {
         (*dd)->accept(v);
     }
 
     return true;
 }
 
-
-void CallStatement::dfaTypeAnalysis(bool& ch)
-{
-    // Iterate through the arguments
-    int n = 0;
-
-    for (Statement *aa : m_arguments) {
-        Assign *param = dynamic_cast<Assign *>(aa);
-        assert(param);
-
-        if (m_procDest && !m_procDest->getSignature()->getParamBoundMax(n).isNull() && param->getRight()->isIntConst()) {
-            QString boundmax = m_procDest->getSignature()->getParamBoundMax(n);
-            assert(param->getType()->resolvesToInteger());
-            StatementList::iterator aat;
-            int nt = 0;
-
-            for (aat = m_arguments.begin(); aat != m_arguments.end(); ++aat, ++nt) {
-                if (boundmax == m_procDest->getSignature()->getParamName(nt)) {
-                    SharedType tyt = ((Assign *)*aat)->getType();
-
-                    if (tyt->resolvesToPointer() && tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
-                        tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded()) {
-                        tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->setLength(
-                            param->getRight()->access<Const>()->getInt());
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        // The below will ascend type, meet type with that of arg, and descend type. Note that the type of the assign
-        // will already be that of the signature, if this is a library call, from updateArguments()
-        param->dfaTypeAnalysis(ch);
-        ++n;
-    }
-
-    // The destination is a pointer to a function with this function's signature (if any)
-    if (m_dest) {
-        if (m_signature) {
-            m_dest->descendType(FuncType::get(m_signature), ch, this);
-        }
-        else if (m_procDest) {
-            m_dest->descendType(FuncType::get(m_procDest->getSignature()), ch, this);
-        }
-    }
-}

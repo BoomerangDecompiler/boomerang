@@ -10,11 +10,6 @@
 #include "Type.h"
 
 
-/***************************************************************************/ /**
- * \file       type.cpp
- * \brief   Implementation of the Type class: low level type information
- ******************************************************************************/
-
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/CFG.h"

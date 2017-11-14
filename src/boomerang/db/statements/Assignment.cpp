@@ -71,33 +71,6 @@ void Assignment::setTypeFor(SharedExp /*e*/, SharedType ty)
 }
 
 
-void Assignment::dfaTypeAnalysis(bool& ch)
-{
-    auto sig = m_proc->getSignature();
-
-    // Don't do this for the common case of an ordinary local,
-    // since it generates hundreds of implicit references,
-    // without any new type information
-    if (m_lhs->isMemOf() && !sig->isStackLocal(m_proc->getProg(), m_lhs)) {
-        SharedExp addr = m_lhs->getSubExp1();
-        // Meet the assignment type with *(type of the address)
-        SharedType addrType = addr->ascendType();
-        SharedType memofType;
-
-        if (addrType->resolvesToPointer()) {
-            memofType = addrType->as<PointerType>()->getPointsTo();
-        }
-        else {
-            memofType = VoidType::get();
-        }
-
-        m_type = m_type->meetWith(memofType, ch);
-        // Push down the fact that the memof operand is a pointer to the assignment type
-        addrType = PointerType::get(m_type);
-        addr->descendType(addrType, ch, this);
-    }
-}
-
 
 bool Assignment::definesLoc(SharedExp loc) const
 {

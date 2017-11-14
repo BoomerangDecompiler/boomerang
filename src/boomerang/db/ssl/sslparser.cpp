@@ -818,7 +818,6 @@ SSLParser::
             yyerror("Index used for more than one register\n");
         Dict.DetRegMap[yyvsp[-4].num].setName(yyvsp[-9].str);
         Dict.DetRegMap[yyvsp[-4].num].setSize(yyvsp[-7].num);
-        Dict.DetRegMap[yyvsp[-4].num].setAddress(nullptr);
         // check range is legitimate for size. 8,10
         if ((Dict.RegMap.find(yyvsp[-2].str) == Dict.RegMap.end()) ||
             (Dict.RegMap.find(yyvsp[0].str) == Dict.RegMap.end()))
@@ -842,7 +841,7 @@ SSLParser::
         }
         Dict.DetRegMap[yyvsp[-4].num].setMappedIndex(Dict.RegMap[yyvsp[-2].str]);
         Dict.DetRegMap[yyvsp[-4].num].setMappedOffset(0);
-        Dict.DetRegMap[yyvsp[-4].num].setFloat(bFloat);
+        Dict.DetRegMap[yyvsp[-4].num].setIsFloat(bFloat);
         ;
         break;
     }
@@ -855,7 +854,6 @@ SSLParser::
             yyerror("Index used for more than one register\n");
         Dict.DetRegMap[yyvsp[-8].num].setName(yyvsp[-13].str);
         Dict.DetRegMap[yyvsp[-8].num].setSize(yyvsp[-11].num);
-        Dict.DetRegMap[yyvsp[-8].num].setAddress(nullptr);
         // Do checks
         if (yyvsp[-11].num != (yyvsp[-1].num - yyvsp[-3].num) + 1)
             yyerror("Size does not equal range\n");
@@ -866,7 +864,7 @@ SSLParser::
             yyerror("Shared index not yet defined\n");
         Dict.DetRegMap[yyvsp[-8].num].setMappedIndex(Dict.RegMap[yyvsp[-6].str]);
         Dict.DetRegMap[yyvsp[-8].num].setMappedOffset(yyvsp[-3].num);
-        Dict.DetRegMap[yyvsp[-8].num].setFloat(bFloat);
+        Dict.DetRegMap[yyvsp[-8].num].setIsFloat(bFloat);
         ;
         break;
     }
@@ -1189,16 +1187,16 @@ SSLParser::
         // append any automatically generated register transfers and clear the list they were stored in.
         // Do nothing for a NOP (i.e. $2 = 0)
         if (yyvsp[0].regtransfer != nullptr) {
-            yyvsp[-1].rtlist->appendStmt(yyvsp[0].regtransfer);
+            yyvsp[-1].rtlist->append(yyvsp[0].regtransfer);
         }
         yyval.rtlist = yyvsp[-1].rtlist;
         ;
         break;
     }
     case 76: {
-        yyval.rtlist = std::make_shared<RTL>(Address::ZERO); // WARN: the code here was RTL(STMT_ASSIGN), which is not right, since RTL parameter is an address
+        yyval.rtlist = std::make_shared<RTL>(Address::ZERO); // WARN: the code here was RTL(StmtType::Assign), which is not right, since RTL parameter is an address
         if (yyvsp[0].regtransfer != nullptr)
-            yyval.rtlist->appendStmt(yyvsp[0].regtransfer);
+            yyval.rtlist->append(yyvsp[0].regtransfer);
         ;
         break;
     }

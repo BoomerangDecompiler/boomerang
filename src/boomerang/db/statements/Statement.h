@@ -10,17 +10,7 @@
 #pragma once
 
 
-/***************************************************************************/ /**
- * \file       statement.h
- * OVERVIEW:   The Statement and related classes
- *  (Was dataflow.h a long time ago)
- ******************************************************************************/
-
-#include "boomerang/db/exp/ExpHelp.h" // For lessExpStar, lessAssignment etc
-#include "boomerang/db/DataFlow.h"    // For embedded objects DefCollector and UseCollector#
-
-#include "boomerang/db/Managed.h"
-
+#include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
 
 #include <QtCore/QTextStream>
@@ -31,6 +21,7 @@
 #include <map>
 #include <memory>
 #include <cassert>
+
 
 class BasicBlock;
 class Prog;
@@ -52,65 +43,59 @@ class Assign;
 class RTL;
 class InstructionSet;
 class ReturnStatement;
+class LocationSet;
 
-typedef std::set<UserProc *>         CycleSet;
 typedef std::shared_ptr<Exp>         SharedExp;
-typedef std::unique_ptr<Statement>   UniqInstruction;
 typedef std::shared_ptr<Type>        SharedType;
 
-/***************************************************************************/ /**
- * Types of Statements, or high-level register transfer lists.
- * changing the order of these will result in save files not working - trent
- ******************************************************************************/
-enum StmtType : uint8_t   // ' : uint8_t' so that it can be forward declared in rtl.h
+
+/// Types of Statements, or high-level register transfer lists.
+enum class StmtType : uint8_t
 {
-    STMT_ASSIGN = 0,
-    STMT_PHIASSIGN,
-    STMT_IMPASSIGN,
-    STMT_BOOLASSIGN, // For "setCC" instructions that set destination
-    // to 1 or 0 depending on the condition codes.
-    STMT_CALL,
-    STMT_RET,
-    STMT_BRANCH,
-    STMT_GOTO,
-    STMT_CASE, // Represent  a switch statement
-    STMT_IMPREF,
-    STMT_JUNCTION
+    INVALID = 0,
+    Assign = 1,
+    PhiAssign,  ///< x := phi(a, b, c)
+    ImpAssign,
+    BoolAssign, ///< For "setCC" instructions
+    Call,
+    Ret,        ///< Return
+    Branch,
+    Goto,
+    Case,       ///< switch statement
+    ImpRef,
+    Junction
 };
 
-/***************************************************************************/ /**
- * BRANCH_TYPE: These values indicate what kind of conditional jump or
+/**
+ * These values indicate what kind of conditional jump or
  * conditonal assign is being performed.
- * Changing the order of these will result in save files not working - trent
- ******************************************************************************/
-enum BranchType
+ */
+enum class BranchType : uint8_t
 {
-    BRANCH_JE = 0, // Jump if equals
-    BRANCH_JNE,    // Jump if not equals
-    BRANCH_JSL,    // Jump if signed less
-    BRANCH_JSLE,   // Jump if signed less or equal
-    BRANCH_JSGE,   // Jump if signed greater or equal
-    BRANCH_JSG,    // Jump if signed greater
-    BRANCH_JUL,    // Jump if unsigned less
-    BRANCH_JULE,   // Jump if unsigned less or equal
-    BRANCH_JUGE,   // Jump if unsigned greater or equal
-    BRANCH_JUG,    // Jump if unsigned greater
-    BRANCH_JMI,    // Jump if result is minus
-    BRANCH_JPOS,   // Jump if result is positive
-    BRANCH_JOF,    // Jump if overflow
-    BRANCH_JNOF,   // Jump if no overflow
-    BRANCH_JPAR    // Jump if parity even (Intel only)
+    INVALID = 0,
+    JE = 1, ///< Jump if equals
+    JNE,    ///< Jump if not equals
+    JSL,    ///< Jump if signed less
+    JSLE,   ///< Jump if signed less or equal
+    JSGE,   ///< Jump if signed greater or equal
+    JSG,    ///< Jump if signed greater
+    JUL,    ///< Jump if unsigned less
+    JULE,   ///< Jump if unsigned less or equal
+    JUGE,   ///< Jump if unsigned greater or equal
+    JUG,    ///< Jump if unsigned greater
+    JMI,    ///< Jump if result is minus
+    JPOS,   ///< Jump if result is positive
+    JOF,    ///< Jump if overflow
+    JNOF,   ///< Jump if no overflow
+    JPAR    ///< Jump if parity even (Intel only)
 };
 
-//    //    //    //    //    //    //    //    //    //    //    //    //    //
-//
-//    A b s t r a c t      C l a s s      S t a t e m e n t //
-//
-//    //    //    //    //    //    //    //    //    //    //    //    //    //
 
-/* Statements define values that are used in expressions.
+/**
+ * Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
- * Class hierarchy:   Statement@            (@ = abstract)
+ * Class hierarchy:
+ *                    Statement@            (@ = abstract)
  *                  __/   |   \________________________
  *                 /      |            \               \
  *     GotoStatement  TypingStatement@  ReturnStatement JunctionStatement
@@ -124,37 +109,40 @@ class Statement
     typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
 public:
-    Statement()
-        : m_parent(nullptr)
-        , m_proc(nullptr)
-        , m_number(0) {}
+    Statement();
 
     virtual ~Statement() = default;
 
-    /// get/set the enclosing BB, etc
+    /// Make copy of self, and make the copy a derived object if needed.
+    virtual Statement *clone() const = 0;
+
+    /// \returns the BB that this statement is part of.
     BasicBlock *getBB() { return m_parent; }
     const BasicBlock *getBB() const { return m_parent; }
+
+    /// Changes the BB that this statment is part of.
     void setBB(BasicBlock *bb) { m_parent = bb; }
 
-    // bool operator==(Statement& o);
-    // Get and set *enclosing* proc (not destination proc)
-    void setProc(UserProc *p);
-
+    /// \returns the procedure this statement is part of.
     UserProc *getProc() const { return m_proc; }
 
+    /// Changes the procedure this statement is part of.
+    void setProc(UserProc *p);
+
     int getNumber() const { return m_number; }
-    virtual void setNumber(int num) { m_number = num; } ///< Overridden for calls (and maybe later returns)
+
+    /// Overridden for calls (and maybe later returns)
+    virtual void setNumber(int num) { m_number = num; }
 
     StmtType getKind() const { return m_kind; }
     void setKind(StmtType k) { m_kind = k; }
 
-    virtual Statement *clone() const = 0;  ///< Make copy of self
-
-    // Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
-    virtual bool accept(StmtVisitor *visitor)      = 0;
-    virtual bool accept(StmtExpVisitor *visitor)   = 0;
-    virtual bool accept(StmtModifier *visitor)     = 0;
-    virtual bool accept(StmtPartModifier *visitor) = 0;
+    /// Accept a visitor (of various kinds) to this Statement.
+    /// \return true to continue visiting
+    virtual bool accept(StmtVisitor *visitor)       = 0;
+    virtual bool accept(StmtExpVisitor *visitor)    = 0;
+    virtual bool accept(StmtModifier *modifier)     = 0;
+    virtual bool accept(StmtPartModifier *modifier) = 0;
 
     void setLexBegin(unsigned int n) { m_lexBegin = n; }
     void setLexEnd(unsigned int n) { m_lexEnd = n; }
@@ -163,46 +151,59 @@ public:
 
     /// returns true if this statement defines anything
     virtual bool isDefinition() const = 0;
-    bool isNullStatement() const; ///< true if is a null statement
 
-    virtual bool isTyping() const { return false; } // Return true if a TypingStatement
+    /// true if is a null statement
+    bool isNullStatement() const;
+
+    /// Return true if a TypingStatement
+    virtual bool isTyping() const { return false; }
 
     /// true if this statement is a standard assign
-    bool isAssign() const { return m_kind == STMT_ASSIGN; }
+    bool isAssign() const { return m_kind == StmtType::Assign; }
+
     /// true if this statement is a any kind of assignment
     bool isAssignment() const
     {
-        return m_kind == STMT_ASSIGN || m_kind == STMT_PHIASSIGN || m_kind == STMT_IMPASSIGN || m_kind == STMT_BOOLASSIGN;
+        return m_kind == StmtType::Assign
+            || m_kind == StmtType::PhiAssign
+            || m_kind == StmtType::ImpAssign
+            || m_kind == StmtType::BoolAssign;
     }
 
-    bool isPhi() const { return m_kind == STMT_PHIASSIGN; }      ///< true    if this statement is a phi assignment
-    bool isImplicit() const { return m_kind == STMT_IMPASSIGN; } ///< true if this statement is an implicit assignment
-    bool isFlagAssign() const;                                   ///< true if this statment is a flags assignment
+    /// \returns true if this statement is a phi assignment
+    bool isPhi() const { return m_kind == StmtType::PhiAssign; }
 
-    bool isImpRef() const { return m_kind == STMT_IMPREF; } ///< true of this statement is an implicit reference
+    /// \returns true if this statement is an implicit assignment
+    bool isImplicit() const { return m_kind == StmtType::ImpAssign; }
 
-    virtual bool isGoto() { return m_kind == STMT_GOTO; }
-    virtual bool isBranch() { return m_kind == STMT_BRANCH; }
+    /// \returns true if this statment is a flags assignment
+    bool isFlagAssign() const;
 
-    // true if this statement is a junction
-    bool isJunction() const { return m_kind == STMT_JUNCTION; }
+    /// \returns true if this statement is an implicit reference
+    bool isImpRef() const { return m_kind == StmtType::ImpRef; }
 
-    /// true if this statement is a call
-    bool isCall() const { return m_kind == STMT_CALL; }
+    virtual bool isGoto()   { return m_kind == StmtType::Goto; }
+    virtual bool isBranch() { return m_kind == StmtType::Branch; }
 
-    /// true if this statement is a BoolAssign
-    bool isBool() const { return m_kind == STMT_BOOLASSIGN; }
+    /// \returns true if this statement is a junction
+    bool isJunction() const { return m_kind == StmtType::Junction; }
 
-    /// true if this statement is a ReturnStatement
-    bool isReturn() const { return m_kind == STMT_RET; }
+    /// \returns true if this statement is a call
+    bool isCall() const { return m_kind == StmtType::Call; }
+
+    /// \returns true if this statement is a BoolAssign
+    bool isBool() const { return m_kind == StmtType::BoolAssign; }
+
+    /// \returns true if this statement is a ReturnStatement
+    bool isReturn() const { return m_kind == StmtType::Ret; }
 
     /// true if this statement is a decoded ICT.
     /// \note for now, it only represents decoded indirect jump instructions
-    bool isHL_ICT() const { return m_kind == STMT_CASE; }
+    bool isHL_ICT() const { return m_kind == StmtType::Case; }
 
-    bool isCase() { return m_kind == STMT_CASE; }
+    bool isCase() { return m_kind == StmtType::Case; }
 
-    /// true if this is a fpush/fpop
+    /// \returns true if this is a fpush/fpop
     bool isFpush() const;
     bool isFpop() const;
 
@@ -210,17 +211,19 @@ public:
     /// returns a set of locations defined by this statement in a LocationSet argument.
     virtual void getDefinitions(LocationSet& /*def*/) const {}
 
-    // set the left for forExp to newExp
-
     virtual bool definesLoc(SharedExp /*loc*/) const { return false; }  // True if this Statement defines loc
 
-    // returns true if this statement uses the given expression
-    virtual bool usesExp(const Exp&) const = 0;
+    /// returns true if this statement uses the given expression
+    virtual bool usesExp(const Exp& exp) const = 0;
 
-    // statements should be printable (for debugging)
+    /**
+     * Display a text reprentation of this statement to the given stream
+     * \note  Usually called from RTL::print, in which case the first 9
+     *        chars of the print have already been output to os
+     * \param os - stream to write to
+     * \param html - produce html encoded representation
+     */
     virtual void print(QTextStream& os, bool html = false) const = 0;
-
-    // print functions
 
     void printAsUse(QTextStream& os) const { os << m_number; }
     void printAsUseBy(QTextStream& os) const { os << m_number; }
@@ -230,28 +233,45 @@ public:
     // This version prints much better in gdb
     void dump() const;    // For debugging
 
-    // general search
-    virtual bool search(const Exp& search, SharedExp& result) const = 0;
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const = 0;
+    /// general search
+    virtual bool search(const Exp& pattern, SharedExp& result) const = 0;
 
-    /// general search and replace. Set cc true to change collectors as well. Return true if any change
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) = 0; // TODO: consider constness
+    /**
+     * Find all instances of \p pattern and adds all found expressions
+     * to \p result in reverse nesting order.
+     *
+     * \param   pattern an expression to search for
+     * \param   result  a list which will have any matching exps
+     *                  appended to it in reverse nesting order.
+     * \returns true if there were any matches
+     */
+    virtual bool searchAll(const Exp& pattern, std::list<SharedExp>& result) const = 0;
 
-    // True if can propagate to expression e in this Statement.
-    // Return true if can propagate to Exp* e (must be a RefExp to return true)
-    // Note: does not consider whether e is able to be renamed (from a memory Primitive point of view), only if the
-    // definition can be propagated TO this stmt
-    // Note: static member function
-    static bool canPropagateToExp(Exp& e);
+    /**
+     * Replace all instances of search with replace.
+     * \param pattern a location to search for
+     * \param replace the expression with which to replace it
+     * \param cc      Set to true to change collectors as well.
+     * \returns True if any change
+     */
+    virtual bool searchAndReplace(const Exp& pattern, SharedExp replace, bool cc = false) = 0; // TODO: consider constness
 
-    /***************************************************************************/ /**
-     * \brief Propagate to this statement
+    /**
+     * \returns true if can propagate to \p exp (must be a RefExp to return true)
+     * \note does not consider whether e is able to be renamed
+     * (from a memory Primitive point of view),
+     * only if the definition can be propagated TO this stmt
+     */
+    static bool canPropagateToExp(Exp& exp);
+
+    /**
+     * Propagate to this statement.
      * \param destCounts is a map that indicates how may times a statement's definition is used
      * \param convert set true if an indirect call is changed to direct (otherwise, no change)
      * \param force set to true to propagate even memofs (for switch analysis)
      * \param usedByDomPhi is a set of subscripted locations used in phi statements
      * \returns true if a change
-     ******************************************************************************/
+     */
     bool propagateTo(bool& convert, ExpIntMap *destCounts = nullptr, LocationSet *usedByDomPhi = nullptr,
                      bool force = false);
 
@@ -259,9 +279,11 @@ public:
     /// without tests about complexity or the propagation limiting heuristic
     bool propagateFlagsTo();
 
-    // code generation
+    /// Generate code for this statement
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) = 0;
-    virtual void simplify() = 0; ///< simpify internal expressions
+
+    /// simpify internal expressions
+    virtual void simplify() = 0;
 
     /// simplify internal address expressions (a[m[x]] -> x) etc
     /// Only Assignments override at present
@@ -276,7 +298,6 @@ public:
     /// insert casts where needed, since fromSSA will erase type information
     void insertCasts();
 
-    // fixSuccessor
     // Only Assign overrides at present
     virtual void fixSuccessor() {}
 
@@ -284,7 +305,6 @@ public:
     virtual void genConstraints(LocationSet& /*cons*/) {}
 
     // Data flow based type analysis
-    virtual void dfaTypeAnalysis(bool& /*ch*/) {}  // Use the type information in this Statement
     SharedType meetWithFor(SharedType ty, SharedExp e, bool& ch); // Meet the type associated with e with ty
 
 public:
@@ -363,12 +383,12 @@ public:
     bool mayAlias(SharedExp e1, SharedExp e2, int size) const;
 
 protected:
-    BasicBlock *m_parent; // contains a pointer to the enclosing BB
-    UserProc *m_proc;     // procedure containing this statement
-    int m_number;         // Statement number for printing
+    BasicBlock *m_parent = nullptr; ///< contains a pointer to the enclosing BB
+    UserProc *m_proc = nullptr;     ///< procedure containing this statement
+    int m_number = -1;              ///< Statement number for printing
 
 #if USE_DOMINANCE_NUMS
-    int m_dominanceNum;   // Like a statement number, but has dominance properties
+    int m_dominanceNum = -1;        ///< Like a statement number, but has dominance properties
 
 public:
     int getDomNumber() const { return m_dominanceNum; }
@@ -377,23 +397,28 @@ public:
 protected:
 #endif
 
-    StmtType m_kind; // Statement kind (e.g. STMT_BRANCH)
+    StmtType m_kind = StmtType::INVALID; ///< Statement kind (e.g. STMT_BRANCH)
     unsigned int m_lexBegin, m_lexEnd;
 };
 
 
-/// Print the Statement (etc) pointed to by p
-QTextStream& operator<<(QTextStream& os, const Statement *p);
+/**
+ * Output operator for Statement *.
+ * Just makes it easier to use e.g. LOG_STREAM() << myStmtStar
+ * \param os output stream to send to
+ * \param stmt  ptr to Statement to print to the stream
+ * \returns copy of os (for concatenation)
+ */
+QTextStream& operator<<(QTextStream& os, const Statement *stmt);
 QTextStream& operator<<(QTextStream& os, const InstructionSet *p);
 QTextStream& operator<<(QTextStream& os, const LocationSet *p);
 
 
-
-/***************************************************************************/ /**
+/**
  * CaseStatement is derived from GotoStatement. In addition to the destination
  * of the jump, it has a switch variable Exp.
- ******************************************************************************/
-struct SWITCH_INFO
+ */
+struct SwitchInfo
 {
     SharedExp pSwitchVar;  ///< Ptr to Exp repres switch var, e.g. v[7]
     char      chForm;      ///< Switch form: 'A', 'O', 'R', 'H', or 'F' etc

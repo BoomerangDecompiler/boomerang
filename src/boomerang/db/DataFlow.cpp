@@ -10,20 +10,17 @@
 #include "DataFlow.h"
 
 
-/***************************************************************************/ /**
- * \file       dataflow.cpp
- * \brief   Implementation of the DataFlow class
- ******************************************************************************/
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/Visitor.h"
-
+#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/db/visitor/ImplicitConverter.h"
 #include "boomerang/util/Log.h"
 
 #include <sstream>
@@ -52,16 +49,16 @@ void DataFlow::dfs(int p, size_t n)
 
         // For each successor w of n
         BasicBlock *bb = m_BBs[n];
-        const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
+        const std::vector<BasicBlock *>& successors = bb->getSuccessors();
 
-        for (BasicBlock *_bb : outEdges) {
+        for (BasicBlock *_bb : successors) {
             dfs(n, m_indices[_bb]);
         }
     }
 }
 
 
-void DataFlow::dominators(Cfg *cfg)
+void DataFlow::calculateDominators(Cfg *cfg)
 {
     BasicBlock   *entryBB = cfg->getEntryBB();
     const size_t numBB    = cfg->getNumBBs();
@@ -110,7 +107,7 @@ void DataFlow::dominators(Cfg *cfg)
 
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
-        const std::vector<BasicBlock *>&    inEdges = m_BBs[n]->getInEdges();
+        const std::vector<BasicBlock *>&    inEdges = m_BBs[n]->getPredecessors();
         std::vector<BasicBlock *>::iterator it;
 
         for (BasicBlock *parentBB : inEdges) {
@@ -217,7 +214,7 @@ void DataFlow::computeDF(int n)
     /* This loop computes DF_local[n] */
     // for each node y in succ(n)
     BasicBlock *bb = m_BBs[n];
-    const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
+    const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
 
     for (BasicBlock *b : outEdges) {
         int y = m_indices[b];
@@ -253,7 +250,7 @@ void DataFlow::computeDF(int n)
     }
 
     m_DF[n] = S;
-} // end computeDF
+}
 
 
 bool DataFlow::canRename(SharedExp e, UserProc *proc)
@@ -631,7 +628,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     }
 
     // For each successor Y of block n
-    const std::vector<BasicBlock *>& outEdges = bb->getOutEdges();
+    const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
     size_t numSucc = outEdges.size();
 
     for (unsigned succ = 0; succ < numSucc; succ++) {
@@ -766,226 +763,6 @@ void DataFlow::dumpA_orig()
             LOG_MSG("  %1 ", ee);
         }
     }
-}
-
-
-void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar>& Stacks, UserProc *proc)
-{
-    for (auto it = Stacks.begin(); it != Stacks.end(); it++) {
-        if (it->second.empty()) {
-            continue; // This variable's definition doesn't reach here
-        }
-
-        // Create an assignment of the form loc := loc{def}
-        auto   re  = RefExp::get(it->first->clone(), it->second.back());
-        Assign *as = new Assign(it->first->clone(), re);
-        as->setProc(proc); // Simplify sometimes needs this
-        insert(as);
-    }
-
-    m_initialised = true;
-}
-
-
-SharedExp DefCollector::findDefFor(SharedExp e) const
-{
-    for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
-        SharedExp lhs = (*it)->getLeft();
-
-        if (*lhs == *e) {
-            return (*it)->getRight();
-        }
-    }
-
-    return nullptr; // Not explicitly defined here
-}
-
-
-void UseCollector::print(QTextStream& os, bool html) const
-{
-    bool first = true;
-
-    for (auto const& elem : m_locs) {
-        if (first) {
-            first = false;
-        }
-        else {
-            os << ",  ";
-        }
-
-        (elem)->print(os, html);
-    }
-}
-
-
-#define DEFCOL_COLS    120
-
-void DefCollector::print(QTextStream& os, bool html) const
-{
-    size_t   col   = 36;
-    bool     first = true;
-
-    for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
-        QString     tgt;
-        QTextStream ost(&tgt);
-        (*it)->getLeft()->print(ost, html);
-        ost << "=";
-        (*it)->getRight()->print(ost, html);
-        size_t len = tgt.length();
-
-        if (first) {
-            first = false;
-        }
-        else if (col + 4 + len >= DEFCOL_COLS) { // 4 for a comma and three spaces
-            if (col != DEFCOL_COLS - 1) {
-                os << ",";                       // Comma at end of line
-            }
-
-            os << "\n                ";
-            col = 16;
-        }
-        else {
-            os << ",   ";
-            col += 4;
-        }
-
-        os << tgt;
-        col += len;
-    }
-}
-
-
-char *UseCollector::prints() const
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
-}
-
-
-char *DefCollector::prints() const
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
-}
-
-
-void UseCollector::dump() const
-{
-    QTextStream ost(stderr);
-
-    print(ost);
-}
-
-
-void DefCollector::dump() const
-{
-    QTextStream ost(stderr);
-
-    print(ost);
-}
-
-
-void UseCollector::makeCloneOf(UseCollector& other)
-{
-    m_initialised = other.m_initialised;
-    m_locs.clear();
-
-    for (auto const& elem : other) {
-        m_locs.insert((elem)->clone());
-    }
-}
-
-
-void DefCollector::makeCloneOf(const DefCollector& other)
-{
-    m_initialised = other.m_initialised;
-    qDeleteAll(m_defs);
-    m_defs.clear();
-
-    for (const auto& elem : other) {
-        m_defs.insert((Assign *)(elem)->clone());
-    }
-}
-
-
-void DefCollector::searchReplaceAll(const Exp& from, SharedExp to, bool& change)
-{
-    for (iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
-        change |= (*it)->searchAndReplace(from, to);
-    }
-}
-
-
-void UseCollector::fromSSAform(UserProc *proc, Statement *def)
-{
-    LocationSet   removes, inserts;
-    iterator      it;
-    ExpSsaXformer esx(proc);
-
-    for (it = m_locs.begin(); it != m_locs.end(); ++it) {
-        auto      ref = RefExp::get(*it, def); // Wrap it in a def
-        SharedExp ret = ref->accept(&esx);
-
-        // If there is no change, ret will equal *it again (i.e. fromSSAform just removed the subscript)
-        if (ret != *it) { // Pointer comparison
-            // There was a change; we want to replace *it with ret
-            removes.insert(*it);
-            inserts.insert(ret);
-        }
-    }
-
-    for (it = removes.begin(); it != removes.end(); ++it) {
-        m_locs.remove(*it);
-    }
-
-    for (it = inserts.begin(); it != inserts.end(); ++it) {
-        m_locs.insert(*it);
-    }
-}
-
-
-bool UseCollector::operator==(UseCollector& other)
-{
-    if (other.m_initialised != m_initialised) {
-        return false;
-    }
-
-    iterator it1, it2;
-
-    if (other.m_locs.size() != m_locs.size()) {
-        return false;
-    }
-
-    for (it1 = m_locs.begin(), it2 = other.m_locs.begin(); it1 != m_locs.end(); ++it1, ++it2) {
-        if (!(**it1 == **it2)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-void DefCollector::insert(Assign *a)
-{
-    SharedExp l = a->getLeft();
-
-    if (existsOnLeft(l)) {
-        delete a;
-        return;
-    }
-
-    m_defs.insert(a);
 }
 
 
@@ -1124,9 +901,4 @@ void DataFlow::setDominanceNums(int n, int& currNum)
     Q_UNUSED(n);
     Q_UNUSED(currNum);
 #endif
-}
-
-DefCollector::~DefCollector()
-{
-    qDeleteAll(m_defs);
 }

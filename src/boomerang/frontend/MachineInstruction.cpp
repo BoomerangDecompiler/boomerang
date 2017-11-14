@@ -24,6 +24,7 @@ public:
     std::list<Statement *> *convertInstruction(MachineInstruction *Insn) override;
 };
 
+
 Exp *MachineSemanticsSSLBased::convertOperand(MachineOperand *Operand)
 {
     Q_UNUSED(Operand);

@@ -9,11 +9,6 @@
 #pragma endregion License
 
 
-/**
- * \file FrontPentTest.cpp
- * Provides the implementation for the FrontPentTest class, which
- * tests the Pentium frontend
- */
 #include "FrontPentTest.h"
 
 #include "boomerang/core/Boomerang.h"
@@ -56,7 +51,7 @@ void FrontPentTest::test1()
 
     QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog(HELLO_PENT);
+    Prog *prog = new Prog("HELLO_PENT");
     QVERIFY(loader->getMachine() == Machine::PENTIUM);
 
     IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
@@ -108,7 +103,7 @@ void FrontPentTest::test2()
     IFileLoader *pBF = project.getBestLoader(HELLO_PENT);
 
     QVERIFY(pBF != nullptr);
-    Prog *prog = new Prog(HELLO_PENT);
+    Prog *prog = new Prog("HELLO_PENT");
     QVERIFY(pBF->getMachine() == Machine::PENTIUM);
 
     IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
@@ -152,7 +147,7 @@ void FrontPentTest::test3()
     IFileLoader *loader = project.getBestLoader(HELLO_PENT);
 
     QVERIFY(loader != nullptr);
-    Prog *prog = new Prog(HELLO_PENT);
+    Prog *prog = new Prog("HELLO_PENT");
     QVERIFY(loader->getMachine() == Machine::PENTIUM);
     IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);
@@ -193,7 +188,7 @@ void FrontPentTest::testBranch()
     project.loadBinaryFile(BRANCH_PENT);
     IFileLoader *loader = project.getBestLoader(BRANCH_PENT);
     QVERIFY(loader != nullptr);
-    Prog *prog = new Prog(BRANCH_PENT);
+    Prog *prog = new Prog("BRANCH_PENT");
 
     QVERIFY(loader->getMachine() == Machine::PENTIUM);
     IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
@@ -239,7 +234,7 @@ void FrontPentTest::testFindMain()
     IFileLoader *loader = project.getBestLoader(FEDORA2_TRUE);
     QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog(FEDORA2_TRUE);
+    Prog *prog = new Prog("FEDORA2_TRUE");
     QVERIFY(loader->getMachine() == Machine::PENTIUM);
 
     IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);

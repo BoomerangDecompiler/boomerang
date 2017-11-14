@@ -10,11 +10,6 @@
 #include "Exp.h"
 
 
-/***************************************************************************/ /**
- * \file       exp.cpp
- * \brief   Implementation of the Exp and related classes.
- ******************************************************************************/
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
@@ -22,7 +17,26 @@
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Unary.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/visitor/BadMemofFinder.h"
+#include "boomerang/db/visitor/CallBypasser.h"
+#include "boomerang/db/visitor/ConscriptSetter.h"
+#include "boomerang/db/visitor/ComplexityFinder.h"
+#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/db/visitor/ExpSubscripter.h"
+#include "boomerang/db/visitor/ExpPropagator.h"
+#include "boomerang/db/visitor/FlagsFinder.h"
+#include "boomerang/db/visitor/MemDepthFinder.h"
+#include "boomerang/db/visitor/SizeStripper.h"
+#include "boomerang/db/visitor/UsedLocsFinder.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
@@ -480,9 +494,9 @@ SharedExp Exp::convertFromOffsetToCompound(SharedExp parent, std::shared_ptr<Com
         return nullptr;
     }
 
-    QString nam = c->getNameAtOffset(n * 8);
+    QString name = c->getNameAtOffset(n * 8);
 
-    if (!nam.isNull() && (nam != "pad")) {
+    if (!name.isNull() && (name != "pad")) {
         SharedExp l = Location::memOf(parent);
         return Unary::get(opAddrOf, accessMember(l, c, n));
     }
@@ -520,28 +534,23 @@ void Exp::printt(QTextStream& os) const
 }
 
 
-void Exp::printAsHL(QTextStream& os)
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    ost << this; // Print to the string stream
-
-    if ((tgt.length() >= 4) && (tgt[1] == '[')) {
-        // r[nn]; change to rnn
-        tgt.remove(1, 1);             // '['
-        tgt.remove(tgt.length() - 1); // ']'
-    }
-
-    os << tgt;                        // Print to the output stream
-}
-
-
 QTextStream& operator<<(QTextStream& os, const Exp *p)
 {
     // Useful for debugging, but can clutter the output
     p->printt(os);
     return os;
+}
+
+SharedType Exp::ascendType()
+{
+    assert(false);
+    return nullptr;
+}
+
+
+void Exp::descendType(SharedType, bool&, Statement*)
+{
+    assert(false);
 }
 
 
@@ -639,7 +648,6 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 SharedExp Exp::fromSSAleft(UserProc *proc, Statement *d)
 {
     auto r = RefExp::get(shared_from_this(), d); // "Wrap" in a ref
-
     ExpSsaXformer *xformer = new ExpSsaXformer(proc);
     SharedExp result = r->accept(xformer);
     delete xformer;
@@ -658,44 +666,10 @@ SharedExp Exp::genConstraints(SharedExp /*result*/)
 }
 
 
-//    //    //    //    //    //    //    //
-//                            //
-//       V i s i t i n g        //
-//                            //
-//    //    //    //    //    //    //    //
-
-// The following are similar, but don't have children that have to accept visitors
-
-
-
-void Exp::fixLocationProc(UserProc *p)
-{
-    // All locations are supposed to have a pointer to the enclosing UserProc that they are a location of. Sometimes,
-    // you have an arbitrary expression that may not have all its procs set. This function fixes the procs for all
-    // Location subexpresssions.
-    FixProcVisitor fpv;
-
-    fpv.setProc(p);
-    accept(&fpv);
-}
-
-
-// GetProcVisitor class
-
-UserProc *Exp::findProc()
-{
-    GetProcVisitor gpv;
-
-    accept(&gpv);
-    return gpv.getProc();
-}
-
-
 void Exp::setConscripts(int n, bool bClear)
 {
-    SetConscripts sc(n, bClear);
-
-    accept(&sc);
+    ConscriptSetter sc(n, bClear);
+    this->accept(&sc);
 }
 
 
@@ -703,7 +677,7 @@ SharedExp Exp::stripSizes()
 {
     SizeStripper ss;
 
-    return accept(&ss);
+    return this->accept(&ss);
 }
 
 
@@ -753,9 +727,9 @@ SharedExp Exp::expSubscriptValNull(const SharedExp& e)
 }
 
 
-SharedExp Exp::expSubscriptAllNull(/*Cfg* cfg*/)
+SharedExp Exp::expSubscriptAllNull()
 {
-    return expSubscriptVar(Terminal::get(opWild), nullptr /* was nullptr, nullptr, cfg */);
+    return expSubscriptVar(Terminal::get(opWild), nullptr);
 }
 
 
@@ -764,16 +738,6 @@ SharedExp Exp::bypass()
     CallBypasser cb(nullptr);
 
     return accept(&cb);
-}
-
-
-void Exp::bypassComp()
-{
-    if (m_oper != opMemOf) {
-        return;
-    }
-
-    setSubExp1(getSubExp1()->bypass());
 }
 
 
@@ -835,19 +799,10 @@ bool Exp::containsFlags()
 }
 
 
-bool Exp::containsBadMemof(UserProc *proc)
+bool Exp::containsBadMemof()
 {
-    BadMemofFinder bmf(proc);
+    BadMemofFinder bmf;
 
     accept(&bmf);
     return bmf.isFound();
-}
-
-
-bool Exp::containsMemof(UserProc *proc)
-{
-    ExpHasMemofTester ehmt(proc);
-
-    accept(&ehmt);
-    return ehmt.getResult();
 }

@@ -10,20 +10,28 @@
 #include "BoolAssign.h"
 
 
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/Visitor.h"
 #include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/StatementHelper.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/util/LocationSet.h"
 
 
 BoolAssign::BoolAssign(int size)
     : Assignment(nullptr)
-    , m_jumpType((BranchType)0)
+    , m_jumpType(BranchType::JE)
     , m_cond(nullptr)
     , m_isFloat(false)
     , m_size(size)
 {
-    m_kind = STMT_BOOLASSIGN;
+    m_kind = StmtType::BoolAssign;
 }
 
 
@@ -45,20 +53,20 @@ void BoolAssign::makeSigned()
     // Make this into a signed branch
     switch (m_jumpType)
     {
-    case BRANCH_JUL:
-        m_jumpType = BRANCH_JSL;
+    case BranchType::JUL:
+        m_jumpType = BranchType::JSL;
         break;
 
-    case BRANCH_JULE:
-        m_jumpType = BRANCH_JSLE;
+    case BranchType::JULE:
+        m_jumpType = BranchType::JSLE;
         break;
 
-    case BRANCH_JUGE:
-        m_jumpType = BRANCH_JSGE;
+    case BranchType::JUGE:
+        m_jumpType = BranchType::JSGE;
         break;
 
-    case BRANCH_JUG:
-        m_jumpType = BRANCH_JSG;
+    case BranchType::JUG:
+        m_jumpType = BranchType::JSG;
         break;
 
     default:
@@ -92,64 +100,68 @@ void BoolAssign::printCompact(QTextStream& os, bool html) const
 
     switch (m_jumpType)
     {
-    case BRANCH_JE:
+    case BranchType::JE:
         os << "equals";
         break;
 
-    case BRANCH_JNE:
+    case BranchType::JNE:
         os << "not equals";
         break;
 
-    case BRANCH_JSL:
+    case BranchType::JSL:
         os << "signed less";
         break;
 
-    case BRANCH_JSLE:
+    case BranchType::JSLE:
         os << "signed less or equals";
         break;
 
-    case BRANCH_JSGE:
+    case BranchType::JSGE:
         os << "signed greater or equals";
         break;
 
-    case BRANCH_JSG:
+    case BranchType::JSG:
         os << "signed greater";
         break;
 
-    case BRANCH_JUL:
+    case BranchType::JUL:
         os << "unsigned less";
         break;
 
-    case BRANCH_JULE:
+    case BranchType::JULE:
         os << "unsigned less or equals";
         break;
 
-    case BRANCH_JUGE:
+    case BranchType::JUGE:
         os << "unsigned greater or equals";
         break;
 
-    case BRANCH_JUG:
+    case BranchType::JUG:
         os << "unsigned greater";
         break;
 
-    case BRANCH_JMI:
+    case BranchType::JMI:
         os << "minus";
         break;
 
-    case BRANCH_JPOS:
+    case BranchType::JPOS:
         os << "plus";
         break;
 
-    case BRANCH_JOF:
+    case BranchType::JOF:
         os << "overflow";
         break;
 
-    case BRANCH_JNOF:
+    case BranchType::JNOF:
         os << "no overflow";
         break;
 
-    case BRANCH_JPAR:
+    case BranchType::JPAR:
         os << "ev parity";
+        break;
+
+    case BranchType::INVALID:
+        assert(false);
         break;
     }
 
@@ -276,17 +288,17 @@ void BoolAssign::setLeftFromList(std::list<Statement *> *stmts)
 {
     assert(stmts->size() == 1);
     Assign *first = (Assign *)stmts->front();
-    assert(first->getKind() == STMT_ASSIGN);
+    assert(first->getKind() == StmtType::Assign);
     m_lhs = first->getLeft();
 }
 
 
 bool BoolAssign::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -300,16 +312,17 @@ bool BoolAssign::accept(StmtExpVisitor *v)
 
 bool BoolAssign::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
+    if (v->m_mod) {
+        if (m_cond && visitChildren) {
+            m_cond = m_cond->accept(v->m_mod);
+        }
 
-    if (m_cond && recur) {
-        m_cond = m_cond->accept(v->m_mod);
-    }
-
-    if (recur && m_lhs->isMemOf()) {
-        m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->m_mod));
+        if (visitChildren && m_lhs->isMemOf()) {
+            m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->m_mod));
+        }
     }
 
     return true;
@@ -318,24 +331,18 @@ bool BoolAssign::accept(StmtModifier *v)
 
 bool BoolAssign::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren;
 
-    v->visit(this, recur);
+    v->visit(this, visitChildren);
 
-    if (m_cond && recur) {
+    if (m_cond && visitChildren) {
         m_cond = m_cond->accept(v->mod);
     }
 
-    if (m_lhs && recur) {
+    if (m_lhs && visitChildren) {
         m_lhs = m_lhs->accept(v->mod);
     }
 
     return true;
 }
 
-
-void BoolAssign::dfaTypeAnalysis(bool& ch)
-{
-    // Not properly implemented yet
-    Assignment::dfaTypeAnalysis(ch);
-}

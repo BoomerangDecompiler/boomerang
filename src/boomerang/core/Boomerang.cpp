@@ -10,25 +10,15 @@
 #include "Boomerang.h"
 
 
-/***************************************************************************/ /**
- * \file    Boomerang.cpp
- * \brief   Command line processing for the Boomerang decompiler
- ******************************************************************************/
-
 #include "boomerang/codegen/CCodeGenerator.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/db/Signature.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/frontend/Frontend.h"
-
-// TODO: Move the Objective-C loader code to a more suitable place
-#include "../../boomerang-loaders/machO/MachOBinaryLoader.h" // For Objective-C stuff
+#include "boomerang/util/Log.h"
 
 #include <ctime>
 
@@ -55,51 +45,10 @@ ICodeGenerator *Boomerang::getCodeGenerator()
 }
 
 
-void Boomerang::objcDecode(const std::map<QString, ObjcModule>& modules, Prog *prog)
-{
-    LOG_MSG("Adding Objective-C information to Prog.");
-    Module *root = prog->getRootModule();
-
-    for (auto& modules_it : modules) {
-        const ObjcModule& mod     = (modules_it).second;
-        Module            *module = prog->getOrInsertModule(mod.name);
-        root->addChild(module);
-        LOG_VERBOSE("\tModule: %1", mod.name);
-        ClassModFactory class_fact;
-
-        for (auto& elem : mod.classes) {
-            const ObjcClass& c   = (elem).second;
-            Module           *cl = prog->getOrInsertModule(mod.name, class_fact);
-            root->addChild(cl);
-            LOG_VERBOSE("\t\tClass: %1", c.name);
-
-            for (auto& _it2 : c.methods) {
-                const ObjcMethod& m = (_it2).second;
-                // TODO: parse :'s in names
-                QString  method_name = m.name + "_" + m.types;
-                Function *existing   = prog->findProc(method_name);
-
-                if (existing) {
-                    assert(!"Name clash in objc processor ?");
-                    continue;
-                }
-
-                Function *p = cl->createFunction(method_name, m.addr);
-                p->setSignature(Signature::instantiate(prog->getFrontEndId(), CallConv::C, method_name));
-                // TODO: decode types in m.types
-                LOG_VERBOSE("\t\t\tMethod: ", m.name);
-            }
-        }
-    }
-
-    LOG_VERBOSE("");
-}
-
-
 std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
     LOG_MSG("Loading...");
-    std::unique_ptr<Prog> prog(new Prog(fname));
+    std::unique_ptr<Prog> prog(new Prog(QFileInfo(fname).baseName()));
     IFrontEnd *fe   = IFrontEnd::create(fname, prog.get(), this->getOrCreateProject());
 
     if (fe == nullptr) {
@@ -146,12 +95,7 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
 
     Boomerang::get()->alertEndDecode();
 
-    LOG_MSG("Found %1 procs", prog->getNumProcs());
-
-    // GK: The analysis which was performed was not exactly very "analysing", and so it has been moved to
-    // prog::finishDecode, UserProc::assignProcsToCalls and UserProc::finalSimplify
-    // std::cout << "analysing...\n";
-    // prog->analyse();
+    LOG_MSG("Found %1 procs", prog->getNumFunctions());
 
     if (SETTING(generateSymbols)) {
         prog->printSymbolsToFile();
@@ -202,12 +146,12 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     if (SETTING(printAST)) {
         LOG_MSG("Printing AST...");
 
-        for (const Module *module : prog->getModuleList()) {
+        for (const auto& module : prog->getModuleList()) {
             for (Function *func : *module) {
                 if (!func->isLib()) {
-                    UserProc *u = (UserProc *)func;
-                    u->getCFG()->compressCfg();
-                    u->printAST();
+                    UserProc *proc = (UserProc *)func;
+                    proc->getCFG()->compressCfg();
+                    proc->printAST();
                 }
             }
         }

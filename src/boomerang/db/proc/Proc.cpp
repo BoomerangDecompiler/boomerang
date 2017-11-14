@@ -9,12 +9,6 @@
 #pragma endregion License
 #include "Proc.h"
 
-/***************************************************************************/ /**
- * \file    proc.cpp
- * \brief   Implementation of the Proc hierachy (Proc, UserProc, LibProc).
- *               All aspects of a procedure, apart from the actual code in the
- *               Cfg, are stored here
- ******************************************************************************/
 
 #include "boomerang/core/Boomerang.h"
 
@@ -32,9 +26,8 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
 
-#include "boomerang/type/Constraint.h"
 #include "boomerang/type/type/Type.h"
 
 #include "boomerang/util/Log.h"
@@ -65,9 +58,9 @@ typedef std::map<Statement *, int> RefCounter;
 
 Function::Function(Address uNative, Signature *sig, Module *mod)
     : m_signature(sig)
-    , m_address(uNative)
+    , m_entryAddress(uNative)
     , m_firstCaller(nullptr)
-    , m_parent(mod)
+    , m_module(mod)
 {
     assert(mod);
     m_prog = mod->getProg();
@@ -82,9 +75,9 @@ Function::~Function()
 void Function::eraseFromParent()
 {
     // Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
-    m_parent->setLocationMap(getEntryAddress(), (Function *)-1);
+    m_module->setLocationMap(getEntryAddress(), (Function *)-1);
     // Delete the cfg etc.
-    m_parent->getFunctionList().remove(this);
+    m_module->getFunctionList().remove(this);
     this->deleteCFG();
     delete this;  // Delete ourselves
 }
@@ -106,13 +99,13 @@ void Function::setName(const QString& nam)
 
 Address Function::getEntryAddress() const
 {
-    return m_address;
+    return m_entryAddress;
 }
 
 
 void Function::setEntryAddress(Address a)
 {
-    m_address = a;
+    m_entryAddress = a;
 }
 
 
@@ -183,31 +176,31 @@ void Function::printDetailsXML()
 }
 
 
-void Function::removeFromParent()
+void Function::removeFromModule()
 {
-    assert(m_parent);
-    m_parent->getFunctionList().remove(this);
-    m_parent->setLocationMap(m_address, nullptr);
+    assert(m_module);
+    m_module->getFunctionList().remove(this);
+    m_module->setLocationMap(m_entryAddress, nullptr);
 }
 
 
 void Function::setParent(Module *c)
 {
-    if (c == m_parent) {
+    if (c == m_module) {
         return;
     }
 
-    removeFromParent();
-    m_parent = c;
+    removeFromModule();
+    m_module = c;
     c->getFunctionList().push_back(this);
-    c->setLocationMap(m_address, this);
+    c->setLocationMap(m_entryAddress, this);
 }
 
 
 Function *Function::getFirstCaller()
 {
     if ((m_firstCaller == nullptr) && (m_firstCallerAddr != Address::INVALID)) {
-        m_firstCaller     = m_prog->findProc(m_firstCallerAddr);
+        m_firstCaller     = m_prog->findFunction(m_firstCallerAddr);
         m_firstCallerAddr = Address::INVALID;
     }
 
@@ -230,12 +223,6 @@ void Function::removeParameter(SharedExp e)
             (elem)->removeArgument(n);
         }
     }
-}
-
-
-void Function::removeReturn(SharedExp e)
-{
-    m_signature->removeReturn(e);
 }
 
 

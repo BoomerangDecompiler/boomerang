@@ -10,17 +10,6 @@
 #include "st20frontend.h"
 
 
-/***************************************************************************/ /**
- * \file       st20frontend.cpp
- * \brief   This file contains routines to manage the decoding of st20
- *               instructions and the instantiation to RTLs, removing st20
- *               dependent features such as delay slots in the process. These
- *               functions replace Frontend.cc for decoding sparc instructions.
- ******************************************************************************/
-
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
 #include "boomerang/util/Log.h"
 
 #include "boomerang/db/Register.h"

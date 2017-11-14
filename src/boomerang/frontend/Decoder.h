@@ -10,11 +10,6 @@
 #pragma once
 
 
-/***************************************************************************/ /**
- * \file       decoder.h
- * OVERVIEW:   The interface to the instruction decoder.
- ******************************************************************************/
-
 #include "boomerang/util/Address.h"
 
 #include <list>
@@ -25,32 +20,35 @@ class Exp;
 class RTL;
 class Prog;
 
-// These are the instruction classes defined in "A Transformational Approach to
-// Binary Translation of Delayed Branches" for SPARC instructions.
-// Extended for HPPA. Ignored by machines with no delay slots
+/**
+ * These are the instruction classes defined in
+ * "A Transformational Approach to Binary Translation of Delayed Branches"
+ * for SPARC instructions.
+ * Extended for HPPA. Ignored by machines with no delay slots
+ */
 enum ICLASS : Byte
 {
-    NCT,   // Non Control Transfer
-    SD,    // Static Delayed
-    DD,    // Dynamic Delayed
-    SCD,   // Static Conditional Delayed
-    SCDAN, // Static Conditional Delayed, Anulled if Not taken
-    SCDAT, // Static Conditional Delayed, Anulled if Taken
-    SU,    // Static Unconditional (not delayed)
-    SKIP,  // Skip successor
-    //    TRAP,            // Trap
-    NOP,   // No operation (e.g. sparc BN,A)
+    NCT,   ///< Non Control Transfer
+    SD,    ///< Static Delayed
+    DD,    ///< Dynamic Delayed
+    SCD,   ///< Static Conditional Delayed
+    SCDAN, ///< Static Conditional Delayed, Anulled if Not taken
+    SCDAT, ///< Static Conditional Delayed, Anulled if Taken
+    SU,    ///< Static Unconditional (not delayed)
+    SKIP,  ///< Skip successor
+    // TRAP, ///< Trap
+    NOP,   ///< No operation (e.g. sparc BN,A)
     // HPPA only
-    DU,    // Dynamic Unconditional (not delayed)
-    NCTA   // Non Control Transfer, with following instr Anulled
+    DU,    ///< Dynamic Unconditional (not delayed)
+    NCTA   ///< Non Control Transfer, with following instr Anulled
 };
 
 
-/***************************************************************************/ /**
+/**
  * The DecodeResult struct contains all the information that results from
  * calling the decoder. This prevents excessive use of confusing
  * reference parameters.
- ******************************************************************************/
+ */
 struct DecodeResult
 {
 public:
@@ -95,28 +93,31 @@ public:
 
 
 /**
- * \brief The IDecoder class - responsible for translating raw bytes to Instruction lists
+ * Base class for decoders.
+ * Decoders translate raw bytes to instruction lists (RTLs).
  */
 class IDecoder
 {
 public:
     virtual ~IDecoder() = default;
 
-    /// Decodes the machine instruction at \p pc.
-    /// The decode result is stored into \p result, if the decode was successful.
-    /// If the decode was not successful, the content of \p result is undefined.
-    /// \returns true if decoding the instruction was successful.
+    /**
+     * Decodes the machine instruction at \p pc.
+     * The decode result is stored into \p result, if the decode was successful.
+     * If the decode was not successful, the content of \p result is undefined.
+     * \returns true if decoding the instruction was successful.
+     */
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) = 0;
 
-    /// Returns machine-specific register name given it's index
+    /// \returns machine-specific register name given it's index
     virtual QString getRegName(int idx) const = 0;
 
-    /// Returns index of the named register
+    /// \returns index of the named register
     virtual int getRegIdx(const QString& name) const = 0;
 
-    /// Returns size of register in bits
+    /// \returns size of register in bits
     virtual int getRegSize(int idx) const = 0;
 
-    /// Returns the size of the register with name \p name, in bits
+    /// \returns the size of the register with name \p name, in bits
     int getRegSize(const QString& name) const { return getRegSize(getRegIdx(name)); }
 };

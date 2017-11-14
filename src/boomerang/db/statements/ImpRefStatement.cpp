@@ -11,7 +11,13 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/exp/Exp.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/util/Log.h"
 
@@ -20,7 +26,7 @@ ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)
     : TypingStatement(ty)
     , m_addressExp(a)
 {
-    m_kind = STMT_IMPREF;
+    m_kind = StmtType::ImpRef;
 }
 
 
@@ -61,10 +67,10 @@ bool ImpRefStatement::accept(StmtVisitor *visitor)
 
 bool ImpRefStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -78,31 +84,32 @@ bool ImpRefStatement::accept(StmtExpVisitor *v)
 
 bool ImpRefStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-    v->m_mod->clearMod();
+    if (v->m_mod) {
+        v->m_mod->clearMod();
 
-    if (recur) {
-        m_addressExp = m_addressExp->accept(v->m_mod);
+        if (visitChildren) {
+            m_addressExp = m_addressExp->accept(v->m_mod);
+        }
+
+        if (v->m_mod->isMod()) {
+            LOG_VERBOSE("ImplicitRef changed: now %1", this);
+        }
     }
-
-    if (v->m_mod->isMod()) {
-        LOG_VERBOSE("ImplicitRef changed: now %1", this);
-    }
-
     return true;
 }
 
 
 bool ImpRefStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren;
 
-    v->visit(this, recur);
+    v->visit(this, visitChildren);
     v->mod->clearMod();
 
-    if (recur) {
+    if (visitChildren) {
         m_addressExp = m_addressExp->accept(v->mod);
     }
 

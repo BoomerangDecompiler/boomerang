@@ -35,15 +35,15 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
 
         switch (jtCond)
         {
-        case BRANCH_JE:
+        case BranchType::JE:
             op = opEquals;
             break;
 
-        case BRANCH_JNE:
+        case BranchType::JNE:
             op = opNotEqual;
             break;
 
-        case BRANCH_JSL:
+        case BranchType::JSL:
 
             if (makeUns) {
                 op = opLessUns;
@@ -54,7 +54,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
 
             break;
 
-        case BRANCH_JSLE:
+        case BranchType::JSLE:
 
             if (makeUns) {
                 op = opLessEqUns;
@@ -65,7 +65,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
 
             break;
 
-        case BRANCH_JSGE:
+        case BranchType::JSGE:
 
             if (makeUns) {
                 op = opGtrEqUns;
@@ -76,7 +76,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
 
             break;
 
-        case BRANCH_JSG:
+        case BranchType::JSG:
 
             if (makeUns) {
                 op = opGtrUns;
@@ -87,23 +87,23 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
 
             break;
 
-        case BRANCH_JUL:
+        case BranchType::JUL:
             op = opLessUns;
             break;
 
-        case BRANCH_JULE:
+        case BranchType::JULE:
             op = opLessEqUns;
             break;
 
-        case BRANCH_JUGE:
+        case BranchType::JUGE:
             op = opGtrEqUns;
             break;
 
-        case BRANCH_JUG:
+        case BranchType::JUG:
             op = opGtrUns;
             break;
 
-        case BRANCH_JMI:
+        case BranchType::JMI:
 
             /*     pCond
              *      /      \
@@ -119,15 +119,19 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                             pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(), Const::get(0));
             break;
 
-        case BRANCH_JPOS:
+        case BranchType::JPOS:
             pCond =
                 Binary::get(opGtrEq,     // P3 >= 0
                             pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(), Const::get(0));
             break;
 
-        case BRANCH_JOF:
-        case BRANCH_JNOF:
-        case BRANCH_JPAR:
+        case BranchType::JOF:
+        case BranchType::JNOF:
+        case BranchType::JPAR:
+            break;
+
+        case BranchType::INVALID:
+            assert(false);
             break;
         }
 
@@ -143,61 +147,61 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
 
         switch (jtCond)
         {
-        case BRANCH_JE:
+        case BranchType::JE:
             op = opEquals;
             break;
 
-        case BRANCH_JNE:
+        case BranchType::JNE:
             op = opNotEqual;
             break;
 
-        case BRANCH_JMI:
+        case BranchType::JMI:
             op = opLess;
             break;
 
-        case BRANCH_JPOS:
+        case BranchType::JPOS:
             op = opGtrEq;
             break;
 
         // FIXME: This next set is quite shakey. Really, we should pull all the individual flag definitions out of
         // the flag definitions, and substitute these into the equivalent conditions for the branches (a big, ugly
         // job).
-        case BRANCH_JSL:
+        case BranchType::JSL:
             op = opLess;
             break;
 
-        case BRANCH_JSLE:
+        case BranchType::JSLE:
             op = opLessEq;
             break;
 
-        case BRANCH_JSGE:
+        case BranchType::JSGE:
             op = opGtrEq;
             break;
 
-        case BRANCH_JSG:
+        case BranchType::JSG:
             op = opGtr;
             break;
 
         // These next few seem to fluke working fine on architectures like X86, SPARC, and 68K which clear the
         // carry on all logical operations.
-        case BRANCH_JUL:
+        case BranchType::JUL:
             op = opLessUns;
             break;     // NOTE: this is equivalent to never branching, since nothing
 
         // can be unsigned less than zero
-        case BRANCH_JULE:
+        case BranchType::JULE:
             op = opLessEqUns;
             break;
 
-        case BRANCH_JUGE:
+        case BranchType::JUGE:
             op = opGtrEqUns;
             break;     // Similarly, this is equivalent to always branching
 
-        case BRANCH_JUG:
+        case BranchType::JUG:
             op = opGtrUns;
             break;
 
-        case BRANCH_JPAR:
+        case BranchType::JPAR:
             {
                 // This is pentium specific too; see below for more notes.
 
@@ -287,35 +291,35 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
 
         switch (jtCond)
         {
-        case BRANCH_JE:
+        case BranchType::JE:
             op = opEquals;
             break;
 
-        case BRANCH_JNE:
+        case BranchType::JNE:
             op = opNotEqual;
             break;
 
-        case BRANCH_JMI:
+        case BranchType::JMI:
             op = opLess;
             break;
 
-        case BRANCH_JPOS:
+        case BranchType::JPOS:
             op = opGtrEq;
             break;
 
-        case BRANCH_JSL:
+        case BranchType::JSL:
             op = opLess;
             break;
 
-        case BRANCH_JSLE:
+        case BranchType::JSLE:
             op = opLessEq;
             break;
 
-        case BRANCH_JSGE:
+        case BranchType::JSGE:
             op = opGtrEq;
             break;
 
-        case BRANCH_JSG:
+        case BranchType::JSG:
             op = opGtr;
             break;
 

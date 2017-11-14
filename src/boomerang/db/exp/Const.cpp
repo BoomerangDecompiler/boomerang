@@ -9,17 +9,19 @@
 #pragma endregion License
 #include "Const.h"
 
-
-#include "boomerang/db/Visitor.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Util.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/TypeVal.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
 
 
 Const::Const(uint32_t i)
@@ -27,7 +29,7 @@ Const::Const(uint32_t i)
     , m_conscript(0)
     , m_type(VoidType::get())
 {
-    u.i = i;
+    m_value.i = i;
 }
 
 
@@ -36,7 +38,7 @@ Const::Const(int i)
     , m_conscript(0)
     , m_type(VoidType::get())
 {
-    u.i = i;
+    m_value.i = i;
 }
 
 
@@ -45,7 +47,7 @@ Const::Const(QWord ll)
     , m_conscript(0)
     , m_type(VoidType::get())
 {
-    u.ll = ll;
+    m_value.ll = ll;
 }
 
 
@@ -54,7 +56,7 @@ Const::Const(double d)
     , m_conscript(0)
     , m_type(VoidType::get())
 {
-    u.d = d;
+    m_value.d = d;
 }
 
 
@@ -72,7 +74,7 @@ Const::Const(Function *p)
     , m_conscript(0)
     , m_type(VoidType::get())
 {
-    u.pp = p;
+    m_value.pp = p;
 }
 
 
@@ -81,7 +83,7 @@ Const::Const(Address a)
     , m_conscript(0)
     , m_type(VoidType::get())
 {
-    u.ll = a.value();
+    m_value.ll = a.value();
 }
 
 
@@ -89,7 +91,7 @@ Const::Const(Address a)
 Const::Const(const Const& o)
     : Exp(o.m_oper)
 {
-    u           = o.u;
+    m_value           = o.m_value;
     m_conscript = o.m_conscript;
     m_type      = o.m_type;
     m_string    = o.m_string;
@@ -122,13 +124,13 @@ bool Const::operator<(const Exp& o) const
     switch (m_oper)
     {
     case opIntConst:
-        return u.i < ((Const&)o).u.i;
+        return m_value.i < ((Const&)o).m_value.i;
 
     case opLongConst:
-        return u.ll < ((Const&)o).u.ll;
+        return m_value.ll < ((Const&)o).m_value.ll;
 
     case opFltConst:
-        return u.d < ((Const&)o).u.d;
+        return m_value.d < ((Const&)o).m_value.d;
 
     case opStrConst:
         return m_string < ((Const&)o).m_string;
@@ -170,7 +172,7 @@ SharedExp Const::genConstraints(SharedExp result)
 
             // An integer constant can also match a pointer to something.  Assume values less than 0x100 can't be a
             // pointer
-            if ((unsigned)u.i >= 0x100) {
+            if ((unsigned)m_value.i >= 0x100) {
                 constraintMatched |= t->isPointer();
             }
 
@@ -254,7 +256,7 @@ SharedExp Const::genConstraints(SharedExp result)
 
 QString Const::getFuncName() const
 {
-    return u.pp->getName();
+    return m_value.pp->getName();
 }
 
 
@@ -281,7 +283,7 @@ void Const::printx(int ind) const
     switch (m_oper)
     {
     case opIntConst:
-        LOG_MSG("%1", u.i);
+        LOG_MSG("%1", m_value.i);
         break;
 
     case opStrConst:
@@ -289,11 +291,11 @@ void Const::printx(int ind) const
         break;
 
     case opFltConst:
-        LOG_MSG("%1", u.d);
+        LOG_MSG("%1", m_value.d);
         break;
 
     case opFuncConst:
-        LOG_MSG(u.pp->getName());
+        LOG_MSG(m_value.pp->getName());
         break;
 
     default:
@@ -316,34 +318,32 @@ SharedExp Const::clone() const
 
 void Const::print(QTextStream& os, bool) const
 {
-    setLexBegin(os.pos());
-
     switch (m_oper)
     {
     case opIntConst:
 
-        if ((u.i < -1000) || (u.i > 1000)) {
-            os << "0x" << QString::number(u.i, 16);
+        if ((m_value.i < -1000) || (m_value.i > 1000)) {
+            os << "0x" << QString::number(m_value.i, 16);
         }
         else {
-            os << u.i;
+            os << m_value.i;
         }
 
         break;
 
     case opLongConst:
 
-        if (((long long)u.ll < -1000LL) || ((long long)u.ll > 1000LL)) {
-            os << "0x" << QString::number(u.ll, 16) << "LL";
+        if (((long long)m_value.ll < -1000LL) || ((long long)m_value.ll > 1000LL)) {
+            os << "0x" << QString::number(m_value.ll, 16) << "LL";
         }
         else {
-            os << u.ll << "LL";
+            os << m_value.ll << "LL";
         }
 
         break;
 
     case opFltConst:
-        os << QString("%1").arg(u.d); // respects English locale
+        os << QString("%1").arg(m_value.d); // respects English locale
         break;
 
     case opStrConst:
@@ -363,7 +363,6 @@ void Const::print(QTextStream& os, bool) const
         os << "T(" << type->prints() << ")";
     }
 #endif
-    setLexEnd(os.pos());
 }
 
 
@@ -387,11 +386,11 @@ void Const::appendDotFile(QTextStream& of)
     switch (m_oper)
     {
     case opIntConst:
-        of << u.i;
+        of << m_value.i;
         break;
 
     case opFltConst:
-        of << u.d;
+        of << m_value.d;
         break;
 
     case opStrConst:
@@ -400,7 +399,7 @@ void Const::appendDotFile(QTextStream& of)
 
     // Might want to distinguish this better, e.g. "(func*)myProc"
     case opFuncConst:
-        of << u.pp->getName();
+        of << m_value.pp->getName();
         break;
 
     default:
@@ -450,13 +449,13 @@ bool Const::operator==(const Exp& o) const
     switch (m_oper)
     {
     case opIntConst:
-        return u.i == ((Const&)o).u.i;
+        return m_value.i == ((Const&)o).m_value.i;
 
     case opLongConst:
-        return u.ll == ((Const&)o).u.ll;
+        return m_value.ll == ((Const&)o).m_value.ll;
 
     case opFltConst:
-        return u.d == ((Const&)o).u.d;
+        return m_value.d == ((Const&)o).m_value.d;
 
     case opStrConst:
         return m_string == ((Const&)o).m_string;

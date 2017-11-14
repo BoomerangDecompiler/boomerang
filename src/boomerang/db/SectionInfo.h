@@ -17,15 +17,14 @@
 
 class QVariant;
 
-/// SectionInfo structure - All information about the sections is contained in these
-/// structures.
+/// All information about the sections is contained in these structures.
 struct SectionInfo : public IBinarySection
 {
 private:
     SectionInfo& operator=(const SectionInfo& other);
 
 public:
-    SectionInfo(Address sourceAddr, uint32_t size, const QString& name = ""); // Constructor
+    SectionInfo(Address sourceAddr, uint64 size, const QString& name = "");
     SectionInfo(const SectionInfo& other);
     virtual ~SectionInfo() override;
 
@@ -35,7 +34,7 @@ public:
     bool isReadOnly()    const override { return m_readOnly; }
     bool isCode()        const override { return m_code; }
     bool isData()        const override { return m_data; }
-    uint32_t getSize()       const override { return m_sectionSize; }
+    uint32_t getSize()       const override { return m_size; }
     QString getName()       const override { return m_sectionName; }
     uint32_t getEntrySize()  const override { return m_sectionEntrySize; }
 
@@ -68,7 +67,7 @@ private:
     QString               m_sectionName;      ///< Name of section
     Address               m_nativeAddr;       ///< Logical or native load address
     HostAddress           m_hostAddr;         ///< Host or actual address of data
-    uint32_t              m_sectionSize;      ///< Size of section in bytes
+    uint64                m_size;             ///< Size of section in bytes
     uint32_t              m_sectionEntrySize; ///< Size of one section entry (if applicable)
     unsigned              m_type;             ///< Type of section (format dependent)
     unsigned              m_code     : 1;     ///< Set if section contains instructions

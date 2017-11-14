@@ -10,20 +10,11 @@
 #pragma once
 
 
-/** \file MachOBinaryLoader.h
- * \brief This file contains the definition of the class MachOBinaryLoader.
- */
-
 #include "boomerang/loader/IFileLoader.h"
 
 #include <string>
 #include <vector>
 
-
-/**
- * This file contains the definition of the MachOBinaryLoader class,
- * This is my bare bones implementation of a Mac OS-X binary loader.
- */
 
 // Given a little endian value x, load its value assuming big endian order
 // Note: must be able to take address of x
@@ -85,6 +76,10 @@ public:
 };
 
 
+/**
+ * Contains the implementation of the class MachOBinaryFile.
+ * This is my bare bones implementation of a Mac OS-X binary loader.
+ */
 class MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
 {
 public:
@@ -125,13 +120,9 @@ public:
     std::map<QString, ObjcModule>& getObjcModules() override  { return modules; }
 
 protected:
-    int machORead2(short *ps) const; // Read 2 bytes from native addr
-    int machORead4(int *pi) const;   // Read 4 bytes from native addr
+    int machORead2(short *ps) const; ///< Read 2 bytes from native addr
+    int machORead4(int *pi) const;   ///< Read 4 bytes from native addr
 
-    // void *            BMMH(void *x);
-    // char *            BMMH(char *x);
-    //    const char *        BMMH(const char *x);
-    // unsigned int        BMMH(long int & x);
     int32_t BMMH(int32_t x);
     uint32_t BMMH(uint32_t x);
     unsigned short BMMHW(unsigned short x);

@@ -11,22 +11,16 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/db/Visitor.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
-
-
-Ternary::Ternary(OPER _op)
-    : Binary(_op)
-{
-    subExp3 = nullptr;
-}
+#include "boomerang/util/Log.h"
 
 
 Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)
@@ -38,10 +32,8 @@ Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)
 
 
 Ternary::Ternary(const Ternary& o)
-    : Binary(o.m_oper)
+    : Binary(o)
 {
-    subExp1 = o.subExp1->clone();
-    subExp2 = o.subExp2->clone();
     subExp3 = o.subExp3->clone();
     assert(subExp1 && subExp2 && subExp3);
 }
@@ -644,9 +636,10 @@ SharedExp Ternary::genConstraints(SharedExp result)
 
 bool Ternary::accept(ExpVisitor *v)
 {
-    bool override, ret = v->visit(shared_from_base<Ternary>(), override);
+    bool visitChildren = true;
+    bool ret = v->visit(shared_from_base<Ternary>(), visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -668,18 +661,12 @@ bool Ternary::accept(ExpVisitor *v)
 
 SharedExp Ternary::accept(ExpModifier *v)
 {
-    bool recur;
-    auto ret = std::static_pointer_cast<Ternary>(v->preVisit(shared_from_base<Ternary>(), recur));
+    bool visitChildren = true;
+    auto ret = std::static_pointer_cast<Ternary>(v->preVisit(shared_from_base<Ternary>(), visitChildren));
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
-    }
-
-    if (recur) {
         subExp2 = subExp2->accept(v);
-    }
-
-    if (recur) {
         subExp3 = subExp3->accept(v);
     }
 
@@ -692,7 +679,7 @@ void Ternary::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 
-    child(subExp1, ind);
-    child(subExp2, ind);
-    child(subExp3, ind);
+    printChild(subExp1, ind);
+    printChild(subExp2, ind);
+    printChild(subExp3, ind);
 }

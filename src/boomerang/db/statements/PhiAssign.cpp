@@ -11,8 +11,17 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/type/type/Type.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
 
 
@@ -144,6 +153,8 @@ bool PhiAssign::search(const Exp& pattern, SharedExp& result) const
 
 bool PhiAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
+    // FIXME: is this the right semantics for searching a phi statement,
+    // disregarding the RHS?
     return m_lhs->searchAll(pattern, result);
 }
 
@@ -189,10 +200,10 @@ PhiInfo& PhiAssign::getAt(BasicBlock *idx)
 
 bool PhiAssign::accept(StmtExpVisitor *visitor)
 {
-    bool override;
-    bool ret = visitor->visit(this, override);
+    bool visitChildren = true;
+    bool ret = visitor->visit(this, visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -216,17 +227,19 @@ bool PhiAssign::accept(StmtExpVisitor *visitor)
 
 bool PhiAssign::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-    v->m_mod->clearMod();
+    if (v->m_mod) {
+        v->m_mod->clearMod();
 
-    if (recur) {
-        m_lhs = m_lhs->accept(v->m_mod);
-    }
+        if (visitChildren) {
+            m_lhs = m_lhs->accept(v->m_mod);
+        }
 
-    if (v->m_mod->isMod()) {
-        LOG_VERBOSE("PhiAssign changed: now %1", this);
+        if (v->m_mod->isMod()) {
+            LOG_VERBOSE("PhiAssign changed: now %1", this);
+        }
     }
 
     return true;
@@ -235,12 +248,11 @@ bool PhiAssign::accept(StmtModifier *v)
 
 bool PhiAssign::accept(StmtPartModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren;
+    v->visit(this, visitChildren);
     v->mod->clearMod();
 
-    if (recur && m_lhs->isMemOf()) {
+    if (visitChildren && m_lhs->isMemOf()) {
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
     }
 
@@ -344,38 +356,12 @@ void PhiAssign::enumerateParams(std::list<SharedExp>& le)
 }
 
 
-void PhiAssign::dfaTypeAnalysis(bool& ch)
+Statement* PhiAssign::getStmtAt(BasicBlock* idx)
 {
-    iterator it = m_defs.begin();
-
-    while (it->second.e == nullptr && it != m_defs.end()) {
-        ++it;
+    if (m_defs.find(idx) == m_defs.end()) {
+        return nullptr;
     }
 
-    assert(it != m_defs.end());
-    SharedType meetOfArgs = it->second.getDef()->getTypeFor(m_lhs);
-
-    for (++it; it != m_defs.end(); ++it) {
-        PhiInfo& phinf(it->second);
-
-        if (phinf.e == nullptr) {
-            continue;
-        }
-
-        assert(phinf.getDef() != nullptr);
-        SharedType typeOfDef = phinf.getDef()->getTypeFor(phinf.e);
-        meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
-    }
-
-    m_type = m_type->meetWith(meetOfArgs, ch);
-
-    for (it = m_defs.begin(); it != m_defs.end(); ++it) {
-        if (it->second.e == nullptr) {
-            continue;
-        }
-
-        it->second.getDef()->meetWithFor(m_type, it->second.e, ch);
-    }
-
-    Assignment::dfaTypeAnalysis(ch); // Handle the LHS
+    return m_defs[idx].getDef();
 }
+

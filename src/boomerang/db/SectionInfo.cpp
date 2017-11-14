@@ -110,12 +110,12 @@ public:
 
 
 
-SectionInfo::SectionInfo(Address sourceAddr, uint32_t size, const QString& name)
+SectionInfo::SectionInfo(Address sourceAddr, uint64 size, const QString& name)
     : m_impl(new SectionInfoImpl)
     , m_sectionName(name)
     , m_nativeAddr(sourceAddr)
     , m_hostAddr(HostAddress::ZERO)
-    , m_sectionSize(size)
+    , m_size(size)
     , m_sectionEntrySize(0)
     , m_type(0)
     , m_code(false)
@@ -127,7 +127,7 @@ SectionInfo::SectionInfo(Address sourceAddr, uint32_t size, const QString& name)
 
 
 SectionInfo::SectionInfo(const SectionInfo& other)
-    : SectionInfo(other.m_nativeAddr, other.m_sectionSize, other.m_sectionName)
+    : SectionInfo(other.m_nativeAddr, other.m_size, other.m_sectionName)
 {
     *m_impl            = *other.m_impl;
     m_hostAddr         = other.m_hostAddr;
@@ -147,7 +147,7 @@ SectionInfo::~SectionInfo()
 
 bool SectionInfo::isAddressBss(Address a) const
 {
-    assert(a >= m_nativeAddr && a < m_nativeAddr + m_sectionSize);
+    assert(a >= m_nativeAddr && a < m_nativeAddr + m_size);
 
     if (m_bss) {
         return true;
@@ -170,7 +170,7 @@ bool SectionInfo::anyDefinedValues() const
 void SectionInfo::resize(uint32_t sz)
 {
     LOG_VERBOSE("Function not fully implemented yet");
-    m_sectionSize = sz;
+    m_size = sz;
 
 //    assert(false && "This function is not implmented yet");
 //    if(sz!=uSectionSize) {

@@ -13,12 +13,13 @@
 #include <QTextStream>
 
 #include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/Managed.h"
 
 class Prog;
 class Module;
 class UserProc;
 class Function;
+class StatementList;
+
 
 /**
  * Base class for generating high-level code from statements.
@@ -32,8 +33,8 @@ class Function;
 class ICodeGenerator
 {
 public:
-    ICodeGenerator() {}
-    virtual ~ICodeGenerator() {}
+    ICodeGenerator() = default;
+    virtual ~ICodeGenerator() = default;
 
     /// Generate code for \p program to \p os.
     virtual void generateCode(const Prog *program, QTextStream& os) = 0;
@@ -41,12 +42,12 @@ public:
     /**
      * Generate code for a module or function, or all modules.
      * \param program The program to generate code for.
-     * \param cluster The cluster to generate code for, or nullptr to generate code for all clusters.
+     * \param module The module to generate code for, or nullptr to generate code for all modules.
      * \param proc The function to generate code for, or nullptr to generate code for all procedures in a module.
      * \param intermixRTL Set this to true to intermix code with underlying intermediate representation.
      *                    Currently not implemented.
      */
-    virtual void generateCode(const Prog *program, Module *cluster = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) = 0;
+    virtual void generateCode(const Prog *program, Module *module = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) = 0;
 
 public:
     /*

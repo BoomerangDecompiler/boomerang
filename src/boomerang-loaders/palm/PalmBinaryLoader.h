@@ -10,21 +10,18 @@
 #pragma once
 
 
-/** \file PalmBinaryLoader.h
- * \brief This file contains the definition of the class PalmBinaryLoader.
- */
-
 #include "boomerang/loader/IFileLoader.h"
 
 #include <QtCore/QObject>
 
+
 /**
- * This class loads a Palm Pilot .prc file.
+ * Loader for Palm Pilot .prc files.
  */
 class PalmBinaryLoader : public IFileLoader
 {
 public:
-    PalmBinaryLoader(); // Constructor
+    PalmBinaryLoader();
     virtual ~PalmBinaryLoader();
 
     /// \copydoc IFileLoader::initialize

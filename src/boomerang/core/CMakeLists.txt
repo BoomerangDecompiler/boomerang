@@ -8,16 +8,12 @@
 
 
 list(APPEND boomerang-core-sources
-    core/Boomerang.h
-    core/Boomerang.cpp
+    core/Boomerang
     core/IBoomerang.h
     core/IProject.h
-    core/Plugin.h
-    core/Plugin.cpp
-    core/Project.cpp
-    core/Project.h
-    core/Settings.h
-    core/Settings.cpp
+    core/Plugin
+    core/Project
+    core/Settings
     core/Watcher.h
 )
 

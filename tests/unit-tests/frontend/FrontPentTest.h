@@ -19,7 +19,7 @@ class FrontPentTest : public QObject
 private slots:
     void initTestCase();
 
-    /***************************************************************************/ /**
+    /**
      * FUNCTION:        FrontPentTest::test1
      * OVERVIEW:        Test decoding some pentium instructions
      *============================================================================*/

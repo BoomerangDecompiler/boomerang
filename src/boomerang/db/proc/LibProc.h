@@ -19,12 +19,12 @@
 class LibProc : public Function
 {
 public:
-    /***************************************************************************/ /**
-     * \brief        Constructor with name, native address.
-     * \param        address - Native address of entry point of procedure
-     * \param        name - Name of procedure
-     * \param        module - Module that contains this Function
-     ******************************************************************************/
+    /**
+     * Constructor with name, native address.
+     * \param        address Address of entry point of function
+     * \param        name    Name of function
+     * \param        module  Module that contains this library function
+     */
     LibProc(Address address, const QString& name, Module *module);
     virtual ~LibProc() override = default;
 

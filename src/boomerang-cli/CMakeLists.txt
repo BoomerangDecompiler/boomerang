@@ -8,10 +8,8 @@
 
 
 set(boomerang-cli-sources
-    Console.h
-    Console.cpp
-    CommandlineDriver.h
-    CommandlineDriver.cpp
+    Console
+    CommandlineDriver
     main.cpp
 )
 

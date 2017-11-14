@@ -10,10 +10,6 @@
 #include "st20decoder.h"
 
 
-/***************************************************************************/ /**
- * \file       st20decoder.cpp
- * \brief   This file contains the high level decoding functionality, for matching ST-20 instructions.
- ******************************************************************************/
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
 
@@ -27,19 +23,9 @@
 #include <cassert>
 
 
-/**********************************
-* ST20Decoder methods.
-**********************************/
 #define sign_extend(N, SIZE)    Util::signExtend(N, SIZE)
 
-/***************************************************************************/ /**
- * \fn    ST20Decoder::decodeInstruction
- * \brief Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.
- * \param pc - the native address of the pc
- * \param delta - the difference between the above address and the host address of the pc (i.e. the address that
- *         the pc is at in the loaded object file)
- * \returns            a DecodeResult structure containing all the information gathered during decoding
- ******************************************************************************/
+
 bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
     result.reset();                          // Clear the result structure (numBytes = 0 etc)
@@ -138,7 +124,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         result.rtl = new RTL(pc, stmts);
 
-                        result.rtl->appendStmt(newCall);
+                        result.rtl->append(newCall);
                     }
                     break;
 
@@ -150,7 +136,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         BranchStatement *br = new BranchStatement();
 
-                        // br->setCondType(BRANCH_JE);
+                        // br->setCondType(BranchType::JE);
 
                         br->setDest(pc + result.numBytes + total + oper);
 
@@ -160,7 +146,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         result.rtl = new RTL(pc, stmts);
 
-                        result.rtl->appendStmt(br);
+                        result.rtl->append(br);
                     }
                     break;
 
@@ -838,7 +824,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
                             if (isRet) {
                                 result.rtl = new RTL(pc, stmts);
 
-                                result.rtl->appendStmt(new ReturnStatement);
+                                result.rtl->append(new ReturnStatement);
                             }
                         }
                         else {
@@ -875,20 +861,19 @@ MATCH_finished_a:
 }
 
 
-/***************************************************************************/ /**
+/**
  * These are machine specific functions used to decode instruction operands into Exp*s.
- ******************************************************************************/
+ */
 
 /**********************************
 * These are the fetch routines.
 **********************************/
 
-/***************************************************************************/ /**
- * \fn        ST20Decoder::getByte
- * \brief        Returns the word starting at the given address.
- * \param        lc - address at which to decode the double
- * \returns             the decoded double
- ******************************************************************************/
+/**
+ * Returns the word starting at the given address.
+ * \param lc - address at which to decode the Byte
+ * \returns the decoded Byte
+ */
 Byte ST20Decoder::getByte(intptr_t lc)
 /* getByte - returns next byte from image pointed to by lc.     */
 {
@@ -896,12 +881,11 @@ Byte ST20Decoder::getByte(intptr_t lc)
 }
 
 
-/***************************************************************************/ /**
- * \fn        ST20Decoder::getWord
- * \brief        Returns the word starting at the given address.
- * \param        lc - address at which to decode the double
- * \returns             the decoded double
- ******************************************************************************/
+/**
+ * Returns the word starting at the given address.
+ * \param    lc - address at which to decode the Word
+ * \returns  the decoded Word
+ */
 SWord ST20Decoder::getWord(intptr_t lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
 {
@@ -909,12 +893,11 @@ SWord ST20Decoder::getWord(intptr_t lc)
 }
 
 
-/***************************************************************************/ /**
- * \fn        ST20Decoder::getDword
- * \brief        Returns the double starting at the given address.
+/**
+ * Returns the double starting at the given address.
  * \param        lc - address at which to decode the double
  * \returns             the decoded double
- ******************************************************************************/
+ */
 DWord ST20Decoder::getDword(intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
@@ -922,11 +905,6 @@ DWord ST20Decoder::getDword(intptr_t lc)
 }
 
 
-/***************************************************************************/ /**
- * \fn       ST20Decoder::ST20Decoder
- * \brief       Constructor. The code won't work without this (not sure why the default constructor won't do...)
- *
- ******************************************************************************/
 ST20Decoder::ST20Decoder(Prog *prog_)
     : NJMCDecoder(prog_)
 {

@@ -10,16 +10,6 @@
 #include "ppcdecoder.h"
 
 
-/***************************************************************************/ /**
- * \file       ppcdecoder.cpp
- * \brief   Implementation of the PPC specific parts of the PPCDecoder class.
- ******************************************************************************/
-
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
-
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
@@ -75,29 +65,14 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
 #define PPC_COND_JUMP(name, size, relocd, cond, BIcr) \
     result.rtl = new RTL(pc, stmts);                  \
     BranchStatement *jump = new BranchStatement;      \
-    result.rtl->appendStmt(jump);                     \
+    result.rtl->append(jump);                         \
     result.numBytes = size;                           \
     jump->setDest(Address((relocd).value() - delta)); \
     jump->setCondType(cond);                          \
     SHOW_ASM(name << " " << BIcr << ", 0x" << relocd - delta)
 
-/***************************************************************************/ /**
- * \fn       PPCDecoder::decodeInstruction
- * \brief       Attempt to decode the high level instruction at a given address.
- *
- * Will return the corresponding HL type (e.g. CallStatement,
- * GotoStatement etc). If no high level instruction exists at the
- * given address, then simply return the RTL for the low level
- * instruction at this address. There is an option to also
- * include the low level statements for a HL instruction.
- *
- * \param  pc - the native address of the pc
- * \param  delta - the difference between the above address and the
- *                 host address of the pc (i.e. the address that the pc is at
- *                 in the loaded object file)
- * \returns            a DecodeResult structure containing all the information
- *                     gathered during decoding
- ******************************************************************************/
+
+
 bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
     HostAddress hostPC = HostAddress(delta) + pc;
@@ -744,7 +719,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 result.rtl = new RTL(pc, stmts);
 
-                                result.rtl->appendStmt(newCall);
+                                result.rtl->append(newCall);
                             }
 
                             Q_UNUSED(BIcr);
@@ -796,7 +771,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 // #line 275 "frontend/machine/ppc/decoder.m"
 
-                                PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
+                                PPC_COND_JUMP(name, 4, reladdr, BranchType::JSGE, BIcr);
                             }
 
                             break;
@@ -812,7 +787,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 // #line 269 "frontend/machine/ppc/decoder.m"
 
-                                PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSL, BIcr);
+                                PPC_COND_JUMP(name, 4, reladdr, BranchType::JSL, BIcr);
                             }
 
                             break;
@@ -862,7 +837,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 // #line 271 "frontend/machine/ppc/decoder.m"
 
-                                PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSLE, BIcr);
+                                PPC_COND_JUMP(name, 4, reladdr, BranchType::JSLE, BIcr);
                             }
 
                             break;
@@ -878,11 +853,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 // #line 278 "frontend/machine/ppc/decoder.m"
 
-                                PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSG, BIcr);
+                                PPC_COND_JUMP(name, 4, reladdr, BranchType::JSG, BIcr);
 
                                 //    | bnl(BIcr, reladdr) [name] =>                                // bnl same as bge
 
-                                //        PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
+                                //        PPC_COND_JUMP(name, 4, reladdr, BranchType::JSGE, BIcr);
                             }
 
                             break;
@@ -933,11 +908,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 // #line 282 "frontend/machine/ppc/decoder.m"
 
-                                PPC_COND_JUMP(name, 4, reladdr, BRANCH_JNE, BIcr);
+                                PPC_COND_JUMP(name, 4, reladdr, BranchType::JNE, BIcr);
 
                                 //    | bng(BIcr, reladdr) [name] =>                                // bng same as blt
 
-                                //        PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSLE, BIcr);
+                                //        PPC_COND_JUMP(name, 4, reladdr, BranchType::JSLE, BIcr);
                             }
 
                             break;
@@ -953,7 +928,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 // #line 273 "frontend/machine/ppc/decoder.m"
 
-                                PPC_COND_JUMP(name, 4, reladdr, BRANCH_JE, BIcr);
+                                PPC_COND_JUMP(name, 4, reladdr, BranchType::JE, BIcr);
                             }
 
                             break;
@@ -1008,11 +983,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 //    | bun(BIcr, reladdr) [name] =>
 
-                                //        PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
+                                //        PPC_COND_JUMP(name, 4, reladdr, (BranchType)0, BIcr);
 
                                 //    | bnu(BIcr, reladdr) [name] =>
 
-                                //        PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
+                                //        PPC_COND_JUMP(name, 4, reladdr, (BranchType)0, BIcr);
                             }
 
                             break;
@@ -1077,9 +1052,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                         result.rtl = new RTL(pc, stmts);
 
-                        result.rtl->appendStmt(newCall);
+                        result.rtl->append(newCall);
 
-                        Function *destProc = m_prog->createProc(Address(reladdr.value() - delta));
+                        Function *destProc = m_prog->createFunction(Address(reladdr.value() - delta));
 
                         if (destProc == (Function *)-1) {
                             destProc = nullptr;
@@ -1314,9 +1289,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 321 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, BRANCH_JSL, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::JSL, BIcr);
 
-                                        result.rtl->appendStmt(new ReturnStatement);
+                                        result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
@@ -1330,9 +1305,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 309 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, BRANCH_JSGE, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::JSGE, BIcr);
 
-                                        result.rtl->appendStmt(new ReturnStatement);
+                                        result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
@@ -1381,9 +1356,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 313 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, BRANCH_JSG, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::JSG, BIcr);
 
-                                        result.rtl->appendStmt(new ReturnStatement);
+                                        result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
@@ -1397,9 +1372,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 325 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, BRANCH_JSLE, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::JSLE, BIcr);
 
-                                        result.rtl->appendStmt(new ReturnStatement);
+                                        result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
@@ -1448,9 +1423,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 329 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, BRANCH_JE, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::JE, BIcr);
 
-                                        result.rtl->appendStmt(new ReturnStatement);
+                                        result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
@@ -1464,9 +1439,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 317 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, BRANCH_JNE, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::JNE, BIcr);
 
-                                        result.rtl->appendStmt(new ReturnStatement);
+                                        result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
@@ -1517,7 +1492,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         PPC_COND_JUMP(name, 4, hostPC + 4, (BranchType)0, BIcr);
 
-                                        result.rtl->appendStmt(new ReturnStatement);
+                                        result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
@@ -1533,7 +1508,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         PPC_COND_JUMP(name, 4, hostPC + 4, (BranchType)0, BIcr);
 
-                                        result.rtl->appendStmt(new ReturnStatement);
+                                        result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
@@ -7934,7 +7909,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                     result.rtl = new RTL(pc, stmts);
 
-                    result.rtl->appendStmt(new ReturnStatement);
+                    result.rtl->append(new ReturnStatement);
 
                     unused(b0);
 
@@ -9005,7 +8980,7 @@ MATCH_label_a2:
 
             result.rtl = new RTL(pc, stmts);
 
-            result.rtl->appendStmt(new ReturnStatement);
+            result.rtl->append(new ReturnStatement);
 
             SHOW_ASM(name << "\n");
 
@@ -9354,12 +9329,11 @@ bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
 * These are the fetch routines.
 **********************************/
 
-/***************************************************************************/ /**
- * \fn        PPCDecoder::getDword
- * \brief        Returns the double starting at the given address.
+/**
+ * Returns the double starting at the given address.
  * \param        lc - address at which to decode the double
  * \returns             the decoded double
- ******************************************************************************/
+ */
 DWord PPCDecoder::getDword(HostAddress lc)
 {
     Byte *p = (Byte *)lc.value();
@@ -9368,11 +9342,6 @@ DWord PPCDecoder::getDword(HostAddress lc)
 }
 
 
-/***************************************************************************/ /**
- * \fn       PPCDecoder::PPCDecoder
- * \brief
- *
- ******************************************************************************/
 PPCDecoder::PPCDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {

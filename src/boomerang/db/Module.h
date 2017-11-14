@@ -10,14 +10,6 @@
 #pragma once
 
 
-/***************************************************************************/ /**
- * \file       module.h
- *    Definition of the classes that describe a Module, a grouping
- * of functions irrespective of relationship.  For example, the
- * Object Oriented Programming concept of a Class is a Module.
- * Modules can contain other Modules to form a tree.
- ******************************************************************************/
-
 #include "boomerang/type/type/CompoundType.h"
 
 #include <list>
@@ -35,6 +27,11 @@ class Prog;
 class IFrontEnd;
 
 
+/**
+ * A modules is a grouping of functions irrespective of relationship.
+ * For example, the Object Oriented Programming concept of a Class is a Module.
+ * Modules can contain other Modules to form a tree.
+ */
 class Module : public QObject
 {
     Q_OBJECT
@@ -46,9 +43,6 @@ public:
 
     typedef FunctionList::iterator          iterator;
     typedef FunctionList::const_iterator    const_iterator;
-
-public slots:
-    void onLibrarySignaturesChanged();
 
 signals:
     void newFunction(Function *);
@@ -105,34 +99,41 @@ public:
     bool empty() const { return m_functionList.empty(); }
 
 
-    /***************************************************************************/ /**
-     * \brief    Creates a new Function object, adds it to the list of procs in this Module,
+    /**
+     * Creates a new Function object, adds it to the list of procs in this Module,
      * and adds the address to the list
-     * \param name - Name for the proc
-     * \param uNative - Native address of the entry point of the proc
-     * \param bLib - If true, this will be a libProc; else a UserProc
-     * \returns        A pointer to the new Function object
-     ******************************************************************************/
-    Function *createFunction(const QString& name, Address uNative, bool bLib = false);
-    Function *getFunction(const QString& name) const;
-    Function *getFunction(Address loc) const;
+     * \param name            Name of the new function
+     * \param entryAddr       Address of the entry point of the function
+     * \param libraryFunction If true, this will be a libProc; else a UserProc
+     * \returns A pointer to the new Function object
+     */
+    Function *createFunction(const QString& name, Address entryAddr, bool libraryFunction = false);
 
-    /// Get a library signature for a given name (used when creating a new library proc).
+    /// \returns the function with name \p name
+    Function *getFunction(const QString& name) const;
+
+    /// \returns the function with entry address \p entryAddr
+    Function *getFunction(Address entryAddr) const;
+
+    /// \returns the signature of the function with name \p name
     std::shared_ptr<Signature> getLibSignature(const QString& name);
 
+    void updateLibrarySignatures();
+
 private:
-    void addWin32DbgInfo(Function *pProc);
+    /// Retrieve Win32 PDB debug information for the function \p function
+    void addWin32DbgInfo(Function *function);
 
 private:
     FunctionList m_functionList; ///< The Functions in the module
-    IFrontEnd *m_currentFrontend;
     FunctionMap m_labelsToProcs;
+    IFrontEnd *m_currentFrontend;
 
 protected:
     QString m_name;
+    Module *m_parent = nullptr;
     std::vector<Module *> m_children;
-    Prog *m_prog       = nullptr;
-    Module *m_upstream = nullptr;
+    Prog *m_prog           = nullptr;
     QFile m_out;
     QTextStream m_strm;
     QString m_stream_ext;

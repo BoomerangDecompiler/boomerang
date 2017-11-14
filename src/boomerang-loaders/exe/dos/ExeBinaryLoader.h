@@ -10,18 +10,6 @@
 #pragma once
 
 
-/**
- * \file ExeBinaryLoader.h
- * \brief This file contains the definition of the class ExeBinaryLoader.
- * This file contains the definition of the ExeBinaryLoader class.
- *
- * At present, there is no support for a symbol table. Exe files do
- * not use dynamic linking, but it is possible that some files may
- * have debug symbols (in Microsoft Codeview or Borland formats),
- * and these may be implemented in the future. The debug info may
- * even be exposed as another pseudo section.
- */
-
 #include "boomerang/loader/IFileLoader.h"
 
 class QFile;
@@ -69,6 +57,16 @@ struct ExeHeader          /*      EXE file header          */
 #pragma pack(pop)
 
 
+/**
+ * Contains the definition of the class ExeBinaryLoader,
+ * a loader for DOS executable files.
+ *
+ * At present, there is no support for a symbol table. Exe files do
+ * not use dynamic linking, but it is possible that some files may
+ * have debug symbols (in Microsoft Codeview or Borland formats),
+ * and these may be implemented in the future. The debug info may
+ * even be exposed as another pseudo section.
+ */
 class ExeBinaryLoader : public IFileLoader
 {
 public:

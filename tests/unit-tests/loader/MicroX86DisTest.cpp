@@ -10,25 +10,6 @@
 #include "MicroX86DisTest.h"
 
 
-/**
- * \file MicroX86DisTest.cpp
- * Provides the implementation for the LoaderTest class, which
- * tests the BinaryFile and derived classes
- */
-
-/*
- * $Revision$
- *
- * 05 Apr 02 - Mike: Created
- * 14 Jun 02 - Mike: Added windows test for calc.exe
- * 20 Jun 02 - Mike: Added test for microX86Dis
- * 08 Jul 02 - Mike: Test more exe file formats
- * 30 Sep 02 - Trent: split microDis tests
- * 30 Sep 02 - Trent: remove dependancy between microDis test1 and Elf loader
- * 05 Aug 05 - Mike: added borland test; check address of main (not just != Address::INVALID)
- */
-
-
 #include <QDebug>
 
 #include "boomerang/core/Boomerang.h"

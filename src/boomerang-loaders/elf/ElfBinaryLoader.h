@@ -10,10 +10,6 @@
 #pragma once
 
 
-/** \file ElfBinaryLoader.h
- * \brief This file contains the definition of the class ElfBinaryLoader.
- */
-
 #include "boomerang/loader/IFileLoader.h"
 
 struct Elf32_Ehdr;
@@ -114,21 +110,15 @@ private:
 
     // Internal elf reading methods // TODO replace by Util::swapEndian
 
-    /***************************************************************************/ /**
-     * \brief    Read a 2 or 4 byte quantity from host address (C pointer) p
-     * \note        Takes care of reading the correct endianness, set early on into m_elfEndianness
-     * \param    ps or pi: host pointer to the data
-     * \returns        An integer representing the data
-     ******************************************************************************/
-    SWord elfRead2(const SWord *ps) const; // Read a short with endianness care
-    DWord elfRead4(const DWord *pi) const; // Read an int with endianness care
-    void elfWrite4(DWord *pi, DWord val);  // Write an int with endianness care
+    SWord elfRead2(const SWord *ps) const; // Read a 16 bit value, respecting source endianness
+    DWord elfRead4(const DWord *pi) const; // Read a 32 bit value, respecting source endianness
+    void elfWrite4(DWord *pi, DWord val);  // Write an 32 bit value, respecting destination endianness
 
-    /***************************************************************************/ /**
-     * \brief      Mark all imported symbols as such.
-     * This function relies on the fact that the symbols are sorted by address, and that Elf PLT
-     * entries have successive addresses beginning soon after m_PltMin
-     ******************************************************************************/
+    /**
+     * Mark all imported symbols as such.
+     * This function relies on the fact that the symbols are sorted by address,
+     * and that Elf PLT entries have successive addresses beginning soon after m_PltMin
+     */
     void markImports();
 
     void processSymbol(Translated_ElfSym& sym, int e_type, int i);

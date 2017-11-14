@@ -10,27 +10,6 @@
 #include "mipsdecoder.h"
 
 
-/****************************************************************
- *
- * FILENAME
- *
- *   \file decoder.m
- *
- * PURPOSE
- *
- * Decoding MIPS
- *
- * AUTHOR
- *
- *   \author Markus Gothe, nietzsche@lysator.liu.se
- *
- * REVISION
- *
- *   $Id$
- *
- *****************************************************************/
-
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
@@ -41,8 +20,8 @@
 #include <cassert>
 
 
-MIPSDecoder::MIPSDecoder(Prog *_prog)
-    : NJMCDecoder(_prog)
+MIPSDecoder::MIPSDecoder(Prog *prog)
+    : NJMCDecoder(prog)
 {
     m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/mips.ssl"));
 }

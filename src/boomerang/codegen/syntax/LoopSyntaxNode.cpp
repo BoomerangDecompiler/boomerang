@@ -33,7 +33,7 @@ LoopSyntaxNode::~LoopSyntaxNode()
 
 SyntaxNode *LoopSyntaxNode::getOutEdge(SyntaxNode *root, size_t)
 {
-    return hasCond() ? root->findNodeFor(m_bb->getOutEdge(1)) : nullptr;
+    return hasCond() ? root->findNodeFor(m_bb->getSuccessor(1)) : nullptr;
 }
 
 

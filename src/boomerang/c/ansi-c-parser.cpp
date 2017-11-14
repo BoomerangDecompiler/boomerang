@@ -749,10 +749,10 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
             yyval.param = std::make_shared<Parameter>(yyvsp[-1].type_ident->ty, yyvsp[-1].type_ident->nam);
 
             if (yyvsp[0].bound) {
-                switch (yyvsp[0].bound->kind)
+                switch (yyvsp[0].bound->m_kind)
                 {
                 case 0 :
-                    yyval.param->setBoundMax(yyvsp[0].bound->nam);
+                    yyval.param->setBoundMax(yyvsp[0].bound->m_name);
                 }
             }
 
@@ -937,7 +937,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 
     case 40 : {
             Symbol *sym = new Symbol(Address(yyvsp[-2].ival));
-            sym->nam = yyvsp[-1].type_ident->nam;
+            sym->name = yyvsp[-1].type_ident->nam;
             sym->ty  = yyvsp[-1].type_ident->ty;
             symbols.push_back(sym);
 

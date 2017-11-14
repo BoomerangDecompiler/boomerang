@@ -12,88 +12,83 @@
 
 #include "boomerang/db/statements/Assignment.h"
 
+
 /**
  * Assign an ordinary assignment with left and right sides.
  */
 class Assign : public Assignment
 {
 public:
-    /// Default constructor, for XML parser
     Assign();
-
-    /// Constructor, subexpressions
     Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
-
-    /// Constructor, type and subexpressions
     Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
-
     Assign(Assign& o);
-
     virtual ~Assign() override = default;
 
-    /// Clone
+    /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 
-    /// Get how to replace this statement in a use
+    /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return m_rhs; }
+
     SharedExp& getRightRef() { return m_rhs; }
     const SharedExp& getRightRef() const { return m_rhs; }
 
     /// set the rhs to something new
     void setRight(SharedExp e) { m_rhs = e; }
 
-    /// Accept a visitor to this Statement
-    /// Visiting from class StmtExpVisitor
-    /// Visit all the various expressions in a statement
+    /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) override;
+
+    /// \copydoc Statement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
 
-    /// Visiting from class StmtModifier
-    /// Modify all the various expressions in a statement
-    virtual bool accept(StmtModifier *visitor) override;
-    virtual bool accept(StmtPartModifier *visitor) override;
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtModifier *modifier) override;
 
-    virtual void printCompact(QTextStream& os, bool html = false) const override; // Without statement number
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtPartModifier *modifier) override;
+
+    /// \copydoc Assignment::printCompact
+    virtual void printCompact(QTextStream& os, bool html = false) const override;
 
     /// Guard
     void setGuard(SharedExp g) { m_guard = g; }
     SharedExp getGuard() const { return m_guard; }
-    bool isGuarded() const { return m_guard != nullptr; }
+    inline bool isGuarded() const { return m_guard != nullptr; }
 
+    /// \copydoc Assignment::usesExp
     virtual bool usesExp(const Exp& e) const override;
 
+    /// \copydoc Assignment::isDefinition
     virtual bool isDefinition() const override { return true; }
 
-    /// general search
+    /// \copydoc Assignment::search
     virtual bool search(const Exp& search, SharedExp& result) const override;
+
+    /// \copydoc Assignment::searchAll
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
-    /// general search and replace
+    /// \copydoc Assignment::searchAndReplace
     virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
     /// Get memory depth
-    int getMemDepth() const;
+    virtual int getMemDepth() const;
 
-    /// Generate code
+    /// \copydoc Assignment::generateCode
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
-    /// simpify internal expressions
+    /// \copydoc Assignment::simplify
     virtual void simplify() override;
 
-    /// simplify address expressions
+    /// \copydoc Assignment::simplifyAddr
     virtual void simplifyAddr() override;
 
-    /// fixSuccessor (succ(r2) -> r3)
+    /// \copydoc Statement::fixSuccessor
     virtual void fixSuccessor() override;
 
-    /// generate Constraints
+    /// \copydoc Assignment::genConstraints
     virtual void genConstraints(LocationSet& cons) override;
-
-    /// Data flow based type analysis
-    void dfaTypeAnalysis(bool& ch) override;
-
-    /// FIXME: I suspect that this was only used by adhoc TA, and can be deleted
-    bool match(const char *pattern, std::map<QString, SharedExp>& bindings);
 
 private:
     SharedExp m_rhs;

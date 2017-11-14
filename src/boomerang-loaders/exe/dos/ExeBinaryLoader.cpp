@@ -10,15 +10,6 @@
 #include "ExeBinaryLoader.h"
 
 
-/**
- * \file ExeBinaryLoader.cpp
- * Desc: This file contains the implementation of the class ExeBinaryLoader.
- *       See ExeBinaryLoader.h and BinaryLoader.h for details
- *       MVE 08/10/97
- * 21 May 02 - Mike: Slight mod for gcc 3.1
- */
-
-
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/db/IBinaryImage.h"

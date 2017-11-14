@@ -19,13 +19,13 @@
 // A helper class for comparing Exp*'s sensibly
 bool lessExpStar::operator()(const SharedConstExp& x, const SharedConstExp& y) const
 {
-    return(*x < *y);   // Compare the actual Exps
+    return (*x < *y);   // Compare the actual Exps
 }
 
 
 bool lessTI::operator()(const SharedExp& x, const SharedExp& y) const
 {
-    return(*x << *y);   // Compare the actual Exps
+    return (*x << *y);   // Compare the actual Exps
 }
 
 
@@ -43,7 +43,7 @@ bool lessAssign::operator()(const Assign *x, const Assign *y) const
 }
 
 
-void child(const SharedExp& e, int ind)
+void printChild(const SharedExp& e, int ind)
 {
     if (e == nullptr) {
         LOG_MSG("%1<nullptr>", QString(ind + 4, ' '));

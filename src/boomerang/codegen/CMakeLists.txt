@@ -8,17 +8,12 @@
 
 
 list(APPEND boomerang-codegen-sources
-    codegen/CCodeGenerator.cpp
-    codegen/CCodeGenerator.h
+    codegen/CCodeGenerator
     codegen/ICodeGenerator.h
-    codegen/syntax/SyntaxNode.h
-    codegen/syntax/SyntaxNode.cpp
-    codegen/syntax/BlockSyntaxNode.h
-    codegen/syntax/BlockSyntaxNode.cpp
-    codegen/syntax/IfThenSyntaxNode.h
-    codegen/syntax/IfThenSyntaxNode.cpp
-    codegen/syntax/LoopSyntaxNode.h
-    codegen/syntax/LoopSyntaxNode.cpp
+    codegen/syntax/SyntaxNode
+    codegen/syntax/BlockSyntaxNode
+    codegen/syntax/IfThenSyntaxNode
+    codegen/syntax/LoopSyntaxNode
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-codegen-sources}" PARENT_SCOPE)

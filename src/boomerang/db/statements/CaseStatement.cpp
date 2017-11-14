@@ -10,33 +10,37 @@
 #include "CaseStatement.h"
 
 
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
 
 
 CaseStatement::CaseStatement()
-    : pSwitchInfo(nullptr)
+    : m_switchInfo(nullptr)
 {
-    m_kind = STMT_CASE;
+    m_kind = StmtType::Case;
 }
 
 
 CaseStatement::~CaseStatement()
 {
-    if (pSwitchInfo) {
+    if (m_switchInfo) {
         // delete pSwitchInfo;
     }
 }
 
 
-SWITCH_INFO *CaseStatement::getSwitchInfo()
+SwitchInfo *CaseStatement::getSwitchInfo()
 {
-    return pSwitchInfo;
+    return m_switchInfo;
 }
 
 
-void CaseStatement::setSwitchInfo(SWITCH_INFO *psi)
+void CaseStatement::setSwitchInfo(SwitchInfo *psi)
 {
-    pSwitchInfo = psi;
+    m_switchInfo = psi;
 }
 
 
@@ -45,8 +49,8 @@ bool CaseStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool
     bool ch  = GotoStatement::searchAndReplace(pattern, replace, cc);
     bool ch2 = false;
 
-    if (pSwitchInfo && pSwitchInfo->pSwitchVar) {
-        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(pattern, replace, ch2);
+    if (m_switchInfo && m_switchInfo->pSwitchVar) {
+        m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->searchReplaceAll(pattern, replace, ch2);
     }
 
     return ch | ch2;
@@ -56,7 +60,7 @@ bool CaseStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool
 bool CaseStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
     return GotoStatement::searchAll(pattern, result) ||
-           (pSwitchInfo && pSwitchInfo->pSwitchVar && pSwitchInfo->pSwitchVar->searchAll(pattern, result));
+           (m_switchInfo && m_switchInfo->pSwitchVar && m_switchInfo->pSwitchVar->searchAll(pattern, result));
 }
 
 
@@ -69,7 +73,7 @@ void CaseStatement::print(QTextStream& os, bool html) const
         os << "<a name=\"stmt" << m_number << "\">";
     }
 
-    if (pSwitchInfo == nullptr) {
+    if (m_switchInfo == nullptr) {
         os << "CASE [";
 
         if (m_dest == nullptr) {
@@ -82,7 +86,7 @@ void CaseStatement::print(QTextStream& os, bool html) const
         os << "]";
     }
     else {
-        os << "SWITCH(" << pSwitchInfo->pSwitchVar << ")\n";
+        os << "SWITCH(" << m_switchInfo->pSwitchVar << ")\n";
     }
 
     if (html) {
@@ -98,10 +102,10 @@ Statement *CaseStatement::clone() const
     ret->m_dest       = m_dest ? m_dest->clone() : nullptr;
     ret->m_isComputed = m_isComputed;
 
-    if (pSwitchInfo) {
-        ret->pSwitchInfo             = new SWITCH_INFO;
-        *ret->pSwitchInfo            = *pSwitchInfo;
-        ret->pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->clone();
+    if (m_switchInfo) {
+        ret->m_switchInfo             = new SwitchInfo;
+        *ret->m_switchInfo            = *m_switchInfo;
+        ret->m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->clone();
     }
 
     // Statement members
@@ -132,8 +136,8 @@ bool CaseStatement::usesExp(const Exp& e) const
     }
 
     // After a switch statement is recognised, pDest is null, and pSwitchInfo->pSwitchVar takes over
-    if (pSwitchInfo->pSwitchVar) {
-        return *pSwitchInfo->pSwitchVar == e;
+    if (m_switchInfo->pSwitchVar) {
+        return *m_switchInfo->pSwitchVar == e;
     }
 
     return false;
@@ -145,18 +149,18 @@ void CaseStatement::simplify()
     if (m_dest) {
         m_dest = m_dest->simplify();
     }
-    else if (pSwitchInfo && pSwitchInfo->pSwitchVar) {
-        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->simplify();
+    else if (m_switchInfo && m_switchInfo->pSwitchVar) {
+        m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->simplify();
     }
 }
 
 
 bool CaseStatement::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -164,8 +168,8 @@ bool CaseStatement::accept(StmtExpVisitor *v)
         ret = m_dest->accept(v->ev);
     }
 
-    if (ret && pSwitchInfo && pSwitchInfo->pSwitchVar) {
-        ret = pSwitchInfo->pSwitchVar->accept(v->ev);
+    if (ret && m_switchInfo && m_switchInfo->pSwitchVar) {
+        ret = m_switchInfo->pSwitchVar->accept(v->ev);
     }
 
     return ret;
@@ -174,16 +178,17 @@ bool CaseStatement::accept(StmtExpVisitor *v)
 
 bool CaseStatement::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
+    if (v->m_mod) {
+        if (m_dest && visitChildren) {
+            m_dest = m_dest->accept(v->m_mod);
+        }
 
-    if (m_dest && recur) {
-        m_dest = m_dest->accept(v->m_mod);
-    }
-
-    if (pSwitchInfo && pSwitchInfo->pSwitchVar && recur) {
-        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->accept(v->m_mod);
+        if (m_switchInfo && m_switchInfo->pSwitchVar && visitChildren) {
+            m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->accept(v->m_mod);
+        }
     }
 
     return true;
@@ -192,16 +197,15 @@ bool CaseStatement::accept(StmtModifier *v)
 
 bool CaseStatement::accept(StmtPartModifier *v)
 {
-    bool recur;
+    bool visitChildren;
+    v->visit(this, visitChildren);
 
-    v->visit(this, recur);
-
-    if (m_dest && recur) {
+    if (m_dest && visitChildren) {
         m_dest = m_dest->accept(v->mod);
     }
 
-    if (pSwitchInfo && pSwitchInfo->pSwitchVar && recur) {
-        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->accept(v->mod);
+    if (m_switchInfo && m_switchInfo->pSwitchVar && visitChildren) {
+        m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->accept(v->mod);
     }
 
     return true;

@@ -10,30 +10,25 @@
 #include "RtlTest.h"
 
 
-/**
- * \file RtlTest.cpp
- * Provides the implementation for the RtlTest class, which
- * tests the RTL and derived classes
- */
-
 #include "boomerang/core/Boomerang.h"
 
-#include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/statements/GotoStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/Visitor.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtConscriptSetter.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/frontend/sparc/sparcfrontend.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/util/Log.h"
 
 #include <sstream>
 
@@ -53,7 +48,7 @@ void RtlTest::testAppend()
     Assign *a = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
     RTL    r;
 
-    r.appendStmt(a);
+    r.append(a);
     QString     res;
     QTextStream ost(&res);
     r.print(ost);

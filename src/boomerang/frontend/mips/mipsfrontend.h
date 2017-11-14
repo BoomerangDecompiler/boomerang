@@ -10,30 +10,6 @@
 #pragma once
 
 
-/****************************************************************
- *
- * FILENAME
- *
- *   \file mipsfrontend.h
- *
- * PURPOSE
- *
- *   Skeleton for MIPS disassembly.
- *
- * AUTHOR
- *
- *   \author Markus Gothe, nietzsche@lysator.liu.se
- *
- * REVISION
- *
- *   $Id$
- *
- *****************************************************************/
-
-// Class MIPSFrontEnd: derived from FrontEnd, with source machine specific
-// behaviour
-
-
 #include "boomerang/frontend/Frontend.h"
 
 class IFrontEnd;

@@ -10,10 +10,8 @@
 #pragma once
 
 
-// Class ST20FrontEnd: derived from FrontEnd, with source machine specific
-// behaviour
-
 #include "boomerang/frontend/Frontend.h"
+
 
 class IFrontEnd;
 class ST20Decoder;
@@ -22,6 +20,12 @@ class CallStatement;
 struct DecodeResult;
 
 
+/**
+ * Contains routines to manage the decoding of st20
+ * instructions and the instantiation to RTLs, removing st20
+ * dependent features such as delay slots in the process. These
+ * functions replace Frontend.cc for decoding sparc instructions.
+ */
 class ST20FrontEnd : public IFrontEnd
 {
 public:

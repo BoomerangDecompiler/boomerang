@@ -21,15 +21,14 @@
 
 class IBinaryImage;
 
-/***************************************************************************/ /**
+
+/**
  * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
- ******************************************************************************/
+ */
 class NJMCDecoder : public IDecoder
 {
 public:
-    /***************************************************************************/ /**
-     * \param       prog Pointer to the Prog object
-     ******************************************************************************/
+    /// \param       prog Pointer to the Prog object
     NJMCDecoder(Prog *prog);
 
     /// \copydoc IDecoder::~IDecoder
@@ -37,27 +36,27 @@ public:
 
     RTLInstDict& getRTLDict() { return m_rtlDict; }
 
-    /***************************************************************************/ /**
-     * \brief   Process an indirect jump instruction
+    /**
+     * Process an indirect jump instruction.
      * \param   name name of instruction (for debugging)
      * \param   size size of instruction in bytes
      * \param   dest destination Exp*
      * \param   pc native pc
      * \param   stmts list of statements (?)
      * \param   result ref to decoder result object
-     ******************************************************************************/
+     */
     void processComputedJump(const char *name, int size, SharedExp dest, Address pc,
                              std::list<Statement *> *stmts, DecodeResult& result);
 
-    /***************************************************************************/ /**
-     * \brief   Process an indirect call instruction
+    /**
+     * Process an indirect call instruction.
      * \param   name name of instruction (for debugging)
      * \param   size size of instruction in bytes
      * \param   dest destination Exp*
      * \param   pc native pc
      * \param   stmts list of statements (?)
      * \param   result ref to decoder result object
-     ******************************************************************************/
+     */
     void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
                              std::list<Statement *> *stmts, DecodeResult& result);
 
@@ -72,68 +71,73 @@ public:
 
 protected:
 
-    /***************************************************************************/ /**
-     * \brief   Given an instruction name and a variable list of expressions representing the actual operands of
-     *              the instruction, use the RTL template dictionary to return the instantiated RTL representing the
-     *              semantics of the instruction. This method also displays a disassembly of the instruction if the
-     *              relevant compilation flag has been set.
+    /**
+     * Given an instruction name and a variable list of expressions
+     * representing the actual operands of the instruction,
+     * use the RTL template dictionary to return the instantiated RTL
+     * representing the semantics of the instruction.
+     * This method also displays a disassembly of the instruction if the
+     * relevant compilation flag has been set.
      *
      * \param   pc  native PC
      * \param   name - instruction name
      * \param   args Semantic String ptrs representing actual operands
      * \returns an instantiated list of Exps
-     ******************************************************************************/
+     */
     std::list<Statement *> *instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args = {});
 
-    /***************************************************************************/ /**
-     * \brief   Similarly to NJMCDecoder::instantiate, given a parameter name and a list of Exp*'s representing
-     * sub-parameters, return a fully substituted Exp for the whole expression
-     * \note    Caller must delete result
-     * \param   name - parameter name
-     *          ... - Exp* representing actual operands
+    /**
+     * Similarly to \ref NJMCDecoder::instantiate, given a parameter name
+     * and a list of Exp*'s representing sub-parameters, return
+     * a fully substituted Exp for the whole expression
+     *
+     * \param   name  parameter name
+     *          ...   Exp* representing actual operands
      * \returns an instantiated list of Exps
-     ******************************************************************************/
+     */
     SharedExp instantiateNamedParam(char *name, const std::initializer_list<SharedExp>& args);
 
-    /***************************************************************************/ /**
-     * \brief   In the event that it's necessary to synthesize the call of a named parameter generated with
-     *          instantiateNamedParam(), this substituteCallArgs() will substitute the arguments that follow into
-     *          the expression.
+    /**
+     * In the event that it's necessary to synthesize the call of a
+     * named parameter generated with \ref instantiateNamedParam, this
+     * \ref substituteCallArgs will substitute the arguments that follow into
+     * the expression.
      *
      * \note    Should only be used after instantiateNamedParam(name, ..);
      * \note    exp (the pointer) could be changed
      *
-     * \param   name - parameter name
-     * \param   exp - expression to instantiate into
+     * \param   name  parameter name
+     * \param   exp   expression to instantiate into
      * \param   args Exp* representing actual operands
-     ******************************************************************************/
+     */
     void substituteCallArgs(char *name, SharedExp *exp, const std::initializer_list<SharedExp>& args);
 
-    /***************************************************************************/ /**
-     * \brief   Process an unconditional jump instruction
-     *              Also check if the destination is a label (MVE: is this done?)
+    /**
+     * Process an unconditional jump instruction
+     * Also check if the destination is a label (MVE: is this done?)
+     *
      * \param   name name of instruction (for debugging)
      * \param   size size of instruction in bytes
      * \param   pc native pc
      * \param   stmts list of statements (?)
      * \param   result ref to decoder result object
-     ******************************************************************************/
+     */
     void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta, Address pc,
                                   std::list<Statement *> *stmts, DecodeResult& result);
 
 
-    /***************************************************************************/ /**
-     * \brief   Converts a numbered register to a suitable expression.
+    /**
+     * Converts a numbered register to a suitable expression.
      * \param   regNum - the register number, e.g. 0 for eax
      * \returns the Exp* for the register NUMBER (e.g. "int 36" for %f4)
-     ******************************************************************************/
+     */
     SharedExp dis_Reg(int regNum);
 
-    /***************************************************************************/ /**
-     * \brief        Converts a number to a Exp* expression.
+    /**
+     * Converts a number to a Exp* expression.
      * \param        num - a number
      * \returns      the Exp* representation of the given number
-     ******************************************************************************/
+     */
     SharedExp dis_Num(unsigned num);
 
 protected:
@@ -152,9 +156,9 @@ protected:
  */
 bool isFuncPrologue(Address hostPC);
 
-/***************************************************************************/ /**
+/**
  * These are the macros that each of the .m files depend upon.
- ******************************************************************************/
+ */
 
 #define SHOW_ASM(output)               \
     if (DEBUG_DECODER) {               \
@@ -176,7 +180,7 @@ bool isFuncPrologue(Address hostPC);
 #define COND_JUMP(name, size, relocd, cond)                                    \
     result.rtl = new RTL(pc, stmts);                                           \
     BranchStatement *jump = new BranchStatement;                               \
-    result.rtl->appendStmt(jump);                                              \
+    result.rtl->append(jump);                                                  \
     result.numBytes = size;                                                    \
     jump->setDest(Address(relocd.value() - Util::signExtend<int64_t>(delta))); \
     jump->setCondType(cond);                                                   \
@@ -188,7 +192,7 @@ bool isFuncPrologue(Address hostPC);
     bs->setLeftFromList(stmts);          \
     stmts->clear();                      \
     result.rtl = new RTL(pc, stmts);     \
-    result.rtl->appendStmt(bs);          \
+    result.rtl->append(bs);              \
     bs->setCondType(cond);               \
     result.numBytes = 3;                 \
     SHOW_ASM(name << " " << dest)

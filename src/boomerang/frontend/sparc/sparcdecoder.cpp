@@ -10,16 +10,6 @@
 #include "sparcdecoder.h"
 
 
-/***************************************************************************/ /**
- * \file       sparcdecoder.cpp
- * \brief   Implementation of the SPARC specific parts of the
- *               SparcDecoder class.
- ******************************************************************************/
-
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
@@ -72,7 +62,7 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
     RTL             *res = new RTL(pc, stmts);
     BranchStatement *br  = new BranchStatement();
 
-    res->appendStmt(br);
+    res->append(br);
 
     if (name[0] == 'F') {
         // fbranch is any of [ FBN FBNE FBLG FBUL FBL    FBUG FBG   FBU
@@ -85,19 +75,19 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
         switch (name[2])
         {
         case 'E': // FBE
-            br->setCondType(BRANCH_JE, true);
+            br->setCondType(BranchType::JE, true);
             break;
 
         case 'L':
 
             if (name[3] == 'G') { // FBLG
-                br->setCondType(BRANCH_JNE, true);
+                br->setCondType(BranchType::JNE, true);
             }
             else if (name[3] == 'E') { // FBLE
-                br->setCondType(BRANCH_JSLE, true);
+                br->setCondType(BranchType::JSLE, true);
             }
             else { // FBL
-                br->setCondType(BRANCH_JSL, true);
+                br->setCondType(BranchType::JSL, true);
             }
 
             break;
@@ -105,10 +95,10 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
         case 'G':
 
             if (name[3] == 'E') { // FBGE
-                br->setCondType(BRANCH_JSGE, true);
+                br->setCondType(BranchType::JSGE, true);
             }
             else { // FBG
-                br->setCondType(BRANCH_JSG, true);
+                br->setCondType(BranchType::JSG, true);
             }
 
             break;
@@ -116,7 +106,7 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
         case 'N':
 
             if (name[3] == 'E') { // FBNE
-                br->setCondType(BRANCH_JNE, true);
+                br->setCondType(BranchType::JNE, true);
             }
 
             // Else it's FBN!
@@ -137,21 +127,21 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
     switch (name[1])
     {
     case 'E':
-        br->setCondType(BRANCH_JE); // BE
+        br->setCondType(BranchType::JE); // BE
         break;
 
     case 'L':
 
         if (name[2] == 'E') {
             if (name[3] == 'U') {
-                br->setCondType(BRANCH_JULE); // BLEU
+                br->setCondType(BranchType::JULE); // BLEU
             }
             else {
-                br->setCondType(BRANCH_JSLE); // BLE
+                br->setCondType(BranchType::JSLE); // BLE
             }
         }
         else {
-            br->setCondType(BRANCH_JSL); // BL
+            br->setCondType(BranchType::JSL); // BL
         }
 
         break;
@@ -160,10 +150,10 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
 
         // BNE, BNEG (won't see BN)
         if (name[3] == 'G') {
-            br->setCondType(BRANCH_JMI); // BNEG
+            br->setCondType(BranchType::JMI); // BNEG
         }
         else {
-            br->setCondType(BRANCH_JNE); // BNE
+            br->setCondType(BranchType::JNE); // BNE
         }
 
         break;
@@ -172,10 +162,10 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
 
         // BCC, BCS
         if (name[2] == 'C') {
-            br->setCondType(BRANCH_JUGE); // BCC
+            br->setCondType(BranchType::JUGE); // BCC
         }
         else {
-            br->setCondType(BRANCH_JUL); // BCS
+            br->setCondType(BranchType::JUL); // BCS
         }
 
         break;
@@ -196,13 +186,13 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
 
         // BGE, BG, BGU
         if (name[2] == 'E') {
-            br->setCondType(BRANCH_JSGE); // BGE
+            br->setCondType(BranchType::JSGE); // BGE
         }
         else if (name[2] == 'U') {
-            br->setCondType(BRANCH_JUG); // BGU
+            br->setCondType(BranchType::JUG); // BGU
         }
         else {
-            br->setCondType(BRANCH_JSG); // BG
+            br->setCondType(BranchType::JSG); // BG
         }
 
         break;
@@ -210,7 +200,7 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
     case 'P':
 
         if (name[2] == 'O') {
-            br->setCondType(BRANCH_JPOS); // BPOS
+            br->setCondType(BranchType::JPOS); // BPOS
             break;
         }
 
@@ -431,7 +421,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         GotoStatement *jump = new GotoStatement;
                         result.type = SD;
                         result.rtl  = new RTL(pc, stmts);
-                        result.rtl->appendStmt(jump);
+                        result.rtl->append(jump);
                         jump->setDest(Address(tgt.value() - delta));
                         SHOW_ASM("BPA " << tgt - delta)
 
@@ -460,12 +450,12 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                             if (strcmp(name, "BPN") == 0) {
                                 jump = new GotoStatement;
                                 rtl  = new RTL(pc, stmts);
-                                rtl->appendStmt(jump);
+                                rtl->append(jump);
                             }
                             else if ((strcmp(name, "BPVS") == 0) || (strcmp(name, "BPVC") == 0)) {
                                 jump = new GotoStatement;
                                 rtl  = new RTL(pc, stmts);
-                                rtl->appendStmt(jump);
+                                rtl->append(jump);
                             }
                             else {
                                 rtl = createBranchRtl(pc, stmts, name);
@@ -618,7 +608,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
                     Address nativeDest = Address(addr.value() - delta);
                     newCall->setDest(nativeDest);
-                    Function *destProc = m_prog->createProc(nativeDest);
+                    Function *destProc = m_prog->createFunction(nativeDest);
 
                     if (destProc == (Function *)-1) {
                         destProc = nullptr;
@@ -626,7 +616,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
                     newCall->setDestProc(destProc);
                     result.rtl = new RTL(pc, stmts);
-                    result.rtl->appendStmt(newCall);
+                    result.rtl->append(newCall);
                     result.type = SD;
                     SHOW_ASM("call__ " << (nativeDest))
 
@@ -1389,7 +1379,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                      */
 
                                     result.rtl = new RTL(pc, stmts);
-                                    result.rtl->appendStmt(new ReturnStatement);
+                                    result.rtl->append(new ReturnStatement);
                                     result.type = DD;
                                     SHOW_ASM("retl_")
 
@@ -1415,7 +1405,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                      */
 
                                     result.rtl = new RTL(pc, stmts);
-                                    result.rtl->appendStmt(new ReturnStatement);
+                                    result.rtl->append(new ReturnStatement);
                                     result.type = DD;
                                     SHOW_ASM("ret_")
 
@@ -1490,7 +1480,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         // #line 620 "frontend/machine/sparc/decoder.m"
                         stmts      = instantiate(pc, name, { DIS_ADDR });
                         result.rtl = new RTL(pc, stmts);
-                        result.rtl->appendStmt(new ReturnStatement);
+                        result.rtl->append(new ReturnStatement);
                         result.type = DD;
                     }
 
@@ -1900,12 +1890,12 @@ MATCH_label_d0:
             if ((strcmp(name, "BPA,a") == 0) || (strcmp(name, "BPN,a") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else if ((strcmp(name, "BPVS,a") == 0) || (strcmp(name, "BPVC,a") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else {
                 rtl  = createBranchRtl(pc, stmts, name);
@@ -1969,12 +1959,12 @@ MATCH_label_d1:
             if ((strcmp(name, "BA") == 0) || (strcmp(name, "BN") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else if ((strcmp(name, "BVS") == 0) || (strcmp(name, "BVC") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else {
                 rtl  = createBranchRtl(pc, stmts, name);
@@ -2038,12 +2028,12 @@ MATCH_label_d2:
             if ((strcmp(name, "BA,a") == 0) || (strcmp(name, "BN,a") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else if ((strcmp(name, "BVS,a") == 0) || (strcmp(name, "BVC,a") == 0)) {
                 jump = new GotoStatement;
                 rtl  = new RTL(pc, stmts);
-                rtl->appendStmt(jump);
+                rtl->append(jump);
             }
             else {
                 rtl  = createBranchRtl(pc, stmts, name);
@@ -2130,7 +2120,7 @@ MATCH_label_d6:
 
             jump->setIsComputed();
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(jump);
+            result.rtl->append(jump);
             result.type = DD;
             jump->setDest(dis_Eaddr(addr));
             Q_UNUSED(rd);
@@ -2170,7 +2160,7 @@ MATCH_label_d7:
 
             newCall->setDest(dis_Eaddr(addr));
             result.rtl = new RTL(pc, stmts);
-            result.rtl->appendStmt(newCall);
+            result.rtl->append(newCall);
             result.type = DD;
             SHOW_ASM("call_ " << dis_Eaddr(addr))
 

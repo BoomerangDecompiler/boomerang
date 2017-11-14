@@ -10,13 +10,6 @@
 #include "pentiumfrontend.h"
 
 
-/***************************************************************************/ /**
- * \file       pentiumfrontend.cpp
- * \brief   This file contains routines to manage the decoding of pentium instructions and the instantiation to RTLs.
- *               These functions replace frontend.cpp for decoding pentium instructions.
- ******************************************************************************/
-
-
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
@@ -41,13 +34,14 @@
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/frontend/pentium/pentiumdecoder.h"
 
-
 #include <cassert>
 #include <cstring>
 #include <sstream>
 
+
 #define FSW    40 // Numeric registers
 #define AH     12
+
 
 bool PentiumFrontEnd::isStoreFsw(Statement *s)
 {
@@ -149,31 +143,31 @@ void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, 
 }
 
 
-bool PentiumFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+bool PentiumFrontEnd::processProc(Address addr, UserProc *function, QTextStream& os, bool frag /* = false */,
                                   bool spec /* = false */)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+    if (!IFrontEnd::processProc(addr, function, os, frag, spec)) {
         return false;
     }
 
     // Need a post-cfg pass to remove the FPUSH and FPOP instructions, and to transform various code after floating
     // point compares to generate floating point branches.
     // processFloatCode() will recurse to process its out-edge BBs (if not already processed)
-    Cfg *pCfg = pProc->getCFG();
-    pCfg->unTraverse(); // Reset all the "traversed" flags (needed soon)
+    Cfg *cfg = function->getCFG();
+    cfg->unTraverse(); // Reset all the "traversed" flags (needed soon)
     // This will get done twice; no harm
-    pProc->setEntryBB();
+    function->setEntryBB();
 
     int tos = 0;
-    processFloatCode(pProc->getEntryBB(), tos, pCfg);
-    processFloatCode(pCfg);
+    processFloatCode(function->getEntryBB(), tos, cfg);
+    processFloatCode(cfg);
 
     // Process away %rpt and %skip
-    processStringInst(pProc);
+    processStringInst(function);
 
     // Process code for side effects of overlapped registers
-    processOverlapped(pProc);
+    processOverlapped(function);
 
     return true;
 }
@@ -227,11 +221,11 @@ std::vector<SharedExp>& PentiumFrontEnd::getDefaultReturns()
 }
 
 
-void PentiumFrontEnd::processFloatCode(Cfg *pCfg)
+void PentiumFrontEnd::processFloatCode(Cfg *cfg)
 {
     BBIterator it;
 
-    for (BasicBlock *pBB = pCfg->getFirstBB(it); pBB; pBB = pCfg->getNextBB(it)) {
+    for (BasicBlock *pBB = cfg->getFirstBB(it); pBB; pBB = cfg->getNextBB(it)) {
         Statement *st;
 
         // Loop through each RTL this BB
@@ -289,13 +283,13 @@ void PentiumFrontEnd::processFloatCode(Cfg *pCfg)
 }
 
 
-void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
+void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
 {
     std::list<RTL *>::iterator rit;
     Statement                  *st;
 
     // Loop through each RTL this BB
-    std::list<RTL *> *BB_rtls = pBB->getRTLs();
+    std::list<RTL *> *BB_rtls = bb->getRTLs();
 
     if (BB_rtls == nullptr) {
         // For example, incomplete BB
@@ -380,10 +374,10 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
         }
     }
 
-    pBB->setTraversed(true);
+    bb->setTraversed(true);
 
     // Now recurse to process my out edges, if not already processed
-    const std::vector<BasicBlock *>& outs = pBB->getOutEdges();
+    const std::vector<BasicBlock *>& outs = bb->getSuccessors();
     size_t n;
 
     do {
@@ -393,7 +387,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
             BasicBlock *anOut = outs[o];
 
             if (!anOut->isTraversed()) {
-                processFloatCode(anOut, tos, pCfg);
+                processFloatCode(anOut, tos, cfg);
 
                 if (outs.size() != n) {
                     // During the processing, we have added or more likely deleted a BB, and the vector of out edges
@@ -406,16 +400,16 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *pBB, int& tos, Cfg *pCfg)
 }
 
 
-void PentiumFrontEnd::emitSet(std::list<RTL *> *BB_rtls, std::list<RTL *>::iterator& rit, Address uAddr, SharedExp lhs,
-                              SharedExp cond)
+void PentiumFrontEnd::emitSet(std::list<RTL *> *bbRTLs, std::list<RTL *>::iterator& rit,
+                              Address addr, SharedExp lhs, SharedExp cond)
 {
     Statement *asgn = new Assign(lhs, std::make_shared<Ternary>(opTern, cond, Const::get(1), Const::get(0)));
-    RTL       *pRtl = new RTL(uAddr);
+    RTL       *pRtl = new RTL(addr);
 
-    pRtl->appendStmt(asgn);
-    //    std::cout << "Emit "; pRtl->print(); std::cout << '\n';
+    pRtl->append(asgn);
+
     // Insert the new RTL before rit
-    BB_rtls->insert(rit, pRtl);
+    bbRTLs->insert(rit, pRtl);
 }
 
 
@@ -441,29 +435,30 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         Statement *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                   std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
         RTL *pRtl = new RTL(addr);
-        pRtl->appendStmt(a);
+        pRtl->append(a);
         a = new Assign(Location::regOf(24), std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
-        pRtl->appendStmt(a);
+        pRtl->append(a);
         a = new Assign(Location::regOf(26),
                        Binary::get(opShiftR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))), Const::get(32)));
-        pRtl->appendStmt(a);
+        pRtl->append(a);
         // Append this RTL to the list of RTLs for this BB
         lrtl->push_back(pRtl);
+
         // Return true, so the caller knows not to create a HLCall
         return true;
     }
     else if (name == "__mingw_allocstack") {
         RTL       *pRtl = new RTL(addr);
         Statement *a    = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
-        pRtl->appendStmt(a);
+        pRtl->append(a);
         lrtl->push_back(pRtl);
-        m_program->removeProc(name);
+        m_program->removeFunction(name);
         return true;
     }
     else if ((name == "__mingw_frame_init") || (name == "__mingw_cleanup_setup") || (name == "__mingw_frame_end")) {
         LOG_MSG("Found removable call to static lib proc %1 at address %2", name, addr);
-        m_program->removeProc(name);
+        m_program->removeFunction(name);
         return true;
     }
     else {
@@ -527,7 +522,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         CallStatement *cs = nullptr;
 
         if (!inst.rtl->empty()) {
-            cs = (CallStatement *)((inst.rtl->back()->getKind() == STMT_CALL) ? inst.rtl->back() : nullptr);
+            cs = (CallStatement *)((inst.rtl->back()->getKind() == StmtType::Call) ? inst.rtl->back() : nullptr);
         }
 
         const IBinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
@@ -580,7 +575,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 
         GotoStatement *gs = (GotoStatement *)cs;
 
-        if (gs && (gs->getKind() == STMT_GOTO)) {
+        if (gs && (gs->getKind() == StmtType::Goto)) {
             // Example: Borland often starts with a branch around some debug
             // info
             addr = gs->getFixedDest();
@@ -608,7 +603,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-void toBranches(Address a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb, BBIterator& it)
+void toBranches(Address addr, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb, BBIterator& it)
 {
     BranchStatement *br1 = new BranchStatement;
 
@@ -623,7 +618,7 @@ void toBranches(Address a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb,
         br1->setCondExpr(nullptr);
     }
 
-    br1->setDest(a + 2);
+    br1->setDest(addr + 2);
     BranchStatement *br2 = new BranchStatement;
 
     if (s6->isAssign()) {
@@ -633,7 +628,7 @@ void toBranches(Address a, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb,
         br2->setCondExpr(nullptr);
     }
 
-    br2->setDest(a);
+    br2->setDest(addr);
     cfg->splitForBranch(bb, rtl, br1, br2, it);
 }
 
@@ -937,7 +932,7 @@ bool PentiumFrontEnd::decodeSpecial_out(Address pc, DecodeResult& r)
     call->setDestProc(m_program->getLibraryProc("outp"));
     call->setArgumentExp(0, dx);
     call->setArgumentExp(1, al);
-    r.rtl->appendStmt(call);
+    r.rtl->append(call);
     return true;
 }
 
@@ -959,7 +954,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(Address pc, DecodeResult& r)
 
     CallStatement *call = new CallStatement();
     call->setDestProc(m_program->getLibraryProc("invalid_opcode"));
-    r.rtl->appendStmt(call);
+    r.rtl->append(call);
     return true;
 }
 
@@ -991,7 +986,7 @@ bool PentiumFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 }
 
 
-void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB_rtls)
+void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rtls)
 {
     if (!call->getDestProc()) {
         return;
@@ -1031,10 +1026,9 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
 
         // count pushes backwards to find arg
         SharedExp found = nullptr;
-        std::list<RTL *>::reverse_iterator itr;
         unsigned int pushcount = 0;
 
-        for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
+        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; itr++) {
             RTL *rtl = *itr;
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
@@ -1083,7 +1077,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
         if (paramIsFuncPointer) {
             LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to '%2'.",
                         a, call->getDestProc()->getName());
-            Function *proc = m_program->createProc(a);
+            Function *proc = m_program->createFunction(a);
             auto     sig   = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
             sig->setName(proc->getName());
             sig->setForced(true);
@@ -1103,7 +1097,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
                 LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to %2",
                             d, call->getDestProc()->getName());
 
-                Function *proc = m_program->createProc(d);
+                Function *proc = m_program->createFunction(d);
                 auto     sig   = compound->getType(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);
@@ -1118,10 +1112,9 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, std::list<RTL *> *BB
     if (calledSig->hasEllipsis()) {
         // count pushes backwards to find a push of 0
         bool found = false;
-        std::list<RTL *>::reverse_iterator itr;
         int pushcount = 0;
 
-        for (itr = BB_rtls->rbegin(); itr != BB_rtls->rend() && !found; itr++) {
+        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; itr++) {
             RTL *rtl = *itr;
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {

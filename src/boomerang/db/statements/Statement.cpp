@@ -10,22 +10,18 @@
 #include "Statement.h"
 
 
-/***************************************************************************/ /**
- * \file       statement.cpp
- * \brief   Implementation of the Statement and related classes.
- ******************************************************************************/
-
-#include "boomerang/core/Boomerang.h"
-
 #include "boomerang/codegen/ICodeGenerator.h"
-
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/proc/Proc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/RTL.h" // For debugging code
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/RTL.h"
 #include "boomerang/db/Signature.h"
-#include "boomerang/db/DataFlow.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/statements/JunctionStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
@@ -34,8 +30,26 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/db/Visitor.h"
-
+#include "boomerang/db/visitor/StmtConscriptSetter.h"
+#include "boomerang/db/visitor/ExpConstCaster.h"
+#include "boomerang/db/visitor/SizeStripper.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/CallBypasser.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/db/visitor/UsedLocalFinder.h"
+#include "boomerang/db/visitor/UsedLocsFinder.h"
+#include "boomerang/db/visitor/UsedLocsVisitor.h"
+#include "boomerang/db/visitor/ExpSubscripter.h"
+#include "boomerang/db/visitor/StmtSubscripter.h"
+#include "boomerang/db/visitor/ConstFinder.h"
+#include "boomerang/db/visitor/StmtConstFinder.h"
+#include "boomerang/db/visitor/ExpRegMapper.h"
+#include "boomerang/db/visitor/StmtRegMapper.h"
+#include "boomerang/db/visitor/ExpCastInserter.h"
+#include "boomerang/db/visitor/StmtCastInserter.h"
+#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/db/visitor/StmtSSAXFormer.h"
+#include "boomerang/db/visitor/DFALocalMapper.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -46,9 +60,16 @@
 #include <algorithm>
 
 
-void Statement::setProc(UserProc *p)
+Statement::Statement()
+    : m_parent(nullptr)
+    , m_proc(nullptr)
+    , m_number(0)
 {
-    m_proc = p;
+
+}
+void Statement::setProc(UserProc *proc)
+{
+    m_proc = proc;
     LocationSet exps, defs;
     addUsedLocs(exps);
     getDefinitions(defs);
@@ -58,7 +79,7 @@ void Statement::setProc(UserProc *p)
         auto l = std::dynamic_pointer_cast<Location>(*ll);
 
         if (l) {
-            l->setProc(p);
+            l->setProc(proc);
         }
     }
 }
@@ -207,13 +228,6 @@ Statement *Statement::getNextStatementInBB() const
 }
 
 
-/***************************************************************************/ /**
- * \brief Output operator for Instruction*
- *        Just makes it easier to use e.g. LOG_STREAM() << myStmtStar
- * \param os output stream to send to
- * \param s  ptr to Statement to print to the stream
- * \returns copy of os (for concatenation)
- ******************************************************************************/
 QTextStream& operator<<(QTextStream& os, const Statement *s)
 {
     if (s == nullptr) {
@@ -228,7 +242,7 @@ QTextStream& operator<<(QTextStream& os, const Statement *s)
 
 bool Statement::isFlagAssign() const
 {
-    if (m_kind != STMT_ASSIGN) {
+    if (m_kind != StmtType::Assign) {
         return false;
     }
 
@@ -299,11 +313,9 @@ bool Statement::canPropagateToExp(Exp& e)
 bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
                             LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
 {
-    bool change;
+    bool change = false;
     int  changes = 0;
-    // int sp = proc->getSignature()->getStackRegister(proc->getProg());
-    // Exp* regSp = Location::regOf(sp);
-    int propMaxDepth = SETTING(propMaxDepth);
+    const int propMaxDepth = SETTING(propMaxDepth);
 
     do {
         LocationSet exps;
@@ -328,7 +340,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
             SharedExp  rhs  = def->getRight();
 
             // If force is true, ignore the fact that a memof should not be propagated (for switch analysis)
-            if (rhs->containsBadMemof(m_proc) && !(force && rhs->isMemOf())) {
+            if (rhs->containsBadMemof() && !(force && rhs->isMemOf())) {
                 // Must never propagate unsubscripted memofs, or memofs that don't yet have symbols. You could be
                 // propagating past a definition, thereby invalidating the IR
                 continue;
@@ -409,26 +421,34 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
             }
 
 
-            // Check if the -l flag (propMaxDepth) prevents this propagation
-            if (destCounts && !lhs->isFlags()) { // Always propagate to %flags
+            // Check if the -l flag (propMaxDepth) prevents this propagation,
+            // but always propagate to %flags
+            if (!destCounts || lhs->isFlags() || def->getRight()->containsFlags()) {
+                change |= doPropagateTo(e, def, convert);
+            }
+            else {
                 std::map<SharedExp, int, lessExpStar>::iterator ff = destCounts->find(e);
 
-                if ((ff != destCounts->end()) && (ff->second > 1) && (rhs->getComplexityDepth(m_proc) >= propMaxDepth)) {
-                    if (!def->getRight()->containsFlags()) {
-                        // This propagation is prevented by the -l limit
-                        continue;
-                    }
+                if (ff == destCounts->end()) {
+                    change |= doPropagateTo(e, def, convert);
+                }
+                else if (ff->second <= 1) {
+                    change |= doPropagateTo(e, def, convert);
+                }
+                else if (rhs->getComplexityDepth(m_proc) < propMaxDepth) {
+                    change |= doPropagateTo(e, def, convert);
                 }
             }
-
-            change |= doPropagateTo(e, def, convert);
         }
     } while (change && ++changes < 10);
 
-    // Simplify is very costly, especially for calls. I hope that doing one simplify at the end will not affect any
+    // Simplify is very costly, especially for calls.
+    // I hope that doing one simplify at the end will not affect any
     // result...
     simplify();
-    return changes > 0; // Note: change is only for the last time around the do/while loop
+
+    // Note: change is only for the last time around the do/while loop
+    return changes > 0;
 }
 
 
@@ -574,7 +594,7 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
 
 bool Statement::isNullStatement() const
 {
-    if (m_kind != STMT_ASSIGN) {
+    if (m_kind != StmtType::Assign) {
         return false;
     }
 
@@ -593,7 +613,7 @@ bool Statement::isNullStatement() const
 
 bool Statement::isFpush() const
 {
-    if (m_kind != STMT_ASSIGN) {
+    if (m_kind != StmtType::Assign) {
         return false;
     }
 
@@ -603,7 +623,7 @@ bool Statement::isFpush() const
 
 bool Statement::isFpop() const
 {
-    if (m_kind != STMT_ASSIGN) {
+    if (m_kind != StmtType::Assign) {
         return false;
     }
 
@@ -709,7 +729,7 @@ void Statement::mapRegistersToLocals()
 void Statement::insertCasts()
 {
     // First we postvisit expressions using a StmtModifier and an ExpCastInserter
-    ExpCastInserter eci(m_proc);
+    ExpCastInserter eci;
     StmtModifier    sm(&eci, true);     // True to ignore collectors
 
     accept(&sm);

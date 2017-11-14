@@ -10,13 +10,6 @@
 #include "FrontSparcTest.h"
 
 
-/**
- * \file FrontSparcTest.cpp
- * Provides the implementation for the FrontSparcTest class, which
- * tests the SPARC frontend
- */
-
-
 #include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/BasicBlock.h"
@@ -57,7 +50,7 @@ void FrontSparcTest::test1()
     QVERIFY(pBF != nullptr);
     QVERIFY(pBF->getMachine() == Machine::SPARC);
 
-    Prog      *prog = new Prog(HELLO_SPARC);
+    Prog      *prog = new Prog("HELLO_SPARC");
     IFrontEnd *pFE  = new SparcFrontEnd(pBF, prog);
     prog->setFrontEnd(pFE);
 
@@ -132,7 +125,7 @@ void FrontSparcTest::test2()
     IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
     QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog(HELLO_SPARC);
+    Prog *prog = new Prog("HELLO_SPARC");
     QVERIFY(loader->getMachine() == Machine::SPARC);
     IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);
@@ -183,7 +176,7 @@ void FrontSparcTest::test3()
     IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
     QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog(HELLO_SPARC);
+    Prog *prog = new Prog("HELLO_SPARC");
     QVERIFY(loader->getMachine() == Machine::SPARC);
     IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);
@@ -250,7 +243,7 @@ void FrontSparcTest::testBranch()
     IFileLoader *loader = project.getBestLoader(BRANCH_SPARC);
     QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog(BRANCH_SPARC);
+    Prog *prog = new Prog("BRANCH_SPARC");
     QVERIFY(loader->getMachine() == Machine::SPARC);
     IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);
@@ -293,7 +286,7 @@ void FrontSparcTest::testDelaySlot()
     IFileLoader *loader = project.getBestLoader(BRANCH_SPARC);
     QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog(BRANCH_SPARC);
+    Prog *prog = new Prog("BRANCH_SPARC");
     QVERIFY(loader->getMachine() == Machine::SPARC);
     IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);

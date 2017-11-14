@@ -22,38 +22,42 @@
 class ImplicitAssign : public Assignment
 {
 public:
-    /// Constructor and subexpression
     ImplicitAssign(SharedExp lhs);
-
-    /// Constructor, type, and subexpression
     ImplicitAssign(SharedType ty, SharedExp lhs);
     ImplicitAssign(ImplicitAssign& o);
 
-    // The first virtual function (here the destructor) can't be in statement.h file for gcc
     virtual ~ImplicitAssign() override;
 
+    /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 
-    /// Data flow based type analysis
-    void dfaTypeAnalysis(bool& ch) override;
-
-    // general search
+    /// \copydoc Statement::search
     virtual bool search(const Exp& search, SharedExp& result) const override;
+
+    /// \copydoc Statement::searchAll
     virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
 
-    // general search and replace
+    /// \copydoc Statement::searchAndReplace
     virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
+    /// \copydoc Statement::printCompact
     virtual void printCompact(QTextStream& os, bool html = false) const override;
 
-    // Statement and Assignment functions
+    /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return nullptr; }
+
+    /// \copydoc Statement::simplify
     virtual void simplify() override {}
 
-    // Visitation
-    // visit this Statement
+    /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) override;
+
+    /// \copydoc Statement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
-    virtual bool accept(StmtModifier *visitor) override;
-    virtual bool accept(StmtPartModifier *visitor) override;
+
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtModifier *modifier) override;
+
+    /// \copydoc Statement::accept
+    virtual bool accept(StmtPartModifier *modifier) override;
 };

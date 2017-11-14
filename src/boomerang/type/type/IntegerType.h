@@ -30,11 +30,11 @@ public:
 
     virtual SharedType clone() const override;
 
-    /***************************************************************************/ /**
-     * \brief        Equality comparsion.
+    /**
+     * Equality comparsion.
      * \param        other - Type being compared to
      * \returns      *this == other
-     ******************************************************************************/
+     */
     virtual bool operator==(const Type& other) const override;
 
     // virtual bool          operator-=(const Type& other) const;

@@ -21,10 +21,13 @@ list(APPEND boomerang-type-sources
     type/type/Type
     type/type/UnionType
     type/type/VoidType
-    type/Constraint
+
     type/DataIntervalMap
-    type/DFATypeRecovery
     type/TypeRecovery
+
+    # DFA type recovery
+    type/dfa/DFATypeRecovery
+    type/dfa/DFATypeAnalyzer
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-type-sources}" PARENT_SCOPE)

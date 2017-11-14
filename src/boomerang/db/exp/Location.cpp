@@ -11,20 +11,23 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/Visitor.h"
+
 
 Location::Location(Location& o)
     : Unary(o.m_oper, o.subExp1->clone())
-    , proc(o.proc)
+    , m_proc(o.m_proc)
 {
 }
 
 
 Location::Location(OPER _op, SharedExp exp, UserProc *_p)
     : Unary(_op, exp)
-    , proc(_p)
+    , m_proc(_p)
 {
     assert(m_oper == opRegOf || m_oper == opMemOf || m_oper == opLocal || m_oper == opGlobal || m_oper == opParam || m_oper == opTemp);
 
@@ -35,7 +38,7 @@ Location::Location(OPER _op, SharedExp exp, UserProc *_p)
         if (e) {
             bool giveUp = false;
 
-            while (this->proc == nullptr && !giveUp) {
+            while (this->m_proc == nullptr && !giveUp) {
                 switch (e->getOper())
                 {
                 case opRegOf:
@@ -44,7 +47,7 @@ Location::Location(OPER _op, SharedExp exp, UserProc *_p)
                 case opLocal:
                 case opGlobal:
                 case opParam:
-                    this->proc = std::static_pointer_cast<Location>(e)->getProc();
+                    this->m_proc = std::static_pointer_cast<Location>(e)->getProc();
                     giveUp     = true;
                     break;
 
@@ -64,7 +67,7 @@ Location::Location(OPER _op, SharedExp exp, UserProc *_p)
 
 SharedExp Location::clone() const
 {
-    return std::make_shared<Location>(m_oper, subExp1->clone(), proc);
+    return std::make_shared<Location>(m_oper, subExp1->clone(), m_proc);
 }
 
 
@@ -134,9 +137,10 @@ void Location::getDefinitions(LocationSet& defs)
 
 bool Location::accept(ExpVisitor *v)
 {
-    bool override = false, ret = v->visit(shared_from_base<Location>(), override);
+    bool visitChildren = true;
+    bool ret = v->visit(shared_from_base<Location>(), visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         return ret;
     }
 
@@ -152,10 +156,10 @@ SharedExp Location::accept(ExpModifier *v)
 {
     // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
     // important here!  (it makes a call to a different visitor member function).
-    bool      recur;
-    SharedExp ret = v->preVisit(shared_from_base<Location>(), recur);
+    bool      visitChildren = true;
+    SharedExp ret = v->preVisit(shared_from_base<Location>(), visitChildren);
 
-    if (recur) {
+    if (visitChildren) {
         subExp1 = subExp1->accept(v);
     }
 

@@ -10,13 +10,9 @@
 #pragma once
 
 
-/***************************************************************************/ /**
- * \file     project.h
- * \brief    This file contains the definition for the Project class
- ******************************************************************************/
-
 #include "boomerang/core/IProject.h"
 #include "boomerang/loader/IFileLoader.h"
+#include "boomerang/type/TypeRecovery.h"
 
 #include <QByteArray>
 #include <memory>
@@ -52,6 +48,8 @@ public:
     /// \copydoc IProject::getImage
     const IBinaryImage *getImage() const override { return m_image.get(); }
 
+    ITypeRecovery *getTypeRecoveryEngine() const override { return m_typeRecovery.get(); }
+
     /// Get the best loader that is able to load the file at \p filePath
     IFileLoader *getBestLoader(const QString& filePath) const override;
 
@@ -62,6 +60,7 @@ private:
 private:
     QByteArray m_fileBytes;
     std::unique_ptr<IBinaryImage> m_image; ///< raw memory interface
+    std::unique_ptr<ITypeRecovery> m_typeRecovery; ///< type recovery engine
 
     // Plugins
     std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins;

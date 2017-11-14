@@ -10,33 +10,21 @@
 #include "ExpTest.h"
 
 
-/**
- * \file ExpTest.cpp
- * Provides the implementation for the ExpTest class, which
- * tests the Exp and derived classes
- */
-
-/*
- * $Revision$
- *
- * 05 Apr 02 - Mike: Fixed problems caused by lack of clone() calls
- * 09 Apr 02 - Mike: Compare, searchReplace
- * 14 Apr 02 - Mike: search and replace functions take Exp*, was Exp&
- * 27 Apr 02 - Mike: Added testDecideType
- * 09 Dec 02 - Mike: Added test for fixSuccessor
- * 13 Dec 02 - Mike: Added test for killFill()
- */
-
-
 #include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
+#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/Visitor.h"
+#include "boomerang/db/visitor/FlagsFinder.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/util/LocationSet.h"
+
 #include <map>
 
 

@@ -10,24 +10,12 @@
 #pragma once
 
 
-/** \file DOS4GWBinaryLoader.h
- * \brief This file contains the definition of the class DOS4GWBinaryLoader.
- */
-
 #include "boomerang/loader/IFileLoader.h"
 
 #include <string>
 
 class QFile;
 
-/**
- * This file contains the definition of the DOS4GWBinaryLoader class.
- * At present, this loader supports the OS2 file format (also known as
- * the Linear eXecutable format) as much as I've found necessary to
- * inspect old DOS4GW apps.  This loader could also be used for decompiling
- * Win9x VxD files or, of course, OS2 binaries, but you're probably better off
- * making a specific loader for each of these.
- */
 
 // Given a little endian value x, load its value assuming little endian order
 // Note: must be able to take address of x
@@ -131,6 +119,14 @@ typedef struct
 #pragma pack(pop)
 
 
+/**
+ * Loader for DOS/4GW executable files.
+ * At present, this loader supports the OS2 file format (also known as
+ * the Linear eXecutable format) as much as I've found necessary to
+ * inspect old DOS4GW apps.  This loader could also be used for decompiling
+ * Win9x VxD files or, of course, OS2 binaries, but you're probably better off
+ * making a specific loader for each of these.
+ */
 class DOS4GWBinaryLoader : public IFileLoader
 {
 public:

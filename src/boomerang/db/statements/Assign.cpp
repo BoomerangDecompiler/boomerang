@@ -10,12 +10,20 @@
 #include "Assign.h"
 
 
-#include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
-#include "boomerang/db/Visitor.h"
-
 #include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Unary.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/StmtVisitor.h"
+#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/type/type/Type.h"
+#include "boomerang/util/LocationSet.h"
+#include "boomerang/util/Log.h"
 
 
 Assign::Assign(SharedExp lhs, SharedExp r, SharedExp guard)
@@ -23,7 +31,7 @@ Assign::Assign(SharedExp lhs, SharedExp r, SharedExp guard)
     , m_rhs(r)
     , m_guard(guard)
 {
-    m_kind = STMT_ASSIGN;
+    m_kind = StmtType::Assign;
 }
 
 
@@ -32,14 +40,14 @@ Assign::Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard)
     , m_rhs(r)
     , m_guard(guard)
 {
-    m_kind = STMT_ASSIGN;
+    m_kind = StmtType::Assign;
 }
 
 
 Assign::Assign(Assign& o)
     : Assignment(m_lhs->clone())
 {
-    m_kind  = STMT_ASSIGN;
+    m_kind  = StmtType::Assign;
     m_rhs   = o.m_rhs->clone();
     m_type  = nullptr;
     m_guard = nullptr;
@@ -222,13 +230,12 @@ void Assign::genConstraints(LocationSet& cons)
 
 bool Assign::accept(StmtExpVisitor *v)
 {
-    bool override;
-    bool ret = v->visit(this, override);
+    bool visitChildren = true;
+    bool ret = v->visit(this, visitChildren);
 
-    if (override) {
+    if (!visitChildren) {
         // The visitor has overridden this functionality.  This is needed for example in UsedLocFinder, where the
-        // lhs of
-        // an assignment is not used (but if it's m[blah], then blah is used)
+        // lhs of an assignment is not used (but if it's m[blah], then blah is used)
         return ret;
     }
 
@@ -246,21 +253,24 @@ bool Assign::accept(StmtExpVisitor *v)
 
 bool Assign::accept(StmtModifier *v)
 {
-    bool recur;
+    bool visitChildren;
 
-    v->visit(this, recur);
-    v->m_mod->clearMod();
+    v->visit(this, visitChildren);
 
-    if (recur) {
-        m_lhs = m_lhs->accept(v->m_mod);
-    }
+    if (v->m_mod) {
+        v->m_mod->clearMod();
 
-    if (recur) {
-        m_rhs = m_rhs->accept(v->m_mod);
-    }
+        if (visitChildren) {
+            m_lhs = m_lhs->accept(v->m_mod);
+        }
 
-    if (v->m_mod->isMod()) {
-        LOG_VERBOSE("Assignment changed: now %1", this);
+        if (visitChildren) {
+            m_rhs = m_rhs->accept(v->m_mod);
+        }
+
+        if (v->m_mod->isMod()) {
+            LOG_VERBOSE("Assignment changed: now %1", this);
+        }
     }
 
     return true;
@@ -269,16 +279,15 @@ bool Assign::accept(StmtModifier *v)
 
 bool Assign::accept(StmtPartModifier *v)
 {
-    bool recur;
-
-    v->visit(this, recur);
+    bool visitChildren = true;
+    v->visit(this, visitChildren);
     v->mod->clearMod();
 
-    if (recur && m_lhs->isMemOf()) {
+    if (visitChildren && m_lhs->isMemOf()) {
         m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
     }
 
-    if (recur) {
+    if (visitChildren) {
         m_rhs = m_rhs->accept(v->mod);
     }
 
@@ -287,17 +296,6 @@ bool Assign::accept(StmtPartModifier *v)
     }
 
     return true;
-}
-
-
-void Assign::dfaTypeAnalysis(bool& ch)
-{
-    SharedType tr = m_rhs->ascendType();
-
-    m_type = m_type->meetWith(tr, ch, true); // Note: bHighestPtr is set true, since the lhs could have a greater type
-    // (more possibilities) than the rhs. Example: pEmployee = pManager.
-    m_rhs->descendType(m_type, ch, this);    // This will effect rhs = rhs MEET lhs
-    Assignment::dfaTypeAnalysis(ch);         // Handle the LHS wrt m[] operands
 }
 
 

@@ -10,11 +10,6 @@
 #include "ElfBinaryLoader.h"
 
 
-/***************************************************************************/ /**
- * \file ElfBinaryLoader.cpp
- * Desc: This file contains the implementation of the class ElfBinaryLoader.
- ******************************************************************************/
-
 #include "ElfTypes.h"
 
 #include "boomerang/core/IBoomerang.h"
@@ -753,23 +748,22 @@ QStringList ElfBinaryLoader::getDependencyList()
 
 void ElfBinaryLoader::markImports()
 {
-    IBinarySymbolTable::const_iterator first = m_symbols->begin();
-    IBinarySymbolTable::const_iterator last  = m_symbols->begin();
-    IBinarySymbolTable::const_iterator end   = m_symbols->end();
 
-    for ( ; first != end; ++first) {
+    auto first = m_symbols->begin();
+    auto end   = m_symbols->end();
+
+    for (; first != end; ++first) {
         if ((*first)->getLocation() >= m_pltMin) {
             break;
         }
     }
 
-    for (last = first; last != end; ++last) {
+    for (auto last = first; last != end; ++last) {
         if ((*last)->getLocation() >= m_pltMax) {
             break;
         }
 
-        const IBinarySymbol *sym = *last;
-        sym->setAttr("Imported", true);
+        (*last)->setAttr("Imported", true);
     }
 }
 
@@ -819,8 +813,8 @@ void ElfBinaryLoader::applyRelocations()
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
-                // ADDRESS destNatOrigin = Address::ZERO, destHostOrigin = Address::ZERO;
-                for (unsigned u = 0; u < sizeInBytes; u += sizeof(Elf32_Rela)) {
+                // Address destNatOrigin = Address::ZERO, destHostOrigin = Address::ZERO;
+                for (unsigned idx = 0; idx < sizeInBytes; idx += sizeof(Elf32_Rela)) {
                     Elf32_Rela r;
                     r.r_offset = elfRead4(relocEntry++);
                     r.r_info   = elfRead4(relocEntry++);

@@ -247,7 +247,7 @@ CommandStatus Console::handleDecompile(const QStringList& args)
         ProcSet procSet;
 
         for (const QString& procName : args) {
-            Function *proc = g_prog->findProc(procName);
+            Function *proc = g_prog->findFunction(procName);
 
             if (proc == nullptr) {
                 std::cerr << "Cannot find function '" << procName.toStdString() << "'\n";
@@ -336,7 +336,7 @@ CommandStatus Console::handleMove(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Function *proc = g_prog->findProc(args[1]);
+        Function *proc = g_prog->findFunction(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
@@ -499,14 +499,14 @@ CommandStatus Console::handleRename(const QStringList& args)
             return CommandStatus::Failure;
         }
 
-        Function *proc = g_prog->findProc(args[1]);
+        Function *proc = g_prog->findFunction(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
         }
 
-        Function *nproc = g_prog->findProc(args[2]);
+        Function *nproc = g_prog->findFunction(args[2]);
 
         if (nproc != nullptr) {
             std::cerr << "Proc " << args[2].toStdString() << " already exists" << std::endl;
@@ -569,7 +569,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
 
         const Prog::ModuleList& modules = g_prog->getModuleList();
 
-        for (const Module *module : modules) {
+        for (const auto& module : modules) {
             for (const Function *function : *module) {
                 if (function->isLib()) {
                     libFunctions.push_back(function);
@@ -635,7 +635,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Function *proc = g_prog->findProc(args[1]);
+        Function *proc = g_prog->findFunction(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
@@ -691,7 +691,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
         }
 
         for (int i = 1; i < args.size(); i++) {
-            Function *proc = g_prog->findProc(args[i]);
+            Function *proc = g_prog->findFunction(args[i]);
 
             if (proc == nullptr) {
                 std::cerr << "Cannot find procedure " << args[i].toStdString() << std::endl;
@@ -731,7 +731,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
             ProcSet procs;
 
             for (int i = 1; i < args.size(); i++) {
-                Function *proc = g_prog->findProc(args[i]);
+                Function *proc = g_prog->findFunction(args[i]);
 
                 if (!proc) {
                     std::cerr << "Procedure '" << args[i].toStdString() << "' not found.";

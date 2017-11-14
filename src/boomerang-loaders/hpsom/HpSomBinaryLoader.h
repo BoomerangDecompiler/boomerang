@@ -10,14 +10,6 @@
 #pragma once
 
 
-/** \file HpSomBinaryLoader.h
- * \brief This file contains the definition of the class HpSomBinaryLoader.
- */
-
-/***************************************************************************/ /**
- * Dependencies.
- ******************************************************************************/
-
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/loader/IFileLoader.h"
 
@@ -82,6 +74,9 @@ struct symElem
 };
 
 
+/**
+ * This class provides is responsible for decoding PA/RISC SOM executable files.
+ */
 class HpSomBinaryLoader : public IFileLoader
 {
 public:
@@ -124,19 +119,18 @@ private:
     /// and the value for GLOBALOFFSET (unused for pa-risc)
     std::pair<Address, unsigned> getGlobalPointerInfo();
 
-    /***************************************************************************/ /**
+    /**
+     * Get map containing the addresses and symbolic names of global data items
+     * (if any) which are shared with dynamically linked libraries.
+     * Example: __iob (basis for stdout). The Address is the (native)
+     * address of a pointer to the real dynamic data object.
      *
-     * \brief  Get a map from ADDRESS to const char*. This map contains the
-     *         native addresses and symbolic names of global data items
-     *         (if any) which are shared with dynamically linked libraries.
-     *         Example: __iob (basis for stdout). The ADDRESS is the native
-     *         address of a pointer to the real dynamic data object.
      * \note        The caller should delete the returned map.
      * \returns     Pointer to a new map with the info
-     ******************************************************************************/
+     */
     std::map<Address, const char *> *getDynamicGlobalMap();
 
-    // Private method to get the start and length of a given subspace
+    /// Private method to get the start and length of a given subspace
     std::pair<Address, int> getSubspaceInfo(const char *ssname);
 
     Byte *m_loadedImage;            ///< Points to loaded image

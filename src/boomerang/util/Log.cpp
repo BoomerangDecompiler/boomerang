@@ -16,7 +16,6 @@
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Managed.h"
 
 #include <QTextStream>
 #include <sstream>

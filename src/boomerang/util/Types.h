@@ -9,10 +9,6 @@
 #pragma endregion License
 #pragma once
 
-/**
- * \file types.h
- * \brief Contains some often used basic type definitions
- */
 
 #include <cstdint>
 

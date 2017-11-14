@@ -10,11 +10,6 @@
 #include "PalmBinaryLoader.h"
 
 
-/** \file PalmBinaryLoader.cpp
- * This class loads a Palm Pilot .prc file.
- * Derived from class IFileLoader.
- */
-
 #include "palmsystraps.h"
 
 #include "boomerang/core/IBoomerang.h"
@@ -374,6 +369,7 @@ int PalmBinaryLoader::getAppID() const
 
 // Patterns for Code Warrior
 #define WILD    0x4AFC
+
 static SWord CWFirstJump[] =
 {
     0x0,     0x1,                                 // ? All Pilot programs seem to start with this
@@ -398,36 +394,47 @@ static SWord GccCallMain[] =
     0x6100, WILD
 };                                                // bsr PilotMain
 
-/***************************************************************************/ /**
+/**
+ * Find a byte pattern corresponding to \p patt;
+ * \p pat may include a wildcard (16 bit WILD, 0x4AFC)
  *
- * \brief      Try to find a pattern
- * \param start - pointer to code to start searching
- * \param patt - pattern to look for
- * \param pattSize - size of the pattern (in SWords)
- * \param max - max number of SWords to search
- * \returns       0 if no match; pointer to start of match if found
- ******************************************************************************/
-SWord *findPattern(SWord *start, const SWord *patt, int pattSize, int max)
+ * \param start    pointer to code to start searching
+ * \param size     max number of SWords to search
+ * \param patt     pattern to look for
+ * \param pattSize size of the pattern (in SWords)
+ *
+ * \returns pointer to start of match if found, or nullptr if not found.
+ */
+const SWord *findPattern(const SWord *start, int size, const SWord *patt, int pattSize)
 {
-    const SWord *last = start + max;
+    if (pattSize <= 0 || pattSize > size) {
+        return nullptr; // no pattern to find
+    }
 
-    for ( ; start < last; start++) {
-        bool found = true;
+    const SWord *last = start + size;
 
+    while (start + pattSize <= last) {
+        bool allMatched = true;
         for (int i = 0; i < pattSize; i++) {
-            SWord curr = patt[i];
-            SWord val  = Util::readWord(start + i, true);
+            const SWord curr = patt[i];
+            if (curr == WILD) {
+                continue;
+            }
 
-            if ((curr != WILD) && (curr != val)) {
-                found = false;
-                break; // Mismatch
+            const SWord val  = Util::readWord(start + i, true);
+            if (curr != val) {
+                // Mismatch
+                allMatched = false;
+                break;
             }
         }
 
-        if (found) {
+        if (allMatched) {
             // All parts of the pattern matched
             return start;
         }
+
+        start++;
     }
 
     // Each start position failed
@@ -450,14 +457,14 @@ Address PalmBinaryLoader::getMainEntryPoint()
     int      delta      = (psect->getHostAddr() - psect->getSourceAddr()).value();
 
     // First try the CW first jump pattern
-    SWord *res = findPattern(startCode, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord), 1);
+    const SWord *res = findPattern(startCode, 1, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord));
 
     if (res) {
         // We have the code warrior first jump. Get the addil operand
         const int addilOp      = Util::readDWord((startCode + 5), true);
         SWord     *startupCode = (SWord *)(HostAddress(startCode) + 10 + addilOp).value();
         // Now check the next 60 SWords for the call to PilotMain
-        res = findPattern(startupCode, CWCallMain, sizeof(CWCallMain) / sizeof(SWord), 60);
+        res = findPattern(startupCode, 60, CWCallMain, sizeof(CWCallMain) / sizeof(SWord));
 
         if (res) {
             // Get the addil operand
@@ -474,7 +481,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
     }
 
     // Check for gcc call to main
-    res = findPattern(startCode, GccCallMain, sizeof(GccCallMain) / sizeof(SWord), 75);
+    res = findPattern(startCode, 75, GccCallMain, sizeof(GccCallMain) / sizeof(SWord));
 
     if (res) {
         // Get the operand to the bsr
