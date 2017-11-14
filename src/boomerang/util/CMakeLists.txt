@@ -18,7 +18,6 @@ list(APPEND boomerang-util-sources
     util/Log
     util/StatementList
     util/StatementSet
-    util/StatementVec
     util/Types.h
     util/Util
 )
