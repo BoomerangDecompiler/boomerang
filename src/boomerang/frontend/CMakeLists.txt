@@ -9,35 +9,21 @@
 
 list(APPEND boomerang-frontend-sources
     frontend/Decoder.h
-    frontend/Frontend.cpp
-    frontend/Frontend.h
-    frontend/MachineInstruction.cpp
-    frontend/MachineInstruction.h
-    frontend/mips/mipsdecoder.cpp
-    frontend/mips/mipsdecoder.h
-    frontend/mips/mipsfrontend.cpp
-    frontend/mips/mipsfrontend.h
-    frontend/NJMCDecoder.cpp
-    frontend/NJMCDecoder.h
-    frontend/pentium/pentiumdecoder.cpp
-    frontend/pentium/pentiumdecoder.h
-    frontend/pentium/pentiumfrontend.cpp
-    frontend/pentium/pentiumfrontend.h
-    frontend/ppc/ppcdecoder.cpp
-    frontend/ppc/ppcdecoder.h
-    frontend/ppc/ppcfrontend.cpp
-    frontend/ppc/ppcfrontend.h
+    frontend/Frontend
+    frontend/MachineInstruction
+    frontend/mips/mipsdecoder
+    frontend/mips/mipsfrontend
+    frontend/NJMCDecoder
+    frontend/pentium/pentiumdecoder
+    frontend/pentium/pentiumfrontend
+    frontend/ppc/ppcdecoder
+    frontend/ppc/ppcfrontend
     frontend/SigEnum.h
-    frontend/sparc/sparcdecoder.cpp
-    frontend/sparc/sparcdecoder.h
-    frontend/sparc/sparcfrontend.cpp
-    frontend/sparc/sparcfrontend.h
-    frontend/st20/st20decoder.cpp
-    frontend/st20/st20decoder.h
-    frontend/st20/st20frontend.cpp
-    frontend/st20/st20frontend.h
-    frontend/TargetQueue.cpp
-    frontend/TargetQueue.h
+    frontend/sparc/sparcdecoder
+    frontend/sparc/sparcfrontend
+    frontend/st20/st20decoder
+    frontend/st20/st20frontend
+    frontend/TargetQueue
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-frontend-sources}" PARENT_SCOPE)
