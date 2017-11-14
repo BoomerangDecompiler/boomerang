@@ -36,6 +36,7 @@
 #include "boomerang/db/visitor/MemDepthFinder.h"
 #include "boomerang/db/visitor/SizeStripper.h"
 #include "boomerang/db/visitor/UsedLocsFinder.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"

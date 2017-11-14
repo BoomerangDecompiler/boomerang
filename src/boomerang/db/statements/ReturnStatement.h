@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/db/DefCollector.h"
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/util/StatementList.h"
 

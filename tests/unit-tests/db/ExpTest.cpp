@@ -23,6 +23,7 @@
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/util/LocationSet.h"
 
 #include <map>
 

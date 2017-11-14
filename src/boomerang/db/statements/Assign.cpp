@@ -22,6 +22,7 @@
 #include "boomerang/db/visitor/StmtModifier.h"
 #include "boomerang/db/visitor/StmtPartModifier.h"
 #include "boomerang/type/type/Type.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
 
 

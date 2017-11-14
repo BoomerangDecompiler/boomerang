@@ -16,6 +16,8 @@ list(APPEND boomerang-db-sources
     db/CFG.h
     db/DataFlow.cpp
     db/DataFlow.h
+    db/DefCollector.h
+    db/DefCollector.cpp
     db/Global.h
     db/Global.cpp
     db/IBinaryImage.h
@@ -39,6 +41,8 @@ list(APPEND boomerang-db-sources
     db/SymTab.h
     db/Table.cpp
     db/Table.h
+    db/UseCollector.h
+    db/UseCollector.cpp
 
     # exp handling
     db/exp/Exp.cpp

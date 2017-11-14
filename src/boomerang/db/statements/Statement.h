@@ -11,7 +11,6 @@
 
 
 #include "boomerang/db/exp/ExpHelp.h"
-#include "boomerang/db/DataFlow.h"
 #include "boomerang/util/Address.h"
 
 #include <QtCore/QTextStream>
@@ -44,6 +43,7 @@ class Assign;
 class RTL;
 class InstructionSet;
 class ReturnStatement;
+class LocationSet;
 
 typedef std::shared_ptr<Exp>         SharedExp;
 typedef std::shared_ptr<Type>        SharedType;

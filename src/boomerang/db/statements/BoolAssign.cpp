@@ -21,6 +21,8 @@
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtModifier.h"
 #include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/util/LocationSet.h"
+
 
 BoolAssign::BoolAssign(int size)
     : Assignment(nullptr)

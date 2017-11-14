@@ -12,10 +12,9 @@
 
 #include "Proc.h"
 
-
-#include "boomerang/db/CFG.h"      // For cfg->simplify()
-
-#include "boomerang/db/DataFlow.h" // For class UseCollector
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/DataFlow.h"
+#include "boomerang/db/UseCollector.h"
 #include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/exp/Binary.h"
 
@@ -64,6 +63,7 @@ enum ProcStatus
 
 typedef std::set<UserProc *>    ProcSet;
 typedef std::list<UserProc *>   ProcList;
+
 
 /**
  * UserProc class.

@@ -13,6 +13,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
+#include "boomerang/util/LocationSet.h"
 
 
 UsedLocsFinder::UsedLocsFinder(LocationSet& used, bool memOnly)
