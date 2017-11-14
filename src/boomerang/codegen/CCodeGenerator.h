@@ -80,8 +80,8 @@ enum PREC
 class CCodeGenerator : public ICodeGenerator
 {
 public:
-    CCodeGenerator();
-    virtual ~CCodeGenerator() override;
+    CCodeGenerator() = default;
+    virtual ~CCodeGenerator() override = default;
 
     /// \copydoc ICodeGenerator::generateCode
     virtual void generateCode(const Prog *prog, QTextStream& os) override;
@@ -283,9 +283,9 @@ private:
     void appendLine(const QString& s);
 
 private:
-    int m_indent;                           ///< Current indentation depth
+    int m_indent = 0;                       ///< Current indentation depth
     std::map<QString, SharedType> m_locals; ///< All locals in a Proc
     std::set<int> m_usedLabels;             ///< All used goto labels.
     QStringList m_lines;                    ///< The generated code.
-    UserProc *m_proc;
+    UserProc *m_proc = nullptr;
 };

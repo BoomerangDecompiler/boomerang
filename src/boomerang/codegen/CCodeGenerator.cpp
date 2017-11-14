@@ -68,18 +68,6 @@ static bool isBareMemof(const Exp& e, UserProc *)
 }
 
 
-CCodeGenerator::CCodeGenerator()
-    : m_indent(0)
-    , m_proc(nullptr)
-{
-}
-
-
-CCodeGenerator::~CCodeGenerator()
-{
-}
-
-
 void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
 {
     for (Global *glob : prog->getGlobals()) {
