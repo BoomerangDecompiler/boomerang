@@ -25,10 +25,19 @@ class UserProc;
 class DefCollector
 {
 public:
-    DefCollector();
+    typedef AssignSet::const_iterator   const_iterator;
+    typedef AssignSet::iterator         iterator;
 
+public:
+    DefCollector() = default;
     ~DefCollector();
 
+    iterator begin() { return m_defs.begin(); }
+    iterator end() { return m_defs.end(); }
+    const_iterator begin() const { return m_defs.begin(); }
+    const_iterator end() const { return m_defs.end(); }
+
+public:
     /// Clone the given Collector into this one
     void makeCloneOf(const DefCollector& other);
 
@@ -36,11 +45,7 @@ public:
     inline bool isInitialised() const { return m_initialised; }
 
     /// Clear the location set
-    void clear()
-    {
-        m_defs.clear();
-        m_initialised = false;
-    }
+    void clear();
 
     /**
      * Insert a new member (make sure none exists yet).
@@ -49,28 +54,12 @@ public:
      */
     void insert(Assign *a);
 
-
     /// Print the collected locations to stream os
     void print(QTextStream& os, bool html = false) const;
 
-    /*
-     * Print to string (for debugging)
-     */
+    /// Print to string (for debugging)
     char *prints() const;
     void dump() const;
-    Assign *dumpAddrOfFourth();
-
-    /*
-     * begin() and end() so we can iterate through the locations
-     */
-    typedef AssignSet::const_iterator   const_iterator;
-    typedef AssignSet::iterator         iterator;
-
-    iterator begin() { return m_defs.begin(); }
-    iterator end() { return m_defs.end(); }
-
-    const_iterator begin() const { return m_defs.begin(); }
-    const_iterator end() const { return m_defs.end(); }
 
     bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
 
@@ -87,17 +76,15 @@ public:
      */
     SharedExp findDefFor(SharedExp e) const;
 
-    /**
-     * Search and replace all occurrences
-     */
-    void searchReplaceAll(const Exp& from, SharedExp to, bool& change);
+    /// Search and replace all occurrences
+    void searchReplaceAll(const Exp& pattern, SharedExp replacement, bool& change);
 
 private:
-    /*
+    /**
      * True if initialised. When not initialised, callees should not subscript parameters inserted into the
      * associated CallStatement
      */
-    bool m_initialised;
+    bool m_initialised = false;
     AssignSet m_defs; ///< The set of definitions.
 };
 

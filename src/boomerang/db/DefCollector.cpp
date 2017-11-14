@@ -17,14 +17,16 @@
 #include <QTextStream>
 
 
-DefCollector::DefCollector()
-    : m_initialised(false)
-{}
-
-
 DefCollector::~DefCollector()
 {
     qDeleteAll(m_defs);
+}
+
+
+void DefCollector::clear()
+{
+    m_defs.clear();
+    m_initialised = false;
 }
 
 

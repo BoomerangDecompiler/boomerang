@@ -40,6 +40,7 @@ public:
     inline const_iterator begin() const { return m_locs.begin(); }
     inline const_iterator end() const { return m_locs.end(); }
 
+public:
     /// clone the given Collector into this one
     void makeCloneOf(UseCollector& other);
 
@@ -60,7 +61,7 @@ public:
     void dump() const;
 
     /// \returns true if \p e is in the collection
-    bool exists(SharedExp e) { return m_locs.exists(e); }
+    inline bool exists(SharedExp e) { return m_locs.exists(e); }
     LocationSet& getLocSet() { return m_locs; }
 
 public:
@@ -68,16 +69,10 @@ public:
     void updateLocs(Statement *stmt);
 
     /// Remove the given location
-    void remove(SharedExp loc)
-    {
-        m_locs.remove(loc);
-    }
+    void remove(SharedExp loc);
 
     /// Remove the current location
-    void remove(iterator it)
-    {
-        m_locs.remove(it);
-    }
+    void remove(iterator it);
 
     /// Translate out of SSA form
     /// Called from CallStatement::fromSSAForm. The UserProc is needed for the symbol map

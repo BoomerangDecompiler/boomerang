@@ -132,3 +132,15 @@ void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
         m_locs.insert(*it);
     }
 }
+
+void UseCollector::remove(SharedExp loc)
+{
+    m_locs.remove(loc);
+}
+
+
+void UseCollector::remove(iterator it)
+{
+    m_locs.remove(it);
+}
+
