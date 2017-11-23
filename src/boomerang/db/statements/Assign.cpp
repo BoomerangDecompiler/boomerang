@@ -217,17 +217,6 @@ bool Assign::usesExp(const Exp& e) const
 }
 
 
-void Assign::genConstraints(LocationSet& cons)
-{
-    Assignment::genConstraints(cons);     // Gen constraint for the LHS
-    SharedExp con = m_rhs->genConstraints(Unary::get(opTypeOf, RefExp::get(m_lhs->clone(), this)));
-
-    if (con) {
-        cons.insert(con);
-    }
-}
-
-
 bool Assign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;

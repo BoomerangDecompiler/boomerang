@@ -87,9 +87,6 @@ public:
     /// \copydoc Statement::fixSuccessor
     virtual void fixSuccessor() override;
 
-    /// \copydoc Assignment::genConstraints
-    virtual void genConstraints(LocationSet& cons) override;
-
 private:
     SharedExp m_rhs;
     SharedExp m_guard;

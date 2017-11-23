@@ -419,36 +419,6 @@ void Unary::appendDotFile(QTextStream& of)
 }
 
 
-SharedExp Unary::match(const SharedConstExp& pattern)
-{
-    assert(subExp1);
-
-    if (m_oper == pattern->getOper()) {
-        return subExp1->match(pattern->getSubExp1());
-    }
-
-    return Exp::match(pattern);
-}
-
-
-bool Unary::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
-{
-    if (Exp::match(pattern, bindings)) {
-        return true;
-    }
-
-#ifdef DEBUG_MATCH
-    LOG_MSG("Matching %1 to %2.", this, pattern);
-#endif
-
-    if ((m_oper == opAddrOf) && pattern.startsWith("a[") && pattern.endsWith(']')) {
-        return subExp1->match(pattern.mid(2, pattern.size() - 1), bindings); // eliminate 'a[' and ']'
-    }
-
-    return false;
-}
-
-
 void Unary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
     if (m_oper != opInitValueOf) { // don't search child
@@ -660,36 +630,6 @@ void Unary::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
     printChild(subExp1, ind);
-}
-
-
-SharedExp Unary::genConstraints(SharedExp result)
-{
-    if (result->isTypeVal()) {
-        // TODO: need to check for conflicts
-        return Terminal::get(opTrue);
-    }
-
-    switch (m_oper)
-    {
-    case opRegOf:
-    case opParam: // Should be no params at constraint time
-    case opGlobal:
-    case opLocal:
-        return Binary::get(opEquals, Unary::get(opTypeOf, this->clone()), result->clone());
-
-    default:
-        break;
-    }
-
-    return Terminal::get(opTrue);
-}
-
-
-SharedExp Unary::simplifyConstraint()
-{
-    subExp1 = subExp1->simplifyConstraint();
-    return shared_from_this();
 }
 
 

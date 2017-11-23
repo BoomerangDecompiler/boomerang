@@ -97,17 +97,11 @@ public:
     /// \copydoc Exp:;:appendDotFile
     virtual void appendDotFile(QTextStream& of) override;
 
-    /// \copydoc Exp::genConstraints
-    virtual SharedExp genConstraints(SharedExp restrictTo) override;
-
     /// \copydoc Exp::accept
     virtual bool accept(ExpVisitor *v) override;
 
     /// \copydoc Exp::accept
     virtual SharedExp accept(ExpModifier *v) override;
-
-    /// \copydoc Exp::match
-    virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
     /// \copydoc Exp::ascendType
     virtual SharedType ascendType() override;

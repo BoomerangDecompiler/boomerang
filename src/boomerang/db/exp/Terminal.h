@@ -51,9 +51,6 @@ public:
     /// \copydoc Exp::isTerminal
     bool isTerminal() const override { return true; }
 
-    /// \copydoc Exp::match
-    bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
-
     /// \copydoc Exp::accept
     bool accept(ExpVisitor *v) override;
 

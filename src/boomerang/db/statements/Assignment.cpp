@@ -11,14 +11,13 @@
 
 
 #include "boomerang/core/Boomerang.h"
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/TypeVal.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/SizeType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -81,18 +80,6 @@ bool Assignment::definesLoc(SharedExp loc) const
     }
 
     return *m_lhs == *loc;
-}
-
-
-void Assignment::genConstraints(LocationSet& cons)
-{
-    // Almost every assignment has at least a size from decoding
-    // MVE: do/will PhiAssign's have a valid type? Why not?
-    if (m_type) {
-        cons.insert(Binary::get(opEquals,
-                                Unary::get(opTypeOf, RefExp::get(m_lhs, this)),
-                                TypeVal::get(m_type)));
-    }
 }
 
 

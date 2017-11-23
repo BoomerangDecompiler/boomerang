@@ -179,7 +179,6 @@ enum OPER
     opFalse,
     opTypeOf,  ///< Unary: takes a location, makes a type variable
     opKindOf,
-    opTypeVal, ///< Wraps a Type into a type value (TypeVal)
 
     // Added for range analysis
     opInitValueOf, ///< The initial value of a location, typically the stack pointer

@@ -40,11 +40,6 @@ public:
     // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type& other) const override;
 
-    // FIXME: aren't mergeWith and meetWith really the same thing?
-    // Merge this IntegerType with another
-    virtual SharedType mergeWith(SharedType other) const override;
-    virtual SharedExp match(SharedType pattern)  override;
-
     virtual size_t getSize() const override; // Get size in bits
 
     virtual void setSize(size_t sz)  override { size = sz; }

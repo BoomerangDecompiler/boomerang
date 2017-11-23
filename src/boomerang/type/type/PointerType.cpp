@@ -86,17 +86,6 @@ bool PointerType::operator<(const Type& other) const
 }
 
 
-SharedExp PointerType::match(SharedType pattern)
-{
-    if (pattern->isPointer()) {
-        LOG_VERBOSE("Got pointer match: %1 to %2", this->getCtype(), pattern->getCtype());
-        return points_to->match(pattern->as<PointerType>()->getPointsTo());
-    }
-
-    return Type::match(pattern);
-}
-
-
 bool PointerType::pointsToAlpha() const
 {
     // void* counts as alpha* (and may replace it soon)

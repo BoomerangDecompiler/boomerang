@@ -157,9 +157,6 @@ public:
     /// \returns the function that is called by this call statement.
     Function *getDestProc();
 
-    /// \copydoc Statement::genConstraints
-    virtual void genConstraints(LocationSet& cons) override;
-
     /// \copydoc GotoStatement::generateCode
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 

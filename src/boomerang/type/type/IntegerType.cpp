@@ -88,37 +88,6 @@ QString IntegerType::getTempName() const
 }
 
 
-SharedExp IntegerType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
-SharedType IntegerType::mergeWith(SharedType other) const
-{
-    if (*this == *other) {
-        return ((IntegerType *)this)->shared_from_this();
-    }
-
-    if (!other->isInteger()) {
-        return nullptr; // Can you merge with a pointer?
-    }
-
-    auto oth = std::static_pointer_cast<IntegerType>(other);
-    auto ret = std::static_pointer_cast<IntegerType>(this->clone());
-
-    if (size == 0) {
-        ret->setSize(oth->getSize());
-    }
-
-    if (signedness == 0) {
-        ret->setSigned(oth->getSignedness());
-    }
-
-    return ret;
-}
-
-
 QString IntegerType::getCtype(bool final) const
 {
     if (signedness >= 0) {

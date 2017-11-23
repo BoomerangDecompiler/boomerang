@@ -86,9 +86,6 @@ public:
     /// \copydoc GotoStatement::simplify
     virtual void simplify() override;
 
-    /// \copydoc GotoStatement::genConstraints
-    virtual void genConstraints(LocationSet& cons) override;
-
 private:
     BranchType m_jumpType; ///< The condition for jumping
     SharedExp m_cond;      ///< The Exp representation of the high level condition: e.g., r[8] == 5

@@ -75,12 +75,6 @@ bool NamedType::operator<(const Type& other) const
 }
 
 
-SharedExp NamedType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
 QString NamedType::getCtype(bool /*final*/) const
 {
     return name;

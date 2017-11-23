@@ -77,12 +77,6 @@ SharedExp& Exp::refSubExp3()
 }
 
 
-//    //    //    //
-// TypeVal    //
-//    //    //    //
-
-
-
 char *Exp::prints()
 {
     QString     tgt;
@@ -188,53 +182,6 @@ SharedExp Exp::getGuard()
     }
 
     return nullptr;
-}
-
-
-SharedExp Exp::match(const SharedConstExp& pattern)
-{
-    if (*this == *pattern) {
-        return Terminal::get(opNil);
-    }
-
-    if (pattern->getOper() == opVar) {
-        return Binary::get(opList, Binary::get(opEquals, pattern->clone(), this->clone()), Terminal::get(opNil));
-    }
-
-    return nullptr;
-}
-
-
-static QRegularExpression variableRegexp("[a-zA-Z0-9]+");
-
-
-// TODO use regexp ?
-#define ISVARIABLE_S(x) \
-    (strspn((x.c_str()), "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") == (x).length())
-
-
-bool Exp::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
-{
-    // most obvious
-    QString     tgt;
-    QTextStream ostr(&tgt);
-
-    print(ostr);
-
-    if (tgt == pattern) {
-        return true;
-    }
-
-    assert((pattern.lastIndexOf(variableRegexp) == 0) == ISVARIABLE_S(pattern.toStdString()));
-
-    // alright, is pattern an acceptable variable?
-    if (pattern.lastIndexOf(variableRegexp) == 0) {
-        bindings[pattern] = shared_from_this();
-        return true;
-    }
-
-    // no, fail
-    return false;
 }
 
 
@@ -652,17 +599,6 @@ SharedExp Exp::fromSSAleft(UserProc *proc, Statement *d)
     SharedExp result = r->accept(xformer);
     delete xformer;
     return result;
-}
-
-
-//    //    //    //    //    //
-//    genConstraints    //
-//    //    //    //    //    //
-
-SharedExp Exp::genConstraints(SharedExp /*result*/)
-{
-    // Default case, no constraints -> return true
-    return Terminal::get(opTrue);
 }
 
 

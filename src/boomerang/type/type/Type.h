@@ -161,19 +161,6 @@ public:
     virtual bool operator!=(const Type& other) const;     ///< Considers sign
     virtual bool operator<(const Type& other) const = 0;  ///< Considers sign
 
-    /**
-     * Match operation.
-     * \param        pattern - Type to match
-     * \returns            Exp list of bindings if match or nullptr
-     */
-    virtual SharedExp match(SharedType pattern);
-
-    // Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
-    virtual SharedType mergeWith(SharedType /*other*/) const
-    {
-        assert(false);
-        return nullptr;
-    }
 
     // Acccess functions
 

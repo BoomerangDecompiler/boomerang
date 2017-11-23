@@ -69,10 +69,3 @@ bool ExpVisitor::visit(const std::shared_ptr<Terminal>&)
 {
     return true;
 }
-
-
-bool ExpVisitor::visit(const std::shared_ptr<TypeVal>&)
-{
-    return true;
-}
-

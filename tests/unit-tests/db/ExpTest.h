@@ -103,9 +103,6 @@ private slots:
 
     void testSimplifyAddr();
 
-    /// Test the simplifyConstraint functions
-    void testSimpConstr();
-
     /// Various tests of the operator< function
     void testLess();
 

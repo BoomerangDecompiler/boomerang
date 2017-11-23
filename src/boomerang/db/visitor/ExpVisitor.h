@@ -22,7 +22,6 @@ class RefExp;
 class Location;
 class Const;
 class Terminal;
-class TypeVal;
 
 
 /**
@@ -70,8 +69,4 @@ public:
     /// \copydoc ExpVisitor::visit
     /// A Terminal does not have children
     virtual bool visit(const std::shared_ptr<Terminal>& exp);
-
-    /// \copydoc ExpVisitor::visit
-    /// A TypeVal does not have children
-    virtual bool visit(const std::shared_ptr<TypeVal>& exp);
 };

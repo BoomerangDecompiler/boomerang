@@ -78,17 +78,11 @@ public:
     /// \copydoc Binary::simplifyAddr
     SharedExp simplifyAddr() override;
 
-    /// \copydoc Binary::genConstraints
-    SharedExp genConstraints(SharedExp restrictTo) override;
-
     /// \copydoc Binary::accept
     bool accept(ExpVisitor *v) override;
 
     /// \copydoc Binary::accept
     SharedExp accept(ExpModifier *v) override;
-
-    /// \copydoc Binary::match
-    virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
     /// \copydoc Binary::ascendType
     virtual SharedType ascendType() override;

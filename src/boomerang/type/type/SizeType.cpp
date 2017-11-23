@@ -61,15 +61,6 @@ bool SizeType::operator<(const Type& other) const
 }
 
 
-SharedType SizeType::mergeWith(SharedType other) const
-{
-    SharedType ret = other->clone();
-
-    ret->setSize(size);
-    return ret;
-}
-
-
 std::shared_ptr<SizeType> SizeType::get(unsigned int sz)
 {
     return std::make_shared<SizeType>(sz);

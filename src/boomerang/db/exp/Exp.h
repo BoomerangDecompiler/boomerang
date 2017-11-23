@@ -52,8 +52,8 @@ typedef std::shared_ptr<Type>        SharedType;
  *                    ____/  |     \
  *                   /       |      \
  *                Unary     Const   Terminal
- *   TypedExp____/  |   \              \
- *    FlagDef___/ Binary Location    TypeVal
+ *   TypedExp____/  |   \
+ *    FlagDef___/ Binary Location
  *     RefExp__/    |
  *               Ternary
  */
@@ -216,8 +216,6 @@ public:
             || m_oper == opGtrEqUns || m_oper == opLessEqUns;
     }
 
-    /// \returns true if this is a TypeVal
-    bool isTypeVal() const { return m_oper == opTypeVal; }
     /// \returns true if this is a machine feature
     bool isMachFtr() const { return m_oper == opMachFtr; }
     /// \returns true if this is a parameter. Note: opParam has two meanings: a SSL parameter, or a function parameter
@@ -227,18 +225,6 @@ public:
     bool isLocation() const { return m_oper == opMemOf || m_oper == opRegOf || m_oper == opGlobal || m_oper == opLocal || m_oper == opParam; }
     /// \returns True if this is a typed expression
     bool isTypedExp() const { return m_oper == opTypedExp; }
-
-    // FIXME: are these used?
-    // Matches this expression to the pattern, if successful returns a list of variable bindings, otherwise returns
-    // nullptr
-    virtual SharedExp match(const SharedConstExp& pattern);
-
-    /// match a string pattern
-    virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings);
-
-    //    //    //    //    //    //    //
-    //    Search and Replace    //
-    //    //    //    //    //    //    //
 
     /**
      * Search this expression for the given subexpression, and if found, return true and return a pointer
@@ -493,7 +479,6 @@ public:
      * \returns      Ptr to the simplified expression
      */
     virtual SharedExp simplifyAddr() { return shared_from_this(); }
-    virtual SharedExp simplifyConstraint() { return shared_from_this(); }
 
     /**
      * Replace succ(r[k]) by r[k+1]
@@ -523,22 +508,6 @@ public:
     // FIXME: if the wrapped expression does not convert to a location, the result is subscripted, which is probably not
     // what is wanted!
     SharedExp fromSSAleft(UserProc *proc, Statement *d);
-
-    /// Generate constraints for this Exp.
-    ///
-    /// \note The behaviour is a bit different depending on whether or not
-    /// parameter result is a type constant or a type variable.
-    /// If the constraint is always satisfied, return true
-    /// If the constraint can never be satisfied, return false
-    ///
-    /// Example: this is opMinus and result is <int>, constraints are:
-    ///     sub1 = <int> and sub2 = <int> or
-    ///     sub1 = <ptr> and sub2 = <ptr>
-    /// Example: this is opMinus and result is Tr (typeOf r), constraints are:
-    ///     sub1 = <int> and sub2 = <int> and Tr = <int> or
-    ///     sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
-    ///     sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
-    virtual SharedExp genConstraints(SharedExp restrictTo);
 
     /// All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
     /// function called each time is different for each class (because "this" is different each time)

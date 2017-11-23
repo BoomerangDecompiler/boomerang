@@ -46,9 +46,6 @@ public:
     void setProc(UserProc *p) { m_proc = p; }
     UserProc *getProc() { return m_proc; }
 
-    /// \copydoc Unary::match
-    virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
-
     /// \copydoc Unary::polySimplify
     virtual SharedExp polySimplify(bool& bMod) override;
 

@@ -16,7 +16,6 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/visitor/FlagsFinder.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -588,15 +587,6 @@ void ExpTest::testSimplifyBinary()
     actual = "";
     as->print(ost);
     QCOMPARE(actual, QString("   0 *v* r27 := m[r29 - 4]"));
-
-    // (false and true) or (Tr24 = <int>)
-    e = Binary::get(opOr, Binary::get(opAnd, Terminal::get(opFalse), Terminal::get(opTrue)),
-                    Binary::get(opEquals, Unary::get(opTypeOf, Location::regOf(24)), TypeVal::get(IntegerType::get(32, 1))));
-    e = e->simplify();
-
-    actual = "";
-    e->print(ost);
-    QCOMPARE(actual, QString("T[r24] = <int>"));
 }
 
 
@@ -626,49 +616,6 @@ void ExpTest::testSimplifyAddr()
     e = e->simplifyAddr();
     e->print(ost);
     QCOMPARE(actual, QString("1000"));
-}
-
-
-void ExpTest::testSimpConstr()
-{
-    // After
-    //     (T[local1{16}] = <int>) or (Tlocal1{16} = <alpha2*>)
-    // gets substituted to
-    //     (<char*> = <int>) or (<char*> = <alpha2*>)
-    // it should simplify to
-    //    <char*> = <alpha2*>
-    SharedExp e = Binary::get(opOr,
-                              Binary::get(opEquals,
-                                          TypeVal::get(PointerType::get(CharType::get())),
-                                          TypeVal::get(IntegerType::get(Address::getSourceBits()))),
-                              Binary::get(opEquals,
-                                          TypeVal::get(PointerType::get(CharType::get())),
-                                          TypeVal::get(PointerType::newPtrAlpha())));
-
-    e = e->simplifyConstraint();
-    QString     actual;
-    QTextStream ost(&actual);
-    e->print(ost);
-    QCOMPARE(actual, QString("<char *> = <alpha0 *>"));
-
-    // Similarly,
-    //     <char*> = <alpha0*>) and (T[134517848\1\] = <alpha0*>
-    // becomes after alpha substitution
-    //     (<char*> = <char*>) and (T[134517848\1\] = <char*>)
-    // which should simplify to
-    //     T[134517848\1\] = <char*>
-    e = Binary::get(opAnd,
-                    Binary::get(opEquals,
-                                TypeVal::get(PointerType::get(CharType::get())),
-                                TypeVal::get(PointerType::get(CharType::get()))),
-                    Binary::get(opEquals,
-                                Unary::get(opTypeOf, Const::get(0x123456)),
-                                TypeVal::get(PointerType::get(CharType::get()))));
-    e = e->simplifyConstraint();
-
-    actual = "";
-    e->print(ost);
-    QCOMPARE(actual, QString("T[0x123456] = <char *>"));
 }
 
 
@@ -940,13 +887,6 @@ void ExpTest::testTypeOf()
     QTextStream ost(&actual);
     ost << e;
     QCOMPARE(actual, QString("T[r24{5}] = T[r25{9}]"));
-
-    // T[r24{5}] = <float>
-    actual = "";
-    SharedType t = FloatType::get(32);
-    e = Binary::get(opEquals, Unary::get(opTypeOf, RefExp::get(Location::regOf(24), s5)), TypeVal::get(t));
-    ost << e;
-    QCOMPARE(actual, QString("T[r24{5}] = <float>"));
 }
 
 

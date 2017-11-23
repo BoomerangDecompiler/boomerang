@@ -71,10 +71,6 @@ public:
     /// \copydoc Statement::simplifyAddr
     virtual void simplifyAddr() override;
 
-    /// \copydoc Statement::genConstraints
-    virtual void genConstraints(LocationSet& cons) override;
-
-
 protected:
     SharedExp m_lhs; ///< The left hand side of the assignment
 };

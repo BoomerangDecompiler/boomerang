@@ -9,9 +9,9 @@
 #pragma endregion License
 #include "Const.h"
 
+
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/ArrayType.h"
@@ -87,7 +87,6 @@ Const::Const(Address a)
 }
 
 
-// Copy constructor
 Const::Const(const Const& o)
     : Exp(o.m_oper)
 {
@@ -152,105 +151,6 @@ bool Const::operator*=(const Exp& o) const
     }
 
     return *this == *other;
-}
-
-
-SharedExp Const::genConstraints(SharedExp result)
-{
-    if (result->isTypeVal()) {
-        // result is a constant type, or possibly a partial type such as ptr(alpha)
-        SharedType t     = result->access<TypeVal>()->getType();
-        bool       constraintMatched = false;
-
-        switch (m_oper)
-        {
-        case opLongConst:
-        // An integer constant is compatible with any size of integer, as long is it is in the right range
-        // (no test yet) FIXME: is there an endianness issue here?
-        case opIntConst:
-            constraintMatched = t->isInteger();
-
-            // An integer constant can also match a pointer to something.  Assume values less than 0x100 can't be a
-            // pointer
-            if ((unsigned)m_value.i >= 0x100) {
-                constraintMatched |= t->isPointer();
-            }
-
-            // We can co-erce 32 bit constants to floats
-            constraintMatched |= t->isFloat();
-            break;
-
-        case opStrConst:
-
-            if (t->isPointer()) {
-                auto ptr_type = std::static_pointer_cast<PointerType>(t);
-                constraintMatched = ptr_type->getPointsTo()->isChar() ||
-                        (ptr_type->getPointsTo()->isArray() &&
-                         (ptr_type->getPointsTo())->as<ArrayType>()->getBaseType()->isChar());
-            }
-
-            break;
-
-        case opFltConst:
-            constraintMatched = t->isFloat();
-            break;
-
-        default:
-            break;
-        }
-
-        if (constraintMatched) {
-            // This constant may require a cast or a change of format. So we generate a constraint.
-            // Don't clone 'this', so it can be co-erced after type analysis
-            return Binary::get(opEquals, Unary::get(opTypeOf, shared_from_this()), result->clone());
-        }
-        else {
-            // Doesn't match
-            return Terminal::get(opFalse);
-        }
-    }
-
-    // result is a type variable, which is constrained by this constant
-    SharedType t;
-
-    switch (m_oper)
-    {
-    case opIntConst:
-        {
-            // We have something like local1 = 1234.  Either they are both integer, or both pointer
-            SharedType intt = IntegerType::get(0);
-            SharedType alph = PointerType::newPtrAlpha();
-            return Binary::get(
-                opOr, Binary::get(
-                    opAnd, Binary::get(opEquals, result->clone(), TypeVal::get(intt)),
-                    Binary::get(opEquals,
-                                Unary::get(opTypeOf,
-                                           // Note: don't clone 'this', so we can change the Const after type analysis!
-                                           shared_from_this()),
-                                TypeVal::get(intt))),
-                Binary::get(opAnd, Binary::get(opEquals, result->clone(), TypeVal::get(alph)),
-                            Binary::get(opEquals, Unary::get(opTypeOf, shared_from_this()), TypeVal::get(alph))));
-        }
-
-    case opLongConst:
-        t = IntegerType::get(64);
-        break;
-
-    case opStrConst:
-        t = PointerType::get(CharType::get());
-        break;
-
-    case opFltConst:
-        t = FloatType::get(64);     // size is not known. Assume double for now
-        break;
-
-    default:
-        return nullptr;
-    }
-
-    auto      tv = TypeVal::get(t);
-    SharedExp e  = Binary::get(opEquals, result->clone(), tv);
-    return e;
 }
 
 
@@ -410,55 +310,42 @@ void Const::appendDotFile(QTextStream& of)
 }
 
 
-bool Const::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
-{
-    if (Exp::match(pattern, bindings)) {
-        return true;
-    }
-
-#ifdef DEBUG_MATCH
-    LOG_MSG("Matching %1 to %2.", this, pattern);
-#endif
-    return false;
-}
-
-
-bool Const::operator==(const Exp& o) const
+bool Const::operator==(const Exp& other) const
 {
     // Note: the casts of o to Const& are needed, else op is protected! Duh.
-    if (o.getOper() == opWild) {
+    if (other.getOper() == opWild) {
         return true;
     }
 
-    if ((o.getOper() == opWildIntConst) && (m_oper == opIntConst)) {
+    if ((other.getOper() == opWildIntConst) && (m_oper == opIntConst)) {
         return true;
     }
 
-    if ((o.getOper() == opWildStrConst) && (m_oper == opStrConst)) {
+    if ((other.getOper() == opWildStrConst) && (m_oper == opStrConst)) {
         return true;
     }
 
-    if (m_oper != o.getOper()) {
+    if (m_oper != other.getOper()) {
         return false;
     }
 
-    if ((m_conscript && (m_conscript != ((Const&)o).m_conscript)) || ((Const&)o).m_conscript) {
+    if ((m_conscript && (m_conscript != ((Const&)other).m_conscript)) || ((Const&)other).m_conscript) {
         return false;
     }
 
     switch (m_oper)
     {
     case opIntConst:
-        return m_value.i == ((Const&)o).m_value.i;
+        return m_value.i == ((Const&)other).m_value.i;
 
     case opLongConst:
-        return m_value.ll == ((Const&)o).m_value.ll;
+        return m_value.ll == ((Const&)other).m_value.ll;
 
     case opFltConst:
-        return m_value.d == ((Const&)o).m_value.d;
+        return m_value.d == ((Const&)other).m_value.d;
 
     case opStrConst:
-        return m_string == ((Const&)o).m_string;
+        return m_string == ((Const&)other).m_string;
 
     default:
         LOG_FATAL("Invalid operator %1", operToString(m_oper));

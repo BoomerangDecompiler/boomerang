@@ -301,9 +301,6 @@ public:
     // Only Assign overrides at present
     virtual void fixSuccessor() {}
 
-    /// Generate constraints (for constraint based type analysis)
-    virtual void genConstraints(LocationSet& /*cons*/) {}
-
     // Data flow based type analysis
     SharedType meetWithFor(SharedType ty, SharedExp e, bool& ch); // Meet the type associated with e with ty
 

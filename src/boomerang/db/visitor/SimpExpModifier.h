@@ -49,9 +49,6 @@ public:
     /// \copydoc ExpModifier::preVisit
     SharedExp preVisit(const std::shared_ptr<Terminal>& exp) override;
 
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preVisit(const std::shared_ptr<TypeVal>& exp)  override;
-
     /// \copydoc ExpModifier::postVisit
     SharedExp postVisit(const std::shared_ptr<Unary>& exp) override;
 
@@ -78,10 +75,6 @@ public:
 
     /// \copydoc ExpModifier::postVisit
     SharedExp postVisit(const std::shared_ptr<Terminal>& exp) override;
-
-    /// \copydoc ExpModifier::postVisit
-    SharedExp postVisit(const std::shared_ptr<TypeVal>& exp) override;
-
 
     unsigned getUnchanged() { return m_unchanged; }
     bool isTopChanged() { return !(m_unchanged & m_mask); }

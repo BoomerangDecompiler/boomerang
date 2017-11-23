@@ -71,36 +71,6 @@ SharedExp Location::clone() const
 }
 
 
-bool Location::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
-{
-    if (Exp::match(pattern, bindings)) {
-        return true;
-    }
-
-#ifdef DEBUG_MATCH
-    LOG_MSG("Matching %1 to %2.", this, pattern);
-#endif
-
-    if ((m_oper == opMemOf) || (m_oper == opRegOf)) {
-        if ((m_oper == opRegOf) && !pattern.startsWith("r[")) {
-            return false;
-        }
-
-        if ((m_oper == opMemOf) && !pattern.startsWith("m[")) {
-            return false;
-        }
-
-        if (!pattern.endsWith(']')) {
-            return false;
-        }
-
-        return subExp1->match(pattern.mid(2), bindings); // shouldn't this cut the last ']' ??
-    }
-
-    return false;
-}
-
-
 SharedExp Location::polySimplify(bool& bMod)
 {
     SharedExp res = Unary::polySimplify(bMod);

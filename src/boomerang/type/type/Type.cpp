@@ -17,9 +17,9 @@
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
 #include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -84,21 +84,6 @@ SharedType Type::parseType(const char *)
 bool Type::operator!=(const Type& other) const
 {
     return !(*this == other);
-}
-
-
-SharedExp Type::match(SharedType pattern)
-{
-    if (pattern->isNamed()) {
-        LOG_VERBOSE("type match: %1 to %2", this->getCtype(), pattern->getCtype());
-        return Binary::get(opList,
-                           Binary::get(opEquals,
-                                       Unary::get(opVar, Const::get(pattern->as<NamedType>()->getName())),
-                                       std::make_shared<TypeVal>(this->clone())),
-                           Terminal::get(opNil));
-    }
-
-    return nullptr;
 }
 
 

@@ -44,13 +44,6 @@ bool CharType::operator<(const Type& other) const
     return id < other.getId();
 }
 
-
-SharedExp CharType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
 QString CharType::getCtype(bool /*final*/) const
 {
     return "char";

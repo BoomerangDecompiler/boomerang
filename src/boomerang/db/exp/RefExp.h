@@ -58,14 +58,9 @@ public:
 
     SharedExp addSubscript(Statement *_def);
 
-    /// \copydoc Unary::genConstraints
-    virtual SharedExp genConstraints(SharedExp restrictTo) override;
-
     bool references(const Statement *s) const { return m_def == s; }
 
     virtual SharedExp polySimplify(bool& bMod) override;
-
-    virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
 
     /**
      * Before type analysis, implicit definitions are nullptr.

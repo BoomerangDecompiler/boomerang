@@ -198,19 +198,6 @@ void Terminal::appendDotFile(QTextStream& of)
 }
 
 
-bool Terminal::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
-{
-    if (Exp::match(pattern, bindings)) {
-        return true;
-    }
-
-#ifdef DEBUG_MATCH
-    LOG_MSG("Matching %1 to %2.", this, pattern);
-#endif
-    return false;
-}
-
-
 bool Terminal::accept(ExpVisitor *v)
 {
     return v->visit(shared_from_base<Terminal>());
