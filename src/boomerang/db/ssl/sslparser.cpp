@@ -1017,7 +1017,7 @@ SSLParser::
         // expand $2 from table of names
         if (TableDict.find(yyvsp[0].str) != TableDict.end())
             if (TableDict[yyvsp[0].str]->getType() == NAMETABLE)
-                yyval.namelist = new std::deque<QString>(TableDict[yyvsp[0].str]->Records);
+                yyval.namelist = new std::deque<QString>(TableDict[yyvsp[0].str]->getRecords());
             else {
                 yyerror(qPrintable(QString("name %1  is not a NAMETABLE.\n").arg(yyvsp[0].str)));
             }
@@ -1030,7 +1030,7 @@ SSLParser::
         // try and expand $1 from table of names. if fail, expand using '"' NAME '"' rule
         if (TableDict.find(yyvsp[0].str) != TableDict.end())
             if (TableDict[yyvsp[0].str]->getType() == NAMETABLE)
-                yyval.namelist = new std::deque<QString>(TableDict[yyvsp[0].str]->Records);
+                yyval.namelist = new std::deque<QString>(TableDict[yyvsp[0].str]->getRecords());
             else {
                 yyerror(qPrintable(QString("name %1  is not a NAMETABLE.\n").arg(yyvsp[0].str)));
             }
@@ -1145,10 +1145,10 @@ SSLParser::
     case 70: {
         if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
             yyerror(qPrintable(QString("Table %1 has not been declared.\n").arg(yyvsp[-2].str)));
-        } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->Records.size())) {
+        } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->getRecords().size())) {
             yyerror(qPrintable(QString("Can't get element %1  of table %2\n").arg(yyvsp[-1].num).arg(yyvsp[-2].str)));
         } else
-            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num]);
+            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->getRecords()[yyvsp[-1].num]);
         ;
         break;
     }
@@ -1163,10 +1163,10 @@ SSLParser::
     case 72: {
         if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
             yyerror(qPrintable(QString("Table %1 has not been declared.\n").arg(yyvsp[-2].str)));
-        } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->Records.size())) {
+        } else if ((yyvsp[-1].num < 0) || (yyvsp[-1].num >= (int)TableDict[yyvsp[-2].str]->getRecords().size())) {
             yyerror(qPrintable(QString("Can't get element %1  of table %2\n").arg(yyvsp[-1].num).arg(yyvsp[-2].str)));
         } else
-            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->Records[yyvsp[-1].num]);
+            yyval.insel = std::make_shared<InsNameElem>(TableDict[yyvsp[-2].str]->getRecords()[yyvsp[-1].num]);
         ;
         break;
     }
@@ -1502,7 +1502,7 @@ SSLParser::
         } else if (TableDict[yyvsp[-3].str]->getType() != OPTABLE) {
             yyerror(qPrintable(QString("table %1 is not an operator table but appears to be used as one.\n")
                                .arg(yyvsp[-3].str)));
-        } else if (TableDict[yyvsp[-3].str]->Records.size() < indexrefmap[yyvsp[-2].str]->getNumTokens()) {
+        } else if (TableDict[yyvsp[-3].str]->getRecords().size() < indexrefmap[yyvsp[-2].str]->getNumTokens()) {
             yyerror(qPrintable(QString("table %1 is too small to use with %2 as an index.\n")
                                .arg(yyvsp[-2].str)));
         }

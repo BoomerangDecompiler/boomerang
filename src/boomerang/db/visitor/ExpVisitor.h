@@ -33,6 +33,7 @@ public:
     ExpVisitor() = default;
     virtual ~ExpVisitor() = default;
 
+public:
     /**
      * Visit the expression while iterating through the expression tree.
      * The default behaviour is to visit all expressions and all children.

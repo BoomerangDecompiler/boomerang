@@ -26,7 +26,7 @@ QTextStream& operator<<(QTextStream& os, const InstructionSet *ss)
 
 
 
-void InstructionSet::makeUnion(InstructionSet& other)
+void InstructionSet::makeUnion(const InstructionSet& other)
 {
     std::set<Statement *>::iterator it;
 
@@ -36,7 +36,7 @@ void InstructionSet::makeUnion(InstructionSet& other)
 }
 
 
-void InstructionSet::makeDiff(InstructionSet& other)
+void InstructionSet::makeDiff(const InstructionSet& other)
 {
     std::set<Statement *>::iterator it;
 
@@ -46,7 +46,7 @@ void InstructionSet::makeDiff(InstructionSet& other)
 }
 
 
-void InstructionSet::makeIsect(InstructionSet& other)
+void InstructionSet::makeIsect(const InstructionSet& other)
 {
     std::set<Statement *>::iterator it, ff;
 
@@ -61,7 +61,7 @@ void InstructionSet::makeIsect(InstructionSet& other)
 }
 
 
-bool InstructionSet::isSubSetOf(InstructionSet& other)
+bool InstructionSet::isSubSetOf(const InstructionSet& other)
 {
     std::set<Statement *>::iterator it, ff;
 

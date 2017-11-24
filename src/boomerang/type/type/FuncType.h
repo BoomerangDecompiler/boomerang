@@ -16,19 +16,26 @@
 class FuncType : public Type
 {
 public:
-    static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature>& sig = nullptr) { return std::make_shared<FuncType>(sig); }
     FuncType(const std::shared_ptr<Signature>& sig = nullptr);
+    FuncType(const FuncType& other) = default;
+    FuncType(FuncType&& other) = default;
+
     virtual ~FuncType() override;
+
+    FuncType& operator=(const FuncType& other) = default;
+    FuncType& operator=(FuncType&& other) = default;
+
+public:
+    static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature>& sig = nullptr) { return std::make_shared<FuncType>(sig); }
     virtual bool isFunc() const override { return true; }
 
     virtual SharedType clone() const override;
+    virtual bool operator==(const Type& other) const override;
+    virtual bool operator<(const Type& other) const override;
 
     Signature *getSignature() { return signature.get(); }
     void setSignature(std::shared_ptr<Signature>& sig) { signature = sig; }
-    virtual bool operator==(const Type& other) const override;
 
-    // virtual bool          operator-=(const Type& other) const;
-    virtual bool operator<(const Type& other) const override;
 
     virtual size_t getSize() const override;
 

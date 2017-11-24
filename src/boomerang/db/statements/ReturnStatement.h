@@ -26,8 +26,15 @@ public:
 
 public:
     ReturnStatement();
+    ReturnStatement(const ReturnStatement& other) = default;
+    ReturnStatement(ReturnStatement&& other) = default;
+
     virtual ~ReturnStatement() override;
 
+    ReturnStatement& operator=(const ReturnStatement& other) = default;
+    ReturnStatement& operator=(ReturnStatement&& other) = default;
+
+public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 

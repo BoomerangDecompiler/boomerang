@@ -41,8 +41,14 @@ public:
 
 public:
     PluginHandle(const QString& filePath);
+    PluginHandle(const PluginHandle& other) = delete;
+    PluginHandle(PluginHandle&& other) = default;
     ~PluginHandle();
 
+    PluginHandle& operator=(const PluginHandle& other) = delete;
+    PluginHandle& operator=(PluginHandle&& other) = default;
+
+public:
     Symbol getSymbol(const char *name) const;
 
 private:
@@ -85,12 +91,19 @@ public:
         }
     }
 
+    Plugin(const Plugin& other) = delete;
+    Plugin(Plugin&& other) = default;
+
     ~Plugin()
     {
         deinit();
         // library is automatically unloaded
     }
 
+    Plugin& operator=(const Plugin& other) = delete;
+    Plugin& operator=(Plugin&& other) = default;
+
+public:
     /// Get information about the plugin.
     const PluginInfo *getInfo() const
     {
@@ -111,9 +124,6 @@ public:
     inline IFC *operator->() { return this->get(); }
 
 private:
-    Plugin(const Plugin& other) = delete;
-    const Plugin& operator=(const Plugin& other) = delete;
-
     /// Initialize the plugin.
     bool init()
     {

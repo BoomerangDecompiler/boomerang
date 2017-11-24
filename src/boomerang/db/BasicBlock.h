@@ -145,6 +145,7 @@ public:
     BasicBlock& operator=(const BasicBlock& bb);
     BasicBlock& operator=(BasicBlock&& bb) = default;
 
+public:
     /// \returns the type pf the BasicBlock
     inline BBType getType()         const { return m_nodeType; }
     inline bool isType(BBType type) const { return m_nodeType == type; }

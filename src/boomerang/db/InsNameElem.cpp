@@ -145,14 +145,14 @@ InsListElem::InsListElem(const QString& name, const std::shared_ptr<Table>& t, c
 
 size_t InsListElem::getNumTokens() const
 {
-    return m_theTable->Records.size();
+    return m_theTable->getRecords().size();
 }
 
 
 QString InsListElem::getInstruction() const
 {
-    return (m_nextElem != nullptr) ? (m_theTable->Records[getValue()] + m_nextElem->getInstruction())
-           : m_theTable->Records[getValue()];
+    return (m_nextElem != nullptr) ? (m_theTable->getRecords()[getValue()] + m_nextElem->getInstruction())
+           : m_theTable->getRecords()[getValue()];
 }
 
 

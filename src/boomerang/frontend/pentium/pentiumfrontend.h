@@ -25,10 +25,16 @@ class PentiumFrontEnd : public IFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     PentiumFrontEnd(IFileLoader *pLoader, Prog *prog);
+    PentiumFrontEnd(const PentiumFrontEnd& other) = delete;
+    PentiumFrontEnd(PentiumFrontEnd&& other) = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
-    virtual ~PentiumFrontEnd();
+    virtual ~PentiumFrontEnd() override;
 
+    PentiumFrontEnd& operator=(const PentiumFrontEnd& other) = delete;
+    PentiumFrontEnd& operator=(PentiumFrontEnd&& other) = default;
+
+public:
     /// \copydoc IFrontEnd::getFrontEndId
     virtual Platform getType() const override { return Platform::PENTIUM; }
 

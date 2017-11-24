@@ -25,14 +25,13 @@
  */
 class ConnectionGraph
 {
-    std::multimap<SharedExp, SharedExp, lessExpStar> emap;   ///< The map
+    typedef std::multimap<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 
 public:
-    typedef std::multimap<SharedExp, SharedExp, lessExpStar>::iterator       iterator;
-    typedef std::multimap<SharedExp, SharedExp, lessExpStar>::const_iterator const_iterator;
+    typedef ExpExpMap::iterator       iterator;
+    typedef ExpExpMap::const_iterator const_iterator;
 
-    ConnectionGraph() = default;
-
+public:
     /// Add pair with check for existing
     void add(SharedExp a, SharedExp b);
     void connect(SharedExp a, SharedExp b);
@@ -59,4 +58,7 @@ public:
 
 private:
     std::vector<SharedExp> allConnected(SharedExp a);
+
+private:
+   ExpExpMap emap;   ///< The map
 };

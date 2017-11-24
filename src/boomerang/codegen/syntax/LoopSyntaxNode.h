@@ -21,7 +21,13 @@ class LoopSyntaxNode : public SyntaxNode
 {
 public:
     LoopSyntaxNode(SyntaxNode *body = nullptr, SharedExp cond = nullptr, bool postTested = false);
+    LoopSyntaxNode(const LoopSyntaxNode& other) = delete;
+    LoopSyntaxNode(LoopSyntaxNode&& other) = delete;
+
     virtual ~LoopSyntaxNode() override;
+
+    LoopSyntaxNode& operator=(const LoopSyntaxNode& other) = delete;
+    LoopSyntaxNode& operator=(LoopSyntaxNode& other) = delete;
 
 public:
     /// \copydoc SyntaxNode::isBranch

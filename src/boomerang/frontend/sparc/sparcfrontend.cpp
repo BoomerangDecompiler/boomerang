@@ -666,7 +666,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
     // Get the next address from which to continue decoding and go from
     // there. Exit the loop if there are no more addresses or they all
     // correspond to locations that have been decoded.
-    while ((uAddr = _targetQueue.nextAddress(*cfg)) != Address::INVALID) {
+    while ((uAddr = _targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
         // The list of RTLs for the current basic block
         std::list<RTL *> *BB_rtls = new std::list<RTL *>();
 
@@ -1409,11 +1409,6 @@ SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog)
     nop_inst.type     = NOP;
     nop_inst.valid    = true;
     nop_inst.rtl      = new RTL();
-}
-
-
-SparcFrontEnd::~SparcFrontEnd()
-{
 }
 
 

@@ -123,7 +123,7 @@ void LocationSet::removeIfDefines(InstructionSet& given)
 }
 
 
-void LocationSet::makeUnion(LocationSet& other)
+void LocationSet::makeUnion(const LocationSet& other)
 {
     iterator it;
 
@@ -133,7 +133,7 @@ void LocationSet::makeUnion(LocationSet& other)
 }
 
 
-void LocationSet::makeDiff(LocationSet& other)
+void LocationSet::makeDiff(const LocationSet& other)
 {
     ExpSet::iterator it;
 

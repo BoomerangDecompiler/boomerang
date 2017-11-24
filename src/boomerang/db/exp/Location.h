@@ -23,8 +23,15 @@ public:
      * \param proc - enclosing procedure, if null this constructor will try to find it.
      */
     Location(OPER op, SharedExp exp, UserProc *proc);
-    Location(Location& o);
+    Location(const Location& other);
+    Location(Location&& other) = default;
 
+    virtual ~Location() override = default;
+
+    Location& operator=(const Location& other) = default;
+    Location& operator=(Location&& other) = default;
+
+public:
     virtual SharedExp clone() const override;
 
     static SharedExp get(OPER op, SharedExp childExp, UserProc *proc) { return std::make_shared<Location>(op, childExp, proc); }

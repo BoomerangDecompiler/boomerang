@@ -17,10 +17,13 @@
 
 #include "boomerang/util/Types.h"
 
+
 class Printable
 {
 public:
-    virtual ~Printable() {}
+    virtual ~Printable() = default;
+
+public:
     virtual QString toString() const = 0;
 };
 

@@ -21,20 +21,18 @@ class QTextStream;
 class AssignSet : public std::set<Assign *, lessAssign>
 {
 public:
-    ~AssignSet() {}
-
     // Make this set the union of itself and other
-    void makeUnion(AssignSet& other);         ///< Set union
+    void makeUnion(const AssignSet& other);         ///< Set union
 
     // Make this set the difference of itself and other
-    void makeDiff(AssignSet& other);          ///< Set difference
+    void makeDiff(const AssignSet& other);          ///< Set difference
 
     /// Make this set the intersection of itself and other
-    void makeIsect(AssignSet& other);         ///< Set intersection
+    void makeIsect(const AssignSet& other);         ///< Set intersection
 
     // Check for the subset relation, i.e. are all my elements also in the set
     // other. Effectively (this intersect other) == this
-    bool isSubSetOf(AssignSet& other);        ///< Subset relation
+    bool isSubSetOf(const AssignSet& other);        ///< Subset relation
 
     // Remove this Assign. Return false if it was not found
     bool remove(Assign *a);                   ///< Removal; rets false if not found

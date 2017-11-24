@@ -46,7 +46,7 @@ bool UseCollector::operator==(const UseCollector& other) const
 }
 
 
-void UseCollector::makeCloneOf(UseCollector& other)
+void UseCollector::makeCloneOf(const UseCollector& other)
 {
     m_initialised = other.m_initialised;
     m_locs.clear();

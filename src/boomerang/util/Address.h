@@ -32,9 +32,12 @@ public:
     explicit Address();
     explicit Address(value_type value);
 
-    Address(const Address&)            = default;
-    Address& operator=(const Address&) = default;
+    Address(const Address&)             = default;
+    Address(Address&&)                  = default;
+    Address& operator=(const Address&)  = default;
+    Address& operator=(Address&&)       = default;
 
+public:
     /// Set the bit count of the source machine.
     static void setSourceBits(Byte bitCount = STD_SIZE);
 
@@ -94,8 +97,11 @@ public:
     explicit HostAddress(Address srcAddr, ptrdiff_t hostDiff);
 
     HostAddress(const HostAddress& other)            = default;
+    HostAddress(HostAddress&& other)                 = default;
     HostAddress& operator=(const HostAddress& other) = default;
+    HostAddress& operator=(HostAddress&& other)      = default;
 
+public:
     inline value_type value() const { return m_value; }
     inline bool isZero() const { return m_value == 0; }
 

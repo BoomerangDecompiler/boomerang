@@ -24,6 +24,7 @@ public:
     PalmBinaryLoader();
     virtual ~PalmBinaryLoader();
 
+public:
     /// \copydoc IFileLoader::initialize
     void initialize(IBinaryImage *image, IBinarySymbolTable *table) override;
 

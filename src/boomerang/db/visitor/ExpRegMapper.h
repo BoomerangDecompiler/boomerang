@@ -24,7 +24,9 @@ class ExpRegMapper : public ExpVisitor
 {
 public:
     ExpRegMapper(UserProc *proc);
+    virtual ~ExpRegMapper() = default;
 
+public:
     /// \copydoc ExpVisitor::visit
     bool visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 

@@ -63,9 +63,16 @@ protected:
     /// Constructor, with operator
     Exp(OPER oper) : m_oper(oper) {}
 
+    Exp(const Exp& other) = default;
+    Exp(Exp&& other) = default;
+
+    Exp& operator=(const Exp&) = default;
+    Exp& operator=(Exp&&) = default;
+
 public:
     virtual ~Exp() override = default;
 
+public:
     /// Clone (make copy of self that can be deleted without affecting self)
     virtual SharedExp clone() const = 0;
 
@@ -103,10 +110,7 @@ public:
     /// with its type in \<angle brackets\>.
     void printt(QTextStream& os) const;
 
-    /**
-     * Print to a static buffer (for debugging)
-     * \returns      Address of the static buffer
-     */
+    /// Print to a static buffer (for debugging)
     char *prints();
 
     /// For debugging: print in indented hex. In gdb: "p x->printx(0)"
@@ -310,8 +314,6 @@ public:
      */
     SharedExp propagateAllRpt(bool& changed);
 
-
-    // Sub expressions
 
     /**
      * These are here so we can (optionally) prevent code clutter.

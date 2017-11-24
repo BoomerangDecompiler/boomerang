@@ -27,23 +27,11 @@ TableEntry::TableEntry()
 }
 
 
-TableEntry::TableEntry(std::list<QString>& p, RTL& r)
-    : m_rtl(r)
+TableEntry::TableEntry(const std::list<QString>& params, const RTL& rtl)
+    : m_rtl(rtl)
     , m_flags(0)
 {
-    std::copy(p.begin(), p.end(), std::back_inserter(m_params));
-}
-
-
-void TableEntry::setParam(std::list<QString>& p)
-{
-    m_params = p;
-}
-
-
-void TableEntry::setRTL(RTL& r)
-{
-    m_rtl = r;
+    std::copy(params.begin(), params.end(), std::back_inserter(m_params));
 }
 
 
@@ -55,46 +43,27 @@ TableEntry& TableEntry::operator=(const TableEntry& other)
 }
 
 
-int TableEntry::appendRTL(std::list<QString>& p, RTL& r)
+int TableEntry::appendRTL(const std::list<QString>& params, const RTL& rtl)
 {
-    bool match = (p.size() == m_params.size());
-
-    std::list<QString>::iterator a, b;
-
-    for (a = m_params.begin(), b = p.begin(); match && (a != m_params.end()) && (b != p.end());
-         match = (*a == *b), a++, b++) {
+    if (!std::equal(m_params.begin(), m_params.end(), params.begin())) {
+        return -1;
     }
 
-    if (match) {
-        m_rtl.append(r);
-        return 0;
-    }
-
-    return -1;
+    m_rtl.append(rtl);
+    return 0;
 }
 
-
-RTLInstDict::RTLInstDict()
+int RTLInstDict::insert(const QString& name, std::list<QString>& params, const RTL& rtl)
 {
-}
-
-
-RTLInstDict::~RTLInstDict()
-{
-}
-
-
-int RTLInstDict::insert(const QString& n, std::list<QString>& p, RTL& r)
-{
-    QString opcode = n.toUpper();
+    QString opcode = name.toUpper();
 
     opcode.remove(".");
 
     if (idict.find(opcode) == idict.end()) {
-        idict[opcode] = TableEntry(p, r);
+        idict[opcode] = TableEntry(params, rtl);
     }
     else {
-        return idict[opcode].appendRTL(p, r);
+        return idict[opcode].appendRTL(params, rtl);
     }
 
     return 0;

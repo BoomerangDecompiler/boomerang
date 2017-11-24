@@ -83,6 +83,7 @@ public:
     HpSomBinaryLoader();    // Constructor
     virtual ~HpSomBinaryLoader();
 
+public:
     /// \copydoc IFileLoader::initialize
     void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 

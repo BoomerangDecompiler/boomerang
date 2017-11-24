@@ -56,7 +56,13 @@ private:
      * - Main log stream is output on stderr
      */
     Boomerang();
+    Boomerang(const Boomerang& other) = delete;
+    Boomerang(Boomerang&& other) = delete;
+
     virtual ~Boomerang() override;
+
+    Boomerang& operator=(const Boomerang& other) = delete;
+    Boomerang& operator=(Boomerang&& other) = delete;
 
 public:
     /// \returns The global boomerang object. It will be created if it does not already exist.
@@ -68,12 +74,10 @@ public:
 
     IProject *getOrCreateProject() override;
 
+    /// \returns the library version string
     static const char *getVersionStr();
 
-    /**
-     * Returns the ICodeGenerator for the given proc.
-     * \return The ICodeGenerator for the specified UserProc.
-     */
+    /// \returns the code generator that is currently in use.
     ICodeGenerator *getCodeGenerator();
 
 
@@ -98,6 +102,7 @@ public:
      */
     int decompile(const QString& fname, const char *pname = nullptr);
 
+public:
     /// Add a Watcher to the set of Watchers for this Boomerang object.
     void addWatcher(IWatcher *watcher) { m_watchers.insert(watcher); }
 

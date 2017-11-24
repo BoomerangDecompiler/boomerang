@@ -12,12 +12,20 @@
 
 #include "boomerang/codegen/syntax/SyntaxNode.h"
 
+
 class BlockSyntaxNode : public SyntaxNode
 {
 public:
     BlockSyntaxNode();
+    BlockSyntaxNode(const BlockSyntaxNode& other) = delete;
+    BlockSyntaxNode(BlockSyntaxNode&& other) = default;
+
     virtual ~BlockSyntaxNode() override;
 
+    BlockSyntaxNode& operator=(const BlockSyntaxNode& other) = delete;
+    BlockSyntaxNode& operator=(BlockSyntaxNode&& other) = default;
+
+public:
     virtual bool isBlock() const override;
 
     virtual void ignoreGoto() override;

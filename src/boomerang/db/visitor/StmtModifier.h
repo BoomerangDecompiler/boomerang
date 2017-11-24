@@ -38,9 +38,9 @@ class StmtModifier
 {
 public:
     StmtModifier(ExpModifier *em, bool ignoreCollector = false);
-
     virtual ~StmtModifier() = default;
 
+public:
     bool ignoreCollector() const { return m_ignoreCol; }
 
     /// Modify a statement.

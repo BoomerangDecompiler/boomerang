@@ -38,7 +38,15 @@ class SparcDecoder : public NJMCDecoder
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
     SparcDecoder(Prog *prog);
+    SparcDecoder(const SparcDecoder& other) = delete;
+    SparcDecoder(SparcDecoder&& other) = default;
 
+    virtual ~SparcDecoder() override = default;
+
+    SparcDecoder& operator=(const SparcDecoder& other) = delete;
+    SparcDecoder& operator=(SparcDecoder&& other) = default;
+
+public:
     /// \copydoc NJMCDecoder::decodeInstruction
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 

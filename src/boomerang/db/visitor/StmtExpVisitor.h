@@ -33,6 +33,7 @@ public:
     StmtExpVisitor(ExpVisitor *v, bool ignoreCol = true);
     virtual ~StmtExpVisitor() = default;
 
+public:
     /// Visit all expressions in a statement.
     /// \param[in]  stmt The statement to visit.
     /// \param[out] visitChildren set to false to not visit child expressions.

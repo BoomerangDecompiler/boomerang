@@ -35,6 +35,7 @@ public:
     StmtVisitor() = default;
     virtual ~StmtVisitor() = default;
 
+public:
     /// returns true to continue iterating the container
     virtual bool visit(RTL *rtl);
 

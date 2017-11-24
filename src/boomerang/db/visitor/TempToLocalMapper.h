@@ -22,7 +22,9 @@ class TempToLocalMapper : public ExpVisitor
 {
 public:
     TempToLocalMapper(UserProc *proc);
+    virtual ~TempToLocalMapper() = default;
 
+public:
     /// \copydoc ExpVisitor::visit
     bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 

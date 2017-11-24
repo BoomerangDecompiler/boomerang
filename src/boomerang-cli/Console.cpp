@@ -44,11 +44,6 @@ Console::Console()
 }
 
 
-Console::~Console()
-{
-}
-
-
 CommandStatus Console::handleCommand(const QString& commandWithArgs)
 {
     QStringList args;

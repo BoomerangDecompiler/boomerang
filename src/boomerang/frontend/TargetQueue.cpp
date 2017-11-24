@@ -38,7 +38,7 @@ void TargetQueue::initial(Address uAddr)
 }
 
 
-Address TargetQueue::nextAddress(const Cfg& cfg)
+Address TargetQueue::getNextAddress(const Cfg& cfg)
 {
     while (!m_targets.empty()) {
         Address address = m_targets.front();

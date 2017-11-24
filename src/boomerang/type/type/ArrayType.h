@@ -24,13 +24,17 @@ class ArrayType : public Type
 {
 public:
     /// Create a new array type of fixed length
-    ArrayType(SharedType p, unsigned _length);
+    ArrayType(SharedType baseType, unsigned length = NO_BOUND);
 
-    /// Create a new array type with unknown upper bound
-    ArrayType(SharedType p);
+    ArrayType(const ArrayType& other) = default;
+    ArrayType(ArrayType&& other) = default;
 
-    virtual ~ArrayType() override;
+    virtual ~ArrayType() override = default;
 
+    ArrayType& operator=(const ArrayType& other) = default;
+    ArrayType& operator=(ArrayType&& other) = default;
+
+public:
     virtual bool isArray() const override { return true; }
 
     /// \returns the type of elements of this array

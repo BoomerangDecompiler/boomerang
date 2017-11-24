@@ -21,7 +21,9 @@ class ConscriptSetter : public ExpVisitor
 {
 public:
     ConscriptSetter(int n, bool clear);
+    virtual ~ConscriptSetter() = default;
 
+public:
     int getLast() const;
 
     /// \copydoc ExpVisitor::visit

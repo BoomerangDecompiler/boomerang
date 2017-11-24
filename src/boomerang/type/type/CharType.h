@@ -17,7 +17,15 @@ class CharType : public Type
 {
 public:
     CharType();
+    CharType(CharType& other) = default;
+    CharType(CharType&& other) = default;
+
     virtual ~CharType() override;
+
+    CharType& operator=(CharType& other) = default;
+    CharType& operator=(CharType&& other) = default;
+
+public:
     virtual bool isChar() const override { return true; }
 
     virtual SharedType clone() const override;

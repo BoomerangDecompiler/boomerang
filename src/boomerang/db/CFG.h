@@ -61,7 +61,6 @@ public:
     typedef std::list<BasicBlock *>::iterator                      iterator;
     typedef std::list<BasicBlock *>::const_iterator                const_iterator;
 
-public:
     class BBAlreadyExistsError : public std::exception
     {
     public:
@@ -70,12 +69,18 @@ public:
             : pBB(_pBB) {}
     };
 
+public:
     /// Creates an empty CFG for the function \p proc
     Cfg(UserProc *proc);
-    Cfg(const Cfg&) = delete;
-    Cfg& operator=(const Cfg&) = delete;
+    Cfg(Cfg&) = delete;
+    Cfg(Cfg&&) = default;
+
     ~Cfg();
 
+    Cfg& operator=(Cfg&) = delete;
+    Cfg& operator=(Cfg&&) = default;
+
+public:
     /// Remove all basic blocks from the CFG
     void clear();
 

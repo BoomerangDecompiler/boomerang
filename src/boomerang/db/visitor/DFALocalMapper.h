@@ -32,7 +32,9 @@ public:
      * when at a sum or difference, check for the address of locals high level pattern that is a pointer
      */
     DfaLocalMapper(UserProc *proc);
+    virtual ~DfaLocalMapper() = default;
 
+public:
     /// \copydoc ExpModifier::preVisit
     /// To process m[X]
     SharedExp preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;

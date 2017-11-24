@@ -90,8 +90,15 @@ public:
      * \param mod     Module that contains this function
      */
     UserProc(Address address, const QString& name, Module *mod);
+    UserProc(const UserProc&) = delete;
+    UserProc(UserProc&&) = default;
+
     virtual ~UserProc() override;
 
+    UserProc& operator=(const UserProc&) = delete;
+    UserProc& operator=(UserProc&&) = default;
+
+public:
     /// \copydoc Printable::toString
     virtual QString toString() const override;
 

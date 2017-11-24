@@ -33,8 +33,15 @@ class SparcFrontEnd : public IFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     SparcFrontEnd(IFileLoader *p_BF, Prog *prog);
-    virtual ~SparcFrontEnd();
+    SparcFrontEnd(const SparcFrontEnd& other) = delete;
+    SparcFrontEnd(SparcFrontEnd&& other) = default;
 
+    virtual ~SparcFrontEnd() = default;
+
+    SparcFrontEnd& operator=(const SparcFrontEnd&) = delete;
+    SparcFrontEnd& operator=(SparcFrontEnd&&) = default;
+
+public:
     /// \copydoc IFrontEnd::getType
     virtual Platform getType() const override { return Platform::SPARC; }
 

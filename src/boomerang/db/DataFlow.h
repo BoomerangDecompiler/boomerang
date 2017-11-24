@@ -41,8 +41,15 @@ class DataFlow
 {
 public:
     DataFlow();
+    DataFlow(const DataFlow& other) = delete;
+    DataFlow(DataFlow&& other) = default;
+
     ~DataFlow();
 
+    DataFlow& operator=(const DataFlow& other) = delete;
+    DataFlow& operator=(DataFlow&& other) = default;
+
+public:
     /// Place phi functions.
     /// \returns true if any change
     bool placePhiFunctions(UserProc *proc);

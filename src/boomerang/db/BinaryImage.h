@@ -35,8 +35,15 @@ class BinaryImage : public IBinaryImage
 {
 public:
     BinaryImage();
+    BinaryImage(const BinaryImage& other) = delete;
+    BinaryImage(BinaryImage&& other) = default;
+
     virtual ~BinaryImage() override;
 
+    BinaryImage& operator=(const BinaryImage& other) = delete;
+    BinaryImage& operator=(BinaryImage&& other) = default;
+
+public:
     /// \copydoc IBinaryImage::size
     size_t size() const override { return m_sections.size(); }
 
@@ -93,10 +100,6 @@ public:
 
     /// \copydoc IBinaryImage::isReadOnly
     bool isReadOnly(Address addr) override;
-
-private:
-    BinaryImage(const BinaryImage&)            = delete; ///< prevent copy-construction
-    BinaryImage& operator=(const BinaryImage&) = delete; ///< prevent assignment
 
 private:
     Address m_limitTextLow;

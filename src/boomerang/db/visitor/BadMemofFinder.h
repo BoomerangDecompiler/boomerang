@@ -23,9 +23,12 @@ class BadMemofFinder : public ExpVisitor
 {
 public:
     BadMemofFinder();
+    virtual ~BadMemofFinder() = default;
+
+public:
     bool isFound() { return m_found; }
 
-private:
+public:
     /// \copydoc ExpVisitor::visit
     virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 

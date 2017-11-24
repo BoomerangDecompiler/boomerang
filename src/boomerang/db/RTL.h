@@ -36,27 +36,23 @@ public:
     /// \param   instrAddr the address of the instruction
     /// \param   listStmt  ptr to existing list of Statement
     RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);
-
-    /// Makes this RTL a deep copy of \p other.
-    RTL(const RTL& other);
-
+    RTL(const RTL& other); ///< Deep copies the content
+    RTL(RTL&& other) = default;
     ~RTL();
-
-    /// Creates a deep copy clone of this RTL.
-    RTL *clone() const;
 
     /// Makes this RTL a deep copy of \p other.
     const RTL& operator=(const RTL& other);
+    RTL& operator=(RTL&& other) = default;
 
-    // Common enquiry methods
+public:
+    /// Creates a deep copy clone of this RTL.
+    RTL *clone() const;
 
     /// Return RTL's native address
     Address getAddress() const { return m_nativeAddr; }
 
     /// Set the address of this RTL
     void setAddress(Address a) { m_nativeAddr = a; }
-
-    // Statement list editing methods
 
     /**
      *  Append \p s to the end of this RTL.
@@ -67,7 +63,7 @@ public:
     void append(Statement *s);
 
     /// Append a deep copy of \p le to this RTL.
-    void append(std::list<Statement *>& le);
+    void append(const std::list<Statement *>& le);
 
     /// Deep copy the elements of this RTL into the given list.
     void deepCopyList(std::list<Statement *>& dest) const;

@@ -50,8 +50,15 @@ signals:
 public:
     Module();
     Module(const QString& name, Prog *prog, IFrontEnd *fe);
+    Module(const Module& other) = delete;
+    Module(Module&& other) = default;
+
     virtual ~Module();
 
+    Module& operator=(const Module& other) = delete;
+    Module& operator=(Module&& other) = default;
+
+public:
     QString getName() const { return m_name; }
     void setName(const QString& nam) { m_name = nam; }
 

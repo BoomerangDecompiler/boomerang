@@ -36,11 +36,6 @@ MIPSFrontEnd::MIPSFrontEnd(IFileLoader *loader, Prog *prog)
 }
 
 
-MIPSFrontEnd::~MIPSFrontEnd()
-{
-}
-
-
 std::vector<SharedExp>& MIPSFrontEnd::getDefaultParams()
 {
     static std::vector<SharedExp> params;

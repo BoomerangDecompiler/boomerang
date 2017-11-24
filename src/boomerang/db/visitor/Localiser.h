@@ -24,7 +24,9 @@ class Localiser : public SimpExpModifier
 {
 public:
     Localiser(CallStatement *call);
+    virtual ~Localiser() = default;
 
+public:
     /// \copydoc SimpExpModifier::preVisit
     SharedExp preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 

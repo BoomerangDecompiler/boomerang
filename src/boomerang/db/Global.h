@@ -23,8 +23,15 @@ class Global : public Printable
 {
 public:
     Global(SharedType type, Address addr, const QString& name, Prog *prog);
+    Global(const Global& other) = delete;
+    Global(Global&& other) = default;
+
     virtual ~Global() override = default;
 
+    Global& operator=(const Global& other) = delete;
+    Global& operator=(Global&& other) = delete;
+
+public:
     /// @copydoc Printable::toString
     QString toString() const override;
 

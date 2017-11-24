@@ -16,7 +16,8 @@
 
 
 /**
- * Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
+ * Const is a subclass of Exp, and holds either an integer,
+ * floating point, string, or address constant
  */
 class Const : public Exp
 {
@@ -28,7 +29,7 @@ private:
         double d;      ///< Double precision float
 
         /// Don't store string: function could be renamed
-        Function *pp;      ///< Pointer to function
+        Function *pp;  ///< Pointer to function (e.g. global function pointers)
     };
 
 public:
@@ -43,11 +44,16 @@ public:
     Const(const QString& p);
     Const(Function *p);
 
-    Const(const Const& o);
+    Const(const Const& other);
+    Const(Const&& other) = default;
 
     /// Nothing to destruct: Don't deallocate the string passed to constructor
     virtual ~Const() override = default;
 
+    Const& operator=(const Const&) = default;
+    Const& operator=(Const&&) = default;
+
+public:
     /// \copydoc Exp::clone
     virtual SharedExp clone() const override;
 

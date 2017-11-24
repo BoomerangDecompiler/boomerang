@@ -16,6 +16,7 @@
 class Prog;
 struct DecodeResult;
 
+
 /**
  * Decoder for the MIPS instruction set.
  * \author Markus Gothe, nietzsche@lysator.liu.se
@@ -25,7 +26,15 @@ class MIPSDecoder : public NJMCDecoder
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
     MIPSDecoder(Prog *prog);
+    MIPSDecoder(const MIPSDecoder& other) = delete;
+    MIPSDecoder(MIPSDecoder&& other) = default;
 
+    virtual ~MIPSDecoder() override = default;
+
+    MIPSDecoder& operator=(const MIPSDecoder& other) = delete;
+    MIPSDecoder& operator=(MIPSDecoder&& other) = default;
+
+public:
     /// \copydoc NJMCDecoder::decodeInstruction
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 };

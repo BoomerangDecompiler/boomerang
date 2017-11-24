@@ -54,6 +54,7 @@ class ILogSink
 public:
     virtual ~ILogSink() = default;
 
+public:
     /// Write a string to the log.
     virtual void write(const QString& s) = 0;
 
@@ -113,8 +114,13 @@ public:
     /// Create a log.
     /// \param level Default logging level.
     Log(LogLevel level = LogLevel::Default);
+    Log(const Log& other) = delete;
+    Log(Log&&) = default;
 
     virtual ~Log();
+
+    Log& operator=(const Log& other) = delete;
+    Log& operator=(Log&& other) = default;
 
 public:
     /**
@@ -254,14 +260,17 @@ private:
 class SeparateLogger : public Log
 {
 public:
-    SeparateLogger(const QString filePath);
-    ~SeparateLogger() = default;
+    SeparateLogger(const QString& filePath);
+    SeparateLogger(const SeparateLogger& other) = delete;
+    SeparateLogger(SeparateLogger&& other) = default;
+
+    virtual ~SeparateLogger() override = default;
+
+    SeparateLogger& operator=(const SeparateLogger& other) = delete;
+    SeparateLogger& operator=(SeparateLogger&& other) = default;
 
 public:
     static SeparateLogger& getOrCreateLog(const QString& name);
-
-private:
-    SeparateLogger& operator=(SeparateLogger&) = delete;
 };
 
 

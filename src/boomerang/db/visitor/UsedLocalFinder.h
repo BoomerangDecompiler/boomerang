@@ -26,8 +26,9 @@ class UsedLocalFinder : public ExpVisitor
 {
 public:
     UsedLocalFinder(LocationSet& _used, UserProc *_proc);
-    ~UsedLocalFinder() override = default;
+    virtual ~UsedLocalFinder() = default;
 
+public:
     LocationSet *getLocSet() { return m_used; }
     bool wasAllFound() { return all; }
 

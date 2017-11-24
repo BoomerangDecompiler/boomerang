@@ -45,8 +45,15 @@ public:
 
 public:
     Prog(const QString& name);
+    Prog(const Prog& other) = delete;
+    Prog(Prog&& other) = default;
+
     virtual ~Prog();
 
+    Prog& operator=(const Prog& other) = delete;
+    Prog& operator=(Prog&& other) = default;
+
+public:
     /// Change the FrontEnd
     void setFrontEnd(IFrontEnd *fe);
     IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }

@@ -35,6 +35,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public:
     void errorLoadingFile();
 
 public slots:

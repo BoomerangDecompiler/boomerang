@@ -34,8 +34,15 @@ public:
      * \param module    The Module this procedure belongs to
      */
     Function(Address address, Signature *signature, Module *module);
+    Function(const Function&) = delete;
+    Function(Function&&) = default;
+
     virtual ~Function();
 
+    Function& operator=(const Function&) = delete;
+    Function& operator=(Function&&) = default;
+
+public:
     /// Get the name of this procedure.
     QString getName() const;
 

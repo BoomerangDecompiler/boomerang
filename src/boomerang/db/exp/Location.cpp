@@ -18,20 +18,20 @@
 #include "boomerang/util/Log.h"
 
 
-Location::Location(Location& o)
-    : Unary(o.m_oper, o.subExp1->clone())
-    , m_proc(o.m_proc)
+Location::Location(const Location& other)
+    : Unary(other.m_oper, other.subExp1->clone())
+    , m_proc(other.m_proc)
 {
 }
 
 
-Location::Location(OPER _op, SharedExp exp, UserProc *_p)
-    : Unary(_op, exp)
-    , m_proc(_p)
+Location::Location(OPER oper, SharedExp exp, UserProc *proc)
+    : Unary(oper, exp)
+    , m_proc(proc)
 {
     assert(m_oper == opRegOf || m_oper == opMemOf || m_oper == opLocal || m_oper == opGlobal || m_oper == opParam || m_oper == opTemp);
 
-    if (_p == nullptr) {
+    if (proc == nullptr) {
         // eep.. this almost always causes problems
         SharedExp e = exp;
 

@@ -26,7 +26,15 @@ class ImpRefStatement : public TypingStatement
 {
 public:
     ImpRefStatement(SharedType ty, SharedExp a);
+    ImpRefStatement(const ImpRefStatement& other) = default;
+    ImpRefStatement(ImpRefStatement&& other) = default;
 
+    virtual ~ImpRefStatement() override = default;
+
+    ImpRefStatement& operator=(const ImpRefStatement& other) = default;
+    ImpRefStatement& operator=(ImpRefStatement&& other) = default;
+
+public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 

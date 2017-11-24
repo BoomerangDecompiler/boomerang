@@ -276,7 +276,7 @@ QString Log::levelToString(LogLevel level)
 }
 
 
-SeparateLogger::SeparateLogger(const QString filePath)
+SeparateLogger::SeparateLogger(const QString& filePath)
 {
     static QMap<QString, int> versions;
 

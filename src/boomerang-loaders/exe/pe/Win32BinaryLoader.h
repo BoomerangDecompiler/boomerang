@@ -166,6 +166,7 @@ public:
     Win32BinaryLoader();
     virtual ~Win32BinaryLoader();
 
+public:
     /// \copydoc IFileLoader::initialize
     void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 

@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     CommandlineDriver driver;
 
-    bool decompile = driver.applyCommandline(app.arguments()) == 0;
+    const bool decompile = driver.applyCommandline(app.arguments()) == 0;
     if (!decompile) {
         Boomerang::destroy();
         return 0;

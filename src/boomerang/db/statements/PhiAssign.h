@@ -19,16 +19,15 @@
  * so it is now possible, and arguably desirable.
  * However, it's convenient to have these members public
  */
-struct PhiInfo
+class PhiInfo
 {
-    void            setDef(Statement *def)
-    {
-        m_def = def;
-    }
+public:
+    void setDef(Statement *def) { m_def = def; }
 
     Statement       *getDef() { return m_def; }
     const Statement *getDef() const { return m_def; }
 
+public:
     SharedExp       e;   ///< The expression for the thing being defined (never subscripted)
 
 private:
@@ -62,8 +61,15 @@ public:
     PhiAssign(SharedType ty, SharedExp _lhs)
         : Assignment(ty, _lhs) { m_kind = StmtType::PhiAssign; }
 
+    PhiAssign(const PhiAssign& other) = default;
+    PhiAssign(PhiAssign&& other) = default;
+
     virtual ~PhiAssign() override = default;
 
+    PhiAssign& operator=(const PhiAssign& other) = default;
+    PhiAssign& operator=(PhiAssign&& other) = default;
+
+public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 

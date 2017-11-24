@@ -24,7 +24,9 @@ class StmtImplicitConverter : public StmtModifier
 {
 public:
     StmtImplicitConverter(ImplicitConverter *ic, Cfg *cfg);
+    virtual ~StmtImplicitConverter() = default;
 
+public:
     /// \copydoc StmtModifier::visit
     virtual void visit(PhiAssign *stmt, bool& visitChildren) override;
 

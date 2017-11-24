@@ -30,10 +30,16 @@ class NJMCDecoder : public IDecoder
 public:
     /// \param       prog Pointer to the Prog object
     NJMCDecoder(Prog *prog);
+    NJMCDecoder(const NJMCDecoder& other) = delete;
+    NJMCDecoder(NJMCDecoder&& other) = default;
 
     /// \copydoc IDecoder::~IDecoder
-    virtual ~NJMCDecoder() = default;
+    virtual ~NJMCDecoder() override = default;
 
+    NJMCDecoder& operator=(const NJMCDecoder& other) = delete;
+    NJMCDecoder& operator=(NJMCDecoder&& other) = default;
+
+public:
     RTLInstDict& getRTLDict() { return m_rtlDict; }
 
     /**

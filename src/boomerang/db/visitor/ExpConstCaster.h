@@ -12,6 +12,7 @@
 
 #include "boomerang/db/visitor/ExpModifier.h"
 
+
 using SharedType = std::shared_ptr<class Type>;
 
 
@@ -19,9 +20,9 @@ class ExpConstCaster : public ExpModifier
 {
 public:
     ExpConstCaster(int num, SharedType ty);
+    virtual ~ExpConstCaster() = default;
 
-    virtual ~ExpConstCaster() override = default;
-
+public:
     bool isChanged() const { return m_changed; }
 
     /// \copydoc ExpModifier::preVisit

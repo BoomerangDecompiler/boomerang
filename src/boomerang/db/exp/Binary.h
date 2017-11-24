@@ -19,9 +19,15 @@ class Binary : public Unary
 {
 public:
     Binary(OPER op, SharedExp e1, SharedExp e2);
-    Binary(const Binary& o);
+    Binary(const Binary& other);
+    Binary(Binary&& other) = default;
+
     virtual ~Binary() override;
 
+    Binary& operator=(const Binary& other) = default;
+    Binary& operator=(Binary&& other) = default;
+
+public:
     /// \copydoc Unary::clone
     virtual SharedExp clone() const override;
 

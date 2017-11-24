@@ -22,7 +22,7 @@ QTextStream& operator<<(QTextStream& os, const AssignSet *as)
 
 
 
-void AssignSet::makeUnion(AssignSet& other)
+void AssignSet::makeUnion(const AssignSet& other)
 {
     iterator it;
 
@@ -33,17 +33,17 @@ void AssignSet::makeUnion(AssignSet& other)
 
 
 
-void AssignSet::makeDiff(AssignSet& other)
+void AssignSet::makeDiff(const AssignSet& other)
 {
     iterator it;
 
     for (it = other.begin(); it != other.end(); it++) {
-        erase(*it);
+        this->erase(*it);
     }
 }
 
 
-void AssignSet::makeIsect(AssignSet& other)
+void AssignSet::makeIsect(const AssignSet& other)
 {
     iterator it, ff;
 
@@ -58,7 +58,7 @@ void AssignSet::makeIsect(AssignSet& other)
 }
 
 
-bool AssignSet::isSubSetOf(AssignSet& other)
+bool AssignSet::isSubSetOf(const AssignSet& other)
 {
     iterator it, ff;
 

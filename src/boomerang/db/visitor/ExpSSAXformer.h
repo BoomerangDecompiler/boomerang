@@ -27,7 +27,9 @@ class ExpSsaXformer : public ExpModifier
 {
 public:
     ExpSsaXformer(UserProc *p);
+    virtual ~ExpSsaXformer() = default;
 
+public:
     UserProc *getProc() { return m_proc; }
 
     /// \copydoc ExpModifier::postVisit

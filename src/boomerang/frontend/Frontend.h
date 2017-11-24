@@ -46,6 +46,7 @@ using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
 using RTLList        = std::list<RTL *>;
 
+
 /**
  * Contains the definition for the FrontEnd class,
  * which implements the source indendent parts of the front end:
@@ -60,9 +61,15 @@ public:
      * \param prog   program being decoded
      */
     IFrontEnd(IFileLoader *loader, Prog *prog);
+    IFrontEnd(const IFrontEnd&) = delete;
+    IFrontEnd(IFrontEnd&&) = default;
 
-    virtual ~IFrontEnd();
+    virtual ~IFrontEnd() = default;
 
+    IFrontEnd& operator=(const IFrontEnd&) = delete;
+    IFrontEnd& operator=(IFrontEnd&&) = default;
+
+public:
     /**
      * Create frontend from a binary file.
      * Static function to instantiate an appropriate concrete front end

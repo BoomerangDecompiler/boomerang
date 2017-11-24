@@ -35,11 +35,6 @@ ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog)
 }
 
 
-ST20FrontEnd::~ST20FrontEnd()
-{
-}
-
-
 std::vector<SharedExp>& ST20FrontEnd::getDefaultParams()
 {
     static std::vector<SharedExp> params;

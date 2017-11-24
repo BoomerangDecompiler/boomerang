@@ -22,8 +22,15 @@ class InsNameElem
 {
 public:
     InsNameElem(const QString& name);
+    InsNameElem(const InsNameElem& other) = delete;
+    InsNameElem(InsNameElem&& other) = default;
+
     virtual ~InsNameElem();
 
+    InsNameElem& operator=(const InsNameElem& other) = delete;
+    InsNameElem& operator=(InsNameElem&& other) = default;
+
+public:
     virtual size_t getNumTokens() const;
     virtual QString getInstruction() const;
     virtual QString getInsPattern() const;
@@ -46,6 +53,7 @@ class InsOptionElem : public InsNameElem
 {
 public:
     InsOptionElem(const QString& name);
+
     virtual size_t getNumTokens()    const override;
     virtual QString getInstruction() const override;
     virtual QString getInsPattern()  const override;

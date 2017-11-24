@@ -18,8 +18,15 @@ class IfThenSyntaxNode : public SyntaxNode
 {
 public:
     IfThenSyntaxNode();
+    IfThenSyntaxNode(const IfThenSyntaxNode& other) = delete;
+    IfThenSyntaxNode(IfThenSyntaxNode&& other) = default;
+
     virtual ~IfThenSyntaxNode() override;
 
+    IfThenSyntaxNode& operator=(const IfThenSyntaxNode& other) = delete;
+    IfThenSyntaxNode& operator=(IfThenSyntaxNode&& other) = default;
+
+public:
     virtual bool isGoto() const override { return false; }
     virtual bool isBranch() const override { return false; }
 
@@ -58,8 +65,15 @@ class IfThenElseSyntaxNode : public SyntaxNode
 {
 public:
     IfThenElseSyntaxNode();
+    IfThenElseSyntaxNode(const IfThenElseSyntaxNode& other) = delete;
+    IfThenElseSyntaxNode(IfThenElseSyntaxNode&& other) = default;
+
     virtual ~IfThenElseSyntaxNode() override;
 
+    IfThenElseSyntaxNode& operator=(const IfThenElseSyntaxNode& other) = delete;
+    IfThenElseSyntaxNode& operator=(IfThenElseSyntaxNode&& other) = default;
+
+public:
     virtual bool isGoto() const override { return false; }
     virtual bool isBranch() const override { return false; }
 

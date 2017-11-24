@@ -28,6 +28,7 @@ public:
     IFileLoader()          = default;
     virtual ~IFileLoader() = default;
 
+public:
     /**
      * Initialize this loader.
      * \param image   Binary image to load this file into.

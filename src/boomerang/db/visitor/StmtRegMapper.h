@@ -23,7 +23,9 @@ class StmtRegMapper : public StmtExpVisitor
 {
 public:
     StmtRegMapper(ExpRegMapper *erm);
+    virtual ~StmtRegMapper() = default;
 
+public:
     virtual bool common(Assignment *stmt, bool& visitChildren);
 
     /// \copydoc StmtExpVisitor::visit

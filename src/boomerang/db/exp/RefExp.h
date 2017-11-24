@@ -30,8 +30,15 @@ public:
     /// \param usedExp Expression that is used
     /// \param definition Pointer to the statment where the expression is defined
     RefExp(SharedExp usedExp, Statement *definition);
+    RefExp(const RefExp& other) = default;
+    RefExp(RefExp&& other) = default;
+
     virtual ~RefExp() override { m_def = nullptr; }
 
+    RefExp& operator=(const RefExp& other) = default;
+    RefExp& operator=(RefExp&& other) = default;
+
+public:
     /// \copydoc Unary::clone
     SharedExp clone() const override;
 

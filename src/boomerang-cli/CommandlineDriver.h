@@ -43,6 +43,8 @@ class CommandlineDriver : public QObject
 
 public:
     explicit CommandlineDriver(QObject *parent = nullptr);
+
+public:
     int applyCommandline(const QStringList& args);
     int decompile();
 

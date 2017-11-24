@@ -17,7 +17,9 @@ class StmtConscriptSetter : public StmtVisitor
 {
 public:
     StmtConscriptSetter(int n, bool _bClear);
+    virtual ~StmtConscriptSetter() = default;
 
+public:
     int getLast() const { return m_curConscript; }
 
     /// \copydoc StmtVisitor::visit

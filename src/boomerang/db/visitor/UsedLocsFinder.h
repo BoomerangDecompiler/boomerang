@@ -20,8 +20,9 @@ class UsedLocsFinder : public ExpVisitor
 {
 public:
     UsedLocsFinder(LocationSet& used, bool memOnly);
-    ~UsedLocsFinder() override = default;
+    virtual ~UsedLocsFinder() = default;
 
+public:
     LocationSet *getLocSet() { return m_used; }
 
     bool isMemOnly() { return m_memOnly; }

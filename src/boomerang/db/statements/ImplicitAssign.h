@@ -24,10 +24,15 @@ class ImplicitAssign : public Assignment
 public:
     ImplicitAssign(SharedExp lhs);
     ImplicitAssign(SharedType ty, SharedExp lhs);
-    ImplicitAssign(ImplicitAssign& o);
+    ImplicitAssign(const ImplicitAssign& other);
+    ImplicitAssign(ImplicitAssign&& other) = default;
 
-    virtual ~ImplicitAssign() override;
+    virtual ~ImplicitAssign() override = default;
 
+    ImplicitAssign& operator=(const ImplicitAssign& other) = default;
+    ImplicitAssign& operator=(ImplicitAssign&& other) = default;
+
+public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 

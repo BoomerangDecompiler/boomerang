@@ -32,6 +32,7 @@ public:
 public:
     UseCollector();
 
+public:
     bool operator==(const UseCollector& other) const;
     bool operator!=(const UseCollector& other) const { return !(*this == other); }
 
@@ -42,7 +43,7 @@ public:
 
 public:
     /// clone the given Collector into this one
-    void makeCloneOf(UseCollector& other);
+    void makeCloneOf(const UseCollector& other);
 
     /// \returns true if initialised
     inline bool isInitialised() const { return m_initialised; }

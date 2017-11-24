@@ -39,7 +39,11 @@ class TableEntry
 {
 public:
     TableEntry();
-    TableEntry(std::list<QString>& p, RTL& rtl);
+    TableEntry(const std::list<QString>& params, const RTL& rtl);
+    TableEntry(const TableEntry& other) { *this = other; }
+    TableEntry(TableEntry&& other) = default;
+
+    ~TableEntry() = default;
 
     /**
      * Sets the contents of this object with a deepcopy from another TableEntry object.
@@ -50,20 +54,16 @@ public:
      * \returns a reference to this object
      */
     TableEntry& operator=(const TableEntry& other);
+    TableEntry& operator=(TableEntry&& other) = default;
 
-    /// Set the parameter list.
-    void setParam(std::list<QString>& p);
-
-    /// Set the RTL.
-    void setRTL(RTL& rtl);
-
+public:
     /**
      * Appends an RTL to an exising TableEntry
      * \param        p reference to list of formal parameters (as strings)
      * \param        rtl reference to RTL with list of Exps to append
-     * \returns      0 for success, non-zero for failure
+     * \returns      zero for success, non-zero for failure
      */
-    int appendRTL(std::list<QString>& p, RTL& rtl);
+    int appendRTL(const std::list<QString>& p, const RTL& rtl);
 
 public:
     std::list<QString> m_params;
@@ -116,9 +116,16 @@ class RTLInstDict
     friend class NJMCDecoder;
 
 public:
-    RTLInstDict();
-    ~RTLInstDict();
+    RTLInstDict() = default;
+    RTLInstDict(const RTLInstDict&) = delete;
+    RTLInstDict(RTLInstDict&&) = default;
 
+    ~RTLInstDict() = default;
+
+    RTLInstDict& operator=(const RTLInstDict&) = delete;
+    RTLInstDict& operator=(RTLInstDict&&) = default;
+
+public:
     /**
      * Read and parse the SSL file, and initialise the expanded instruction dictionary
      * (this object). This also reads and sets up the register map and flag functions.
@@ -171,7 +178,7 @@ private:
      * \param rtl reference to the RTL to add
      * \returns zero for success, non-zero for failure
      */
-    int insert(const QString& name, std::list<QString>& parameters, RTL& rtl);
+    int insert(const QString& name, std::list<QString>& parameters, const RTL& rtl);
 
     /**
      * Transform an RTL to eliminate any uses of post-variables by either

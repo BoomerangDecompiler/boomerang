@@ -22,9 +22,15 @@ public:
     Assign();
     Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
     Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
-    Assign(Assign& o);
+    Assign(const Assign& other);
+    Assign(Assign&& other) = default;
+
     virtual ~Assign() override = default;
 
+    Assign& operator=(const Assign& other) = default;
+    Assign& operator=(Assign&& other) = default;
+
+public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 

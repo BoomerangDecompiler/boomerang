@@ -20,14 +20,17 @@ class QVariant;
 /// All information about the sections is contained in these structures.
 struct SectionInfo : public IBinarySection
 {
-private:
-    SectionInfo& operator=(const SectionInfo& other);
-
 public:
     SectionInfo(Address sourceAddr, uint64 size, const QString& name = "");
     SectionInfo(const SectionInfo& other);
+    SectionInfo(SectionInfo&& other) = default;
+
     virtual ~SectionInfo() override;
 
+    SectionInfo& operator=(const SectionInfo& other) = delete;
+    SectionInfo& operator=(SectionInfo&& other) = default;
+
+public:
     HostAddress getHostAddr()   const override { return m_hostAddr; }
     Address getSourceAddr() const override { return m_nativeAddr; }
     uint8_t getEndian()     const override { return m_endianness; }

@@ -25,7 +25,9 @@ public:
 
 public:
     ExpDestCounter(ExpCountMap& dc);
+    virtual ~ExpDestCounter() = default;
 
+public:
     /// \copydoc ExpVisitor::visit
     bool visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 

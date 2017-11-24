@@ -17,8 +17,15 @@ class CaseStatement : public GotoStatement
 {
 public:
     CaseStatement();
+    CaseStatement(const CaseStatement& other) = default;
+    CaseStatement(CaseStatement&& other) = default;
+
     virtual ~CaseStatement() override;
 
+    CaseStatement& operator=(const CaseStatement& other) = default;
+    CaseStatement& operator=(CaseStatement&& other) = default;
+
+public:
     /// \copydoc GotoStatement::clone
     virtual Statement *clone() const override;
 

@@ -28,8 +28,15 @@ class CallStatement : public GotoStatement
 {
 public:
     CallStatement();
+    CallStatement(const CallStatement& other) = default;
+    CallStatement(CallStatement&& other) = default;
+
     virtual ~CallStatement() override;
 
+    CallStatement& operator=(const CallStatement& other) = default;
+    CallStatement& operator=(CallStatement&& other) = default;
+
+public:
     /// \copydoc GotoStatement::clone
     virtual Statement *clone() const override;
 
