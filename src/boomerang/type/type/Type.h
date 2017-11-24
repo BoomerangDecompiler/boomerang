@@ -200,8 +200,6 @@ public:
     // type for the first parameter to 'main' is different for sparc and pentium
     static void clearNamedTypes();
 
-    bool isPointerToAlpha();
-
     // TODO: the best possible thing would be to have both types as const
     // For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
     // If bHighestPtr is true, then if this and other are non void* pointers, set the result to the

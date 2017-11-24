@@ -14,9 +14,6 @@
 
 class NamedType : public Type
 {
-private:
-    QString name;
-
 public:
     NamedType(const QString& _name);
     virtual ~NamedType() override;
@@ -26,9 +23,7 @@ public:
 
     SharedType resolvesTo() const;
 
-    // Get a new type variable, e.g. alpha0, alpha55
     static std::shared_ptr<NamedType> get(const QString& _name) { return std::make_shared<NamedType>(_name); }
-    static std::shared_ptr<NamedType> getAlpha();
 
     virtual SharedType clone() const override;
 
@@ -43,6 +38,9 @@ public:
 
     virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool all) const override;
+
+private:
+    QString name;
 };
 
 

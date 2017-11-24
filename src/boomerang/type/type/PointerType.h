@@ -18,21 +18,29 @@ class PointerType : public Type
 public:
     PointerType(SharedType p);
     virtual ~PointerType() override;
+
+public:
     virtual bool isPointer() const override { return true; }
 
     /// Set the pointer type of this pointer.
     /// E.g. for a pointer of type 'Foo *' the pointer type is 'Foo'
     void setPointsTo(SharedType p);
 
+    /// \returns the type the pointer points to (e.g. returns void* for void **x)
     SharedType getPointsTo() { return points_to; }
     const SharedType getPointsTo() const { return points_to; }
-    static std::shared_ptr<PointerType> get(SharedType t) { return std::make_shared<PointerType>(t); }
-    static std::shared_ptr<PointerType> newPtrAlpha();
 
-    // Note: alpha is therefore a "reserved name" for types
-    bool pointsToAlpha() const;
-    int pointerDepth() const;            // Return 2 for **x
-    SharedType getFinalPointsTo() const; // Return x for **x
+    static std::shared_ptr<PointerType> get(SharedType t) { return std::make_shared<PointerType>(t); }
+
+    /// \returns true if the type is void* (pointer can morph into any other pointer type)
+    bool isVoidPointer() const;
+
+    /// \returns the length of the pointer chain (e.g. returns 2 for void **x)
+    int getPointerDepth() const;
+
+    /// \returns the final type at the end of the pointer chain
+    /// (e.g. returns void for void **x)
+    SharedType getFinalPointsTo() const;
 
     virtual SharedType clone() const override;
 

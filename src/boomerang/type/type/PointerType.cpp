@@ -86,22 +86,13 @@ bool PointerType::operator<(const Type& other) const
 }
 
 
-bool PointerType::pointsToAlpha() const
+bool PointerType::isVoidPointer() const
 {
-    // void* counts as alpha* (and may replace it soon)
-    if (points_to->isVoid()) {
-        return true;
-    }
-
-    if (!points_to->isNamed()) {
-        return false;
-    }
-
-    return points_to->as<NamedType>()->getName().startsWith("alpha");
+    return points_to->isVoid();
 }
 
 
-int PointerType::pointerDepth() const
+int PointerType::getPointerDepth() const
 {
     int  d  = 1;
     auto pt = points_to;
@@ -139,10 +130,4 @@ QString PointerType::getCtype(bool final) const
     }
 
     return s; // memory..
-}
-
-
-std::shared_ptr<PointerType> PointerType::newPtrAlpha()
-{
-    return PointerType::get(NamedType::getAlpha());
 }

@@ -226,12 +226,6 @@ RESOLVES_TO_TYPE(Union)
 RESOLVES_TO_TYPE(Size)
 
 
-bool Type::isPointerToAlpha()
-{
-    return isPointer() && as<PointerType>()->pointsToAlpha();
-}
-
-
 void Type::starPrint(QTextStream& os)
 {
     os << "*" << this << "*";
