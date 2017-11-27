@@ -77,7 +77,6 @@ public:
 
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type& other) const override;
-    virtual SharedExp match(SharedType pattern) override;
 
     virtual size_t getSize() const override;
 

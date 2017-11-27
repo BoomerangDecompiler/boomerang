@@ -39,7 +39,6 @@ list(APPEND boomerang-db-sources
     db/exp/Terminal
     db/exp/Ternary
     db/exp/TypedExp
-    db/exp/TypeVal
     db/exp/Unary
     db/exp/Operator
 

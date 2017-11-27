@@ -117,16 +117,6 @@ bool ArrayType::operator<(const Type& other) const
 }
 
 
-SharedExp ArrayType::match(SharedType pattern)
-{
-    if (pattern->isArray()) {
-        return BaseType->match(pattern);
-    }
-
-    return Type::match(pattern);
-}
-
-
 QString ArrayType::getCtype(bool final) const
 {
     QString s = BaseType->getCtype(final);

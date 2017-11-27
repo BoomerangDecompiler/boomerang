@@ -113,9 +113,8 @@ MainWindow::MainWindow(QWidget *_parent)
     ui->toLoadButton->setEnabled((ui->outputPathComboBox->count() > 0) && (ui->inputFileComboBox->count() > 0));
 
     loadingSettings = false;
-    ui->cmb_typeRecoveryEngine->addItem("Constraint based recovery", QVariant::fromValue((void *)1));
-    ui->cmb_typeRecoveryEngine->addItem("DFA based recovery", QVariant::fromValue((void *)2));
-    ui->cmb_typeRecoveryEngine->setCurrentIndex(1);
+    ui->cmb_typeRecoveryEngine->addItem("DFA based type recovery", QVariant::fromValue((void *)1));
+    ui->cmb_typeRecoveryEngine->setCurrentIndex(0);
 
     ui->inputFileComboBox->setEditable(false);
     ui->outputPathComboBox->setEditable(false);

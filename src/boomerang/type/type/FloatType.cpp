@@ -60,12 +60,6 @@ bool FloatType::operator<(const Type& other) const
 }
 
 
-SharedExp FloatType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
 QString FloatType::getCtype(bool /*final*/) const
 {
     switch (size)

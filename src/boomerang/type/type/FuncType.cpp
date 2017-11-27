@@ -68,12 +68,6 @@ bool FuncType::operator<(const Type& other) const
 }
 
 
-SharedExp FuncType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
 QString FuncType::getCtype(bool final) const
 {
     if (signature == nullptr) {

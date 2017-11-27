@@ -32,9 +32,6 @@ public:
     virtual bool operator==(const Type& other) const override;
     virtual bool operator<(const Type& other) const override;
 
-    // Merge this SizeType with another type
-    virtual SharedType mergeWith(SharedType other) const override;
-
     virtual size_t getSize() const override;
 
     virtual void setSize(size_t sz) override;

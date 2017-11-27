@@ -696,7 +696,7 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
 
     auto otherPtr = other->as<PointerType>();
 
-    if (pointsToAlpha() && !otherPtr->pointsToAlpha()) {
+    if (isVoidPointer() && !otherPtr->isVoidPointer()) {
         ch = true;
 
         // Can't point to self; impossible to compare, print, etc
@@ -743,7 +743,7 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
             return ((PointerType *)this)->shared_from_this();
         }
 
-        if (pointerDepth() == otherPtr->pointerDepth()) {
+        if (getPointerDepth() == otherPtr->getPointerDepth()) {
             SharedType fType = getFinalPointsTo();
 
             if (fType->resolvesToVoid()) {

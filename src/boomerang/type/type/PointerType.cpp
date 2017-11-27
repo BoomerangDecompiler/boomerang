@@ -86,33 +86,13 @@ bool PointerType::operator<(const Type& other) const
 }
 
 
-SharedExp PointerType::match(SharedType pattern)
+bool PointerType::isVoidPointer() const
 {
-    if (pattern->isPointer()) {
-        LOG_VERBOSE("Got pointer match: %1 to %2", this->getCtype(), pattern->getCtype());
-        return points_to->match(pattern->as<PointerType>()->getPointsTo());
-    }
-
-    return Type::match(pattern);
+    return points_to->isVoid();
 }
 
 
-bool PointerType::pointsToAlpha() const
-{
-    // void* counts as alpha* (and may replace it soon)
-    if (points_to->isVoid()) {
-        return true;
-    }
-
-    if (!points_to->isNamed()) {
-        return false;
-    }
-
-    return points_to->as<NamedType>()->getName().startsWith("alpha");
-}
-
-
-int PointerType::pointerDepth() const
+int PointerType::getPointerDepth() const
 {
     int  d  = 1;
     auto pt = points_to;
@@ -150,10 +130,4 @@ QString PointerType::getCtype(bool final) const
     }
 
     return s; // memory..
-}
-
-
-std::shared_ptr<PointerType> PointerType::newPtrAlpha()
-{
-    return PointerType::get(NamedType::getAlpha());
 }

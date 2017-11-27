@@ -10,14 +10,14 @@
 #include "SimpExpModifier.h"
 
 
-#include "boomerang/db/exp/Unary.h"
 #include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/FlagDef.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/exp/TypeVal.h"
-#include "boomerang/db/exp/FlagDef.h"
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Unary.h"
 
 
 SimpExpModifier::SimpExpModifier()
@@ -91,13 +91,6 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Const>& exp)
 
 
 SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Terminal>& exp)
-{
-    m_mask <<= 1;
-    return exp;
-}
-
-
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<TypeVal>& exp)
 {
     m_mask <<= 1;
     return exp;
@@ -196,13 +189,6 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<FlagDef>& exp)
 
 
 SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Const>& exp)
-{
-    m_mask >>= 1;
-    return exp;
-}
-
-
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<TypeVal>& exp)
 {
     m_mask >>= 1;
     return exp;

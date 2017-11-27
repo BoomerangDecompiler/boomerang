@@ -45,12 +45,6 @@ bool VoidType::operator<(const Type& other) const
 }
 
 
-SharedExp VoidType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
 QString VoidType::getCtype(bool /*final*/) const
 {
     return "void";

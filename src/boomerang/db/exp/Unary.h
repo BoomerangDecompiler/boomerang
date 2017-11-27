@@ -50,12 +50,6 @@ public:
     /// \copydoc Exp::getArity
     virtual int getArity() const override { return 1; }
 
-    /// \copydoc Exp::match
-    virtual SharedExp match(const SharedConstExp& pattern) override;
-
-    /// \copydoc Exp::match
-    virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
-
     /// \copydoc Exp::doSearchChildren
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
@@ -79,12 +73,6 @@ public:
 
     /// \copydoc Exp::simplifyAddr
     virtual SharedExp simplifyAddr() override;
-
-    /// \copydoc Exp::simplifyConstraint
-    virtual SharedExp simplifyConstraint() override;
-
-    /// \copydoc Exp::genConstraints
-    virtual SharedExp genConstraints(SharedExp restrictTo) override;
 
     /// \copydoc Exp::accept
     virtual bool accept(ExpVisitor *v) override;

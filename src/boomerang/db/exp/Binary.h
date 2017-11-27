@@ -12,9 +12,6 @@
 
 #include "boomerang/db/exp/Unary.h"
 
-class TypeVal;
-
-
 /**
  * Binary is a subclass of Unary, holding two subexpressions
  */
@@ -69,12 +66,6 @@ public:
     /// \note Changes the meaning for non-commutative operations
     void commute();
 
-    /// \copydoc Unary::match
-    virtual SharedExp match(const SharedConstExp& pattern) override;
-
-    /// \copydoc Unary::match
-    virtual bool match(const QString& pattern, std::map<QString, SharedConstExp>& bindings) override;
-
     /// \copydoc Unary::doSearchChildren
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
@@ -87,12 +78,6 @@ public:
     /// \copydoc Unary::simplifyAddr
     SharedExp simplifyAddr() override;
 
-    /// \copydoc Unary::simplifyConstraint
-    virtual SharedExp simplifyConstraint() override;
-
-    /// \copydoc Unary::genConstraints
-    virtual SharedExp genConstraints(SharedExp restrictTo) override;
-
     /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;
 
@@ -104,10 +89,6 @@ public:
 
     /// \copydoc Unary::ascendType
     virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
-
-private:
-    /// Return a constraint that my subexpressions have to be of type typeval1 and typeval2 respectively
-    SharedExp constrainSub(const std::shared_ptr<TypeVal>& typeVal1, const std::shared_ptr<TypeVal>& typeVal2);
 
 protected:
     SharedExp subExp2; ///< Second subexpression pointer

@@ -97,10 +97,6 @@ public:
     /// \copydoc Statement::simplify
     virtual void simplify() override;
 
-    /// \copydoc Statement::genConstraints
-    virtual void genConstraints(LocationSet& cons) override;
-
-
     //
     //    Phi specific functions
     //

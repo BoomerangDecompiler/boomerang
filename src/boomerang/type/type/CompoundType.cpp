@@ -267,12 +267,6 @@ bool CompoundType::operator<(const Type& other) const
 }
 
 
-SharedExp CompoundType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
 QString CompoundType::getCtype(bool final) const
 {
     QString tmp("struct { ");

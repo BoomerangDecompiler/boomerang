@@ -53,12 +53,6 @@ bool BooleanType::operator<(const Type& other) const
 }
 
 
-SharedExp BooleanType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
 QString BooleanType::getCtype(bool /*final*/) const
 {
     return "bool";

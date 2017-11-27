@@ -18,7 +18,6 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/exp/TypeVal.h"
 
 
 SharedExp ExpModifier::preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren)
@@ -82,12 +81,6 @@ SharedExp ExpModifier::preVisit(const std::shared_ptr<Terminal>& exp)
 }
 
 
-SharedExp ExpModifier::preVisit(const std::shared_ptr<TypeVal>& exp)
-{
-    return exp;
-}
-
-
 SharedExp ExpModifier::postVisit(const std::shared_ptr<Unary>& exp)
 {
     return exp;
@@ -137,12 +130,6 @@ SharedExp ExpModifier::postVisit(const std::shared_ptr<Const>& exp)
 
 
 SharedExp ExpModifier::postVisit(const std::shared_ptr<Terminal>& exp)
-{
-    return exp;
-}
-
-
-SharedExp ExpModifier::postVisit(const std::shared_ptr<TypeVal>& exp)
 {
     return exp;
 }

@@ -14,7 +14,6 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/db/visitor/ExpModifier.h"
@@ -369,19 +368,6 @@ void Ternary::appendDotFile(QTextStream& of)
 }
 
 
-bool Ternary::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
-{
-    if (Exp::match(pattern, bindings)) {
-        return true;
-    }
-
-#ifdef DEBUG_MATCH
-    LOG_MSG("Matching %1 to %2.", this, pattern);
-#endif
-    return false;
-}
-
-
 void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
     doSearch(pattern, subExp1, li, once);
@@ -540,97 +526,6 @@ SharedExp Ternary::simplifyAddr()
     subExp2 = subExp2->simplifyAddr();
     subExp3 = subExp3->simplifyAddr();
     return shared_from_this();
-}
-
-
-SharedExp Ternary::genConstraints(SharedExp result)
-{
-    SharedType argHasToBe = nullptr;
-    SharedType retHasToBe = nullptr;
-
-    switch (m_oper)
-    {
-    case opFsize:
-    case opItof:
-    case opFtoi:
-    case opSgnEx:
-        {
-            assert(subExp1->isIntConst());
-            assert(subExp2->isIntConst());
-            int fromSize = std::static_pointer_cast<const Const>(subExp1)->getInt();
-            int toSize   = std::static_pointer_cast<const Const>(subExp2)->getInt();
-
-            // Fall through
-            switch (m_oper)
-            {
-            case opFsize:
-                argHasToBe = FloatType::get(fromSize);
-                retHasToBe = FloatType::get(toSize);
-                break;
-
-            case opItof:
-                argHasToBe = IntegerType::get(fromSize);
-                retHasToBe = FloatType::get(toSize);
-                break;
-
-            case opFtoi:
-                argHasToBe = FloatType::get(fromSize);
-                retHasToBe = IntegerType::get(toSize);
-                break;
-
-            case opSgnEx:
-                argHasToBe = IntegerType::get(fromSize);
-                retHasToBe = IntegerType::get(toSize);
-                break;
-
-            default:
-                break;
-            }
-        }
-        break;
-
-    default:
-        break;
-    }
-
-    SharedExp res = nullptr;
-
-    if (retHasToBe) {
-        if (result->isTypeVal()) {
-            // result is a constant type, or possibly a partial type such as
-            // ptr(alpha)
-            SharedType t = result->access<TypeVal>()->getType();
-
-            // Compare broad types
-            if (!(retHasToBe->getId() == t->getId())) {
-                return Terminal::get(opFalse);
-            }
-
-            // else just constrain the arg
-        }
-        else {
-            // result is a type variable, constrained by this Ternary
-            res = Binary::get(opEquals, result, TypeVal::get(retHasToBe));
-        }
-    }
-
-    if (argHasToBe) {
-        // Constrain the argument
-        SharedExp con = subExp3->genConstraints(TypeVal::get(argHasToBe));
-
-        if (res) {
-            res = Binary::get(opAnd, res, con);
-        }
-        else {
-            res = con;
-        }
-    }
-
-    if (res == nullptr) {
-        return Terminal::get(opTrue);
-    }
-
-    return res;
 }
 
 

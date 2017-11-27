@@ -192,12 +192,13 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'T':
-
             if (arg[2] == 'c') {
-                LOG_WARN("Constraint-based type analysis is no longer supported, decompilation results will be inaccurate!");
+                LOG_WARN("Constraint-based type analysis is no longer supported. "
+                        "Falling back to Data-Flow based type analysis.");
+                SETTING(dfaTypeAnalysis) = true;
             }
             else if (arg[2] == 'd') {
-                SETTING(dfaTypeAnalysis) = true; // -Td: use data-flow-based type analysis (now default)
+                SETTING(dfaTypeAnalysis) = true;
             }
 
             break;
@@ -282,7 +283,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'n':
-
             switch (arg[2].toLatin1())
             {
             case 'b':
@@ -336,7 +336,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'p':
-
             if (arg[2] == 'a') {
                 SETTING(propOnlyToAll) = true;
                 LOG_WARN(" * * Warning! -pa is not implemented yet!");

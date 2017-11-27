@@ -14,7 +14,6 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/exp/TypeVal.h"
 #include "boomerang/db/statements/StatementHelper.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/db/visitor/StmtVisitor.h"
@@ -442,64 +441,6 @@ void BranchStatement::simplify()
             m_isFloat = true;
         }
     }
-}
-
-
-void BranchStatement::genConstraints(LocationSet& cons)
-{
-    if (m_cond == nullptr) {
-        LOG_VERBOSE("Warning: BranchStatment %1 has no condition expression!", m_number);
-        return;
-    }
-
-    SharedType opsType;
-
-    if (m_isFloat) {
-        opsType = FloatType::get(0);
-    }
-    else {
-        opsType = IntegerType::get(0);
-    }
-
-    if ((m_jumpType == BranchType::JUGE) || (m_jumpType == BranchType::JULE) || (m_jumpType == BranchType::JUG) || (m_jumpType == BranchType::JUL)) {
-        assert(!m_isFloat);
-        opsType->as<IntegerType>()->bumpSigned(-1);
-    }
-    else if ((m_jumpType == BranchType::JSGE) || (m_jumpType == BranchType::JSLE) || (m_jumpType == BranchType::JSG) || (m_jumpType == BranchType::JSL)) {
-        assert(!m_isFloat);
-        opsType->as<IntegerType>()->bumpSigned(+1);
-    }
-
-    // Constraints leading from the condition
-    assert(m_cond->getArity() == 2);
-    SharedExp a = m_cond->getSubExp1();
-    SharedExp b = m_cond->getSubExp2();
-    // Generate constraints for a and b separately (if any).  Often only need a size, since we get basic type and
-    // signedness from the branch condition (e.g. jump if unsigned less)
-    SharedExp Ta;
-    SharedExp Tb;
-
-    if (a->isSizeCast()) {
-        opsType->setSize(a->access<Const, 1>()->getInt());
-        Ta = Unary::get(opTypeOf, a->getSubExp2());
-    }
-    else {
-        Ta = Unary::get(opTypeOf, a);
-    }
-
-    if (b->isSizeCast()) {
-        opsType->setSize(b->access<Const, 1>()->getInt());
-        Tb = Unary::get(opTypeOf, b->getSubExp2());
-    }
-    else {
-        Tb = Unary::get(opTypeOf, b);
-    }
-
-    // Constrain that Ta == opsType and Tb == opsType
-    SharedExp con = Binary::get(opEquals, Ta, TypeVal::get(opsType));
-    cons.insert(con);
-    con = Binary::get(opEquals, Tb, TypeVal::get(opsType));
-    cons.insert(con);
 }
 
 

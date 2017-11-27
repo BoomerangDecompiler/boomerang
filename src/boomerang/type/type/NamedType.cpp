@@ -13,9 +13,6 @@
 #include "boomerang/util/Log.h"
 
 
-static int nextAlpha = 0;
-
-
 NamedType::NamedType(const QString& _name)
     : Type(eNamed)
     , name(_name)
@@ -75,19 +72,7 @@ bool NamedType::operator<(const Type& other) const
 }
 
 
-SharedExp NamedType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}
-
-
 QString NamedType::getCtype(bool /*final*/) const
 {
     return name;
-}
-
-
-std::shared_ptr<NamedType> NamedType::getAlpha()
-{
-    return NamedType::get(QString("alpha%1").arg(nextAlpha++));
 }

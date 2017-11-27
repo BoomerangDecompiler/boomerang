@@ -147,9 +147,3 @@ QString UnionType::getCtype(bool final) const
     tmp += "}";
     return tmp;
 }
-
-
-SharedExp UnionType::match(SharedType pattern)
-{
-    return Type::match(pattern);
-}

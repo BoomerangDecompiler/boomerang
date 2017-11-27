@@ -124,36 +124,6 @@ bool RefExp::operator*=(const Exp& o) const
 }
 
 
-bool RefExp::match(const QString& pattern, std::map<QString, SharedConstExp>& bindings)
-{
-    if (Exp::match(pattern, bindings)) {
-        return true;
-    }
-
-#ifdef DEBUG_MATCH
-    LOG_MSG("Matching %1 to %2.", this, pattern);
-#endif
-
-    if (pattern.endsWith('}')) {
-        if ((pattern[pattern.size() - 2] == '-') && (m_def == nullptr)) {
-            return subExp1->match(pattern.left(pattern.size() - 3), bindings); // remove {-}
-        }
-
-        int end = pattern.lastIndexOf('{');
-
-        if (end != -1) {
-            // "prefix {number ...}" -> number matches first def ?
-            if (pattern.midRef(end + 1).toInt() == m_def->getNumber()) {
-                // match "prefix"
-                return subExp1->match(pattern.left(end - 1), bindings);
-            }
-        }
-    }
-
-    return false;
-}
-
-
 SharedExp RefExp::polySimplify(bool& bMod)
 {
     SharedExp res = shared_from_this();
@@ -292,25 +262,6 @@ void RefExp::print(QTextStream& os, bool html) const
     }
 }
 
-
-SharedExp RefExp::genConstraints(SharedExp result)
-{
-    OPER subOp = subExp1->getOper();
-
-    switch (subOp)
-    {
-    case opRegOf:
-    case opParam:
-    case opGlobal:
-    case opLocal:
-        return Binary::get(opEquals, Unary::get(opTypeOf, this->clone()), result->clone());
-
-    default:
-        break;
-    }
-
-    return Terminal::get(opTrue);
-}
 
 SharedExp RefExp::addSubscript(Statement* _def)
 {

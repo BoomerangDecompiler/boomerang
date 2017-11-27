@@ -1,31 +1,32 @@
 0.4.0 (in development)
 ----------------------
-- Fix: Crashes when decompiling SPARC binaries.
-- Fix: Crash when generating code for switch statements.
-- Fix: Crash when loading MIPS binaries.
-- Fix: Crash when loading HPPA binaries.
-- Fix: Crash when decoding backwards relative jumps.
-- Fix: Crash when decompiling a library thunk.
-- Fix: Crash when the instruction at the entry point is a jump instruction.
-- Fix: Crash when accessing a Phi reference in a removed Basic Block.
-- Fix: Disable direct editing of file selection combobox in boomerang-gui.
+- Fixed: Crashes when decompiling SPARC binaries.
+- Fixed: Crash when generating code for switch statements.
+- Fixed: Crash when loading MIPS binaries.
+- Fixed: Crash when loading HPPA binaries.
+- Fixed: Crash when decoding backwards relative jumps.
+- Fixed: Crash when decompiling library thunks.
+- Fixed: Crash when the instruction at the entry point is a jump instruction.
+- Fixed: Crash when accessing a Phi reference in a removed Basic Block.
+- Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
 - Improved: Log output formatting.
 - Improved: Detection of statically imported library functions.
-- Feature: Add 'replay' console command to read console commands from a file.
+- Feature: Added 'replay' console command to read console commands from a file.
 - Changed: Rename 'print-*' console command to a single 'print' command with arguments.
-- Changed: Add '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
+- Changed: Added '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
 - Changed: Slight changes to generated C code.
+- Removed: Constraint-based type analysis.
 - Removed: Ability to read/write XML files, to be replaced by new save format.
 - Performance: Slightly increased performance of code generation.
 - Performance: Slightly increased performance of instruction decoding.
-- Technical: Drop boost as a dependency.
+- Technical: Dropped boost as a dependency.
 - Technical: Code base now uses 4 spaces for indentation exclusively.
-- Technical: Add option to auto-generate Doxygen documentation using CMake.
+- Technical: Added option to auto-generate Doxygen documentation using CMake.
 - Technical: Allow compilation using GCC, Clang and Visual Studio compilers.
-- Technical: Remove unused files from the repository.
+- Technical: Removed unused files from the repository.
 - Technical: Split project into libboomerang (core library), boomerang-cli (command line interface) and boomerang-gui (GUI frontend).
-- Technical: Upgrade codebase to C++11.
-- Technical: Add more regression tests.
-- Technical: Add more unit tests.
+- Technical: Upgraded codebase to C++11.
+- Technical: Added more regression tests.
+- Technical: Added more unit tests.
 - Numerous other small changes and fixes.

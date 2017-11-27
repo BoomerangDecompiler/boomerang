@@ -161,19 +161,6 @@ public:
     virtual bool operator!=(const Type& other) const;     ///< Considers sign
     virtual bool operator<(const Type& other) const = 0;  ///< Considers sign
 
-    /**
-     * Match operation.
-     * \param        pattern - Type to match
-     * \returns            Exp list of bindings if match or nullptr
-     */
-    virtual SharedExp match(SharedType pattern);
-
-    // Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
-    virtual SharedType mergeWith(SharedType /*other*/) const
-    {
-        assert(false);
-        return nullptr;
-    }
 
     // Acccess functions
 
@@ -212,8 +199,6 @@ public:
     // Clear the named type map. This is necessary when testing; the
     // type for the first parameter to 'main' is different for sparc and pentium
     static void clearNamedTypes();
-
-    bool isPointerToAlpha();
 
     // TODO: the best possible thing would be to have both types as const
     // For data-flow-based type analysis only: implement the meet operator. Set ch true if any change

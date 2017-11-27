@@ -178,20 +178,6 @@ bool PhiAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*c
 }
 
 
-void PhiAssign::genConstraints(LocationSet& cons)
-{
-    // Generate a constraints st that all the phi's have to be the same type as
-    // result
-    SharedExp result = Unary::get(opTypeOf, RefExp::get(m_lhs, this));
-
-    for (auto& v : m_defs) {
-        assert(v.second.e != nullptr);
-        SharedExp conjunct = Binary::get(opEquals, result, Unary::get(opTypeOf, RefExp::get(v.second.e, v.second.getDef())));
-        cons.insert(conjunct);
-    }
-}
-
-
 PhiInfo& PhiAssign::getAt(BasicBlock *idx)
 {
     return m_defs[idx];

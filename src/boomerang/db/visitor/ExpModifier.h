@@ -23,7 +23,6 @@ class RefExp;
 class Location;
 class Const;
 class Terminal;
-class TypeVal;
 
 using SharedExp = std::shared_ptr<class Exp>;
 
@@ -80,9 +79,6 @@ public:
     /// \copydoc ExpModifier::preVisit
     virtual SharedExp preVisit(const std::shared_ptr<Terminal>& exp);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<TypeVal>& exp);
-
     /**
      * Modify the expression after modifying children.
      * The default behaviour is to not modify the expression.
@@ -115,9 +111,6 @@ public:
 
     /// \copydoc ExpModifier::postVisit
     virtual SharedExp postVisit(const std::shared_ptr<Terminal>& exp);
-
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<TypeVal>& exp);
 };
 
 
