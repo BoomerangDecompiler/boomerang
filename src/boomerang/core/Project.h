@@ -25,12 +25,12 @@ class Project : public IProject
 {
 public:
     Project();
-    Project(Project& other) = delete;
+    Project(const Project& other) = delete;
     Project(Project&& other) = default;
 
     virtual ~Project() override;
 
-    Project& operator=(Project& other) = delete;
+    Project& operator=(const Project& other) = delete;
     Project& operator=(Project&& other) = default;
 
 public:

@@ -36,6 +36,7 @@ public:
     ICodeGenerator() = default;
     virtual ~ICodeGenerator() = default;
 
+public:
     /// Generate code for \p program to \p os.
     virtual void generateCode(const Prog *program, QTextStream& os) = 0;
 
@@ -68,7 +69,7 @@ public:
      * \param results        The variable that will receive the return value of the function.
      *
      * \todo                Remove the \p name parameter and use Proc::getName()
-     * \todo                Add assingment for when the function returns a struct.
+     * \todo                Add assignment for when the function returns a struct.
      */
     virtual void addCallStatement(Function *dest, const QString& name,
                                   const StatementList& args, const StatementList& results) = 0;

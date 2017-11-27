@@ -34,7 +34,6 @@ public:
 
     virtual bool operator==(const Type& other) const override;
 
-    // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type& other) const override;
 
     virtual size_t getSize() const override;

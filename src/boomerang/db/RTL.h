@@ -38,10 +38,11 @@ public:
     RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);
     RTL(const RTL& other); ///< Deep copies the content
     RTL(RTL&& other) = default;
+
     ~RTL();
 
     /// Makes this RTL a deep copy of \p other.
-    const RTL& operator=(const RTL& other);
+    RTL& operator=(const RTL& other);
     RTL& operator=(RTL&& other) = default;
 
 public:

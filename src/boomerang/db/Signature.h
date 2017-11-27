@@ -31,6 +31,7 @@ class Parameter
 public:
     Parameter(SharedType type, const QString& name, SharedExp exp = nullptr, const QString& boundMax = "");
 
+public:
     bool operator==(const Parameter& other) const;
 
     /// Make a deep copy clone of this Parameter
@@ -315,6 +316,7 @@ public:
     CustomSignature(const QString& nam);
     virtual ~CustomSignature() override = default;
 
+public:
     virtual bool isPromoted() const override { return true; }
     virtual std::shared_ptr<Signature> clone() const override;
 

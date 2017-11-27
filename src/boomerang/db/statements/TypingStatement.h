@@ -12,6 +12,7 @@
 
 #include "boomerang/db/statements/Statement.h"
 
+
 /**
  * TypingStatement is an abstract subclass of Statement.
  * It has a type, representing the type of a reference or an assignment

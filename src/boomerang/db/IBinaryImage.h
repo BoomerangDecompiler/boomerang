@@ -24,9 +24,10 @@ public:
     typedef SectionListType::const_iterator   const_iterator;
 
 public:
-    IBinaryImage() {}
-    virtual ~IBinaryImage() {}
+    IBinaryImage() = default;
+    virtual ~IBinaryImage() = default;
 
+public:
     /// \returns the number of bytes in this image.
     virtual size_t size() const = 0;
 

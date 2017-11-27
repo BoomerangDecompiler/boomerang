@@ -26,7 +26,7 @@ public:
 
     virtual ~Terminal() override = default;
 
-    Terminal& operator=(Terminal&) = default;
+    Terminal& operator=(const Terminal&) = default;
     Terminal& operator=(Terminal&&) = default;
 
 public:

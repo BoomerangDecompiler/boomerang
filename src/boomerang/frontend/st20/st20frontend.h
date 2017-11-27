@@ -38,7 +38,7 @@ public:
     virtual ~ST20FrontEnd() override = default;
 
     ST20FrontEnd& operator=(const ST20FrontEnd& other) = delete;
-    ST20FrontEnd& operator=(ST20FrontEnd&& other) = delete;
+    ST20FrontEnd& operator=(ST20FrontEnd&& other) = default;
 
 public:
     /// \copydoc IFrontEnd::getType

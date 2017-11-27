@@ -72,13 +72,13 @@ public:
 public:
     /// Creates an empty CFG for the function \p proc
     Cfg(UserProc *proc);
-    Cfg(Cfg&) = delete;
-    Cfg(Cfg&&) = default;
+    Cfg(const Cfg& other) = delete;
+    Cfg(Cfg&& other) = default;
 
     ~Cfg();
 
-    Cfg& operator=(Cfg&) = delete;
-    Cfg& operator=(Cfg&&) = default;
+    Cfg& operator=(const Cfg& other) = delete;
+    Cfg& operator=(Cfg&& other) = default;
 
 public:
     /// Remove all basic blocks from the CFG

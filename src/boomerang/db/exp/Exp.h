@@ -59,18 +59,16 @@ typedef std::shared_ptr<Type>        SharedType;
  */
 class Exp : public Printable, public std::enable_shared_from_this<Exp>
 {
-protected:
-    /// Constructor, with operator
+public:
     Exp(OPER oper) : m_oper(oper) {}
 
     Exp(const Exp& other) = default;
     Exp(Exp&& other) = default;
 
+    virtual ~Exp() override = default;
+
     Exp& operator=(const Exp&) = default;
     Exp& operator=(Exp&&) = default;
-
-public:
-    virtual ~Exp() override = default;
 
 public:
     /// Clone (make copy of self that can be deleted without affecting self)

@@ -43,6 +43,7 @@ public:
     PluginHandle(const QString& filePath);
     PluginHandle(const PluginHandle& other) = delete;
     PluginHandle(PluginHandle&& other) = default;
+
     ~PluginHandle();
 
     PluginHandle& operator=(const PluginHandle& other) = delete;

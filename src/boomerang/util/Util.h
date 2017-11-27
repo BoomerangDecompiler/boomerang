@@ -137,6 +137,7 @@ void writeWord(void *dst, SWord value, bool dstBigEndian);
 void writeDWord(void *dst, DWord value, bool dstBigEndian);
 void writeQWord(void *dst, DWord value, bool dstBigEndian);
 
+
 /**
  * Sign-extend \p src into \a TgtType.
  * Example:
@@ -158,7 +159,7 @@ TgtType signExtend(const SrcType& src, size_t numSrcBits = 8 *sizeof(SrcType))
 }
 }
 
-#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kb)
+#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kB)
 extern char debug_buffer[DEBUG_BUFSIZE];
 
 

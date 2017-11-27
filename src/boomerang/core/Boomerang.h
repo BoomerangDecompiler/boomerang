@@ -57,12 +57,12 @@ private:
      */
     Boomerang();
     Boomerang(const Boomerang& other) = delete;
-    Boomerang(Boomerang&& other) = delete;
+    Boomerang(Boomerang&& other) = default;
 
-    virtual ~Boomerang() override;
+    virtual ~Boomerang() override = default;
 
     Boomerang& operator=(const Boomerang& other) = delete;
-    Boomerang& operator=(Boomerang&& other) = delete;
+    Boomerang& operator=(Boomerang&& other) = default;
 
 public:
     /// \returns The global boomerang object. It will be created if it does not already exist.

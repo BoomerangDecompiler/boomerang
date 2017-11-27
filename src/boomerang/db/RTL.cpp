@@ -57,7 +57,7 @@ RTL::~RTL()
 }
 
 
-const RTL& RTL::operator=(const RTL& other)
+RTL& RTL::operator=(const RTL& other)
 {
     if (this == &other) {
         return *this;
