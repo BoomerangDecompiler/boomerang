@@ -73,7 +73,6 @@ private:
     HostAddress           m_hostAddr;         ///< Host or actual address of data
     uint64                m_size;             ///< Size of section in bytes
     uint32_t              m_sectionEntrySize; ///< Size of one section entry (if applicable)
-    unsigned              m_type;             ///< Type of section (format dependent)
     unsigned              m_code     : 1;     ///< Set if section contains instructions
     unsigned              m_data     : 1;     ///< Set if section contains data
     unsigned              m_bss      : 1;     ///< Set if section is BSS (allocated only)
