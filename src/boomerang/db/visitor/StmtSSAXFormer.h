@@ -24,7 +24,9 @@ class StmtSsaXformer : public StmtModifier
 {
 public:
     StmtSsaXformer(ExpSsaXformer *esx, UserProc *proc);
+    virtual ~StmtSsaXformer() = default;
 
+public:
     /// Common code for the left hand side of assignments
     void commonLhs(Assignment *stmt);
 

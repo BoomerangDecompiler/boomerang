@@ -25,16 +25,15 @@ using SharedExp = std::shared_ptr<class Exp>;
 class InstructionSet : public std::set<Statement *>
 {
 public:
-    ~InstructionSet() {}
-    void makeUnion(InstructionSet& other);       ///< Set union
-    void makeDiff(InstructionSet& other);        ///< Set difference
+    void makeUnion(const InstructionSet& other);       ///< Set union
+    void makeDiff(const InstructionSet& other);        ///< Set difference
 
     /// Make this set the intersection of itself and other
-    void makeIsect(InstructionSet& other);       ///< Set intersection
+    void makeIsect(const InstructionSet& other);       ///< Set intersection
 
     /// Check for the subset relation, i.e. are all my elements also in the set
     /// other. Effectively (this intersect other) == this
-    bool isSubSetOf(InstructionSet& other);      ///< Subset relation
+    bool isSubSetOf(const InstructionSet& other);      ///< Subset relation
 
     /// Remove this Statement. Return false if it was not found
     bool remove(Statement *s);                   ///< Removal; rets false if not found

@@ -34,13 +34,11 @@ using SharedExp = std::shared_ptr<class Exp>;
  */
 class ExpModifier
 {
-protected:
-    bool m_mod = false; ///< Set if there is any change. Don't have to implement
-
 public:
-    ExpModifier()          = default;
+    ExpModifier() = default;
     virtual ~ExpModifier() = default;
 
+public:
     bool isMod() const { return m_mod; }
     void clearMod() { m_mod = false; }
 
@@ -111,6 +109,9 @@ public:
 
     /// \copydoc ExpModifier::postVisit
     virtual SharedExp postVisit(const std::shared_ptr<Terminal>& exp);
+
+protected:
+    bool m_mod = false; ///< Set if there is any change. Don't have to implement
 };
 
 

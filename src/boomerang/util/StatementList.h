@@ -25,30 +25,28 @@ using SharedExp = std::shared_ptr<class Exp>;
 class StatementList : public std::list<Statement *>
 {
 public:
-    ~StatementList() {}
-
-    // A special intersection operator; this becomes the intersection of StatementList a (assumed to be a list of
-    // Assignment*s) with the LocationSet b.
-    // Used for calculating returns for a CallStatement
-    // Special intersection method: this := a intersect b
+    /// Special intersection method: this := a intersect b
+    /// A special intersection operator; *this becomes the intersection
+    /// of StatementList a (assumed to be a list of Assignment *'s)
+    /// with the LocationSet b.
+    /// Used for calculating returns for a CallStatement
     void makeIsect(StatementList& a, LocationSet& b);
 
-    void append(Statement *s) { push_back(s); } ///< Insert at end
-    void append(const StatementList& sl);         ///< Append whole StatementList
-    void append(const InstructionSet& sl);        ///< Append whole InstructionSet
+    void append(Statement *s) { push_back(s); }
+    void append(const StatementList& sl);
+    void append(const InstructionSet& sl);
 
-    bool remove(Statement *s);                  ///< Removal; rets false if not found
+    /// \returns false if not found
+    bool remove(Statement *s);
 
     /// Remove the first definition where loc appears on the left
     /// \note statements in this list are assumed to be assignments
     void removeDefOf(SharedExp loc);              ///< Remove definitions of loc
 
-    // This one is needed where you remove in the middle of a loop
-    // Use like this: it = mystatementlist.erase(it);
     bool exists(Statement *s);            ///< Search; returns false if not found
     char *prints();                       ///< Print to string (for debugging)
     void dump();                          ///< Print to standard error for debugging
-    void makeCloneOf(StatementList& o);   ///< Make this a clone of o
+    void makeCloneOf(const StatementList& other);
 
     /// Return true if loc appears on the left of any statements in this list
     /// Note: statements in this list are assumed to be assignments

@@ -25,7 +25,9 @@ class ConstGlobalConverter : public ExpModifier
 {
 public:
     ConstGlobalConverter(Prog *pg);
+    virtual ~ConstGlobalConverter() = default;
 
+public:
     /// \copydoc ExpModifier::preVisit
     SharedExp preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 

@@ -34,11 +34,6 @@ PPCFrontEnd::PPCFrontEnd(IFileLoader *pBF, Prog *prog)
 }
 
 
-PPCFrontEnd::~PPCFrontEnd()
-{
-}
-
-
 std::vector<SharedExp>& PPCFrontEnd::getDefaultParams()
 {
     static std::vector<SharedExp> params;

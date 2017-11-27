@@ -20,9 +20,15 @@ class Ternary : public Binary
 {
 public:
     Ternary(OPER op, SharedExp e1, SharedExp e2, SharedExp e3);
-    Ternary(const Ternary& o);
+    Ternary(const Ternary& other);
+    Ternary(Ternary&& other) = default;
+
     virtual ~Ternary() override;
 
+    Ternary& operator=(const Ternary& other) = default;
+    Ternary& operator=(Ternary&& other) = default;
+
+public:
     /// \copydoc Binary::clone
     virtual SharedExp clone() const override;
 

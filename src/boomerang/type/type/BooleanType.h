@@ -17,8 +17,15 @@ class BooleanType : public Type
 {
 public:
     BooleanType();
+    BooleanType(const BooleanType& other) = default;
+    BooleanType(BooleanType&& other) = default;
+
     virtual ~BooleanType() override;
 
+    BooleanType& operator=(const BooleanType& other) = default;
+    BooleanType& operator=(BooleanType&& other) = default;
+
+public:
     virtual bool isBoolean() const override { return true; }
     static std::shared_ptr<BooleanType> get() { return std::make_shared<BooleanType>(); }
 
@@ -26,7 +33,6 @@ public:
 
     virtual bool operator==(const Type& other) const override;
 
-    // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type& other) const override;
 
     virtual size_t getSize() const override;

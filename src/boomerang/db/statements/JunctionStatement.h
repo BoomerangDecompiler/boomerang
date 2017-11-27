@@ -17,8 +17,15 @@ class JunctionStatement : public Statement
 {
 public:
     JunctionStatement();
+    JunctionStatement(const JunctionStatement& other) = default;
+    JunctionStatement(JunctionStatement&& other) = default;
+
     virtual ~JunctionStatement() override;
 
+    JunctionStatement& operator=(const JunctionStatement& other) = default;
+    JunctionStatement& operator=(JunctionStatement&& other) = default;
+
+public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override { return new JunctionStatement(); }
 

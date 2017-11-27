@@ -29,10 +29,6 @@ public:
     typedef typename Data::const_reverse_iterator                      const_reverse_iterator;
 
 public:
-    IntervalSet() {}
-    ~IntervalSet() = default;
-
-public:
     /// \returns true if the set does not contain any elements.
     bool isEmpty() const { return m_data.empty(); }
 

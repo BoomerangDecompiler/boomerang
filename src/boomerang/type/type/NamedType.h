@@ -12,12 +12,20 @@
 
 #include "boomerang/type/type/Type.h"
 
+
 class NamedType : public Type
 {
 public:
     NamedType(const QString& _name);
+    NamedType(const NamedType& other) = default;
+    NamedType(NamedType&& other) = default;
+
     virtual ~NamedType() override;
 
+    NamedType& operator=(const NamedType& other) = default;
+    NamedType& operator=(NamedType&& other) = default;
+
+public:
     virtual bool isNamed() const override { return true; }
     QString getName() const { return name; }
 
@@ -28,9 +36,8 @@ public:
     virtual SharedType clone() const override;
 
     virtual bool operator==(const Type& other) const override;
-
-    // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type& other) const override;
+
 
     virtual size_t getSize() const override;
 

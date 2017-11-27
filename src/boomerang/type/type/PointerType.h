@@ -17,7 +17,13 @@ class PointerType : public Type
 {
 public:
     PointerType(SharedType p);
+    PointerType(const PointerType& other) = default;
+    PointerType(PointerType&& other) = default;
+
     virtual ~PointerType() override;
+
+    PointerType& operator=(const PointerType& other) = default;
+    PointerType& operator=(PointerType&& other) = default;
 
 public:
     virtual bool isPointer() const override { return true; }

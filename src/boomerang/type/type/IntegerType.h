@@ -12,17 +12,20 @@
 
 #include "boomerang/type/type/Type.h"
 
+
 class IntegerType : public Type
 {
 public:
-    explicit IntegerType(unsigned NumBits, int sign = 0)
-        : Type(eInteger)
-    {
-        size       = NumBits;
-        signedness = sign;
-        // setSubclassData(NumBits);
-    }
+    explicit IntegerType(unsigned NumBits, int sign = 0);
+    IntegerType(const IntegerType& other) = default;
+    IntegerType(IntegerType&& other) = default;
 
+    virtual ~IntegerType() override = default;
+
+    IntegerType& operator=(const IntegerType& other) = default;
+    IntegerType& operator=(IntegerType&& other) = default;
+
+public:
     static std::shared_ptr<IntegerType> get(unsigned NumBits, int sign = 0);
 
     virtual bool isInteger() const override { return true; }
@@ -30,14 +33,7 @@ public:
 
     virtual SharedType clone() const override;
 
-    /**
-     * Equality comparsion.
-     * \param        other - Type being compared to
-     * \returns      *this == other
-     */
     virtual bool operator==(const Type& other) const override;
-
-    // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type& other) const override;
 
     virtual size_t getSize() const override; // Get size in bits

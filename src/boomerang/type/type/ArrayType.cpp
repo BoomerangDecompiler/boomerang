@@ -10,23 +10,10 @@
 #include "ArrayType.h"
 
 
-ArrayType::ArrayType(SharedType p, unsigned _length)
+ArrayType::ArrayType(SharedType baseType, unsigned length)
     : Type(eArray)
-    , BaseType(p)
-    , m_length(_length)
-{
-}
-
-
-ArrayType::ArrayType(SharedType p)
-    : Type(eArray)
-    , BaseType(p)
-    , m_length(NO_BOUND)
-{
-}
-
-
-ArrayType::~ArrayType()
+    , BaseType(baseType)
+    , m_length(length)
 {
 }
 

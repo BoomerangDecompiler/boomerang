@@ -25,6 +25,7 @@ class IBinarySymbol
 public:
     virtual ~IBinarySymbol() = default;
 
+public:
     virtual const QString& getName() const = 0;
 
     virtual size_t getSize() const         = 0;
@@ -51,6 +52,7 @@ public:
 public:
     virtual ~IBinarySymbolTable() = default;
 
+public:
     /// \returns the binary symbol at address \p addr, or nullptr if no such symbol exists.
     virtual const IBinarySymbol *find(Address addr) const = 0;
 

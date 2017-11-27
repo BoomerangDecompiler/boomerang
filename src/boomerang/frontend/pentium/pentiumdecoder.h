@@ -25,10 +25,16 @@ class PentiumDecoder : public NJMCDecoder
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
     PentiumDecoder(Prog *prog);
+    PentiumDecoder(const PentiumDecoder& other) = delete;
+    PentiumDecoder(PentiumDecoder&& other) = default;
 
     /// \copydoc NJMCDecoder::~NJMCDecoder
-    virtual ~PentiumDecoder() = default;
+    virtual ~PentiumDecoder() override = default;
 
+    PentiumDecoder& operator=(const PentiumDecoder& other) = delete;
+    PentiumDecoder& operator=(PentiumDecoder&& other) = default;
+
+public:
     /// \copydoc NJMCDecoder::decodeInstruction
     /**
      * Decodes a machine instruction and returns an RTL instance. In most cases

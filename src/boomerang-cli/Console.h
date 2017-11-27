@@ -51,8 +51,9 @@ class Console
 {
 public:
     Console();
-    ~Console();
+    ~Console() = default;
 
+public:
     CommandStatus handleCommand(const QString& command);
 
     /// Execute the commands in \p file line by line

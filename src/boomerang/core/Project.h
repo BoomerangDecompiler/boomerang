@@ -25,8 +25,15 @@ class Project : public IProject
 {
 public:
     Project();
+    Project(const Project& other) = delete;
+    Project(Project&& other) = default;
+
     virtual ~Project() override;
 
+    Project& operator=(const Project& other) = delete;
+    Project& operator=(Project&& other) = default;
+
+public:
     /// \copydoc IProject::loadBinaryFile
     bool loadBinaryFile(const QString& filePath) override;
 

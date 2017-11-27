@@ -77,12 +77,12 @@ void StatementList::makeIsect(StatementList& a, LocationSet& b)
 }
 
 
-void StatementList::makeCloneOf(StatementList& o)
+void StatementList::makeCloneOf(const StatementList& other)
 {
     clear();
 
-    for (auto& elem : o) {
-        push_back((elem)->clone());
+    for (auto& stmt : other) {
+        push_back((stmt)->clone());
     }
 }
 

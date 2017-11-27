@@ -21,7 +21,9 @@ class SimpExpModifier : public ExpModifier
 {
 public:
     SimpExpModifier();
+    virtual ~SimpExpModifier() = default;
 
+public:
     /// \copydoc ExpModifier::preVisit
     SharedExp preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren) override;
 

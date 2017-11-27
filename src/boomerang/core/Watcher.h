@@ -19,9 +19,10 @@ class UserProc;
 class IWatcher
 {
 public:
-    IWatcher() {}
-    virtual ~IWatcher() {}
+    IWatcher() = default;
+    virtual ~IWatcher() = default;
 
+public:
     virtual void alert_complete() {}
     virtual void alertNew(Function *) {}
     virtual void alertRemove(Function *) {}

@@ -23,10 +23,16 @@ class MIPSFrontEnd : public IFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     MIPSFrontEnd(IFileLoader *pLoader, Prog *prog);
+    MIPSFrontEnd(const MIPSFrontEnd& other) = delete;
+    MIPSFrontEnd(MIPSFrontEnd&& other) = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
-    virtual ~MIPSFrontEnd();
+    virtual ~MIPSFrontEnd() override = default;
 
+    MIPSFrontEnd& operator=(const MIPSFrontEnd& other) = delete;
+    MIPSFrontEnd& operator=(MIPSFrontEnd&& other) = default;
+
+public:
     /// \copydoc IFrontEnd::getFrontEndId
     virtual Platform getType() const override { return Platform::MIPS; }
 

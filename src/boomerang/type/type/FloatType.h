@@ -17,16 +17,23 @@ class FloatType : public Type
 {
 public:
     explicit FloatType(int sz = 64);
-    static std::shared_ptr<FloatType> get(int sz = 64);
+    FloatType(const FloatType& other) = default;
+    FloatType(FloatType&& other) = default;
 
     virtual ~FloatType() override;
+
+    FloatType& operator=(const FloatType& other) = default;
+    FloatType& operator=(FloatType&& other) = default;
+
+public:
+    static std::shared_ptr<FloatType> get(int sz = 64);
+
     virtual bool isFloat() const override { return true; }
 
     virtual SharedType clone() const override;
 
     virtual bool operator==(const Type& other) const override;
 
-    // virtual bool          operator-=(const Type& other) const;
     virtual bool operator<(const Type& other) const override;
 
     virtual size_t getSize() const override;

@@ -25,7 +25,9 @@ class ExpCastInserter : public ExpModifier
 {
 public:
     ExpCastInserter() = default;
+    virtual ~ExpCastInserter() = default;
 
+public:
     /// Check the type of the address expression of memof to make sure it is compatible with the given memofType.
     /// memof may be changed internally to include a TypedExp, which will emit as a cast
     static void checkMemofType(const SharedExp& memof, SharedType memofType);
@@ -42,5 +44,4 @@ public:
 
     /// \copydoc ExpModifier::postVisit
     SharedExp postVisit(const std::shared_ptr<Const>& exp) override;
-
 };

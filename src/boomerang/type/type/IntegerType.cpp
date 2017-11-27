@@ -10,6 +10,14 @@
 #include "IntegerType.h"
 
 
+IntegerType::IntegerType(unsigned int NumBits, int sign)
+    : Type(eInteger)
+{
+    size       = NumBits;
+    signedness = sign;
+}
+
+
 std::shared_ptr<IntegerType> IntegerType::get(unsigned numBits, int sign)
 {
     return std::make_shared<IntegerType>(numBits, sign);

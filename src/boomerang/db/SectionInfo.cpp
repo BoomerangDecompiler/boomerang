@@ -117,7 +117,6 @@ SectionInfo::SectionInfo(Address sourceAddr, uint64 size, const QString& name)
     , m_hostAddr(HostAddress::ZERO)
     , m_size(size)
     , m_sectionEntrySize(0)
-    , m_type(0)
     , m_code(false)
     , m_data(false)
     , m_bss(0)
@@ -134,8 +133,8 @@ SectionInfo::SectionInfo(const SectionInfo& other)
     m_sectionEntrySize = other.m_sectionEntrySize;
     m_code             = other.m_code;
     m_data             = other.m_data;
-    m_bss      = other.m_bss;
-    m_readOnly = other.m_readOnly;
+    m_bss              = other.m_bss;
+    m_readOnly         = other.m_readOnly;
 }
 
 

@@ -110,9 +110,15 @@ class Statement
 
 public:
     Statement();
+    Statement(const Statement& other) = default;
+    Statement(Statement&& other) = default;
 
     virtual ~Statement() = default;
 
+    Statement& operator=(const Statement& other) = default;
+    Statement& operator=(Statement&& other) = default;
+
+public:
     /// Make copy of self, and make the copy a derived object if needed.
     virtual Statement *clone() const = 0;
 

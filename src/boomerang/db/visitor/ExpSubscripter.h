@@ -21,7 +21,9 @@ class ExpSubscripter : public ExpModifier
 {
 public:
     ExpSubscripter(const SharedExp& s, Statement *d);
+    virtual ~ExpSubscripter() = default;
 
+public:
     /// \copydoc ExpModifier::preVisit
     SharedExp preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 

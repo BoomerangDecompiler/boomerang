@@ -12,7 +12,6 @@
 
 #include "boomerang/db/visitor/ExpVisitor.h"
 
-
 class UserProc;
 
 
@@ -23,7 +22,9 @@ class ComplexityFinder : public ExpVisitor
 {
 public:
     ComplexityFinder(UserProc *proc);
+    virtual ~ComplexityFinder() = default;
 
+public:
     int getDepth() { return m_count; }
 
     /// \copydoc ExpVisitor::visit

@@ -20,7 +20,9 @@ class FlagsFinder : public ExpVisitor
 {
 public:
     FlagsFinder();
+    virtual ~FlagsFinder() = default;
 
+public:
     bool isFound() { return m_found; }
 
     /// \copydoc ExpVisitor::visit

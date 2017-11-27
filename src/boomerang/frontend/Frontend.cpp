@@ -61,12 +61,6 @@ IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog)
 }
 
 
-IFrontEnd::~IFrontEnd()
-{
-    m_fileLoader = nullptr;
-}
-
-
 IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog)
 {
     switch (pBF->getMachine())
@@ -641,7 +635,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
     Address startAddr   = uAddr;
     Address lastAddr    = uAddr;
 
-    while ((uAddr = m_targetQueue.nextAddress(*cfg)) != Address::INVALID) {
+    while ((uAddr = m_targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
         // The list of RTLs for the current basic block
         std::unique_ptr<RTLList> BB_rtls(new RTLList);
 

@@ -22,7 +22,15 @@ class SizeType : public Type
 public:
     SizeType();
     SizeType(unsigned sz);
+    SizeType(const SizeType& other) = default;
+    SizeType(SizeType&& other) = default;
+
     virtual ~SizeType() override;
+
+    SizeType& operator=(const SizeType& other) = default;
+    SizeType& operator=(SizeType&& other) = default;
+
+public:
     virtual SharedType clone() const override;
 
     static std::shared_ptr<SizeType> get(unsigned sz);

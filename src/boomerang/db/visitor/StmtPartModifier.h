@@ -36,8 +36,9 @@ class StmtPartModifier
 {
 public:
     StmtPartModifier(ExpModifier *em, bool ignoreCol = false);
-
     virtual ~StmtPartModifier() = default;
+
+public:
     bool ignoreCollector() const { return m_ignoreCol; }
 
     /// Visit this statement.

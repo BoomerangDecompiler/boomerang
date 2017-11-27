@@ -31,10 +31,16 @@ class ST20FrontEnd : public IFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     ST20FrontEnd(IFileLoader *pLoader, Prog *prog);
+    ST20FrontEnd(const ST20FrontEnd& other) = delete;
+    ST20FrontEnd(ST20FrontEnd&& other) = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
-    virtual ~ST20FrontEnd();
+    virtual ~ST20FrontEnd() override = default;
 
+    ST20FrontEnd& operator=(const ST20FrontEnd& other) = delete;
+    ST20FrontEnd& operator=(ST20FrontEnd&& other) = default;
+
+public:
     /// \copydoc IFrontEnd::getType
     virtual Platform getType() const override { return Platform::ST20; }
 

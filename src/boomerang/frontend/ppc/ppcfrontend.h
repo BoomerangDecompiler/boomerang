@@ -32,10 +32,16 @@ class PPCFrontEnd : public IFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     PPCFrontEnd(IFileLoader *pLoader, Prog *Program);
+    PPCFrontEnd(const PPCFrontEnd& other) = delete;
+    PPCFrontEnd(PPCFrontEnd&& other) = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
-    virtual ~PPCFrontEnd();
+    virtual ~PPCFrontEnd() override = default;
 
+    PPCFrontEnd& operator=(const PPCFrontEnd& other) = delete;
+    PPCFrontEnd& operator=(PPCFrontEnd&& other) = default;
+
+public:
     /// \copydoc IFrontEnd::getFrontEndId
     virtual Platform getType() const override { return Platform::PPC; }
 

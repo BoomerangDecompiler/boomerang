@@ -17,8 +17,8 @@ Table::Table(TABLE_TYPE t)
 
 
 Table::Table(const std::deque<QString>& recs, TABLE_TYPE t /* = NAMETABLE */)
-    : Records(recs)
-    , TableType(t)
+    : TableType(t)
+    , Records(recs)
 {
 }
 
@@ -41,10 +41,3 @@ ExprTable::ExprTable(const std::deque<SharedExp>& exprs)
 {
 }
 
-
-ExprTable::~ExprTable()
-{
-//    std::deque<SharedExp>::iterator loc;
-//    for (loc = expressions.begin(); loc != expressions.end(); ++loc)
-//        delete (*loc);
-}

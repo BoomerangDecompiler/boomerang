@@ -20,8 +20,9 @@ class UsedLocsVisitor : public StmtExpVisitor
 {
 public:
     UsedLocsVisitor(ExpVisitor *v, bool countCol);
-    virtual ~UsedLocsVisitor() override = default;
+    virtual ~UsedLocsVisitor() = default;
 
+public:
     /// \copydoc StmtExpVisitor::visit
     /// Needs special attention because the lhs of an assignment isn't used
     /// (except where it's m[blah], when blah is used)

@@ -21,9 +21,9 @@ class QString;
 class IProject
 {
 public:
-    IProject() {}
-    virtual ~IProject() {}
+    virtual ~IProject() = default;
 
+public:
     /**
      * Import a binary file from \p filePath.
      * Loads the binary file and decodes it.

@@ -72,8 +72,15 @@ class SymTab : public IBinarySymbolTable
 {
 public:
     SymTab();
+    SymTab(const SymTab& other) = delete;
+    SymTab(SymTab&& other) = default;
+
     ~SymTab() override;
 
+    SymTab& operator=(const SymTab& other) = delete;
+    SymTab& operator=(SymTab&& other) = default;
+
+public:
     virtual iterator begin()             override { return m_symbolList.begin(); }
     virtual const_iterator begin() const override { return m_symbolList.begin(); }
     virtual iterator end()               override { return m_symbolList.end(); }

@@ -23,8 +23,15 @@ class BoolAssign : public Assignment
 public:
     /// \param size the size of the assignment
     BoolAssign(int size);
+    BoolAssign(const BoolAssign& other) = default;
+    BoolAssign(BoolAssign&& other) = default;
+
     virtual ~BoolAssign() override;
 
+    BoolAssign& operator=(const BoolAssign& other) = default;
+    BoolAssign& operator=(BoolAssign&& other) = default;
+
+public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 

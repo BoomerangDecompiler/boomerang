@@ -17,6 +17,7 @@
 class Cfg;
 class BasicBlock;
 
+
 /// Put the target queue logic into this small class
 class TargetQueue
 {
@@ -36,7 +37,6 @@ public:
      */
     void visit(Cfg *cfg, Address newAddr, BasicBlock *& newBB);
 
-
     /**
      * Seed the queue with an initial address.
      * \note     Can be some targets already in the queue now
@@ -50,7 +50,7 @@ public:
      * \returns The next address to process, or Address::INVALID if none
      *          (targets is empty)
      */
-    Address nextAddress(const Cfg& cfg);
+    Address getNextAddress(const Cfg& cfg);
 
     /// Print (for debugging)
     void dump();

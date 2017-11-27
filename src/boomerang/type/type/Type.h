@@ -83,8 +83,15 @@ class Type : public std::enable_shared_from_this<Type>, public Printable
 public:
     // Constructors
     Type(TypeID id);
+    Type(const Type& other) = default;
+    Type(Type&& other) = default;
+
     virtual ~Type() override;
 
+    Type& operator=(const Type& other) = default;
+    Type& operator=(Type&& other) = default;
+
+public:
     /// \returns the type class (ID) of this type.
     TypeID getId() const { return id; }
 

@@ -21,6 +21,7 @@ public:
     StmtSubscripter(ExpSubscripter *es);
     virtual ~StmtSubscripter() override = default;
 
+public:
     /// \copydoc StmtModifier::visit
     virtual void visit(Assign *stmt, bool& visitChildren) override;
 

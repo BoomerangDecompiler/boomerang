@@ -37,13 +37,22 @@ class Table
 public:
     Table(const std::deque<QString>& recs, TABLE_TYPE t = NAMETABLE);
     Table(TABLE_TYPE t);
-    virtual ~Table() {}
+    Table(const Table& other) = delete;
+    Table(Table&& other) = default;
+
+    virtual ~Table() = default;
+
+    Table& operator=(const Table& other) = delete;
+    Table& operator=(Table&& other) = default;
+
+public:
     TABLE_TYPE getType() const;
 
-    StringQueue Records;
+    const StringQueue& getRecords() const { return Records; }
 
 private:
     TABLE_TYPE TableType;
+    StringQueue Records;
 };
 
 
@@ -58,6 +67,8 @@ class ExprTable : public Table
 {
 public:
     ExprTable(const std::deque<SharedExp>& exprs);
-    ~ExprTable();
+    ~ExprTable() = default;
+
+public:
     std::deque<SharedExp> expressions;
 };

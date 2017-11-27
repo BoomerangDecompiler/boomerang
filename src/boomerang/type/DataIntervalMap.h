@@ -33,6 +33,7 @@ struct TypedVariable
     SharedType type;        ///< The type of the variable
 };
 
+
 /**
  * This class is used to represent local variables in procedures, and global variables for the program.
  *

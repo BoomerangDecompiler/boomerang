@@ -22,8 +22,17 @@ class Prog;
 class ITypeRecovery
 {
 public:
+    ITypeRecovery() = default;
+
+    ITypeRecovery(const ITypeRecovery& other) = delete;
+    ITypeRecovery(ITypeRecovery&& other) = default;
+
     virtual ~ITypeRecovery() = default;
 
+    ITypeRecovery& operator=(const ITypeRecovery& other) = delete;
+    ITypeRecovery& operator=(ITypeRecovery&& other) = default;
+
+public:
     /// \returns A descriptive name of this type recovery engine.
     virtual QString getName() = 0;
 

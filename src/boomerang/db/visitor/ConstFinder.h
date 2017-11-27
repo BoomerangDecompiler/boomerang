@@ -14,6 +14,7 @@
 
 #include <list>
 
+
 /**
  * This is the code (apart from definitions) to find all constants in a Statement
  */
@@ -21,9 +22,9 @@ class ConstFinder : public ExpVisitor
 {
 public:
     ConstFinder(std::list<std::shared_ptr<Const> >& results);
+    virtual ~ConstFinder() = default;
 
-    virtual ~ConstFinder() override = default;
-
+public:
     /// \copydoc ExpVisitor::visit
     virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 

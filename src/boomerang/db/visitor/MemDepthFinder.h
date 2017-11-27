@@ -18,7 +18,9 @@ class MemDepthFinder : public ExpVisitor
 {
 public:
     MemDepthFinder();
+    virtual ~MemDepthFinder() = default;
 
+public:
     /// \copydoc ExpVisitor::visit
     virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 

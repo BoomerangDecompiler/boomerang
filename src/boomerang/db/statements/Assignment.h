@@ -21,8 +21,15 @@ class Assignment : public TypingStatement
 public:
     Assignment(SharedExp lhs);
     Assignment(SharedType ty, SharedExp lhs);
+    Assignment(const Assignment& other) = default;
+    Assignment(Assignment&& other) = default;
+
     virtual ~Assignment() override;
 
+    Assignment& operator=(const Assignment& other) = default;
+    Assignment& operator=(Assignment&& other) = default;
+
+public:
     /// We also want operator< for assignments. For example, we want ReturnStatement
     /// to contain a set of (pointers to) Assignments, so we can automatically
     /// make sure that existing assignments are not duplicated.

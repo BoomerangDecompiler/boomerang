@@ -29,7 +29,7 @@ TypedExp::TypedExp(SharedType ty, SharedExp e1)
 }
 
 
-TypedExp::TypedExp(TypedExp& o)
+TypedExp::TypedExp(const TypedExp& o)
     : Unary(o)
 {
     m_type    = o.m_type->clone();

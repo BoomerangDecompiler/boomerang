@@ -22,7 +22,13 @@ class SyntaxNode
 {
 public:
     SyntaxNode();
+    SyntaxNode(const SyntaxNode& other) = delete;
+    SyntaxNode(SyntaxNode&& other) = default;
+
     virtual ~SyntaxNode();
+
+    SyntaxNode& operator=(const SyntaxNode& other) = delete;
+    SyntaxNode& operator=(SyntaxNode&& other) = default;
 
 public:
     /// \returns true if this is a fully generated block syntax node

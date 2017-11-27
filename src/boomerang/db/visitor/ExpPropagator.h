@@ -21,7 +21,9 @@ class ExpPropagator : public SimpExpModifier
 {
 public:
     ExpPropagator();
+    virtual ~ExpPropagator() = default;
 
+public:
     bool isChanged() { return m_changed; }
     void clearChanged() { m_changed = false; }
 

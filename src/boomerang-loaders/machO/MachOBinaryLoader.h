@@ -86,6 +86,7 @@ public:
     MachOBinaryLoader();
     virtual ~MachOBinaryLoader() override;
 
+public:
     /// \copydoc IFileLoader::initialize
     void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
 

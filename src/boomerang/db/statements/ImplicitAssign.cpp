@@ -36,15 +36,10 @@ ImplicitAssign::ImplicitAssign(SharedType ty, SharedExp _lhs)
 }
 
 
-ImplicitAssign::ImplicitAssign(ImplicitAssign& o)
-    : Assignment(o.m_type ? o.m_type->clone() : nullptr, o.m_lhs->clone())
+ImplicitAssign::ImplicitAssign(const ImplicitAssign& other)
+    : Assignment(other.m_type ? other.m_type->clone() : nullptr, other.m_lhs->clone())
 {
     m_kind = StmtType::ImpAssign;
-}
-
-
-ImplicitAssign::~ImplicitAssign()
-{
 }
 
 

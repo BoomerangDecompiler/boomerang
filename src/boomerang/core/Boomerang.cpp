@@ -34,11 +34,6 @@ Boomerang::Boomerang()
 }
 
 
-Boomerang::~Boomerang()
-{
-}
-
-
 ICodeGenerator *Boomerang::getCodeGenerator()
 {
     return m_codeGenerator.get();

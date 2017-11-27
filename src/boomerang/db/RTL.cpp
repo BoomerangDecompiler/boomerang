@@ -57,7 +57,7 @@ RTL::~RTL()
 }
 
 
-const RTL& RTL::operator=(const RTL& other)
+RTL& RTL::operator=(const RTL& other)
 {
     if (this == &other) {
         return *this;
@@ -105,7 +105,7 @@ void RTL::append(Statement *s)
 }
 
 
-void RTL::append(std::list<Statement *>& le)
+void RTL::append(const std::list<Statement *>& le)
 {
     for (Statement *it : le) {
         push_back(it->clone());

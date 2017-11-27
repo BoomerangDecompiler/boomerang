@@ -21,12 +21,19 @@ class TypedExp : public Unary
 public:
     TypedExp(SharedExp e1);
 
-    // Constructor, type, and subexpression.
-    // A rare const parameter allows the common case of providing a temporary,
-    // e.g. foo = new TypedExp(Type(INTEGER), ...);
+    /// Constructor, type, and subexpression.
+    /// A rare const parameter allows the common case of providing a temporary,
+    /// e.g. foo = new TypedExp(Type(INTEGER), ...);
     TypedExp(SharedType ty, SharedExp e1);
-    TypedExp(TypedExp& o);
+    TypedExp(const TypedExp& other);
+    TypedExp(TypedExp&& other) = default;
 
+    virtual ~TypedExp() override = default;
+
+    TypedExp& operator=(const TypedExp& other) = default;
+    TypedExp& operator=(TypedExp&& other) = default;
+
+public:
     /// \copydoc Unary::clone
     virtual SharedExp clone() const override;
 

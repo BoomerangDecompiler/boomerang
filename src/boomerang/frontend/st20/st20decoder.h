@@ -31,7 +31,15 @@ class ST20Decoder : public NJMCDecoder
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
     ST20Decoder(Prog *prog);
+    ST20Decoder(const ST20Decoder& other) = delete;
+    ST20Decoder(ST20Decoder&& other) = default;
 
+    virtual ~ST20Decoder() override = default;
+
+    ST20Decoder& operator=(const ST20Decoder& other) = delete;
+    ST20Decoder& operator=(ST20Decoder&& other) = default;
+
+public:
     /// \copydoc NJMCDecoder::decodeInstruction
     /**
      * Decodes a machine instruction and returns an RTL instance. In all cases a single instruction is decoded.

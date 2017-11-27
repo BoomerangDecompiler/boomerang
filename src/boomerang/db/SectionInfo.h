@@ -17,17 +17,21 @@
 
 class QVariant;
 
+
 /// All information about the sections is contained in these structures.
 struct SectionInfo : public IBinarySection
 {
-private:
-    SectionInfo& operator=(const SectionInfo& other);
-
 public:
     SectionInfo(Address sourceAddr, uint64 size, const QString& name = "");
     SectionInfo(const SectionInfo& other);
+    SectionInfo(SectionInfo&& other) = default;
+
     virtual ~SectionInfo() override;
 
+    SectionInfo& operator=(const SectionInfo& other) = delete;
+    SectionInfo& operator=(SectionInfo&& other) = default;
+
+public:
     HostAddress getHostAddr()   const override { return m_hostAddr; }
     Address getSourceAddr() const override { return m_nativeAddr; }
     uint8_t getEndian()     const override { return m_endianness; }
@@ -69,7 +73,6 @@ private:
     HostAddress           m_hostAddr;         ///< Host or actual address of data
     uint64                m_size;             ///< Size of section in bytes
     uint32_t              m_sectionEntrySize; ///< Size of one section entry (if applicable)
-    unsigned              m_type;             ///< Type of section (format dependent)
     unsigned              m_code     : 1;     ///< Set if section contains instructions
     unsigned              m_data     : 1;     ///< Set if section contains data
     unsigned              m_bss      : 1;     ///< Set if section is BSS (allocated only)

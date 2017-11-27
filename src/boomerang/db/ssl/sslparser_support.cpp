@@ -485,7 +485,7 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
                 SharedExp e2 = b->getSubExp2(); // This should be an opList too
                 assert(b->getOper() == opList);
                 e2 = e2->getSubExp1();
-                QString   ops  = ((OpTable *)TableDict[tbl].get())->Records[indexrefmap[idx]->getValue()];
+                QString   ops  = ((OpTable *)TableDict[tbl].get())->getRecords()[indexrefmap[idx]->getValue()];
                 SharedExp repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
                 s->searchAndReplace(*res, repl);
             }

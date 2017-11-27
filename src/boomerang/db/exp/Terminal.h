@@ -21,9 +21,15 @@ class Terminal : public Exp
 {
 public:
     Terminal(OPER op);
-    Terminal(const Terminal& o);
+    Terminal(const Terminal& other);
+    Terminal(Terminal&& other) = default;
+
     virtual ~Terminal() override = default;
 
+    Terminal& operator=(const Terminal&) = default;
+    Terminal& operator=(Terminal&&) = default;
+
+public:
     /// \copydoc Exp::clone
     virtual SharedExp clone() const override;
 

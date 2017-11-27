@@ -15,15 +15,24 @@
 class RTL;
 typedef std::shared_ptr<RTL> SharedRTL;
 
+
 /**
- * FlagDef holds a list of parameters (in the subexpression), and a pointer to an RTL
+ * FlagDef holds a list of parameters (in the subexpression),
+ * and a pointer to a RTL
  */
 class FlagDef : public Unary
 {
 public:
     FlagDef(SharedExp params, SharedRTL rtl);
+    FlagDef(const FlagDef& other) = default;
+    FlagDef(FlagDef&& other) = default;
+
     virtual ~FlagDef() override;
 
+    FlagDef& operator=(const FlagDef& other) = default;
+    FlagDef& operator=(FlagDef&& other) = default;
+
+public:
     /// \copydoc Unary::appendDotFile
     virtual void appendDotFile(QTextStream& of) override;
 

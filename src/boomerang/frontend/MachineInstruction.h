@@ -31,23 +31,26 @@ class MachineOperand
 
 struct MachineInstruction
 {
-    QString                opcode;
-    Address                location;
-    std::vector<SharedExp> actuals;
-
+public:
     MachineInstruction(QString op, Address pc, std::vector<SharedExp>&& acts)
         : opcode(op)
         , location(pc)
         , actuals(acts)
     {
     }
+
+public:
+    QString                opcode;
+    Address                location;
+    std::vector<SharedExp> actuals;
+
 };
 
 
 class MachineSemantics
 {
 public:
-    virtual ~MachineSemantics() {}
+    virtual ~MachineSemantics() = default;
 
     virtual Exp *convertOperand(MachineOperand *Operand) = 0;
 

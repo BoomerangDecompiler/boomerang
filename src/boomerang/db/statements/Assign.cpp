@@ -44,35 +44,35 @@ Assign::Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard)
 }
 
 
-Assign::Assign(Assign& o)
+Assign::Assign(const Assign& other)
     : Assignment(m_lhs->clone())
 {
     m_kind  = StmtType::Assign;
-    m_rhs   = o.m_rhs->clone();
+    m_rhs   = other.m_rhs->clone();
     m_type  = nullptr;
     m_guard = nullptr;
 
-    if (o.m_type) {
-        m_type = o.m_type->clone();
+    if (other.m_type) {
+        m_type = other.m_type->clone();
     }
 
-    if (o.m_guard) {
-        m_guard = o.m_guard->clone();
+    if (other.m_guard) {
+        m_guard = other.m_guard->clone();
     }
 }
 
 
 Statement *Assign::clone() const
 {
-    Assign *a = new Assign(m_type == nullptr ? nullptr : m_type->clone(),
+    Assign *asgn = new Assign(m_type == nullptr ? nullptr : m_type->clone(),
                            m_lhs->clone(), m_rhs->clone(),
                            m_guard == nullptr ? nullptr : m_guard->clone());
 
     // Statement members
-    a->m_parent = m_parent;
-    a->m_proc   = m_proc;
-    a->m_number = m_number;
-    return a;
+    asgn->m_parent = m_parent;
+    asgn->m_proc   = m_proc;
+    asgn->m_number = m_number;
+    return asgn;
 }
 
 

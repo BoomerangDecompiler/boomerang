@@ -26,8 +26,15 @@ public:
      * \param        module  Module that contains this library function
      */
     LibProc(Address address, const QString& name, Module *module);
+    LibProc(const LibProc&) = delete;
+    LibProc(LibProc&&) = default;
+
     virtual ~LibProc() override = default;
 
+    LibProc& operator=(const LibProc&) = delete;
+    LibProc& operator=(LibProc&&) = default;
+
+public:
     QString toString() const override;
 
     /// \copydoc Function::isLib

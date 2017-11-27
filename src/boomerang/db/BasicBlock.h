@@ -138,13 +138,14 @@ public:
 public:
     /// \param parent The function this BB belongs to.
     BasicBlock(Function *parent);
-    BasicBlock(const BasicBlock& bb);
-    BasicBlock(BasicBlock&& bb) = default;
+    BasicBlock(const BasicBlock& other);
+    BasicBlock(BasicBlock&& other) = default;
     ~BasicBlock();
 
-    BasicBlock& operator=(const BasicBlock& bb);
-    BasicBlock& operator=(BasicBlock&& bb) = default;
+    BasicBlock& operator=(const BasicBlock& other);
+    BasicBlock& operator=(BasicBlock&& other) = default;
 
+public:
     /// \returns the type pf the BasicBlock
     inline BBType getType()         const { return m_nodeType; }
     inline bool isType(BBType type) const { return m_nodeType == type; }

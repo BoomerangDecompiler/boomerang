@@ -29,9 +29,9 @@ class Exp;
 class Parameter
 {
 public:
-    Parameter() = delete;
     Parameter(SharedType type, const QString& name, SharedExp exp = nullptr, const QString& boundMax = "");
 
+public:
     bool operator==(const Parameter& other) const;
 
     /// Make a deep copy clone of this Parameter
@@ -72,6 +72,7 @@ public:
         , m_exp(_exp)
     {}
 
+public:
     bool operator==(const Return& other) const;
 
     std::shared_ptr<Return> clone() const;
@@ -100,8 +101,15 @@ class Signature : public std::enable_shared_from_this<Signature>
 {
 public:
     Signature(const QString& nam);
+    Signature(const Signature& other) = default;
+    Signature(Signature&& other) = default;
+
     virtual ~Signature();
 
+    Signature& operator=(const Signature& other) = default;
+    Signature& operator=(Signature&& other) = default;
+
+public:
     /// Create a new signature for a function named \p name
     static std::shared_ptr<Signature> instantiate(Platform plat, CallConv cc, const QString& name);
 
@@ -308,6 +316,7 @@ public:
     CustomSignature(const QString& nam);
     virtual ~CustomSignature() override = default;
 
+public:
     virtual bool isPromoted() const override { return true; }
     virtual std::shared_ptr<Signature> clone() const override;
 

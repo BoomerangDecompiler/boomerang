@@ -17,8 +17,9 @@ class SizeStripper : public ExpModifier
 {
 public:
     SizeStripper() = default;
-    virtual ~SizeStripper() override = default;
+    virtual ~SizeStripper() = default;
 
+public:
     /// \copydoc ExpModifier::preVisit
     SharedExp preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 };

@@ -38,6 +38,7 @@ public:
         , m_waiting(false)
     {}
 
+public:
     virtual void alertDecompileDebugPoint(UserProc *p, const char *description) override;
     virtual void alertConsidering(Function *parent, Function *p) override;
     virtual void alertDecompiling(UserProc *p) override;

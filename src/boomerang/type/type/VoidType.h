@@ -17,7 +17,15 @@ class VoidType : public Type
 {
 public:
     VoidType();
+    VoidType(const VoidType& other) = default;
+    VoidType(VoidType&& other) = default;
+
     virtual ~VoidType() override;
+
+    VoidType& operator=(const VoidType& other) = default;
+    VoidType& operator=(VoidType&& other) = default;
+
+public:
     virtual bool isVoid() const override { return true; }
 
     virtual SharedType clone() const override;

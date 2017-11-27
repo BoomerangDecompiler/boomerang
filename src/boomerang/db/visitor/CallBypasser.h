@@ -26,7 +26,9 @@ class CallBypasser : public SimpExpModifier
 {
 public:
     CallBypasser(Statement *enclosing);
+    virtual ~CallBypasser() = default;
 
+public:
     /// \copydoc SimpExpModifier::postVisit
     virtual SharedExp postVisit(const std::shared_ptr<RefExp>& exp) override;
 

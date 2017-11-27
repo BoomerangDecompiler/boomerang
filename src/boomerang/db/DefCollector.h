@@ -30,8 +30,15 @@ public:
 
 public:
     DefCollector() = default;
+    DefCollector(const DefCollector& other) = delete;
+    DefCollector(DefCollector&& other) = default;
+
     ~DefCollector();
 
+    DefCollector& operator=(const DefCollector& other) = delete;
+    DefCollector& operator=(DefCollector&& other) = default;
+
+public:
     iterator begin() { return m_defs.begin(); }
     iterator end() { return m_defs.end(); }
     const_iterator begin() const { return m_defs.begin(); }

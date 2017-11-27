@@ -83,6 +83,7 @@ public:
     CCodeGenerator() = default;
     virtual ~CCodeGenerator() override = default;
 
+public:
     /// \copydoc ICodeGenerator::generateCode
     virtual void generateCode(const Prog *prog, QTextStream& os) override;
 

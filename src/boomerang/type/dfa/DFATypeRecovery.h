@@ -19,11 +19,16 @@ class Statement;
 class StatementList;
 class UserProc;
 
+
 /**
  * Data-flow based type recovery.
  */
 class DFATypeRecovery : public TypeRecoveryCommon
 {
+public:
+    DFATypeRecovery() = default;
+    virtual ~DFATypeRecovery() = default;
+
 public:
     /// \copydoc ITypeRecovery::recoverFunctionTypes
     void recoverFunctionTypes(Function *function) override;

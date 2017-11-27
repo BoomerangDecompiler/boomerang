@@ -22,7 +22,9 @@ class PhiStripper : public StmtModifier
 {
 public:
     PhiStripper(ExpModifier *em);
+    virtual ~PhiStripper() = default;
 
+public:
     bool getDelete() const { return m_del; }
 
     /// \copydoc StmtModifier::visit

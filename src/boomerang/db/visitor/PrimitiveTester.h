@@ -21,7 +21,9 @@ class PrimitiveTester : public ExpVisitor
 {
 public:
     PrimitiveTester() = default;
+    virtual ~PrimitiveTester() = default;
 
+public:
     bool getResult() { return m_result; }
 
     /// \copydoc ExpVisitor::visit

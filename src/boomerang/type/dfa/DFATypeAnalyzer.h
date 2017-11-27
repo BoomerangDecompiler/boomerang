@@ -22,6 +22,7 @@ class DFATypeAnalyzer : public StmtModifier
 {
 public:
     DFATypeAnalyzer();
+    virtual ~DFATypeAnalyzer() = default;
 
 public:
     bool hasChanged() const { return m_changed; }

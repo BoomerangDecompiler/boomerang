@@ -26,7 +26,9 @@ class StmtCastInserter : public StmtVisitor
 {
 public:
     StmtCastInserter() = default;
+    virtual ~StmtCastInserter() = default;
 
+public:
     bool common(Assignment *stmt);
 
     /// \copydoc StmtVisitor::visit

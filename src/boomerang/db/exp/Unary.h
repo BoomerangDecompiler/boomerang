@@ -14,15 +14,22 @@
 
 
 /**
- * Unary is a subclass of Exp, holding one subexpression
+ * Unary is a subclass of Exp,
+ * holding one subexpression
  */
 class Unary : public Exp
 {
 public:
     Unary(OPER op, SharedExp subExp1);
-    Unary(const Unary& o);
+    Unary(const Unary& other);
+    Unary(Unary&& other);
+
     virtual ~Unary() override;
 
+    Unary& operator=(const Unary& other) = default;
+    Unary& operator=(Unary&& other) = default;
+
+public:
     /// \copydoc Exp::clone
     virtual SharedExp clone() const override;
 

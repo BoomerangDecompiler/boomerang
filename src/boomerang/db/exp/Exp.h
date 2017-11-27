@@ -59,13 +59,18 @@ typedef std::shared_ptr<Type>        SharedType;
  */
 class Exp : public Printable, public std::enable_shared_from_this<Exp>
 {
-protected:
-    /// Constructor, with operator
+public:
     Exp(OPER oper) : m_oper(oper) {}
 
-public:
+    Exp(const Exp& other) = default;
+    Exp(Exp&& other) = default;
+
     virtual ~Exp() override = default;
 
+    Exp& operator=(const Exp&) = default;
+    Exp& operator=(Exp&&) = default;
+
+public:
     /// Clone (make copy of self that can be deleted without affecting self)
     virtual SharedExp clone() const = 0;
 
@@ -103,10 +108,7 @@ public:
     /// with its type in \<angle brackets\>.
     void printt(QTextStream& os) const;
 
-    /**
-     * Print to a static buffer (for debugging)
-     * \returns      Address of the static buffer
-     */
+    /// Print to a static buffer (for debugging)
     char *prints();
 
     /// For debugging: print in indented hex. In gdb: "p x->printx(0)"
@@ -310,8 +312,6 @@ public:
      */
     SharedExp propagateAllRpt(bool& changed);
 
-
-    // Sub expressions
 
     /**
      * These are here so we can (optionally) prevent code clutter.

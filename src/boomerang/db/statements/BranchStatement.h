@@ -19,8 +19,15 @@ class BranchStatement : public GotoStatement
 {
 public:
     BranchStatement();
+    BranchStatement(const BranchStatement& other) = default;
+    BranchStatement(BranchStatement&& other) = default;
+
     virtual ~BranchStatement() override;
 
+    BranchStatement& operator=(const BranchStatement& other) = default;
+    BranchStatement& operator=(BranchStatement&& other) = default;
+
+public:
     /// \copydoc GotoStatement::clone
     virtual Statement *clone() const override;
 
