@@ -89,7 +89,7 @@ UserProc::~UserProc()
 }
 
 
-SyntaxNode *UserProc::getAST() const
+SyntaxNode *UserProc::calculateAST() const
 {
     int             numBBs = 0;
     BlockSyntaxNode *init  = new BlockSyntaxNode();
@@ -172,7 +172,7 @@ void UserProc::printAST(SyntaxNode *a) const
     char       s[1024];
 
     if (a == nullptr) {
-        a = getAST();
+        a = calculateAST();
     }
 
     sprintf(s, "ast%i-%s.dot", count++, qPrintable(getName()));
@@ -292,15 +292,10 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
     m_locals.erase(oldName);
     SharedExp oldLoc = getSymbolFor(oldExp, ty);
     auto      newLoc = Location::local(newName, this);
+
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
     m_locals[newName] = ty;
     m_cfg->searchAndReplace(*oldLoc, newLoc);
-}
-
-
-bool UserProc::searchAll(const Exp& search, std::list<SharedExp>& result)
-{
-    return m_cfg->searchAll(search, result);
 }
 
 
@@ -474,13 +469,6 @@ void UserProc::setDecoded()
 {
     setStatus(PROC_DECODED);
     printDecodedXML();
-}
-
-
-void UserProc::unDecode()
-{
-    m_cfg->clear();
-    setStatus(PROC_UNDECODED);
 }
 
 
@@ -1260,11 +1248,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
     doRenameBlockVars(2);
     propagateStatements(convert, 2); // Otherwise sometimes sp is not fully propagated
-    // Map locals and temporary parameters as symbols, so that they can be propagated later
-    //    mapLocalsAndParams();                // FIXME: unsure where this belongs
     updateArguments();
     reverseStrengthReduction();
-    // processTypes();
 
     // Repeat until no change
     int pass;
@@ -2279,44 +2264,6 @@ void UserProc::addParameter(SharedExp e, SharedType ty)
 }
 
 
-void UserProc::processFloatConstants()
-{
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    static Ternary match(opFsize, Terminal::get(opWild), Terminal::get(opWild), Location::memOf(Terminal::get(opWild)));
-
-    StatementList::iterator it;
-
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
-
-        std::list<SharedExp> results;
-        s->searchAll(match, results);
-
-        for (auto& result : results) {
-            auto fsize = result->access<Ternary>();
-
-            if ((fsize->getSubExp3()->getOper() == opMemOf) &&
-                (fsize->getSubExp3()->getSubExp1()->getOper() == opIntConst)) {
-                SharedExp memof = fsize->getSubExp3();
-                Address   u     = memof->access<Const, 1>()->getAddr();
-                bool      ok;
-                double    d = m_prog->getFloatConstant(u, ok);
-
-                if (ok) {
-                    LOG_MSG("Replacing %1 with %2 in %3", memof, d, fsize);
-                    fsize->setSubExp3(Const::get(d));
-                }
-            }
-        }
-
-        s->simplify();
-    }
-}
-
-
 void UserProc::addParameterSymbols()
 {
     StatementList::iterator it;
@@ -2398,162 +2345,6 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
     }
 
     return e;
-}
-
-
-void UserProc::mapExpressionsToLocals(bool lastPass)
-{
-    static SharedExp sp_location = Location::regOf(0);
-    // parse("[*] + sp{0}")
-    static Binary nn(opPlus, Terminal::get(opWild), RefExp::get(sp_location, nullptr));
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "before mapping expressions to locals");
-
-    LOG_VERBOSE("Mapping expressions to locals for %1%2", getName(), lastPass ? " last pass" : "");
-
-    int sp = m_signature->getStackRegister(m_prog);
-
-    if (getProven(Location::regOf(sp)) == nullptr) {
-        LOG_VERBOSE("Can't map locals since SP unproven");
-        return; // can't replace if nothing proven about sp
-    }
-
-    // start with calls because that's where we have the most types
-
-    for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-        if ((*it)->isCall()) {
-            CallStatement *call = (CallStatement *)*it;
-
-            for (int i = 0; i < call->getNumArguments(); i++) {
-                SharedType ty = call->getArgumentType(i);
-                SharedExp  e  = call->getArgumentExp(i);
-
-                // If a pointer type and e is of the form m[sp{0} - K]:
-                if (ty && ty->resolvesToPointer() && m_signature->isAddrOfStackLocal(m_prog, e)) {
-                    LOG_MSG("Argument %1 is an addr of stack local and the type resolves to a pointer", e);
-
-                    auto       olde(e->clone());
-                    SharedType pty = ty->as<PointerType>()->getPointsTo();
-
-                    if (e->isAddrOf() && e->getSubExp1()->isSubscript() && e->getSubExp1()->getSubExp1()->isMemOf()) {
-                        e = e->getSubExp1()->getSubExp1()->getSubExp1();
-                    }
-
-                    if (pty->resolvesToArray() && pty->as<ArrayType>()->isUnbounded()) {
-                        auto a = std::static_pointer_cast<ArrayType>(pty->as<ArrayType>()->clone());
-                        pty = a;
-                        a->setLength(1024); // just something arbitrary
-
-                        if (i + 1 < call->getNumArguments()) {
-                            SharedType nt = call->getArgumentType(i + 1);
-
-                            if (nt->isNamed()) {
-                                nt = std::static_pointer_cast<NamedType>(nt)->resolvesTo();
-                            }
-
-                            if (nt->isInteger() && call->getArgumentExp(i + 1)->isIntConst()) {
-                                a->setLength(call->getArgumentExp(i + 1)->access<Const>()->getInt());
-                            }
-                        }
-                    }
-
-                    e = getSymbolExp(Location::memOf(e->clone(), this), pty);
-
-                    if (e) {
-                        auto ne = Unary::get(opAddrOf, e);
-                        LOG_VERBOSE("Replacing argument %1 with %2 in %3", olde, ne, (const CallStatement *)call);
-                        call->setArgumentExp(i, ne);
-                    }
-                }
-            }
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After processing locals in calls");
-
-    // normalise sp usage (turn WILD + sp{0} into sp{0} + WILD)
-    sp_location->access<Const, 1>()->setInt(sp); // set to search sp value
-
-    for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-        Statement            *s = *it;
-        std::list<SharedExp> results;
-        s->searchAll(nn, results);
-
-        for (SharedExp& result : results) {
-            auto wild = result->getSubExp1();
-            result->setSubExp1(result->getSubExp2());
-            result->setSubExp2(wild);
-        }
-    }
-
-    // FIXME: this is probably part of the ADHOC TA
-    // look for array locals
-    // l = m[(sp{0} + WILD1) - K2]
-    static std::shared_ptr<Const> sp_const(Const::get(0));
-    static auto sp_loc(Location::get(opRegOf, sp_const, nullptr));
-    static auto query_f(Location::get(
-                            opMemOf, Binary::get(opMinus, Binary::get(opPlus, RefExp::get(sp_loc, nullptr), Terminal::get(opWild)),
-                                                 Terminal::get(opWildIntConst)),
-                            nullptr));
-
-    for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
-        Statement            *s = *it;
-        std::list<SharedExp> results;
-        sp_const->setInt(sp);
-        s->searchAll(*query_f, results);
-
-        for (SharedExp& result : results) {
-            // arr = m[sp{0} - K2]
-            SharedExp arr = Location::memOf(Binary::get(opMinus, RefExp::get(Location::regOf(sp), nullptr),
-                                                        result->getSubExp1()->getSubExp2()->clone()),
-                                            this);
-            int        n    = result->access<Const, 1, 2>()->getInt();
-            SharedType base = IntegerType::get(STD_SIZE);
-
-            if (s->isAssign() && (((Assign *)s)->getLeft() == result)) {
-                SharedType at = ((Assign *)s)->getType();
-
-                if (at && (at->getSize() != 0)) {
-                    base = ((Assign *)s)->getType()->clone();
-                }
-            }
-
-            // arr->setType(ArrayType::get(base, n / (base->getSize() / 8))); //TODO: why is this commented out ?
-            LOG_VERBOSE("Found a local array using %1 bytes", n);
-            SharedExp replace = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, arr),
-                                                            result->access<Exp, 1, 1, 2>()->clone()),
-                                                this);
-            // TODO: the change from de8c876e9ca33e6f5aab39191204e80b81048d67
-            // doesn't change anything, but 'looks' better
-            SharedExp actual_replacer = std::make_shared<TypedExp>(
-                ArrayType::get(base, n / (base->getSize() / 8)), replace);
-
-            LOG_VERBOSE("Replacing %1 with %2 in %3", result, actual_replacer, s);
-
-            s->searchAndReplace(*result, actual_replacer);
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After processing array locals");
-
-    // Stack offsets for local variables could be negative (most machines), positive (PA/RISC), or both (SPARC)
-    if (m_signature->isLocalOffsetNegative()) {
-        searchRegularLocals(opMinus, lastPass, sp, stmts);
-    }
-
-    if (m_signature->isLocalOffsetPositive()) {
-        searchRegularLocals(opPlus, lastPass, sp, stmts);
-    }
-
-    // Ugh - m[sp] is a special case: neither positive or negative.  SPARC uses this to save %i0
-    if (m_signature->isLocalOffsetPositive() && m_signature->isLocalOffsetNegative()) {
-        searchRegularLocals(opWild, lastPass, sp, stmts);
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After mapping expressions to locals");
 }
 
 
@@ -2844,38 +2635,6 @@ SharedConstExp UserProc::expFromSymbol(const QString& nam) const
 }
 
 
-QString UserProc::getLocalName(int n)
-{
-    int i = 0;
-
-    for (std::map<QString, SharedType>::iterator it = m_locals.begin(); it != m_locals.end(); it++, i++) {
-        if (i == n) {
-            return it->first;
-        }
-    }
-
-    return nullptr;
-}
-
-
-QString UserProc::getSymbolName(SharedExp e)
-{
-    SymbolMap::iterator it = m_symbolMap.find(e);
-
-    if (it == m_symbolMap.end()) {
-        return "";
-    }
-
-    SharedExp loc = it->second;
-
-    if (!loc->isLocal() && !loc->isParam()) {
-        return "";
-    }
-
-    return loc->access<Const, 1>()->getStr();
-}
-
-
 void UserProc::countRefs(RefCounter& refCounts)
 {
     StatementList stmts;
@@ -3059,10 +2818,6 @@ void UserProc::removeUnusedLocals()
     Boomerang::get()->alertDecompileDebugPoint(this, "After removing unused locals");
 }
 
-
-//
-//    SSA code
-//
 
 void UserProc::fromSSAForm()
 {
@@ -3850,16 +3605,6 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
 }
 
 
-void UserProc::getDefinitions(LocationSet& ls)
-{
-    int n = m_signature->getNumReturns();
-
-    for (int j = 0; j < n; j++) {
-        ls.insert(m_signature->getReturnExp(j));
-    }
-}
-
-
 bool UserProc::searchAndReplace(const Exp& search, SharedExp replace)
 {
     bool          ch = false;
@@ -3908,21 +3653,6 @@ SharedExp UserProc::getPremised(SharedExp left)
 bool UserProc::isPreserved(SharedExp e)
 {
     return m_provenTrue.find(e) != m_provenTrue.end() && *m_provenTrue[e] == *e;
-}
-
-
-void UserProc::castConst(int num, SharedType ty)
-{
-    StatementList stmts;
-
-    getStatements(stmts);
-    StatementList::iterator it;
-
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        if ((*it)->castConst(num, ty)) {
-            break;
-        }
-    }
 }
 
 
@@ -4135,40 +3865,6 @@ void UserProc::dumpSymbolMapx() const
         LOG_MSG("  %1 maps to %2 type %3", it->first, it->second, (ty ? qPrintable(ty->getCtype()) : "NULL"));
         it->first->printx(2);
     }
-}
-
-
-void UserProc::testSymbolMap() const
-{
-    SymbolMap::const_iterator it1, it2;
-    bool OK = true;
-    it1 = m_symbolMap.begin();
-
-    if (it1 != m_symbolMap.end()) {
-        it2 = it1;
-        ++it2;
-
-        while (it2 != m_symbolMap.end()) {
-            if (*it2->first < *it1->first) { // Compare keys
-                OK = false;
-                LOG_MSG("*it2->first < *it1->first: %1 < %2!", it2->first, it1->first);
-                // it2->first->printx(0); it1->first->printx(5);
-            }
-
-            ++it1;
-            ++it2;
-        }
-    }
-
-    LOG_MSG("Symbol Map is %1", (OK ? "OK" : "NOT OK!!!!!"));
-}
-
-
-void UserProc::dumpLocals() const
-{
-    QTextStream q_cerr(stderr);
-
-    dumpLocals(q_cerr);
 }
 
 
@@ -4865,43 +4561,6 @@ bool UserProc::inductivePreservation(UserProc * /*topOfCycle*/)
 }
 
 
-bool UserProc::isLocal(SharedExp e) const
-{
-    if (!e->isMemOf()) {
-        return false; // Don't want say a register
-    }
-
-    SymbolMap::const_iterator ff = m_symbolMap.find(e);
-
-    if (ff == m_symbolMap.end()) {
-        return false;
-    }
-
-    SharedExp mapTo = ff->second;
-    return mapTo->isLocal();
-}
-
-
-bool UserProc::isPropagatable(const SharedExp& e) const
-{
-    if (m_addressEscapedVars.exists(e)) {
-        return false;
-    }
-
-    return isLocalOrParam(e);
-}
-
-
-bool UserProc::isLocalOrParam(const SharedExp& e) const
-{
-    if (isLocal(e)) {
-        return true;
-    }
-
-    return m_parameters.existsOnLeft(e);
-}
-
-
 bool UserProc::isLocalOrParamPattern(const SharedExp& e)
 {
     if (!e->isMemOf()) {
@@ -4996,90 +4655,6 @@ bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visit
                     // TODO: Else consider more calls this proc
                 }
             }
-        }
-    }
-
-    return false;
-}
-
-
-bool UserProc::isRetNonFakeUsed(CallStatement *c, SharedExp retLoc, UserProc *p, ProcSet *visited)
-{
-    // Ick! This algorithm has to search every statement for uses of the return location retLoc defined at call c that
-    // are not arguments of calls to p. If we had def-use information, it would be much more efficient
-    StatementList stmts;
-
-    getStatements(stmts);
-    StatementList::iterator it;
-
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement   *s = *it;
-        LocationSet ls;
-        s->addUsedLocs(ls);
-        bool found = false;
-
-        for (const SharedExp& ll : ls) {
-            if (!ll->isSubscript()) {
-                continue;
-            }
-
-            Statement *def = ll->access<RefExp>()->getDef();
-
-            if (def != c) {
-                continue; // Not defined at c, ignore
-            }
-
-            SharedExp base = ll->getSubExp1();
-
-            if (!(*base == *retLoc)) {
-                continue; // Defined at c, but not the right location
-            }
-
-            found = true;
-            break;
-        }
-
-        if (!found) {
-            continue;
-        }
-
-        if (!s->isCall()) {
-            // This non-call uses the return; return true as it is non-fake used
-            return true;
-        }
-
-        UserProc *dest = (UserProc *)((CallStatement *)s)->getDestProc();
-
-        if (dest == nullptr) {
-            // This childless call seems to use the return. Count it as a non-fake use
-            return true;
-        }
-
-        if (dest == p) {
-            // This procedure uses the parameter, but it's a recursive call to p, so ignore it
-            continue;
-        }
-
-        if (dest->isLib()) {
-            // Can't be a recursive call
-            return true;
-        }
-
-        if (!dest->doesRecurseTo(p)) {
-            return true;
-        }
-
-        // We have a call that uses the return, but it may well recurse to p
-        visited->insert(this);
-
-        if (visited->find(dest) != visited->end()) {
-            // We've not found any way for loc to be fake-used. Count it as non-fake
-            return true;
-        }
-
-        if (!doesParamChainToCall(retLoc, p, visited)) {
-            // It is a recursive call, but it doesn't end up passing param as an argument in a call to p
-            return true;
         }
     }
 
@@ -5474,30 +5049,6 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 }
 
 
-void UserProc::clearUses()
-{
-    if (VERBOSE) {
-        LOG_MSG("### clearing usage for %1 ###", getName());
-    }
-
-    m_procUseCollector.clear();
-    BBIterator                      it;
-    BasicBlock::rtlrit              rrit;
-    StatementList::reverse_iterator srit;
-
-    for (it = m_cfg->begin(); it != m_cfg->end(); ++it) {
-        CallStatement *c = (CallStatement *)(*it)->getLastStmt(rrit, srit);
-
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if ((c == nullptr) || !c->isCall()) {
-            continue;
-        }
-
-        c->clearUseCollector();
-    }
-}
-
-
 void UserProc::typeAnalysis()
 {
     LOG_VERBOSE("### Type analysis for %1 ###", getName());
@@ -5553,86 +5104,6 @@ void UserProc::processDecodedICTs()
 }
 
 
-void UserProc::setImplicitRef(Statement *s, SharedExp a, SharedType ty)
-{
-    BasicBlock *bb = s->getBB(); // Get s' enclosing BB
-
-    std::list<RTL *> *rtls = bb->getRTLs();
-
-    for (std::list<RTL *>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
-        RTL::iterator it, itForS;
-        RTL           *rtlForS;
-
-        for (it = (*rit)->begin(); it != (*rit)->end(); it++) {
-            if ((*it == s) ||
-                // Not the searched for statement. But if it is a call or return statement, it will be the last, and
-                // s must be a substatement (e.g. argument, return, define, etc).
-                ((*it)->isCall() || (*it)->isReturn())) {
-                // Found s. Search preceeding statements for an implicit reference with address a
-                itForS  = it;
-                rtlForS = *rit;
-                bool found             = false;
-                bool searchEarlierRtls = true;
-
-                while (it != (*rit)->begin()) {
-                    ImpRefStatement *irs = (ImpRefStatement *)*--it;
-
-                    if (!irs->isImpRef()) {
-                        searchEarlierRtls = false;
-                        break;
-                    }
-
-                    if (*irs->getAddressExp() == *a) {
-                        found             = true;
-                        searchEarlierRtls = false;
-                        break;
-                    }
-                }
-
-                while (searchEarlierRtls && rit != rtls->begin()) {
-                    for (std::list<RTL *>::reverse_iterator revit = rtls->rbegin(); revit != rtls->rend(); ++revit) {
-                        it = (*revit)->end();
-
-                        while (it != (*revit)->begin()) {
-                            ImpRefStatement *irs = (ImpRefStatement *)*--it;
-
-                            if (!irs->isImpRef()) {
-                                searchEarlierRtls = false;
-                                break;
-                            }
-
-                            if (*irs->getAddressExp() == *a) {
-                                found             = true;
-                                searchEarlierRtls = false;
-                                break;
-                            }
-                        }
-
-                        if (!searchEarlierRtls) {
-                            break;
-                        }
-                    }
-                }
-
-                if (found) {
-                    ImpRefStatement *irs = (ImpRefStatement *)*it;
-                    bool            ch;
-                    irs->meetWith(ty, ch);
-                }
-                else {
-                    ImpRefStatement *irs = new ImpRefStatement(ty, a);
-                    rtlForS->insert(itForS, irs);
-                }
-
-                return;
-            }
-        }
-    }
-
-    assert(0); // Could not find s withing its enclosing BB
-}
-
-
 void UserProc::eliminateDuplicateArgs()
 {
     LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
@@ -5675,39 +5146,6 @@ void UserProc::removeCallLiveness()
 }
 
 
-void UserProc::mapTempsToLocals()
-{
-    StatementList stmts;
-
-    getStatements(stmts);
-    StatementList::iterator it;
-    TempToLocalMapper       ttlm(this);
-    StmtExpVisitor          sv(&ttlm);
-
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
-        s->accept(&sv);
-    }
-}
-
-
-// For debugging:
-void dumpProcList(ProcList *pc)
-{
-    for (ProcList::iterator pi = pc->begin(); pi != pc->end(); ++pi) {
-        LOG_MSG("%1,", (*pi)->getName());
-    }
-}
-
-
-void dumpProcSet(ProcSet *pc)
-{
-    for (ProcSet::iterator pi = pc->begin(); pi != pc->end(); ++pi) {
-        LOG_MSG("%1,", (*pi)->getName());
-    }
-}
-
-
 void UserProc::mapLocalsAndParams()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
@@ -5741,19 +5179,6 @@ void UserProc::makeSymbolsImplicit()
     for (it = sm2.begin(); it != sm2.end(); ++it) {
         SharedExp impFrom = std::const_pointer_cast<Exp>(it->first)->accept(&ic);
         mapSymbolTo(impFrom, it->second);
-    }
-}
-
-
-void UserProc::makeParamsImplicit()
-{
-    StatementList::iterator it;
-    ImplicitConverter       ic(m_cfg);
-
-    for (it = m_parameters.begin(); it != m_parameters.end(); ++it) {
-        SharedExp lhs = ((Assignment *)*it)->getLeft();
-        lhs = lhs->accept(&ic);
-        ((Assignment *)*it)->setLeft(lhs);
     }
 }
 

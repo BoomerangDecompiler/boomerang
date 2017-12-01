@@ -266,9 +266,6 @@ const char *Decompiler::getProcStatus(UserProc *p)
     case PROC_DECODED:
         return "decoded";
 
-    case PROC_SORTED:
-        return "sorted";
-
     case PROC_VISITED:
         return "visited";
 

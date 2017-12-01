@@ -1642,8 +1642,7 @@ bool CallStatement::isChildless() const
     if (m_procDest == nullptr) {
         return true;
     }
-
-    if (m_procDest->isLib()) {
+    else if (m_procDest->isLib()) {
         return false;
     }
 
