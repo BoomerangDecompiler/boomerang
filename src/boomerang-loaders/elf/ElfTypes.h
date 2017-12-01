@@ -13,7 +13,6 @@
 /// \file ElfTypes.h This file contains the elf format support structures
 /// \sa http://docs.oracle.com/cd/E18752_01/pdf/817-1984.pdf
 
-
 // Data types for 32 bit ELF files
 typedef uint8    Elf32_Byte;
 typedef uint16   Elf32_Half;
@@ -35,6 +34,7 @@ typedef uint64   Elf64_Off;
 // number of bytes for ELF file type identification
 #define EI_NIDENT    16
 
+#pragma pack(push, 1)
 /// Internal elf info
 struct Elf32_Ehdr
 {
@@ -57,7 +57,7 @@ struct Elf32_Ehdr
 
 typedef struct
 {
-    Elf32_Byte e_ident[EI_NIDENT];
+    Elf64_Byte e_ident[EI_NIDENT];
     Elf64_Half e_type;
     Elf64_Half e_machine;
     Elf64_Word e_version;
@@ -72,6 +72,7 @@ typedef struct
     Elf64_Half e_shnum;
     Elf64_Half e_shstrndx;
 } Elf64_Ehdr;
+#pragma pack(pop)
 
 
 #define EI_MAGO              0
@@ -166,7 +167,7 @@ typedef struct
 #define SHN_XINDEX           0xffff
 #define SHN_HIRESERVE        0xffff
 
-
+#pragma pack(push, 1)
 struct Elf32_Shdr
 {
     Elf32_Word sh_name;         ///< section name.
@@ -195,6 +196,7 @@ struct Elf64_Shdr
     Elf64_Xword sh_addralign;
     Elf64_Xword sh_entsize;
 };
+#pragma pack(pop)
 
 
 // sh_type
@@ -272,7 +274,7 @@ enum ElfSectionTypes
 #define ELF64_C_INFO(sym, grp)    (((Elf64_Xword)(sym) << 32) + (Elf64_Xword)
 
 
-
+#pragma pack(push, 1)
 // Relocation
 struct Elf32_Rel
 {
@@ -299,6 +301,8 @@ struct Elf64_Rela
     Elf64_Xword  r_info;
     Elf64_Sxword r_addend;
 };
+#pragma pack(pop)
+
 
 #define ELF32_R_SYM(info)                ((info) >> 8)
 #define ELF32_R_TYPE(info)               ((unsigned char)(info))
@@ -379,7 +383,6 @@ struct Elf64_Rela
 #define R_AMD64_SIZE64       33 ///< word64     Z + A
 
 
-
 /// Sparc relocation types
 #define R_SPARC_NONE                0  ///< None       None
 #define R_SPARC_8                   1  ///< V-byte8    S + A
@@ -452,6 +455,8 @@ struct Elf64_Rela
 #define R_SPARC_SIZE64              87 ///< V-xword64  Z + A
 
 
+#pragma pack(push, 1)
+
 /// Program header
 struct Elf32_Phdr
 {
@@ -476,7 +481,10 @@ struct Elf64_Phdr
     Elf64_Xword p_memsz;
     Elf64_Xword p_align;
 };
+#pragma pack(pop)
 
+
+// p_type
 #define PT_NULL             0
 #define PT_LOAD             1
 #define PT_DYNAMIC          2
@@ -516,7 +524,6 @@ struct Elf32_Sym
     Elf32_Byte st_other;
     Elf32_Half st_shndx;
 };
-#pragma pack(pop)
 
 struct Elf64_Sym
 {
@@ -527,6 +534,8 @@ struct Elf64_Sym
     Elf64_Addr  st_value;
     Elf64_Xword st_size;
 };
+#pragma pack(pop)
+
 
 #define ELF32_ST_BIND(info)          (ElfSymBinding)((info) >> 4)
 #define ELF32_ST_TYPE(info)          (ElfSymType)((info) & 0xf)
@@ -537,6 +546,7 @@ struct Elf64_Sym
 
 #define ELF32_ST_VISIBILITY(o)       (ElfSymVisibility)((o) & 0x3)
 #define ELF64_ST_VISIBILITY(o)       (ElfSymVisibility)((o) & 0x3)
+
 
 enum ElfSymBinding
 {
@@ -579,6 +589,7 @@ enum ElfSymVisibility
 
 // dynamic section data
 
+#pragma pack(push, 1)
 struct Elf32_Dyn
 {
     Elf32_Sword d_tag; /* how to interpret value */
@@ -587,8 +598,7 @@ struct Elf32_Dyn
         Elf32_Word d_val;
         Elf32_Addr d_ptr;
         Elf32_Off  d_off;
-    }
-                d_un;
+    } d_un;
 };
 
 struct Elf64_Dyn
@@ -598,9 +608,10 @@ struct Elf64_Dyn
     {
         Elf64_Xword d_val;
         Elf64_Addr  d_ptr;
-    }
-                d_un;
+    } d_un;
 };
+#pragma pack(pop)
+
 
 // Tag values
 #define DT_NULL                0 ///< Last entry in list
