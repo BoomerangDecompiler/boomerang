@@ -126,3 +126,95 @@ void ArrayType::fixBaseType(SharedType b)
         BaseType->as<ArrayType>()->fixBaseType(b);
     }
 }
+
+
+SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    if (other->resolvesToVoid()) {
+        return ((ArrayType *)this)->shared_from_this();
+    }
+
+    if (other->resolvesToArray()) {
+        auto       otherArr  = other->as<ArrayType>();
+        SharedType newBase   = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
+        size_t     newLength = m_length;
+
+        if (*newBase != *BaseType) {
+            ch        = true;
+            newLength = convertLength(newBase);
+        }
+
+        newLength = std::min(newLength, other->as<ArrayType>()->getLength());
+        return ArrayType::get(newBase, newLength);
+    }
+
+    if (*BaseType == *other) {
+        return ((ArrayType *)this)->shared_from_this();
+    }
+
+    /*
+     * checks if 'other' is compatible with the ArrayType, if it is
+     * checks if other's 'completeness' is less then current BaseType, if it is, unchanged type is returned.
+     * checks if sizes of BaseType and other match, if they do, checks if other is less complete ( SizeType vs NonSize type ),
+     *  if that happens unchanged type is returned
+     * then it clones the BaseType and tries to 'meetWith' with other, if this results in unchanged type, unchanged type is returned
+     * otherwise a new ArrayType is returned, with it's size recalculated based on new BaseType
+     */
+    if (isCompatible(*other, false)) { // compatible with all ?
+        size_t bitsize  = BaseType->getSize();
+        size_t new_size = other->getSize();
+
+        if (BaseType->isComplete() && !other->isComplete()) {
+            // complete types win
+            return std::const_pointer_cast<Type>(this->shared_from_this());
+        }
+
+        if (bitsize == new_size) {
+            // same size, prefer Int/Float over SizeType
+            if (!BaseType->isSize() && other->isSize()) {
+                return std::const_pointer_cast<Type>(this->shared_from_this());
+            }
+        }
+
+        auto bt = BaseType->clone();
+        bool base_changed;
+        auto res = bt->meetWith(other, base_changed);
+
+        if (res == bt) {
+            return std::const_pointer_cast<Type>(this->shared_from_this());
+        }
+
+        size_t new_length = m_length;
+
+        if (m_length != NO_BOUND) {
+            new_length = (m_length * bitsize) / new_size;
+        }
+
+        return ArrayType::get(res, new_length);
+    }
+
+    // Needs work?
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+bool ArrayType::isCompatible(const Type& other, bool all) const
+{
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    if (other.resolvesToArray() && BaseType->isCompatibleWith(*other.as<ArrayType>()->BaseType)) {
+        return true;
+    }
+
+    if (other.resolvesToUnion()) {
+        return other.isCompatibleWith(*this);
+    }
+
+    if (!all && BaseType->isCompatibleWith(other)) {
+        return true; // An array of x is compatible with x
+    }
+
+    return false;
+}

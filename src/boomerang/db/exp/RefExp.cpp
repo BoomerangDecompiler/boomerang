@@ -21,6 +21,7 @@
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/VoidType.h"
 
 
 RefExp::RefExp(SharedExp e, Statement *d)
@@ -276,3 +277,31 @@ void RefExp::setDef(Statement* _def)
     m_def = _def;
 }
 
+
+SharedType RefExp::ascendType()
+{
+    // Constants and subscripted locations are at the leaves
+    // of the expression tree. Just return their stored types.
+    if (m_def == nullptr) {
+        LOG_WARN("Null reference in '%1'", this->prints());
+        return VoidType::get();
+    }
+
+    return m_def->getTypeFor(subExp1);
+}
+
+
+void RefExp::descendType(SharedType parentType, bool& ch, Statement *s)
+{
+    assert(getSubExp1());
+
+    if (m_def == nullptr) {
+        LOG_ERROR("Cannot descendType of expression '%1' since it does not have a defining statement!", getSubExp1());
+        ch = false;
+        return;
+    }
+
+    SharedType newType = m_def->meetWithFor(parentType, subExp1, ch);
+    // In case subExp1 is a m[...]
+    subExp1->descendType(newType, ch, s);
+}

@@ -36,8 +36,6 @@ public:
 
     // Remove this Assign. Return false if it was not found
     bool remove(Assign *a);                   ///< Removal; rets false if not found
-    bool removeIfDefines(SharedExp given);    ///< Remove if given exp is defined
-    bool removeIfDefines(AssignSet& given);   ///< Remove if any given is def'd
 
     // Search for a in this Assign set. Return true if found
     bool exists(Assign *s);                   ///< Search; returns false if !found

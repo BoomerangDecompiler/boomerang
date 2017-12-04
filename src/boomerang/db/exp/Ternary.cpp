@@ -19,6 +19,7 @@
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 
@@ -577,4 +578,50 @@ void Ternary::printx(int ind) const
     printChild(subExp1, ind);
     printChild(subExp2, ind);
     printChild(subExp3, ind);
+}
+
+
+SharedType Ternary::ascendType()
+{
+    switch (m_oper)
+    {
+    case opFsize:
+        return FloatType::get(subExp2->access<Const>()->getInt());
+
+    case opZfill:
+    case opSgnEx:
+        {
+            const int toSize = subExp2->access<Const>()->getInt();
+            return Type::newIntegerLikeType(toSize, m_oper == opZfill ? -1 : 1);
+        }
+
+    default:
+        break;
+    }
+
+    return VoidType::get();
+}
+
+
+void Ternary::descendType(SharedType /*parentType*/, bool& ch, Statement *s)
+{
+    switch (m_oper)
+    {
+    case opFsize:
+        subExp3->descendType(FloatType::get(subExp1->access<Const>()->getInt()), ch, s);
+        break;
+
+    case opZfill:
+    case opSgnEx:
+        {
+            int        fromSize = subExp1->access<Const>()->getInt();
+            SharedType fromType;
+            fromType = Type::newIntegerLikeType(fromSize, m_oper == opZfill ? -1 : 1);
+            subExp3->descendType(fromType, ch, s);
+            break;
+        }
+
+    default:
+        break;
+    }
 }

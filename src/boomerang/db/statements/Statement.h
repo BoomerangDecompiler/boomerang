@@ -413,8 +413,6 @@ protected:
  * \returns copy of os (for concatenation)
  */
 QTextStream& operator<<(QTextStream& os, const Statement *stmt);
-QTextStream& operator<<(QTextStream& os, const InstructionSet *p);
-QTextStream& operator<<(QTextStream& os, const LocationSet *p);
 
 
 /**

@@ -51,9 +51,6 @@ public:
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 
 private:
-    RTL *createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name);
-    bool isFuncPrologue(Address hostPC);
-
     DWord getDword(intptr_t lc); // TODO: switch back to using ADDRESS objects
     SWord getWord(intptr_t lc);
     Byte getByte(intptr_t lc);

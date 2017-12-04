@@ -67,23 +67,10 @@ public:
     virtual Address getMainEntryPoint(bool& gotMain) override;
 
 private:
-    /*
-     * Process an F(n)STSW instruction.
-     */
-    bool processStsw(std::list<RTL *>::iterator& rit, std::list<RTL *> *pRtls, BasicBlock *pBB, Cfg *pCfg);
-
     /// Emit a set instruction.
     /// Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
     /// Insert before rit
     void emitSet(std::list<RTL *> *pRtls, std::list<RTL *>::iterator& itRtl, Address uAddr, SharedExp pLHS, SharedExp cond);
-
-    /**
-     * Handle the case of being in state 23 and encountering a set instruction.
-     */
-    void State25(SharedExp pLHS, SharedExp pRHS, std::list<RTL *> *pRtls, std::list<RTL *>::iterator& rit, Address uAddr);
-
-    int idPF; // Parity flag
-
 
     /**
      * Little simpler, just replaces FPUSH and FPOP with more complex
@@ -166,7 +153,6 @@ private:
      */
     void bumpRegisterAll(SharedExp exp, int min, int max, int delta, int mask);
 
-    unsigned fetch4(unsigned char *ptr);
     bool decodeSpecial(Address pc, DecodeResult& r);
     bool decodeSpecial_out(Address pc, DecodeResult& r);
     bool decodeSpecial_invalid(Address pc, DecodeResult& r);

@@ -10,6 +10,10 @@
 #include "FloatType.h"
 
 
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/SizeType.h"
+
+
 FloatType::FloatType(int sz)
     : Type(eFloat)
     , size(sz)
@@ -94,4 +98,46 @@ QString FloatType::getTempName() const
     }
 
     return "tmp";
+}
+
+
+SharedType FloatType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    if (other->resolvesToVoid()) {
+        return ((FloatType *)this)->shared_from_this();
+    }
+
+    if (other->resolvesToFloat() || other->resolvesToSize()) {
+        const size_t newSize = std::max(size, other->getSize());
+        ch |= (newSize != size);
+        return FloatType::get(newSize);
+    }
+
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+bool FloatType::isCompatible(const Type& other, bool /*all*/) const
+{
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    if (other.resolvesToFloat()) {
+        return true;
+    }
+
+    if (other.resolvesToUnion()) {
+        return other.isCompatibleWith(*this);
+    }
+
+    if (other.resolvesToArray()) {
+        return isCompatibleWith(*((const ArrayType&)other).getBaseType());
+    }
+
+    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == size)) {
+        return true;
+    }
+
+    return false;
 }

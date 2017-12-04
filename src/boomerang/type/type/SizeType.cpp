@@ -10,6 +10,10 @@
 #include "SizeType.h"
 
 
+#include "boomerang/util/Log.h"
+#include "boomerang/type/type/ArrayType.h"
+
+
 SizeType::SizeType()
     : Type(eSize)
     , size(0)
@@ -100,3 +104,74 @@ QString SizeType::getCtype(bool /*final*/) const
     ost << "__size" << size;
     return res;
 }
+
+
+SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    if (other->resolvesToVoid()) {
+        return ((SizeType *)this)->shared_from_this();
+    }
+
+    if (other->resolvesToSize()) {
+        SharedType result = this->clone();
+
+        if (other->as<SizeType>()->size != size) {
+            LOG_VERBOSE("Size %1 meet with size %2!", size, other->as<SizeType>()->size);
+        }
+
+        result->setSize(std::max(result->getSize(), other->as<SizeType>()->getSize()));
+
+        return result;
+    }
+
+    ch = true;
+
+    if (other->resolvesToInteger()) {
+        if (other->getSize() == 0) {
+            other->setSize(size);
+            return other->clone();
+        }
+
+        if (other->getSize() != size) {
+            LOG_WARN("Size %1 meet with %2; allowing temporarily",
+                     size, other->getCtype());
+        }
+
+        return other->clone();
+    }
+
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+bool SizeType::isCompatible(const Type& other, bool /*all*/) const
+{
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    size_t otherSize = other.getSize();
+
+    if (other.resolvesToFunc()) {
+        return false;
+    }
+
+    // FIXME: why is there a test for size 0 here?
+    // This is because some signatures leave us with 0-sized NamedType -> using GLEnum when it was not defined.
+    if (otherSize == size) {
+        return true;
+    }
+
+    if (other.resolvesToUnion()) {
+        return other.isCompatibleWith(*this);
+    }
+
+    if (other.resolvesToArray()) {
+        return isCompatibleWith(*((const ArrayType&)other).getBaseType());
+    }
+
+    // return false;
+    // For now, size32 and double will be considered compatible (helps test/pentium/global2)
+    return false;
+}
+

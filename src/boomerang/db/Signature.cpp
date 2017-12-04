@@ -232,7 +232,6 @@ class SparcLibSignature : public SparcSignature
 public:
     SparcLibSignature(const QString& nam)
         : SparcSignature(nam) {}
-    SparcLibSignature(Signature& old);
 
     virtual std::shared_ptr<Signature> clone() const override;
     virtual SharedExp getProven(SharedExp left) const override;
@@ -275,7 +274,6 @@ class MIPSSignature : public Signature
 {
 public:
     MIPSSignature(const QString& name);
-    MIPSSignature(Signature& old);
     virtual ~MIPSSignature() override = default;
 
     virtual std::shared_ptr<Signature> clone() const override;

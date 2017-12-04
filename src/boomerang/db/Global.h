@@ -16,6 +16,7 @@
 
 class Prog;
 
+
 /**
  * A global variable in the decompiled program.
  */

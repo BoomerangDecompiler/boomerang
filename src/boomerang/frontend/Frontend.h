@@ -193,8 +193,6 @@ public:
      */
     std::vector<Address> getEntryPoints();
 
-    static void closeInstance(void *dlHandle); ///< Close the library opened by getInstanceFor
-
     /**
      * Create a Return or a Oneway BB if a return statement already exists.
      * \param    pProc pointer to enclosing UserProc

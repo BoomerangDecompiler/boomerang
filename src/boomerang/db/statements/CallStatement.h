@@ -108,7 +108,6 @@ public:
     SharedExp bypassRef(const std::shared_ptr<RefExp>& r, bool& ch);
 
     void clearUseCollector() { m_useCol.clear(); }
-    void addArgument(SharedExp e, UserProc *proc);
 
     /// Find the reaching definition for expression e.
     /// Find the definition for the given expression, using the embedded Collector object
@@ -122,8 +121,6 @@ public:
     void removeArgument(int i);
     SharedType getArgumentType(int i) const;
     void setArgumentType(int i, SharedType ty);
-    void truncateArguments();
-    void clearLiveEntry();
     void eliminateDuplicateArgs();
 
     /// \copydoc GotoStatement::print
@@ -151,12 +148,6 @@ public:
      * \returns True if this call is effectively followed by a return
      */
     bool isReturnAfterCall() const;
-
-    /// Set and return the list of Exps that occur *after* the call (the
-    /// list of exps in the RTL occur before the call). Useful for odd patterns.
-    void setPostCallExpList(std::list<SharedExp> *le);
-
-    std::list<SharedExp> *getPostCallExpList();
 
     /// Set the function that is called by this call statement.
     void setDestProc(Function *dest);
@@ -233,9 +224,6 @@ private:
     Assign *makeArgAssign(SharedType ty, SharedExp e);
 
     bool objcSpecificProcessing(const QString& formatStr);
-
-protected:
-    void updateDefineWithType(int n);
 
 private:
     bool m_returnAfterCall; // True if call is effectively followed by a return.

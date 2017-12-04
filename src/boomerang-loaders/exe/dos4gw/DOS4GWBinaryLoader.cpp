@@ -16,11 +16,12 @@
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
 
+#include <QBuffer>
+#include <QFile>
+
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
-#include <QBuffer>
-#include <QFile>
 
 
 namespace

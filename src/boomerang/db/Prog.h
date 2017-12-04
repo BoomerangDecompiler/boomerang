@@ -178,7 +178,6 @@ public:
 
     /// lookup a library procedure by name; create if does not exist
     LibProc *getLibraryProc(const QString& nam) const;
-    Signature *getLibSignature(const QString& name) const;
 
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;

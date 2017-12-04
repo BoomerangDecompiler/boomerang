@@ -10,6 +10,10 @@
 #include "IntegerType.h"
 
 
+#include "boomerang/type/type/SizeType.h"
+#include "boomerang/util/Log.h"
+
+
 IntegerType::IntegerType(unsigned int NumBits, int sign)
     : Type(eInteger)
 {
@@ -166,4 +170,83 @@ QString IntegerType::getCtype(bool final) const
             }
         }
     }
+}
+
+
+SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    if (other->resolvesToVoid()) {
+        return ((IntegerType *)this)->shared_from_this();
+    }
+
+    if (other->resolvesToInteger()) {
+        std::shared_ptr<IntegerType> otherInt = other->as<IntegerType>();
+        std::shared_ptr<IntegerType> result   = std::dynamic_pointer_cast<IntegerType>(this->clone());
+
+        // Signedness
+        if (otherInt->signedness > 0) {
+            result->signedness++;
+        }
+        else if (otherInt->signedness < 0) {
+            result->signedness--;
+        }
+
+        ch |= ((result->signedness > 0) != (signedness > 0)); // Changed from signed to not necessarily signed
+        ch |= ((result->signedness < 0) != (signedness < 0)); // Changed from unsigned to not necessarily unsigned
+
+        // Size. Assume 0 indicates unknown size
+        result->size = std::max(size, otherInt->size);
+        ch          |= (result->size != size);
+
+        return result;
+    }
+    else if (other->resolvesToSize()) {
+        std::shared_ptr<IntegerType> result   = std::dynamic_pointer_cast<IntegerType>(this->clone());
+        std::shared_ptr<SizeType>    other_sz = other->as<SizeType>();
+
+        if (size == 0) { // Doubt this will ever happen
+            result->size = other_sz->getSize();
+            ch           = true;
+            return result;
+        }
+
+        if (size == other_sz->getSize()) {
+            return result;
+        }
+
+        LOG_VERBOSE("Integer size %1 meet with SizeType size %2!", size, other_sz->getSize());
+
+        result->size = std::max(size, other_sz->getSize());
+        ch           = result->size != size;
+        return result;
+    }
+
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+
+bool IntegerType::isCompatible(const Type& other, bool /*all*/) const
+{
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    if (other.resolvesToInteger()) {
+        return true;
+    }
+
+    if (other.resolvesToChar()) {
+        return true;
+    }
+
+    if (other.resolvesToUnion()) {
+        return other.isCompatibleWith(*this);
+    }
+
+    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == size)) {
+        return true;
+    }
+
+    return false;
 }

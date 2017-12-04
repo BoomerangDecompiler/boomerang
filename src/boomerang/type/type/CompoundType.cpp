@@ -337,3 +337,74 @@ QString CompoundType::getName(unsigned int idx)
     assert(idx < getNumTypes());
     return m_names[idx];
 }
+
+
+SharedType CompoundType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    if (other->resolvesToVoid()) {
+        return ((CompoundType *)this)->shared_from_this();
+    }
+
+    if (!other->resolvesToCompound()) {
+        if (m_types[0]->isCompatibleWith(*other)) {
+            // struct meet first element = struct
+            return ((CompoundType *)this)->shared_from_this();
+        }
+
+        return createUnion(other, ch, bHighestPtr);
+    }
+
+    auto otherCmp = other->as<CompoundType>();
+
+    if (otherCmp->isSuperStructOf(((CompoundType *)this)->shared_from_this())) {
+        // The other structure has a superset of my struct's offsets. Preserve the names etc of the bigger struct.
+        ch = true;
+        return other;
+    }
+
+    if (isSubStructOf(otherCmp)) {
+        // This is a superstruct of other
+        ch = true;
+        return ((CompoundType *)this)->shared_from_this();
+    }
+
+    if (*this == *other) {
+        return ((CompoundType *)this)->shared_from_this();
+    }
+
+    // Not compatible structs. Create a union of both complete structs.
+    // NOTE: may be possible to take advantage of some overlaps of the two structures some day.
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+bool CompoundType::isCompatible(const Type& other, bool all) const
+{
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    if (other.resolvesToUnion()) {
+        return other.isCompatibleWith(*this);
+    }
+
+    if (!other.resolvesToCompound()) {
+        // Used to always return false here. But in fact, a struct is compatible with its first member (if all is false)
+        return !all && m_types[0]->isCompatibleWith(other);
+    }
+
+    auto   otherComp = other.as<CompoundType>();
+    size_t n         = otherComp->getNumTypes();
+
+    if (n != m_types.size()) {
+        return false; // Is a subcompound compatible with a supercompound?
+    }
+
+    for (size_t i = 0; i < n; i++) {
+        if (!m_types[i]->isCompatibleWith(*otherComp->m_types[i])) {
+            return false;
+        }
+    }
+
+    return true;
+}

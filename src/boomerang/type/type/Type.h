@@ -157,8 +157,6 @@ public:
     bool resolvesToCompound() const;
     bool resolvesToUnion() const;
     bool resolvesToSize() const;
-    bool resolvesToUpper() const;
-    bool resolvesToLower() const;
 
     // cloning
     virtual SharedType clone() const = 0;

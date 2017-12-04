@@ -37,8 +37,6 @@ public:
 
     /// Remove this Statement. Return false if it was not found
     bool remove(Statement *s);                   ///< Removal; rets false if not found
-    bool removeIfDefines(SharedExp given);       ///< Remove if given exp is defined
-    bool removeIfDefines(InstructionSet& given); ///< Remove if any given is def'd
 
     /// Search for s in this Statement set. Return true if found
     bool exists(Statement *s);                 ///< Search; returns false if !found

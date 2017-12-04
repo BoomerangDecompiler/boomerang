@@ -15,10 +15,13 @@
 #include <QString>
 #include <QMap>
 #include <QTextStream>
+
 #include <cassert>
 #include <string>
 
+
 char debug_buffer[DEBUG_BUFSIZE];
+
 
 namespace Util
 {

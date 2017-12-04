@@ -16,6 +16,7 @@ StmtExpVisitor::StmtExpVisitor(ExpVisitor *v, bool ignoreCol)
 {
 }
 
+
 bool StmtExpVisitor::visit(Assign *, bool& visitChildren)
 {
     visitChildren = true;

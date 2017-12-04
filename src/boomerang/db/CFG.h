@@ -10,15 +10,13 @@
 #pragma once
 
 
-#include "boomerang/db/exp/ExpHelp.h" // For lessExpStar
+#include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
 
-#include <cstdio>                 // For FILE
 #include <list>
 #include <vector>
 #include <set>
 #include <map>
-#include <string>
 
 
 class Function;
@@ -510,8 +508,6 @@ public:
     void setImplicitsDone() { m_implicitsDone = true; } ///< Call when implicits have been created
     void findInterferences(ConnectionGraph& ig);
     void appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& workset);
-    void removeUsedGlobals(std::set<Global *>& unusedGlobals);
-    void bbSearchAll(Exp *search, std::list<SharedExp>& result, bool ch);
 
     bool removeOrphanBBs();
 

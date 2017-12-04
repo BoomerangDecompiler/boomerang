@@ -16,6 +16,7 @@
 #include "boomerang/util/StatementSet.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Util.h"
+
 #include <QString>
 #include <QTextStream>
 

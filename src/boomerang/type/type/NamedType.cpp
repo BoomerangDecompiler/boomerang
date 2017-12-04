@@ -76,3 +76,49 @@ QString NamedType::getCtype(bool /*final*/) const
 {
     return name;
 }
+
+
+SharedType NamedType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    SharedType rt = resolvesTo();
+
+    if (rt) {
+        SharedType ret = rt->meetWith(other, ch, bHighestPtr);
+
+        if (ret == rt) { // Retain the named type, much better than some compound type
+            return ((NamedType *)this)->shared_from_this();
+        }
+
+        return ret;              // Otherwise, whatever the result is
+    }
+
+    if (other->resolvesToVoid()) {
+        return ((NamedType *)this)->shared_from_this();
+    }
+
+    if (*this == *other) {
+        return ((NamedType *)this)->shared_from_this();
+    }
+
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+bool NamedType::isCompatible(const Type& other, bool /*all*/) const
+{
+    if (other.isNamed() && (name == ((const NamedType&)other).getName())) {
+        return true;
+    }
+
+    SharedType resTo = resolvesTo();
+
+    if (resTo) {
+        return resolvesTo()->isCompatibleWith(other);
+    }
+
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    return(*this == other);
+}

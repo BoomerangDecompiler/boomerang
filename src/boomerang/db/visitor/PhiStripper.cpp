@@ -19,6 +19,7 @@ PhiStripper::PhiStripper(ExpModifier* em)
 {
 }
 
+
 void PhiStripper::visit(PhiAssign * /*stmt*/, bool& visitChildren)
 {
     m_del = true;

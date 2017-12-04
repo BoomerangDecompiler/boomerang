@@ -66,9 +66,6 @@ public:
     LocationSet& getLocSet() { return m_locs; }
 
 public:
-    /// Add a new use from Statement \p stmt
-    void updateLocs(Statement *stmt);
-
     /// Remove the given location
     void remove(SharedExp loc);
 

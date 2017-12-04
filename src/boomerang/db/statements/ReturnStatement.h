@@ -94,9 +94,6 @@ public:
     /// \copydoc Statement::isDefinition
     virtual bool isDefinition() const override { return true; }
 
-    /// Get a subscripted version of e from the collector
-    SharedExp subscriptWithDef(SharedExp e);
-
     /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) override;
 

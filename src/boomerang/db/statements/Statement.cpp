@@ -53,11 +53,11 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstring>
 #include <sstream>
-#include <cstddef>
-#include <algorithm>
 
 
 Statement::Statement()
@@ -758,4 +758,21 @@ void Statement::dfaMapLocals()
     if (dlm.change) {
         LOG_VERBOSE("Statement mapped with new local(s): %1", m_number);
     }
+}
+
+
+SharedType Statement::meetWithFor(SharedType ty, SharedExp e, bool& ch)
+{
+    bool       thisCh  = false;
+    SharedType typeFor = getTypeFor(e);
+
+    assert(typeFor);
+    SharedType newType = typeFor->meetWith(ty, thisCh);
+
+    if (thisCh) {
+        ch = true;
+        setTypeFor(e, newType->clone());
+    }
+
+    return newType;
 }

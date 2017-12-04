@@ -22,12 +22,14 @@
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
 
-#include <cstdarg>
-#include <cassert>
-#include <cstring>
-#include <cstdlib>
-#include <QFile>
 #include <QBuffer>
+#include <QFile>
+
+#include <cassert>
+#include <cstdarg>
+#include <cstdlib>
+#include <cstring>
+
 
 #define DEBUG_MACHO_LOADER    0
 

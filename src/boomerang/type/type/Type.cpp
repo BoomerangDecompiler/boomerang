@@ -11,7 +11,6 @@
 
 
 #include "boomerang/core/Boomerang.h"
-
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Signature.h"
@@ -37,6 +36,7 @@
 
 #include <cassert>
 #include <cstring>
+
 
 /// For NamedType
 static QMap<QString, SharedType> namedTypes;
@@ -334,4 +334,90 @@ SharedType Type::newIntegerLikeType(int size, int signedness)
     }
 
     return IntegerType::get(size, signedness);
+}
+
+
+SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = false */) const
+{
+    // `this' should not be a UnionType
+    assert(!resolvesToUnion());
+
+    // Put all the hard union logic in one place
+    if (other->resolvesToUnion()) {
+        return other->meetWith(((Type *)this)->shared_from_this(), ch, bHighestPtr)->clone();
+    }
+
+    // Check for anytype meet compound with anytype as first element
+    if (other->resolvesToCompound()) {
+        auto       otherComp = other->as<CompoundType>();
+        SharedType firstType = otherComp->getType((unsigned)0);
+
+        if (firstType->isCompatibleWith(*this)) {
+            // struct meet first element = struct
+            return other->clone();
+        }
+    }
+
+    // Check for anytype meet array of anytype
+    if (other->resolvesToArray()) {
+        auto       otherArr = other->as<ArrayType>();
+        SharedType elemTy   = otherArr->getBaseType();
+
+        if (elemTy->isCompatibleWith(*this)) {
+            // x meet array[x] == array
+            ch = true; // since 'this' type is not an array, but the returned type is
+            return other->clone();
+        }
+    }
+
+    auto u = std::make_shared<UnionType>();
+    u->addType(this->clone());
+    u->addType(other->clone());
+    ch = true;
+    return u;
+}
+
+
+bool Type::isCompatibleWith(const Type& other, bool all /* = false */) const
+{
+    // Note: to prevent infinite recursion, CompoundType, ArrayType, and UnionType
+    // implement this function as a delegation to isCompatible()
+    if (other.resolvesToCompound() || other.resolvesToArray() || other.resolvesToUnion()) {
+        return other.isCompatible(*this, all);
+    }
+
+    return isCompatible(other, all);
+}
+
+
+bool Type::isSubTypeOrEqual(SharedType other)
+{
+    if (resolvesToVoid()) {
+        return true;
+    }
+
+    if (*this == *other) {
+        return true;
+    }
+
+    if (this->resolvesToCompound() && other->resolvesToCompound()) {
+        return this->as<CompoundType>()->isSubStructOf(other);
+    }
+
+    // Not really sure here
+    return false;
+}
+
+
+SharedType Type::dereference()
+{
+    if (resolvesToPointer()) {
+        return as<PointerType>()->getPointsTo();
+    }
+
+    if (resolvesToUnion()) {
+        return as<UnionType>()->dereferenceUnion();
+    }
+
+    return VoidType::get(); // Can't dereference this type. Note: should probably be bottom
 }

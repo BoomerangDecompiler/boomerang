@@ -49,3 +49,17 @@ QString VoidType::getCtype(bool /*final*/) const
 {
     return "void";
 }
+
+
+SharedType VoidType::meetWith(SharedType other, bool& ch, bool /*bHighestPtr*/) const
+{
+    // void meet x = x
+    ch |= !other->resolvesToVoid();
+    return other->clone();
+}
+
+
+bool VoidType::isCompatible(const Type& /*other*/, bool /*all*/) const
+{
+    return true; // Void is compatible with any type
+}
