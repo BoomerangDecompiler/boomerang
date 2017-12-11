@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/statements/Assign.h"
@@ -23,6 +24,20 @@
 #include "boomerang/type/type/Type.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
+
+
+bool PhiAssign::BBComparator::operator()(const BasicBlock* bb1, const BasicBlock* bb2) const
+{
+    // special case: in test code, we have statements that do not belong to BBs.
+    // Thus, bb is nullptr
+    if (bb1 && bb2) {
+        return bb1->getLowAddr() < bb2->getLowAddr();
+    }
+    else {
+        // compare pointers
+        return bb1 < bb2;
+    }
+}
 
 
 Statement *PhiAssign::clone() const
