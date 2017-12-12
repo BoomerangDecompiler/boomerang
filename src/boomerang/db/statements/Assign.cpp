@@ -294,4 +294,3 @@ Assign::Assign()
     , m_guard(nullptr)
 {
 }
-

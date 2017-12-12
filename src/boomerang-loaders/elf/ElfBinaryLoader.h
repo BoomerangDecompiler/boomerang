@@ -124,33 +124,33 @@ private:
     void processSymbol(Translated_ElfSym& sym, int e_type, int i);
 
 private:
-    size_t m_loadedImageSize;                   ///< Size of image in bytes
+    size_t m_loadedImageSize = 0;               ///< Size of image in bytes
     Byte *m_loadedImage = nullptr;              ///< Pointer to the loaded image
 
     Elf32_Ehdr *m_elfHeader   = nullptr;        ///< ELF header
     Elf32_Phdr *m_programHdrs = nullptr;        ///< Pointer to program headers
-    Elf32_Shdr *m_sectionhdrs = nullptr;        ///< Array of section header structs
+    Elf32_Shdr *m_sectionHdrs = nullptr;        ///< Array of section header structs
 
     const char *m_strings = nullptr;            ///< Pointer to the string section
-    bool m_bigEndian;                           ///< 1 = Big Endian
+    bool m_bigEndian = false;                   ///< 1 = Big Endian
 
     const Elf32_Rel *m_relocSection  = nullptr; ///< Pointer to the relocation section
     const Elf32_Sym *m_symbolSection = nullptr; ///< Pointer to loaded symbol section
 
-    bool m_relocHasAddend;                      ///< true if reloc table has addend
-    Address m_lastAddr;                         ///< Save last address looked up
-    int m_lastSize;                             ///< Size associated with that name
-    Address m_pltMin;                           ///< Min address of PLT table
-    Address m_pltMax;                           ///< Max address (1 past last) of PLT
+    bool m_relocHasAddend = false;              ///< true if reloc table has addend
+    Address m_lastAddr = Address::INVALID;      ///< Save last address looked up
+    int m_lastSize = 0;                         ///< Size associated with that name
+    Address m_pltMin = Address::INVALID;        ///< Min address of PLT table
+    Address m_pltMax = Address::INVALID;        ///< Max address (1 past last) of PLT
     Address *m_importStubs = nullptr;           ///< An array of import stubs
-    Address m_baseAddr;                         ///< Base image virtual address
-    size_t m_imageSize;                         ///< total image size (bytes)
-    Address m_firstExtern;                      ///< where the first extern will be placed
-    Address m_nextExtern;                       ///< where the next extern will be placed
-    int *m_shLink = nullptr;                    ///< pointer to array of sh_link values
-    int *m_shInfo = nullptr;                    ///< pointer to array of sh_info values
+    Address m_baseAddr = Address::INVALID;      ///< Base image virtual address
+    size_t m_imageSize = 0;                     ///< total image size (bytes)
+    Address m_firstExtern = Address::INVALID;   ///< where the first extern will be placed
+    Address m_nextExtern = Address::INVALID;    ///< where the next extern will be placed
+    uint32 *m_shLink = nullptr;                 ///< pointer to array of sh_link values
+    uint32 *m_shInfo = nullptr;                 ///< pointer to array of sh_info values
 
     std::vector<struct SectionParam> m_elfSections;
-    IBinaryImage *m_binaryImage;
-    IBinarySymbolTable *m_symbols;
+    IBinaryImage *m_binaryImage = nullptr;
+    IBinarySymbolTable *m_symbols = nullptr;
 };
