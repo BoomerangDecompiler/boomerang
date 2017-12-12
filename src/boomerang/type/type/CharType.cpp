@@ -10,6 +10,10 @@
 #include "CharType.h"
 
 
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/SizeType.h"
+
+
 CharType::CharType()
     : Type(eChar)
 {
@@ -47,4 +51,54 @@ bool CharType::operator<(const Type& other) const
 QString CharType::getCtype(bool /*final*/) const
 {
     return "char";
+}
+
+
+SharedType CharType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    if (other->resolvesToVoid() || other->resolvesToChar()) {
+        return ((CharType *)this)->shared_from_this();
+    }
+
+    // Also allow char to merge with integer
+    if (other->resolvesToInteger()) {
+        ch = true;
+        return other->clone();
+    }
+
+    if (other->resolvesToSize() && (other->as<SizeType>()->getSize() == 8)) {
+        return ((CharType *)this)->shared_from_this();
+    }
+
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+bool CharType::isCompatible(const Type& other, bool /*all*/) const
+{
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    if (other.resolvesToChar()) {
+        return true;
+    }
+
+    if (other.resolvesToInteger()) {
+        return true;
+    }
+
+    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == 8)) {
+        return true;
+    }
+
+    if (other.resolvesToUnion()) {
+        return other.isCompatibleWith(*this);
+    }
+
+    if (other.resolvesToArray()) {
+        return isCompatibleWith(*((const ArrayType&)other).getBaseType());
+    }
+
+    return false;
 }

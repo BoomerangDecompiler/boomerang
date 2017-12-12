@@ -16,11 +16,13 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/type/type/BooleanType.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/SizeType.h"
+#include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 #include <QRegularExpression>
@@ -1385,3 +1387,343 @@ void Binary::printx(int ind) const
     printChild(subExp1, ind);
     printChild(subExp2, ind);
 }
+
+
+// Special operators for handling addition and subtraction in a data flow based type analysis
+//                    ta=
+//  tb=       alpha*     int      pi
+//  beta*     bottom    void*    void*
+//  int        void*     int      pi
+//  pi         void*     pi       pi
+SharedType sigmaSum(SharedType ta, SharedType tb)
+{
+    bool ch;
+
+    if (ta->resolvesToPointer()) {
+        if (tb->resolvesToPointer()) {
+            return ta->createUnion(tb, ch);
+        }
+
+        return PointerType::get(VoidType::get());
+    }
+
+    if (ta->resolvesToInteger()) {
+        if (tb->resolvesToPointer()) {
+            return PointerType::get(VoidType::get());
+        }
+
+        return tb->clone();
+    }
+
+    if (tb->resolvesToPointer()) {
+        return PointerType::get(VoidType::get());
+    }
+
+    return ta->clone();
+}
+
+
+//          ta=
+// tb=      alpha*  int        pi
+// beta*    int     bottom    int
+// int      void*   int        pi
+// pi       pi      int        pi
+SharedType deltaDifference(SharedType ta, SharedType tb)
+{
+    bool ch;
+
+    if (ta->resolvesToPointer()) {
+        if (tb->resolvesToPointer()) {
+            return IntegerType::get(STD_SIZE, 0);
+        }
+
+        if (tb->resolvesToInteger()) {
+            return PointerType::get(VoidType::get());
+        }
+
+        return tb->clone();
+    }
+
+    if (ta->resolvesToInteger()) {
+        if (tb->resolvesToPointer()) {
+            return ta->createUnion(tb, ch);
+        }
+
+        return IntegerType::get(STD_SIZE, 0);
+    }
+
+    if (tb->resolvesToPointer()) {
+        return IntegerType::get(STD_SIZE, 0);
+    }
+
+    return ta->clone();
+}
+
+
+SharedType Binary::ascendType()
+{
+    if (m_oper == opFlagCall) {
+        return VoidType::get();
+    }
+
+    SharedType ta = subExp1->ascendType();
+    SharedType tb = subExp2->ascendType();
+
+    switch (m_oper)
+    {
+    case opPlus:
+        return sigmaSum(ta, tb);
+
+    // Do I need to check here for Array* promotion? I think checking in descendType is enough
+    case opMinus:
+        return deltaDifference(ta, tb);
+
+    case opMult:
+    case opDiv:
+        return IntegerType::get(ta->getSize(), -1);
+
+    case opMults:
+    case opDivs:
+    case opShiftRA:
+        return IntegerType::get(ta->getSize(), +1);
+
+    case opBitAnd:
+    case opBitOr:
+    case opBitXor:
+    case opShiftR:
+    case opShiftL:
+        return IntegerType::get(ta->getSize(), 0);
+
+    case opLess:
+    case opGtr:
+    case opLessEq:
+    case opGtrEq:
+    case opLessUns:
+    case opGtrUns:
+    case opLessEqUns:
+    case opGtrEqUns:
+        return BooleanType::get();
+
+    case opFMinus:
+    case opFPlus:
+        return FloatType::get(ta->getSize());
+
+    default:
+        // Many more cases to implement
+        return VoidType::get();
+    }
+}
+
+
+//                    tc=
+//  to=        beta*    int        pi
+// alpha*    int        bottom    int
+// int        void*    int        pi
+// pi        pi        pi        pi
+SharedType sigmaAddend(SharedType tc, SharedType to)
+{
+    bool ch;
+
+    if (tc->resolvesToPointer()) {
+        if (to->resolvesToPointer()) {
+            return IntegerType::get(STD_SIZE, 0);
+        }
+
+        if (to->resolvesToInteger()) {
+            return PointerType::get(VoidType::get());
+        }
+
+        return to->clone();
+    }
+
+    if (tc->resolvesToInteger()) {
+        if (to->resolvesToPointer()) {
+            return tc->createUnion(to, ch);
+        }
+
+        return to->clone();
+    }
+
+    if (to->resolvesToPointer()) {
+        return IntegerType::get(STD_SIZE, 0);
+    }
+
+    return tc->clone();
+}
+
+
+//                    tc=
+//  tb=        beta*    int        pi
+// alpha*    bottom    void*    void*
+// int        void*    int        pi
+// pi        void*    int        pi
+SharedType deltaMinuend(SharedType tc, SharedType tb)
+{
+    bool ch;
+
+    if (tc->resolvesToPointer()) {
+        if (tb->resolvesToPointer()) {
+            return tc->createUnion(tb, ch);
+        }
+
+        return PointerType::get(VoidType::get());
+    }
+
+    if (tc->resolvesToInteger()) {
+        if (tb->resolvesToPointer()) {
+            return PointerType::get(VoidType::get());
+        }
+
+        return tc->clone();
+    }
+
+    if (tb->resolvesToPointer()) {
+        return PointerType::get(VoidType::get());
+    }
+
+    return tc->clone();
+}
+
+
+//                    tc=
+//  ta=        beta*    int        pi
+// alpha*    int        void*    pi
+// int        bottom    int        int
+// pi        int        pi        pi
+SharedType deltaSubtrahend(SharedType tc, SharedType ta)
+{
+    bool ch;
+
+    if (tc->resolvesToPointer()) {
+        if (ta->resolvesToPointer()) {
+            return IntegerType::get(STD_SIZE, 0);
+        }
+
+        if (ta->resolvesToInteger()) {
+            return tc->createUnion(ta, ch);
+        }
+
+        return IntegerType::get(STD_SIZE, 0);
+    }
+
+    if (tc->resolvesToInteger()) {
+        if (ta->resolvesToPointer()) {
+            return PointerType::get(VoidType::get());
+        }
+    }
+
+    return ta->clone();
+}
+
+void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
+{
+    if (m_oper == opFlagCall) {
+        return;
+    }
+
+    SharedType ta = subExp1->ascendType();
+    SharedType tb = subExp2->ascendType();
+    SharedType nt; // "New" type for certain operators
+    // The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
+    // where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
+    // triggers with every ordinary local reference, causing esp to appear used in the final program
+
+    switch (m_oper)
+    {
+    case opPlus:
+        ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
+        subExp1->descendType(ta, ch, s);
+        tb = tb->meetWith(sigmaAddend(parentType, ta), ch);
+        subExp2->descendType(tb, ch, s);
+        break;
+
+    case opMinus:
+        ta = ta->meetWith(deltaMinuend(parentType, tb), ch);
+        subExp1->descendType(ta, ch, s);
+        tb = tb->meetWith(deltaSubtrahend(parentType, ta), ch);
+        subExp2->descendType(tb, ch, s);
+        break;
+
+    case opGtrUns:
+    case opLessUns:
+    case opGtrEqUns:
+    case opLessEqUns:
+        nt = IntegerType::get(ta->getSize(), -1); // Used as unsigned
+        ta = ta->meetWith(nt, ch);
+        tb = tb->meetWith(nt, ch);
+        subExp1->descendType(ta, ch, s);
+        subExp2->descendType(tb, ch, s);
+        break;
+
+    case opGtr:
+    case opLess:
+    case opGtrEq:
+    case opLessEq:
+        nt = IntegerType::get(ta->getSize(), +1); // Used as signed
+        ta = ta->meetWith(nt, ch);
+        tb = tb->meetWith(nt, ch);
+        subExp1->descendType(ta, ch, s);
+        subExp2->descendType(tb, ch, s);
+        break;
+
+    case opBitAnd:
+    case opBitOr:
+    case opBitXor:
+    case opShiftR:
+    case opShiftL:
+    case opMults:
+    case opDivs:
+    case opShiftRA:
+    case opMult:
+    case opDiv:
+        {
+            int signedness;
+
+            switch (m_oper)
+            {
+            case opBitAnd:
+            case opBitOr:
+            case opBitXor:
+            case opShiftR:
+            case opShiftL:
+                signedness = 0;
+                break;
+
+            case opMults:
+            case opDivs:
+            case opShiftRA:
+                signedness = 1;
+                break;
+
+            case opMult:
+            case opDiv:
+                signedness = -1;
+                break;
+
+            default:
+                signedness = 0;
+                break; // Unknown signedness
+            }
+
+            int parentSize = parentType->getSize();
+            ta = ta->meetWith(IntegerType::get(parentSize, signedness), ch);
+            subExp1->descendType(ta, ch, s);
+
+            if ((m_oper == opShiftL) || (m_oper == opShiftR) || (m_oper == opShiftRA)) {
+                // These operators are not symmetric; doesn't force a signedness on the second operand
+                // FIXME: should there be a gentle bias twowards unsigned? Generally, you can't shift by negative
+                // amounts.
+                signedness = 0;
+            }
+
+            tb = tb->meetWith(IntegerType::get(parentSize, signedness), ch);
+            subExp2->descendType(tb, ch, s);
+            break;
+        }
+
+    default:
+        // Many more cases to implement
+        break;
+    }
+}
+

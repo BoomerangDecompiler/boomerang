@@ -40,8 +40,6 @@ public:
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
 
 private:
-    /// Various functions to decode the operands of an instruction into an Exp* representation.
-    Exp *dis_Eaddr(Address pc, int size = 0);
     Exp *dis_RegImm(Address pc);
 
     /**
@@ -57,8 +55,6 @@ private:
      * \returns             the expression representing the register
      */
     SharedExp dis_RAmbz(unsigned r); // Special for rA of certain instructions
-
-    RTL *createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name);
 
     /**
      * Check to see if the instructions at the given offset match

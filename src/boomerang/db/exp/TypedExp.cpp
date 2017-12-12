@@ -15,6 +15,7 @@
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/Type.h"
 
+
 TypedExp::TypedExp(SharedExp e1)
     : Unary(opTypedExp, e1)
     , m_type(nullptr)
@@ -196,3 +197,12 @@ void TypedExp::printx(int ind) const
     LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), m_type->getCtype());
     printChild(subExp1, ind);
 }
+
+
+SharedType TypedExp::ascendType()
+{
+    return m_type;
+}
+
+void TypedExp::descendType(SharedType, bool&, Statement*) {}
+

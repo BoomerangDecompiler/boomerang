@@ -17,6 +17,7 @@
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/FuncType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/VoidType.h"
@@ -352,4 +353,67 @@ bool Const::operator==(const Exp& other) const
     }
 
     return false;
+}
+
+
+SharedType Const::ascendType()
+{
+    if (m_type->resolvesToVoid()) {
+        switch (m_oper)
+        {
+        case opIntConst:
+            // could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
+            break;
+
+        case opLongConst:
+            m_type = IntegerType::get(STD_SIZE * 2, 0);
+            break;
+
+        case opFltConst:
+            m_type = FloatType::get(64);
+            break;
+
+        case opStrConst:
+            m_type = PointerType::get(CharType::get());
+            break;
+
+        case opFuncConst:
+            m_type = FuncType::get();          // More needed here?
+            break;
+
+        default:
+            assert(0); // Bad Const
+        }
+    }
+
+    return m_type;
+}
+
+
+void Const::descendType(SharedType parentType, bool& ch, Statement *)
+{
+    bool thisCh = false;
+
+    m_type = m_type->meetWith(parentType, thisCh);
+    ch    |= thisCh;
+
+    if (thisCh) {
+        // May need to change the representation
+        if (m_type->resolvesToFloat()) {
+            if (m_oper == opIntConst) {
+                m_oper = opFltConst;
+                m_type = FloatType::get(64);
+                float f = *(float *)&m_value.i;
+                m_value.d = (double)f;
+            }
+            else if (m_oper == opLongConst) {
+                m_oper = opFltConst;
+                m_type = FloatType::get(64);
+                double d = *(double *)&m_value.ll;
+                m_value.d = d;
+            }
+        }
+
+        // May be other cases
+    }
 }

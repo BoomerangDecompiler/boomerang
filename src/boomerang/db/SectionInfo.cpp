@@ -16,8 +16,10 @@
 #include "boomerang/util/IntervalSet.h"
 
 #include <QVariantMap>
+
 #include <algorithm>
 #include <utility>
+
 
 struct VariantHolder
 {

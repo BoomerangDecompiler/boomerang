@@ -72,9 +72,6 @@ private:
     /// we're up to
     void init();
 
-    /// Does most of the work
-    int processElfFile();
-
     /// \returns true if this file is a shared library file.
     bool isLibrary() const;
 
@@ -144,7 +141,6 @@ private:
     Address m_pltMax = Address::INVALID;        ///< Max address (1 past last) of PLT
     Address *m_importStubs = nullptr;           ///< An array of import stubs
     Address m_baseAddr = Address::INVALID;      ///< Base image virtual address
-    size_t m_imageSize = 0;                     ///< total image size (bytes)
     Address m_firstExtern = Address::INVALID;   ///< where the first extern will be placed
     Address m_nextExtern = Address::INVALID;    ///< where the next extern will be placed
     uint32 *m_shLink = nullptr;                 ///< pointer to array of sh_link values

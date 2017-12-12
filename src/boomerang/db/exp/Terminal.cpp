@@ -14,6 +14,9 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/type/type/BooleanType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 
@@ -229,3 +232,34 @@ void Terminal::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 }
+
+
+SharedType Terminal::ascendType()
+{
+    // Can also find various terminals at the leaves of an expression tree
+    switch (m_oper)
+    {
+    case opPC:
+        return IntegerType::get(STD_SIZE, -1);
+
+    case opCF:
+    case opZF:
+        return BooleanType::get();
+
+    case opDefineAll:
+        return VoidType::get();
+
+    case opFlags:
+        return IntegerType::get(STD_SIZE, -1);
+
+    default:
+        LOG_WARN("Unknown type %1", this->toString());
+        return VoidType::get();
+    }
+}
+
+void Terminal::descendType(SharedType, bool& ch, Statement*)
+{
+    ch = false;
+}
+

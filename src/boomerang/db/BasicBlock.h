@@ -488,8 +488,6 @@ protected:
     bool isAncestorOf(BasicBlock *other);
     bool inLoop(BasicBlock *header, BasicBlock *latch);
 
-    char *indent(int indLevel, int extra = 0);
-
     void addRTL(RTL *rtl)
     {
         if (m_listOfRTLs == nullptr) {

@@ -114,14 +114,9 @@ public:
     /// Update the statement at index \p idx
     void putAt(BasicBlock *idx, Statement *d, SharedExp e);
 
-    void simplifyRefs();
-
     size_t getNumDefs() const { return m_defs.size(); }
     PhiDefs& getDefs() { return m_defs; }
     const PhiDefs& getDefs() const { return m_defs; }
-
-    // A hack. Check MVE
-    bool hasGlobalFuncParam();
 
     PhiInfo& front() { return m_defs.begin()->second; }
     PhiInfo& back() { return m_defs.rbegin()->second; }
@@ -130,8 +125,6 @@ public:
     const_iterator begin() const { return m_defs.begin(); }
     const_iterator end() const { return m_defs.end(); }
     iterator erase(iterator it) { return m_defs.erase(it); }
-
-    // Convert this phi assignment to an ordinary assignment
 
     /// Convert this PhiAssignment to an ordinary Assignment.
     /// Hopefully, this is the only place that Statements change from

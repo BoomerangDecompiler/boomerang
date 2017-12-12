@@ -580,7 +580,7 @@ void MainWindow::showNewUserProc(const QString& name, Address addr)
 
 void MainWindow::showNewLibProc(const QString& name, const QString& params)
 {
-    int nrows = ui->libProcs->rowCount();
+    const int nrows = ui->libProcs->rowCount();
 
     for (int i = 0; i < nrows; i++) {
         if (ui->libProcs->item(i, 0)->text() == name) {

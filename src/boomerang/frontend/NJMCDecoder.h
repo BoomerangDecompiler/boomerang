@@ -156,13 +156,6 @@ protected:
 
 
 /**
- * Function used to guess whether a given pc-relative address is the start of a function
- * Does the instruction at the given offset correspond to a caller prologue?
- * \note Implemented in the decoder.m files
- */
-bool isFuncPrologue(Address hostPC);
-
-/**
  * These are the macros that each of the .m files depend upon.
  */
 

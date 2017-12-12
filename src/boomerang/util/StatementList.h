@@ -43,9 +43,7 @@ public:
     /// \note statements in this list are assumed to be assignments
     void removeDefOf(SharedExp loc);              ///< Remove definitions of loc
 
-    bool exists(Statement *s);            ///< Search; returns false if not found
     char *prints();                       ///< Print to string (for debugging)
-    void dump();                          ///< Print to standard error for debugging
     void makeCloneOf(const StatementList& other);
 
     /// Return true if loc appears on the left of any statements in this list

@@ -11,6 +11,7 @@
 
 
 #include "boomerang/db/Signature.h"
+#include "boomerang/type/type/SizeType.h"
 
 
 FuncType::FuncType(const std::shared_ptr<Signature>& sig)
@@ -127,3 +128,51 @@ void FuncType::getReturnAndParam(QString& ret, QString& param)
     s    += ")";
     param = s;
 }
+
+
+SharedType FuncType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    if (other->resolvesToVoid()) {
+        return ((FuncType *)this)->shared_from_this();
+    }
+
+    // NOTE: at present, compares names as well as types and num parameters
+    if (*this == *other) {
+        return ((FuncType *)this)->shared_from_this();
+    }
+
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+bool FuncType::isCompatible(const Type& other, bool /*all*/) const
+{
+    assert(signature);
+
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    if (*this == other) {
+        return true; // MVE: should not compare names!
+    }
+
+    if (other.resolvesToUnion()) {
+        return other.isCompatibleWith(*this);
+    }
+
+    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == STD_SIZE)) {
+        return true;
+    }
+
+    if (other.resolvesToFunc()) {
+        assert(other.as<FuncType>()->signature);
+
+        if (*other.as<FuncType>()->signature == *signature) {
+            return true;
+        }
+    }
+
+    return false;
+}
+

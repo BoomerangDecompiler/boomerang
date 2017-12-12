@@ -21,7 +21,6 @@ QTextStream& operator<<(QTextStream& os, const AssignSet *as)
 }
 
 
-
 void AssignSet::makeUnion(const AssignSet& other)
 {
     iterator it;
@@ -30,7 +29,6 @@ void AssignSet::makeUnion(const AssignSet& other)
         insert(*it);
     }
 }
-
 
 
 void AssignSet::makeDiff(const AssignSet& other)

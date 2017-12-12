@@ -279,7 +279,6 @@ private:
      *
      */
     void emitCopyPC(std::list<RTL *> *pRtls, Address uAddr);
-    unsigned fetch4(unsigned char *ptr);
 
     // Append one assignment to a list of RTLs
     void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, std::list<RTL *> *lrtl);

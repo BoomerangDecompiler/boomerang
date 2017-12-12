@@ -471,7 +471,6 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
 
 PentiumFrontEnd::PentiumFrontEnd(IFileLoader *p_BF, Prog *prog)
     : IFrontEnd(p_BF, prog)
-    , idPF(-1)
 {
     m_decoder = new PentiumDecoder(prog);
 }

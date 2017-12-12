@@ -292,3 +292,162 @@ IProject *Boomerang::getOrCreateProject()
 
     return m_currentProject.get();
 }
+
+
+void Boomerang::addWatcher(IWatcher* watcher)
+{
+    m_watchers.insert(watcher);
+}
+
+
+void Boomerang::alertDecompileComplete()
+{
+    for (IWatcher *it : m_watchers) {
+        it->alert_complete();
+    }
+}
+
+
+void Boomerang::alertNew(Function* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertNew(p);
+    }
+}
+
+
+void Boomerang::alertRemove(Function* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertRemove(p);
+    }
+}
+
+
+void Boomerang::alertUpdateSignature(Function* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertUpdateSignature(p);
+    }
+}
+
+
+void Boomerang::alertDecode(Address pc, int nBytes)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertDecode(pc, nBytes);
+    }
+}
+
+
+void Boomerang::alertBadDecode(Address pc)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertBadDecode(pc);
+    }
+}
+
+
+void Boomerang::alertDecode(Function* p, Address pc, Address last, int nBytes)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertDecode(p, pc, last, nBytes);
+    }
+}
+
+
+void Boomerang::alertLoad(Function* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alert_load(p);
+    }
+}
+
+
+void Boomerang::alertStartDecode(Address start, int nBytes)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertStartDecode(start, nBytes);
+    }
+}
+
+
+void Boomerang::alertEndDecode()
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertEndDecode();
+    }
+}
+
+
+void Boomerang::alertStartDecompile(UserProc* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertStartDecompile(p);
+    }
+}
+
+
+void Boomerang::alertProcStatusChange(UserProc* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertProcStatusChange(p);
+    }
+}
+
+
+void Boomerang::alertDecompileSSADepth(UserProc* p, int depth)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertDecompileSSADepth(p, depth);
+    }
+}
+
+
+void Boomerang::alertDecompileBeforePropagate(UserProc* p, int depth)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertDecompileBeforePropagate(p, depth);
+    }
+}
+
+
+void Boomerang::alertDecompileAfterPropagate(UserProc* p, int depth)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertDecompileAfterPropagate(p, depth);
+    }
+}
+
+
+void Boomerang::alertDecompileAfterRemoveStmts(UserProc* p, int depth)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertDecompileAfterRemoveStmts(p, depth);
+    }
+}
+
+
+void Boomerang::alertEndDecompile(UserProc* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertEndDecompile(p);
+    }
+}
+
+
+void Boomerang::alertConsidering(Function* _parent, Function* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertConsidering(_parent, p);
+    }
+}
+
+
+void Boomerang::alertDecompiling(UserProc* p)
+{
+    for (IWatcher *it : m_watchers) {
+        it->alertDecompiling(p);
+    }
+}
+

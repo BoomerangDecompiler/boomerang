@@ -16,12 +16,14 @@
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
 
+#include <QBuffer>
+#include <QFile>
 #include <QString>
+
 #include <cstddef>
 #include <cassert>
 #include <cstring>
-#include <QFile>
-#include <QBuffer>
+
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UC(p)           ((unsigned char *)p)

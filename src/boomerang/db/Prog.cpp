@@ -1516,38 +1516,6 @@ void Prog::readSymbolFile(const QString& fname)
 }
 
 
-SharedExp Global::getInitialValue(const Prog *prog) const
-{
-    const IBinarySection *si = prog->getSectionByAddr(m_addr);
-
-    // TODO: see what happens when we skip Bss check here
-    if (si && si->isAddressBss(m_addr)) {
-        // This global is in the BSS, so it can't be initialised
-        // NOTE: this is not actually correct. at least for typing, BSS data can have a type assigned
-        return nullptr;
-    }
-
-    if (si == nullptr) {
-        return nullptr;
-    }
-
-    return prog->readNativeAs(m_addr, m_type);
-}
-
-
-QString Global::toString() const
-{
-    auto    init = getInitialValue(m_program);
-    QString res  = QString("%1 %2 at %3 initial value %4")
-                      .arg(m_type->toString())
-                      .arg(m_name)
-                      .arg(m_addr.toString())
-                      .arg((init ? init->prints() : "<none>"));
-
-    return res;
-}
-
-
 SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 {
     SharedExp            e   = nullptr;
@@ -1696,14 +1664,6 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
     }
 
     return e;
-}
-
-
-void Global::meetType(SharedType ty)
-{
-    bool ch = false;
-
-    m_type = m_type->meetWith(ty, ch);
 }
 
 

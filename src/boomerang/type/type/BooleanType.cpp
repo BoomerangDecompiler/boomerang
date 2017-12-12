@@ -10,6 +10,9 @@
 #include "BooleanType.h"
 
 
+#include "boomerang/type/type/SizeType.h"
+
+
 BooleanType::BooleanType()
     : Type(eBoolean)
 {
@@ -56,4 +59,36 @@ bool BooleanType::operator<(const Type& other) const
 QString BooleanType::getCtype(bool /*final*/) const
 {
     return "bool";
+}
+
+
+SharedType BooleanType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+{
+    if (other->resolvesToVoid() || other->resolvesToBoolean()) {
+        return ((BooleanType *)this)->shared_from_this();
+    }
+
+    return createUnion(other, ch, bHighestPtr);
+}
+
+
+bool BooleanType::isCompatible(const Type& other, bool /*all*/) const
+{
+    if (other.resolvesToVoid()) {
+        return true;
+    }
+
+    if (other.resolvesToBoolean()) {
+        return true;
+    }
+
+    if (other.resolvesToUnion()) {
+        return other.isCompatibleWith(*this);
+    }
+
+    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == 1)) {
+        return true;
+    }
+
+    return false;
 }

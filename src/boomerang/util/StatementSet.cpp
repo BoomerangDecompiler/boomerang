@@ -24,8 +24,6 @@ QTextStream& operator<<(QTextStream& os, const InstructionSet *ss)
 }
 
 
-
-
 void InstructionSet::makeUnion(const InstructionSet& other)
 {
     std::set<Statement *>::iterator it;

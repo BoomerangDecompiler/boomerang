@@ -11,10 +11,8 @@
 
 
 #include "boomerang/core/Boomerang.h"
-
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/codegen/syntax/SyntaxNode.h"
-
 #include "boomerang/db/Module.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
@@ -27,9 +25,7 @@
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
-
 #include "boomerang/type/type/Type.h"
-
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"

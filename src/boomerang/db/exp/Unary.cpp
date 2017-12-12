@@ -11,11 +11,19 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 
@@ -659,4 +667,175 @@ SharedExp Unary::accept(ExpModifier *v)
 
     assert(ret);
     return v->postVisit(ret);
+}
+
+
+SharedType Unary::ascendType()
+{
+    SharedType ta = subExp1->ascendType();
+
+    switch (m_oper)
+    {
+    case opMemOf:
+
+        if (ta->resolvesToPointer()) {
+            return ta->as<PointerType>()->getPointsTo();
+        }
+        else {
+            return VoidType::get(); // NOT SURE! Really should be bottom
+        }
+
+        break;
+
+    case opAddrOf:
+        return PointerType::get(ta);
+
+        break;
+
+    default:
+        break;
+    }
+
+    return VoidType::get();
+}
+
+
+
+// match m[l1{} + K] pattern
+static bool match_l1_K(SharedExp in, std::vector<SharedExp>& matches)
+{
+    if (!in->isMemOf()) {
+        return false;
+    }
+
+    auto as_bin = std::dynamic_pointer_cast<Binary>(in->getSubExp1());
+
+    if (!as_bin || (as_bin->getOper() != opPlus)) {
+        return false;
+    }
+
+    if (!as_bin->access<Exp, 2>()->isIntConst()) {
+        return false;
+    }
+
+    if (!as_bin->access<Exp, 1>()->isSubscript()) {
+        return false;
+    }
+
+    auto refexp = std::static_pointer_cast<RefExp>(as_bin->getSubExp1());
+
+    if (!refexp->getSubExp1()->isLocation()) {
+        return false;
+    }
+
+    matches.push_back(refexp);
+    matches.push_back(as_bin->getSubExp2());
+    return true;
+}
+
+
+void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
+{
+    UserProc *owner_proc = s->getProc();
+    auto     sig         = owner_proc != nullptr ? owner_proc->getSignature() : nullptr;
+    Prog     *prog       = owner_proc->getProg();
+
+    std::vector<SharedExp> matches;
+
+    switch (m_oper)
+    {
+    case opMemOf:
+        {
+            auto as_bin = std::dynamic_pointer_cast<Binary>(subExp1);
+
+            // Check for m[x*K1 + K2]: array with base K2 and stride K1
+            if (as_bin && (as_bin->getOper() == opPlus) && (as_bin->getSubExp1()->getOper() == opMult) &&
+                as_bin->getSubExp2()->isIntConst() &&
+                as_bin->getSubExp1()->getSubExp2()->isIntConst()) {
+                SharedExp leftOfPlus = as_bin->getSubExp1();
+                // We would expect the stride to be the same size as the base type
+                size_t stride = leftOfPlus->access<Const, 2>()->getInt();
+
+                if (DEBUG_TA && (stride * 8 != parentType->getSize())) {
+                    LOG_WARN("Type WARNING: apparent array reference at %1 has stride %2 bits, but parent type %3 has size %4",
+                             shared_from_this(), stride * 8, parentType->getCtype(), parentType->getSize());
+                }
+
+                // The index is integer type
+                SharedExp x = leftOfPlus->getSubExp1();
+                x->descendType(IntegerType::get(parentType->getSize(), 0), ch, s);
+                // K2 is of type <array of parentType>
+                auto    constK2 = subExp1->access<Const, 2>();
+                Address intK2   = Address(constK2->getInt());         // TODO: use getAddr ?
+                constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
+            }
+            else if (match_l1_K(shared_from_this(), matches)) {
+                // m[l1 + K]
+                auto       l1     = std::static_pointer_cast<Location>(matches[0]->access<Location, 1>());
+                SharedType l1Type = l1->ascendType();
+                int        K      = matches[1]->access<Const>()->getInt();
+
+                if (l1Type->resolvesToPointer()) {
+                    // This is a struct reference m[ptr + K]; ptr points to the struct and K is an offset into it
+                    // First find out if we already have struct information
+                    SharedType st(l1Type->as<PointerType>()->getPointsTo());
+
+                    if (st->resolvesToCompound()) {
+                        auto ct = st->as<CompoundType>();
+
+                        if (ct->isGeneric()) {
+                            ct->updateGenericMember(K, parentType, ch);
+                        }
+                        else {
+                            // would like to force a simplify here; I guess it will happen soon enough
+                        }
+                    }
+                    else {
+                        // Need to create a generic stuct with a least one member at offset K
+                        auto ct = CompoundType::get(true);
+                        ct->updateGenericMember(K, parentType, ch);
+                    }
+                }
+                else {
+                    // K must be the pointer, so this is a global array
+                    // FIXME: finish this case
+                }
+
+                // FIXME: many other cases
+            }
+            else {
+                subExp1->descendType(PointerType::get(parentType), ch, s);
+            }
+
+            break;
+        }
+
+    case opAddrOf:
+
+        if (parentType->resolvesToPointer()) {
+            subExp1->descendType(parentType->as<PointerType>()->getPointsTo(), ch, s);
+        }
+
+        break;
+
+    case opGlobal:
+        {
+            Prog       *_prog = s->getProc()->getProg();
+            QString    name   = subExp1->access<Const>()->getStr();
+            SharedType ty     = _prog->getGlobalType(name);
+
+            if (ty) {
+                ty = ty->meetWith(parentType, ch);
+
+                if (ch) {
+                    _prog->setGlobalType(name, ty);
+                }
+            }
+
+            break;
+        }
+
+    default:
+        break;
+    }
 }

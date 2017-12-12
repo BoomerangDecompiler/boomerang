@@ -19,7 +19,9 @@
 
 #include <QBuffer>
 #include <QFile>
+
 #include <cassert>
+
 
 ExeBinaryLoader::ExeBinaryLoader()
 {

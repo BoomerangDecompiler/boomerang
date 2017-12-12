@@ -50,13 +50,11 @@ enum ProcStatus
 {
     PROC_UNDECODED,     ///< Has not even been decoded
     PROC_DECODED,       ///< Decoded, no attempt at decompiling
-    PROC_SORTED,        ///< Decoded, and CFG has been sorted by address
     PROC_VISITED,       ///< Has been visited on the way down in decompile()
     PROC_INCYCLE,       ///< Is involved in cycles, has not completed early decompilation as yet
     PROC_PRESERVEDS,    ///< Has had preservation analysis done
     PROC_EARLYDONE,     ///< Has completed everything except the global analyses
     PROC_FINAL,         ///< Has had final decompilation
-    // , PROC_RETURNS   ///< Has had returns intersected with all caller's defines
     PROC_CODE_GENERATED ///< Has had code generated
 };
 
@@ -110,18 +108,6 @@ public:
     DataFlow *getDataFlow()       { return &m_df; }
     const DataFlow *getDataFlow() const { return &m_df; }
 
-    /**
-     * Returns an abstract syntax tree for the procedure in the internal representation.
-     * This function actually _calculates_ * this value
-     * and is expected to do so expensively.
-     */
-    SyntaxNode *getAST() const;
-
-
-    /// Print AST to a file.
-    /// if \p node is null, print the AST of the whole procedure.
-    void printAST(SyntaxNode *node = nullptr) const;
-
     /// \copydoc Function::isNoReturn
     virtual bool isNoReturn() const override;
 
@@ -129,10 +115,7 @@ public:
     bool isDecoded() const { return m_status >= PROC_DECODED; }
     bool isDecompiled() const { return m_status >= PROC_FINAL; }
     bool isEarlyRecursive() const { return m_cycleGroup != nullptr && m_status <= PROC_INCYCLE; }
-    bool doesRecurseTo(UserProc *p) const { return m_cycleGroup && m_cycleGroup->find(p) != m_cycleGroup->end(); }
-
-    bool isSorted() const { return m_status >= PROC_SORTED; }
-    void setSorted() { setStatus(PROC_SORTED); }
+    bool doesRecurseTo(UserProc *proc) const { return m_cycleGroup && m_cycleGroup->find(proc) != m_cycleGroup->end(); }
 
     ProcStatus getStatus() const { return m_status; }
     void setStatus(ProcStatus s);
@@ -141,11 +124,16 @@ public:
     void print(QTextStream& out, bool html = false) const;
     void printParams(QTextStream& out, bool html = false) const;
     char *prints() const;
-    void dump() const;
     void printDFG() const;
+
+    /// Print AST to a file.
+    /// if \p node is null, print the AST of the whole procedure.
+    void printAST(SyntaxNode *node = nullptr) const;
 
     /// Print just the symbol map
     void printSymbolMap(QTextStream& out, bool html = false) const;
+
+    void dump() const;
 
     /// For debugging
     void dumpSymbolMap() const;
@@ -154,16 +142,10 @@ public:
     void dumpSymbolMapx() const;
 
     /// For debugging
-    void testSymbolMap() const;
     void dumpLocals(QTextStream& os, bool html = false) const;
-    void dumpLocals() const;
 
     /// Records that this procedure has been decoded.
     void setDecoded();
-
-    /// Removes the decoded bit and throws away all the current information
-    /// about this procedure.
-    void unDecode();
 
     /// Deletes the whole Cfg for this proc object.
     void deleteCFG() override;
@@ -229,8 +211,6 @@ public:
     /// Initialise the statements, e.g. proc, bb pointers
     void initStatements();
     void numberStatements();
-    bool nameStackLocations();
-    void removeRedundantPhis();
 
     /// \note Was trimReturns()
     void findPreserveds();
@@ -239,7 +219,6 @@ public:
     void findSpPreservation();
     void removeSpAssignsIfPossible();
     void removeMatchingAssignsIfPossible(SharedExp e);
-    void updateReturnTypes();
 
     /// Perform call and phi statement bypassing at all depths
     void fixCallAndPhiRefs();
@@ -259,8 +238,6 @@ public:
      * which include some caused by recursive calls
      */
     void findFinalParameters();
-
-    int nextParamNum() { return ++m_nextParam; }
 
     /// Add the parameter to the signature
     void addParameter(SharedExp e, SharedType ty);
@@ -288,18 +265,7 @@ public:
     void replaceSimpleGlobalConstants();
     void reverseStrengthReduction();
 
-    void trimParameters(int depth = -1);
-    void processFloatConstants();
-
-    /// Not used with DFA Type Analysis; the equivalent thing happens in mapLocalsAndParams() now
-    void mapExpressionsToLocals(bool lastPass = false);
     void addParameterSymbols();
-
-    /// True if e represents a stack local variable
-    bool isLocal(SharedExp e) const;
-
-    /// True if e represents a stack local or stack param
-    bool isLocalOrParam(const SharedExp& e) const;
 
     /// Is this m[sp{-} +/- K]?
     /// True if e could represent a stack local or stack param
@@ -309,9 +275,6 @@ public:
     bool existsLocal(const QString& name) const;
 
     bool isAddressEscapedVar(const SharedExp& e) const { return m_addressEscapedVars.exists(e); }
-
-    /// True if e can be propagated
-    bool isPropagatable(const SharedExp& e) const;
 
     /**
      * Find the procs the calls point to.
@@ -329,15 +292,7 @@ public:
     /// eliminate duplicate arguments
     void eliminateDuplicateArgs();
 
-private:
-    void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
-
-    /// Return a string for a new local suitable for \a e
-    QString newLocalName(const SharedExp& e);
-
-public:
     bool removeNullStatements();
-    bool removeDeadStatements();
 
     /// Count references to the things that are under SSA control.
     /// For each SSA subscripting, increment a counter for that definition
@@ -345,12 +300,11 @@ public:
 
     /// Remove unused statements.
     void remUnusedStmtEtc();
-    void remUnusedStmtEtc(RefCounter& refCounts /* , int depth*/);
+    void remUnusedStmtEtc(RefCounter& refCounts);
 
     /// Note: call the below after translating from SSA form
     /// FIXME: this can be done before transforming out of SSA form now, surely...
     void removeUnusedLocals();
-    void mapTempsToLocals();
 
     const std::map<QString, SharedType>& getLocals() const { return m_locals; }
 
@@ -370,9 +324,6 @@ public:
 
     /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
     void propagateToCollector();
-
-    /// Clear the useCollectors (in this Proc, and all calls).
-    void clearUses();
 
     void fromSSAForm();
 
@@ -428,7 +379,6 @@ public:
      * \param visited a set of procs already visited, to prevent infinite recursion
      */
     bool doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited);
-    bool isRetNonFakeUsed(CallStatement *c, SharedExp loc, UserProc *p, ProcSet *Visited);
 
     /// Remove redundant parameters. Return true if remove any
     bool removeRedundantParameters();
@@ -488,10 +438,6 @@ public:
     /// be conditional on premises stored in other procedures
     bool prove(const std::shared_ptr<Binary>& query, bool conditional = false);
 
-    /// helper function, should be private
-    bool prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map<PhiAssign *, SharedExp>& cache,
-                PhiAssign *lastPhi = nullptr);
-
     /// promote the signature if possible
     void promoteSignature();
 
@@ -500,11 +446,6 @@ public:
     /// get all the statements
     void getStatements(StatementList& stmts) const;
     void removeStatement(Statement *stmt);
-    bool searchAll(const Exp& search, std::list<SharedExp>& result);
-
-    // Get the set of locations defined by this proc.
-    // In other words, the define set, currently called returns
-    void getDefinitions(LocationSet& defs);
 
     /**
      * Before Type Analysis, refs like r28{0} have a nullptr Statement pointer.
@@ -518,13 +459,12 @@ public:
      */
     void addImplicitAssigns();
     void makeSymbolsImplicit();
-    void makeParamsImplicit();
 
     StatementList& getParameters() { return m_parameters; }
     StatementList& getModifieds() { return m_retStatement->getModifieds(); }
 
 
-    /// Return an expression that is equivilent to e in terms of symbols.
+    /// Return an expression that is equivalent to e in terms of symbols.
     /// Creates new symbols as needed.
 
     /**
@@ -550,8 +490,7 @@ public:
     void setLocalType(const QString& nam, SharedType ty);
     SharedType getParamType(const QString& nam);
 
-    /// return a symbol's exp (note: the original exp, like r24, not local1)
-    /// \note linear search!!
+    /// \returns a symbol's exp (note: the original exp, like r24, not local1)
     SharedConstExp expFromSymbol(const QString& nam) const;
 
     void mapSymbolTo(const SharedConstExp& from, SharedExp to);
@@ -592,11 +531,6 @@ public:
     QString findLocalFromRef(const std::shared_ptr<RefExp>& r);
     QString findFirstSymbol(const SharedExp& e);
 
-    size_t getNumLocals() { return m_locals.size(); }
-    QString getLocalName(int n);
-
-    /// As getLocalName, but look for expression \a e
-    QString getSymbolName(SharedExp e);
     void renameLocal(const char *oldName, const char *newName);
     virtual void renameParam(const char *oldName, const char *newName) override;
 
@@ -661,9 +595,6 @@ public:
 
     bool searchAndReplace(const Exp& search, SharedExp replace);
 
-    /// Cast the constant whose conscript is num to be type ty
-    void castConst(int num, SharedType ty);
-
     /// Add a location to the UseCollector; this means this location is used before defined,
     /// and hence is an *initial* parameter.
     /// \note final parameters don't use this information; it's only for handling recursion.
@@ -705,18 +636,24 @@ public:
      */
     bool filterParams(SharedExp e);
 
-    /// Find or insert a new implicit reference just before statement s, for address expression a with type t.
-    /// Meet types if necessary
-    /// Find and if necessary insert an implicit reference before s whose address expression is a and type is t.
-    void setImplicitRef(Statement *s, SharedExp a, SharedType ty);
-
     void verifyPHIs();
     void debugPrintAll(const char *c);
 
-protected:
-    UserProc();
-    void setCFG(Cfg *c) { m_cfg = c; }
+private:
+    /**
+     * Calculates the abstract syntax tree for the procedure in the internal representation.
+     * \note since the callculation is expensive, don't call this method too often.
+     */
+    SyntaxNode *calculateAST() const;
 
+    void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
+
+    /// Return a string for a new local suitable for \a e
+    QString newLocalName(const SharedExp& e);
+
+    /// helper function for prove()
+    bool prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map<PhiAssign *, SharedExp>& cache,
+                PhiAssign *lastPhi = nullptr);
 private:
     SymbolMap m_symbolMap;
 
@@ -788,5 +725,4 @@ private:
     std::map<QString, SharedType> m_locals;
 
     int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
-    int m_nextParam = 0; ///< Number for param1, param2, etc
 };

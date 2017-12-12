@@ -104,151 +104,46 @@ public:
 
 public:
     /// Add a Watcher to the set of Watchers for this Boomerang object.
-    void addWatcher(IWatcher *watcher) { m_watchers.insert(watcher); }
+    void addWatcher(IWatcher *watcher);
 
     /// Alert the watchers that decompilation has completed.
-    void alert_complete()
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alert_complete();
-        }
-    }
+    void alertDecompileComplete();
 
-    /// Alert the watchers we have found a new %Proc.
-    void alertNew(Function *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertNew(p);
-        }
-    }
+    /// Alert the watchers we have found a new Proc.
+    void alertNew(Function *p);
 
     /// Alert the watchers we have removed a %Proc.
-    void alertRemove(Function *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertRemove(p);
-        }
-    }
+    void alertRemove(Function *p);
 
     /// Alert the watchers we have updated this Procs signature
-    void alertUpdateSignature(Function *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertUpdateSignature(p);
-        }
-    }
+    void alertUpdateSignature(Function *p);
 
     /// Alert the watchers we are currently decoding \a nBytes bytes at address \a pc.
-    void alertDecode(Address pc, int nBytes)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertDecode(pc, nBytes);
-        }
-    }
+    void alertDecode(Address pc, int nBytes);
 
     /// Alert the watchers of a bad decode of an instruction at \a pc.
-    void alertBadDecode(Address pc)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertBadDecode(pc);
-        }
-    }
+    void alertBadDecode(Address pc);
 
     /// Alert the watchers we have succesfully decoded this function
-    void alertDecode(Function *p, Address pc, Address last, int nBytes)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertDecode(p, pc, last, nBytes);
-        }
-    }
+    void alertDecode(Function *p, Address pc, Address last, int nBytes);
 
     /// Alert the watchers we have loaded the Proc.
-    void alertLoad(Function *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alert_load(p);
-        }
-    }
+    void alertLoad(Function *p);
 
     /// Alert the watchers we are starting to decode.
-    void alertStartDecode(Address start, int nBytes)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertStartDecode(start, nBytes);
-        }
-    }
+    void alertStartDecode(Address start, int nBytes);
 
     /// Alert the watchers we finished decoding.
-    void alertEndDecode()
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertEndDecode();
-        }
-    }
-
-    void alertStartDecompile(UserProc *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertStartDecompile(p);
-        }
-    }
-
-    void alertProcStatusChange(UserProc *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertProcStatusChange(p);
-        }
-    }
-
-    void alertDecompileSSADepth(UserProc *p, int depth)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertDecompileSSADepth(p, depth);
-        }
-    }
-
-    void alertDecompileBeforePropagate(UserProc *p, int depth)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertDecompileBeforePropagate(p, depth);
-        }
-    }
-
-    void alertDecompileAfterPropagate(UserProc *p, int depth)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertDecompileAfterPropagate(p, depth);
-        }
-    }
-
-    void alertDecompileAfterRemoveStmts(UserProc *p, int depth)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertDecompileAfterRemoveStmts(p, depth);
-        }
-    }
-
-    void alertEndDecompile(UserProc *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertEndDecompile(p);
-        }
-    }
-
-    void alertConsidering(Function *_parent, Function *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertConsidering(_parent, p);
-        }
-    }
-
-    void alertDecompiling(UserProc *p)
-    {
-        for (IWatcher *it : m_watchers) {
-            it->alertDecompiling(p);
-        }
-    }
-
+    void alertEndDecode();
+    void alertStartDecompile(UserProc *p);
+    void alertProcStatusChange(UserProc *p);
+    void alertDecompileSSADepth(UserProc *p, int depth);
+    void alertDecompileBeforePropagate(UserProc *p, int depth);
+    void alertDecompileAfterPropagate(UserProc *p, int depth);
+    void alertDecompileAfterRemoveStmts(UserProc *p, int depth);
+    void alertEndDecompile(UserProc *p);
+    void alertConsidering(Function *_parent, Function *p);
+    void alertDecompiling(UserProc *p);
     void alertDecompileDebugPoint(UserProc *p, const char *description);
 
 public:
@@ -263,9 +158,6 @@ public:
     std::map<Address, QString> m_symbolMap; ///< A map to find a name by a given address.
 
 private:
-    /// Prints help for the interactive mode.
-    void helpcmd() const;
-
     /// This is a mini command line debugger.  Feel free to expand it.
     void miniDebugger(UserProc *p, const char *description);
 };
@@ -276,16 +168,16 @@ private:
 
 #define SETTING(var)    (Boomerang::get()->getSettings()->var)
 
-#define VERBOSE                 (Boomerang::get()->getSettings()->vFlag)
-#define DEBUG_TA                (Boomerang::get()->getSettings()->debugTA)
-#define DEBUG_PROOF             (Boomerang::get()->getSettings()->debugProof)
-#define DEBUG_UNUSED            (Boomerang::get()->getSettings()->debugUnused)
-#define DEBUG_LIVENESS          (Boomerang::get()->getSettings()->debugLiveness)
-#define DEBUG_RANGE_ANALYSIS    (Boomerang::get()->getSettings()->debugRangeAnalysis)
-#define DEBUG_SWITCH            (Boomerang::get()->getSettings()->debugSwitch)
-#define DEBUG_GEN               (Boomerang::get()->getSettings()->debugGen)
-#define DEBUG_DECODER           (Boomerang::get()->getSettings()->debugDecoder)
-#define DEBUG_LIVENESS          (Boomerang::get()->getSettings()->debugLiveness)
-#define DFA_TYPE_ANALYSIS       (Boomerang::get()->getSettings()->dfaTypeAnalysis)
-#define DUMP_XML                (Boomerang::get()->getSettings()->dumpXML)
-#define EXPERIMENTAL            (Boomerang::get()->getSettings()->experimental)
+#define VERBOSE                 (SETTING(vFlag))
+#define DEBUG_TA                (SETTING(debugTA))
+#define DEBUG_PROOF             (SETTING(debugProof))
+#define DEBUG_UNUSED            (SETTING(debugUnused))
+#define DEBUG_LIVENESS          (SETTING(debugLiveness))
+#define DEBUG_RANGE_ANALYSIS    (SETTING(debugRangeAnalysis))
+#define DEBUG_SWITCH            (SETTING(debugSwitch))
+#define DEBUG_GEN               (SETTING(debugGen))
+#define DEBUG_DECODER           (SETTING(debugDecoder))
+#define DEBUG_LIVENESS          (SETTING(debugLiveness))
+#define DFA_TYPE_ANALYSIS       (SETTING(dfaTypeAnalysis))
+#define DUMP_XML                (SETTING(dumpXML))
+#define EXPERIMENTAL            (SETTING(experimental))

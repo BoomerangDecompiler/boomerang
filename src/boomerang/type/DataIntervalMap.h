@@ -90,7 +90,6 @@ public:
 
     /// Mainly for testing?
     void deleteItem(Address addr);
-    void expandItem(Address addr, unsigned size);
 
     /// For test and debug
     char *prints();
@@ -103,9 +102,6 @@ private:
     /// Check for compatibility, meet if necessary.
     void insertComponentType(TypedVariable *variable, Address addr, const QString& name,
                              SharedType type, bool forced);
-
-    // We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
-    void enterComponent(TypedVariable *pdie, Address addr, const QString&, SharedType ty, bool);
 
     // We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
     // components out of the way, meeting if necessary
