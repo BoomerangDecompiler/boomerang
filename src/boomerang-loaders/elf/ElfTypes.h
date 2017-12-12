@@ -55,7 +55,7 @@ struct Elf32_Ehdr
     Elf32_Half e_shstrndx;         ///< The index of the entry in the Section Header Table containing the section names.
 };
 
-typedef struct
+struct Elf64_Ehdr
 {
     Elf64_Byte e_ident[EI_NIDENT];
     Elf64_Half e_type;
@@ -71,7 +71,7 @@ typedef struct
     Elf64_Half e_shentsize;
     Elf64_Half e_shnum;
     Elf64_Half e_shstrndx;
-} Elf64_Ehdr;
+};
 #pragma pack(pop)
 
 
@@ -166,6 +166,7 @@ typedef struct
 #define SHN_COMMON           0xfff2
 #define SHN_XINDEX           0xffff
 #define SHN_HIRESERVE        0xffff
+
 
 #pragma pack(push, 1)
 struct Elf32_Shdr

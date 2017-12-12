@@ -69,9 +69,9 @@ ElfBinaryLoader::ElfBinaryLoader()
 ElfBinaryLoader::~ElfBinaryLoader()
 {
     // Delete the array of import stubs
-    delete  []m_importStubs;
-    delete  []m_shLink;
-    delete  []m_shInfo;
+    delete[] m_importStubs;
+    delete[] m_shLink;
+    delete[] m_shInfo;
 }
 
 
@@ -181,6 +181,9 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
     // Number of sections
     const Elf32_Half numSections = elfRead2(&m_elfHeader->e_shnum);
+    if (numSections == 0) {
+        return false;
+    }
 
     // Set up the m_sh_link and m_sh_info arrays
     m_shLink = new Elf32_Word[numSections];
@@ -201,14 +204,14 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         const Elf32_Shdr *sectionHeader = m_sectionHdrs + i;
 
         if ((Byte *)sectionHeader > m_loadedImage + m_loadedImageSize) {
-            LOG_ERROR("Section %1 header is outside the image size", i);
+            LOG_ERROR("Section %1 header is outside of image size", i);
             return false;
         }
 
         const char *sectionName = m_strings + elfRead4(&sectionHeader->sh_name);
 
         if ((Byte *)sectionName > m_loadedImage + m_loadedImageSize) {
-            LOG_ERROR("Name for section %1 is outside the image size", i);
+            LOG_ERROR("Name for section %1 is outside of image size", i);
             return false;
         }
 
@@ -280,7 +283,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         }
 
         m_elfSections.push_back(newSection);
-    } // for each section
+    }
 
     // assign arbitary addresses to .rel.* sections too
     for (SectionParam& sect : m_elfSections) {
@@ -355,7 +358,8 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     // Apply relocations; important when the input program is not compiled with -fPIC
     applyRelocations();
     markImports();
-    return true; // Success
+
+    return true;
 }
 
 
@@ -1046,11 +1050,24 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
 
 int ElfBinaryLoader::canLoad(QIODevice& fl) const
 {
-    const QByteArray contents = fl.read(4);
+    const QByteArray contents = fl.read(sizeof(Elf32_Ehdr));
+    if (contents.size() < (int)sizeof(Elf32_Ehdr)) {
+        return 0;
+    }
 
-    return TESTMAGIC4(contents.data(), 0, '\177', 'E', 'L', 'F') ? 4 : 0;
+    const Elf32_Ehdr *header = (Elf32_Ehdr *)contents.constData();
+
+    if (TESTMAGIC4(header->e_ident, EI_MAGO, ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3) == false) {
+        return 0;
+    }
+
+    // for now, we can only load 32 bit ELF files
+    switch (header->e_ident[EI_CLASS]) {
+        case ELFCLASS32: return 5;
+        case ELFCLASS64: return 0;
+        default: return 0;
+    }
 }
 
 
-BOOMERANG_LOADER_PLUGIN(ElfBinaryLoader,
-                        "ELF32 loader plugin", BOOMERANG_VERSION, "Boomerang developers")
+BOOMERANG_LOADER_PLUGIN(ElfBinaryLoader, "ELF32 loader plugin", BOOMERANG_VERSION, "Boomerang developers")
