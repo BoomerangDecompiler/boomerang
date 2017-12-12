@@ -60,7 +60,7 @@
 #include <cstring>
 
 
-class lessEvaluate : public std::binary_function<SyntaxNode *, SyntaxNode *, bool>
+class lessEvaluate
 {
 public:
     bool operator()(const SyntaxNode *x, const SyntaxNode *y) const

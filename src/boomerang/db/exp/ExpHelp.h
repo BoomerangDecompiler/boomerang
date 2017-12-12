@@ -10,7 +10,6 @@
 #pragma once
 
 
-#include <map>
 #include <memory>
 
 class Exp;
@@ -24,7 +23,7 @@ class Assignment;
  * A class for comparing Exp*s (comparing the actual expressions).
  * Type sensitive.
  */
-struct lessExpStar : public std::binary_function<const SharedConstExp&, const SharedConstExp&, bool>
+struct lessExpStar
 {
     bool operator()(const SharedConstExp& x, const SharedConstExp& y) const;
 };
@@ -33,20 +32,20 @@ struct lessExpStar : public std::binary_function<const SharedConstExp&, const Sh
  * A class for comparing Exp*s (comparing the actual expressions).
  * Type insensitive.
  */
-struct lessTI : public std::binary_function<const SharedExp&, const SharedExp&, bool>
+struct lessTI
 {
     bool operator()(const SharedExp& x, const SharedExp& y) const;
 };
 
 /// Compare assignments by their left hand sides (only).
-struct lessAssignment : public std::binary_function<Assignment *, Assignment *, bool>
+struct lessAssignment
 {
     bool operator()(const Assignment *x, const Assignment *y) const;
 };
 
 // Repeat the above for Assigns; sometimes the #include ordering is such that the compiler doesn't know that an Assign
 // is a subclass of Assignment
-struct lessAssign : public std::binary_function<Assign *, Assign *, bool>
+struct lessAssign
 {
     bool operator()(const Assign *x, const Assign *y) const;
 };

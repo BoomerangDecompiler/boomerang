@@ -13,6 +13,7 @@
 #include "boomerang/db/exp/ExpHelp.h"
 
 #include <vector>
+#include <map>
 
 
 /**

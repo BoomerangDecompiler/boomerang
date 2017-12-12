@@ -13,6 +13,7 @@
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 
+#include <map>
 
 /**
  * Count the number of times a reference expression is used. Increments the count multiple times if the same reference
