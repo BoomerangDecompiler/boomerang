@@ -28,7 +28,7 @@ class UserProc;
 class LibProc;
 class Signature;
 class Statement;
-class InstructionSet;
+class StatementSet;
 class Module;
 class IBinarySection;
 class ICodeGenerator;

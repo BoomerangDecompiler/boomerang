@@ -17,14 +17,14 @@
 #include <QTextStream>
 
 
-QTextStream& operator<<(QTextStream& os, const InstructionSet *ss)
+QTextStream& operator<<(QTextStream& os, const StatementSet *ss)
 {
     ss->print(os);
     return os;
 }
 
 
-void InstructionSet::makeUnion(const InstructionSet& other)
+void StatementSet::makeUnion(const StatementSet& other)
 {
     std::set<Statement *>::iterator it;
 
@@ -34,7 +34,7 @@ void InstructionSet::makeUnion(const InstructionSet& other)
 }
 
 
-void InstructionSet::makeDiff(const InstructionSet& other)
+void StatementSet::makeDiff(const StatementSet& other)
 {
     std::set<Statement *>::iterator it;
 
@@ -44,7 +44,7 @@ void InstructionSet::makeDiff(const InstructionSet& other)
 }
 
 
-void InstructionSet::makeIsect(const InstructionSet& other)
+void StatementSet::makeIsect(const StatementSet& other)
 {
     std::set<Statement *>::iterator it, ff;
 
@@ -59,7 +59,7 @@ void InstructionSet::makeIsect(const InstructionSet& other)
 }
 
 
-bool InstructionSet::isSubSetOf(const InstructionSet& other)
+bool StatementSet::isSubSetOf(const StatementSet& other)
 {
     std::set<Statement *>::iterator it, ff;
 
@@ -75,7 +75,7 @@ bool InstructionSet::isSubSetOf(const InstructionSet& other)
 }
 
 
-bool InstructionSet::remove(Statement *s)
+bool StatementSet::remove(Statement *s)
 {
     if (find(s) != end()) {
         erase(s);
@@ -86,7 +86,7 @@ bool InstructionSet::remove(Statement *s)
 }
 
 
-bool InstructionSet::exists(Statement *s)
+bool StatementSet::exists(Statement *s)
 {
     iterator it = find(s);
 
@@ -94,7 +94,7 @@ bool InstructionSet::exists(Statement *s)
 }
 
 
-bool InstructionSet::definesLoc(SharedExp loc)
+bool StatementSet::definesLoc(SharedExp loc)
 {
     for (auto const& elem : *this) {
         if ((elem)->definesLoc(loc)) {
@@ -106,7 +106,7 @@ bool InstructionSet::definesLoc(SharedExp loc)
 }
 
 
-const char *InstructionSet::prints()
+const char *StatementSet::prints()
 {
     QString     tgt;
     QTextStream ost(&tgt);
@@ -128,7 +128,7 @@ const char *InstructionSet::prints()
 }
 
 
-void InstructionSet::dump()
+void StatementSet::dump()
 {
     QTextStream q_cerr(stderr);
 
@@ -136,7 +136,7 @@ void InstructionSet::dump()
 }
 
 
-void InstructionSet::print(QTextStream& os) const
+void StatementSet::print(QTextStream& os) const
 {
     std::set<Statement *>::iterator it;
 
@@ -152,7 +152,7 @@ void InstructionSet::print(QTextStream& os) const
 }
 
 
-void InstructionSet::printNums(QTextStream& os)
+void StatementSet::printNums(QTextStream& os)
 {
     for (iterator it = begin(); it != end();) {
         if (*it) {
@@ -169,7 +169,7 @@ void InstructionSet::printNums(QTextStream& os)
 }
 
 
-bool InstructionSet::operator<(const InstructionSet& o) const
+bool StatementSet::operator<(const StatementSet& o) const
 {
     if (size() < o.size()) {
         return true;

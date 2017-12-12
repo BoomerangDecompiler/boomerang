@@ -42,7 +42,7 @@ void StatementList::append(const StatementList& sl)
 }
 
 
-void StatementList::append(const InstructionSet& ss)
+void StatementList::append(const StatementSet& ss)
 {
     insert(end(), ss.begin(), ss.end());
 }

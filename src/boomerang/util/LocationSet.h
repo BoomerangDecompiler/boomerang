@@ -14,7 +14,7 @@
 
 #include <set>
 
-class InstructionSet;
+class StatementSet;
 class RefExp;
 class Statement;
 class QTextStream;
@@ -62,7 +62,7 @@ public:
 
     // Remove locations defined by any of the given set of statements
     // Used for killing in liveness sets
-    void removeIfDefines(InstructionSet& given); ///< Remove locs defined in given
+    void removeIfDefines(StatementSet& given); ///< Remove locs defined in given
 
     size_t size() const { return lset.size(); }  ///< Number of elements
     bool operator==(const LocationSet& o) const; ///< Compare
