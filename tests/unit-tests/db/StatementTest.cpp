@@ -572,7 +572,6 @@ void StatementTest::testUseKill()
     QTextStream st(&actual);
     cfg->print(st);
 
-    // compare it to expected
     QString expected =
         "Control Flow Graph:\n"
         "Fall BB:\n"
@@ -587,6 +586,7 @@ void StatementTest::testUseKill()
         "              Reaching definitions: r24=6\n\n";
 
     QCOMPARE(actual, expected);
+
     // clean up
     delete prog;
 }
@@ -594,7 +594,9 @@ void StatementTest::testUseKill()
 
 void StatementTest::testEndlessLoop()
 {
-    QSKIP("Disabled.");
+    //
+    // BB1 -> BB2 _
+    //       ^_____|
 
     // create Prog
     Prog *prog = new Prog("testEndlessLoop");
@@ -608,6 +610,7 @@ void StatementTest::testEndlessLoop()
 
     // We need a Prog object with a pBF (for getEarlyParamExp())
     prog->setFrontEnd(pFE);
+
     // create UserProc
     std::string name  = "test";
     UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
@@ -615,28 +618,31 @@ void StatementTest::testEndlessLoop()
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> pRtls(new RTLList);
-    RTL              *rtl   = new RTL();
+
+
     // r[24] := 5
-    Assign *e = new Assign(Location::regOf(24), Const::get(5));
-    e->setProc(proc);
-    rtl->append(e);
-    pRtls->push_back(rtl);
+    Assign *a = new Assign(Location::regOf(24), Const::get(5));
+    a->setProc(proc);
+    pRtls->push_back(new RTL(Address::ZERO, { a }));
+
     BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+
     pRtls.reset(new RTLList);
-    rtl   = new RTL();
-    // r[24] := r[24] + 1
-    e = new Assign(Location::regOf(24), Binary::get(opPlus, Location::regOf(24), Const::get(1)));
-    e->setProc(proc);
-    rtl->append(e);
-    pRtls->push_back(rtl);
+
+    // r24 := r24 + 1
+    a = new Assign(Location::regOf(24), Binary::get(opPlus, Location::regOf(24), Const::get(1)));
+    a->setProc(proc);
+    pRtls->push_back(new RTL(Address(0x00000020), { a }));
 
     BasicBlock *body = cfg->createBB(std::move(pRtls), BBType::Oneway);
+
     first->addSuccessor(body);
     body->addPredecessor(first);
     body->addSuccessor(body);
     body->addPredecessor(body);
     cfg->setEntryAndExitBB(first);
     proc->setDecoded();
+
     // compute dataflow
     int indent = 0;
     proc->decompile(new ProcList, indent);
@@ -647,13 +653,22 @@ void StatementTest::testEndlessLoop()
     // print cfg to a string
     cfg->print(st);
 
-    QString expected = "Fall BB: reach in: \n"
-                       "0x00000000 *v* r[24] := 5\n"
+    // int i = 5; do { i++; } while (true);
+    // TODO: is the phi really needed?
+    QString expected = "Control Flow Graph:\n"
+                       "Fall BB:\n"
+                       "  in edges: \n"
+                       "  out edges: 0x00000020 \n"
+                       "0x00000000    1 *32* r24 := 5\n"
                        "Oneway BB:\n"
-                       "0x00000000 *v* r[24] := r[24] + 1   uses: ** r[24] := 5, "
-                       "*v* r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
-                       "cfg reachExit: \n";
+                       "  in edges: 0x00000000(0x00000000) 0x00000020(0x00000020) \n"
+                       "  out edges: 0x00000020 \n"
+                       "0x00000000    3 *32* r24 := phi{1 2}\n"
+                       "0x00000020    2 *32* r24 := r24{3} + 1\n"
+                       "\n";
+
     QCOMPARE(actual, expected);
+
     // clean up
     delete prog;
 }
@@ -1114,8 +1129,6 @@ void StatementTest::testAddUsedLocsReturn()
 
 void StatementTest::testAddUsedLocsBool()
 {
-    QSKIP("Disabled.");
-
     // Boolstatement with condition m[r24] = r25, dest m[r26]
     LocationSet l;
     BoolAssign  *bs = new BoolAssign(8);
@@ -1147,7 +1160,7 @@ void StatementTest::testAddUsedLocsBool()
     // Note: phis were not considered to use blah if they ref m[blah], so local21 was not considered used
 
     actual   = "";
-    expected = "m[local21 + 16]{-},\tm[local21 + 16]{372},\tlocal21";
+    expected = "m[local21 + 16]{372},\tlocal21";
     l.print(ost);
 
     QCOMPARE(actual, expected);
@@ -1346,9 +1359,10 @@ void StatementTest::testBypass()
     QVERIFY(addr != Address::INVALID);
 
     UserProc *proc = (UserProc *)prog->findFunction("foo2");
-    QVERIFY(proc);
+    QVERIFY(proc != nullptr);
 
     proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
+
     Cfg *cfg = proc->getCFG();
     // Sort by address
     cfg->sortByAddress();
@@ -1368,25 +1382,33 @@ void StatementTest::testBypass()
     proc->getStatements(stmts);
     StatementList::iterator it = stmts.begin();
 
-    while (!(*it)->isCall()) {
+    while (it != stmts.end() && !(*it)->isCall()) {
         it++;
     }
+    QVERIFY(it != stmts.end());
 
     CallStatement *call = (CallStatement *)*it; // Statement 18, a call to printf
     call->setDestProc(proc);                    // A recursive call
-    // std::cerr << "Call is "; call->dump();
-    advance(it, 2);
 
-    Statement *s20 = *it; // Statement 20
-    // FIXME: Ugh. Somehow, statement 20 has already bypassed the call, and incorrectly from what I can see - MVE
-    s20->bypass();        // r28 should bypass the call
+    Statement *s20 = *std::next(it, 2); // Statement 20
+    QVERIFY(s20->getKind() == StmtType::Assign);
 
-    // Make sure it's what we expect!
-    QString     expected("  20 *32* r28 := r28{-} - 16");
     QString     actual;
     QTextStream ost(&actual);
     ost << s20;
 
+    // TODO ???
+    QString expected = "20 *32* r28 := r28{15} - 16";
+
+    QCOMPARE(actual, expected);
+
+    // FIXME: Ugh. Somehow, statement 20 has already bypassed the call, and incorrectly from what I can see - MVE
+    s20->bypass();        // r28 should bypass the call
+
+    actual = "";
+    ost << s20;
+
+    expected = "  20 *32* r28 := r28{-} - 16";
     QCOMPARE(actual, expected);
     delete pFE;
 }

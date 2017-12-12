@@ -41,6 +41,13 @@ RTL::RTL(Address instrAddr, const std::list<Statement *> *listStmt /*= nullptr*/
 }
 
 
+RTL::RTL(Address instrAddr, const std::initializer_list<Statement *> statements)
+    : std::list<Statement *>(statements)
+    , m_nativeAddr(instrAddr)
+{
+}
+
+
 RTL::RTL(const RTL& other)
     : std::list<Statement *>()
     , m_nativeAddr(other.m_nativeAddr)

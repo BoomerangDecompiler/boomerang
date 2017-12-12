@@ -150,9 +150,9 @@ public:
     inline BBType getType()         const { return m_nodeType; }
     inline bool isType(BBType type) const { return m_nodeType == type; }
 
-    /// \returns enclosing function, null if none
+    /// \returns enclosing function, nullptr if the BB does not belong to a function.
     inline const Function *getFunction() const { return m_function; }
-    inline Function *getParent()               { return m_function; }
+    inline Function *getFunction()             { return m_function; }
 
     /**
      * Get the lowest real address associated with this BB.

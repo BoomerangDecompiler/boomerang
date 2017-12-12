@@ -36,6 +36,10 @@ public:
     /// \param   instrAddr the address of the instruction
     /// \param   listStmt  ptr to existing list of Statement
     RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);
+
+    /// Take ownership of the statements in the initializer list.
+    RTL(Address instrAddr, const std::initializer_list<Statement *> statements);
+
     RTL(const RTL& other); ///< Deep copies the content
     RTL(RTL&& other) = default;
 
