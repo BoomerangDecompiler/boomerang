@@ -60,7 +60,7 @@
 #include <cstring>
 
 
-class lessEvaluate : public std::binary_function<SyntaxNode *, SyntaxNode *, bool>
+class lessEvaluate
 {
 public:
     bool operator()(const SyntaxNode *x, const SyntaxNode *y) const
@@ -1624,7 +1624,7 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
                 // First adjust the counts, due to statements only referenced by statements that are themselves unused.
                 // Need to be careful not to count two refs to the same def as two; refCounts is a count of the number
                 // of statements that use a definition, not the total number of refs
-                InstructionSet stmtsRefdByUnused;
+                StatementSet stmtsRefdByUnused;
                 LocationSet    components;
                 s->addUsedLocs(components, false); // Second parameter false to ignore uses in collectors
                 LocationSet::iterator cc;
@@ -1635,7 +1635,7 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
                     }
                 }
 
-                InstructionSet::iterator dd;
+                StatementSet::iterator dd;
 
                 for (dd = stmtsRefdByUnused.begin(); dd != stmtsRefdByUnused.end(); dd++) {
                     if (*dd == nullptr) {

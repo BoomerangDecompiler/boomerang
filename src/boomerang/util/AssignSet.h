@@ -9,6 +9,7 @@
 #pragma endregion License
 #pragma once
 
+
 #include "boomerang/db/exp/ExpHelp.h"
 
 #include <set>
@@ -21,39 +22,45 @@ class QTextStream;
 class AssignSet : public std::set<Assign *, lessAssign>
 {
 public:
-    // Make this set the union of itself and other
-    void makeUnion(const AssignSet& other);         ///< Set union
+    /// Set union.
+    /// *this = *this union other
+    void makeUnion(const AssignSet& other);
 
-    // Make this set the difference of itself and other
-    void makeDiff(const AssignSet& other);          ///< Set difference
+    /// Set difference.
+    /// *this = *this - other
+    void makeDiff(const AssignSet& other);
 
-    /// Make this set the intersection of itself and other
-    void makeIsect(const AssignSet& other);         ///< Set intersection
+    /// Set intersection.
+    /// *this = *this isect other
+    void makeIsect(const AssignSet& other);
 
-    // Check for the subset relation, i.e. are all my elements also in the set
-    // other. Effectively (this intersect other) == this
-    bool isSubSetOf(const AssignSet& other);        ///< Subset relation
+    /// \returns true if all elements of this set are in \p other
+    bool isSubSetOf(const AssignSet& other);
 
-    // Remove this Assign. Return false if it was not found
-    bool remove(Assign *a);                   ///< Removal; rets false if not found
+    /// Remove this Assign.
+    /// \returns false if it was not found.
+    bool remove(Assign *asgn);
 
-    // Search for a in this Assign set. Return true if found
-    bool exists(Assign *s);                   ///< Search; returns false if !found
+    /// \returns true if found.
+    bool exists(Assign *asgn);
 
-    // Find a definition for loc in this Assign set. Return true if found
-    bool definesLoc(SharedExp loc) const;     ///< Search; returns true if any assignment defines loc
+    /// \returns true if any assignment in this set defines \p loc
+    bool definesLoc(SharedExp loc) const;
 
-    // Find a definition for loc on the LHS in this Assign set. If found, return pointer to the Assign with that LHS
-    Assign *lookupLoc(SharedExp loc);         ///< Search for loc on LHS, return ptr to Assign if found
+    /// Find a definition for \p loc on the LHS in this Assign set.
+    /// If found, return pointer to the Assign with that LHS (else return nullptr)
+    Assign *lookupLoc(SharedExp loc);
 
-    bool operator<(const AssignSet& o) const; ///< Compare if less
+    bool operator<(const AssignSet& o) const;
 
-    void print(QTextStream& os) const;        ///< Print to os
+    void print(QTextStream& os) const;
 
-    // Print just the numbers to stream os
-    void printNums(QTextStream& os);          ///< Print statements as numbers
+    /// Print just the numbers to stream os
+    void printNums(QTextStream& os);
 
-    // Print to a string, for debugging
-    char *prints();                           ///< Print to string (for debug)
-    void dump();                              ///< Print to standard error for debugging
-};                                            ///< class AssignSet
+    /// Print to a string, for debugging
+    char *prints();
+
+    /// Print to standard error for debugging
+    void dump();
+};

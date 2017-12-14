@@ -22,36 +22,41 @@ using SharedExp = std::shared_ptr<class Exp>;
 /**
  * A class to implement sets of statements
  */
-class InstructionSet : public std::set<Statement *>
+class StatementSet : public std::set<Statement *>
 {
 public:
-    void makeUnion(const InstructionSet& other);       ///< Set union
-    void makeDiff(const InstructionSet& other);        ///< Set difference
+    /// Set union
+    void makeUnion(const StatementSet& other);
 
-    /// Make this set the intersection of itself and other
-    void makeIsect(const InstructionSet& other);       ///< Set intersection
+    /// Set difference
+    void makeDiff(const StatementSet& other);
 
-    /// Check for the subset relation, i.e. are all my elements also in the set
-    /// other. Effectively (this intersect other) == this
-    bool isSubSetOf(const InstructionSet& other);      ///< Subset relation
+    /// Set intersection
+    void makeIsect(const StatementSet& other);
 
-    /// Remove this Statement. Return false if it was not found
-    bool remove(Statement *s);                   ///< Removal; rets false if not found
+    /// Set subset relation
+    bool isSubSetOf(const StatementSet& other);
 
-    /// Search for s in this Statement set. Return true if found
-    bool exists(Statement *s);                 ///< Search; returns false if !found
+    /// Remove this Statement.
+    /// \returns false if it was not found.
+    bool remove(Statement *s);
 
-    /// Find a definition for loc in this Statement set. Return true if found
-    bool definesLoc(SharedExp loc);              ///< Search; returns true if any
+    /// \returns true if found.
+    bool exists(Statement *s);
 
-    /// statement defines loc
-    bool operator<(const InstructionSet& o) const; ///< Compare if less
-    void print(QTextStream& os) const;             ///< Print to os
+    /// \returns true if any assignment in this set defines \p loc
+    bool definesLoc(SharedExp loc);
 
-    /// Print just the numbers to stream os
-    void printNums(QTextStream& os);               ///< Print statements as numbers
+    bool operator<(const StatementSet& o) const;
 
-    /// Print to a string, for debugging
-    const char *prints();                          ///< Print to string (for debug)
-    void dump();                                   ///< Print to standard error for debugging
+    void print(QTextStream& os) const;
+
+    /// Print just the numbers
+    void printNums(QTextStream& os);
+
+    /// Print to string (for debugging)
+    const char *prints();
+
+    /// Print to standard error for debugging
+    void dump();
 };

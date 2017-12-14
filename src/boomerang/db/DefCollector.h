@@ -13,6 +13,7 @@
 #include "boomerang/util/AssignSet.h"
 
 #include <deque>
+#include <map>
 
 class Statement;
 class UserProc;

@@ -13,7 +13,7 @@
 #include <memory>
 #include <list>
 
-class InstructionSet;
+class StatementSet;
 class LocationSet;
 class Statement;
 class Assignment;
@@ -34,7 +34,7 @@ public:
 
     void append(Statement *s) { push_back(s); }
     void append(const StatementList& sl);
-    void append(const InstructionSet& sl);
+    void append(const StatementSet& sl);
 
     /// \returns false if not found
     bool remove(Statement *s);

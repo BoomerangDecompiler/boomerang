@@ -41,7 +41,7 @@ class StmtPartModifier;
 class ICodeGenerator;
 class Assign;
 class RTL;
-class InstructionSet;
+class StatementSet;
 class ReturnStatement;
 class LocationSet;
 

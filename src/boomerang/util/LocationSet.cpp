@@ -106,9 +106,9 @@ void LocationSet::remove(SharedExp given)
 }
 
 
-void LocationSet::removeIfDefines(InstructionSet& given)
+void LocationSet::removeIfDefines(StatementSet& given)
 {
-    InstructionSet::iterator it;
+    StatementSet::iterator it;
 
     for (it = given.begin(); it != given.end(); ++it) {
         Statement   *s = (Statement *)*it;
