@@ -705,60 +705,51 @@ bool Cfg::compressCfg()
         return false;
     }
 
-    // FIXME: The below was working while we still had reaching definitions.  It seems to me that it would be easy to
+    // FIXME: The below was working while we still had reaching definitions. It seems to me that it would be easy to
     // search the BB for definitions between the two branches (so we don't need reaching defs, just the SSA property of
     //  unique definition).
     //
     // Look in CVS for old code.
 
-    // Find A -> J -> B   where J is a BB that is only a jump
-    // Then A -> B
+    // Find A -> J -> B where J is a BB that is only a jump and replace it by A -> B
     for (iterator it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        for (BasicBlock *& successor : (*it)->m_successors) {
-            BasicBlock *bb    = (*it);  // Pointer to A
+        BasicBlock *a = *it;
 
-            if ((successor->m_predecessors.size() == 1) &&
-                (successor->m_successors.size() == 1) &&
-                (successor->m_listOfRTLs->size() == 1) &&
-                (successor->m_listOfRTLs->front()->size() == 1) &&
-                successor->m_listOfRTLs->front()->front()->isGoto()) {
-                // Found an out-edge to an only-jump BB
+        for (size_t i = 0; i < a->getSuccessors().size(); i++) {
+            BasicBlock *jmpBB = a->getSuccessor(i);
 
-                /* std::cout << "outedge to jump detected at " << std::hex << bb->getLowAddr() << " to ";
-                 *                      std::cout << pSucc->getLowAddr() << " to " <<
-                 * pSucc->m_OutEdges.front()->getLowAddr() << std::dec <<
-                 *                      '\n'; */
-                // Point this outedge of A to the dest of the jump (B)
-                successor = successor->m_successors.front();
+            if (jmpBB->getNumSuccessors() != 1) { // only consider oneway jumps
+                continue;
+            }
 
-                // Now successor still points to J; *it1 points to B.
-                // Almost certainly, we will need a jump in the low
-                // level C that may be generated. Also force a label for B
-                bb->m_jumpRequired = true;
-                setLabelRequired(successor);
+            if (jmpBB->getRTLs()->size() != 1 ||
+                jmpBB->getRTLs()->front()->size() != 1 ||
+                jmpBB->getRTLs()->front()->front()->isGoto()) {
+                continue;
+            }
 
-                // Find the in-edge from B to J; replace this with an in-edge to A
-                for (BasicBlock *& pred : successor->m_predecessors) {
-                    if (pred == successor) {
-                        pred = bb; // Point to A
-                    }
+            // Found an out-edge to an only-jump BB.
+            // Replace edge A -> J -> B by A -> B
+            BasicBlock *b = jmpBB->getSuccessor(0);
+            a->setSuccessor(i, b);
+
+            for (size_t j = 0; j < b->getNumPredecessors(); j++) {
+                if (b->getPredecessor(j) == jmpBB) {
+                    b->setPredecessor(j, a);
+                    break;
                 }
+            }
 
-                // Remove the in-edge from J to A. First find the in-edge
-                std::vector<BasicBlock *>::iterator it2;
-                for (it2 = successor->m_predecessors.begin(); it2 != successor->m_predecessors.end(); it2++) {
-                    if (*it2 == bb) {
-                        break;
-                    }
-                }
+            // remove predecessor from j. Cannot remove successor now since there might be several predecessors
+            // which need the successor information.
+            jmpBB->removePredecessor(a);
 
-                assert(it2 != successor->m_predecessors.end());
-                successor->removePredecessor(*it2);
+            a->setJumpRequired();
+            setLabelRequired(b);
 
-                // If nothing else uses this BB (J), remove it from the CFG
-                if (successor->m_predecessors.empty()) {
-                    removeBB(successor);
-                }
+            if (jmpBB->getNumPredecessors() == 0) {
+                jmpBB->removeAllSuccessors(); // now we can remove the successors
+                removeBB(jmpBB);
             }
         }
     }

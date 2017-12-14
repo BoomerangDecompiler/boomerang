@@ -121,6 +121,7 @@ typedef std::list<BasicBlock *>::const_iterator   BBCIterator;
 using RTLList   = std::list<RTL *>;
 using SharedExp = std::shared_ptr<class Exp>;
 
+
 /**
  * BasicBlock class.
  */
@@ -193,6 +194,10 @@ public:
     /// Change the \p i-th successor of this BB.
     /// \param i index (0-based)
     void setSuccessor(size_t i, BasicBlock *newOutEdge);
+
+    /// \returns the \p i-th predecessor of this BB.
+    /// Returns nullptr if \p i is out of range.
+    BasicBlock *getPredecessor(size_t i);
 
     /// \returns the \p i-th successor of this BB.
     /// Returns nullptr if \p i is out of range.
