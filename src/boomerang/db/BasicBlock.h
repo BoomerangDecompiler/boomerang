@@ -520,7 +520,7 @@ private:
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
-    Function *m_function;
+    Function *m_function = nullptr;
 
     BBType m_nodeType = BBType::Invalid;      ///< type of basic block
     std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
@@ -547,16 +547,17 @@ protected:
      */
     int m_DFTfirst = 0; ///< depth-first traversal first visit
     int m_DFTlast  = 0; ///< depth-first traversal last visit
-    int m_DFTrevfirst;  ///< reverse depth-first traversal first visit
-    int m_DFTrevlast;   ///< reverse depth-first traversal last visit
+    int m_DFTrevfirst = 0;  ///< reverse depth-first traversal first visit
+    int m_DFTrevlast = 0;   ///< reverse depth-first traversal last visit
 
     /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
-    int m_ord;                               ///< node's position within the ordering structure
-    int m_revOrd;                            ///< position within ordering structure for the reverse graph
-    int m_inEdgesVisited;                    ///< counts the number of in edges visited during a DFS
-    int m_numForwardInEdges;                 ///< inedges to this node that aren't back edges
-    int m_loopStamps[2], m_revLoopStamps[2]; ///< used for structuring analysis
-    TravType m_traversed;                    ///< traversal flag for the numerous DFS's
+    int m_ord = -1;                          ///< node's position within the ordering structure
+    int m_revOrd = -1;                       ///< position within ordering structure for the reverse graph
+    int m_inEdgesVisited = 0;                ///< counts the number of in edges visited during a DFS
+    int m_numForwardInEdges = 0;             ///< inedges to this node that aren't back edges
+    int m_loopStamps[2] = { 0 };
+    int m_revLoopStamps[2] = { 0 }; ///< used for structuring analysis
+    TravType m_traversed = TravType::Untraversed; ///< traversal flag for the numerous DFS's
     QString m_labelStr;                      ///< the high level label for this node (if needed)
 
     /* high level structuring */
@@ -564,18 +565,18 @@ protected:
     SBBType m_structType   = SBBType::None; ///< structured type of this node
 
     // analysis information
-    BasicBlock *m_immPDom;         ///< immediate post dominator
-    BasicBlock *m_loopHead;        ///< head of the most nested enclosing loop
-    BasicBlock *m_caseHead;        ///< head of the most nested enclosing case
-    BasicBlock *m_condFollow;      ///< follow of a conditional header
-    BasicBlock *m_loopFollow;      ///< follow of a loop header
-    BasicBlock *m_latchNode;       ///< latching node of a loop header
+    BasicBlock *m_immPDom = nullptr;         ///< immediate post dominator
+    BasicBlock *m_loopHead = nullptr;        ///< head of the most nested enclosing loop
+    BasicBlock *m_caseHead = nullptr;        ///< head of the most nested enclosing case
+    BasicBlock *m_condFollow = nullptr;      ///< follow of a conditional header
+    BasicBlock *m_loopFollow = nullptr;      ///< follow of a loop header
+    BasicBlock *m_latchNode = nullptr;       ///< latching node of a loop header
 
     // Structured type of the node
-    StructType m_structuringType;    ///< the structuring class (Loop, Cond, etc)
-    UnstructType m_unstructuredType; ///< the restructured type of a conditional header
-    LoopType m_loopHeaderType;       ///< the loop type of a loop header
-    CondType m_conditionHeaderType;  ///< the conditional type of a conditional header
+    StructType m_structuringType = StructType::Invalid;      ///< the structuring class (Loop, Cond, etc)
+    UnstructType m_unstructuredType = UnstructType::Invalid; ///< the restructured type of a conditional header
+    LoopType m_loopHeaderType = LoopType::Invalid;           ///< the loop type of a loop header
+    CondType m_conditionHeaderType = CondType::Invalid;      ///< the conditional type of a conditional header
 
     /// true if processing for overlapped registers on statements in this BB
     /// has been completed.
