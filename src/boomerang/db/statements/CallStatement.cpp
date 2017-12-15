@@ -887,8 +887,7 @@ SharedExp CallStatement::getArgumentExp(int i) const
 
     // stmt = m_arguments[i]
     const Assign *asgn = dynamic_cast<const Assign *>(*std::next(m_arguments.begin(), i));
-    assert(asgn);
-    return asgn->getRight();
+    return asgn ? asgn->getRight() : nullptr;
 }
 
 

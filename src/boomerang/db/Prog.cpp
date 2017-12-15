@@ -1136,10 +1136,8 @@ void Prog::removeUnusedGlobals()
         namedGlobals[g->getName()] = g;
     }
 
-    // rebuild the globals vector
-    Global *usedGlobal;
-
-    qDeleteAll(m_globals);
+    // rebuild the globals vector.
+    // Do not delete the globals now since they will be re-inserted again if they are used.
     m_globals.clear();
 
     for (const SharedExp& e : usedGlobals) {
@@ -1148,13 +1146,20 @@ void Prog::removeUnusedGlobals()
         }
 
         QString name(e->access<Const, 1>()->getStr());
-        usedGlobal = namedGlobals[name];
+        Global *usedGlobal = namedGlobals[name];
 
         if (usedGlobal) {
             m_globals.insert(usedGlobal);
         }
         else {
             LOG_WARN("An expression refers to a nonexistent global");
+        }
+    }
+
+
+    for (Global *global : namedGlobals) {
+        if (m_globals.find(global) == m_globals.end()) {
+            delete global;
         }
     }
 }

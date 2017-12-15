@@ -412,6 +412,15 @@ void BasicBlock::setSuccessor(size_t i, BasicBlock *pNewOutEdge)
     m_successors[i] = pNewOutEdge;
 }
 
+BasicBlock *BasicBlock::getPredecessor(size_t i)
+{
+    if (i < m_predecessors.size()) {
+        return m_predecessors[i];
+    }
+    else {
+        return nullptr;
+    }
+}
 
 BasicBlock *BasicBlock::getSuccessor(size_t i)
 {

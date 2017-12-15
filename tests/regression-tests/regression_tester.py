@@ -46,7 +46,7 @@ def perform_test(exepath, test_file_path, output_path, args):
         start_t = time.time()
 
         try:
-            result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=20)
+            result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=120)
             result = '.'
         except:
             result = '!'
