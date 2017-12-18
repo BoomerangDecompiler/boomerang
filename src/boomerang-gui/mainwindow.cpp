@@ -23,6 +23,9 @@
 #include "boomerang/type/TypeRecovery.h"
 
 
+Q_DECLARE_METATYPE(ITypeRecovery *)
+
+
 MainWindow::MainWindow(QWidget *_parent)
     : QMainWindow(_parent)
     , ui(new Ui::MainWindow)
@@ -113,7 +116,8 @@ MainWindow::MainWindow(QWidget *_parent)
     ui->toLoadButton->setEnabled((ui->outputPathComboBox->count() > 0) && (ui->inputFileComboBox->count() > 0));
 
     loadingSettings = false;
-    ui->cmb_typeRecoveryEngine->addItem("DFA based type recovery", QVariant::fromValue((void *)1));
+    ui->cmb_typeRecoveryEngine->addItem("DFA based type recovery",
+        QVariant::fromValue(Boomerang::get()->getOrCreateProject()->getTypeRecoveryEngine()));
     ui->cmb_typeRecoveryEngine->setCurrentIndex(0);
 
     ui->inputFileComboBox->setEditable(false);
@@ -1129,19 +1133,14 @@ void MainWindow::on_actionLoggingOptions_triggered()
 
 void MainWindow::on_cmb_typeRecoveryEngine_currentIndexChanged(int index)
 {
-    QVariant      sel_data = ui->cmb_typeRecoveryEngine->itemData(index);
-    ITypeRecovery *ptr     = (ITypeRecovery *)sel_data.value<void *>();
     Boomerang     *boom    = Boomerang::get();
 
     if (!boom->getOrCreateProject()) {
         QMessageBox::warning(this, "Error", "Cannot set type recovery without active project");
         return;
     }
+    ITypeRecovery *ptr     = ui->cmb_typeRecoveryEngine->itemData(index).value<ITypeRecovery *>();
 
-    if ((intptr_t)ptr == 1) {
-        decompilerThread->getDecompiler()->setUseDFTA(false);
-    }
-    else {
-        decompilerThread->getDecompiler()->setUseDFTA(true);
-    }
+    // since we only have DFTA now, assume we use DFTA if ptr != nullptr
+    decompilerThread->getDecompiler()->setUseDFTA(ptr != nullptr);
 }
