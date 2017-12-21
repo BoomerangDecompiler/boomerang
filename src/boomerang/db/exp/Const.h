@@ -24,13 +24,14 @@ class Const : public Exp
 private:
     union Data
     {
-        int    i;      ///< Integer
-        QWord  ll;     ///< 64 bit integer / address / pointer
-        double d;      ///< Double precision float
+        int    i;  ///< Integer
+        QWord  ll = 0; ///< 64 bit integer / address / pointer
+        double d;  ///< Double precision float
 
         /// Don't store string: function could be renamed
         Function *pp;  ///< Pointer to function (e.g. global function pointers)
     };
+    static_assert(sizeof(Data) == 8, "Const data must be 64 bits");
 
 public:
     // Special constructors overloaded for the various constants
