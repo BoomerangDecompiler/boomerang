@@ -659,12 +659,12 @@ void StatementTest::testEndlessLoop()
                        "Fall BB:\n"
                        "  in edges: \n"
                        "  out edges: 0x00000020 \n"
-                       "0x00000000    1 *32* r24 := 5\n"
+                       "0x00000000    1 *i32* r24 := 5\n"
                        "Oneway BB:\n"
                        "  in edges: 0x00000000(0x00000000) 0x00000020(0x00000020) \n"
                        "  out edges: 0x00000020 \n"
-                       "0x00000000    3 *32* r24 := phi{1 2}\n"
-                       "0x00000020    2 *32* r24 := r24{3} + 1\n"
+                       "0x00000000    3 *i32* r24 := phi{1 2}\n"
+                       "0x00000020    2 *i32* r24 := r24{3} + 1\n"
                        "\n";
 
     QCOMPARE(actual, expected);
