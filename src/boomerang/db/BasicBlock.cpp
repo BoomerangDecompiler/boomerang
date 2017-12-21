@@ -1452,8 +1452,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
             // b will be (<expr> * 4) + T
             SharedExp b = e->getSubExp1();
             T    = b->access<Const, 2>()->getAddr();
-            b    = b->getSubExp1(); // b is now <expr> * 4
-            expr = b->getSubExp1();
+            expr = b->access<Exp, 1, 1>();
             break;
         }
 
@@ -1660,11 +1659,12 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 
         assert(!lastRtl->empty());
         CaseStatement *lastStmt = (CaseStatement *)lastRtl->back();
+
         // Note: some programs might not have the case expression propagated to, because of the -l switch (?)
         // We used to use ordinary propagation here to get the memory expression, but now it refuses to propagate memofs
         // because of the alias safety issue. Eventually, we should use an alias-safe incremental propagation, but for
         // now we'll assume no alias problems and force the propagation
-        bool convert; // FIXME: uninitialized value passed to propagateTo
+        bool convert = false;
         lastStmt->propagateTo(convert, nullptr, nullptr, true /* force */);
         SharedExp e = lastStmt->getDest();
 
@@ -1685,7 +1685,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
         if (form) {
             SwitchInfo *swi = new SwitchInfo;
             swi->chForm = form;
-            Address   T;
+            Address   T = Address::INVALID;
             SharedExp expr;
             findSwParams(form, e, expr, T);
 
@@ -1696,12 +1696,12 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                 // TMN: Added actual control of the array members, to possibly truncate what findNumCases()
                 // thinks is the number of cases, when finding the first array element not pointing to code.
                 if (form == 'A') {
-                    Prog *prog = proc->getProg();
+                    const Prog *prog = proc->getProg();
 
                     for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
                         Address uSwitch = Address(prog->readNative4(swi->uTable + iPtr * 4));
 
-                        if ((uSwitch >= prog->getLimitTextHigh()) || (uSwitch < prog->getLimitTextLow())) {
+                        if (!Util::inRange(uSwitch, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
                             if (DEBUG_SWITCH) {
                                 LOG_MSG("Truncating type A indirect jump array to %1 entries "
                                         "due to finding an array entry pointing outside valid code; %2 isn't in %3..%4",
@@ -1716,7 +1716,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
                 }
 
                 if (swi->iNumTable <= 0) {
-                    LOG_MSG("Switch analysis failure at address %1", this->getLowAddr());
+                    LOG_WARN("Switch analysis failure at address %1", this->getLowAddr());
                     return false;
                 }
 

@@ -28,7 +28,7 @@
 Const::Const(uint32_t i)
     : Exp(opIntConst)
     , m_conscript(0)
-    , m_type(VoidType::get())
+    , m_type(IntegerType::get(32, -1))
 {
     m_value.i = i;
 }
@@ -37,7 +37,7 @@ Const::Const(uint32_t i)
 Const::Const(int i)
     : Exp(opIntConst)
     , m_conscript(0)
-    , m_type(VoidType::get())
+    , m_type(IntegerType::get(32, 1))
 {
     m_value.i = i;
 }
@@ -46,7 +46,7 @@ Const::Const(int i)
 Const::Const(QWord ll)
     : Exp(opLongConst)
     , m_conscript(0)
-    , m_type(VoidType::get())
+    , m_type(IntegerType::get(64, -1))
 {
     m_value.ll = ll;
 }
@@ -55,7 +55,7 @@ Const::Const(QWord ll)
 Const::Const(double d)
     : Exp(opFltConst)
     , m_conscript(0)
-    , m_type(VoidType::get())
+    , m_type(FloatType::get(64))
 {
     m_value.d = d;
 }
@@ -73,67 +73,56 @@ Const::Const(const QString& p)
 Const::Const(Function *p)
     : Exp(opFuncConst)
     , m_conscript(0)
-    , m_type(VoidType::get())
+    , m_type(PointerType::get(FuncType::get()))
 {
     m_value.pp = p;
 }
 
 
-Const::Const(Address a)
+Const::Const(Address addr)
     : Exp(opIntConst)
     , m_conscript(0)
-    , m_type(VoidType::get())
+    , m_type(IntegerType::get(Address::getSourceBits(), -1))
 {
-    m_value.ll = a.value();
+    m_value.ll = addr.value();
 }
 
 
-Const::Const(const Const& o)
-    : Exp(o.m_oper)
+Const::Const(const Const& other)
+    : Exp(other.m_oper)
 {
-    m_value           = o.m_value;
-    m_conscript = o.m_conscript;
-    m_type      = o.m_type;
-    m_string    = o.m_string;
+    m_value     = other.m_value;
+    m_conscript = other.m_conscript;
+    m_type      = other.m_type;
+    m_string    = other.m_string;
 }
 
 
 bool Const::operator<(const Exp& o) const
 {
-    if (m_oper < o.getOper()) {
-        return true;
+    if (m_oper != o.getOper()) {
+        return m_oper < o.getOper();
     }
 
-    if (m_oper > o.getOper()) {
-        return false;
-    }
+    const Const& otherConst = (const Const&)o;
 
-    if (m_conscript) {
-        if (m_conscript < ((Const&)o).m_conscript) {
-            return true;
-        }
-
-        if (m_conscript > ((Const&)o).m_conscript) {
-            return false;
-        }
-    }
-    else if (((Const&)o).m_conscript) {
-        return true;
+    if (m_conscript != otherConst.m_conscript) {
+        return m_conscript < otherConst.m_conscript;
     }
 
     switch (m_oper)
     {
     case opIntConst:
-        return m_value.i < ((Const&)o).m_value.i;
+        return m_value.i < otherConst.m_value.i;
 
     case opLongConst:
-        return m_value.ll < ((Const&)o).m_value.ll;
+        return m_value.ll < otherConst.m_value.ll;
 
     case opFltConst:
-        return m_value.d < ((Const&)o).m_value.d;
+        return m_value.d < otherConst.m_value.d;
 
     case opStrConst:
-        return m_string < ((Const&)o).m_string;
+        return m_string < otherConst.m_string;
 
     default:
         LOG_FATAL("Invalid operator %1", operToString(m_oper));
