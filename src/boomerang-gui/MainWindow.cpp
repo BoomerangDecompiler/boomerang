@@ -69,7 +69,10 @@ MainWindow::MainWindow(QWidget *_parent)
     connect(ui->toDecodeButton,         SIGNAL(clicked()),                          m_decompiler, SLOT(decode()));
     connect(ui->toDecompileButton,      SIGNAL(clicked()),                          m_decompiler, SLOT(decompile()));
     connect(ui->toGenerateCodeButton,   SIGNAL(clicked()),                          m_decompiler, SLOT(generateCode()));
+
     connect(this, SIGNAL(librarySignaturesOutdated()), m_decompiler, SLOT(rereadLibSignatures()));
+    connect(this, SIGNAL(entryPointAdded(Address, const QString&)), m_decompiler, SLOT(addEntryPoint(Address, const QString&)));
+    connect(this, SIGNAL(entryPointRemoved(Address)), m_decompiler, SLOT(removeEntryPoint(Address)));
 
     ui->userProcs->horizontalHeader()->disconnect(SIGNAL(sectionClicked(int)));
     connect(ui->userProcs->horizontalHeader(), &QHeaderView::sectionClicked, this,
@@ -1099,7 +1102,7 @@ void MainWindow::on_addButton_pressed()
         return;
     }
 
-    m_decompiler->addEntryPoint(a, (const char *)qPrintable(ui->nameEdit->text()));
+    emit entryPointAdded(a, ui->nameEdit->text());
     int nrows = ui->entrypoints->rowCount();
     ui->entrypoints->setRowCount(nrows + 1);
     ui->entrypoints->setItem(nrows, 0, new QTableWidgetItem(ui->addressEdit->text()));
@@ -1118,7 +1121,7 @@ void MainWindow::on_removeButton_pressed()
         return;
     }
 
-    m_decompiler->removeEntryPoint(a);
+    emit entryPointRemoved(a);
     ui->entrypoints->removeRow(ui->entrypoints->currentRow());
 }
 

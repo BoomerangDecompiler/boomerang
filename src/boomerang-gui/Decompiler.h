@@ -77,6 +77,9 @@ public slots: // ui -> Decompiler
     void stopWaiting();
     void rereadLibSignatures();
 
+    void addEntryPoint(Address entryAddr, const QString& name);
+    void removeEntryPoint(Address entryAddr);
+
     // todo: provide thread-safe access mechanism
 public:
     bool getRtlForProc(const QString& name, QString& rtl);
@@ -87,8 +90,6 @@ public:
 
     void setDebugEnabled(bool debug) { m_debugging = debug; }
 
-    void addEntryPoint(Address entryAddr, const QString& name);
-    void removeEntryPoint(Address entryAddr);
 
 private:
     /// After code generation, update the list of modules

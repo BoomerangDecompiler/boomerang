@@ -43,6 +43,8 @@ public:
 
 signals:
     void librarySignaturesOutdated();
+    void entryPointAdded(Address entryAddr, const QString& name);
+    void entryPointRemoved(Address entryAddr);
 
 public slots:
     void loadComplete();
