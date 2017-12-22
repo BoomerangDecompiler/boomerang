@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *_parent)
 
     m_decompiler = new Decompiler();
     m_decompiler->moveToThread(&m_decompilerThread);
+
     m_decompilerThread.start();
 
     connect(m_decompiler, &Decompiler::newCluster, this, &MainWindow::showNewCluster);
@@ -127,7 +128,11 @@ MainWindow::MainWindow(QWidget *_parent)
 
 MainWindow::~MainWindow()
 {
+    m_decompilerThread.quit();
+    m_decompilerThread.wait();
+
     delete ui;
+    delete m_decompiler;
 }
 
 
