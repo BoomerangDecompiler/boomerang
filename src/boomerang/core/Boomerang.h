@@ -142,7 +142,7 @@ public:
     void alertDecompileAfterPropagate(UserProc *p, int depth);
     void alertDecompileAfterRemoveStmts(UserProc *p, int depth);
     void alertEndDecompile(UserProc *p);
-    void alertConsidering(Function *_parent, Function *p);
+    void alertDiscovered(Function *_parent, Function *p);
     void alertDecompiling(UserProc *p);
     void alertDecompileDebugPoint(UserProc *p, const char *description);
 

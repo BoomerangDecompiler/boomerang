@@ -895,7 +895,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
      *      return child
      */
 
-    Boomerang::get()->alertConsidering(path->empty() ? nullptr : path->back(), this);
+    Boomerang::get()->alertDiscovered(path->empty() ? nullptr : path->back(), this);
 
     LOG_MSG("%1 procedure '%2'", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
 

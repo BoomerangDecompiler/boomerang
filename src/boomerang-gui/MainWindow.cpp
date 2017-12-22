@@ -41,26 +41,26 @@ MainWindow::MainWindow(QWidget *_parent)
 
     m_decompilerThread.start();
 
-    connect(m_decompiler, &Decompiler::newCluster, this, &MainWindow::showNewCluster);
-    connect(m_decompiler, &Decompiler::newProcInCluster, this, &MainWindow::showNewProcInCluster);
-    connect(m_decompiler, &Decompiler::debuggingPoint, this, &MainWindow::showDebuggingPoint);
-    connect(m_decompiler, &Decompiler::loading, this, &MainWindow::showLoadPage);
-    connect(m_decompiler, &Decompiler::decoding, this, &MainWindow::showDecodePage);
-    connect(m_decompiler, &Decompiler::decompiling, this, &MainWindow::showDecompilePage);
-    connect(m_decompiler, &Decompiler::generatingCode, this, &MainWindow::showGenerateCodePage);
+    connect(m_decompiler, &Decompiler::moduleCreated, this, &MainWindow::showNewCluster);
+    connect(m_decompiler, &Decompiler::functionAddedToModule, this, &MainWindow::showNewProcInCluster);
+    connect(m_decompiler, &Decompiler::debugPointHit, this, &MainWindow::showDebuggingPoint);
+    connect(m_decompiler, &Decompiler::loadingStarted, this, &MainWindow::showLoadPage);
+    connect(m_decompiler, &Decompiler::decodingStarted, this, &MainWindow::showDecodePage);
+    connect(m_decompiler, &Decompiler::decompilingStarted, this, &MainWindow::showDecompilePage);
+    connect(m_decompiler, &Decompiler::generatingCodeStarted, this, &MainWindow::showGenerateCodePage);
     connect(m_decompiler, &Decompiler::loadCompleted, this, &MainWindow::loadComplete);
-    connect(m_decompiler, &Decompiler::machineType, this, &MainWindow::showMachineType);
-    connect(m_decompiler, &Decompiler::newEntrypoint, this, &MainWindow::showNewEntrypoint);
+    connect(m_decompiler, &Decompiler::machineTypeChanged, this, &MainWindow::showMachineType);
+    connect(m_decompiler, &Decompiler::entryPointAdded, this, &MainWindow::showNewEntrypoint);
     connect(m_decompiler, &Decompiler::decodeCompleted, this, &MainWindow::decodeComplete);
     connect(m_decompiler, &Decompiler::decompileCompleted, this, &MainWindow::decompileComplete);
     connect(m_decompiler, &Decompiler::generateCodeCompleted, this, &MainWindow::generateCodeComplete);
-    connect(m_decompiler, &Decompiler::consideringProc, this, &MainWindow::showConsideringProc);
-    connect(m_decompiler, &Decompiler::decompilingProc, this, &MainWindow::showDecompilingProc);
-    connect(m_decompiler, &Decompiler::newUserProc, this, &MainWindow::showNewUserProc);
-    connect(m_decompiler, &Decompiler::newLibProc, this, &MainWindow::showNewLibProc);
-    connect(m_decompiler, &Decompiler::removeUserProc, this, &MainWindow::showRemoveUserProc);
-    connect(m_decompiler, &Decompiler::removeLibProc, this, &MainWindow::showRemoveLibProc);
-    connect(m_decompiler, &Decompiler::newSection, this, &MainWindow::showNewSection);
+    connect(m_decompiler, &Decompiler::procDiscovered, this, &MainWindow::showConsideringProc);
+    connect(m_decompiler, &Decompiler::procDecompileStarted, this, &MainWindow::showDecompilingProc);
+    connect(m_decompiler, &Decompiler::userProcCreated, this, &MainWindow::showNewUserProc);
+    connect(m_decompiler, &Decompiler::libProcCreated, this, &MainWindow::showNewLibProc);
+    connect(m_decompiler, &Decompiler::userProcRemoved, this, &MainWindow::showRemoveUserProc);
+    connect(m_decompiler, &Decompiler::libProcRemoved, this, &MainWindow::showRemoveLibProc);
+    connect(m_decompiler, &Decompiler::sectionAdded, this, &MainWindow::showNewSection);
 
     connect(ui->toLoadButton, &QPushButton::clicked, this, [=]() {
         m_decompiler->loadInputFile(ui->inputFileComboBox->currentText(), ui->outputPathComboBox->currentText());
@@ -69,6 +69,7 @@ MainWindow::MainWindow(QWidget *_parent)
     connect(ui->toDecodeButton,         SIGNAL(clicked()),                          m_decompiler, SLOT(decode()));
     connect(ui->toDecompileButton,      SIGNAL(clicked()),                          m_decompiler, SLOT(decompile()));
     connect(ui->toGenerateCodeButton,   SIGNAL(clicked()),                          m_decompiler, SLOT(generateCode()));
+    connect(this, SIGNAL(librarySignaturesOutdated()), m_decompiler, SLOT(rereadLibSignatures()));
 
     ui->userProcs->horizontalHeader()->disconnect(SIGNAL(sectionClicked(int)));
     connect(ui->userProcs->horizontalHeader(), &QHeaderView::sectionClicked, this,
@@ -313,7 +314,7 @@ void MainWindow::on_actionSave_triggered()
         }
 
         if (signatureFiles.find(ui->tabWidget->currentWidget()) != signatureFiles.end()) {
-            m_decompiler->rereadLibSignatures();
+            emit librarySignaturesOutdated();
         }
     }
 }
@@ -796,7 +797,7 @@ void MainWindow::on_decompileProcsTreeWidget_itemDoubleClicked(QTreeWidgetItem *
 
 void MainWindow::on_actionEnable_toggled(bool b)
 {
-    m_decompiler->setDebugging(b);
+    m_decompiler->setDebugEnabled(b);
     m_decompiler->stopWaiting();
 
     if (b) {
@@ -1073,7 +1074,7 @@ void MainWindow::on_actionAboutQt_triggered()
 
 void MainWindow::on_enableNoDecodeChildren_toggled(bool b)
 {
-    m_decompiler->setNoDecodeChildren(b);
+    SETTING(noDecodeChildren) = b;
 }
 
 
@@ -1141,5 +1142,5 @@ void MainWindow::on_cmb_typeRecoveryEngine_currentIndexChanged(int index)
     ITypeRecovery *ptr     = ui->cmb_typeRecoveryEngine->itemData(index).value<ITypeRecovery *>();
 
     // since we only have DFTA now, assume we use DFTA if ptr != nullptr
-    m_decompiler->setUseDFTA(ptr != nullptr);
+    SETTING(dfaTypeAnalysis) = (ptr != nullptr);
 }

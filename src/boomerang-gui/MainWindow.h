@@ -41,6 +41,9 @@ public:
 public:
     void errorLoadingFile();
 
+signals:
+    void librarySignaturesOutdated();
+
 public slots:
     void loadComplete();
     void decodeComplete();

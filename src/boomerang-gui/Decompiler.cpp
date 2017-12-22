@@ -30,22 +30,11 @@ Decompiler::Decompiler()
     Boomerang::get()->getOrCreateProject();
 }
 
-void Decompiler::setUseDFTA(bool d)
+
+void Decompiler::addEntryPoint(Address entryAddr, const QString& name)
 {
-    SETTING(dfaTypeAnalysis) = d;
-}
-
-
-void Decompiler::setNoDecodeChildren(bool d)
-{
-    SETTING(noDecodeChildren) = d;
-}
-
-
-void Decompiler::addEntryPoint(Address a, const char *nam)
-{
-    m_userEntrypoints.push_back(a);
-    m_fe->addSymbol(a, nam);
+    m_userEntrypoints.push_back(entryAddr);
+    m_fe->addSymbol(entryAddr, name);
 }
 
 
@@ -63,14 +52,14 @@ void Decompiler::removeEntryPoint(Address a)
 void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPath)
 {
     Boomerang::get()->getSettings()->setOutputDirectory(outputPath);
-    emit loading();
+    emit loadingStarted();
 
     m_image = Boomerang::get()->getImage();
     m_prog  = new Prog(QFileInfo(inputFile).baseName());
     m_fe    = IFrontEnd::create(inputFile, m_prog, Boomerang::get()->getOrCreateProject());
 
     if (m_fe == nullptr) {
-        emit machineType(QString("Unavailable: Load Failed!"));
+        emit machineTypeChanged(QString("Unavailable: Load Failed!"));
         return;
     }
 
@@ -80,52 +69,51 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
     switch (m_prog->getMachine())
     {
     case Machine::PENTIUM:
-        emit machineType(QString("pentium"));
+        emit machineTypeChanged("pentium");
         break;
 
     case Machine::SPARC:
-        emit machineType(QString("sparc"));
+        emit machineTypeChanged("sparc");
         break;
 
     case Machine::HPRISC:
-        emit machineType(QString("hprisc"));
+        emit machineTypeChanged("hprisc");
         break;
 
     case Machine::PALM:
-        emit machineType(QString("palm"));
+        emit machineTypeChanged("palm");
         break;
 
     case Machine::PPC:
-        emit machineType(QString("ppc"));
+        emit machineTypeChanged("ppc");
         break;
 
     case Machine::ST20:
-        emit machineType(QString("st20"));
+        emit machineTypeChanged("st20");
         break;
 
     case Machine::MIPS:
-        emit machineType(QString("mips"));
+        emit machineTypeChanged("mips");
         break;
 
     case Machine::M68K:
-        emit machineType(QString("m68k"));
+        emit machineTypeChanged("m68k");
         break;
 
     case Machine::UNKNOWN:
-        emit machineType(QString("UNKNOWN"));
+        emit machineTypeChanged("UNKNOWN");
         break;
     }
 
-    QStringList          entrypointStrings;
     std::vector<Address> entrypoints = m_fe->getEntryPoints();
 
     for (Address entryPoint : entrypoints) {
         m_userEntrypoints.push_back(entryPoint);
-        emit newEntrypoint(entryPoint, m_prog->getSymbolByAddress(entryPoint));
+        emit entryPointAdded(entryPoint, m_prog->getSymbolByAddress(entryPoint));
     }
 
     for (const IBinarySection *section : *m_image) {
-        emit newSection(section->getName(), section->getSourceAddr(),
+        emit sectionAdded(section->getName(), section->getSourceAddr(),
                         section->getSourceAddr() + section->getSize());
     }
 
@@ -135,16 +123,16 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
 
 void Decompiler::decode()
 {
-    emit decoding();
+    emit decodingStarted();
 
 
     LOG_MSG("Decoding program %1...", m_prog->getName());
 
     bool    gotMain;
-    Address a = m_fe->getMainEntryPoint(gotMain);
+    Address mainAddr = m_fe->getMainEntryPoint(gotMain);
 
     for (Address entryAddr : m_userEntrypoints) {
-        if (entryAddr == a) {
+        if (entryAddr == mainAddr) {
             m_fe->decode(m_prog, true, nullptr);
             break;
         }
@@ -168,7 +156,7 @@ void Decompiler::decode()
 
 void Decompiler::decompile()
 {
-    emit decompiling();
+    emit decompilingStarted();
 
     LOG_MSG("Starting decompile...");
     m_prog->decompile();
@@ -178,19 +166,19 @@ void Decompiler::decompile()
 }
 
 
-void Decompiler::emitClusterAndChildren(Module *root)
+void Decompiler::moduleAndChildrenUpdated(Module *root)
 {
-    emit newCluster(root->getName());
+    emit moduleCreated(root->getName());
 
     for (size_t i = 0; i < root->getNumChildren(); i++) {
-        emitClusterAndChildren(root->getChild(i));
+        moduleAndChildrenUpdated(root->getChild(i));
     }
 }
 
 
 void Decompiler::generateCode()
 {
-    emit generatingCode();
+    emit generatingCodeStarted();
 
     LOG_MSG("Generating code...");
     Boomerang::get()->getCodeGenerator()->generateCode(m_prog);
@@ -198,10 +186,8 @@ void Decompiler::generateCode()
     Module *root = m_prog->getRootModule();
 
     if (root) {
-        emitClusterAndChildren(root);
+        moduleAndChildrenUpdated(root);
     }
-
-    std::list<Function *>::iterator it;
 
     for (const auto& module : m_prog->getModuleList()) {
         for (Function *p : *module) {
@@ -209,7 +195,7 @@ void Decompiler::generateCode()
                 continue;
             }
 
-            emit newProcInCluster(p->getName(), module->getName());
+            emit functionAddedToModule(p->getName(), module->getName());
         }
     }
 
@@ -218,76 +204,43 @@ void Decompiler::generateCode()
 }
 
 
-const char *Decompiler::getProcStatus(UserProc *p)
+void Decompiler::alertDiscovered(Function *caller, Function *proc)
 {
-    switch (p->getStatus())
-    {
-    case PROC_UNDECODED:
-        return "undecoded";
-
-    case PROC_DECODED:
-        return "decoded";
-
-    case PROC_VISITED:
-        return "visited";
-
-    case PROC_INCYCLE:
-        return "in cycle";
-
-    case PROC_PRESERVEDS:
-        return "preserveds";
-
-    case PROC_EARLYDONE:
-        return "early done";
-
-    case PROC_FINAL:
-        return "final";
-
-    case PROC_CODE_GENERATED:
-        return "code generated";
-    }
-
-    return "unknown";
-}
-
-
-void Decompiler::alertConsidering(Function *calledBy, Function *proc)
-{
-    emit consideringProc(calledBy ? calledBy->getName() : "", proc->getName());
+    emit procDiscovered(caller ? caller->getName() : "", proc->getName());
 }
 
 
 void Decompiler::alertDecompiling(UserProc *p)
 {
-    emit decompilingProc(p->getName());
+    emit procDecompileStarted(p->getName());
 }
 
 
-void Decompiler::alertNew(Function *p)
+void Decompiler::alertNew(Function *function)
 {
-    if (p->isLib()) {
+    if (function->isLib()) {
         QString params;
 
-        if ((p->getSignature() == nullptr) || p->getSignature()->isUnknown()) {
+        if ((function->getSignature() == nullptr) || function->getSignature()->isUnknown()) {
             params = "<unknown>";
         }
         else {
-            for (size_t i = 0; i < p->getSignature()->getNumParams(); i++) {
-                auto ty = p->getSignature()->getParamType(i);
+            for (size_t i = 0; i < function->getSignature()->getNumParams(); i++) {
+                auto ty = function->getSignature()->getParamType(i);
                 params.append(ty->getCtype());
                 params.append(" ");
-                params.append(p->getSignature()->getParamName(i));
+                params.append(function->getSignature()->getParamName(i));
 
-                if (i != p->getSignature()->getNumParams() - 1) {
+                if (i != function->getSignature()->getNumParams() - 1) {
                     params.append(", ");
                 }
             }
         }
 
-        emit newLibProc(p->getName(), params);
+        emit libProcCreated(function->getName(), params);
     }
     else {
-        emit newUserProc(p->getName(), p->getEntryAddress());
+        emit userProcCreated(function->getName(), function->getEntryAddress());
     }
 }
 
@@ -295,10 +248,10 @@ void Decompiler::alertNew(Function *p)
 void Decompiler::alertRemove(Function *p)
 {
     if (p->isLib()) {
-        emit removeLibProc(p->getName());
+        emit libProcRemoved(p->getName());
     }
     else {
-        emit removeUserProc(p->getName(), p->getEntryAddress());
+        emit userProcRemoved(p->getName(), p->getEntryAddress());
     }
 }
 
@@ -330,7 +283,7 @@ void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description)
 
     if (m_debugging) {
         m_waiting = true;
-        emit debuggingPoint(p->getName(), description);
+        emit debugPointHit(p->getName(), description);
 
         while (m_waiting) {
             QThread::yieldCurrentThread();
